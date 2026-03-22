@@ -72,21 +72,11 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .tk.hi{color:var(--amb)}.tk.alr{color:var(--red)}
 @keyframes scrl{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-/* Live game: left column = market + intel/news; right = station cards */
-#main{
-  display:grid;
-  grid-template-columns:minmax(320px,0.95fr) minmax(420px,1.15fr) minmax(420px,1.15fr);
-  grid-template-areas:
-    "pc pl pl"
-    "pr pl pl";
-  gap:18px;
-  padding:18px 22px 22px;
-  align-items:start;
-}
-#pl{grid-area:pl}
-#pc{grid-area:pc}
-#pr{grid-area:pr}
+/* Live game — two columns: market / news left, station cards right (wavelength-ui.html) */
+#main{display:grid;grid-template-columns:460px 1fr;align-items:start;min-height:calc(100vh - 116px)}
 .pnl{border-right:1px solid var(--bdr);padding:20px}
+#pc{border-right:none}
+#pl{padding-right:16px}
 .pnl:last-child{border-right:none}
 .ph{font-family:var(--fd);font-size:14px;letter-spacing:3px;color:var(--amb);border-bottom:1px solid var(--bdr);padding-bottom:10px;margin-bottom:18px;display:flex;justify-content:space-between;align-items:center}
 .ph sub{font-family:var(--ft);font-size:14px;letter-spacing:1px;color:var(--mut);font-style:normal}
@@ -94,7 +84,18 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .phbtn:hover{border-color:var(--amb);color:var(--amb)}
 .sep{height:1px;background:var(--bdr);margin:18px 0}
 
-/* SCORE BOX */
+/* SCORE BOX + compact strip (reference layout) */
+#scorebar{display:flex;align-items:center;gap:16px;padding:8px 14px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.18);border-radius:2px;margin-bottom:10px;flex-wrap:wrap;position:sticky;top:0;z-index:10;backdrop-filter:blur(4px)}
+.sbi{display:flex;flex-direction:column;align-items:flex-start;min-width:60px}
+.sbi-lbl{font-family:var(--ft);font-size:11px;color:var(--mut);letter-spacing:2px}
+.sbi-val{font-family:var(--fd);font-size:20px;color:var(--wht);line-height:1.1}
+.sbi-val.amb{color:var(--amb)}
+.sbi-val.grn{color:var(--grn)}
+#scen-banner{padding:8px 12px;background:rgba(245,166,35,.04);border-left:2px solid rgba(245,166,35,.3);margin-bottom:10px;cursor:pointer}
+.scen-banner-name{font-family:var(--ft);font-size:12px;color:var(--amb);letter-spacing:2px}
+.scen-banner-desc{font-size:14px;color:var(--mut);line-height:1.4;margin-top:2px}
+.corp-tag{font-family:var(--ft);font-size:11px;letter-spacing:1px;padding:1px 4px;border-radius:2px;margin-left:4px;opacity:.85}
+.sig-badge{font-family:var(--ft);font-size:11px;color:var(--mut);margin-left:3px}
 #scorebox{background:var(--crd);border:1px solid var(--bdr);border-left:3px solid var(--amb);padding:14px;margin-bottom:20px}
 .sbh{font-family:var(--fd);font-size:15px;letter-spacing:3px;color:var(--amb);margin-bottom:10px}
 .sbr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(51,51,51,.5);font-size:15px}
@@ -154,7 +155,9 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .cyr-exp{font-family:var(--ft);font-size:14px;color:var(--red);flex-shrink:0;animation:pulse 1.2s ease-in-out infinite}
 .mor-bar{display:inline-block;width:28px;height:4px;border-radius:2px;vertical-align:middle;margin-left:4px;flex-shrink:0}
 .ab{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px}
-.ab2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px}
+.ab2{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px}
+.btn-section{margin-bottom:8px}
+.btn-section-lbl{font-family:var(--ft);font-size:11px;color:var(--mut);letter-spacing:2px;margin-bottom:4px;padding-left:1px}
 .abt{background:transparent;border:1px solid var(--bdh);color:var(--off);font-family:var(--ft);font-size:15px;letter-spacing:1px;padding:9px 4px;cursor:pointer;text-align:center;transition:all .15s}
 .abt:hover{border-color:var(--amb);color:var(--amb);background:var(--abg)}
 .abt.d:hover{border-color:var(--red);color:var(--red);background:rgba(240,88,88,.08)}
@@ -193,8 +196,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .cb[data-tip]{cursor:default}
 .cp{font-family:var(--ft);font-size:15px;color:var(--amb);width:46px;text-align:right}
 
-/* RIGHT */
-#pr{background:var(--pnl)}
+/* INTEL ROWS (competitor list — may be in hidden #intel) */
 .ir{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid rgba(51,51,51,.5);transition:background .15s}.ir.clickable{cursor:pointer}.ir.clickable:hover{background:rgba(245,166,35,.07)}
 .ir:last-child{border-bottom:none}
 .ic{font-family:var(--fd);font-size:17px;letter-spacing:1px;width:58px;flex-shrink:0}
@@ -380,15 +382,15 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   /* Kill ticker on mobile — eats vertical space */
   #tkr{display:none}
 
-  #main{display:block;padding:12px}
-  #pl,#pc,#pr{grid-area:auto}
+  #main{grid-template-columns:1fr;min-height:unset}
+  #scorebar{gap:10px}
   .pnl{border-right:none;border-bottom:1px solid var(--bdr);padding:14px;width:100%}
   .pnl:last-child{border-bottom:none}
 
-  /* Left panel (stations) — full width, no fixed height */
+  /* Left column — full width */
   #pl{border-right:none;border-bottom:1px solid var(--bdr);padding:12px;max-height:unset}
 
-  /* Center panel (market table) — full width */
+  /* Right column — station cards */
   #pc{padding:12px;border-right:none;border-bottom:1px solid var(--bdr)}
   .ph{font-size:15px;gap:8px;margin-bottom:10px}
   .phbtn{padding:5px 10px;font-size:14px}
@@ -396,8 +398,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   /* Hide less critical columns on mobile */
   .mt th:nth-child(5),.mt td:nth-child(5){display:none} /* TREND */
 
-  /* Right panel (news/score) — full width */
-  #pr{padding:12px}
   .sb{padding:10px}
   .ir{font-size:14px}
 

@@ -188,26 +188,27 @@
 <div id="alertbar"></div>
 <div id="tkr"><div id="ti"></div></div>
 <main id="main">
+  <!-- LEFT COLUMN: score strip, market standings, news feed, upcoming events (matches wavelength-ui.html) -->
   <div class="pnl" id="pl">
-    <div class="ph">YOUR STATIONS <sub id="ownlbl">1 AM · 1 FM</sub></div>
-    <div id="scorebox"></div>
-    <div id="stns"></div>
-  </div>
-  <div class="pnl" id="pc">
-    <div id="scenwrap"></div>
-    <div class="ph">MARKET STANDINGS <sub id="mkt-city">ATLANTA</sub><span style="color:var(--mut);font-size:14px;font-weight:400;margin-left:8px;font-family:var(--ft)">· click competitor for intel</span><button class="phbtn" onclick="om('m-rk')">📊 RANKER</button><button class="phbtn" onclick="openLoan()">💳 LOANS</button><button class="phbtn" onclick="openSaveLoad()">💾 SAVE</button></div>
-    <table class="mt"><thead><tr><th>#</th><th>STATION</th><th>FORMAT</th><th style="text-align:right">SHARE</th><th style="text-align:right;min-width:110px">TREND</th><th style="text-align:right">REV/PERIOD</th></tr></thead><tbody id="mtb"></tbody></table>
+    <div id="scorebar"></div>
+    <div class="ph">MARKET <sub id="mkt-city">ATLANTA</sub><span style="color:var(--mut);font-size:13px;font-weight:400;margin-left:6px;font-family:var(--ft)">· tap for intel</span><button class="phbtn" onclick="om('m-rk')">📊 RANKER</button><button class="phbtn" onclick="openLoan()">💳 LOANS</button><button class="phbtn" onclick="openSaveLoad()">💾 SAVE</button></div>
+    <table class="mt"><thead><tr><th>#</th><th>STATION</th><th>FORMAT</th><th style="text-align:right">SHARE</th><th style="text-align:right">△</th><th style="text-align:right">REV/PD</th></tr></thead><tbody id="mtb"></tbody></table>
     <div class="sep"></div>
     <div class="dh">DEMO BREAKDOWN — YOUR LEAD STATION</div>
     <div id="dmb"></div>
-  </div>
-  <div class="pnl" id="pr">
-    <div class="ph">INTEL <sub>COMPETITORS</sub></div><div id="intel"></div>
     <div class="sep"></div>
     <div class="ph">NEWS FEED <sub>RECENT</sub></div><div id="news"></div>
     <div class="sep"></div>
     <div class="ph">UPCOMING</div><div id="evts"></div>
   </div>
+  <!-- RIGHT COLUMN: scenario banner, your stations -->
+  <div class="pnl" id="pc">
+    <div id="scen-banner"></div>
+    <div class="ph">YOUR STATIONS <sub id="ownlbl">1 AM · 1 FM</sub></div>
+    <div id="stns"></div>
+  </div>
+  <!-- Hidden targets — score detail + scenario sync + competitor intel (rIntel / rScore / rMkt) -->
+  <div style="display:none"><div id="intel"></div><div id="scorebox"></div><div id="scenwrap"></div></div>
 </main>
 
 <!-- Modals -->

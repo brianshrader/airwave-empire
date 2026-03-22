@@ -8068,7 +8068,18 @@ function rScore(){
   const rankLabel=primaryRank<=0?'—':`#${primaryRank} of ${G.stations.length}`;
   const rankColor=primaryRank<=1?'var(--grn)':primaryRank<=3?'var(--amb)':'var(--off)';
   const totalRev=myPS().reduce((s,st)=>s+st.fin.rev,0);
-  document.getElementById('scorebox').innerHTML=`
+  const gradeColor=grade==='A'?'var(--grn)':grade==='B'?'#8aef8a':grade==='C'?'var(--amb)':grade==='F'?'var(--red)':'#e89020';
+  const myShareTotal=myPS().reduce((s,st)=>s+(st.rat.share||0),0);
+  const scorebarEl=document.getElementById('scorebar');
+  if(scorebarEl)scorebarEl.innerHTML=
+    `<div class="sbi"><span class="sbi-lbl">RANK</span><span class="sbi-val amb">${rankLabel}</span></div>`+
+    `<div class="sbi"><span class="sbi-lbl">SHARE</span><span class="sbi-val">${pct(myShareTotal)}</span></div>`+
+    `<div class="sbi"><span class="sbi-lbl">CASH</span><span class="sbi-val grn">${f$(G.cash)}</span></div>`+
+    `<div class="sbi"><span class="sbi-lbl">SCORE</span><span class="sbi-val" style="color:${gradeColor}">${isSandbox&&G.score.decadeScores[2020]?G.score.decadeScores[2020].total:sc.total}<span style="font-size:13px"> ${grade}</span></span></div>`+
+    (totalVP>0?`<div class="sbi"><span class="sbi-lbl">VP</span><span class="sbi-val amb">${totalVP}</span></div>`:'')+
+    (isSandbox?'<div style="font-family:var(--ft);font-size:11px;color:var(--mut);letter-spacing:1px;align-self:center">SANDBOX</div>':'');
+  const scoreboxEl=document.getElementById('scorebox');
+  if(scoreboxEl)scoreboxEl.innerHTML=`
     <div class="sbh">SCORE</div>
     ${isSandbox?'<div class="sandbox-badge">SANDBOX — SCORE LOCKED</div>':''}
     <div class="sbr"><span class="sbl">Market Rank</span><span class="sbv" style="color:${rankColor}">${rankLabel}</span></div>
@@ -8077,7 +8088,7 @@ function rScore(){
     <div class="sbr"><span class="sbl">Peak Revenue</span><span class="sbv">${sc.peakScore}/100</span></div>
     ${totalVP>0?`<div class="sbr"><span class="sbl">VP Banked</span><span class="sbv amb">${totalVP} VP</span></div>`:''}
     ${prevDecades}
-    <div class="sbtotal"><span class="sbtl">TOTAL</span><span class="sbtv">${isSandbox&&G.score.decadeScores[2020]?G.score.decadeScores[2020].total:sc.total}/100 <span style="font-size:18px;color:${grade==='A'?'var(--grn)':grade==='B'?'#8aef8a':grade==='C'?'var(--amb)':grade==='F'?'var(--red)':'#e89020'}">${grade}</span></span></div>`;
+    <div class="sbtotal"><span class="sbtl">TOTAL</span><span class="sbtv">${isSandbox&&G.score.decadeScores[2020]?G.score.decadeScores[2020].total:sc.total}/100 <span style="font-size:18px;color:${gradeColor}">${grade}</span></span></div>`;
 }
 
 function rTick(){
@@ -8231,8 +8242,24 @@ function rMkt(){
   // Update city name (supports multi-market future)
   const cityEl=document.getElementById('mkt-city');
   if(cityEl)cityEl.textContent=(G.city||'Atlanta').toUpperCase();
+  const hcityEl=document.getElementById('hcity');if(hcityEl)hcityEl.textContent=(G.city||'Atlanta').toUpperCase();
+  const sb=document.getElementById('scen-banner');
+  if(sb&&MP.mode!=='live'){
+    if(!sb.dataset.id||sb.dataset.id!==G.sc.id){
+      sb.dataset.id=G.sc.id;
+      const _collapsed=sb.dataset.collapsed==='1'?true:(G.turn||0)>6&&sb.dataset.collapsed!=='0';
+      sb.dataset.collapsed=_collapsed?'1':'0';
+      sb.innerHTML=`<div class="scen-banner-name" style="cursor:pointer" onclick="
+        const el=this.parentElement;
+        el.dataset.collapsed=el.dataset.collapsed==='1'?'0':'1';
+        el.dataset.id='';
+        renderAll();
+      ">${G.sc.l.toUpperCase()} <span style="color:var(--mut);font-size:11px">${_collapsed?'▼ SHOW':'▲ HIDE'}</span></div>`+
+        (!_collapsed?`<div class="scen-banner-desc">${G.sc.d}</div>`:'');
+    }
+  }
   const sw=document.getElementById('scenwrap');
-  if(MP.mode!=='live'){if(!sw.dataset.id||sw.dataset.id!==G.sc.id){sw.dataset.id=G.sc.id;sw.innerHTML=`<div class="scen"><div class="scenl">${G.sc.l.toUpperCase()}</div><div class="scend">${G.sc.d}</div></div>`;}}
+  if(sw&&MP.mode!=='live'){if(!sw.dataset.id||sw.dataset.id!==G.sc.id){sw.dataset.id=G.sc.id;sw.innerHTML='';}}
   // Collapse simulcast pairs into one combined ranker row
   const seenSimul=new Set();
   const rankerSt=[];
