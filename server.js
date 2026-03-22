@@ -1,0 +1,645 @@
+// ═══════════════════════════════════════════════════════════════════
+// WAVELENGTH MULTIPLAYER SERVER
+// Node.js + Socket.io
+//
+// Architecture: host-authoritative
+//   - Host client runs advTurn() locally and broadcasts resulting G
+//   - All player actions relay through server for ordering + broadcast
+//   - Server enforces: action ordering, period commit gating, room state
+//
+// Persistence:
+//   - G is saved to ./saves/<roomId>.json after every state_update
+//   - Players can rejoin by room code at any time while server is running
+//   - Saves survive server restarts — rooms are restored from disk on boot
+//
+// Run: node server.js
+// Requires: npm install express socket.io
+// ═══════════════════════════════════════════════════════════════════
+
+const express  = require('express');
+const http     = require('http');
+const { Server } = require('socket.io');
+const path     = require('path');
+const fs       = require('fs');
+const { randomBytes } = require('crypto');
+
+const app        = express();
+const httpServer = http.createServer(app);
+const io         = new Server(httpServer, {
+  cors: { origin: '*' },
+  maxHttpBufferSize: 10e6,   // 10MB — G state + history can grow
+});
+
+const PORT     = process.env.PORT || 3000;
+const SAVE_DIR = path.join(__dirname, 'saves');
+
+// Ensure saves directory exists
+if (!fs.existsSync(SAVE_DIR)) fs.mkdirSync(SAVE_DIR);
+
+// ── PERSISTENCE ────────────────────────────────────────────────────
+
+function roomSavePath(roomId) {
+  return path.join(SAVE_DIR, `${roomId}.json`);
+}
+
+function persistRoom(room) {
+  try {
+    const data = {
+      id:          room.id,
+      phase:       room.phase,
+      scenarioId:  room.scenarioId,
+      players:     room.players.map(p => ({
+        // Save name + playerId but NOT socketId — that changes on reconnect
+        name:     p.name,
+        playerId: p.playerId,
+        // Store the most recent socket id so we can match on rejoin by name+playerId
+        lastSocketId: p.socketId,
+      })),
+      G:           room.G,
+      savedAt:     new Date().toISOString(),
+    };
+    fs.writeFileSync(roomSavePath(room.id), JSON.stringify(data), 'utf8');
+  } catch(e) {
+    console.error(`[SAVE] Failed to persist room ${room.id}:`, e.message);
+  }
+}
+
+function loadPersistedRooms() {
+  if (!fs.existsSync(SAVE_DIR)) return;
+  const files = fs.readdirSync(SAVE_DIR).filter(f => f.endsWith('.json'));
+  let loaded = 0;
+  for (const file of files) {
+    try {
+      const data = JSON.parse(fs.readFileSync(path.join(SAVE_DIR, file), 'utf8'));
+      if (!data.id || !data.G) continue;
+      // Restore room — all players start disconnected; they rejoin by code
+      rooms[data.id] = {
+        id:         data.id,
+        hostId:     null,   // will be assigned when first player rejoins
+        phase:      data.phase || 'playing',
+        scenarioId: data.scenarioId,
+        players:    data.players.map(p => ({
+          socketId:  null,   // unknown until they reconnect
+          name:      p.name,
+          playerId:  p.playerId,
+          ready:     false,
+          connected: false,
+          lastSocketId: p.lastSocketId,
+        })),
+        G:          data.G,
+        commitLog:  {},
+        actionQueue: [],
+        seq:        0,
+        hostPlayerId: 0,  // playerId 0 is always host — reassigned correctly on rejoin
+        _restored:  true,
+      };
+      loaded++;
+      console.log(`[RESTORE] Room ${data.id} — ${data.players.length} players, year ${data.G?.year}`);
+    } catch(e) {
+      console.error(`[RESTORE] Failed to load ${file}:`, e.message);
+    }
+  }
+  if (loaded) console.log(`[RESTORE] ${loaded} room(s) restored from disk`);
+}
+
+// ── ROOM HELPERS ───────────────────────────────────────────────────
+
+const rooms = {};
+
+function makeRoomId() {
+  // 6-char alphanumeric, unambiguous characters only (no 0/O, 1/I/L)
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let id = '';
+  const bytes = randomBytes(6);
+  for (const b of bytes) id += chars[b % chars.length];
+  return id.slice(0, 6);
+}
+
+function makeRoom(hostSocketId, hostName) {
+  let id = makeRoomId();
+  // Avoid collision with restored rooms
+  while (rooms[id]) id = makeRoomId();
+  rooms[id] = {
+    id,
+    hostId:     hostSocketId,
+    phase:      'lobby',
+    scenarioId: null,
+    players: [{
+      socketId:  hostSocketId,
+      name:      hostName || 'Host',
+      playerId:  0,
+      ready:     false,
+      connected: true,
+    }],
+    G:          null,
+    commitLog:  {},
+    actionQueue: [],
+    seq:        0,
+    hostPlayerId: 0,  // playerId 0 is always the permanent host
+    draft: null,  // {order:[], pickIdx:0, picks:{socketId: [stationIdx,...]}, phase:'draft'|'done'}
+  };
+  return rooms[id];
+}
+
+function getRoom(roomId) {
+  return rooms[roomId?.toUpperCase()] || null;
+}
+
+function getRoomBySocket(socketId) {
+  return Object.values(rooms).find(r => r.players.some(p => p.socketId === socketId));
+}
+
+function broadcastRoomState(room) {
+  io.to(room.id).emit('room_state', {
+    roomId:    room.id,
+    phase:     room.phase,
+    players:   room.players.map(p => ({
+      socketId:  p.socketId,
+      name:      p.name,
+      playerId:  p.playerId,
+      ready:     p.ready,
+      connected: p.connected,
+    })),
+    hostId:    room.hostId,
+    commitLog: room.commitLog,
+  });
+}
+
+// Check if all connected players have committed; if so, signal host
+function checkAllCommitted(room) {
+  const connected = room.players.filter(p => p.connected);
+  // Require all players to be connected before allowing a period advance.
+  // If only 1 player is connected (other hasn't rejoined yet), wait.
+  // This prevents the host from accidentally advancing while the guest is still loading.
+  const expectedPlayers = room.players.length;
+  if (!connected.length) return;
+  if (connected.length < Math.min(2, expectedPlayers)) {
+    console.log(`[CHECK] only ${connected.length}/${expectedPlayers} players connected — waiting for full roster before advancing`);
+    return;
+  }
+  console.log(`[CHECK] room ${room.id} phase=${room.phase} commitLog=${JSON.stringify(room.commitLog)} connected=${connected.map(p=>p.name+'='+p.socketId)}`);
+  const allCommitted = connected.every(p => room.commitLog[p.socketId]);
+  if (allCommitted) {
+    const hostSock = io.sockets.sockets.get(room.hostId);
+    if (hostSock) {
+      hostSock.emit('run_advturn', { roomId: room.id });
+      console.log(`[TURN] ${room.id} — all committed, signaling host`);
+    } else {
+      console.log(`[TURN] ${room.id} — all committed but host socket NOT FOUND (hostId=${room.hostId})`);
+    }
+  } else {
+    const waiting = connected.filter(p => !room.commitLog[p.socketId]).map(p=>p.name);
+    console.log(`[CHECK] still waiting on: ${waiting.join(', ')}`);
+  }
+}
+
+// ── SOCKET HANDLERS ───────────────────────────────────────────────
+io.on('connection', socket => {
+  console.log(`[+] ${socket.id}`);
+
+  // ── CREATE ROOM ───────────────────────────────────────────────
+  socket.on('create_room', ({ name }) => {
+    const room = makeRoom(socket.id, name || 'Host');
+    socket.join(room.id);
+    socket.emit('room_created', { roomId: room.id, playerId: 0, socketId: socket.id });
+    broadcastRoomState(room);
+    console.log(`[ROOM] Created ${room.id} by ${socket.id}`);
+  });
+
+  // ── JOIN ROOM ─────────────────────────────────────────────────
+  socket.on('join_room', ({ roomId, name }) => {
+    const room = getRoom(roomId);
+    if (!room) { socket.emit('join_error', 'Room not found.'); return; }
+    if (room.phase !== 'lobby') { socket.emit('join_error', 'Game already in progress. Use REJOIN if you were in this game.'); return; }
+    if (room.players.length >= 4) { socket.emit('join_error', 'Room is full (max 4 players).'); return; }
+
+    const playerId = room.players.length;
+    room.players.push({ socketId: socket.id, name: name || `Player ${playerId+1}`, playerId, ready: false, connected: true });
+    socket.join(roomId);
+    socket.emit('room_joined', { roomId, playerId, socketId: socket.id });
+    broadcastRoomState(room);
+    console.log(`[ROOM] ${socket.id} joined ${room.id} as player ${playerId}`);
+  });
+
+  // ── REJOIN ROOM (mid-game reconnect) ──────────────────────────
+  // Player provides their room code + name. Server matches them to their
+  // existing player slot by name (or the only disconnected slot if unambiguous).
+  socket.on('rejoin_room', ({ roomId, name, playerId: claimedId }) => {
+    const room = getRoom(roomId);
+    if (!room) { socket.emit('join_error', 'Room not found. The server may have restarted.'); return; }
+    if (room.phase === 'lobby') { socket.emit('join_error', 'Game hasn\'t started yet — use JOIN instead.'); return; }
+
+    // Match player slot. Priority order:
+    // 1. playerId claim + name matches (most reliable, prevents slot theft)
+    // 2. playerId claim alone (same browser, name might have changed)
+    // 3. Name match on a disconnected slot (playerId not stored / wrong browser)
+    // 4. Name match on a connected slot — could be a duplicate rejoin, reject it
+    let player = null;
+    if (claimedId != null) {
+      // Try exact match: claimed playerId AND name
+      player = room.players.find(p => p.playerId === claimedId && p.name === name);
+      // Fallback: claimed playerId regardless of name (same browser, different name entry)
+      if (!player) player = room.players.find(p => p.playerId === claimedId && !p.connected);
+    }
+    // Fallback: match by name on a disconnected slot (fresh browser, no stored playerId)
+    if (!player) player = room.players.find(p => p.name === name && !p.connected);
+
+    if (!player) {
+      // Check if already connected under that name (duplicate tab / already rejoined)
+      const alreadyIn = room.players.find(p => p.name === name && p.connected);
+      if (alreadyIn) {
+        socket.emit('join_error', `"${name}" is already connected to this game. Are you in another tab?`);
+      } else {
+        socket.emit('join_error', `Could not match you to a player slot. Re-enter the name you used originally.`);
+      }
+      return;
+    }
+
+    // Update socket id — this is their new connection
+    const oldSocketId = player.socketId;
+    player.socketId   = socket.id;
+    player.connected  = true;
+    socket.join(room.id);
+
+    // Update commitLog key
+    if (oldSocketId && room.commitLog[oldSocketId] !== undefined) {
+      room.commitLog[socket.id] = room.commitLog[oldSocketId];
+      delete room.commitLog[oldSocketId];
+    } else {
+      room.commitLog[socket.id] = false; // needs to commit this period
+    }
+
+    // Track the original host playerId (set on first assignment, never changes)
+    if (room.hostPlayerId === undefined) room.hostPlayerId = 0; // playerId 0 is always the original host
+
+    // Assign host strictly by original host playerId.
+    // Do NOT give host to the first person who reconnects.
+    const isOriginalHost = (player.playerId === room.hostPlayerId);
+    const wasHost = isOriginalHost;
+    if (wasHost) {
+      room.hostId = socket.id;
+      io.to(room.id).emit('host_migrated', { newHostId: socket.id, playerId: player.playerId });
+    }
+
+    socket.emit('room_rejoined', {
+      roomId:   room.id,
+      playerId: player.playerId,
+      socketId: socket.id,
+      isHost:   wasHost,
+      G:        room.G,               // full current state
+      players:  room.players,
+      commitLog: room.commitLog,
+    });
+
+    broadcastRoomState(room);
+    io.to(room.id).emit('player_reconnected', { playerId: player.playerId, name: player.name });
+    console.log(`[REJOIN] ${socket.id} rejoined ${room.id} as player ${player.playerId} (${player.name})`);
+
+    // Re-check commits in case everyone was waiting on this player
+    checkAllCommitted(room);
+  });
+
+  // ── PLAYER READY ──────────────────────────────────────────────
+  socket.on('player_ready', ({ roomId }) => {
+    const room = getRoom(roomId);
+    if (!room) return;
+    const p = room.players.find(p => p.socketId === socket.id);
+    if (p) { p.ready = true; broadcastRoomState(room); }
+  });
+
+  // ── START GAME (host only) ────────────────────────────────────
+  socket.on('start_game', ({ roomId, scenarioId, G: initialG }) => {
+    const room = getRoom(roomId);
+    if (!room || room.hostId !== socket.id) return;
+    if (room.players.length < 2) { socket.emit('start_error', 'Need at least 2 players to start.'); return; }
+
+    room.phase      = 'playing';
+    room.scenarioId = scenarioId;
+    room.G          = initialG;
+    room.commitLog  = {};
+    room.players.forEach(p => { room.commitLog[p.socketId] = false; });
+
+    persistRoom(room);
+
+    io.to(roomId).emit('game_started', { G: room.G, players: room.players, scenarioId });
+    broadcastRoomState(room);
+    console.log(`[GAME] ${roomId} started — ${room.players.length} players, scenario: ${scenarioId}`);
+  });
+
+  socket.on('player_cash_update', ({ roomId, playerId, cash }) => {
+    const room = getRoom(roomId);
+    if (!room) return;
+    if (!room.G) return;
+    if (!room.G._playerCash) room.G._playerCash = {};
+    room.G._playerCash[playerId] = cash;
+  });
+
+  // ── PLAYER ACTION ─────────────────────────────────────────────
+  socket.on('player_action', ({ roomId, action, payload, G: hostG }) => {
+    const room = getRoom(roomId);
+    if (!room || room.phase !== 'playing') return;
+    const player = room.players.find(p => p.socketId === socket.id);
+    if (!player) return;
+
+    const seq = ++room.seq;
+    const envelope = { playerId: player.playerId, socketId: socket.id, action, payload, seq };
+    room.actionQueue.push(envelope);
+    io.to(roomId).emit('action_broadcast', envelope);
+
+    // If the host includes their current G snapshot, update room.G so rejoiners
+    // get the latest state including mid-period changes (ops, salesForce, etc.)
+    if (hostG && room.hostId === socket.id) {
+      room.G = hostG;
+      persistRoom(room);
+    }
+  });
+
+  // ── COMMIT PERIOD ─────────────────────────────────────────────
+  socket.on('commit_period', ({ roomId }) => {
+    const room = getRoom(roomId);
+    console.log(`[COMMIT] ${socket.id} roomId=${roomId} found=${!!room} phase=${room?.phase}`);
+    if (!room || room.phase !== 'playing') return;
+
+    room.commitLog[socket.id] = true;
+    const player = room.players.find(p => p.socketId === socket.id);
+    io.to(roomId).emit('player_committed', {
+      socketId:  socket.id,
+      playerId:  player?.playerId,
+      commitLog: room.commitLog,
+    });
+    checkAllCommitted(room);
+  });
+
+  // ── STATE UPDATE (host broadcasts result of advTurn) ──────────
+  socket.on('state_update', ({ roomId, G, decadeYear, sumData }) => {
+    const room = getRoom(roomId);
+    if (!room || room.hostId !== socket.id) return;
+
+    room.G = G;
+    room.commitLog  = {};
+    room.players.forEach(p => { room.commitLog[p.socketId] = false; });
+    room.actionQueue = [];
+    room.seq = 0;
+
+    // Persist to disk every period
+    persistRoom(room);
+
+    io.to(roomId).emit('state_broadcast', { G: room.G, decadeYear: decadeYear || null, sumData: sumData || null });
+    console.log(`[STATE] ${roomId} — year ${G?.year} ${G?.period===2?'FALL':'SPRING'} saved`);
+  });
+
+  // ── CHAT ──────────────────────────────────────────────────────
+  socket.on('chat', ({ roomId, text }) => {
+    const room = getRoom(roomId);
+    if (!room) return;
+    const player = room.players.find(p => p.socketId === socket.id);
+    io.to(roomId).emit('chat_message', {
+      from:     player?.name || 'Unknown',
+      playerId: player?.playerId,
+      text:     text?.slice(0, 200),
+      ts:       Date.now(),
+    });
+  });
+
+
+  // ── START DRAFT ───────────────────────────────────────────────
+  socket.on('start_draft', ({ roomId, era, G: initialG }) => {
+    const room = getRoom(roomId);
+    if (!room || room.hostId !== socket.id) return;
+    if (room.players.length < 2) { socket.emit('start_error', 'Need at least 2 players.'); return; }
+
+    room.phase = 'draft';
+    room.era = era;
+    room.G = initialG;
+
+    // Build snake draft order: [0,1,2,1,0] for 3 players, etc.
+    const n = room.players.length;
+    const fwd = room.players.map(p => p.socketId);
+    const rev = [...fwd].reverse();
+    // Each player picks once forward + once reverse (for their optional 2nd station)
+    const order = [...fwd, ...rev];
+    room.draft = { order, pickIdx: 0, picks: {}, phase: 'first' };
+    room.players.forEach(p => { room.draft.picks[p.socketId] = []; });
+
+    persistRoom(room);
+
+    io.to(roomId).emit('draft_started', {
+      G: room.G,
+      players: room.players,
+      draft: room.draft,
+      era,
+    });
+    console.log(`[DRAFT] ${roomId} started — ${n} players, era ${era}`);
+  });
+
+  // ── DRAFT PICK ─────────────────────────────────────────────────
+  socket.on('draft_pick', ({ roomId, stationId }) => {
+    const room = getRoom(roomId);
+    if (!room || room.phase !== 'draft' || !room.draft) return;
+
+    const draft = room.draft;
+    const currentPicker = draft.order[draft.pickIdx];
+    if (currentPicker !== socket.id) {
+      socket.emit('draft_error', 'Not your pick.');
+      return;
+    }
+
+    // Validate station isn't already picked
+    const alreadyPicked = Object.values(draft.picks).flat();
+    if (alreadyPicked.includes(stationId)) {
+      socket.emit('draft_error', 'Station already picked.');
+      return;
+    }
+
+    // Enforce 1 AM + 1 FM per player
+    if (room.G) {
+      const station = room.G.stations.find(st => st.id === stationId);
+      if (station) {
+        const myPicks = (draft.picks[socket.id] || []).map(id => room.G.stations.find(st=>st.id===id)).filter(Boolean);
+        const myAM = myPicks.filter(st => st.sig?.type === 'AM').length;
+        const myFM = myPicks.filter(st => st.sig?.type === 'FM').length;
+        const sigType = station.sig?.type === 'FM' ? 'FM' : 'AM';
+        if ((sigType === 'AM' && myAM >= 1) || (sigType === 'FM' && myFM >= 1)) {
+          socket.emit('draft_error', `You already have an ${sigType} station. Pick the other signal type.`);
+          return;
+        }
+      }
+    }
+
+    draft.picks[socket.id].push(stationId);
+    draft.pickIdx++;
+
+    const player = room.players.find(p => p.socketId === socket.id);
+    io.to(roomId).emit('draft_pick_made', {
+      socketId:   socket.id,
+      playerId:   player?.playerId,
+      playerName: player?.name,
+      stationId,
+      draft:      room.draft,
+    });
+
+    // Check if draft is complete
+    const totalPicks = Object.values(draft.picks).reduce((s,a) => s+a.length, 0);
+    const maxPicks = draft.order.length; // each player gets up to 2 picks
+    if (draft.pickIdx >= draft.order.length) {
+      draft.phase = 'done';
+    }
+
+    persistRoom(room);
+    console.log(`[DRAFT] ${roomId} pick: ${player?.name} → ${stationId} (${draft.pickIdx}/${draft.order.length})`);
+  });
+
+  // ── DRAFT PASS (skip 2nd station) ──────────────────────────────
+  socket.on('draft_pass', ({ roomId }) => {
+    const room = getRoom(roomId);
+    if (!room || room.phase !== 'draft' || !room.draft) return;
+    const draft = room.draft;
+    const currentPicker = draft.order[draft.pickIdx];
+    if (currentPicker !== socket.id) return;
+
+    draft.pickIdx++;
+    const player = room.players.find(p => p.socketId === socket.id);
+    io.to(roomId).emit('draft_pick_made', {
+      socketId: socket.id, playerId: player?.playerId,
+      playerName: player?.name, stationId: null, // null = passed
+      draft: room.draft,
+    });
+    if (draft.pickIdx >= draft.order.length) draft.phase = 'done';
+    persistRoom(room);
+  });
+
+  // ── DRAFT COMPLETE (host finalizes and starts game) ────────────
+  socket.on('draft_complete', ({ roomId, G: finalG }) => {
+    const room = getRoom(roomId);
+    if (!room || room.hostId !== socket.id) return;
+
+    room.phase = 'playing';
+    room.G = finalG;
+    room.commitLog = {};
+    room.players.forEach(p => { room.commitLog[p.socketId] = false; });
+    room.actionQueue = [];
+    room.draft.phase = 'done';
+
+    persistRoom(room);
+
+    io.to(roomId).emit('game_started', {
+      G: room.G,
+      players: room.players,
+      era: room.era,
+    });
+    broadcastRoomState(room);
+    console.log(`[GAME] ${roomId} draft complete — game starting`);
+  });
+
+  // ── DISCONNECT ────────────────────────────────────────────────
+  socket.on('disconnect', () => {
+    console.log(`[-] ${socket.id}`);
+    const room = getRoomBySocket(socket.id);
+    if (!room) return;
+
+    const player = room.players.find(p => p.socketId === socket.id);
+    if (!player) return;
+
+    player.connected = false;
+    // Auto-commit so others aren't blocked waiting on a ghost
+    if (room.commitLog[socket.id] === false) {
+      room.commitLog[socket.id] = true;
+    }
+
+    broadcastRoomState(room);
+    io.to(room.id).emit('player_disconnected', { playerId: player.playerId, name: player.name });
+
+    // Don't delete the room — they may rejoin. Clean up only if ALL players
+    // have been gone for a while (handled by the stale-room sweep below).
+
+    // If host disconnected, promote next connected player temporarily
+    if (room.hostId === socket.id) {
+      const next = room.players.find(p => p.connected);
+      if (next) {
+        room.hostId = next.socketId;
+        io.to(room.id).emit('host_migrated', { newHostId: next.socketId, playerId: next.playerId });
+        console.log(`[HOST] ${room.id} temporarily migrated to ${next.name}`);
+      } else {
+        room.hostId = null; // nobody connected — will be assigned on first rejoin
+      }
+    }
+
+    // Re-check commits: disconnected player was auto-committed above
+    if (room.phase === 'playing') checkAllCommitted(room);
+  });
+});
+
+// ── STALE ROOM CLEANUP ────────────────────────────────────────────
+// Rooms where nobody has been connected for 2+ hours get removed from
+// memory (saves stay on disk indefinitely for manual recovery).
+setInterval(() => {
+  const cutoff = Date.now() - 2 * 60 * 60 * 1000; // 2 hours
+  for (const [id, room] of Object.entries(rooms)) {
+    const anyConnected = room.players.some(p => p.connected);
+    if (!anyConnected) {
+      if (!room._lastEmptyAt) {
+        room._lastEmptyAt = Date.now();
+      } else if (room._lastEmptyAt < cutoff) {
+        delete rooms[id];
+        console.log(`[CLEANUP] Room ${id} expired from memory (save retained on disk)`);
+      }
+    } else {
+      room._lastEmptyAt = null;
+    }
+  }
+}, 15 * 60 * 1000); // check every 15 minutes
+
+// ── STATIC FILES ──────────────────────────────────────────────────
+app.use(express.static(path.join(__dirname)));
+app.get('/', (req, res) => {
+  res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
+  res.set('Pragma', 'no-cache');
+  const indexPath = path.join(__dirname, 'index.html');
+  const legacyPath = path.join(__dirname, 'wavelength-ui.html');
+  // Prefer the modular index.html; fall back to the legacy monolithic page.
+  res.sendFile(fs.existsSync(indexPath) ? indexPath : legacyPath);
+});
+
+// ── SAVE MANAGEMENT ROUTES ──────────────────────────────────────
+app.get('/admin/saves', (req, res) => {
+  try {
+    const files = fs.existsSync(SAVE_DIR) ? fs.readdirSync(SAVE_DIR).filter(f=>f.endsWith('.json')) : [];
+    const saves = files.map(f => {
+      try {
+        const d = JSON.parse(fs.readFileSync(path.join(SAVE_DIR, f), 'utf8'));
+        return { id: d.id, year: d.G?.year, period: d.G?.period === 1 ? 'Spring' : 'Fall', players: (d.players||[]).map(p=>p.name).join(', '), file: f };
+      } catch(e) { return { file: f, error: true }; }
+    });
+    res.json(saves);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.delete('/admin/saves/:roomId', (req, res) => {
+  const roomId = req.params.roomId;
+  const file = path.join(SAVE_DIR, roomId + '.json');
+  if (!fs.existsSync(file)) return res.status(404).json({ error: 'Not found' });
+  fs.unlinkSync(file);
+  delete rooms[roomId];
+  console.log(`[ADMIN] Deleted room ${roomId}`);
+  res.json({ ok: true });
+});
+
+app.delete('/admin/saves', (req, res) => {
+  try {
+    const files = fs.existsSync(SAVE_DIR) ? fs.readdirSync(SAVE_DIR).filter(f=>f.endsWith('.json')) : [];
+    files.forEach(f => fs.unlinkSync(path.join(SAVE_DIR, f)));
+    Object.keys(rooms).forEach(k => delete rooms[k]);
+    console.log(`[ADMIN] Deleted ${files.length} saves`);
+    res.json({ deleted: files.length });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── BOOT ──────────────────────────────────────────────────────────
+loadPersistedRooms();
+
+httpServer.listen(PORT, () => {
+  console.log(`\n🎙 WAVELENGTH SERVER`);
+  console.log(`   http://localhost:${PORT}`);
+  console.log(`   Saves: ${SAVE_DIR}`);
+  console.log(`   Share your local IP for LAN play\n`);
+});
