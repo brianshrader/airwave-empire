@@ -291,6 +291,15 @@ const SUPERSTAR={
 };
 const SUPERSTAR_DAYPART_ORDER={morningDrive:0,afternoonDrive:1,midday:2,evening:3,overnight:4};
 
+/** Effective daypart quality for station OQ weighting — superstars lift slot contribution (capped at 100). */
+function effSlotQForOq(sd){
+  let q=sd?.quality||20;
+  if(sd?.talent?.superstar===true){
+    q=Math.min(100,q*SUPERSTAR.EFF_Q_MULT);
+  }
+  return q;
+}
+
 /** Count talents with superstar flag in the current market. */
 function countSuperstars(G){
   if(!G?.stations)return 0;
@@ -704,7 +713,7 @@ function mkTal(slot,fmt,tier='mid',year=1970){
   /500)*500;
 
   // Anchor new hires to on-air salaries for this daypart (same slot across the market).
-  if(typeof G!=='undefined'&&Array.isArray(G.stations)&&G.stations.length){
+  if(G?.stations?.length){
     const salz=[];
     for(let i=0;i<G.stations.length;i++){
       const v=G.stations[i]?.prog?.[slot]?.talent?.salary;
@@ -1727,7 +1736,7 @@ window._mpApply_hire = function({ sid, slot, talent }) {
   const s = G.stations.find(st=>st.id===sid);
   if (!s || !s.prog[slot]) return;
   s.prog[slot].talent = talent;
-  s.oq = Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(s.prog[sl]?.quality||20)*w, 0));
+  s.oq = Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w, 0));
 };
 
 // Fire talent
@@ -1735,7 +1744,7 @@ window._mpApply_fire = function({ sid, slot }) {
   const s = G.stations.find(st=>st.id===sid);
   if (!s) return;
   if (s.prog[slot]) s.prog[slot].talent = null;
-  s.oq = Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(s.prog[sl]?.quality||20)*w, 0));
+  s.oq = Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w, 0));
 };
 
 // Sell station
@@ -1828,7 +1837,7 @@ window._mpApply_shuffle = function({ sid, fromSlot, toSlot }) {
     const pen = {morningDrive:.20,afternoonDrive:.14,midday:.09,evening:.06,overnight:.03}[fromSlot] || .09;
     fromSd.quality = Math.max(10, Math.round(fromSd.quality * (1 - pen)));
   }
-  s.oq = Math.round(Object.entries(SW).reduce((sum, [sl, w]) => sum + (s.prog[sl]?.quality || 20) * w, 0));
+  s.oq = Math.round(Object.entries(SW).reduce((sum, [sl, w]) => sum + effSlotQForOq(s.prog[sl]) * w, 0));
   // renderAll() is called by applyRemoteAction after this returns
 };
 window._mpApply_extend = function({ sid, slot, years, newSalary }) {
@@ -2032,7 +2041,7 @@ function mkStn(bp,freq,year=1970){
     overnight:     {talent:null,quality:Math.round(rnd(15,30))},
   };
   Object.values(prog).forEach(s=>s.quality=Math.max(10,Math.min(100,s.quality)));
-  const oq=Math.round(Object.entries(SW).reduce((s,[sl,w])=>s+(prog[sl]?.quality||20)*w,0));
+  const oq=Math.round(Object.entries(SW).reduce((acc,[sl,w])=>acc+effSlotQForOq(prog[sl])*w,0));
   const reach=type==='AM'?(RA[pw]||.85):(RF[pw]||.70);
   const sb=SBR[str]||[.50,.70];
   return{
@@ -3233,7 +3242,7 @@ function decay(s,year,period){
        if(sd.talent.salary<hardFloor)sd.talent.salary=hardFloor;}
     }
   });
-  s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(s.prog[sl]?.quality||20)*w,0));
+  s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w,0));
 
   // ── COMMUNITY IDENTITY ───────────────────────────────────────────
   // Only player stations build meaningful identity (rivals are background)
@@ -3475,7 +3484,7 @@ function runAI(G){
           hires++;
           acts.push({v:'LOW',t:`${s.callLetters} fills ${SL[sl]} (${tier})`});
         }
-        if(hires)s.oq=Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+(s.prog[sl2]?.quality||20)*w,0));
+        if(hires)s.oq=Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+effSlotQForOq(s.prog[sl2])*w,0));
       }
     }
 
@@ -6117,7 +6126,7 @@ function doHire(){
   s.prog[sl].talent=t;
   const fit=t.formatFit[s.format]||.3;
   s.prog[sl].quality=Math.min(100,Math.round(s.prog[sl].quality+(t.quality/100)*fit*35));
-  s.oq=Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+(s.prog[sl2]?.quality||20)*w,0));
+  s.oq=Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+effSlotQForOq(s.prog[sl2])*w,0));
   G.news.unshift({v:'LOW',t:`You hire ${t.name} for ${s.callLetters} ${SL[sl]}`,y:G.year,p:G.period});
   logHistory(s,'TALENT',`Hired ${t.name} — ${SL[sl]} (Q:${t.quality})`,G);
   MP.action('hire', {sid:s.id, slot:sl, talent:t});
@@ -6327,7 +6336,7 @@ function doShuffle(sid,fromSlot,toSlot){
     fromSd.quality=Math.max(10,Math.round(fromSd.quality*(1-pen)));
     G.news.unshift({v:'LOW',t:`${talA.name} moves to ${s.callLetters} ${SL[toSlot]}`,y:G.year,p:G.period});
   }
-  s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(s.prog[sl]?.quality||20)*w,0));
+  s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w,0));
   MP.action('shuffle',{sid,fromSlot,toSlot});
   openFire(sid);renderAll();
 }
@@ -6355,7 +6364,7 @@ function doFire(sid,slot){
   // Quality hit: losing morning drive hurts most
   const penalty={morningDrive:.28,afternoonDrive:.18,midday:.12,evening:.08,overnight:.04}[slot]||.12;
   sd.quality=Math.max(10,Math.round(sd.quality*(1-penalty)));
-  s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(s.prog[sl]?.quality||20)*w,0));
+  s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w,0));
 
   const buyoutMsg=buyout>0?` Buyout paid: ${f$(buyout)}.`:'';
   const sev=buyout>0?'MEDIUM':'LOW';
@@ -6888,7 +6897,7 @@ function doMigrate(amId,fmId){
   am._formatAge=0;
   am.identityBudget=0;
   // Recalculate FM overall quality from moved talent
-  fm.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(fm.prog[sl]?.quality||20)*w,0));
+  fm.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(fm.prog[sl])*w,0));
 
   const oldFormat=am.format;
   const amCall=am.callLetters,fmCall=fm.callLetters;
@@ -7080,7 +7089,7 @@ function doFmt(keepSim){
     _simPartner._formatAge = 0;
     _simPartner.ops.sell = ['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'].includes(nf)?0.60:0.55;
     Object.values(_simPartner.prog).forEach(sd=>{if(sd)sd.quality=Math.round(sd.quality*(1-pen));});
-    _simPartner.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(_simPartner.prog[sl]?.quality||20)*w,0));
+    _simPartner.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(_simPartner.prog[sl])*w,0));
     COH.forEach(c=>{if(_simPartner.mom[c])_simPartner.mom[c].cur*=(1-pen);});
     // Apply identity penalty to simulcast partner — same betrayal, same penalty
     if((_simPartner.identity||0)>0){
@@ -7125,7 +7134,7 @@ function doFmt(keepSim){
     s.identity=Math.min(s.identity,newCeiling);
   }
   Object.values(s.prog).forEach(sd=>{if(sd)sd.quality=Math.round(sd.quality*(1-pen));});
-  s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(s.prog[sl]?.quality||20)*w,0));
+  s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w,0));
   COH.forEach(c=>{if(s.mom[c])s.mom[c].cur*=(1-pen);});
   if(!adj)Object.entries(s.prog).forEach(([sl,sd])=>{if(sd?.talent&&Math.random()<.25){sd.talent=null;sd.quality*=.60;}});
   s.flog.push({from:old,to:nf});
@@ -7343,8 +7352,8 @@ function applySimulcastPair(sourceId,targetId,opts){
     }
     dst.prog[sl]={quality:ssd.quality,talent:null};
   });
-  src.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(src.prog[sl]?.quality||20)*w,0));
-  dst.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(dst.prog[sl]?.quality||20)*w,0));
+  src.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(src.prog[sl])*w,0));
+  dst.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(dst.prog[sl])*w,0));
   // On-air brand matches programming source; receiver keeps local management (drift, demo lean, sales, ops budgets,
   // marketing, salesForce, identity scores, _history, etc.) — do not assign or clear those here.
   dst.brand=src.brand;
@@ -7376,7 +7385,7 @@ function doBreakSim(id){
   slots.forEach(sl=>{
     if(junior.prog[sl]?.talent) junior.prog[sl].talent=null;
   });
-  junior.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(junior.prog[sl]?.quality||20)*w,0));
+  junior.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(junior.prog[sl])*w,0));
 
   // ── DRIFT / FORMAT STRATEGY: stays with lead only ────────────────
   if(junior.drift && lead.format && junior.drift[lead.format]!==undefined){
@@ -8207,7 +8216,7 @@ function doPoach(sid, slot, rivalId){
   // Move talent — fire from rival, hire to player
   rival.prog[slot].talent=null;
   rival.prog[slot].quality=Math.max(10,Math.round(rival.prog[slot].quality*0.75));
-  rival.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(rival.prog[sl]?.quality||20)*w,0));
+  rival.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(rival.prog[sl])*w,0));
   if(oldTal){
     const buyoutNote=buyout>0?` Buyout paid: ${f$(buyout)}.`:'';
     G.news.unshift({v:'LOW',t:`${oldTal.name} released from ${s.callLetters} to make room for ${name}.${buyoutNote}`,y:G.year,p:G.period});
@@ -8223,7 +8232,7 @@ function doPoach(sid, slot, rivalId){
   s.prog[slot].talent=t;
   const fit=t.formatFit[s.format]||.3;
   s.prog[slot].quality=Math.min(100,Math.round(s.prog[slot].quality+(t.quality/100)*fit*35));
-  s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(s.prog[sl]?.quality||20)*w,0));
+  s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w,0));
   G.news.unshift({v:'HIGH',t:`🎙 SIGNED: ${name} joins ${s.callLetters} from ${rival.callLetters} — ${f$(offer)}/yr.`,y:G.year,p:G.period,iy:true});
   MP.action('poach', {sid, slot, rivalId, talentId:t.id||t.name});
   cm('m-contract');renderAll();
