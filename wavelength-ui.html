@@ -230,13 +230,17 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 
 /* SCENARIO SELECT */
 /* ── SCENARIO LIST LAYOUT ── */
-.scn-list{display:flex;flex-direction:column;gap:0;margin:0 0 20px}
+.scn-list{display:flex;flex-direction:column;gap:12px;margin:0 0 20px}
 .scn-era-hdr{font-family:var(--ft);font-size:13px;color:var(--amb);letter-spacing:3px;padding:14px 0 8px;border-bottom:1px solid rgba(245,166,35,.20);margin-bottom:2px;display:flex;align-items:baseline;gap:12px}
 .scn-era-hdr span{font-size:12px;color:var(--mut);letter-spacing:1px;font-family:var(--fd)}
-.scn-card{border:1px solid var(--bdr);border-left:3px solid transparent;padding:16px 20px 14px;cursor:pointer;transition:all .15s;background:var(--drk);display:grid;grid-template-columns:auto 1fr auto;gap:0 18px;align-items:start}
-.scn-card:hover{border-color:var(--bdh);border-left-color:rgba(245,166,35,.5);background:var(--pnl)}
-.scn-card.sel{border-color:rgba(245,166,35,.4);border-left-color:var(--amb);background:rgba(245,166,35,.06)}
-.scn-card + .scn-card{border-top:none}
+.scn-card{border:2px solid var(--bdr);border-radius:6px;padding:16px 20px 14px;cursor:pointer;transition:background .15s,border-color .15s,box-shadow .15s;background:var(--drk);display:grid;grid-template-columns:auto 1fr auto;gap:0 18px;align-items:start}
+.scn-card:hover{border-color:var(--bdh);background:var(--pnl)}
+/* Selected scenario: highlight entire card frame */
+.scn-card.sel{
+  border-color:var(--amb);
+  background:rgba(245,166,35,.12);
+  box-shadow:0 0 0 1px rgba(245,166,35,.35),0 6px 28px rgba(245,166,35,.14);
+}
 /* left col: diff pill + station info */
 .scn-lft{display:flex;flex-direction:column;gap:5px;min-width:90px}
 /* center col: name + description */

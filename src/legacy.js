@@ -381,7 +381,7 @@ function htmlMarketTalentRankerList(){
   rows.sort((a,b)=>b.q-a.q);
   if(!rows.length)return '<p style="color:var(--mut);font-size:14px;font-style:italic">No on-air talent in the market yet.</p>';
   return rows.map(({tal,st,sl,q})=>{
-    const star=q>=75?'⭐ ':'';
+    const star=tal.superstar===true?'⭐ ':'';
     return `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;font-family:var(--ft)">
       <span style="color:var(--off);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${star}<strong style="color:var(--wht)">${tal.name}</strong> <span style="color:var(--mut)">· ${SL[sl]} · ${callDisplay(st)}</span></span>
       <span style="color:var(--amb);flex-shrink:0;font-family:var(--fd);font-size:14px">Q ${q}</span>
@@ -647,9 +647,12 @@ function salInfl(base,year){
 }
 
 function eraTalentMult(year){
-  // Early-70s salaries were still too hot. Compress them and fade back to normal by 1980.
-  if(year<=1970) return 0.50;
-  if(year<=1973) return 0.50 + (year-1970)*0.08;
+  // Early-70s: stronger compression so 1971 top morning Q~85 lands ~$22–26K (not $30K+); 1975+ unchanged from prior curve.
+  if(year<=1970) return 0.42;
+  if(year<=1971) return 0.48;
+  if(year<=1972) return 0.54;
+  if(year<=1973) return 0.60;
+  if(year<=1974) return 0.70;
   if(year<=1977) return 0.74 + (year-1973)*0.055;
   if(year<=1980) return 0.96 + (year-1977)*0.0133;
   return 1.00;

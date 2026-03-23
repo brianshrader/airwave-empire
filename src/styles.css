@@ -219,10 +219,14 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 /* SCENARIO SELECT */
 /* Scenario picker: single vertical list (not side-by-side columns) */
 .scn-wrap{display:grid;grid-template-columns:1fr;gap:14px;margin:0 0 20px}
-.scn-card{border:2px solid var(--bdr);padding:18px 20px;cursor:pointer;transition:all .18s;background:var(--drk);position:relative}
+.scn-card{border:2px solid var(--bdr);border-radius:6px;padding:18px 20px;cursor:pointer;transition:background .18s,border-color .18s,box-shadow .18s;background:var(--drk);position:relative}
 .scn-card:hover{border-color:var(--bdh);background:var(--pnl)}
-.scn-card.sel{border-color:var(--amb);background:rgba(245,166,35,.07)}
-.scn-card.sel::after{content:'✓';position:absolute;top:12px;right:14px;color:var(--amb);font-family:var(--fd);font-size:20px}
+/* Selected scenario: full card border + glow (no corner-only cue) */
+.scn-card.sel{
+  border-color:var(--amb);
+  background:rgba(245,166,35,.12);
+  box-shadow:0 0 0 1px rgba(245,166,35,.35),0 6px 28px rgba(245,166,35,.14);
+}
 .scn-title{font-family:var(--fd);font-size:22px;letter-spacing:3px;color:var(--amb);margin-bottom:4px}
 .scn-sub{font-family:var(--ft);font-size:14px;color:var(--mut);letter-spacing:2px;margin-bottom:10px}
 .scn-desc{font-size:15px;color:var(--off);line-height:1.6;margin-bottom:12px}
