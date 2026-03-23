@@ -696,12 +696,28 @@ function mkTal(slot,fmt,tier='mid',year=1970){
   if(year>=1974 && year<=1978 && q<80) qualAdjSal=Math.round(qualAdjSal*0.90/500)*500;
 
   const marketId=(typeof G!=='undefined'&&G?.marketId)||ACTIVE_MARKET||'atlanta';
-  const finalSal=Math.round(
+  let finalSal=Math.round(
     salInfl(qualAdjSal,year)
     * talkDiscount
     * eraTalentMult(year)
     * marketTalentMult(marketId)
   /500)*500;
+
+  // Anchor new hires to on-air salaries for this daypart (same slot across the market).
+  if(typeof G!=='undefined'&&Array.isArray(G.stations)&&G.stations.length){
+    const salz=[];
+    for(let i=0;i<G.stations.length;i++){
+      const v=G.stations[i]?.prog?.[slot]?.talent?.salary;
+      if(typeof v==='number'&&!Number.isNaN(v)) salz.push(v);
+    }
+    if(salz.length>=3){
+      const avg=salz.reduce((a,b)=>a+b,0)/salz.length;
+      finalSal=Math.min(finalSal,avg*1.25);
+    }
+  }
+  // Mild pool bias: entry/mid draw slightly below star ask (does not touch superstar scaling later).
+  if(tier!=='star') finalSal*=0.90;
+  finalSal=Math.round(finalSal/500)*500;
 
   return{
     id:Math.random().toString(36).substr(2,8),
