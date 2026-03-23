@@ -275,6 +275,28 @@ function vacantLabel(fmt,slot){
   if(isTalk)return 'SYNDICATED';
   return 'AUTOMATION';
 }
+const DAYPART_SLOTS=['morningDrive','afternoonDrive','midday','evening','overnight'];
+function nonLocalDaypartCaption(fmt,slot,isPublic){
+  if(isPublic)return 'PROGRAMMED';
+  return vacantLabel(fmt,slot);
+}
+/** Competitor intel + market ranker: per-daypart talent name, Q, salary, or syndication/automation/public label */
+function htmlOnAirTalentRoster(s){
+  return DAYPART_SLOTS.map(sl=>{
+    const sd=s.prog?.[sl];
+    if(!sd)return '';
+    const lbl=SL[sl];
+    const t=sd.talent;
+    const slotQ=Math.round(sd.quality||0);
+    if(t){
+      const tq=Math.round(t.quality||0);
+      const salStr=(typeof t.salary==='number'&&!Number.isNaN(t.salary))?f$(t.salary)+'/yr':'—';
+      return `<div class="sr" style="align-items:flex-start"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px"><span style="font-family:var(--fd)">${t.name}</span> · Q ${tq} · slot ${slotQ} · ${salStr}</span></div>`;
+    }
+    const cap=nonLocalDaypartCaption(s.format,sl,!!s.isPublic);
+    return `<div class="sr"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px;color:var(--mut)"><em>${cap}</em> · slot Q ${slotQ}</span></div>`;
+  }).join('');
+}
 const MQR=3000000,FMP0=.42; // MQR retained as legacy fallback; total market revenue is now scaled from MARKET_BILLING_CURVE
 
 // ── ERA CURVES (smoothstep — replaces event-driven step function) ─
@@ -620,6 +642,23 @@ function mkPool(slot,fmt,year){
     if(t){usedFirstNames.add(t.name.split(' ')[0]);pool.push(t);}
   }
   return pool.sort((a,b)=>b.quality-a.quality);
+}
+
+/** Hire modal only: experience + rough remaining-career band (does not expose retirement triggers). */
+function hireTalentCareerLine(t, year){
+  const cs=t._careerStartYear;
+  if(typeof cs!=='number'||Number.isNaN(cs))return '';
+  const exp=Math.max(0, Math.floor(year-cs));
+  const softCap=35;
+  const rem=Math.max(0, softCap-exp);
+  let band;
+  if(rem>=22)band='~20–30+ yrs left';
+  else if(rem>=15)band='~15–22 yrs left';
+  else if(rem>=10)band='~10–15 yrs left';
+  else if(rem>=5)band='~5–10 yrs left';
+  else if(rem>=1)band='~1–5 yrs left';
+  else band='~0–5 yrs left';
+  return `<div style="font-size:13px;color:var(--mut);margin-top:2px;line-height:1.25">${exp} yrs experience · <span style="color:var(--off)">${band}</span></div>`;
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1626,9 +1665,10 @@ window._mpApply_stream = function({ sid }) {
 
 // Simulcast create/break
 window._mpApply_sim = function({ sid, partnerId }) {
-  const s = G.stations.find(st=>st.id===sid);
-  const p = G.stations.find(st=>st.id===partnerId);
-  if (s && p) { s.simulcastWith = partnerId; p.simulcastWith = sid; }
+  // Same semantics as doSim: sid = programming source, partnerId = receiver.
+  if(!applySimulcastPair(sid, partnerId, { suppressNews: true }))return;
+  const src=G.stations.find(st=>st.id===sid), dst=G.stations.find(st=>st.id===partnerId);
+  logSimulcastPairHistory(src,dst,G);
 };
 window._mpApply_breaksim = function({ sid }) {
   breakSimulcast(G, sid);
@@ -2741,6 +2781,20 @@ function seedRat(stations,fmpOrYear){
   });
 }
 
+// Simulcast economics: use _simulcastSource + simulcastWith only (no AM/FM “lead” inference).
+function simulcastProgrammingSourceStation(s,G){
+  if(!s?.simulcastWith)return null;
+  const p=(G.stations||[]).find(st=>st.id===s.simulcastWith);
+  if(!p)return null;
+  if(s._simulcastSource===true)return s;
+  if(p._simulcastSource===true)return p;
+  return null;
+}
+function isSimulcastProgrammingReceiver(s,G){
+  const src=simulcastProgrammingSourceStation(s,G);
+  return !!(src&&src.id!==s.id);
+}
+
 // ── REVENUE ENGINE ────────────────────────────────────────────────
 function calcRev(s,G){
   // Non-commercial public stations earn no ad revenue — pledge-funded
@@ -2804,7 +2858,7 @@ function calcRev(s,G){
     s.ops.sell=s.ops.sell*0.65+targetSell*0.35;
   }
   const aqh=COH.reduce((sum,c)=>sum+(s.rat.cur[c]?.aqh||0),0);
-  if(!aqh){s.fin.rev=0;s.fin.cost=s.fin.fix||0;s.fin.ebitda=-(s.fin.fix||0);return;}
+  if(!aqh){s.fin.rev=0;s.fin.cost=s.fin.fix||0;s.fin.ebitda=-(s.fin.fix||0);s.fin.simulcastProgFee=0;return;}
   const fmd=FM[s.format]||{};
   const podBonus=s.format==='PODCAST_TALK'?1+Math.min((streamDrag*2),.4):1;
   const gcpm=genderCPM(s.format); // gender audience concentration CPM premium
@@ -2854,17 +2908,21 @@ function calcRev(s,G){
   const facBase={'AM_50kw':148000,'AM_10kw': 81000,'AM_5kw': 51000,'AM_1kw': 32000,
                  'FM_100kw':155000,'FM_50kw':105000,'FM_25kw': 58000,'FM_10kw': 33000,
                  'FM_translator': 17000}[`${s.sig.type}_${s.sig.pw}`]|| 45000;
-  // Simulcast: FM carries identical programming to AM partner — no separate staff,
-  // no separate programming costs. Only incremental cost is transmitter site + engineering.
-  // This applies at any era — simulcasting was always a cost-sharing arrangement.
-
-  const isSimulcast=!!(s.simulcastWith&&playerStations.some(st=>st.id===s.simulcastWith));
+  // Simulcast: programming source keeps normal cluster economics; receiver pays incremental
+  // facility cost + a partial programming fee tied to the source’s talent load (see below).
+  const simPartner=s.simulcastWith?(G.stations||[]).find(st=>st.id===s.simulcastWith):null;
+  const playerPaired=!!(s.simulcastWith&&playerStations.some(st=>st.id===s.simulcastWith));
+  const progSrcStation=simulcastProgrammingSourceStation(s,G);
+  const isProgReceiver=isSimulcastProgrammingReceiver(s,G);
+  const legacySimPair=playerPaired&&simPartner&&s._simulcastSource!==true&&simPartner._simulcastSource!==true;
   let efficiencyMult;
-  if(isSimulcast){
-    // Simulcast FM/AM: ~15% of standalone cost (transmitter site + minimal engineering only)
-    // Sharing studios, staff, sales team, programming — only the signal is separate
+  if(isProgReceiver){
+    // Receiver: second stick — mostly transmitter/site + lean local ops (~40–48% of standalone fixed footprint)
+    efficiencyMult=0.44;
+  }else if(legacySimPair){
+    // Legacy saves with no explicit source flag: both stations very lean (pre-flag behavior)
     efficiencyMult=0.15;
-  } else {
+  }else{
     // Cluster efficiency: AM/FM combos always shared studios, staff and sales teams.
     // Pre-1990: modest sharing discount (physical combo operations, one building, shared admin).
     // 1990-1996: growing consolidation makes cluster ops more systematic.
@@ -2939,16 +2997,31 @@ function calcRev(s,G){
   const daPenalty = (s.sig.pw==='DA' && s.sig.type==='AM' && !s.fmBooster)
     ? Math.max(0.82, 1 - 0.15 * Math.min(1, Math.max(0, 1 - (G.year - 1980) / 20)))
     : 1;
-  const totalRev=Math.round((rev+streamRev)*ccBonus*daPenalty);
+  let totalRev=Math.round((rev+streamRev)*ccBonus*daPenalty);
+  // Receiver: incremental simulcast monetization (~35–60% of this signal’s standalone billings;
+  // scales with programming source oq — stronger show = more sell-through on the echo signal).
+  let simulcastRevMult=1;
+  if(isProgReceiver&&progSrcStation){
+    simulcastRevMult=0.35+0.25*Math.min(1,(progSrcStation.oq||50)/100);
+    totalRev=Math.round(totalRev*simulcastRevMult);
+  }
   const salesRate=year<1980?0.18:year<1990?0.17:year<2005?0.16:0.15;
   const adminRate=year<1980?0.12:year<1990?0.11:year<2005?0.10:0.09;
   const salesAdminRate=salesRate+adminRate;
   const salesAdminCost=Math.round(totalRev*salesAdminRate);
   const opsFloor=Math.round((s.sig.type==='AM'?70000:50000)*Math.min(2.4,rawInfl)*Math.max(0.65,eraCostMult));
-  s.fin.rev=totalRev;s.fin.streamRev=streamRev;s.fin.terRev=Math.round(rev*ccBonus);
+  let simulcastProgFee=0;
+  if(isProgReceiver&&progSrcStation){
+    const srcTal=Object.values(progSrcStation.prog||{}).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
+    simulcastProgFee=Math.round(srcTal*0.38);
+  }
+  s.fin.rev=totalRev;
+  s.fin.streamRev=isProgReceiver&&progSrcStation?Math.round(streamRev*ccBonus*daPenalty*simulcastRevMult):streamRev;
+  s.fin.terRev=isProgReceiver&&progSrcStation?Math.round(rev*ccBonus*daPenalty*simulcastRevMult):Math.round(rev*ccBonus);
   s.fin.tal=talCost;s.fin.fix=fixedCost;s.fin.opsFloor=opsFloor;s.fin.salesAdminRate=salesAdminRate;s.fin.streamUpkeep=streamUpkeep;
+  s.fin.simulcastProgFee=simulcastProgFee;
   s.fin.salesAdmin=salesAdminCost;
-  s.fin.cost=fixedCost+talCost+salesAdminCost+opsFloor+(s.ops.promo||0)+(s.ops.progBudget||0)+(s.identityBudget||0)+streamUpkeep;
+  s.fin.cost=fixedCost+talCost+salesAdminCost+opsFloor+(s.ops.promo||0)+(s.ops.progBudget||0)+(s.identityBudget||0)+streamUpkeep+simulcastProgFee;
   s.fin.ebitda=s.fin.rev-s.fin.cost;
 }
 function seedRev(stations,G){
@@ -2964,7 +3037,7 @@ function seedRev(stations,G){
       if(s.fin.streamRev!=null)s.fin.streamRev=Math.round(s.fin.streamRev*f);
       if(s.fin.salesAdminRate!=null){
         s.fin.salesAdmin=Math.round(s.fin.rev*s.fin.salesAdminRate);
-        s.fin.cost=(s.fin.fix||0)+(s.fin.tal||0)+(s.fin.salesAdmin||0)+(s.fin.opsFloor||0)+(s.ops.promo||0)+(s.ops.progBudget||0)+(s.identityBudget||0)+(s.fin.streamUpkeep||0);
+        s.fin.cost=(s.fin.fix||0)+(s.fin.tal||0)+(s.fin.salesAdmin||0)+(s.fin.opsFloor||0)+(s.ops.promo||0)+(s.ops.progBudget||0)+(s.identityBudget||0)+(s.fin.streamUpkeep||0)+(s.fin.simulcastProgFee||0);
       }
       s.fin.ebitda=s.fin.rev-s.fin.cost;
     });
@@ -4254,7 +4327,11 @@ function breakSimulcast(G,stnId){
   if(!s||!s.simulcastWith)return;
   const partner=G.stations.find(st=>st.id===s.simulcastWith);
   s.simulcastWith=null;
-  if(partner)partner.simulcastWith=null;
+  delete s._simulcastSource;
+  if(partner){
+    partner.simulcastWith=null;
+    delete partner._simulcastSource;
+  }
 }
 function canSimulcast(G,s1,s2){
   // Must be player-owned, same format, neither already paired
@@ -4604,8 +4681,8 @@ function talentEvents(G){
     Object.entries(s.prog).forEach(([slot,sd])=>{
       if(!sd?.talent)return;
       const t=sd.talent;
-      const age=(t.periodsAtStation||0)+1;
-      t.periodsAtStation=age;
+      // Tenure: single increment per period in decay() — do not mutate here (avoids double-count with talentEvents+decay).
+      const age=(t.periodsAtStation||0)+1; // projected end-of-period tenure for event odds (decay runs later)
 
       // GRACEFUL NON-RENEWAL: player chose not to renew
       if(t._letExpire&&(t.cyr||0)<=0){
@@ -5631,33 +5708,11 @@ function showGrade(decadeYear,sc){
 function openRanker(){
   const h=G.rankerHistory;
   if(!h.length){document.getElementById('rkwrap').innerHTML='<p class="di" style="padding:20px">No history yet. Advance at least one period.</p>';return;}
-  // Build station roster sorted by current share
-  // Effective share for sorting: simulcast pairs sort by combined share
-  const effShare=s=>{
-    if(!s.simulcastWith)return s.rat.share;
-    const partner=G.stations.find(st=>st.id===s.simulcastWith);
-    if(!partner)return s.rat.share;
-    // Only combine for player pairs — rivals sort by their own share
-    if(!s.isPlayer||!partner.isPlayer)return s.rat.share;
-    return s.rat.share+(partner.rat.share||0);
-  };
-  const sorted=[...G.stations].sort((a,b)=>effShare(b)-effShare(a));
+  const sorted=[...G.stations].sort((a,b)=>b.rat.share-a.rat.share);
   // Column headers — show last 20 periods max
   const cols=h; // full history — wrapper scrolls horizontally
   const thd=cols.map((c,i)=>`<th style="min-width:54px;text-align:center${i===cols.length-1?';color:var(--amb)':''}"><span style="font-size:15px">${c.year}</span><br><span style="font-size:15px;color:var(--mut)">${c.label.split(' ')[1]||''}</span></th>`).join('');
-  // Build rows: merge simulcast player pairs into one combined row
-  const shownJuniors=new Set();
   const rows=sorted.map(s=>{
-    if(shownJuniors.has(s.id))return '';
-    const simPartner=s.simulcastWith?G.stations.find(st=>st.id===s.simulcastWith):null;
-    const isPlayerPair=simPartner&&s.isPlayer&&simPartner.isPlayer;
-    let juniorId=null;
-    if(isPlayerPair){
-      const lead=simLead(s,simPartner);
-      if(lead.id!==s.id)return ''; // this is the junior — skip it
-      juniorId=simPartner.id;
-      shownJuniors.add(juniorId);
-    }
     const isP=mpIsMe(s); // true only for THIS player's stations in MP
     const entry=s.entryTurn;
     const cells=cols.map(c=>{
@@ -5667,32 +5722,25 @@ function openRanker(){
         if(colIdx<entryIdx)return '<td class="stc" style="position:static"></td>';
       }
       const v=c.shares[s.id]||0;
-      const v2=juniorId?(c.shares[juniorId]||0):0;
-      const combined=v+v2;
-      if(!v&&!v2)return '<td>—</td>';
-      const pv=(combined*100).toFixed(1);
-      const cls=combined>=.08?'rcv hi':combined>=.02?'rcv':combined<.005?'rcv lo':'rcv';
+      if(!v)return '<td>—</td>';
+      const pv=(v*100).toFixed(1);
+      const cls=v>=.08?'rcv hi':v>=.02?'rcv':v<.005?'rcv lo':'rcv';
       return `<td><span class="${cls}">${pv}</span></td>`;
     }).join('');
     const pubBadge=s.isPublic?'<span style="font-size:15px;background:#1e3a5f;color:#7dd3fc;padding:1px 5px;border-radius:2px;margin-left:4px;font-family:var(--ft)">NPR</span>':'';
     const corpBadge=s.corpOwner&&!s.isPlayer?`<span style="font-size:15px;background:${s.corpColor||'#374151'};color:#fff;padding:1px 5px;border-radius:2px;font-family:var(--ft)">${(s.corpName||'CORP').split(' ')[0]}</span>`:'';
     const intelAttr=!isP&&!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="Click for competitor intel"`:'';
     const intelBadge=!isP&&!s.isPublic?' <span style="color:var(--mut);font-size:15px">🔍</span>':'';
-    // Simulcast: show merged call letters and AM/FM breakdown as sub-line
-    let nameDisplay, freqLine;
-    if(isPlayerPair){
-      const amStn=s.sig.type==='AM'?s:simPartner, fmStn=s.sig.type==='FM'||s.fmBooster?s:simPartner;
-      const amShare=(amStn.rat.share*100).toFixed(1), fmShare=(fmStn.rat.share*100).toFixed(1);
-      nameDisplay=`${s.callLetters.replace(/-FM|-AM/,'')} <span style="color:var(--grn);font-size:15px">◈ SIMULCAST</span>${pubBadge}${corpBadge}`;
-      freqLine=`${FM[s.format]?.l||s.format} · <span style="color:var(--mut);font-size:14px">${amStn.freq} ${amShare}% AM · ${fmStn.freq} ${fmShare}% FM</span>`;
-    } else {
-      nameDisplay=`${callDisplay(s)}${s.simulcastWith?'<span style="color:var(--blu);font-size:14px"> ◈</span>':''}${pubBadge}${corpBadge}`;
-      freqLine=`${FM[s.format]?.l||s.format} · ${s.freq}${intelBadge}`;
-    }
-    return `<tr class="${isP?'rky':s.isPlayer?'rkp2':s.isPublic?'rkp':''}">
+    const nameDisplay=`${callDisplay(s)}${s.simulcastWith?'<span style="color:var(--blu);font-size:14px"> ◈</span>':''}${pubBadge}${corpBadge}`;
+    const freqLine=`${FM[s.format]?.l||s.format} · ${s.freq}${intelBadge}`;
+    const rkCls=`${isP?'rky':s.isPlayer?'rkp2':s.isPublic?'rkp':''}`;
+    const colSpan=1+cols.length;
+    const mainTr=`<tr class="${rkCls}">
       <td class="stc"${intelAttr}><div class="rc" style="color:${s.color}">${nameDisplay}</div><div class="rf">${freqLine}</div></td>
       ${cells}
     </tr>`;
+    const lineupTr=`<tr class="rk-lineup ${rkCls}"><td colspan="${colSpan}" style="padding:4px 10px 10px 18px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top"><div class="ms2" style="margin:0;padding:0"><div class="msh" style="font-size:12px;color:var(--mut);letter-spacing:1px">ON-AIR LINEUP</div>${htmlOnAirTalentRoster(s)}</div></td></tr>`;
+    return mainTr+lineupTr;
   }).join('');
   const wrap=document.getElementById('rkwrap');
   wrap.innerHTML=`<table class="rkt"><thead><tr><th class="sth">STATION / FORMAT</th>${thd}</tr></thead><tbody>${rows}</tbody></table>`;
@@ -5799,6 +5847,10 @@ function showCompIntel(sid){
       <div class="sr"><span class="lb">Marketing Activity</span><span class="vl">${s.ops?.promo>20000?'Active campaigns':s.ops?.promo>5000?'Occasional':'Passive'}</span></div>
       <div class="sr"><span class="lb">Talent Retention</span><span class="vl">${(s.pers?.tr||0)>=0.75?'Locks in talent':((s.pers?.tr||0)>=0.55?'Standard contracts':'High turnover')}</span></div>
     </div>
+    <div class="ms2" style="margin-top:12px">
+      <div class="msh">ON-AIR TALENT ROSTER</div>
+      ${htmlOnAirTalentRoster(s)}
+    </div>
     ${(s._history||[]).length?`
     <div class="ms2" style="margin-top:12px">
       <div class="msh">STATION HISTORY <span style="color:var(--mut);font-size:13px;font-weight:400">(public record — format changes & milestones only)</span></div>
@@ -5832,7 +5884,7 @@ function rHire(s){
     const slotQcur=Math.round(s2.prog[HS.slot]?.quality||0);
     ph=`${cur?`<div class="ibox">Current: <strong>${cur.name}</strong> — quality ${Math.round(cur.quality)}, slot quality ${slotQcur}, ${f$(cur.salary)}/yr.</div>`:''}
     <p class="di">Four candidates. <strong>Talent Rating</strong> is how good they are — higher talent boosts slot quality on hire. <strong>Format Fit</strong> scales the boost.</p>
-    <div class="tg">${HS.pool.map((t,i)=>{const fit=Math.round((t.formatFit[s2.format]||.3)*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const boost=Math.round((q/100)*fit*.35*35);const newSlotQ=Math.min(100,curSlotQ+boost);return `<div class="to${HS.sel===i?' sel':''}" onclick="pickTal(${i})"><div><div class="ton">${t.name}</div><div class="tos">${SL[t.slot]}</div><div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">SLOT BOOST</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ}</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div></div></div><div><span class="tocl">ANNUAL SAL</span><span class="toc">${f$(t.salary)}</span></div></div>`;}).join('')}</div>`;
+    <div class="tg">${HS.pool.map((t,i)=>{const fit=Math.round((t.formatFit[s2.format]||.3)*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const boost=Math.round((q/100)*fit*.35*35);const newSlotQ=Math.min(100,curSlotQ+boost);return `<div class="to${HS.sel===i?' sel':''}" onclick="pickTal(${i})"><div><div class="ton">${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div><div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">SLOT BOOST</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ}</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div></div></div><div><span class="tocl">ANNUAL SAL</span><span class="toc">${f$(t.salary)}</span></div></div>`;}).join('')}</div>`;
   }
   const fmtHireNote=TALK_FMTS.includes(s.format)?'Local hosts beat syndication for building loyal listeners — especially morning drive.':'Morning Drive has the biggest ratings impact. Automation is cheap but bleeds share over time.';
   document.getElementById('talb').innerHTML=`<p class="di">${fmtHireNote} Salary grows ~1–2% per year.</p><div class="ssl">${sbtns}</div><div id="tp">${ph}</div><button class="cfm" onclick="doHire()" ${HS.sel===null?'disabled':''}>HIRE TALENT</button><button class="cnl" onclick="cm('m-tal')">CANCEL</button>`;
@@ -6023,6 +6075,15 @@ function openShuffle(sid,fromSlot){
     <div class="ibox">Repositioning <strong>${talent.name}</strong> (quality ${Math.round(talent.quality)}) from <strong>${SL[fromSlot]}</strong>.<br><span style="color:var(--amb)">SWAP</span> trades both hosts. <span style="color:var(--grn)">MOVE</span> sends them to a vacant slot. Both carry a small adjustment dip.</div>
     <div class="ms2"><div class="msh">CHOOSE DESTINATION</div>${destRows}</div>
     <button class="cnl" onclick="openFire('${sid}')">&#8592; BACK</button>`;
+}
+
+/** Quick entry to daypart move/swap (same station) — uses openShuffle / doShuffle. */
+function openSwapSignal(sid){
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const filled=Object.entries(s.prog).filter(([sl,sd])=>sd?.talent);
+  if(filled.length!==1){openFire(sid);return;}
+  om('m-fire');
+  openShuffle(sid,filled[0][0]);
 }
 
 function doShuffle(sid,fromSlot,toSlot){
@@ -6978,15 +7039,19 @@ function rSim(){
   // If already in simulcast, offer to break it
   if(s.simulcastWith){
     const partner=G.stations.find(st=>st.id===s.simulcastWith);
-    const _lead=partner?simLead(s,partner):s;
-    const _junior=_lead.id===s.id?partner:s;
-    const _talentSlots=_lead?Object.values(_lead.prog).filter(sd=>sd?.talent).map(sd=>sd.talent.name):[];
+    let _progSrc=s, _rcv=partner;
+    if(partner){
+      if(s._simulcastSource && !partner._simulcastSource){ _progSrc=s; _rcv=partner; }
+      else if(!s._simulcastSource && partner._simulcastSource){ _progSrc=partner; _rcv=s; }
+      else { const L=simLead(s,partner); _progSrc=L; _rcv=L.id===s.id?partner:s; }
+    }
+    const _talentSlots=_progSrc?Object.values(_progSrc.prog).filter(sd=>sd?.talent).map(sd=>sd.talent.name):[];
     document.getElementById('simb').innerHTML=`
       <p class="di"><strong>${s.callLetters}</strong> is currently simulcasting with <strong>${partner?callDisplay(partner):'unknown'}</strong> on <em>${FM[s.format]?.l||s.format}</em>.</p>
       <div class="bbox"><strong>Simulcast benefits:</strong> Shared talent pool, shared brand. AM↔FM pairs: AM gets +15% audience reach bonus. Both stations counted as one format for upkeep.</div>
       <div class="wbox"><strong>If you break this simulcast:</strong><br>
-        <strong>${_lead.callLetters}</strong> (lead) keeps the format, talent${_talentSlots.length?' ('+_talentSlots.join(', ')+'​)':''}, brand identity, and drift positioning.<br>
-        <strong>${_junior?_junior.callLetters:'—'}</strong> (junior) loses all talent and identity — reformat it next turn.</div>
+        <strong>${_progSrc.callLetters}</strong> (programming source) keeps the format, talent${_talentSlots.length?' ('+_talentSlots.join(', ')+'​)':''}, brand identity, and drift positioning.<br>
+        <strong>${_rcv?_rcv.callLetters:'—'}</strong> (receiver) loses simulcast echo — reformat it next turn.</div>
       <button class="cfm" onclick="doBreakSim('${s.id}')" style="background:var(--red);color:var(--wht)">BREAK SIMULCAST</button>
       <button class="cnl" onclick="cm('m-sim')">CANCEL</button>`;
     return;
@@ -6998,24 +7063,13 @@ function rSim(){
     document.getElementById('simb').innerHTML=`<p class="di">No eligible partner stations. You need at least two stations you own that are not already simulcast pairs.</p><button class="cnl" onclick="cm('m-sim')">CLOSE</button>`;
     return;
   }
-  // Auto-pair: clicking a partner immediately establishes the simulcast.
-  // If formats differ, we reformat the partner to match before pairing.
+  // Source = station this modal was opened from (s). Target = selected partner.
   const opts=partners.map(p=>{
     const sameFmt=p.format===s.format;
-    const lead2=simLead(s,p), junior2=lead2.id===s.id?p:s;
-    const amStn2=s.sig.type==='AM'?s:p;
-    const fmStn2=(s.sig.type==='FM'||s.fmBooster)?s:p;
-    const amOQ=amStn2.oq||0,fmOQ=fmStn2.oq||0;
-    const talentNote=amOQ>fmOQ+5?`<span style="color:var(--grn);font-size:14px">✓ AM talent (Q${amOQ}) preserved</span>`:'';
-    // Determine which station donates format (AM wins over FM)
-    const sIsAM = s.sig.type==='AM'&&!s.fmBooster;
-    const pIsAM = p.sig.type==='AM'&&!p.fmBooster;
-    let fmtSrc=s, fmtDst=p;
-    if(!sIsAM && pIsAM){ fmtSrc=p; fmtDst=s; }
-    else if(sIsAM===pIsAM && (p.rat?.share||0)>(s.rat?.share||0)){ fmtSrc=p; fmtDst=s; }
     const fmtNote=sameFmt
       ?`<span style="color:var(--mut);font-size:14px">${FM[p.format]?.l||p.format} — formats match ✓</span>`
-      :`<span style="color:var(--amb);font-size:14px">⚡ ${FM[fmtDst.format]?.l||fmtDst.format} → adopts <strong>${FM[fmtSrc.callLetters]?.l||fmtSrc.callLetters}</strong>'s ${FM[fmtSrc.format]?.l||fmtSrc.format}</span>`;
+      :`<span style="color:var(--amb);font-size:14px">⚡ <strong>${callDisplay(p)}</strong> will adopt <strong>${s.callLetters}</strong>'s <em>${FM[s.format]?.l||s.format}</em> (repeater)</span>`;
+    const talentNote=`<span style="color:var(--mut);font-size:14px">Partner drops separate local staffing; ${s.callLetters} keeps the on-air roster.</span>`;
     return `<div class="aco${SimS.b===p.id?' sel':''}" onclick="pickSim('${p.id}')">
       <div>
         <div class="acn" style="color:${p.color||'var(--amb)'}">${callDisplay(p)}</div>
@@ -7027,125 +7081,65 @@ function rSim(){
   const partnerPreview = SimS.b ? (()=>{
     const partner=G.stations.find(st=>st.id===SimS.b);
     if(!partner) return '';
-    const lead2=simLead(s,partner);
-    return `<div class="ibox" style="margin-top:8px"><strong>Lead station: ${callDisplay(lead2)} (${lead2.sig?.type||''})</strong> — best talent from each daypart carries forward. Ready to pair.</div>`;
+    return `<div class="ibox" style="margin-top:8px"><strong>Programming source:</strong> ${callDisplay(s)} — keeps all on-air talent.<br><strong>Simulcast receiver:</strong> ${callDisplay(partner)} — echoes ${s.callLetters}'s format; this signal's separate local talent is cleared.</div>`;
   })() : '';
-  const sIsAM2 = s.sig.type==='AM'&&!s.fmBooster;
   // Pre-compute format direction for the currently selected partner (if any)
   const _previewPartner = SimS.b ? G.stations.find(st=>st.id===SimS.b) : null;
   let fmtDirectionNote = '';
   if(_previewPartner){
-    const _pa = s, _pb = _previewPartner;
-    const _paIsAM = _pa.sig.type==='AM'&&!_pa.fmBooster;
-    const _pbIsAM = _pb.sig.type==='AM'&&!_pb.fmBooster;
-    let _src=_pa, _dst=_pb;
-    if(!_paIsAM && _pbIsAM){ _src=_pb; _dst=_pa; }
-    else if(_paIsAM===_pbIsAM && (_pb.rat?.share||0)>(_pa.rat?.share||0)){ _src=_pb; _dst=_pa; }
-    const fmtMatch = _src.format===_dst.format;
+    const fmtMatch = s.format===_previewPartner.format;
     fmtDirectionNote = fmtMatch
-      ? `<div class="ibox" style="margin-top:6px;border-color:var(--grn)">✓ Both stations already play <strong>${FM[_src.format]?.l||_src.format}</strong> — no format change needed.</div>`
-      : `<div class="ibox" style="margin-top:6px;border-color:var(--red)">⚡ <strong>FORMAT CHANGE:</strong> <strong>${_dst.callLetters}</strong> will drop <em>${FM[_dst.format]?.l||_dst.format}</em> and adopt <strong>${_src.callLetters}</strong>'s <em>${FM[_src.format]?.l||_src.format}</em>.<br><span style="color:var(--mut);font-size:15px">Format leader = ${_paIsAM!==_pbIsAM?'AM station':'higher-share station'}. Talent from both stations is preserved.</span></div>`;
+      ? `<div class="ibox" style="margin-top:6px;border-color:var(--grn)">✓ Both stations already play <strong>${FM[s.format]?.l||s.format}</strong> — no format change needed.</div>`
+      : `<div class="ibox" style="margin-top:6px;border-color:var(--amb)">⚡ <strong>${callDisplay(_previewPartner)}</strong> will reformat to <strong>${FM[s.format]?.l||s.format}</strong> and carry ${s.callLetters}'s programming (repeater).</div>`;
   } else {
-    const _roleNote = sIsAM2
-      ? `<strong>${s.callLetters}</strong> (AM · ${FM[s.format]?.l||s.format}) will be the <strong>format leader</strong> — the FM partner adopts this format and talent.`
-      : `<strong>${s.callLetters}</strong> (FM · ${FM[s.format]?.l||s.format}) opened — if pairing with an AM station, <strong>the AM will be the format leader</strong> and this FM will adopt the AM's format. If pairing FM↔FM, the higher-share station leads.`;
-    fmtDirectionNote = `<span style="color:var(--mut);font-size:15px">${_roleNote}</span>`;
+    fmtDirectionNote = `<span style="color:var(--mut);font-size:15px"><strong>${s.callLetters}</strong> is the <strong>programming source</strong>. Choose a partner below — it becomes the <strong>receiver / repeater</strong>, adopting this station's format and identity. Local talent on the partner no longer applies.</span>`;
   }
   document.getElementById('simb').innerHTML=`
-    <p class="di">Pair <strong>${callDisplay(s)}</strong> (${FM[s.format]?.l||s.format} · ${s.fmBooster?'FM BOOSTER':s.sig.type}) with one of your stations below.</p>
-    <div class="bbox"><strong>Simulcast benefits:</strong> Shared talent pool and brand. AM↔FM pairs get +15% AM reach bonus. One upkeep cost for both.<br><br>${fmtDirectionNote}</div>
+    <p class="di"><strong>Simulcast this station:</strong> <strong>${callDisplay(s)}</strong> (${FM[s.format]?.l||s.format} · ${s.fmBooster?'FM BOOSTER':s.sig.type}) → select a partner to receive this signal.</p>
+    <div class="bbox"><strong>How it works:</strong> The station you opened stays the programming source. The partner you pick becomes the simulcast receiver — it takes this format/brand and no longer runs its own separate local lineup. AM↔FM pairs still get +15% AM reach bonus where applicable.<br><br>${fmtDirectionNote}</div>
     <div class="acg">${opts}</div>
     ${partnerPreview}
-    <button class="cfm" onclick="doSim()" ${!SimS.b?'disabled':''}>ESTABLISH SIMULCAST</button>
+    <button class="cfm" onclick="doSim()" ${!SimS.b?'disabled':''}>SIMULCAST THIS STATION</button>
     <button class="cnl" onclick="cm('m-sim')">CANCEL</button>`;
 }
 function pickSim(id){SimS.b=id;rSim();}
-function doSim(){
-  if(!SimS.a||!SimS.b)return;
-  let a=G.stations.find(st=>st.id===SimS.a),b=G.stations.find(st=>st.id===SimS.b);
-  if(!a||!b)return;
-  // Format source is ALWAYS the senior station: AM over FM (AM has history, share, talent).
-  // If both same type, the one with higher share/quality is the source.
-  // This means the FM always adopts the AM's format — never the other way around.
-  const aIsAM = a.sig.type==='AM'&&!a.fmBooster;
-  const bIsAM = b.sig.type==='AM'&&!b.fmBooster;
-  let src=a, dst=b; // src = format donor, dst = station being reformatted
-  if(!aIsAM && bIsAM){
-    // b is AM, a is FM — swap so src=AM, dst=FM
-    src=b; dst=a;
-  } else if(aIsAM===bIsAM){
-    // Same type — use higher share as source
-    if((b.rat?.share||0)>(a.rat?.share||0)){ src=b; dst=a; }
-  }
-  // Reformat destination to match source if needed
+/** sourceId = station whose modal was opened; targetId = selected partner (repeater). */
+function applySimulcastPair(sourceId,targetId,opts){
+  const suppressNews=opts&&opts.suppressNews;
+  const src=G.stations.find(st=>st.id===sourceId), dst=G.stations.find(st=>st.id===targetId);
+  if(!src||!dst)return false;
   if(dst.format!==src.format){
     dst.format=src.format;
     dst.brand=src.brand;
-    G.news.unshift({v:'LOW',t:`${dst.callLetters} (${dst.sig.type}) reformatted to ${FM[src.format]?.l||src.format} to simulcast with ${src.callLetters}.`,y:G.year,p:G.period});
+    if(!suppressNews) G.news.unshift({v:'LOW',t:`${dst.callLetters} (${dst.sig.type}) reformatted to ${FM[src.format]?.l||src.format} to simulcast ${src.callLetters}'s programming.`,y:G.year,p:G.period});
   }
-  a.simulcastWith=b.id;b.simulcastWith=a.id;
-
-  // simLead picks FM over AM — but the AM may have the better talent/quality.
-  // We need to merge talent into the lead so it's not silently dropped.
-  const lead=simLead(a,b), junior=lead.id===a.id?b:a;
-
-  // TALENT MERGE: carry the best talent/quality into the lead station.
-  // For each daypart, compare lead vs junior — take whichever has higher slot quality.
-  // This preserves your great AM talent when the FM becomes the display lead.
+  src.simulcastWith=dst.id;
+  dst.simulcastWith=src.id;
+  src._simulcastSource=true;
+  dst._simulcastSource=false;
   const slots=['morningDrive','afternoonDrive','midday','evening','overnight'];
   slots.forEach(sl=>{
-    const lsd=lead.prog[sl], jsd=junior.prog[sl];
-    // If both null: nothing to merge or clear
-    if(!lsd&&!jsd)return;
-    const lq=lsd?.quality||0, jq=jsd?.quality||0;
-    const lTalQ=lsd?.talent?.quality||0, jTalQ=jsd?.talent?.quality||0;
-    // If lead slot is null but junior has a slot (possibly with talent),
-    // initialize lead slot first — the junior's talent must NOT be left behind.
-    if(!lsd){
-      lead.prog[sl]={quality:jq,talent:jsd.talent||null};
-    } else {
-      // If junior talent is meaningfully better than lead, promote it to lead
-      const jIsBetter=(jTalQ>lTalQ+5)||(jTalQ===0&&lTalQ===0&&jq>lq+5);
-      if(jIsBetter){
-        lead.prog[sl]={...jsd}; // carry junior's talent+quality to lead
-      }
+    const ssd=src.prog[sl];
+    if(!ssd){
+      dst.prog[sl]={quality:20,talent:null};
+      return;
     }
-    // Always clear junior — talent pool lives on the lead card only.
-    // This is the rule that was previously skipped when lsd was null,
-    // leaving ghost talent on the AM after the simulcast was broken.
-    junior.prog[sl]={quality:Math.max(lq,jq),talent:null};
+    dst.prog[sl]={quality:ssd.quality,talent:null};
   });
-
-  // Recalc lead oq after talent merge
-  lead.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(lead.prog[sl]?.quality||20)*w,0));
-  junior.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(junior.prog[sl]?.quality||20)*w,0));
-
-  // Sync brand, positioning, drift from lead to junior
-  junior.brand=lead.brand;
-  junior.demoLean=lead.demoLean||0;
-  if(!junior.drift)junior.drift={};
-  if(lead.drift&&lead.drift[lead.format]!==undefined) junior.drift[lead.format]=lead.drift[lead.format];
-  if(!junior.driftHistory)junior.driftHistory={};
-  if(lead.driftHistory&&lead.driftHistory[lead.format]) junior.driftHistory[lead.format]={...lead.driftHistory[lead.format]};
-  if(lead.ops?.progBudget) junior.ops.progBudget=lead.ops.progBudget;
-
-  // Identity: simulcast merges community roots — both stations share the brand.
-  // The lead (FM display card) gets the best of both; junior retains it too.
-  // AM may have deep roots the FM lacks — always take the higher value.
-  const _mergedId=Math.max(lead.identity||0, junior.identity||0);
-  const _mergedIdPeak=Math.max(lead._identityPeak||0, junior._identityPeak||0);
-  const _mergedFmtAge=Math.max(lead._formatAge||0, junior._formatAge||0);
-  lead.identity=_mergedId;
-  lead._identityPeak=_mergedIdPeak;
-  lead._formatAge=_mergedFmtAge;
-  // Junior keeps its identity — both stations are now the same brand in the community
-  junior.identity=_mergedId;
-  junior._identityPeak=_mergedIdPeak;
-  // Also carry identityBudget if AM has an active community investment
-  if((junior.identityBudget||0)>(lead.identityBudget||0)) lead.identityBudget=junior.identityBudget;
-
-  const talentNote=slots.some(sl=>lead.prog[sl]?.talent)?` Talent carried from stronger station.`:'';
-  G.news.unshift({v:'MEDIUM',t:`${a.callLetters} + ${b.callLetters} now simulcasting "${lead.brand}" (${FM[a.format]?.l}).${talentNote}`,y:G.year,p:G.period});
+  src.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(src.prog[sl]?.quality||20)*w,0));
+  dst.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(dst.prog[sl]?.quality||20)*w,0));
+  // On-air identity only — target keeps its own drift, demo lean, budgets, sales, _history, identity scores, etc.
+  dst.brand=src.brand;
+  return true;
+}
+function doSim(){
+  if(!SimS.a||!SimS.b)return;
+  if(!applySimulcastPair(SimS.a,SimS.b,{}))return;
+  const src=G.stations.find(st=>st.id===SimS.a), dst=G.stations.find(st=>st.id===SimS.b);
+  logSimulcastPairHistory(src,dst,G);
+  const slots=['morningDrive','afternoonDrive','midday','evening','overnight'];
+  const talentNote=slots.some(sl=>src.prog[sl]?.talent)?` On-air talent remains on ${src.callLetters}.`:'';
+  G.news.unshift({v:'MEDIUM',t:`${dst.callLetters} now simulcasts ${src.callLetters} (${FM[src.format]?.l||src.format}).${talentNote}`,y:G.year,p:G.period});
   MP.action('sim', {sid:SimS.a, partnerId:SimS.b});
   cm('m-sim');renderAll();
 }
@@ -7153,8 +7147,11 @@ function doBreakSim(id){
   const s=G.stations.find(st=>st.id===id); if(!s||!s.simulcastWith) return;
   const partner=G.stations.find(st=>st.id===s.simulcastWith); if(!partner) { breakSimulcast(G,id); cm('m-sim'); renderAll(); return; }
 
-  // Determine which station is the lead (keeps format, talent, drift, identity)
-  const lead=simLead(s,partner), junior=lead.id===s.id?partner:s;
+  // Programming source (keeps talent) = station marked when simulcast was created; else FM lead heuristic.
+  let lead, junior;
+  if(s._simulcastSource && !partner._simulcastSource){ lead=s; junior=partner; }
+  else if(!s._simulcastSource && partner._simulcastSource){ lead=partner; junior=s; }
+  else { lead=simLead(s,partner); junior=lead.id===s.id?partner:s; }
 
   // ── TALENT: junior loses all talent (it lives on the lead card) ──
   const slots=['morningDrive','afternoonDrive','midday','evening','overnight'];
@@ -7541,6 +7538,12 @@ function logHistory(s, type, msg, G){
   // Cap at 40 entries to avoid save bloat
   if(s._history.length>40) s._history=s._history.slice(0,40);
 }
+/** Append simulcast history to both stations (never replaces _history). */
+function logSimulcastPairHistory(src,dst,Gref){
+  if(!src||!dst||!Gref)return;
+  logHistory(src,'SIMULCAST',`Simulcast partner: ${dst.callLetters} carries this station's programming.`,Gref);
+  logHistory(dst,'SIMULCAST',`Simulcast: programming supplied by ${src.callLetters} (${FM[src.format]?.l||src.format}).`,Gref);
+}
 function updRepay(loanId, maxOwed, rawVal){
   const amt=Math.min(parseInt(rawVal)||0, maxOwed);
   const remaining=Math.max(0, maxOwed-amt);
@@ -7721,14 +7724,24 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod){
       const stnMargin=s.fin.rev>0?Math.round((s.fin.ebitda/s.fin.rev)*100):0;
       const mc=stnMargin>=35?'pos':stnMargin>=10?'amb':'neg';
       const talCost=Object.values(s.prog).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
-      const host=s.prog.morningDrive?.talent;
-      const vacant=['morningDrive','afternoonDrive'].filter(k=>!s.prog[k]?.talent).map(k=>SL[k]);
+      const simSrc=s.simulcastWith&&s._simulcastSource===false?G.stations.find(st=>st.id===s.simulcastWith):null;
+      const localMD=s.prog.morningDrive?.talent;
+      const simMD=!localMD&&simSrc?simSrc.prog?.morningDrive?.talent:null;
+      const hostStr=localMD?localMD.name:(simMD?`${simMD.name} (${simSrc.callLetters})`:'');
+      const vacant=['morningDrive','afternoonDrive'].filter(k=>{
+        if(simSrc?.prog?.[k]?.talent)return false;
+        return !s.prog[k]?.talent;
+      }).map(k=>SL[k]);
+      const simulcastLine=simSrc?`<div class="sr"><span class="lb" style="color:var(--mut)">Programming</span><span class="vl" style="font-size:14px;color:var(--off)">Supplied by <strong>${simSrc.callLetters}</strong> (simulcast)</span></div>`:'';
+      const simFeeLine=(s.fin?.simulcastProgFee>0)?`<div class="sr"><span class="lb" style="color:var(--mut)">Simulcast program fee</span><span class="vl" style="font-size:14px;color:var(--off)">${f$(s.fin.simulcastProgFee)}/period <span style="color:var(--mut)">(in costs above)</span></span></div>`:'';
       return `<div class="ms2"><div class="msh">${s.callLetters} — ${FM[s.format]?.l||s.format}${s.simulcastWith?' ◈':''}</div>
         <div class="sr"><span class="lb">Share</span><span class="vl">${pct(s.rat.share)}${trd}</span></div>
         <div class="sr"><span class="lb">Revenue / Costs</span><span class="vl">${f$(s.fin.rev)} / ${f$(s.fin.cost)}</span></div>
         <div class="sr"><span class="lb">EBITDA</span><span class="vl ${mc}">${s.fin.ebitda>=0?'+':''}${f$(s.fin.ebitda)} (${stnMargin}%)</span></div>
         <div class="sr"><span class="lb">Fixed / Talent</span><span class="vl" style="font-size:14px;color:var(--mut)">${f$(s.fin.fix||0)} / ${f$(talCost)}</span></div>
-        <div class="sr"><span class="lb">Quality</span><span class="vl">${s.oq}/100${host?' · '+host.name:''}</span></div>
+        ${simulcastLine}
+        ${simFeeLine}
+        <div class="sr"><span class="lb">Quality</span><span class="vl">${s.oq}/100${hostStr?' · '+hostStr:''}</span></div>
         ${vacant.length?`<div class="sr"><span class="lb" style="color:var(--red)">⚠ Vacant</span><span class="vl" style="color:var(--red);font-size:14px">${vacant.join(', ')}</span></div>`:''}
       </div>`;
     }).join('')}
@@ -7753,7 +7766,16 @@ function openContract(sid, slot){
   const s=G.stations.find(st=>st.id===sid);
   if(!s)return;
   const sd=s.prog[slot];
-  if(!sd?.talent){openHire(sid);return;}
+  if(!sd?.talent){
+    if(s.simulcastWith&&s._simulcastSource===false){
+      const src=G.stations.find(st=>st.id===s.simulcastWith);
+      if(src){
+        showToast(`Programming for ${SL[slot]} is carried from ${src.callLetters} (simulcast). Open a contract on ${src.callLetters} to manage that talent.`,'info');
+        return;
+      }
+    }
+    openHire(sid);return;
+  }
   const t=sd.talent;
   const cyr=Math.round((t.cyr||0)*10)/10;
   const mor=t.morale||65;
@@ -8130,25 +8152,15 @@ function rStns(){
     ? G.ps.filter(s => s._mpOwner === MP.playerId)
     : G.ps;
   myStations.forEach(s=>{
-    // Simulcast: suppress junior card — lead card shows merged view
     const _simPartner=s.simulcastWith?G.stations.find(st=>st.id===s.simulcastWith):null;
     const _isPlayerPair=_simPartner&&myStations.some(st=>st.id===_simPartner.id);
-    if(_isPlayerPair){
-      // Suppress junior — only show the lead card
-      const _lead=simLead(s,_simPartner);
-      if(_lead.id!==s.id)return;
-    }
-    // For lead: gather junior partner for merged financials/share
-    const simAM=_isPlayerPair?_simPartner:null; // reuse simAM variable name for card template compat
-    const mergedRev=simAM?(s.fin.rev+(simAM.fin.rev||0)):s.fin.rev;
-    const mergedCost=simAM?(s.fin.cost+(simAM.fin.cost||0)):s.fin.cost;
-    const mergedEbitda=mergedRev-mergedCost;
-    const mergedShare=simAM?(s.rat.share+(simAM.rat.share||0)):s.rat.share;
+    const simAM=_isPlayerPair?_simPartner:null;
     const pr=s.cp;
     const trd=!pr?'':pr.col?'<span style="color:var(--red)">⬇⬇</span>':pr.under?'<span style="color:var(--red)">⬇</span>':pr.sur?'<span style="color:var(--grn)">⬆</span>':'<span style="color:var(--mut)">→</span>';
-    const simP=_isPlayerPair?_simPartner:null; // already found above
+    const simP=_isPlayerPair?_simPartner:null;
+    const stnEbitda=s.fin.rev-s.fin.cost;
     const div=document.createElement('div');
-    div.className=`sc ${mergedEbitda>=0?'profit':'loss'}`;
+    div.className=`sc ${stnEbitda>=0?'profit':'loss'}`;
     const slrows=Object.entries(SL).map(([k,lbl])=>{
       const sd=s.prog[k],tn=sd?.talent?.name,q=Math.round(sd?.quality||0),c2=qc(q);
       const vlbl=vacantLabel(s.format,k);
@@ -8174,25 +8186,16 @@ function rStns(){
       <div class="sctop"><div>
         <div class="sccall">${callDisplay(s)}</div>
         <div class="scfreq">${s.fmBooster?s.freq+' · <span style="color:var(--grn);font-family:var(--ft);font-size:14px">FM TRANSLATOR</span>'+(s._boosterOrigFreq?' · <span style="color:var(--mut)">+'+s._boosterOrigFreq+'</span>':''): s.sig.pw==='DA'?s.freq+' · AM · <span style="color:var(--red);font-family:var(--ft);font-size:14px" title="Daytimer: 50kW day, 1-5kW night">DAYTIMER</span>': s.freq+' · '+s.sig.type+' · '+s.sig.pw.toUpperCase()}</div>
-        <div class="scbrand">"${s.brand}" · ${(()=>{
-          // In an AM/FM simulcast, the AM is always the format authority.
-          // If the FM lead's format is out of sync with the AM partner, show AM's.
-          if(simAM){
-            const amStn = (simAM.sig.type==='AM'&&!simAM.fmBooster)?simAM:
-                          (s.sig.type==='AM'&&!s.fmBooster)?s:null;
-            if(amStn) return FM[amStn.format]?.l||amStn.format;
-          }
-          return FM[s.format]?.l||s.format;
-        })()} <span style="color:var(--mut);font-size:15px;font-style:normal">· ${genderLabel(s.format)}</span></div>
+        <div class="scbrand">"${s.brand}" · ${FM[s.format]?.l||s.format} <span style="color:var(--mut);font-size:15px;font-style:normal">· ${genderLabel(s.format)}</span></div>
         ${simAM?(()=>{const bL=s.sig.type,bJ=simAM.sig.type;const lbl=bL===bJ?(bL+'/'+bL+' SIMULCAST'):'AM/FM SIMULCAST';return '<div class="sim-tag" style="color:var(--grn)">◈ '+lbl+' · '+callDisplay(s)+' + '+callDisplay(simAM)+'</div>';})():simP?'<div class="sim-tag">◈ SIMULCAST WITH '+callDisplay(simP)+'</div>':''}
         ${s._lmaStation?'<div class="sim-tag" style="color:var(--blu);border-color:rgba(90,180,255,.4)">📝 LMA — LEASED OPERATION · fee: '+f$(lmaFeeForStation(s))+'/period</div>':''}
         ${s.lmaLessorId?'<div class="sim-tag" style="color:var(--grn);border-color:rgba(82,227,110,.4)">📝 LMA — LEASED OUT · receiving: '+f$(lmaFeeForStation(s))+'/period</div>':''}
-      </div><div><div class="scshv">${pct(mergedShare)}</div><div class="scshl">${simAM?'COMBINED SHARE':'SHARE '+trd}</div></div></div>
+      </div><div><div class="scshv">${pct(s.rat.share)}</div><div class="scshl">SHARE ${trd}</div></div></div>
       <div class="qr"><span class="ql">QUALITY</span><div class="qb"><div class="qf ${qc2}" style="width:${s.oq}%"></div></div><span class="qn">${s.oq}</span></div>
       <div class="fg">
-        <div><span class="fl">${s.lmaLessorId?'LICENSE FEE INCOME':simAM?'COMBINED REV':'REVENUE/PERIOD'} ${s.lmaLessorId?'':('<span style="font-size:15px;color:'+( G.period===2?'var(--grn)':'var(--amb)')+'">'+(G.period===2?'▲ FALL':'▼ SPRING')+'</span>')}</span><span class="fv">${f$(mergedRev)}</span></div>
-        <div><span class="fl">${s.lmaLessorId?'OPERATOR COSTS':''}${!s.lmaLessorId?(simAM?'COMBINED COSTS':'COSTS/PERIOD'):''}</span><span class="fv ${s.lmaLessorId?'pos':''}">${s.lmaLessorId?'BORNE BY OPERATOR':f$(mergedCost)}</span></div>
-        <div><span class="fl">EBITDA</span><span class="fv ${mergedEbitda>=0?'pos':'neg'}">${mergedEbitda>=0?'+':''}${f$(mergedEbitda)}</span></div>
+        <div><span class="fl">${s.lmaLessorId?'LICENSE FEE INCOME':'REVENUE/PERIOD'} ${s.lmaLessorId?'':('<span style="font-size:15px;color:'+( G.period===2?'var(--grn)':'var(--amb)')+'">'+(G.period===2?'▲ FALL':'▼ SPRING')+'</span>')}</span><span class="fv">${f$(s.fin.rev)}</span></div>
+        <div><span class="fl">${s.lmaLessorId?'OPERATOR COSTS':''}${!s.lmaLessorId?'COSTS/PERIOD':''}</span><span class="fv ${s.lmaLessorId?'pos':''}">${s.lmaLessorId?'BORNE BY OPERATOR':f$(s.fin.cost)}</span></div>
+        <div><span class="fl">EBITDA</span><span class="fv ${stnEbitda>=0?'pos':'neg'}">${stnEbitda>=0?'+':''}${f$(stnEbitda)}</span></div>
         <div><span class="fl">SELLOUT</span><span class="fv ${s.ops.sell>.75?'pos':s.ops.sell>.55?'amb':'neg'}">${Math.round(s.ops.sell*100)}%</span></div>
       </div>
       <div class="slots">${slrows}</div>
@@ -8201,14 +8204,13 @@ function rStns(){
         const sfLvl=s.salesForce?.level||0;
         const sfLblText=sfLvl===0?'NONE':SF_LEVELS[sfLvl].l.split(' ').pop().toUpperCase();
         const sfActive=sfLvl>0;
-        // Simulcast button: available on all stations.
-        // The modal clearly shows which station is the FORMAT LEADER before confirming.
+        // Simulcast: modal uses this station as programming source; partner is receiver.
         const simBtn=simAM
           ?'<button class="abt" style="border-color:rgba(255,255,255,.15)" onclick="openSim(\''+s.id+'\')">◈ BREAK SIMULCAST</button>'
-          :'<button class="abt b" onclick="openSim(\''+s.id+'\')">◈ SIMULCAST</button>';
+          :'<button class="abt b" onclick="openSim(\''+s.id+'\')">◈ SIMULCAST THIS STATION</button>';
         const driftBtn=(DRIFT[s.format]&&!s.simulcastWith&&!simAM)?'<div class="ab"><button class="abt" style="width:100%;background:rgba(245,166,35,.12);border:1px solid var(--amb);color:var(--amb)" onclick="openDrift(\''+s.id+'\')">🎚 FORMAT STRATEGY — '+DRIFT[s.format].poleA.name+' ↔ '+DRIFT[s.format].poleB.name+'</button></div>':'';
         return `
-        <div class="ab"><button class="abt" onclick="openHire('${s.id}')">🎙 HIRE TALENT</button><button class="abt d" onclick="openFire('${s.id}')">↕ MANAGE TALENT</button><button class="abt" onclick="openSpots('${s.id}')">📻 SPOT LOAD</button></div>
+        <div class="ab"><button class="abt" onclick="openHire('${s.id}')">🎙 HIRE TALENT</button><button class="abt d" onclick="openFire('${s.id}')">↕ MANAGE TALENT</button><button class="abt" onclick="openSwapSignal('${s.id}')">⇄ SWAP SIGNAL</button><button class="abt" onclick="openSpots('${s.id}')">📻 SPOT LOAD</button></div>
         <div class="ab"><button class="abt ${s.stream?.active?'g active':G.year>=2005?'b':''}" onclick="openStream('${s.id}')" ${G.year<2005?'style="opacity:.30;cursor:default"':''}>${s.stream?.active?'📶 STREAMING ✓':'📶 ADD STREAMING'}</button><button class="abt" onclick="openPromo('${s.id}')">📣 MARKETING</button><button class="abt b" onclick="openLean('${s.id}')">🎯 DEMO TARGET</button></div>
         <div class="ab"><button class="abt ${(s.ops?.progBudget||0)>0?'g active':'g'}" onclick="openProg('${s.id}')">📈 PROG${(s.ops?.progBudget||0)>0?' · '+f$(s.ops.progBudget)+'/p':''}</button><button class="abt ${(s.identityBudget||0)>0||(s.identity||0)>=30?'g active':''}" onclick="openIdent('${s.id}')">🏘 IDENTITY${(s.identity||0)>=1?' · '+Math.round(s.identity):''}${(s.identityBudget||0)>0?' ★':''}</button><button class="abt" onclick="openResearch('${s.id}')">📊 RESEARCH</button><button class="abt d" onclick="openFmt('${s.id}')">⚡ FORMAT</button>${simBtn}</div>
         <div class="ab"><button class="abt ${sfActive?'g':''}" style="width:100%" onclick="openSales('${s.id}')">💼 SALES: ${sfLblText}${sfActive?' · '+Math.round(s.ops.sell*100)+'% sellout':''}</button></div>
@@ -8260,33 +8262,14 @@ function rMkt(){
   }
   const sw=document.getElementById('scenwrap');
   if(sw&&MP.mode!=='live'){if(!sw.dataset.id||sw.dataset.id!==G.sc.id){sw.dataset.id=G.sc.id;sw.innerHTML='';}}
-  // Collapse simulcast pairs into one combined ranker row
-  const seenSimul=new Set();
-  const rankerSt=[];
-  [...G.stations].sort((a,b)=>b.rat.share-a.rat.share).forEach(s=>{
-    if(seenSimul.has(s.id))return;
-    if(s.simulcastWith){
-      const partner=G.stations.find(x=>x.id===s.simulcastWith);
-      if(partner){
-        seenSimul.add(s.id);seenSimul.add(partner.id);
-        const lead=s.rat.share>=partner.rat.share?s:partner;
-        const trail=lead===s?partner:s;
-        rankerSt.push({...lead,_pair:lead.callLetters+' ◈ '+trail.callLetters,
-          _sh:lead.rat.share+trail.rat.share,_rv:(lead.fin.rev||0)+(trail.fin.rev||0)});
-        return;
-      }
-    }
-    rankerSt.push(s);
-  });
-  // Re-sort after collapse so simulcast combined shares rank correctly
-  rankerSt.sort((a,b)=>(b._sh||b.rat.share)-(a._sh||a.rat.share));
-  const mx=rankerSt.length?(rankerSt[0]._sh||rankerSt[0].rat.share)||1:1;
+  const rankerSt=[...G.stations].sort((a,b)=>b.rat.share-a.rat.share);
+  const mx=rankerSt.length?rankerSt[0].rat.share||1:1;
   document.getElementById('mtb').innerHTML=rankerSt.map((s,i)=>{
-    const share=s._sh||s.rat.share,rev=s._rv!==undefined?s._rv:s.fin.rev;
+    const share=s.rat.share,rev=s.fin.rev;
     const pr=s.cp,tr=!pr?'—':pr.col?'⬇⬇':pr.under?'⬇':pr.sur?'⬆':'→';
     const tc=!pr?'tfl':pr.col||pr.under?'tdn':pr.sur?'tup':'tfl';
     const wp=Math.round((share/mx)*100);
-    const label=s._pair||callDisplay(s);
+    const label=callDisplay(s)+(s.simulcastWith?' <span style="color:var(--blu);font-size:13px">◈</span>':'');
     const clickAttr=!s.isPlayer&&!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="View competitor intel"`:'';
     const _me=mpIsMe(s),_anyP=s.isPlayer;
     return `<tr class="${_me?'you':''}"${!_anyP&&!s.isPublic?clickAttr:''}><td><span class="rn">${i+1}</span></td><td><span class="clg" style="color:${mpStationColor(s)}">${label}</span>${_me?'<span class="yp">YOU</span>':_anyP?`<span class="yp" style="background:${s.color||'#60a5fa'};color:#000">OPP</span>`:!s.isPublic?'<span style="color:var(--mut);font-size:14px"> &#128269;</span>':''}</td><td><span class="fmtag">${FM[s.format]?.l||s.format}</span></td><td><span class="shn" style="color:${_me?'var(--amb)':_anyP?s.color:'var(--wht)'}">${pct(share)}</span></td><td><div class="bc"><div class="bb"><div class="bf ${_me?'you':''}" style="width:${wp}%;${_anyP&&!_me?'background:'+s.color:''}"></div></div><span class="${tc}" style="font-size:15px">${tr}</span></div></td><td><span class="rvn">${f$(rev)}</span></td></tr>`;
