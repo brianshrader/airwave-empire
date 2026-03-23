@@ -276,6 +276,75 @@ function vacantLabel(fmt,slot){
   return 'AUTOMATION';
 }
 const DAYPART_SLOTS=['morningDrive','afternoonDrive','midday','evening','overnight'];
+/** Market-wide superstar talent — conservative tuning (effects wired in later phases). */
+const SUPERSTAR={
+  QUALITY_THRESHOLD:80,
+  TENURE_THRESHOLD:5,
+  MAX_PER_MARKET:2,
+  EFF_Q_MULT:1.40,
+  OQ_BONUS:8,
+  SHARE_BOOST_ON_ARRIVE:0.008,
+  SHARE_LOSS_ON_DEPART:0.006,
+  SALARY_FLOOR_BASE:55000,
+  SALARY_CAP_MULT_BONUS:0.50,
+  POACH_RESIST_BONUS:0.30,
+};
+const SUPERSTAR_DAYPART_ORDER={morningDrive:0,afternoonDrive:1,midday:2,evening:3,overnight:4};
+
+/** Count talents with superstar flag in the current market. */
+function countSuperstars(G){
+  if(!G?.stations)return 0;
+  let n=0;
+  G.stations.forEach(st=>{
+    if(!st.prog)return;
+    DAYPART_SLOTS.forEach(sl=>{
+      if(st.prog[sl]?.talent?.superstar)n++;
+    });
+  });
+  return n;
+}
+
+/**
+ * Promote/revoke talent.superstar across the market (max MAX_PER_MARKET).
+ * Eligible: quality ≥ threshold, station tenure ≥ TENURE_THRESHOLD calendar years (periods/2).
+ * Tie-break: prime dayparts first (morning → afternoon → …), then quality, then callsign/slot.
+ */
+function updateSuperstars(G){
+  if(!G?.stations)return;
+  const S=SUPERSTAR;
+  const minPeriods=S.TENURE_THRESHOLD*2;
+  G.stations.forEach(st=>{
+    if(!st.prog)return;
+    DAYPART_SLOTS.forEach(sl=>{
+      const t=st.prog[sl]?.talent;
+      if(t)t.superstar=false;
+    });
+  });
+  const candidates=[];
+  G.stations.forEach(st=>{
+    if(st.isPublic||!st.prog)return;
+    DAYPART_SLOTS.forEach(sl=>{
+      const t=st.prog[sl]?.talent;
+      if(!t)return;
+      const q=Math.round(t.quality||0);
+      const ten=t.periodsAtStation||0;
+      if(q<S.QUALITY_THRESHOLD||ten<minPeriods)return;
+      candidates.push({
+        st,slot:sl,t,
+        q,
+        dp:SUPERSTAR_DAYPART_ORDER[sl]??9,
+      });
+    });
+  });
+  candidates.sort((a,b)=>{
+    if(a.dp!==b.dp)return a.dp-b.dp;
+    if(b.q!==a.q)return b.q-a.q;
+    const ca=`${a.st.callLetters||''}|${a.slot}`,cb=`${b.st.callLetters||''}|${b.slot}`;
+    return ca.localeCompare(cb);
+  });
+  candidates.slice(0,S.MAX_PER_MARKET).forEach(({t})=>{t.superstar=true;});
+}
+
 function nonLocalDaypartCaption(fmt,slot,isPublic){
   if(isPublic)return 'PROGRAMMED';
   return vacantLabel(fmt,slot);
@@ -295,6 +364,28 @@ function htmlOnAirTalentRoster(s){
     }
     const cap=nonLocalDaypartCaption(s.format,sl,!!s.isPublic);
     return `<div class="sr"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px;color:var(--mut)"><em>${cap}</em> · slot Q ${slotQ}</span></div>`;
+  }).join('');
+}
+/** Ranker modal footer only: all on-air talent in the market, quality desc (no per-station lineup duplication above). */
+function htmlMarketTalentRankerList(){
+  const rows=[];
+  G.stations.forEach(st=>{
+    if(!st.prog)return;
+    DAYPART_SLOTS.forEach(sl=>{
+      const tal=st.prog[sl]?.talent;
+      if(!tal)return;
+      const q=Math.round(tal.quality||0);
+      rows.push({tal,st,sl,q});
+    });
+  });
+  rows.sort((a,b)=>b.q-a.q);
+  if(!rows.length)return '<p style="color:var(--mut);font-size:14px;font-style:italic">No on-air talent in the market yet.</p>';
+  return rows.map(({tal,st,sl,q})=>{
+    const star=q>=75?'⭐ ':'';
+    return `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;font-family:var(--ft)">
+      <span style="color:var(--off);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${star}<strong style="color:var(--wht)">${tal.name}</strong> <span style="color:var(--mut)">· ${SL[sl]} · ${callDisplay(st)}</span></span>
+      <span style="color:var(--amb);flex-shrink:0;font-family:var(--fd);font-size:14px">Q ${q}</span>
+    </div>`;
   }).join('');
 }
 const MQR=3000000,FMP0=.42; // MQR retained as legacy fallback; total market revenue is now scaled from MARKET_BILLING_CURVE
@@ -619,7 +710,8 @@ function mkTal(slot,fmt,tier='mid',year=1970){
     cyr:ri(1,2),
     morale:Math.round(rnd(55,85)),
     _hireYear:year,
-    _careerStartYear
+    _careerStartYear,
+    superstar:false
   };
 }
 
@@ -4187,7 +4279,7 @@ function openScenSelect(localSave){
     const cashFmt=`$${(sc.cash/1000).toFixed(0)}K starting cash`;
     const hint=sc.hint||diffHints[sc.id]||'';
     const span=`${sc.startYear||1970}–2020`;
-    return `<div class="scn-card" id="scn-${sc.id}" style="display:block;background:#111;border:1px solid #2a2a2a;border-radius:4px;padding:14px 16px" onclick="pickScen('${sc.id}')">
+    return `<div class="scn-card" id="scn-${sc.id}" onclick="pickScen('${sc.id}')">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:4px">
         <div class="scn-diff ${diffCls}">${diff}</div>
         <div style="font-family:var(--ft);font-size:15px;color:var(--mut);letter-spacing:1px;padding-top:2px">${span}</div>
@@ -5648,6 +5740,7 @@ function advTurn(){
       }
     });
     G.stations.forEach(s=>decay(s,G.year,G.period));
+    updateSuperstars(G);
     const alerts=checkPressure(G);
     // Advance clock before showSum so wasYear/wasPeriod are available to pass in
     const wasYear=G.year,wasPeriod=G.period;
@@ -5824,23 +5917,25 @@ function openRanker(){
       const cls=v>=.08?'rcv hi':v>=.02?'rcv':v<.005?'rcv lo':'rcv';
       return `<td><span class="${cls}">${pv}</span></td>`;
     }).join('');
-    const pubBadge=s.isPublic?'<span style="font-size:15px;background:#1e3a5f;color:#7dd3fc;padding:1px 5px;border-radius:2px;margin-left:4px;font-family:var(--ft)">NPR</span>':'';
-    const corpBadge=s.corpOwner&&!s.isPlayer?`<span style="font-size:15px;background:${s.corpColor||'#374151'};color:#fff;padding:1px 5px;border-radius:2px;font-family:var(--ft)">${(s.corpName||'CORP').split(' ')[0]}</span>`:'';
+    const pubBadge=s.isPublic?'<span style="font-size:13px;background:#1e3a5f;color:#7dd3fc;padding:1px 5px;border-radius:2px;margin-left:4px;font-family:var(--ft)">NPR</span>':'';
+    const corpBadge=s.corpOwner&&!s.isPlayer?`<span style="font-size:13px;background:${s.corpColor||'#374151'};color:#fff;padding:1px 5px;border-radius:2px;font-family:var(--ft)">${(s.corpName||'CORP').split(' ')[0]}</span>`:'';
     const intelAttr=!isP&&!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="Click for competitor intel"`:'';
-    const intelBadge=!isP&&!s.isPublic?' <span style="color:var(--mut);font-size:15px">🔍</span>':'';
-    const nameDisplay=`${callDisplay(s)}${s.simulcastWith?'<span style="color:var(--blu);font-size:14px"> ◈</span>':''}${pubBadge}${corpBadge}`;
-    const freqLine=`${FM[s.format]?.l||s.format} · ${s.freq}${intelBadge}`;
+    const intelBadge=!isP&&!s.isPublic?'<span style="color:var(--mut);font-size:15px;line-height:1;flex-shrink:0;margin-left:6px">🔍</span>':'';
+    const simB=s.simulcastWith?'<span style="color:var(--blu);font-size:14px"> ◈</span>':'';
+    const fmtLbl=FM[s.format]?.l||s.format;
+    const oneLine=`<span style="display:inline-flex;align-items:center;flex-wrap:nowrap;white-space:nowrap;gap:6px;min-width:0"><span class="rc" style="color:${s.color};font-family:var(--fd);flex-shrink:0">${callDisplay(s)}</span>${simB}${pubBadge}${corpBadge}<span style="color:var(--mut);flex-shrink:0">·</span><span style="color:var(--off);flex-shrink:0">${fmtLbl}</span><span style="color:var(--mut);flex-shrink:0">·</span><span style="color:var(--wht);flex-shrink:0">${s.freq}</span>${intelBadge}</span>`;
     const rkCls=`${isP?'rky':s.isPlayer?'rkp2':s.isPublic?'rkp':''}`;
-    const colSpan=1+cols.length;
-    const mainTr=`<tr class="${rkCls}">
-      <td class="stc"${intelAttr}><div class="rc" style="color:${s.color}">${nameDisplay}</div><div class="rf">${freqLine}</div></td>
+    return `<tr class="${rkCls}">
+      <td class="stc"${intelAttr}><div style="overflow:hidden;text-overflow:ellipsis;max-width:min(480px,55vw)">${oneLine}</div></td>
       ${cells}
     </tr>`;
-    const lineupTr=`<tr class="rk-lineup ${rkCls}"><td colspan="${colSpan}" style="padding:4px 10px 10px 18px;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top"><div class="ms2" style="margin:0;padding:0"><div class="msh" style="font-size:12px;color:var(--mut);letter-spacing:1px">ON-AIR LINEUP</div>${htmlOnAirTalentRoster(s)}</div></td></tr>`;
-    return mainTr+lineupTr;
   }).join('');
   const wrap=document.getElementById('rkwrap');
-  wrap.innerHTML=`<table class="rkt"><thead><tr><th class="sth">STATION / FORMAT</th>${thd}</tr></thead><tbody>${rows}</tbody></table>`;
+  wrap.innerHTML=`<table class="rkt"><thead><tr><th class="sth">STATION · FORMAT · FREQ</th>${thd}</tr></thead><tbody>${rows}</tbody></table>
+    <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--bdr)">
+      <div style="font-family:var(--ft);font-size:14px;color:var(--mut);letter-spacing:2px;margin-bottom:10px">MARKET TALENT <span style="font-size:12px;color:var(--mut);font-weight:400">(quality · all stations)</span></div>
+      <div style="max-height:min(38vh,320px);overflow-y:auto;padding-right:4px">${htmlMarketTalentRankerList()}</div>
+    </div>`;
   // Legend: color key
   const legEl=document.getElementById('rk-legend');
   if(legEl) legEl.innerHTML=`
@@ -8386,10 +8481,13 @@ function rMkt(){
     const tc=!pr?'tfl':pr.col||pr.under?'tdn':pr.sur?'tup':'tfl';
     const wp=Math.round((share/mx)*100);
     const band=s.fmBooster?'FM+':(s.sig.type==='FM'?'FM':'AM');
-    const label=callDisplay(s)+(s.simulcastWith?' <span style="color:var(--blu);font-size:13px">◈</span>':'')+` <span style="font-size:12px;color:var(--mut);font-weight:600" title="Band">${band}</span>`;
+    const calls=callDisplay(s)+(s.simulcastWith?' <span style="color:var(--blu);font-size:13px">◈</span>':'');
     const clickAttr=!s.isPlayer&&!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="View competitor intel"`:'';
     const _me=mpIsMe(s),_anyP=s.isPlayer;
-    return `<tr class="${_me?'you':''}"${!_anyP&&!s.isPublic?clickAttr:''}><td><span class="rn">${i+1}</span></td><td><span class="clg" style="color:${mpStationColor(s)}">${label}</span>${_me?'<span class="yp">YOU</span>':_anyP?`<span class="yp" style="background:${s.color||'#60a5fa'};color:#000">OPP</span>`:!s.isPublic?'<span style="color:var(--mut);font-size:14px"> &#128269;</span>':''}</td><td><span class="fmtag">${FM[s.format]?.l||s.format}</span></td><td><span class="shn" style="color:${_me?'var(--amb)':_anyP?s.color:'var(--wht)'}">${pct(share)}</span></td><td><div class="bc"><div class="bb"><div class="bf ${_me?'you':''}" style="width:${wp}%;${_anyP&&!_me?'background:'+s.color:''}"></div></div><span class="${tc}" style="font-size:15px">${tr}</span></div></td><td><span class="rvn">${f$(rev)}</span></td></tr>`;
+    const badges=_me?'<span class="yp">YOU</span>':_anyP?`<span class="yp" style="background:${s.color||'#60a5fa'};color:#000">OPP</span>`:'';
+    const intelEl=!_anyP&&!s.isPublic?'<span style="color:var(--mut);font-size:14px;line-height:1;flex-shrink:0;margin-left:2px">&#128269;</span>':'';
+    const stationCell=`<span style="display:inline-flex;align-items:center;gap:8px;flex-wrap:nowrap;white-space:nowrap;max-width:100%"><span class="clg" style="color:${mpStationColor(s)};flex-shrink:0">${calls}</span><span style="font-size:12px;color:var(--mut);font-weight:600;flex-shrink:0" title="Band">${band}</span>${badges?`<span style="display:inline-flex;align-items:center">${badges}</span>`:''}${intelEl}</span>`;
+    return `<tr class="${_me?'you':''}"${!_anyP&&!s.isPublic?clickAttr:''}><td><span class="rn">${i+1}</span></td><td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(340px,52vw)">${stationCell}</td><td><span class="fmtag">${FM[s.format]?.l||s.format}</span></td><td><span class="shn" style="color:${_me?'var(--amb)':_anyP?s.color:'var(--wht)'}">${pct(share)}</span></td><td><div class="bc"><div class="bb"><div class="bf ${_me?'you':''}" style="width:${wp}%;${_anyP&&!_me?'background:'+s.color:''}"></div></div><span class="${tc}" style="font-size:15px">${tr}</span></div></td><td><span class="rvn">${f$(rev)}</span></td></tr>`;
   }).join('');
   // In MP, show the current player's lead station; in solo, G.ps[0]
   const _myStns = MP.mode==='live' ? G.ps.filter(s=>s._mpOwner===MP.playerId) : G.ps;
