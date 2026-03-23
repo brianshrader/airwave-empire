@@ -3332,6 +3332,42 @@ function runAI(G){
       if(Math.random()<p.ms)sd.quality=Math.min(100,sd.quality+rnd(1,4));
     });
 
+    // ── TALENT: FILL EMPTY KEY DAYPARTS (aggressive but not suicidal) ─────
+    if(!s.isPublic){
+      const prioritySlots=['morningDrive','afternoonDrive','midday','evening','overnight'];
+      const wt={morningDrive:1.45,afternoonDrive:1.35,midday:1.0,evening:0.9,overnight:0.55};
+      const empty=prioritySlots.filter(sl=>!s.prog[sl]?.talent);
+      if(empty.length){
+        const shareGap=Math.max(0,0.08-(s.rat.share||0));
+        const losing=pr&&(pr.col||pr.under);
+        const understaffed=empty.length>=3||(empty.includes('morningDrive')&&empty.includes('afternoonDrive'));
+        let hireProb=0.10+0.38*p.ag;
+        if(understaffed)hireProb+=0.24;
+        if(losing)hireProb+=0.16;
+        hireProb+=shareGap*2.4;
+        if(crisis)hireProb*=0.42;
+        if((s.fin?.ebitda||0)<-(s.fin?.rev||1)*0.38)hireProb*=0.4;
+        empty.sort((a,b)=>(wt[b]||1)-(wt[a]||1));
+        const maxHires=(understaffed&&p.ag>0.48)?2:1;
+        let hires=0;
+        for(const sl of empty){
+          if(hires>=maxHires)break;
+          if(Math.random()>Math.min(0.9,hireProb))continue;
+          const tier=(sl==='morningDrive'||sl==='afternoonDrive')
+            ?((p.ag>0.52||s.rat.share<0.045)?'mid':'entry')
+            :(p.ag>0.58?'mid':'entry');
+          const tNew=mkTal(sl,s.format,tier,G.year);
+          if(!tNew)continue;
+          if((s.fin?.ebitda||0)<-70000&&sl!=='morningDrive'&&sl!=='afternoonDrive')continue;
+          s.prog[sl].talent=tNew;
+          s.prog[sl].quality=Math.min(100,Math.round((s.prog[sl].quality||25)*0.52+tNew.quality*0.48));
+          hires++;
+          acts.push({v:'LOW',t:`${s.callLetters} fills ${SL[sl]} (${tier})`});
+        }
+        if(hires)s.oq=Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+(s.prog[sl2]?.quality||20)*w,0));
+      }
+    }
+
     // ── PROGRAMMING INVESTMENT ──────────────────────────────
     {
       const baseInvest=Math.round((s.fin.rev||0)*(p.pi||0.04));
@@ -3393,26 +3429,25 @@ function runAI(G){
       });
 
       if(targetPlayerStation&&Math.random()<(surging?0.65:0.40)){
-        // Find the actual station object
+        // Find the actual station object — player gets one period to match salary (see resolvePendingRivalPoaches)
         const pStn=playerStns.find(st=>st.id===targetPlayerStation.id);
         const tal=pStn?.prog?.morningDrive?.talent;
-        if(pStn&&tal){
+        if(pStn&&tal&&!pStn._rivalPoachPending){
           const nm=tal.name;
           const newSal=Math.round(tal.salary*rnd(1.35,1.70)/500)*500;
-          // Player gets a warning first — talent is being courted
           if(!s._poachCooldown||s._poachCooldown<=0){
-            pStn.prog.morningDrive.talent=null;
-            pStn.prog.morningDrive.quality*=0.70;
-            s.prog.morningDrive.talent={...tal,salary:newSal,cyr:ri(1,2)};
-            s.prog.morningDrive.quality=Math.min(100,s.prog.morningDrive.quality+tal.quality*.45);
-            s._poachCooldown=4; // won't poach again for 4 periods
+            pStn._rivalPoachPending={
+              rivalId:s.id,slot:'morningDrive',offerSalary:newSal,talentId:tal.id,
+              announcedY:G.year,announcedP:G.period,matched:false
+            };
+            s._poachCooldown=4;
             acts.push({v:'HIGH',
-              t:`💥 ${s.callLetters} poaches ${nm} from ${pStn.callLetters}`,
+              t:`⚡ ${s.callLetters} is courting ${nm} at ${pStn.callLetters} (${f$(newSal)}/yr) — you have one period to match in contract.`,
               iy:true});
           }
         }
       } else {
-        // Attempt 2: best available talent anywhere (existing logic, refined)
+        // Attempt 2: best available talent anywhere — instant poach vs rivals; deferred vs player
         let best=null,bq=0;
         G.stations.forEach(o=>{
           if(o.id===s.id||o.isPublic)return;
@@ -3422,12 +3457,25 @@ function runAI(G){
           }
         });
         if(best&&Math.random()<0.30){
-          const nm=best.t.name;
-          best.st.prog.morningDrive.talent=null;best.st.prog.morningDrive.quality*=.72;
-          s.prog.morningDrive.talent={...best.t,salary:Math.round(best.t.salary*rnd(1.30,1.60)/500)*500};
-          s.prog.morningDrive.quality=Math.min(100,s.prog.morningDrive.quality+bq*.4);
-          const iy=G.ps.some(st=>st.callLetters===best.st.callLetters);
-          acts.push({v:'HIGH',t:`⚡ ${s.callLetters} poaches ${nm} from ${best.st.callLetters}`,iy});
+          if(best.st.isPlayer){
+            const pStn=best.st,tal=pStn.prog.morningDrive.talent;
+            if(tal&&!pStn._rivalPoachPending&&(!s._poachCooldown||s._poachCooldown<=0)){
+              const newSal=Math.round(tal.salary*rnd(1.30,1.60)/500)*500;
+              pStn._rivalPoachPending={
+                rivalId:s.id,slot:'morningDrive',offerSalary:newSal,talentId:tal.id,
+                announcedY:G.year,announcedP:G.period,matched:false
+              };
+              s._poachCooldown=4;
+              acts.push({v:'HIGH',t:`⚡ ${s.callLetters} is courting ${tal.name} at ${pStn.callLetters} (${f$(newSal)}/yr).`,iy:true});
+            }
+          } else {
+            const nm=best.t.name;
+            best.st.prog.morningDrive.talent=null;best.st.prog.morningDrive.quality*=.72;
+            s.prog.morningDrive.talent={...best.t,salary:Math.round(best.t.salary*rnd(1.30,1.60)/500)*500};
+            s.prog.morningDrive.quality=Math.min(100,s.prog.morningDrive.quality+bq*.4);
+            const iy=G.ps.some(st=>st.callLetters===best.st.callLetters);
+            acts.push({v:'HIGH',t:`⚡ ${s.callLetters} poaches ${nm} from ${best.st.callLetters}`,iy});
+          }
         }
       }
     }
@@ -4340,6 +4388,18 @@ function canSimulcast(G,s1,s2){
     s1.format===s2.format&&
     !s1.simulcastWith&&!s2.simulcastWith;
 }
+/** Programming source station for a simulcast receiver (repeater); null if not applicable. */
+function simulcastProgrammingSource(s){
+  if(!s?.simulcastWith)return null;
+  if(s._simulcastSource===true)return null;
+  return G.stations.find(st=>st.id===s.simulcastWith)||null;
+}
+/** Receiver echoes partner's on-air content for this slot (no local talent object on receiver). */
+function slotCoveredBySimulcast(s,slot){
+  const src=simulcastProgrammingSource(s);
+  if(!src)return false;
+  return !s.prog[slot]?.talent&&!!src.prog[slot]?.talent;
+}
 // Determine which station leads a simulcast pair (higher signal power / revenue)
 function simLead(a,b){
   // FM (incl. fmBooster) beats AM; among same type, higher power wins; tiebreak by revenue
@@ -4675,14 +4735,45 @@ function updBrand(sid,v){
 // ── ADVANCE TURN ──────────────────────────────────────────────────
 
 // ── TALENT EVENTS ─────────────────────────────────────────────────
+/** Resolve deferred AI→player poaches (one period to match salary in contract screen). */
+function resolvePendingRivalPoaches(G){
+  G.ps.forEach(pStn=>{
+    const pend=pStn._rivalPoachPending;
+    if(!pend)return;
+    const afterAnnounce=(G.year>pend.announcedY||(G.year===pend.announcedY&&G.period>pend.announcedP));
+    if(!afterAnnounce)return;
+    const slot=pend.slot||'morningDrive';
+    const sd=pStn.prog[slot];
+    const t=sd?.talent;
+    const rival=G.stations.find(st=>st.id===pend.rivalId);
+    if(!t||t.id!==pend.talentId){
+      delete pStn._rivalPoachPending;
+      return;
+    }
+    const nm=t.name;
+    sd.talent=null;
+    sd.quality=Math.round((sd.quality||30)*0.70);
+    if(rival&&rival.prog[slot]){
+      rival.prog[slot].talent={...t,salary:pend.offerSalary,cyr:ri(1,2),morale:Math.min(100,(t.morale||65)+5)};
+      rival.prog[slot].quality=Math.min(100,Math.round((rival.prog[slot].quality||30)+t.quality*0.45));
+    }
+    rival&&(rival._poachCooldown=4);
+    G.news.unshift({v:'HIGH',t:`🎙 POACHED: ${nm} leaves ${pStn.callLetters} for ${rival?rival.callLetters:'a rival'} — you didn't match their offer in time.`,y:G.year,p:G.period,iy:true});
+    delete pStn._rivalPoachPending;
+  });
+}
+
 function talentEvents(G){
   const acts=[];
+  resolvePendingRivalPoaches(G);
   G.ps.filter(s=>!s.isPublic).forEach(s=>{
     Object.entries(s.prog).forEach(([slot,sd])=>{
       if(!sd?.talent)return;
       const t=sd.talent;
       // Tenure: single increment per period in decay() — do not mutate here (avoids double-count with talentEvents+decay).
       const age=(t.periodsAtStation||0)+1; // projected end-of-period tenure for event odds (decay runs later)
+      if(!t._hireYear)t._hireYear=G.year;
+      if(!t._careerStartYear)t._careerStartYear=t._hireYear;
 
       // GRACEFUL NON-RENEWAL: player chose not to renew
       if(t._letExpire&&(t.cyr||0)<=0){
@@ -4715,6 +4806,13 @@ function talentEvents(G){
         t._retireWarned=true;
         G.news.unshift({v:'MEDIUM',t:`📋 ${t.name} reaches 35 years in radio next year — they'll be retiring from ${s.callLetters}. Start scouting.`,y:G.year,p:G.period,iy:true});
       }
+      // Late-career retirement (calendar years in radio) — reachable during normal play, not save-migration only
+      if(careerYears>=26&&careerYears<35&&Math.random()<0.02+Math.max(0,(careerYears-26))*0.018){
+        const name=t.name;
+        sd.talent=null;
+        G.news.unshift({v:'MEDIUM',t:`🎙 ${name} retires from ${s.callLetters} ${SL[slot]} after ${careerYears} years in radio.`,y:G.year,p:G.period,iy:true});
+        return;
+      }
       // GRACEFUL VOLUNTARY RETIREMENT: quality talent, long tenure, probabilistic
       const retireChance=careerYears>22?0.10:careerYears>18?0.05:age>16?0.04:age>12?0.02:0;
       if(t.quality>70&&Math.random()<retireChance){
@@ -4733,21 +4831,20 @@ function talentEvents(G){
         return;
       }
 
-      // POACHING: rival AI stations try to steal star talent (morning drive only)
-      // Player gets advance warning so they can counter-offer
+      // POACHING: rival AI stations try to steal star talent (morning drive only) — defer loss; player can match in contract modal
       if(slot==='morningDrive'&&t.quality>72&&Math.random()<0.06){
         const rivals=G.stations.filter(st=>!st.isPlayer&&st.rat.share>0.05);
-        if(rivals.length){
+        if(rivals.length&&!s._rivalPoachPending){
           const rival=pick(rivals);
           const name=t.name;
-          // Check if player's contract is solid — high morale + contract remaining reduces risk
           const poachResist=(t.morale/100)*0.5+Math.min(1,(t.cyr||0)/2)*0.5;
           if(Math.random()<poachResist){
-            // Poach attempt FAILED — talent stayed loyal, but player should know
             G.news.unshift({v:'MEDIUM',t:`🎙 ${rival.callLetters} approached ${name} — they stayed loyal to ${s.callLetters}. Consider a renewal.`,y:G.year,p:G.period});
           } else {
-            sd.talent=null;
-            G.news.unshift({v:'HIGH',t:`🎙 POACHED: ${name} leaves ${s.callLetters} for ${rival.callLetters}. Morning Drive is now vacant.`,y:G.year,p:G.period,iy:true});
+            const newSal=Math.round(t.salary*rnd(1.22,1.48)/500)*500;
+            s._rivalPoachPending={rivalId:rival.id,slot:'morningDrive',offerSalary:newSal,talentId:t.id,announcedY:G.year,announcedP:G.period,matched:false};
+            rival._poachCooldown=4;
+            G.news.unshift({v:'HIGH',t:`⚡ ${rival.callLetters} is courting ${name} with ${f$(newSal)}/yr — open their contract to match (≥${f$(Math.round(newSal*0.95/500)*500)}/yr) or they may leave next period.`,y:G.year,p:G.period,iy:true});
           }
         }
       }
@@ -5868,9 +5965,15 @@ let HS={sid:null,slot:null,pool:[],sel:null};
 function openHire(sid){const s=G.stations.find(st=>st.id===sid);if(!s)return;HS={sid,slot:null,pool:[],sel:null};rHire(s);om('m-tal');}
 function rHire(s){
   const slots=['morningDrive','afternoonDrive','midday','evening','overnight'];
+  const _simSrc=simulcastProgrammingSource(s);
   const sbtns=slots.map(sl=>{
     const sd=s.prog[sl];
-    const tn=sd?.talent?.name||(vacantLabel(s.format,sl));
+    let tn=sd?.talent?.name;
+    if(!tn&&_simSrc?.prog[sl]?.talent?.name){
+      tn=`◈ ${_simSrc.prog[sl].talent.name} (${_simSrc.callLetters})`;
+    }else if(!tn){
+      tn=vacantLabel(s.format,sl);
+    }
     const slotQ=Math.round(sd?.quality||0);
     const talQ=sd?.talent?.quality?Math.round(sd.talent.quality):null;
     const slotQlbl=`<span style="color:${slotQ>=70?'var(--grn)':slotQ>=45?'var(--amb)':'var(--red)'}"> ${slotQ}</span>`;
@@ -7081,7 +7184,7 @@ function rSim(){
   const partnerPreview = SimS.b ? (()=>{
     const partner=G.stations.find(st=>st.id===SimS.b);
     if(!partner) return '';
-    return `<div class="ibox" style="margin-top:8px"><strong>Programming source:</strong> ${callDisplay(s)} — keeps all on-air talent.<br><strong>Simulcast receiver:</strong> ${callDisplay(partner)} — echoes ${s.callLetters}'s format; this signal's separate local talent is cleared.</div>`;
+    return `<div class="ibox" style="margin-top:8px"><strong>Programming source:</strong> ${callDisplay(s)} — keeps all on-air talent.<br><strong>Simulcast receiver:</strong> ${callDisplay(partner)} — carries ${s.callLetters}'s programming on-air; local sales, budgets, demo target, and format strategy stay under your control (no separate local daypart hosts).</div>`;
   })() : '';
   // Pre-compute format direction for the currently selected partner (if any)
   const _previewPartner = SimS.b ? G.stations.find(st=>st.id===SimS.b) : null;
@@ -7096,7 +7199,7 @@ function rSim(){
   }
   document.getElementById('simb').innerHTML=`
     <p class="di"><strong>Simulcast this station:</strong> <strong>${callDisplay(s)}</strong> (${FM[s.format]?.l||s.format} · ${s.fmBooster?'FM BOOSTER':s.sig.type}) → select a partner to receive this signal.</p>
-    <div class="bbox"><strong>How it works:</strong> The station you opened stays the programming source. The partner you pick becomes the simulcast receiver — it takes this format/brand and no longer runs its own separate local lineup. AM↔FM pairs still get +15% AM reach bonus where applicable.<br><br>${fmtDirectionNote}</div>
+    <div class="bbox"><strong>How it works:</strong> The station you opened stays the programming source. The partner you pick becomes the simulcast receiver — it takes this format/brand and echoes the source's on-air programming; your local management (sales, budgets, demo target, format strategy) stays on the receiver. AM↔FM pairs still get +15% AM reach bonus where applicable.<br><br>${fmtDirectionNote}</div>
     <div class="acg">${opts}</div>
     ${partnerPreview}
     <button class="cfm" onclick="doSim()" ${!SimS.b?'disabled':''}>SIMULCAST THIS STATION</button>
@@ -7128,7 +7231,8 @@ function applySimulcastPair(sourceId,targetId,opts){
   });
   src.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(src.prog[sl]?.quality||20)*w,0));
   dst.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(dst.prog[sl]?.quality||20)*w,0));
-  // On-air identity only — target keeps its own drift, demo lean, budgets, sales, _history, identity scores, etc.
+  // On-air brand matches programming source; receiver keeps local management (drift, demo lean, sales, ops budgets,
+  // marketing, salesForce, identity scores, _history, etc.) — do not assign or clear those here.
   dst.brand=src.brand;
   return true;
 }
@@ -7728,7 +7832,7 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod){
       const localMD=s.prog.morningDrive?.talent;
       const simMD=!localMD&&simSrc?simSrc.prog?.morningDrive?.talent:null;
       const hostStr=localMD?localMD.name:(simMD?`${simMD.name} (${simSrc.callLetters})`:'');
-      const vacant=['morningDrive','afternoonDrive'].filter(k=>{
+      const vacant=Object.keys(SL).filter(k=>{
         if(simSrc?.prog?.[k]?.talent)return false;
         return !s.prog[k]?.talent;
       }).map(k=>SL[k]);
@@ -7859,6 +7963,7 @@ function openContract(sid, slot){
 
   document.getElementById('contractb').innerHTML=`
     <div class="msh" style="margin-bottom:12px">📋 TALENT CONTRACT — ${s.callLetters} ${SL[slot]}</div>
+    ${(()=>{const rp=s._rivalPoachPending;if(!rp||rp.slot!==slot||rp.talentId!==t.id)return'';const riv=G.stations.find(st=>st.id===rp.rivalId);const minM=Math.round(rp.offerSalary*0.95/500)*500;return`<div class="ibox" style="border-color:var(--amb);margin-bottom:12px"><strong style="color:var(--amb)">⚡ RIVAL OFFER / COUNTER-POACH</strong><br><span style="font-size:14px;color:var(--off)"><strong>${riv?riv.callLetters:'Rival'}</strong> offered <strong>${f$(rp.offerSalary)}</strong>/yr. Sign at <strong>≥${f$(minM)}</strong>/yr to retain ${t.name} next period.</span></div>`;})()}
     ${(()=>{const sh=s.rat?.share||0;const q=t.quality||50;if(sh>0.12&&q>75)return`<div style="background:rgba(245,166,35,.10);border:1px solid var(--amb);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--amb)">📈 Strong station + top talent — expect a premium ask. They know their worth.</div>`;if(sh>0.08&&q>65)return`<div style="background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.3);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--off)">📊 Solid ratings give this talent negotiating leverage.</div>`;if(t.morale<50)return`<div style="background:rgba(220,50,50,.10);border:1px solid var(--red);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--red)">⚠ Low morale — they're unhappy and may ask for extra just to stay.</div>`;return''})()}
 
     <div class="ms2" style="margin-bottom:16px">
@@ -7930,6 +8035,11 @@ function openContract(sid, slot){
 function doExtend(sid, slot, years, newSalary){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const t=s.prog[slot]?.talent;if(!t)return;
+  const rp=s._rivalPoachPending;
+  if(rp&&rp.slot===slot&&t.id===rp.talentId&&newSalary>=(rp.offerSalary||0)*0.95){
+    delete s._rivalPoachPending;
+    G.news.unshift({v:'LOW',t:`📋 ${t.name} stays — your contract fends off the rival bid.`,y:G.year,p:G.period});
+  }
   t.salary=newSalary;
   t.cyr=years*2; // cyr counts in half-years (periods)
   t.morale=Math.min(100,t.morale+10); // relief at being signed
@@ -8161,9 +8271,15 @@ function rStns(){
     const stnEbitda=s.fin.rev-s.fin.cost;
     const div=document.createElement('div');
     div.className=`sc ${stnEbitda>=0?'profit':'loss'}`;
+    const _simSrc=simulcastProgrammingSource(s);
     const slrows=Object.entries(SL).map(([k,lbl])=>{
       const sd=s.prog[k],tn=sd?.talent?.name,q=Math.round(sd?.quality||0),c2=qc(q);
       const vlbl=vacantLabel(s.format,k);
+      const srcTal=!tn&&_simSrc?_simSrc.prog[k]?.talent:null;
+      if(!tn&&srcTal){
+        const sn=_simSrc.callLetters;
+        return `<div class="slr"><span class="sln">${lbl}</span><span class="slt" style="color:var(--off)" title="Simulcast — on-air from ${sn}">◈ ${srcTal.name} <span style="color:var(--mut);font-size:13px">(${sn})</span></span><span class="slsal">${f$(srcTal.salary/2)}/p · src</span><span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Programming Quality (0-100)">Q ${q}</span></div>`;
+      }
       if(!tn) return `<div class="slr"><span class="sln">${lbl}</span><span class="slt vac">${vlbl}</span><span class="slsal"></span><span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Programming Quality (0-100)">Q ${q}</span></div>`;
       const t=sd.talent;
       const cyr=t.cyr||0;
@@ -8269,7 +8385,8 @@ function rMkt(){
     const pr=s.cp,tr=!pr?'—':pr.col?'⬇⬇':pr.under?'⬇':pr.sur?'⬆':'→';
     const tc=!pr?'tfl':pr.col||pr.under?'tdn':pr.sur?'tup':'tfl';
     const wp=Math.round((share/mx)*100);
-    const label=callDisplay(s)+(s.simulcastWith?' <span style="color:var(--blu);font-size:13px">◈</span>':'');
+    const band=s.fmBooster?'FM+':(s.sig.type==='FM'?'FM':'AM');
+    const label=callDisplay(s)+(s.simulcastWith?' <span style="color:var(--blu);font-size:13px">◈</span>':'')+` <span style="font-size:12px;color:var(--mut);font-weight:600" title="Band">${band}</span>`;
     const clickAttr=!s.isPlayer&&!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="View competitor intel"`:'';
     const _me=mpIsMe(s),_anyP=s.isPlayer;
     return `<tr class="${_me?'you':''}"${!_anyP&&!s.isPublic?clickAttr:''}><td><span class="rn">${i+1}</span></td><td><span class="clg" style="color:${mpStationColor(s)}">${label}</span>${_me?'<span class="yp">YOU</span>':_anyP?`<span class="yp" style="background:${s.color||'#60a5fa'};color:#000">OPP</span>`:!s.isPublic?'<span style="color:var(--mut);font-size:14px"> &#128269;</span>':''}</td><td><span class="fmtag">${FM[s.format]?.l||s.format}</span></td><td><span class="shn" style="color:${_me?'var(--amb)':_anyP?s.color:'var(--wht)'}">${pct(share)}</span></td><td><div class="bc"><div class="bb"><div class="bf ${_me?'you':''}" style="width:${wp}%;${_anyP&&!_me?'background:'+s.color:''}"></div></div><span class="${tc}" style="font-size:15px">${tr}</span></div></td><td><span class="rvn">${f$(rev)}</span></td></tr>`;
