@@ -315,8 +315,9 @@ function countSuperstars(G){
 
 /**
  * Promote/revoke talent.superstar across the market (max MAX_PER_MARKET).
- * Eligible: quality ≥ threshold, station tenure ≥ TENURE_THRESHOLD calendar years (periods/2).
- * Tie-break: prime dayparts first (morning → afternoon → …), then quality, then callsign/slot.
+ * Eligible: effective on-air quality ≥ threshold, station tenure ≥ TENURE_THRESHOLD calendar years (periods/2).
+ * effQ = max(talent Q, slot Q) so decaying t.quality alone does not disqualify long-tenured hosts.
+ * Tie-break: prime dayparts first (morning → afternoon → …), then effQ, then callsign/slot.
  */
 function updateSuperstars(G){
   if(!G?.stations)return;
@@ -333,14 +334,17 @@ function updateSuperstars(G){
   G.stations.forEach(st=>{
     if(st.isPublic||!st.prog)return;
     DAYPART_SLOTS.forEach(sl=>{
-      const t=st.prog[sl]?.talent;
+      const sd=st.prog[sl];
+      const t=sd?.talent;
       if(!t)return;
-      const q=Math.round(t.quality||0);
+      const rawQ=Math.round(t.quality||0);
+      const slotQ=Math.round(sd.quality||0);
+      const effQ=Math.max(rawQ,slotQ);
       const ten=t.periodsAtStation||0;
-      if(q<S.QUALITY_THRESHOLD||ten<minPeriods)return;
+      if(effQ<S.QUALITY_THRESHOLD||ten<minPeriods)return;
       candidates.push({
         st,slot:sl,t,
-        q,
+        q:effQ,
         dp:SUPERSTAR_DAYPART_ORDER[sl]??9,
       });
     });
