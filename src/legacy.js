@@ -315,8 +315,8 @@ function countSuperstars(G){
 
 /**
  * Promote/revoke talent.superstar across the market (max MAX_PER_MARKET).
- * Eligible: effective on-air quality ≥ threshold, station tenure ≥ TENURE_THRESHOLD calendar years (periods/2).
- * effQ = max(talent Q, slot Q) so decaying t.quality alone does not disqualify long-tenured hosts.
+ * Eligible: raw talent Q ≥ 60, hybrid effQ ≥ threshold, tenure ≥ TENURE_THRESHOLD calendar years (periods/2).
+ * effQ = round(rawQ×0.65 + slotQ×0.35) — blends personal ability with on-air slot strength without slot-only “fake” stars.
  * Tie-break: prime dayparts first (morning → afternoon → …), then effQ, then callsign/slot.
  */
 function updateSuperstars(G){
@@ -338,8 +338,9 @@ function updateSuperstars(G){
       const t=sd?.talent;
       if(!t)return;
       const rawQ=Math.round(t.quality||0);
+      if(rawQ<60)return;
       const slotQ=Math.round(sd.quality||0);
-      const effQ=Math.max(rawQ,slotQ);
+      const effQ=Math.round(rawQ*0.65+slotQ*0.35);
       const ten=t.periodsAtStation||0;
       if(effQ<S.QUALITY_THRESHOLD||ten<minPeriods)return;
       candidates.push({
@@ -373,7 +374,8 @@ function htmlOnAirTalentRoster(s){
     if(t){
       const tq=Math.round(t.quality||0);
       const salStr=(typeof t.salary==='number'&&!Number.isNaN(t.salary))?f$(t.salary)+'/yr':'—';
-      return `<div class="sr" style="align-items:flex-start"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px"><span style="font-family:var(--fd)">${t.name}</span> · Q ${tq} · slot ${slotQ} · ${salStr}</span></div>`;
+      const star=t.superstar===true?'⭐ ':'';
+      return `<div class="sr" style="align-items:flex-start"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px"><span style="font-family:var(--fd)">${star}${t.name}</span> · Q ${tq} · slot ${slotQ} · ${salStr}</span></div>`;
     }
     const cap=nonLocalDaypartCaption(s.format,sl,!!s.isPublic);
     return `<div class="sr"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px;color:var(--mut)"><em>${cap}</em> · slot Q ${slotQ}</span></div>`;
@@ -8027,19 +8029,30 @@ function openContract(sid, slot){
   // 1yr deal: bigger immediate raise (talent prefers flexibility on hot stations)
   const ext1Lo=Math.max(1.06, Math.min(1.45, demand*rnd(0.92,1.00)));
   const ext1Hi=Math.max(1.10, Math.min(1.55, demand*rnd(1.00,1.10)));
-  const ext1Cost=Math.round(t.salary*rnd(ext1Lo,ext1Hi)/500)*500;
+  let ext1Cost=Math.round(t.salary*rnd(ext1Lo,ext1Hi)/500)*500;
   // 2yr deal: slightly lower per-year ask for security, but still share-aware
   const ext2Lo=Math.max(1.04, Math.min(1.30, demand*rnd(0.80,0.88)));
   const ext2Hi=Math.max(1.07, Math.min(1.40, demand*rnd(0.88,0.96)));
-  const ext2Cost=Math.round(t.salary*rnd(ext2Lo,ext2Hi)/500)*500; // per year, 2yr deal
-  const ext1Annual=ext1Cost;
-  const ext2Annual=ext2Cost;
+  let ext2Cost=Math.round(t.salary*rnd(ext2Lo,ext2Hi)/500)*500; // per year, 2yr deal
   // 3yr deal: biggest discount per year — talent trades flexibility for long-term security
   // Only available if morale is decent (they won't sign a long deal unhappy)
   const ext3Lo=Math.max(1.03, Math.min(1.22, demand*rnd(0.70,0.78)));
   const ext3Hi=Math.max(1.05, Math.min(1.28, demand*rnd(0.78,0.86)));
-  const ext3Cost=mor>=55?Math.round(t.salary*rnd(ext3Lo,ext3Hi)/500)*500:null; // null = unavailable
-  const ext3Annual=ext3Cost;
+  let ext3Cost=mor>=55?Math.round(t.salary*rnd(ext3Lo,ext3Hi)/500)*500:null; // null = unavailable
+  let ext1Annual=ext1Cost;
+  let ext2Annual=ext2Cost;
+  let ext3Annual=ext3Cost;
+  // Counter-poach: extension asks can fall below the rival floor — ensure at least one option meets retention minimum.
+  const rpp=s._rivalPoachPending;
+  if(rpp&&rpp.slot===slot&&rpp.talentId===t.id){
+    const requiredMin=Math.round((rpp.offerSalary*0.95)/500)*500;
+    if(ext1Cost<requiredMin)ext1Cost=requiredMin;
+    if(ext2Cost<requiredMin)ext2Cost=requiredMin;
+    if(ext3Cost!=null&&ext3Cost<requiredMin)ext3Cost=requiredMin;
+    ext1Annual=ext1Cost;
+    ext2Annual=ext2Cost;
+    if(ext3Cost!=null)ext3Annual=ext3Cost;
+  }
 
   // Bonus cost: one-time payment, boosts morale by 15-25 pts
   const bonusCost=Math.round(t.salary*rnd(0.08,0.15)/500)*500;
@@ -8088,6 +8101,10 @@ function openContract(sid, slot){
     ?`<span style="color:var(--amb);font-family:var(--ft);font-size:15px">⚠ Contract expires next period — extend now to lock in this talent</span>`
     :`<span style="color:var(--mut);font-family:var(--ft);font-size:15px">${Math.ceil(cyr*2)} period${Math.ceil(cyr*2)!==1?'s':''} remaining (~${Math.ceil(cyr)} yr)</span>`;
 
+  const poach1yrMatchLabel=rpp&&rpp.slot===slot&&rpp.talentId===t.id
+    ?`<div style="font-size:13px;color:var(--grn);font-family:var(--ft);margin-top:2px">MATCH OFFER</div>`
+    :'';
+
   document.getElementById('contractb').innerHTML=`
     <div class="msh" style="margin-bottom:12px">📋 TALENT CONTRACT — ${s.callLetters} ${SL[slot]}</div>
     ${(()=>{const rp=s._rivalPoachPending;if(!rp||rp.slot!==slot||rp.talentId!==t.id)return'';const riv=G.stations.find(st=>st.id===rp.rivalId);const minM=Math.round(rp.offerSalary*0.95/500)*500;return`<div class="ibox" style="border-color:var(--amb);margin-bottom:12px"><strong style="color:var(--amb)">⚡ RIVAL OFFER / COUNTER-POACH</strong><br><span style="font-size:14px;color:var(--off)"><strong>${riv?riv.callLetters:'Rival'}</strong> offered <strong>${f$(rp.offerSalary)}</strong>/yr. Sign at <strong>≥${f$(minM)}</strong>/yr to retain ${t.name} next period.</span></div>`;})()}
@@ -8107,7 +8124,7 @@ function openContract(sid, slot){
       <div class="msh">EXTEND CONTRACT</div>
       <div style="display:flex;gap:8px">
         <div class="to" style="flex:1;cursor:default">
-          <div><div class="ton">1-Year</div>
+          <div><div class="ton">1-Year</div>${poach1yrMatchLabel}
           <div class="tost"><div><span class="tosl">SALARY</span><span class="tosv ${qc(70)}">${f$(ext1Annual)}/yr</span></div><div><span class="tosl">RAISE</span><span class="tosv warn">${Math.round((ext1Annual/t.salary-1)*100)}%</span></div></div>
           <div style="font-size:14px;color:var(--mut);margin-top:3px">Flexibility. Higher ask.</div></div>
           <button class="cfm" style="font-size:15px;padding:8px;margin-top:6px" onclick="doExtend('${sid}','${slot}',1,${ext1Cost})" ${G.cash<ext1Cost/2?'disabled':''}>SIGN 1 YR</button>
@@ -8163,9 +8180,12 @@ function doExtend(sid, slot, years, newSalary){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const t=s.prog[slot]?.talent;if(!t)return;
   const rp=s._rivalPoachPending;
-  if(rp&&rp.slot===slot&&t.id===rp.talentId&&newSalary>=(rp.offerSalary||0)*0.95){
-    delete s._rivalPoachPending;
-    G.news.unshift({v:'LOW',t:`📋 ${t.name} stays — your contract fends off the rival bid.`,y:G.year,p:G.period});
+  if(rp&&rp.slot===slot&&t.id===rp.talentId){
+    const minSal=Math.round((rp.offerSalary||0)*0.95/500)*500;
+    if(newSalary>=minSal){
+      delete s._rivalPoachPending;
+      G.news.unshift({v:'LOW',t:`📋 ${t.name} stays — your contract fends off the rival bid.`,y:G.year,p:G.period});
+    }
   }
   t.salary=newSalary;
   t.cyr=years*2; // cyr counts in half-years (periods)
