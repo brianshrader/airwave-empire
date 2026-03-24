@@ -2112,6 +2112,29 @@ window._mpApply_prog = function({ sid, progBudget }) {
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
   if(!s.ops) s.ops={}; s.ops.progBudget = progBudget; renderAll();
 };
+/** Cross-station talent move: mutates G, news, history, recomputes OQ on both stations. */
+function applyTalentCrossStationXferFull(fromSid, fromSlot, toSid, toSlot) {
+  const src = G.stations.find(st => st.id === fromSid);
+  const dst = G.stations.find(st => st.id === toSid);
+  if (!src || !dst || fromSid === toSid) return false;
+  const fromSd = src.prog[fromSlot], toSd = dst.prog[toSlot];
+  if (!fromSd?.talent || toSd?.talent) return false;
+  const talA = fromSd.talent;
+  const adjDip = 0.10;
+  const fit = t => t.formatFit[dst.format] || 0.3;
+  const boost = t => Math.round((t.quality / 100) * fit(t) * 0.35 * 18);
+  toSd.talent = talA;
+  toSd.quality = Math.min(100, Math.max(10, Math.round((toSd.quality || 30) * (1 - adjDip))) + boost(talA));
+  fromSd.talent = null;
+  const pen = { morningDrive: .20, afternoonDrive: .14, midday: .09, evening: .06, overnight: .03 }[fromSlot] || .09;
+  fromSd.quality = Math.max(10, Math.round(fromSd.quality * (1 - pen)));
+  src.oq = Math.round(Object.entries(SW).reduce((sum, [sl, w]) => sum + effSlotQForOq(src.prog[sl]) * w, 0));
+  dst.oq = Math.round(Object.entries(SW).reduce((sum, [sl, w]) => sum + effSlotQForOq(dst.prog[sl]) * w, 0));
+  G.news.unshift({ v: 'LOW', t: `${talA.name} moves from ${callDisplay(src)} ${SL[fromSlot]} to ${callDisplay(dst)} ${SL[toSlot]}.`, y: G.year, p: G.period });
+  logHistory(src, 'TALENT', `Transferred ${talA.name} to ${callDisplay(dst)} ${SL[toSlot]}`, G);
+  logHistory(dst, 'TALENT', `Received ${talA.name} from ${callDisplay(src)} ${SL[fromSlot]}`, G);
+  return true;
+}
 window._mpApply_shuffle = function({ sid, fromSlot, toSlot }) {
   // Apply swap logic directly — do NOT call doShuffle (would re-broadcast + open modal)
   const s = G.stations.find(st => st.id === sid); if (!s) return;
@@ -2134,6 +2157,13 @@ window._mpApply_shuffle = function({ sid, fromSlot, toSlot }) {
   }
   s.oq = Math.round(Object.entries(SW).reduce((sum, [sl, w]) => sum + effSlotQForOq(s.prog[sl]) * w, 0));
   // renderAll() is called by applyRemoteAction after this returns
+};
+window._mpApply_talent_xfer = function({ fromSid, fromSlot, toSid, toSlot, _fromPlayerId }) {
+  if (MP.mode === 'live') {
+    const owns = id => G.ps.some(st => st.id === id && st._mpOwner === _fromPlayerId);
+    if (_fromPlayerId === undefined || !owns(fromSid) || !owns(toSid)) return;
+  }
+  applyTalentCrossStationXferFull(fromSid, fromSlot, toSid, toSlot);
 };
 window._mpApply_extend = function({ sid, slot, years, newSalary }) {
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
@@ -6727,6 +6757,120 @@ function doShuffle(sid,fromSlot,toSlot){
   MP.action('shuffle',{sid,fromSlot,toSlot});
   openFire(sid);renderAll();
 }
+
+// Cross-station talent transfer (player-owned stations only; separate from within-station shuffle)
+let XFER = { fromSid: null, fromSlot: null, toSid: null };
+function xferOwnedStations() {
+  return MP.mode === 'live' ? G.ps.filter(s => s._mpOwner === MP.playerId) : G.ps;
+}
+function xferStnsWithLocalTalent() {
+  return xferOwnedStations().filter(s => Object.values(s.prog).some(sd => sd?.talent));
+}
+function openXfer(sid) {
+  sid = ensureOpsSourceSid(sid);
+  const mine = xferOwnedStations();
+  if (mine.length < 2) {
+    showToast('Need at least two owned stations to move talent between them.', 'warn');
+    return;
+  }
+  const withTal = xferStnsWithLocalTalent();
+  if (!withTal.length) {
+    showToast('No station has local on-air talent to move (simulcast receivers mirror the programming source).', 'warn');
+    return;
+  }
+  XFER = { fromSid: null, fromSlot: null, toSid: null };
+  document.getElementById('fire-title').textContent = 'MOVE BETWEEN STATIONS';
+  xferRenderPickSource();
+  om('m-fire');
+}
+function xferRenderPickSource() {
+  const withTal = xferStnsWithLocalTalent();
+  const rows = withTal.map(st => `<div class="sr" style="padding:10px 14px"><span class="lb"><strong>${callDisplay(st)}</strong><br><span style="color:var(--mut);font-size:15px">${FM[st.format]?.l || st.format}</span></span><button class="abt" onclick="xferPickSource('${st.id}')">SELECT</button></div>`).join('');
+  document.getElementById('fireb').innerHTML = `
+    <p class="di">Move a host from one station you own to another. <strong>Destination must be a vacant daypart</strong> — use Manage Talent on the other station first if that slot is filled.</p>
+    <div class="ms2"><div class="msh">SOURCE STATION</div>${rows}</div>
+    <button class="cnl" onclick="cm('m-fire')">CLOSE</button>`;
+}
+function xferPickSource(fromSid) {
+  const s = G.stations.find(st => st.id === fromSid);
+  if (!s || !mpIsMe(s)) { showToast('Not your station.', 'warn'); return; }
+  const filled = Object.entries(s.prog).filter(([sl, sd]) => sd?.talent);
+  if (!filled.length) { xferRenderPickSource(); return; }
+  document.getElementById('fire-title').textContent = 'MOVE BETWEEN STATIONS';
+  XFER.fromSid = fromSid; XFER.fromSlot = null; XFER.toSid = null;
+  const rows = filled.map(([sl, sd]) => {
+    const t = sd.talent;
+    return `<div class="sr" style="padding:10px 14px"><span class="lb"><strong>${SL[sl]}</strong> &nbsp; ${t.name}<br><span style="color:var(--mut);font-size:15px">talent ${Math.round(t.quality)}</span></span><button class="abt" onclick="xferPickSlot('${sl}')">SELECT</button></div>`;
+  }).join('');
+  document.getElementById('fireb').innerHTML = `
+    <p class="di">Choose which daypart to move <strong>from ${callDisplay(s)}</strong>.</p>
+    <div class="ms2"><div class="msh">SOURCE DAYPART</div>${rows}</div>
+    <button class="cnl" onclick="xferRenderPickSource()">← BACK</button>`;
+}
+function xferPickSlot(fromSlot) {
+  const { fromSid } = XFER;
+  const s = G.stations.find(st => st.id === fromSid);
+  if (!s || !s.prog[fromSlot]?.talent) return;
+  if (!mpIsMe(s)) return;
+  XFER.fromSlot = fromSlot;
+  xferRenderDestPick();
+}
+function xferRenderDestPick() {
+  const { fromSid, fromSlot } = XFER;
+  const src = G.stations.find(st => st.id === fromSid);
+  if (!src || !fromSlot || !src.prog[fromSlot]?.talent) return;
+  const tal = src.prog[fromSlot].talent;
+  const dests = xferOwnedStations().filter(st => st.id !== fromSid);
+  const rows = dests.map(st => `<div class="sr" style="padding:10px 14px"><span class="lb"><strong>${callDisplay(st)}</strong><br><span style="color:var(--mut);font-size:15px">${FM[st.format]?.l || st.format}</span></span><button class="abt" onclick="xferPickDest('${st.id}')">SELECT</button></div>`).join('');
+  document.getElementById('fireb').innerHTML = `
+    <p class="di">Moving <strong>${tal.name}</strong> from <strong>${callDisplay(src)} ${SL[fromSlot]}</strong>. Pick the destination station.</p>
+    <div class="ms2"><div class="msh">DESTINATION STATION</div>${rows}</div>
+    <button class="cnl" onclick="xferPickSource('${fromSid}')">← BACK</button>`;
+}
+function xferPickDest(toSid) {
+  const st = G.stations.find(s => s.id === toSid);
+  if (!st || !mpIsMe(st)) return;
+  if (toSid === XFER.fromSid) return;
+  XFER.toSid = toSid;
+  xferRenderDestSlots();
+}
+function xferRenderDestSlots() {
+  const { fromSid, fromSlot, toSid } = XFER;
+  const dst = G.stations.find(st => st.id === toSid);
+  const src = G.stations.find(st => st.id === fromSid);
+  const tal = src?.prog[fromSlot]?.talent;
+  if (!dst || !tal) return;
+  const slots = ['morningDrive', 'afternoonDrive', 'midday', 'evening', 'overnight'];
+  const destRows = slots.map(sl => {
+    const sd = dst.prog[sl];
+    const occ = sd?.talent;
+    const slotQ = Math.round(sd?.quality || 0);
+    if (occ) {
+      return `<div class="sr" style="padding:10px 14px;opacity:.55"><span class="lb"><strong>${SL[sl]}</strong><br><span style="color:var(--red);font-size:15px">occupied by ${occ.name} — open Manage Talent on ${callDisplay(dst)} to clear this slot first</span></span><span style="font-size:15px;color:var(--mut)">Q ${slotQ}</span></div>`;
+    }
+    return `<div class="sr" style="padding:10px 14px"><span class="lb"><strong>${SL[sl]}</strong><br><span style="color:var(--mut);font-size:15px">vacant · slot Q ${slotQ}</span></span><button class="abt" style="border-color:var(--grn);color:var(--grn)" onclick="doCrossStationXfer('${sl}')">MOVE HERE</button></div>`;
+  }).join('');
+  document.getElementById('fireb').innerHTML = `
+    <p class="di">Place <strong>${tal.name}</strong> on <strong>${callDisplay(dst)}</strong>. Only vacant dayparts can receive a transfer.</p>
+    <div class="ms2"><div class="msh">DESTINATION DAYPART</div>${destRows}</div>
+    <button class="cnl" onclick="xferRenderDestPick()">← BACK</button>`;
+}
+function doCrossStationXfer(toSlot) {
+  const { fromSid, fromSlot, toSid } = XFER;
+  const src = G.stations.find(st => st.id === fromSid);
+  const dst = G.stations.find(st => st.id === toSid);
+  if (!src || !dst || !fromSlot || fromSid === toSid) return;
+  if (!mpIsMe(src) || !mpIsMe(dst)) { showToast('Cross-station moves only between stations you own.', 'warn'); return; }
+  if (!src.prog[fromSlot]?.talent || dst.prog[toSlot]?.talent) {
+    showToast('That move is no longer valid — check dayparts again.', 'warn');
+    xferRenderDestSlots();
+    return;
+  }
+  if (!applyTalentCrossStationXferFull(fromSid, fromSlot, toSid, toSlot)) return;
+  MP.action('talent_xfer', { fromSid, fromSlot, toSid, toSlot });
+  cm('m-fire');
+  renderAll();
+}
 function doFire(sid,slot){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const sd=s.prog[slot];if(!sd?.talent)return;
@@ -9061,7 +9205,7 @@ function rStns(){
         if(_m2&&_m2!==_m1)fmUniq.push(_m2);
         const adminBtns=[...histArr,...renArr,swapBtn,...fmUniq,...sellArr];
         return '<div class="sc-card-actions">'+
-          sec('TALENT',true,pack2(['<button class="abt" onclick="openHire(\''+op.id+'\')">🎙 HIRE TALENT</button>','<button class="abt d" onclick="openFire(\''+op.id+'\')">↕ MANAGE TALENT</button>']))+
+          sec('TALENT',true,pack2(['<button class="abt" onclick="openHire(\''+op.id+'\')">🎙 HIRE TALENT</button>','<button class="abt d" onclick="openFire(\''+op.id+'\')">↕ MANAGE TALENT</button>','<button class="abt" onclick="openXfer(\''+op.id+'\')">⇄ OTHER STATION</button>']))+
           sec('PROGRAMMING',false,pack2(progBtns))+
           sec('MARKETING',false,pack2(['<button class="abt" onclick="openPromo(\''+op.id+'\')">📣 MARKETING</button>','<button class="abt '+idAct+'" onclick="openIdent(\''+op.id+'\')">🏘 IDENTITY'+idLbl+idStar+'</button>','<button class="abt" onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
           sec('SALES',false,pack2(['<button class="abt '+(sfActive?'g':'')+'" onclick="openSales(\''+op.id+'\')">'+salesLbl+'</button>','<button class="abt" onclick="openSpots(\''+op.id+'\')">📻 SPOT LOAD</button>']))+
