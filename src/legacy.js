@@ -3941,6 +3941,7 @@ function runAI(G){
 
 // ── FORMAT STRATEGY (DRIFT) MODAL ────────────────────────────────
 function openDrift(sid){
+  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const dr=getDrift(s);
   if(!dr){alert('No format strategy available for '+FM[s.format]?.l);return;}
@@ -3987,6 +3988,7 @@ function openDrift(sid){
 }
 
 function updDrift(sid, v){
+  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const dr=getDrift(s);if(!dr)return;
   const val=parseInt(v);
@@ -3999,6 +4001,7 @@ function updDrift(sid, v){
 }
 
 function doDrift(sid){
+  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const slider=document.getElementById('drift-slider');if(!slider)return;
   if(!s.drift)s.drift={};
@@ -4825,6 +4828,17 @@ function slotCoveredBySimulcast(s,slot){
   if(!src)return false;
   return !s.prog[slot]?.talent&&!!src.prog[slot]?.talent;
 }
+/** Programming-side station for UI: simulcast receiver inherits from the source leg. */
+function simulcastOperationalSource(st){
+  if(!st)return st;
+  const src=simulcastProgrammingSource(st);
+  return src||st;
+}
+function ensureOpsSourceSid(sid){
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s)return sid;
+  return simulcastOperationalSource(s).id;
+}
 // Determine which station leads a simulcast pair (higher signal power / revenue)
 function simLead(a,b){
   // FM (incl. fmBooster) beats AM; among same type, higher power wins; tiebreak by revenue
@@ -4839,6 +4853,7 @@ function simLead(a,b){
 // ── STATION RESEARCH CONSULTANT ──────────────────────────────────
 const RESEARCH_COST = 40000; // $40K per report — meaningful but not punishing
 function openResearch(sid){
+  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   document.getElementById('research-title').textContent=`📊 RESEARCH — ${s.callLetters}`;
   const rb=document.getElementById('researchb');
@@ -4849,6 +4864,7 @@ function openResearch(sid){
   om('m-research');
 }
 function doResearch(sid){
+  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   if(G.cash<RESEARCH_COST)return;
   G.cash-=RESEARCH_COST;
@@ -5925,6 +5941,7 @@ function flushMilestones(){
 
 // ── SALES FORCE ───────────────────────────────────────────────────
 function openSales(sid){
+  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const cur=s.salesForce?.level||0;
   const allComm=[...G.stations].filter(st=>!st.isPublic).sort((a,b)=>b.rat.share-a.rat.share);
@@ -5966,6 +5983,7 @@ function openSales(sid){
   om('m-sales');
 }
 function doSales(sid,level){
+  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const prev=s.salesForce?.level||0;
   s.salesForce={level,periodsHeld:0};
@@ -6121,13 +6139,14 @@ function advTurn(){
         const sh=pct(s.rat.share);
         const owner=MP.players?.find(p=>p.playerId===s._mpOwner)?.name||'';
         const pfx=owner?`${owner}'s `:'';
+        const op=simulcastOperationalSource(s);
         let m=null;
-        if(cur===1&&prev>1) m={type:'gain',title:'NUMBER ONE',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[s.format]?.l||s.format}) is now #1 in the market — ${sh} share.`,owner:s._mpOwner};
-        else if(cur>1&&prev===1) m={type:'loss',title:'LOST #1',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[s.format]?.l||s.format}) has fallen from #1. Now #${cur} at ${sh}.`,owner:s._mpOwner};
-        else if(gained&&cur<=5&&prev>5) m={type:'gain',title:'TOP 5',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[s.format]?.l||s.format}) breaks into the top 5 — ranked #${cur} with ${sh}.`,owner:s._mpOwner};
-        else if(lost&&cur>5&&prev<=5) m={type:'loss',title:'OUT OF TOP 5',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[s.format]?.l||s.format}) slips out of the top 5.`,owner:s._mpOwner};
-        else if(gained&&cur<=10&&prev>10) m={type:'gain',title:'TOP 10',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[s.format]?.l||s.format}) enters the top 10 at #${cur}.`,owner:s._mpOwner};
-        else if(lost&&cur>10&&prev<=10) m={type:'loss',title:'OUT OF TOP 10',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[s.format]?.l||s.format}) has dropped out of the top 10.`,owner:s._mpOwner};
+        if(cur===1&&prev>1) m={type:'gain',title:'NUMBER ONE',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[op.format]?.l||op.format}) is now #1 in the market — ${sh} share.`,owner:s._mpOwner};
+        else if(cur>1&&prev===1) m={type:'loss',title:'LOST #1',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[op.format]?.l||op.format}) has fallen from #1. Now #${cur} at ${sh}.`,owner:s._mpOwner};
+        else if(gained&&cur<=5&&prev>5) m={type:'gain',title:'TOP 5',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[op.format]?.l||op.format}) breaks into the top 5 — ranked #${cur} with ${sh}.`,owner:s._mpOwner};
+        else if(lost&&cur>5&&prev<=5) m={type:'loss',title:'OUT OF TOP 5',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[op.format]?.l||op.format}) slips out of the top 5.`,owner:s._mpOwner};
+        else if(gained&&cur<=10&&prev>10) m={type:'gain',title:'TOP 10',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[op.format]?.l||op.format}) enters the top 10 at #${cur}.`,owner:s._mpOwner};
+        else if(lost&&cur>10&&prev<=10) m={type:'loss',title:'OUT OF TOP 10',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[op.format]?.l||op.format}) has dropped out of the top 10.`,owner:s._mpOwner};
         if(m) _allMs.push(m);
       });
       mpBroadcastState(_dcYear, { profit, ev, acts, alerts, wasYear, wasPeriod, milestones:_allMs });
@@ -6257,7 +6276,8 @@ function openRanker(){
     const intelAttr=!isP&&!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="Click for competitor intel"`:'';
     const intelBadge=!isP&&!s.isPublic?'<span style="color:var(--mut);font-size:15px;line-height:1;flex-shrink:0;margin-left:6px">🔍</span>':'';
     const simB=s.simulcastWith?'<span style="color:var(--blu);font-size:14px"> ◈</span>':'';
-    const fmtLbl=FM[s.format]?.l||s.format;
+    const op=simulcastOperationalSource(s);
+    const fmtLbl=FM[op.format]?.l||op.format;
     const oneLine=`<span style="display:inline-flex;align-items:center;flex-wrap:nowrap;white-space:nowrap;gap:6px;min-width:0"><span class="rc" style="color:${s.color};font-family:var(--fd);flex-shrink:0">${callDisplay(s)}</span>${simB}${pubBadge}${corpBadge}<span style="color:var(--mut);flex-shrink:0">·</span><span style="color:var(--off);flex-shrink:0">${fmtLbl}</span><span style="color:var(--mut);flex-shrink:0">·</span><span style="color:var(--wht);flex-shrink:0">${s.freq}</span>${intelBadge}</span>`;
     const rkCls=`${isP?'rky':s.isPlayer?'rkp2':s.isPublic?'rkp':''}`;
     return `<tr class="${rkCls}">
@@ -6292,7 +6312,8 @@ function showCompIntel(sid){
   // Block only your own stations; allow AI stations AND opponent player stations
   if(!s)return;
   if(s.isPlayer && mpIsMe(s))return;
-  const fmd=FM[s.format]||{};
+  const op=simulcastOperationalSource(s);
+  const fmd=FM[op.format]||{};
   const pr=s.cp;
 
   // Revenue: show ±15% noise as a "trade publication estimate"
@@ -6301,7 +6322,7 @@ function showCompIntel(sid){
   const trendColor=!pr?'var(--mut)':pr.col?'var(--red)':pr.under?'var(--amb)':pr.sur?'var(--grn)':'var(--off)';
 
   // Format strategy: show drift direction if driftable, else "holding position"
-  const dr=getDrift(s);
+  const dr=getDrift(op);
   let strategyLine='';
   if(dr&&dr.cfg){
     const val=dr.val||0;
@@ -6327,15 +6348,15 @@ function showCompIntel(sid){
   const cohLabels={'12-17':'Teens (12–17)','18-24':'Young Adults (18–24)','25-34':'Adults 25–34','35-49':'Adults 35–49','50-64':'Adults 50–64','65+':'Seniors 65+'};
 
   // Competition: who's competing for same listeners
-  const competitors=(FMT_COMPETITION[s.format]||[]);
+  const competitors=(FMT_COMPETITION[op.format]||[]);
   const sameFormat=G.stations.filter(o=>o.id!==sid&&competitors.includes(o.format));
   const compText=sameFormat.length
     ?sameFormat.map(o=>`<span style="color:${o.isPlayer?'var(--amb)':'var(--mut)'}">${o.callLetters}</span>`).join(', ')
     :'None in direct competition';
 
   // Quality indicators — fuzzy/rounded
-  const qLevel=s.oq>=80?'Excellent':s.oq>=65?'Good':s.oq>=45?'Average':s.oq>=30?'Below Average':'Weak';
-  const qColor=s.oq>=80?'var(--grn)':s.oq>=65?'var(--grn)':s.oq>=45?'var(--amb)':'var(--red)';
+  const qLevel=op.oq>=80?'Excellent':op.oq>=65?'Good':op.oq>=45?'Average':op.oq>=30?'Below Average':'Weak';
+  const qColor=op.oq>=80?'var(--grn)':op.oq>=65?'var(--grn)':op.oq>=45?'var(--amb)':'var(--red)';
 
   const corpLine=s.corpOwner
     ?`<div class="sr"><span class="lb">Ownership</span><span class="vl" style="color:${s.corpColor||'#9ca3af'}">${s.corpName||'Corporate'}</span></div>`
@@ -6348,7 +6369,7 @@ function showCompIntel(sid){
     </div>
     <div class="ms2">
       <div class="msh">STATION PROFILE</div>
-      <div class="sr"><span class="lb">Format</span><span class="vl">${fmd.l||s.format}</span></div>
+      <div class="sr"><span class="lb">Format</span><span class="vl">${fmd.l||op.format}</span></div>
       <div class="sr"><span class="lb">Signal</span><span class="vl">${s.sig.type} ${s.sig.pw} · ${s.sig.freq}</span></div>
       ${corpLine}
       <div class="sr"><span class="lb">On-Air Quality</span><span class="vl" style="color:${qColor}">${qLevel}</span></div>
@@ -6392,7 +6413,7 @@ function showCompIntel(sid){
 // ════════════════════════════════════════════════════════════════
 // 1. HIRE TALENT
 let HS={sid:null,slot:null,pool:[],sel:null};
-function openHire(sid){const s=G.stations.find(st=>st.id===sid);if(!s)return;HS={sid,slot:null,pool:[],sel:null};rHire(s);om('m-tal');}
+function openHire(sid){sid=ensureOpsSourceSid(sid);const s=G.stations.find(st=>st.id===sid);if(!s)return;HS={sid,slot:null,pool:[],sel:null};rHire(s);om('m-tal');}
 function rHire(s){
   const slots=['morningDrive','afternoonDrive','midday','evening','overnight'];
   const _simSrc=simulcastProgrammingSource(s);
@@ -6443,6 +6464,7 @@ function doHire(){
 // 2. SPOT LOAD — scaffold once, update display only
 let SS={sid:null,val:14};
 function openSpots(sid){
+  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   SS={sid,val:s.ops.spots};
   const norm=FM[s.format]?.sp||14;
@@ -6460,6 +6482,7 @@ function openSpots(sid){
   om('m-sp');
 }
 function updSpots(sid,v){
+  sid=ensureOpsSourceSid(sid);
   SS.val=parseInt(v);SS.sid=sid;
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const norm=FM[s.format]?.sp||14,ratio=SS.val/norm;
@@ -6470,11 +6493,12 @@ function updSpots(sid,v){
   if(vEl)vEl.textContent=`${SS.val} min/hr`;
   if(nEl)nEl.innerHTML=`TSL impact: <strong style="color:${pc}">${plbl}</strong> &nbsp;·&nbsp; Est. revenue change: <strong style="color:${estD>=0?'var(--grn)':'var(--red)'}">${estD>=0?'+':''}${f$(estD)}/period</strong>`;
 }
-function doSpots(){const s=G.stations.find(st=>st.id===SS.sid);if(!s)return;s.ops.spots=SS.val;G.news.unshift({v:'LOW',t:`${s.callLetters} spot load set to ${SS.val} min/hr — revenue impact next period.`,y:G.year,p:G.period});MP.action('spots',{sid:SS.sid,spots:SS.val});cm('m-sp');renderAll();}
+function doSpots(){const sid=ensureOpsSourceSid(SS.sid);SS.sid=sid;const s=G.stations.find(st=>st.id===sid);if(!s)return;s.ops.spots=SS.val;G.news.unshift({v:'LOW',t:`${s.callLetters} spot load set to ${SS.val} min/hr — revenue impact next period.`,y:G.year,p:G.period});MP.action('spots',{sid,spots:SS.val});cm('m-sp');renderAll();}
 
 // 3. PROMOTION — scaffold once, update display only
 let PS={sid:null,val:0};
 function openPromo(sid){
+  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   PS={sid,val:s.ops.promo||0};
   const simNote=s.simulcastWith?`<div class="ibox">📡 Simulcast tip: Promote the <strong>FM</strong> to migrate listeners from AM. FM promotion builds the digital audience; AM promotion only sustains the legacy signal.</div>`:'';
@@ -6493,6 +6517,7 @@ function openPromo(sid){
   om('m-pr2');
 }
 function updPromo(sid,v){
+  sid=ensureOpsSourceSid(sid);
   PS.val=parseInt(v);PS.sid=sid;
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   // Promotion boosts ratings share — small stations get bigger lift (harder to ignore a newcomer)
@@ -6506,7 +6531,8 @@ function updPromo(sid,v){
   if(nEl)nEl.innerHTML=`<strong>${tier}</strong><br>Est. share lift: <strong style="color:var(--grn)">+${(estShareBoost*100).toFixed(2)}%</strong> · Est. revenue gain: <strong style="color:${net>=0?'var(--grn)':'var(--amb)'}">~${f$(Math.abs(net))} ${net>=0?'net gain':'net cost'}/period</strong>`;
 }
 function doPromo(){
-  const s=G.stations.find(st=>st.id===PS.sid);if(!s)return;
+  const sid=ensureOpsSourceSid(PS.sid);PS.sid=sid;
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
   s.ops.promo=PS.val;
   // Revenue impact applies next period when ratings engine runs — not immediately
   G.news.unshift({v:'LOW',t:`${s.callLetters} marketing budget set to ${f$(PS.val)}/period — takes effect next period.`,y:G.year,p:G.period});
@@ -6519,6 +6545,7 @@ function doPromo(){
 let SHUFFLE={sid:null,fromSlot:null};
 
 function openFire(sid){
+  sid=ensureOpsSourceSid(sid);
   SHUFFLE={sid,fromSlot:null};
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   document.getElementById('fire-title').textContent='MANAGE TALENT';
@@ -6582,6 +6609,7 @@ function openFire(sid){
 }
 
 function openShuffle(sid,fromSlot){
+  sid=ensureOpsSourceSid(sid);
   SHUFFLE={sid,fromSlot};
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const talent=s.prog[fromSlot]?.talent;if(!talent)return;
@@ -6612,6 +6640,7 @@ function openShuffle(sid,fromSlot){
 
 /** Quick entry to daypart move/swap (same station) — uses openShuffle / doShuffle. */
 function openSwapSignal(sid){
+  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const filled=Object.entries(s.prog).filter(([sl,sd])=>sd?.talent);
   if(filled.length!==1){openFire(sid);return;}
@@ -6685,6 +6714,7 @@ function doFire(sid,slot){
 // 3b. PROGRAMMING INVESTMENT — scaffold once, update display only
 let PI={sid:null,val:0};
 function openProg(sid){
+  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   PI={sid,val:s.ops?.progBudget||0};
   const drows=Object.entries(SL).map(([k,lbl])=>{
@@ -6707,6 +6737,7 @@ function openProg(sid){
   om('m-pg');
 }
 function updProg(sid,v){
+  sid=ensureOpsSourceSid(sid);
   PI.val=parseInt(v);PI.sid=sid;
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const boost=Math.round((PI.val/10000)*4);
@@ -6718,16 +6749,18 @@ function updProg(sid,v){
   }
 }
 function doProg(){
-  const s=G.stations.find(st=>st.id===PI.sid);if(!s)return;
+  const sid=ensureOpsSourceSid(PI.sid);PI.sid=sid;
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
   if(!s.ops)s.ops={spots:14,sell:0.65,promo:0,progBudget:0};
   s.ops.progBudget=PI.val;
-  MP.action('prog',{sid:PI.sid,progBudget:PI.val});
+  MP.action('prog',{sid,progBudget:PI.val});
   G.news.unshift({v:'LOW',t:`${s.callLetters} programming budget set to ${f$(PI.val)}/period${PI.val===0?' — discontinued.':'.'}`,y:G.year,p:G.period});
   cm('m-pg');renderAll();
 }
 // 3b2. COMMUNITY INVESTMENT
 let CI={sid:null,val:0};
 function openIdent(sid){
+  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   CI={sid,val:s.identityBudget||0};
   const identity=Math.round(s.identity||0);
@@ -6771,6 +6804,7 @@ function openIdent(sid){
   om('m-ident');
 }
 function updIdent(sid,v){
+  sid=ensureOpsSourceSid(sid);
   CI.val=parseInt(v);CI.sid=sid;
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const vEl=document.getElementById('ci-val'),nEl=document.getElementById('ci-note');
@@ -6784,16 +6818,18 @@ function updIdent(sid,v){
   }
 }
 function doIdent(){
-  const s=G.stations.find(st=>st.id===CI.sid);if(!s)return;
+  const sid=ensureOpsSourceSid(CI.sid);CI.sid=sid;
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
   s.identityBudget=CI.val;
   G.news.unshift({v:'LOW',t:`${s.callLetters} community investment set to ${f$(CI.val)}/period${CI.val===0?' — discontinued.':'.'}`,y:G.year,p:G.period});
-  MP.action('ident', {sid:s.id, budget:CI.val});
+  MP.action('ident', {sid, budget:CI.val});
   cm('m-ident');renderAll();
 }
 
 // 3c. DEMO LEAN TARGETING
 let DL={sid:null,val:0};
 function openLean(sid){
+  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   DL={sid,val:s.demoLean||0};
   const fmt=FM[s.format]||{};
@@ -6830,6 +6866,7 @@ function openLean(sid){
   om('m-lean');
 }
 function updLean(sid,v){
+  sid=ensureOpsSourceSid(sid);
   DL.val=parseInt(v)/100;DL.sid=sid;
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const vEl=document.getElementById('lean-val'),nEl=document.getElementById('lean-note');
@@ -6857,7 +6894,8 @@ function updLean(sid,v){
   }
 }
 function doLean(){
-  const s=G.stations.find(st=>st.id===DL.sid);if(!s)return;
+  const sid=ensureOpsSourceSid(DL.sid);DL.sid=sid;
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
   s.demoLean=DL.val;
   // Sync to simulcast partner — they share the same audience strategy
   if(s.simulcastWith){
@@ -6865,12 +6903,13 @@ function doLean(){
     if(partner)partner.demoLean=DL.val;
   }
   G.news.unshift({v:'LOW',t:`${s.callLetters} demo targeting: ${leanLabel(DL.val)}`,y:G.year,p:G.period});
-  MP.action('lean',{sid:DL.sid,val:DL.val});
+  MP.action('lean',{sid,val:DL.val});
   cm('m-lean');renderAll();
 }
 
 // 3d-pre. STREAMING INVESTMENT
 function openStream(sid){
+  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const avail=G.year>=2005;
   const cost=STREAM_COST_BASE;
@@ -6939,6 +6978,7 @@ function openStream(sid){
   om('m-stream');
 }
 function doStream(sid){
+  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const cost=STREAM_COST_BASE;
   if(G.cash<cost){alert('Insufficient funds.');return;}
@@ -7311,7 +7351,7 @@ function doFmBooster(sid){
 
 // 4. FORMAT CHANGE
 let FS={sid:null,chosen:null};
-function openFmt(sid){const s=G.stations.find(st=>st.id===sid);if(!s)return;FS={sid,chosen:null};rFmt(s);om('m-fm');}
+function openFmt(sid){sid=ensureOpsSourceSid(sid);const s=G.stations.find(st=>st.id===sid);if(!s)return;FS={sid,chosen:null};rFmt(s);om('m-fm');}
 function rFmt(s){
   const occ=G.stations.filter(st=>st.id!==s.id).map(st=>st.format);
   const isAM=s.sig.type==='AM';
@@ -7579,8 +7619,9 @@ function rSim(){
       else { const L=simLead(s,partner); _progSrc=L; _rcv=L.id===s.id?partner:s; }
     }
     const _talentSlots=_progSrc?Object.values(_progSrc.prog).filter(sd=>sd?.talent).map(sd=>sd.talent.name):[];
+    const _simulcastFmt=_progSrc?FM[_progSrc.format]?.l||_progSrc.format:FM[s.format]?.l||s.format;
     document.getElementById('simb').innerHTML=`
-      <p class="di"><strong>${s.callLetters}</strong> is currently simulcasting with <strong>${partner?callDisplay(partner):'unknown'}</strong> on <em>${FM[s.format]?.l||s.format}</em>.</p>
+      <p class="di"><strong>${s.callLetters}</strong> is currently simulcasting with <strong>${partner?callDisplay(partner):'unknown'}</strong> on <em>${_simulcastFmt}</em>.</p>
       <div class="bbox"><strong>Simulcast benefits:</strong> Shared talent pool, shared brand. AM↔FM pairs: AM gets +15% audience reach bonus. Both stations counted as one format for upkeep.</div>
       <div class="wbox"><strong>If you break this simulcast:</strong><br>
         <strong>${_progSrc.callLetters}</strong> (programming source) keeps the format, talent${_talentSlots.length?' ('+_talentSlots.join(', ')+'​)':''}, brand identity, and drift positioning.<br>
@@ -8051,13 +8092,14 @@ function renderHistoryRows(hist, fuzzy){
 
 function openHistory(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const op=simulcastOperationalSource(s);
   const hist=s._history||[];
   document.getElementById('hist-title').textContent=`${s.callLetters} — STATION HISTORY`;
-  const fmtAge=s._formatAge?Math.round(s._formatAge/2)+' yrs on current format':'';
-  const idLine=s.identity?`Identity: ${Math.round(s.identity)}/100`:'';
+  const fmtAge=op._formatAge?Math.round(op._formatAge/2)+' yrs on current format':'';
+  const idLine=op.identity?`Identity: ${Math.round(op.identity)}/100`:'';
   document.getElementById('histb').innerHTML=`
     <div class="ms2" style="margin-bottom:4px">
-      <div class="msh">${FM[s.format]?.l||s.format}${fmtAge?' · '+fmtAge:''}${idLine?' · '+idLine:''}</div>
+      <div class="msh">${FM[op.format]?.l||op.format}${fmtAge?' · '+fmtAge:''}${idLine?' · '+idLine:''}</div>
       ${renderHistoryRows(hist,false)}
     </div>
     <button class="cnl" onclick="cm('m-hist')">CLOSE</button>`;
@@ -8255,6 +8297,7 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod){
       <div class="sr"><span class="lb" style="color:var(--mut)">Ad Market</span><span class="vl" style="color:${per===2?'var(--grn)':'var(--amb)'}">${per===2?'FALL — peak season (+12%)':'SPRING — lean season (−12%)'}${isElYr?' 🗳 +4% political for Talk/Sports':''}</span></div>
     </div>
     ${ps.map(s=>{
+      const op=simulcastOperationalSource(s);
       const pr=s.cp;
       const trd=!pr?'':'  '+( pr.col?'<span style="color:var(--red)">⬇⬇ collapsing</span>':pr.under?'<span style="color:var(--red)">⬇ declining</span>':pr.sur?'<span style="color:var(--grn)">⬆ surging</span>':'<span style="color:var(--mut)">→ stable</span>');
       const stnMargin=s.fin.rev>0?Math.round((s.fin.ebitda/s.fin.rev)*100):0;
@@ -8270,14 +8313,14 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod){
       }).map(k=>SL[k]);
       const simulcastLine=simSrc?`<div class="sr"><span class="lb" style="color:var(--mut)">Programming</span><span class="vl" style="font-size:14px;color:var(--off)">Supplied by <strong>${simSrc.callLetters}</strong> (simulcast)</span></div>`:'';
       const simFeeLine=(s.fin?.simulcastProgFee>0)?`<div class="sr"><span class="lb" style="color:var(--mut)">Simulcast program fee</span><span class="vl" style="font-size:14px;color:var(--off)">${f$(s.fin.simulcastProgFee)}/period <span style="color:var(--mut)">(in costs above)</span></span></div>`:'';
-      return `<div class="ms2"><div class="msh">${s.callLetters} — ${FM[s.format]?.l||s.format}${s.simulcastWith?' ◈':''}</div>
+      return `<div class="ms2"><div class="msh">${s.callLetters} — ${FM[op.format]?.l||op.format}${s.simulcastWith?' ◈':''}</div>
         <div class="sr"><span class="lb">Share</span><span class="vl">${pct(s.rat.share)}${trd}</span></div>
         <div class="sr"><span class="lb">Revenue / Costs</span><span class="vl">${f$(s.fin.rev)} / ${f$(s.fin.cost)}</span></div>
         <div class="sr"><span class="lb">EBITDA</span><span class="vl ${mc}">${s.fin.ebitda>=0?'+':''}${f$(s.fin.ebitda)} (${stnMargin}%)</span></div>
         <div class="sr"><span class="lb">Fixed / Talent</span><span class="vl" style="font-size:14px;color:var(--mut)">${f$(s.fin.fix||0)} / ${f$(talCost)}</span></div>
         ${simulcastLine}
         ${simFeeLine}
-        <div class="sr"><span class="lb">Quality</span><span class="vl">${s.oq}/100${hostStr?' · '+hostStr:''}</span></div>
+        <div class="sr"><span class="lb">Quality</span><span class="vl">${op.oq}/100${hostStr?' · '+hostStr:''}</span></div>
         ${vacant.length?`<div class="sr"><span class="lb" style="color:var(--red)">⚠ Vacant</span><span class="vl" style="color:var(--red);font-size:14px">${vacant.join(', ')}</span></div>`:''}
       </div>`;
     }).join('')}
@@ -8696,7 +8739,7 @@ function rTick(){
     return `#${rank} ${s.callLetters} ${pct(s.rat.share)}`;
   });
   const items=[
-    ...srt.slice(0,3).map((s,i)=>`#${i+1} ${s.callLetters} ${FM[s.format]?.l||s.format} ${pct(s.rat.share)}`),
+    ...srt.slice(0,3).map((s,i)=>{const op=simulcastOperationalSource(s);return `#${i+1} ${s.callLetters} ${FM[op.format]?.l||op.format} ${pct(s.rat.share)}`;}),
     playerRanks.length?`YOU: ${playerRanks.join(' · ')} · Cash: ${f$(G.cash)}`:`Cash: ${f$(G.cash)}`,
     (()=>{
       const sm=seasonMult(G.year,G.period,'NEWS_TALK'); // representative
@@ -8726,20 +8769,28 @@ function rStns(){
   const myStations = MP.mode==='live'
     ? G.ps.filter(s => s._mpOwner === MP.playerId)
     : G.ps;
+  const freqLineHtml=st=>{
+    if(!st)return '';
+    return st.fmBooster?st.freq+' · <span style="color:var(--grn);font-family:var(--ft);font-size:14px">FM TRANSLATOR</span>'+(st._boosterOrigFreq?' · <span style="color:var(--mut)">+'+st._boosterOrigFreq+'</span>':''): st.sig.pw==='DA'?st.freq+' · AM · <span style="color:var(--red);font-family:var(--ft);font-size:14px" title="Daytimer: 50kW day, 1-5kW night">DAYTIMER</span>': st.freq+' · '+st.sig.type+' · '+st.sig.pw.toUpperCase();
+  };
   myStations.forEach(s=>{
-    const _simPartner=s.simulcastWith?G.stations.find(st=>st.id===s.simulcastWith):null;
-    const _isPlayerPair=_simPartner&&myStations.some(st=>st.id===_simPartner.id);
-    const simAM=_isPlayerPair?_simPartner:null;
+    const partner=s.simulcastWith?G.stations.find(st=>st.id===s.simulcastWith):null;
+    const isPlayerPair=partner&&myStations.some(st=>st.id===partner.id);
+    if(isPlayerPair&&partner&&s._simulcastSource===false&&s.simulcastWith)return;
+    const junior=isPlayerPair&&s._simulcastSource===true?partner:null;
+    const op=simulcastOperationalSource(s);
     const pr=s.cp;
     const trd=!pr?'':pr.col?'<span style="color:var(--red)">⬇⬇</span>':pr.under?'<span style="color:var(--red)">⬇</span>':pr.sur?'<span style="color:var(--grn)">⬆</span>':'<span style="color:var(--mut)">→</span>';
-    const simP=_isPlayerPair?_simPartner:null;
-    const stnEbitda=s.fin.rev-s.fin.cost;
+    const revUi=junior?s.fin.rev+junior.fin.rev:s.fin.rev;
+    const costUi=junior?s.fin.cost+junior.fin.cost:s.fin.cost;
+    const stnEbitda=revUi-costUi;
+    const shareUi=junior?s.rat.share+junior.rat.share:s.rat.share;
     const div=document.createElement('div');
     div.className=`sc ${stnEbitda>=0?'profit':'loss'}`;
     const _simSrc=simulcastProgrammingSource(s);
     const slrows=Object.entries(SL).map(([k,lbl])=>{
       const sd=s.prog[k],tn=sd?.talent?.name,q=Math.round(sd?.quality||0),c2=qc(q);
-      const vlbl=vacantLabel(s.format,k);
+      const vlbl=vacantLabel(op.format,k);
       const srcTal=!tn&&_simSrc?_simSrc.prog[k]?.talent:null;
       if(!tn&&srcTal){
         const sn=_simSrc.callLetters;
@@ -8762,42 +8813,56 @@ function rStns(){
         <span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}">${q}</span>
       </div>`;
     }).join('');
-    const qc2=qc(s.oq);
+    const qc2=qc(op.oq);
     div.innerHTML=`
       <div class="sctop"><div>
-        <div class="sccall">${callDisplay(s)}</div>
-        <div class="scfreq">${s.fmBooster?s.freq+' · <span style="color:var(--grn);font-family:var(--ft);font-size:14px">FM TRANSLATOR</span>'+(s._boosterOrigFreq?' · <span style="color:var(--mut)">+'+s._boosterOrigFreq+'</span>':''): s.sig.pw==='DA'?s.freq+' · AM · <span style="color:var(--red);font-family:var(--ft);font-size:14px" title="Daytimer: 50kW day, 1-5kW night">DAYTIMER</span>': s.freq+' · '+s.sig.type+' · '+s.sig.pw.toUpperCase()}</div>
-        <div class="scbrand">"${s.brand}" · ${FM[s.format]?.l||s.format} <span style="color:var(--mut);font-size:15px;font-style:normal">· ${genderLabel(s.format)}</span></div>
-        ${simAM?(()=>{const bL=s.sig.type,bJ=simAM.sig.type;const lbl=bL===bJ?(bL+'/'+bL+' SIMULCAST'):'AM/FM SIMULCAST';return '<div class="sim-tag" style="color:var(--grn)">◈ '+lbl+' · '+callDisplay(s)+' + '+callDisplay(simAM)+'</div>';})():simP?'<div class="sim-tag">◈ SIMULCAST WITH '+callDisplay(simP)+'</div>':''}
+        <div class="sccall">${junior?callDisplay(s)+' + '+callDisplay(junior):callDisplay(s)}</div>
+        <div class="scfreq">${junior?`<div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;line-height:1.25"><span>${freqLineHtml(s)}</span><span>${freqLineHtml(junior)}</span></div>`:freqLineHtml(s)}</div>
+        <div class="scbrand">"${op.brand}" · ${FM[op.format]?.l||op.format} <span style="color:var(--mut);font-size:15px;font-style:normal">· ${genderLabel(op.format)}</span></div>
+        ${junior?(()=>{const bL=s.sig.type,bJ=junior.sig.type;const lbl=bL===bJ?(bL+'/'+bL+' SIMULCAST'):'AM/FM SIMULCAST';return '<div class="sim-tag" style="color:var(--grn)">◈ '+lbl+' · '+callDisplay(s)+' + '+callDisplay(junior)+'</div>';})():partner&&!isPlayerPair?'<div class="sim-tag">◈ SIMULCAST WITH '+callDisplay(partner)+'</div>':''}
         ${s._lmaStation?'<div class="sim-tag" style="color:var(--blu);border-color:rgba(90,180,255,.4)">📝 LMA — LEASED OPERATION · fee: '+f$(lmaFeeForStation(s))+'/period</div>':''}
         ${s.lmaLessorId?'<div class="sim-tag" style="color:var(--grn);border-color:rgba(82,227,110,.4)">📝 LMA — LEASED OUT · receiving: '+f$(lmaFeeForStation(s))+'/period</div>':''}
-      </div><div><div class="scshv">${pct(s.rat.share)}</div><div class="scshl">SHARE ${trd}</div></div></div>
-      <div class="qr"><span class="ql">QUALITY</span><div class="qb"><div class="qf ${qc2}" style="width:${s.oq}%"></div></div><span class="qn">${s.oq}</span></div>
+      </div><div><div class="scshv">${pct(shareUi)}</div><div class="scshl">SHARE ${trd}</div></div></div>
+      <div class="qr"><span class="ql">QUALITY</span><div class="qb"><div class="qf ${qc2}" style="width:${op.oq}%"></div></div><span class="qn">${op.oq}</span></div>
       <div class="fg">
-        <div><span class="fl">${s.lmaLessorId?'LICENSE FEE INCOME':'REVENUE/PERIOD'} ${s.lmaLessorId?'':('<span style="font-size:15px;color:'+( G.period===2?'var(--grn)':'var(--amb)')+'">'+(G.period===2?'▲ FALL':'▼ SPRING')+'</span>')}</span><span class="fv">${f$(s.fin.rev)}</span></div>
-        <div><span class="fl">${s.lmaLessorId?'OPERATOR COSTS':''}${!s.lmaLessorId?'COSTS/PERIOD':''}</span><span class="fv ${s.lmaLessorId?'pos':''}">${s.lmaLessorId?'BORNE BY OPERATOR':f$(s.fin.cost)}</span></div>
+        <div><span class="fl">${s.lmaLessorId?'LICENSE FEE INCOME':'REVENUE/PERIOD'} ${s.lmaLessorId?'':('<span style="font-size:15px;color:'+( G.period===2?'var(--grn)':'var(--amb)')+'">'+(G.period===2?'▲ FALL':'▼ SPRING')+'</span>')}</span><span class="fv">${f$(revUi)}</span></div>
+        <div><span class="fl">${s.lmaLessorId?'OPERATOR COSTS':''}${!s.lmaLessorId?'COSTS/PERIOD':''}</span><span class="fv ${s.lmaLessorId?'pos':''}">${s.lmaLessorId?'BORNE BY OPERATOR':f$(costUi)}</span></div>
         <div><span class="fl">EBITDA</span><span class="fv ${stnEbitda>=0?'pos':'neg'}">${stnEbitda>=0?'+':''}${f$(stnEbitda)}</span></div>
-        <div><span class="fl">SELLOUT</span><span class="fv ${s.ops.sell>.75?'pos':s.ops.sell>.55?'amb':'neg'}">${Math.round(s.ops.sell*100)}%</span></div>
+        <div><span class="fl">SELLOUT</span><span class="fv ${op.ops.sell>.75?'pos':op.ops.sell>.55?'amb':'neg'}">${Math.round(op.ops.sell*100)}%</span></div>
       </div>
       <div class="slots">${slrows}</div>
             ${(()=>{
-        // Full controls — FM lead in simulcast OR standalone station
-        const sfLvl=s.salesForce?.level||0;
+        // Management routes through programming source (op) — junior is not rendered as its own card.
+        const sfLvl=op.salesForce?.level||0;
         const sfLblText=sfLvl===0?'NONE':SF_LEVELS[sfLvl].l.split(' ').pop().toUpperCase();
         const sfActive=sfLvl>0;
-        // Simulcast: modal uses this station as programming source; partner is receiver.
-        const simBtn=simAM
+        const simBtn=junior
           ?'<button class="abt" style="border-color:rgba(255,255,255,.15)" onclick="openSim(\''+s.id+'\')">◈ BREAK SIMULCAST</button>'
           :'<button class="abt b" onclick="openSim(\''+s.id+'\')">◈ SIMULCAST THIS STATION</button>';
-        const driftBtn=(DRIFT[s.format]&&!s.simulcastWith&&!simAM)?'<div class="ab"><button class="abt" style="width:100%;background:rgba(245,166,35,.12);border:1px solid var(--amb);color:var(--amb)" onclick="openDrift(\''+s.id+'\')">🎚 FORMAT STRATEGY — '+DRIFT[s.format].poleA.name+' ↔ '+DRIFT[s.format].poleB.name+'</button></div>':'';
+        const driftBtn=DRIFT[op.format]?'<div class="ab"><button class="abt" style="width:100%;background:rgba(245,166,35,.12);border:1px solid var(--amb);color:var(--amb)" onclick="openDrift(\''+op.id+'\')">🎚 FORMAT STRATEGY — '+DRIFT[op.format].poleA.name+' ↔ '+DRIFT[op.format].poleB.name+'</button></div>':'';
         return `
-        <div class="ab"><button class="abt" onclick="openHire('${s.id}')">🎙 HIRE TALENT</button><button class="abt d" onclick="openFire('${s.id}')">↕ MANAGE TALENT</button><button class="abt" onclick="openSwapSignal('${s.id}')">⇄ SWAP SIGNAL</button><button class="abt" onclick="openSpots('${s.id}')">📻 SPOT LOAD</button></div>
-        <div class="ab"><button class="abt ${s.stream?.active?'g active':G.year>=2005?'b':''}" onclick="openStream('${s.id}')" ${G.year<2005?'style="opacity:.30;cursor:default"':''}>${s.stream?.active?'📶 STREAMING ✓':'📶 ADD STREAMING'}</button><button class="abt" onclick="openPromo('${s.id}')">📣 MARKETING</button><button class="abt b" onclick="openLean('${s.id}')">🎯 DEMO TARGET</button></div>
-        <div class="ab"><button class="abt ${(s.ops?.progBudget||0)>0?'g active':'g'}" onclick="openProg('${s.id}')">📈 PROG${(s.ops?.progBudget||0)>0?' · '+f$(s.ops.progBudget)+'/p':''}</button><button class="abt ${(s.identityBudget||0)>0||(s.identity||0)>=30?'g active':''}" onclick="openIdent('${s.id}')">🏘 IDENTITY${(s.identity||0)>=1?' · '+Math.round(s.identity):''}${(s.identityBudget||0)>0?' ★':''}</button><button class="abt" onclick="openResearch('${s.id}')">📊 RESEARCH</button><button class="abt d" onclick="openFmt('${s.id}')">⚡ FORMAT</button>${simBtn}</div>
-        <div class="ab"><button class="abt ${sfActive?'g':''}" style="width:100%" onclick="openSales('${s.id}')">💼 SALES: ${sfLblText}${sfActive?' · '+Math.round(s.ops.sell*100)+'% sellout':''}</button></div>
+        <div class="ab"><button class="abt" onclick="openHire('${op.id}')">🎙 HIRE TALENT</button><button class="abt d" onclick="openFire('${op.id}')">↕ MANAGE TALENT</button><button class="abt" onclick="openSwapSignal('${op.id}')">⇄ SWAP SIGNAL</button><button class="abt" onclick="openSpots('${op.id}')">📻 SPOT LOAD</button></div>
+        <div class="ab"><button class="abt ${op.stream?.active?'g active':G.year>=2005?'b':''}" onclick="openStream('${op.id}')" ${G.year<2005?'style="opacity:.30;cursor:default"':''}>${op.stream?.active?'📶 STREAMING ✓':'📶 ADD STREAMING'}</button><button class="abt" onclick="openPromo('${op.id}')">📣 MARKETING</button><button class="abt b" onclick="openLean('${op.id}')">🎯 DEMO TARGET</button></div>
+        <div class="ab"><button class="abt ${(op.ops?.progBudget||0)>0?'g active':'g'}" onclick="openProg('${op.id}')">📈 PROG${(op.ops?.progBudget||0)>0?' · '+f$(op.ops.progBudget)+'/p':''}</button><button class="abt ${(op.identityBudget||0)>0||(op.identity||0)>=30?'g active':''}" onclick="openIdent('${op.id}')">🏘 IDENTITY${(op.identity||0)>=1?' · '+Math.round(op.identity):''}${(op.identityBudget||0)>0?' ★':''}</button><button class="abt" onclick="openResearch('${op.id}')">📊 RESEARCH</button><button class="abt d" onclick="openFmt('${op.id}')">⚡ FORMAT</button>${simBtn}</div>
+        <div class="ab"><button class="abt ${sfActive?'g':''}" style="width:100%" onclick="openSales('${op.id}')">💼 SALES: ${sfLblText}${sfActive?' · '+Math.round(op.ops.sell*100)+'% sellout':''}</button></div>
         ${driftBtn}`;
       })()}
-      <div class="ab2"><button class="abt" onclick="openHistory('${s.id}')">📋 HISTORY</button><button class="abt" onclick="openRename('${s.id}')">✏ RENAME</button>${s.simulcastWith&&!s.fmBooster?`<button class="abt g" onclick="openMigrate('${s.id}')">📡 MIGRATE FM</button>`:s.fmBooster?`<button class="abt g active" onclick="openFmBooster('${s.id}')">📡 TRANSLATOR ✓</button>`:s.sig.type==='AM'&&G.year>=1978?`<button class="abt ${s.fmBooster?'g active':'b'}" onclick="openFmBooster('${s.id}')">${s.fmBooster?'📡 TRANSLATOR ✓':'📡 FM TRANSLATOR'}</button>`:'<button class="abt" style="opacity:.25;cursor:default;font-size:14px">📡 FM TRANSLATOR</button>'}<button class="abt g" onclick="openSell('${s.id}')">💰 SELL</button></div>`;
+      ${(()=>{
+        const legFm=st=>{
+          if(!st)return '';
+          return st.simulcastWith&&!st.fmBooster?`<button class="abt g" onclick="openMigrate('${st.id}')">📡 MIGRATE FM</button>`:st.fmBooster?`<button class="abt g active" onclick="openFmBooster('${st.id}')">📡 TRANSLATOR ✓</button>`:st.sig.type==='AM'&&G.year>=1978?`<button class="abt ${st.fmBooster?'g active':'b'}" onclick="openFmBooster('${st.id}')">${st.fmBooster?'📡 TRANSLATOR ✓':'📡 FM TRANSLATOR'}</button>`:'<button class="abt" style="opacity:.25;cursor:default;font-size:14px">📡 FM TRANSLATOR</button>';
+        };
+        const hist=junior
+          ?`<button class="abt" onclick="openHistory('${s.id}')">📋 HISTORY (${s.callLetters})</button><button class="abt" onclick="openHistory('${junior.id}')">📋 HISTORY (${junior.callLetters})</button>`
+          :`<button class="abt" onclick="openHistory('${s.id}')">📋 HISTORY</button>`;
+        const ren=junior
+          ?`<button class="abt" onclick="openRename('${s.id}')">✏ RENAME ${s.callLetters}</button><button class="abt" onclick="openRename('${junior.id}')">✏ RENAME ${junior.callLetters}</button>`
+          :`<button class="abt" onclick="openRename('${s.id}')">✏ RENAME</button>`;
+        const sell=junior
+          ?`<button class="abt g" onclick="openSell('${s.id}')">💰 SELL ${s.callLetters}</button><button class="abt g" onclick="openSell('${junior.id}')">💰 SELL ${junior.callLetters}</button>`
+          :`<button class="abt g" onclick="openSell('${s.id}')">💰 SELL</button>`;
+        return `<div class="ab2">${hist}${ren}${legFm(s)}${junior?legFm(junior):''}${sell}</div>`;
+      })()}`;
     c.appendChild(div);
   });
   // Acquire button at bottom if under FCC limit
@@ -8846,6 +8911,7 @@ function rMkt(){
   const rankerSt=[...G.stations].sort((a,b)=>b.rat.share-a.rat.share);
   const mx=rankerSt.length?rankerSt[0].rat.share||1:1;
   document.getElementById('mtb').innerHTML=rankerSt.map((s,i)=>{
+    const op=simulcastOperationalSource(s);
     const share=s.rat.share,rev=s.fin.rev;
     const pr=s.cp,tr=!pr?'—':pr.col?'⬇⬇':pr.under?'⬇':pr.sur?'⬆':'→';
     const tc=!pr?'tfl':pr.col||pr.under?'tdn':pr.sur?'tup':'tfl';
@@ -8857,7 +8923,7 @@ function rMkt(){
     const badges=_me?'<span class="yp">YOU</span>':_anyP?`<span class="yp" style="background:${s.color||'#60a5fa'};color:#000">OPP</span>`:'';
     const intelEl=!_anyP&&!s.isPublic?'<span style="color:var(--mut);font-size:14px;line-height:1;flex-shrink:0;margin-left:2px">&#128269;</span>':'';
     const stationCell=`<span style="display:inline-flex;align-items:center;gap:8px;flex-wrap:nowrap;white-space:nowrap;max-width:100%"><span class="clg" style="color:${mpStationColor(s)};flex-shrink:0">${calls}</span><span style="font-size:12px;color:var(--mut);font-weight:600;flex-shrink:0" title="Band">${band}</span>${badges?`<span style="display:inline-flex;align-items:center">${badges}</span>`:''}${intelEl}</span>`;
-    return `<tr class="${_me?'you':''}"${!_anyP&&!s.isPublic?clickAttr:''}><td><span class="rn">${i+1}</span></td><td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(340px,52vw)">${stationCell}</td><td><span class="fmtag">${FM[s.format]?.l||s.format}</span></td><td><span class="shn" style="color:${_me?'var(--amb)':_anyP?s.color:'var(--wht)'}">${pct(share)}</span></td><td><div class="bc"><div class="bb"><div class="bf ${_me?'you':''}" style="width:${wp}%;${_anyP&&!_me?'background:'+s.color:''}"></div></div><span class="${tc}" style="font-size:15px">${tr}</span></div></td><td><span class="rvn">${f$(rev)}</span></td></tr>`;
+    return `<tr class="${_me?'you':''}"${!_anyP&&!s.isPublic?clickAttr:''}><td><span class="rn">${i+1}</span></td><td style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:min(340px,52vw)">${stationCell}</td><td><span class="fmtag">${FM[op.format]?.l||op.format}</span></td><td><span class="shn" style="color:${_me?'var(--amb)':_anyP?s.color:'var(--wht)'}">${pct(share)}</span></td><td><div class="bc"><div class="bb"><div class="bf ${_me?'you':''}" style="width:${wp}%;${_anyP&&!_me?'background:'+s.color:''}"></div></div><span class="${tc}" style="font-size:15px">${tr}</span></div></td><td><span class="rvn">${f$(rev)}</span></td></tr>`;
   }).join('');
   // In MP, show the current player's lead station; in solo, G.ps[0]
   const _myStns = MP.mode==='live' ? G.ps.filter(s=>s._mpOwner===MP.playerId) : G.ps;
@@ -8868,7 +8934,7 @@ function rMkt(){
   document.getElementById('dmb').innerHTML=COH.map(coh=>{
     const by=[...G.stations].sort((a,b)=>(b.rat.cur[coh]?.share||0)-(a.rat.cur[coh]?.share||0));
     const mx2=by[0]?.rat.cur[coh]?.share||1;
-    const bars=by.slice(0,8).map(s=>{const sh=s.rat.cur[coh]?.share||0,w=Math.round((sh/mx2)*100);const _isMe=mpIsMe(s),_isAnyP=s.isPlayer;return `<div class="cb" data-tip="${callDisplay(s)} · ${FM[s.format]?.l||s.format} · ${pct(sh)}" style="background:${s.color};width:${w}%;opacity:${_isAnyP?(_isMe?1:.65):.38};${_isMe?'outline:2px solid rgba(255,255,255,.4)':_isAnyP?'outline:1px dashed rgba(255,255,255,.2)':''}" title=""></div>`;}).join('');
+    const bars=by.slice(0,8).map(s=>{const sh=s.rat.cur[coh]?.share||0,w=Math.round((sh/mx2)*100);const op=simulcastOperationalSource(s);const _isMe=mpIsMe(s),_isAnyP=s.isPlayer;return `<div class="cb" data-tip="${callDisplay(s)} · ${FM[op.format]?.l||op.format} · ${pct(sh)}" style="background:${s.color};width:${w}%;opacity:${_isAnyP?(_isMe?1:.65):.38};${_isMe?'outline:2px solid rgba(255,255,255,.4)':_isAnyP?'outline:1px dashed rgba(255,255,255,.2)':''}" title=""></div>`;}).join('');
     return `<div class="cr"><span class="crl">${coh}</span><div class="cbs">${bars}</div><span class="cp">${pct(_leadStn.rat.cur[coh]?.share||0)}</span></div>`;
   }).join('');
 }
@@ -8887,11 +8953,12 @@ function rIntel(){
         const pCash=G._playerCash?.[pid]??0;
         const pVP=G._playerScore?.[pid]?.totalVP??0;
         const pRows=pStns.sort((a,b)=>b.rat.share-a.rat.share).map(s=>{
+          const op=simulcastOperationalSource(s);
           const pr=s.cp,tr=!pr?'→':pr.col?'⬇⬇':pr.under?'⬇':pr.sur?'⬆':'→';
           const tc=!pr?'tfl':pr.col||pr.under?'tdn':pr.sur?'tup':'tfl';
           return `<div class="ir clickable" style="border-left:2px solid ${pColor};padding-left:6px" onclick="showCompIntel('${s.id}')" title="View intel on ${s.callLetters}">
             <span class="ic" style="color:${pColor}">${s.callLetters}</span>
-            <div class="iff"><span class="ifmt">${FM[s.format]?.l||s.format}</span><span class="iper">${s.freq}</span></div>
+            <div class="iff"><span class="ifmt">${FM[op.format]?.l||op.format}</span><span class="iper">${s.freq}</span></div>
             <span class="ish">${pct(s.rat.share)}</span>
             <span class="itr ${tc}">${tr}</span>
             <span class="ish" style="color:var(--mut);font-size:14px">${f$(s.fin.rev)}</span>
