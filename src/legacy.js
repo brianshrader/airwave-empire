@@ -3139,6 +3139,55 @@ function recalc(stations,G){
       const engage=AQH_ENGAGE[c]||0.060;
       return sum+(s.rat.cur[c]?.share||0)*(pop*engage)/Math.max(engageWeightedPop,1);
     },0);
+  });
+
+  // Long-tail share smoothing: mild blend toward the commercial-station mean so
+  // mid-pack stations don't cliff into unrealistically thin tails (common in 1970s
+  // sims). Stronger outlets keep slightly more of their raw share; weaker ones get
+  // a touch more pull toward the average. Total commercial share mass is preserved,
+  // then cohort cur shares scale proportionally so AQH stays consistent.
+  const comm = stations.filter(s => !s.isPublic);
+  if (comm.length >= 2) {
+    const sumRaw = comm.reduce((a, s) => a + s.rat.share, 0);
+    if (sumRaw > 1e-8) {
+      const avg = sumRaw / comm.length;
+      const rawById = new Map(comm.map(s => [s.id, s.rat.share]));
+      const byRank = [...comm].sort((a, b) => b.rat.share - a.rat.share);
+      let sumBlend = 0;
+      const blendedById = new Map();
+      byRank.forEach((s, rank) => {
+        const raw = rawById.get(s.id);
+        const p = comm.length > 1 ? rank / (comm.length - 1) : 0;
+        const w = 0.92 - p * 0.04;
+        const blended = w * raw + (1 - w) * avg;
+        blendedById.set(s.id, blended);
+        sumBlend += blended;
+      });
+      const scale = sumBlend > 1e-10 ? sumRaw / sumBlend : 1;
+      comm.forEach(s => {
+        const raw = rawById.get(s.id);
+        const finalShare = blendedById.get(s.id) * scale;
+        const ratio = raw > 1e-10 ? finalShare / raw : 1;
+        COH.forEach(coh => {
+          const cur = s.rat.cur[coh];
+          if (!cur) return;
+          const pop = (POP.cohorts[coh]?.t || 0) * effUniverse(s);
+          const engage = AQH_ENGAGE[coh] || 0.060;
+          cur.share = Math.round(cur.share * ratio * 10000) / 10000;
+          cur.aqh = Math.round(cur.share * pop * engage);
+          if (s.mom[coh]) s.mom[coh].cur = cur.share;
+        });
+        s.rat.aqh = COH.reduce((sum, c) => sum + (s.rat.cur[c]?.aqh || 0), 0);
+        s.rat.share = COH.reduce((sum, c) => {
+          const pop = POP.cohorts[c]?.t || 0;
+          const engage = AQH_ENGAGE[c] || 0.060;
+          return sum + (s.rat.cur[c]?.share || 0) * (pop * engage) / Math.max(engageWeightedPop, 1);
+        }, 0);
+      });
+    }
+  }
+
+  stations.forEach(s=>{
     s.rat.hist.push({year:G.year,period:G.period,share:s.rat.share});
     if(s.rat.hist.length>24)s.rat.hist.shift();
   });
