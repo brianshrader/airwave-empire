@@ -294,11 +294,300 @@ const SUPERSTAR_DAYPART_ORDER={morningDrive:0,afternoonDrive:1,midday:2,evening:
 /** Effective daypart quality for station OQ weighting — superstars lift slot contribution (capped at 100). */
 function effSlotQForOq(sd){
   let q=sd?.quality||20;
+  if(sd?.talent && (sd.talent._suspended||0)>0){
+    return Math.max(12,Math.round(q*0.48));
+  }
   if(sd?.talent?.superstar===true){
     q=Math.min(100,q*SUPERSTAR.EFF_Q_MULT);
   }
   return q;
 }
+
+// ── TALENT TROUBLE (Phase 1: FCC / sponsor / DUI decision events) ─
+const TROUBLE_SCENARIOS=[
+  {id:'fcc_language',tier:'minor',
+   title:'FCC Language Violation',
+   desc:'{name} dropped an expletive live on air. The FCC is investigating.',
+   flavor:'It was a slip during an emotional sports argument. Or maybe not.',
+   options:[
+     {label:'Pay fine + public apology',cost:'fine',effect:{morale:-8,fine:15000},outcome:'Fine paid. {name} is embarrassed but grateful. Audience mostly forgets within a period.'},
+     {label:'Suspend for one period',cost:'none',effect:{morale:-18,quality:-3,suspendPeriods:1},outcome:'{name} suspended. Listeners notice the absence. Some respect the accountability.'},
+     {label:'Fire immediately',cost:'buyout',effect:{stationShare:-0.003},outcome:'Clean break. {name} exits with some bitterness. Rival stations are already calling them.'},
+   ]},
+  {id:'fcc_indecency',tier:'major',
+   title:'FCC Indecency Complaint',
+   desc:'{name} crossed the line on a morning segment. Three listener complaints filed. The FCC is reviewing.',
+   flavor:'A joke that went too far. Or satire that nobody understood. Either way, the phones are ringing.',
+   options:[
+     {label:'Fight the complaint ($25K legal)',cost:25000,effect:{morale:+5},outcome:'Legal team files response. 60% chance the fine is reduced or dismissed.'},
+     {label:'Settle: pay max fine',cost:'fine',effect:{morale:-10,fine:50000},outcome:'Quick resolution. {name} survives but is on thin ice. One more incident and the FCC flags the station.'},
+     {label:'Fire + issue statement',cost:'buyout',effect:{stationShare:-0.005,identity:+5},outcome:'Bold accountability move. Community responds positively. Rivals notice your standards.'},
+   ]},
+  {id:'sponsor_boycott',tier:'major',
+   title:'Sponsor Boycott',
+   desc:'{name} made comments that upset three major advertisers. They have pulled their buys.',
+   flavor:'It started on social media. Now it is in the trades.',
+   options:[
+     {label:'Have {name} issue apology',cost:'none',effect:{morale:-12,sell:+0.03},outcome:'Apology aired. Two of three sponsors return next period. {name} is chastened.'},
+     {label:'Defend {name} publicly',cost:'none',effect:{morale:+10,sell:-0.05},outcome:'You doubled down. Core listeners love it. Advertisers are nervous. High risk, high reward.'},
+     {label:'Quietly reassign to overnight',cost:'none',effect:{morale:-20,quality:-5},outcome:'{name} moved off morning. Advertisers relieved. Listeners confused. Ratings dip.'},
+     {label:'Buy out contract',cost:'buyout',effect:{sell:+0.04,stationShare:-0.004},outcome:'Clean break. Advertisers return. Listeners grumble for one period then move on.'},
+   ]},
+  {id:'dui',tier:'minor',
+   title:'DUI Arrest',
+   desc:'{name} was arrested for DUI. It is in the local paper.',
+   flavor:'Morning show hosts and their demons. Classic radio.',
+   options:[
+     {label:'Mandatory leave + treatment',cost:20000,effect:{morale:-5,quality:-2,suspendPeriods:1},outcome:'{name} enters treatment. Returns with better morale and a compelling comeback story.'},
+     {label:'Issue statement, no action',cost:'none',effect:{morale:-8,sell:-0.02},outcome:'Advertisers are watching. {name} continues on air. Community is divided.'},
+     {label:'Terminate contract',cost:'buyout',effect:{},outcome:'By the book. {name} exits. The slot needs filling.'},
+   ]},
+];
+
+const TROUBLE_MAJOR_DAYPARTS=['morningDrive','afternoonDrive','midday','evening'];
+
+function triggerTalentTrouble(G){
+  const acts=[];
+  if(!G||!G.ps||G.pendingDecisionEvent)return acts;
+  const cands=[];
+  G.ps.forEach(s=>{
+    if(!s.prog)return;
+    TROUBLE_MAJOR_DAYPARTS.forEach(slot=>{
+      const sd=s.prog[slot];
+      if(!sd?.talent)return;
+      const t=sd.talent;
+      if((t._suspended||0)>0)return;
+      cands.push({s,slot,t});
+    });
+  });
+  if(!cands.length)return acts;
+  const pick=cands[Math.floor(Math.random()*cands.length)];
+  const baseProb=pick.t.superstar?0.010:0.005;
+  const moraleMod=pick.t.morale<50?1.35:pick.t.morale<65?1.0:0.65;
+  if(Math.random()>baseProb*moraleMod)return acts;
+  const tierRoll=Math.random();
+  const pool=tierRoll<0.3
+    ? TROUBLE_SCENARIOS.filter(sc=>sc.tier==='major')
+    : TROUBLE_SCENARIOS.filter(sc=>sc.tier==='minor');
+  if(!pool.length)return acts;
+  const scenario=pool[Math.floor(Math.random()*pool.length)];
+  const rivalPool=G.stations.filter(st=>!st.isPlayer&&!st.isPublic&&st.rat.share>0.03);
+  const rival=rivalPool.length?rivalPool[Math.floor(Math.random()*rivalPool.length)]:null;
+  G.pendingDecisionEvent={
+    scenarioId:scenario.id,
+    stationId:pick.s.id,
+    slot:pick.slot,
+    talentName:pick.t.name,
+    rivalStation:rival?.callLetters||'a rival',
+    year:G.year,
+    period:G.period,
+    ownerId:pick.s._mpOwner!==undefined?pick.s._mpOwner:0,
+  };
+  acts.push({v:'HIGH',
+    t:`⚠ INCIDENT: ${scenario.title} — ${pick.t.name} at ${pick.s.callLetters}. Decision required.`,
+    y:G.year,p:G.period,iy:true});
+  return acts;
+}
+
+function clearPendingTroubleIfStale(){
+  const p=G?.pendingDecisionEvent;
+  if(!p)return;
+  const s=G.stations.find(st=>st.id===p.stationId);
+  const sd=s?.prog?.[p.slot];
+  if(!sd?.talent||!TROUBLE_SCENARIOS.find(sc=>sc.id===p.scenarioId))G.pendingDecisionEvent=null;
+}
+
+function showTalentTroubleModal(){
+  clearPendingTroubleIfStale();
+  const pending=G.pendingDecisionEvent;
+  if(!pending)return;
+  const scenario=TROUBLE_SCENARIOS.find(sc=>sc.id===pending.scenarioId);
+  if(!scenario)return;
+  const s=G.stations.find(st=>st.id===pending.stationId);
+  const sd=s?.prog?.[pending.slot];
+  const t=sd?.talent;
+  if(!t){G.pendingDecisionEvent=null;return;}
+  const ownerPid=pending.ownerId!=null?pending.ownerId:MP.playerId;
+  const ownerCash=MP.mode==='live'?(G._playerCash?.[ownerPid]??G.cash):G.cash;
+  const cyr=t.cyr||0;
+  const buyout=cyr>0.1?Math.round(t.salary*cyr*0.60/500)*500:0;
+  const fineAmt=scenario.id==='fcc_language'?15000:scenario.id==='fcc_indecency'?50000:0;
+  const raiseAmt=Math.round(t.salary*0.15/500)*500;
+  const desc=scenario.desc.replace(/{name}/g,t.name).replace(/{rivalStation}/g,pending.rivalStation);
+  const optRows=scenario.options.map((opt,i)=>{
+    let costLabel='',costColor='var(--off)',canAfford=true;
+    const isFcc = scenario.id==='fcc_language' || scenario.id==='fcc_indecency';
+    const mandatoryFine = isFcc ? fineAmt : 0;
+    if(opt.cost==='fine'){
+      costLabel=` — Mandatory FCC fine: ${f$(mandatoryFine)}`;
+      costColor='var(--red)';
+      canAfford=ownerCash>=mandatoryFine;
+    }
+    else if(opt.cost==='buyout'){
+      const totalNeed = mandatoryFine + (buyout||0);
+      costLabel=buyout>0
+        ?` — FCC fine: ${f$(mandatoryFine)} + Buyout: ${f$(buyout)}`
+        :` — FCC fine: ${f$(mandatoryFine)}`;
+      costColor='var(--amb)';
+      canAfford=ownerCash>=totalNeed;
+    }
+    else if(opt.cost==='raise'){
+      costLabel=` — FCC fine: ${f$(mandatoryFine)} + Salary +${f$(raiseAmt)}/yr`;
+      costColor='var(--amb)';
+      canAfford=ownerCash>=mandatoryFine;
+    }
+    else if(opt.cost==='leave' || opt.cost==='none'){
+      costLabel=mandatoryFine>0 ? ` — Mandatory FCC fine: ${f$(mandatoryFine)}` : (opt.cost==='leave' ? ' — 1 period paid leave' : 'No cash cost');
+      costColor=mandatoryFine>0 ? 'var(--red)' : 'var(--mut)';
+      canAfford=ownerCash>=mandatoryFine;
+    }
+    else if(typeof opt.cost==='number'){
+      const totalNeed = mandatoryFine + opt.cost;
+      costLabel= mandatoryFine>0
+        ? ` — FCC fine: ${f$(mandatoryFine)} + $${Math.round(opt.cost/1000)}K legal`
+        : ` — $${Math.round(opt.cost/1000)}K legal`;
+      costColor='var(--amb)';
+      canAfford=ownerCash>=totalNeed;
+    }
+    return `<button class="to${canAfford?'':' nope'}" style="display:block;width:100%;text-align:left;padding:10px 14px;margin-bottom:6px;cursor:${canAfford?'pointer':'not-allowed'}" onclick="${canAfford?`resolveTrouble('${pending.stationId}','${pending.slot}',${i})`:''}">
+      <div style="font-family:var(--fd);font-size:15px;color:var(--wht)">${opt.label.replace(/{name}/g,t.name)}</div>
+      <div style="font-size:13px;color:${costColor};margin-top:2px">${costLabel||'No cost'}</div>
+    </button>`;
+  }).join('');
+  const tt=document.getElementById('trouble-title');
+  const tb=document.getElementById('trouble-body');
+  if(!tt||!tb)return;
+  tt.textContent=`⚠ ${scenario.title.toUpperCase()}`;
+  tb.innerHTML=`
+    <div style="background:rgba(240,88,88,.06);border:1px solid rgba(240,88,88,.15);border-radius:6px;padding:14px;margin-bottom:16px">
+      <div style="font-family:var(--fd);font-size:17px;color:var(--wht);margin-bottom:6px">${t.name} <span style="color:var(--mut);font-weight:normal">· ${s?.callLetters||''} ${SL[pending.slot]||''}</span></div>
+      <div style="font-size:15px;color:var(--off);margin-bottom:6px">${desc}</div>
+      <div style="font-size:14px;color:var(--mut);font-style:italic">${scenario.flavor}</div>
+    </div>
+    <div style="font-size:14px;color:var(--mut);margin-bottom:10px">How do you respond?</div>
+    ${optRows}`;
+  om('m-talent-trouble');
+}
+
+function applyTroubleResolution(sid,slot,optionIdx,appealRemote){
+  const pending=G.pendingDecisionEvent;
+  if(!pending||pending.stationId!==sid||pending.slot!==slot)return;
+  const s=G.stations.find(st=>st.id===sid);
+  const sd=s?.prog?.[slot];
+  const t=sd?.talent;
+  if(!t)return;
+  const scenario=TROUBLE_SCENARIOS.find(sc=>sc.id===pending.scenarioId);
+  if(!scenario)return;
+  const opt=scenario.options[optionIdx];
+  if(!opt)return;
+  const eff=opt.effect||{};
+  const ownerPid=pending.ownerId!=null?pending.ownerId:MP.playerId;
+  const tCash=d=>{
+    if(MP.mode!=='live'){G.cash+=d;return;}
+    if(!G._playerCash)G._playerCash={};
+    G._playerCash[ownerPid]=(G._playerCash[ownerPid]||0)+d;
+    if(MP.playerId===ownerPid)G.cash=G._playerCash[ownerPid];
+    MP.emit('player_cash_update',{playerId:ownerPid,cash:G._playerCash[ownerPid]});
+  };
+  const cyr=t.cyr||0;
+  const buyout=cyr>0.1?Math.round(t.salary*cyr*0.60/500)*500:0;
+  const fineAmt=pending.scenarioId==='fcc_language'?15000:pending.scenarioId==='fcc_indecency'?50000:0;
+  const raiseAmt=Math.round(t.salary*0.15/500)*500;
+  let costPaid=0;
+  const isFcc = pending.scenarioId==='fcc_language' || pending.scenarioId==='fcc_indecency';
+  const mandatoryFine = isFcc ? fineAmt : 0;
+  if(mandatoryFine>0){
+    tCash(-mandatoryFine);
+    costPaid+=mandatoryFine;
+  }
+  if(opt.cost==='fine'){
+    // already paid via mandatoryFine for FCC
+  }
+  else if(opt.cost==='buyout'&&buyout>0){
+    tCash(-buyout);
+    costPaid+=buyout;
+  }
+  else if(opt.cost==='raise'){
+    t.salary=Math.round((t.salary+raiseAmt)/500)*500;
+    t.cyr=Math.max(t.cyr||2,(t.cyr||2)+2);
+    t.morale=Math.min(100,(t.morale||65)+5);
+  }
+  else if(opt.cost==='leave'){
+    // effect.suspendPeriods handles suspension
+  }
+  else if(typeof opt.cost==='number'){tCash(-opt.cost);costPaid+=opt.cost;}
+  let troubleOutcomeNote='';
+  if(pending.scenarioId==='fcc_indecency' && optionIdx===0){
+    let refund=0;
+    if(appealRemote!=null && typeof appealRemote.refund==='number'){
+      refund=appealRemote.refund;
+      troubleOutcomeNote=appealRemote.note||'';
+    } else {
+      const roll=Math.random();
+      if(roll<0.60){
+        refund = roll<0.25 ? fineAmt : Math.round(fineAmt*0.5);
+        troubleOutcomeNote = refund>=fineAmt
+          ? ' Legal appeal succeeds — the FCC fine is dismissed.'
+          : ` Legal appeal partially succeeds — ${f$(refund)} of the FCC fine is recovered.`;
+      } else {
+        troubleOutcomeNote = ' Legal appeal fails — the FCC fine stands.';
+      }
+    }
+    if(refund>0){
+      tCash(refund);
+      costPaid-=refund;
+    }
+  }
+  if(eff.morale)t.morale=Math.max(20,Math.min(100,(t.morale||65)+eff.morale));
+  if(eff.quality)t.quality=Math.max(20,Math.min(100,(t.quality||50)+eff.quality));
+  if(eff.loyalty)t._poachResist=(t._poachResist||0)+eff.loyalty/100;
+  if(eff.suspendPeriods){t._suspended=(t._suspended||0)+eff.suspendPeriods;t._preSuspendQuality=t.quality;}
+  if(eff.sell&&s)s.ops.sell=Math.max(0.20,Math.min(0.96,(s.ops.sell||0.65)+eff.sell));
+  if(eff.stationShare&&s){COH.forEach(c=>{if(s.mom?.[c])s.mom[c].tgt=Math.max(0.001,s.mom[c].tgt+eff.stationShare);});}
+  if(eff.identity&&s)s.identity=Math.max(0,Math.min(100,(s.identity||0)+eff.identity));
+  if(eff.fine){tCash(-eff.fine);}
+  const fireOpt=opt.cost==='buyout'||opt.label.toLowerCase().includes('fire')||opt.label.toLowerCase().includes('terminate');
+  if(fireOpt){
+    if(sd){sd.talent=null;sd.quality=Math.max(10,Math.round((sd.quality||30)*0.75));}
+    s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w,0));
+  }
+  const outcome=(opt.outcome||'Resolved.').replace(/{name}/g,t.name);
+  G.news.unshift({v:'MEDIUM',t:`📋 ${scenario.title}: ${outcome}${costPaid>0?' Cost: '+f$(costPaid)+'.':''}${troubleOutcomeNote}`,y:G.year,p:G.period,iy:true});
+  G.pendingDecisionEvent=null;
+}
+
+function resolveTrouble(sid,slot,optionIdx){
+  if(!G.pendingDecisionEvent)return;
+  const pending=G.pendingDecisionEvent;
+  let appealRemote=null;
+  if(pending.scenarioId==='fcc_indecency' && optionIdx===0){
+    const fineAmt=50000;
+    const roll=Math.random();
+    let refund=0,note='';
+    if(roll<0.60){
+      refund = roll<0.25 ? fineAmt : Math.round(fineAmt*0.5);
+      note = refund>=fineAmt
+        ? ' Legal appeal succeeds — the FCC fine is dismissed.'
+        : ` Legal appeal partially succeeds — ${f$(refund)} of the FCC fine is recovered.`;
+    } else {
+      note = ' Legal appeal fails — the FCC fine stands.';
+    }
+    appealRemote={refund,note};
+  }
+  applyTroubleResolution(sid,slot,optionIdx,appealRemote);
+  MP.action('trouble_resolve',{sid,slot,optionIdx,appealRefund:appealRemote?.refund,appealNote:appealRemote?.note});
+  cm('m-talent-trouble');
+  renderAll();
+}
+
+window._mpApply_trouble_resolve=function({sid,slot,optionIdx,appealRefund,appealNote}){
+  const p=G.pendingDecisionEvent;
+  let ar=null;
+  if(p?.scenarioId==='fcc_indecency'&&optionIdx===0){
+    ar={refund:typeof appealRefund==='number'?appealRefund:0,note:appealNote||''};
+  }
+  applyTroubleResolution(sid,slot,optionIdx,ar);
+};
 
 /** Count talents with superstar flag in the current market. */
 function countSuperstars(G){
@@ -3198,6 +3487,16 @@ function decay(s,year,period){
       const md=sd.talent.morale<60?d*1.5:d*.5;
       sd.talent.quality=Math.max(15,sd.talent.quality*(1-md));
       sd.talent.cyr=Math.max(0,(sd.talent.cyr||2)-.5);
+      if((sd.talent._suspended||0)>0){
+        sd.talent._suspended--;
+        sd.quality=Math.max(10,Math.round((sd.quality||20)*0.85));
+        if(sd.talent._suspended===0){
+          const preQ=sd.talent._preSuspendQuality||sd.talent.quality;
+          sd.talent.quality=Math.max(sd.talent.quality,Math.round(preQ*0.92));
+          sd.talent._preSuspendQuality=null;
+          G.news.unshift({v:'LOW',t:`${sd.talent.name} returns from leave at ${s?.callLetters||'the station'}.`,y:G.year,p:G.period});
+        }
+      }
       sd.talent.periodsAtStation=(sd.talent.periodsAtStation||0)+1;
       if(!sd.talent._hireYear)sd.talent._hireYear=G.year;
       if(!sd.talent._careerStartYear)sd.talent._careerStartYear=sd.talent._hireYear;
@@ -5686,6 +5985,8 @@ function advTurn(){
     corporateDecay(G);
     runCorpLMAOffers(G);
     talentEvents(G);
+    const troubleActs=triggerTalentTrouble(G);
+    troubleActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     rivalReformat(G);
     recalc(G.stations,G);
     // Snapshot ranks BEFORE checkRankMilestones updates _prevRank,
@@ -7703,6 +8004,8 @@ function migrateSave(G){
 
   // Rebuild ps
   G.ps=G.stations.filter(s=>s.isPlayer);
+  if(G.pendingDecisionEvent && !TROUBLE_SCENARIOS.find(sc=>sc.id===G.pendingDecisionEvent.scenarioId))
+    G.pendingDecisionEvent=null;
   return G;
 }
 
@@ -8275,6 +8578,21 @@ function renderAll(){
     return;
   }
   rHdr();rTick();rScore();rStns();rMkt();rIntel();rNews();
+  maybeShowPendingTroubleModal();
+}
+
+function maybeShowPendingTroubleModal(){
+  if(!G?.pendingDecisionEvent)return;
+  if(MP.mode==='live'&&G.pendingDecisionEvent.ownerId!==MP.playerId)return;
+  const m=document.getElementById('m-talent-trouble');
+  if(!m||m.classList.contains('on'))return;
+  if(document.getElementById('m-sum')?.classList.contains('on'))return;
+  setTimeout(()=>{
+    if(!G.pendingDecisionEvent)return;
+    if(document.getElementById('m-sum')?.classList.contains('on'))return;
+    if(document.getElementById('m-talent-trouble')?.classList.contains('on'))return;
+    showTalentTroubleModal();
+  },500);
 }
 
 function rHdr(){
