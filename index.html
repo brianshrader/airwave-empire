@@ -191,7 +191,7 @@
   <!-- LEFT COLUMN: score strip, market standings, news feed, upcoming events (matches wavelength-ui.html) -->
   <div class="pnl" id="pl">
     <div id="scorebar"></div>
-    <div class="ph">MARKET <sub id="mkt-city">ATLANTA</sub><span style="color:var(--mut);font-size:13px;font-weight:400;margin-left:6px;font-family:var(--ft)">· tap for intel</span><button class="phbtn" onclick="om('m-rk')">📊 RANKER</button><button class="phbtn" onclick="openLoan()">💳 LOANS</button><button class="phbtn" onclick="openSaveLoad()">💾 SAVE</button></div>
+    <div class="ph">MARKET <sub id="mkt-city">ATLANTA</sub><span style="color:var(--mut);font-size:13px;font-weight:400;margin-left:6px;font-family:var(--ft)">· tap for intel</span><button class="phbtn" onclick="om('m-rk')">📊 RANKER</button><button class="phbtn" onclick="openFinancials()">FINANCIALS</button><button class="phbtn" onclick="openLoan()">💳 LOANS</button><button class="phbtn" onclick="openSaveLoad()">💾 SAVE</button></div>
     <table class="mt"><thead><tr><th>#</th><th>STATION</th><th>FORMAT</th><th style="text-align:right">SHARE</th><th style="text-align:right">△</th><th style="text-align:right">REV/PD</th></tr></thead><tbody id="mtb"></tbody></table>
     <div class="sep"></div>
     <div class="dh">DEMO BREAKDOWN — YOUR LEAD STATION</div>
@@ -224,6 +224,7 @@
 <div class="ov" id="m-sim"><div class="mo"><div class="mh"><span>SIMULCAST</span><button class="mc" onclick="cm('m-sim')">CLOSE ×</button></div><div id="simb"></div></div></div>
 <div class="ov" id="m-drift"><div class="mo"><div class="mh"><span id="drift-title">FORMAT STRATEGY</span><button class="mc" onclick="cm('m-drift')">CLOSE ×</button></div><div id="driftb"></div></div></div>
 <div class="ov" id="m-save"><div class="mo"><div class="mh"><span>💾 SAVE / LOAD</span><button class="mc" onclick="cm('m-save')">CLOSE ×</button></div><div id="saveb"></div></div></div>
+<div class="ov" id="m-fin"><div class="mo wide"><div class="mh"><span>FINANCIALS</span><button class="mc" onclick="cm('m-fin')">CLOSE ×</button></div><div id="finb"></div></div></div>
 <div class="ov" id="m-loan"><div class="mo"><div class="mh"><span>💳 FINANCING</span><button class="mc" onclick="cm('m-loan')">CLOSE ×</button></div><div id="loanb"></div></div></div>
 <div class="ov" id="m-stream"><div class="mo"><div class="mh"><span>📶 STREAMING</span><button class="mc" onclick="cm('m-stream')">CLOSE ×</button></div><div id="streamb"></div></div></div>
 <div class="ov" id="m-rename"><div class="mo"><div class="mh"><span>RENAME STATION</span><button class="mc" onclick="cm('m-rename')">CLOSE ×</button></div><div id="renameb"></div></div></div>

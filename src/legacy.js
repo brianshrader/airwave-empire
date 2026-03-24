@@ -664,7 +664,7 @@ function htmlOnAirTalentRoster(s){
       const tq=Math.round(t.quality||0);
       const salStr=(typeof t.salary==='number'&&!Number.isNaN(t.salary))?f$(t.salary)+'/yr':'—';
       const star=t.superstar===true?'⭐ ':'';
-      return `<div class="sr" style="align-items:flex-start"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px"><span style="font-family:var(--fd)">${star}${t.name}</span> · Q ${tq} · slot ${slotQ} · ${salStr}</span></div>`;
+      return `<div class="sr" style="align-items:flex-start"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);line-height:1.45"><strong style="font-weight:600;color:var(--wht)">${star}${t.name}</strong> · Q ${tq} · slot ${slotQ} · ${salStr}</span></div>`;
     }
     const cap=nonLocalDaypartCaption(s.format,sl,!!s.isPublic);
     return `<div class="sr"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px;color:var(--mut)"><em>${cap}</em> · slot Q ${slotQ}</span></div>`;
@@ -4531,6 +4531,8 @@ function genMarket(scenId){
       evq:remainingEvq,
       score:{shareHistory:[],peakRevenue:0,decadeScores:{},isSandbox:false},
       rankerHistory:[],
+      finHistory:[],
+      stationFinHistory:{},
       debtWarningQ:0,
       loans:[],
     };
@@ -4549,6 +4551,8 @@ function genMarket(scenId){
     news:[],evq:[...EVDATA],
     score:{shareHistory:[],peakRevenue:0,decadeScores:{},isSandbox:false},
     rankerHistory:[],
+    finHistory:[],
+    stationFinHistory:{},
     debtWarningQ:0,
     loans:[],
   };
@@ -4848,6 +4852,46 @@ function simLead(a,b){
   const pa=pwRank[a.sig.pw]||0, pb=pwRank[b.sig.pw]||0;
   if(pa!==pb) return pa>pb?a:b;
   return (a.fin?.rev||0)>=(b.fin?.rev||0)?a:b;
+}
+function simulcastPartnerStation(s){
+  if(!s?.simulcastWith)return null;
+  return G.stations.find(st=>st.id===s.simulcastWith)||null;
+}
+/** Programming source (lead) and receiver for a simulcast pair. */
+function simulcastPairLeadReceiver(a,b){
+  if(a._simulcastSource===true&&!b._simulcastSource)return{lead:a,rcv:b};
+  if(b._simulcastSource===true&&!a._simulcastSource)return{lead:b,rcv:a};
+  const L=simLead(a,b);
+  return {lead:L,rcv:L.id===a.id?b:a};
+}
+/** One row per station or combined simulcast pair, sorted by total share (desc). */
+function buildSimulcastCombinedRankRows(allStations){
+  const seen=new Set();
+  const rows=[];
+  const sorted=[...allStations].sort((a,b)=>b.rat.share-a.rat.share);
+  sorted.forEach(s=>{
+    if(seen.has(s.id))return;
+    const p=simulcastPartnerStation(s);
+    if(p&&allStations.some(st=>st.id===p.id)){
+      seen.add(s.id);seen.add(p.id);
+      const {lead,rcv}=simulcastPairLeadReceiver(s,p);
+      rows.push({pair:true,lead,rcv,share:lead.rat.share+rcv.rat.share,rev:lead.fin.rev+rcv.fin.rev});
+    }else{
+      seen.add(s.id);
+      rows.push({pair:false,st:s,share:s.rat.share,rev:s.fin.rev});
+    }
+  });
+  rows.sort((a,b)=>b.share-a.share);
+  return rows;
+}
+function scrollModalContentToTop(overlayId){
+  const ov=document.getElementById(overlayId);
+  if(!ov)return;
+  const mo=ov.querySelector('.mo');
+  if(!mo)return;
+  mo.scrollTop=0;
+  requestAnimationFrame(()=>{mo.scrollTop=0;});
+  setTimeout(()=>{mo.scrollTop=0;},0);
 }
 
 // ── STATION RESEARCH CONSULTANT ──────────────────────────────────
@@ -6097,6 +6141,8 @@ function advTurn(){
     const alerts=checkPressure(G);
     // Advance clock before showSum so wasYear/wasPeriod are available to pass in
     const wasYear=G.year,wasPeriod=G.period;
+    recordCompanyFinHistory(G, wasYear, wasPeriod, profit);
+    recordStationFinHistory(G, wasYear, wasPeriod);
     showSum(profit,ev,acts,alerts,wasYear,wasPeriod);
     if(G.period===1){G.period=2;}else{G.period=1;G.year++;}
     G.turn=(G.turn||0)+1;
@@ -6252,20 +6298,21 @@ function showGrade(decadeYear,sc){
 function openRanker(){
   const h=G.rankerHistory;
   if(!h.length){document.getElementById('rkwrap').innerHTML='<p class="di" style="padding:20px">No history yet. Advance at least one period.</p>';return;}
-  const sorted=[...G.stations].sort((a,b)=>b.rat.share-a.rat.share);
+  const rowObjs=buildSimulcastCombinedRankRows(G.stations);
   // Column headers — show last 20 periods max
   const cols=h; // full history — wrapper scrolls horizontally
   const thd=cols.map((c,i)=>`<th style="min-width:54px;text-align:center${i===cols.length-1?';color:var(--amb)':''}"><span style="font-size:15px">${c.year}</span><br><span style="font-size:15px;color:var(--mut)">${c.label.split(' ')[1]||''}</span></th>`).join('');
-  const rows=sorted.map(s=>{
-    const isP=mpIsMe(s); // true only for THIS player's stations in MP
-    const entry=s.entryTurn;
+  const rows=rowObjs.map(row=>{
+    const s=row.pair?row.lead:row.st;
+    const isP=row.pair?(mpIsMe(row.lead)||mpIsMe(row.rcv)):mpIsMe(s);
+    const entry=row.pair?row.lead.entryTurn:s.entryTurn;
     const cells=cols.map(c=>{
       if(entry){
         const entryIdx=h.findIndex(hh=>hh.year===entry.year&&hh.period===entry.period);
         const colIdx=h.indexOf(c);
         if(colIdx<entryIdx)return '<td class="stc" style="position:static"></td>';
       }
-      const v=c.shares[s.id]||0;
+      const v=row.pair?(c.shares[row.lead.id]||0)+(c.shares[row.rcv.id]||0):(c.shares[s.id]||0);
       if(!v)return '<td>—</td>';
       const pv=(v*100).toFixed(1);
       const cls=v>=.08?'rcv hi':v>=.02?'rcv':v<.005?'rcv lo':'rcv';
@@ -6275,10 +6322,13 @@ function openRanker(){
     const corpBadge=s.corpOwner&&!s.isPlayer?`<span style="font-size:13px;background:${s.corpColor||'#374151'};color:#fff;padding:1px 5px;border-radius:2px;font-family:var(--ft)">${(s.corpName||'CORP').split(' ')[0]}</span>`:'';
     const intelAttr=!isP&&!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="Click for competitor intel"`:'';
     const intelBadge=!isP&&!s.isPublic?'<span style="color:var(--mut);font-size:15px;line-height:1;flex-shrink:0;margin-left:6px">🔍</span>':'';
-    const simB=s.simulcastWith?'<span style="color:var(--blu);font-size:14px"> ◈</span>':'';
+    const simB=row.pair?'<span style="color:var(--blu);font-size:14px"> ◈</span>':(s.simulcastWith?'<span style="color:var(--blu);font-size:14px"> ◈</span>':'');
     const op=simulcastOperationalSource(s);
     const fmtLbl=FM[op.format]?.l||op.format;
-    const oneLine=`<span style="display:inline-flex;align-items:center;flex-wrap:nowrap;white-space:nowrap;gap:6px;min-width:0"><span class="rc" style="color:${s.color};font-family:var(--fd);flex-shrink:0">${callDisplay(s)}</span>${simB}${pubBadge}${corpBadge}<span style="color:var(--mut);flex-shrink:0">·</span><span style="color:var(--off);flex-shrink:0">${fmtLbl}</span><span style="color:var(--mut);flex-shrink:0">·</span><span style="color:var(--wht);flex-shrink:0">${s.freq}</span>${intelBadge}</span>`;
+    const callLine=row.pair?`${callDisplay(row.lead)} + ${callDisplay(row.rcv)}`:callDisplay(s);
+    const freqLine=row.pair?`${row.lead.freq} + ${row.rcv.freq}`:s.freq;
+    const lineColor=row.pair?row.lead.color:s.color;
+    const oneLine=`<span style="display:inline-flex;align-items:center;flex-wrap:nowrap;white-space:nowrap;gap:6px;min-width:0"><span class="rc" style="color:${lineColor};font-family:var(--fd);flex-shrink:0">${callLine}</span>${simB}${pubBadge}${corpBadge}<span style="color:var(--mut);flex-shrink:0">·</span><span style="color:var(--off);flex-shrink:0">${fmtLbl}</span><span style="color:var(--mut);flex-shrink:0">·</span><span style="color:var(--wht);flex-shrink:0">${freqLine}</span>${intelBadge}</span>`;
     const rkCls=`${isP?'rky':s.isPlayer?'rkp2':s.isPublic?'rkp':''}`;
     return `<tr class="${rkCls}">
       <td class="stc"${intelAttr}><div style="overflow:hidden;text-overflow:ellipsis;max-width:min(480px,55vw)">${oneLine}</div></td>
@@ -6413,7 +6463,7 @@ function showCompIntel(sid){
 // ════════════════════════════════════════════════════════════════
 // 1. HIRE TALENT
 let HS={sid:null,slot:null,pool:[],sel:null};
-function openHire(sid){sid=ensureOpsSourceSid(sid);const s=G.stations.find(st=>st.id===sid);if(!s)return;HS={sid,slot:null,pool:[],sel:null};rHire(s);om('m-tal');}
+function openHire(sid){sid=ensureOpsSourceSid(sid);const s=G.stations.find(st=>st.id===sid);if(!s)return;HS={sid,slot:null,pool:[],sel:null};rHire(s);om('m-tal');scrollModalContentToTop('m-tal');}
 function rHire(s){
   const slots=['morningDrive','afternoonDrive','midday','evening','overnight'];
   const _simSrc=simulcastProgrammingSource(s);
@@ -6442,6 +6492,7 @@ function rHire(s){
   }
   const fmtHireNote=TALK_FMTS.includes(s.format)?'Local hosts beat syndication for building loyal listeners — especially morning drive.':'Morning Drive has the biggest ratings impact. Automation is cheap but bleeds share over time.';
   document.getElementById('talb').innerHTML=`<p class="di">${fmtHireNote} Salary grows ~1–2% per year.</p><div class="ssl">${sbtns}</div><div id="tp">${ph}</div><button class="cfm" onclick="doHire()" ${HS.sel===null?'disabled':''}>HIRE TALENT</button><button class="cnl" onclick="cm('m-tal')">CANCEL</button>`;
+  scrollModalContentToTop('m-tal');
 }
 function pickSlot(sid,sl){const s=G.stations.find(st=>st.id===sid);HS.slot=sl;HS.sel=null;HS.pool=mkPool(sl,s.format,G.year);rHire(s);}
 function pickTal(i){HS.sel=i;rHire(G.stations.find(st=>st.id===HS.sid));}
@@ -7897,6 +7948,8 @@ function migrateSave(G){
   if(G.corps)rehydrateCorps(G); // re-link corp ownership after save/load
   G.corps=G.corps||null;
   G.rankerHistory=G.rankerHistory||[];
+  G.finHistory=G.finHistory||[];
+  G.stationFinHistory=G.stationFinHistory||{};
   if(!G.score)G.score={isSandbox:false,shareHistory:[],peakRevenue:0,decadeScores:{}};
   // Ensure fin.fix exists on all stations (added for cost breakdown display)
   (G.stations||[]).forEach(s=>{
@@ -8274,6 +8327,123 @@ function om(id){
 }
 function cm(id){document.getElementById(id).classList.remove('on');}
 document.querySelectorAll('.ov').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('on');}));
+
+// ── COMPANY FINANCIALS (rollup matches period summary / myPS) ─────
+function companyFinanceRollup(){
+  const ps=myPS();
+  const revenue=ps.reduce((s,st)=>s+st.fin.rev,0);
+  const cost=ps.reduce((s,st)=>s+st.fin.cost,0);
+  const ebitda=ps.reduce((s,st)=>s+st.fin.ebitda,0);
+  const margin=revenue>0?Math.round((ebitda/revenue)*100):0;
+  const talentCost=ps.reduce((sum,s)=>sum+Object.values(s.prog).filter(sl=>sl?.talent).reduce((a,sl)=>a+Math.round((sl.talent.salary||0)/2),0),0);
+  const fixedCost=ps.reduce((s,st)=>s+(st.fin.fix||0),0);
+  const cash=MP.mode==='live'?(G._playerCash?.[MP.playerId]??G.cash):G.cash;
+  const shareSum=ps.reduce((s,st)=>s+st.rat.share,0);
+  const avgSellout=ps.length?Math.round((ps.reduce((s,st)=>s+(st.ops?.sell||0),0)/ps.length)*1000)/1000:0;
+  return {revenue,cost,ebitda,margin,talentCost,fixedCost,cash,shareSum,avgSellout};
+}
+function recordCompanyFinHistory(G, wasYear, wasPeriod, profit){
+  if(!G)return;
+  G.finHistory=G.finHistory||[];
+  const ps=myPS();
+  const revenue=ps.reduce((s,st)=>s+st.fin.rev,0);
+  const cost=ps.reduce((s,st)=>s+st.fin.cost,0);
+  const margin=revenue>0?Math.round((profit/revenue)*100):0;
+  const talentCost=ps.reduce((sum,s)=>sum+Object.values(s.prog).filter(sl=>sl?.talent).reduce((a,sl)=>a+Math.round((sl.talent.salary||0)/2),0),0);
+  const fixedCost=ps.reduce((s,st)=>s+(st.fin.fix||0),0);
+  const cash=MP.mode==='live'?(G._playerCash?.[MP.playerId]??G.cash):G.cash;
+  const shareSum=ps.reduce((s,st)=>s+st.rat.share,0);
+  const avgSellout=ps.length?Math.round((ps.reduce((s,st)=>s+(st.ops?.sell||0),0)/ps.length)*1000)/1000:0;
+  G.finHistory.push({year:wasYear,period:wasPeriod,revenue,cost,ebitda:profit,margin,cash,talentCost,fixedCost,shareSum,avgSellout});
+  if(G.finHistory.length>120)G.finHistory=G.finHistory.slice(-120);
+}
+function recordStationFinHistory(G, wasYear, wasPeriod){
+  if(!G)return;
+  G.stationFinHistory=G.stationFinHistory||{};
+  myPS().forEach(st=>{
+    if(!G.stationFinHistory[st.id])G.stationFinHistory[st.id]=[];
+    const rev=st.fin.rev||0,stcost=st.fin.cost||0,ebit=st.fin.ebitda||0;
+    const margin=rev>0?Math.round((ebit/rev)*100):0;
+    G.stationFinHistory[st.id].push({year:wasYear,period:wasPeriod,revenue:rev,cost:stcost,ebitda:ebit,margin});
+    if(G.stationFinHistory[st.id].length>120)G.stationFinHistory[st.id]=G.stationFinHistory[st.id].slice(-120);
+  });
+}
+function openFinancials(){
+  if(!G)return;
+  const r=companyFinanceRollup();
+  const perName=PERIODS[(G.period||1)-1]||'';
+  const hist=[...(G.finHistory||[])].reverse();
+  const histRows=hist.map(h=>{
+    const pnm=PERIODS[(h.period||1)-1]||'';
+    return `<tr>
+      <td style="padding:4px 8px;font-family:var(--fd)">${h.year}</td>
+      <td style="padding:4px 8px;color:var(--mut)">${pnm}</td>
+      <td style="padding:4px 8px;text-align:right">${f$(h.revenue)}</td>
+      <td style="padding:4px 8px;text-align:right">${f$(h.cost)}</td>
+      <td style="padding:4px 8px;text-align:right;color:${h.ebitda>=0?'var(--grn)':'var(--red)'}">${h.ebitda>=0?'+':''}${f$(h.ebitda)}</td>
+      <td style="padding:4px 8px;text-align:right">${h.margin}%</td>
+      <td style="padding:4px 8px;text-align:right">${f$(h.cash)}</td>
+    </tr>`;
+  }).join('');
+  const stHistBlocks=myPS().map(st=>{
+    const sh=[...(G.stationFinHistory?.[st.id]||[])].reverse();
+    if(!sh.length)return '';
+    const rows=sh.map(h=>{
+      const pnm=PERIODS[(h.period||1)-1]||'';
+      return `<tr>
+        <td style="padding:4px 8px;font-family:var(--fd)">${h.year}</td>
+        <td style="padding:4px 8px;color:var(--mut)">${pnm}</td>
+        <td style="padding:4px 8px;text-align:right">${f$(h.revenue)}</td>
+        <td style="padding:4px 8px;text-align:right">${f$(h.cost)}</td>
+        <td style="padding:4px 8px;text-align:right;color:${h.ebitda>=0?'var(--grn)':'var(--red)'}">${h.ebitda>=0?'+':''}${f$(h.ebitda)}</td>
+        <td style="padding:4px 8px;text-align:right">${h.margin}%</td>
+      </tr>`;
+    }).join('');
+    return `<div class="ms2" style="margin-top:14px"><div class="msh">${st.callLetters}</div>
+      <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px">
+        <thead><tr style="color:var(--mut);text-align:left;font-family:var(--ft);letter-spacing:1px">
+          <th style="padding:6px 8px;border-bottom:1px solid var(--bdr)">Year</th>
+          <th style="padding:6px 8px;border-bottom:1px solid var(--bdr)">Period</th>
+          <th style="padding:6px 8px;border-bottom:1px solid var(--bdr);text-align:right">Revenue</th>
+          <th style="padding:6px 8px;border-bottom:1px solid var(--bdr);text-align:right">Costs</th>
+          <th style="padding:6px 8px;border-bottom:1px solid var(--bdr);text-align:right">EBITDA</th>
+          <th style="padding:6px 8px;border-bottom:1px solid var(--bdr);text-align:right">Margin</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table></div></div>`;
+  }).join('');
+  document.getElementById('finb').innerHTML=`
+    <div style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;max-height:min(72vh,640px);overflow-y:auto">
+      <p class="di" style="margin-top:0">Company-wide totals from your owned stations (same basis as the period-end summary).</p>
+      <div class="ms2"><div class="msh">${G.year} ${perName} — SNAPSHOT</div>
+        <div class="sr"><span class="lb">Total revenue</span><span class="vl">${f$(r.revenue)}</span></div>
+        <div class="sr"><span class="lb">Total expenses</span><span class="vl">${f$(r.cost)}</span></div>
+        <div class="sr"><span class="lb">EBITDA</span><span class="vl ${r.ebitda>=0?'pos':'neg'}">${r.ebitda>=0?'+':''}${f$(r.ebitda)}</span></div>
+        <div class="sr"><span class="lb">EBITDA margin</span><span class="vl">${r.margin}%</span></div>
+        <div class="sr"><span class="lb">Total talent cost</span><span class="vl">${f$(r.talentCost)}</span></div>
+        <div class="sr"><span class="lb">Total fixed cost</span><span class="vl">${f$(r.fixedCost)}</span></div>
+        <div class="sr"><span class="lb">Cash on hand</span><span class="vl amb">${f$(r.cash)}</span></div>
+        <div class="sr"><span class="lb">Owned share (sum)</span><span class="vl">${pct(r.shareSum)}</span></div>
+        <div class="sr"><span class="lb">Avg sellout</span><span class="vl">${Math.round(r.avgSellout*100)}%</span></div>
+      </div>
+      <div class="ms2" style="margin-top:14px"><div class="msh">HISTORY (newest first)</div>
+        ${hist.length?`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px">
+          <thead><tr style="color:var(--mut);text-align:left;font-family:var(--ft);letter-spacing:1px">
+            <th style="padding:6px 8px;border-bottom:1px solid var(--bdr)">Year</th>
+            <th style="padding:6px 8px;border-bottom:1px solid var(--bdr)">Period</th>
+            <th style="padding:6px 8px;border-bottom:1px solid var(--bdr);text-align:right">Revenue</th>
+            <th style="padding:6px 8px;border-bottom:1px solid var(--bdr);text-align:right">Costs</th>
+            <th style="padding:6px 8px;border-bottom:1px solid var(--bdr);text-align:right">EBITDA</th>
+            <th style="padding:6px 8px;border-bottom:1px solid var(--bdr);text-align:right">Margin</th>
+            <th style="padding:6px 8px;border-bottom:1px solid var(--bdr);text-align:right">Cash</th>
+          </tr></thead>
+          <tbody>${histRows}</tbody>
+        </table></div>`:'<p class="enote">No closed periods recorded yet. Advance a period to build history.</p>'}
+      </div>
+      ${stHistBlocks?`<div class="ms2" style="margin-top:16px"><div class="msh">BY STATION (newest first)</div></div>${stHistBlocks}`:''}
+    </div>`;
+  om('m-fin');
+}
 
 // ── PERIOD SUMMARY ────────────────────────────────────────────────
 function showSum(profit,events,acts,alerts,displayYear,displayPeriod){
@@ -8840,28 +9010,37 @@ function rStns(){
           ?'<button class="abt" style="border-color:rgba(255,255,255,.15)" onclick="openSim(\''+s.id+'\')">◈ BREAK SIMULCAST</button>'
           :'<button class="abt b" onclick="openSim(\''+s.id+'\')">◈ SIMULCAST THIS STATION</button>';
         const driftBtn=DRIFT[op.format]?'<div class="ab"><button class="abt" style="width:100%;background:rgba(245,166,35,.12);border:1px solid var(--amb);color:var(--amb)" onclick="openDrift(\''+op.id+'\')">🎚 FORMAT STRATEGY — '+DRIFT[op.format].poleA.name+' ↔ '+DRIFT[op.format].poleB.name+'</button></div>':'';
-        return `
-        <div class="ab"><button class="abt" onclick="openHire('${op.id}')">🎙 HIRE TALENT</button><button class="abt d" onclick="openFire('${op.id}')">↕ MANAGE TALENT</button><button class="abt" onclick="openSwapSignal('${op.id}')">⇄ SWAP SIGNAL</button><button class="abt" onclick="openSpots('${op.id}')">📻 SPOT LOAD</button></div>
-        <div class="ab"><button class="abt ${op.stream?.active?'g active':G.year>=2005?'b':''}" onclick="openStream('${op.id}')" ${G.year<2005?'style="opacity:.30;cursor:default"':''}>${op.stream?.active?'📶 STREAMING ✓':'📶 ADD STREAMING'}</button><button class="abt" onclick="openPromo('${op.id}')">📣 MARKETING</button><button class="abt b" onclick="openLean('${op.id}')">🎯 DEMO TARGET</button></div>
-        <div class="ab"><button class="abt ${(op.ops?.progBudget||0)>0?'g active':'g'}" onclick="openProg('${op.id}')">📈 PROG${(op.ops?.progBudget||0)>0?' · '+f$(op.ops.progBudget)+'/p':''}</button><button class="abt ${(op.identityBudget||0)>0||(op.identity||0)>=30?'g active':''}" onclick="openIdent('${op.id}')">🏘 IDENTITY${(op.identity||0)>=1?' · '+Math.round(op.identity):''}${(op.identityBudget||0)>0?' ★':''}</button><button class="abt" onclick="openResearch('${op.id}')">📊 RESEARCH</button><button class="abt d" onclick="openFmt('${op.id}')">⚡ FORMAT</button>${simBtn}</div>
-        <div class="ab"><button class="abt ${sfActive?'g':''}" style="width:100%" onclick="openSales('${op.id}')">💼 SALES: ${sfLblText}${sfActive?' · '+Math.round(op.ops.sell*100)+'% sellout':''}</button></div>
-        ${driftBtn}`;
-      })()}
-      ${(()=>{
-        const legFm=st=>{
+        const streamBtn='<button class="abt '+(op.stream?.active?'g active':G.year>=2005?'b':'')+'" onclick="openStream(\''+op.id+'\')" '+(G.year<2005?'style="opacity:.30;cursor:default"':'')+'>'+(op.stream?.active?'📶 STREAMING ✓':'📶 ADD STREAMING')+'</button>';
+        const fmBtn=st=>{
           if(!st)return '';
-          return st.simulcastWith&&!st.fmBooster?`<button class="abt g" onclick="openMigrate('${st.id}')">📡 MIGRATE FM</button>`:st.fmBooster?`<button class="abt g active" onclick="openFmBooster('${st.id}')">📡 TRANSLATOR ✓</button>`:st.sig.type==='AM'&&G.year>=1978?`<button class="abt ${st.fmBooster?'g active':'b'}" onclick="openFmBooster('${st.id}')">${st.fmBooster?'📡 TRANSLATOR ✓':'📡 FM TRANSLATOR'}</button>`:'<button class="abt" style="opacity:.25;cursor:default;font-size:14px">📡 FM TRANSLATOR</button>';
+          if(st.simulcastWith&&!st.fmBooster)return '<button class="abt g" onclick="openMigrate(\''+st.id+'\')">📡 MIGRATE '+callDisplay(st)+'</button>';
+          if(st.fmBooster)return '<button class="abt g active" onclick="openFmBooster(\''+st.id+'\')">📡 TRANSLATOR '+callDisplay(st)+' ✓</button>';
+          if(st.sig.type==='AM'&&G.year>=1978)return '<button class="abt '+(st.fmBooster?'g active':'b')+'" onclick="openFmBooster(\''+st.id+'\')">'+(st.fmBooster?'📡 TRANSLATOR ✓':'📡 FM TRANSLATOR')+' '+callDisplay(st)+'</button>';
+          return '<button class="abt" style="opacity:.25;cursor:default;font-size:14px">📡 FM TRANSLATOR</button>';
         };
-        const hist=junior
-          ?`<button class="abt" onclick="openHistory('${s.id}')">📋 HISTORY (${s.callLetters})</button><button class="abt" onclick="openHistory('${junior.id}')">📋 HISTORY (${junior.callLetters})</button>`
-          :`<button class="abt" onclick="openHistory('${s.id}')">📋 HISTORY</button>`;
-        const ren=junior
-          ?`<button class="abt" onclick="openRename('${s.id}')">✏ RENAME ${s.callLetters}</button><button class="abt" onclick="openRename('${junior.id}')">✏ RENAME ${junior.callLetters}</button>`
-          :`<button class="abt" onclick="openRename('${s.id}')">✏ RENAME</button>`;
-        const sell=junior
-          ?`<button class="abt g" onclick="openSell('${s.id}')">💰 SELL ${s.callLetters}</button><button class="abt g" onclick="openSell('${junior.id}')">💰 SELL ${junior.callLetters}</button>`
-          :`<button class="abt g" onclick="openSell('${s.id}')">💰 SELL</button>`;
-        return `<div class="ab2">${hist}${ren}${legFm(s)}${junior?legFm(junior):''}${sell}</div>`;
+        const migBtns=junior?fmBtn(s)+fmBtn(junior):fmBtn(s);
+        const histBtns=junior
+          ?'<button class="abt" onclick="openHistory(\''+s.id+'\')">📋 HISTORY '+callDisplay(s)+'</button><button class="abt" onclick="openHistory(\''+junior.id+'\')">📋 HISTORY '+callDisplay(junior)+'</button>'
+          :'<button class="abt" onclick="openHistory(\''+s.id+'\')">📋 HISTORY '+callDisplay(s)+'</button>';
+        const renBtns=junior
+          ?'<button class="abt" onclick="openRename(\''+s.id+'\')">✏ RENAME '+callDisplay(s)+'</button><button class="abt" onclick="openRename(\''+junior.id+'\')">✏ RENAME '+callDisplay(junior)+'</button>'
+          :'<button class="abt" onclick="openRename(\''+s.id+'\')">✏ RENAME '+callDisplay(s)+'</button>';
+        const sellBtns=junior
+          ?'<button class="abt g" onclick="openSell(\''+s.id+'\')">💰 SELL '+callDisplay(s)+'</button><button class="abt g" onclick="openSell(\''+junior.id+'\')">💰 SELL '+callDisplay(junior)+'</button>'
+          :'<button class="abt g" onclick="openSell(\''+s.id+'\')">💰 SELL '+callDisplay(s)+'</button>';
+        const idAct=(op.identityBudget||0)>0||(op.identity||0)>=30?'g active':'';
+        const idLbl=(op.identity||0)>=1?' · '+Math.round(op.identity):'';
+        const idStar=(op.identityBudget||0)>0?' ★':'';
+        const progAct=(op.ops?.progBudget||0)>0?'g active':'g';
+        const progLbl=(op.ops?.progBudget||0)>0?' · '+f$(op.ops.progBudget)+'/p':'';
+        const sec=(title,first,inner)=>'<div style="'+(first?'margin-top:0':'margin-top:14px')+';padding-top:'+(first?4:12)+'px;border-top:'+(first?'none':'1px solid var(--bdr)')+'"><div style="font-family:var(--ft);font-size:11px;letter-spacing:0.22em;color:var(--mut);margin-bottom:8px">'+title+'</div>'+inner+'</div>';
+        return '<div class="ab2" style="display:block">'+
+          sec('TALENT',true,'<div class="ab"><button class="abt" onclick="openHire(\''+op.id+'\')">🎙 HIRE TALENT</button><button class="abt d" onclick="openFire(\''+op.id+'\')">↕ MANAGE TALENT</button></div>')+
+          sec('PROGRAMMING',false,'<div class="ab"><button class="abt d" onclick="openFmt(\''+op.id+'\')">⚡ FORMAT</button></div>'+driftBtn+'<div class="ab"><button class="abt b" onclick="openLean(\''+op.id+'\')">🎯 DEMO TARGET</button><button class="abt '+progAct+'" onclick="openProg(\''+op.id+'\')">📈 PROG'+progLbl+'</button></div><div class="ab">'+streamBtn+'</div><div class="ab">'+simBtn+'</div>')+
+          sec('MARKETING',false,'<div class="ab"><button class="abt" onclick="openPromo(\''+op.id+'\')">📣 MARKETING</button><button class="abt '+idAct+'" onclick="openIdent(\''+op.id+'\')">🏘 IDENTITY'+idLbl+idStar+'</button><button class="abt" onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button></div>')+
+          sec('SALES',false,'<div class="ab"><button class="abt '+(sfActive?'g':'')+'" style="width:100%" onclick="openSales(\''+op.id+'\')">💼 SALES: '+sfLblText+(sfActive?' · '+Math.round(op.ops.sell*100)+'% sellout':'')+'</button></div><div class="ab"><button class="abt" style="width:100%" onclick="openSpots(\''+op.id+'\')">📻 SPOT LOAD</button></div>')+
+          sec('ADMINISTRATION',false,'<div class="ab">'+histBtns+'</div><div class="ab">'+renBtns+'</div><div class="ab"><button class="abt" onclick="openSwapSignal(\''+op.id+'\')">⇄ SWAP SIGNAL</button></div>'+(migBtns?'<div class="ab">'+migBtns+'</div>':'')+'<div class="ab">'+sellBtns+'</div>')+
+          '</div>';
       })()}`;
     c.appendChild(div);
   });
@@ -8908,18 +9087,20 @@ function rMkt(){
   }
   const sw=document.getElementById('scenwrap');
   if(sw&&MP.mode!=='live'){if(!sw.dataset.id||sw.dataset.id!==G.sc.id){sw.dataset.id=G.sc.id;sw.innerHTML='';}}
-  const rankerSt=[...G.stations].sort((a,b)=>b.rat.share-a.rat.share);
-  const mx=rankerSt.length?rankerSt[0].rat.share||1:1;
-  document.getElementById('mtb').innerHTML=rankerSt.map((s,i)=>{
+  const rankRows=buildSimulcastCombinedRankRows(G.stations);
+  const mx=rankRows.length?rankRows[0].share||1:1;
+  document.getElementById('mtb').innerHTML=rankRows.map((row,i)=>{
+    const s=row.pair?row.lead:row.st;
     const op=simulcastOperationalSource(s);
-    const share=s.rat.share,rev=s.fin.rev;
+    const share=row.share,rev=row.rev;
     const pr=s.cp,tr=!pr?'—':pr.col?'⬇⬇':pr.under?'⬇':pr.sur?'⬆':'→';
     const tc=!pr?'tfl':pr.col||pr.under?'tdn':pr.sur?'tup':'tfl';
     const wp=Math.round((share/mx)*100);
     const band=s.fmBooster?'FM+':(s.sig.type==='FM'?'FM':'AM');
-    const calls=callDisplay(s)+(s.simulcastWith?' <span style="color:var(--blu);font-size:13px">◈</span>':'');
-    const clickAttr=!s.isPlayer&&!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="View competitor intel"`:'';
-    const _me=mpIsMe(s),_anyP=s.isPlayer;
+    const calls=row.pair?`${callDisplay(row.lead)} + ${callDisplay(row.rcv)} <span style="color:var(--blu);font-size:13px">◈</span>`:callDisplay(s)+(s.simulcastWith?' <span style="color:var(--blu);font-size:13px">◈</span>':'');
+    const _me=row.pair?(mpIsMe(row.lead)||mpIsMe(row.rcv)):mpIsMe(s);
+    const _anyP=s.isPlayer;
+    const clickAttr=!_anyP&&!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="View competitor intel"`:'';
     const badges=_me?'<span class="yp">YOU</span>':_anyP?`<span class="yp" style="background:${s.color||'#60a5fa'};color:#000">OPP</span>`:'';
     const intelEl=!_anyP&&!s.isPublic?'<span style="color:var(--mut);font-size:14px;line-height:1;flex-shrink:0;margin-left:2px">&#128269;</span>':'';
     const stationCell=`<span style="display:inline-flex;align-items:center;gap:8px;flex-wrap:nowrap;white-space:nowrap;max-width:100%"><span class="clg" style="color:${mpStationColor(s)};flex-shrink:0">${calls}</span><span style="font-size:12px;color:var(--mut);font-weight:600;flex-shrink:0" title="Band">${band}</span>${badges?`<span style="display:inline-flex;align-items:center">${badges}</span>`:''}${intelEl}</span>`;
