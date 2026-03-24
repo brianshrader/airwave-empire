@@ -170,6 +170,13 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .mor-bar{display:inline-block;width:28px;height:4px;border-radius:2px;vertical-align:middle;margin-left:4px;flex-shrink:0}
 .ab{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:6px}
 .ab2{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:6px}
+.sc-card-actions{display:block}
+.sc-act{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:stretch}
+.sc-act .abt{box-sizing:border-box;width:100%;min-width:0}
+.sc-act-empty{visibility:hidden;pointer-events:none;min-height:1px}
+.sc-card-sec{margin-top:14px;padding-top:12px;border-top:1px solid var(--bdr)}
+.sc-card-sec--first{margin-top:0;padding-top:4px;border-top:none}
+.sc-card-sec-h{font-family:var(--ft);font-size:12px;font-weight:500;letter-spacing:0.2em;color:var(--mut);margin-bottom:10px;line-height:1.4;text-transform:uppercase;opacity:.95}
 .btn-section{margin-bottom:8px}
 .btn-section-lbl{font-family:var(--ft);font-size:11px;color:var(--mut);letter-spacing:2px;margin-bottom:4px;padding-left:1px}
 .abt{background:transparent;border:1px solid var(--bdh);color:var(--off);font-family:var(--ft);font-size:15px;letter-spacing:1px;padding:9px 4px;cursor:pointer;text-align:center;transition:all .15s}
@@ -462,6 +469,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   /* Action buttons — full width 2-col grid on mobile */
   .ab{grid-template-columns:1fr 1fr;gap:5px}
   .ab2{grid-template-columns:1fr 1fr;gap:5px}
+  .sc-act{gap:6px}
   .abt{padding:9px 6px;font-size:14px;letter-spacing:.3px}
 
   /* Quality bar */
@@ -714,7 +722,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     <div class="corp-actions-wrap">
       <div class="corp-actions-h">CORPORATE ACTIONS</div>
       <div class="corp-actions-btns">
-        <button type="button" class="phbtn" onclick="openFinancials()">FINANCIALS</button>
+        <button type="button" class="phbtn" onclick="openFinancials()">📈 FINANCIALS</button>
         <button type="button" class="phbtn" onclick="openLoan()">💳 LOANS</button>
         <button type="button" class="phbtn" onclick="openSaveLoad()">💾 SAVE / LOAD</button>
       </div>

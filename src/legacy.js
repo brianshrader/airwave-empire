@@ -9009,7 +9009,7 @@ function rStns(){
         const simBtn=junior
           ?'<button class="abt" style="border-color:rgba(255,255,255,.15)" onclick="openSim(\''+s.id+'\')">◈ BREAK SIMULCAST</button>'
           :'<button class="abt b" onclick="openSim(\''+s.id+'\')">◈ SIMULCAST THIS STATION</button>';
-        const driftBtn=DRIFT[op.format]?'<div class="ab"><button class="abt" style="width:100%;background:rgba(245,166,35,.12);border:1px solid var(--amb);color:var(--amb)" onclick="openDrift(\''+op.id+'\')">🎚 FORMAT STRATEGY — '+DRIFT[op.format].poleA.name+' ↔ '+DRIFT[op.format].poleB.name+'</button></div>':'';
+        const driftBtn=DRIFT[op.format]?'<button class="abt" style="background:rgba(245,166,35,.12);border:1px solid var(--amb);color:var(--amb)" onclick="openDrift(\''+op.id+'\')">🎚 STRATEGY</button>':'';
         const streamBtn='<button class="abt '+(op.stream?.active?'g active':G.year>=2005?'b':'')+'" onclick="openStream(\''+op.id+'\')" '+(G.year<2005?'style="opacity:.30;cursor:default"':'')+'>'+(op.stream?.active?'📶 STREAMING ✓':'📶 ADD STREAMING')+'</button>';
         const fmBtn=st=>{
           if(!st)return '';
@@ -9018,28 +9018,54 @@ function rStns(){
           if(st.sig.type==='AM'&&G.year>=1978)return '<button class="abt '+(st.fmBooster?'g active':'b')+'" onclick="openFmBooster(\''+st.id+'\')">'+(st.fmBooster?'📡 TRANSLATOR ✓':'📡 FM TRANSLATOR')+' '+callDisplay(st)+'</button>';
           return '<button class="abt" style="opacity:.25;cursor:default;font-size:14px">📡 FM TRANSLATOR</button>';
         };
-        const migBtns=junior?fmBtn(s)+fmBtn(junior):fmBtn(s);
-        const histBtns=junior
-          ?'<button class="abt" onclick="openHistory(\''+s.id+'\')">📋 HISTORY '+callDisplay(s)+'</button><button class="abt" onclick="openHistory(\''+junior.id+'\')">📋 HISTORY '+callDisplay(junior)+'</button>'
-          :'<button class="abt" onclick="openHistory(\''+s.id+'\')">📋 HISTORY '+callDisplay(s)+'</button>';
-        const renBtns=junior
-          ?'<button class="abt" onclick="openRename(\''+s.id+'\')">✏ RENAME '+callDisplay(s)+'</button><button class="abt" onclick="openRename(\''+junior.id+'\')">✏ RENAME '+callDisplay(junior)+'</button>'
-          :'<button class="abt" onclick="openRename(\''+s.id+'\')">✏ RENAME '+callDisplay(s)+'</button>';
-        const sellBtns=junior
-          ?'<button class="abt g" onclick="openSell(\''+s.id+'\')">💰 SELL '+callDisplay(s)+'</button><button class="abt g" onclick="openSell(\''+junior.id+'\')">💰 SELL '+callDisplay(junior)+'</button>'
-          :'<button class="abt g" onclick="openSell(\''+s.id+'\')">💰 SELL '+callDisplay(s)+'</button>';
+        const legLbl=st=>junior?`${st.callLetters}-${st.sig.type}`:callDisplay(st);
+        const histArr=junior
+          ?['<button class="abt" onclick="openHistory(\''+s.id+'\')">📋 HISTORY '+legLbl(s)+'</button>','<button class="abt" onclick="openHistory(\''+junior.id+'\')">📋 HISTORY '+legLbl(junior)+'</button>']
+          :['<button class="abt" onclick="openHistory(\''+s.id+'\')">📋 HISTORY '+legLbl(s)+'</button>'];
+        const renArr=junior
+          ?['<button class="abt" onclick="openRename(\''+s.id+'\')">✏ RENAME '+legLbl(s)+'</button>','<button class="abt" onclick="openRename(\''+junior.id+'\')">✏ RENAME '+legLbl(junior)+'</button>']
+          :['<button class="abt" onclick="openRename(\''+s.id+'\')">✏ RENAME '+legLbl(s)+'</button>'];
+        const sellArr=junior
+          ?['<button class="abt g" onclick="openSell(\''+s.id+'\')">💰 SELL '+legLbl(s)+'</button>','<button class="abt g" onclick="openSell(\''+junior.id+'\')">💰 SELL '+legLbl(junior)+'</button>']
+          :['<button class="abt g" onclick="openSell(\''+s.id+'\')">💰 SELL '+legLbl(s)+'</button>'];
         const idAct=(op.identityBudget||0)>0||(op.identity||0)>=30?'g active':'';
         const idLbl=(op.identity||0)>=1?' · '+Math.round(op.identity):'';
         const idStar=(op.identityBudget||0)>0?' ★':'';
         const progAct=(op.ops?.progBudget||0)>0?'g active':'g';
         const progLbl=(op.ops?.progBudget||0)>0?' · '+f$(op.ops.progBudget)+'/p':'';
-        const sec=(title,first,inner)=>'<div style="'+(first?'margin-top:0':'margin-top:14px')+';padding-top:'+(first?4:12)+'px;border-top:'+(first?'none':'1px solid var(--bdr)')+'"><div style="font-family:var(--ft);font-size:11px;letter-spacing:0.22em;color:var(--mut);margin-bottom:8px">'+title+'</div>'+inner+'</div>';
-        return '<div class="ab2" style="display:block">'+
-          sec('TALENT',true,'<div class="ab"><button class="abt" onclick="openHire(\''+op.id+'\')">🎙 HIRE TALENT</button><button class="abt d" onclick="openFire(\''+op.id+'\')">↕ MANAGE TALENT</button></div>')+
-          sec('PROGRAMMING',false,'<div class="ab"><button class="abt d" onclick="openFmt(\''+op.id+'\')">⚡ FORMAT</button></div>'+driftBtn+'<div class="ab"><button class="abt b" onclick="openLean(\''+op.id+'\')">🎯 DEMO TARGET</button><button class="abt '+progAct+'" onclick="openProg(\''+op.id+'\')">📈 PROG'+progLbl+'</button></div><div class="ab">'+streamBtn+'</div><div class="ab">'+simBtn+'</div>')+
-          sec('MARKETING',false,'<div class="ab"><button class="abt" onclick="openPromo(\''+op.id+'\')">📣 MARKETING</button><button class="abt '+idAct+'" onclick="openIdent(\''+op.id+'\')">🏘 IDENTITY'+idLbl+idStar+'</button><button class="abt" onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button></div>')+
-          sec('SALES',false,'<div class="ab"><button class="abt '+(sfActive?'g':'')+'" style="width:100%" onclick="openSales(\''+op.id+'\')">💼 SALES: '+sfLblText+(sfActive?' · '+Math.round(op.ops.sell*100)+'% sellout':'')+'</button></div><div class="ab"><button class="abt" style="width:100%" onclick="openSpots(\''+op.id+'\')">📻 SPOT LOAD</button></div>')+
-          sec('ADMINISTRATION',false,'<div class="ab">'+histBtns+'</div><div class="ab">'+renBtns+'</div><div class="ab"><button class="abt" onclick="openSwapSignal(\''+op.id+'\')">⇄ SWAP SIGNAL</button></div>'+(migBtns?'<div class="ab">'+migBtns+'</div>':'')+'<div class="ab">'+sellBtns+'</div>')+
+        const scActEmpty='<div class="sc-act-empty" aria-hidden="true"></div>';
+        const pack2=btns=>{
+          const a=btns.filter(x=>x&&String(x).trim()!=='');
+          if(!a.length)return '';
+          const cells=[];
+          for(let i=0;i<a.length;i+=2){
+            cells.push(a[i]);
+            cells.push(i+1<a.length?a[i+1]:scActEmpty);
+          }
+          return '<div class="sc-act">'+cells.join('')+'</div>';
+        };
+        const sec=(title,first,inner)=>'<div class="sc-card-sec'+(first?' sc-card-sec--first':'')+'"><div class="sc-card-sec-h">'+title+'</div>'+inner+'</div>';
+        const progBtns=['<button class="abt d" onclick="openFmt(\''+op.id+'\')">⚡ FORMAT</button>'];
+        if(driftBtn)progBtns.push(driftBtn);
+        progBtns.push(
+          '<button class="abt b" onclick="openLean(\''+op.id+'\')">🎯 DEMO TARGET</button>',
+          '<button class="abt '+progAct+'" onclick="openProg(\''+op.id+'\')">📈 PROG'+progLbl+'</button>',
+          streamBtn,
+          simBtn,
+        );
+        const salesLbl=sfActive?'💼 '+sfLblText+' · '+Math.round(op.ops.sell*100)+'%':'💼 SALES';
+        const swapBtn='<button class="abt" onclick="openSwapSignal(\''+op.id+'\')">⇄ SWAP SIGNAL</button>';
+        const fmUniq=[];
+        const _m1=fmBtn(s),_m2=junior?fmBtn(junior):'';
+        if(_m1)fmUniq.push(_m1);
+        if(_m2&&_m2!==_m1)fmUniq.push(_m2);
+        const adminBtns=[...histArr,...renArr,swapBtn,...fmUniq,...sellArr];
+        return '<div class="sc-card-actions">'+
+          sec('TALENT',true,pack2(['<button class="abt" onclick="openHire(\''+op.id+'\')">🎙 HIRE TALENT</button>','<button class="abt d" onclick="openFire(\''+op.id+'\')">↕ MANAGE TALENT</button>']))+
+          sec('PROGRAMMING',false,pack2(progBtns))+
+          sec('MARKETING',false,pack2(['<button class="abt" onclick="openPromo(\''+op.id+'\')">📣 MARKETING</button>','<button class="abt '+idAct+'" onclick="openIdent(\''+op.id+'\')">🏘 IDENTITY'+idLbl+idStar+'</button>','<button class="abt" onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
+          sec('SALES',false,pack2(['<button class="abt '+(sfActive?'g':'')+'" onclick="openSales(\''+op.id+'\')">'+salesLbl+'</button>','<button class="abt" onclick="openSpots(\''+op.id+'\')">📻 SPOT LOAD</button>']))+
+          sec('ADMINISTRATION',false,pack2(adminBtns))+
           '</div>';
       })()}`;
     c.appendChild(div);
