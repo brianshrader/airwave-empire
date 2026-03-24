@@ -191,7 +191,7 @@
   <!-- LEFT COLUMN: score strip, market standings, news feed, upcoming events (matches wavelength-ui.html) -->
   <div class="pnl" id="pl">
     <div id="scorebar"></div>
-    <div class="ph">MARKET <sub id="mkt-city">ATLANTA</sub><span style="color:var(--mut);font-size:13px;font-weight:400;margin-left:6px;font-family:var(--ft)">· tap for intel</span><button class="phbtn" onclick="om('m-rk')">📊 RANKER</button><button class="phbtn" onclick="openFinancials()">FINANCIALS</button><button class="phbtn" onclick="openLoan()">💳 LOANS</button><button class="phbtn" onclick="openSaveLoad()">💾 SAVE</button></div>
+    <div class="ph"><span>MARKET <sub id="mkt-city">ATLANTA</sub><span style="color:var(--mut);font-size:13px;font-weight:400;margin-left:6px;font-family:var(--ft)">· tap for intel</span></span><button type="button" class="phbtn" onclick="om('m-rk')">📊 RANKER</button></div>
     <table class="mt"><thead><tr><th>#</th><th>STATION</th><th>FORMAT</th><th style="text-align:right">SHARE</th><th style="text-align:right">△</th><th style="text-align:right">REV/PD</th></tr></thead><tbody id="mtb"></tbody></table>
     <div class="sep"></div>
     <div class="dh">DEMO BREAKDOWN — YOUR LEAD STATION</div>
@@ -204,6 +204,14 @@
   <!-- RIGHT COLUMN: scenario banner, your stations -->
   <div class="pnl" id="pc">
     <div id="scen-banner"></div>
+    <div class="corp-actions-wrap">
+      <div class="corp-actions-h">CORPORATE ACTIONS</div>
+      <div class="corp-actions-btns">
+        <button type="button" class="phbtn" onclick="openFinancials()">FINANCIALS</button>
+        <button type="button" class="phbtn" onclick="openLoan()">💳 LOANS</button>
+        <button type="button" class="phbtn" onclick="openSaveLoad()">💾 SAVE / LOAD</button>
+      </div>
+    </div>
     <div class="ph">YOUR STATIONS <sub id="ownlbl">1 AM · 1 FM</sub></div>
     <div id="stns"></div>
   </div>

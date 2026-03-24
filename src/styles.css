@@ -72,8 +72,8 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .tk.hi{color:var(--amb)}.tk.alr{color:var(--red)}
 @keyframes scrl{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-/* Live game — two columns: market / news left, station cards right (wavelength-ui.html) */
-#main{display:grid;grid-template-columns:460px 1fr;align-items:start;min-height:calc(100vh - 116px)}
+/* Live game — two columns: market / news left (wider for long station names), station cards right */
+#main{display:grid;grid-template-columns:minmax(520px,1.32fr) minmax(0,1fr);align-items:start;min-height:calc(100vh - 116px)}
 .pnl{border-right:1px solid var(--bdr);padding:20px}
 #pc{border-right:none}
 #pl{padding-right:16px}
@@ -91,7 +91,10 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .sbi-val{font-family:var(--fd);font-size:20px;color:var(--wht);line-height:1.1}
 .sbi-val.amb{color:var(--amb)}
 .sbi-val.grn{color:var(--grn)}
-#scen-banner{padding:8px 12px;background:rgba(245,166,35,.04);border-left:2px solid rgba(245,166,35,.3);margin-bottom:10px;cursor:pointer}
+#scen-banner{padding:8px 12px;background:rgba(245,166,35,.04);border-left:2px solid rgba(245,166,35,.3);margin-bottom:8px;cursor:pointer}
+.corp-actions-wrap{padding-bottom:10px;margin-bottom:16px;border-bottom:1px solid var(--bdr)}
+.corp-actions-h{font-family:var(--ft);font-size:11px;letter-spacing:0.22em;color:var(--mut);margin-bottom:8px}
+.corp-actions-btns{display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center}
 .scen-banner-name{font-family:var(--ft);font-size:12px;color:var(--amb);letter-spacing:2px}
 .scen-banner-desc{font-size:14px;color:var(--mut);line-height:1.4;margin-top:2px}
 .corp-tag{font-family:var(--ft);font-size:11px;letter-spacing:1px;padding:1px 4px;border-radius:2px;margin-left:4px;opacity:.85}
