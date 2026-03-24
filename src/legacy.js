@@ -6403,15 +6403,14 @@ function openRanker(){
     }).join('');
     const pubBadge=s.isPublic?'<span style="font-size:13px;background:#1e3a5f;color:#7dd3fc;padding:1px 5px;border-radius:2px;margin-left:4px;font-family:var(--ft)">NPR</span>':'';
     const corpBadge=s.corpOwner&&!s.isPlayer?`<span style="font-size:13px;background:${s.corpColor||'#374151'};color:#fff;padding:1px 5px;border-radius:2px;font-family:var(--ft)">${(s.corpName||'CORP').split(' ')[0]}</span>`:'';
-    const intelAttr=!isP&&!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="Click for competitor intel"`:'';
-    const intelBadge=!isP&&!s.isPublic?'<span style="color:var(--mut);font-size:15px;line-height:1;flex-shrink:0;margin-left:6px">🔍</span>':'';
+    const intelAttr=!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="${isP?'Open station intel':'View competitor intel'}"`:'';
     const simB=row.pair?'<span style="color:var(--blu);font-size:14px"> ◈</span>':(s.simulcastWith?'<span style="color:var(--blu);font-size:14px"> ◈</span>':'');
     const op=simulcastOperationalSource(s);
     const fmtLbl=FM[op.format]?.l||op.format;
     const callLine=row.pair?`${callDisplay(row.lead)} + ${callDisplay(row.rcv)}`:callDisplay(s);
     const freqLine=row.pair?`${row.lead.freq} + ${row.rcv.freq}`:s.freq;
     const lineColor=row.pair?row.lead.color:s.color;
-    const oneLine=`<span style="display:inline-flex;align-items:center;flex-wrap:nowrap;white-space:nowrap;gap:6px;min-width:0"><span class="rc" style="color:${lineColor};font-family:var(--fd);flex-shrink:0">${callLine}</span>${simB}${pubBadge}${corpBadge}<span style="color:var(--mut);flex-shrink:0">·</span><span style="color:var(--off);flex-shrink:0">${fmtLbl}</span><span style="color:var(--mut);flex-shrink:0">·</span><span style="color:var(--wht);flex-shrink:0">${freqLine}</span>${intelBadge}</span>`;
+    const oneLine=`<span style="display:inline-flex;align-items:center;flex-wrap:nowrap;white-space:nowrap;gap:6px;min-width:0"><span class="rc" style="color:${lineColor};font-family:var(--fd);flex-shrink:0">${callLine}</span>${simB}${pubBadge}${corpBadge}<span style="color:var(--mut);flex-shrink:0">·</span><span style="color:var(--off);flex-shrink:0">${fmtLbl}</span><span style="color:var(--mut);flex-shrink:0">·</span><span style="color:var(--wht);flex-shrink:0">${freqLine}</span></span>`;
     const rkCls=`${isP?'rky':s.isPlayer?'rkp2':s.isPublic?'rkp':''}`;
     return `<tr class="${rkCls}">
       <td class="stc"${intelAttr}><div style="overflow:hidden;text-overflow:ellipsis;max-width:min(480px,55vw)">${oneLine}</div></td>
@@ -6442,15 +6441,14 @@ function openRanker(){
 // ── COMPETITOR INTEL ──────────────────────────────────────────────
 function showCompIntel(sid){
   const s=G.stations.find(st=>st.id===sid);
-  // Block only your own stations; allow AI stations AND opponent player stations
   if(!s)return;
-  if(s.isPlayer && mpIsMe(s))return;
   const op=simulcastOperationalSource(s);
   const fmd=FM[op.format]||{};
   const pr=s.cp;
+  const isOwn=s.isPlayer&&mpIsMe(s);
 
-  // Revenue: show ±15% noise as a "trade publication estimate"
-  const estRev=(s.fin?.rev||0)*(0.85+Math.random()*0.30);
+  // Revenue: fuzzy for competitors; exact books for your own station
+  const estRev=isOwn?(s.fin?.rev||0):(s.fin?.rev||0)*(0.85+Math.random()*0.30);
   const trend=!pr?'—':pr.col?'⬇⬇ COLLAPSING':pr.under?'⬇ DECLINING':pr.sur?'⬆ SURGING':'→ STABLE';
   const trendColor=!pr?'var(--mut)':pr.col?'var(--red)':pr.under?'var(--amb)':pr.sur?'var(--grn)':'var(--off)';
 
@@ -6495,10 +6493,12 @@ function showCompIntel(sid){
     ?`<div class="sr"><span class="lb">Ownership</span><span class="vl" style="color:${s.corpColor||'#9ca3af'}">${s.corpName||'Corporate'}</span></div>`
     :`<div class="sr"><span class="lb">Ownership</span><span class="vl" style="color:var(--mut)">Independent</span></div>`;
 
-  document.getElementById('ci-title').textContent=`${s.callLetters} — COMPETITOR INTEL`;
+  document.getElementById('ci-title').textContent=`${s.callLetters} — ${isOwn?'STATION INTEL':'COMPETITOR INTEL'}`;
   document.getElementById('ci-body').innerHTML=`
     <div class="ibox" style="margin-bottom:14px">
-      <strong style="color:var(--amb)">⚠ Trade Publication Estimates</strong> — Revenue figures are approximate. Share data is from Arbitron ratings.
+      ${isOwn
+        ?`<strong style="color:var(--grn)">Your station</strong> — Revenue and share below are from your books and ratings (no masking).`
+        :`<strong style="color:var(--amb)">⚠ Trade Publication Estimates</strong> — Revenue figures are approximate. Share data is from Arbitron ratings.`}
     </div>
     <div class="ms2">
       <div class="msh">STATION PROFILE</div>
@@ -6512,7 +6512,7 @@ function showCompIntel(sid){
       <div class="sr"><span class="lb">Overall Share</span><span class="vl amb">${pct(s.rat.share)}</span></div>
       <div class="sr"><span class="lb">AQH Listeners</span><span class="vl">${s.rat.aqh.toLocaleString()}</span></div>
       <div class="sr"><span class="lb">Trend</span><span class="vl" style="color:${trendColor}">${trend}</span></div>
-      <div class="sr"><span class="lb">Est. Revenue / Period</span><span class="vl">${f$(Math.round(estRev/50000)*50000)}</span></div>
+      <div class="sr"><span class="lb">${isOwn?'Revenue / Period':'Est. Revenue / Period'}</span><span class="vl">${f$(isOwn?Math.round((s.fin?.rev||0)/50000)*50000:Math.round(estRev/50000)*50000)}</span></div>
       <div class="sr"><span class="lb">Core Demographic</span><span class="vl">${cohLabels[topCoh]||topCoh}</span></div>
     </div>
     <div class="ms2" style="margin-top:12px">
@@ -6535,7 +6535,7 @@ function showCompIntel(sid){
     ${(s._history||[]).length?`
     <div class="ms2" style="margin-top:12px">
       <div class="msh">STATION HISTORY <span style="color:var(--mut);font-size:13px;font-weight:400">(public record — format changes & milestones only)</span></div>
-      ${renderHistoryRows(s._history||[], true)}
+      ${renderHistoryRows(s._history||[], !isOwn)}
     </div>`:''}
   `;
   om('m-ci');
@@ -9305,14 +9305,12 @@ function rMkt(){
   const sw=document.getElementById('scenwrap');
   if(sw&&MP.mode!=='live'){if(!sw.dataset.id||sw.dataset.id!==G.sc.id){sw.dataset.id=G.sc.id;sw.innerHTML='';}}
   const rankRows=buildSimulcastCombinedRankRows(G.stations);
-  const mx=rankRows.length?rankRows[0].share||1:1;
   document.getElementById('mtb').innerHTML=rankRows.map((row,i)=>{
     const s=row.pair?row.lead:row.st;
     const op=simulcastOperationalSource(s);
     const share=row.share,rev=row.rev;
     const pr=s.cp,tr=!pr?'—':pr.col?'⬇⬇':pr.under?'⬇':pr.sur?'⬆':'→';
     const tc=!pr?'tfl':pr.col||pr.under?'tdn':pr.sur?'tup':'tfl';
-    const wp=Math.round((share/mx)*100);
     const band=s.fmBooster?'FM+':(s.sig.type==='FM'?'FM':'AM');
     const simMark='<span style="color:var(--blu);font-size:13px">◈</span>';
     const calls=row.pair
@@ -9322,11 +9320,10 @@ function rMkt(){
         :callDisplay(s);
     const _me=row.pair?(mpIsMe(row.lead)||mpIsMe(row.rcv)):mpIsMe(s);
     const _anyP=s.isPlayer;
-    const clickAttr=!_anyP&&!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="View competitor intel"`:'';
+    const clickAttr=!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="${_me?'Open station intel':_anyP?'View opponent intel':'View competitor intel'}"`:'';
     const badges=_me?'<span class="yp">YOU</span>':_anyP?`<span class="yp" style="background:${s.color||'#60a5fa'};color:#000">OPP</span>`:'';
-    const intelEl=!_anyP&&!s.isPublic?'<span style="color:var(--mut);font-size:14px;line-height:1;flex-shrink:0;margin-left:2px">&#128269;</span>':'';
-    const stationCell=`<div class="mt-station-inner"><span class="clg" style="color:${mpStationColor(s)}">${calls}</span><span class="mt-stn-meta" title="Band">${band}</span>${badges?`<span style="display:inline-flex;align-items:center;flex-shrink:0">${badges}</span>`:''}${intelEl}</div>`;
-    return `<tr class="${_me?'you':''}"${!_anyP&&!s.isPublic?clickAttr:''}><td><span class="rn">${i+1}</span></td><td class="mt-station">${stationCell}</td><td><span class="fmtag">${FM[op.format]?.l||op.format}</span></td><td><span class="shn" style="color:${_me?'var(--amb)':_anyP?s.color:'var(--wht)'}">${pct(share)}</span></td><td><div class="bc"><div class="bb"><div class="bf ${_me?'you':''}" style="width:${wp}%;${_anyP&&!_me?'background:'+s.color:''}"></div></div><span class="${tc}" style="font-size:15px">${tr}</span></div></td><td><span class="rvn">${f$(rev)}</span></td></tr>`;
+    const stationCell=`<div class="mt-station-inner"><span class="clg" style="color:${mpStationColor(s)}">${calls}</span><span class="mt-stn-meta" title="Band">${band}</span>${badges?`<span style="display:inline-flex;align-items:center;flex-shrink:0">${badges}</span>`:''}</div>`;
+    return `<tr class="${_me?'you':''}"${clickAttr}><td><span class="rn">${i+1}</span></td><td class="mt-station">${stationCell}</td><td><span class="fmtag">${FM[op.format]?.l||op.format}</span></td><td><span class="shn" style="color:${_me?'var(--amb)':_anyP?s.color:'var(--wht)'}">${pct(share)}</span></td><td class="mt-trend"><span class="${tc}" style="font-size:15px">${tr}</span></td><td><span class="rvn">${f$(rev)}</span></td></tr>`;
   }).join('');
   // In MP, show the current player's lead station; in solo, G.ps[0]
   const _myStns = MP.mode==='live' ? G.ps.filter(s=>s._mpOwner===MP.playerId) : G.ps;
