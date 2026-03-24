@@ -72,8 +72,8 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .tk.hi{color:var(--amb)}.tk.alr{color:var(--red)}
 @keyframes scrl{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-/* Live game — ~40% market (left), ~60% stations (right); minmax(0,…) prevents grid blowout from long text */
-#main{display:grid;grid-template-columns:minmax(0,2fr) minmax(0,3fr);align-items:start;min-height:calc(100vh - 116px)}
+/* Live game — ~⅓ market (left), ~⅔ stations (right); minmax(0,…) prevents grid blowout from long text */
+#main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);align-items:start;min-height:calc(100vh - 116px)}
 .pnl{border-right:1px solid var(--bdr);padding:20px}
 #pc{border-right:none}
 #pl{padding-right:16px}
@@ -172,21 +172,23 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .scen{background:var(--pnl);border:1px solid var(--adm);border-left:3px solid var(--amb);padding:14px 16px;margin-bottom:20px}
 .scenl{font-family:var(--fd);font-size:15px;letter-spacing:2px;color:var(--amb);margin-bottom:4px}
 .scend{font-size:15px;color:var(--off);line-height:1.65;font-style:italic}
-.mt{width:100%;table-layout:fixed;border-collapse:collapse;margin-bottom:22px}
-.mt th{font-family:var(--ft);font-size:13px;letter-spacing:1px;color:var(--mut);padding:5px 6px 6px;border-bottom:1px solid var(--bdr);text-align:left}
+.mt{width:100%;table-layout:fixed;border-collapse:collapse;margin-bottom:18px}
+.mt th{font-family:var(--ft);font-size:13px;letter-spacing:1px;color:var(--mut);padding:4px 5px 5px;border-bottom:1px solid var(--bdr);text-align:left}
 .mt th:not(:first-child):not(:nth-child(2)):not(:nth-child(3)){text-align:right}
-.mt td{padding:5px 6px;border-bottom:1px solid rgba(51,51,51,.5);vertical-align:middle;font-size:14px}
+.mt td{padding:4px 5px;border-bottom:1px solid rgba(51,51,51,.5);vertical-align:middle;font-size:14px}
 .mt th:nth-child(1),.mt td:nth-child(1){width:2.25rem;padding-left:4px;padding-right:4px}
-.mt th:nth-child(2),.mt td:nth-child(2){width:32%;overflow:hidden}
+.mt th:nth-child(2),.mt td:nth-child(2){width:32%;overflow:hidden;min-width:0}
 .mt th:nth-child(3),.mt td:nth-child(3){width:16%}
 .mt th:nth-child(4),.mt td:nth-child(4){width:11%}
 .mt th:nth-child(5),.mt td:nth-child(5){width:13%}
 .mt th:nth-child(6),.mt td:nth-child(6){width:15%}
 .mt tr:hover td{background:rgba(245,166,35,.04)}.mt tr[onclick]:hover td{background:rgba(245,166,35,.09);cursor:pointer}
 .mt tr.you td{background:rgba(245,166,35,.07)}
-.mt-station-inner{display:flex;align-items:center;gap:6px;min-width:0;width:100%}
+.mt td.mt-station{padding:4px 5px;overflow:hidden;vertical-align:middle;min-width:0}
+.mt-station-inner{display:flex;align-items:center;gap:6px;min-width:0;width:100%;max-width:100%}
 .mt-station-inner .clg{flex:1 1 0%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px;letter-spacing:1px}
 .mt-stn-meta{flex-shrink:0;font-family:var(--ft);font-size:11px;color:var(--mut);font-weight:600}
+#pl .mt .fmtag{font-size:13px}
 .rn{font-family:var(--ft);font-size:14px;color:var(--mut)}
 .clg{font-family:var(--fd);font-size:19px;letter-spacing:2px}
 .yp{font-family:var(--ft);font-size:14px;background:var(--amb);color:var(--blk);padding:2px 5px;margin-left:5px;letter-spacing:1px;vertical-align:middle}

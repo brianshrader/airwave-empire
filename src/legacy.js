@@ -9097,7 +9097,12 @@ function rMkt(){
     const tc=!pr?'tfl':pr.col||pr.under?'tdn':pr.sur?'tup':'tfl';
     const wp=Math.round((share/mx)*100);
     const band=s.fmBooster?'FM+':(s.sig.type==='FM'?'FM':'AM');
-    const calls=row.pair?`${callDisplay(row.lead)} + ${callDisplay(row.rcv)} <span style="color:var(--blu);font-size:13px">◈</span>`:callDisplay(s)+(s.simulcastWith?' <span style="color:var(--blu);font-size:13px">◈</span>':'');
+    const simMark='<span style="color:var(--blu);font-size:13px">◈</span>';
+    const calls=row.pair
+      ?`${callDisplay(simulcastOperationalSource(row.lead))} + ${simMark}`
+      :s.simulcastWith
+        ?`${callDisplay(simulcastOperationalSource(s))} + ${simMark}`
+        :callDisplay(s);
     const _me=row.pair?(mpIsMe(row.lead)||mpIsMe(row.rcv)):mpIsMe(s);
     const _anyP=s.isPlayer;
     const clickAttr=!_anyP&&!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="View competitor intel"`:'';
