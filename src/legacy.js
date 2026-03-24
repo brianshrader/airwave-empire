@@ -153,8 +153,7 @@ function fccCanAcquire(entity, sigType, G){
 }
 
 // ── FM BOOSTER COSTS ─────────────────────────────────────────────
-// Available from 1978 onward — lets a struggling AM convert to low-power FM.
-// FM Translator for AM stations — NOT available until 2009.
+// FM Translator for AM stations — NOT available until 2009 (FCC AM Revitalization).
 // The FCC's AM Revitalization proceeding + 2010 rule change allowed AM stations
 // to acquire FM translators via HD Radio subchannels. Before 2009, AM operators
 // who wanted FM presence had to buy a real FM license or do a full simulcast.
@@ -2206,7 +2205,9 @@ window._mpApply_fmbooster = function({ sid }) {
   }
   renderAll();
 };
-window._mpApply_migrate = function({ amId, fmId }) { renderAll(); };
+window._mpApply_migrate = function({ amId, fmId }) {
+  applyFmSimulcastMigration(amId, fmId);
+};
 window._mpApply_acq = function({ sid, playerId, color }) {
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
   s.isPlayer=true;
@@ -4881,6 +4882,9 @@ function loadLocalSaveAndClose(el){
 }
 
 // ── SIMULCAST HELPERS ─────────────────────────────────────────────
+// Model: each station has at most one simulcastWith partner + boolean _simulcastSource.
+// Future expansion (translator chains, multi-FM repeaters, clusters) may need a dedicated
+// simulcast group / graph instead of a single pair link — not implemented in this build.
 function breakSimulcast(G,stnId){
   const s=G.stations.find(st=>st.id===stnId);
   if(!s||!s.simulcastWith)return;
@@ -7357,7 +7361,7 @@ function doRename(sid){
   cm('m-rename');renderAll();
 }
 
-// 3e. FM MIGRATION — break simulcast and move audience to FM
+// 3e. FM MIGRATION — end simulcast; FM becomes flagship (format / brand / talent / identity)
 function openMigrate(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   // Find the paired FM station
@@ -7365,9 +7369,10 @@ function openMigrate(sid){
   const am=s.sig.type==='AM'?s:(fm?.sig.type==='AM'?fm:null);
   const fmStn=s.sig.type==='FM'?s:(fm?.sig.type==='FM'?fm:null);
   if(!am||!fmStn){
-    document.getElementById('migrateb').innerHTML=`<p class="di">Migration requires an active AM/FM simulcast pair. Set up a simulcast first.</p><button class="cnl" onclick="cm('m-migrate')">CLOSE</button>`;
+    document.getElementById('migrateb').innerHTML=`<p class="di">This action requires an active AM/FM simulcast pair. Use <strong>Simulcast this station</strong> first to bridge the signals, then move the full programming franchise to FM.</p><button class="cnl" onclick="cm('m-migrate')">CLOSE</button>`;
     om('m-migrate');return;
   }
+  const fmCallEsc=callDisplay(fmStn);
   // How many listeners would follow? Depends on FM penetration and year.
   // Higher fmp = more car/home radios have FM = more follow
   const followRate=Math.min(.85,Math.max(.20,G.fmp*1.1));
@@ -7376,9 +7381,9 @@ function openMigrate(sid){
   const estimatedLost=amAqh-estimatedFollow;
   const fmpPct=Math.round(G.fmp*100);
   document.getElementById('migrateb').innerHTML=`
-    <p class="di">You're ready to make the move. Break the simulcast, retire the AM format, and commit fully to FM — taking as many listeners with you as FM penetration allows.</p>
+    <p class="di">End the simulcast bridge and make <strong>${fmCallEsc}</strong> your <strong>flagship</strong>: the full format, brand, on-air staff, strategy, and community identity move to the FM signal. The AM facility becomes an empty shell — reformat or sell it separately.</p>
     <div class="ms2">
-      <div class="msh">MIGRATION ESTIMATE — ${G.year}</div>
+      <div class="msh">AUDIENCE TRANSFER ESTIMATE — ${G.year}</div>
       <div class="sr"><span class="lb">AM current AQH</span><span class="vl">${amAqh.toLocaleString()}</span></div>
       <div class="sr"><span class="lb">FM current AQH</span><span class="vl">${fmAqh.toLocaleString()}</span></div>
       <div class="sr"><span class="lb">FM penetration (${G.year})</span><span class="vl amb">${fmpPct}%</span></div>
@@ -7389,118 +7394,104 @@ function openMigrate(sid){
     ${G.fmp<.65?`<div class="wbox"><strong>WARNING:</strong> FM penetration is only ${fmpPct}% in ${G.year}. A large chunk of your AM audience doesn't own FM radios yet — they won't follow. Consider waiting until FM penetration is higher (post-1977).</div>`:''}
     ${G.fmp>=.75?`<div class="bbox"><strong>GOOD TIMING:</strong> FM penetration is ${fmpPct}%. Most listeners have FM receivers. This is a solid window to make the move.</div>`:''}
     <div class="ms2">
-      <div class="msh">WHAT TRANSFERS TO FM</div>
-      <div class="sr"><span class="lb">Format &amp; Brand</span><span class="vl pos">✓ ${FM[fmStn.format]?.l||fmStn.format} — "${fmStn.brand}"</span></div>
+      <div class="msh">MOVES TO ${fmCallEsc.toUpperCase()} (NEW FLAGSHIP)</div>
+      <div class="sr"><span class="lb">Format &amp; Brand</span><span class="vl pos">✓ ${FM[am.format]?.l||am.format} — "${am.brand}" (from ${am.callLetters})</span></div>
       <div class="sr"><span class="lb">All Talent</span><span class="vl pos">✓ ${Object.values(am.prog).filter(sd=>sd?.talent).map(sd=>sd.talent.name).join(', ')||'None hired'}</span></div>
       <div class="sr"><span class="lb">Format Strategy</span><span class="vl pos">✓ Drift positioning preserved</span></div>
       <div class="sr"><span class="lb">Demo Target</span><span class="vl pos">✓ Audience lean preserved</span></div>
       <div class="sr"><span class="lb">Programming Quality</span><span class="vl pos">✓ ${am.oq}/100 moves to FM</span></div>
       <div class="sr"><span class="lb">AM after migration</span><span class="vl" style="color:var(--off)">Available to reformat or sell</span></div>
     </div>
-    <button class="cfm" onclick="doMigrate('${am.id}','${fmStn.id}')">COMMIT — MIGRATE TO FM</button>
+    <button class="cfm" onclick="doMigrate('${am.id}','${fmStn.id}')">COMMIT — MOVE FORMAT TO ${fmCallEsc}</button>
     <button class="cnl" onclick="cm('m-migrate')">NOT YET</button>`;
   om('m-migrate');
 }
-function doMigrate(amId,fmId){
-  const am=G.stations.find(st=>st.id===amId),fm=G.stations.find(st=>st.id===fmId);
-  if(!am||!fm)return;
-  const followRate=Math.min(.85,Math.max(.20,G.fmp*1.1));
+/** End AM/FM simulcast; FM becomes programming flagship (shared by doMigrate + MP). */
+function applyFmSimulcastMigration(amId, fmId) {
+  const am = G.stations.find(st => st.id === amId), fm = G.stations.find(st => st.id === fmId);
+  if (!am || !fm) return false;
+  if (am.sig.type !== 'AM' || am.fmBooster) return false;
+  if (fm.sig.type !== 'FM' || fm.fmBooster) return false;
+  const daySlots = ['morningDrive', 'afternoonDrive', 'midday', 'evening', 'overnight'];
+  const oldFormat = am.format;
+  const followRate = Math.min(.85, Math.max(.20, G.fmp * 1.1));
 
   // ── 1. TRANSFER AUDIENCE MOMENTUM ────────────────────────────────
-  // Full AM audience share targets transfer (scaled by FM penetration).
-  // The FM already has some audience from simulcast — take the higher of
-  // current FM momentum or the transferred AM share on each cohort.
-  Object.keys(am.rat.cur).forEach(coh=>{
-    const amSh=am.rat.cur[coh]?.share||0;
-    const fmCur=fm.mom[coh]?.cur||0;
-    const transferred=amSh*followRate;
-    const newVal=Math.min(.90,Math.max(fmCur,transferred));
-    if(fm.mom[coh])fm.mom[coh].cur=newVal,fm.mom[coh].tgt=Math.max(fm.mom[coh].tgt||0,newVal);
-    else fm.mom[coh]={cur:newVal,tgt:newVal};
+  Object.keys(am.rat.cur).forEach(coh => {
+    const amSh = am.rat.cur[coh]?.share || 0;
+    const fmCur = fm.mom[coh]?.cur || 0;
+    const transferred = amSh * followRate;
+    const newVal = Math.min(.90, Math.max(fmCur, transferred));
+    if (fm.mom[coh]) fm.mom[coh].cur = newVal, fm.mom[coh].tgt = Math.max(fm.mom[coh].tgt || 0, newVal);
+    else fm.mom[coh] = { cur: newVal, tgt: newVal };
   });
 
-  // ── 2. MOVE FORMAT (if AM is the lead and FM is just simulcasting) ─
-  // If AM and FM share a format, nothing to do — FM already has it.
-  // If somehow different, FM takes AM's format identity.
-  if(fm.format!==am.format){
-    fm.format=am.format;
-    fm.brand=am.brand;
-    fm.flog=[...am.flog||[]];
-  }
+  // ── 2. FLAGSHIP PROGRAMMING ON FM (always from former source leg) ─
+  fm.format = am.format;
+  fm.brand = am.brand;
+  fm.flog = [...(am.flog || [])];
 
   // ── 3. MOVE ALL TALENT ───────────────────────────────────────────
-  // Every filled talent slot moves from AM to FM.
-  // Talent follows the format, not the transmitter.
-  Object.entries(am.prog).forEach(([slot,sd])=>{
-    if(!sd)return;
-    if(sd.talent){
-      // Move talent to FM slot, preserving all properties
-      if(!fm.prog[slot])fm.prog[slot]={quality:sd.quality,talent:null};
-      fm.prog[slot].talent=sd.talent;
-      fm.prog[slot].quality=Math.max(fm.prog[slot].quality||0, sd.quality);
-      sd.talent=null; // vacate AM slot
-    } else {
-      // Move programming quality even if no talent
-      if(fm.prog[slot])fm.prog[slot].quality=Math.max(fm.prog[slot].quality||0, sd.quality);
+  Object.entries(am.prog).forEach(([slot, sd]) => {
+    if (!sd) return;
+    if (sd.talent) {
+      if (!fm.prog[slot]) fm.prog[slot] = { quality: sd.quality, talent: null };
+      fm.prog[slot].talent = sd.talent;
+      fm.prog[slot].quality = Math.max(fm.prog[slot].quality || 0, sd.quality);
+      sd.talent = null;
+    } else if (fm.prog[slot]) {
+      fm.prog[slot].quality = Math.max(fm.prog[slot].quality || 0, sd.quality);
     }
   });
 
-  // ── 4. MOVE FORMAT STRATEGY (DRIFT POSITIONING) ──────────────────
-  if(am.drift){
-    if(!fm.drift)fm.drift={};
-    Object.entries(am.drift).forEach(([fmt,val])=>{ fm.drift[fmt]=val; });
+  // ── 4–5. DRIFT + DEMO ────────────────────────────────────────────
+  if (am.drift) {
+    if (!fm.drift) fm.drift = {};
+    Object.entries(am.drift).forEach(([fmt, val]) => { fm.drift[fmt] = val; });
   }
-  if(am.driftHistory){
-    fm.driftHistory=am.driftHistory;
-  }
+  if (am.driftHistory) fm.driftHistory = am.driftHistory;
+  fm.demoLean = am.demoLean || 0;
 
-  // ── 5. MOVE DEMO TARGET ──────────────────────────────────────────
-  fm.demoLean=am.demoLean||0;
+  // ── 6–7. PROG INVESTMENT + OQ (prelim) ────────────────────────────
+  fm.progInvestment = (fm.progInvestment || 0) + (am.progInvestment || 0);
+  am.progInvestment = 0;
+  fm.oq = Math.max(fm.oq || 0, am.oq || 0);
 
-  // ── 6. MOVE PROGRAMMING INVESTMENT ──────────────────────────────
-  fm.progInvestment=(fm.progInvestment||0)+(am.progInvestment||0);
-  am.progInvestment=0;
+  // ── 8–9. STRATEGIC TYPE + COMMUNITY IDENTITY ──────────────────────
+  if (am.str && am.str !== 'emerging') fm.str = am.str;
+  fm.identity = Math.max(fm.identity || 0, am.identity || 0);
+  fm._identityPeak = Math.max(fm._identityPeak || 0, am._identityPeak || 0);
+  fm._formatAge = Math.max(fm._formatAge || 0, am._formatAge || 0);
+  if ((am.identityBudget || 0) > (fm.identityBudget || 0)) fm.identityBudget = am.identityBudget;
 
-  // ── 7. MOVE OVERALL QUALITY ──────────────────────────────────────
-  fm.oq=Math.max(fm.oq||0, am.oq||0);
+  // ── 10. END SIMULCAST; AM NO LONGER PROGRAMMING SOURCE ─────────────
+  breakSimulcast(G, am.id);
+  am.demoLean = 0;
+  am.identity = 0;
+  am._identityPeak = 0;
+  am._formatAge = 0;
+  am.identityBudget = 0;
+  am.drift = {};
+  delete am.driftHistory;
+  daySlots.forEach(sl => { am.prog[sl] = { quality: 20, talent: null }; });
+  am.oq = Math.round(Object.entries(SW).reduce((sum, [sl, w]) => sum + effSlotQForOq(am.prog[sl]) * w, 0));
+  fm.oq = Math.round(Object.entries(SW).reduce((sum, [sl, w]) => sum + effSlotQForOq(fm.prog[sl]) * w, 0));
 
-  // ── 8. MOVE PERSONALITY / STRATEGIC TYPE ─────────────────────────
-  // FM station takes on the AM's persona for AI/scoring purposes
-  if(am.str&&am.str!=='emerging') fm.str=am.str;
-
-  // ── 9. MOVE COMMUNITY IDENTITY ───────────────────────────────────
-  // The brand's community roots follow the format to FM, not the transmitter.
-  // FM inherits the full identity score, peak, format age, and active budget.
-  fm.identity=Math.max(fm.identity||0, am.identity||0);
-  fm._identityPeak=Math.max(fm._identityPeak||0, am._identityPeak||0);
-  fm._formatAge=Math.max(fm._formatAge||0, am._formatAge||0);
-  if((am.identityBudget||0)>(fm.identityBudget||0)) fm.identityBudget=am.identityBudget;
-
-  // ── 10. RESET AM ──────────────────────────────────────────────────
-  // AM is now a blank slate — player reformats it next turn.
-  // Keep call letters and license but clear format identity.
-  am.simulcastWith=null;
-  fm.simulcastWith=null;
-  am.demoLean=0;
-  am.progInvestment=0;
-  am.identity=0;
-  am._identityPeak=0;
-  am._formatAge=0;
-  am.identityBudget=0;
-  // Recalculate FM overall quality from moved talent
-  fm.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(fm.prog[sl])*w,0));
-
-  const oldFormat=am.format;
-  const amCall=am.callLetters,fmCall=fm.callLetters;
-  const talentMoved=Object.values(fm.prog).filter(sd=>sd?.talent).length;
+  const fmCall = fm.callLetters, amCall = am.callLetters;
   G.news.unshift({
-    v:'HIGH',
-    t:`📻 ${fmCall} now full-time FM — ${FM[oldFormat]?.l||oldFormat}, talent, strategy all transferred. ${amCall} available to reformat.`,
-    y:G.year,p:G.period,iy:true
+    v: 'HIGH',
+    t: `📻 ${fmCall} is now the flagship — ${FM[oldFormat]?.l || oldFormat}, brand, talent, and identity live on FM. ${amCall} is off the simulcast (automation shell only) — reformat or sell.`,
+    y: G.year, p: G.period, iy: true
   });
-  calcRev(fm,G);
-  MP.action('migrate',{amId,fmId});
-  cm('m-migrate');renderAll();
+  calcRev(fm, G);
+  calcRev(am, G);
+  return true;
+}
+function doMigrate(amId, fmId) {
+  if (!applyFmSimulcastMigration(amId, fmId)) return;
+  MP.action('migrate', { amId, fmId });
+  cm('m-migrate');
+  renderAll();
 }
 
 // 3b. FM BOOSTER
@@ -7556,6 +7547,7 @@ function openFmBooster(sid){
 
 function doFmBooster(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s||s.sig.type!=='AM'||s.fmBooster)return;
+  if(G.year<2009){alert('FM translators for AM stations were not permitted until 2009.');return;}
   const cost=getBoosterCost(G.year);
   if(G.cash<cost){alert('Not enough cash.');return;}
   G.cash-=cost;
@@ -9206,9 +9198,15 @@ function rStns(){
         const streamBtn='<button class="abt '+(op.stream?.active?'g active':G.year>=2005?'b':'')+'" onclick="openStream(\''+op.id+'\')" '+(G.year<2005?'style="opacity:.30;cursor:default"':'')+'>'+(op.stream?.active?'📶 STREAMING ✓':'📶 ADD STREAMING')+'</button>';
         const fmBtn=st=>{
           if(!st)return '';
-          if(st.simulcastWith&&!st.fmBooster)return '<button class="abt g" onclick="openMigrate(\''+st.id+'\')">📡 MIGRATE '+callDisplay(st)+'</button>';
+          if(st.simulcastWith&&!st.fmBooster){
+            const partner=st.simulcastWith?G.stations.find(x=>x.id===st.simulcastWith):null;
+            const fmLeg=partner&&(partner.sig.type==='FM'&&!partner.fmBooster)?partner:(st.sig.type==='FM'&&!st.fmBooster?st:null);
+            const fmLbl=fmLeg?callDisplay(fmLeg):'FM';
+            return '<button class="abt g" onclick="openMigrate(\''+st.id+'\')">📡 MOVE FORMAT TO '+fmLbl+'</button>';
+          }
           if(st.fmBooster)return '<button class="abt g active" onclick="openFmBooster(\''+st.id+'\')">📡 TRANSLATOR '+callDisplay(st)+' ✓</button>';
-          if(st.sig.type==='AM'&&G.year>=1978)return '<button class="abt '+(st.fmBooster?'g active':'b')+'" onclick="openFmBooster(\''+st.id+'\')">'+(st.fmBooster?'📡 TRANSLATOR ✓':'📡 FM TRANSLATOR')+' '+callDisplay(st)+'</button>';
+          if(st.sig.type==='AM'&&G.year>=2009)return '<button class="abt b" onclick="openFmBooster(\''+st.id+'\')">📡 FM TRANSLATOR '+callDisplay(st)+'</button>';
+          if(st.sig.type==='AM')return '<button class="abt" style="opacity:.28;cursor:default;font-size:14px" title="AM FM translators unlock in 2009 (FCC AM Revitalization). Use Simulcast or a full FM license before then.">📡 FM TRANSLATOR</button>';
           return '<button class="abt" style="opacity:.25;cursor:default;font-size:14px">📡 FM TRANSLATOR</button>';
         };
         const legLbl=st=>junior?`${st.callLetters}-${st.sig.type}`:callDisplay(st);
