@@ -2993,6 +2993,9 @@ function leanMult(coh,lean){
   return Math.max(.15, 1 + lean * axis * 2);
 }
 function appl(s,coh,G){
+  // BP-slot placeholders and any malformed row must not break appeal math (e.g. seedNewEntry
+  // iterates the full G.stations list while 1976-deferred slots still exist in 1975).
+  if(!s||s._bpSlotDeferred||!s.sig||!s.format||typeof s.oq!=='number'||!s.ops)return 0;
   // Use smoothstep era curves — computed from year, not event-driven steps
   const year=G.year||1970;
   const fmp=fmpForYear(year);
@@ -5032,7 +5035,8 @@ function simulcastPairLeadReceiver(a,b){
 function buildSimulcastCombinedRankRows(allStations){
   const seen=new Set();
   const rows=[];
-  const sorted=[...allStations].sort((a,b)=>b.rat.share-a.rat.share);
+  const active=allStations.filter(s=>s&&!s._bpSlotDeferred&&s.rat);
+  const sorted=[...active].sort((a,b)=>b.rat.share-a.rat.share);
   sorted.forEach(s=>{
     if(seen.has(s.id))return;
     const p=simulcastPartnerStation(s);
@@ -5105,8 +5109,8 @@ function buildResearchReport(s,G){
 
   // ── COMPETITION ──
   const compFmts=FMT_COMPETITION[s.format]||[];
-  const directCompetitors=G.stations.filter(o=>o.id!==s.id&&compFmts.includes(o.format));
-  const sameFormat=G.stations.filter(o=>o.id!==s.id&&o.format===s.format);
+  const directCompetitors=G.stations.filter(o=>o&&!o._bpSlotDeferred&&o.id!==s.id&&compFmts.includes(o.format));
+  const sameFormat=G.stations.filter(o=>o&&!o._bpSlotDeferred&&o.id!==s.id&&o.format===s.format);
   const totalCompCount=directCompetitors.length;
   const competitionBleed=Math.min(0.22,COMPETITION_BLEED*(totalCompCount/5));
 
@@ -5141,7 +5145,7 @@ function buildResearchReport(s,G){
   }
 
   // ── RANK vs COMPETITION ──
-  const allByShare=[...G.stations].sort((a,b)=>b.rat.share-a.rat.share);
+  const allByShare=[...G.stations].filter(s=>s&&!s._bpSlotDeferred&&s.rat).sort((a,b)=>b.rat.share-a.rat.share);
   const rank=allByShare.findIndex(st=>st.id===s.id)+1;
   const total=allByShare.length;
 
@@ -6631,8 +6635,23 @@ function showCompIntel(sid){
 // DECISIONS
 // ════════════════════════════════════════════════════════════════
 // 1. HIRE TALENT
-let HS={sid:null,slot:null,pool:[],sel:null};
-function openHire(sid){sid=ensureOpsSourceSid(sid);const s=G.stations.find(st=>st.id===sid);if(!s)return;HS={sid,slot:null,pool:[],sel:null};rHire(s);om('m-tal');scrollModalContentToTop('m-tal');}
+/** Rivals with on-air talent in `slot` eligible for poach from hire modal (same rules as contract POACH section). */
+function hireModalRivalPoachCandidates(sid, slot){
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s)return[];
+  const incumbent=s.prog[slot]?.talent;
+  return G.stations.filter(st=>st&&!st._bpSlotDeferred&&!st.isPlayer&&!st.isPublic&&st.rat?.share>0.01&&st.id!==sid)
+    .map(st=>({st, sd:st.prog[slot]}))
+    .filter(({sd:rsd})=>rsd?.talent)
+    .filter(({sd:rsd})=>{
+      if(!incumbent)return true;
+      return rsd.talent.quality>incumbent.quality*0.75;
+    })
+    .sort((a,b)=>b.sd.talent.quality-a.sd.talent.quality)
+    .slice(0,5);
+}
+let HS={sid:null,slot:null,pool:[],sel:null,poachRivalId:null};
+function openHire(sid){sid=ensureOpsSourceSid(sid);const s=G.stations.find(st=>st.id===sid);if(!s)return;HS={sid,slot:null,pool:[],sel:null,poachRivalId:null};rHire(s);om('m-tal');scrollModalContentToTop('m-tal');}
 function rHire(s){
   const slots=['morningDrive','afternoonDrive','midday','evening','overnight'];
   const _simSrc=simulcastProgrammingSource(s);
@@ -6651,22 +6670,56 @@ function rHire(s){
     return `<button class="ssb${HS.slot===sl?' sel':''}" onclick="pickSlot('${s.id}','${sl}')"><span><strong>${SL[sl]}</strong><span style="font-size:14px;color:var(--mut);margin-left:6px">SLOT${slotQlbl}${talQlbl}</span></span><span class="cur">${tn}</span></button>`;
   }).join('');
   let ph='<p class="di" style="margin-top:12px">Select a daypart to see available talent.</p>';
-  if(HS.slot&&HS.pool.length){
+  if(HS.slot){
     const s2=G.stations.find(st=>st.id===HS.sid);
     const cur=s2.prog[HS.slot]?.talent;
     const slotQcur=Math.round(s2.prog[HS.slot]?.quality||0);
-    ph=`${cur?`<div class="ibox">Current: <strong>${cur.name}</strong> — quality ${Math.round(cur.quality)}, slot quality ${slotQcur}, ${f$(cur.salary)}/yr.</div>`:''}
-    <p class="di">Four candidates. <strong>Talent Rating</strong> is how good they are — higher talent boosts slot quality on hire. <strong>Format Fit</strong> scales the boost.</p>
-    <div class="tg">${HS.pool.map((t,i)=>{const fit=Math.round((t.formatFit[s2.format]||.3)*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const boost=Math.round((q/100)*fit*.35*35);const newSlotQ=Math.min(100,curSlotQ+boost);return `<div class="to${HS.sel===i?' sel':''}" onclick="pickTal(${i})"><div><div class="ton">${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div><div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">SLOT BOOST</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ}</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div></div></div><div><span class="tocl">ANNUAL SAL</span><span class="toc">${f$(t.salary)}</span></div></div>`;}).join('')}</div>`;
+    const poachList=hireModalRivalPoachCandidates(HS.sid,HS.slot);
+    const freeRows=HS.pool.map((t,i)=>{const fit=Math.round((t.formatFit[s2.format]||.3)*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const boost=Math.round((q/100)*fit*.35*35);const newSlotQ=Math.min(100,curSlotQ+boost);return `<div class="to${HS.sel===i&&!HS.poachRivalId?' sel':''}" onclick="pickTal(${i})"><div><div class="ton">${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div><div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">SLOT BOOST</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ}</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div></div></div><div><span class="tocl">ANNUAL SAL</span><span class="toc">${f$(t.salary)}</span></div></div>`;}).join('');
+    const rivalRows=poachList.map(({st,sd:rsd})=>{
+      const rt=rsd.talent;
+      const fit=Math.round((rt.formatFit[s2.format]||.3)*100);
+      const fc=fit>=75?'good':fit>=55?'warn':'poor';
+      const q=Math.round(rt.quality);
+      const dispOffer=Math.round(rt.salary*rnd(1.10,1.30)/500)*500;
+      const minSign=Math.round(rt.salary*1.25/500)*500;
+      const oldTal=s2.prog[HS.slot]?.talent;
+      const buyout=oldTal&&(oldTal.cyr||0)>0.1?Math.round(oldTal.salary*(oldTal.cyr||0)*0.60/500)*500:0;
+      const minCash=minSign+buyout;
+      const canAfford=G.cash>=minCash;
+      const sel=HS.poachRivalId===st.id;
+      return `<div class="to${sel?' sel':''}" onclick="pickHirePoach('${st.id}')"><div><div class="ton">${rt.name} <span style="font-size:13px;color:var(--amb);font-family:var(--ft);letter-spacing:.06em">RIVAL</span></div><div class="tos" style="color:var(--mut)">${st.callLetters} · ${SL[HS.slot]}</div><div class="tost"><div><span class="tosl">TALENT Q</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">FIT</span><span class="tosv ${fc}">${fit}%</span></div><div><span class="tosl">AT RIVAL</span><span class="tosv">${f$(rt.salary)}/yr</span></div></div><div style="font-size:13px;color:var(--mut);margin-top:4px">Est. offer ~${f$(dispOffer)}/yr · need ≥${f$(minCash)} cash${buyout?` (incl. buyout ${f$(buyout)})`:''}</div></div><div><span class="tocl">ACTION</span><span class="toc" style="font-size:14px;color:${canAfford?'var(--mut)':'var(--red)'}">${canAfford?'Select, then HIRE':'Short on cash'}</span></div></div>`;
+    }).join('');
+    const curBox=cur?`<div class="ibox">Current: <strong>${cur.name}</strong> — quality ${Math.round(cur.quality)}, slot quality ${slotQcur}, ${f$(cur.salary)}/yr.</div>`:'';
+    const freeSection=HS.pool.length
+      ?`<div class="msh" style="margin-top:16px;margin-bottom:8px;font-size:13px;letter-spacing:.12em;color:var(--mut)">FREE AGENTS</div>
+    <p class="di">Four market candidates. <strong>Talent Rating</strong> is how good they are — higher talent boosts slot quality on hire. <strong>Format Fit</strong> scales the boost.</p>
+    <div class="tg">${freeRows}</div>`
+      :'';
+    const rivalSection=poachList.length
+      ?`<div class="msh" style="margin-top:${HS.pool.length?20:16}px;margin-bottom:8px;font-size:13px;letter-spacing:.12em;color:var(--amb)">RIVAL TALENT</div>
+    <p class="di">Poach from another station in <strong>${SL[HS.slot]}</strong> — same signing rules as the contract screen (salary premium + buyout if replacing someone).</p>
+    <div class="tg">${rivalRows}</div>`
+      :'';
+    const emptyNote=!HS.pool.length&&!poachList.length?'<p class="di" style="color:var(--mut)">No free agents or poachable rivals for this slot right now.</p>':'';
+    ph=`${curBox}${freeSection}${rivalSection}${emptyNote}`;
   }
   const fmtHireNote=TALK_FMTS.includes(s.format)?'Local hosts beat syndication for building loyal listeners — especially morning drive.':'Morning Drive has the biggest ratings impact. Automation is cheap but bleeds share over time.';
-  document.getElementById('talb').innerHTML=`<p class="di">${fmtHireNote} Salary grows ~1–2% per year.</p><div class="ssl">${sbtns}</div><div id="tp">${ph}</div><button class="cfm" onclick="doHire()" ${HS.sel===null?'disabled':''}>HIRE TALENT</button><button class="cnl" onclick="cm('m-tal')">CANCEL</button>`;
+  const hireReady=HS.poachRivalId||HS.sel!==null;
+  const hireLabel=HS.poachRivalId?'HIRE (POACH)':'HIRE TALENT';
+  document.getElementById('talb').innerHTML=`<p class="di">${fmtHireNote} Salary grows ~1–2% per year.</p><div class="ssl">${sbtns}</div><div id="tp">${ph}</div><button class="cfm" onclick="doHire()" ${!hireReady?'disabled':''}>${hireLabel}</button><button class="cnl" onclick="cm('m-tal')">CANCEL</button>`;
   scrollModalContentToTop('m-tal');
 }
-function pickSlot(sid,sl){const s=G.stations.find(st=>st.id===sid);HS.slot=sl;HS.sel=null;HS.pool=mkPool(sl,s.format,G.year);rHire(s);}
-function pickTal(i){HS.sel=i;rHire(G.stations.find(st=>st.id===HS.sid));}
+function pickSlot(sid,sl){const s=G.stations.find(st=>st.id===sid);HS.slot=sl;HS.sel=null;HS.poachRivalId=null;HS.pool=mkPool(sl,s.format,G.year);rHire(s);}
+function pickTal(i){HS.sel=i;HS.poachRivalId=null;rHire(G.stations.find(st=>st.id===HS.sid));}
+function pickHirePoach(rivalId){HS.poachRivalId=rivalId;HS.sel=null;rHire(G.stations.find(st=>st.id===HS.sid));}
 function doHire(){
-  if(HS.sel===null||!HS.slot)return;
+  if(!HS.slot)return;
+  if(HS.poachRivalId){
+    doPoach(HS.sid,HS.slot,HS.poachRivalId);
+    return;
+  }
+  if(HS.sel===null)return;
   const s=G.stations.find(st=>st.id===HS.sid),t=HS.pool[HS.sel],sl=HS.slot;
   t.periodsAtStation=0;
   t._hireYear=G.year;
@@ -9055,7 +9108,7 @@ function doPoach(sid, slot, rivalId){
   s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w,0));
   G.news.unshift({v:'HIGH',t:`🎙 SIGNED: ${name} joins ${s.callLetters} from ${rival.callLetters} — ${f$(offer)}/yr.`,y:G.year,p:G.period,iy:true});
   MP.action('poach', {sid, slot, rivalId, talentId:t.id||t.name});
-  cm('m-contract');renderAll();
+  cm('m-contract');cm('m-tal');renderAll();
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -9152,10 +9205,10 @@ function rScore(){
   const prevDecades=decadeKeys.map(y=>`<div class="sbr"><span class="sbl">${DECADE_NAMES[y]||y}</span><span class="sbv amb">${_dcSource[y].total}/100 · ${_dcSource[y].vp||0}VP</span></div>`).join('');
   const totalVP=decadeKeys.reduce((s,y)=>s+(_dcSource[y].vp||0),0);
   // Market rank for MY primary station only
-  const sorted=[...G.stations].sort((a,b)=>b.rat.share-a.rat.share);
+  const sorted=[...G.stations].filter(s=>s&&!s._bpSlotDeferred&&s.rat).sort((a,b)=>b.rat.share-a.rat.share);
   const myStns = myPS();
   const primaryRank=myStns.length ? sorted.findIndex(s=>s.id===myStns[0].id)+1 : sorted.findIndex(s=>s.isPlayer)+1;
-  const rankLabel=primaryRank<=0?'—':`#${primaryRank} of ${G.stations.length}`;
+  const rankLabel=primaryRank<=0?'—':`#${primaryRank} of ${sorted.length}`;
   const rankColor=primaryRank<=1?'var(--grn)':primaryRank<=3?'var(--amb)':'var(--off)';
   const totalRev=myPS().reduce((s,st)=>s+st.fin.rev,0);
   const gradeColor=grade==='A'?'var(--grn)':grade==='B'?'#8aef8a':grade==='C'?'var(--amb)':grade==='F'?'var(--red)':'#e89020';
@@ -9182,7 +9235,7 @@ function rScore(){
 }
 
 function rTick(){
-  const srt=[...G.stations].sort((a,b)=>b.rat.share-a.rat.share);
+  const srt=[...G.stations].filter(s=>s&&!s._bpSlotDeferred&&s.rat).sort((a,b)=>b.rat.share-a.rat.share);
   // Find player rank(s) in market
   const playerRanks=myPS().map(s=>{
     const rank=srt.findIndex(st=>st.id===s.id)+1;
@@ -9427,7 +9480,7 @@ function rMkt(){
   // Pick the lead station (highest share among this player's stations)
   const _leadStn = _myStns.reduce((best,s)=>(!best||s.rat.share>best.rat.share)?s:best, null) || ps;
   document.getElementById('dmb').innerHTML=COH.map(coh=>{
-    const by=[...G.stations].sort((a,b)=>(b.rat.cur[coh]?.share||0)-(a.rat.cur[coh]?.share||0));
+    const by=[...G.stations].filter(s=>s&&!s._bpSlotDeferred&&s.rat).sort((a,b)=>(b.rat.cur[coh]?.share||0)-(a.rat.cur[coh]?.share||0));
     const mx2=by[0]?.rat.cur[coh]?.share||1;
     const bars=by.slice(0,8).map(s=>{const sh=s.rat.cur[coh]?.share||0,w=Math.round((sh/mx2)*100);const op=simulcastOperationalSource(s);const _isMe=mpIsMe(s),_isAnyP=s.isPlayer;return `<div class="cb" data-tip="${callDisplay(s)} · ${FM[op.format]?.l||op.format} · ${pct(sh)}" style="background:${s.color};width:${w}%;opacity:${_isAnyP?(_isMe?1:.65):.38};${_isMe?'outline:2px solid rgba(255,255,255,.4)':_isAnyP?'outline:1px dashed rgba(255,255,255,.2)':''}" title=""></div>`;}).join('');
     return `<div class="cr"><span class="crl">${coh}</span><div class="cbs">${bars}</div><span class="cp">${pct(_leadStn.rat.cur[coh]?.share||0)}</span></div>`;
@@ -9469,7 +9522,7 @@ function rIntel(){
       }).join('');
     }
   }
-  document.getElementById('intel').innerHTML=mpOpponentHTML+[...G.stations].filter(s=>!s.isPlayer).sort((a,b)=>b.rat.share-a.rat.share).map(s=>{
+  document.getElementById('intel').innerHTML=mpOpponentHTML+[...G.stations].filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&s.rat).sort((a,b)=>b.rat.share-a.rat.share).map(s=>{
     const pubTag=s.isPublic?`<span style="font-size:15px;background:#1e3a5f;color:#7dd3fc;padding:1px 4px;border-radius:2px;font-family:var(--ft)"> PUBLIC</span>`:'';
     const corpTag=s.corpOwner&&!s.isPlayer?`<span style="font-size:15px;background:${s.corpColor||'#374151'};color:#fff;padding:1px 4px;border-radius:2px;font-family:var(--ft)"> ${(s.corpName||'CORP').split(' ')[0].toUpperCase()}</span>`:'';
 
