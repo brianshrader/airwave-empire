@@ -275,10 +275,11 @@ function vacantLabel(fmt,slot){
   return 'AUTOMATION';
 }
 const DAYPART_SLOTS=['morningDrive','afternoonDrive','midday','evening','overnight'];
-/** Market-wide superstar talent — conservative tuning (effects wired in later phases). */
+/** Market-wide superstar talent — prior 80/60/5y gates rarely fired by 1980 in normal play; tuned so 0–2 stars can emerge late 70s without trivializing. */
 const SUPERSTAR={
-  QUALITY_THRESHOLD:80,
-  TENURE_THRESHOLD:5,
+  RAW_QUALITY_MIN:55,
+  QUALITY_THRESHOLD:75,
+  TENURE_THRESHOLD:3,
   MAX_PER_MARKET:2,
   EFF_Q_MULT:1.40,
   OQ_BONUS:8,
@@ -603,7 +604,7 @@ function countSuperstars(G){
 
 /**
  * Promote/revoke talent.superstar across the market (max MAX_PER_MARKET).
- * Eligible: raw talent Q ≥ 60, hybrid effQ ≥ threshold, tenure ≥ TENURE_THRESHOLD calendar years (periods/2).
+ * Eligible: raw Q ≥ RAW_QUALITY_MIN, hybrid effQ ≥ QUALITY_THRESHOLD, tenure ≥ TENURE_THRESHOLD calendar years (periods/2).
  * effQ = round(rawQ×0.65 + slotQ×0.35) — blends personal ability with on-air slot strength without slot-only “fake” stars.
  * Tie-break: prime dayparts first (morning → afternoon → …), then effQ, then callsign/slot.
  */
@@ -626,7 +627,7 @@ function updateSuperstars(G){
       const t=sd?.talent;
       if(!t)return;
       const rawQ=Math.round(t.quality||0);
-      if(rawQ<60)return;
+      if(rawQ<S.RAW_QUALITY_MIN)return;
       const slotQ=Math.round(sd.quality||0);
       const effQ=Math.round(rawQ*0.65+slotQ*0.35);
       const ten=t.periodsAtStation||0;
@@ -723,6 +724,26 @@ function amViabForYear(year){
   const v1=_smoothstep(1975,1988,year)*0.45; // steady erosion through late 80s
   const v2=_smoothstep(1988,1997,year)*0.51; // rapid collapse — last music AMs gone by ~1997
   return Math.max(0.04,1.0-v1-v2);
+}
+/**
+ * Late-1970s FM music listening preference: stereo music and clean audio pull audiences
+ * to FM as receiver penetration rises, while talk stays AM-weighted. Ramps mid-70s, full
+ * by ~1979–86, then fades (FM is the default — no permanent artificial lift). Applied only
+ * in appl() for full-power FM; does not affect revenue.
+ */
+function fmMusicEraPreferenceMult(s, year, fmp) {
+  if (!s || s.isPublic || s.sig.type !== 'FM') return 1;
+  if (['NEWS_TALK', 'SPORTS_TALK', 'PODCAST_TALK'].includes(s.format)) return 1;
+  const strong = new Set(['TOP40', 'ALBUM_ROCK', 'BEAUTIFUL_MUSIC', 'ADULT_CONTEMP', 'SOUL_RNB', 'CHR', 'CLASSIC_ROCK', 'MOR', 'OLDIES', 'RHYTHMIC', 'HOT_AC', 'URBAN_CONTEMP', 'ALT_ROCK']);
+  let fmtW = 0;
+  if (strong.has(s.format)) fmtW = 1;
+  else if (s.format === 'COUNTRY') fmtW = 0.55;
+  else if (['SPANISH', 'GOSPEL', 'CLASSIC_HITS', 'ADULT_STANDARDS'].includes(s.format)) fmtW = 0.45;
+  else return 1;
+  const eraWindow = _smoothstep(1971, 1978, year) * (1 - _smoothstep(1986, 1992, year));
+  const fmpRamp = _smoothstep(0.30, 0.58, fmp);
+  const raw = 0.46 * eraWindow * fmpRamp * fmtW;
+  return Math.min(1.5, 1 + raw);
 }
 // AQH engagement rates by cohort (from Arbitron methodology)
 // Fraction of population in an average quarter-hour
@@ -3064,7 +3085,8 @@ function appl(s,coh,G){
     oldiesAgeMult=agePen[coh]!==undefined?(year>=2010?agePen[coh]*Math.max(0.3,1-(year-2010)*0.06):agePen[coh]):1.0;
     oldiesAgeMult=Math.max(0.02,oldiesAgeMult);
   }
-  return Math.max(0,aff*q*eff*amP*atl*sp*sat*strm*simBonus*driftMod*eraMult*oldiesAgeMult);
+  const fmMusPref = fmMusicEraPreferenceMult(s, year, fmp);
+  return Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * eraMult * oldiesAgeMult * fmMusPref);
 }
 function recalc(stations,G){
   COH.forEach(coh=>{
@@ -3142,10 +3164,10 @@ function recalc(stations,G){
     },0);
   });
 
-  // Long-tail share smoothing: mild blend toward the commercial-station mean so
-  // mid-pack stations don't cliff into unrealistically thin tails (common in 1970s
-  // sims). Stronger outlets keep slightly more of their raw share; weaker ones get
-  // a touch more pull toward the average. Total commercial share mass is preserved,
+  // Long-tail share smoothing: blend toward the commercial-station mean (1970s-style
+  // cliff softening). Top ranks use w≈0.94 (light pull); mid-pack moderate; ranks ~7–12
+  // and below get stronger pull via w = 0.94 − p·0.10 (clamped 0.80–0.94) so weak
+  // stations don’t collapse near zero. Total commercial share mass is preserved (scale),
   // then cohort cur shares scale proportionally so AQH stays consistent.
   const comm = stations.filter(s => !s.isPublic);
   if (comm.length >= 2) {
@@ -3159,7 +3181,7 @@ function recalc(stations,G){
       byRank.forEach((s, rank) => {
         const raw = rawById.get(s.id);
         const p = comm.length > 1 ? rank / (comm.length - 1) : 0;
-        const w = 0.92 - p * 0.04;
+        const w = Math.min(0.94, Math.max(0.80, 0.94 - p * 0.10));
         const blended = w * raw + (1 - w) * avg;
         blendedById.set(s.id, blended);
         sumBlend += blended;
