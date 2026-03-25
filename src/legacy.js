@@ -371,7 +371,7 @@ function triggerTalentTrouble(G){
     : TROUBLE_SCENARIOS.filter(sc=>sc.tier==='minor');
   if(!pool.length)return acts;
   const scenario=pool[Math.floor(Math.random()*pool.length)];
-  const rivalPool=G.stations.filter(st=>!st.isPlayer&&!st.isPublic&&st.rat.share>0.03);
+  const rivalPool=G.stations.filter(st=>st&&!st._bpSlotDeferred&&!st.isPlayer&&!st.isPublic&&st.rat?.share>0.03);
   const rival=rivalPool.length?rivalPool[Math.floor(Math.random()*rivalPool.length)]:null;
   G.pendingDecisionEvent={
     scenarioId:scenario.id,
@@ -1360,7 +1360,7 @@ function mpRenderDraft(players, era) {
 
   // ── Station cards ─────────────────────────────────────────────
   const allPicked = Object.values(draft.picks).flat();
-  const playerStations = G ? G.stations.filter(s => !s.isPublic) : [];
+  const playerStations = G ? G.stations.filter(s => s&&!s._bpSlotDeferred&&!s.isPublic) : [];
 
   const cards = document.getElementById('draft-cards');
   if (cards) {
@@ -2219,7 +2219,7 @@ window._mpApply_fmbooster = function({ sid }) {
     s.sig.pw = 'translator';
     // Pick an FM frequency not already in use
     const fmFreqs=['92.3 FM','93.7 FM','96.9 FM','98.3 FM','101.1 FM','105.3 FM','106.7 FM'];
-    const usedFm=G.stations.map(st=>st.freq);
+    const usedFm=G.stations.map(st=>st.freq||st._deferFreq).filter(Boolean);
     const newFm=fmFreqs.find(f=>!usedFm.includes(f))||'107.9 FM';
     s._boosterOrigFreq=s.freq;
     s.freq=newFm;
@@ -2281,7 +2281,8 @@ const BP=[
   {type:'FM',fmt:'ALBUM_ROCK',     pw:'25kw',str:'moderate'},
 
   // ── MARKET DEPTH (indices 10-17) ─────────────────────────────────
-  // Atlanta 1970: ~20 commercial stations. Duncan data shows by 1998 only ~6 AMs
+  // Spring 1970 start uses ~13 on-air commercials + 5 BP slots deferred to 1972–76
+  // (see ATLANTA_1970_DEFERRED_LAUNCHES). Duncan data shows by 1998 only ~6 AMs
   // survive with ratings — all non-music (NT/Sports/Talk/Gospel/Standards).
   // AM music stations die or flip formats through the 70s-90s naturally.
   // Rivals here are constructed to create that arc realistically.
@@ -2316,6 +2317,17 @@ const BP=[
   // idx 17: AM Gospel 1kw DA weak — tiny daytimer, brokered time by 1985
   {type:'AM',fmt:'GOSPEL',     pw:'DA', str:'weak'},
 ];
+// Early-1970 Atlanta should start less fragmented: fewer weak FMs and tail AMs on day one.
+// Additional competitors roll on via ATLANTA_1970_DEFERRED_LAUNCHES (same path as mid-game rival entry:
+// mkStn → seedNewEntry → news) as FM uptake and dial fragmentation rise in the 70s.
+const ATLANTA_1970_DEFERRED_LAUNCHES=[
+  {bpIdx:7,  y:1972,p:1}, // FM Album Rock 100kw emerging — big-FM rock after the pioneer era beds in
+  {bpIdx:12, y:1972,p:2}, // second AM Gospel 5kw niche — tail clutter, not a 1970 core
+  {bpIdx:15, y:1974,p:1}, // FM Album Rock 50kw moderate — fragmentation / second AOR fight
+  {bpIdx:16, y:1976,p:1}, // FM Country 50kw emerging — AM country handoff window
+  {bpIdx:17, y:1976,p:2}, // weak gospel daytimer — marginal tail
+];
+const ATLANTA_1970_DEFER_IDX=new Set(ATLANTA_1970_DEFERRED_LAUNCHES.map(e=>e.bpIdx));
 const STT={dominant:'star',strong:'mid',moderate:'mid',emerging:'entry',niche:'entry',weak:'entry'};
 const STQ={dominant:[68,88],strong:[55,75],moderate:[42,62],emerging:[30,52],niche:[25,48],weak:[18,38]};
 // STM: base appeal multiplier at FULL MATURITY for each strength tier.
@@ -3089,8 +3101,10 @@ function appl(s,coh,G){
   return Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * eraMult * oldiesAgeMult * fmMusPref);
 }
 function recalc(stations,G){
+  const activeIx=stations.map((s,i)=>s&&!s._bpSlotDeferred?i:-1).filter(i=>i>=0);
   COH.forEach(coh=>{
-    const sc=stations.map(s=>{
+    const sc=activeIx.map(i=>{
+      const s=stations[i];
       const m=STM[s.str]||{b:.7,v:.12,launchB:.20,ramp:8};
       const age=s.launchPeriod>0?(G.turn||0)-s.launchPeriod:999;
       if(s.isPublic){
@@ -3110,10 +3124,11 @@ function recalc(stations,G){
 
     // Competition bleed: dense same-format competition erodes everyone's share
     // e.g. 4 country stations each lose ~10% to each other
-    raw=raw.map((r,i)=>{
+    raw=raw.map((r,ri)=>{
+      const i=activeIx[ri];
       const s=stations[i];
       const competitors=(FMT_COMPETITION[s.format]||[]);
-      const count=stations.filter((o,j)=>j!==i&&competitors.includes(o.format)).length;
+      const count=activeIx.filter(j=>j!==i&&competitors.includes(stations[j].format)).length;
       const bleed=1-Math.min(0.22,COMPETITION_BLEED*(count/5));
       return r*bleed;
     });
@@ -3130,12 +3145,13 @@ function recalc(stations,G){
       raw=raw.map(r=>r<CAP?r+excess*(r/Math.max(freeSum,0.0001)):r);
     }
 
-    stations.forEach((s,i)=>{
+    activeIx.forEach((i,ri)=>{
+      const s=stations[i];
       // Identity creates a loyalty floor — high-identity stations bleed share slower
     const identityFloor=(s.isPlayer&&s.identity>20)
       ?(s.rat.cur[coh]?.share||0)*((s.identity/100)*0.35)
       :0;
-    const tgt=Math.max(raw[i], identityFloor),cur=s.mom[coh]?.cur||s.rat.cur[coh]?.share||0;
+    const tgt=Math.max(raw[ri], identityFloor),cur=s.mom[coh]?.cur||s.rat.cur[coh]?.share||0;
       const d=tgt-cur,spd=d>0?.35:.60,ns=Math.max(0,cur+d*spd);
       const pop=(POP.cohorts[coh]?.t||0)*effUniverse(s);
       // AQH: share × cohort population × universe × engagement rate
@@ -3155,6 +3171,7 @@ function recalc(stations,G){
     return s+pop*engage;
   },0);
   stations.forEach(s=>{
+    if(!s||s._bpSlotDeferred)return;
     s.rat.aqh=COH.reduce((sum,c)=>sum+(s.rat.cur[c]?.aqh||0),0);
     // Weight overall share by listening intensity, not just raw population
     s.rat.share=COH.reduce((sum,c)=>{
@@ -3169,7 +3186,7 @@ function recalc(stations,G){
   // and below get stronger pull via w = 0.94 − p·0.10 (clamped 0.80–0.94) so weak
   // stations don’t collapse near zero. Total commercial share mass is preserved (scale),
   // then cohort cur shares scale proportionally so AQH stays consistent.
-  const comm = stations.filter(s => !s.isPublic);
+  const comm = stations.filter(s => s && !s._bpSlotDeferred && !s.isPublic);
   if (comm.length >= 2) {
     const sumRaw = comm.reduce((a, s) => a + s.rat.share, 0);
     if (sumRaw > 1e-8) {
@@ -3211,10 +3228,12 @@ function recalc(stations,G){
   }
 
   stations.forEach(s=>{
+    if(!s||s._bpSlotDeferred||!s.rat)return;
     s.rat.hist.push({year:G.year,period:G.period,share:s.rat.share});
     if(s.rat.hist.length>24)s.rat.hist.shift();
   });
   stations.forEach(s=>{
+    if(!s||s._bpSlotDeferred||!s.rat)return;
     const h=s.rat.hist;if(h.length<2)return;
     const cur=s.rat.share,prev=h[h.length-2]?.share||cur,two=h.length>=3?h[h.length-3]?.share||cur:cur;
     s.cp={dq:cur-prev,d2:cur-two,under:cur-two<-.008,col:cur-two<-.020,sur:cur-two>.010};
@@ -3260,8 +3279,10 @@ function seedRat(stations,fmpOrYear){
   // Accept either a year (new) or a raw fmp value (legacy calls) for backward compat
   const year=fmpOrYear>1?fmpOrYear:1970; // if >1 it's a year, otherwise treat as legacy fmp
   const mockG={year,satDrag:0,streamDrag:0};
+  const activeIx=stations.map((s,i)=>s&&!s._bpSlotDeferred?i:-1).filter(i=>i>=0);
   COH.forEach(coh=>{
-    const sc=stations.map(s=>{
+    const sc=activeIx.map(i=>{
+      const s=stations[i];
       const m=STM[s.str]||{b:.7,v:.12,launchB:.20,ramp:8};
       // Established stations (launchPeriod=-999) seed at mature b-value, not launchB
       const seedB=s.launchPeriod===-999?m.b:m.launchB;
@@ -3276,8 +3297,9 @@ function seedRat(stations,fmpOrYear){
       if(excess<0.0001)break;
       raw=raw.map(r=>r<CAP?r+excess*(r/Math.max(freeSum,0.0001)):r);
     }
-    stations.forEach((s,i)=>{
-      const sh=raw[i],pop=(POP.cohorts[coh]?.t||0)*effUniverse(s);
+    activeIx.forEach((i,ri)=>{
+      const s=stations[i];
+      const sh=raw[ri],pop=(POP.cohorts[coh]?.t||0)*effUniverse(s);
       const engage=AQH_ENGAGE[coh]||0.060;
       s.rat.cur[coh]={share:Math.round(sh*10000)/10000,aqh:Math.round(sh*pop*engage)};
       s.mom[coh]={tgt:sh,cur:sh};
@@ -3288,7 +3310,8 @@ function seedRat(stations,fmpOrYear){
     const engage=AQH_ENGAGE[c]||0.060;
     return s+pop*engage;
   },0);
-  stations.forEach(s=>{
+  activeIx.forEach(i=>{
+    const s=stations[i];
     s.rat.aqh=COH.reduce((sum,c)=>sum+(s.rat.cur[c]?.aqh||0),0);
     s.rat.share=COH.reduce((sum,c)=>{
       const pop=POP.cohorts[c]?.t||0;
@@ -3314,15 +3337,16 @@ function isSimulcastProgrammingReceiver(s,G){
 
 // ── REVENUE ENGINE ────────────────────────────────────────────────
 function calcRev(s,G){
+  if(s._bpSlotDeferred)return;
   // Non-commercial public stations earn no ad revenue — pledge-funded
   if(s.isPublic){s.fin={rev:0,fix:0,tal:0,cost:0,ebitda:0};return;}
   const adx=G.adx,streamDrag=G.streamDrag,year=G.year;
-  const playerStations=(G?.ps||G?.stations||[]).filter(st=>!st.isPublic);
+  const playerStations=(G?.ps||G?.stations||[]).filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic);
   // Sellout rate drifts toward market-position-appropriate level each period
   // Only runs during live gameplay (G.stations exists), not during initial seeding
   if(G.stations){
     // sort a copy — never mutate G.stations order mid-calcRev loop
-    const allComm=[...G.stations].filter(st=>!st.isPublic).sort((a,b)=>b.rat.share-a.rat.share);
+    const allComm=[...G.stations].filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic).sort((a,b)=>b.rat.share-a.rat.share);
     const rank=allComm.findIndex(st=>st.id===s.id)+1;
     const mktSize=allComm.length||1;
     const rankPct=1-(rank-1)/mktSize;
@@ -3542,13 +3566,14 @@ function calcRev(s,G){
   s.fin.ebitda=s.fin.rev-s.fin.cost;
 }
 function seedRev(stations,G){
-  stations.forEach(s=>calcRev(s,G));
-  const tot=stations.reduce((sum,s)=>sum+s.fin.rev,0);
+  stations.forEach(s=>{ if(!s||s._bpSlotDeferred)return; calcRev(s,G); });
+  const tot=stations.reduce((sum,s)=>sum+((!s||s._bpSlotDeferred)?0:(s.fin?.rev||0)),0);
   const annualTarget=marketAnnualBilling(G.year,G.marketId||ACTIVE_MARKET);
   const halfTarget=Math.round(annualTarget*0.5*marketHalfSeasonFactor(G.year,G.period||1)*Math.max(0.75,G.adx||1));
   if(tot>0&&halfTarget>0){
     const f=halfTarget/tot;
     stations.forEach(s=>{
+      if(!s||s._bpSlotDeferred)return;
       s.fin.rev=Math.round(s.fin.rev*f);
       if(s.fin.terRev!=null)s.fin.terRev=Math.round(s.fin.terRev*f);
       if(s.fin.streamRev!=null)s.fin.streamRev=Math.round(s.fin.streamRev*f);
@@ -3573,6 +3598,7 @@ function seedRev(stations,G){
 
 // ── DECAY ─────────────────────────────────────────────────────────
 function decay(s,year,period){
+  if(!s||s._bpSlotDeferred)return;
   const D={morningDrive:.035,afternoonDrive:.030,midday:.040,evening:.044,overnight:.050};
   // Programming budget: recurring (progBudget) plus any residual one-shot (progInvestment)
   const totalProgSpend=(s.ops?.progBudget||0)+(s.progInvestment||0);
@@ -3743,7 +3769,7 @@ function runMarketAttrition(G){
     return pool;
   };
 
-  const allComm = G.stations.filter(s=>!s.isPlayer&&!s.isPublic);
+  const allComm = G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic);
 
   // Cap: Atlanta market should have at most ~22-24 commercial stations post-2000
   // (~26 1990s, ~24 2000s, ~22 2010s — actual market data)
@@ -3836,7 +3862,7 @@ function runAI(G){
   const playerWeak=playerShares.filter(ps=>ps.cp&&ps.cp.col);   // player stations in freefall
   const playerStrong=playerShares.filter(ps=>ps.share>0.08);    // player's dominant stations
 
-  G.stations.filter(s=>!s.isPlayer).forEach(s=>{
+  G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer).forEach(s=>{
     const p=s.pers;if(!p)return;
     const pr=s.cp;
     const crisis=pr&&pr.d2<-p.pt;
@@ -3977,7 +4003,7 @@ function runAI(G){
         // Attempt 2: best available talent anywhere — instant poach vs rivals; deferred vs player
         let best=null,bq=0;
         G.stations.forEach(o=>{
-          if(o.id===s.id||o.isPublic)return;
+          if(!o||o._bpSlotDeferred||o.id===s.id||o.isPublic)return;
           const mt=o.prog.morningDrive;
           if(mt?.talent&&mt.talent.quality>bq&&mt.talent.quality>=60){
             bq=mt.talent.quality;best={st:o,t:mt.talent};
@@ -4208,7 +4234,7 @@ function applyEv(G,ev){
       const BEAUTIFUL_SUCCESSORS=['ADULT_CONTEMP','HOT_AC','ADULT_CONTEMP','ADULT_STANDARDS'];
       const successorPool=dying==='MOR'?MOR_SUCCESSORS:dying==='BEAUTIFUL_MUSIC'?BEAUTIFUL_SUCCESSORS:[successor];
       let migrateIdx=0;
-      G.stations.filter(s=>!s.isPlayer&&!s.isPublic&&s.format===dying).forEach(s=>{
+      G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic&&s.format===dying).forEach(s=>{
         // 75% migrate on the event — rest stay until rivalReformat catches them
         if(Math.random()<0.75){
           const old=FM[s.format]?.l||s.format;
@@ -4235,7 +4261,7 @@ function applyEv(G,ev){
       const dying=e.split(':')[1];
       const successors={BEAUTIFUL_MUSIC:'ADULT_CONTEMP',MOR:'NEWS_TALK',OLDIES:'CLASSIC_HITS'};
       const succ=successors[dying]||'NEWS_TALK';
-      G.stations.filter(s=>!s.isPlayer&&!s.isPublic&&s.format===dying).forEach(s=>{
+      G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic&&s.format===dying).forEach(s=>{
         s.format=succ;
         Object.keys(s.mom||{}).forEach(c=>s.mom[c]={tgt:0.005,cur:0.005});
         s.str='emerging';s.launchPeriod=G.turn||0;
@@ -4415,19 +4441,24 @@ function genMarket(scenId){
   // Resolve scenario first so we can build BP talent at the correct start year
   const sc=scenId?SC.find(s=>s.id===scenId)||pick(SC):pick(SC);
   const bpYear=sc.startYear||1970;
-  const stations=BP.map(bp=>mkStn(bp,nextFreq(bp.type),bpYear));
-  stations.forEach((s,i)=>s.color=CLR[i%CLR.length]);
+  const stations=BP.map((bp,i)=>{
+    const freq=nextFreq(bp.type);
+    if(bpYear===1970&&ATLANTA_1970_DEFER_IDX.has(i))
+      return{_bpSlotDeferred:true,_bpIdx:i,_deferFreq:freq};
+    return mkStn(bp,freq,bpYear);
+  });
+  stations.forEach((s,i)=>{ if(s&&!s._bpSlotDeferred) s.color=CLR[i%CLR.length]; });
   // BP stations are established — mark them mature so recalc
   // uses their full tier b-value, not launchB (which is for new entrants)
-  stations.forEach(s=>{ s.launchPeriod=-999; });
+  stations.forEach(s=>{ if(s&&!s._bpSlotDeferred) s.launchPeriod=-999; });
 
   // Clear channel designation: BP index 4 (dominant 50kW AM MOR — the WSB archetype)
   // is a Class A clear-channel station: unlimited power day/night, no directionality.
   // One other 50kW AM (index 0, the dominant Top40) is also clear channel in this market.
   // The rest (indices 1, 2, 5, 10) are 50kW daytime / reduced-power directional at night.
-  [0, 4].forEach(i => { if(stations[i]) stations[i].clearChannel = true; });
+  [0, 4].forEach(i => { const st=stations[i]; if(st&&!st._bpSlotDeferred) st.clearChannel = true; });
 
-  sc.idx.forEach((i,pi)=>{if(stations[i]){stations[i].isPlayer=true;
+  sc.idx.forEach((i,pi)=>{if(stations[i]&&!stations[i]._bpSlotDeferred){stations[i].isPlayer=true;
     // WSB scenario: dominant heritage station — minimal quality penalty (you inherited a well-run operation)
     // Quality adjustment: WSB starts near-peak; other scenarios tuned by oqBoost
     const oqAdj=sc.oqBoost||0;
@@ -4491,7 +4522,7 @@ function genMarket(scenId){
         cur.aqh=Math.round(newSh*pop*(AQH_ENGAGE[coh]||0.060));
         wsb.mom[coh]={tgt:newSh,cur:newSh};
         // Redistribute delta proportionally from rivals
-        const rivals=stations.filter(s=>!s.isPlayer&&!s.isPublic&&s.rat.cur[coh]);
+        const rivals=stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic&&s.rat.cur[coh]);
         const rivTotal=rivals.reduce((a,s)=>a+(s.rat.cur[coh]?.share||0),0);
         if(rivTotal>0.001&&delta>0)rivals.forEach(s=>{
           const s2=s.rat.cur[coh];
@@ -4505,6 +4536,7 @@ function genMarket(scenId){
       // Recompute weighted overall share for WSB and rivals
       const ewp=COH.reduce((s,c)=>{const pop=POP.cohorts[c]?.t||0;const eng=AQH_ENGAGE[c]||0.060;return s+pop*eng;},0);
       stations.forEach(s=>{
+        if(!s||s._bpSlotDeferred)return;
         s.rat.aqh=COH.reduce((sum,c)=>sum+(s.rat.cur[c]?.aqh||0),0);
         s.rat.share=COH.reduce((sum,c)=>{
           const pop=POP.cohorts[c]?.t||0;const eng=AQH_ENGAGE[c]||0.060;
@@ -4524,7 +4556,7 @@ function genMarket(scenId){
         const [,fmt,type,pw,str]=part.split('-');
         if(!fmt||!FM[fmt])return;
         // Don't add if this format is already represented in market
-        const already=stations.some(s=>s.format===fmt&&!s.isPlayer);
+        const already=stations.some(s=>s&&!s._bpSlotDeferred&&s.format===fmt&&!s.isPlayer);
         if(already)return;
         const freq=nextFreq(type);
         const ns=mkStn({type,fmt,pw,str},freq,startYear);
@@ -4544,7 +4576,7 @@ function genMarket(scenId){
           const MOR_SUCCESSORS=['NEWS_TALK','ADULT_CONTEMP','ADULT_STANDARDS','BEAUTIFUL_MUSIC'];
           const BEAUTIFUL_SUCCESSORS=['ADULT_CONTEMP','HOT_AC','ADULT_STANDARDS'];
           const successors=deadFmt==='MOR'?MOR_SUCCESSORS:deadFmt==='BEAUTIFUL_MUSIC'?BEAUTIFUL_SUCCESSORS:[pivot];
-          stations.filter(s=>!s.isPlayer&&s.format===deadFmt).forEach((s,i)=>{
+          stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&s.format===deadFmt).forEach((s,i)=>{
             // Cycle through successors so rivals spread across formats naturally
             const target=successors[i%successors.length];
             if(target&&FM[target]){
@@ -4556,7 +4588,7 @@ function genMarket(scenId){
         } else if(part.startsWith('fmt_purge:')){
           const deadFmt=part.split(':')[1];
           // Remove dead-format stations (replace with market-appropriate alternatives)
-          stations.forEach(s=>{if(!s.isPlayer&&s.format===deadFmt)s.format='NEWS_TALK';});
+          stations.forEach(s=>{if(s&&!s._bpSlotDeferred&&!s.isPlayer&&s.format===deadFmt)s.format='NEWS_TALK';});
         }
       });
     });
@@ -4596,7 +4628,7 @@ function genMarket(scenId){
             const pop=(POP.cohorts[coh]?.t||0)*effUniverse(player);
             rc.aqh=Math.round(ns*pop*(AQH_ENGAGE[coh]||0.060));
             player.mom[coh]={tgt:ns,cur:ns};
-            const rivals=stations.filter(s=>!s.isPlayer&&!s.isPublic&&s.rat.cur[coh]);
+            const rivals=stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic&&s.rat.cur[coh]);
             const rt=rivals.reduce((a,s)=>a+(s.rat.cur[coh]?.share||0),0);
             if(rt>0.001&&delta>0)rivals.forEach(s=>{
               const sc2=s.rat.cur[coh];
@@ -4608,6 +4640,7 @@ function genMarket(scenId){
           });
           const ewp=COH.reduce((s,co)=>{const p=POP.cohorts[co]?.t||0;return s+p*(AQH_ENGAGE[co]||0.060);},0);
           stations.forEach(s=>{
+            if(!s||s._bpSlotDeferred)return;
             s.rat.aqh=COH.reduce((sum,co)=>sum+(s.rat.cur[co]?.aqh||0),0);
             s.rat.share=COH.reduce((sum,co)=>{const p=POP.cohorts[co]?.t||0;const e=AQH_ENGAGE[co]||0.060;return sum+(s.rat.cur[co]?.share||0)*(p*e)/Math.max(ewp,1);},0);
           });
@@ -4623,7 +4656,7 @@ function genMarket(scenId){
     return{
       city:activeMkt2.label,marketId:ACTIVE_MARKET,year:startYear,period:1,
       turn:(startYear-1970)*2,
-      stations,ps:stations.filter(s=>s.isPlayer),
+      stations,ps:stations.filter(s=>s&&s.isPlayer),
       sc,cash:sc.cash,
       fmp:fmpForYear(startYear),adx:adxMod*(1.0+activeMkt2.adxBonus),satDrag:0,
       streamDrag:Math.min(.60,EVDATA.filter(ev=>ev.e==='stream+'&&ev.y<startYear).length*0.06),
@@ -4637,6 +4670,7 @@ function genMarket(scenId){
       stationFinHistory:{},
       debtWarningQ:0,
       loans:[],
+      _atl1970DeferredQueue:[],
     };
   }
 
@@ -4645,7 +4679,7 @@ function genMarket(scenId){
   const activeMkt=MARKETS[ACTIVE_MARKET]||MARKETS.atlanta;
   return{
     city:activeMkt.label,marketId:ACTIVE_MARKET,year:1970,period:1,turn:0,
-    stations,ps:stations.filter(s=>s.isPlayer),
+    stations,ps:stations.filter(s=>s&&s.isPlayer),
     sc,cash:sc.cash,
     fmp:fmpForYear(1970),adx:1.0+activeMkt.adxBonus,satDrag:0,streamDrag:0,
     fccAM:1,fccFM:1,
@@ -4657,7 +4691,32 @@ function genMarket(scenId){
     stationFinHistory:{},
     debtWarningQ:0,
     loans:[],
+    _atl1970DeferredQueue:ATLANTA_1970_DEFERRED_LAUNCHES.map(({bpIdx,y,p})=>({bpIdx,y,p})),
   };
+}
+
+// Scheduled Atlanta 1970 BP slots: same entry economics as event-driven `rival-` (seedNewEntry).
+function processAtlanta1970DeferredLaunches(G){
+  const q=G._atl1970DeferredQueue;
+  if(!q||!q.length)return;
+  const remain=[];
+  for(const ent of q){
+    if(G.year<ent.y||(G.year===ent.y&&G.period<ent.p)){remain.push(ent);continue;}
+    const i=ent.bpIdx;
+    const ph=G.stations[i];
+    if(!ph||!ph._bpSlotDeferred)continue;
+    const bp=BP[i];
+    const freq=ph._deferFreq;
+    const s=mkStn(bp,freq,G.year);
+    s.color=CLR[i%CLR.length];
+    s.entryTurn={year:G.year,period:G.period};
+    s.launchPeriod=G.turn||0;
+    G.stations[i]=s;
+    seedNewEntry(s,G);
+    calcRev(s,G);
+    G.news.unshift({v:'MEDIUM',t:`📡 ${s.callLetters} signs on — ${FM[bp.fmt]?.l||bp.fmt} (${bp.type} ${freq}). The dial keeps filling out.`,y:G.year,p:G.period});
+  }
+  G._atl1970DeferredQueue=remain;
 }
 
 // ── STATE ─────────────────────────────────────────────────────────
@@ -5423,7 +5482,7 @@ function talentEvents(G){
 
       // POACHING: rival AI stations try to steal star talent (morning drive only) — defer loss; player can match in contract modal
       if(slot==='morningDrive'&&t.quality>72&&Math.random()<0.06){
-        const rivals=G.stations.filter(st=>!st.isPlayer&&st.rat.share>0.05);
+        const rivals=G.stations.filter(st=>st&&!st._bpSlotDeferred&&!st.isPlayer&&st.rat?.share>0.05);
         if(rivals.length&&!s._rivalPoachPending){
           const rival=pick(rivals);
           const name=t.name;
@@ -5445,7 +5504,7 @@ function talentEvents(G){
 // ── RIVAL REFORMAT ────────────────────────────────────────────────
 function rivalReformat(G){
   // Non-commercial public stations are immune to all of this
-  const commercialRivals=G.stations.filter(s=>!s.isPlayer&&!s.isPublic);
+  const commercialRivals=G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic);
   // Formats unavailable after their sunset year
   // Formats unavailable after their sunset — can't reformat INTO a dead format
   const formatSunset={BEAUTIFUL_MUSIC:1995,MOR:1998,FULL_SERVICE:1975};
@@ -5515,9 +5574,10 @@ function rivalReformat(G){
       );
       if(!candidates.length)return;
       // Weighted format selection: favor growing formats, penalize oversaturated ones
-      const sorted=[...G.stations].sort((a,b)=>b.rat.share-a.rat.share);
-      const fmtCounts={};G.stations.forEach(st=>{fmtCounts[st.format]=(fmtCounts[st.format]||0)+1;});
-      const fmtShares={};G.stations.forEach(st=>{fmtShares[st.format]=(fmtShares[st.format]||0)+st.rat.share;});
+      const mktComm=G.stations.filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic);
+      const sorted=[...mktComm].sort((a,b)=>b.rat.share-a.rat.share);
+      const fmtCounts={};mktComm.forEach(st=>{fmtCounts[st.format]=(fmtCounts[st.format]||0)+1;});
+      const fmtShares={};mktComm.forEach(st=>{fmtShares[st.format]=(fmtShares[st.format]||0)+st.rat.share;});
       // Score each candidate format
       const scored=candidates.map(f=>{
         let score=1.0;
@@ -6043,7 +6103,7 @@ function checkRankMilestones(G){
   // In MP, host runs this for ALL player stations and tags milestones with _mpOwner.
   // _prevRank is updated for every station regardless of owner.
   // MILESTONE_Q only receives milestones belonging to the local player.
-  const allComm=[...G.stations].filter(st=>!st.isPublic).sort((a,b)=>b.rat.share-a.rat.share);
+  const allComm=[...G.stations].filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic).sort((a,b)=>b.rat.share-a.rat.share);
   G.ps.forEach(s=>{
     const prev=s._prevRank||null;
     const cur=allComm.findIndex(st=>st.id===s.id)+1;
@@ -6093,7 +6153,7 @@ function openSales(sid){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const cur=s.salesForce?.level||0;
-  const allComm=[...G.stations].filter(st=>!st.isPublic).sort((a,b)=>b.rat.share-a.rat.share);
+  const allComm=[...G.stations].filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic).sort((a,b)=>b.rat.share-a.rat.share);
   const rank=allComm.findIndex(st=>st.id===s.id)+1;
   const rows=SF_LEVELS.map(sf=>{
     const isCur=sf.id===cur;
@@ -6148,7 +6208,8 @@ function advTurn(){
   btn.disabled=true;btn.textContent='⟳ PROCESSING...';
   setTimeout(()=>{
     try{
-    const ev=[...chkEv(G),...applyDriftInflections(G),...pledgeDriveCheck(G),...runConsolidation(G),...runMarketAttrition(G)];
+      processAtlanta1970DeferredLaunches(G);
+      const ev=[...chkEv(G),...applyDriftInflections(G),...pledgeDriveCheck(G),...runConsolidation(G),...runMarketAttrition(G)];
     corporateDecay(G);
     runCorpLMAOffers(G);
     talentEvents(G);
@@ -6160,7 +6221,7 @@ function advTurn(){
     // so the MP broadcast block can build per-player milestones accurately.
     const _rankSnap={};
     if(MP.mode==='live'){
-      const _allComm2=[...G.stations].filter(st=>!st.isPublic).sort((a,b)=>b.rat.share-a.rat.share);
+      const _allComm2=[...G.stations].filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic).sort((a,b)=>b.rat.share-a.rat.share);
       G.ps.forEach(s=>{ _rankSnap[s.id]={prev:s._prevRank||null, cur:_allComm2.findIndex(st=>st.id===s.id)+1}; });
     }
     checkRankMilestones(G);
@@ -6212,7 +6273,7 @@ function advTurn(){
     }
     // Ranker snapshot
     const snap={year:G.year,period:G.period,label:`${G.year} ${PERIODS[G.period-1]}`,shares:{}};
-    G.stations.forEach(s=>{snap.shares[s.id]=s.rat.share;});
+    G.stations.forEach(s=>{ if(!s||s._bpSlotDeferred||!s.id)return; snap.shares[s.id]=s.rat.share; });
     G.rankerHistory.push(snap);
     acts.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     ev.forEach(e=>G.news.unshift({v:'HIGH',t:`📡 ${e.t}: ${e.d}`,y:e.y,p:e.p}));
@@ -6251,6 +6312,9 @@ function advTurn(){
     showSum(profit,ev,acts,alerts,wasYear,wasPeriod);
     if(G.period===1){G.period=2;}else{G.period=1;G.year++;}
     G.turn=(G.turn||0)+1;
+    // BP-slot entrants scheduled for the new calendar period appear as soon as the clock advances
+    // (start-of-turn processing still runs for launches tied to the period being simulated).
+    processAtlanta1970DeferredLaunches(G);
     // Keep G.fmp in sync with smoothstep curve (used by UI display and legacy references)
     G.fmp=fmpForYear(G.year);
     // Decade grade at end of fall of decade-end year
@@ -7593,7 +7657,7 @@ function doFmBooster(sid){
   // Assign an FM translator frequency
   const oldFreq=s.freq;
   const fmFreqs=['92.3 FM','93.7 FM','96.9 FM','98.3 FM','101.1 FM','105.3 FM','106.7 FM'];
-  const usedFm=G.stations.map(st=>st.freq);
+  const usedFm=G.stations.map(st=>st.freq||st._deferFreq).filter(Boolean);
   const newFm=fmFreqs.find(f=>!usedFm.includes(f))||'107.9 FM';
   s.freq=newFm;
   s._boosterOrigFreq=oldFreq;
@@ -7611,7 +7675,7 @@ function doFmBooster(sid){
 let FS={sid:null,chosen:null};
 function openFmt(sid){sid=ensureOpsSourceSid(sid);const s=G.stations.find(st=>st.id===sid);if(!s)return;FS={sid,chosen:null};rFmt(s);om('m-fm');}
 function rFmt(s){
-  const occ=G.stations.filter(st=>st.id!==s.id).map(st=>st.format);
+  const occ=G.stations.filter(st=>st&&!st._bpSlotDeferred&&st.id!==s.id).map(st=>st.format);
   const isAM=s.sig.type==='AM';
   const allFmts=Object.keys(FM).filter(f=>f!==s.format);
   const opts=allFmts.map(f=>{
@@ -7762,7 +7826,7 @@ function rAcq(){
   const canAcqAM=fccCanAcquire('player','AM',G);
   const canAcqFM=fccCanAcquire('player','FM',G);
   const limDesc=lim.mode==='pre96'?`${lim.am} AM + ${lim.fm} FM`:`${lim.total} total · max ${lim.perService}/service · ${G.stations.length} signals in market`;
-  const avail=G.stations.filter(s=>!s.isPlayer&&!s.isPublic);
+  const avail=G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic);
   if(!avail.length){document.getElementById('acb').innerHTML='<p class="di">No stations available for acquisition.</p>';return;}
   if(!canAcqAM&&!canAcqFM){document.getElementById('acb').innerHTML=`<p class="di">You have reached the FCC ownership limit — <strong>${limDesc}</strong>.</p>`;return;}
   const opts=avail.map(s=>{
@@ -8018,7 +8082,7 @@ function openSell(sid){
   // Valuation: market-aware (FM premium, market rank, quality)
   const annualRev=s.fin.rev*2;
   const signalMult=(s.sig.type==='FM'&&!s.fmBooster)?1.35:s.fmBooster?1.10:1.0;
-  const allCommS=[...G.stations].filter(st=>!st.isPublic).sort((a,b)=>b.rat.share-a.rat.share);
+  const allCommS=[...G.stations].filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic).sort((a,b)=>b.rat.share-a.rat.share);
   const sRank=allCommS.findIndex(st=>st.id===s.id)+1;
   const rankMult=sRank===1?1.30:sRank<=3?1.15:sRank<=5?1.05:1.0;
   const qMult=s.oq>=75?1.10:s.oq>=55?1.0:0.90;
@@ -8158,8 +8222,10 @@ function migrateSave(G){
   G.finHistory=G.finHistory||[];
   G.stationFinHistory=G.stationFinHistory||{};
   if(!G.score)G.score={isSandbox:false,shareHistory:[],peakRevenue:0,decadeScores:{}};
+  G._atl1970DeferredQueue=G._atl1970DeferredQueue||[];
   // Ensure fin.fix exists on all stations (added for cost breakdown display)
   (G.stations||[]).forEach(s=>{
+    if(s._bpSlotDeferred)return;
     // Ensure fmBooster field exists
     if(s.fmBooster===undefined)s.fmBooster=false;
   // Translator signal restoration: old saves had universe/reach replaced with translator's weak values.
@@ -8193,14 +8259,20 @@ function migrateSave(G){
     if(s.fmBooster&&s.sig.type!=='FM'){s.sig.type='FM';s.sig.pw='translator';s.sig.reach=0.55;s.sig.universe=0.32;}
   });
 
-  // Remove any corrupted/empty station entries
-  G.stations=G.stations.filter(s=>s&&s.id&&s.callLetters);
+  // Remove any corrupted/empty station entries (keep BP-slot placeholders without id/calls yet)
+  G.stations=G.stations.filter(s=>s&&(s._bpSlotDeferred||(s.id&&s.callLetters)));
   // Deduplicate by id (can happen from LMA bugs or double-inserts)
   const _seenIds=new Set();
-  G.stations=G.stations.filter(s=>{ if(_seenIds.has(s.id))return false; _seenIds.add(s.id); return true; });
+  G.stations=G.stations.filter(s=>{
+    if(s._bpSlotDeferred)return true;
+    if(_seenIds.has(s.id))return false;
+    _seenIds.add(s.id);
+    return true;
+  });
   // Fix duplicate call letters — append suffix to later duplicates
   const _seenCalls={};
   G.stations.forEach(s=>{
+    if(s._bpSlotDeferred)return;
     if(_seenCalls[s.callLetters]){
       const suffix=s.sig?.type==='FM'?'-FM':'-AM';
       s.callLetters=s.callLetters+suffix;
@@ -8208,6 +8280,7 @@ function migrateSave(G){
   });
 
   G.stations.forEach(s=>{
+    if(s._bpSlotDeferred)return;
     // Stream object
     if(!s.stream)s.stream={active:false,aqh:0,rev:0,upkeep:0,dragOffset:0,launchYear:0};
     // Fin object
@@ -8781,7 +8854,7 @@ function openContract(sid, slot){
   const bonusCost=Math.round(t.salary*rnd(0.08,0.15)/500)*500;
 
   // Poach: find a rival's talent in same slot with higher quality
-  const poachCandidates=G.stations.filter(st=>!st.isPlayer&&!st.isPublic&&st.rat.share>0.01)
+  const poachCandidates=G.stations.filter(st=>st&&!st._bpSlotDeferred&&!st.isPlayer&&!st.isPublic&&st.rat?.share>0.01)
     .map(st=>({st, sd:st.prog[slot]}))
     .filter(({sd:rsd})=>rsd?.talent&&rsd.talent.quality>t.quality*0.75)
     .sort((a,b)=>b.sd.talent.quality-a.sd.talent.quality)
@@ -9287,14 +9360,14 @@ function rStns(){
   if(fccCanAcquire('player','AM',G)||fccCanAcquire('player','FM',G)){
     const div=document.createElement('div');
     div.style.cssText='margin-top:8px';
-    const minAcqPrice=Math.min(...G.stations.filter(s=>!s.isPlayer&&!s.isPublic).map(s=>acqPrice(s,G)||9999999),9999999);
+    const minAcqPrice=Math.min(...G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic).map(s=>acqPrice(s,G)||9999999),9999999);
     const canAffordAcq=G.cash>=Math.min(minAcqPrice,200000);
     div.innerHTML=`<button class="abt g" style="width:100%;padding:14px;font-size:15px;${canAffordAcq?'':' opacity:.45'}" onclick="openAcq()">🏢 ACQUIRE A STATION${canAffordAcq?'':'  — insufficient funds'}</button>`;
     c.appendChild(div);
   }
   // LMA button — always available (useful even when at ownership cap)
   if(G.year>=1978){
-    const hasLMATargets=G.stations.some(s=>!s.isPlayer&&!s.isPublic&&!s.lmaLesseeId&&s.rat.share<0.04)
+    const hasLMATargets=G.stations.some(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic&&!s.lmaLesseeId&&s.rat?.share<0.04)
       ||G.stations.some(s=>s.corpOwner&&s._corpLMAOffer&&!s.lmaLesseeId);
     const hasActiveLMAs=G.ps.some(s=>s._lmaStation)||G.ps.some(s=>s.lmaLessorId);
     const lmaDiv=document.createElement('div');
