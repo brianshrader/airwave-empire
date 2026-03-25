@@ -302,6 +302,19 @@ function effSlotQForOq(sd){
   }
   return q;
 }
+function slotQualityForOQ(s,sl,G){
+  const f=getStationFranchise(s,sl,G);
+  if(f)return f.quality;
+  return effSlotQForOq(s.prog?.[sl]);
+}
+function refreshStationOQ(s,G){
+  if(!s||s._bpSlotDeferred)return;
+  const sup=Object.values(s.prog||{}).some(sd=>sd?.talent?.superstar)?SUPERSTAR.OQ_BONUS:0;
+  s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+slotQualityForOQ(s,sl,G)*w,0)+sup);
+}
+function refreshAllStationOQ(G){
+  (G.stations||[]).forEach(s=>refreshStationOQ(s,G));
+}
 
 // ── TALENT TROUBLE (Phase 1: FCC / sponsor / DUI decision events) ─
 const TROUBLE_SCENARIOS=[
@@ -392,9 +405,16 @@ function triggerTalentTrouble(G){
 function clearPendingTroubleIfStale(){
   const p=G?.pendingDecisionEvent;
   if(!p)return;
+  if(!TROUBLE_SCENARIOS.find(sc=>sc.id===p.scenarioId)){G.pendingDecisionEvent=null;return;}
+  if(p.isFranchise){
+    const s=G.stations.find(st=>st.id===p.stationId);
+    const r=G.franchiseRights?.[p.franchiseId];
+    if(!s||!r||r.holderId!==s.id)G.pendingDecisionEvent=null;
+    return;
+  }
   const s=G.stations.find(st=>st.id===p.stationId);
   const sd=s?.prog?.[p.slot];
-  if(!sd?.talent||!TROUBLE_SCENARIOS.find(sc=>sc.id===p.scenarioId))G.pendingDecisionEvent=null;
+  if(!sd?.talent)G.pendingDecisionEvent=null;
 }
 
 function showTalentTroubleModal(){
@@ -404,6 +424,51 @@ function showTalentTroubleModal(){
   const scenario=TROUBLE_SCENARIOS.find(sc=>sc.id===pending.scenarioId);
   if(!scenario)return;
   const s=G.stations.find(st=>st.id===pending.stationId);
+  if(pending.isFranchise){
+    const nm=pending.talentName||'Syndicated franchise';
+    const desc=scenario.desc.replace(/{name}/g,nm).replace(/{rivalStation}/g,pending.rivalStation||'');
+    const ownerPid=pending.ownerId!=null?pending.ownerId:MP.playerId;
+    const ownerCash=MP.mode==='live'?(G._playerCash?.[ownerPid]??G.cash):G.cash;
+    const fineAmt=scenario.id==='fcc_language'?15000:scenario.id==='fcc_indecency'?50000:0;
+    const optRows=scenario.options.map((opt,i)=>{
+      let costLabel='',costColor='var(--off)',canAfford=true;
+      const isFcc=scenario.id==='fcc_language'||scenario.id==='fcc_indecency';
+      const mandatoryFine=isFcc?fineAmt:0;
+      if(opt.cost==='fine'){
+        costLabel=` — Mandatory FCC fine: ${f$(mandatoryFine)}`;
+        costColor='var(--red)';
+        canAfford=ownerCash>=mandatoryFine;
+      }else if(opt.cost==='buyout'){
+        costLabel=mandatoryFine>0?` — FCC fine: ${f$(mandatoryFine)}`:' — Drop / replace franchise';
+        canAfford=ownerCash>=mandatoryFine;
+      }else if(opt.cost==='none'||opt.cost==='leave'){
+        costLabel=mandatoryFine>0?` — Mandatory FCC fine: ${f$(mandatoryFine)}`:(opt.cost==='leave'?' — 1 period suspension (syndicated slot dark)':'No cash cost');
+        canAfford=ownerCash>=mandatoryFine;
+      }else if(typeof opt.cost==='number'){
+        const totalNeed=mandatoryFine+opt.cost;
+        costLabel=mandatoryFine>0?` — FCC fine: ${f$(mandatoryFine)} + legal`:` — $${Math.round(opt.cost/1000)}K`;
+        canAfford=ownerCash>=totalNeed;
+      }
+      return `<button class="to${canAfford?'':' nope'}" style="display:block;width:100%;text-align:left;padding:10px 14px;margin-bottom:6px;cursor:${canAfford?'pointer':'not-allowed'}" onclick="${canAfford?`resolveTrouble('${pending.stationId}','${pending.slot}',${i})`:''}">
+      <div style="font-family:var(--fd);font-size:15px;color:var(--wht)">${opt.label.replace(/{name}/g,nm)}</div>
+      <div style="font-size:13px;color:${costColor};margin-top:2px">${costLabel||'No cost'}</div>
+    </button>`;
+    }).join('');
+    const tt=document.getElementById('trouble-title');
+    const tb=document.getElementById('trouble-body');
+    if(!tt||!tb)return;
+    tt.textContent=`⚠ ${scenario.title.toUpperCase()}`;
+    tb.innerHTML=`
+    <div style="background:rgba(240,88,88,.06);border:1px solid rgba(240,88,88,.15);border-radius:6px;padding:14px;margin-bottom:16px">
+      <div style="font-family:var(--fd);font-size:17px;color:var(--wht);margin-bottom:6px">${nm} <span style="color:var(--mut);font-weight:normal">· ${s?.callLetters||''} ${SL[pending.slot]||''}</span></div>
+      <div style="font-size:15px;color:var(--off);margin-bottom:6px">${desc}</div>
+      <div style="font-size:14px;color:var(--mut);font-style:italic">${scenario.flavor}</div>
+    </div>
+    <div style="font-size:14px;color:var(--mut);margin-bottom:10px">How do you respond?</div>
+    ${optRows}`;
+    om('m-talent-trouble');
+    return;
+  }
   const sd=s?.prog?.[pending.slot];
   const t=sd?.talent;
   if(!t){G.pendingDecisionEvent=null;return;}
@@ -473,6 +538,36 @@ function applyTroubleResolution(sid,slot,optionIdx,appealRemote){
   const pending=G.pendingDecisionEvent;
   if(!pending||pending.stationId!==sid||pending.slot!==slot)return;
   const s=G.stations.find(st=>st.id===sid);
+  if(pending.isFranchise){
+    const scenario=TROUBLE_SCENARIOS.find(sc=>sc.id===pending.scenarioId);
+    if(!scenario)return;
+    const opt=scenario.options[optionIdx];
+    if(!opt)return;
+    const eff=opt.effect||{};
+    const ownerPid=pending.ownerId!=null?pending.ownerId:MP.playerId;
+    const tCash=d=>{
+      if(MP.mode!=='live'){G.cash+=d;return;}
+      if(!G._playerCash)G._playerCash={};
+      G._playerCash[ownerPid]=(G._playerCash[ownerPid]||0)+d;
+      if(MP.playerId===ownerPid)G.cash=G._playerCash[ownerPid];
+      MP.emit('player_cash_update',{playerId:ownerPid,cash:G._playerCash[ownerPid]});
+    };
+    const fineAmt=pending.scenarioId==='fcc_language'?15000:pending.scenarioId==='fcc_indecency'?50000:0;
+    let costPaid=0;
+    const mandatoryFine=(pending.scenarioId==='fcc_language'||pending.scenarioId==='fcc_indecency')?fineAmt:0;
+    if(mandatoryFine>0){tCash(-mandatoryFine);costPaid+=mandatoryFine;}
+    if(typeof opt.cost==='number'){tCash(-opt.cost);costPaid+=opt.cost;}
+    if(eff.sell&&s)s.ops.sell=Math.max(0.20,Math.min(0.96,(s.ops.sell||0.65)+eff.sell));
+    if(eff.stationShare&&s){COH.forEach(c=>{if(s.mom?.[c])s.mom[c].tgt=Math.max(0.001,s.mom[c].tgt+eff.stationShare);});}
+    if(eff.identity&&s)s.identity=Math.max(0,Math.min(100,(s.identity||0)+eff.identity));
+    if(eff.fine){tCash(-eff.fine);costPaid+=eff.fine;}
+    const nm=pending.talentName||'Franchise';
+    const outcome=(opt.outcome||'Resolved.').replace(/{name}/g,nm);
+    G.news.unshift({v:'MEDIUM',t:`📋 ${scenario.title}: ${outcome}${costPaid>0?' Cost: '+f$(costPaid)+'.':''}`,y:G.year,p:G.period,iy:true});
+    G.pendingDecisionEvent=null;
+    refreshStationOQ(s,G);
+    return;
+  }
   const sd=s?.prog?.[slot];
   const t=sd?.talent;
   if(!t)return;
@@ -549,7 +644,7 @@ function applyTroubleResolution(sid,slot,optionIdx,appealRemote){
   const fireOpt=opt.cost==='buyout'||opt.label.toLowerCase().includes('fire')||opt.label.toLowerCase().includes('terminate');
   if(fireOpt){
     if(sd){sd.talent=null;sd.quality=Math.max(10,Math.round((sd.quality||30)*0.75));}
-    s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w,0));
+    refreshStationOQ(s,G);
   }
   const outcome=(opt.outcome||'Resolved.').replace(/{name}/g,t.name);
   G.news.unshift({v:'MEDIUM',t:`📋 ${scenario.title}: ${outcome}${costPaid>0?' Cost: '+f$(costPaid)+'.':''}${troubleOutcomeNote}`,y:G.year,p:G.period,iy:true});
@@ -587,6 +682,16 @@ window._mpApply_trouble_resolve=function({sid,slot,optionIdx,appealRefund,appeal
     ar={refund:typeof appealRefund==='number'?appealRefund:0,note:appealNote||''};
   }
   applyTroubleResolution(sid,slot,optionIdx,ar);
+};
+window._mpApply_sports_bid=function({teamId,stationId,amount}){
+  if(!G.sportsRights?.[teamId])return;
+  G.sportsRights[teamId].bids=G.sportsRights[teamId].bids||{};
+  G.sportsRights[teamId].bids[stationId]=amount;
+};
+window._mpApply_franchise_bid=function({franchiseId,stationId,amount}){
+  if(!G.franchiseRights?.[franchiseId])return;
+  G.franchiseRights[franchiseId].bids=G.franchiseRights[franchiseId].bids||{};
+  G.franchiseRights[franchiseId].bids[stationId]=amount;
 };
 
 /** Count talents with superstar flag in the current market. */
@@ -1112,6 +1217,14 @@ const MARKETS={
     // Starting station count and power distribution
     amFreqs:['590 AM','640 AM','750 AM','860 AM','920 AM','1010 AM','1090 AM','1160 AM','1230 AM','1340 AM'],
     fmFreqs:['96.1 FM','99.7 FM','102.3 FM','104.5 FM','107.1 FM','94.9 FM','88.5 FM','101.5 FM','103.3 FM'],
+    blackPop:0.358,hispPop1970:0.010,hispPop2000:0.080,hispPop2020:0.115,churchGoing:0.54,countryBonus:0,urbanBonus:0.05,
+    teams:[
+      // baseFee: annual rights $, tuned to current half-period revenue scale (was monolith-high vs station billing)
+      {id:'braves',name:'Atlanta Braves',sport:'MLB',introduced:1970,baseFee:95000,baseBonus:0.012,contractYrs:3},
+      {id:'falcons',name:'Atlanta Falcons',sport:'NFL',introduced:1970,baseFee:420000,baseBonus:0.025,contractYrs:4},
+      {id:'hawks',name:'Atlanta Hawks',sport:'NBA',introduced:1970,baseFee:85000,baseBonus:0.010,contractYrs:3},
+      {id:'thrashers',name:'Atlanta Thrashers',sport:'NHL',introduced:2000,baseFee:80000,baseBonus:0.009,contractYrs:3},
+    ],
   },
   // ── EXPANSION MARKETS (not yet active) ──────────────────────────
   chicago:{
@@ -1134,6 +1247,11 @@ const MARKETS={
     revScale:0.5, adxBonus:0.03, // Country music capital — country formats get +15% here
     amFreqs:['650 AM','760 AM','1040 AM','1160 AM','1240 AM','1300 AM','1400 AM','1470 AM','1510 AM','1560 AM'],
     fmFreqs:['94.1 FM','96.3 FM','97.9 FM','100.1 FM','102.9 FM','104.5 FM','107.5 FM'],
+    teams:[
+      {id:'sounds',name:'Nashville Sounds',sport:'MLB',introduced:1978,baseFee:28000,baseBonus:0.006,contractYrs:3},
+      {id:'predators',name:'Nashville Predators',sport:'NHL',introduced:1998,baseFee:115000,baseBonus:0.014,contractYrs:3},
+      {id:'titans',name:'Tennessee Titans',sport:'NFL',introduced:1997,baseFee:340000,baseBonus:0.028,contractYrs:4},
+    ],
   },
 };
 const ACTIVE_MARKET='atlanta'; // Future: set per game session
@@ -1164,6 +1282,503 @@ function marketHalfSeasonFactor(year,period){
   const mkt=MARKETS[ACTIVE_MARKET]||MARKETS.atlanta;
   if(mkt?.pop) Object.keys(mkt.pop).forEach(c=>{if(POP.cohorts[c])POP.cohorts[c].t=mkt.pop[c]*1000;});
 })();
+
+// ══════════════════════════════════════════════════════════════════
+// SPORTS RIGHTS + NATIONAL FRANCHISES (ported from monolith wavelength-ui.html)
+// Simulcast rule: holderId on G.sportsRights / G.franchiseRights is the LICENSEE (legal station).
+//   · CASH FEES (calcRev): only the station whose id === holderId pays rights/franchise fees.
+//   · PROGRAMMING HALO (ratings share bonus, franchise demoBoost, OQ slot quality): applies to
+//     the licensee AND any simulcast partner that carries the same feed (explicit _simulcastSource pair).
+// ══════════════════════════════════════════════════════════════════
+const SPORT_SEASONS={
+  NFL:{p1:0.25,p2:0.75},MLB:{p1:0.50,p2:0.50},NBA:{p1:0.60,p2:0.40},NHL:{p1:0.55,p2:0.45},
+};
+const SPORTS_FORMAT_FIT={
+  SPORTS_TALK:1.00,NEWS_TALK:0.70,PODCAST_TALK:0.65,
+  MOR:0.45,ADULT_CONTEMP:0.40,CLASSIC_HITS:0.40,
+  COUNTRY:0.38,CLASSIC_ROCK:0.38,ADULT_STANDARDS:0.30,
+  CHR:0.35,TOP40:0.35,HOT_AC:0.32,ALBUM_ROCK:0.35,
+  URBAN_CONTEMP:0.30,SOUL_RNB:0.28,RHYTHMIC:0.25,
+  ALT_ROCK:0.32,GOSPEL:0.15,SPANISH:0.20,
+};
+const TEAM_TIER_LABELS={
+  dynasty:['Historic run','Championship form','Dominant season'],
+  playoff:['Playoff push','Deep playoff run','Conference finals'],
+  competitive:['Winning record','Solid season','Competing for playoffs'],
+  mediocre:['.500 season','Inconsistent year','Middle of the pack'],
+  rebuilding:['Rebuilding year','Rough season','Tough stretch'],
+};
+function sportsTierFromRecord(record){
+  if(record>=90)return'dynasty';
+  if(record>=72)return'playoff';
+  if(record>=55)return'competitive';
+  if(record>=35)return'mediocre';
+  return'rebuilding';
+}
+/** True if station s receives programming-halo benefits of rights held by holderId (includes simulcast pair). */
+function syndicationHaloAppliesToStation(s,holderId,G){
+  if(!s||!holderId)return false;
+  if(s.id===holderId)return true;
+  if(!s.simulcastWith)return false;
+  const p=(G.stations||[]).find(st=>st.id===s.simulcastWith);
+  if(!p)return false;
+  let src=null;
+  if(s._simulcastSource===true)src=s;
+  else if(p._simulcastSource===true)src=p;
+  if(!src)return false;
+  return holderId===src.id||holderId===p.id||holderId===s.id;
+}
+/** Weighted pick for initial rights holder — favors SPORTS/NEWS/PODCAST_TALK via SPORTS_FORMAT_FIT. */
+function pickInitialSportsRightsHolder(G){
+  const list=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPublic);
+  if(!list.length)return null;
+  const weights=list.map(s=>{
+    const fit=SPORTS_FORMAT_FIT[s.format]||0.30;
+    let w=fit*fit;
+    if(['SPORTS_TALK','NEWS_TALK','PODCAST_TALK'].includes(s.format))w*=5;
+    else if(fit>=0.55)w*=1.8;
+    else if(fit>=0.38)w*=1.15;
+    return w+0.04;
+  });
+  const tw=weights.reduce((a,b)=>a+b,0);
+  let r=Math.random()*tw;
+  for(let i=0;i<list.length;i++){
+    r-=weights[i];
+    if(r<=0)return list[i];
+  }
+  return list[list.length-1];
+}
+function initSportsRights(G){
+  if(!G.sportsRights)G.sportsRights={};
+  if(!G.teamRecords)G.teamRecords={};
+  const mkt=MARKETS[G.marketId||'atlanta']||MARKETS.atlanta;
+  (mkt.teams||[]).forEach(team=>{
+    if(G.year<team.introduced)return;
+    if(!G.teamRecords[team.id]){
+      G.teamRecords[team.id]={record:Math.round(40+Math.random()*30),trend:0,lastEvent:0};
+    }
+    if(!G.sportsRights[team.id]){
+      const newlyIntroduced=G.year===team.introduced;
+      const holder=newlyIntroduced?null:pickInitialSportsRightsHolder(G);
+      G.sportsRights[team.id]={
+        holderId:holder?.id||null,
+        holderName:holder?.callLetters||'—',
+        fee:Math.round(team.baseFee*(0.7+Math.random()*0.6)/1000)*1000,
+        contractEnd:newlyIntroduced?G.year:G.year+Math.floor(Math.random()*team.contractYrs)+1,
+        relationship:{},bids:{},auctionOpen:false,auctionCloses:null,
+      };
+      if(holder)G.sportsRights[team.id].relationship[holder.id]=30+Math.round(Math.random()*20);
+    }
+  });
+}
+function getSportsBonus(s,G){
+  if(!G.sportsRights||!G.teamRecords)return 0;
+  const mkt=MARKETS[G.marketId||'atlanta']||MARKETS.atlanta;
+  let totalBonus=0;
+  (mkt.teams||[]).forEach(team=>{
+    if(G.year<team.introduced)return;
+    const rights=G.sportsRights[team.id];
+    if(!rights||!rights.holderId||!syndicationHaloAppliesToStation(s,rights.holderId,G))return;
+    const rec=G.teamRecords[team.id];
+    if(!rec)return;
+    const tier=sportsTierFromRecord(rec.record);
+    const qualMult={dynasty:1.5,playoff:1.2,competitive:1.0,mediocre:0.7,rebuilding:0.4}[tier]||1.0;
+    const season=SPORT_SEASONS[team.sport]||{p1:0.5,p2:0.5};
+    const periodWeight=G.period===1?season.p1:season.p2;
+    const fmtFit=SPORTS_FORMAT_FIT[s.format]||0.30;
+    totalBonus+=team.baseBonus*qualMult*periodWeight*fmtFit;
+  });
+  return totalBonus;
+}
+/**
+ * Apply sports rights as a uniform scale on this station's cohort shares + AQH + mom,
+ * so weighted s.rat.share rises by getSportsBonus (capped) and stays equal to Σ_c w_c·share_c.
+ */
+function applySportsRatingsToCohorts(s,G,engageWeightedPop){
+  if(!s||s._bpSlotDeferred||s.isPublic||!s.rat)return;
+  const bonus=getSportsBonus(s,G);
+  if(bonus<=0)return;
+  const ewp=Math.max(engageWeightedPop,1e-10);
+  const weightedShare=COH.reduce((sum,coh)=>{
+    const pop=POP.cohorts[coh]?.t||0;
+    const engage=AQH_ENGAGE[coh]||0.060;
+    return sum+(s.rat.cur[coh]?.share||0)*(pop*engage)/ewp;
+  },0);
+  if(weightedShare<1e-10)return;
+  const target=Math.min(0.45,weightedShare+bonus);
+  const k=target/weightedShare;
+  COH.forEach(coh=>{
+    const cur=s.rat.cur[coh];
+    if(!cur)return;
+    const pop=(POP.cohorts[coh]?.t||0)*effUniverse(s);
+    const engage=AQH_ENGAGE[coh]||0.060;
+    const ns=Math.round(cur.share*k*10000)/10000;
+    cur.share=ns;
+    cur.aqh=Math.round(ns*pop*engage);
+    if(s.mom[coh]){
+      s.mom[coh].cur=ns;
+      s.mom[coh].tgt=Math.round((s.mom[coh].tgt||ns)*k*10000)/10000;
+    }
+  });
+  s.rat.aqh=COH.reduce((sum,coh)=>sum+(s.rat.cur[coh]?.aqh||0),0);
+  s.rat.share=COH.reduce((sum,coh)=>{
+    const pop=POP.cohorts[coh]?.t||0;
+    const engage=AQH_ENGAGE[coh]||0.060;
+    return sum+(s.rat.cur[coh]?.share||0)*(pop*engage)/ewp;
+  },0);
+}
+function runSportsEvents(G){
+  if(!G.sportsRights)G.sportsRights={};
+  if(!G.teamRecords)G.teamRecords={};
+  initSportsRights(G);
+  const mkt=MARKETS[G.marketId||'atlanta']||MARKETS.atlanta;
+  const acts=[];
+  (mkt.teams||[]).forEach(team=>{
+    if(G.year<team.introduced)return;
+    const rec=G.teamRecords[team.id];
+    if(!rec)return;
+    const rights=G.sportsRights[team.id];
+    const shock=(Math.random()-0.5)*18;
+    const reversion=(55-rec.record)*0.08;
+    rec.record=Math.max(5,Math.min(98,Math.round(rec.record+shock+reversion)));
+    const tier=sportsTierFromRecord(rec.record);
+    const prevTier=sportsTierFromRecord(rec.record-shock-reversion);
+    const isSeasonStart=(team.sport==='NFL'&&G.period===2)||
+      (team.sport==='MLB'&&G.period===1)||
+      (team.sport==='NBA'&&G.period===2)||
+      (team.sport==='NHL'&&G.period===2);
+    if(isSeasonStart||(tier!==prevTier&&Math.random()<0.7)){
+      const labels=TEAM_TIER_LABELS[tier];
+      const label=labels[Math.floor(Math.random()*labels.length)];
+      const holder=rights?.holderId?G.stations.find(st=>st.id===rights.holderId):null;
+      const holderNote=holder
+        ?(holder.isPlayer?` YOUR ${holder.callLetters} carries the broadcast.`:` ${holder.callLetters} carries the broadcast.`)
+        :' No local radio contract.';
+      const impact=tier==='dynasty'||tier==='playoff'?'📈 Ratings lift for rights holder.':
+        tier==='rebuilding'?'📉 Listeners tuning out.':'';
+      acts.push({v:tier==='dynasty'?'HIGH':tier==='rebuilding'?'MEDIUM':'LOW',
+        t:`🏟 ${team.name}: ${label} (${rec.record}/100).${holderNote}${impact?'  '+impact:''}`,
+        y:G.year,p:G.period,iy:!!(holder?.isPlayer)});
+    }
+    if(rights&&rights.contractEnd===G.year&&G.period===1&&!rights.auctionOpen){
+      rights.auctionOpen=true;
+      rights.auctionCloses=G.year;
+      rights.bids={};
+      acts.push({v:'HIGH',
+        t:`📋 ${team.name} broadcast rights up for renewal — bidding opens. Current holder: ${rights.holderName}. Contract expires this period.`,
+        y:G.year,p:G.period,iy:true});
+    }
+    if(rights&&rights.auctionOpen&&rights.auctionCloses===G.year&&G.period===2){
+      resolveRightsAuction(team,rights,G,acts);
+    }
+  });
+  return acts;
+}
+function resolveRightsAuction(team,rights,G,acts){
+  const rec=G.teamRecords?.[team.id];
+  const tier=rec?sportsTierFromRecord(rec.record):'competitive';
+  const tierBidMult={dynasty:1.35,playoff:1.2,competitive:1.0,mediocre:0.75,rebuilding:0.55}[tier]||1;
+  G.stations.filter(s=>!s.isPlayer&&!s.isPublic).forEach(s=>{
+    const fmtFit=SPORTS_FORMAT_FIT[s.format]||0.3;
+    if(fmtFit<0.22&&Math.random()>0.15)return;
+    const cashStress=(s.fin?.ebitda||0)<-(s.fin?.rev||1)*0.25;
+    const bidProb=cashStress?0.12:0.35;
+    if(Math.random()>bidProb)return;
+    const rel=rights.relationship[s.id]||0;
+    const aiBid=Math.round(team.baseFee*tierBidMult*(0.7+fmtFit*0.8+Math.random()*0.5+rel*0.003)/1000)*1000;
+    if(!rights.bids[s.id]||rights.bids[s.id]<aiBid)rights.bids[s.id]=aiBid;
+  });
+  if(!Object.keys(rights.bids).length){
+    rights.contractEnd=G.year+team.contractYrs;
+    rights.auctionOpen=false;
+    acts.push({v:'LOW',t:`📋 ${team.name} rights renewed by ${rights.holderName} — no competing bids.`,y:G.year,p:G.period,iy:false});
+    return;
+  }
+  let winner=null,winnerBid=0,winnerEff=0;
+  Object.entries(rights.bids).forEach(([sid,bid])=>{
+    const stn=G.stations.find(st=>st.id===sid);
+    if(!stn)return;
+    const rel=(rights.relationship[sid]||0)/100;
+    const fmtFit=(SPORTS_FORMAT_FIT[stn.format]||0.3)*0.3;
+    const effBid=bid*(1+rel*0.25+fmtFit);
+    if(effBid>winnerEff){winner=stn;winnerBid=bid;winnerEff=effBid;}
+  });
+  if(!winner)return;
+  const prev=rights.holderId?G.stations.find(st=>st.id===rights.holderId):null;
+  const prevPlayer=prev?.isPlayer;
+  const newPlayer=winner.isPlayer;
+  if(!rights.relationship[winner.id])rights.relationship[winner.id]=0;
+  rights.relationship[winner.id]=Math.min(100,rights.relationship[winner.id]+20);
+  if(prev&&prev.id!==winner.id&&prev.isPlayer){
+    Object.values(prev.mom||{}).forEach(m=>{if(m)m.tgt=Math.max(0.001,m.tgt-team.baseBonus*0.5);});
+  }
+  if(newPlayer){
+    const myId=winner._mpOwner!==undefined?winner._mpOwner:null;
+    if(myId!==null&&G._playerCash){
+      G._playerCash[myId]=(G._playerCash[myId]||0)-winnerBid;
+      if(MP.playerId===myId)G.cash=G._playerCash[myId];
+    }else{
+      G.cash-=winnerBid;
+    }
+    if(MP.mode==='live')MP.emit('player_cash_update',{playerId:myId??MP.playerId,cash:G._playerCash?.[myId??MP.playerId]??G.cash});
+  }
+  rights.holderId=winner.id;
+  rights.holderName=winner.callLetters;
+  rights.fee=winnerBid;
+  rights.contractEnd=G.year+team.contractYrs;
+  rights.auctionOpen=false;
+  rights.bids={};
+  const changeNote=prev&&prev.id!==winner.id?` (previously ${prev.callLetters})`:'';
+  acts.push({v:'HIGH',
+    t:`📋 ${team.name} rights awarded to ${winner.callLetters} — ${f$(winnerBid)}/yr for ${team.contractYrs} years.${changeNote}`,
+    y:G.year,p:G.period,iy:newPlayer||prevPlayer});
+}
+function placeSportsBid(teamId,stationId,amount){
+  if(!G.sportsRights?.[teamId])return;
+  const rights=G.sportsRights[teamId];
+  if(!rights.auctionOpen){showToast('Bidding is not currently open for this team.','warn');return;}
+  const st=G.stations.find(x=>x.id===stationId);
+  const ownerPid=st&&st._mpOwner!==undefined?st._mpOwner:MP.playerId;
+  const myCash=MP.mode==='live'?(G._playerCash?.[ownerPid]??G.cash):G.cash;
+  if(myCash<amount){showToast('Insufficient funds.','warn');return;}
+  rights.bids[stationId]=amount;
+  const tname=(MARKETS[G.marketId||'atlanta']?.teams||[]).find(t=>t.id===teamId)?.name||teamId;
+  G.news.unshift({v:'LOW',t:`📋 Bid submitted for ${tname} rights — ${f$(amount)}/yr.`,y:G.year,p:G.period,iy:true});
+  MP.action('sports_bid',{teamId,stationId,amount});
+  showToast(`Bid of ${f$(amount)}/yr submitted.`,'info');
+  cm('m-sports');renderAll();
+}
+
+const NATIONAL_FRANCHISES=[
+  {id:'morning_standard',name:'The Morning Standard',tagline:'Serious news for serious people.',slot:'morningDrive',
+    formats:['NEWS_TALK','ALL_NEWS'],introduced:1975,quality:72,baseFee:80000,contractYrs:3,
+    demoBoost:{'50-64':0.15,'65+':0.10},troubleMod:0.5,exclusive:true,
+    desc:'Morning news magazine. Credentialed, measured, trusted. Modest ratings but educated 35-64 demo commands premium CPM. The franchise that makes your station respectable.'},
+  {id:'drummond_hour',name:'The Drummond Hour',tagline:'Real talk. No apologies.',slot:'midday',
+    formats:['NEWS_TALK','PODCAST_TALK'],introduced:1988,quality:92,baseFee:240000,contractYrs:4,
+    demoBoost:{'35-49':0.28,'50-64':0.22},troubleMod:2.5,exclusive:true,
+    desc:'Conservative political talk powerhouse airing middays. Massive male 35-64 audience — they rearrange their lunch hour to listen. Advertiser sensitivity is real.'},
+  {id:'night_owl',name:'Night Owl with Vic Farrell',tagline:'The truth is out there. Somewhere.',slot:'overnight',
+    formats:['NEWS_TALK','PODCAST_TALK'],introduced:1993,quality:65,baseFee:42000,contractYrs:3,
+    demoBoost:{'18-24':0.22,'25-34':0.18},troubleMod:0.8,exclusive:true,
+    desc:'Late-night paranormal and conspiracy talk. Niche but intensely loyal younger-skewing audience.'},
+  {id:'the_blitz',name:'The Blitz',tagline:'All sports. All the time.',slot:'afternoonDrive',
+    formats:['SPORTS_TALK'],introduced:1992,quality:86,baseFee:175000,contractYrs:3,
+    demoBoost:{'25-34':0.20,'35-49':0.25},troubleMod:0.7,exclusive:true,
+    desc:'National sports radio powerhouse in afternoon drive — prime Sports Talk real estate.'},
+  {id:'the_countdown',name:'The Countdown',tagline:'America’s favorite hits, every weekend.',slot:'midday',
+    formats:['CHR','TOP40','HOT_AC','ADULT_CONTEMP','CLASSIC_HITS'],introduced:1970,quality:68,baseFee:52000,contractYrs:3,
+    demoBoost:{'12-17':0.12,'18-24':0.10},troubleMod:0.2,exclusive:true,
+    desc:'The nationally-syndicated weekly countdown. One station per market — locking out your competitor is part of the value.'},
+  {id:'wild_card',name:'The Wild Card Morning Show',tagline:'We go there.',slot:'morningDrive',
+    formats:['CHR','TOP40','RHYTHMIC','ALT_ROCK','HOT_AC'],introduced:1984,quality:95,baseFee:320000,contractYrs:4,
+    demoBoost:{'18-24':0.32,'25-34':0.28,'12-17':0.18},troubleMod:4.0,exclusive:true,
+    desc:'The shock jock franchise. Morning drive on music stations. The highest-rated morning show in any market that carries it — and the highest-risk.'},
+  {id:'smooth_ride',name:'Smooth Ride with Denny Cole',tagline:'The sound of your evening.',slot:'evening',
+    formats:['ADULT_CONTEMP','HOT_AC','BEAUTIFUL_MUSIC','CLASSIC_HITS','MOR','ADULT_STANDARDS'],introduced:1995,quality:64,baseFee:36000,contractYrs:3,
+    demoBoost:{'35-49':0.14,'50-64':0.10},troubleMod:0.1,exclusive:true,
+    desc:'Syndicated evening soft-hits block. One station per market. Fills the 7pm-midnight slot and builds a loyal female 35-54 audience.'},
+];
+function franchiseFormatFit(franchise,fmt){
+  return franchise.formats.includes(fmt)?1.0:0;
+}
+function initFranchiseRights(G){
+  if(!G.franchiseRights)G.franchiseRights={};
+  NATIONAL_FRANCHISES.forEach(f=>{
+    if(G.year<f.introduced)return;
+    if(G.franchiseRights[f.id])return;
+    let holderId=null,holderName='—';
+    const newlyIntroduced=G.year===f.introduced;
+    if(f.exclusive&&!newlyIntroduced){
+      const eligible=G.stations.filter(s=>!s.isPlayer&&!s.isPublic&&f.formats.includes(s.format));
+      if(eligible.length&&Math.random()<0.6){
+        const holder=eligible[Math.floor(Math.random()*eligible.length)];
+        holderId=holder.id;holderName=holder.callLetters;
+      }
+    }
+    G.franchiseRights[f.id]={
+      holderId,holderName,
+      fee:Math.round(f.baseFee*(0.8+Math.random()*0.4)/1000)*1000,
+      contractEnd:newlyIntroduced?G.year:G.year+f.contractYrs+Math.floor(Math.random()*2),
+      bids:{},auctionOpen:false,auctionCloses:null,relationship:{},
+    };
+  });
+}
+function getStationFranchise(s,slot,G){
+  if(!G.franchiseRights)return null;
+  return NATIONAL_FRANCHISES.find(f=>{
+    if(f.slot!==slot)return false;
+    const r=G.franchiseRights[f.id];
+    if(!r?.holderId)return false;
+    return syndicationHaloAppliesToStation(s,r.holderId,G);
+  })||null;
+}
+function applyFranchiseToSlot(s,slot,G){
+  const f=getStationFranchise(s,slot,G);
+  if(!f)return null;
+  return{franchise:f,quality:f.quality,name:f.name};
+}
+function franchiseDemoMult(s,coh,G){
+  let m=1;
+  if(!G?.franchiseRights)return m;
+  NATIONAL_FRANCHISES.forEach(f=>{
+    if(G.year<f.introduced)return;
+    const r=G.franchiseRights[f.id];
+    if(!r?.holderId||!syndicationHaloAppliesToStation(s,r.holderId,G))return;
+    const b=f.demoBoost?.[coh];
+    if(b)m*=1+b;
+  });
+  return m;
+}
+function syndicationFeesForStation(s,G){
+  let fee=0;
+  const mkt=MARKETS[G.marketId||'atlanta']||MARKETS.atlanta;
+  (mkt.teams||[]).forEach(team=>{
+    const r=G.sportsRights?.[team.id];
+    if(r?.holderId===s.id)fee+=Math.round((r.fee||0)/2);
+  });
+  NATIONAL_FRANCHISES.forEach(f=>{
+    const r=G.franchiseRights?.[f.id];
+    if(r?.holderId===s.id)fee+=Math.round((r.fee||0)/2);
+  });
+  return fee;
+}
+function runFranchiseEvents(G){
+  if(!G.franchiseRights)return[];
+  initFranchiseRights(G);
+  const acts=[];
+  NATIONAL_FRANCHISES.forEach(f=>{
+    if(G.year<f.introduced)return;
+    const r=G.franchiseRights[f.id];
+    if(!r)return;
+    if(r.contractEnd===G.year&&G.period===1&&!r.auctionOpen){
+      r.auctionOpen=true;r.auctionCloses=G.year;r.bids={};
+      acts.push({v:'HIGH',
+        t:`📻 "${f.name}" franchise available — bidding opens for market exclusivity. ${r.holderId?'Current holder: '+r.holderName+'.':'Currently unowned.'}`,
+        y:G.year,p:G.period,iy:true});
+    }
+    if(r.auctionOpen&&r.auctionCloses===G.year&&G.period===2){
+      resolveFranchiseAuction(f,r,G,acts);
+    }
+  });
+  return acts;
+}
+function resolveFranchiseAuction(franchise,rights,G,acts){
+  const _aiBidProb=franchise.exclusive?0.65:0.40;
+  G.stations.filter(s=>!s.isPlayer&&!s.isPublic&&franchise.formats.includes(s.format)).forEach(s=>{
+    const fmtOk=franchiseFormatFit(franchise,s.format)>=1;
+    const cashStress=(s.fin?.ebitda||0)<-(s.fin?.rev||1)*0.3;
+    if(cashStress&&Math.random()>0.2)return;
+    if(!fmtOk)return;
+    if(Math.random()>_aiBidProb)return;
+    const rel=(rights.relationship?.[s.id]||0);
+    const slotPrem={morningDrive:1.15,midday:1.05,afternoonDrive:1.12,evening:1.0,overnight:0.92}[franchise.slot]||1;
+    const aiBid=Math.round(franchise.baseFee*slotPrem*(0.85+Math.random()*0.70+rel*0.003)/1000)*1000;
+    if(!rights.bids[s.id]||rights.bids[s.id]<aiBid)rights.bids[s.id]=aiBid;
+  });
+  if(!Object.keys(rights.bids).length){
+    if(franchise.exclusive){
+      const eligible=G.stations.filter(s=>!s.isPlayer&&!s.isPublic&&franchise.formats.includes(s.format));
+      if(eligible.length){
+        const fallback=eligible[Math.floor(Math.random()*eligible.length)];
+        rights.holderId=fallback.id;rights.holderName=fallback.callLetters;
+        rights.fee=Math.round(franchise.baseFee*0.75/1000)*1000;
+        rights.contractEnd=G.year+franchise.contractYrs;
+        rights.auctionOpen=false;
+        acts.push({v:'LOW',t:`📻 "${franchise.name}" picked up by ${fallback.callLetters} — $${Math.round(rights.fee/1000)}K/yr (no auction).`,y:G.year,p:G.period});
+        return;
+      }
+    }else if(rights.holderId){
+      rights.contractEnd=G.year+franchise.contractYrs;
+      acts.push({v:'LOW',t:`📻 "${franchise.name}" retained by ${rights.holderName} — no competing bids.`,y:G.year,p:G.period});
+    }
+    rights.auctionOpen=false;
+    return;
+  }
+  let winner=null,winnerBid=0,winnerEff=0;
+  Object.entries(rights.bids).forEach(([sid,bid])=>{
+    const stn=G.stations.find(st=>st.id===sid);if(!stn)return;
+    const rel=(rights.relationship?.[sid]||0)/100;
+    const incumbent=sid===rights.holderId?0.15:0;
+    const fmt=franchiseFormatFit(franchise,stn.format);
+    const effBid=bid*(1+rel*0.20+incumbent)*(0.65+0.35*fmt);
+    if(effBid>winnerEff){winner=stn;winnerBid=bid;winnerEff=effBid;}
+  });
+  if(!winner){rights.auctionOpen=false;return;}
+  const prev=rights.holderId?G.stations.find(st=>st.id===rights.holderId):null;
+  if(!rights.relationship)rights.relationship={};
+  rights.relationship[winner.id]=Math.min(100,(rights.relationship[winner.id]||0)+25);
+  if(winner.isPlayer){
+    const pid=winner._mpOwner!==undefined?winner._mpOwner:null;
+    if(pid!==null&&G._playerCash){
+      G._playerCash[pid]=(G._playerCash[pid]||0)-winnerBid*2;
+      if(MP.playerId===pid)G.cash=G._playerCash[pid];
+    }else G.cash-=winnerBid*2;
+    if(MP.mode==='live')MP.emit('player_cash_update',{playerId:pid??MP.playerId,cash:G._playerCash?.[pid??MP.playerId]??G.cash});
+  }
+  if(franchise.exclusive&&prev&&prev.id!==winner.id){
+    acts.push({v:prev.isPlayer?'HIGH':'LOW',
+      t:`📻 "${franchise.name}" moves from ${prev.callLetters} to ${winner.callLetters} — ${f$(winnerBid)}/yr.`,
+      y:G.year,p:G.period,iy:prev.isPlayer||winner.isPlayer});
+  }else{
+    acts.push({v:winner.isPlayer?'HIGH':'LOW',
+      t:`📻 "${franchise.name}" secured by ${winner.callLetters} — ${f$(winnerBid)}/yr for ${franchise.contractYrs} years.`,
+      y:G.year,p:G.period,iy:winner.isPlayer});
+  }
+  if(prev&&prev.id!==winner.id&&prev.isPlayer){
+    Object.values(prev.mom||{}).forEach(m=>{if(m)m.tgt=Math.max(0.001,m.tgt-0.004);});
+  }
+  rights.holderId=winner.id;
+  rights.holderName=winner.callLetters;
+  rights.fee=winnerBid;
+  rights.contractEnd=G.year+franchise.contractYrs;
+  rights.auctionOpen=false;
+  rights.bids={};
+}
+function placeFranchiseBid(franchiseId,stationId,amount){
+  if(!G.franchiseRights?.[franchiseId])return;
+  const r=G.franchiseRights[franchiseId];
+  if(!r.auctionOpen){showToast('Bidding not currently open for this franchise.','warn');return;}
+  const f=NATIONAL_FRANCHISES.find(fr=>fr.id===franchiseId);
+  if(!f)return;
+  r.bids[stationId]=amount;
+  G.news.unshift({v:'LOW',t:`📻 Bid submitted for "${f.name}" franchise — ${f$(amount)}/yr.`,y:G.year,p:G.period,iy:true});
+  MP.action('franchise_bid',{franchiseId,stationId,amount});
+  showToast(`Bid of ${f$(amount)}/yr submitted for "${f.name}".`,'info');
+  cm('m-franchise');renderAll();
+}
+
+function triggerFranchiseTrouble(G){
+  const acts=[];
+  if(!G.franchiseRights||G.pendingDecisionEvent)return acts;
+  for(const f of NATIONAL_FRANCHISES){
+    if(f.troubleMod<=1.0)continue;
+    const r=G.franchiseRights[f.id];
+    if(!r?.holderId)continue;
+    const holder=G.stations.find(st=>st.id===r.holderId);
+    if(!holder||!holder.isPlayer)continue;
+    const prob=0.015*f.troubleMod;
+    if(Math.random()>prob)continue;
+    const pool=f.id==='wild_card'
+      ?['fcc_language','fcc_indecency','sponsor_boycott']
+      :['sponsor_boycott','fcc_indecency'];
+    const scId=pool[Math.floor(Math.random()*pool.length)];
+    const sc=TROUBLE_SCENARIOS.find(s=>s.id===scId);
+    if(!sc)continue;
+    G.pendingDecisionEvent={
+      isFranchise:true,franchiseId:f.id,
+      scenarioId:scId,stationId:holder.id,slot:f.slot,
+      talentName:`"${f.name}" (national franchise)`,
+      rivalStation:'',year:G.year,period:G.period,
+      ownerId:holder._mpOwner!==undefined?holder._mpOwner:0,
+    };
+    acts.push({v:'HIGH',
+      t:`⚠ INCIDENT: ${sc.title} — "${f.name}" at ${holder.callLetters}. Decision required.`,
+      y:G.year,p:G.period,iy:true});
+    break;
+  }
+  return acts;
+}
 
 // ══════════════════════════════════════════════════════════════════
 // MULTIPLAYER STUB — Socket.io integration points
@@ -3101,7 +3716,7 @@ function appl(s,coh,G){
     oldiesAgeMult=Math.max(0.02,oldiesAgeMult);
   }
   const fmMusPref = fmMusicEraPreferenceMult(s, year, fmp);
-  return Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * eraMult * oldiesAgeMult * fmMusPref);
+  return Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * eraMult * oldiesAgeMult * fmMusPref * franchiseDemoMult(s,coh,G));
 }
 function recalc(stations,G){
   const activeIx=stations.map((s,i)=>s&&!s._bpSlotDeferred?i:-1).filter(i=>i>=0);
@@ -3229,6 +3844,11 @@ function recalc(stations,G){
       });
     }
   }
+
+  // Sports rights: scale cohort shares + AQH + mom so weighted share matches getSportsBonus (internal consistency)
+  stations.forEach(s=>applySportsRatingsToCohorts(s,G,engageWeightedPop));
+
+  refreshAllStationOQ(G);
 
   stations.forEach(s=>{
     if(!s||s._bpSlotDeferred||!s.rat)return;
@@ -3402,7 +4022,7 @@ function calcRev(s,G){
     s.ops.sell=s.ops.sell*0.65+targetSell*0.35;
   }
   const aqh=COH.reduce((sum,c)=>sum+(s.rat.cur[c]?.aqh||0),0);
-  if(!aqh){s.fin.rev=0;s.fin.cost=s.fin.fix||0;s.fin.ebitda=-(s.fin.fix||0);s.fin.simulcastProgFee=0;return;}
+  if(!aqh){s.fin.rev=0;s.fin.cost=s.fin.fix||0;s.fin.ebitda=-(s.fin.fix||0);s.fin.simulcastProgFee=0;s.fin.syndicationRights=0;return;}
   const fmd=FM[s.format]||{};
   const podBonus=s.format==='PODCAST_TALK'?1+Math.min((streamDrag*2),.4):1;
   const gcpm=genderCPM(s.format); // gender audience concentration CPM premium
@@ -3549,6 +4169,9 @@ function calcRev(s,G){
     simulcastRevMult=0.35+0.25*Math.min(1,(progSrcStation.oq||50)/100);
     totalRev=Math.round(totalRev*simulcastRevMult);
   }
+  const _sportsPrem=getSportsBonus(s,G);
+  if(_sportsPrem>0)totalRev=Math.round(totalRev*(1+Math.min(0.08,_sportsPrem*1.25)));
+  const rightsHalfPeriod=syndicationFeesForStation(s,G);
   const salesRate=year<1980?0.18:year<1990?0.17:year<2005?0.16:0.15;
   const adminRate=year<1980?0.12:year<1990?0.11:year<2005?0.10:0.09;
   const salesAdminRate=salesRate+adminRate;
@@ -3565,7 +4188,8 @@ function calcRev(s,G){
   s.fin.tal=talCost;s.fin.fix=fixedCost;s.fin.opsFloor=opsFloor;s.fin.salesAdminRate=salesAdminRate;s.fin.streamUpkeep=streamUpkeep;
   s.fin.simulcastProgFee=simulcastProgFee;
   s.fin.salesAdmin=salesAdminCost;
-  s.fin.cost=fixedCost+talCost+salesAdminCost+opsFloor+(s.ops.promo||0)+(s.ops.progBudget||0)+(s.identityBudget||0)+streamUpkeep+simulcastProgFee;
+  s.fin.syndicationRights=rightsHalfPeriod;
+  s.fin.cost=fixedCost+talCost+salesAdminCost+opsFloor+(s.ops.promo||0)+(s.ops.progBudget||0)+(s.identityBudget||0)+streamUpkeep+simulcastProgFee+rightsHalfPeriod;
   s.fin.ebitda=s.fin.rev-s.fin.cost;
 }
 function seedRev(stations,G){
@@ -3582,7 +4206,7 @@ function seedRev(stations,G){
       if(s.fin.streamRev!=null)s.fin.streamRev=Math.round(s.fin.streamRev*f);
       if(s.fin.salesAdminRate!=null){
         s.fin.salesAdmin=Math.round(s.fin.rev*s.fin.salesAdminRate);
-        s.fin.cost=(s.fin.fix||0)+(s.fin.tal||0)+(s.fin.salesAdmin||0)+(s.fin.opsFloor||0)+(s.ops.promo||0)+(s.ops.progBudget||0)+(s.identityBudget||0)+(s.fin.streamUpkeep||0)+(s.fin.simulcastProgFee||0);
+        s.fin.cost=(s.fin.fix||0)+(s.fin.tal||0)+(s.fin.salesAdmin||0)+(s.fin.opsFloor||0)+(s.ops.promo||0)+(s.ops.progBudget||0)+(s.identityBudget||0)+(s.fin.streamUpkeep||0)+(s.fin.simulcastProgFee||0)+(s.fin.syndicationRights||0);
       }
       s.fin.ebitda=s.fin.rev-s.fin.cost;
     });
@@ -3920,7 +4544,7 @@ function runAI(G){
           hires++;
           acts.push({v:'LOW',t:`${s.callLetters} fills ${SL[sl]} (${tier})`});
         }
-        if(hires)s.oq=Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+effSlotQForOq(s.prog[sl2])*w,0));
+        if(hires)refreshStationOQ(s,G);
       }
     }
 
@@ -4674,6 +5298,7 @@ function genMarket(scenId){
       debtWarningQ:0,
       loans:[],
       _atl1970DeferredQueue:[],
+      sportsRights:{},franchiseRights:{},teamRecords:{},
     };
   }
 
@@ -4695,6 +5320,7 @@ function genMarket(scenId){
     debtWarningQ:0,
     loans:[],
     _atl1970DeferredQueue:ATLANTA_1970_DEFERRED_LAUNCHES.map(({bpIdx,y,p})=>({bpIdx,y,p})),
+    sportsRights:{},franchiseRights:{},teamRecords:{},
   };
 }
 
@@ -4950,6 +5576,9 @@ function startPlay(scenId){
   try{
     _pendingScenId=null;
     G=genMarket(scenId);
+    initSportsRights(G);
+    initFranchiseRights(G);
+    refreshAllStationOQ(G);
     renderAll();
   }catch(err){
     showError('Failed during genMarket: '+err.message, err.stack||String(err));
@@ -6219,7 +6848,11 @@ function advTurn(){
     talentEvents(G);
     const troubleActs=triggerTalentTrouble(G);
     troubleActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
+    const franchiseTroubleActs=!G.pendingDecisionEvent?triggerFranchiseTrouble(G):[];
+    franchiseTroubleActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     rivalReformat(G);
+    (runSportsEvents(G)||[]).forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
+    (runFranchiseEvents(G)||[]).forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     recalc(G.stations,G);
     // Snapshot ranks BEFORE checkRankMilestones updates _prevRank,
     // so the MP broadcast block can build per-player milestones accurately.
@@ -6945,9 +7578,228 @@ function doShuffle(sid,fromSlot,toSlot){
     fromSd.quality=Math.max(10,Math.round(fromSd.quality*(1-pen)));
     G.news.unshift({v:'LOW',t:`${talA.name} moves to ${s.callLetters} ${SL[toSlot]}`,y:G.year,p:G.period});
   }
-  s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w,0));
+  refreshStationOQ(s,G);
   MP.action('shuffle',{sid,fromSlot,toSlot});
   openFire(sid);renderAll();
+}
+
+function franchiseBenchTalent(station,slot,G){
+  const sd=station?.prog?.[slot];
+  return(getStationFranchise(station,slot,G)&&sd?.talent)?sd.talent:null;
+}
+function openFranchiseBenchManager(stationId,franchiseId){
+  const s=G.stations.find(st=>st.id===stationId);if(!s)return;
+  const f=NATIONAL_FRANCHISES.find(fr=>fr.id===franchiseId);if(!f)return;
+  const slot=f.slot;
+  const t=franchiseBenchTalent(s,slot,G);
+  if(!t){showToast('No local talent is currently benched under this franchise.','info');return;}
+  const openSlots=Object.keys(SL).filter(k=>k!==slot&&!getStationFranchise(s,k,G)&&!s.prog?.[k]?.talent);
+  document.getElementById('frmoveb').innerHTML=`
+    <div class="msh" style="margin-bottom:10px">📻 FRANCHISE SLOT MANAGEMENT — ${s.callLetters}</div>
+    <div class="ibox" style="margin-bottom:12px">
+      <strong>${f.name}</strong> occupies ${SL[slot]}. <strong>${t.name}</strong> is benched underneath that franchise slot.
+    </div>
+    ${openSlots.length?`<div style="margin-bottom:12px">
+      <div class="msh" style="margin-bottom:8px">Move ${t.name} to an open slot</div>
+      ${openSlots.map(k=>`<button class="cfm" style="display:block;width:100%;margin-bottom:6px" onclick="moveBenchedFranchiseTalent('${stationId}','${franchiseId}','${k}')">Move to ${SL[k]}</button>`).join('')}
+    </div>`:`<div class="di" style="margin-bottom:12px">No open dayparts available on this station. Fire them or free up another slot first.</div>`}
+    <button class="abt d" style="width:100%;margin-bottom:8px" onclick="fireBenchedFranchiseTalent('${stationId}','${franchiseId}')">FIRE ${t.name}</button>
+    <button class="cnl" onclick="cm('m-frmove')">CLOSE</button>`;
+  om('m-frmove');
+}
+function moveBenchedFranchiseTalent(stationId,franchiseId,targetSlot){
+  const s=G.stations.find(st=>st.id===stationId);if(!s)return;
+  const f=NATIONAL_FRANCHISES.find(fr=>fr.id===franchiseId);if(!f)return;
+  const sourceSlot=f.slot;
+  const sd=s.prog?.[sourceSlot];
+  const t=sd?.talent;
+  if(!t){showToast('No benched talent found in that franchise slot.','warn');return;}
+  if(getStationFranchise(s,targetSlot,G)){showToast('That slot is occupied by another franchise.','warn');return;}
+  if(s.prog?.[targetSlot]?.talent){showToast('That slot already has live talent.','warn');return;}
+  s.prog[targetSlot].talent=t;
+  s.prog[targetSlot].quality=Math.max(s.prog[targetSlot].quality||20,Math.round((t.quality||30)*0.88));
+  s.prog[sourceSlot].talent=null;
+  G.news.unshift({v:'LOW',t:`📻 ${t.name} moved from benched ${SL[sourceSlot]} under "${f.name}" to ${s.callLetters} ${SL[targetSlot]}.`,y:G.year,p:G.period,iy:true});
+  cm('m-frmove');refreshStationOQ(s,G);renderAll();
+}
+function fireBenchedFranchiseTalent(stationId,franchiseId){
+  const s=G.stations.find(st=>st.id===stationId);if(!s)return;
+  const f=NATIONAL_FRANCHISES.find(fr=>fr.id===franchiseId);if(!f)return;
+  const sourceSlot=f.slot;
+  const sd=s.prog?.[sourceSlot];
+  const t=sd?.talent;
+  if(!t){showToast('No benched talent found in that franchise slot.','warn');return;}
+  const buyout=(t.cyr||0)>0.1?Math.round((t.salary||0)*(t.cyr||0)*0.60/500)*500:0;
+  if(G.cash<buyout){showToast(`Need ${f$(buyout)} to fire ${t.name}.`,'warn');return;}
+  G.cash-=buyout;
+  if(MP.mode==='live'){if(!G._playerCash)G._playerCash={};G._playerCash[MP.playerId]=G.cash;MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash});}
+  s.prog[sourceSlot].talent=null;
+  G.news.unshift({v:'LOW',t:`📻 ${t.name} fired from ${s.callLetters} while "${f.name}" occupies ${SL[sourceSlot]}.${buyout>0?' Buyout paid: '+f$(buyout)+'.':''}`,y:G.year,p:G.period,iy:true});
+  cm('m-frmove');refreshStationOQ(s,G);renderAll();
+}
+
+function openSports(sid){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const mkt=MARKETS[G.marketId||'atlanta']||MARKETS.atlanta;
+  const teams=(mkt.teams||[]).filter(t=>G.year>=t.introduced);
+  if(!teams.length){
+    document.getElementById('sportsb').innerHTML='<p class="di">No sports franchises in this market yet.</p><button class="cnl" onclick="cm(\'m-sports\')">CLOSE</button>';
+    om('m-sports');return;
+  }
+  document.getElementById('sports-title').textContent='🏟 SPORTS RIGHTS — '+s.callLetters;
+  const rows=teams.map(team=>{
+    const rights=G.sportsRights?.[team.id];
+    const rec=G.teamRecords?.[team.id];
+    if(!rights||!rec)return'';
+    const tier=sportsTierFromRecord(rec.record);
+    const tierCol={dynasty:'var(--grn)',playoff:'var(--grn)',competitive:'var(--off)',mediocre:'var(--mut)',rebuilding:'var(--red)'}[tier];
+    const tierLabel={dynasty:'Dynasty',playoff:'Playoff Contender',competitive:'Competitive',mediocre:'Mediocre',rebuilding:'Rebuilding'}[tier];
+    const season=SPORT_SEASONS[team.sport]||{p1:0.5,p2:0.5};
+    const seasonNote=team.sport==='NFL'?'Fall-heavy':team.sport==='MLB'?'Year-round':team.sport==='NBA'?'Spring-heavy':'Spring-heavy';
+    const holding=rights.holderId===s.id;
+    const fmtFit=SPORTS_FORMAT_FIT[s.format]||0.3;
+    const fmtFitPct=Math.round(fmtFit*100);
+    const rel=rights.relationship?.[s.id]||0;
+    const qualMult={dynasty:1.5,playoff:1.2,competitive:1.0,mediocre:0.7,rebuilding:0.4}[tier]||1.0;
+    const periodWeight=G.period===1?season.p1:season.p2;
+    const projBonus=Math.round(team.baseBonus*qualMult*periodWeight*fmtFit*1000)/10;
+    const estShareGain=team.baseBonus*qualMult*fmtFit*(season.p1+season.p2);
+    const annualBilling=marketAnnualBilling(G.year,G.marketId);
+    const estRevLift=Math.round(annualBilling*estShareGain/2/1000)*1000;
+    let bidSection='';
+    if(rights.auctionOpen){
+      const incumbent=rights.holderId?G.stations.find(st=>st.id===rights.holderId):null;
+      const myBid=rights.bids?.[s.id]||0;
+      const sugBid=Math.round(Math.max(rights.fee*1.1,team.baseFee*(0.9+fmtFit*0.6))/1000)*1000;
+      const breakEven=Math.round(estRevLift*0.85/1000)*1000;
+      bidSection=`<div style="background:rgba(82,227,110,.06);border:1px solid rgba(82,227,110,.2);border-radius:6px;padding:12px;margin-top:8px">
+        <div style="font-family:var(--ft);font-size:13px;color:var(--grn);letter-spacing:1px;margin-bottom:8px">🔔 BIDDING OPEN — closes this Fall</div>
+        <div class="sr"><span class="lb">Current holder</span><span class="vl">${incumbent?incumbent.callLetters:'None'} — paying ${f$(rights.fee)}/yr</span></div>
+        <div class="sr"><span class="lb">Your relationship</span><span class="vl" style="color:${rel>=50?'var(--grn)':rel>=25?'var(--amb)':'var(--mut)'}">${rel}/100 ${rel>=50?'(incumbent advantage)':rel>=25?'(known bidder)':'(new bidder)'}</span></div>
+        <div class="sr"><span class="lb">Est. revenue lift</span><span class="vl pos">+${f$(estRevLift)}/yr</span></div>
+        <div class="sr"><span class="lb">Break-even bid</span><span class="vl" style="color:var(--mut)">${f$(breakEven)}/yr</span></div>
+        ${myBid>0?`<div class="sr"><span class="lb">Your current bid</span><span class="vl" style="color:var(--grn)">${f$(myBid)}/yr ✓</span></div>`:''}
+        <div style="margin-top:10px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+            <span style="font-size:14px;color:var(--mut)">Bid:</span>
+            <strong id="bid-val-${team.id}" style="font-family:var(--fd);font-size:16px;color:var(--amb)">${f$(myBid||sugBid)}/yr</strong>
+          </div>
+          <input type="range" id="sports-range-${team.id}" min="${Math.round(team.baseFee*0.5/1000)*1000}" max="${Math.round(team.baseFee*4/1000)*1000}" step="10000"
+            value="${myBid||sugBid}"
+            oninput="document.getElementById('bid-val-${team.id}').textContent=f$(parseInt(this.value))+'/yr'"
+            style="width:100%;margin-bottom:8px">
+          <button class="cfm" style="width:100%;padding:8px;font-size:14px"
+            onclick="placeSportsBid('${team.id}','${s.id}',parseInt(document.querySelector('#sports-range-${team.id}').value))">
+            ${myBid>0?'UPDATE BID':'SUBMIT BID'}</button>
+        </div>
+      </div>`;
+    }else{
+      const expiresIn=rights.contractEnd-G.year;
+      bidSection=`<div style="font-size:14px;color:var(--mut);margin-top:6px">
+        Contract held by ${rights.holderName} — ${expiresIn<=0?'<span style="color:var(--red)">expires this year</span>':expiresIn===1?'<span style="color:var(--amb)">expires next year</span>':'renews in '+expiresIn+' years'}.
+        ${estRevLift>0?`Est. revenue lift if acquired: <span style="color:var(--grn)">+${f$(estRevLift)}/yr</span>`:''}
+      </div>`;
+    }
+    return `<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:6px;padding:12px 14px;margin-bottom:10px;${holding?'border-color:var(--grn)':''}">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
+        <div>
+          <div style="font-family:var(--fd);font-size:16px;color:var(--wht)">${team.name} ${holding?'<span style="color:var(--grn);font-size:14px">◆ YOU HOLD</span>':''}</div>
+          <div style="font-size:14px;color:var(--mut);margin-top:2px">${team.sport} · ${seasonNote} · Format fit: ${fmtFitPct}%</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-family:var(--fd);font-size:16px;color:${tierCol}">${tierLabel}</div>
+          <div style="font-size:14px;color:var(--mut)">${rec.record}/100 · ${projBonus>0?'+'+projBonus.toFixed(1)+'% share this period':''}</div>
+        </div>
+      </div>
+      ${bidSection}
+    </div>`;
+  }).join('');
+  document.getElementById('sportsb').innerHTML=`
+    <p class="di">Broadcast rights give your station a ratings boost during the team's season. <strong>Format fit</strong> determines how much of that boost you can capture — Sports Talk gets the full halo; music formats get a smaller lift.</p>
+    ${rows}
+    <button class="cnl" onclick="cm('m-sports')">CLOSE</button>`;
+  om('m-sports');
+}
+
+function openFranchise(sid){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const eligible=NATIONAL_FRANCHISES.filter(f=>G.year>=f.introduced&&f.formats.includes(s.format));
+  if(!eligible.length){
+    document.getElementById('franchiseb').innerHTML='<p class="di">No national franchises available for this format yet.</p><button class="cnl" onclick="cm(\'m-franchise\')">CLOSE</button>';
+    om('m-franchise');return;
+  }
+  document.getElementById('franchise-title').textContent=`📻 NATIONAL FRANCHISES — ${s.callLetters}`;
+  const rows=eligible.map(f=>{
+    const r=G.franchiseRights?.[f.id];
+    const holding=r?.holderId===s.id;
+    const heldByOther=f.exclusive&&r?.holderId&&r.holderId!==s.id;
+    const otherHolder=heldByOther?G.stations.find(st=>st.id===r.holderId):null;
+    const rel=r?.relationship?.[s.id]||0;
+    const expiresIn=(r?.contractEnd||G.year)-G.year;
+    const canBid=!!r?.auctionOpen;
+    const myBid=r?.bids?.[s.id];
+    const sugBid=Math.round(f.baseFee*(1.0+(rel/100)*0.2)/1000)*1000;
+    const statusColor=holding?'var(--grn)':heldByOther?'var(--red)':'var(--mut)';
+    const statusLabel=holding?'◆ YOU HOLD':heldByOther?`Held by ${otherHolder?.callLetters||'rival'}`:f.exclusive?'Available':'Multiple stations can hold';
+    const troubleLabel=f.troubleMod>=3?'⚠ High FCC risk':f.troubleMod>=1.5?'⚠ Moderate risk':f.troubleMod<=0.3?'✓ Low risk':'';
+    const troubleCol=f.troubleMod>=3?'var(--red)':f.troubleMod>=1.5?'var(--amb)':'var(--grn)';
+    let bidSection='';
+    if(canBid){
+      bidSection=`<div style="background:rgba(82,227,110,.06);border:1px solid rgba(82,227,110,.2);border-radius:6px;padding:10px;margin-top:8px">
+        <div style="font-family:var(--ft);font-size:12px;color:var(--grn);margin-bottom:6px">🔔 AUCTION OPEN — closes this Fall</div>
+        <div class="sr"><span class="lb">Your relationship</span><span class="vl" style="color:${rel>=40?'var(--grn)':'var(--mut)'}">${rel}/100${holding?' (incumbent +15%bonus)':''}</span></div>
+        ${myBid?`<div class="sr"><span class="lb">Your bid</span><span class="vl" style="color:var(--grn)">${f$(myBid)}/yr ✓</span></div>`:''}
+        <div style="margin-top:8px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+            <span style="font-size:13px;color:var(--mut)">Bid:</span>
+            <strong id="fb-val-${f.id}" style="font-family:var(--fd);font-size:15px;color:var(--amb)">${f$(myBid||sugBid)}/yr</strong>
+          </div>
+          <input type="range" id="fb-range-${f.id}" min="${Math.round(f.baseFee*0.4/1000)*1000}" max="${Math.round(f.baseFee*3.5/1000)*1000}" step="5000"
+            value="${myBid||sugBid}"
+            oninput="document.getElementById('fb-val-${f.id}').textContent=f$(parseInt(this.value))+'/yr'"
+            style="width:100%;margin-bottom:6px">
+          <button class="cfm" style="width:100%;padding:7px;font-size:13px"
+            onclick="placeFranchiseBid('${f.id}','${s.id}',parseInt(document.querySelector('#fb-range-${f.id}').value))">
+            ${myBid?'UPDATE BID':'SUBMIT BID'}</button>
+        </div>
+      </div>`;
+    }else if(holding){
+      const bench=franchiseBenchTalent(s,f.slot,G);
+      bidSection=`<div style="font-size:13px;color:var(--mut);margin-top:4px">Contract renews in ${expiresIn} year${expiresIn!==1?'s':''}. Paying ${f$(r.fee)}/yr.</div>`
+        +(bench?`<div style="margin-top:8px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.25);border-radius:6px;padding:10px">
+            <div style="font-size:13px;color:var(--amb);margin-bottom:8px">⚠ ${bench.name} is benched because "${f.name}" occupies ${SL[f.slot]}.</div>
+            <button class="cfm" style="width:100%;padding:7px;font-size:13px" onclick="openFranchiseBenchManager('${s.id}','${f.id}')">MANAGE BENCHED TALENT</button>
+          </div>`:'');
+    }else if(heldByOther){
+      bidSection=`<div style="font-size:13px;color:var(--mut);margin-top:4px">Held until ${r.contractEnd}. Watch for the auction next year.</div>`;
+    }else{
+      bidSection='<div style="font-size:13px;color:var(--mut);margin-top:4px">Not currently in market. Will go to auction when available.</div>';
+    }
+    return `<div style="background:var(--crd);border:1px solid ${holding?'var(--grn)':heldByOther?'rgba(240,88,88,.3)':'var(--bdh)'};border-radius:6px;padding:12px 14px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
+        <div style="flex:1">
+          <div style="font-family:var(--fd);font-size:15px;color:var(--wht)">${f.name}</div>
+          <div style="font-size:13px;color:var(--mut);font-style:italic;margin-top:1px">"${f.tagline}"</div>
+          <div style="font-size:13px;color:var(--off);margin-top:4px">${f.desc}</div>
+          <div style="display:flex;gap:12px;margin-top:5px;flex-wrap:wrap">
+            <span style="font-size:12px;color:var(--mut)">${SL[f.slot]||f.slot} · Q${f.quality} · ${f$(f.baseFee)}/yr base</span>
+            ${troubleLabel?`<span style="font-size:12px;color:${troubleCol}">${troubleLabel}</span>`:''}
+          </div>
+        </div>
+        <div style="text-align:right;flex-shrink:0">
+          <div style="font-size:13px;color:${statusColor};font-family:var(--ft)">${statusLabel}</div>
+        </div>
+      </div>
+      ${bidSection}
+    </div>`;
+  }).join('');
+  document.getElementById('franchiseb').innerHTML=`
+    <p class="di">National franchises are syndicated shows your station pays to air. Exclusive franchises can only be held by one station per market — bid to win them at auction.</p>
+    ${rows}
+    <button class="cnl" onclick="cm('m-franchise')">CLOSE</button>`;
+  om('m-franchise');
 }
 
 // Cross-station talent transfer (player-owned stations only; separate from within-station shuffle)
@@ -8276,6 +9128,14 @@ function migrateSave(G){
   G.stationFinHistory=G.stationFinHistory||{};
   if(!G.score)G.score={isSandbox:false,shareHistory:[],peakRevenue:0,decadeScores:{}};
   G._atl1970DeferredQueue=G._atl1970DeferredQueue||[];
+  G.sportsRights=G.sportsRights||{};
+  G.franchiseRights=G.franchiseRights||{};
+  G.teamRecords=G.teamRecords||{};
+  if((G.year||1970)>=1970){
+    initSportsRights(G);
+    initFranchiseRights(G);
+  }
+  refreshAllStationOQ(G);
   // Ensure fin.fix exists on all stations (added for cost breakdown display)
   (G.stations||[]).forEach(s=>{
     if(s._bpSlotDeferred)return;
@@ -9344,6 +10204,15 @@ function rStns(){
           :'<button class="abt b" onclick="openSim(\''+s.id+'\')">◈ SIMULCAST THIS STATION</button>';
         const driftBtn=DRIFT[op.format]?'<button class="abt" style="background:rgba(245,166,35,.12);border:1px solid var(--amb);color:var(--amb)" onclick="openDrift(\''+op.id+'\')">🎚 STRATEGY</button>':'';
         const streamBtn='<button class="abt '+(op.stream?.active?'g active':G.year>=2005?'b':'')+'" onclick="openStream(\''+op.id+'\')" '+(G.year<2005?'style="opacity:.30;cursor:default"':'')+'>'+(op.stream?.active?'📶 STREAMING ✓':'📶 ADD STREAMING')+'</button>';
+        const _fr=G.franchiseRights||{};
+        const _teams=(MARKETS[G.marketId||'atlanta']?.teams||[]).filter(t=>G.year>=t.introduced);
+        const _openSp=_teams.some(t=>G.sportsRights?.[t.id]?.auctionOpen);
+        const _holdsSp=_teams.filter(t=>G.sportsRights?.[t.id]?.holderId===op.id);
+        const sportsBtn=_teams.length?'<button class="abt '+(_openSp?'g':'b')+'" onclick="openSports(\''+op.id+'\')" style="'+(_openSp?'border-color:var(--grn);color:var(--grn)':'')+'">🏟 '+(_holdsSp.length?_holdsSp.map(t=>t.name.split(' ').pop()).join('+')+' RIGHTS':'SPORTS RIGHTS')+'</button>':'';
+        const _myFr=NATIONAL_FRANCHISES.filter(f=>_fr[f.id]?.holderId===op.id);
+        const _openFr=NATIONAL_FRANCHISES.filter(f=>G.year>=f.introduced&&f.formats.includes(op.format)&&_fr[f.id]?.auctionOpen);
+        const _eligFr=NATIONAL_FRANCHISES.filter(f=>G.year>=f.introduced&&f.formats.includes(op.format));
+        const franchiseBtn=_eligFr.length?'<button class="abt '+(_openFr.length?'g':'')+'" onclick="openFranchise(\''+op.id+'\')" style="'+(_openFr.length?'border-color:var(--grn);color:var(--grn)':'')+'">📻 '+(_myFr.length?_myFr.map(f=>f.name.split(' ').slice(-1)[0]).join('+')+' FRANCHISE':'FRANCHISES')+'</button>':'';
         const fmBtn=st=>{
           if(!st)return '';
           if(st.simulcastWith&&!st.fmBooster){
@@ -9392,6 +10261,8 @@ function rStns(){
           streamBtn,
           simBtn,
         );
+        if(sportsBtn)progBtns.push(sportsBtn);
+        if(franchiseBtn)progBtns.push(franchiseBtn);
         const salesLbl=sfActive?'💼 '+sfLblText+' · '+Math.round(op.ops.sell*100)+'%':'💼 SALES';
         const swapBtn='<button class="abt" onclick="openSwapSignal(\''+op.id+'\')">⇄ SWAP SIGNAL</button>';
         const fmUniq=[];
