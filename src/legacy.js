@@ -811,8 +811,8 @@ function fmpForYear(year){
   // 1983: FM standard in most new cars (65%)
   // 1990: near-universal (85%)
   const base=0.20;
-  const p1=_smoothstep(1970,1977,year)*0.25; // early adoption
-  const p2=_smoothstep(1977,1983,year)*0.20; // car radio boom
+  const p1=_smoothstep(1970,1977,year)*0.30; // early adoption — accelerated (was 0.25)
+  const p2=_smoothstep(1977,1983,year)*0.18; // car radio boom (was 0.20, reduced to keep 1990s total stable)
   const p3=_smoothstep(1983,1990,year)*0.20; // saturation
   const p4=_smoothstep(1990,2000,year)*0.12; // final holdouts
   return _clamp01(base+p1+p2+p3+p4);
@@ -846,8 +846,8 @@ function fmMusicEraPreferenceMult(s, year, fmp) {
   else if (['SPANISH', 'GOSPEL', 'CLASSIC_HITS', 'ADULT_STANDARDS'].includes(s.format)) fmtW = 0.45;
   else return 1;
   const eraWindow = _smoothstep(1971, 1978, year) * (1 - _smoothstep(1986, 1992, year));
-  const fmpRamp = _smoothstep(0.30, 0.58, fmp);
-  const raw = 0.46 * eraWindow * fmpRamp * fmtW;
+  const fmpRamp = _smoothstep(0.22, 0.48, fmp);
+  const raw = 0.64 * eraWindow * fmpRamp * fmtW;
   return Math.min(1.5, 1 + raw);
 }
 // AQH engagement rates by cohort (from Arbitron methodology)
