@@ -265,13 +265,17 @@ const COMMUNITY_IDENTITY={
 
 const MUSIC_FMTS=['TOP40','COUNTRY','SOUL_RNB','MOR','ADULT_STANDARDS','ALBUM_ROCK','BEAUTIFUL_MUSIC','CHR',
   'CLASSIC_ROCK','ADULT_CONTEMP','URBAN_CONTEMP','ALT_ROCK','RHYTHMIC','HOT_AC','CLASSIC_HITS','OLDIES','GOSPEL','SPANISH'];
-function vacantLabel(fmt,slot){
+function vacantLabel(fmt,slot,s){
   const isTalk=TALK_FMTS.includes(fmt);
+  if(s&&typeof G!=='undefined'&&G){
+    const f=getStationFranchise(s,slot,G);
+    if(f)return `"${f.name}"`;
+  }
   // Overnight is always automation or paid programming regardless of format
   if(slot==='overnight')return isTalk?'PAID PROGRAMMING':'AUTOMATION';
-  if(slot==='evening')return isTalk?'SYNDICATED':'AUTOMATION';
+  if(slot==='evening')return isTalk?'NATIONAL SHOW':'AUTOMATION';
   // Prime dayparts: the distinction matters most
-  if(isTalk)return 'SYNDICATED';
+  if(isTalk)return 'NATIONAL SHOW';
   return 'AUTOMATION';
 }
 const DAYPART_SLOTS=['morningDrive','afternoonDrive','midday','evening','overnight'];
@@ -753,9 +757,9 @@ function updateSuperstars(G){
   candidates.slice(0,S.MAX_PER_MARKET).forEach(({t})=>{t.superstar=true;});
 }
 
-function nonLocalDaypartCaption(fmt,slot,isPublic){
+function nonLocalDaypartCaption(fmt,slot,isPublic,s){
   if(isPublic)return 'PROGRAMMED';
-  return vacantLabel(fmt,slot);
+  return vacantLabel(fmt,slot,s);
 }
 /** Competitor intel + market ranker: per-daypart talent name, Q, salary, or syndication/automation/public label */
 function htmlOnAirTalentRoster(s){
@@ -771,7 +775,7 @@ function htmlOnAirTalentRoster(s){
       const star=t.superstar===true?'⭐ ':'';
       return `<div class="sr" style="align-items:flex-start"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);line-height:1.45"><strong style="font-weight:600;color:var(--wht)">${star}${t.name}</strong> · Q ${tq} · slot ${slotQ} · ${salStr}</span></div>`;
     }
-    const cap=nonLocalDaypartCaption(s.format,sl,!!s.isPublic);
+    const cap=nonLocalDaypartCaption(s.format,sl,!!s.isPublic,s);
     return `<div class="sr"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px;color:var(--mut)"><em>${cap}</em> · slot Q ${slotQ}</span></div>`;
   }).join('');
 }
@@ -1032,7 +1036,7 @@ const SAL={morningDrive:{entry:[12000,20000],mid:[22000,35000],star:[35000,60000
 const QRG={entry:[28,52],mid:[45,72],star:[68,92]};
 const NF=['Jack','Bobby','Ray','Don','Mike','Larry','Gary','Jim','Dave','Steve','Tom','Bill','Frank','Gene','Roy','Earl','Betty','Carol','Sandra','Diane','Linda','Sharon','Pat','Ruth','Duke','Hank','Wanda','Al','Jerry','Ted','Maria','Carlos','Marcus','Keisha','Tanya','DeShawn','Renee'];
 const NL=['Williams','Johnson','Davis','Wilson','Moore','Taylor','Anderson','Thomas','Jackson','White','Harris','Martin','Thompson','Garcia','Clark','Lewis','Walker','Hall','Young','King','Rivera','Washington','Brown'];
-const gn=()=>{
+const gn=(nameCtx)=>{
   // Collect first names already in use across all stations in current market
   const usedFirst=new Set();
   if(typeof G!=='undefined'&&G?.stations){
@@ -1040,14 +1044,20 @@ const gn=()=>{
       if(!st.prog)return;
       Object.values(st.prog).forEach(sd=>{
         if(sd?.talent?.name){
-          usedFirst.add(sd.talent.name.split(' ')[0]);
+          const parts=sd.talent.name.trim().split(/\s+/);
+          usedFirst.add(parts[0]);
         }
       });
     });
   }
-  const avail=NF.filter(f=>!usedFirst.has(f));
-  const pool=avail.length?avail:NF; // fallback to full list if market is saturated
-  return `${pick(pool)} ${pick(NL)}`;
+  const availF=NF.filter(f=>!usedFirst.has(f));
+  const poolF=availF.length?availF:NF; // fallback to full list if market is saturated
+  let lastPool=NL;
+  if(nameCtx?.usedLastNames?.size){
+    const filtered=NL.filter(l=>!nameCtx.usedLastNames.has(l));
+    if(filtered.length)lastPool=filtered;
+  }
+  return `${pick(poolF)} ${pick(lastPool)}`;
 };
 let UC=new Set(),UB=new Set();
 function gc(){const c='BCDFGJKLMNPRSTVXZ',a=c+'AEIOU';let s,t=0;do{s='W'+c[ri(0,c.length-1)]+a[ri(0,a.length-1)]+a[ri(0,a.length-1)];t++;}while(UC.has(s)&&t<200);UC.add(s);return s;}
@@ -1100,7 +1110,7 @@ function marketTalentMult(marketId){
   return Math.max(0.70, Math.min(1.35, 0.70 + rs*0.30));
 }
 
-function mkTal(slot,fmt,tier='mid',year=1970){
+function mkTal(slot,fmt,tier='mid',year=1970,nameCtx){
   const isTalkFmt = TALK_FMTS.includes(fmt);
   const isAllNews = fmt === 'ALL_NEWS';
   const talkDiscount = isAllNews ? 0.60
@@ -1155,9 +1165,16 @@ function mkTal(slot,fmt,tier='mid',year=1970){
   if(tier!=='star') finalSal*=0.90;
   finalSal=Math.round(finalSal/500)*500;
 
+  const name=gn(nameCtx);
+  if(nameCtx?.usedLastNames){
+    const parts=name.trim().split(/\s+/);
+    const last=parts[parts.length-1];
+    if(last)nameCtx.usedLastNames.add(last);
+  }
+
   return{
     id:Math.random().toString(36).substr(2,8),
-    name:gn(fmt,year),
+    name,
     slot,
     quality:q,
     formatFit:ff,
@@ -1225,6 +1242,8 @@ const MARKETS={
     amFreqs:['590 AM','640 AM','750 AM','860 AM','920 AM','1010 AM','1090 AM','1160 AM','1230 AM','1340 AM'],
     fmFreqs:['96.1 FM','99.7 FM','102.3 FM','104.5 FM','107.1 FM','94.9 FM','88.5 FM','101.5 FM','103.3 FM'],
     blackPop:0.358,hispPop1970:0.010,hispPop2000:0.080,hispPop2020:0.115,churchGoing:0.54,countryBonus:0,urbanBonus:0.05,
+    /** Rare 3-letter heritage call for the dominant AM incumbent (King of the Dial, etc.) — not random */
+    heritageCall3:'WSB',
     teams:[
       // baseFee: annual rights $, tuned to current half-period revenue scale (was monolith-high vs station billing)
       {id:'braves',name:'Atlanta Braves',sport:'MLB',introduced:1970,baseFee:95000,baseBonus:0.012,contractYrs:3},
@@ -1250,6 +1269,7 @@ const MARKETS={
   },
   nashville:{
     id:'nashville', label:'Nashville', region:'South',
+    heritageCall3:'WSM',
     pop:{'12-17':95,'18-24':110,'25-34':120,'35-49':150,'50-64':125,'65+':75},
     revScale:0.5, adxBonus:0.03, // Country music capital — country formats get +15% here
     amFreqs:['650 AM','760 AM','1040 AM','1160 AM','1240 AM','1300 AM','1400 AM','1470 AM','1510 AM','1560 AM'],
@@ -2518,7 +2538,7 @@ function mpSetupSocketHandlers(socket) {
     // Show period-end summary for guest with their own profit figure
     if (sumData) {
       const myProfit = myPS().reduce((s,st) => s + st.fin.ebitda, 0);
-      setTimeout(() => showSum(myProfit, sumData.ev, sumData.acts, sumData.alerts, sumData.wasYear, sumData.wasPeriod), 300);
+      setTimeout(() => showSum(myProfit, sumData.ev, sumData.acts, sumData.alerts, sumData.wasYear, sumData.wasPeriod, { sportsActs: sumData.sportsActs, franchiseActs: sumData.franchiseActs }), 300);
     }
     // Decade grade modal — per-player score
     if (decadeYear) {
@@ -3060,14 +3080,16 @@ function nextFreq(type){return type==='AM'?AMF[amfIdx++%AMF.length]:FMF[fmfIdx++
 
 function mkStn(bp,freq,year=1970){
   const{type,fmt,pw,str}=bp,tt=STT[str]||'mid',qb=STQ[str]||[40,60];
+  const stId=Math.random().toString(36).substr(2,8);
+  const nameCtx={usedLastNames:new Set()};
   // Tier step-down: each slot is one tier weaker than the previous
   // star→mid→entry. Morning leads, afternoon follows, midday is bench depth.
   const afTier=tt==='star'?'mid':tt==='mid'?'entry':'entry';
   const prog={
-    morningDrive:  {talent:mkTal('morningDrive',fmt,tt,year),quality:Math.round(rnd(qb[0],qb[1]))},
-    midday:        {talent:fmt!=='BEAUTIFUL_MUSIC'?mkTal('midday',fmt,'entry',year):null,quality:Math.round(rnd(qb[0]-10,qb[1]-10))},
-    afternoonDrive:{talent:mkTal('afternoonDrive',fmt,afTier,year),quality:Math.round(rnd(qb[0]-5,qb[1]-5))},
-    evening:       {talent:Math.random()>.4?mkTal('evening',fmt,'entry',year):null,quality:Math.round(rnd(qb[0]-15,qb[1]-15))},
+    morningDrive:  {talent:mkTal('morningDrive',fmt,tt,year,nameCtx),quality:Math.round(rnd(qb[0],qb[1]))},
+    midday:        {talent:fmt!=='BEAUTIFUL_MUSIC'?mkTal('midday',fmt,'entry',year,nameCtx):null,quality:Math.round(rnd(qb[0]-10,qb[1]-10))},
+    afternoonDrive:{talent:mkTal('afternoonDrive',fmt,afTier,year,nameCtx),quality:Math.round(rnd(qb[0]-5,qb[1]-5))},
+    evening:       {talent:Math.random()>.4?mkTal('evening',fmt,'entry',year,nameCtx):null,quality:Math.round(rnd(qb[0]-15,qb[1]-15))},
     overnight:     {talent:null,quality:Math.round(rnd(15,30))},
   };
   Object.values(prog).forEach(s=>s.quality=Math.max(10,Math.min(100,s.quality)));
@@ -3075,7 +3097,7 @@ function mkStn(bp,freq,year=1970){
   const reach=type==='AM'?(RA[pw]||.85):(RF[pw]||.70);
   const sb=SBR[str]||[.50,.70];
   return{
-    id:Math.random().toString(36).substr(2,8),
+    id:stId,
     callLetters:gc(),freq,brand:gb(fmt),
     sig:{type,pw,reach,universe:UNIVERSE[`${type}_${pw}`]||0.65},
     launchPeriod:0, // set after creation — total periods elapsed at launch
@@ -3110,7 +3132,7 @@ const SC=[
    oqBoost:-5, // slightly below market average — room to grow
    hint:'Survive the lean 1978-80 period. Album Rock explodes after that.'},
   {id:'acrise', l:'The Soft Touch', startYear:1978,
-   d:"1978. Adult Contemporary is emerging as FM's most profitable format — softer hits, 25-49 women, premium CPM. You've acquired a good-signal FM that's been drifting as Beautiful Music. The format pivot to AC is obvious. The challenge: it gets crowded fast, and brand loyalty is everything once the format matures.",
+   d:"1978. Adult Contemporary is emerging as FM's most profitable format — softer hits, 25-49 women, premium CPM. You've acquired a good-signal FM still running Beautiful Music. The format pivot to AC is obvious. The challenge: it gets crowded fast, and brand loyalty is everything once the format matures.",
    idx:[14], cash:980000, diff:'MEDIUM',
    oqBoost:5, // inherited a reasonably-run station
    hint:'AC gets crowded by 1983. Build advertiser relationships early.'},
@@ -4916,10 +4938,12 @@ function applyDriftInflections(G){
           const m=s.mom[coh];
           if(m)m.tgt=Math.max(0.001,Math.min(0.30,m.tgt+effect));
         });
-        const dir=effect>0?'surge':'loss';
+        const dirMsg=effect>0
+          ?'gaining momentum — the format is catching on with listeners'
+          :'losing ground — audience is shifting away from the current sound';
         const owner=s.isPlayer?'YOUR':'';
         acts.push({v:effect>0?'MEDIUM':'HIGH',
-          t:`📡 ${inf.name}: ${owner?'YOUR ':''}${s.callLetters} (${FM[s.format]?.l}) — ${dir} from drift positioning`,
+          t:`📡 ${inf.name}: ${owner?'YOUR ':''}${s.callLetters} (${FM[s.format]?.l}) — ${dirMsg}.`,
           iy:s.isPlayer});
       }
     });
@@ -5196,6 +5220,22 @@ function genMarket(scenId){
     const hqBonus=sc.heritageIncumbent?3:0;
     Object.values(stations[i].prog).forEach(sd=>{if(sd)sd.quality=Math.max(12,Math.min(90,(sd.quality||30)+oqAdj*0.6+hqBonus));});
     stations[i].color='#f5a623';}});
+  // One intentional 3-letter heritage call for the dominant AM in heritage scenarios (e.g. King of the Dial)
+  if(sc.heritageIncumbent){
+    const mktHer=MARKETS[ACTIVE_MARKET]||MARKETS.atlanta;
+    if(mktHer.heritageCall3){
+      let appliedHer=false;
+      sc.idx.forEach(i=>{
+        const st=stations[i];
+        if(appliedHer||!st||st._bpSlotDeferred||st.sig.type!=='AM')return;
+        UC.delete(st.callLetters);
+        st.callLetters=mktHer.heritageCall3;
+        UC.add(mktHer.heritageCall3);
+        st.heritageIncumbent=true;
+        appliedHer=true;
+      });
+    }
+  }
   // Validate FCC: stack scenario has 1AM+1FM which is legal; others have 1 station
   // ── PUBLIC RADIO STATIONS (injected 1975+, always present) ──
   // WABE-style public news/talk and WCLK-style public classical
@@ -5560,6 +5600,9 @@ function openOnboarding(scenId){
 
   const tips=eraTips[sc.id]||eraTips.under;
   const tipsHtml=tips.map(t=>`<div class="ob-row"><span class="ob-key">${t.k}</span><span>${t.v}</span></div>`).join('');
+  const mktLbl=(typeof _selectedMarket!=='undefined'&&_selectedMarket&&MARKETS[_selectedMarket]?.label)||MARKETS.atlanta.label;
+  const defCompany=`${mktLbl} Broadcasting Group`;
+  const escCo=defCompany.replace(/"/g,'&quot;');
 
   // Generic mechanics — slightly adjusted by era
   const amMechanicRow=yr<=1978
@@ -5568,9 +5611,17 @@ function openOnboarding(scenId){
 
   document.getElementById('onboardb').innerHTML=`
     <div style="margin-bottom:20px">
-      <div style="font-family:var(--ft);font-size:14px;color:var(--mut);letter-spacing:2px;margin-bottom:4px">YOUR SCENARIO · ATLANTA · ${yr}</div>
+      <div style="font-family:var(--ft);font-size:14px;color:var(--mut);letter-spacing:2px;margin-bottom:4px">YOUR SCENARIO · ${mktLbl.toUpperCase()} · ${yr}</div>
       <div style="font-family:var(--fd);font-size:26px;letter-spacing:4px;color:var(--amb)">${sc.l.toUpperCase()}</div>
       <div style="font-size:15px;color:var(--off);margin-top:8px;line-height:1.6">${sc.d}</div>
+    </div>
+    <div class="ob-sec">
+      <div class="ob-hd">YOUR COMPANY</div>
+      <div class="ob-row"><span class="ob-key">NAME</span><span style="flex:1;min-width:0">
+        <input type="text" id="company-name-input" maxlength="48" value="${escCo}" placeholder="${escCo}"
+          style="width:100%;box-sizing:border-box;background:var(--crd);border:1px solid var(--bdh);color:var(--wht);font-family:var(--ft);font-size:15px;padding:10px 12px;outline:none;border-radius:2px"/>
+      </span></div>
+      <div style="font-size:13px;color:var(--mut);margin-top:6px;line-height:1.45">Shown in the header like multiplayer names. Leave default or enter your own.</div>
     </div>
     <div class="ob-sec">
       <div class="ob-hd">THE GOAL</div>
@@ -5600,7 +5651,13 @@ function openOnboarding(scenId){
 function startPlay(scenId){
   try{
     _pendingScenId=null;
+    let companyName=(document.getElementById('company-name-input')?.value||'').trim();
+    if(!companyName){
+      const mktLbl=(typeof _selectedMarket!=='undefined'&&_selectedMarket&&MARKETS[_selectedMarket]?.label)||MARKETS.atlanta.label;
+      companyName=`${mktLbl} Broadcasting Group`;
+    }
     G=genMarket(scenId);
+    G.companyName=companyName;
     initSportsRights(G);
     initFranchiseRights(G);
     refreshAllStationOQ(G);
@@ -6877,8 +6934,10 @@ function advTurn(){
     const franchiseTroubleActs=!G.pendingDecisionEvent?triggerFranchiseTrouble(G):[];
     franchiseTroubleActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     rivalReformat(G);
-    (runSportsEvents(G)||[]).forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
-    (runFranchiseEvents(G)||[]).forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
+    const sportsActs=runSportsEvents(G)||[];
+    const franchiseActs=runFranchiseEvents(G)||[];
+    sportsActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
+    franchiseActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     recalc(G.stations,G);
     // Snapshot ranks BEFORE checkRankMilestones updates _prevRank,
     // so the MP broadcast block can build per-player milestones accurately.
@@ -6972,7 +7031,7 @@ function advTurn(){
     const wasYear=G.year,wasPeriod=G.period;
     recordCompanyFinHistory(G, wasYear, wasPeriod, profit);
     recordStationFinHistory(G, wasYear, wasPeriod);
-    showSum(profit,ev,acts,alerts,wasYear,wasPeriod);
+    showSum(profit,ev,acts,alerts,wasYear,wasPeriod,{sportsActs,franchiseActs});
     if(G.period===1){G.period=2;}else{G.period=1;G.year++;}
     G.turn=(G.turn||0)+1;
     // BP-slot entrants scheduled for the new calendar period appear as soon as the clock advances
@@ -7027,7 +7086,7 @@ function advTurn(){
         else if(lost&&cur>10&&prev<=10) m={type:'loss',title:'OUT OF TOP 10',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[op.format]?.l||op.format}) has dropped out of the top 10.`,owner:s._mpOwner};
         if(m) _allMs.push(m);
       });
-      mpBroadcastState(_dcYear, { profit, ev, acts, alerts, wasYear, wasPeriod, milestones:_allMs });
+      mpBroadcastState(_dcYear, { profit, ev, acts, alerts, wasYear, wasPeriod, milestones:_allMs, sportsActs, franchiseActs });
       MP.renderStatus();
     } else {
       btn.disabled=false;btn.textContent='▶ NEXT PERIOD';
@@ -7321,7 +7380,7 @@ function rHire(s){
     if(!tn&&_simSrc?.prog[sl]?.talent?.name){
       tn=`◈ ${_simSrc.prog[sl].talent.name} (${_simSrc.callLetters})`;
     }else if(!tn){
-      tn=vacantLabel(s.format,sl);
+      tn=vacantLabel(s.format,sl,s);
     }
     const slotQ=Math.round(sd?.quality||0);
     const talQ=sd?.talent?.quality?Math.round(sd.talent.quality):null;
@@ -7335,7 +7394,7 @@ function rHire(s){
     const cur=s2.prog[HS.slot]?.talent;
     const slotQcur=Math.round(s2.prog[HS.slot]?.quality||0);
     const poachList=hireModalRivalPoachCandidates(HS.sid,HS.slot);
-    const freeRows=HS.pool.map((t,i)=>{const fit=Math.round((t.formatFit[s2.format]||.3)*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const boost=Math.round((q/100)*fit*.35*35);const newSlotQ=Math.min(100,curSlotQ+boost);return `<div class="to${HS.sel===i&&!HS.poachRivalId?' sel':''}" onclick="pickTal(${i})"><div><div class="ton">${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div><div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">SLOT BOOST</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ}</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div></div></div><div><span class="tocl">ANNUAL SAL</span><span class="toc">${f$(t.salary)}</span></div></div>`;}).join('');
+    const freeRows=HS.pool.map((t,i)=>{const fit=Math.round((t.formatFit[s2.format]||.3)*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const boost=Math.round((q/100)*fit*.35*35);const newSlotQ=Math.min(100,curSlotQ+boost);const hStar=t.superstar===true?'★ ':'';return `<div class="to${HS.sel===i&&!HS.poachRivalId?' sel':''}" onclick="pickTal(${i})"><div><div class="ton">${hStar}${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div><div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">SLOT BOOST</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ}</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div></div></div><div><span class="tocl">ANNUAL SAL</span><span class="toc">${f$(t.salary)}</span></div></div>`;}).join('');
     const rivalRows=poachList.map(({st,sd:rsd})=>{
       const rt=rsd.talent;
       const fit=Math.round((rt.formatFit[s2.format]||.3)*100);
@@ -7348,7 +7407,8 @@ function rHire(s){
       const minCash=minSign+buyout;
       const canAfford=G.cash>=minCash;
       const sel=HS.poachRivalId===st.id;
-      return `<div class="to${sel?' sel':''}" onclick="pickHirePoach('${st.id}')"><div><div class="ton">${rt.name} <span style="font-size:13px;color:var(--amb);font-family:var(--ft);letter-spacing:.06em">RIVAL</span></div><div class="tos" style="color:var(--mut)">${st.callLetters} · ${SL[HS.slot]}</div><div class="tost"><div><span class="tosl">TALENT Q</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">FIT</span><span class="tosv ${fc}">${fit}%</span></div><div><span class="tosl">AT RIVAL</span><span class="tosv">${f$(rt.salary)}/yr</span></div></div><div style="font-size:13px;color:var(--mut);margin-top:4px">Est. offer ~${f$(dispOffer)}/yr · need ≥${f$(minCash)} cash${buyout?` (incl. buyout ${f$(buyout)})`:''}</div></div><div><span class="tocl">ACTION</span><span class="toc" style="font-size:14px;color:${canAfford?'var(--mut)':'var(--red)'}">${canAfford?'Select, then HIRE':'Short on cash'}</span></div></div>`;
+      const rhStar=rt.superstar===true?'★ ':'';
+      return `<div class="to${sel?' sel':''}" onclick="pickHirePoach('${st.id}')"><div><div class="ton">${rhStar}${rt.name} <span style="font-size:13px;color:var(--amb);font-family:var(--ft);letter-spacing:.06em">RIVAL</span></div><div class="tos" style="color:var(--mut)">${callDisplay(st)} · ${SL[HS.slot]}</div><div class="tost"><div><span class="tosl">TALENT Q</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">FIT</span><span class="tosv ${fc}">${fit}%</span></div><div><span class="tosl">AT RIVAL</span><span class="tosv">${f$(rt.salary)}/yr</span></div></div><div style="font-size:13px;color:var(--mut);margin-top:4px">Est. offer ~${f$(dispOffer)}/yr · need ≥${f$(minCash)} cash${buyout?` (incl. buyout ${f$(buyout)})`:''}</div></div><div><span class="tocl">ACTION</span><span class="toc" style="font-size:14px;color:${canAfford?'var(--mut)':'var(--red)'}">${canAfford?'Select, then HIRE':'Short on cash'}</span></div></div>`;
     }).join('');
     const curBox=cur?`<div class="ibox">Current: <strong>${cur.name}</strong> — quality ${Math.round(cur.quality)}, slot quality ${slotQcur}, ${f$(cur.salary)}/yr.</div>`:'';
     const freeSection=HS.pool.length
@@ -7711,7 +7771,7 @@ function openSports(sid){
         <div class="sr"><span class="lb">Current holder</span><span class="vl">${incumbent?incumbent.callLetters:'None'} — paying ${f$(rights.fee)}/yr</span></div>
         <div class="sr"><span class="lb">Your relationship</span><span class="vl" style="color:${rel>=50?'var(--grn)':rel>=25?'var(--amb)':'var(--mut)'}">${rel}/100 ${rel>=50?'(incumbent advantage)':rel>=25?'(known bidder)':'(new bidder)'}</span></div>
         <div class="sr"><span class="lb">Est. revenue lift</span><span class="vl pos">+${f$(estRevLift)}/yr</span></div>
-        <div class="sr"><span class="lb">Break-even bid</span><span class="vl" style="color:var(--mut)">${f$(breakEven)}/yr</span></div>
+        <div class="sr"><span class="lb">Estimated annual value</span><span class="vl" style="color:var(--mut)">${f$(breakEven)}/yr</span></div>
         ${myBid>0?`<div class="sr"><span class="lb">Your current bid</span><span class="vl" style="color:var(--grn)">${f$(myBid)}/yr ✓</span></div>`:''}
         <div style="margin-top:10px">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
@@ -8271,13 +8331,11 @@ function doStream(sid){
 // 3d. RENAME STATION
 // Call letters: W or K prefix + 2-3 letters suffix = 3 or 4 total (standard US broadcast)
 // AM/FM pairs share the same base call letters — display adds -AM/-FM suffix
-// "taken" check ignores the partner simulcast station so WRGS-AM can share with WRGS-FM
+// Band suffix on every station: CALL-AM / CALL-FM (and FM translator → -FM)
 function callDisplay(s){
-  // If this station has a simulcast partner, show -AM or -FM suffix
-  const partner=G.stations.find(st=>st.simulcastWith===s.id||s.simulcastWith===st.id);
-  if(partner&&partner.callLetters===s.callLetters)
-    return s.callLetters+(s.sig.type==='AM'?'-AM':'-FM');
-  return s.callLetters;
+  if(!s)return '';
+  const isFm=s.fmBooster||s.sig?.type==='FM';
+  return `${s.callLetters}-${isFm?'FM':'AM'}`;
 }
 function openRename(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
@@ -8889,7 +8947,7 @@ function rSim(){
       <p class="di"><strong>${s.callLetters}</strong> is currently simulcasting with <strong>${partner?callDisplay(partner):'unknown'}</strong> on <em>${_simulcastFmt}</em>.</p>
       <div class="bbox"><strong>Simulcast benefits:</strong> Shared talent pool, shared brand. AM↔FM pairs: AM gets +15% audience reach bonus. Both stations counted as one format for upkeep.</div>
       <div class="wbox"><strong>If you break this simulcast:</strong><br>
-        <strong>${_progSrc.callLetters}</strong> (programming source) keeps the format, talent${_talentSlots.length?' ('+_talentSlots.join(', ')+'​)':''}, brand identity, and drift positioning.<br>
+        <strong>${callDisplay(_progSrc)}</strong> (programming source) keeps the format, talent${_talentSlots.length?' ('+_talentSlots.join(', ')+'​)':''}, brand, and on-air programming strategy.<br>
         <strong>${_rcv?_rcv.callLetters:'—'}</strong> (receiver) loses simulcast echo — reformat it next turn.</div>
       <button class="cfm" onclick="doBreakSim('${s.id}')" style="background:var(--red);color:var(--wht)">BREAK SIMULCAST</button>
       <button class="cnl" onclick="cm('m-sim')">CANCEL</button>`;
@@ -9159,6 +9217,10 @@ function openSaveLoad(){
 
 function migrateSave(G){
   // Fix missing fields added in recent updates
+  if(!G.companyName){
+    const mktLbl=MARKETS[G.marketId||'atlanta']?.label||'Atlanta';
+    G.companyName=`${mktLbl} Broadcasting Group`;
+  }
   G.loans=G.loans||[];
   if(G.corps)rehydrateCorps(G); // re-link corp ownership after save/load
   G.corps=G.corps||null;
@@ -9379,7 +9441,7 @@ function openHistory(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const op=simulcastOperationalSource(s);
   const hist=s._history||[];
-  document.getElementById('hist-title').textContent=`${s.callLetters} — STATION HISTORY`;
+  document.getElementById('hist-title').textContent=`${callDisplay(s)} — STATION HISTORY`;
   const fmtAge=op._formatAge?Math.round(op._formatAge/2)+' yrs on current format':'';
   const idLine=op.identity?`Identity: ${Math.round(op.identity)}/100`:'';
   document.getElementById('histb').innerHTML=`
@@ -9678,7 +9740,21 @@ function openFinancials(){
 }
 
 // ── PERIOD SUMMARY ────────────────────────────────────────────────
-function showSum(profit,events,acts,alerts,displayYear,displayPeriod){
+function playerRelevantRightsActs(sportsActs,franchiseActs){
+  const seen=new Set();
+  const out=[];
+  const mine=new Set(myPS().map(s=>s.callLetters));
+  const consider=(arr)=>{
+    (arr||[]).forEach(a=>{
+      if(!a?.t||seen.has(a.t))return;
+      if(a.iy||[...mine].some(c=>a.t.includes(c))){seen.add(a.t);out.push(a.t);}
+    });
+  };
+  consider(sportsActs);
+  consider(franchiseActs);
+  return out;
+}
+function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   const ps=myPS(),tRev=ps.reduce((s,st)=>s+st.fin.rev,0),tCost=ps.reduce((s,st)=>s+st.fin.cost,0);
   const vis=acts.filter(a=>['HIGH','MEDIUM'].includes(a.v));
@@ -9688,6 +9764,7 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod){
   const yr=displayYear||G.year, per=displayPeriod||G.period;
   const periodName=per===2?'FALL':'SPRING';
   const isElYr=yr%2===0&&per===2;
+  const rightsLines=playerRelevantRightsActs(rightsExtra?.sportsActs,rightsExtra?.franchiseActs);
   document.getElementById('sumt').textContent=`${yr} ${periodName} — PERIOD END`;
   document.getElementById('sumb').innerHTML=`
     <div class="ms2"><div class="msh">YOUR RESULTS</div>
@@ -9699,6 +9776,7 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod){
       ${(G.loans&&G.loans.length)?`<div class="sr"><span class="lb" style="color:var(--red)">Outstanding Loans</span><span class="vl neg">${f$(G.loans.reduce((s,l)=>s+l.owed,0))} owed — click &#36; to manage</span></div>`:''}
       <div class="sr"><span class="lb" style="color:var(--mut)">Ad Market</span><span class="vl" style="color:${per===2?'var(--grn)':'var(--amb)'}">${per===2?'FALL — peak season (+12%)':'SPRING — lean season (−12%)'}${isElYr?' 🗳 +4% political for Talk/Sports':''}</span></div>
     </div>
+    ${rightsLines.length?`<div class="ms2"><div class="msh">RIGHTS &amp; SYNDICATION (THIS PERIOD)</div>${rightsLines.map(t=>`<div class="sr"><span class="vl" style="color:var(--off);font-size:15px;font-family:var(--ft)">${t}</span></div>`).join('')}</div>`:''}
     ${ps.map(s=>{
       const op=simulcastOperationalSource(s);
       const pr=s.cp;
@@ -9709,14 +9787,14 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod){
       const simSrc=s.simulcastWith&&s._simulcastSource===false?G.stations.find(st=>st.id===s.simulcastWith):null;
       const localMD=s.prog.morningDrive?.talent;
       const simMD=!localMD&&simSrc?simSrc.prog?.morningDrive?.talent:null;
-      const hostStr=localMD?localMD.name:(simMD?`${simMD.name} (${simSrc.callLetters})`:'');
+      const hostStr=localMD?localMD.name:(simMD?`${simMD.name} (${callDisplay(simSrc)})`:'');
       const vacant=Object.keys(SL).filter(k=>{
         if(simSrc?.prog?.[k]?.talent)return false;
         return !s.prog[k]?.talent;
       }).map(k=>SL[k]);
-      const simulcastLine=simSrc?`<div class="sr"><span class="lb" style="color:var(--mut)">Programming</span><span class="vl" style="font-size:14px;color:var(--off)">Supplied by <strong>${simSrc.callLetters}</strong> (simulcast)</span></div>`:'';
+      const simulcastLine=simSrc?`<div class="sr"><span class="lb" style="color:var(--mut)">Programming</span><span class="vl" style="font-size:14px;color:var(--off)">Supplied by <strong>${callDisplay(simSrc)}</strong> (simulcast)</span></div>`:'';
       const simFeeLine=(s.fin?.simulcastProgFee>0)?`<div class="sr"><span class="lb" style="color:var(--mut)">Simulcast program fee</span><span class="vl" style="font-size:14px;color:var(--off)">${f$(s.fin.simulcastProgFee)}/period <span style="color:var(--mut)">(in costs above)</span></span></div>`:'';
-      return `<div class="ms2"><div class="msh">${s.callLetters} — ${FM[op.format]?.l||op.format}${s.simulcastWith?' ◈':''}</div>
+      return `<div class="ms2"><div class="msh">${callDisplay(s)} — "${op.brand}" · ${FM[op.format]?.l||op.format}${s.simulcastWith?' ◈':''}</div>
         <div class="sr"><span class="lb">Share</span><span class="vl">${pct(s.rat.share)}${trd}</span></div>
         <div class="sr"><span class="lb">Revenue / Costs</span><span class="vl">${f$(s.fin.rev)} / ${f$(s.fin.cost)}</span></div>
         <div class="sr"><span class="lb">EBITDA</span><span class="vl ${mc}">${s.fin.ebitda>=0?'+':''}${f$(s.fin.ebitda)} (${stnMargin}%)</span></div>
@@ -9846,9 +9924,10 @@ function openContract(sid, slot){
     const fc=fit>=75?'good':fit>=55?'warn':'poor';
     const poachCost=Math.round(rt.salary*rnd(1.10,1.30)/500)*500; // premium to steal
     const canAfford=G.cash>=poachCost;
+    const rpStar=rt.superstar===true?'★ ':'';
     return `<div class="to" style="margin-bottom:6px">
       <div>
-        <div class="ton">${rt.name} <span style="color:var(--mut);font-size:15px">from ${st.callLetters}</span></div>
+        <div class="ton">${rpStar}${rt.name} <span style="color:var(--mut);font-size:15px">from ${callDisplay(st)}</span></div>
         <div class="tost">
           <div><span class="tosl">TALENT</span><span class="tosv ${qc(Math.round(rt.quality))}">${Math.round(rt.quality)}/100</span></div>
           <div><span class="tosl">FIT</span><span class="tosv ${fc}">${fit}%</span></div>
@@ -9873,13 +9952,14 @@ function openContract(sid, slot){
     ?`<div style="font-size:13px;color:var(--grn);font-family:var(--ft);margin-top:2px">MATCH OFFER</div>`
     :'';
 
+  const cStar=t.superstar===true?'★ ':'';
   document.getElementById('contractb').innerHTML=`
-    <div class="msh" style="margin-bottom:12px">📋 TALENT CONTRACT — ${s.callLetters} ${SL[slot]}</div>
+    <div class="msh" style="margin-bottom:12px">📋 TALENT CONTRACT — ${callDisplay(s)} ${SL[slot]}</div>
     ${(()=>{const rp=s._rivalPoachPending;if(!rp||rp.slot!==slot||rp.talentId!==t.id)return'';const riv=G.stations.find(st=>st.id===rp.rivalId);const minM=Math.round(rp.offerSalary*0.95/500)*500;return`<div class="ibox" style="border-color:var(--amb);margin-bottom:12px"><strong style="color:var(--amb)">⚡ RIVAL OFFER / COUNTER-POACH</strong><br><span style="font-size:14px;color:var(--off)"><strong>${riv?riv.callLetters:'Rival'}</strong> offered <strong>${f$(rp.offerSalary)}</strong>/yr. Sign at <strong>≥${f$(minM)}</strong>/yr to retain ${t.name} next period.</span></div>`;})()}
     ${(()=>{const sh=s.rat?.share||0;const q=t.quality||50;if(sh>0.12&&q>75)return`<div style="background:rgba(245,166,35,.10);border:1px solid var(--amb);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--amb)">📈 Strong station + top talent — expect a premium ask. They know their worth.</div>`;if(sh>0.08&&q>65)return`<div style="background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.3);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--off)">📊 Solid ratings give this talent negotiating leverage.</div>`;if(t.morale<50)return`<div style="background:rgba(220,50,50,.10);border:1px solid var(--red);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--red)">⚠ Low morale — they're unhappy and may ask for extra just to stay.</div>`;return''})()}
 
     <div class="ms2" style="margin-bottom:16px">
-      <div class="sr"><span class="lb">Talent</span><span class="vl"><strong>${t.name}</strong></span></div>
+      <div class="sr"><span class="lb">Talent</span><span class="vl"><strong>${cStar}${t.name}</strong></span></div>
       <div class="sr"><span class="lb">Rating</span><span class="vl ${qc(Math.round(t.quality))}">${Math.round(t.quality)}/100</span></div>
       <div class="sr"><span class="lb">Morale</span><span class="vl" style="color:${morCol}">${morLabel} (${mor}) ${morFactors.length?'· '+morFactors[0]:''}</span></div>
       <div class="sr"><span class="lb">Tenure</span><span class="vl">${age} periods (${ageYrs} yrs at station)</span></div>
@@ -9922,7 +10002,7 @@ function openContract(sid, slot){
         </div>
         <div class="to" style="flex:1;cursor:default;border-color:var(--red)">
           <div><div class="ton" style="color:var(--red)">Let Contract Expire</div>
-          <div style="font-size:14px;color:var(--mut);margin-top:4px">Don't renew. ${t.name} leaves when contract ends. Slot goes to ${vacantLabel(s.format,slot).toLowerCase()}.</div></div>
+          <div style="font-size:14px;color:var(--mut);margin-top:4px">Don't renew. ${t.name} leaves when contract ends. Slot goes to ${vacantLabel(s.format,slot,s).toLowerCase()}.</div></div>
           <button class="abt d" style="margin-top:8px;font-size:15px" onclick="doLetExpire('${sid}','${slot}')">LET EXPIRE</button>
         </div>
         ${(()=>{const cyr2=t.cyr||0;const buyout2=cyr2>0.1?Math.round(t.salary*cyr2*0.60/500)*500:0;const canAfford2=G.cash>=buyout2;
@@ -10069,7 +10149,7 @@ function rHdr(){
   const seasonStr=G.period===2?'FALL':'SPRING';
   const isElYr=G.year%2===0&&G.period===2;
   document.getElementById('hp').textContent=seasonStr;
-  document.getElementById('hsc').textContent=MP.mode==='live'?'MULTIPLAYER':G.sc.l.toUpperCase();
+  document.getElementById('hsc').textContent=MP.mode==='live'?'MULTIPLAYER':(G.companyName||G.sc?.l||'').toUpperCase();
   document.getElementById('hcash').textContent=Math.round(G.cash).toLocaleString();
   const cd=document.getElementById('cash');
   cd.className=G.cash<0?'broke':G.cash<200000?'low':'';cd.id='cash';
@@ -10162,10 +10242,10 @@ function rTick(){
   // Find player rank(s) in market
   const playerRanks=myPS().map(s=>{
     const rank=srt.findIndex(st=>st.id===s.id)+1;
-    return `#${rank} ${s.callLetters} ${pct(s.rat.share)}`;
+    return `#${rank} ${callDisplay(s)} ${pct(s.rat.share)}`;
   });
   const items=[
-    ...srt.slice(0,3).map((s,i)=>{const op=simulcastOperationalSource(s);return `#${i+1} ${s.callLetters} ${FM[op.format]?.l||op.format} ${pct(s.rat.share)}`;}),
+    ...srt.slice(0,3).map((s,i)=>{const op=simulcastOperationalSource(s);return `#${i+1} ${callDisplay(s)} ${FM[op.format]?.l||op.format} ${pct(s.rat.share)}`;}),
     playerRanks.length?`YOU: ${playerRanks.join(' · ')} · Cash: ${f$(G.cash)}`:`Cash: ${f$(G.cash)}`,
     (()=>{
       const sm=seasonMult(G.year,G.period,'NEWS_TALK'); // representative
@@ -10216,11 +10296,12 @@ function rStns(){
     const _simSrc=simulcastProgrammingSource(s);
     const slrows=Object.entries(SL).map(([k,lbl])=>{
       const sd=s.prog[k],tn=sd?.talent?.name,q=Math.round(sd?.quality||0),c2=qc(q);
-      const vlbl=vacantLabel(op.format,k);
+      const vlbl=vacantLabel(op.format,k,op);
       const srcTal=!tn&&_simSrc?_simSrc.prog[k]?.talent:null;
       if(!tn&&srcTal){
-        const sn=_simSrc.callLetters;
-        return `<div class="slr"><span class="sln">${lbl}</span><span class="slt" style="color:var(--off)" title="Simulcast — on-air from ${sn}">◈ ${srcTal.name} <span style="color:var(--mut);font-size:13px">(${sn})</span></span><span class="slsal">${f$(srcTal.salary/2)}/p · src</span><span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Programming Quality (0-100)">Q ${q}</span></div>`;
+        const sn=callDisplay(_simSrc);
+        const srcStar=srcTal.superstar===true?'★ ':'';
+        return `<div class="slr"><span class="sln">${lbl}</span><span class="slt" style="color:var(--off)" title="Simulcast — on-air from ${sn}">◈ ${srcStar}${srcTal.name} <span style="color:var(--mut);font-size:13px">(${sn})</span></span><span class="slsal">${f$(srcTal.salary/2)}/p · src</span><span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Programming Quality (0-100)">Q ${q}</span></div>`;
       }
       if(!tn) return `<div class="slr"><span class="sln">${lbl}</span><span class="slt vac">${vlbl}</span><span class="slsal"></span><span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Programming Quality (0-100)">Q ${q}</span></div>`;
       const t=sd.talent;
@@ -10230,9 +10311,10 @@ function rStns(){
       const cyrTitle=cyr<=0?'Contract expired — click name to negotiate now':cyr<=0.5?'Contract expires next period — click name to extend':'ready';
       const mor=t.morale||65;
       const morCol=mor>=70?'var(--grn)':mor>=45?'var(--amb)':'var(--red)';
+      const starT=t.superstar===true?'★ ':'';
       return `<div class="slr">
         <span class="sln">${lbl}</span>
-        <span class="slt clickable" onclick="openContract('${s.id}','${k}')">${tn}</span>
+        <span class="slt clickable" onclick="openContract('${s.id}','${k}')">${starT}${tn}</span>
         ${cyrLbl?`<span class="${cyrCls}" title="${cyrTitle}">${cyrLbl}</span>`:''}
         <svg class="mor-bar" viewBox="0 0 28 4"><rect width="28" height="4" fill="rgba(255,255,255,.1)" rx="2"/><rect width="${Math.round(mor*.28)}" height="4" fill="${morCol}" rx="2"/></svg>
         <span class="slsal">${f$(t.salary/2)}/p</span>
@@ -10244,8 +10326,9 @@ function rStns(){
       <div class="sctop"><div>
         <div class="sccall">${junior?callDisplay(s)+' + '+callDisplay(junior):callDisplay(s)}</div>
         <div class="scfreq">${junior?`<div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;line-height:1.25"><span>${freqLineHtml(s)}</span><span>${freqLineHtml(junior)}</span></div>`:freqLineHtml(s)}</div>
-        <div class="scbrand">"${op.brand}" · ${FM[op.format]?.l||op.format} <span style="color:var(--mut);font-size:15px;font-style:normal">· ${genderLabel(op.format)}</span></div>
+        <div class="scbrand">${callDisplay(s)} — "${op.brand}" · ${FM[op.format]?.l||op.format} <span style="color:var(--mut);font-size:15px;font-style:normal">· ${genderLabel(op.format)}</span></div>
         ${junior?(()=>{const bL=s.sig.type,bJ=junior.sig.type;const lbl=bL===bJ?(bL+'/'+bL+' SIMULCAST'):'AM/FM SIMULCAST';return '<div class="sim-tag" style="color:var(--grn)">◈ '+lbl+' · '+callDisplay(s)+' + '+callDisplay(junior)+'</div>';})():partner&&!isPlayerPair?'<div class="sim-tag">◈ SIMULCAST WITH '+callDisplay(partner)+'</div>':''}
+        ${s.heritageIncumbent?'<div class="sim-tag" style="color:var(--amb);border-color:rgba(245,166,35,.35)">★ Heritage station</div>':''}
         ${s._lmaStation?'<div class="sim-tag" style="color:var(--blu);border-color:rgba(90,180,255,.4)">📝 LMA — LEASED OPERATION · fee: '+f$(lmaFeeForStation(s))+'/period</div>':''}
         ${s.lmaLessorId?'<div class="sim-tag" style="color:var(--grn);border-color:rgba(82,227,110,.4)">📝 LMA — LEASED OUT · receiving: '+f$(lmaFeeForStation(s))+'/period</div>':''}
       </div><div><div class="scshv">${pct(shareUi)}</div><div class="scshl">SHARE ${trd}</div></div></div>
