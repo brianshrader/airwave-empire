@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WAVELENGTH — Atlanta Radio 1970–2020</title>
+<title>WAVELENGTH — Radio 1970–2020</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 
 <!-- Socket.io — loaded dynamically only in multiplayer mode -->
@@ -179,7 +179,7 @@
 <header id="hdr">
   <div id="logo">WAVELENGTH</div>
   <div id="hmeta">
-    <div id="hmetarow">ATLANTA &nbsp;·&nbsp; <strong id="hy">1970</strong> <strong id="hp">SPRING</strong> &nbsp;·&nbsp; <strong id="hsc" onclick="openScenSelect(getLocalSave())" title="Click to change scenario / new game" style="cursor:pointer;border-bottom:1px dotted rgba(245,166,35,.4)">—</strong> &nbsp;·&nbsp; <span id="hmode" style="color:var(--amb)">CAMPAIGN</span></div>
+    <div id="hmetarow"><span id="hcity">ATLANTA</span> &nbsp;·&nbsp; <strong id="hy">1970</strong> <strong id="hp">SPRING</strong> &nbsp;·&nbsp; <strong id="hsc" onclick="openScenSelect(getLocalSave())" title="Click to change scenario / new game" style="cursor:pointer;border-bottom:1px dotted rgba(245,166,35,.4)">—</strong> &nbsp;·&nbsp; <span id="hmode" style="color:var(--amb)">CAMPAIGN</span></div>
     <div id="progwrap"><div id="progbar"><div id="progfill" style="width:0%"></div></div><span id="proglbl">1970 → 2020</span></div>
   </div>
   <div id="cash">$<span id="hcash">0</span></div>
@@ -222,7 +222,7 @@
 <!-- Modals -->
 <div class="ov" id="m-sum"><div class="mo"><div class="mh"><span id="sumt">PERIOD END</span><button class="mc" onclick="cm('m-sum')">CLOSE ×</button></div><div id="sumb"></div></div></div>
 <div class="ov" id="m-grade"><div class="mo wide"><div class="mh"><span id="gradet">DECADE REPORT</span><button class="mc" onclick="cm('m-grade')">CONTINUE →</button></div><div id="gradeb"></div></div></div>
-<div class="ov" id="m-rk"><div class="mo full"><div class="mh"><span>MARKET RANKER — ATLANTA</span><button class="mc" onclick="cm('m-rk')">CLOSE ×</button></div><div id="rkwrap"></div><div class="rkleg" id="rk-legend"></div></div></div>
+<div class="ov" id="m-rk"><div class="mo full"><div class="mh"><span id="m-rk-title">MARKET RANKER</span><button class="mc" onclick="cm('m-rk')">CLOSE ×</button></div><div id="rkwrap"></div><div class="rkleg" id="rk-legend"></div></div></div>
 <div class="ov" id="m-ci"><div class="mo"><div class="mh"><span id="ci-title">COMPETITOR INTEL</span><button class="mc" onclick="cm('m-ci')">CLOSE ×</button></div><div style="font-family:var(--fm);font-size:14px;color:var(--amb);padding:4px 20px 0;font-style:italic;letter-spacing:0.5px" id="ci-subtitle"></div><div id="ci-body" style="padding:16px 20px 20px"></div></div></div>
 <div class="ov" id="m-tal"><div class="mo"><div class="mh"><span>HIRE TALENT</span><button class="mc" onclick="cm('m-tal')">CLOSE ×</button></div><div id="talb"></div></div></div>
 <div class="ov" id="m-sp"><div class="mo"><div class="mh"><span>SPOT LOAD</span><button class="mc" onclick="cm('m-sp')">CLOSE ×</button></div><div id="spb"></div></div></div>

@@ -12,13 +12,13 @@ const vm = require('vm');
 const marketId = (process.argv[2] || 'atlanta').toLowerCase();
 const legacyPath = path.join(__dirname, '..', 'src', 'legacy.js');
 let legacySrc = fs.readFileSync(legacyPath, 'utf8');
-if (!legacySrc.includes("const ACTIVE_MARKET='atlanta'")) {
+if (!legacySrc.includes("let ACTIVE_MARKET='atlanta'")) {
   console.error('Expected ACTIVE_MARKET line not found; abort.');
   process.exit(1);
 }
 legacySrc = legacySrc.replace(
-  /const ACTIVE_MARKET='atlanta'/,
-  `const ACTIVE_MARKET='${marketId === 'atlanta' ? 'atlanta' : marketId}'`
+  /let ACTIVE_MARKET='atlanta'/,
+  `let ACTIVE_MARKET='${marketId === 'atlanta' ? 'atlanta' : marketId}'`
 );
 
 function stubEl() {

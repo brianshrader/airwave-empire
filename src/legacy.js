@@ -8,8 +8,12 @@ console.log('[WAVELENGTH] v2026-03-10-S29 loaded. If you see this, JS is running
 // This is a getter so it always reflects the active market
 const POP={cohorts:{'12-17':{t:180000},'18-24':{t:195000},'25-34':{t:210000},'35-49':{t:265000},'50-64':{t:220000},'65+':{t:130000}}};
 // getPOP(): returns market-aware cohort populations for calculations
+function activeMarketId(){
+  if(typeof G!=='undefined'&&G&&G.marketId)return G.marketId;
+  return ACTIVE_MARKET||'atlanta';
+}
 function getPOP(){
-  const mkt=MARKETS[ACTIVE_MARKET]||MARKETS.atlanta;
+  const mkt=MARKETS[activeMarketId()]||MARKETS.atlanta;
   const cohorts={};
   for(const [c,v] of Object.entries(mkt.pop)) cohorts[c]={t:v*1000};
   return {cohorts};
@@ -1060,7 +1064,16 @@ const gn=(nameCtx)=>{
   return `${pick(poolF)} ${pick(lastPool)}`;
 };
 let UC=new Set(),UB=new Set();
-function gc(){const c='BCDFGJKLMNPRSTVXZ',a=c+'AEIOU';let s,t=0;do{s='W'+c[ri(0,c.length-1)]+a[ri(0,a.length-1)]+a[ri(0,a.length-1)];t++;}while(UC.has(s)&&t<200);UC.add(s);return s;}
+function gc(){
+  // Use ACTIVE_MARKET only — during genMarket(), G may still be the previous session; ACTIVE_MARKET is set in startPlay before genMarket.
+  const pref=getCallPrefixForMarket(ACTIVE_MARKET);
+  const c='BCDFGJKLMNPRSTVXZ',a=c+'AEIOU';
+  let s,t=0;
+  do{s=pref+c[ri(0,c.length-1)]+a[ri(0,a.length-1)]+a[ri(0,a.length-1)];t++;}
+  while(UC.has(s)&&t<200);
+  UC.add(s);
+  return s;
+}
 function gb(f,freq,city){const p=BRANDS[f]||['Radio'],av=p.filter(b=>!UB.has(b));const raw=av.length?pick(av):p[0];const b=typeof resolveBrand==='function'?resolveBrand(raw,freq,city):raw;UB.add(raw);return b;}
 const rnd=(a,b)=>Math.random()*(b-a)+a;
 const ri=(a,b)=>Math.floor(rnd(a,b+1));
@@ -1226,62 +1239,138 @@ function hireTalentCareerLine(t, year){
 }
 
 // ══════════════════════════════════════════════════════════════════
-// MARKETS — each city has its own population, station slate, and feel
-// Atlanta is the shipped market. Others are scaffolded for expansion.
+// MARKETS — Phase 1: five pilot markets on a shared framework (BP + params).
+// Layer A: pop, revScale, adxBonus, culture axes · Layer B: heritage, teams, selectBlurb
 // ══════════════════════════════════════════════════════════════════
 const MARKETS={
   atlanta:{
-    id:'atlanta', label:'Atlanta', region:'Southeast',
-    // 1970 metro pop by cohort (thousands — scaled to game universe)
+    id:'atlanta', callPrefix:'W', label:'Atlanta', region:'Southeast', rankTier:'large', archetypeId:'sunbelt_diversified',
     pop:{'12-17':180,'18-24':195,'25-34':210,'35-49':265,'50-64':220,'65+':130},
-    // Market revenue baseline (relative to Atlanta=1.0)
-    revScale:1.0,
-    // Ad market growth curve relative to national (some markets over/underindex)
-    adxBonus:0.02, // Atlanta grew faster than national avg in 70s-90s
-    // Starting station count and power distribution
+    revScale:1.0, adxBonus:0.02,
     amFreqs:['590 AM','640 AM','750 AM','860 AM','920 AM','1010 AM','1090 AM','1160 AM','1230 AM','1340 AM'],
     fmFreqs:['96.1 FM','99.7 FM','102.3 FM','104.5 FM','107.1 FM','94.9 FM','88.5 FM','101.5 FM','103.3 FM'],
     blackPop:0.358,hispPop1970:0.010,hispPop2000:0.080,hispPop2020:0.115,churchGoing:0.54,countryBonus:0,urbanBonus:0.05,
-    /** Rare 3-letter heritage call for the dominant AM incumbent (King of the Dial, etc.) — not random */
-    heritageCall3:'WSB',
+    culture:{country:0.06,urban:0.06,newsTalk:0.05,religion:0.10,spanish:0.02},
+    heritageCall3:'WFR',
+    selectBlurb:'Large Sunbelt market. Diverse formats compete; heritage AMs still matter in the 70s, then FM specialization accelerates. Strong soul/R&B and Top 40 battlegrounds.',
     teams:[
-      // baseFee: annual rights $, tuned to current half-period revenue scale (was monolith-high vs station billing)
       {id:'braves',name:'Atlanta Braves',sport:'MLB',introduced:1970,baseFee:95000,baseBonus:0.012,contractYrs:3},
       {id:'falcons',name:'Atlanta Falcons',sport:'NFL',introduced:1970,baseFee:420000,baseBonus:0.025,contractYrs:4},
       {id:'hawks',name:'Atlanta Hawks',sport:'NBA',introduced:1970,baseFee:85000,baseBonus:0.010,contractYrs:3},
       {id:'thrashers',name:'Atlanta Thrashers',sport:'NHL',introduced:2000,baseFee:80000,baseBonus:0.009,contractYrs:3},
     ],
   },
-  // ── EXPANSION MARKETS (not yet active) ──────────────────────────
-  chicago:{
-    id:'chicago', label:'Chicago', region:'Midwest',
-    pop:{'12-17':480,'18-24':510,'25-34':560,'35-49':700,'50-64':580,'65+':340},
-    revScale:2.8, adxBonus:0.01,
-    amFreqs:['720 AM','780 AM','890 AM','1000 AM','1160 AM','1200 AM','1390 AM','1490 AM','1590 AM','1690 AM'],
-    fmFreqs:['93.1 FM','94.7 FM','96.3 FM','97.9 FM','99.5 FM','101.9 FM','103.5 FM','104.3 FM','105.9 FM'],
-  },
-  losangeles:{
-    id:'losangeles', label:'Los Angeles', region:'West Coast',
-    pop:{'12-17':820,'18-24':890,'25-34':980,'35-49':1200,'50-64':950,'65+':540},
-    revScale:5.2, adxBonus:0.04,
-    amFreqs:['570 AM','640 AM','710 AM','790 AM','980 AM','1070 AM','1150 AM','1230 AM','1430 AM','1580 AM'],
-    fmFreqs:['93.5 FM','95.5 FM','97.1 FM','98.7 FM','100.3 FM','101.9 FM','102.7 FM','104.3 FM','105.1 FM'],
-  },
   nashville:{
-    id:'nashville', label:'Nashville', region:'South',
-    heritageCall3:'WSM',
+    id:'nashville', callPrefix:'W', label:'Nashville', region:'South', rankTier:'medium', archetypeId:'southern_country',
+    heritageCall3:'WTR',
     pop:{'12-17':95,'18-24':110,'25-34':120,'35-49':150,'50-64':125,'65+':75},
-    revScale:0.5, adxBonus:0.03, // Country music capital — country formats get +15% here
+    revScale:0.5, adxBonus:0.03,
     amFreqs:['650 AM','760 AM','1040 AM','1160 AM','1240 AM','1300 AM','1400 AM','1470 AM','1510 AM','1560 AM'],
     fmFreqs:['94.1 FM','96.3 FM','97.9 FM','100.1 FM','102.9 FM','104.5 FM','107.5 FM'],
+    blackPop:0.18,hispPop1970:0.008,hispPop2000:0.045,hispPop2020:0.095,churchGoing:0.58,countryBonus:0.15,urbanBonus:0.02,
+    culture:{country:0.22,urban:0.03,newsTalk:0.04,religion:0.10,spanish:0.02},
+    selectBlurb:'Country-forward market with outsized format loyalty. AM country works longer here, but FM specialization still arrives. Great for heritage country and full-service stories.',
     teams:[
       {id:'sounds',name:'Nashville Sounds',sport:'MLB',introduced:1978,baseFee:28000,baseBonus:0.006,contractYrs:3},
       {id:'predators',name:'Nashville Predators',sport:'NHL',introduced:1998,baseFee:115000,baseBonus:0.014,contractYrs:3},
       {id:'titans',name:'Tennessee Titans',sport:'NFL',introduced:1997,baseFee:340000,baseBonus:0.028,contractYrs:4},
     ],
   },
+  newyork:{
+    id:'newyork', callPrefix:'W', label:'New York', region:'Northeast', rankTier:'mega', archetypeId:'northeast_mega',
+    pop:{'12-17':1050,'18-24':1000,'25-34':1100,'35-49':1400,'50-64':1200,'65+':750},
+    revScale:6.8, adxBonus:0.05,
+    amFreqs:['660 AM','770 AM','880 AM','1010 AM','1050 AM','1130 AM','1280 AM','1380 AM','1560 AM','1600 AM'],
+    fmFreqs:['92.3 FM','94.7 FM','96.3 FM','98.7 FM','100.3 FM','101.1 FM','102.7 FM','103.5 FM','104.3 FM','106.7 FM'],
+    blackPop:0.21,hispPop1970:0.12,hispPop2000:0.22,hispPop2020:0.26,churchGoing:0.42,countryBonus:0,urbanBonus:0.14,
+    culture:{country:0.02,urban:0.16,newsTalk:0.10,religion:0.06,spanish:0.14},
+    heritageCall3:'WLC',
+    selectBlurb:'Massive billing and brutal competition. Formats fragment early; spoken-word and Top 40/AC paydays are huge when you win. Country is a niche, not the default story.',
+    teams:[
+      {id:'yankees',name:'New York Yankees',sport:'MLB',introduced:1970,baseFee:520000,baseBonus:0.030,contractYrs:4},
+      {id:'mets',name:'New York Mets',sport:'MLB',introduced:1970,baseFee:240000,baseBonus:0.018,contractYrs:3},
+      {id:'giants_ny',name:'New York Giants',sport:'NFL',introduced:1970,baseFee:580000,baseBonus:0.032,contractYrs:4},
+      {id:'jets',name:'New York Jets',sport:'NFL',introduced:1970,baseFee:380000,baseBonus:0.026,contractYrs:4},
+      {id:'knicks',name:'New York Knicks',sport:'NBA',introduced:1970,baseFee:220000,baseBonus:0.020,contractYrs:3},
+      {id:'rangers',name:'New York Rangers',sport:'NHL',introduced:1970,baseFee:180000,baseBonus:0.016,contractYrs:3},
+    ],
+  },
+  losangeles:{
+    id:'losangeles', callPrefix:'K', label:'Los Angeles', region:'West Coast', rankTier:'mega', archetypeId:'west_fm_fragmented',
+    pop:{'12-17':820,'18-24':890,'25-34':980,'35-49':1200,'50-64':950,'65+':540},
+    revScale:5.2, adxBonus:0.04,
+    amFreqs:['570 AM','640 AM','710 AM','790 AM','980 AM','1070 AM','1150 AM','1230 AM','1430 AM','1580 AM'],
+    fmFreqs:['93.5 FM','95.5 FM','97.1 FM','98.7 FM','100.3 FM','101.9 FM','102.7 FM','104.3 FM','105.1 FM'],
+    blackPop:0.14,hispPop1970:0.14,hispPop2000:0.38,hispPop2020:0.45,churchGoing:0.38,countryBonus:0.02,urbanBonus:0.12,
+    culture:{country:0.04,urban:0.12,newsTalk:0.07,religion:0.05,spanish:0.22},
+    heritageCall3:'KRM',
+    selectBlurb:'FM battlefield: fragmentation, format churn, and huge upside for winners. Spanish-language and rhythmic formats punch above their weight as demographics shift.',
+    teams:[
+      {id:'dodgers',name:'Los Angeles Dodgers',sport:'MLB',introduced:1970,baseFee:480000,baseBonus:0.028,contractYrs:4},
+      {id:'angels',name:'Los Angeles Angels',sport:'MLB',introduced:1970,baseFee:180000,baseBonus:0.014,contractYrs:3},
+      {id:'lakers',name:'Los Angeles Lakers',sport:'NBA',introduced:1970,baseFee:320000,baseBonus:0.024,contractYrs:3},
+      {id:'chargers_la',name:'Los Angeles Chargers',sport:'NFL',introduced:2017,baseFee:420000,baseBonus:0.026,contractYrs:4},
+      {id:'rams_la',name:'Los Angeles Rams',sport:'NFL',introduced:2016,baseFee:440000,baseBonus:0.027,contractYrs:4},
+    ],
+  },
+  chicago:{
+    id:'chicago', callPrefix:'W', label:'Chicago', region:'Midwest', rankTier:'mega', archetypeId:'midwest_legacy',
+    pop:{'12-17':480,'18-24':510,'25-34':560,'35-49':700,'50-64':580,'65+':340},
+    revScale:2.8, adxBonus:0.01,
+    amFreqs:['720 AM','780 AM','890 AM','1000 AM','1160 AM','1200 AM','1390 AM','1490 AM','1590 AM','1690 AM'],
+    fmFreqs:['93.1 FM','94.7 FM','96.3 FM','97.9 FM','99.5 FM','101.9 FM','103.5 FM','104.3 FM','105.9 FM'],
+    blackPop:0.22,hispPop1970:0.06,hispPop2000:0.18,hispPop2020:0.22,churchGoing:0.48,countryBonus:0.04,urbanBonus:0.08,
+    culture:{country:0.08,urban:0.08,newsTalk:0.08,religion:0.08,spanish:0.12},
+    heritageCall3:'WMG',
+    selectBlurb:'Big-signal Midwest hub: spoken-word, full-service survivors, and fierce FM music battles. Seasonal sports drive huge tune-in for Sports and News/Talk.',
+    teams:[
+      {id:'cubs',name:'Chicago Cubs',sport:'MLB',introduced:1970,baseFee:280000,baseBonus:0.020,contractYrs:3},
+      {id:'whitesox',name:'Chicago White Sox',sport:'MLB',introduced:1970,baseFee:160000,baseBonus:0.014,contractYrs:3},
+      {id:'bears',name:'Chicago Bears',sport:'NFL',introduced:1970,baseFee:520000,baseBonus:0.030,contractYrs:4},
+      {id:'bulls',name:'Chicago Bulls',sport:'NBA',introduced:1970,baseFee:260000,baseBonus:0.022,contractYrs:3},
+      {id:'blackhawks',name:'Chicago Blackhawks',sport:'NHL',introduced:1970,baseFee:140000,baseBonus:0.012,contractYrs:3},
+    ],
+  },
 };
-const ACTIVE_MARKET='atlanta'; // Future: set per game session
+/** FCC-style call area: W east of Mississippi (in-game), K west — per-market hard rule for gc() / rename */
+function getCallPrefixForMarket(marketId){
+  const m=MARKETS[marketId||'atlanta']||MARKETS.atlanta;
+  return m.callPrefix==='K'?'K':'W';
+}
+/** Ensure 3-letter heritage matches market prefix (data should already; saves / typos get corrected). */
+function normalizeHeritageCall3(hc,marketId){
+  const pref=getCallPrefixForMarket(marketId);
+  if(!hc||typeof hc!=='string')return null;
+  let u=hc.toUpperCase().replace(/[^A-Z]/g,'');
+  if(u.length!==3)return null;
+  if(u[0]!==pref) u=pref+u.slice(1);
+  return u;
+}
+/** Phase 1 pilot markets — same engine, data-driven params; more cities follow this schema */
+const PHASE1_MARKET_IDS=['atlanta','nashville','newyork','losangeles','chicago'];
+let ACTIVE_MARKET='atlanta';
+let _selectedMarket='atlanta';
+let _lastScenSelectLocal=null;
+function syncMarketPopToMarket(marketId){
+  const mkt=MARKETS[marketId]||MARKETS.atlanta;
+  if(mkt?.pop) Object.keys(mkt.pop).forEach(c=>{if(POP.cohorts[c])POP.cohorts[c].t=mkt.pop[c]*1000;});
+}
+/** Scenarios available for a market (not every scenario fits every city) */
+function scenarioIdsForMarket(marketId){
+  const mid=marketId||'atlanta';
+  return SC.map(s=>s.id).filter(scid=>{
+    if(scid==='cntry')return['atlanta','nashville'].includes(mid);
+    return true;
+  });
+}
+function pickMarketPhase1(id){
+  if(!PHASE1_MARKET_IDS.includes(id))return;
+  _pendingScenId=null;
+  _selectedMarket=id;
+  ACTIVE_MARKET=id;
+  syncMarketPopToMarket(id);
+  openScenSelect(_lastScenSelectLocal);
+}
 const MARKET_BILLING_CURVE={1970:14000000,1975:24000000,1980:42000000,1985:68000000,1987:82000000,1990:100000000,1995:130000000,2000:160000000,2005:148000000,2010:130000000,2015:116000000,2020:110000000};
 function marketAnnualBilling(year,marketId){
   const mkt=MARKETS[marketId||ACTIVE_MARKET]||MARKETS[ACTIVE_MARKET]||{revScale:1};
@@ -1347,11 +1436,7 @@ function applyDaypartPromotionEconomics(talent,fromSlot,toSlot){
   talent.cyr=Math.min(talent.cyr!=null?talent.cyr:2,0.5);
 }
 // Sync POP.cohorts to the active market — the static POP constant is a fallback only.
-// All AQH calculations read POP.cohorts, so this must run before any ratings work.
-(function syncMarketPop(){
-  const mkt=MARKETS[ACTIVE_MARKET]||MARKETS.atlanta;
-  if(mkt?.pop) Object.keys(mkt.pop).forEach(c=>{if(POP.cohorts[c])POP.cohorts[c].t=mkt.pop[c]*1000;});
-})();
+syncMarketPopToMarket(ACTIVE_MARKET);
 
 // ══════════════════════════════════════════════════════════════════
 // SPORTS RIGHTS + NATIONAL FRANCHISES (ported from monolith wavelength-ui.html)
@@ -2774,7 +2859,11 @@ window._mpApply_drift = function({ sid, fmt, val }) {
 // Rename
 window._mpApply_rename = function({ sid, callLetters, brand }) {
   const s = G.stations.find(st=>st.id===sid);
-  if (s) { s.callLetters = callLetters; s.brand = brand; }
+  if (!s || !callLetters) return;
+  const pref = getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
+  if (callLetters[0] !== pref) return;
+  s.callLetters = callLetters;
+  s.brand = brand;
 };
 
 // Stream launch
@@ -3075,8 +3164,14 @@ const PM={dominant:['INCUMBENT','INCUMBENT','CORPORATE','MAVERICK'],strong:['COR
 function ap(str){return{...PD[pick(PM[str]||['CORPORATE'])]};}
 const AMF=['590 AM','640 AM','750 AM','860 AM','920 AM','1010 AM','1090 AM','1160 AM','1230 AM','1340 AM'];
 const FMF=['96.1 FM','99.7 FM','102.3 FM','104.5 FM','107.1 FM','94.9 FM','88.5 FM','101.5 FM','103.3 FM'];
+let _freqAmList=AMF,_freqFmList=FMF;
 let amfIdx=0,fmfIdx=0;
-function nextFreq(type){return type==='AM'?AMF[amfIdx++%AMF.length]:FMF[fmfIdx++%FMF.length];}
+function setNextFreqListsForMarket(marketId){
+  const m=MARKETS[marketId]||MARKETS.atlanta;
+  _freqAmList=m.amFreqs&&m.amFreqs.length?m.amFreqs:AMF;
+  _freqFmList=m.fmFreqs&&m.fmFreqs.length?m.fmFreqs:FMF;
+}
+function nextFreq(type){return type==='AM'?_freqAmList[amfIdx++%_freqAmList.length]:_freqFmList[fmfIdx++%_freqFmList.length];}
 
 function mkStn(bp,freq,year=1970){
   const{type,fmt,pw,str}=bp,tt=STT[str]||'mid',qb=STQ[str]||[40,60];
@@ -5190,6 +5285,7 @@ function checkPressure(G){
 // ── GENERATE MARKET ───────────────────────────────────────────────
 function genMarket(scenId){
   UC=new Set();UB=new Set();amfIdx=0;fmfIdx=0;
+  setNextFreqListsForMarket(ACTIVE_MARKET);
   // Resolve scenario first so we can build BP talent at the correct start year
   const sc=scenId?SC.find(s=>s.id===scenId)||pick(SC):pick(SC);
   const bpYear=sc.startYear||1970;
@@ -5220,22 +5316,22 @@ function genMarket(scenId){
     const hqBonus=sc.heritageIncumbent?3:0;
     Object.values(stations[i].prog).forEach(sd=>{if(sd)sd.quality=Math.max(12,Math.min(90,(sd.quality||30)+oqAdj*0.6+hqBonus));});
     stations[i].color='#f5a623';}});
-  // One intentional 3-letter heritage call for the dominant AM in heritage scenarios (e.g. King of the Dial)
-  if(sc.heritageIncumbent){
+  // One fictional 3-letter heritage call per market on the dominant-heritage AM slot (BP idx 4 first); King of the Dial owns that slot, otherwise an AI station.
+  (function applyMarketHeritageSlot(){
     const mktHer=MARKETS[ACTIVE_MARKET]||MARKETS.atlanta;
-    if(mktHer.heritageCall3){
-      let appliedHer=false;
-      sc.idx.forEach(i=>{
-        const st=stations[i];
-        if(appliedHer||!st||st._bpSlotDeferred||st.sig.type!=='AM')return;
-        UC.delete(st.callLetters);
-        st.callLetters=mktHer.heritageCall3;
-        UC.add(mktHer.heritageCall3);
-        st.heritageIncumbent=true;
-        appliedHer=true;
-      });
+    const hc=normalizeHeritageCall3(mktHer?.heritageCall3,ACTIVE_MARKET);
+    if(!hc)return;
+    const preferAmIdx=[4,0,2,5,1,10,3,13,6,11,12,17];
+    for(const i of preferAmIdx){
+      const st=stations[i];
+      if(!st||st._bpSlotDeferred||st.sig?.type!=='AM')continue;
+      UC.delete(st.callLetters);
+      st.callLetters=hc;
+      UC.add(hc);
+      st.heritageIncumbent=true;
+      return;
     }
-  }
+  })();
   // Validate FCC: stack scenario has 1AM+1FM which is legal; others have 1 station
   // ── PUBLIC RADIO STATIONS (injected 1975+, always present) ──
   // WABE-style public news/talk and WCLK-style public classical
@@ -5345,7 +5441,7 @@ function genMarket(scenId){
       streamDrag:Math.min(.60,EVDATA.filter(ev=>ev.e==='stream+'&&ev.y<startYear).length*0.06),
       fccAM,fccFM,
       unlockedFormats:Object.keys(FM).filter(f=>FM[f].unlock<=startYear),
-      news:[{v:'LOW',t:`Campaign begins — Atlanta radio, ${startYear}. ${sc.d.split('.')[0]}.`,y:startYear,p:1}],
+      news:[{v:'LOW',t:`Campaign begins — ${activeMkt2.label} radio, ${startYear}. ${sc.d.split('.')[0]}.`,y:startYear,p:1}],
       evq:remainingEvq,
       score:{shareHistory:[],peakRevenue:0,decadeScores:{},isSandbox:false},
       rankerHistory:[],
@@ -5440,6 +5536,11 @@ function init(){
       && local.G.sc.cash > 0; // sc must have a starting cash value
     console.log('[WAVELENGTH] isValidSave:', isValidSave);
     if(isValidSave){
+      const sm=local.G.marketId;
+      const mid=(sm&&PHASE1_MARKET_IDS.includes(sm))?sm:'atlanta';
+      _selectedMarket=mid;
+      ACTIVE_MARKET=mid;
+      syncMarketPopToMarket(mid);
       openScenSelect(local); // pass autosave so the screen can offer resume
       return;
     }
@@ -5454,18 +5555,31 @@ function init(){
 }
 
 function openScenSelect(localSave){
+  _pendingScenId=null;
+  _lastScenSelectLocal=localSave||null;
+  if(typeof G!=='undefined'&&G&&G.marketId&&PHASE1_MARKET_IDS.includes(G.marketId)){
+    _selectedMarket=G.marketId;
+    ACTIVE_MARKET=G.marketId;
+    syncMarketPopToMarket(G.marketId);
+  }
   const hasSave=!!(localSave?.G?.year);
   const saveYear=localSave?.G?.year||null;
   const savePeriod=localSave?.G?.period===1?'Spring':'Fall';
   const saveLabel=localSave?.label||'';
   const saveScen=SC.find(s=>s.id===localSave?.G?.sc?.id);
+  const rawSaveMkt=localSave?.G?.marketId;
+  const saveMarketId=(rawSaveMkt&&PHASE1_MARKET_IDS.includes(rawSaveMkt))?rawSaveMkt:'atlanta';
 
-  // Group scenarios by era for display
+  const allowed=new Set(scenarioIdsForMarket(_selectedMarket));
+  const mktLabel=(MARKETS[_selectedMarket]||MARKETS.atlanta).label;
+
   const eraGroups=[
     {label:'1970 — THE BEGINNING', ids:['under','cntry','soul','stack','fmpn','wsb']},
     {label:'1978 — FM REVOLUTION', ids:['fmrev','acrise']},
     {label:'1985 — FORMAT WARS',   ids:['chrwar','amtalk']},
   ];
+  const eraGroupsFiltered=eraGroups.map(era=>({...era,ids:era.ids.filter(id=>allowed.has(id))})).filter(era=>era.ids.length>0);
+
   const diffHints={under:'Survival mode. Thin cash, no morning host.',soul:'Great audience, terrible CPM. Grind for every dollar.',fmpn:'Lean years 1970–72. Survive them and FM makes you wealthy.',cntry:'Profitable now. Erosion will catch up.',stack:'AM/FM combo. High ceiling, high overhead.',wsb:'Dominant now, eroding fast. Every format decision has a cost.',fmrev:'Thin margins until 1980. Album Rock will make you rich if you survive.',acrise:'AC gets crowded fast. Brand loyalty is everything.',chrwar:'Three viable format bets. Only one will dominate.',amtalk:'Revenue cliff is coming. Move fast or move on.'};
   const makeCard=sc=>{
     const diff=sc.diff||(sc.id==='under'||sc.id==='soul'||sc.id==='fmpn'||sc.id==='amtalk'||sc.id==='fmrev'?'HARD':sc.id==='cntry'||sc.id==='stack'||sc.id==='acrise'||sc.id==='chrwar'?'MEDIUM':'EASY');
@@ -5480,13 +5594,13 @@ function openScenSelect(localSave){
         <div style="font-family:var(--ft);font-size:15px;color:var(--mut);letter-spacing:1px;padding-top:2px">${span}</div>
       </div>
       <div class="scn-title">${sc.l.toUpperCase()}</div>
-      <div class="scn-sub">${stnInfo} · Atlanta, ${sc.startYear||1970}</div>
+      <div class="scn-sub">${stnInfo} · ${mktLabel}, ${sc.startYear||1970}</div>
       <div class="scn-desc">${sc.d}</div>
       <div class="scn-stat">${cashFmt}</div>
       ${hint?`<div class="scn-stat" style="color:var(--amb);margin-top:5px;font-size:14px;font-style:italic">▶ ${hint}</div>`:''}
     </div>`;
   };
-  const cards=eraGroups.map(era=>{
+  const cards=eraGroupsFiltered.map(era=>{
     const eraCards=SC.filter(sc=>era.ids.includes(sc.id)).map(makeCard).join('');
     return `<div style="margin-bottom:24px">
       <div style="font-family:var(--ft);font-size:14px;color:var(--amb);letter-spacing:3px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(245,166,35,.2)">${era.label}</div>
@@ -5494,16 +5608,31 @@ function openScenSelect(localSave){
     </div>`;
   }).join('');
 
+  const marketPicker=PHASE1_MARKET_IDS.map(id=>{
+    const sel=_selectedMarket===id?' g':'';
+    const m=MARKETS[id];
+    return `<button type="button" class="abt${sel}" style="font-size:13px;padding:6px 12px;letter-spacing:1px" onclick="pickMarketPhase1('${id}')">${m.label}</button>`;
+  }).join('');
+  const blurb=(MARKETS[_selectedMarket]||MARKETS.atlanta).selectBlurb||'';
+  const saveMktLbl=(MARKETS[saveMarketId]||MARKETS.atlanta).label;
+  const mismatchNote=hasSave&&_selectedMarket!==saveMarketId
+    ?`<div style="font-size:14px;color:var(--amb);margin:0 0 16px;line-height:1.5">Autosave is for <strong>${saveMktLbl}</strong> — RESUME loads that game. The market you pick below applies to <strong>new</strong> games.</div>`
+    :'';
+
   document.getElementById('scenb').innerHTML=`
     <div style="padding:18px 20px 20px;max-width:760px;margin:0 auto">
     <div class="scn-hero">
       <div class="scn-logo">WAVELENGTH</div>
-      <div class="scn-tagline" id="scn-tagline">ATLANTA RADIO · 1970 TO 2020</div>
+      <div class="scn-tagline" id="scn-tagline">${mktLabel.toUpperCase()} RADIO · 1970 TO 2020</div>
     </div>
     ${hasSave?`<div style="background:rgba(82,227,110,.08);border:1px solid rgba(82,227,110,.25);padding:12px 16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:15px;color:var(--off)">💾 <strong style="color:var(--grn)">${saveLabel||'Autosave'}</strong> — ${saveScen?.l||''} · ${saveYear} ${savePeriod}</span>
+      <span style="font-size:15px;color:var(--off)">💾 <strong style="color:var(--grn)">${saveLabel||'Autosave'}</strong> — ${saveScen?.l||''} · ${saveMktLbl} · ${saveYear} ${savePeriod}</span>
       <button class="cfm" style="padding:6px 18px;font-size:14px" onclick="loadLocalSave();cm('m-scen')">▶ RESUME</button>
     </div>`:''}
+    <div style="font-family:var(--ft);font-size:14px;color:var(--mut);letter-spacing:2px;margin-bottom:8px">YOUR MARKET</div>
+    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">${marketPicker}</div>
+    ${blurb?`<div style="font-size:15px;color:var(--off);line-height:1.55;margin-bottom:18px;border-left:3px solid rgba(245,166,35,.35);padding-left:12px">${blurb}</div>`:''}
+    ${mismatchNote}
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;justify-content:space-between;align-items:center;margin-bottom:14px">
       <div style="font-family:var(--ft);font-size:15px;color:var(--mut);letter-spacing:2px">SELECT YOUR SCENARIO</div>
       <button onclick="cm('m-scen');mpOpenLobby()" class="abt" style="font-size:15px;letter-spacing:2px;padding:8px 20px">🎙 MULTIPLAYER</button>
@@ -5542,7 +5671,8 @@ function openOnboarding(scenId){
   const sc=SC.find(s=>s.id===scenId)||SC[0];
   const yr=sc.startYear||1970;
   const span=2020-yr;
-  const goalText=`Dominate the Atlanta market over ${span} years — ${yr} to 2020. Score is based on average ratings share, revenue growth, and surviving the industry's upheavals. Decade checkpoints grade your performance.`;
+  const mktGoal=(MARKETS[_selectedMarket]||MARKETS.atlanta).label;
+  const goalText=`Dominate the ${mktGoal} market over ${span} years — ${yr} to 2020. Score is based on average ratings share, revenue growth, and surviving the industry's upheavals. Decade checkpoints grade your performance.`;
 
   // Era-specific strategic tips shown as the KEY WATCH section
   const eraTips={
@@ -5651,6 +5781,8 @@ function openOnboarding(scenId){
 function startPlay(scenId){
   try{
     _pendingScenId=null;
+    ACTIVE_MARKET=_selectedMarket;
+    syncMarketPopToMarket(ACTIVE_MARKET);
     let companyName=(document.getElementById('company-name-input')?.value||'').trim();
     if(!companyName){
       const mktLbl=(typeof _selectedMarket!=='undefined'&&_selectedMarket&&MARKETS[_selectedMarket]?.label)||MARKETS.atlanta.label;
@@ -7188,6 +7320,11 @@ function showGrade(decadeYear,sc){
 
 // ── RANKER ────────────────────────────────────────────────────────
 function openRanker(){
+  const rkTitle=document.getElementById('m-rk-title');
+  if(rkTitle){
+    const lbl=(G.city||MARKETS[G.marketId||'atlanta']?.label||'').toUpperCase();
+    rkTitle.textContent=lbl?`MARKET RANKER — ${lbl}`:'MARKET RANKER';
+  }
   const h=G.rankerHistory;
   if(!h.length){document.getElementById('rkwrap').innerHTML='<p class="di" style="padding:20px">No history yet. Advance at least one period.</p>';return;}
   const rowObjs=buildSimulcastCombinedRankRows(G.stations);
@@ -8340,8 +8477,9 @@ function callDisplay(s){
 function openRename(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const cur=s.callLetters;
-  const prefix=cur[0]==='W'||cur[0]==='K'?cur[0]:'W';
-  const suffix=cur.slice(1);
+  const requiredPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
+  const prefix=requiredPref;
+  const suffix=(cur[0]==='W'||cur[0]==='K')?cur.slice(1):cur;
   const partner=G.stations.find(st=>st.id!==s.id&&(st.simulcastWith===s.id||s.simulcastWith===st.id));
   const partnerNote=partner?`<div class="ibox">This station is simulcast with <strong>${partner.callLetters}</strong>. If you give both stations the same call letters, they'll display as <strong>${cur}-AM</strong> / <strong>${cur}-FM</strong> automatically.</div>`:'';
 
@@ -8351,17 +8489,14 @@ function openRename(sid){
     <div class="slsec">
       <div class="sll"><span>NEW CALL LETTERS</span><strong id="rn-preview">${callDisplay(s)}</strong></div>
       <div style="display:flex;align-items:center;gap:0;margin-top:10px">
-        <select id="rn-prefix" onchange="updRename()"
-          style="background:var(--crd);border:1px solid var(--bdh);border-right:none;color:var(--amb);font-family:var(--fd);font-size:28px;letter-spacing:4px;padding:12px 10px;outline:none;cursor:pointer">
-          <option value="W" ${prefix==='W'?'selected':''}>W</option>
-          <option value="K" ${prefix==='K'?'selected':''}>K</option>
-        </select>
+        <input type="hidden" id="rn-prefix" value="${prefix}">
+        <span style="background:var(--crd);border:1px solid var(--bdh);border-right:none;color:var(--amb);font-family:var(--fd);font-size:28px;letter-spacing:4px;padding:12px 14px;min-width:44px;text-align:center">${prefix}</span>
         <input type="text" id="rn-suffix" maxlength="3" value="${suffix}"
           placeholder="RGS"
           style="width:100%;background:var(--crd);border:1px solid var(--bdh);color:var(--wht);font-family:var(--fd);font-size:28px;letter-spacing:6px;padding:12px 16px;outline:none;text-transform:uppercase"
           oninput="updRename()" onkeydown="if(event.key==='Enter')doRename('${sid}')">
       </div>
-      <div class="sln2" id="rn-note" style="margin-top:8px">2–3 letters after W or K (e.g. WRGS, WLW, KABC).</div>
+      <div class="sln2" id="rn-note" style="margin-top:8px">2–3 letters after ${prefix} — this market uses ${prefix} calls only.</div>
     </div>
     <div style="margin-top:18px;border-top:1px solid var(--bdr);padding-top:16px">
       <div class="sll" style="margin-bottom:8px"><span>BRAND / POSITIONING</span><strong id="brand-preview" style="color:var(--amb)">"${s.brand}"</strong></div>
@@ -8386,7 +8521,8 @@ function updRename(){
   if(!pfxEl||!sfxEl)return;
   const sfx=sfxEl.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,3);
   sfxEl.value=sfx;
-  const val=(pfxEl.value||'W')+sfx;
+  const reqPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
+  const val=(pfxEl.value||reqPref)+sfx;
   const preview=document.getElementById('rn-preview');
   const note=document.getElementById('rn-note');
   const btn=document.getElementById('rn-btn');
@@ -8406,14 +8542,16 @@ function updRename(){
     if(myStationIds.has(st.id)&&stIsAM!==sIsAM2) return false;
     return true;
   });
-  const valid=sfx.length>=2;
+  const prefixOk=(pfxEl.value||reqPref)===reqPref;
+  const valid=sfx.length>=2&&prefixOk;
   // Display with -AM/-FM suffix hint if simulcast partner exists
   const partnerHasSame=s&&partnerId&&G.stations.find(st=>st.id===partnerId)?.callLetters===val;
   const dispVal=s?.simulcastWith&&!partnerHasSame?val:(s?.simulcastWith?val+(s.sig.type==='AM'?'-AM':'-FM'):val);
   if(preview)preview.textContent=valid?dispVal:'—';
   if(note){
-    if(!sfx)note.textContent='Enter 2–3 letters after the prefix.';
-    else if(sfx.length<2)note.textContent='Need at least 2 letters (e.g. WLW, KABC).';
+    if(!prefixOk)note.innerHTML=`<span style="color:var(--red)">This market requires ${reqPref} call letters only.</span>`;
+    else if(!sfx)note.textContent='Enter 2–3 letters after the prefix.';
+    else if(sfx.length<2)note.textContent='Need at least 2 letters after the prefix.';
     else if(taken)note.innerHTML=`<span style="color:var(--red)">${val} is already in use.</span>`;
     else note.innerHTML=`<span style="color:var(--grn)">✓ ${val} is available.</span>`;
   }
@@ -8425,9 +8563,11 @@ function doRename(sid){
   const pfxEl=document.getElementById('rn-prefix');
   const sfxEl=document.getElementById('rn-suffix');
   if(!pfxEl||!sfxEl)return;
+  const reqPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
   const sfx=sfxEl.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,3);
-  const val=(pfxEl.value||'W')+sfx;
+  const val=(pfxEl.value||reqPref)+sfx;
   if(sfx.length<2)return;
+  if(val[0]!==reqPref){showToast(`Call letters in this market must start with ${reqPref}.`,'warn');return;}
   const partnerId=s.simulcastWith;
   const myIds=new Set((MP.mode==='live'?G.ps.filter(st=>st._mpOwner===MP.playerId):G.ps).map(st=>st.id));
   const sIsAMr=s.sig.type==='AM'&&!s.fmBooster;
@@ -9168,6 +9308,7 @@ function importSave(file){
       if(!G)G={};
       Object.assign(G,payload.G);
       migrateSave(G); // handles all field migrations and public station injection
+      applyLoadedGameMarket();
       G.news.unshift({v:'HIGH',t:`📂 Save loaded: ${payload.label||'Unknown'} (${payload.saved?.slice(0,10)||'?'})`,y:G.year,p:G.period});
       cm('m-save');renderAll();
     }catch(err){
@@ -9217,6 +9358,8 @@ function openSaveLoad(){
 
 function migrateSave(G){
   // Fix missing fields added in recent updates
+  if(!G.marketId||!MARKETS[G.marketId])G.marketId='atlanta';
+  if(!G.city)G.city=(MARKETS[G.marketId]||MARKETS.atlanta).label;
   if(!G.companyName){
     const mktLbl=MARKETS[G.marketId||'atlanta']?.label||'Atlanta';
     G.companyName=`${mktLbl} Broadcasting Group`;
@@ -9358,8 +9501,9 @@ function migrateSave(G){
   const hasPubNews=G.stations.some(s=>s.isPublic&&s.format==='PUBLIC_NEWS');
   const hasPubClass=G.stations.some(s=>s.isPublic&&s.format==='PUBLIC_CLASSICAL');
   if(!hasPubNews&&G.year>=1975){
+    const _pubPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
     const pubNews={
-      id:'pub_news_'+Date.now(),callLetters:'W'+['PBR','PNT','PBC','NPR','PUB'][Math.floor(Math.random()*5)],color:'#94a3b8',isPublic:true,isPlayer:false,
+      id:'pub_news_'+Date.now(),callLetters:_pubPref+['PBR','PNT','PBC','NPR','PUB'][Math.floor(Math.random()*5)],color:'#94a3b8',isPublic:true,isPlayer:false,
       brand:'Public Radio',oq:72,_pubLaunchYear:1975,
       format:'PUBLIC_NEWS',
       sig:{type:'FM',reach:0.92,power:'50kw'},str:'moderate',
@@ -9374,8 +9518,9 @@ function migrateSave(G){
     G.stations.push(pubNews);
   }
   if(!hasPubClass&&G.year>=1979){
+    const _pubPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
     const pubClass={
-      id:'pub_class_'+Date.now(),callLetters:'W'+['PCL','PCS','CLS','JZC','PBS'][Math.floor(Math.random()*5)],color:'#7c8fa8',isPublic:true,isPlayer:false,
+      id:'pub_class_'+Date.now(),callLetters:_pubPref+['PCL','PCS','CLS','JZC','PBS'][Math.floor(Math.random()*5)],color:'#7c8fa8',isPublic:true,isPlayer:false,
       brand:'Public Classical',oq:68,_pubLaunchYear:1979,
       format:'PUBLIC_CLASSICAL',
       sig:{type:'FM',reach:0.78,power:'25kw'},str:'niche',
@@ -9397,12 +9542,20 @@ function migrateSave(G){
   return G;
 }
 
+function applyLoadedGameMarket(){
+  if(!G)return;
+  ACTIVE_MARKET=G.marketId||'atlanta';
+  _selectedMarket=ACTIVE_MARKET;
+  syncMarketPopToMarket(ACTIVE_MARKET);
+}
+
 function loadLocalSave(){
   const local=getLocalSave();
   if(!local?.G)return;
   if(!G)G={};
   Object.assign(G,local.G);
   migrateSave(G);
+  applyLoadedGameMarket();
   G.news.unshift({v:'HIGH',t:`📂 Autosave resumed: ${local.label}`,y:G.year,p:G.period});
   cm('m-save');renderAll();
 }
@@ -10403,7 +10556,7 @@ function rStns(){
         if(driftBtn)progBtns.push(driftBtn);
         progBtns.push(
           '<button class="abt b" onclick="openLean(\''+op.id+'\')">🎯 DEMO TARGET</button>',
-          '<button class="abt '+progAct+'" onclick="openProg(\''+op.id+'\')">📈 PROG'+progLbl+'</button>',
+          '<button class="abt '+progAct+'" onclick="openProg(\''+op.id+'\')">📈 Programming Budget'+progLbl+'</button>',
           streamBtn,
           simBtn,
         );
