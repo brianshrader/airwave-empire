@@ -807,13 +807,13 @@ function _smoothstep(a,b,x){const t=_clamp01((x-a)/(b-a));return t*t*(3-2*t);}
 function fmpForYear(year){
   // FM receiver penetration — calibrated to real history
   // 1970: ~20% (FM radios mostly home hi-fi, rare in cars)
-  // 1977: FM car radios becoming common (40%+)
+  // 1976–80: steeper in-car uptake so Atlanta FM music is a real Top-10 force by ~1980
   // 1983: FM standard in most new cars (65%)
   // 1990: near-universal (85%)
   const base=0.20;
-  const p1=_smoothstep(1970,1977,year)*0.25; // early adoption
-  const p2=_smoothstep(1977,1983,year)*0.20; // car radio boom
-  const p3=_smoothstep(1983,1990,year)*0.20; // saturation
+  const p1=_smoothstep(1970,1976,year)*0.27; // early adoption — 1970–72 stay fringe
+  const p2=_smoothstep(1976,1981,year)*0.215; // car/stereo boom (compressed vs old 1977–1983)
+  const p3=_smoothstep(1983,1990,year)*0.195; // slight trim so long-run ~1990+ stays in band
   const p4=_smoothstep(1990,2000,year)*0.12; // final holdouts
   return _clamp01(base+p1+p2+p3+p4);
 }
@@ -845,10 +845,17 @@ function fmMusicEraPreferenceMult(s, year, fmp) {
   else if (s.format === 'COUNTRY') fmtW = 0.55;
   else if (['SPANISH', 'GOSPEL', 'CLASSIC_HITS', 'ADULT_STANDARDS'].includes(s.format)) fmtW = 0.45;
   else return 1;
-  const eraWindow = _smoothstep(1971, 1978, year) * (1 - _smoothstep(1986, 1992, year));
-  const fmpRamp = _smoothstep(0.30, 0.58, fmp);
-  const raw = 0.46 * eraWindow * fmpRamp * fmtW;
-  return Math.min(1.5, 1 + raw);
+  // FM-friendly music lanes that defined late-70s Atlanta dial wars
+  const late70sCore = new Set(['TOP40', 'ALBUM_ROCK', 'BEAUTIFUL_MUSIC', 'ADULT_CONTEMP', 'SOUL_RNB', 'MOR']);
+  if (late70sCore.has(s.format) && year >= 1976)
+    fmtW = Math.min(1.09, fmtW * (1 + _smoothstep(1976, 1979, year) * 0.14));
+  // Start stereo/listener shift at ~1971 so 1970–72 stay AM-dominant; full ramp by 1976
+  const eraWindow = _smoothstep(1971, 1976, year) * (1 - _smoothstep(1986, 1992, year));
+  const fmpRamp = _smoothstep(0.24, 0.50, fmp);
+  // 1976–80: extra stereo / quiet-AM flight to FM (trimmed vs prior so one FM rarely locks #1 every run)
+  const late70sBurst = _smoothstep(1975, 1978, year) * (1 - _smoothstep(1981, 1986, year));
+  const raw = 0.60 * eraWindow * fmpRamp * fmtW * (1 + late70sBurst * 0.40);
+  return Math.min(1.58, 1 + raw);
 }
 // AQH engagement rates by cohort (from Arbitron methodology)
 // Fraction of population in an average quarter-hour
@@ -2931,6 +2938,9 @@ const BP=[
 
   // idx 17: AM Gospel 1kw DA weak — tiny daytimer, brokered time by 1985
   {type:'AM',fmt:'GOSPEL',     pw:'DA', str:'weak'},
+
+  // idx 18: FM Top 40 — deferred (signs on via ATLANTA_1970_DEFERRED_LAUNCHES)
+  {type:'FM',fmt:'TOP40',      pw:'50kw',str:'strong'},
 ];
 // Early-1970 Atlanta should start less fragmented: fewer weak FMs and tail AMs on day one.
 // Additional competitors roll on via ATLANTA_1970_DEFERRED_LAUNCHES (same path as mid-game rival entry:
@@ -2939,6 +2949,7 @@ const ATLANTA_1970_DEFERRED_LAUNCHES=[
   {bpIdx:7,  y:1972,p:1}, // FM Album Rock 100kw emerging — big-FM rock after the pioneer era beds in
   {bpIdx:12, y:1972,p:2}, // second AM Gospel 5kw niche — tail clutter, not a 1970 core
   {bpIdx:15, y:1974,p:1}, // FM Album Rock 50kw moderate — fragmentation / second AOR fight
+  {bpIdx:18, y:1974,p:2}, // FM Top 40 — lands mid-decade to fight AM hits into the late 70s
   {bpIdx:16, y:1976,p:1}, // FM Country 50kw emerging — AM country handoff window
   {bpIdx:17, y:1976,p:2}, // weak gospel daytimer — marginal tail
 ];
@@ -3653,12 +3664,18 @@ function appl(s,coh,G){
   const amViab=amViabForYear(year);
   // Full AM music penalty (no booster)
   const _rawAMPenalty = Math.max(.10,(1.0-0.60*fmp)*amViab);
+  // Late-70s: AM music loses ground faster to FM (talk/news AM excluded — not in amMusicFormats)
+  const needsAmMusicLate70sDrain=isAMMusic||isAMBoosterMusic;
+  const amMusicLate70sDrain=needsAmMusicLate70sDrain
+    ?(1-_smoothstep(1974,1981,year)*0.26)
+    :1;
+  const amMusicPenalty=Math.max(0.08,_rawAMPenalty*amMusicLate70sDrain);
   // Translator: weighted blend — covered portion is protected (penalty=1.0), fringe still erodes
   const amP=isAMMusic
-    ? _rawAMPenalty
+    ? amMusicPenalty
     : isAMBoosterMusic
       // Translator: _tFrac of listeners are on FM (no penalty), (1-_tFrac) still on AM (full penalty)
-      ? _tFrac * 1.0 + (1-_tFrac) * _rawAMPenalty
+      ? _tFrac * 1.0 + (1-_tFrac) * amMusicPenalty
       : isAMTalk&&year>=2007
         ?Math.max(0.55, 1.0-_smoothstep(2007,2015,year)*0.20-_smoothstep(2015,2022,year)*0.20)
         :1;
@@ -3716,7 +3733,18 @@ function appl(s,coh,G){
     oldiesAgeMult=Math.max(0.02,oldiesAgeMult);
   }
   const fmMusPref = fmMusicEraPreferenceMult(s, year, fmp);
-  return Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * eraMult * oldiesAgeMult * fmMusPref * franchiseDemoMult(s,coh,G));
+  // Late-70s: damp on FM music stations by prior total share — in fragmented markets the #1
+  // FM can sit under ~8% but still win; ramp from ~3.5% so the leader does not lock #1 every run.
+  let fmLeaderShareDamp=1;
+  if(s.sig.type==='FM'&&!s.isPublic&&year>=1978&&year<=1981&&
+    !['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'].includes(s.format)){
+    const sh=s.rat?.share??0;
+    if(sh>=0.032){
+      if(year>=1980)fmLeaderShareDamp=1-_smoothstep(0.032,0.086,sh)*0.34;
+      else fmLeaderShareDamp=1-_smoothstep(0.032,0.095,sh)*0.22;
+    }
+  }
+  return Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * eraMult * oldiesAgeMult * fmMusPref * fmLeaderShareDamp * franchiseDemoMult(s,coh,G));
 }
 function recalc(stations,G){
   const activeIx=stations.map((s,i)=>s&&!s._bpSlotDeferred?i:-1).filter(i=>i>=0);
@@ -4495,12 +4523,18 @@ function runAI(G){
     const crisis=pr&&pr.d2<-p.pt;
     const notic=pr&&Math.random()<p.rs&&Math.abs(pr.d2)>p.pt*.5;
     const surging=pr&&pr.sur;
+    const y=G.year||1970;
+    const fmMusicAi=s.sig.type==='FM'&&y>=1975&&y<=1988&&
+      ['TOP40','CHR','ALBUM_ROCK','ADULT_CONTEMP','BEAUTIFUL_MUSIC','HOT_AC','MOR','SOUL_RNB','CLASSIC_ROCK','RHYTHMIC','OLDIES'].includes(s.format)&&
+      !['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'].includes(s.format);
+    const fmMusicAiInvestBoost=fmMusicAi?(y>=1978&&y<=1982?1.38:y>=1976?1.28:1.16):1;
 
     // ── TALENT CONTRACT RENEWALS ──────────────────────────────
     Object.entries(s.prog).forEach(([sl,sd])=>{
       if(!sd?.talent)return;
       if(sd.talent.cyr<=0){
-        if(Math.random()<p.tr){
+        const renewCut=fmMusicAi?Math.min(0.94,p.tr+(y>=1978?0.12:0.08)):p.tr;
+        if(Math.random()<renewCut){
           sd.talent.salary=Math.round(sd.talent.salary*rnd(1.08,1.22)/500)*500;
           sd.talent.cyr=ri(1,2);
         } else {
@@ -4525,6 +4559,7 @@ function runAI(G){
         if(understaffed)hireProb+=0.24;
         if(losing)hireProb+=0.16;
         hireProb+=shareGap*2.4;
+        if(fmMusicAi)hireProb*=(y>=1978?1.20:1.12);
         if(crisis)hireProb*=0.42;
         if((s.fin?.ebitda||0)<-(s.fin?.rev||1)*0.38)hireProb*=0.4;
         empty.sort((a,b)=>(wt[b]||1)-(wt[a]||1));
@@ -4550,7 +4585,7 @@ function runAI(G){
 
     // ── PROGRAMMING INVESTMENT ──────────────────────────────
     {
-      const baseInvest=Math.round((s.fin.rev||0)*(p.pi||0.04));
+      const baseInvest=Math.round((s.fin.rev||0)*(p.pi||0.04)*fmMusicAiInvestBoost);
       // Surge: aggressive types reinvest winnings to press their advantage
       const surgeMult=surging&&p.ag>.50?1.4:1.0;
       const pressureMult=crisis?1.8:notic?1.35:1.0;
@@ -4560,7 +4595,7 @@ function runAI(G){
 
     // ── PROMO SPEND — also fires when rival is SURGING near a weak player ──
     {
-      const basePromo=Math.round((s.fin.rev||0)*(p.pm||0.02));
+      const basePromo=Math.round((s.fin.rev||0)*(p.pm||0.02)*(fmMusicAi?(y>=1978?1.12:1.06):1));
       const pressureBoost=notic?Math.round(rnd(5000,18000)*p.ag):0;
       // Opportunistic: scrapper/maverick types spend big promo when a nearby
       // compatible player station is collapsing
@@ -4599,7 +4634,7 @@ function runAI(G){
     //   1. Poach from a WEAK PLAYER station (if rival is surging or aggressive)
     //   2. Poach best talent in market (any station, existing behavior)
     // Only SCRAPPER / MAVERICK / CORP_RADIO types do this with any regularity.
-    const canPoach=p.ag>=0.65&&!crisis; // don't poach while in your own crisis
+    const canPoach=(fmMusicAi?p.ag>=0.58:p.ag>=0.65)&&!crisis; // don't poach while in your own crisis
     if(canPoach&&Math.random()<p.ag*0.35){
       // Attempt 1: target a vulnerable player morning show
       const targetPlayerStation=playerWeak.find(pw=>{
@@ -5341,6 +5376,15 @@ function processAtlanta1970DeferredLaunches(G){
     s.entryTurn={year:G.year,period:G.period};
     s.launchPeriod=G.turn||0;
     G.stations[i]=s;
+    if(bp.type==='FM'){
+      const entYr=G.year||1970;
+      const isLate70sMusicEnt=[7,15,16,18].includes(i)&&entYr>=1974;
+      const oqBump=isLate70sMusicEnt?6:5;
+      const qTalent=isLate70sMusicEnt?5:4;
+      s.oq=Math.min(90,Math.round(s.oq+oqBump));
+      Object.values(s.prog).forEach(sd=>{if(sd&&sd.quality!=null)sd.quality=Math.min(93,Math.round(sd.quality+qTalent));});
+      refreshStationOQ(s,G);
+    }
     seedNewEntry(s,G);
     calcRev(s,G);
     G.news.unshift({v:'MEDIUM',t:`📡 ${s.callLetters} signs on — ${FM[bp.fmt]?.l||bp.fmt} (${bp.type} ${freq}). The dial keeps filling out.`,y:G.year,p:G.period});
@@ -6764,6 +6808,7 @@ function checkRankMilestones(G){
   });
 }
 function flushMilestones(){
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__){MILESTONE_Q.length=0;return;}
   if(!MILESTONE_Q.length)return;
   const m=MILESTONE_Q.shift();
   const isGain=m.type==='gain';
@@ -7063,6 +7108,7 @@ function mpEndGameHTML(){
 
 // ── DECADE GRADE ─────────────────────────────────────────────────
 function showGrade(decadeYear,sc){
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   const grade=gradeFromScore(sc.total);
   const isFinal=decadeYear===2020;
   const startYr=G.sc.startYear||1970;
@@ -9042,6 +9088,7 @@ function saveGame(label){
 }
 
 function autoSave(){
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   try{
     const payload={v:SAVE_VERSION,saved:new Date().toISOString(),label:'Autosave',G};
     localStorage.setItem(SAVE_KEY,JSON.stringify(payload));
@@ -9640,6 +9687,7 @@ function openFinancials(){
 
 // ── PERIOD SUMMARY ────────────────────────────────────────────────
 function showSum(profit,events,acts,alerts,displayYear,displayPeriod){
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   const ps=myPS(),tRev=ps.reduce((s,st)=>s+st.fin.rev,0),tCost=ps.reduce((s,st)=>s+st.fin.cost,0);
   const vis=acts.filter(a=>['HIGH','MEDIUM'].includes(a.v));
   const margin=tRev>0?Math.round((profit/tRev)*100):0;
@@ -9975,6 +10023,7 @@ function doPoach(sid, slot, rivalId){
 // RENDER
 // ════════════════════════════════════════════════════════════════
 function renderAll(){
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   // Guard: if G hasn't been initialized yet, don't render garbage
   if(!G || !G.sc || !G.stations){
     // Show the welcome/scenario screen instead of an empty state
