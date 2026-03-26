@@ -849,7 +849,7 @@ function fmMusicEraPreferenceMult(s, year, fmp) {
   const late70sCore = new Set(['TOP40', 'ALBUM_ROCK', 'BEAUTIFUL_MUSIC', 'ADULT_CONTEMP', 'SOUL_RNB', 'MOR']);
   if (late70sCore.has(s.format) && year >= 1976)
     fmtW = Math.min(1.09, fmtW * (1 + _smoothstep(1976, 1979, year) * 0.14));
-  // Start stereo/listener shift at ~1971 so 1970–72 stay AM-dominant; full ramp by 1976
+  // Stereo/listener shift: ramps mid-70s; fades post-1986 as FM becomes default
   const eraWindow = _smoothstep(1971, 1976, year) * (1 - _smoothstep(1986, 1992, year));
   const fmpRamp = _smoothstep(0.24, 0.50, fmp);
   // 1976–80: extra stereo / quiet-AM flight to FM (trimmed vs prior so one FM rarely locks #1 every run)
@@ -1282,6 +1282,49 @@ function marketHalfSeasonFactor(year,period){
   const base=period===2?1.04:0.96;
   const election=(period===2&&year%2===0)?1.03:1.00;
   return base*election;
+}
+/** Half-year marketing cap — major-market headroom: billing × era ramp (1970 modest → 80s/90s+ strong). */
+function promoBudgetCapForPeriod(G){
+  const y=G.year||1970;
+  const a=marketAnnualBilling(y,G.marketId||ACTIVE_MARKET);
+  const eraK=_smoothstep(1970,1992,y);
+  const mult=0.00058+eraK*0.00405;
+  const raw=Math.round(a*mult);
+  const floor=Math.round(13000+_smoothstep(1970,1995,y)*56000);
+  const ceil=Math.round(820000+_smoothstep(1970,2020,y)*680000);
+  return Math.max(floor,Math.min(ceil,raw));
+}
+/** Half-year programming cap — same spine as promo, ~15% higher billing multiplier. */
+function progBudgetCapForPeriod(G){
+  const y=G.year||1970;
+  const a=marketAnnualBilling(y,G.marketId||ACTIVE_MARKET);
+  const eraK=_smoothstep(1970,1992,y);
+  const mult=0.00070+eraK*0.00468;
+  const raw=Math.round(a*mult);
+  const floor=Math.round(17000+_smoothstep(1970,1995,y)*64000);
+  const ceil=Math.round(940000+_smoothstep(1970,2020,y)*780000);
+  return Math.max(floor,Math.min(ceil,raw));
+}
+function slotLeverageWeight(sl){ return SW[sl]||0.08; }
+/** True when destination daypart pulls materially more audience weight (for salary / anti-exploit). */
+function isMaterialUpSlotMove(fromSlot,toSlot){
+  return slotLeverageWeight(toSlot)>slotLeverageWeight(fromSlot)+0.024;
+}
+/** After moving into a higher-value slot, talent stays employable but owes a fast renegotiation at real daypart pay. */
+function applyDaypartPromotionEconomics(talent,fromSlot,toSlot){
+  if(!talent||fromSlot===toSlot)return;
+  talent.slot=toSlot;
+  if(slotLeverageWeight(toSlot)+0.001<slotLeverageWeight(fromSlot)){
+    talent._underpaidInRole=false;
+    talent._slotPromotionPendingRenewal=false;
+    talent._promotionFromSlot=undefined;
+    return;
+  }
+  if(!isMaterialUpSlotMove(fromSlot,toSlot))return;
+  talent._underpaidInRole=true;
+  talent._slotPromotionPendingRenewal=true;
+  talent._promotionFromSlot=fromSlot;
+  talent.cyr=Math.min(talent.cyr!=null?talent.cyr:2,0.5);
 }
 // Sync POP.cohorts to the active market — the static POP constant is a fallback only.
 // All AQH calculations read POP.cohorts, so this must run before any ratings work.
@@ -2767,6 +2810,7 @@ function applyTalentCrossStationXferFull(fromSid, fromSlot, toSid, toSlot) {
   const boost = t => Math.round((t.quality / 100) * fit(t) * 0.35 * 18);
   toSd.talent = talA;
   toSd.quality = Math.min(100, Math.max(10, Math.round((toSd.quality || 30) * (1 - adjDip))) + boost(talA));
+  applyDaypartPromotionEconomics(talA, fromSlot, toSlot);
   fromSd.talent = null;
   const pen = { morningDrive: .20, afternoonDrive: .14, midday: .09, evening: .06, overnight: .03 }[fromSlot] || .09;
   fromSd.quality = Math.max(10, Math.round(fromSd.quality * (1 - pen)));
@@ -2789,9 +2833,11 @@ window._mpApply_shuffle = function({ sid, fromSlot, toSlot }) {
   const boost = t => Math.round((t.quality / 100) * fit(t) * 0.35 * 18);
   toSd.talent = talA;
   toSd.quality = Math.min(100, Math.max(10, Math.round((toSd.quality || 30) * (1 - adjDip))) + boost(talA));
+  applyDaypartPromotionEconomics(talA, fromSlot, toSlot);
   if (isSwap) {
     fromSd.talent = talB;
     fromSd.quality = Math.min(100, Math.max(10, Math.round((fromSd.quality || 30) * (1 - adjDip))) + boost(talB));
+    applyDaypartPromotionEconomics(talB, toSlot, fromSlot);
   } else {
     fromSd.talent = null;
     const pen = {morningDrive:.20,afternoonDrive:.14,midday:.09,evening:.06,overnight:.03}[fromSlot] || .09;
@@ -2811,6 +2857,7 @@ window._mpApply_extend = function({ sid, slot, years, newSalary }) {
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
   const t = s.prog[slot]?.talent; if(!t) return;
   t.salary = newSalary; t.cyr = years*2; t.morale = Math.min(100,(t.morale||50)+10);
+  t._underpaidInRole=false; t._slotPromotionPendingRenewal=false; t._promotionFromSlot=undefined;
   renderAll();
 };
 window._mpApply_bonus = function({ sid, slot, amount, boost }) {
@@ -2888,8 +2935,7 @@ const BP=[
   {type:'AM',fmt:'COUNTRY',  pw:'50kw',str:'dominant'},
   // idx 3: AM Soul/RnB strong 10kw  (Soul City)
   {type:'AM',fmt:'SOUL_RNB', pw:'10kw',str:'strong'},
-  // idx 4: AM MOR dominant 50kw — the clear-channel giant (WSB/WPTF/WGN equivalent)
-  // Sole dominant MOR in the market; no format competition from other 50kw MOR
+  // idx 4: AM MOR dominant 50kw — clear-channel–class giant; sole dominant MOR in blueprint
   {type:'AM',fmt:'MOR',      pw:'50kw',str:'dominant'},
   // idx 5: AM News/Talk emerging 50kw  (Stack AM)
   {type:'AM',fmt:'NEWS_TALK',pw:'50kw',str:'emerging'},
@@ -2909,8 +2955,7 @@ const BP=[
   // AM music stations die or flip formats through the 70s-90s naturally.
   // Rivals here are constructed to create that arc realistically.
 
-  // idx 10: AM Top40 50kw strong — the youth challenger (WQXI equivalent)
-  // WQXI was a real Atlanta powerhouse; went 7.5 share in '79, gone by early 90s
+  // idx 10: AM Top40 50kw strong — the youth challenger
   {type:'AM',fmt:'TOP40',      pw:'50kw',str:'strong'},
 
   // idx 11: AM Soul/RnB 5kw moderate — second Black-format AM (WIGO/WERD equivalent)
@@ -2974,7 +3019,7 @@ const RA={'50kw':.97,'10kw':.92,'5kw':.85,'1kw':.72,'DA':.88};
 const RF={'100kw':.92,'50kw':.82,'25kw':.68,'10kw':.52};
 // Population universe: persons who can clearly receive this signal in Atlanta metro
 // Total metro ~1.2M. 50kw AM clears = full market. 1kw daytimer = limited coverage area.
-// clearChannel=true adds ~18% universe bonus — WSB's nighttime footprint covers the SE
+// clearChannel=true adds ~18% universe bonus — large night footprint for Class A AMs
 const UNIVERSE={
   'AM_50kw':1.00,'AM_10kw':0.65,'AM_5kw':0.42,'AM_1kw':0.18,'AM_DA':0.72,
   'FM_100kw':0.92,'FM_50kw':0.78,'FM_25kw':0.58,'FM_10kw':0.38,
@@ -2982,7 +3027,7 @@ const UNIVERSE={
 // Clear channel AM stations (Class A, unlimited power, no nighttime directionality)
 // These stations have a larger effective universe — their signal covers the full metro
 // at night and reaches fringe areas daytime competitors cannot. Revenue premium applies.
-// In Atlanta: WSB 750 AM is the archetypal clear channel. ~1/3 of 50kW AMs are clear.
+// ~1/3 of 50kW AMs in the blueprint carry clear-channel designation.
 const CLEAR_CHANNEL_UNIVERSE_BONUS = 0.18; // +18% addressable audience
 const CLEAR_CHANNEL_REVENUE_BONUS  = 0.12; // +12% revenue premium (nighttime reach = more impressions)
 
@@ -3057,7 +3102,7 @@ const SC=[
   {id:'soul', l:'Soul City',     d:"Soul/R&B — deeply embedded in the community. Loyal listeners, but undervalued by advertisers and squeezed by a small signal. Build your audience and fight for every dollar.",idx:[3],cash:1750000},
   {id:'stack',l:'The Stack',     d:"An AM/FM combo. The AM pays the bills. The FM is a blank canvas — simulcast to build an audience, then differentiate. High overhead, high ceiling.",idx:[5,8],cash:4000000},
   {id:'fmpn', l:'FM Pioneer',   d:"One of Atlanta's first FM licenses. Album Rock on FM — a cult following in 1970, but advertisers haven't noticed yet. FM is about to become everything. Survive the lean years and you'll dominate the decade.",idx:[9],cash:900000},
-  {id:'wsb',  l:'King of the Dial', d:"Atlanta’s dominant AM station. 50kw, Middle of Road, 14% share. You’re the biggest thing on the dial in 1970 — but FM specialization is coming and your broad format is a liability. What will you become?",idx:[4],cash:2200000},
+  {id:'wsb',  l:'King of the Dial', d:"Atlanta’s dominant AM station. 50kw, Middle of Road — a market leader out of the gate with a polished, heritage facility. You’re the biggest thing on the dial in 1970 — but FM specialization is coming and your broad format is a liability. What will you become?",idx:[4],cash:2200000,diff:'MEDIUM',heritageIncumbent:true},
   // ── 1978 ERA ───────────────────────────────────────────────────
   {id:'fmrev', l:'FM Revolution', startYear:1978,
    d:"It's 1978. FM just passed AM in total audience for the first time in American radio history. You've scraped together enough to buy a mid-market FM Album Rock license — decent signal, thin cash, no morning host. The format wars are just beginning and the big groups haven't arrived yet. Build a winner before they do.",
@@ -3201,7 +3246,7 @@ const DRIFT={
        effect:(s,drift)=>{return drift<50?0.015:0;}},
     ]
   },
-  // MOR: Music-Leaning vs Talk-Leaning — the WSB choice
+  // MOR: Music-Leaning vs Talk-Leaning (heritage broad-AM pivot axis)
   MOR:{
     label:'Format Direction',
     poleA:{name:'Music-Leaning',desc:'Soft standards & easy listening. Preserves female 35-64 base. Smooth path to Adult Contemporary.'},
@@ -3645,7 +3690,7 @@ function appl(s,coh,G){
   // News/Talk, Gospel, Sports, Podcast are AM-native — no penalty through 2004
   // BUT: after 2005, even AM Talk faces mounting pressure from streaming/podcasts/smart speakers.
   // AM signal quality (interference, static) becomes a liability vs pristine FM/digital.
-  // Real-world: WBAP, WGN, WSB all scrambled for FM simulcasts 2010-2020.
+  // Real-world: major heritage AMs scrambled for FM simulcasts 2010-2020.
   // Modeled as a soft penalty starting 2007, accelerating 2015+.
   const amMusicFormats=['TOP40','COUNTRY','SOUL_RNB','MOR','ALBUM_ROCK','BEAUTIFUL_MUSIC',
     'CHR','CLASSIC_ROCK','ADULT_CONTEMP','URBAN_CONTEMP','ALT_ROCK','RHYTHMIC','HOT_AC','CLASSIC_HITS',
@@ -3667,7 +3712,7 @@ function appl(s,coh,G){
   // Late-70s: AM music loses ground faster to FM (talk/news AM excluded — not in amMusicFormats)
   const needsAmMusicLate70sDrain=isAMMusic||isAMBoosterMusic;
   const amMusicLate70sDrain=needsAmMusicLate70sDrain
-    ?(1-_smoothstep(1974,1981,year)*0.26)
+    ?(1-_smoothstep(1975,1981,year)*0.24)
     :1;
   const amMusicPenalty=Math.max(0.08,_rawAMPenalty*amMusicLate70sDrain);
   // Translator: weighted blend — covered portion is protected (penalty=1.0), fringe still erodes
@@ -3733,18 +3778,14 @@ function appl(s,coh,G){
     oldiesAgeMult=Math.max(0.02,oldiesAgeMult);
   }
   const fmMusPref = fmMusicEraPreferenceMult(s, year, fmp);
-  // Late-70s: damp on FM music stations by prior total share — in fragmented markets the #1
-  // FM can sit under ~8% but still win; ramp from ~3.5% so the leader does not lock #1 every run.
-  let fmLeaderShareDamp=1;
-  if(s.sig.type==='FM'&&!s.isPublic&&year>=1978&&year<=1981&&
+  // Late-70s transition: very light trim so one FM music leader rarely locks #1 every run (talk excluded)
+  let fmLeaderAppealTrim=1;
+  if(s.sig.type==='FM'&&!s.isPublic&&year>=1978&&year<=1982&&
     !['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'].includes(s.format)){
     const sh=s.rat?.share??0;
-    if(sh>=0.032){
-      if(year>=1980)fmLeaderShareDamp=1-_smoothstep(0.032,0.086,sh)*0.34;
-      else fmLeaderShareDamp=1-_smoothstep(0.032,0.095,sh)*0.22;
-    }
+    if(sh>=0.075)fmLeaderAppealTrim=1-_smoothstep(0.075,0.148,sh)*0.05;
   }
-  return Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * eraMult * oldiesAgeMult * fmMusPref * fmLeaderShareDamp * franchiseDemoMult(s,coh,G));
+  return Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G));
 }
 function recalc(stations,G){
   const activeIx=stations.map((s,i)=>s&&!s._bpSlotDeferred?i:-1).filter(i=>i>=0);
@@ -3761,7 +3802,9 @@ function recalc(stations,G){
       }
       const t=Math.min(1,age/m.ramp);
       const effB=m.launchB+(m.b-m.launchB)*t;
-      const promoBoost=1+(((s.ops?.promo||0)/50000)*0.08);
+      const promoCap=promoBudgetCapForPeriod(G);
+      const effPr=Math.min(s.ops?.promo||0,promoCap);
+      const promoBoost=1+((effPr/Math.max(1,promoCap))*0.08);
       return Math.max(0,appl(s,coh,G)*effB*promoBoost);
     });
     const tot=sc.reduce((a,b)=>a+b,0);
@@ -3794,11 +3837,13 @@ function recalc(stations,G){
     activeIx.forEach((i,ri)=>{
       const s=stations[i];
       // Identity creates a loyalty floor — high-identity stations bleed share slower
-    const identityFloor=(s.isPlayer&&s.identity>20)
-      ?(s.rat.cur[coh]?.share||0)*((s.identity/100)*0.35)
-      :0;
-    const tgt=Math.max(raw[ri], identityFloor),cur=s.mom[coh]?.cur||s.rat.cur[coh]?.share||0;
-      const d=tgt-cur,spd=d>0?.35:.60,ns=Math.max(0,cur+d*spd);
+      const identityFloor=(s.isPlayer&&s.identity>20)
+        ?(s.rat.cur[coh]?.share||0)*((s.identity/100)*0.35)
+        :0;
+      const tgt=Math.max(raw[ri], identityFloor),cur=s.mom[coh]?.cur||s.rat.cur[coh]?.share||0;
+      const d=tgt-cur;
+      const spd=(d>0?.35:.60);
+      const ns=Math.max(0,cur+d*spd);
       const pop=(POP.cohorts[coh]?.t||0)*effUniverse(s);
       // AQH: share × cohort population × universe × engagement rate
       // Engagement rate = fraction listening in an average quarter-hour (Arbitron methodology)
@@ -4070,6 +4115,10 @@ function calcRev(s,G){
     ?0.28+_ss(1970,1984,year)*0.72
     :0.15+_ss(1972,1988,year)*0.85;
   const rev=Math.round((spotsPerDay*.65*182*s.ops.sell*.88 + spotsPerDay*.35*182*s.ops.sell*.55)*ratePerSpot*cpEraFactor);
+  const promoCap=promoBudgetCapForPeriod(G);
+  const progCap=progBudgetCapForPeriod(G);
+  const effPromo=Math.min(s.ops?.promo||0,promoCap);
+  const effProg=Math.min(s.ops?.progBudget||0,progCap);
   // ── COSTS ────────────────────────────────────────────────────────
   // On-air talent (annual salary / 2 for half-year period)
   const talCost=Object.values(s.prog).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
@@ -4202,9 +4251,20 @@ function calcRev(s,G){
   const rightsHalfPeriod=syndicationFeesForStation(s,G);
   const salesRate=year<1980?0.18:year<1990?0.17:year<2005?0.16:0.15;
   const adminRate=year<1980?0.12:year<1990?0.11:year<2005?0.10:0.09;
-  const salesAdminRate=salesRate+adminRate;
+  // Era trim + late squeeze: smooth ramp so 1980s–90s carry a bit more G&A than the 1970s baseline.
+  const lateMarginTrim=_smoothstep(1985,2000,year)*0.0042+_smoothstep(1988,2000,year)*0.0045;
+  // Progressive station cost: larger billers carry heavier sales commissions, traffic, and local overhead
+  // (scales ~0→1 across ~$140k–$900k half-period revenue — weak stations barely feel it).
+  const bigBillerK=_smoothstep(140000,900000,totalRev);
+  const progressiveSaRate=bigBillerK*0.118;
+  const salesAdminRate=salesRate+adminRate+lateMarginTrim+progressiveSaRate;
   const salesAdminCost=Math.round(totalRev*salesAdminRate);
-  const opsFloor=Math.round((s.sig.type==='AM'?70000:50000)*Math.min(2.4,rawInfl)*Math.max(0.65,eraCostMult));
+  const mktBill=marketAnnualBilling(year,G.marketId||ACTIVE_MARKET);
+  const mktScale=Math.min(1.24,Math.max(0.88,mktBill/14000000));
+  // Major markets + strong stations: slightly higher fixed ops intensity (sales office, engineering, promotions).
+  const mktOpsPremium=1+_smoothstep(0.90,1.22,mktScale)*bigBillerK*0.074;
+  const opsScale=1+_smoothstep(1980,1995,year)*0.032;
+  const opsFloor=Math.round((s.sig.type==='AM'?70000:50000)*Math.min(2.4,rawInfl)*Math.max(0.65,eraCostMult)*mktScale*opsScale*mktOpsPremium*(1+bigBillerK*0.124));
   let simulcastProgFee=0;
   if(isProgReceiver&&progSrcStation){
     const srcTal=Object.values(progSrcStation.prog||{}).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
@@ -4217,7 +4277,7 @@ function calcRev(s,G){
   s.fin.simulcastProgFee=simulcastProgFee;
   s.fin.salesAdmin=salesAdminCost;
   s.fin.syndicationRights=rightsHalfPeriod;
-  s.fin.cost=fixedCost+talCost+salesAdminCost+opsFloor+(s.ops.promo||0)+(s.ops.progBudget||0)+(s.identityBudget||0)+streamUpkeep+simulcastProgFee+rightsHalfPeriod;
+  s.fin.cost=fixedCost+talCost+salesAdminCost+opsFloor+effPromo+effProg+(s.identityBudget||0)+streamUpkeep+simulcastProgFee+rightsHalfPeriod;
   s.fin.ebitda=s.fin.rev-s.fin.cost;
 }
 function seedRev(stations,G){
@@ -4234,7 +4294,9 @@ function seedRev(stations,G){
       if(s.fin.streamRev!=null)s.fin.streamRev=Math.round(s.fin.streamRev*f);
       if(s.fin.salesAdminRate!=null){
         s.fin.salesAdmin=Math.round(s.fin.rev*s.fin.salesAdminRate);
-        s.fin.cost=(s.fin.fix||0)+(s.fin.tal||0)+(s.fin.salesAdmin||0)+(s.fin.opsFloor||0)+(s.ops.promo||0)+(s.ops.progBudget||0)+(s.identityBudget||0)+(s.fin.streamUpkeep||0)+(s.fin.simulcastProgFee||0)+(s.fin.syndicationRights||0);
+        const pc=promoBudgetCapForPeriod(G),pgc=progBudgetCapForPeriod(G);
+        const ep=Math.min(s.ops?.promo||0,pc),epg=Math.min(s.ops?.progBudget||0,pgc);
+        s.fin.cost=(s.fin.fix||0)+(s.fin.tal||0)+(s.fin.salesAdmin||0)+(s.fin.opsFloor||0)+ep+epg+(s.identityBudget||0)+(s.fin.streamUpkeep||0)+(s.fin.simulcastProgFee||0)+(s.fin.syndicationRights||0);
       }
       s.fin.ebitda=s.fin.rev-s.fin.cost;
     });
@@ -4256,9 +4318,12 @@ function decay(s,year,period){
   if(!s||s._bpSlotDeferred)return;
   const D={morningDrive:.035,afternoonDrive:.030,midday:.040,evening:.044,overnight:.050};
   // Programming budget: recurring (progBudget) plus any residual one-shot (progInvestment)
-  const totalProgSpend=(s.ops?.progBudget||0)+(s.progInvestment||0);
+  const progCap=progBudgetCapForPeriod(G);
+  const cappedProg=Math.min(s.ops?.progBudget||0,progCap);
+  const totalProgSpend=cappedProg+(s.progInvestment||0);
+  const progRef=Math.max(10000,progCap/6);
   if(totalProgSpend>0){
-    const boost=(totalProgSpend/10000)*4;
+    const boost=(totalProgSpend/progRef)*4;
     const slotBoosts={morningDrive:boost*1.4,afternoonDrive:boost*1.1,midday:boost,evening:boost*.8,overnight:boost*.6};
     Object.entries(slotBoosts).forEach(([sl,b])=>{if(s.prog[sl])s.prog[sl].quality=Math.min(100,s.prog[sl].quality+b);});
   }
@@ -4615,7 +4680,8 @@ function runAI(G){
           }
         }
       }
-      s.ops.promo=Math.min(80000,Math.round((basePromo+pressureBoost+opportunBoost)*rnd(0.7,1.3)));
+      const promoCap=promoBudgetCapForPeriod(G);
+      s.ops.promo=Math.min(promoCap,Math.round((basePromo+pressureBoost+opportunBoost)*rnd(0.7,1.3)));
     }
 
     // ── TALENT: DEFENSIVE UPGRADE (own house in crisis) ──────
@@ -5114,24 +5180,21 @@ function genMarket(scenId){
   // uses their full tier b-value, not launchB (which is for new entrants)
   stations.forEach(s=>{ if(s&&!s._bpSlotDeferred) s.launchPeriod=-999; });
 
-  // Clear channel designation: BP index 4 (dominant 50kW AM MOR — the WSB archetype)
-  // is a Class A clear-channel station: unlimited power day/night, no directionality.
+  // Clear channel designation: BP index 4 (dominant 50kW AM MOR) is Class A: full night power.
   // One other 50kW AM (index 0, the dominant Top40) is also clear channel in this market.
   // The rest (indices 1, 2, 5, 10) are 50kW daytime / reduced-power directional at night.
   [0, 4].forEach(i => { const st=stations[i]; if(st&&!st._bpSlotDeferred) st.clearChannel = true; });
 
   sc.idx.forEach((i,pi)=>{if(stations[i]&&!stations[i]._bpSlotDeferred){stations[i].isPlayer=true;
-    // WSB scenario: dominant heritage station — minimal quality penalty (you inherited a well-run operation)
-    // Quality adjustment: WSB starts near-peak; other scenarios tuned by oqBoost
     const oqAdj=sc.oqBoost||0;
-    if(sc.id==='wsb'){
-      stations[i].oq=Math.max(68,stations[i].oq-ri(2,6));
-    } else {
+    if(sc.heritageIncumbent){
+      stations[i].oq=Math.max(66,Math.min(88,stations[i].oq-ri(2,8)+oqAdj));
+    }else{
       const base=Math.max(28,stations[i].oq-ri(8,18));
       stations[i].oq=Math.max(15,Math.min(85,base+oqAdj));
     }
-    // Propagate oq adjustment to individual daypart quality
-    Object.values(stations[i].prog).forEach(sd=>{if(sd)sd.quality=Math.max(12,Math.min(90,(sd.quality||30)+oqAdj*0.6));});
+    const hqBonus=sc.heritageIncumbent?3:0;
+    Object.values(stations[i].prog).forEach(sd=>{if(sd)sd.quality=Math.max(12,Math.min(90,(sd.quality||30)+oqAdj*0.6+hqBonus));});
     stations[i].color='#f5a623';}});
   // Validate FCC: stack scenario has 1AM+1FM which is legal; others have 1 station
   // ── PUBLIC RADIO STATIONS (injected 1975+, always present) ──
@@ -5161,52 +5224,6 @@ function genMarket(scenId){
   const pubClass=mkPub(gc(),'90.1 FM','PUBLIC_CLASSICAL','25kw',0.78,gb('PUBLIC_CLASSICAL'),68,1979,'#7c8fa8');
   stations.push(pubNews,pubClass);
   seedRat(stations,1970);
-  // WSB scenario: post-seed correction — heritage 50kw MOR was genuinely dominant,
-  // often 18-22% total share. seedRat caps at 22% per cohort, but the weighted
-  // overall comes out lower because youth cohorts (MOR FA near-zero) dilute the total.
-  // We directly set the player to a historically realistic 19-21% share
-  // by redistributing from the market proportionally.
-  if(sc.id==='wsb'){
-    const wsb=stations.find(s=>s.isPlayer);
-    if(wsb){
-      const targetShare=rnd(0.18,0.21);
-      const currentShare=wsb.rat.share||0.095;
-      const boostFactor=targetShare/Math.max(currentShare,0.05);
-      // Scale up player's per-cohort shares; scale down others proportionally
-      COH.forEach(coh=>{
-        const cur=wsb.rat.cur[coh];
-        if(!cur)return;
-        const oldSh=cur.share;
-        const newSh=Math.min(0.38,oldSh*boostFactor); // 0.38 cap per cohort for WSB's core demos
-        const delta=newSh-oldSh;
-        cur.share=newSh;
-        const pop=(POP.cohorts[coh]?.t||0)*effUniverse(wsb);
-        cur.aqh=Math.round(newSh*pop*(AQH_ENGAGE[coh]||0.060));
-        wsb.mom[coh]={tgt:newSh,cur:newSh};
-        // Redistribute delta proportionally from rivals
-        const rivals=stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic&&s.rat.cur[coh]);
-        const rivTotal=rivals.reduce((a,s)=>a+(s.rat.cur[coh]?.share||0),0);
-        if(rivTotal>0.001&&delta>0)rivals.forEach(s=>{
-          const s2=s.rat.cur[coh];
-          const reduction=(s2.share/rivTotal)*delta;
-          s2.share=Math.max(0.001,s2.share-reduction);
-          const pop2=(POP.cohorts[coh]?.t||0)*effUniverse(s);
-          s2.aqh=Math.round(s2.share*pop2*(AQH_ENGAGE[coh]||0.060));
-          s.mom[coh]={tgt:s2.share,cur:s2.share};
-        });
-      });
-      // Recompute weighted overall share for WSB and rivals
-      const ewp=COH.reduce((s,c)=>{const pop=POP.cohorts[c]?.t||0;const eng=AQH_ENGAGE[c]||0.060;return s+pop*eng;},0);
-      stations.forEach(s=>{
-        if(!s||s._bpSlotDeferred)return;
-        s.rat.aqh=COH.reduce((sum,c)=>sum+(s.rat.cur[c]?.aqh||0),0);
-        s.rat.share=COH.reduce((sum,c)=>{
-          const pop=POP.cohorts[c]?.t||0;const eng=AQH_ENGAGE[c]||0.060;
-          return sum+(s.rat.cur[c]?.share||0)*(pop*eng)/Math.max(ewp,1);
-        },0);
-      });
-    }
-  }
   const startYear=sc.startYear||1970;
 
   // For non-1970 starts: inject rivals that would have launched between 1970 and startYear.
@@ -5273,42 +5290,6 @@ function genMarket(scenId){
     });
 
     seedRat(stations, startYear);
-
-    // Scenario-specific share corrections for non-1970 starts
-    if(sc.id==='wsb'||sc.id==='fmrev'||sc.id==='acrise'||sc.id==='chrwar'||sc.id==='amtalk'){
-      const player=stations.find(s=>s.isPlayer);
-      if(player){
-        const targets={fmrev:rnd(0.04,0.07),acrise:rnd(0.05,0.09),chrwar:rnd(0.04,0.08),amtalk:rnd(0.025,0.055)};
-        const tgt=targets[sc.id];
-        if(tgt){
-          const cur=player.rat.share||0.03;
-          const bf=tgt/Math.max(cur,0.02);
-          COH.forEach(coh=>{
-            const rc=player.rat.cur[coh];if(!rc)return;
-            const ns=Math.min(0.28,rc.share*bf);
-            const delta=ns-rc.share;rc.share=ns;
-            const pop=(POP.cohorts[coh]?.t||0)*effUniverse(player);
-            rc.aqh=Math.round(ns*pop*(AQH_ENGAGE[coh]||0.060));
-            player.mom[coh]={tgt:ns,cur:ns};
-            const rivals=stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic&&s.rat.cur[coh]);
-            const rt=rivals.reduce((a,s)=>a+(s.rat.cur[coh]?.share||0),0);
-            if(rt>0.001&&delta>0)rivals.forEach(s=>{
-              const sc2=s.rat.cur[coh];
-              sc2.share=Math.max(0.001,sc2.share-(sc2.share/rt)*delta);
-              const p2=(POP.cohorts[coh]?.t||0)*effUniverse(s);
-              sc2.aqh=Math.round(sc2.share*p2*(AQH_ENGAGE[coh]||0.060));
-              s.mom[coh]={tgt:sc2.share,cur:sc2.share};
-            });
-          });
-          const ewp=COH.reduce((s,co)=>{const p=POP.cohorts[co]?.t||0;return s+p*(AQH_ENGAGE[co]||0.060);},0);
-          stations.forEach(s=>{
-            if(!s||s._bpSlotDeferred)return;
-            s.rat.aqh=COH.reduce((sum,co)=>sum+(s.rat.cur[co]?.aqh||0),0);
-            s.rat.share=COH.reduce((sum,co)=>{const p=POP.cohorts[co]?.t||0;const e=AQH_ENGAGE[co]||0.060;return sum+(s.rat.cur[co]?.share||0)*(p*e)/Math.max(ewp,1);},0);
-          });
-        }
-      }
-    }
 
     const mockG2={adx:adxMod,streamDrag:0,year:startYear};
     seedRev(stations,mockG2);
@@ -5447,7 +5428,7 @@ function openScenSelect(localSave){
   ];
   const diffHints={under:'Survival mode. Thin cash, no morning host.',soul:'Great audience, terrible CPM. Grind for every dollar.',fmpn:'Lean years 1970–72. Survive them and FM makes you wealthy.',cntry:'Profitable now. Erosion will catch up.',stack:'AM/FM combo. High ceiling, high overhead.',wsb:'Dominant now, eroding fast. Every format decision has a cost.',fmrev:'Thin margins until 1980. Album Rock will make you rich if you survive.',acrise:'AC gets crowded fast. Brand loyalty is everything.',chrwar:'Three viable format bets. Only one will dominate.',amtalk:'Revenue cliff is coming. Move fast or move on.'};
   const makeCard=sc=>{
-    const diff=sc.diff||(sc.id==='under'||sc.id==='soul'||sc.id==='fmpn'||sc.id==='amtalk'||sc.id==='fmrev'?'HARD':sc.id==='cntry'||sc.id==='stack'||sc.id==='wsb'||sc.id==='acrise'||sc.id==='chrwar'?'MEDIUM':'EASY');
+    const diff=sc.diff||(sc.id==='under'||sc.id==='soul'||sc.id==='fmpn'||sc.id==='amtalk'||sc.id==='fmrev'?'HARD':sc.id==='cntry'||sc.id==='stack'||sc.id==='acrise'||sc.id==='chrwar'?'MEDIUM':'EASY');
     const diffCls=diff==='HARD'?'hard':diff==='MEDIUM'?'med':'easy';
     const stnInfo=sc.idx.length===2?'AM/FM Combo':'Single Station';
     const cashFmt=`$${(sc.cash/1000).toFixed(0)}K starting cash`;
@@ -5552,8 +5533,8 @@ function openOnboarding(scenId){
     ],
     wsb:[
       {k:'FORMAT CRISIS',v:`MOR's broad appeal is becoming a liability. Every new FM format eats a slice of your audience. Specialize before the erosion compounds.`},
-      {k:'NEWS/TALK',v:`WSB's real-world pivot was to News/Talk — it worked. But the window closes once a rival claims the format.`},
-      {k:'DOMINANCE',v:`You start at 14% share. That's the ceiling to defend, not a floor to build from. Rivals are targeting you.`},
+      {k:'NEWS/TALK',v:`A pivot to News/Talk was the classic MOR survival play — but the window closes once a rival claims the format.`},
+      {k:'DOMINANCE',v:`You open with a strong book — that leadership is the ceiling to defend, not a floor to build from. Rivals are targeting you.`},
     ],
     fmrev:[
       {k:'THE MOMENT',v:`FM just crossed AM in total audience. The ad market hasn't caught up yet — but it will. You have 2-3 years to build before CPMs spike.`},
@@ -7452,14 +7433,15 @@ let PS={sid:null,val:0};
 function openPromo(sid){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  PS={sid,val:s.ops.promo||0};
+  const prCap=promoBudgetCapForPeriod(G);
+  PS={sid,val:Math.min(s.ops.promo||0,prCap)};
   const simNote=s.simulcastWith?`<div class="ibox">📡 Simulcast tip: Promote the <strong>FM</strong> to migrate listeners from AM. FM promotion builds the digital audience; AM promotion only sustains the legacy signal.</div>`:'';
   document.getElementById('prb').innerHTML=`
     <p class="di">Marketing campaigns — billboards, contests, van tours, giveaways. Audience-facing promotion builds ratings and share over time. Higher budgets produce bigger share boosts each period.</p>
     ${simNote}
     <div class="slsec">
       <div class="sll"><span>MARKETING BUDGET / PERIOD</span><strong id="pr-val">${f$(PS.val)}</strong></div>
-      <input type="range" min="0" max="50000" step="1000" value="${PS.val}" oninput="updPromo('${s.id}',this.value)">
+      <input type="range" min="0" max="${prCap}" step="1000" value="${PS.val}" oninput="updPromo('${s.id}',this.value)">
       <div class="sln2" id="pr-note"></div>
     </div>
     <div class="ibox">Current: <strong>${f$(s.ops.promo||0)}/period</strong> · Station share: <strong>${pct(s.rat.share)}</strong></div>
@@ -7472,12 +7454,13 @@ function updPromo(sid,v){
   sid=ensureOpsSourceSid(sid);
   PS.val=parseInt(v);PS.sid=sid;
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const prCap=promoBudgetCapForPeriod(G);
   // Promotion boosts ratings share — small stations get bigger lift (harder to ignore a newcomer)
   const baseShare=s.rat.share||0.01;
-  const estShareBoost=Math.min(0.03,(PS.val/50000)*0.04*(1/Math.max(baseShare*10,1)));
+  const estShareBoost=Math.min(0.03,(PS.val/Math.max(1,prCap))*0.04*(1/Math.max(baseShare*10,1)));
   const estRevGain=Math.round(estShareBoost*s.fin.rev/Math.max(baseShare,0.001));
   const net=estRevGain-PS.val;
-  const tier=PS.val>=30000?'Major campaign — billboards + contests + van tour':PS.val>=15000?'Active campaign — radio ads + events':PS.val>=5000?'Light promotion — social + local ads':'Minimal presence';
+  const tier=PS.val>=prCap*0.58?'Major campaign — billboards + contests + van tour':PS.val>=prCap*0.28?'Active campaign — radio ads + events':PS.val>=prCap*0.09?'Light promotion — social + local ads':'Minimal presence';
   const vEl=document.getElementById('pr-val'),nEl=document.getElementById('pr-note');
   if(vEl)vEl.textContent=f$(PS.val);
   if(nEl)nEl.innerHTML=`<strong>${tier}</strong><br>Est. share lift: <strong style="color:var(--grn)">+${(estShareBoost*100).toFixed(2)}%</strong> · Est. revenue gain: <strong style="color:${net>=0?'var(--grn)':'var(--amb)'}">~${f$(Math.abs(net))} ${net>=0?'net gain':'net cost'}/period</strong>`;
@@ -7485,10 +7468,12 @@ function updPromo(sid,v){
 function doPromo(){
   const sid=ensureOpsSourceSid(PS.sid);PS.sid=sid;
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  s.ops.promo=PS.val;
+  const cap=promoBudgetCapForPeriod(G);
+  const v=Math.min(PS.val,cap);
+  s.ops.promo=v;
   // Revenue impact applies next period when ratings engine runs — not immediately
-  G.news.unshift({v:'LOW',t:`${s.callLetters} marketing budget set to ${f$(PS.val)}/period — takes effect next period.`,y:G.year,p:G.period});
-  MP.action('promo',{sid:PS.sid,promo:PS.val});
+  G.news.unshift({v:'LOW',t:`${s.callLetters} marketing budget set to ${f$(v)}/period — takes effect next period.`,y:G.year,p:G.period});
+  MP.action('promo',{sid:PS.sid,promo:v});
   cm('m-pr2');renderAll();
 }
 
@@ -7612,10 +7597,12 @@ function doShuffle(sid,fromSlot,toSlot){
   // Move A into destination
   toSd.talent=talA;
   toSd.quality=Math.min(100,Math.max(10,Math.round((toSd.quality||30)*(1-adjDip)))+boost(talA));
+  applyDaypartPromotionEconomics(talA,fromSlot,toSlot);
   if(isSwap){
     // Move B back into source
     fromSd.talent=talB;
     fromSd.quality=Math.min(100,Math.max(10,Math.round((fromSd.quality||30)*(1-adjDip)))+boost(talB));
+    applyDaypartPromotionEconomics(talB,toSlot,fromSlot);
     G.news.unshift({v:'LOW',t:`${talA.name} \u2194 ${talB.name} swap at ${s.callLetters}`,y:G.year,p:G.period});
   } else {
     // Source goes to automation
@@ -8001,7 +7988,8 @@ let PI={sid:null,val:0};
 function openProg(sid){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  PI={sid,val:s.ops?.progBudget||0};
+  const pgCap=progBudgetCapForPeriod(G);
+  PI={sid,val:Math.min(s.ops?.progBudget||0,pgCap)};
   const drows=Object.entries(SL).map(([k,lbl])=>{
     const q=Math.round(s.prog[k]?.quality||0),c=qc(q);
     const w=SW[k]||0;
@@ -8012,7 +8000,7 @@ function openProg(sid){
     <div class="ms2"><div class="msh">CURRENT DAYPART QUALITY</div>${drows}</div>
     <div class="slsec">
       <div class="sll"><span>PROGRAMMING BUDGET / PERIOD</span><strong id="pg-val">${f$(PI.val)}</strong></div>
-      <input type="range" min="0" max="60000" step="2000" value="${PI.val}" oninput="updProg('${s.id}',this.value)">
+      <input type="range" min="0" max="${pgCap}" step="2000" value="${PI.val}" oninput="updProg('${s.id}',this.value)">
       <div class="sln2" id="pg-note"></div>
     </div>
     <div class="ibox">Current: <strong>${f$(s.ops?.progBudget||0)}/period</strong> · Station quality: <strong>${s.oq}/100</strong> · Cash on hand: <strong>${f$(G.cash)}</strong></div>
@@ -8025,7 +8013,9 @@ function updProg(sid,v){
   sid=ensureOpsSourceSid(sid);
   PI.val=parseInt(v);PI.sid=sid;
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  const boost=Math.round((PI.val/10000)*4);
+  const pgCap=progBudgetCapForPeriod(G);
+  const progRef=Math.max(10000,pgCap/6);
+  const boost=Math.round((PI.val/progRef)*4);
   const vEl=document.getElementById('pg-val'),nEl=document.getElementById('pg-note');
   if(vEl)vEl.textContent=f$(PI.val);
   if(nEl){
@@ -8037,9 +8027,11 @@ function doProg(){
   const sid=ensureOpsSourceSid(PI.sid);PI.sid=sid;
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   if(!s.ops)s.ops={spots:14,sell:0.65,promo:0,progBudget:0};
-  s.ops.progBudget=PI.val;
-  MP.action('prog',{sid,progBudget:PI.val});
-  G.news.unshift({v:'LOW',t:`${s.callLetters} programming budget set to ${f$(PI.val)}/period${PI.val===0?' — discontinued.':'.'}`,y:G.year,p:G.period});
+  const cap=progBudgetCapForPeriod(G);
+  const v=Math.min(PI.val,cap);
+  s.ops.progBudget=v;
+  MP.action('prog',{sid,progBudget:v});
+  G.news.unshift({v:'LOW',t:`${s.callLetters} programming budget set to ${f$(v)}/period${v===0?' — discontinued.':'.'}`,y:G.year,p:G.period});
   cm('m-pg');renderAll();
 }
 // 3b2. COMMUNITY INVESTMENT
@@ -9810,6 +9802,25 @@ function openContract(sid, slot){
     ext2Annual=ext2Cost;
     if(ext3Cost!=null)ext3Annual=ext3Cost;
   }
+  // Daypart promotion (cheap slot → premium slot): bump toward slot-appropriate pay without exploding asks
+  if(t._underpaidInRole||t._slotPromotionPendingRenewal){
+    const slotTier=(t.quality||30)<42?'entry':(t.quality||30)<68?'mid':'star';
+    const midSal=Math.round(salInfl((SAL[slot]?.[slotTier]?.[1]||SAL[slot]?.mid?.[1]||20000),G.year)/500)*500;
+    const entrySal=Math.round(salInfl((SAL[slot]?.[slotTier]?.[0]||8000),G.year)/500)*500;
+    const slotAnchor=Math.round((midSal*0.58+entrySal*0.42)/500)*500;
+    const softFloor=Math.round((t.salary*0.62+slotAnchor*0.38)/500)*500;
+    const minBase=Math.round(t.salary*1.07/500)*500;
+    const slotMin=Math.round(slotAnchor*0.64/500)*500;
+    const promoFloor1=Math.max(minBase,softFloor,slotMin);
+    ext1Cost=Math.max(ext1Cost,promoFloor1);
+    const promoFloor2=Math.round((promoFloor1*0.97)/500)*500;
+    const promoFloor3=ext3Cost!=null?Math.round((promoFloor1*0.93)/500)*500:null;
+    ext2Cost=Math.max(ext2Cost,promoFloor2);
+    if(ext3Cost!=null&&promoFloor3!=null)ext3Cost=Math.max(ext3Cost,promoFloor3);
+    ext1Annual=ext1Cost;
+    ext2Annual=ext2Cost;
+    if(ext3Cost!=null)ext3Annual=ext3Cost;
+  }
 
   // Bonus cost: one-time payment, boosts morale by 15-25 pts
   const bonusCost=Math.round(t.salary*rnd(0.08,0.15)/500)*500;
@@ -9947,6 +9958,9 @@ function doExtend(sid, slot, years, newSalary){
   t.salary=newSalary;
   t.cyr=years*2; // cyr counts in half-years (periods)
   t.morale=Math.min(100,t.morale+10); // relief at being signed
+  t._underpaidInRole=false;
+  t._slotPromotionPendingRenewal=false;
+  t._promotionFromSlot=undefined;
   G.news.unshift({v:'LOW',t:`📋 ${t.name} signs ${years}-year extension at ${s.callLetters} — ${f$(newSalary)}/yr.`,y:G.year,p:G.period});
   MP.action('extend',{sid,slot,years,newSalary});
   cm('m-contract');renderAll();
