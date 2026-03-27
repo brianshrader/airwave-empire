@@ -825,6 +825,12 @@ function fmpForYear(year){
   const p4=_smoothstep(1990,2000,year)*0.12; // final holdouts
   return _clamp01(base+p1+p2+p3+p4);
 }
+/** FM receiver penetration adjusted per market — modest; ramps 1972–1990 so 1970 stays near national baseline */
+function effectiveFmpForMarket(year,marketId){
+  const m=MARKETS[marketId||'atlanta']||MARKETS.atlanta;
+  const bias=(m.fmPenBias||0)*_smoothstep(1972,1990,year);
+  return _clamp01(fmpForYear(year)+bias);
+}
 function streamForYear(year){
   if(year<2000)return 0;
   return _clamp01(0.02+_smoothstep(2000,2020,year)*0.58);
@@ -844,7 +850,7 @@ function amViabForYear(year){
  * by ~1979–86, then fades (FM is the default — no permanent artificial lift). Applied only
  * in appl() for full-power FM; does not affect revenue.
  */
-function fmMusicEraPreferenceMult(s, year, fmp) {
+function fmMusicEraPreferenceMult(s, year, fmp, marketId) {
   if (!s || s.isPublic || s.sig.type !== 'FM') return 1;
   if (['NEWS_TALK', 'SPORTS_TALK', 'PODCAST_TALK'].includes(s.format)) return 1;
   const strong = new Set(['TOP40', 'ALBUM_ROCK', 'BEAUTIFUL_MUSIC', 'ADULT_CONTEMP', 'SOUL_RNB', 'CHR', 'CLASSIC_ROCK', 'MOR', 'OLDIES', 'RHYTHMIC', 'HOT_AC', 'URBAN_CONTEMP', 'ALT_ROCK']);
@@ -863,7 +869,9 @@ function fmMusicEraPreferenceMult(s, year, fmp) {
   // 1976–80: extra stereo / quiet-AM flight to FM (trimmed vs prior so one FM rarely locks #1 every run)
   const late70sBurst = _smoothstep(1975, 1978, year) * (1 - _smoothstep(1981, 1986, year));
   const raw = 0.60 * eraWindow * fmpRamp * fmtW * (1 + late70sBurst * 0.40);
-  return Math.min(1.58, 1 + raw);
+  const inner = Math.min(1.58, 1 + raw);
+  const frag = (MARKETS[marketId || 'atlanta'] || MARKETS.atlanta).fmMusicFragMult ?? 1;
+  return Math.min(1.62, 1 + (inner - 1) * frag);
 }
 // AQH engagement rates by cohort (from Arbitron methodology)
 // Fraction of population in an average quarter-hour
@@ -1252,7 +1260,8 @@ const MARKETS={
     blackPop:0.358,hispPop1970:0.010,hispPop2000:0.080,hispPop2020:0.115,churchGoing:0.54,countryBonus:0,urbanBonus:0.05,
     culture:{country:0.06,urban:0.06,newsTalk:0.05,religion:0.10,spanish:0.02},
     heritageCall3:'WFR',
-    selectBlurb:'Large Sunbelt market. Diverse formats compete; heritage AMs still matter in the 70s, then FM specialization accelerates. Strong soul/R&B and Top 40 battlegrounds.',
+    selectBlurb:'Reference Sunbelt market: diverse formats, strong soul/R&B and Top 40 battlegrounds, heritage AMs that still matter in the 70s, then FM specialization accelerates.',
+    fmPenBias:0, fmMusicFragMult:1, spokenWordAmResilience:1.02, heritageAmResilience:1.02, countryAmHoldout:1,
     teams:[
       {id:'braves',name:'Atlanta Braves',sport:'MLB',introduced:1970,baseFee:95000,baseBonus:0.012,contractYrs:3},
       {id:'falcons',name:'Atlanta Falcons',sport:'NFL',introduced:1970,baseFee:420000,baseBonus:0.025,contractYrs:4},
@@ -1267,9 +1276,10 @@ const MARKETS={
     revScale:0.5, adxBonus:0.03,
     amFreqs:['650 AM','760 AM','1040 AM','1160 AM','1240 AM','1300 AM','1400 AM','1470 AM','1510 AM','1560 AM'],
     fmFreqs:['94.1 FM','96.3 FM','97.9 FM','100.1 FM','102.9 FM','104.5 FM','107.5 FM'],
-    blackPop:0.18,hispPop1970:0.008,hispPop2000:0.045,hispPop2020:0.095,churchGoing:0.58,countryBonus:0.15,urbanBonus:0.02,
-    culture:{country:0.22,urban:0.03,newsTalk:0.04,religion:0.10,spanish:0.02},
-    selectBlurb:'Country-forward market with outsized format loyalty. AM country works longer here, but FM specialization still arrives. Great for heritage country and full-service stories.',
+    blackPop:0.18,hispPop1970:0.008,hispPop2000:0.045,hispPop2020:0.095,churchGoing:0.58,countryBonus:0.18,urbanBonus:0.02,
+    culture:{country:0.26,urban:0.03,newsTalk:0.04,religion:0.10,spanish:0.02},
+    selectBlurb:'Country-first listening culture: format loyalty runs deep, AM country keeps its footing longer, and the FM transition still arrives — just a beat later than generic Sunbelt markets.',
+    fmPenBias:-0.058, fmMusicFragMult:0.96, spokenWordAmResilience:1, heritageAmResilience:1.06, countryAmHoldout:1.2,
     teams:[
       {id:'sounds',name:'Nashville Sounds',sport:'MLB',introduced:1978,baseFee:28000,baseBonus:0.006,contractYrs:3},
       {id:'predators',name:'Nashville Predators',sport:'NHL',introduced:1998,baseFee:115000,baseBonus:0.014,contractYrs:3},
@@ -1285,7 +1295,8 @@ const MARKETS={
     blackPop:0.21,hispPop1970:0.12,hispPop2000:0.22,hispPop2020:0.26,churchGoing:0.42,countryBonus:0,urbanBonus:0.14,
     culture:{country:0.02,urban:0.16,newsTalk:0.10,religion:0.06,spanish:0.14},
     heritageCall3:'WLC',
-    selectBlurb:'Massive billing and brutal competition. Formats fragment early; spoken-word and Top 40/AC paydays are huge when you win. Country is a niche, not the default story.',
+    selectBlurb:'Huge billing pool and ruthless competition. Spoken-word and AC/Top 40 paydays reward winners; the dial fragments early. Country is a sideline, not the main story.',
+    fmPenBias:0.055, fmMusicFragMult:1.06, spokenWordAmResilience:1.11, heritageAmResilience:1.08, countryAmHoldout:0.76,
     teams:[
       {id:'yankees',name:'New York Yankees',sport:'MLB',introduced:1970,baseFee:520000,baseBonus:0.030,contractYrs:4},
       {id:'mets',name:'New York Mets',sport:'MLB',introduced:1970,baseFee:240000,baseBonus:0.018,contractYrs:3},
@@ -1302,9 +1313,10 @@ const MARKETS={
     amFreqs:['570 AM','640 AM','710 AM','790 AM','980 AM','1070 AM','1150 AM','1230 AM','1430 AM','1580 AM'],
     fmFreqs:['93.5 FM','95.5 FM','97.1 FM','98.7 FM','100.3 FM','101.9 FM','102.7 FM','104.3 FM','105.1 FM'],
     blackPop:0.14,hispPop1970:0.14,hispPop2000:0.38,hispPop2020:0.45,churchGoing:0.38,countryBonus:0.02,urbanBonus:0.12,
-    culture:{country:0.04,urban:0.12,newsTalk:0.07,religion:0.05,spanish:0.22},
+    culture:{country:0.03,urban:0.12,newsTalk:0.07,religion:0.05,spanish:0.22},
     heritageCall3:'KRM',
-    selectBlurb:'FM battlefield: fragmentation, format churn, and huge upside for winners. Spanish-language and rhythmic formats punch above their weight as demographics shift.',
+    selectBlurb:'FM-first battlefield: fast fragmentation, constant format churn, and big upside for whoever owns a lane. Spanish and rhythmic/urban-adjacent formats gain ground as the metro evolves.',
+    fmPenBias:0.068, fmMusicFragMult:1.1, spokenWordAmResilience:1.02, heritageAmResilience:0.96, countryAmHoldout:0.78,
     teams:[
       {id:'dodgers',name:'Los Angeles Dodgers',sport:'MLB',introduced:1970,baseFee:480000,baseBonus:0.028,contractYrs:4},
       {id:'angels',name:'Los Angeles Angels',sport:'MLB',introduced:1970,baseFee:180000,baseBonus:0.014,contractYrs:3},
@@ -1322,7 +1334,8 @@ const MARKETS={
     blackPop:0.22,hispPop1970:0.06,hispPop2000:0.18,hispPop2020:0.22,churchGoing:0.48,countryBonus:0.04,urbanBonus:0.08,
     culture:{country:0.08,urban:0.08,newsTalk:0.08,religion:0.08,spanish:0.12},
     heritageCall3:'WMG',
-    selectBlurb:'Big-signal Midwest hub: spoken-word, full-service survivors, and fierce FM music battles. Seasonal sports drive huge tune-in for Sports and News/Talk.',
+    selectBlurb:'Big-signal Midwest hub: heritage AM survivors, durable talk, and bruising FM music fights. Sports and spoken-word become natural revenue engines as the dial matures.',
+    fmPenBias:0.034, fmMusicFragMult:1.03, spokenWordAmResilience:1.1, heritageAmResilience:1.09, countryAmHoldout:0.9,
     teams:[
       {id:'cubs',name:'Chicago Cubs',sport:'MLB',introduced:1970,baseFee:280000,baseBonus:0.020,contractYrs:3},
       {id:'whitesox',name:'Chicago White Sox',sport:'MLB',introduced:1970,baseFee:160000,baseBonus:0.014,contractYrs:3},
@@ -1359,6 +1372,7 @@ function syncMarketPopToMarket(marketId){
 function scenarioIdsForMarket(marketId){
   const mid=marketId||'atlanta';
   return SC.map(s=>s.id).filter(scid=>{
+    // Country Roads: classic Southern country-incumbent story only
     if(scid==='cntry')return['atlanta','nashville'].includes(mid);
     return true;
   });
@@ -3215,11 +3229,11 @@ function mkStn(bp,freq,year=1970){
 
 const SC=[
   {id:'under',l:'The Underdog',  d:"Inherited a struggling AM station. Ratings soft, morning host just quit. Nowhere to go but up. You have enough runway to turn it around — if you move fast.",idx:[1],cash:250000},
-  {id:'cntry',l:'Country Roads', d:"Atlanta's established country AM. Solid ratings, loyal audience, profitable from day one. The question isn't survival — it's whether you can make the FM transition before erosion catches up.",idx:[2],cash:450000},
+  {id:'cntry',l:'Country Roads', d:"An established country AM with solid ratings, a loyal audience, and real profit from day one. The question isn't survival — it's whether you can make the FM transition before erosion catches up.",idx:[2],cash:450000},
   {id:'soul', l:'Soul City',     d:"Soul/R&B — deeply embedded in the community. Loyal listeners, but undervalued by advertisers and squeezed by a small signal. Build your audience and fight for every dollar.",idx:[3],cash:1750000},
   {id:'stack',l:'The Stack',     d:"An AM/FM combo. The AM pays the bills. The FM is a blank canvas — simulcast to build an audience, then differentiate. High overhead, high ceiling.",idx:[5,8],cash:4000000},
-  {id:'fmpn', l:'FM Pioneer',   d:"One of Atlanta's first FM licenses. Album Rock on FM — a cult following in 1970, but advertisers haven't noticed yet. FM is about to become everything. Survive the lean years and you'll dominate the decade.",idx:[9],cash:900000},
-  {id:'wsb',  l:'King of the Dial', d:"Atlanta’s dominant AM station. 50kw, Middle of Road — a market leader out of the gate with a polished, heritage facility. You’re the biggest thing on the dial in 1970 — but FM specialization is coming and your broad format is a liability. What will you become?",idx:[4],cash:2200000,diff:'MEDIUM',heritageIncumbent:true},
+  {id:'fmpn', l:'FM Pioneer',   d:"One of the market's first FM licenses. Album Rock on FM — a cult following in 1970, but advertisers haven't noticed yet. FM is about to become everything. Survive the lean years and you'll dominate the decade.",idx:[9],cash:900000},
+  {id:'wsb',  l:'King of the Dial', d:"The flagship AM: big signal, Middle of the Road — a market leader out of the gate with a polished, heritage facility. You're the biggest thing on the dial in 1970 — but FM specialization is coming and your broad format is a liability. What will you become?",idx:[4],cash:2200000,diff:'MEDIUM',heritageIncumbent:true},
   // ── 1978 ERA ───────────────────────────────────────────────────
   {id:'fmrev', l:'FM Revolution', startYear:1978,
    d:"It's 1978. FM just passed AM in total audience for the first time in American radio history. You've scraped together enough to buy a mid-market FM Album Rock license — decent signal, thin cash, no morning host. The format wars are just beginning and the big groups haven't arrived yet. Build a winner before they do.",
@@ -3233,7 +3247,7 @@ const SC=[
    hint:'AC gets crowded by 1983. Build advertiser relationships early.'},
   // ── 1985 ERA ───────────────────────────────────────────────────
   {id:'chrwar', l:'Format Wars', startYear:1985,
-   d:"1985. CHR is king, Classic Rock is rising, and every FM license in Atlanta is spoken for. You've just closed on an FM Album Rock station with a good signal and mediocre ratings — right as the format battles peak. Three formats can realistically win from here: stay the course, pivot to CHR, or reformat to Classic Rock. Choose your lane before the window closes.",
+   d:"1985. CHR is king, Classic Rock is rising, and every FM license worth having is spoken for. You've just closed on an FM Album Rock station with a good signal and mediocre ratings — right as the format battles peak. Three formats can realistically win from here: stay the course, pivot to CHR, or reformat to Classic Rock. Choose your lane before the window closes.",
    idx:[9], cash:1800000, diff:'MEDIUM',
    oqBoost:0,
    hint:'Stay Album Rock, pivot to CHR, or reformat to Classic Rock. First move matters — do it in Period 1.'},
@@ -3786,7 +3800,9 @@ function appl(s,coh,G){
   if(!s||s._bpSlotDeferred||!s.sig||!s.format||typeof s.oq!=='number'||!s.ops)return 0;
   // Use smoothstep era curves — computed from year, not event-driven steps
   const year=G.year||1970;
-  const fmp=fmpForYear(year);
+  const marketId=G.marketId||ACTIVE_MARKET||'atlanta';
+  const mkt=MARKETS[marketId]||MARKETS.atlanta;
+  const fmp=effectiveFmpForMarket(year,marketId);
   const satDrag=G.satDrag||0;
   const streamDrag=G.streamDrag||0;
 
@@ -3833,7 +3849,7 @@ function appl(s,coh,G){
     :1;
   const amMusicPenalty=Math.max(0.08,_rawAMPenalty*amMusicLate70sDrain);
   // Translator: weighted blend — covered portion is protected (penalty=1.0), fringe still erodes
-  const amP=isAMMusic
+  let amP=isAMMusic
     ? amMusicPenalty
     : isAMBoosterMusic
       // Translator: _tFrac of listeners are on FM (no penalty), (1-_tFrac) still on AM (full penalty)
@@ -3841,6 +3857,10 @@ function appl(s,coh,G){
       : isAMTalk&&year>=2007
         ?Math.max(0.55, 1.0-_smoothstep(2007,2015,year)*0.20-_smoothstep(2015,2022,year)*0.20)
         :1;
+  if(s.sig.type==='AM'&&!s.fmBooster&&['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'].includes(s.format))
+    amP*=mkt.spokenWordAmResilience??1;
+  if(isAMMusic&&s.format==='COUNTRY')amP*=mkt.countryAmHoldout??1;
+  if(isAMMusic&&s.format==='MOR')amP*=mkt.heritageAmResilience??1;
   // FM Booster: signal type is FM but reach/universe are limited (translator-class)
   // No hard cap — the lower reach values in sig naturally constrain the audience footprint.
 
@@ -3894,7 +3914,7 @@ function appl(s,coh,G){
     oldiesAgeMult=agePen[coh]!==undefined?(year>=2010?agePen[coh]*Math.max(0.3,1-(year-2010)*0.06):agePen[coh]):1.0;
     oldiesAgeMult=Math.max(0.02,oldiesAgeMult);
   }
-  const fmMusPref = fmMusicEraPreferenceMult(s, year, fmp);
+  const fmMusPref = fmMusicEraPreferenceMult(s, year, fmp, marketId);
   // Late-70s transition: very light trim so one FM music leader rarely locks #1 every run (talk excluded)
   let fmLeaderAppealTrim=1;
   if(s.sig.type==='FM'&&!s.isPublic&&year>=1978&&year<=1982&&
@@ -3902,7 +3922,22 @@ function appl(s,coh,G){
     const sh=s.rat?.share??0;
     if(sh>=0.075)fmLeaderAppealTrim=1-_smoothstep(0.075,0.148,sh)*0.05;
   }
-  return Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G));
+  const cult=mkt.culture||{};
+  let mktFmt=1;
+  if(s.format==='COUNTRY'){
+    mktFmt+=(mkt.countryBonus||0)*0.38+(cult.country||0)*0.38;
+    if(marketId==='losangeles')mktFmt-=0.17;
+    if(marketId==='newyork')mktFmt-=0.15;
+    if(marketId==='chicago')mktFmt-=0.028;
+  }
+  if(['SPANISH','RHYTHMIC','URBAN_CONTEMP'].includes(s.format)){
+    mktFmt+=(cult.spanish||0)*0.18+(mkt.urbanBonus||0)*0.12;
+    if(marketId==='losangeles')mktFmt+=0.065;
+  }
+  if((marketId==='newyork'||marketId==='chicago')&&s.sig?.type==='AM'&&['NEWS_TALK','MOR'].includes(s.format))
+    mktFmt+=0.028;
+  mktFmt=Math.max(0.86,Math.min(1.24,mktFmt));
+  return Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G) * mktFmt);
 }
 function recalc(stations,G){
   const activeIx=stations.map((s,i)=>s&&!s._bpSlotDeferred?i:-1).filter(i=>i>=0);
@@ -4091,7 +4126,7 @@ function seedNewEntry(s,G){
 function seedRat(stations,fmpOrYear){
   // Accept either a year (new) or a raw fmp value (legacy calls) for backward compat
   const year=fmpOrYear>1?fmpOrYear:1970; // if >1 it's a year, otherwise treat as legacy fmp
-  const mockG={year,satDrag:0,streamDrag:0};
+  const mockG={year,satDrag:0,streamDrag:0,marketId:ACTIVE_MARKET};
   const activeIx=stations.map((s,i)=>s&&!s._bpSlotDeferred?i:-1).filter(i=>i>=0);
   COH.forEach(coh=>{
     const sc=activeIx.map(i=>{
@@ -5282,6 +5317,27 @@ function checkPressure(G){
   return alerts;
 }
 
+/** Light OQ nudge so 1970 opening rankers skew market-plausible; variance from mkStn remains. */
+function applyMarketOpeningShape(stations,marketId){
+  const m=MARKETS[marketId];
+  if(!m)return;
+  stations.forEach(s=>{
+    if(!s||s._bpSlotDeferred)return;
+    let f=1;
+    if(s.format==='COUNTRY'&&s.sig?.type==='AM'){
+      if(marketId==='nashville')f*=1.09;
+      if(marketId==='losangeles')f*=0.84;
+      if(marketId==='newyork')f*=0.84;
+    }
+    if(s.format==='MOR'&&s.sig?.type==='AM'&&(marketId==='newyork'||marketId==='chicago'))f*=1.04;
+    if(s.format==='NEWS_TALK'&&s.sig?.type==='AM'&&(marketId==='newyork'||marketId==='chicago'))f*=1.03;
+    if(f!==1){
+      s.oq=Math.round(Math.min(90,Math.max(15,s.oq*f)));
+      Object.values(s.prog).forEach(sd=>{if(sd&&sd.quality!=null)sd.quality=Math.round(Math.min(93,sd.quality*Math.sqrt(f)));});
+    }
+  });
+}
+
 // ── GENERATE MARKET ───────────────────────────────────────────────
 function genMarket(scenId){
   UC=new Set();UB=new Set();amfIdx=0;fmfIdx=0;
@@ -5304,6 +5360,8 @@ function genMarket(scenId){
   // One other 50kW AM (index 0, the dominant Top40) is also clear channel in this market.
   // The rest (indices 1, 2, 5, 10) are 50kW daytime / reduced-power directional at night.
   [0, 4].forEach(i => { const st=stations[i]; if(st&&!st._bpSlotDeferred) st.clearChannel = true; });
+
+  applyMarketOpeningShape(stations,ACTIVE_MARKET);
 
   sc.idx.forEach((i,pi)=>{if(stations[i]&&!stations[i]._bpSlotDeferred){stations[i].isPlayer=true;
     const oqAdj=sc.oqBoost||0;
@@ -5437,7 +5495,7 @@ function genMarket(scenId){
       turn:(startYear-1970)*2,
       stations,ps:stations.filter(s=>s&&s.isPlayer),
       sc,cash:sc.cash,
-      fmp:fmpForYear(startYear),adx:adxMod*(1.0+activeMkt2.adxBonus),satDrag:0,
+      fmp:effectiveFmpForMarket(startYear,ACTIVE_MARKET),adx:adxMod*(1.0+activeMkt2.adxBonus),satDrag:0,
       streamDrag:Math.min(.60,EVDATA.filter(ev=>ev.e==='stream+'&&ev.y<startYear).length*0.06),
       fccAM,fccFM,
       unlockedFormats:Object.keys(FM).filter(f=>FM[f].unlock<=startYear),
@@ -5461,7 +5519,7 @@ function genMarket(scenId){
     city:activeMkt.label,marketId:ACTIVE_MARKET,year:1970,period:1,turn:0,
     stations,ps:stations.filter(s=>s&&s.isPlayer),
     sc,cash:sc.cash,
-    fmp:fmpForYear(1970),adx:1.0+activeMkt.adxBonus,satDrag:0,streamDrag:0,
+    fmp:effectiveFmpForMarket(1970,ACTIVE_MARKET),adx:1.0+activeMkt.adxBonus,satDrag:0,streamDrag:0,
     fccAM:1,fccFM:1,
     unlockedFormats:Object.keys(FM).filter(f=>FM[f].unlock<=1970),
     news:[],evq:[...EVDATA],
@@ -7170,7 +7228,7 @@ function advTurn(){
     // (start-of-turn processing still runs for launches tied to the period being simulated).
     processAtlanta1970DeferredLaunches(G);
     // Keep G.fmp in sync with smoothstep curve (used by UI display and legacy references)
-    G.fmp=fmpForYear(G.year);
+    G.fmp=effectiveFmpForMarket(G.year,G.marketId||ACTIVE_MARKET);
     // Decade grade at end of fall of decade-end year
     const startYr=G.sc.startYear||1970;
     const decadeEnd=[1979,1989,1999,2009,2019,2020].filter(y=>y>startYr);
