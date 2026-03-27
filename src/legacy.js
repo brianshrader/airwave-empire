@@ -36,7 +36,7 @@ const SCPM={'12-17':3.5,'18-24':6.0,'25-34':8.5,'35-49':7.0,'50-64':4.5,'65+':2.
 const STRAF={
   TOP40:.90,CHR:.92,RHYTHMIC:.88,HOT_AC:.80,URBAN_CONTEMP:.82,ALT_ROCK:.85,
   ADULT_CONTEMP:.72,CLASSIC_ROCK:.68,CLASSIC_HITS:.65,OLDIES:.55,COUNTRY:.58,SOUL_RNB:.75,
-  ALBUM_ROCK:.70,NEWS_TALK:.62,SPORTS_TALK:.60,PODCAST_TALK:1.0,
+  ALBUM_ROCK:.70,NEWS_TALK:.62,ALL_NEWS:.60,SPORTS_TALK:.60,PODCAST_TALK:1.0,
   MOR:.35,GOSPEL:.30,BEAUTIFUL_MUSIC:.28,
 };
 
@@ -54,7 +54,7 @@ const FGS={
   SOUL_RNB:.55, URBAN_CONTEMP:.54, COUNTRY:.53, TOP40:.53, MOR:.51, ADULT_STANDARDS:.48,
   RHYTHMIC:.51, CLASSIC_HITS:.51, SPANISH:.50, OLDIES:.48,
   PUBLIC_CLASSICAL:.52, PUBLIC_NEWS:.48,
-  PODCAST_TALK:.43, NEWS_TALK:.40, ALT_ROCK:.38, CLASSIC_ROCK:.32,
+  PODCAST_TALK:.43, NEWS_TALK:.40, ALL_NEWS:.41, ALT_ROCK:.38, CLASSIC_ROCK:.32,
   ALBUM_ROCK:.30, SPORTS_TALK:.24,
 };
 // Gender CPM multiplier: concentrated female or male audiences command advertiser premiums
@@ -91,7 +91,7 @@ const SEASONAL={
   fall:   1.12,
 };
 // Talk format bonus in election years (even years, fall period)
-const ELECTION_FORMATS=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'];
+const ELECTION_FORMATS=['NEWS_TALK','ALL_NEWS','SPORTS_TALK','PODCAST_TALK'];
 const ELECTION_BONUS=0.04;
 
 function seasonMult(year, period, format){
@@ -197,21 +197,38 @@ const FM={
   CLASSIC_HITS:   {l:'Classic Hits',       cpm:.92, sp:16,fm:true, ab:0,   unlock:2005,d:'70s–80s nostalgia. Rebranded Oldies with broader library. 35–55.'},
   PODCAST_TALK:   {l:'Podcast / Talk',     cpm:1.25,sp:8,  fm:false,ab:0,  unlock:2012,d:'Hybrid terrestrial/digital. Premium CPM.'},
   ADULT_STANDARDS:{l:'Adult Standards',   cpm:.82, sp:14,fm:false,ab:0,  unlock:1981,d:'Sinatra, Ella, Nat King Cole. "Music of Your Life" blazed the trail in \'81. AM\'s refuge after MOR dies — low shares, intensely loyal 55+ audience.'},
+  ALL_NEWS:       {l:'All-News',           cpm:1.72,sp:8,  fm:false,ab:0,  unlock:1997,talk:true,
+    marketsOnly:['newyork','losangeles','chicago'],
+    d:'24/7 wire-service news — massive newsroom and network costs. Premium CPM in top-3 markets only. Scales with signal reach; weak sticks cannot carry the format. No personality premium (anchors are interchangeable to agencies).'},
   // Public stations — rival-only, non-commercial
   PUBLIC_NEWS:    {l:'Public News / Talk', cpm:0,   sp:0,  fm:true, ab:0,  unlock:1975,d:'NPR affiliate. Non-commercial. Educated 35-64. Unbeatable loyalty.',public:true},
   PUBLIC_CLASSICAL:{l:'Public Classical',  cpm:0,   sp:0,  fm:true, ab:0,  unlock:1975,d:'Classical and jazz. Older educated demos. Pledge-drive funded.',public:true},
 };
+function formatUnlockedForYear(f,G){
+  const y=G?.year??1970;
+  return !!(G?.unlockedFormats?.includes(f)||(FM[f]?.unlock??9999)<=y);
+}
+/** Year unlock + optional marketsOnly (e.g. ALL_NEWS → NY/LA/Chicago only). */
+function formatAllowedInMarket(fmt,marketId,year){
+  const fd=FM[fmt];
+  if(!fd||fd.public)return false;
+  const y=year??1970;
+  if((fd.unlock??9999)>y)return false;
+  if(fd.marketsOnly&&fd.marketsOnly.length&&!fd.marketsOnly.includes(marketId||''))return false;
+  return true;
+}
 const FADJ={
   TOP40:['SOUL_RNB','ALBUM_ROCK','CHR'],SOUL_RNB:['TOP40','GOSPEL','URBAN_CONTEMP'],
   ALBUM_ROCK:['TOP40','CLASSIC_ROCK','ALT_ROCK'],COUNTRY:['MOR','GOSPEL','CLASSIC_HITS'],
-  MOR:['COUNTRY','BEAUTIFUL_MUSIC','NEWS_TALK','ADULT_CONTEMP'],NEWS_TALK:['MOR','SPORTS_TALK','PODCAST_TALK'],
+  MOR:['COUNTRY','BEAUTIFUL_MUSIC','NEWS_TALK','ADULT_CONTEMP'],NEWS_TALK:['MOR','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'],
   BEAUTIFUL_MUSIC:['MOR','ADULT_CONTEMP'],GOSPEL:['SOUL_RNB','COUNTRY'],
   CHR:['TOP40','URBAN_CONTEMP','RHYTHMIC'],CLASSIC_ROCK:['ALBUM_ROCK','CLASSIC_HITS'],
   ADULT_CONTEMP:['MOR','BEAUTIFUL_MUSIC','HOT_AC'],URBAN_CONTEMP:['SOUL_RNB','CHR','RHYTHMIC'],
   SPORTS_TALK:['NEWS_TALK'],ALT_ROCK:['ALBUM_ROCK'],SPANISH:['URBAN_CONTEMP'],
   RHYTHMIC:['CHR','URBAN_CONTEMP'],HOT_AC:['ADULT_CONTEMP','CHR'],
-  OLDIES:['MOR','CLASSIC_HITS','COUNTRY'],CLASSIC_HITS:['OLDIES','CLASSIC_ROCK','MOR'],PODCAST_TALK:['NEWS_TALK','SPORTS_TALK'],
+  OLDIES:['MOR','CLASSIC_HITS','COUNTRY'],CLASSIC_HITS:['OLDIES','CLASSIC_ROCK','MOR'],  PODCAST_TALK:['NEWS_TALK','SPORTS_TALK'],
   ADULT_STANDARDS:['MOR','BEAUTIFUL_MUSIC','OLDIES','NEWS_TALK'],
+  ALL_NEWS:['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'],
 };
 const FA={
   TOP40:          {'12-17':.90,'18-24':.80,'25-34':.45,'35-49':.18,'50-64':.06,'65+':.03},
@@ -235,13 +252,96 @@ const FA={
   OLDIES:         {'12-17':.05,'18-24':.12,'25-34':.28,'35-49':.52,'50-64':.62,'65+':.45},
   CLASSIC_HITS:   {'12-17':.08,'18-24':.20,'25-34':.42,'35-49':.58,'50-64':.50,'65+':.25},
   PODCAST_TALK:   {'12-17':.08,'18-24':.20,'25-34':.32,'35-49':.38,'50-64':.30,'65+':.20},
+  ALL_NEWS:       {'12-17':.03,'18-24':.07,'25-34':.22,'35-49':.38,'50-64':.52,'65+':.35},
   // Public radio: skews educated, older — strong 35-64 concentration
   PUBLIC_NEWS:    {'12-17':.02,'18-24':.06,'25-34':.20,'35-49':.52,'50-64':.60,'65+':.48},
   PUBLIC_CLASSICAL:{'12-17':.01,'18-24':.04,'25-34':.12,'35-49':.38,'50-64':.62,'65+':.58},
 };
 const SW={morningDrive:.38,afternoonDrive:.26,midday:.18,evening:.11,overnight:.07};
 const SL={morningDrive:'MORNING',afternoonDrive:'AFTERNOON',midday:'MIDDAY',evening:'EVENING',overnight:'O/NIGHT'};
-const TALK_FMTS=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'];
+const TALK_FMTS=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'];
+// Light market × format monetization (Duncan-style calibration). Revenue only; ±~10% max.
+// Keys = G.marketId for top-3 metros; omit format → 1. Does not affect shares.
+const MARKET_FMT_ADJ={
+  newyork:{
+    NEWS_TALK:1.05,SPORTS_TALK:1.04,
+    URBAN_CONTEMP:0.90,RHYTHMIC:0.90,SOUL_RNB:0.92,
+  },
+  losangeles:{
+    SPANISH:1.08,NEWS_TALK:0.95,URBAN_CONTEMP:0.94,
+  },
+  chicago:{
+    NEWS_TALK:1.08,SPORTS_TALK:1.06,URBAN_CONTEMP:0.95,RHYTHMIC:0.96,
+  },
+};
+function marketFormatMonMult(marketId,format){
+  const v=MARKET_FMT_ADJ[marketId]?.[format];
+  return typeof v==='number'&&v>0?v:1;
+}
+/** Share-based sell-through of spot inventory (rating points 0–100). Revenue only; does not affect shares. */
+function getSelloutRate(sharePct){
+  if(sharePct<1)return 0.35;
+  if(sharePct<2)return 0.50;
+  if(sharePct<4)return 0.65;
+  if(sharePct<6)return 0.75;
+  if(sharePct<10)return 0.85;
+  if(sharePct<15)return 0.92;
+  return 0.98;
+}
+function fmEarlyEraBaseMult(year){
+  if(year<1973)return 0.68;
+  if(year<1976)return 0.75;
+  if(year<1980)return 0.82;
+  if(year<1983)return 0.90;
+  if(year<1986)return 0.96;
+  return 1.00;
+}
+function fmEarlyEraMarketAdj(marketId){
+  const tier=(MARKETS[marketId]||{}).rankTier||'medium';
+  // Mega: keep early-FM challenging but aligned with prior ~0.9× monetization in top markets (base 0.68 alone was too harsh vs playtests).
+  if(tier==='mega')return 0.22;
+  if(tier==='large')return 0.03;
+  if(tier==='medium')return 0.01;
+  return 0.00;
+}
+function fmEarlyEraMult(year,marketId){
+  return Math.min(1.0,fmEarlyEraBaseMult(year)+fmEarlyEraMarketAdj(marketId));
+}
+/** Extra FM music lift outside mega markets (leaner rep firms still moved spots on local FM). Revenue only. */
+function fmEarlyEraSecondaryFmLift(marketId){
+  const tier=(MARKETS[marketId]||{}).rankTier||'medium';
+  if(tier==='mega')return 0;
+  if(tier==='large')return 0.06;
+  if(tier==='medium')return 0.12;
+  return 0.14;
+}
+function earlyEraSmallMarketOpsRelief(year,marketId){
+  const tier=(MARKETS[marketId]||{}).rankTier||'medium';
+  if(year>=1980)return 1.0;
+  if(tier==='mega')return 1.0;
+  if(tier==='large')return 0.92;
+  if(tier==='medium')return 0.82;
+  return 0.78;
+}
+/** FCC/regulatory + corporate overhead floor — leaner in 1970s secondary markets than mega (pre-1980 only). */
+function earlyEraSmallMarketRegRelief(year,marketId){
+  const tier=(MARKETS[marketId]||{}).rankTier||'medium';
+  if(year>=1980)return 1.0;
+  if(tier==='mega')return 1.0;
+  if(tier==='large')return 0.94;
+  if(tier==='medium')return 0.88;
+  return 0.84;
+}
+function earlyEraAmTalkSmallMarketSupport(format,year,marketId,sigType){
+  if(sigType!=='AM')return 1.0;
+  if(!['NEWS_TALK','SPORTS_TALK'].includes(format))return 1.0;
+  if(year>=1980)return 1.0;
+  const tier=(MARKETS[marketId]||{}).rankTier||'medium';
+  if(tier==='mega')return 1.00;
+  if(tier==='large')return 1.06;
+  if(tier==='medium')return 1.18;
+  return 1.14;
+}
 // Community identity potential by format (0–1 scale)
 // Formats with deep cultural roots build identity faster and lose it harder
 const COMMUNITY_IDENTITY={
@@ -250,6 +350,7 @@ const COMMUNITY_IDENTITY={
   COUNTRY:0.85,      // Rural/Southern identity, deeply tribal
   SPANISH:0.90,      // Immigrant community anchor, irreplaceable
   NEWS_TALK:0.70,    // Civic institution, opinion leader status
+  ALL_NEWS:0.68,     // Institutional news brand; less "voice" than opinion talk
   SPORTS_TALK:0.65,  // Fan community hub
   ADULT_STANDARDS:0.75, // Nostalgic, older community cornerstone
   MOR:0.55,          // Broad but shallow — friendly to everyone, vital to no one
@@ -852,7 +953,7 @@ function amViabForYear(year){
  */
 function fmMusicEraPreferenceMult(s, year, fmp, marketId) {
   if (!s || s.isPublic || s.sig.type !== 'FM') return 1;
-  if (['NEWS_TALK', 'SPORTS_TALK', 'PODCAST_TALK'].includes(s.format)) return 1;
+  if (['NEWS_TALK', 'SPORTS_TALK', 'PODCAST_TALK', 'ALL_NEWS'].includes(s.format)) return 1;
   const strong = new Set(['TOP40', 'ALBUM_ROCK', 'BEAUTIFUL_MUSIC', 'ADULT_CONTEMP', 'SOUL_RNB', 'CHR', 'CLASSIC_ROCK', 'MOR', 'OLDIES', 'RHYTHMIC', 'HOT_AC', 'URBAN_CONTEMP', 'ALT_ROCK']);
   let fmtW = 0;
   if (strong.has(s.format)) fmtW = 1;
@@ -994,7 +1095,7 @@ const EVDATA=[
   {y:1995,p:1,t:'Beautiful Music Extinct',d:'The last Beautiful Music stations have converted. Adult Contemporary is the successor format.',e:'fmt_purge:BEAUTIFUL_MUSIC'},
   {y:1996,p:1,t:'MOR Extinct',d:'Middle of Road no longer viable as a commercial format. The format is dead.',e:'fmt_purge:MOR'},
   {y:1996,p:1,t:'Telecom Act — Deregulation',d:'Ownership caps lifted. Up to 8 stations per market. Consolidation begins.',e:'fcc-1996'},
-  {y:1997,p:1,t:'FM Saturation Complete',d:'97% of new cars have FM. A music AM in 1997 is a museum piece.',e:'fp+.03'},
+  {y:1997,p:1,t:'FM Saturation Complete',d:'97% of new cars have FM. A music AM in 1997 is a museum piece. In the largest markets, 24-hour all-news (massive newsroom cost) becomes a strategic option where ad depth can carry the payroll.',e:'fp+.03|unlock-ALL_NEWS'},
   {y:1997,p:2,t:'Consolidation Wave',d:'Clear Channel and Infinity buying everything. Independents pressured.',e:'consolidate'},
   {y:1998,p:1,t:'Corporate Radio Peaks',d:'Clear Channel and Chancellor are buying stations faster than regulators can process the filings. Independent operators are getting offers they can\'t refuse. The era of local radio is ending.',e:'consolidate'},
   {y:1998,p:2,t:'Tech Ad Money Arrives',d:'Silicon Valley start-ups are buying radio time. The dot-com ad boom is starting to flood local markets. Revenue is climbing ahead of expectations.',e:'ad+.08'},
@@ -1046,30 +1147,145 @@ const DECADE_NAMES={1979:'THE SEVENTIES',1989:'THE EIGHTIES',1999:'THE NINETIES'
 // ── TALENT & GENERATION ───────────────────────────────────────────
 const SAL={morningDrive:{entry:[12000,20000],mid:[22000,35000],star:[35000,60000]},afternoonDrive:{entry:[9000,16000],mid:[16000,26000],star:[26000,45000]},midday:{entry:[7000,12000],mid:[12000,20000],star:[20000,32000]},evening:{entry:[6000,10000],mid:[10000,17000],star:[17000,26000]},overnight:{entry:[5000,8000],mid:[8000,13000],star:[13000,20000]}};
 const QRG={entry:[28,52],mid:[45,72],star:[68,92]};
-const NF=['Jack','Bobby','Ray','Don','Mike','Larry','Gary','Jim','Dave','Steve','Tom','Bill','Frank','Gene','Roy','Earl','Betty','Carol','Sandra','Diane','Linda','Sharon','Pat','Ruth','Duke','Hank','Wanda','Al','Jerry','Ted','Maria','Carlos','Marcus','Keisha','Tanya','DeShawn','Renee'];
-const NL=['Williams','Johnson','Davis','Wilson','Moore','Taylor','Anderson','Thomas','Jackson','White','Harris','Martin','Thompson','Garcia','Clark','Lewis','Walker','Hall','Young','King','Rivera','Washington','Brown'];
-const gn=(nameCtx)=>{
-  // Collect first names already in use across all stations in current market
+const NF_CLASSIC=[
+  'Jack','Bobby','Ray','Don','Mike','Larry','Gary','Jim','Dave','Steve','Tom','Bill','Frank','Gene','Roy','Earl','Hank','Al','Jerry','Ted','Bob','Chuck','Rick','Scott','Paul','Dan','Doug','Ron','Wayne','Dale','Glen','Barry','Roger','Terry','Randy','Keith','Craig','Dean','Russ','Len','Bud','Skip','Chet','Hal','Vic','Stan','Norm','Wes','Stu','Clyde','Mel','Sal','Monty','Buck','Scotty','Marty','Benny','Lou','Ike','Duke','Johnny','Eddy','Porter','Faron','Webb','Ferlin','Sonny','Lefty','Slim','Tex','Ken','Greg','Phil','Jeff','Matt','Chris','John','Joe','Tim','Tony','Nick','Andy','Bruce','Carl','Dennis','George','Harry','Kevin','Mark','Neil','Patrick','Peter','Richard','Robert','Samuel','Stephen','Walter','Will','Hugh','Gordon','Murray','Herb','Brent','Todd','Casey','Les','Mac','Chip','Rod','Vince','Edward','Charles','Franklin','Harold','Louis','Philip','Randall','Russell','Sheldon','Stuart','Theodore','Warren','Billy','Bobby','Cliff','Curt','Danny','Darryl','Duane','Eddie','Freddy','Gerald','Glenn','Howard','Irvin','Jerome','Joey','Kent','Kurt','Lance','Lloyd','Marc','Mitch','Myron','Nolan','Orville','Ralph','Rex','Rodney','Rudy','Rusty','Sean','Sheldon','Toby','Troy','Vernon','Wade','Wiley',
+];
+const NF_WOMEN_70S=[
+  'Betty','Carol','Sandra','Diane','Linda','Sharon','Pat','Ruth','Wanda','Renee','Donna','Pam','Karen','Nancy','Susan','Debbie','Jill','Lynn','Gail','Jan','Kim','Robin','Sherry','Terri','Lori','Dana','Barb','Meg','Judy','Cindy','Brenda','Rhonda','Tammy','Stacy','Amy','Erin','Leah','Faye','Nell','Bette','Dolly','Emmylou','Crystal','Barbara','Loretta','Tanya','Wynonna','Angela','Annette','Beth','Bonnie','Charlene','Cheryl','Christine','Connie','Cynthia','Deborah','Denise','Dianne','Dixie','Dorothy','Elizabeth','Frances','Glenda','Gwen','Heather','Holly','Jacqueline','Janet','Janice','Jean','Jeanne','Joan','Joyce','Juanita','Judith','Julie','Kathleen','Kathy','Kay','Kelly','Kimberly','Kitty','Laura','Laurie','Leslie','Linda','Lisa','Lois','Luanne','Marcia','Margaret','Marilyn','Martha','Mary','Maureen','Melanie','Melissa','Michelle','Mitzi','Mona','Nancy','Naomi','Natalie','Nicole','Nikki','Pamela','Patricia','Paula','Peggy','Penny','Phyllis','Priscilla','Rachel','Rebecca','Regina','Rita','Roberta','Rose','Roxanne','Sally','Samantha','Sandy','Sarah','Shannon','Sheila','Shelley','Sheryl','Stacey','Stephanie','Sue','Susan','Suzanne','Sylvia','Tamara','Tammie','Teresa','Terry','Tina','Tracy','Valerie','Vanessa','Vicki','Virginia','Vivian','Wendy','Yvonne',
+];
+const NF_BLACK=[
+  'Marcus','Keisha','DeShawn','Tanya','Darnell','Tyrone','Lamont','Antoine','Jamal','Monique','Rochelle','Curtis','Reggie','Andre','Terrence','Darius','Latoya','Shantel','Malik','Derrick','Cedric','Vonetta','Kendrick','Jasmine','Ronell','Shonda','Marquise','Alicia','Deion','Tamika','Leroy','Freddie','Willie','Rufus','Otis','Roscoe','Clyde','Bobby','James','Ray','Sam','Aaliyah','Andre','Angela','Antwan','Bernard','Brandon','Brittany','Calvin','Camille','Chandra','Corey','Crystal','Damon','DeAndre','Deborah','Delores','Demetrius','Denise','Desmond','Dominique','Ebony','Erica','Ernest','Evelyn','Felicia','Gregory','Hakeem','Imani','Janelle','Janine','Jerome','Jevon','Kareem','Keon','Kiesha','Kimberly','LaTanya','LaToya','Loretta','Malcolm','Marlon','Maurice','Montell','Nadine','Naomi','Nichelle','Octavia','Precious','Quincy','Rashad','Rashida','Rickey','Rochelle','Sabrina','Shanice','Sharonda','Sheena','Shelby','Tameka','Tanisha','Tarsha','Terrell','Tiffany','Tisha','Toni','Traci','Trina','Tyrone','Vanessa','Vernon','Yvette','Yvonne',
+];
+const NF_LATINO=[
+  'Maria','Carlos','Rosa','Miguel','Elena','Luis','Carmen','Julio','Ana','Rico','Gabriela','Eduardo','Sofia','Alejandro','Isabel','Diego','Marco','Valentina','Javier','Lucia','Fernando','Adriana','Roberto','Camila','Ernesto','Paloma','Alberto','Alma','Amparo','Angel','Antonio','Arturo','Beatriz','Blanca','Catalina','Cecilia','Cesar','Claudia','Consuelo','Cristina','Dolores','Eduardo','Elisa','Emilio','Enrique','Esperanza','Esteban','Estela','Fabiola','Felipe','Francisca','Gloria','Graciela','Guadalupe','Guillermo','Hector','Hilda','Ignacio','Ines','Irene','Isabella','Jaime','Jorge','Jose','Juan','Juana','Leticia','Lourdes','Manuel','Marcela','Marisol','Marta','Mateo','Mercedes','Monica','Natalia','Nora','Oscar','Pablo','Patricia','Pedro','Rafael','Ramona','Raquel','Ricardo','Rita','Rocio','Salvador','Sergio','Silvia','Soledad','Teresa','Veronica','Victor','Virginia','Xavier','Yolanda',
+];
+const NF_MODERN=[
+  'Chad','Brad','Zach','Trent','Brett','Kyle','Brandon','Justin','Ryan','Travis','Ashley','Brittany','Heather','Megan','Kristen','Amber','Caitlin','Stephanie','Jordan','Taylor','Alex','Morgan','Casey','Jamie','Skylar','Devon','Brooke','Kayla','Josh','Jake','Cody','Tyler','Caleb','Austin','Blake','Colby','Shane','Drew','Derek','Nicole','Laura','Christina','Rachel','Sara','Eric','Jason','Corey','Shannon','Kelli','Holly','Allison','Melissa','Jessica','Amanda','Lauren','Jennifer','Nathan','Benjamin','Ethan','Logan','Mason','Noah','Owen','Hunter','Connor','Lucas','Jackson','Aidan','Hayden','Bryce','Chase','Dylan','Garrett','Grant','Ian','Jared','Joel','Jordan','Kaleb','Landon','Parker','Reid','Riley','Spencer','Tanner','Trevor','Ty','Zachary','Sierra','Cheyenne','Destiny','Hailey','Kaitlyn','Mackenzie','Paige','Savannah','Tiffany',
+];
+const NF_HANDLES=[
+  'Ace','Blaze','Flash','Riff','Boom','Jet','Slick','Breezy','Spike','Maverick','Crash','Rocket','Stone','Buzz','Wild','Smooth','Rico','Big','Lil','DJ',
+];
+const NF=[...NF_CLASSIC,...NF_WOMEN_70S,...NF_BLACK,...NF_MODERN];
+const NL_BASE=[
+  'Williams','Johnson','Davis','Wilson','Moore','Taylor','Anderson','Thomas','Jackson','White','Harris','Martin','Thompson','Garcia','Clark','Lewis','Walker','Hall','Young','King','Rivera','Washington','Brown','Jones','Smith','Miller','Robinson','Carter','Mitchell','Perez','Roberts','Turner','Phillips','Campbell','Parker','Evans','Edwards','Collins','Stewart','Morris','Rogers','Reed','Cook','Bailey','Bell','Cooper','Richardson','Cox','Howard','Ward','Torres','Peterson','Gray','Ramirez','Watson','Brooks','Kelly','Sanders','Price','Bennett','Wood','Barnes','Ross','Henderson','Coleman','Jenkins','Perry','Powell','Long','Patterson','Hughes','Flores','Butler','Simmons','Foster','Gonzales','Bryant','Alexander','Russell','Griffin','Diaz','Hayes','Myers','Ford','Hamilton','Graham','Sullivan','Wallace','Woods','Cole','West','Jordan','Owens','Reynolds','Fisher','Ellis','Harrison','Gibson','McDonald','Cruz','Marshall','Ortiz','Gomez','Murray','Freeman','Wells','Webb','Tucker','Guzman','Burns','Crawford','Olson','Simpson','Porter','Hunter','Gordon','Mendez','Silva','Shaw','Snyder','Mason','Dixon','Warren','Holmes','Rice','Robertson','Hunt','Black','Daniel','Palmer','Mills','Nichols','Grant','Knight','Ferguson','Rose','Stone','Hawkins','Dunn','Perkins','Hudson','Spencer','Gardner','Stephens','Payne','Pierce','Berry','Matthews','Arnold','Wagner','Willis','Ray','Watkins','Olsen','Carroll','Duncan','Day','Hart','Bradley','Lane','Andrews','Ruiz','Harper','Fox','Riley','Armstrong','Carpenter','Weaver','Greene','Lawrence','Elliott','Chavez','Sims','Austin','Peters','Kelley','Franklin','Lawson','Fields','Ryan','Schmidt','Carr','Vasquez','Castillo','Wheeler','Chapman','Oliver','Montgomery','Richards','Williamson','Johnston','Banks','Meyer','Bishop','McCoy','Howell','Alvarez','Morrison','Hansen','Fernandez','Garza','Harvey','Little','Burton','Stanley','Nguyen','George','Jacobs','Reid','Kim','Fuller','Lynch','Dean','Gilbert','Garrett','Romero','Welch','Larson','Frazier','Burke','Hanson','Mendoza','Moreno','Bowman','Medina','Fowler','Brewer','Hoffman','Carlson','Silva','Pearson','Holland','Douglas','Fleming','Jensen','Vargas','Byrd','Davidson','Hopkins','May','Terry','Herrera','Wade','Soto','Walters','Curtis','Neal','Caldwell','Lowe','Jennings','Barnett','Graves','Jimenez','Horton','Shelton','Barrett','Obrien','Castro','Sutton','Gregory','McKinney','Lucas','Miles','Craig','Rodriquez','Chambers','Holt','Lambert','Fletcher','Watts','Bates','Hale','Rhodes','Pena','Beck','Newman','Haynes','McDaniel','Barker','Norris','Moss','Church','Lamb','Vaughn','Todd','Buchanan','Cobb','French','Kramer','McCormick','Dougherty','Heath','Singleton','Pate','Denton','Clements','Dodd','Goldman','Hatcher','Ingram','Jarrett','Kessler','Latham','McGill','Nolen','Pritchett','Roper','Shipp','Thrash','Venable','Wimberly','Yancey','Zell',
+];
+const NL_REGIONAL={
+  Southeast:['Tatum','Booker','Pickens','Crews','Raines','Pitts','Pryor','Byrd','Hollis','Worthy','Langford','Malone','Crowe','Payne','Bledsoe','Culpepper','Dabney','Gentry','Grantham','Holliday','Ingram','Lockett','Moseley','Sessions','Cash','Conley','Dalton','Drummond','Ellison','Fancher','Guthrie','Hatcher','Keeton','Lamar','Mabry','Pardue','Ragsdale','Shelton','Trotter','Upchurch','Whitfield','Yarbrough','Carmichael','Daughtry','Echols','Fambrough','Griswold','Hightower','Ivey','Joiner','Kilgore','Lunsford','McDuffie','Peacock','Redding','Stovall','Thurmond','Vickers','Wooten'],
+  South:['Cash','Conley','Dalton','Drummond','Ellison','Fancher','Guthrie','Hatcher','Keeton','Lamar','Mabry','Pardue','Ragsdale','Shelton','Trotter','Upchurch','Whitfield','Yarbrough','Bledsoe','Carmack','Driskill','Fambrough','Gholston','Hickman','Kuykendall','Lockhart','McSwain','Pritchett','Ragsdale','Starnes','Tilghman','Vann','Wamble','Zorn'],
+  Midwest:['Novak','Kowalski','Kaminski','Nowak','Schmidt','Weber','Schneider','Fischer','Hoffmann','Wagner','Becker','Schulz','Koch','Richter','Klein','Murphy','Sullivan','Walsh','Doyle','Kennedy','Lynch','Burke','Ryan','McCarthy','Reilly','Quinn','Byrne','Kowalczyk','Zielinski','Szymanski','Wozniak','Kaczmarek','Krol','Pawlak','Jablonski','Dudek','Grabowski','Majewski','Jaworski','Piotrowski','Krause','Krupa','Lewandowski','Zajac','Adamski','Baran','Czech','Dombrowski','Gorski','Janicki','Kaminska','Lisowski','Michalski','Niemiec','Olszewski','Pasternak','Rutkowski','Sobczak','Tomaszewski','Urbaniak','Wisniewski','Zawadzki'],
+  Northeast:['Russo','Romano','Rossi','Conti','Marino','Esposito','Lombardi','Ferraro','Caruso','Giordano','Ricci','Marchetti','Gallagher','Donovan','Shea','Fitzgerald','McDonnell','Regan','Sweeney','Tierney','Bianco','Bruno','Caputo','DeLuca','Esposito','Fontana','Greco','Iannucci','LaRosa','Mancini','Nicastro','Orsini','Pagano','Quattro','Rizzo','Sacco','Tarantino','Vitale','Zucco','Angelo','Bellucci','Catalano','DiMaggio','Esposito','Falcone','Gentile','Iacono','Lombardo','Martino','Nardone','Palermo','Rinaldi','Sorrentino','Toscano','Ventura','Zito'],
+  'West Coast':['Nguyen','Tran','Pham','Park','Kim','Patel','Shah','Singh','Kaur','Chen','Liu','Wang','Wu','Zhang','Yang','Lin','Chang','Huang','Huynh','Le','Vu','Ngo','Do','Vo','Lam','Truong','Chung','Kwong','Fong','Yee','Mah','Chan','Cheung','Tsai','Yamamoto','Tanaka','Sato','Suzuki','Takahashi','Watanabe','Ito','Okamoto','Nakamura','Hayashi','Maeda','Kobayashi','Inoue','Yamada','Sanchez','Gutierrez','Castillo','Jimenez','Moreno','Ortega','Delgado','Ramos','Medina','Aguilar','Vega','Hernandez','Lopez','Gonzalez','Flores','Reyes','Morales','Castro','Vasquez','Romero','Munoz','Herrera','Garza','Silva','Vargas','Ruiz','Salazar','Espinoza','Valdez','Zavala','Acosta','Miranda','Nava','Arellano','Cervantes','Escobar','Galvan','Ibarra','Juarez','Luna','Montoya','Navarro','Ochoa','Padilla','Quintero','Renteria','Salinas','Trevino','Uribe','Valencia','Zamora','Zuniga'],
+  Southwest:['Bledsoe','Culpepper','Driskill','Fannin','Grisham','Houston','Kuykendall','Lockett','McSwain','Nolen','Pickens','Ragsdale','Sessions','Thrash','Venable','Wimberly','Wortham','Yancey','Bumgarner','Crockett','Dalton','Echols','Fancher','Gholston','Hickman','Jarrell','Kilgore','Lockhart','Mabry','Pardue','Roper','Starnes','Tilghman','Vann','Wamble','Zorn','Armijo','Baca','Cisneros','Delgado','Escobedo','Gallegos','Hinojosa','Jaramillo','Lujan','Montoya','Ontiveros','Paredes','Quintana','Renteria','Saldivar','Trevino','Ulibarri','Valdez','Vigil','Ybarra','Zuniga'],
+};
+const NL_OVERFLOW=[
+  'Abernathy','Bostic','Carmichael','Daughtry','Echols','Fambrough','Griswold','Hightower','Ivey','Joiner','Kilgore','Lunsford','McDuffie','Redding','Stovall','Thurmond','Vickers','Wooten','Babcock','Crenshaw','Dillard','Easterling','Furlong','Grantham','Holladay','Inscore','Jernigan','Kilpatrick','Locklear','Murdock','Pritchard','Register','Shipman','Thornhill','Vannoy','Whitlock','Yount','Ziegler','Ashford','Bingham','Culbertson','Davenport','Elrod','Faircloth','Grigsby','Hunnicutt','Ireland','Jernigan','Knotts','Lampley','McEntire','Norwood','Pardue','Rountree','Strother','Tindall','Vaughan','Winslow','Yancey',
+];
+function normTalentNameKey(name){
+  if(!name||typeof name!=='string')return '';
+  return name.trim().toLowerCase().replace(/\s+/g,' ');
+}
+function collectMarketTalentNameKeys(G){
   const usedFirst=new Set();
-  if(typeof G!=='undefined'&&G?.stations){
-    G.stations.forEach(st=>{
-      if(!st.prog)return;
-      Object.values(st.prog).forEach(sd=>{
-        if(sd?.talent?.name){
-          const parts=sd.talent.name.trim().split(/\s+/);
-          usedFirst.add(parts[0]);
-        }
-      });
+  const usedFull=new Set();
+  const usedLast=new Set();
+  if(!G?.stations)return {usedFirst,usedFull,usedLast};
+  G.stations.forEach(st=>{
+    if(!st.prog)return;
+    Object.values(st.prog).forEach(sd=>{
+      const raw=sd?.talent?.name;
+      if(!raw)return;
+      const parts=raw.trim().split(/\s+/).filter(Boolean);
+      if(!parts.length)return;
+      usedFirst.add(parts[0]);
+      if(parts.length>=2)usedLast.add(parts[parts.length-1]);
+      usedFull.add(normTalentNameKey(raw));
     });
+  });
+  return {usedFirst,usedFull,usedLast};
+}
+function buildWeightedFirstPool(fmt,year,marketId){
+  const yr=year||1970;
+  const mkt=(typeof MARKETS!=='undefined'&&MARKETS[marketId])||{};
+  const blackPop=typeof mkt.blackPop==='number'?mkt.blackPop:0.35;
+  const hispPop1970=mkt.hispPop1970??0.01;
+  const hispPop2000=mkt.hispPop2000??0.08;
+  const hispPop2020=mkt.hispPop2020??0.115;
+  const hispPop=yr<=2000
+    ?hispPop1970+Math.max(0,yr-1970)/30*(hispPop2000-hispPop1970)
+    :Math.min(hispPop2020,hispPop2000+(yr-2000)/20*(hispPop2020-hispPop2000));
+  const isUrbanFmt=['URBAN_CONTEMP','SOUL_RNB','GOSPEL','RHYTHMIC'].includes(fmt);
+  const isSpanishFmt=fmt==='SPANISH';
+  const isCountryFmt=['COUNTRY','CLASSIC_HITS','CLASSIC_ROCK','ALBUM_ROCK'].includes(fmt);
+  const isModernFmt=yr>=1985;
+  const isNewsTalkish=TALK_FMTS.includes(fmt)||fmt==='ALL_NEWS';
+  let pool=[];
+  const classicWeight=yr<=1985?4:yr<=2000?2:1;
+  for(let i=0;i<classicWeight;i++)pool.push(...NF_CLASSIC);
+  if(isNewsTalkish)for(let i=0;i<3;i++)pool.push(...NF_CLASSIC);
+  if(yr>=1972)pool.push(...NF_WOMEN_70S);
+  const blackWeight=isUrbanFmt?6:Math.round(blackPop*10);
+  for(let i=0;i<blackWeight;i++)pool.push(...NF_BLACK);
+  if(yr>=1990&&!isCountryFmt){
+    const hispWeight=isSpanishFmt?8:Math.round(hispPop*10);
+    for(let i=0;i<hispWeight;i++)pool.push(...NF_LATINO);
   }
-  const availF=NF.filter(f=>!usedFirst.has(f));
-  const poolF=availF.length?availF:NF; // fallback to full list if market is saturated
-  let lastPool=NL;
-  if(nameCtx?.usedLastNames?.size){
-    const filtered=NL.filter(l=>!nameCtx.usedLastNames.has(l));
-    if(filtered.length)lastPool=filtered;
+  if(isModernFmt&&!isCountryFmt)pool.push(...NF_MODERN);
+  if(['CHR','TOP40','ALBUM_ROCK','CLASSIC_ROCK','ALT_ROCK','HOT_AC'].includes(fmt)&&yr>=1975)pool.push(...NF_HANDLES);
+  if(isCountryFmt&&yr<1990)pool=pool.filter(n=>NF_CLASSIC.includes(n)||NF_WOMEN_70S.includes(n));
+  return pool;
+}
+function buildLastNamePool(region,usedLastBlock){
+  const regExtra=NL_REGIONAL[region]||NL_REGIONAL.Southeast;
+  let pool=[...NL_BASE,...regExtra];
+  if(usedLastBlock?.size){
+    const filtered=pool.filter(l=>!usedLastBlock.has(l));
+    if(filtered.length)pool=filtered;
   }
-  return `${pick(poolF)} ${pick(lastPool)}`;
+  return pool;
+}
+const gn=(nameCtx)=>{
+  const ctx=nameCtx||{};
+  const fmt=ctx.fmt;
+  const year=ctx.year??((typeof G!=='undefined'&&G?.year)||1970);
+  const marketId=(typeof G!=='undefined'&&G?.marketId)||ACTIVE_MARKET||'atlanta';
+  const mkt=(typeof MARKETS!=='undefined'&&MARKETS[marketId])||{};
+  const region=mkt.region||'Southeast';
+  const mk=collectMarketTalentNameKeys(typeof G!=='undefined'?G:null);
+  const usedFirst=new Set(mk.usedFirst);
+  const usedFull=new Set(mk.usedFull);
+  if(ctx.usedFullNames)ctx.usedFullNames.forEach(k=>usedFull.add(k));
+  const poolFirst=buildWeightedFirstPool(fmt,year,marketId);
+  const availFirst=poolFirst.filter(f=>!usedFirst.has(f));
+  const poolF=availFirst.length?availFirst:poolFirst;
+  const lastPool=buildLastNamePool(region,ctx.usedLastNames);
+  const overflow=[...NL_OVERFLOW,...NL_BASE];
+  for(let attempt=0;attempt<72;attempt++){
+    const first=pick(poolF);
+    const last=pick(lastPool);
+    const full=`${first} ${last}`;
+    const key=normTalentNameKey(full);
+    if(!usedFull.has(key)){
+      usedFirst.add(first);
+      usedFull.add(key);
+      if(ctx.usedFullNames)ctx.usedFullNames.add(key);
+      return full;
+    }
+  }
+  for(let attempt=0;attempt<48;attempt++){
+    const first=pick(poolF);
+    const last=pick(overflow);
+    const full=`${first} ${last}`;
+    const key=normTalentNameKey(full);
+    if(!usedFull.has(key)){
+      usedFull.add(key);
+      if(ctx.usedFullNames)ctx.usedFullNames.add(key);
+      return full;
+    }
+  }
+  const fb=`${pick(poolF)} ${pick(lastPool)}`;
+  const fbKey=normTalentNameKey(fb);
+  if(ctx.usedFullNames)ctx.usedFullNames.add(fbKey);
+  return fb;
 };
 let UC=new Set(),UB=new Set();
 function gc(){
@@ -1186,12 +1402,13 @@ function mkTal(slot,fmt,tier='mid',year=1970,nameCtx){
   if(tier!=='star') finalSal*=0.90;
   finalSal=Math.round(finalSal/500)*500;
 
-  const name=gn(nameCtx);
+  const name=gn({...nameCtx,fmt,year});
   if(nameCtx?.usedLastNames){
     const parts=name.trim().split(/\s+/);
     const last=parts[parts.length-1];
     if(last)nameCtx.usedLastNames.add(last);
   }
+  if(nameCtx?.usedFullNames)nameCtx.usedFullNames.add(normTalentNameKey(name));
 
   return{
     id:Math.random().toString(36).substr(2,8),
@@ -1209,22 +1426,11 @@ function mkTal(slot,fmt,tier='mid',year=1970,nameCtx){
 }
 
 function mkPool(slot,fmt,year){
-  // Collect all first names currently active in the market to avoid duplicates
-  const usedFirstNames=new Set();
-  if(G&&G.stations){
-    G.stations.forEach(st=>{
-      if(st.prog)Object.values(st.prog).forEach(sd=>{
-        if(sd?.talent?.name)usedFirstNames.add(sd.talent.name.split(' ')[0]);
-      });
-    });
-  }
+  const nameCtx={usedLastNames:new Set(),usedFullNames:new Set()};
   const pool=[];
-  let attempts=0;
   for(const tier of['entry','mid','mid','star']){
-    let t=null;
-    do{t=mkTal(slot,fmt,tier,year);attempts++;}
-    while(t&&usedFirstNames.has(t.name.split(' ')[0])&&attempts<30);
-    if(t){usedFirstNames.add(t.name.split(' ')[0]);pool.push(t);}
+    const t=mkTal(slot,fmt,tier,year,nameCtx);
+    if(t)pool.push(t);
   }
   return pool.sort((a,b)=>b.quality-a.quality);
 }
@@ -1293,7 +1499,7 @@ const MARKETS={
     amFreqs:['660 AM','770 AM','880 AM','1010 AM','1050 AM','1130 AM','1280 AM','1380 AM','1560 AM','1600 AM'],
     fmFreqs:['92.3 FM','94.7 FM','96.3 FM','98.7 FM','100.3 FM','101.1 FM','102.7 FM','103.5 FM','104.3 FM','106.7 FM'],
     blackPop:0.21,hispPop1970:0.12,hispPop2000:0.22,hispPop2020:0.26,churchGoing:0.42,countryBonus:0,urbanBonus:0.14,
-    culture:{country:0.02,urban:0.16,newsTalk:0.10,religion:0.06,spanish:0.14},
+    culture:{country:0.008,urban:0.16,newsTalk:0.12,religion:0.06,spanish:0.14},
     heritageCall3:'WLC',
     selectBlurb:'Huge billing pool and ruthless competition. Spoken-word and AC/Top 40 paydays reward winners; the dial fragments early. Country is a sideline, not the main story.',
     fmPenBias:0.055, fmMusicFragMult:1.06, spokenWordAmResilience:1.11, heritageAmResilience:1.08, countryAmHoldout:0.76,
@@ -1386,20 +1592,28 @@ function pickMarketPhase1(id){
   openScenSelect(_lastScenSelectLocal);
 }
 const MARKET_BILLING_CURVE={1970:14000000,1975:24000000,1980:42000000,1985:68000000,1987:82000000,1990:100000000,1995:130000000,2000:160000000,2005:148000000,2010:130000000,2015:116000000,2020:110000000};
+/** When revScale<1, nudge total billing up slightly so seedRev targets stay playable (vs over-penal secondary metros). */
+function marketRevScaleSecondaryLift(rs){
+  const r=rs==null||Number.isNaN(rs)?1:rs;
+  if(r>=1)return 1;
+  return 1+(1-r)*0.5;
+}
 function marketAnnualBilling(year,marketId){
   const mkt=MARKETS[marketId||ACTIVE_MARKET]||MARKETS[ACTIVE_MARKET]||{revScale:1};
+  const rs=mkt.revScale||1;
+  const lift=marketRevScaleSecondaryLift(rs);
   const ys=Object.keys(MARKET_BILLING_CURVE).map(Number).sort((a,b)=>a-b);
-  if(year<=ys[0])return Math.round(MARKET_BILLING_CURVE[ys[0]]*(mkt.revScale||1));
-  if(year>=ys[ys.length-1])return Math.round(MARKET_BILLING_CURVE[ys[ys.length-1]]*(mkt.revScale||1));
+  if(year<=ys[0])return Math.round(MARKET_BILLING_CURVE[ys[0]]*rs*lift);
+  if(year>=ys[ys.length-1])return Math.round(MARKET_BILLING_CURVE[ys[ys.length-1]]*rs*lift);
   for(let i=1;i<ys.length;i++){
     const y0=ys[i-1],y1=ys[i];
     if(year<=y1){
       const t=(year-y0)/(y1-y0);
       const v=MARKET_BILLING_CURVE[y0]+(MARKET_BILLING_CURVE[y1]-MARKET_BILLING_CURVE[y0])*t;
-      return Math.round(v*(mkt.revScale||1));
+      return Math.round(v*rs*lift);
     }
   }
-  return Math.round(MARKET_BILLING_CURVE[1987]*(mkt.revScale||1));
+  return Math.round(MARKET_BILLING_CURVE[1987]*rs*lift);
 }
 function marketHalfSeasonFactor(year,period){
   const base=period===2?1.04:0.96;
@@ -1463,7 +1677,7 @@ const SPORT_SEASONS={
   NFL:{p1:0.25,p2:0.75},MLB:{p1:0.50,p2:0.50},NBA:{p1:0.60,p2:0.40},NHL:{p1:0.55,p2:0.45},
 };
 const SPORTS_FORMAT_FIT={
-  SPORTS_TALK:1.00,NEWS_TALK:0.70,PODCAST_TALK:0.65,
+  SPORTS_TALK:1.00,NEWS_TALK:0.70,ALL_NEWS:0.68,PODCAST_TALK:0.65,
   MOR:0.45,ADULT_CONTEMP:0.40,CLASSIC_HITS:0.40,
   COUNTRY:0.38,CLASSIC_ROCK:0.38,ADULT_STANDARDS:0.30,
   CHR:0.35,TOP40:0.35,HOT_AC:0.32,ALBUM_ROCK:0.35,
@@ -1701,6 +1915,27 @@ function resolveRightsAuction(team,rights,G,acts){
   acts.push({v:'HIGH',
     t:`📋 ${team.name} rights awarded to ${winner.callLetters} — ${f$(winnerBid)}/yr for ${team.contractYrs} years.${changeNote}`,
     y:G.year,p:G.period,iy:newPlayer||prevPlayer});
+}
+/** Sports bid slider: tiered increments (UI only — does not change fee math elsewhere). */
+function snapSportsBidAmount(v){
+  const x=Math.round(Number(v)||0);
+  if(x<=100000) return Math.round(x/2000)*2000;
+  if(x<=500000) return Math.round(x/10000)*10000;
+  return Math.round(x/25000)*25000;
+}
+function snapSportsBidAmountClamped(v, min, max){
+  const lo=Math.round(min), hi=Math.round(max);
+  const t=Math.max(lo, Math.min(hi, Math.round(Number(v)||0)));
+  let x=snapSportsBidAmount(t);
+  if(x>=lo&&x<=hi) return x;
+  let best=null, dist=Infinity;
+  for(let n=lo;n<=hi;n+=1000){
+    const s=snapSportsBidAmount(n);
+    if(s<lo||s>hi) continue;
+    const d=Math.abs(s-t);
+    if(d<dist){ dist=d; best=s; }
+  }
+  return best!=null?best:t;
 }
 function placeSportsBid(teamId,stationId,amount){
   if(!G.sportsRights?.[teamId])return;
@@ -1980,6 +2215,7 @@ const MP = {
   // In solo: no-op. In live: tells server (and other clients) what happened.
   action(action, payload) {
     if (this.mode !== 'live') return;
+    if (G && G.mpPhase === 'endgame' && action !== 'mp_continue') return;
     // Host includes current G so server can persist mid-period state on every action.
     // This ensures rejoiners get settings like progBudget, salesForce, etc.
     this.emit('player_action', { action, payload, G: this.isHost ? G : undefined });
@@ -2001,6 +2237,21 @@ const MP = {
     if (this.mode !== 'live') return;
     const bar = document.getElementById('mp-statusbar');
     if (!bar) return;
+    if (G && G.mpPhase === 'endgame' && !G.continuesBeyondEnd) {
+      const btn = document.getElementById('abtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '🏆 CAMPAIGN COMPLETE — OPEN FINAL RESULTS';
+      }
+      bar.style.display = 'block';
+      const names = this.players.map(p =>
+        `<span style="color:${p.socketId===this.socketId?'var(--amb)':p.connected?'#fff':'var(--mut)'}">${p.name}</span>`
+      ).join(' &nbsp;·&nbsp; ');
+      document.getElementById('mp-status-players').innerHTML = names;
+      document.getElementById('mp-status-commits').textContent = 'Final results pending';
+      document.getElementById('mp-status-room').textContent = `ROOM ${this.roomId}`;
+      return;
+    }
     bar.style.display = 'block';
     const names = this.players.map(p =>
       `<span style="color:${p.socketId===this.socketId?'var(--amb)':p.connected?'#fff':'var(--mut)'}">${p.name}${this.commitLog[p.socketId]?' ✓':''}</span>`
@@ -2772,6 +3023,7 @@ function genMarketMP(era) {
 // Called by non-host players instead of advTurn()
 function mpCommit() {
   if (MP.mode !== 'live') return;
+  if (G && G.mpPhase === 'endgame' && !G.continuesBeyondEnd) return;
   // Save this player's cash into shared state so it survives the broadcast
   if (G && !G._playerCash) G._playerCash = {};
   if (G) G._playerCash[MP.playerId] = G.cash;
@@ -2785,7 +3037,9 @@ function mpCommit() {
 // Called at the end of advTurn() when in multiplayer host mode
 function mpBroadcastState(decadeYear, sumData) {
   if (MP.mode !== 'live' || !MP.isHost) return;
-  MP.emit('state_update', { G, decadeYear: decadeYear || null, sumData: sumData || null });  // decadeScore computed guest-side from _playerScore
+  const sd = sumData ? { ...sumData } : null;
+  if (sd && G && G.mpPhase === 'endgame') sd.mpEndgame = true;
+  MP.emit('state_update', { G, decadeYear: decadeYear || null, sumData: sd });  // decadeScore computed guest-side from _playerScore
   // Reset: everyone must commit again next period
   MP.commitLog = {};
   MP.players.forEach(p => { MP.commitLog[p.socketId] = false; });
@@ -2822,7 +3076,7 @@ function mpSendChat() {
 window._mpApply_fmt = function({ sid, format }) {
   const s = G.stations.find(st=>st.id===sid);
   if (!s) return;
-  const _talkFmts=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'];
+  const _talkFmts=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'];
   s.ops.sell = _talkFmts.includes(format) ? 0.60 : 0.55;
   s._formatAge = 0;
   s.format = format;
@@ -2920,13 +3174,36 @@ window._mpApply_prog = function({ sid, progBudget }) {
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
   if(!s.ops) s.ops={}; s.ops.progBudget = progBudget; renderAll();
 };
+function ensureTalentBench(G){ if(!G.talentBench)G.talentBench=[]; }
+/** Move host from slot to player talent bench (internal — no news). */
+function removeTalentToBenchInternal(sid, slot){
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||!mpIsMe(s))return false;
+  const sd=s.prog[slot];
+  if(!sd?.talent)return false;
+  ensureTalentBench(G);
+  G._benchSeq=(G._benchSeq||0)+1;
+  const benchId='b'+G._benchSeq;
+  const owner=MP.mode==='live'?MP.playerId:0;
+  G.talentBench.push({id:benchId,talent:sd.talent,_mpOwner:owner,sid,slot});
+  sd.talent=null;
+  const pen={morningDrive:.20,afternoonDrive:.14,midday:.09,evening:.06,overnight:.03}[slot]||.09;
+  sd.quality=Math.max(10,Math.round(sd.quality*(1-pen)));
+  refreshStationOQ(s,G);
+  return true;
+}
 /** Cross-station talent move: mutates G, news, history, recomputes OQ on both stations. */
 function applyTalentCrossStationXferFull(fromSid, fromSlot, toSid, toSlot) {
   const src = G.stations.find(st => st.id === fromSid);
   const dst = G.stations.find(st => st.id === toSid);
   if (!src || !dst || fromSid === toSid) return false;
   const fromSd = src.prog[fromSlot], toSd = dst.prog[toSlot];
-  if (!fromSd?.talent || toSd?.talent) return false;
+  if (!fromSd?.talent) return false;
+  let displacedName=null;
+  if (toSd?.talent){
+    displacedName=toSd.talent.name;
+    if(!removeTalentToBenchInternal(toSid,toSlot))return false;
+  }
   const talA = fromSd.talent;
   const adjDip = 0.10;
   const fit = t => t.formatFit[dst.format] || 0.3;
@@ -2939,35 +3216,30 @@ function applyTalentCrossStationXferFull(fromSid, fromSlot, toSid, toSlot) {
   fromSd.quality = Math.max(10, Math.round(fromSd.quality * (1 - pen)));
   src.oq = Math.round(Object.entries(SW).reduce((sum, [sl, w]) => sum + effSlotQForOq(src.prog[sl]) * w, 0));
   dst.oq = Math.round(Object.entries(SW).reduce((sum, [sl, w]) => sum + effSlotQForOq(dst.prog[sl]) * w, 0));
-  G.news.unshift({ v: 'LOW', t: `${talA.name} moves from ${callDisplay(src)} ${SL[fromSlot]} to ${callDisplay(dst)} ${SL[toSlot]}.`, y: G.year, p: G.period });
+  let xferMsg=`${talA.name} moves from ${callDisplay(src)} ${SL[fromSlot]} to ${callDisplay(dst)} ${SL[toSlot]}.`;
+  if(displacedName)xferMsg+=` ${displacedName} moved to the talent bench.`;
+  G.news.unshift({ v: 'LOW', t: xferMsg, y: G.year, p: G.period });
   logHistory(src, 'TALENT', `Transferred ${talA.name} to ${callDisplay(dst)} ${SL[toSlot]}`, G);
   logHistory(dst, 'TALENT', `Received ${talA.name} from ${callDisplay(src)} ${SL[fromSlot]}`, G);
   return true;
 }
 window._mpApply_shuffle = function({ sid, fromSlot, toSlot }) {
-  // Apply swap logic directly — do NOT call doShuffle (would re-broadcast + open modal)
   const s = G.stations.find(st => st.id === sid); if (!s) return;
   const fromSd = s.prog[fromSlot], toSd = s.prog[toSlot];
   if (!fromSd?.talent) return;
-  const talA = fromSd.talent, talB = toSd?.talent || null;
-  const isSwap = !!talB;
-  const adjDip = isSwap ? 0.05 : 0.08;
+  const talA = fromSd.talent;
+  if (toSd?.talent && !removeTalentToBenchInternal(sid, toSlot)) return;
+  const adjDip = 0.08;
   const fit = t => t.formatFit[s.format] || 0.3;
   const boost = t => Math.round((t.quality / 100) * fit(t) * 0.35 * 18);
-  toSd.talent = talA;
-  toSd.quality = Math.min(100, Math.max(10, Math.round((toSd.quality || 30) * (1 - adjDip))) + boost(talA));
+  const toSd2 = s.prog[toSlot];
+  toSd2.talent = talA;
+  toSd2.quality = Math.min(100, Math.max(10, Math.round((toSd2.quality || 30) * (1 - adjDip))) + boost(talA));
   applyDaypartPromotionEconomics(talA, fromSlot, toSlot);
-  if (isSwap) {
-    fromSd.talent = talB;
-    fromSd.quality = Math.min(100, Math.max(10, Math.round((fromSd.quality || 30) * (1 - adjDip))) + boost(talB));
-    applyDaypartPromotionEconomics(talB, toSlot, fromSlot);
-  } else {
-    fromSd.talent = null;
-    const pen = {morningDrive:.20,afternoonDrive:.14,midday:.09,evening:.06,overnight:.03}[fromSlot] || .09;
-    fromSd.quality = Math.max(10, Math.round(fromSd.quality * (1 - pen)));
-  }
+  fromSd.talent = null;
+  const pen = {morningDrive:.20,afternoonDrive:.14,midday:.09,evening:.06,overnight:.03}[fromSlot] || .09;
+  fromSd.quality = Math.max(10, Math.round(fromSd.quality * (1 - pen)));
   s.oq = Math.round(Object.entries(SW).reduce((sum, [sl, w]) => sum + effSlotQForOq(s.prog[sl]) * w, 0));
-  // renderAll() is called by applyRemoteAction after this returns
 };
 window._mpApply_talent_xfer = function({ fromSid, fromSlot, toSid, toSlot, _fromPlayerId }) {
   if (MP.mode === 'live') {
@@ -2975,6 +3247,35 @@ window._mpApply_talent_xfer = function({ fromSid, fromSlot, toSid, toSlot, _from
     if (_fromPlayerId === undefined || !owns(fromSid) || !owns(toSid)) return;
   }
   applyTalentCrossStationXferFull(fromSid, fromSlot, toSid, toSlot);
+};
+window._mpApply_bench_add = function({ sid, slot, _fromPlayerId }) {
+  const s = G.stations.find(st => st.id === sid);
+  if (!s || (MP.mode === 'live' && s._mpOwner !== _fromPlayerId)) return;
+  removeTalentToBenchInternal(sid, slot);
+};
+window._mpApply_bench_release = function({ benchId, _fromPlayerId }) {
+  const ix = G.talentBench.findIndex(e => e.id === benchId);
+  if (ix < 0) return;
+  if (MP.mode === 'live' && G.talentBench[ix]._mpOwner !== _fromPlayerId) return;
+  G.talentBench.splice(ix, 1);
+};
+window._mpApply_placement_from_bench = function({ benchId, toSid, toSlot, _fromPlayerId }) {
+  const dst = G.stations.find(st => st.id === toSid);
+  if (!dst || (MP.mode === 'live' && dst._mpOwner !== _fromPlayerId)) return;
+  const ent = G.talentBench.find(e => e.id === benchId);
+  if (!ent) return;
+  if (dst.prog[toSlot]?.talent) removeTalentToBenchInternal(toSid, toSlot);
+  const t = ent.talent;
+  const prevSlot = ent.slot || 'morningDrive';
+  const toSd = dst.prog[toSlot];
+  const adjDip = 0.08;
+  const fitFn = t0 => t0.formatFit[dst.format] || 0.3;
+  const boost = t0 => Math.round((t0.quality / 100) * fitFn(t0) * 0.35 * 18);
+  toSd.talent = t;
+  toSd.quality = Math.min(100, Math.max(10, Math.round((toSd.quality || 30) * (1 - adjDip))) + boost(t));
+  applyDaypartPromotionEconomics(t, prevSlot, toSlot);
+  G.talentBench = G.talentBench.filter(e => e.id !== benchId);
+  refreshStationOQ(dst, G);
 };
 window._mpApply_extend = function({ sid, slot, years, newSalary }) {
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
@@ -3110,6 +3411,39 @@ const BP=[
   // idx 18: FM Top 40 — deferred (signs on via ATLANTA_1970_DEFERRED_LAUNCHES)
   {type:'FM',fmt:'TOP40',      pw:'50kw',str:'strong'},
 ];
+/**
+ * Opening blueprint patches by market — structural dial mix (Duncan-style: NYC country share stayed marginal).
+ * Nashville uses base BP (country-heavy). Sunbelt Atlanta unchanged. Mega markets: less country, more talk/AC/AOR/Top 40.
+ */
+const MARKET_BP_PATCH={
+  newyork:{
+    2:{fmt:'NEWS_TALK',str:'strong'},
+    13:{fmt:'COUNTRY',pw:'DA',str:'weak'},
+    16:{fmt:'TOP40',str:'emerging'},
+  },
+  losangeles:{
+    2:{fmt:'TOP40',str:'strong'},
+    13:{fmt:'SOUL_RNB',pw:'DA',str:'moderate'},
+    16:{fmt:'ALBUM_ROCK',str:'moderate'},
+  },
+  chicago:{
+    2:{fmt:'NEWS_TALK',str:'emerging'},
+    13:{fmt:'MOR',pw:'DA',str:'moderate'},
+    16:{fmt:'TOP40',str:'emerging'},
+  },
+};
+function effectiveBpForMarket(bpIndex,marketId){
+  const base=BP[bpIndex];
+  if(!base)return base;
+  const p=(MARKET_BP_PATCH[marketId]||{})[bpIndex];
+  return p?{...base,...p}:base;
+}
+/** Atlanta-style 1970 deferred slots; mega non-Sunbelt excludes idx 16 so remapped FM isn't replaced by late FM-country sign-on. */
+function isBpSlotDeferred1970(bpIndex,marketId){
+  if(!ATLANTA_1970_DEFER_IDX.has(bpIndex))return false;
+  if(['newyork','losangeles','chicago'].includes(marketId)&&bpIndex===16)return false;
+  return true;
+}
 // Early-1970 Atlanta should start less fragmented: fewer weak FMs and tail AMs on day one.
 // Additional competitors roll on via ATLANTA_1970_DEFERRED_LAUNCHES (same path as mid-game rival entry:
 // mkStn → seedNewEntry → news) as FM uptake and dial fragmentation rise in the 70s.
@@ -3187,10 +3521,66 @@ function setNextFreqListsForMarket(marketId){
 }
 function nextFreq(type){return type==='AM'?_freqAmList[amfIdx++%_freqAmList.length]:_freqFmList[fmfIdx++%_freqFmList.length];}
 
+// ── AM 50kW density by market tier (structural realism — mega markets still have few true 50kW blowtorches vs blueprint slots) ──
+const AM50_PRIORITY_BP_IDX=[4,0,5,2,1,10]; // keep MOR + dominant Top40 + talk first when trimming
+const AM50_DOWNGRADE_CHAIN=['10kw','10kw','5kw','5kw','1kw','DA'];
+function am50kwCapForMarket(marketId){
+  const tier=(MARKETS[marketId]||MARKETS.atlanta).rankTier;
+  // Even NYC/LA/Chicago historically had a handful of big AMs — not one per blueprint row.
+  if(tier==='mega') return 5;
+  if(tier==='large') return 2;
+  if(tier==='medium') return 1;
+  return 0;
+}
+function countAm50kwStations(stations){
+  if(!stations)return 0;
+  return stations.filter(s=>s&&!s._bpSlotDeferred&&s.sig?.type==='AM'&&s.sig.pw==='50kw').length;
+}
+function applyAmPwToStation(s,pw){
+  if(!s||s.sig?.type!=='AM')return;
+  s.sig.pw=pw;
+  s.sig.reach=RA[pw]||0.85;
+  s.sig.universe=UNIVERSE[`AM_${pw}`]||0.65;
+}
+/** After full BP build: trim excess AM 50kW by tier; reassign clear-channel flags to top two survivors. */
+function applyMarketTierAmPowerCaps(stations, marketId){
+  const cap=am50kwCapForMarket(marketId);
+  const am50=[];
+  for(let i=0;i<stations.length;i++){
+    const s=stations[i];
+    if(!s||s._bpSlotDeferred)continue;
+    if(s.sig?.type==='AM'&&s.sig.pw==='50kw') am50.push(i);
+  }
+  const sorted=am50.slice().sort((a,b)=>{
+    const pa=AM50_PRIORITY_BP_IDX.indexOf(a), pb=AM50_PRIORITY_BP_IDX.indexOf(b);
+    const oa=pa===-1?999:pa, ob=pb===-1?999:pb;
+    if(oa!==ob)return oa-ob;
+    return a-b;
+  });
+  const toDowngrade=sorted.slice(cap);
+  toDowngrade.forEach((idx,i)=>{
+    const newPw=AM50_DOWNGRADE_CHAIN[Math.min(i, AM50_DOWNGRADE_CHAIN.length-1)];
+    applyAmPwToStation(stations[idx], newPw);
+  });
+  stations.forEach(s=>{ if(s) delete s.clearChannel; });
+  sorted.slice(0, Math.min(cap, sorted.length)).slice(0,2).forEach(idx=>{
+    const st=stations[idx];
+    if(st&&st.sig?.type==='AM'&&st.sig.pw==='50kw') st.clearChannel=true;
+  });
+}
+
 function mkStn(bp,freq,year=1970){
-  const{type,fmt,pw,str}=bp,tt=STT[str]||'mid',qb=STQ[str]||[40,60];
+  let{type,fmt,pw,str}=bp;
+  if(type==='AM'&&pw==='50kw'&&typeof G!=='undefined'&&G&&G.marketId&&G.stations){
+    const cap=am50kwCapForMarket(G.marketId);
+    const n=countAm50kwStations(G.stations);
+    if(cap<99&&n>=cap){
+      pw=AM50_DOWNGRADE_CHAIN[Math.min(n-cap, AM50_DOWNGRADE_CHAIN.length-1)];
+    }
+  }
+  const tt=STT[str]||'mid',qb=STQ[str]||[40,60];
   const stId=Math.random().toString(36).substr(2,8);
-  const nameCtx={usedLastNames:new Set()};
+  const nameCtx={usedLastNames:new Set(),usedFullNames:new Set()};
   // Tier step-down: each slot is one tier weaker than the previous
   // star→mid→entry. Morning leads, afternoon follows, midday is bench depth.
   const afTier=tt==='star'?'mid':tt==='mid'?'entry':'entry';
@@ -3766,6 +4156,117 @@ const DRIFT={
   }
 };
 
+/** Structured tradeoff copy for Format Strategy modal (no dated spoilers). */
+const DRIFT_POLE_GUIDANCE={
+  TOP40:{
+    A:{audience:'Heavy 12–24 and teen skew; family-friendly mass appeal',strengths:'High ceiling in youth-heavy markets; chart familiarity; event tie-ins (concerts, tours)',weaknesses:'Credibility fragile; older demos tune out; vulnerable when pop falls out of favor',monetization:'Mass-reach youth spots; fast-food, movies, mobile; volume over CPM',risks:'Trend churn; competition from CHR and streaming; sounds dated overnight'},
+    B:{audience:'18–34 with rock/alternative lean; some 25–44 holdouts',strengths:'Better male retention; survives when "pop" is uncool; format identity',weaknesses:'Narrower mass appeal; can lose 12–17 to pure hit stations',monetization:'Concerts, beer, automotive; slightly older CPMs',risks:'Squeezed between CHR and rock-leaning formats; rock-cycle moments hit pure pop harder'}
+  },
+  NEWS_TALK:{
+    A:{audience:'35–64 news-first; educated; appointment listening',strengths:'Strong news brand; agency-safe; durable through cycles',weaknesses:'Lower passion metrics; harder to dominate 25–54 talk radio wars',monetization:'Premium news CPMs; local sponsors; network compensation',risks:'Slow build; political cycles favor opinion competitors'},
+    B:{audience:'Passionate 35–64 (often male); ideology-aligned',strengths:'Intense loyalty; election and crisis spikes; network-ready talent',weaknesses:'Advertiser sensitivity; demo can age and narrow',monetization:'Direct response; issue advertisers; high rates in peak cycles',risks:'Host dependency; controversy; brand boycotts'}
+  },
+  SOUL_RNB:{
+    A:{audience:'35–64 Black adults; church-adjacent; tradition-minded',strengths:'Deep community loyalty; stable dayparts; lower churn when authentic',weaknesses:'Younger demos drift to funk/R&B crossover; ceiling in mass-market billing',monetization:'Local services, faith, community; steady mid CPMs',risks:'Sounds "old" to teens; competition from crossover and FM'},
+    B:{audience:'18–34 dance/club skew; younger Black and crossover listeners',strengths:'Explosive ratings when the sound is hot; youth advertiser demand',weaknesses:'Brutal when trends flip; loyalty thinner',monetization:'Club, fashion, beverages; burst revenue in peak years',risks:'Disco-style backlash; one-hit dependency; format whiplash'}
+  },
+  COUNTRY:{
+    A:{audience:'Rural and small-town skew; strong 45+; core country purists',strengths:'Deep loyalty; low churn; strong AM retention in heritage markets',weaknesses:'Lower revenue ceiling; slower youth growth; narrower ad categories',monetization:'Local retail, auto, agriculture-adjacent; steady but modest CPMs',risks:'Core audience aging; suburban listeners skimmed by crossover stations'},
+    B:{audience:'Suburban families; broader 25–44; casual country listeners',strengths:'Larger addressable audience; higher upside when the mix connects',weaknesses:'Softer loyalty; identity blurs toward AC and CHR',monetization:'National tours, big brands, truck/auto; CPM jumps when hot',risks:'High volatility; trend-sensitive; "too pop" backlash from purists'}
+  },
+  ALBUM_ROCK:{
+    A:{audience:'Male 25–54; album-oriented; anti-hit-radio',strengths:'Intense format loyalty; low tolerance for gimmicks; heritage positioning',weaknesses:'Narrower female and youth reach; lower peak share in hit-driven eras',monetization:'Concerts, beverages, automotive; loyal local sponsors',risks:'Classic rock migration steals older core; squeezed by CHR and alt'},
+    B:{audience:'Broader 18–44; women and casual rock listeners',strengths:'Higher peak shares; competes for mainstream rock occasions',weaknesses:'Less "special"; competes directly with CHR and classic rock',monetization:'National rock tours; broader retail',risks:'Identity dilution; rock-format fragmentation'}
+  },
+  MOR:{
+    A:{audience:'Female 35–64; at-work and in-home background listening',strengths:'Smooth transition toward soft AC; high tolerance for spots',weaknesses:'AM music erosion; perceived as "elevator" by younger demos',monetization:'Direct retail, local services; high inventory, moderate CPMs',risks:'FM music wins younger pairs; format sunset pressure'},
+    B:{audience:'Male 35–64; news-adjacent; talk-curious',strengths:'Builds bridge to news/talk; stronger male demos for AM',weaknesses:'Higher talent cost; music identity weakens',monetization:'Talk-oriented local and regional; political-adjacent spots',risks:'Hybrid confusion; neither pure music nor pure talk'}
+  },
+  OLDIES:{
+    A:{audience:'55+ Boomers; nostalgia-first; strict era purists',strengths:'Fierce loyalty in core; low ad avoidance',weaknesses:'Shrinking universe; limited youth; revenue ceiling',monetization:'Pharma, financial, legacy brands; high trust, narrow pool',risks:'Mortality and demo aging; library feels "too old" for buyers'},
+    B:{audience:'45–64; broader nostalgia; accepts 70s–80s expansion',strengths:'Larger sellable demo; path toward classic hits positioning',weaknesses:'Less "pure"; competes with AC and classic rock',monetization:'Broader retail; automotive; travel',risks:'Rebranding confusion; younger competition from classic hits'}
+  },
+  CHR:{
+    A:{audience:'12–24 female-leaning; mass teen and young adult',strengths:'Highest youth ceiling; promotional and hit-driven spikes',weaknesses:'Brutal churn; sounds old fast',monetization:'Youth brands; fast fashion; mobile; volume',risks:'Teen-pop cycles; competition from rhythmic and streaming'},
+    B:{audience:'18–34 urban-leaning; R&B/hip-hop crossover taste',strengths:'Holds better through rock and pop shocks; broader 18–34 stickiness',weaknesses:'Can miss pure-pop mega-moments; format definition debates',monetization:'Urban and lifestyle brands; concerts',risks:'Polarizes older buyers; rhythmic competition'}
+  },
+  ADULT_CONTEMP:{
+    A:{audience:'35–54 women; at-work; stress-relief listening',strengths:'Loyal, long TSL; high spot tolerance; agency-friendly',weaknesses:'Sounds "soft" to younger buyers; ceiling in youth',monetization:'Retail, pharma, packaged goods; strong local direct',risks:'Hot AC and CHR skim younger women'},
+    B:{audience:'25–44 women; younger AC fringe',strengths:'Higher ceiling with younger women; trend-friendly',weaknesses:'Direct battle with CHR and Hot AC; loyalty softer',monetization:'Fashion, beauty, premium retail',risks:'Fragmentation; faster competitive churn'}
+  },
+  CLASSIC_ROCK:{
+    A:{audience:'Male 35–54; album-era purists',strengths:'Dense loyalty; concert and lifestyle tie-ins; format clarity',weaknesses:'Weak female and youth; limited pop crossover',monetization:'Beverages, automotive, concerts',risks:'Aging core; alternative steals young males'},
+    B:{audience:'35–54 mixed gender; broader "hits" rock taste',strengths:'Larger tent; better female demos; adapts as Boomers age',weaknesses:'Softer "rock" identity; classic hits competition',monetization:'Broader national and retail',risks:'Dilution; war on two fronts vs CR and CHR'}
+  },
+  URBAN_CONTEMP:{
+    A:{audience:'18–44 Black adults; R&B-first; community anchor',strengths:'Stable core; community trust; smooth/Quiet Storm lanes',weaknesses:'Can lose 12–24 to hip-hop-heavy competitors',monetization:'Local services, faith, entertainment; solid mid CPMs',risks:'Youth flight; "too soft" perception'},
+    B:{audience:'12–24 heavy; hip-hop-forward; trend chasers',strengths:'Dominant youth share when hot; cultural relevance',weaknesses:'Alienates 35+ core; advertiser sensitivity',monetization:'Youth brands; beverages; entertainment; burst pricing',risks:'Format purity fights; churn when sound shifts'}
+  },
+  SPORTS_TALK:{
+    A:{audience:'Local team diehards; male 25–54 core',strengths:'Unbeatable community identity; resilient in weak syndication markets',weaknesses:'Rights costs; off-season dips; narrow female reach',monetization:'Local auto, beer, gaming; team and event packages',risks:'Team performance; rights fee inflation'},
+    B:{audience:'National sports fans; younger male skew possible',strengths:'Lower local overhead; predictable dayparts with network stars',weaknesses:'Weak local differentiation; affiliate competition',monetization:'National spot packages; network deals',risks:'Host/network disputes; sounds generic vs local'}
+  },
+  SPANISH:{
+    A:{audience:'Mexican-heritage core; regional format loyalists',strengths:'Intense loyalty; community lock-in; lower churn in core',weaknesses:'Narrower national ad pool outside genre',monetization:'Local services, telecom, automotive (ethnic buys)',risks:'Younger shift to tropical/reggaeton pressure'},
+    B:{audience:'Broader Hispanic 18–49; crossover-friendly',strengths:'Larger addressable audience; higher CPM growth potential',weaknesses:'Weaker roots in any single subculture',monetization:'National Latino buys; concerts; brand',risks:'Format blur; competition from English and streaming'}
+  },
+  ALT_ROCK:{
+    A:{audience:'18–29; discovery-first; anti-mainstream',strengths:'Credibility; sponsor-friendly "cool"; loyal fringe',weaknesses:'Lower peak share; spot intolerance; niche billing',monetization:'Local nightlife, beverages, concerts',risks:'College and streaming peel core audience'},
+    B:{audience:'18–34 broader; radio-friendly alt',strengths:'Higher ratings ceiling; more sellable dayparts',weaknesses:'Purist backlash; sounds "corporate"',monetization:'National rock tours; retail',risks:'Post-grunge fatigue; CHR steals pop-leaning tracks'}
+  },
+  RHYTHMIC:{
+    A:{audience:'12–24 urban; hip-hop-first',strengths:'Dominant youth cume when the market fits; cultural center of gravity',weaknesses:'Narrow advertiser set; controversy sensitivity',monetization:'Youth and urban national; entertainment',risks:'Format purity fights; pop crossovers split the log'},
+    B:{audience:'18–34 women-leaning; pop-R&B crossover',strengths:'Broader sellable demo; higher national CPM potential',weaknesses:'Loses edge; rhythmic CHR competition',monetization:'Fashion, beauty, lifestyle',risks:'Sounds "not hip-hop enough" to core; volatile hits'}
+  },
+  HOT_AC:{
+    A:{audience:'18–34 women; current-hit seekers',strengths:'Peak shares when hot; competes for CHR spill',weaknesses:'High burn; direct CHR war',monetization:'Retail, mobile, entertainment',risks:'CHR and streaming define "current" outside your control'},
+    B:{audience:'25–44 women; broader AC acceptance',strengths:'Higher spot load tolerance; stable billing',weaknesses:'Lower peak; "not hot enough" for some buyers',monetization:'Packaged goods, pharma, local services',risks:'AC fragmentation; streaming playlists'}
+  },
+  CLASSIC_HITS:{
+    A:{audience:'40–59; soft rock and singer-songwriter nostalgia',strengths:'Strong hold from oldies migration; loyal core',weaknesses:'Limited youth; ceiling on peak share',monetization:'Financial, pharma, travel',risks:'Core aging; 80s-heavy competitors skim'},
+    B:{audience:'35–49; new wave and power-pop friendly',strengths:'Younger classic demo; higher upside in rebrands',weaknesses:'Weaker pure-oldies identity',monetization:'Broader retail; entertainment',risks:'War with classic rock and CHR gold'}
+  },
+  GOSPEL:{
+    A:{audience:'Church-rooted; older Black listeners; tradition-focused',strengths:'Intense loyalty; brokered dayparts viable; community trust',weaknesses:'Limited secular ad pool; narrow youth',monetization:'Faith, local services, community',risks:'Younger migration to contemporary sound'},
+    B:{audience:'Younger faith listeners; crossover and CCM-curious',strengths:'Broader audience; national CCM tie-ins',weaknesses:'Traditionalists push back; identity dilution',monetization:'Touring artists; family brands; broader retail',risks:'Format definition fights; competition from AC/CHR inspirational'}
+  },
+  PODCAST_TALK:{
+    A:{audience:'Educated 25–54; narrative and documentary fans',strengths:'Premium CPM potential; sponsor trust; binge loyalty',weaknesses:'Slow audience build; less "drive-time electricity"',monetization:'Direct brand podcasts; underwriting; premium national',risks:'Platform competition; expensive production'},
+    B:{audience:'Fan-first; parasocial relationship with host',strengths:'Fast cume growth; merch and live events',weaknesses:'Host exit risk; churn; advertiser controversy',monetization:'Direct response; personality endorsements',risks:'Contract wars; scandal sensitivity'}
+  },
+  BEAUTIFUL_MUSIC:{
+    A:{audience:'55+; passive at-work and in-home',strengths:'Maximum margin; minimal staff',weaknesses:'No growth engine; extreme demo aging',monetization:'High inventory, low CPM; local direct',risks:'Listener mortality; AC steals casuals'},
+    B:{audience:'50–64; light local connection seekers',strengths:'Better retention than pure automation; community goodwill',weaknesses:'Higher cost; still vulnerable to AC',monetization:'Local services; light retail',risks:'Still format-endangered; talent cost vs return'}
+  },
+  ADULT_STANDARDS:{
+    A:{audience:'65+; big band and standards purists',strengths:'Deep niche loyalty; low competitive churn in core',weaknesses:'Tiny ad universe; almost no youth',monetization:'Financial, legacy brands; high trust',risks:'Mortality; station sale/brokerage pressure'},
+    B:{audience:'45–64; nostalgic pop and early rock tolerant',strengths:'Slightly younger sellable demo; slower decline curve',weaknesses:'Less "standards purity"; AC competition',monetization:'Travel, pharma, regional',risks:'Classic hits repositioning eats positioning'}
+  }
+};
+
+function htmlDriftStrategicGuidance(cfg, fmtKey){
+  const g=DRIFT_POLE_GUIDANCE[fmtKey];
+  const row=(label,text)=>`<div style="margin-top:8px"><span style="font-size:11px;letter-spacing:.1em;color:var(--mut);text-transform:uppercase;display:block;margin-bottom:3px">${label}</span><span style="font-size:14px;color:var(--off);line-height:1.45;display:block">${text}</span></div>`;
+  const poleCard=(poleKey, poleCfg, borderCol)=>{
+    const gu=g?.[poleKey];
+    const inner=gu
+      ? row('Audience',gu.audience)+row('Strengths',gu.strengths)+row('Weaknesses',gu.weaknesses)+row('Monetization',gu.monetization)+row('Risk factors',gu.risks)
+      : `<p style="margin:0;font-size:14px;color:var(--mut);line-height:1.45">${poleCfg.desc}</p>`;
+    return `<div class="ibox" style="border-left:3px solid ${borderCol};padding-left:12px">
+      <div style="font-family:var(--fd);font-size:15px;color:var(--wht);margin-bottom:4px">${poleCfg.name}</div>
+      ${inner}
+    </div>`;
+  };
+  return `<div class="ms2" style="margin-top:12px">
+    <div class="msh">POSITIONING TRADEOFFS</div>
+    <p style="font-size:14px;color:var(--mut);margin:6px 0 10px 0;line-height:1.45">Compare the two directions below. Your slider chooses where you sit between them <em>right now</em> — balance audience, revenue, and competitive pressure.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
+      ${poleCard('A', cfg.poleA, 'var(--mut)')}
+      ${poleCard('B', cfg.poleB, 'var(--amb)')}
+    </div>
+  </div>`;
+}
+
 // Which formats can drift, and their current drift value per station
 // s.drift = {FORMAT_KEY: 0-100}
 function getDrift(s){
@@ -3838,7 +4339,7 @@ function appl(s,coh,G){
   const isAMMusic=s.sig.type==='AM'&&!s.fmBooster&&amMusicFormats.includes(s.format);
   // Booster with music format: partial immunity — only _tFrac fraction is protected
   const isAMBoosterMusic=s.fmBooster&&amMusicFormats.includes(s.format)&&s._boosterOrigSig;
-  const isAMTalk=s.sig.type==='AM'&&!s.fmBooster&&!s.simulcastWith&&['NEWS_TALK','SPORTS_TALK'].includes(s.format);
+  const isAMTalk=s.sig.type==='AM'&&!s.fmBooster&&!s.simulcastWith&&['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format);
   const amViab=amViabForYear(year);
   // Full AM music penalty (no booster)
   const _rawAMPenalty = Math.max(.10,(1.0-0.60*fmp)*amViab);
@@ -3857,7 +4358,7 @@ function appl(s,coh,G){
       : isAMTalk&&year>=2007
         ?Math.max(0.55, 1.0-_smoothstep(2007,2015,year)*0.20-_smoothstep(2015,2022,year)*0.20)
         :1;
-  if(s.sig.type==='AM'&&!s.fmBooster&&['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'].includes(s.format))
+  if(s.sig.type==='AM'&&!s.fmBooster&&['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'].includes(s.format))
     amP*=mkt.spokenWordAmResilience??1;
   if(isAMMusic&&s.format==='COUNTRY')amP*=mkt.countryAmHoldout??1;
   if(isAMMusic&&s.format==='MOR')amP*=mkt.heritageAmResilience??1;
@@ -3918,7 +4419,7 @@ function appl(s,coh,G){
   // Late-70s transition: very light trim so one FM music leader rarely locks #1 every run (talk excluded)
   let fmLeaderAppealTrim=1;
   if(s.sig.type==='FM'&&!s.isPublic&&year>=1978&&year<=1982&&
-    !['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'].includes(s.format)){
+    !['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'].includes(s.format)){
     const sh=s.rat?.share??0;
     if(sh>=0.075)fmLeaderAppealTrim=1-_smoothstep(0.075,0.148,sh)*0.05;
   }
@@ -3927,8 +4428,8 @@ function appl(s,coh,G){
   if(s.format==='COUNTRY'){
     mktFmt+=(mkt.countryBonus||0)*0.38+(cult.country||0)*0.38;
     if(marketId==='losangeles')mktFmt-=0.17;
-    if(marketId==='newyork')mktFmt-=0.15;
-    if(marketId==='chicago')mktFmt-=0.028;
+    if(marketId==='newyork')mktFmt-=0.125;
+    if(marketId==='chicago')mktFmt-=0.035;
   }
   if(['SPANISH','RHYTHMIC','URBAN_CONTEMP'].includes(s.format)){
     mktFmt+=(cult.spanish||0)*0.18+(mkt.urbanBonus||0)*0.12;
@@ -3936,8 +4437,17 @@ function appl(s,coh,G){
   }
   if((marketId==='newyork'||marketId==='chicago')&&s.sig?.type==='AM'&&['NEWS_TALK','MOR'].includes(s.format))
     mktFmt+=0.028;
+  if(s.format==='ALL_NEWS'&&['newyork','losangeles','chicago'].includes(marketId)){
+    mktFmt+=0.04;
+    if(s.sig?.type==='FM'&&(s.sig?.pw==='100kw'||s.sig?.pw==='50kw'))mktFmt+=0.022;
+  }
+  let allNewsSig=1;
+  if(s.format==='ALL_NEWS'){
+    const sigStrength=Math.min(1.15,eff*(s.sig?.type==='FM'?1.08:1));
+    allNewsSig=0.58+0.42*_smoothstep(0.28,0.78,sigStrength);
+  }
   mktFmt=Math.max(0.86,Math.min(1.24,mktFmt));
-  return Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G) * mktFmt);
+  return Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G) * mktFmt * allNewsSig);
 }
 function recalc(stations,G){
   const activeIx=stations.map((s,i)=>s&&!s._bpSlotDeferred?i:-1).filter(i=>i>=0);
@@ -4201,11 +4711,13 @@ function calcRev(s,G){
     // News/Talk and Sports command premium sellout — advertisers pay for engaged audiences
     // N/T and Sports command sellout premium — engaged, affluent demo
     // But we cap at 1.12 (not 1.18) to prevent too-wide a gap vs FM music
-    const fmtPrem=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'].includes(s.format)?1.12:1.0;
+    // Pre-1976: talk sell-through premium was real but smaller — national spot politics still evolving
+    const talkFmtPrem=year<=1975?1.06:1.12;
+    const fmtPrem=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'].includes(s.format)?talkFmtPrem:1.0;
     // AM signal quality penalty: FM got higher CPMs due to fidelity/reach advantages
     // But Talk/Sports AM was genuinely competitive — smaller penalty than AM music
     const sigMult=s.sig.type==='AM'
-      ?(['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'].includes(s.format)?0.88:0.72)
+      ?(['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'].includes(s.format)?0.88:0.72)
       :1.0;
     const sfBonus=(SF_LEVELS[s.salesForce?.level||0]?.sellBonus||0);
     const sellCap=Math.min(0.88,(fmtPrem>1?0.84:0.80)+sfBonus);
@@ -4215,7 +4727,8 @@ function calcRev(s,G){
     const fmtSellAffinity={'CHR':0.12,'TOP40':0.10,'HOT_AC':0.10,'ADULT_CONTEMP':0.07,
       'URBAN_CONTEMP':0.08,'RHYTHMIC':0.08,'ALT_ROCK':0.06,'CLASSIC_ROCK':0.06,
       'COUNTRY':0.05,'SOUL_RNB':0.07,'GOSPEL':-0.02,
-      'BEAUTIFUL_MUSIC':-0.05,'ADULT_STANDARDS':-0.04,'MOR':-0.03}[s.format]||0;
+      'BEAUTIFUL_MUSIC':-0.05,'ADULT_STANDARDS':-0.04,'MOR':-0.03,
+      'ALL_NEWS':0.09,'NEWS_TALK':0.08}[s.format]||0;
     // Cluster demo breadth bonus: post-1990, agencies pay a premium for
     // one-stop demo coverage across a cluster. A CHR + Country + News/Talk
     // cluster covers 12-24, 25-54, and 55+ — that's the full advertiser story.
@@ -4227,7 +4740,7 @@ function calcRev(s,G){
       // Primary demo band for each format: Y=youth (12-34), M=mid (25-54), O=older (35+)
       const _demoBand = f => {
         const yFmts = ['TOP40','CHR','ALT_ROCK','RHYTHMIC','HOT_AC','URBAN_CONTEMP'];
-        const oFmts = ['NEWS_TALK','SPORTS_TALK','BEAUTIFUL_MUSIC','ADULT_STANDARDS','GOSPEL','PODCAST_TALK'];
+        const oFmts = ['NEWS_TALK','ALL_NEWS','SPORTS_TALK','BEAUTIFUL_MUSIC','ADULT_STANDARDS','GOSPEL','PODCAST_TALK'];
         if(yFmts.includes(f)) return 'Y';
         if(oFmts.includes(f)) return 'O';
         return 'M'; // Country, AC, Classic Rock, MOR, Soul, Oldies etc.
@@ -4266,7 +4779,26 @@ function calcRev(s,G){
   const cpEraFactor=s.sig.type==='AM'
     ?0.28+_ss(1970,1984,year)*0.72
     :0.15+_ss(1972,1988,year)*0.85;
-  const rev=Math.round((spotsPerDay*.65*182*s.ops.sell*.88 + spotsPerDay*.35*182*s.ops.sell*.55)*ratePerSpot*cpEraFactor);
+  let rev=Math.round((spotsPerDay*.65*182*s.ops.sell*.88 + spotsPerDay*.35*182*s.ops.sell*.55)*ratePerSpot*cpEraFactor);
+  const revGrossPreFm=rev;
+  // FM music (non-talk): era × market-tier early monetization; talk on FM excluded.
+  let fmEarlyEraMonMult=1;
+  if(s.sig.type==='FM'&&!TALK_FMTS.includes(s.format)){
+    const mkt=G.marketId||ACTIVE_MARKET;
+    fmEarlyEraMonMult=Math.min(1,fmEarlyEraMult(year,mkt)+fmEarlyEraSecondaryFmLift(mkt));
+  }
+  rev=Math.round(rev*fmEarlyEraMonMult);
+  const mktFmtMon=marketFormatMonMult(G.marketId||ACTIVE_MARKET,s.format);
+  rev=Math.round(rev*mktFmtMon);
+  // Inventory sell-through vs share: low-share stations do not monetize full avails at book CPM.
+  let shareSelloutMult=getSelloutRate((s.rat.share||0)*100);
+  if(year<1980)shareSelloutMult*=0.95;
+  const _sellTier=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
+  if(year<1980&&_sellTier!=='mega')shareSelloutMult=Math.min(0.98,shareSelloutMult*1.1);
+  if(year<1980&&_sellTier!=='mega'&&s.sig.type==='FM'&&!TALK_FMTS.includes(s.format)&&shareSelloutMult<0.76)shareSelloutMult=0.76;
+  rev=Math.round(rev*shareSelloutMult);
+  const amTalkSmMult=earlyEraAmTalkSmallMarketSupport(s.format,year,G.marketId||ACTIVE_MARKET,s.sig?.type||'');
+  rev=Math.round(rev*amTalkSmMult);
   const promoCap=promoBudgetCapForPeriod(G);
   const progCap=progBudgetCapForPeriod(G);
   const effPromo=Math.min(s.ops?.promo||0,promoCap);
@@ -4342,13 +4874,29 @@ function calcRev(s,G){
   }
   // Era cost: early stations ran lean. 1970=20% of mature, ramps to 100% by 1985.
   // Small FM (25kw/10kw) pre-1980 gets extra pioneer discount.
-  const regCost=60000;
+  const regCost=Math.round(60000*(year<1980?earlyEraSmallMarketRegRelief(year,G.marketId||ACTIVE_MARKET):1));
   const smallFMDiscount=(s.sig?.type==='FM'&&['25kw','10kw'].includes(s.sig?.pw)&&year<1980)
     ?Math.max(0,(1980-year)/10*0.30):0;
   const baseEra=year<=1985?Math.max(0.20,0.20+(year-1970)/15*0.80):1.0;
   const eraCostMult=Math.max(0.20,baseEra*(1-smallFMDiscount));
-  const staffCost=Math.round(staffBase*inflFactor*efficiencyMult*eraCostMult/2);
-  const facCost=Math.round(facBase*inflFactor*efficiencyMult*eraCostMult/2);
+  const allNewsOps=s.format==='ALL_NEWS'?1.24:1;
+  let staffCost=Math.round(staffBase*inflFactor*efficiencyMult*eraCostMult/2*allNewsOps);
+  let facCost=Math.round(facBase*inflFactor*efficiencyMult*eraCostMult/2*allNewsOps);
+  // News/Talk: modest lift on staff/fac (newsroom load vs music). Big margin effect comes from
+  // salesAdmin bump below — early talk had brutal traffic/local spot friction vs today's consolidated ops.
+  let talkEarlyFixedMult=1;
+  if(TALK_FMTS.includes(s.format)){
+    if(year<=1972)talkEarlyFixedMult=1.06;
+    else if(year<=1975)talkEarlyFixedMult=1.04;
+    else if(year<=1979)talkEarlyFixedMult=1.02;
+  }
+  staffCost=Math.round(staffCost*talkEarlyFixedMult);
+  facCost=Math.round(facCost*talkEarlyFixedMult);
+  if(year<1980&&s.sig.type==='FM'&&!TALK_FMTS.includes(s.format)){
+    const _ftr=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
+    if(_ftr==='medium'){staffCost=Math.round(staffCost*0.87);facCost=Math.round(facCost*0.87);}
+    else if(_ftr==='large'){staffCost=Math.round(staffCost*0.92);facCost=Math.round(facCost*0.92);}
+  }
   const sfCost=Math.round((SF_LEVELS[s.salesForce?.level||0]?.cost||0)/2);
   const fixedCost=staffCost+facCost+regCost+sfCost;
   // ── STREAMING REVENUE ───────────────────────────────────────────
@@ -4390,7 +4938,8 @@ function calcRev(s,G){
   const daPenalty = (s.sig.pw==='DA' && s.sig.type==='AM' && !s.fmBooster)
     ? Math.max(0.82, 1 - 0.15 * Math.min(1, Math.max(0, 1 - (G.year - 1980) / 20)))
     : 1;
-  let totalRev=Math.round((rev+streamRev)*ccBonus*daPenalty);
+  const earlyGlobalRevTrim=year<=1974?0.985:1;
+  let totalRev=Math.round((rev+streamRev)*ccBonus*daPenalty*earlyGlobalRevTrim);
   // Receiver: incremental simulcast monetization (~35–60% of this signal’s standalone billings;
   // scales with programming source oq — stronger show = more sell-through on the echo signal).
   let simulcastRevMult=1;
@@ -4409,14 +4958,26 @@ function calcRev(s,G){
   // (scales ~0→1 across ~$140k–$900k half-period revenue — weak stations barely feel it).
   const bigBillerK=_smoothstep(140000,900000,totalRev);
   const progressiveSaRate=bigBillerK*0.118;
-  const salesAdminRate=salesRate+adminRate+lateMarginTrim+progressiveSaRate;
+  // Pre-consolidation talk: high-touch local spot traffic, make-goods, and national rep friction — % of billings.
+  // Tapers to 0 by 1979; mega markets keep full bump — secondary markets used leaner sales stacks in the 1970s.
+  const _tierMkt=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
+  let talkEarlySaBump=(TALK_FMTS.includes(s.format)&&year<=1978)?((1979-year)/9)*0.118:0;
+  if(talkEarlySaBump>0&&year<1980&&_tierMkt!=='mega')talkEarlySaBump*=0.58;
+  const salesAdminRate=salesRate+adminRate+lateMarginTrim+progressiveSaRate+talkEarlySaBump;
   const salesAdminCost=Math.round(totalRev*salesAdminRate);
   const mktBill=marketAnnualBilling(year,G.marketId||ACTIVE_MARKET);
   const mktScale=Math.min(1.24,Math.max(0.88,mktBill/14000000));
   // Major markets + strong stations: slightly higher fixed ops intensity (sales office, engineering, promotions).
   const mktOpsPremium=1+_smoothstep(0.90,1.22,mktScale)*bigBillerK*0.074;
   const opsScale=1+_smoothstep(1980,1995,year)*0.032;
-  const opsFloor=Math.round((s.sig.type==='AM'?70000:50000)*Math.min(2.4,rawInfl)*Math.max(0.65,eraCostMult)*mktScale*opsScale*mktOpsPremium*(1+bigBillerK*0.124));
+  let opsFloor=Math.round((s.sig.type==='AM'?70000:50000)*Math.min(2.4,rawInfl)*Math.max(0.65,eraCostMult)*mktScale*opsScale*mktOpsPremium*(1+bigBillerK*0.124)*(s.format==='ALL_NEWS'?1.12:1));
+  if(TALK_FMTS.includes(s.format)&&talkEarlyFixedMult>1)opsFloor=Math.round(opsFloor*talkEarlyFixedMult);
+  if(year<1980)opsFloor=Math.round(opsFloor*earlyEraSmallMarketOpsRelief(year,G.marketId||ACTIVE_MARKET));
+  if(year<1980&&s.sig.type==='FM'&&!TALK_FMTS.includes(s.format)){
+    const _ftr2=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
+    if(_ftr2==='medium')opsFloor=Math.round(opsFloor*0.91);
+    else if(_ftr2==='large')opsFloor=Math.round(opsFloor*0.95);
+  }
   let simulcastProgFee=0;
   if(isProgReceiver&&progSrcStation){
     const srcTal=Object.values(progSrcStation.prog||{}).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
@@ -4431,6 +4992,16 @@ function calcRev(s,G){
   s.fin.syndicationRights=rightsHalfPeriod;
   s.fin.cost=fixedCost+talCost+salesAdminCost+opsFloor+effPromo+effProg+(s.identityBudget||0)+streamUpkeep+simulcastProgFee+rightsHalfPeriod;
   s.fin.ebitda=s.fin.rev-s.fin.cost;
+  if(typeof G!=='undefined'&&G._econDebugIds&&Array.isArray(G._econDebugIds)&&G._econDebugIds.includes(s.id)){
+    const row={
+      id:s.id,call:s.callLetters,market:G.marketId||ACTIVE_MARKET,year:G.year,period:G.period,
+      revGrossPreFm,fmEarlyEraMonMult,mktFmtMon,shareSelloutMult,amTalkSmMult,
+      opsFloor,talCost,regCost,fix:fixedCost,salesAdmin:salesAdminCost,totalRev:s.fin.rev,ebitda:s.fin.ebitda,
+    };
+    if(!G._econDebugLog)G._econDebugLog=[];
+    G._econDebugLog.push(row);
+    if(typeof console!=='undefined'&&console.log)console.log('[ECON]',row);
+  }
 }
 function seedRev(stations,G){
   stations.forEach(s=>{ if(!s||s._bpSlotDeferred)return; calcRev(s,G); });
@@ -4585,12 +5156,18 @@ function decay(s,year,period){
     // Grow toward ceiling, slower as you approach it
     const gain=Math.min(headroom, growthRate*(1-(cur/Math.max(ceiling,1)))*2.5);
     const newIdentity=Math.min(100,Math.round((cur+gain)*10)/10);
-    // Milestone moments
-    if(s.isPlayer&&G){
+    // Milestone moments (one alert per simulcast pair — combined calls on the programming lead leg)
+    const _idPartner=simulcastPartnerStation(s);
+    const _idSkipReceiver=_idPartner&&simLead(s,_idPartner).id!==s.id;
+    if(s.isPlayer&&G&&!_idSkipReceiver){
+      const _idCall=_idPartner?(function(){
+        const {lead,rcv}=simulcastPairLeadReceiver(s,_idPartner);
+        return callDisplay(lead)+' & '+callDisplay(rcv);
+      })():s.callLetters;
       const milestones=[
-        {threshold:25,msg:`📻 ${s.callLetters} is becoming a recognized voice in the community. Listeners are starting to think of it as "their station."`},
-        {threshold:50,msg:`🏘 ${s.callLetters} has become embedded in the community — ${Math.round((s._formatAge||0)/2)} years of ${FM[s.format]?.l||s.format} have built something real. Listeners here are loyal in ways ratings don't fully capture.`},
-        {threshold:75,msg:`⭐ ${s.callLetters} is a community cornerstone. This station doesn't just serve the market — it belongs to it. Changing format now would feel like a betrayal.`},
+        {threshold:25,msg:`📻 ${_idCall} is becoming a recognized voice in the community. Listeners are starting to think of it as "their station."`},
+        {threshold:50,msg:`🏘 ${_idCall} has become embedded in the community — ${Math.round((s._formatAge||0)/2)} years of ${FM[s.format]?.l||s.format} have built something real. Listeners here are loyal in ways ratings don't fully capture.`},
+        {threshold:75,msg:`⭐ ${_idCall} is a community cornerstone. This station doesn't just serve the market — it belongs to it. Changing format now would feel like a betrayal.`},
       ];
       for(const m of milestones){
         if(cur<m.threshold&&newIdentity>=m.threshold){
@@ -4666,7 +5243,7 @@ function runMarketAttrition(G){
        'CHR','CLASSIC_ROCK','ADULT_CONTEMP','URBAN_CONTEMP','ALT_ROCK',
        'RHYTHMIC','HOT_AC','CLASSIC_HITS','OLDIES'].includes(s.format);
     const isAMTalk = s.sig.type==='AM'&&!s.fmBooster&&
-      ['NEWS_TALK','SPORTS_TALK'].includes(s.format);
+      ['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format);
     const isImplausible = s.sig.type==='AM'&&!s.fmBooster&&
       AM_IMPLAUSIBLE_AFTER[s.format]&&year>AM_IMPLAUSIBLE_AFTER[s.format];
     const shareIsGhost = s.rat.share<0.005; // truly invisible
@@ -4743,7 +5320,7 @@ function runAI(G){
     const y=G.year||1970;
     const fmMusicAi=s.sig.type==='FM'&&y>=1975&&y<=1988&&
       ['TOP40','CHR','ALBUM_ROCK','ADULT_CONTEMP','BEAUTIFUL_MUSIC','HOT_AC','MOR','SOUL_RNB','CLASSIC_ROCK','RHYTHMIC','OLDIES'].includes(s.format)&&
-      !['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'].includes(s.format);
+      !['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'].includes(s.format);
     const fmMusicAiInvestBoost=fmMusicAi?(y>=1978&&y<=1982?1.38:y>=1976?1.28:1.16):1;
 
     // ── TALENT CONTRACT RENEWALS ──────────────────────────────
@@ -4956,25 +5533,11 @@ function openDrift(sid){
   const cfg=dr.cfg;
   const val=dr.val;
 
-  // Upcoming inflections this decade
-  const upcoming=cfg.inflections.filter(inf=>
-    inf.y>G.year||(inf.y===G.year&&inf.p>=G.period)
-  ).slice(0,3);
-
-  const upcomingHtml=upcoming.length?`
-    <div class="ms2" style="margin-top:12px">
-      <div class="msh">⚡ UPCOMING INFLECTIONS</div>
-      ${upcoming.map(inf=>`
-        <div class="sr" style="flex-direction:column;align-items:flex-start;gap:4px;padding:8px 0;border-bottom:1px solid var(--adm)">
-          <span style="font-family:var(--fd);color:var(--amb)">${inf.name} — ${inf.y} ${inf.p===1?'Spring':'Fall'}</span>
-          <span style="font-family:var(--ft);font-size:14px;color:var(--mut)">${inf.desc}</span>
-          <span style="font-family:var(--ft);font-size:15px;color:var(--wht)">Your current positioning: <strong>${val<35?'favors '+cfg.poleA.name:val>65?'favors '+cfg.poleB.name:'neutral'}</strong></span>
-        </div>`).join('')}
-    </div>`:'<div class="ibox" style="margin-top:8px">No major inflections on the horizon this decade.</div>';
+  const strategicGuidanceHtml=htmlDriftStrategicGuidance(cfg, s.format);
 
   document.getElementById('drift-title').textContent=`${s.callLetters} — ${cfg.label.toUpperCase()}`;
   document.getElementById('driftb').innerHTML=`
-    <p class="di">Your positioning within <strong>${FM[s.format]?.l||s.format}</strong> affects which demographics you attract and how exposed you are to format inflection events. Move the slider deliberately — overcorrecting can cost you your core audience.</p>
+    <p class="di">Your positioning within <strong>${FM[s.format]?.l||s.format}</strong> shapes how the station sounds and who it serves. Move the slider deliberately — overcorrecting can cost you your core audience.</p>
     <div class="slsec">
       <div style="display:flex;justify-content:space-between;margin-bottom:4px">
         <span style="font-family:var(--fd);font-size:15px;color:var(--mut);text-transform:uppercase">${cfg.poleA.name}</span>
@@ -4988,7 +5551,7 @@ function openDrift(sid){
       </div>
       <div class="sln2" id="drift-note" style="margin-top:10px;font-size:15px"></div>
     </div>
-    ${upcomingHtml}
+    ${strategicGuidanceHtml}
     <button class="cfm" id="drift-btn" onclick="doDrift('${sid}')">COMMIT POSITIONING</button>
     <button class="cnl" onclick="cm('m-drift')">CANCEL</button>`;
   updDrift(sid, val);
@@ -5052,33 +5615,254 @@ function pledgeDriveCheck(G){
   });
   return acts;
 }
+
+/** Half-year index from game start (1970 Spring = 0). */
+function tradeNewsPeriodIndex(y,p){
+  return (y-1970)*2+(p-1);
+}
+
+/**
+ * Trade news foreshadows timeline shifts 1–3 years (2–6 half-years) ahead: LOW → MEDIUM → HIGH.
+ * Anchors align with EVDATA unlocks / shocks; copy stays observational — no named impact dates or guarantees.
+ */
+const TRADE_NEWS_CHAINS=[
+  {id:'tn_disco_backlash',anchorYear:1979,anchorPeriod:2,
+    low:[
+      'Record stores report slowing disco sales in several markets.',
+      'Record stores report slowing dance-single sell-through in several major markets.',
+      'Retail buyers quietly trim reorders on club-heavy releases.',
+      'Rock programmers seeing increased callout interest.',
+      'Rock programmers in a few metros note rising callout scores on guitar-driven titles.',
+    ],
+    medium:[
+      'Consultants circulate memos questioning whether dance-heavy clocks are overheating.',
+      'Some markets show restless male 18–24 diary behavior away from pure disco dayparts.',
+      'Label promo reps grumble that rock-leaning adds are getting longer looks in focus groups.',
+    ],
+    high:[
+      'Program directors whisper about "format fatigue" on dance-intensive stations — nobody agrees what replaces it.',
+      'Trade chatter links crowded dance playlists to softer male numbers in multiple books.',
+      'A few heritage FM brands are testing slightly leaner dance rotations without announcing anything publicly.',
+    ],
+  },
+  {id:'tn_fm_overtakes',anchorYear:1977,anchorPeriod:1,
+    low:[
+      'Diary vendors note FM gaining younger cume in car-heavy dayparts.',
+      'Sales houses say AM music sellers are being asked sharper questions about demo skew.',
+    ],
+    medium:[
+      'Several markets show FM music stations winning diary battles AM used to own outright.',
+      'Agency buyers hint they will pay for FM reach even where AM still posts raw numbers.',
+    ],
+    high:[
+      'Cluster managers quietly model scenarios where FM becomes the default music band.',
+      'Trade press runs pieces on AM stations "rethinking music" without prescribing formats.',
+    ],
+  },
+  {id:'tn_classic_rock',anchorYear:1980,anchorPeriod:1,
+    low:[
+      'Album-oriented programmers talk more about catalog depth in panel Q&A.',
+      'Label reps push heritage rock titles for adds alongside current singles.',
+    ],
+    medium:[
+      'A few FM brands experiment with longer non-current stretches in afternoon drive.',
+      'Consultants note male 25–54 diary strength on guitar-based playlists in several books.',
+    ],
+    high:[
+      'Format panels debate "how classic is too classic" before anyone names a new lane.',
+      'Promo budgets shift slightly toward established rock acts in competitive metros.',
+    ],
+  },
+  {id:'tn_adult_contemp',anchorYear:1980,anchorPeriod:2,
+    low:[
+      'Soft hits gaining traction among 25–49 women.',
+      'Soft hits show upticks among 25–49 women in scattered PPM and diary markets.',
+      'Music directors report mellower currents testing well in focus groups.',
+    ],
+    medium:[
+      'Agency planners ask for less aggressive beds under retail spots in several regions.',
+      'Sales decks emphasize "comfort" and "workplace friendly" for midday avails.',
+    ],
+    high:[
+      'Clusters quietly pilot softer clocks on FM outlets that used to chase younger demos.',
+      'Advertisers showing interest in less aggressive music formats.',
+      'Advertisers show interest in formats pitched as less aggressive — nobody commits on paper.',
+    ],
+  },
+  {id:'tn_chr_mature',anchorYear:1982,anchorPeriod:2,
+    low:[
+      'Top-40 trackers see CHR reclaiming diary share in a handful of hot markets.',
+      'Promo priorities tilt toward pop singles that can clear multiple station types.',
+    ],
+    medium:[
+      'Programmers argue on panels about tighter rotations versus broader pop playlists.',
+      'National buys increasingly bundle CHR with adjacent formats in the same cluster.',
+    ],
+    high:[
+      'Consultants warn lagging stations that "hit radio" is stealing younger cume in competitive books.',
+      'Label promo tours target CHR-heavy metros for priority adds.',
+    ],
+  },
+  {id:'tn_urban_contemp',anchorYear:1983,anchorPeriod:1,
+    low:[
+      'R&B crossover singles pick up spins outside traditional soul outlets in a few cities.',
+      'Night-show hosts report heavier requests for rhythmic pop titles.',
+    ],
+    medium:[
+      'Agency buyers ask after stations that can deliver younger Black and Latino diaries.',
+      'Programmers debate how far to lean rhythmic without shedding older core listeners.',
+    ],
+    high:[
+      'Trade gossip says major-market FM clusters are scouting "urban-leaning" dayparts.',
+      'Promo budgets flow toward acts that chart on both R&B and pop lists.',
+    ],
+  },
+  {id:'tn_oldies_wave',anchorYear:1983,anchorPeriod:2,
+    low:[
+      'Nostalgia-themed weekends pull respectable diary spikes in several markets.',
+      'Music libraries from the 50s and 60s get dusted off for specialty programming tests.',
+    ],
+    medium:[
+      'Consultants pitch "boomer memory" formats as a hedge against CHR churn.',
+      'A few AM outlets experiment with older gold hours without rebranding.',
+    ],
+    high:[
+      'Group PDs quietly compare notes on library depth versus personality costs.',
+      'Sales materials start pitching "classic hits" language before formats lock in.',
+    ],
+  },
+  {id:'tn_alt_rock',anchorYear:1991,anchorPeriod:1,
+    low:[
+      'Music press hype around guitar bands spills into programmer email chains.',
+      'Add charts show "alternative" labels gaining spins on adventurous FM outlets.',
+    ],
+    medium:[
+      'A few mainstream rock stations sneak non-current cuts into rotation as experiments.',
+      'Agency creatives ask for spots on outlets that reach teens and college-age listeners.',
+    ],
+    high:[
+      'Format meetings get tense over how "alternative" fits next to heritage rock brands.',
+      'Promo tours route through clubs and markets where new acts break first.',
+    ],
+  },
+  {id:'tn_spanish',anchorYear:1992,anchorPeriod:2,
+    low:[
+      'Spanish-language diary cells show uneven growth in Sun Belt metros.',
+      'Small advertisers test ethnic buys on a handful of standalone AMs.',
+    ],
+    medium:[
+      'Regional promoters report stronger ticket sales for Latin tours in border states.',
+      'Cluster owners ask whether bilingual sellers are worth hiring in certain ZIPs.',
+    ],
+    high:[
+      'National agencies quietly model Hispanic reach as a separate line item in RFPs.',
+      'Engineering filings show a few new FM allocations aimed at Spanish-language use.',
+    ],
+  },
+  {id:'tn_rhythmic_hot_ac',anchorYear:2000,anchorPeriod:1,
+    low:[
+      'CHR panels note rhythmic pop and R&B crossovers eating shared spins.',
+      'Hot AC testers in a few markets add tempo without calling it a rebrand.',
+    ],
+    medium:[
+      'Programmers argue how to label stations that play pop, rhythm, and recurrents on one clock.',
+      'Agency buyers request packages that mirror younger female demos across dayparts.',
+    ],
+    high:[
+      'Group strategy decks compare "rhythmic" and "hot AC" clocks side by side — internally.',
+      'Consultants warn traditional AC brands about flankers from younger-leaning playlists.',
+    ],
+  },
+  {id:'tn_classic_hits',anchorYear:2005,anchorPeriod:1,
+    low:[
+      'Oldies brands report pressure as core listeners age out of prime buying demos.',
+      'Music logs show wider 70s and 80s stretches creeping into daytime hours.',
+    ],
+    medium:[
+      'Sales decks experiment with "classic hits" wording in place of "oldies."',
+      'Programmers swap slogans that sound less "sock hop" and more "throwback."',
+    ],
+    high:[
+      'Cluster managers weigh library costs against rebranding risk on heritage signals.',
+      'Agencies ask which stations still own the 35–54 money demo with gold-based formats.',
+    ],
+  },
+  {id:'tn_streaming',anchorYear:2005,anchorPeriod:2,
+    low:[
+      'Industry blogs buzz about personalized online audio — impact on radio still unclear.',
+      'A few sales reps hear early questions about digital alternatives in younger demos.',
+    ],
+    medium:[
+      'PPM commentary notes phone and web use fragmenting reported listening in dense markets.',
+      'Talk and heritage brands pitch "appointment listening" harder to skeptical buyers.',
+    ],
+    high:[
+      'Group finance teams ask for scenarios where streaming pulls marginal music cume.',
+      'Programmers quietly lengthen stopsets on music stations to protect TSL — opinions vary.',
+    ],
+  },
+  {id:'tn_podcast',anchorYear:2012,anchorPeriod:1,
+    low:[
+      'On-demand audio startups court talent with small guarantees and big equity stories.',
+      'Talk stations notice podcasters recycling similar topics in overnight slots.',
+    ],
+    medium:[
+      'Agencies experiment with host-read ads on downloadable shows alongside terrestrial.',
+      'Talent agents negotiate "digital side rights" in contract talks.',
+    ],
+    high:[
+      'Newsrooms and talk brands debate whether to simulcast or differentiate online.',
+      'Sales leaders ask which dayparts still justify live bodies versus packaged replays.',
+    ],
+  },
+];
+const TRADE_NEWS_STAGE_START={low:6,medium:4,high:2};
+const TRADE_NEWS_STAGE_END={low:5,medium:3,high:1};
+
+function injectTradeNewsForeshadow(G){
+  if(!G||G.score?.isSandbox)return;
+  if(!G._tradeNewsFired)G._tradeNewsFired={};
+  const curIdx=tradeNewsPeriodIndex(G.year,G.period);
+  const candidates=[];
+  for(const chain of TRADE_NEWS_CHAINS){
+    const anchorIdx=tradeNewsPeriodIndex(chain.anchorYear,chain.anchorPeriod);
+    const delta=anchorIdx-curIdx;
+    if(delta<1||delta>6)continue;
+    const stage=delta>=5?'low':delta>=3?'medium':'high';
+    const key=`${chain.id}:${stage}`;
+    if(G._tradeNewsFired[key])continue;
+    const st=TRADE_NEWS_STAGE_START[stage];
+    const en=TRADE_NEWS_STAGE_END[stage];
+    if(delta!==st&&delta!==en)continue;
+    const msgs=chain[stage];
+    if(!msgs||!msgs.length)continue;
+    candidates.push({chain,stage,key,msgs});
+  }
+  if(!candidates.length)return;
+  const pick=candidates[Math.floor(Math.random()*candidates.length)];
+  const text=pick.msgs[Math.floor(Math.random()*pick.msgs.length)];
+  const v=pick.stage==='low'?'LOW':pick.stage==='medium'?'MEDIUM':'HIGH';
+  G._tradeNewsFired[pick.key]=true;
+  G.news.unshift({v,t:text,y:G.year,p:G.period,type:'trade_news'});
+}
+
 function applyDriftInflections(G){
-  // Check each driftable format for historical inflection events this period
-  const acts=[];
+  // Apply drift inflection effects on mom targets (no named "event" headlines — see injectTradeNewsForeshadow)
   G.stations.forEach(s=>{
     const dr=getDrift(s);
     if(!dr)return;
     (dr.cfg.inflections||[]).forEach(inf=>{
       if(inf.y===G.year&&inf.p===G.period){
-        // Event fires — compute effect based on current drift
         const effect=inf.effect(s,dr.val);
         if(Math.abs(effect)<0.001)return;
-        // Apply as a share modifier by nudging mom targets
         Object.keys(s.mom||{}).forEach(coh=>{
           const m=s.mom[coh];
           if(m)m.tgt=Math.max(0.001,Math.min(0.30,m.tgt+effect));
         });
-        const dirMsg=effect>0
-          ?'gaining momentum — the format is catching on with listeners'
-          :'losing ground — audience is shifting away from the current sound';
-        const owner=s.isPlayer?'YOUR':'';
-        acts.push({v:effect>0?'MEDIUM':'HIGH',
-          t:`📡 ${inf.name}: ${owner?'YOUR ':''}${s.callLetters} (${FM[s.format]?.l}) — ${dirMsg}.`,
-          iy:s.isPlayer});
       }
     });
   });
-  return acts;
+  return [];
 }
 function chkEv(G){
   const f=[];
@@ -5094,15 +5878,15 @@ function applyEv(G,ev){
     if(e.startsWith('fp+')){/* fmp now driven by smoothstep curve — event logged for news only */}
     else if(e.startsWith('ad+')){G.adx=Math.min(2.5,G.adx+parseFloat(e.slice(3)));}
     else if(e.startsWith('ad-')){G.adx=Math.max(.3,G.adx-parseFloat(e.slice(3)));}
-    else if(e==='ntb'||e==='ntb2'||e==='ntb3')G.stations.filter(s=>['NEWS_TALK','SPORTS_TALK'].includes(s.format)).forEach(s=>{s.oq=Math.min(100,s.oq+5);Object.values(s.prog).forEach(sl=>{if(sl)sl.quality=Math.min(100,sl.quality+4);});});
-    else if(e==='talkboost')G.stations.filter(s=>['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'].includes(s.format)).forEach(s=>{s.ops.sell=Math.min(.96,s.ops.sell+.06);});
+    else if(e==='ntb'||e==='ntb2'||e==='ntb3')G.stations.filter(s=>['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format)).forEach(s=>{s.oq=Math.min(100,s.oq+5);Object.values(s.prog).forEach(sl=>{if(sl)sl.quality=Math.min(100,sl.quality+4);});});
+    else if(e==='talkboost')G.stations.filter(s=>['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'].includes(s.format)).forEach(s=>{s.ops.sell=Math.min(.96,s.ops.sell+.06);});
     else if(e==='disco')G.stations.filter(s=>s.format==='SOUL_RNB').forEach(s=>{s.ops.sell=Math.min(.96,s.ops.sell+.04);});
     else if(e==='anti-disco')G.stations.filter(s=>s.format==='SOUL_RNB').forEach(s=>{s.oq=Math.max(10,s.oq-8);});
     else if(e==='sat+')G.satDrag=Math.min(.25,G.satDrag+.04);
     else if(e==='stream+')G.streamDrag=Math.min(.60,G.streamDrag+.06);
     else if(e==='amtalk_warn'||e==='amtalk_warn2'){
       // If player has an AM Talk/Sports station without FM, make it personal
-      const amTalkStns=G.ps.filter(s=>['NEWS_TALK','SPORTS_TALK'].includes(s.format)&&s.sig.type==='AM'&&!s.fmBooster&&!s.simulcastWith);
+      const amTalkStns=G.ps.filter(s=>['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format)&&s.sig.type==='AM'&&!s.fmBooster&&!s.simulcastWith);
       if(amTalkStns.length){
         const names=amTalkStns.map(s=>s.callLetters).join(', ');
         G.news.unshift({v:'HIGH',t:`📻 ${names}: Your AM Talk ${amTalkStns.length>1?'stations are':'station is'} now facing audience erosion from streaming and podcasts. Add an FM simulcast or translator to stop the bleed.`,y:G.year,p:G.period,iy:true});
@@ -5324,13 +6108,34 @@ function applyMarketOpeningShape(stations,marketId){
   stations.forEach(s=>{
     if(!s||s._bpSlotDeferred)return;
     let f=1;
-    if(s.format==='COUNTRY'&&s.sig?.type==='AM'){
-      if(marketId==='nashville')f*=1.09;
-      if(marketId==='losangeles')f*=0.84;
-      if(marketId==='newyork')f*=0.84;
+    if(s.format==='COUNTRY'){
+      if(s.sig?.type==='AM'){
+        if(marketId==='nashville')f*=1.09;
+        if(marketId==='losangeles')f*=0.84;
+        if(marketId==='newyork')f*=0.93;
+        if(marketId==='chicago')f*=0.88;
+      }else if(s.sig?.type==='FM'){
+        if(marketId==='newyork')f*=0.62;
+        if(marketId==='losangeles')f*=0.78;
+        if(marketId==='chicago')f*=0.85;
+        if(marketId==='nashville')f*=1.06;
+      }
     }
     if(s.format==='MOR'&&s.sig?.type==='AM'&&(marketId==='newyork'||marketId==='chicago'))f*=1.04;
     if(s.format==='NEWS_TALK'&&s.sig?.type==='AM'&&(marketId==='newyork'||marketId==='chicago'))f*=1.03;
+    if(marketId==='newyork'){
+      if(['TOP40','ALBUM_ROCK'].includes(s.format)&&s.sig?.type==='FM')f*=1.045;
+      if(s.format==='BEAUTIFUL_MUSIC'&&s.sig?.type==='FM')f*=1.04;
+      if(s.format==='NEWS_TALK'&&s.sig?.type==='AM')f*=1.035;
+    }
+    if(marketId==='losangeles'){
+      if(['ALBUM_ROCK','TOP40'].includes(s.format)&&s.sig?.type==='FM')f*=1.03;
+      if(['SPANISH','URBAN_CONTEMP'].includes(s.format))f*=1.025;
+    }
+    if(marketId==='chicago'){
+      if(['TOP40','ALBUM_ROCK'].includes(s.format)&&s.sig?.type==='FM')f*=1.02;
+    }
+    if(marketId==='nashville'&&s.format==='COUNTRY'&&s.sig?.type==='FM')f*=1.05;
     if(f!==1){
       s.oq=Math.round(Math.min(90,Math.max(15,s.oq*f)));
       Object.values(s.prog).forEach(sd=>{if(sd&&sd.quality!=null)sd.quality=Math.round(Math.min(93,sd.quality*Math.sqrt(f)));});
@@ -5346,20 +6151,19 @@ function genMarket(scenId){
   const sc=scenId?SC.find(s=>s.id===scenId)||pick(SC):pick(SC);
   const bpYear=sc.startYear||1970;
   const stations=BP.map((bp,i)=>{
-    const freq=nextFreq(bp.type);
-    if(bpYear===1970&&ATLANTA_1970_DEFER_IDX.has(i))
+    const eff=effectiveBpForMarket(i,ACTIVE_MARKET);
+    const freq=nextFreq(eff.type);
+    if(bpYear===1970&&isBpSlotDeferred1970(i,ACTIVE_MARKET))
       return{_bpSlotDeferred:true,_bpIdx:i,_deferFreq:freq};
-    return mkStn(bp,freq,bpYear);
+    return mkStn(eff,freq,bpYear);
   });
   stations.forEach((s,i)=>{ if(s&&!s._bpSlotDeferred) s.color=CLR[i%CLR.length]; });
   // BP stations are established — mark them mature so recalc
   // uses their full tier b-value, not launchB (which is for new entrants)
   stations.forEach(s=>{ if(s&&!s._bpSlotDeferred) s.launchPeriod=-999; });
 
-  // Clear channel designation: BP index 4 (dominant 50kW AM MOR) is Class A: full night power.
-  // One other 50kW AM (index 0, the dominant Top40) is also clear channel in this market.
-  // The rest (indices 1, 2, 5, 10) are 50kW daytime / reduced-power directional at night.
-  [0, 4].forEach(i => { const st=stations[i]; if(st&&!st._bpSlotDeferred) st.clearChannel = true; });
+  // AM 50kW count by market tier (mega vs large vs medium); excess → 10/5/1kW/DA. Clear-channel on top two survivors.
+  applyMarketTierAmPowerCaps(stations,ACTIVE_MARKET);
 
   applyMarketOpeningShape(stations,ACTIVE_MARKET);
 
@@ -5498,7 +6302,7 @@ function genMarket(scenId){
       fmp:effectiveFmpForMarket(startYear,ACTIVE_MARKET),adx:adxMod*(1.0+activeMkt2.adxBonus),satDrag:0,
       streamDrag:Math.min(.60,EVDATA.filter(ev=>ev.e==='stream+'&&ev.y<startYear).length*0.06),
       fccAM,fccFM,
-      unlockedFormats:Object.keys(FM).filter(f=>FM[f].unlock<=startYear),
+      unlockedFormats:Object.keys(FM).filter(f=>formatAllowedInMarket(f,ACTIVE_MARKET,startYear)),
       news:[{v:'LOW',t:`Campaign begins — ${activeMkt2.label} radio, ${startYear}. ${sc.d.split('.')[0]}.`,y:startYear,p:1}],
       evq:remainingEvq,
       score:{shareHistory:[],peakRevenue:0,decadeScores:{},isSandbox:false},
@@ -5507,6 +6311,7 @@ function genMarket(scenId){
       stationFinHistory:{},
       debtWarningQ:0,
       loans:[],
+      talentBench:[],
       _atl1970DeferredQueue:[],
       sportsRights:{},franchiseRights:{},teamRecords:{},
     };
@@ -5521,7 +6326,7 @@ function genMarket(scenId){
     sc,cash:sc.cash,
     fmp:effectiveFmpForMarket(1970,ACTIVE_MARKET),adx:1.0+activeMkt.adxBonus,satDrag:0,streamDrag:0,
     fccAM:1,fccFM:1,
-    unlockedFormats:Object.keys(FM).filter(f=>FM[f].unlock<=1970),
+    unlockedFormats:Object.keys(FM).filter(f=>formatAllowedInMarket(f,ACTIVE_MARKET,1970)),
     news:[],evq:[...EVDATA],
     score:{shareHistory:[],peakRevenue:0,decadeScores:{},isSandbox:false},
     rankerHistory:[],
@@ -5529,6 +6334,7 @@ function genMarket(scenId){
     stationFinHistory:{},
     debtWarningQ:0,
     loans:[],
+    talentBench:[],
     _atl1970DeferredQueue:ATLANTA_1970_DEFERRED_LAUNCHES.map(({bpIdx,y,p})=>({bpIdx,y,p})),
     sportsRights:{},franchiseRights:{},teamRecords:{},
   };
@@ -5544,7 +6350,7 @@ function processAtlanta1970DeferredLaunches(G){
     const i=ent.bpIdx;
     const ph=G.stations[i];
     if(!ph||!ph._bpSlotDeferred)continue;
-    const bp=BP[i];
+    const bp=effectiveBpForMarket(i,G.marketId||ACTIVE_MARKET);
     const freq=ph._deferFreq;
     const s=mkStn(bp,freq,G.year);
     s.color=CLR[i%CLR.length];
@@ -5879,7 +6685,9 @@ function breakSimulcast(G,stnId){
   if(partner){
     partner.simulcastWith=null;
     delete partner._simulcastSource;
+    delete partner._prevRank;
   }
+  delete s._prevRank;
 }
 function canSimulcast(G,s1,s2){
   // Must be player-owned, same format, neither already paired
@@ -5953,6 +6761,35 @@ function buildSimulcastCombinedRankRows(allStations){
   rows.sort((a,b)=>b.share-a.share);
   return rows;
 }
+/** Commercial-only — same universe as rank milestones (excludes public / deferred). */
+function buildCommercialCombinedRankRows(G){
+  return buildSimulcastCombinedRankRows([...G.stations].filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic));
+}
+/** Market rank (1-based) using combined simulcast rows; one rank per AM/FM pair. */
+function combinedMarketRankForStation(s, combinedRows){
+  const partner=simulcastPartnerStation(s);
+  if(partner){
+    const {lead,rcv}=simulcastPairLeadReceiver(s,partner);
+    const idx=combinedRows.findIndex(r=>r.pair&&r.lead.id===lead.id&&r.rcv.id===rcv.id);
+    return idx>=0?idx+1:0;
+  }
+  const idx=combinedRows.findIndex(r=>!r.pair&&r.st.id===s.id);
+  return idx>=0?idx+1:0;
+}
+/** Milestone / ticker label: one simulcast pair reads as a single unit. */
+function milestoneRankLabelHtml(s){
+  const p=simulcastPartnerStation(s);
+  if(!p)return '<strong>'+s.callLetters+'</strong>';
+  const {lead,rcv}=simulcastPairLeadReceiver(s,p);
+  return '<strong>'+callDisplay(lead)+'</strong> & <strong>'+callDisplay(rcv)+'</strong>';
+}
+/** Combined share for messaging when simulcast; else this leg’s share. */
+function milestoneRankSharePct(s){
+  const p=simulcastPartnerStation(s);
+  if(!p)return pct(s.rat.share);
+  const {lead,rcv}=simulcastPairLeadReceiver(s,p);
+  return pct(lead.rat.share+rcv.rat.share);
+}
 function scrollModalContentToTop(overlayId){
   const ov=document.getElementById(overlayId);
   if(!ov)return;
@@ -6006,7 +6843,7 @@ function buildResearchReport(s,G){
     return Math.max(0.12,0.12-(year-1993)*0.005);
   })();
   const amPenalty=isAMMusic?Math.max(0.10,(1.0-0.60*fmp)*amViab):1.0;
-  const isTalkAM=isAM&&['NEWS_TALK','SPORTS_TALK','GOSPEL','PODCAST_TALK'].includes(s.format);
+  const isTalkAM=isAM&&['NEWS_TALK','ALL_NEWS','SPORTS_TALK','GOSPEL','PODCAST_TALK'].includes(s.format);
 
   // ── COMPETITION ──
   const compFmts=FMT_COMPETITION[s.format]||[];
@@ -6066,7 +6903,7 @@ function buildResearchReport(s,G){
     if(pw==='translator')sigSection+=row('Power','FM Translator','Low-power signal. Limited reach compared to full-power FM.','var(--amb)');
     else sigSection+=row('Power',pw.toUpperCase(),'','var(--off)');
   } else if(isTalkAM){
-    const amTalkPenalty = (G.year>=2007&&['NEWS_TALK','SPORTS_TALK'].includes(s.format)&&!s.simulcastWith)
+    const amTalkPenalty = (G.year>=2007&&['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format)&&!s.simulcastWith)
       ? Math.round((1-Math.max(0.55, 1.0-_smoothstep(2007,2015,G.year)*0.20-_smoothstep(2015,2022,G.year)*0.20))*100)
       : 0;
     const amTalkColor = amTalkPenalty>=20?'var(--red)':amTalkPenalty>=8?'var(--ylw)':'var(--grn)';
@@ -6415,7 +7252,8 @@ function rivalReformat(G){
   const formatSunset={BEAUTIFUL_MUSIC:1995,MOR:1998,FULL_SERVICE:1975};
   const eligibleFormats=Object.keys(FM).filter(f=>
     !FM[f]?.public && f!=='FULL_SERVICE' &&
-    (G.unlockedFormats?.includes(f)||FM[f].unlock<=G.year) &&
+    formatUnlockedForYear(f,G) &&
+    formatAllowedInMarket(f,G.marketId,G.year) &&
     (!formatSunset[f]||G.year<formatSunset[f])
   );
 
@@ -6499,7 +7337,7 @@ function rivalReformat(G){
         }
         // Bonus for formats completely absent from market — realistic gap-filling
         if((fmtCounts[f]||0)===0&&FM[f]?.unlock<=G.year){
-          if(['NEWS_TALK','SPORTS_TALK','COUNTRY','CLASSIC_ROCK'].includes(f))score*=2.5;
+          if(['NEWS_TALK','ALL_NEWS','SPORTS_TALK','COUNTRY','CLASSIC_ROCK'].includes(f))score*=2.5;
         }
         // Maverick/Scrapper more willing to bet on emerging formats
         if(s.pers?.ag>=0.70&&count===0)score*=1.4;
@@ -6595,7 +7433,7 @@ function runConsolidation(G){
       const scored=targets.map(s=>{
         let score=s.rat.share*100;
         if(s.sig.type==='FM')score*=1.4;
-        if(['NEWS_TALK','SPORTS_TALK','CHR','COUNTRY','ADULT_CONTEMP'].includes(s.format))score*=1.2;
+        if(['NEWS_TALK','ALL_NEWS','SPORTS_TALK','CHR','COUNTRY','ADULT_CONTEMP'].includes(s.format))score*=1.2;
         // Prefer stations in formats they don't already own in this market
         const ownedFormats=corp.stations.map(id=>G.stations.find(st=>st.id===id)?.format).filter(Boolean);
         if(!ownedFormats.includes(s.format))score*=1.3;
@@ -6894,12 +7732,13 @@ function doLMALessor(sid) {
   // AI operator picks a format — they won't duplicate the lessor's existing formats
   // (real LMA agreements routinely include non-compete clauses on format)
   const _myFormats = G.ps.filter(st=>st.id!==s.id).map(st=>st.format);
-  const _availFmts = G.unlockedFormats.filter(f=>
+  const _availFmts = Object.keys(FM).filter(f=>
     !_myFormats.includes(f) && f!==s.format &&
-    (FM[f]?.ri||1)<=G.year && !['FULL_SERVICE','PUBLIC_RADIO'].includes(f)
+    formatUnlockedForYear(f,G) && formatAllowedInMarket(f,G.marketId,G.year) &&
+    !FM[f]?.public && !['FULL_SERVICE','PUBLIC_RADIO'].includes(f)
   );
   // Prefer formats with decent CPM that suit the signal type
-  const _amFriendly=['NEWS_TALK','SPORTS_TALK','COUNTRY','GOSPEL','ADULT_STANDARDS','OLDIES','CLASSIC_HITS'];
+  const _amFriendly=['NEWS_TALK','ALL_NEWS','SPORTS_TALK','COUNTRY','GOSPEL','ADULT_STANDARDS','OLDIES','CLASSIC_HITS'];
   const _fmtPool = s.sig.type==='AM'
     ? _availFmts.filter(f=>_amFriendly.includes(f)).concat(_availFmts.filter(f=>!_amFriendly.includes(f)))
     : _availFmts;
@@ -7006,33 +7845,46 @@ window._mpApply_lma_terminate = function({sid,role}) {
 const MILESTONE_Q=[];
 function checkRankMilestones(G){
   // In MP, host runs this for ALL player stations and tags milestones with _mpOwner.
-  // _prevRank is updated for every station regardless of owner.
+  // Simulcast AM/FM pairs use combined rank & share — one milestone per pair, not per leg.
   // MILESTONE_Q only receives milestones belonging to the local player.
-  const allComm=[...G.stations].filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic).sort((a,b)=>b.rat.share-a.rat.share);
+  const combinedRows=buildCommercialCombinedRankRows(G);
+  const seenPairs=new Set();
   G.ps.forEach(s=>{
-    const prev=s._prevRank||null;
-    const cur=allComm.findIndex(st=>st.id===s.id)+1;
+    const partner=simulcastPartnerStation(s);
+    if(partner){
+      const pk=[s.id,partner.id].sort().join('|');
+      if(seenPairs.has(pk))return;
+      seenPairs.add(pk);
+    }
+    const cur=combinedMarketRankForStation(s, combinedRows);
     if(!cur)return;
-    // Always update _prevRank so the next period has a valid baseline
-    if(prev===null){s._prevRank=cur;return;}
-    const gained=cur<prev,lost=cur>prev;
-    const sh=pct(s.rat.share);
+    const prev=s._prevRank??null;
+    const sh=milestoneRankSharePct(s);
+    const labelHtml=milestoneRankLabelHtml(s);
+    const sharePhrase=partner?'combined share':'total share';
     const isMyStation = MP.mode!=='live' || s._mpOwner===MP.playerId;
+    if(prev===null){
+      s._prevRank=cur;
+      if(partner) partner._prevRank=cur;
+      return;
+    }
+    const gained=cur<prev,lost=cur>prev;
     let m=null;
     if(cur===1&&prev>1)
-      m={type:'gain',title:'NUMBER ONE',body:'<strong>'+s.callLetters+'</strong> is now the #1 station in the market — '+sh+' total share.',owner:s._mpOwner};
+      m={type:'gain',title:'NUMBER ONE',body:labelHtml+' is now the #1 station in the market — '+sh+' '+sharePhrase+'.',owner:s._mpOwner};
     else if(cur>1&&prev===1)
-      m={type:'loss',title:'LOST #1',body:'<strong>'+s.callLetters+'</strong> has fallen from the top spot. Now #'+cur+' at '+sh+'.',owner:s._mpOwner};
+      m={type:'loss',title:'LOST #1',body:labelHtml+' has fallen from the top spot. Now #'+cur+' at '+sh+'.',owner:s._mpOwner};
     else if(gained&&cur<=5&&prev>5)
-      m={type:'gain',title:'TOP 5',body:'<strong>'+s.callLetters+'</strong> breaks into the top 5 — now ranked #'+cur+' with '+sh+'.',owner:s._mpOwner};
+      m={type:'gain',title:'TOP 5',body:labelHtml+' breaks into the top 5 — now ranked #'+cur+' with '+sh+'.',owner:s._mpOwner};
     else if(lost&&cur>5&&prev<=5)
-      m={type:'loss',title:'OUT OF TOP 5',body:'<strong>'+s.callLetters+'</strong> slips out of the top 5, now ranked #'+cur+'.',owner:s._mpOwner};
+      m={type:'loss',title:'OUT OF TOP 5',body:labelHtml+' slips out of the top 5, now ranked #'+cur+'.',owner:s._mpOwner};
     else if(gained&&cur<=10&&prev>10)
-      m={type:'gain',title:'TOP 10',body:'<strong>'+s.callLetters+'</strong> is now a top-10 station at rank #'+cur+'.',owner:s._mpOwner};
+      m={type:'gain',title:'TOP 10',body:labelHtml+' is now a top-10 station at rank #'+cur+'.',owner:s._mpOwner};
     else if(lost&&cur>10&&prev<=10)
-      m={type:'loss',title:'OUT OF TOP 10',body:'<strong>'+s.callLetters+'</strong> has dropped out of the top 10, now ranked #'+cur+'.',owner:s._mpOwner};
+      m={type:'loss',title:'OUT OF TOP 10',body:labelHtml+' has dropped out of the top 10, now ranked #'+cur+'.',owner:s._mpOwner};
     if(m&&isMyStation) MILESTONE_Q.push(m);
     s._prevRank=cur;
+    if(partner) partner._prevRank=cur;
   });
 }
 function flushMilestones(){
@@ -7059,8 +7911,8 @@ function openSales(sid){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const cur=s.salesForce?.level||0;
-  const allComm=[...G.stations].filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic).sort((a,b)=>b.rat.share-a.rat.share);
-  const rank=allComm.findIndex(st=>st.id===s.id)+1;
+  const _cr=buildCommercialCombinedRankRows(G);
+  const rank=combinedMarketRankForStation(s,_cr);
   const rows=SF_LEVELS.map(sf=>{
     const isCur=sf.id===cur;
     const estRevGain=sf.id>cur?Math.round(s.fin.rev*(sf.sellBonus-(SF_LEVELS[cur].sellBonus||0))*0.6):0;
@@ -7074,7 +7926,7 @@ function openSales(sid){
   // Cluster demo breadth note for the sales modal
   const _sDemoBand = f => {
     const yFmts=['TOP40','CHR','ALT_ROCK','RHYTHMIC','HOT_AC','URBAN_CONTEMP'];
-    const oFmts=['NEWS_TALK','SPORTS_TALK','BEAUTIFUL_MUSIC','ADULT_STANDARDS','GOSPEL','PODCAST_TALK'];
+    const oFmts=['NEWS_TALK','ALL_NEWS','SPORTS_TALK','BEAUTIFUL_MUSIC','ADULT_STANDARDS','GOSPEL','PODCAST_TALK'];
     return yFmts.includes(f)?'Youth (12–34)':oFmts.includes(f)?'Older (35+)':'Mid (25–54)';
   };
   const _clusterStns = myPS();
@@ -7090,7 +7942,7 @@ function openSales(sid){
       ? `<div class="ibox" style="font-size:14px;color:var(--mut)">Add stations covering different age demos to unlock cluster sellout bonuses — agencies pay a premium when you can reach Youth, Mid, and Older demos across one buy.</div>`
       : '';
   document.getElementById('salesb').innerHTML=
-    '<p class="di"><strong>'+s.callLetters+'</strong> · Rank #'+rank+' of '+allComm.length+' · '+Math.round(s.ops.sell*100)+'% sellout</p>'+
+    '<p class="di"><strong>'+s.callLetters+'</strong> · Rank #'+rank+' of '+_cr.length+' · '+Math.round(s.ops.sell*100)+'% sellout</p>'+
     _breadthNote+
     '<div class="ms2"><div class="msh">SALES TEAM</div>'+rows+'</div>'+
     '<div class="ibox" style="font-size:15px">Changes take effect next period.</div>'+
@@ -7114,6 +7966,7 @@ function advTurn(){
   btn.disabled=true;btn.textContent='⟳ PROCESSING...';
   setTimeout(()=>{
     try{
+      finalizeTalentBenchEndOfTurn(G);
       processAtlanta1970DeferredLaunches(G);
       const ev=[...chkEv(G),...applyDriftInflections(G),...pledgeDriveCheck(G),...runConsolidation(G),...runMarketAttrition(G)];
     corporateDecay(G);
@@ -7133,8 +7986,8 @@ function advTurn(){
     // so the MP broadcast block can build per-player milestones accurately.
     const _rankSnap={};
     if(MP.mode==='live'){
-      const _allComm2=[...G.stations].filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic).sort((a,b)=>b.rat.share-a.rat.share);
-      G.ps.forEach(s=>{ _rankSnap[s.id]={prev:s._prevRank||null, cur:_allComm2.findIndex(st=>st.id===s.id)+1}; });
+      const _combinedRows=buildCommercialCombinedRankRows(G);
+      G.ps.forEach(s=>{ _rankSnap[s.id]={prev:s._prevRank??null, cur:combinedMarketRankForStation(s,_combinedRows)}; });
     }
     checkRankMilestones(G);
     const acts=runAI(G);
@@ -7189,6 +8042,7 @@ function advTurn(){
     G.rankerHistory.push(snap);
     acts.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     ev.forEach(e=>G.news.unshift({v:'HIGH',t:`📡 ${e.t}: ${e.d}`,y:e.y,p:e.p}));
+    injectTradeNewsForeshadow(G);
     // Seasonal market note — brief context at the top of the feed each period
     const nextPeriodName=G.period===2?'FALL':'SPRING'; // period hasn't advanced yet
     const nextIsElection=G.period===2&&G.year%2===0;
@@ -7222,6 +8076,12 @@ function advTurn(){
     recordCompanyFinHistory(G, wasYear, wasPeriod, profit);
     recordStationFinHistory(G, wasYear, wasPeriod);
     showSum(profit,ev,acts,alerts,wasYear,wasPeriod,{sportsActs,franchiseActs});
+    // Multiplayer: campaign ends after Fall 2025 — build scores while G.year is still 2025 (playerScoreCalc weights)
+    if(MP.mode==='live'&&!G.continuesBeyondEnd&&wasYear===2025&&wasPeriod===2){
+      G.mpPhase='endgame';
+      G._mpFinalResults=buildMpFall2025EndgameResults();
+      G._mpShowEndgameAfterSumClose=true;
+    }
     if(G.period===1){G.period=2;}else{G.period=1;G.year++;}
     G.turn=(G.turn||0)+1;
     // BP-slot entrants scheduled for the new calendar period appear as soon as the clock advances
@@ -7259,21 +8119,30 @@ function advTurn(){
       const _dcYear = decadeEnd.includes(wasYear) && wasPeriod===2 ? wasYear : null;
       // Build per-player milestones from the pre-checkRankMilestones snapshot
       const _allMs = [];
+      const _msSeenPairs=new Set();
       G.ps.forEach(s=>{
-        const snap=_rankSnap[s.id]; if(!snap||snap.prev===null||!snap.cur) return;
+        const partner=simulcastPartnerStation(s);
+        if(partner){
+          const pk=[s.id,partner.id].sort().join('|');
+          if(_msSeenPairs.has(pk))return;
+          _msSeenPairs.add(pk);
+        }
+        const snap=_rankSnap[s.id]; if(!snap||snap.prev===null||snap.cur==null) return;
         const prev=snap.prev, cur=snap.cur;
         const gained=cur<prev, lost=cur>prev;
-        const sh=pct(s.rat.share);
+        const sh=milestoneRankSharePct(s);
         const owner=MP.players?.find(p=>p.playerId===s._mpOwner)?.name||'';
         const pfx=owner?`${owner}'s `:'';
         const op=simulcastOperationalSource(s);
+        const labelHtml=milestoneRankLabelHtml(s);
+        const fmtSeg=` (${pfx}${FM[op.format]?.l||op.format})`;
         let m=null;
-        if(cur===1&&prev>1) m={type:'gain',title:'NUMBER ONE',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[op.format]?.l||op.format}) is now #1 in the market — ${sh} share.`,owner:s._mpOwner};
-        else if(cur>1&&prev===1) m={type:'loss',title:'LOST #1',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[op.format]?.l||op.format}) has fallen from #1. Now #${cur} at ${sh}.`,owner:s._mpOwner};
-        else if(gained&&cur<=5&&prev>5) m={type:'gain',title:'TOP 5',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[op.format]?.l||op.format}) breaks into the top 5 — ranked #${cur} with ${sh}.`,owner:s._mpOwner};
-        else if(lost&&cur>5&&prev<=5) m={type:'loss',title:'OUT OF TOP 5',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[op.format]?.l||op.format}) slips out of the top 5.`,owner:s._mpOwner};
-        else if(gained&&cur<=10&&prev>10) m={type:'gain',title:'TOP 10',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[op.format]?.l||op.format}) enters the top 10 at #${cur}.`,owner:s._mpOwner};
-        else if(lost&&cur>10&&prev<=10) m={type:'loss',title:'OUT OF TOP 10',body:`<strong>${s.callLetters}</strong> (${pfx}${FM[op.format]?.l||op.format}) has dropped out of the top 10.`,owner:s._mpOwner};
+        if(cur===1&&prev>1) m={type:'gain',title:'NUMBER ONE',body:`${labelHtml}${fmtSeg} is now #1 in the market — ${sh} share.`,owner:s._mpOwner};
+        else if(cur>1&&prev===1) m={type:'loss',title:'LOST #1',body:`${labelHtml}${fmtSeg} has fallen from #1. Now #${cur} at ${sh}.`,owner:s._mpOwner};
+        else if(gained&&cur<=5&&prev>5) m={type:'gain',title:'TOP 5',body:`${labelHtml}${fmtSeg} breaks into the top 5 — ranked #${cur} with ${sh}.`,owner:s._mpOwner};
+        else if(lost&&cur>5&&prev<=5) m={type:'loss',title:'OUT OF TOP 5',body:`${labelHtml}${fmtSeg} slips out of the top 5.`,owner:s._mpOwner};
+        else if(gained&&cur<=10&&prev>10) m={type:'gain',title:'TOP 10',body:`${labelHtml}${fmtSeg} enters the top 10 at #${cur}.`,owner:s._mpOwner};
+        else if(lost&&cur>10&&prev<=10) m={type:'loss',title:'OUT OF TOP 10',body:`${labelHtml}${fmtSeg} has dropped out of the top 10.`,owner:s._mpOwner};
         if(m) _allMs.push(m);
       });
       mpBroadcastState(_dcYear, { profit, ev, acts, alerts, wasYear, wasPeriod, milestones:_allMs, sportsActs, franchiseActs });
@@ -7288,6 +8157,81 @@ function advTurn(){
     }
   },450);
 }
+
+// ── MP FALL 2025 ENDGAME (multiplayer campaign finale) ───────────
+function mpEndgameFrozen(){
+  return MP.mode==='live'&&G&&G.mpPhase==='endgame'&&!G.continuesBeyondEnd;
+}
+/** Composite ranking for MP finale — tiebreak: VP → score/100 → cash. */
+function buildMpFall2025EndgameResults(){
+  const allPids=[...new Set(G.ps.map(s=>s._mpOwner).filter(id=>id!==undefined))].sort((a,b)=>a-b);
+  const players=allPids.map(pid=>{
+    const sc=playerScoreCalc(pid);
+    const ps=G._playerScore?.[pid]||{};
+    const totalVP=ps.totalVP||Object.values(ps.decadeScores||{}).reduce((s,d)=>s+(d.vp||0),0);
+    const cash=G._playerCash?.[pid]||0;
+    const stns=G.ps.filter(s=>s._mpOwner===pid);
+    const stationCount=stns.length;
+    const totalRev=stns.reduce((s,st)=>s+(st.fin?.rev||0),0);
+    const estValue=Math.round(stns.reduce((s,st)=>s+Math.max(0,(st.fin?.rev||0))*8,0));
+    const name=(MP.players||[]).find(p=>p.playerId===pid)?.name||`Player ${pid+1}`;
+    const finalScore=totalVP*10000+Math.round(sc.total)*100+Math.floor(cash/1000);
+    return {pid,name,finalScore,totalVP,score100:sc.total,cash,stationCount,totalRev,estValue};
+  });
+  players.sort((a,b)=>b.finalScore-a.finalScore||b.totalVP-a.totalVP||b.cash-a.cash||b.score100-a.score100);
+  const top=players[0]?.finalScore;
+  const winnerPids=players.filter(p=>p.finalScore===top).map(p=>p.pid);
+  const coWinners=winnerPids.length>1;
+  return {year:2025,players,winnerPids,coWinners,topScore:top};
+}
+function showMpEndgameModal(){
+  if(MP.mode!=='live'||!G._mpFinalResults)return;
+  const r=G._mpFinalResults;
+  const winNames=r.winnerPids.map(pid=>(MP.players||[]).find(p=>p.playerId===pid)?.name||`Player ${pid+1}`).join(' · ');
+  const rows=r.players.map((p,i)=>{
+    const isW=r.winnerPids.includes(p.pid);
+    return`<div class="mp-endgame-row" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08);${isW?'background:rgba(212,175,55,.09)':''}">
+      <div style="font-family:var(--fd);font-size:22px;color:${isW?'var(--amb)':'var(--mut)'};width:32px">${i+1}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:var(--ft);font-size:15px;letter-spacing:.12em;color:${isW?'var(--wht)':'var(--off)'}">${p.name.toUpperCase()}</div>
+        <div style="font-family:var(--ft);font-size:14px;color:var(--mut);margin-top:4px">${f$(p.cash)} cash · ${p.stationCount} station${p.stationCount===1?'':'s'} · ${f$(p.totalRev)}/pd revenue · ~${f$(p.estValue)} est. value</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:var(--fd);font-size:24px;color:${isW?'var(--amb)':'var(--off)'}">${p.finalScore}</div>
+        <div style="font-family:var(--ft);font-size:12px;color:var(--mut)">FINAL SCORE</div>
+        <div style="font-family:var(--ft);font-size:13px;color:var(--mut);margin-top:2px">${p.totalVP} VP · ${p.score100}/100</div>
+      </div>
+    </div>`;
+  }).join('');
+  const winLine=r.coWinners
+    ?`<div class="mp-endgame-winner" style="text-align:center;padding:16px 12px 8px;font-family:var(--fd);font-size:22px;color:var(--amb);text-shadow:0 0 24px rgba(212,175,55,.35)">🏆 CO-WINNERS: ${winNames}</div>`
+    :`<div class="mp-endgame-winner" style="text-align:center;padding:16px 12px 8px;font-family:var(--fd);font-size:24px;color:var(--amb);text-shadow:0 0 28px rgba(212,175,55,.4)">🏆 WINNER: ${winNames}</div>`;
+  const el=document.getElementById('mp-endgame-body');
+  if(el) el.innerHTML=`<p class="di" style="font-size:15px;color:var(--mut);margin:0 0 14px 0;line-height:1.5">Fall 2025 ends the competitive campaign. Final score weights victory points, performance index, and cash. You may continue in sandbox after this screen.</p>${winLine}<div style="margin-top:8px;border:1px solid rgba(212,175,55,.25);border-radius:6px;overflow:hidden">${rows}</div>`;
+  document.body.classList.add('mp-endgame');
+  om('m-mp-endgame');
+}
+function mpContinueBeyondEndgame(){
+  if(MP.mode!=='live'||!G)return;
+  if(G.mpPhase!=='endgame')return;
+  G.continuesBeyondEnd=true;
+  G.mpPhase='playing';
+  G._mpShowEndgameAfterSumClose=false;
+  cm('m-mp-endgame');
+  document.body.classList.remove('mp-endgame');
+  renderAll();
+  MP.action('mp_continue',{});
+}
+window._mpApply_mp_continue=function(){
+  if(!G)return;
+  G.continuesBeyondEnd=true;
+  G.mpPhase='playing';
+  G._mpShowEndgameAfterSumClose=false;
+  cm('m-mp-endgame');
+  document.body.classList.remove('mp-endgame');
+  renderAll();
+  MP.renderStatus();
+};
 
 // ── MP END-GAME COMPARISON ───────────────────────────────────────
 function mpEndGameHTML(){
@@ -7443,6 +8387,29 @@ function openRanker(){
 }
 
 // ── COMPETITOR INTEL ──────────────────────────────────────────────
+/** Band + power + frequency for intel UI — never emits "undefined" (dial is on `s.freq`; `s.sig.freq` is optional). */
+function inferBandFromDialStr(raw){
+  if(raw==null||raw==='')return'';
+  const n=parseFloat(String(raw).replace(/[^\d.]/g,''));
+  if(Number.isNaN(n))return'';
+  if(n>=88&&n<=108)return'FM';
+  if(n>=0.52&&n<=1.71)return'AM';
+  return'';
+}
+function signalLineForIntel(s){
+  if(!s)return'Unknown frequency';
+  const sig=s.sig||{};
+  const raw=(s.freq!=null&&s.freq!=='')?String(s.freq).trim():((sig.freq!=null&&sig.freq!=='')?String(sig.freq).trim():'');
+  const freq=raw||'Unknown frequency';
+  let band=sig.type==='FM'?'FM':sig.type==='AM'?'AM':(sig.type?String(sig.type).trim():'');
+  if(!band)band=inferBandFromDialStr(raw);
+  if(!band)band='AM/FM';
+  const pw=sig.pw!=null&&sig.pw!==''?String(sig.pw):'';
+  const parts=[band];
+  if(pw)parts.push(pw);
+  parts.push(freq);
+  return parts.join(' · ');
+}
 function showCompIntel(sid){
   const s=G.stations.find(st=>st.id===sid);
   if(!s)return;
@@ -7507,7 +8474,7 @@ function showCompIntel(sid){
     <div class="ms2">
       <div class="msh">STATION PROFILE</div>
       <div class="sr"><span class="lb">Format</span><span class="vl">${fmd.l||op.format}</span></div>
-      <div class="sr"><span class="lb">Signal</span><span class="vl">${s.sig.type} ${s.sig.pw} · ${s.sig.freq}</span></div>
+      <div class="sr"><span class="lb">Signal</span><span class="vl">${signalLineForIntel(s)}</span></div>
       ${corpLine}
       <div class="sr"><span class="lb">On-Air Quality</span><span class="vl" style="color:${qColor}">${qLevel}</span></div>
     </div>
@@ -7565,8 +8532,9 @@ function hireModalRivalPoachCandidates(sid, slot){
     .slice(0,5);
 }
 let HS={sid:null,slot:null,pool:[],sel:null,poachRivalId:null};
-function openHire(sid){sid=ensureOpsSourceSid(sid);const s=G.stations.find(st=>st.id===sid);if(!s)return;HS={sid,slot:null,pool:[],sel:null,poachRivalId:null};rHire(s);om('m-tal');scrollModalContentToTop('m-tal');}
-function rHire(s){
+function openHire(sid){sid=ensureOpsSourceSid(sid);const s=G.stations.find(st=>st.id===sid);if(!s)return;HS={sid,slot:null,pool:[],sel:null,poachRivalId:null};rHire(s,'top');om('m-tal');scrollModalContentToTop('m-tal');}
+/** `scrollAfter`: `'top'` after open/daypart change; `'preserve'` (default) when only selection changes — keeps scroll so poach/free-agent picks don’t jump. */
+function rHire(s, scrollAfter){
   const slots=['morningDrive','afternoonDrive','midday','evening','overnight'];
   const _simSrc=simulcastProgrammingSource(s);
   const sbtns=slots.map(sl=>{
@@ -7622,10 +8590,18 @@ function rHire(s){
   const fmtHireNote=TALK_FMTS.includes(s.format)?'Local hosts beat syndication for building loyal listeners — especially morning drive.':'Morning Drive has the biggest ratings impact. Automation is cheap but bleeds share over time.';
   const hireReady=HS.poachRivalId||HS.sel!==null;
   const hireLabel=HS.poachRivalId?'HIRE (POACH)':'HIRE TALENT';
+  const mo=document.getElementById('m-tal')?.querySelector('.mo');
+  const preserveScroll=scrollAfter!=='top';
+  const prevScroll=preserveScroll&&mo?mo.scrollTop:0;
   document.getElementById('talb').innerHTML=`<p class="di">${fmtHireNote} Salary grows ~1–2% per year.</p><div class="ssl">${sbtns}</div><div id="tp">${ph}</div><button class="cfm" onclick="doHire()" ${!hireReady?'disabled':''}>${hireLabel}</button><button class="cnl" onclick="cm('m-tal')">CANCEL</button>`;
-  scrollModalContentToTop('m-tal');
+  if(scrollAfter==='top'){
+    scrollModalContentToTop('m-tal');
+  }else if(mo){
+    mo.scrollTop=prevScroll;
+    requestAnimationFrame(()=>{mo.scrollTop=prevScroll;});
+  }
 }
-function pickSlot(sid,sl){const s=G.stations.find(st=>st.id===sid);HS.slot=sl;HS.sel=null;HS.poachRivalId=null;HS.pool=mkPool(sl,s.format,G.year);rHire(s);}
+function pickSlot(sid,sl){const s=G.stations.find(st=>st.id===sid);HS.slot=sl;HS.sel=null;HS.poachRivalId=null;HS.pool=mkPool(sl,s.format,G.year);rHire(s,'top');}
 function pickTal(i){HS.sel=i;HS.poachRivalId=null;rHire(G.stations.find(st=>st.id===HS.sid));}
 function pickHirePoach(rivalId){HS.poachRivalId=rivalId;HS.sel=null;rHire(G.stations.find(st=>st.id===HS.sid));}
 function doHire(){
@@ -7732,143 +8708,324 @@ function doPromo(){
   cm('m-pr2');renderAll();
 }
 
-// 3a. FIRE TALENT
-// Talent shuffle state
+// 3a. TALENT ROSTER — assigned / bench / release (no instant fire from roster)
 let SHUFFLE={sid:null,fromSlot:null};
-
-function openFire(sid){
-  sid=ensureOpsSourceSid(sid);
-  SHUFFLE={sid,fromSlot:null};
-  const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  document.getElementById('fire-title').textContent='MANAGE TALENT';
-  const filled=Object.entries(s.prog).filter(([sl,sd])=>sd?.talent);
-  if(!filled.length){
-    const noTalentMsg=TALK_FMTS.includes(s.format)
-      ?'All dayparts are running syndicated or paid programming — no local talent on staff to release.'
-      :'All dayparts are running on automation — no on-air talent on staff to release.';
-    document.getElementById('fireb').innerHTML=`<p class="di">${noTalentMsg}</p><button class="cnl" onclick="cm('m-fire')">CLOSE</button>`;
-    om('m-fire');return;
-  }
-  // Station's overall quality for context
-  const stationOQ=s.oq||50;
-  const rows=filled.map(([sl,sd])=>{
-    const t=sd.talent;
-    const cyr=t.cyr||0;
-    const buyout=cyr>0.1?Math.round(t.salary*cyr*0.60/500)*500:0;
-    const canAfford=G.cash>=buyout;
-    const buyoutLabel=buyout>0
-      ?`<span style="color:${canAfford?'var(--amb)':'var(--red)'};font-size:15px">${cyr.toFixed(1)}yr left · buyout ${f$(buyout)}</span>`
-      :`<span style="color:var(--mut);font-size:15px">expired · free to release</span>`;
-
-    // Daypart contribution: slot quality × slot weight = share of station's total OQ
-    // Express as % of station performance this host is responsible for
-    const slotQ=Math.round(sd.quality||0);
-    const slotW=SW[sl]||0;
-    const contribution=stationOQ>0?Math.round((slotQ*slotW/stationOQ)*100):0;
-    // Trend: compare talent quality to slot quality — gap shows if host is lifting or dragging
-    const talQ=Math.round(t.quality);
-    const gap=talQ-slotQ; // positive = talent better than current slot output (growing), negative = declining
-    const trendLabel=gap>8?'↑ growing':gap<-8?'↓ fading':'→ steady';
-    const trendCol=gap>8?'var(--grn)':gap<-8?'var(--red)':'var(--mut)';
-    const perfCol=contribution>=25?'var(--grn)':contribution>=12?'var(--amb)':'var(--red)';
-
-    return `
-    <div style="background:var(--crd);border:1px solid var(--bdh);border-radius:6px;padding:12px 14px;margin-bottom:8px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
-        <div>
-          <div style="font-family:var(--fd);font-size:15px;letter-spacing:1px;color:var(--wht)">${SL[sl]} &nbsp;<span style="color:var(--mut);font-weight:normal;font-size:15px">· ${t.name}</span></div>
-          <div style="display:flex;gap:14px;margin-top:6px;flex-wrap:wrap">
-            <div style="font-size:15px"><span style="color:var(--mut)">TALENT</span> <span class="${qc(talQ)}" style="font-family:var(--fd)">${talQ}/100</span></div>
-            <div style="font-size:15px"><span style="color:var(--mut)">SLOT OUTPUT</span> <span class="${qc(slotQ)}" style="font-family:var(--fd)">${slotQ}/100</span></div>
-            <div style="font-size:15px"><span style="color:var(--mut)">SHARE CONTRIBUTION</span> <span style="font-family:var(--fd);color:${perfCol}">~${contribution}%</span></div>
-            <div style="font-size:15px"><span style="color:${trendCol}">${trendLabel}</span></div>
+let MOVE_CTX={fromSid:null,fromSlot:null,benchId:null};
+function rosterHtmlEsc(x){
+  return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+}
+function rosterSlotImpactLine(fromSlot,toSlot){
+  const a=slotLeverageWeight(fromSlot||'midday');
+  const b=slotLeverageWeight(toSlot||'midday');
+  if(b>a+0.02)return 'Higher-impact slot';
+  if(b<a-0.02)return 'Lower-impact slot';
+  return 'Similar impact';
+}
+function rosterFmtLong(st){
+  return FM[st.format]?.l||st.format;
+}
+/** Bold station header — shared by Manage Talent and Move destination lists. */
+function rosterStationSectionHeaderHtml(st){
+  const br=st.brand?` · ${st.brand}`:'';
+  return `<div style="font-family:var(--fd);font-size:16px;font-weight:700;letter-spacing:0.6px;color:var(--wht);margin:0 0 12px 0;padding-bottom:8px;border-bottom:2px solid rgba(245,166,35,.35)">${callDisplay(st)}${br} — ${rosterFmtLong(st)}</div>`;
+}
+function rosterTalentOnAirCardHtml(st,sl,t,contribution,talQ,fitPct,trendWord,trendCol,perfCol){
+  const slotLabel=SL[sl];
+  return`
+    <div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:10px">
+      <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1;min-width:200px;max-width:100%">
+          <div style="font-family:var(--fd);font-size:20px;letter-spacing:1px;color:var(--wht);line-height:1.25;text-transform:uppercase">
+            <span style="color:var(--amb)">${slotLabel}</span> — ${rosterHtmlEsc(t.name)}
           </div>
-          <div style="margin-top:5px;font-size:15px;color:var(--mut)">${f$(t.salary)}/yr &nbsp;·&nbsp; ${buyoutLabel}</div>
+          <div style="margin-top:8px;font-size:14px;color:var(--off);font-family:var(--fd)">${callDisplay(st)} · ${rosterFmtLong(st)} · ${f$(t.salary)}/yr</div>
+          <div style="margin-top:8px;font-size:14px;color:var(--mut)">Fit: ${fitPct} · Talent: <span class="${qc(talQ)}" style="font-family:var(--fd)">${talQ}</span></div>
+          <div style="margin-top:6px;font-size:14px;color:var(--off)">Contribution: <span style="font-family:var(--fd);color:${perfCol}">~${contribution}%</span> · <span style="color:${trendCol}">${trendWord}</span></div>
         </div>
-        <div style="display:flex;gap:6px;align-items:center;flex-shrink:0">
-          <button class="abt" style="padding:6px 10px;font-size:15px" onclick="openShuffle('${sid}','${sl}')">MOVE</button>
-          <button class="abt d" style="padding:6px 10px;font-size:15px;${!canAfford&&buyout>0?'opacity:.4;pointer-events:none':''}" onclick="doFire('${sid}','${sl}')">FIRE${buyout>0?' ('+f$(buyout)+')':''}</button>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-items:center;align-self:flex-end;flex-shrink:0">
+          <button class="abt" style="padding:8px 14px;font-size:14px;letter-spacing:1px" onclick="openRosterMoveFromSlot('${st.id}','${sl}')">MOVE</button>
+          <button class="abt" style="padding:8px 14px;font-size:14px;letter-spacing:1px;border-color:var(--amb);color:var(--amb)" onclick="rosterBenchClick('${st.id}','${sl}')">BENCH</button>
+          <button class="abt d" style="padding:8px 14px;font-size:14px;letter-spacing:1px" onclick="rosterFirePrompt('${st.id}','${sl}')">FIRE</button>
+        </div>
+      </div>
+    </div>`;
+}
+function rosterMoveDestSlotCardHtml(dst,sl,movingTalent,fromSlotKey){
+  const t=movingTalent;
+  const occ=dst.prog[sl]?.talent;
+  const fitPct=Math.round((t.formatFit[dst.format]||0.3)*100);
+  const impact=rosterSlotImpactLine(fromSlotKey,sl);
+  const resultLine=occ
+    ?`Result: ${rosterHtmlEsc(occ.name)} goes to bench`
+    :'Result: Open slot';
+  return`
+    <div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:10px">
+      <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:flex-start">
+        <div style="flex:1;min-width:200px;max-width:100%">
+          <div style="font-family:var(--fd);font-size:20px;letter-spacing:1px;color:var(--amb);text-transform:uppercase;line-height:1.2">${SL[sl]}</div>
+          <div style="margin-top:8px;font-size:14px;color:var(--mut)">Fit: ${fitPct}%</div>
+          <div style="margin-top:4px;font-size:14px;color:var(--off)">${impact}</div>
+          <div style="margin-top:6px;font-size:14px;color:var(--off)">${resultLine}</div>
+        </div>
+        <div style="display:flex;align-items:flex-end;flex-shrink:0;align-self:flex-end">
+          <button class="abt" style="padding:8px 14px;font-size:14px;letter-spacing:1px" onclick="doRosterPlace('${dst.id}','${sl}')">MOVE HERE</button>
+        </div>
+      </div>
+    </div>`;
+}
+/** Stations this human controls — never competitors (solo: isPlayer; MP: isPlayer + _mpOwner). */
+function rosterOwnedStations(){
+  return myPS().filter(s=>mpIsMe(s));
+}
+function myBenchEntries(){
+  ensureTalentBench(G);
+  return G.talentBench.filter(e=>MP.mode!=='live'||e._mpOwner===MP.playerId);
+}
+/** Player moves host to temporary bench (not a firing). */
+function benchTalentFromSlot(sid,slot){
+  const s=G.stations.find(st=>st.id===sid);
+  if(!removeTalentToBenchInternal(sid,slot))return false;
+  const t=G.talentBench[G.talentBench.length-1].talent;
+  G.news.unshift({v:'LOW',t:`${t.name} moved to the talent bench — ${callDisplay(s)} ${SL[slot]} on automation until reassigned.`,y:G.year,p:G.period});
+  MP.action('bench_add',{sid,slot});
+  return true;
+}
+function finalizeTalentBenchEndOfTurn(G){
+  ensureTalentBench(G);
+  if(!G.talentBench.length)return;
+  const names=G.talentBench.map(e=>e.talent.name);
+  G.talentBench=[];
+  G.news.unshift({v:'MEDIUM',t:`Talent bench cleared — ${names.join(', ')} left (not reassigned before period end). No buyout.`,y:G.year,p:G.period});
+}
+function releaseBenchEntryManual(benchId){
+  ensureTalentBench(G);
+  const ix=G.talentBench.findIndex(e=>e.id===benchId);
+  if(ix<0)return;
+  const ent=G.talentBench[ix];
+  if(MP.mode==='live'&&ent._mpOwner!==MP.playerId)return;
+  const t=ent.talent;
+  const cyr=t.cyr||0;
+  const buyout=cyr>0.1?Math.round(t.salary*cyr*0.60/500)*500:0;
+  if(buyout>0&&G.cash<buyout){showToast(`Need ${f$(buyout)} to release ${t.name}.`,'warn');return;}
+  if(buyout>0){G.cash-=buyout;if(MP.mode==='live'){if(!G._playerCash)G._playerCash={};G._playerCash[MP.playerId]=G.cash;MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash});}}
+  G.talentBench.splice(ix,1);
+  G.news.unshift({v:'MEDIUM',t:`Released ${t.name} from the talent bench.${buyout>0?' Buyout '+f$(buyout)+'.':''}`,y:G.year,p:G.period});
+  MP.action('bench_release',{benchId});
+  openTalentRoster();renderAll();
+}
+function openTalentRoster(){
+  document.getElementById('fire-title').textContent='MANAGE TALENT';
+  const mine=rosterOwnedStations();
+  const stationSections=[];
+  mine.forEach(st=>{
+    const stationOQ=st.oq||50;
+    const cards=[];
+    Object.entries(st.prog||{}).forEach(([sl,sd])=>{
+      if(!sd?.talent)return;
+      const t=sd.talent;
+      const slotQ=Math.round(sd.quality||0);
+      const slotW=SW[sl]||0;
+      const contribution=stationOQ>0?Math.round((slotQ*slotW/stationOQ)*100):0;
+      const talQ=Math.round(t.quality);
+      const gap=talQ-slotQ;
+      const trendWord=gap>8?'Growing':gap<-8?'Fading':'Steady';
+      const trendCol=gap>8?'var(--grn)':gap<-8?'var(--red)':'var(--mut)';
+      const perfCol=contribution>=25?'var(--grn)':contribution>=12?'var(--amb)':'var(--red)';
+      const fitPct=Math.round((t.formatFit[st.format]||0.3)*100);
+      cards.push(rosterTalentOnAirCardHtml(st,sl,t,contribution,talQ,fitPct,trendWord,trendCol,perfCol));
+    });
+    if(cards.length){
+      stationSections.push(`
+    <div style="margin-bottom:30px">
+      ${rosterStationSectionHeaderHtml(st)}
+      ${cards.join('')}
+    </div>`);
+    }
+  });
+  const assigned=stationSections;
+  const benchRows=myBenchEntries().map(ent=>{
+    const t=ent.talent;
+    const was=G.stations.find(st=>st.id===ent.sid);
+    const buyout=(t.cyr||0)>0.1?Math.round(t.salary*t.cyr*0.60/500)*500:0;
+    const canAfford=buyout===0||G.cash>=buyout;
+    return `
+    <div style="background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.28);border-radius:8px;padding:14px 16px;margin-bottom:10px">
+      <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end">
+        <div style="flex:1;min-width:220px">
+          <div style="font-family:var(--fd);font-size:17px;letter-spacing:1px;color:var(--wht)">BENCH — ${rosterHtmlEsc(t.name)}</div>
+          <div style="margin-top:6px;font-size:14px;color:var(--mut)">Was ${was?callDisplay(was):'?'} · ${SL[ent.slot]||''}</div>
+          <div style="margin-top:6px;font-size:12px;color:var(--mut)">Not reassigned by period end: host leaves (no buyout). Release now triggers buyout${buyout>0?` (${f$(buyout)})`:''}.</div>
+        </div>
+        <div style="display:flex;gap:8px;flex-shrink:0">
+          <button class="abt" style="padding:8px 14px;font-size:14px;letter-spacing:1px" onclick="openRosterMoveFromBench('${ent.id}')">REASSIGN</button>
+          <button class="abt d" style="padding:8px 14px;font-size:14px;letter-spacing:1px;${!canAfford?'opacity:.45;pointer-events:none':''}" onclick="releaseBenchEntryManual('${ent.id}')">RELEASE${buyout>0?' ('+f$(buyout)+')':''}</button>
         </div>
       </div>
     </div>`;
   }).join('');
+  const emptyOnAir=!assigned.length;
+  const emptyBench=!myBenchEntries().length;
+  if(emptyOnAir&&emptyBench){
+    document.getElementById('fireb').innerHTML=`<p class="di">No local on-air staff yet. Hire from the station card. The talent bench holds hosts you move out of a daypart until you reassign or release them.</p><button class="cnl" onclick="cm('m-fire')">CLOSE</button>`;
+    om('m-fire');return;
+  }
   document.getElementById('fireb').innerHTML=`
-    <p class="di">Move talent to a different daypart, or release them to save payroll. <strong>Moving is free</strong> — the receiving slot gets a brief adjustment period.</p>
-    <div class="ms2"><div class="msh">CURRENT ON-AIR STAFF</div>${rows}</div>
-    <div class="ibox"><strong>Note:</strong> Morning drive has the biggest quality impact. ${TALK_FMTS.includes(s.format)?'Syndicated content is cheaper but rarely builds a loyal local audience.':'Automation is cheap but a silent station bleeds share.'}</div>
+    <p class="di" style="font-size:15px;line-height:1.45;margin-bottom:6px">Move sends talent to another daypart or to another one of your stations.</p>
+    <p style="font-size:12px;color:var(--mut);line-height:1.4;margin:0 0 18px 0">Occupied slots send that host to the bench. Bench, fire, and buyout rules unchanged.</p>
+    <div class="ms2"><div class="msh">ON AIR</div>${assigned.join('')||'<p class="di" style="color:var(--mut)">No assigned hosts.</p>'}</div>
+    <div class="ms2"><div class="msh">BENCH</div>${benchRows||'<p class="di" style="color:var(--mut)">Bench is empty.</p>'}</div>
     <button class="cnl" onclick="cm('m-fire')">DONE</button>`;
   om('m-fire');
 }
-
-function openShuffle(sid,fromSlot){
-  sid=ensureOpsSourceSid(sid);
-  SHUFFLE={sid,fromSlot};
-  const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  const talent=s.prog[fromSlot]?.talent;if(!talent)return;
-  document.getElementById('fire-title').textContent='MOVE / SWAP TALENT';
-  const slots=['morningDrive','afternoonDrive','midday','evening','overnight'];
-  const slotWeight={morningDrive:1.0,afternoonDrive:0.75,midday:0.55,evening:0.35,overnight:0.20};
-  const destRows=slots.filter(sl=>sl!==fromSlot).map(sl=>{
-    const sd=s.prog[sl];
-    const occ=sd?.talent;
-    const slotQ=Math.round(sd?.quality||0);
-    const toW=slotWeight[sl]||0.5, fromW=slotWeight[fromSlot]||0.5;
-    const dirNote=toW>fromW
-      ?'<span style="color:var(--grn);font-size:14px">\u2191 PRIME SLOT</span>'
-      :'<span style="color:var(--mut);font-size:14px">\u2193 OFF-PEAK</span>';
-    const isSwap=!!occ;
-    const actionLabel=isSwap?'SWAP':'MOVE HERE';
-    const actionColor=isSwap?'var(--amb)':'var(--grn)';
-    const occNote=isSwap
-      ?`<span style="color:var(--amb);font-size:15px">${occ.name} \u00b7 quality ${Math.round(occ.quality)}</span>`
-      :'<span style="color:var(--mut);font-size:15px">vacant \u2014 automation</span>';
-    return `<div class="sr" style="padding:10px 14px"><span class="lb"><strong>${SL[sl]}</strong> ${dirNote}<br><span style="font-weight:normal;font-size:15px">${occNote}</span></span><span style="display:flex;gap:8px;align-items:center"><span style="font-size:15px;color:var(--mut)">slot ${slotQ}</span><button class="abt" style="padding:6px 14px;font-size:15px;color:${actionColor};border-color:${actionColor}" onclick="doShuffle('${sid}','${fromSlot}','${sl}')">${actionLabel}</button></span></div>`;
-  }).join('');
-  document.getElementById('fireb').innerHTML=`
-    <div class="ibox">Repositioning <strong>${talent.name}</strong> (quality ${Math.round(talent.quality)}) from <strong>${SL[fromSlot]}</strong>.<br><span style="color:var(--amb)">SWAP</span> trades both hosts. <span style="color:var(--grn)">MOVE</span> sends them to a vacant slot. Both carry a small adjustment dip.</div>
-    <div class="ms2"><div class="msh">CHOOSE DESTINATION</div>${destRows}</div>
-    <button class="cnl" onclick="openFire('${sid}')">&#8592; BACK</button>`;
+function rosterBenchClick(sid,slot){
+  if(benchTalentFromSlot(sid,slot))openTalentRoster();
+  renderAll();
 }
-
-/** Quick entry to daypart move/swap (same station) — uses openShuffle / doShuffle. */
+/** Confirm then fire — same rules as station-card release (buyout if contract time remains). */
+function rosterFirePrompt(sid,slot){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||!mpIsMe(s))return;
+  const sd=s.prog?.[slot];
+  const t=sd?.talent;
+  if(!t)return;
+  const buyout=(t.cyr||0)>0.1?Math.round(t.salary*t.cyr*0.60/500)*500:0;
+  const msg=`Fire ${t.name} from ${callDisplay(s)} ${SL[slot]}?${buyout>0?` Contract buyout ${f$(buyout)}.`:' No buyout.'} They leave immediately — not benched.`;
+  if(!confirm(msg))return;
+  doFire(sid,slot);
+}
+function openFire(sid){ openTalentRoster(); }
+function openRosterMoveFromSlot(sid,slot){
+  sid=ensureOpsSourceSid(sid);
+  MOVE_CTX={fromSid:sid,fromSlot:slot,benchId:null};
+  openRosterMoveDest();
+}
+function openRosterMoveFromBench(benchId){
+  const e=G.talentBench.find(x=>x.id===benchId);
+  if(!e)return;
+  MOVE_CTX={fromSid:e.sid,fromSlot:e.slot,benchId};
+  openRosterMoveDest();
+}
+function openRosterMoveDest(){
+  const ctx=MOVE_CTX;
+  const t=ctx.benchId
+    ? G.talentBench.find(e=>e.id===ctx.benchId)?.talent
+    : G.stations.find(st=>st.id===ctx.fromSid)?.prog[ctx.fromSlot]?.talent;
+  if(!t){openTalentRoster();return;}
+  const fromSlotKey=ctx.fromSlot||'midday';
+  const srcSt=ctx.fromSid?G.stations.find(st=>st.id===ctx.fromSid):null;
+  document.getElementById('fire-title').textContent=`MOVE — ${t.name}`;
+  const owned=rosterOwnedStations();
+  const srcSid=ctx.fromSid;
+  const sameFirst=owned.filter(s=>s.id===srcSid);
+  const otherRest=owned.filter(s=>s.id!==srcSid);
+  function destHtmlForStation(dst){
+    if(!mpIsMe(dst))return'';
+    const slots=[];
+    Object.keys(SL).forEach(sl=>{
+      if(!ctx.benchId&&srcSid===dst.id&&ctx.fromSlot===sl)return;
+      slots.push(rosterMoveDestSlotCardHtml(dst,sl,t,fromSlotKey));
+    });
+    if(!slots.length)return'';
+    return`<div style="margin-bottom:30px">${rosterStationSectionHeaderHtml(dst)}${slots.join('')}</div>`;
+  }
+  const blocks=[];
+  sameFirst.forEach(dst=>{ const h=destHtmlForStation(dst); if(h)blocks.push(h); });
+  otherRest.forEach(dst=>{ const h=destHtmlForStation(dst); if(h)blocks.push(h); });
+  const ctxLine=ctx.benchId
+    ?`Moving ${rosterHtmlEsc(t.name)} · from bench · ${srcSt?callDisplay(srcSt):'?'} ${SL[fromSlotKey]}`
+    :`Moving ${rosterHtmlEsc(t.name)} · from ${SL[fromSlotKey]} · ${srcSt?callDisplay(srcSt):'—'}`;
+  document.getElementById('fireb').innerHTML=`
+    <p style="font-size:13px;color:var(--mut);margin:0 0 14px 0;line-height:1.45">${ctxLine}</p>
+    <div class="ms2">${blocks.join('')||'<p class="di" style="color:var(--mut)">No valid destinations.</p>'}</div>
+    <button class="cnl" onclick="openTalentRoster()" style="margin-top:8px">← BACK</button>`;
+  om('m-fire');
+}
+function doRosterPlace(toSid,toSlot){
+  const ctx=MOVE_CTX;
+  if(!ctx)return;
+  if(ctx.benchId){
+    const ent=G.talentBench.find(e=>e.id===ctx.benchId);
+    if(!ent)return;
+    const dst=G.stations.find(st=>st.id===toSid);
+    if(!dst||!mpIsMe(dst))return;
+    const t=ent.talent;
+    const prevSlot=ent.slot||'morningDrive';
+    const occ=dst.prog[toSlot]?.talent;
+    if(occ){
+      if(!confirm(`Place ${t.name} in ${SL[toSlot]} on ${callDisplay(dst)}? ${occ.name} will be sent to the bench.`))return;
+      if(!removeTalentToBenchInternal(toSid,toSlot))return;
+    }
+    const toSd=dst.prog[toSlot];
+    const adjDip=0.08;
+    const fit=t0=>t0.formatFit[dst.format]||0.3;
+    const boost=t0=>Math.round((t0.quality/100)*fit(t0)*0.35*18);
+    toSd.talent=t;
+    toSd.quality=Math.min(100,Math.max(10,Math.round((toSd.quality||30)*(1-adjDip)))+boost(t));
+    applyDaypartPromotionEconomics(t,prevSlot,toSlot);
+    G.talentBench=G.talentBench.filter(e=>e.id!==ctx.benchId);
+    G.news.unshift({v:'LOW',t:`${t.name} assigned from bench to ${callDisplay(dst)} ${SL[toSlot]}.`,y:G.year,p:G.period});
+    MP.action('placement_from_bench',{benchId:ctx.benchId,toSid,toSlot});
+    refreshStationOQ(dst,G);
+    MOVE_CTX={fromSid:null,fromSlot:null,benchId:null};
+    openTalentRoster();renderAll();
+    return;
+  }
+  const {fromSid,fromSlot}=ctx;
+  const src=G.stations.find(st=>st.id===fromSid);
+  const dst=G.stations.find(st=>st.id===toSid);
+  const moving=src?.prog[fromSlot]?.talent;
+  if(!src||!dst||!moving||!mpIsMe(src)||!mpIsMe(dst))return;
+  const occ=dst.prog[toSlot]?.talent;
+  if(occ){
+    if(!confirm(`Move ${moving.name} to ${SL[toSlot]} on ${callDisplay(dst)}? ${occ.name} will be sent to the bench.`))return;
+  }
+  if(fromSid===toSid){
+    MOVE_CTX={fromSid:null,fromSlot:null,benchId:null};
+    doShuffle(fromSid,fromSlot,toSlot);
+    return;
+  }
+  if(!applyTalentCrossStationXferFull(fromSid,fromSlot,toSid,toSlot))return;
+  MP.action('talent_xfer',{fromSid,fromSlot,toSid,toSlot});
+  MOVE_CTX={fromSid:null,fromSlot:null,benchId:null};
+  openTalentRoster();renderAll();
+}
+function openShuffle(sid,fromSlot){ openRosterMoveFromSlot(sid,fromSlot); }
 function openSwapSignal(sid){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const filled=Object.entries(s.prog).filter(([sl,sd])=>sd?.talent);
-  if(filled.length!==1){openFire(sid);return;}
+  if(filled.length!==1){openTalentRoster();return;}
   om('m-fire');
-  openShuffle(sid,filled[0][0]);
+  openRosterMoveFromSlot(sid,filled[0][0]);
 }
-
 function doShuffle(sid,fromSlot,toSlot){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  const fromSd=s.prog[fromSlot],toSd=s.prog[toSlot];
+  const fromSd=s.prog[fromSlot];
+  let toSd=s.prog[toSlot];
   if(!fromSd?.talent)return;
-  const talA=fromSd.talent, talB=toSd?.talent||null;
-  const isSwap=!!talB;
-  const adjDip=isSwap?0.05:0.08; // swaps are smoother — both know the station
+  const talA=fromSd.talent;
+  let displacedName=null;
+  if(toSd?.talent){
+    displacedName=toSd.talent.name;
+    if(!removeTalentToBenchInternal(sid,toSlot))return;
+    toSd=s.prog[toSlot];
+  }
+  const adjDip=0.08;
   const fit=t=>t.formatFit[s.format]||0.3;
   const boost=t=>Math.round((t.quality/100)*fit(t)*0.35*18);
-  // Move A into destination
   toSd.talent=talA;
   toSd.quality=Math.min(100,Math.max(10,Math.round((toSd.quality||30)*(1-adjDip)))+boost(talA));
   applyDaypartPromotionEconomics(talA,fromSlot,toSlot);
-  if(isSwap){
-    // Move B back into source
-    fromSd.talent=talB;
-    fromSd.quality=Math.min(100,Math.max(10,Math.round((fromSd.quality||30)*(1-adjDip)))+boost(talB));
-    applyDaypartPromotionEconomics(talB,toSlot,fromSlot);
-    G.news.unshift({v:'LOW',t:`${talA.name} \u2194 ${talB.name} swap at ${s.callLetters}`,y:G.year,p:G.period});
-  } else {
-    // Source goes to automation
-    fromSd.talent=null;
-    const pen={morningDrive:.20,afternoonDrive:.14,midday:.09,evening:.06,overnight:.03}[fromSlot]||.09;
-    fromSd.quality=Math.max(10,Math.round(fromSd.quality*(1-pen)));
-    G.news.unshift({v:'LOW',t:`${talA.name} moves to ${s.callLetters} ${SL[toSlot]}`,y:G.year,p:G.period});
-  }
+  fromSd.talent=null;
+  const pen={morningDrive:.20,afternoonDrive:.14,midday:.09,evening:.06,overnight:.03}[fromSlot]||.09;
+  fromSd.quality=Math.max(10,Math.round(fromSd.quality*(1-pen)));
+  let msg=`${talA.name} moves to ${s.callLetters} ${SL[toSlot]}`;
+  if(displacedName)msg+=` — ${displacedName} moved to the talent bench`;
+  G.news.unshift({v:'LOW',t:msg,y:G.year,p:G.period});
   refreshStationOQ(s,G);
   MP.action('shuffle',{sid,fromSlot,toSlot});
-  openFire(sid);renderAll();
+  openTalentRoster();renderAll();
 }
 
 function franchiseBenchTalent(station,slot,G){
@@ -7961,6 +9118,9 @@ function openSports(sid){
       const myBid=rights.bids?.[s.id]||0;
       const sugBid=Math.round(Math.max(rights.fee*1.1,team.baseFee*(0.9+fmtFit*0.6))/1000)*1000;
       const breakEven=Math.round(estRevLift*0.85/1000)*1000;
+      const _sMin=Math.round(team.baseFee*0.5/1000)*1000;
+      const _sMax=Math.round(team.baseFee*4/1000)*1000;
+      const _sStart=snapSportsBidAmountClamped(myBid||sugBid,_sMin,_sMax);
       bidSection=`<div style="background:rgba(82,227,110,.06);border:1px solid rgba(82,227,110,.2);border-radius:6px;padding:12px;margin-top:8px">
         <div style="font-family:var(--ft);font-size:13px;color:var(--grn);letter-spacing:1px;margin-bottom:8px">🔔 BIDDING OPEN — closes this Fall</div>
         <div class="sr"><span class="lb">Current holder</span><span class="vl">${incumbent?incumbent.callLetters:'None'} — paying ${f$(rights.fee)}/yr</span></div>
@@ -7971,11 +9131,11 @@ function openSports(sid){
         <div style="margin-top:10px">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
             <span style="font-size:14px;color:var(--mut)">Bid:</span>
-            <strong id="bid-val-${team.id}" style="font-family:var(--fd);font-size:16px;color:var(--amb)">${f$(myBid||sugBid)}/yr</strong>
+            <strong id="bid-val-${team.id}" style="font-family:var(--fd);font-size:16px;color:var(--amb)">${f$(_sStart)}/yr</strong>
           </div>
-          <input type="range" id="sports-range-${team.id}" min="${Math.round(team.baseFee*0.5/1000)*1000}" max="${Math.round(team.baseFee*4/1000)*1000}" step="10000"
-            value="${myBid||sugBid}"
-            oninput="document.getElementById('bid-val-${team.id}').textContent=f$(parseInt(this.value))+'/yr'"
+          <input type="range" id="sports-range-${team.id}" min="${_sMin}" max="${_sMax}" step="1000"
+            value="${_sStart}"
+            oninput="(function(el){var lo=parseInt(el.min,10),hi=parseInt(el.max,10),v=snapSportsBidAmountClamped(parseInt(el.value,10),lo,hi);el.value=v;document.getElementById('bid-val-${team.id}').textContent=f$(v)+'/yr';})(this)"
             style="width:100%;margin-bottom:8px">
           <button class="cfm" style="width:100%;padding:8px;font-size:14px"
             onclick="placeSportsBid('${team.id}','${s.id}',parseInt(document.querySelector('#sports-range-${team.id}').value))">
@@ -8093,7 +9253,7 @@ function openFranchise(sid){
 // Cross-station talent transfer (player-owned stations only; separate from within-station shuffle)
 let XFER = { fromSid: null, fromSlot: null, toSid: null };
 function xferOwnedStations() {
-  return MP.mode === 'live' ? G.ps.filter(s => s._mpOwner === MP.playerId) : G.ps;
+  return myPS().filter(s => mpIsMe(s));
 }
 function xferStnsWithLocalTalent() {
   return xferOwnedStations().filter(s => Object.values(s.prog).some(sd => sd?.talent));
@@ -8119,7 +9279,7 @@ function xferRenderPickSource() {
   const withTal = xferStnsWithLocalTalent();
   const rows = withTal.map(st => `<div class="sr" style="padding:10px 14px"><span class="lb"><strong>${callDisplay(st)}</strong><br><span style="color:var(--mut);font-size:15px">${FM[st.format]?.l || st.format}</span></span><button class="abt" onclick="xferPickSource('${st.id}')">SELECT</button></div>`).join('');
   document.getElementById('fireb').innerHTML = `
-    <p class="di">Move a host from one station you own to another. <strong>Destination must be a vacant daypart</strong> — use Manage Talent on the other station first if that slot is filled.</p>
+    <p class="di">Move a host between stations you own. If the destination daypart is occupied, that host goes to the <strong>talent bench</strong>.</p>
     <div class="ms2"><div class="msh">SOURCE STATION</div>${rows}</div>
     <button class="cnl" onclick="cm('m-fire')">CLOSE</button>`;
 }
@@ -8177,13 +9337,13 @@ function xferRenderDestSlots() {
     const sd = dst.prog[sl];
     const occ = sd?.talent;
     const slotQ = Math.round(sd?.quality || 0);
-    if (occ) {
-      return `<div class="sr" style="padding:10px 14px;opacity:.55"><span class="lb"><strong>${SL[sl]}</strong><br><span style="color:var(--red);font-size:15px">occupied by ${occ.name} — open Manage Talent on ${callDisplay(dst)} to clear this slot first</span></span><span style="font-size:15px;color:var(--mut)">Q ${slotQ}</span></div>`;
-    }
-    return `<div class="sr" style="padding:10px 14px"><span class="lb"><strong>${SL[sl]}</strong><br><span style="color:var(--mut);font-size:15px">vacant · slot Q ${slotQ}</span></span><button class="abt" style="border-color:var(--grn);color:var(--grn)" onclick="doCrossStationXfer('${sl}')">MOVE HERE</button></div>`;
+    const occNote = occ
+      ? `<span style="color:var(--amb);font-size:15px">${occ.name} → bench</span>`
+      : `<span style="color:var(--mut);font-size:15px">vacant · slot Q ${slotQ}</span>`;
+    return `<div class="sr" style="padding:10px 14px"><span class="lb"><strong>${SL[sl]}</strong><br>${occNote}</span><button class="abt" style="border-color:var(--grn);color:var(--grn)" onclick="doCrossStationXfer('${sl}')">MOVE HERE</button></div>`;
   }).join('');
   document.getElementById('fireb').innerHTML = `
-    <p class="di">Place <strong>${tal.name}</strong> on <strong>${callDisplay(dst)}</strong>. Only vacant dayparts can receive a transfer.</p>
+    <p class="di">Place <strong>${tal.name}</strong> on <strong>${callDisplay(dst)}</strong>. Occupied slots send the current host to the bench.</p>
     <div class="ms2"><div class="msh">DESTINATION DAYPART</div>${destRows}</div>
     <button class="cnl" onclick="xferRenderDestPick()">← BACK</button>`;
 }
@@ -8193,7 +9353,7 @@ function doCrossStationXfer(toSlot) {
   const dst = G.stations.find(st => st.id === toSid);
   if (!src || !dst || !fromSlot || fromSid === toSid) return;
   if (!mpIsMe(src) || !mpIsMe(dst)) { showToast('Cross-station moves only between stations you own.', 'warn'); return; }
-  if (!src.prog[fromSlot]?.talent || dst.prog[toSlot]?.talent) {
+  if (!src.prog[fromSlot]?.talent) {
     showToast('That move is no longer valid — check dayparts again.', 'warn');
     xferRenderDestSlots();
     return;
@@ -8234,7 +9394,7 @@ function doFire(sid,slot){
   G.news.unshift({v:sev,t:`You fire ${name} from ${s.callLetters} ${SL[slot]}.${buyoutMsg} Saving ${f$(sal/2)}/period going forward.`,y:G.year,p:G.period});
   logHistory(s,'TALENT',`Released ${name} — ${SL[slot]}${buyout>0?' (buyout: '+f$(buyout)+')':''}`,G);
   MP.action('fire', {sid, slot});
-  openFire(sid);
+  openTalentRoster();
   renderAll();
 }
 
@@ -8807,8 +9967,8 @@ function openFmBooster(sid){
   }
   const cost=getBoosterCost(G.year);
   const canAfford=G.cash>=cost;
-  const isMusFmt=!['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','GOSPEL','SPANISH'].includes(s.format);
-  const erosionRisk=(isMusFmt&&s.sig.type==='AM')||(['NEWS_TALK','SPORTS_TALK'].includes(s.format)&&s.sig.type==='AM'&&!s.fmBooster&&!s.simulcastWith&&(G?.year||0)>=2007);
+  const isMusFmt=!['NEWS_TALK','ALL_NEWS','SPORTS_TALK','PODCAST_TALK','GOSPEL','SPANISH'].includes(s.format);
+  const erosionRisk=(isMusFmt&&s.sig.type==='AM')||(['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format)&&s.sig.type==='AM'&&!s.fmBooster&&!s.simulcastWith&&(G?.year||0)>=2007);
   document.getElementById('boostb').innerHTML=`
     <p class="di">An FM translator rebroadcasts your AM signal on a low-power FM frequency. Made available to AM stations by the FCC's AM Revitalization proceeding starting 2009 — typically by placing the AM on an HD Radio subchannel and qualifying a translator for that feed. It covers the city core (~99 watts) and picks up FM-only listeners in that footprint. <strong>It does not stop AM erosion entirely</strong> — listeners in your AM fringe beyond the translator's reach still can't receive the FM signal and keep drifting away. The bigger your AM signal, the more fringe audience remains exposed. A full FM license is the only complete solution. The translator also partially shields Talk and Sports from streaming-era AM signal quality penalties.</p>
     <div class="ms2">
@@ -8876,13 +10036,16 @@ function openFmt(sid){sid=ensureOpsSourceSid(sid);const s=G.stations.find(st=>st
 function rFmt(s){
   const occ=G.stations.filter(st=>st&&!st._bpSlotDeferred&&st.id!==s.id).map(st=>st.format);
   const isAM=s.sig.type==='AM';
-  const allFmts=Object.keys(FM).filter(f=>f!==s.format);
+  const allFmts=Object.keys(FM).filter(f=>f!==s.format&&!FM[f].public&&formatAllowedInMarket(f,G.marketId,G.year));
   const opts=allFmts.map(f=>{
     const meta=FM[f]||{};
-    const unlocked=G.unlockedFormats.includes(f);
+    const yearOk=G.unlockedFormats.includes(f)||(meta.unlock||9999)<=G.year;
+    const marketOk=formatAllowedInMarket(f,G.marketId,G.year);
+    const unlocked=yearOk&&marketOk;
     const fmr=meta.fm&&isAM,cnt=occ.filter(o=>o===f).length,adj=FADJ[s.format]?.includes(f);
     let badge,bc,cls='fmo';
-    if(!unlocked){badge=`UNLOCKS ${meta.unlock}`;bc='lock';cls+=' locked';}
+    if(!yearOk){badge=`UNLOCKS ${meta.unlock}`;bc='lock';cls+=' locked';}
+    else if(!marketOk){badge='TOP 3 MARKETS';bc='risk';cls+=' locked';}
     else if(fmr&&isAM){badge='AM — low youth reach';bc='risk';}
     else if(cnt>=2){badge='CROWDED';bc='risk';}
     else if(cnt===1){badge='CONTESTED';bc='risk';}
@@ -8955,7 +10118,7 @@ function doFmt(keepSim){
     _simPartner.format = nf;
     _simPartner.brand  = gb(nf, _simPartner.freq, G?.city);
     _simPartner._formatAge = 0;
-    _simPartner.ops.sell = ['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'].includes(nf)?0.60:0.55;
+    _simPartner.ops.sell = ['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'].includes(nf)?0.60:0.55;
     Object.values(_simPartner.prog).forEach(sd=>{if(sd)sd.quality=Math.round(sd.quality*(1-pen));});
     _simPartner.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(_simPartner.prog[sl])*w,0));
     COH.forEach(c=>{if(_simPartner.mom[c])_simPartner.mom[c].cur*=(1-pen);});
@@ -8991,7 +10154,7 @@ function doFmt(keepSim){
   s._formatAge=0;
   // Reset sellout rate — new format starts with a fresh advertiser relationship.
   // A News/Talk station that flips to Album Rock can't keep its talk-format sell premium.
-  const _talkFmts=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'];
+  const _talkFmts=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'];
   s.ops.sell=_talkFmts.includes(nf)?0.60:0.55;
   // Identity hit: high-identity stations take a major, permanent hit on betrayal
   // 75% loss — some residual goodwill remains (the building, the callsign, the memory)
@@ -9425,6 +10588,8 @@ function migrateSave(G){
   G.loans=G.loans||[];
   if(G.corps)rehydrateCorps(G); // re-link corp ownership after save/load
   G.corps=G.corps||null;
+  G.mpPhase=G.mpPhase??null;
+  G.continuesBeyondEnd=G.continuesBeyondEnd??false;
   G.rankerHistory=G.rankerHistory||[];
   G.finHistory=G.finHistory||[];
   G.stationFinHistory=G.stationFinHistory||{};
@@ -9830,8 +10995,21 @@ function om(id){
   if(id==='m-rk')openRanker();
   document.getElementById(id).classList.add('on');
 }
-function cm(id){document.getElementById(id).classList.remove('on');}
-document.querySelectorAll('.ov').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('on');}));
+function cm(id){
+  document.getElementById(id).classList.remove('on');
+  if(id==='m-sum'&&typeof G!=='undefined'&&G&&G._mpShowEndgameAfterSumClose){
+    G._mpShowEndgameAfterSumClose=false;
+    if(MP.mode==='live'&&G.mpPhase==='endgame'){
+      setTimeout(()=>showMpEndgameModal(),200);
+    }
+  }
+}
+document.querySelectorAll('.ov').forEach(el=>el.addEventListener('click',e=>{
+  if(e.target===el){
+    if(el.id==='m-mp-endgame'&&typeof mpEndgameFrozen==='function'&&mpEndgameFrozen())return;
+    el.classList.remove('on');
+  }
+}));
 
 // ── COMPANY FINANCIALS (rollup matches period summary / myPS) ─────
 function companyFinanceRollup(){
@@ -10338,6 +11516,7 @@ function renderAll(){
     return;
   }
   rHdr();rTick();rScore();rStns();rMkt();rIntel();rNews();
+  if(document.body) document.body.classList.toggle('mp-endgame', typeof mpEndgameFrozen==='function'&&mpEndgameFrozen());
   maybeShowPendingTroubleModal();
 }
 
@@ -10418,11 +11597,12 @@ function rScore(){
   const decadeKeys=Object.keys(_dcSource).map(Number).sort();
   const prevDecades=decadeKeys.map(y=>`<div class="sbr"><span class="sbl">${DECADE_NAMES[y]||y}</span><span class="sbv amb">${_dcSource[y].total}/100 · ${_dcSource[y].vp||0}VP</span></div>`).join('');
   const totalVP=decadeKeys.reduce((s,y)=>s+(_dcSource[y].vp||0),0);
-  // Market rank for MY primary station only
-  const sorted=[...G.stations].filter(s=>s&&!s._bpSlotDeferred&&s.rat).sort((a,b)=>b.rat.share-a.rat.share);
+  // Market rank: combined simulcast pair = one row (same as milestone rank logic)
+  const _cr=buildCommercialCombinedRankRows(G);
   const myStns = myPS();
-  const primaryRank=myStns.length ? sorted.findIndex(s=>s.id===myStns[0].id)+1 : sorted.findIndex(s=>s.isPlayer)+1;
-  const rankLabel=primaryRank<=0?'—':`#${primaryRank} of ${sorted.length}`;
+  const primary=myStns.length?myStns[0]:null;
+  const primaryRank=primary?combinedMarketRankForStation(primary,_cr):0;
+  const rankLabel=primaryRank<=0?'—':`#${primaryRank} of ${_cr.length}`;
   const rankColor=primaryRank<=1?'var(--grn)':primaryRank<=3?'var(--amb)':'var(--off)';
   const totalRev=myPS().reduce((s,st)=>s+st.fin.rev,0);
   const gradeColor=grade==='A'?'var(--grn)':grade==='B'?'#8aef8a':grade==='C'?'var(--amb)':grade==='F'?'var(--red)':'#e89020';
@@ -10450,11 +11630,23 @@ function rScore(){
 
 function rTick(){
   const srt=[...G.stations].filter(s=>s&&!s._bpSlotDeferred&&s.rat).sort((a,b)=>b.rat.share-a.rat.share);
-  // Find player rank(s) in market
+  const _cr=buildCommercialCombinedRankRows(G);
+  const _tickSeen=new Set();
+  // Player ranks: one line per simulcast pair (combined rank + combined share)
   const playerRanks=myPS().map(s=>{
-    const rank=srt.findIndex(st=>st.id===s.id)+1;
+    const partner=simulcastPartnerStation(s);
+    if(partner){
+      const pk=[s.id,partner.id].sort().join('|');
+      if(_tickSeen.has(pk))return null;
+      _tickSeen.add(pk);
+      const rank=combinedMarketRankForStation(s,_cr);
+      const {lead,rcv}=simulcastPairLeadReceiver(s,partner);
+      const comb=pct(lead.rat.share+rcv.rat.share);
+      return `#${rank} ${callDisplay(lead)} & ${callDisplay(rcv)} ${comb}`;
+    }
+    const rank=combinedMarketRankForStation(s,_cr);
     return `#${rank} ${callDisplay(s)} ${pct(s.rat.share)}`;
-  });
+  }).filter(Boolean);
   const items=[
     ...srt.slice(0,3).map((s,i)=>{const op=simulcastOperationalSource(s);return `#${i+1} ${callDisplay(s)} ${FM[op.format]?.l||op.format} ${pct(s.rat.share)}`;}),
     playerRanks.length?`YOU: ${playerRanks.join(' · ')} · Cash: ${f$(G.cash)}`:`Cash: ${f$(G.cash)}`,
@@ -10614,7 +11806,7 @@ function rStns(){
         if(driftBtn)progBtns.push(driftBtn);
         progBtns.push(
           '<button class="abt b" onclick="openLean(\''+op.id+'\')">🎯 DEMO TARGET</button>',
-          '<button class="abt '+progAct+'" onclick="openProg(\''+op.id+'\')">📈 Programming Budget'+progLbl+'</button>',
+          '<button class="abt '+progAct+'" onclick="openProg(\''+op.id+'\')">📈 PROGRAMMING BUDGET'+progLbl+'</button>',
           streamBtn,
           simBtn,
         );
@@ -10630,7 +11822,7 @@ function rStns(){
         return '<div class="sc-card-actions">'+
           sec('TALENT',true,pack2(['<button class="abt" onclick="openHire(\''+op.id+'\')">🎙 HIRE TALENT</button>','<button class="abt d" onclick="openFire(\''+op.id+'\')">↕ MANAGE TALENT</button>','<button class="abt" onclick="openXfer(\''+op.id+'\')">⇄ OTHER STATION</button>']))+
           sec('PROGRAMMING',false,pack2(progBtns))+
-          sec('MARKETING',false,pack2(['<button class="abt" onclick="openPromo(\''+op.id+'\')">📣 MARKETING</button>','<button class="abt '+idAct+'" onclick="openIdent(\''+op.id+'\')">🏘 IDENTITY'+idLbl+idStar+'</button>','<button class="abt" onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
+          sec('MARKETING',false,pack2(['<button class="abt" onclick="openPromo(\''+op.id+'\')">📣 MARKETING BUDGET</button>','<button class="abt '+idAct+'" onclick="openIdent(\''+op.id+'\')">🏘 IDENTITY'+idLbl+idStar+'</button>','<button class="abt" onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
           sec('SALES',false,pack2(['<button class="abt '+(sfActive?'g':'')+'" onclick="openSales(\''+op.id+'\')">'+salesLbl+'</button>','<button class="abt" onclick="openSpots(\''+op.id+'\')">📻 SPOT LOAD</button>']))+
           sec('ADMINISTRATION',false,pack2(adminBtns))+
           '</div>';
@@ -10697,9 +11889,9 @@ function rMkt(){
     const _me=row.pair?(mpIsMe(row.lead)||mpIsMe(row.rcv)):mpIsMe(s);
     const _anyP=s.isPlayer;
     const clickAttr=!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="${_me?'Open station intel':_anyP?'View opponent intel':'View competitor intel'}"`:'';
-    const badges=_me?'<span class="yp">YOU</span>':_anyP?`<span class="yp" style="background:${s.color||'#60a5fa'};color:#000">OPP</span>`:'';
+    const badges=!_me&&_anyP?`<span class="yp" style="background:${s.color||'#60a5fa'};color:#000">OPP</span>`:'';
     const stationCell=`<div class="mt-station-inner"><span class="clg" style="color:${mpStationColor(s)}">${calls}</span><span class="mt-stn-meta" title="Band">${band}</span>${badges?`<span style="display:inline-flex;align-items:center;flex-shrink:0">${badges}</span>`:''}</div>`;
-    return `<tr class="${_me?'you':''}"${clickAttr}><td><span class="rn">${i+1}</span></td><td class="mt-station">${stationCell}</td><td><span class="fmtag">${FM[op.format]?.l||op.format}</span></td><td><span class="shn" style="color:${_me?'var(--amb)':_anyP?s.color:'var(--wht)'}">${pct(share)}</span></td><td class="mt-trend"><span class="${tc}" style="font-size:15px">${tr}</span></td><td><span class="rvn">${f$(rev)}</span></td></tr>`;
+    return `<tr class="station-row${_me?' owned':''}"${clickAttr}><td><span class="rn">${i+1}</span></td><td class="mt-station">${stationCell}</td><td><span class="fmtag">${FM[op.format]?.l||op.format}</span></td><td><span class="shn" style="color:${_me?'var(--amb)':_anyP?s.color:'var(--wht)'}">${pct(share)}</span></td><td class="mt-trend"><span class="${tc}" style="font-size:15px">${tr}</span></td><td><span class="rvn">${f$(rev)}</span></td></tr>`;
   }).join('');
   // In MP, show the current player's lead station; in solo, G.ps[0]
   const _myStns = MP.mode==='live' ? G.ps.filter(s=>s._mpOwner===MP.playerId) : G.ps;
@@ -10774,14 +11966,11 @@ function rNews(){
   const nl=document.getElementById('news');
   if(!G.news.length){nl.innerHTML='<p class="enote">No news yet. Advance a period.</p>';return;}
   const limit=_newsExpanded?50:14;
-  const _nitems=G.news.slice(0,limit).map(n=>`<div class="ni ${n.iy?'you':''}">`+
-    `<div class="nm">${n.y} ${PERIODS[(n.p||1)-1]} · ${n.v||'LOW'}</div>`+
+  const _nitems=G.news.slice(0,limit).map(n=>`<div class="ni ${n.iy?'you':''} ${n.type==='trade_news'?'trade':''}">`+
+    `<div class="nm">${n.y} ${PERIODS[(n.p||1)-1]} · ${n.type==='trade_news'?`Trade · ${n.v||'LOW'}`:(n.v||'LOW')}</div>`+
     `<div class="nt ${n.v==='HIGH'?'hi':''}">${n.t}</div></div>`).join('');
   const moreBtn=G.news.length>14?`<div style="text-align:center;padding:6px 0"><button class="abt" style="font-size:15px;padding:4px 14px" onclick="_newsExpanded=!_newsExpanded;rNews()">${_newsExpanded?'\u25b2 Show less':'\u25bc Show '+(G.news.length-14)+' more'}</button></div>`:'';
   nl.innerHTML=_nitems+moreBtn;
-  const el=document.getElementById('evts');
-  const up=G.evq.filter(ev=>(ev.y===G.year&&ev.p>G.period)||ev.y===G.year+1||ev.y===G.year+2).slice(0,4);
-  el.innerHTML=up.length?up.map(ev=>`<div class="ev"><div class="evt">${ev.y} ${PERIODS[ev.p-1]} · ${ev.t}</div><div class="evd">${ev.d}</div></div>`).join(''):'<p class="enote">No upcoming events on the horizon.</p>';
 }
 
 init();

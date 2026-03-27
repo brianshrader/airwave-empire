@@ -192,8 +192,15 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .mt th:nth-child(5),.mt td:nth-child(5){width:8%}
 .mt td.mt-trend{text-align:right;white-space:nowrap}
 .mt th:nth-child(6),.mt td:nth-child(6){width:15%}
-.mt tr:hover td{background:rgba(245,166,35,.04)}.mt tr[onclick]:hover td{background:rgba(245,166,35,.09);cursor:pointer}
-.mt tr.you td{background:rgba(245,166,35,.07)}
+.mt tr.station-row:hover td{background:rgba(245,166,35,.04)}
+.mt tr.station-row[onclick]:hover td{background:rgba(245,166,35,.09);cursor:pointer}
+.mt tr.station-row{position:relative}
+.mt tr.station-row.owned td{background:rgba(212,175,55,.08)}
+.mt tr.station-row.owned:hover td{background:rgba(212,175,55,.11)}
+.mt tr.station-row.owned[onclick]:hover td{background:rgba(212,175,55,.14)}
+/* Left ownership bar: pseudo on first cell — reliable for table rows; does not shift layout */
+.mt tr.station-row.owned td:first-child{position:relative}
+.mt tr.station-row.owned td:first-child::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#d4af37;pointer-events:none;z-index:1}
 .mt td.mt-station{padding:4px 5px;overflow:hidden;vertical-align:middle;min-width:0}
 .mt-station-inner{display:flex;align-items:center;justify-content:flex-start;gap:4px;min-width:0;width:100%;max-width:100%}
 /* Don't flex-grow calls — keeps AM/FM + intel tight; ellipsis only when cell is cramped */
@@ -294,6 +301,9 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .sr .lb{color:var(--off)}.sr .vl{font-family:var(--ft)}
 .sr .vl.pos{color:var(--grn)}.sr .vl.neg{color:var(--red)}.sr .vl.amb{color:var(--amb)}
 .di{font-size:14px;color:var(--off);line-height:1.65;margin-bottom:16px;font-style:italic}
+body.mp-endgame #pl,body.mp-endgame #pc{position:relative}
+body.mp-endgame #pl::after,body.mp-endgame #pc::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.22);z-index:4;pointer-events:auto}
+body.mp-endgame #mp-statusbar,body.mp-endgame #mp-chat-wrap{position:relative;z-index:6}
 
 /* RANKER */
 #rkwrap{overflow-x:auto;overflow-y:auto;max-height:72vh;scroll-behavior:smooth}

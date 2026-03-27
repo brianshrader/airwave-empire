@@ -188,7 +188,7 @@
 <div id="alertbar"></div>
 <div id="tkr"><div id="ti"></div></div>
 <main id="main">
-  <!-- LEFT COLUMN: score strip, market standings, news feed, upcoming events (matches wavelength-ui.html) -->
+  <!-- LEFT COLUMN: score strip, market standings, news feed -->
   <div class="pnl" id="pl">
     <div id="scorebar"></div>
     <div class="ph"><span>MARKET <sub id="mkt-city">ATLANTA</sub><span style="color:var(--mut);font-size:13px;font-weight:400;margin-left:6px;font-family:var(--ft)">· tap for intel</span></span><button type="button" class="phbtn" onclick="om('m-rk')">📊 RANKER</button></div>
@@ -198,8 +198,6 @@
     <div id="dmb"></div>
     <div class="sep"></div>
     <div class="ph">NEWS FEED <sub>RECENT</sub></div><div id="news"></div>
-    <div class="sep"></div>
-    <div class="ph">UPCOMING</div><div id="evts"></div>
   </div>
   <!-- RIGHT COLUMN: scenario banner, your stations -->
   <div class="pnl" id="pc">
@@ -261,6 +259,7 @@
 <div class="ov" id="m-frmove"><div class="mo"><div class="mh"><span>📻 FRANCHISE SLOT</span><button class="mc" onclick="cm('m-frmove')">CLOSE ×</button></div><div id="frmoveb" style="padding:16px 20px 20px"></div></div></div>
 <div class="ov" id="m-swap"><div class="mo"><div class="mh"><span id="swap-title">⇄ SWAP SIGNAL</span><button class="mc" onclick="cm('m-swap')">CLOSE ×</button></div><div id="swapb" style="padding:16px 20px 20px"></div></div></div>
 <div class="ov" id="m-trade"><div class="mo"><div class="mh"><span id="trade-title">🤝 TRADE OFFER</span><button class="mc" onclick="cm('m-trade')">CLOSE ×</button></div><div id="tradeb" style="padding:16px 20px 20px"></div></div></div>
+<div class="ov" id="m-mp-endgame"><div class="mo wide mp-endgame-mo" style="max-width:560px;border:2px solid rgba(212,175,55,.45);box-shadow:0 0 60px rgba(212,175,55,.18),0 12px 40px rgba(0,0,0,.5)"><div class="mh mp-endgame-mh" style="background:linear-gradient(180deg,rgba(212,175,55,.12),transparent);border-bottom:1px solid rgba(212,175,55,.25)"><span id="mp-endgame-title" style="font-family:var(--fd);letter-spacing:3px;color:var(--amb)">FINAL RESULTS — 2025</span></div><div id="mp-endgame-body" style="padding:16px 20px 8px"></div><div style="padding:0 20px 22px"><button type="button" class="cfm" id="mp-endgame-continue" onclick="mpContinueBeyondEndgame()" style="width:100%;font-size:16px;padding:14px">Continue Playing →</button><p style="font-family:var(--ft);font-size:13px;color:var(--mut);margin:10px 0 0 0;text-align:center">Resumes normal play from Spring 2026 onward.</p></div></div></div>
 
   <script src="src/legacy.js"></script>
 </body>

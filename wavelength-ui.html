@@ -48,7 +48,6 @@ html{font-size:16px}
 .sandbox-badge{font-size:14px!important}
 .sim-tag{font-size:14px!important}
 .grade-sub{font-size:14px!important}
-.ev{font-size:15px!important}
 .nm{font-size:15px!important}
 body{background:var(--blk);color:var(--wht);font-family:var(--fm);min-height:100vh;overflow-x:hidden;line-height:1.55}
 body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:9999}
@@ -201,8 +200,14 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .mt th:nth-child(5),.mt td:nth-child(5){width:8%}
 .mt td.mt-trend{text-align:right;white-space:nowrap}
 .mt th:nth-child(6),.mt td:nth-child(6){width:15%}
-.mt tr:hover td{background:rgba(245,166,35,.04)}.mt tr[onclick]:hover td{background:rgba(245,166,35,.09);cursor:pointer}
-.mt tr.you td{background:rgba(245,166,35,.07)}
+.mt tr.station-row:hover td{background:rgba(245,166,35,.04)}
+.mt tr.station-row[onclick]:hover td{background:rgba(245,166,35,.09);cursor:pointer}
+.mt tr.station-row{position:relative}
+.mt tr.station-row.owned td{background:rgba(212,175,55,.08)}
+.mt tr.station-row.owned:hover td{background:rgba(212,175,55,.11)}
+.mt tr.station-row.owned[onclick]:hover td{background:rgba(212,175,55,.14)}
+.mt tr.station-row.owned td:first-child{position:relative}
+.mt tr.station-row.owned td:first-child::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#d4af37;pointer-events:none;z-index:1}
 .mt td.mt-station{padding:4px 5px;overflow:hidden;vertical-align:middle;min-width:0}
 .mt-station-inner{display:flex;align-items:center;justify-content:flex-start;gap:4px;min-width:0;width:100%;max-width:100%}
 .mt-station-inner .clg{flex:0 1 auto;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px;letter-spacing:1px}
@@ -245,9 +250,6 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .nt{font-size:15px;color:var(--wht);line-height:1.6}
 .nt.hi{color:var(--amb)}
 .ni.you .nt::before{content:'▶ ';color:var(--amb)}
-.ev{padding:10px 12px;margin-bottom:9px;background:rgba(245,166,35,.07);border-left:2px solid var(--adm)}
-.evt{font-family:var(--ft);font-size:14px;color:var(--amb);letter-spacing:1px;margin-bottom:3px}
-.evd{font-size:15px;color:var(--off);line-height:1.55}
 .enote{font-family:var(--ft);font-size:14px;color:var(--mut);font-style:italic;padding:10px 0}
 
 /* SCENARIO SELECT */
@@ -313,6 +315,9 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .sr .lb{color:var(--off)}.sr .vl{font-family:var(--ft)}
 .sr .vl.pos{color:var(--grn)}.sr .vl.neg{color:var(--red)}.sr .vl.amb{color:var(--amb)}
 .di{font-size:14px;color:var(--off);line-height:1.65;margin-bottom:16px;font-style:italic}
+body.mp-endgame #pl,body.mp-endgame #pc{position:relative}
+body.mp-endgame #pl::after,body.mp-endgame #pc::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.22);z-index:4;pointer-events:auto}
+body.mp-endgame #mp-statusbar,body.mp-endgame #mp-chat-wrap{position:relative;z-index:6}
 
 /* RANKER */
 #rkwrap{overflow-x:auto;overflow-y:auto;max-height:72vh;scroll-behavior:smooth}
@@ -704,7 +709,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 <div id="alertbar"></div>
 <div id="tkr"><div id="ti"></div></div>
 <main id="main">
-  <!-- LEFT COLUMN: score strip, market standings, news feed, upcoming events -->
+  <!-- LEFT COLUMN: score strip, market standings, news feed -->
   <div class="pnl" id="pl">
     <div id="scorebar"></div>
     <div class="ph"><span>MARKET <sub id="mkt-city">ATLANTA</sub><span style="color:var(--mut);font-size:13px;font-weight:400;margin-left:6px;font-family:var(--ft)">· tap for intel</span></span><button type="button" class="phbtn" onclick="om('m-rk')">📊 RANKER</button></div>
@@ -714,8 +719,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
     <div id="dmb"></div>
     <div class="sep"></div>
     <div class="ph">NEWS FEED <sub>RECENT</sub></div><div id="news"></div>
-    <div class="sep"></div>
-    <div class="ph">UPCOMING</div><div id="evts"></div>
   </div>
   <!-- RIGHT COLUMN: scenario banner, your stations -->
   <div class="pnl" id="pc">
@@ -764,6 +767,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 <div class="ov" id="m-sunset"><div class="mo" style="border-top-color:var(--red)"><div class="mh"><span style="color:var(--red)">⚠ FORMAT SUNSET WARNING</span><button class="mc" onclick="cm('m-sunset')">CLOSE ×</button></div><div id="sunsetb"></div></div></div>
 <div class="ov" id="m-sell"><div class="mo"><div class="mh"><span>SELL STATION</span><button class="mc" onclick="cm('m-sell')">CLOSE ×</button></div><div id="sellb"></div></div></div>
 <div class="ov" id="m-trade"><div class="mo"><div class="mh"><span>🤝 OFFER STATION TO PLAYER</span><button class="mc" onclick="cm('m-trade')">CLOSE ×</button></div><div id="tradeb"></div></div></div>
+<div class="ov" id="m-mp-endgame"><div class="mo wide mp-endgame-mo" style="max-width:560px;border:2px solid rgba(212,175,55,.45);box-shadow:0 0 60px rgba(212,175,55,.18),0 12px 40px rgba(0,0,0,.5)"><div class="mh mp-endgame-mh" style="background:linear-gradient(180deg,rgba(212,175,55,.12),transparent);border-bottom:1px solid rgba(212,175,55,.25)"><span id="mp-endgame-title" style="font-family:var(--fd);letter-spacing:3px;color:var(--amb)">FINAL RESULTS — 2025</span></div><div id="mp-endgame-body" style="padding:16px 20px 8px"></div><div style="padding:0 20px 22px"><button type="button" class="cfm" id="mp-endgame-continue" onclick="mpContinueBeyondEndgame()" style="width:100%;font-size:16px;padding:14px">Continue Playing →</button><p style="font-family:var(--ft);font-size:13px;color:var(--mut);margin:10px 0 0 0;text-align:center">Resumes normal play from Spring 2026 onward.</p></div></div></div>
 <div class="ov" id="m-trade-incoming"><div class="mo" style="border-top-color:var(--blu)"><div class="mh"><span style="color:var(--blu)">📨 INCOMING TRADE OFFER</span><button class="mc" onclick="cm('m-trade-incoming')">CLOSE ×</button></div><div id="tradeinb"></div></div></div>
 <div class="ov" id="m-scen"><div class="mo wide" style="max-width:860px"><div id="scenb"></div></div></div>
 <div class="ov" id="m-onboard"><div class="mo" style="max-width:660px"><div class="mh"><span>HOW TO PLAY</span><button class="mc" onclick="cm('m-onboard');startPlay(_pendingScenId)">START →</button></div><div id="onboardb"></div></div></div>
@@ -960,7 +964,7 @@ const SCPM={'12-17':3.5,'18-24':6.0,'25-34':8.5,'35-49':7.0,'50-64':4.5,'65+':2.
 const STRAF={
   TOP40:.90,CHR:.92,RHYTHMIC:.88,HOT_AC:.80,URBAN_CONTEMP:.82,ALT_ROCK:.85,
   ADULT_CONTEMP:.72,CLASSIC_ROCK:.68,CLASSIC_HITS:.65,OLDIES:.55,COUNTRY:.58,SOUL_RNB:.75,
-  ALBUM_ROCK:.70,NEWS_TALK:.62,SPORTS_TALK:.60,PODCAST_TALK:1.0,
+  ALBUM_ROCK:.70,NEWS_TALK:.62,ALL_NEWS:.60,SPORTS_TALK:.60,PODCAST_TALK:1.0,
   MOR:.35,GOSPEL:.30,BEAUTIFUL_MUSIC:.28,
 };
 
@@ -978,7 +982,7 @@ const FGS={
   SOUL_RNB:.55, URBAN_CONTEMP:.54, COUNTRY:.53, TOP40:.53, MOR:.51, ADULT_STANDARDS:.48,
   RHYTHMIC:.51, CLASSIC_HITS:.51, SPANISH:.50, OLDIES:.48,
   PUBLIC_CLASSICAL:.52, PUBLIC_NEWS:.48,
-  PODCAST_TALK:.43, NEWS_TALK:.40, ALT_ROCK:.38, CLASSIC_ROCK:.32,
+  PODCAST_TALK:.43, NEWS_TALK:.40, ALL_NEWS:.41, ALT_ROCK:.38, CLASSIC_ROCK:.32,
   ALBUM_ROCK:.30, SPORTS_TALK:.24,
 };
 // Gender CPM multiplier: concentrated female or male audiences command advertiser premiums
@@ -1015,7 +1019,7 @@ const SEASONAL={
   fall:   1.12,
 };
 // Talk format bonus in election years (even years, fall period)
-const ELECTION_FORMATS=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'];
+const ELECTION_FORMATS=['NEWS_TALK','ALL_NEWS','SPORTS_TALK','PODCAST_TALK'];
 const ELECTION_BONUS=0.04;
 
 function seasonMult(year, period, format){
@@ -1122,15 +1126,30 @@ const FM={
   CLASSIC_HITS:   {l:'Classic Hits',       cpm:.92, sp:16,fm:true, ab:0,   unlock:2005,d:'70s–80s nostalgia. Rebranded Oldies with broader library. 35–55.'},
   PODCAST_TALK:   {l:'Podcast / Talk',     cpm:1.40,sp:8,  fm:false,ab:0,  unlock:2012,d:'Hybrid terrestrial/digital. Premium CPM.'},
   ADULT_STANDARDS:{l:'Adult Standards',   cpm:.82, sp:14,fm:false,ab:0,  unlock:1981,d:'Sinatra, Ella, Nat King Cole. "Music of Your Life" blazed the trail in \'81. AM\'s refuge after MOR dies — low shares, intensely loyal 55+ audience.'},
-  ALL_NEWS:       {l:'All-News',           cpm:1.65,sp:8,  fm:false,ab:0,  unlock:1970,d:'24-hour news cycle. Premium CPM — credibility commands top dollar. No personality premium. Viable only in major markets. Anchor-driven with no individual star power.',talk:true},
+  ALL_NEWS:       {l:'All-News',           cpm:1.72,sp:8,  fm:false,ab:0,  unlock:1997,talk:true,
+    marketsOnly:['newyork','losangeles','chicago'],
+    d:'24/7 wire-service news — massive newsroom and network costs. Premium CPM in top-3 markets only. Scales with signal reach; weak sticks cannot carry the format. No personality premium (anchors are interchangeable to agencies).'},
   // Public stations — rival-only, non-commercial
   PUBLIC_NEWS:    {l:'Public News / Talk', cpm:0,   sp:0,  fm:true, ab:0,  unlock:1975,d:'NPR affiliate. Non-commercial. Educated 35-64. Unbeatable loyalty.',public:true},
   PUBLIC_CLASSICAL:{l:'Public Classical',  cpm:0,   sp:0,  fm:true, ab:0,  unlock:1975,d:'Classical and jazz. Older educated demos. Pledge-drive funded.',public:true},
 };
+function formatUnlockedForYear(f,G){
+  const y=G?.year??1970;
+  return !!(G?.unlockedFormats?.includes(f)||(FM[f]?.unlock??9999)<=y);
+}
+/** Year unlock + optional marketsOnly (e.g. ALL_NEWS → NY/LA/Chicago only). */
+function formatAllowedInMarket(fmt,marketId,year){
+  const fd=FM[fmt];
+  if(!fd||fd.public)return false;
+  const y=year??1970;
+  if((fd.unlock??9999)>y)return false;
+  if(fd.marketsOnly&&fd.marketsOnly.length&&!fd.marketsOnly.includes(marketId||''))return false;
+  return true;
+}
 const FADJ={
   TOP40:['SOUL_RNB','ALBUM_ROCK','CHR'],SOUL_RNB:['TOP40','GOSPEL','URBAN_CONTEMP'],
   ALBUM_ROCK:['TOP40','CLASSIC_ROCK','ALT_ROCK'],COUNTRY:['MOR','GOSPEL','CLASSIC_HITS'],
-  MOR:['COUNTRY','BEAUTIFUL_MUSIC','NEWS_TALK','ADULT_CONTEMP'],NEWS_TALK:['MOR','SPORTS_TALK','PODCAST_TALK'],
+  MOR:['COUNTRY','BEAUTIFUL_MUSIC','NEWS_TALK','ADULT_CONTEMP'],NEWS_TALK:['MOR','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'],
   BEAUTIFUL_MUSIC:['MOR','ADULT_CONTEMP'],GOSPEL:['SOUL_RNB','COUNTRY'],
   CHR:['TOP40','URBAN_CONTEMP','RHYTHMIC'],CLASSIC_ROCK:['ALBUM_ROCK','CLASSIC_HITS'],
   ADULT_CONTEMP:['MOR','BEAUTIFUL_MUSIC','HOT_AC'],URBAN_CONTEMP:['SOUL_RNB','CHR','RHYTHMIC'],
@@ -1138,7 +1157,7 @@ const FADJ={
   RHYTHMIC:['CHR','URBAN_CONTEMP'],HOT_AC:['ADULT_CONTEMP','CHR'],
   OLDIES:['MOR','CLASSIC_HITS','COUNTRY'],CLASSIC_HITS:['OLDIES','CLASSIC_ROCK','MOR'],PODCAST_TALK:['NEWS_TALK','SPORTS_TALK'],
   ADULT_STANDARDS:['MOR','BEAUTIFUL_MUSIC','OLDIES','NEWS_TALK'],
-  ALL_NEWS:['NEWS_TALK','ADULT_STANDARDS'],
+  ALL_NEWS:['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'],
 };
 const FA={
   TOP40:          {'12-17':.90,'18-24':.80,'25-34':.45,'35-49':.18,'50-64':.06,'65+':.03},
@@ -1162,6 +1181,7 @@ const FA={
   OLDIES:         {'12-17':.05,'18-24':.12,'25-34':.28,'35-49':.52,'50-64':.62,'65+':.45},
   CLASSIC_HITS:   {'12-17':.08,'18-24':.20,'25-34':.42,'35-49':.58,'50-64':.50,'65+':.25},
   PODCAST_TALK:   {'12-17':.08,'18-24':.20,'25-34':.32,'35-49':.38,'50-64':.30,'65+':.20},
+  ALL_NEWS:       {'12-17':.03,'18-24':.07,'25-34':.22,'35-49':.38,'50-64':.52,'65+':.35},
   // Public radio: skews educated, older — strong 35-64 concentration
   PUBLIC_NEWS:    {'12-17':.02,'18-24':.06,'25-34':.20,'35-49':.52,'50-64':.60,'65+':.48},
   PUBLIC_CLASSICAL:{'12-17':.01,'18-24':.04,'25-34':.12,'35-49':.38,'50-64':.62,'65+':.58},
@@ -1177,6 +1197,7 @@ const COMMUNITY_IDENTITY={
   COUNTRY:0.85,      // Rural/Southern identity, deeply tribal
   SPANISH:0.90,      // Immigrant community anchor, irreplaceable
   NEWS_TALK:0.70,    // Civic institution, opinion leader status
+  ALL_NEWS:0.68,     // Institutional news brand; less "voice" than opinion talk
   SPORTS_TALK:0.65,  // Fan community hub
   ADULT_STANDARDS:0.75, // Nostalgic, older community cornerstone
   MOR:0.55,          // Broad but shallow — friendly to everyone, vital to no one
@@ -1515,9 +1536,8 @@ const EVDATA=[
   {y:1995,p:1,t:'Beautiful Music Extinct',d:'The last Beautiful Music stations have converted. Adult Contemporary is the successor format.',e:'fmt_purge:BEAUTIFUL_MUSIC'},
   {y:1996,p:1,t:'MOR Extinct',d:'Middle of Road no longer viable as a commercial format. The format is dead.',e:'fmt_purge:MOR'},
   {y:1996,p:1,t:'Telecom Act — Deregulation',d:'Ownership caps lifted. Up to 8 stations per market. Consolidation begins.',e:'fcc-1996'},
-  {y:1997,p:1,t:'FM Saturation Complete',d:'97% of new cars have FM. A music AM in 1997 is a museum piece.',e:'fp+.03'},
+  {y:1997,p:1,t:'FM Saturation Complete',d:'97% of new cars have FM. A music AM in 1997 is a museum piece. In the largest markets, 24-hour all-news (massive newsroom cost) becomes a strategic option where ad depth can carry the payroll.',e:'fp+.03|unlock-ALL_NEWS'},
   {y:1997,p:2,t:'Consolidation Wave',d:'Clear Channel and Infinity buying everything. Independents pressured.',e:'consolidate'},
-  {y:1997,p:1,t:'All-News Radio Arrives',d:'24-hour news cycle creates demand for all-news format in major markets.',e:'unlock-ALL_NEWS|rival-ALL_NEWS-AM-50kw-emerging|rival-NEWS_TALK-AM-50kw-moderate'},
   {y:1998,p:1,t:'Corporate Radio Peaks',d:'Clear Channel and Chancellor are buying stations faster than regulators can process the filings. Independent operators are getting offers they can\'t refuse. The era of local radio is ending.',e:'consolidate'},
   {y:1998,p:2,t:'Tech Ad Money Arrives',d:'Silicon Valley start-ups are buying radio time. The dot-com ad boom is starting to flood local markets. Revenue is climbing ahead of expectations.',e:'ad+.08'},
   {y:1999,p:1,t:'Dot-Com Ad Boom',d:'Tech companies flooding radio with ad dollars. Revenue peaks.',e:'ad+.20'},
@@ -1583,116 +1603,148 @@ const QRG={
   star:[68,95],    // exceptional — top ~10% of market; Q90+ eligible for superstar status
 };
 // Name pools segmented by era and demographic context
-// mkTal selects the appropriate pool based on year, format, and market
-const NF_CLASSIC = [ // 1950s-1970s — classic AM era, overwhelmingly male white hosts
-  'Jack','Bobby','Ray','Don','Mike','Larry','Gary','Jim','Dave','Steve',
-  'Tom','Bill','Frank','Gene','Roy','Earl','Hank','Al','Jerry','Ted',
-  'Bob','Chuck','Rick','Scott','Paul','Dan','Doug','Ron','Wayne','Dale',
-  'Glen','Barry','Roger','Terry','Randy','Keith','Craig','Dean','Russ','Len',
-  'Bud','Skip','Chet','Hal','Vic','Stan','Norm','Wes','Stu','Clyde',
-  'Mel','Sal','Monty','Buck','Scotty','Marty','Benny','Lou','Ike','Duke',
-  'Johnny','Eddy','Porter','Faron','Webb','Ferlin','Sonny','Lefty','Slim','Tex',
+// mkTal passes {fmt,year} + optional nameCtx; regional surnames + full-name dedup per market
+const NF_CLASSIC=[
+  'Jack','Bobby','Ray','Don','Mike','Larry','Gary','Jim','Dave','Steve','Tom','Bill','Frank','Gene','Roy','Earl','Hank','Al','Jerry','Ted','Bob','Chuck','Rick','Scott','Paul','Dan','Doug','Ron','Wayne','Dale','Glen','Barry','Roger','Terry','Randy','Keith','Craig','Dean','Russ','Len','Bud','Skip','Chet','Hal','Vic','Stan','Norm','Wes','Stu','Clyde','Mel','Sal','Monty','Buck','Scotty','Marty','Benny','Lou','Ike','Duke','Johnny','Eddy','Porter','Faron','Webb','Ferlin','Sonny','Lefty','Slim','Tex','Ken','Greg','Phil','Jeff','Matt','Chris','John','Joe','Tim','Tony','Nick','Andy','Bruce','Carl','Dennis','George','Harry','Kevin','Mark','Neil','Patrick','Peter','Richard','Robert','Samuel','Stephen','Walter','Will','Hugh','Gordon','Murray','Herb','Brent','Todd','Casey','Les','Mac','Chip','Rod','Vince','Edward','Charles','Franklin','Harold','Louis','Philip','Randall','Russell','Sheldon','Stuart','Theodore','Warren','Billy','Bobby','Cliff','Curt','Danny','Darryl','Duane','Eddie','Freddy','Gerald','Glenn','Howard','Irvin','Jerome','Joey','Kent','Kurt','Lance','Lloyd','Marc','Mitch','Myron','Nolan','Orville','Ralph','Rex','Rodney','Rudy','Rusty','Sean','Sheldon','Toby','Troy','Vernon','Wade','Wiley',
 ];
-const NF_WOMEN_70S = [ // Women entering radio 1970s+
-  'Betty','Carol','Sandra','Diane','Linda','Sharon','Pat','Ruth','Wanda','Renee',
-  'Donna','Pam','Karen','Nancy','Susan','Debbie','Jill','Lynn','Gail','Jan',
-  'Kim','Robin','Sherry','Terri','Lori','Dana','Barb','Meg','Judy','Cindy',
-  'Brenda','Rhonda','Tammy','Stacy','Amy','Erin','Leah','Faye','Nell','Bette',
-  'Dolly','Emmylou','Crystal','Barbara','Loretta','Tanya','Wynonna',
+const NF_WOMEN_70S=[
+  'Betty','Carol','Sandra','Diane','Linda','Sharon','Pat','Ruth','Wanda','Renee','Donna','Pam','Karen','Nancy','Susan','Debbie','Jill','Lynn','Gail','Jan','Kim','Robin','Sherry','Terri','Lori','Dana','Barb','Meg','Judy','Cindy','Brenda','Rhonda','Tammy','Stacy','Amy','Erin','Leah','Faye','Nell','Bette','Dolly','Emmylou','Crystal','Barbara','Loretta','Tanya','Wynonna','Angela','Annette','Beth','Bonnie','Charlene','Cheryl','Christine','Connie','Cynthia','Deborah','Denise','Dianne','Dixie','Dorothy','Elizabeth','Frances','Glenda','Gwen','Heather','Holly','Jacqueline','Janet','Janice','Jean','Jeanne','Joan','Joyce','Juanita','Judith','Julie','Kathleen','Kathy','Kay','Kelly','Kimberly','Kitty','Laura','Laurie','Leslie','Linda','Lisa','Lois','Luanne','Marcia','Margaret','Marilyn','Martha','Mary','Maureen','Melanie','Melissa','Michelle','Mitzi','Mona','Nancy','Naomi','Natalie','Nicole','Nikki','Pamela','Patricia','Paula','Peggy','Penny','Phyllis','Priscilla','Rachel','Rebecca','Regina','Rita','Roberta','Rose','Roxanne','Sally','Samantha','Sandy','Sarah','Shannon','Sheila','Shelley','Sheryl','Stacey','Stephanie','Sue','Susan','Suzanne','Sylvia','Tamara','Tammie','Teresa','Terry','Tina','Tracy','Valerie','Vanessa','Vicki','Virginia','Vivian','Wendy','Yvonne',
 ];
-const NF_BLACK = [ // Black on-air talent — strong in urban, gospel, soul formats
-  'Marcus','Keisha','DeShawn','Tanya','Darnell','Tyrone','Lamont','Antoine',
-  'Jamal','Monique','Rochelle','Curtis','Reggie','Andre','Terrence','Darius',
-  'Latoya','Shantel','Malik','Derrick','Cedric','Vonetta','Kendrick','Jasmine',
-  'Ronell','Shonda','Marquise','Alicia','Deion','Tamika','Leroy','Freddie',
-  'Willie','Rufus','Otis','Roscoe','Clyde','Bobby','James','Ray','Sam',
+const NF_BLACK=[
+  'Marcus','Keisha','DeShawn','Tanya','Darnell','Tyrone','Lamont','Antoine','Jamal','Monique','Rochelle','Curtis','Reggie','Andre','Terrence','Darius','Latoya','Shantel','Malik','Derrick','Cedric','Vonetta','Kendrick','Jasmine','Ronell','Shonda','Marquise','Alicia','Deion','Tamika','Leroy','Freddie','Willie','Rufus','Otis','Roscoe','Clyde','Bobby','James','Ray','Sam','Aaliyah','Andre','Angela','Antwan','Bernard','Brandon','Brittany','Calvin','Camille','Chandra','Corey','Crystal','Damon','DeAndre','Deborah','Delores','Demetrius','Denise','Desmond','Dominique','Ebony','Erica','Ernest','Evelyn','Felicia','Gregory','Hakeem','Imani','Janelle','Janine','Jerome','Jevon','Kareem','Keon','Kiesha','Kimberly','LaTanya','LaToya','Loretta','Malcolm','Marlon','Maurice','Montell','Nadine','Naomi','Nichelle','Octavia','Precious','Quincy','Rashad','Rashida','Rickey','Rochelle','Sabrina','Shanice','Sharonda','Sheena','Shelby','Tameka','Tanisha','Tarsha','Terrell','Tiffany','Tisha','Toni','Traci','Trina','Tyrone','Vanessa','Vernon','Yvette','Yvonne',
 ];
-const NF_LATINO = [ // Latino talent — primarily post-1990 Spanish/Rhythmic formats
-  'Maria','Carlos','Rosa','Miguel','Elena','Luis','Carmen','Julio','Ana','Rico',
-  'Gabriela','Eduardo','Sofia','Alejandro','Isabel','Diego','Marco','Valentina',
-  'Javier','Lucia','Fernando','Adriana','Roberto','Camila','Ernesto','Paloma',
+const NF_LATINO=[
+  'Maria','Carlos','Rosa','Miguel','Elena','Luis','Carmen','Julio','Ana','Rico','Gabriela','Eduardo','Sofia','Alejandro','Isabel','Diego','Marco','Valentina','Javier','Lucia','Fernando','Adriana','Roberto','Camila','Ernesto','Paloma','Alberto','Alma','Amparo','Angel','Antonio','Arturo','Beatriz','Blanca','Catalina','Cecilia','Cesar','Claudia','Consuelo','Cristina','Dolores','Eduardo','Elisa','Emilio','Enrique','Esperanza','Esteban','Estela','Fabiola','Felipe','Francisca','Gloria','Graciela','Guadalupe','Guillermo','Hector','Hilda','Ignacio','Ines','Irene','Isabella','Jaime','Jorge','Jose','Juan','Juana','Leticia','Lourdes','Manuel','Marcela','Marisol','Marta','Mateo','Mercedes','Monica','Natalia','Nora','Oscar','Pablo','Patricia','Pedro','Rafael','Ramona','Raquel','Ricardo','Rita','Rocio','Salvador','Sergio','Silvia','Soledad','Teresa','Veronica','Victor','Virginia','Xavier','Yolanda',
 ];
-const NF_MODERN = [ // Gen-X/Millennial talent 1985-2010
-  'Chad','Brad','Zach','Trent','Brett','Kyle','Brandon','Justin','Ryan','Travis',
-  'Ashley','Brittany','Heather','Megan','Kristen','Amber','Caitlin','Stephanie',
-  'Jordan','Taylor','Alex','Morgan','Casey','Jamie','Skylar','Devon','Brooke','Kayla',
-  'Josh','Jake','Cody','Tyler','Caleb','Austin','Blake','Colby','Shane','Drew',
+const NF_MODERN=[
+  'Chad','Brad','Zach','Trent','Brett','Kyle','Brandon','Justin','Ryan','Travis','Ashley','Brittany','Heather','Megan','Kristen','Amber','Caitlin','Stephanie','Jordan','Taylor','Alex','Morgan','Casey','Jamie','Skylar','Devon','Brooke','Kayla','Josh','Jake','Cody','Tyler','Caleb','Austin','Blake','Colby','Shane','Drew','Derek','Nicole','Laura','Christina','Rachel','Sara','Eric','Jason','Corey','Shannon','Kelli','Holly','Allison','Melissa','Jessica','Amanda','Lauren','Jennifer','Nathan','Benjamin','Ethan','Logan','Mason','Noah','Owen','Hunter','Connor','Lucas','Jackson','Aidan','Hayden','Bryce','Chase','Dylan','Garrett','Grant','Ian','Jared','Joel','Jordan','Kaleb','Landon','Parker','Reid','Riley','Spencer','Tanner','Trevor','Ty','Zachary','Sierra','Cheyenne','Destiny','Hailey','Kaitlyn','Mackenzie','Paige','Savannah','Tiffany',
 ];
-const NF_HANDLES = [ // Radio handles — more common in CHR/Rock
-  'Ace','Blaze','Flash','Riff','Boom','Jet','Slick','Breezy','Spike','Maverick',
-  'Crash','Rocket','Stone','Buzz','Wild','Smooth','Rico','Big','Lil','DJ',
+const NF_HANDLES=[
+  'Ace','Blaze','Flash','Riff','Boom','Jet','Slick','Breezy','Spike','Maverick','Crash','Rocket','Stone','Buzz','Wild','Smooth','Rico','Big','Lil','DJ',
 ];
-// Backward-compat flat array (still used as fallback)
 const NF=[...NF_CLASSIC,...NF_WOMEN_70S,...NF_BLACK,...NF_MODERN];
-const NL=[
-  'Williams','Johnson','Davis','Wilson','Moore','Taylor','Anderson','Thomas',
-  'Jackson','White','Harris','Martin','Thompson','Garcia','Clark','Lewis',
-  'Walker','Hall','Young','King','Rivera','Washington','Brown','Jones',
-  'Smith','Miller','Robinson','Carter','Mitchell','Perez','Roberts','Turner',
-  'Phillips','Campbell','Parker','Evans','Edwards','Collins','Stewart','Morris',
-  'Rogers','Reed','Cook','Bailey','Bell','Cooper','Richardson','Cox','Howard',
-  'Ward','Torres','Peterson','Gray','Ramirez','Watson','Brooks','Kelly',
-  'Sanders','Price','Bennett','Wood','Barnes','Ross','Henderson','Coleman',
-  'Jenkins','Perry','Powell','Long','Patterson','Hughes','Flores','Butler',
-  'Simmons','Foster','Gonzales','Bryant','Alexander','Russell','Griffin',
-  // Southern surnames (Atlanta flavor)
-  'Tatum','Booker','Payne','Byrd','Pryor','Pitts','Crowe','Hollis','Crews',
-  'Pickens','Dupree','Malone','Langford','Worthy','Cobb','Phelps','Raines',
-]
-const gn=(fmt,year)=>{
-  // Select appropriate name pool based on format, year, and market demographics
-  const yr=year||(typeof G!=='undefined'&&G?.year)||1970;
-  const mkt=typeof G!=='undefined'&&G?.marketId?G.marketId:'atlanta';
-  const _mktCfg=(typeof MARKETS!=='undefined'&&MARKETS[mkt])||{blackPop:0.358,hispPop2020:0.115};
-  const blackPop=_mktCfg.blackPop||0.358;
+const NL_BASE=[
+  'Williams','Johnson','Davis','Wilson','Moore','Taylor','Anderson','Thomas','Jackson','White','Harris','Martin','Thompson','Garcia','Clark','Lewis','Walker','Hall','Young','King','Rivera','Washington','Brown','Jones','Smith','Miller','Robinson','Carter','Mitchell','Perez','Roberts','Turner','Phillips','Campbell','Parker','Evans','Edwards','Collins','Stewart','Morris','Rogers','Reed','Cook','Bailey','Bell','Cooper','Richardson','Cox','Howard','Ward','Torres','Peterson','Gray','Ramirez','Watson','Brooks','Kelly','Sanders','Price','Bennett','Wood','Barnes','Ross','Henderson','Coleman','Jenkins','Perry','Powell','Long','Patterson','Hughes','Flores','Butler','Simmons','Foster','Gonzales','Bryant','Alexander','Russell','Griffin','Diaz','Hayes','Myers','Ford','Hamilton','Graham','Sullivan','Wallace','Woods','Cole','West','Jordan','Owens','Reynolds','Fisher','Ellis','Harrison','Gibson','McDonald','Cruz','Marshall','Ortiz','Gomez','Murray','Freeman','Wells','Webb','Tucker','Guzman','Burns','Crawford','Olson','Simpson','Porter','Hunter','Gordon','Mendez','Silva','Shaw','Snyder','Mason','Dixon','Warren','Holmes','Rice','Robertson','Hunt','Black','Daniel','Palmer','Mills','Nichols','Grant','Knight','Ferguson','Rose','Stone','Hawkins','Dunn','Perkins','Hudson','Spencer','Gardner','Stephens','Payne','Pierce','Berry','Matthews','Arnold','Wagner','Willis','Ray','Watkins','Olsen','Carroll','Duncan','Day','Hart','Bradley','Lane','Andrews','Ruiz','Harper','Fox','Riley','Armstrong','Carpenter','Weaver','Greene','Lawrence','Elliott','Chavez','Sims','Austin','Peters','Kelley','Franklin','Lawson','Fields','Ryan','Schmidt','Carr','Vasquez','Castillo','Wheeler','Chapman','Oliver','Montgomery','Richards','Williamson','Johnston','Banks','Meyer','Bishop','McCoy','Howell','Alvarez','Morrison','Hansen','Fernandez','Garza','Harvey','Little','Burton','Stanley','Nguyen','George','Jacobs','Reid','Kim','Fuller','Lynch','Dean','Gilbert','Garrett','Romero','Welch','Larson','Frazier','Burke','Hanson','Mendoza','Moreno','Bowman','Medina','Fowler','Brewer','Hoffman','Carlson','Silva','Pearson','Holland','Douglas','Fleming','Jensen','Vargas','Byrd','Davidson','Hopkins','May','Terry','Herrera','Wade','Soto','Walters','Curtis','Neal','Caldwell','Lowe','Jennings','Barnett','Graves','Jimenez','Horton','Shelton','Barrett','Obrien','Castro','Sutton','Gregory','McKinney','Lucas','Miles','Craig','Rodriquez','Chambers','Holt','Lambert','Fletcher','Watts','Bates','Hale','Rhodes','Pena','Beck','Newman','Haynes','McDaniel','Barker','Norris','Moss','Church','Lamb','Vaughn','Todd','Buchanan','Cobb','French','Kramer','McCormick','Dougherty','Heath','Singleton','Pate','Denton','Clements','Dodd','Goldman','Hatcher','Ingram','Jarrett','Kessler','Latham','McGill','Nolen','Pritchett','Roper','Shipp','Thrash','Venable','Wimberly','Yancey','Zell',
+];
+const NL_REGIONAL={
+  Southeast:['Tatum','Booker','Pickens','Crews','Raines','Pitts','Pryor','Byrd','Hollis','Worthy','Langford','Malone','Crowe','Payne','Bledsoe','Culpepper','Dabney','Gentry','Grantham','Holliday','Ingram','Lockett','Moseley','Sessions','Cash','Conley','Dalton','Drummond','Ellison','Fancher','Guthrie','Hatcher','Keeton','Lamar','Mabry','Pardue','Ragsdale','Shelton','Trotter','Upchurch','Whitfield','Yarbrough','Carmichael','Daughtry','Echols','Fambrough','Griswold','Hightower','Ivey','Joiner','Kilgore','Lunsford','McDuffie','Peacock','Redding','Stovall','Thurmond','Vickers','Wooten'],
+  South:['Cash','Conley','Dalton','Drummond','Ellison','Fancher','Guthrie','Hatcher','Keeton','Lamar','Mabry','Pardue','Ragsdale','Shelton','Trotter','Upchurch','Whitfield','Yarbrough','Bledsoe','Carmack','Driskill','Fambrough','Gholston','Hickman','Kuykendall','Lockhart','McSwain','Pritchett','Ragsdale','Starnes','Tilghman','Vann','Wamble','Zorn'],
+  Midwest:['Novak','Kowalski','Kaminski','Nowak','Schmidt','Weber','Schneider','Fischer','Hoffmann','Wagner','Becker','Schulz','Koch','Richter','Klein','Murphy','Sullivan','Walsh','Doyle','Kennedy','Lynch','Burke','Ryan','McCarthy','Reilly','Quinn','Byrne','Kowalczyk','Zielinski','Szymanski','Wozniak','Kaczmarek','Krol','Pawlak','Jablonski','Dudek','Grabowski','Majewski','Jaworski','Piotrowski','Krause','Krupa','Lewandowski','Zajac','Adamski','Baran','Czech','Dombrowski','Gorski','Janicki','Kaminska','Lisowski','Michalski','Niemiec','Olszewski','Pasternak','Rutkowski','Sobczak','Tomaszewski','Urbaniak','Wisniewski','Zawadzki'],
+  Northeast:['Russo','Romano','Rossi','Conti','Marino','Esposito','Lombardi','Ferraro','Caruso','Giordano','Ricci','Marchetti','Gallagher','Donovan','Shea','Fitzgerald','McDonnell','Regan','Sweeney','Tierney','Bianco','Bruno','Caputo','DeLuca','Esposito','Fontana','Greco','Iannucci','LaRosa','Mancini','Nicastro','Orsini','Pagano','Quattro','Rizzo','Sacco','Tarantino','Vitale','Zucco','Angelo','Bellucci','Catalano','DiMaggio','Esposito','Falcone','Gentile','Iacono','Lombardo','Martino','Nardone','Palermo','Rinaldi','Sorrentino','Toscano','Ventura','Zito'],
+  'West Coast':['Nguyen','Tran','Pham','Park','Kim','Patel','Shah','Singh','Kaur','Chen','Liu','Wang','Wu','Zhang','Yang','Lin','Chang','Huang','Huynh','Le','Vu','Ngo','Do','Vo','Lam','Truong','Chung','Kwong','Fong','Yee','Mah','Chan','Cheung','Tsai','Yamamoto','Tanaka','Sato','Suzuki','Takahashi','Watanabe','Ito','Okamoto','Nakamura','Hayashi','Maeda','Kobayashi','Inoue','Yamada','Sanchez','Gutierrez','Castillo','Jimenez','Moreno','Ortega','Delgado','Ramos','Medina','Aguilar','Vega','Hernandez','Lopez','Gonzalez','Flores','Reyes','Morales','Castro','Vasquez','Romero','Munoz','Herrera','Garza','Silva','Vargas','Ruiz','Salazar','Espinoza','Valdez','Zavala','Acosta','Miranda','Nava','Arellano','Cervantes','Escobar','Galvan','Ibarra','Juarez','Luna','Montoya','Navarro','Ochoa','Padilla','Quintero','Renteria','Salinas','Trevino','Uribe','Valencia','Zamora','Zuniga'],
+  Southwest:['Bledsoe','Culpepper','Driskill','Fannin','Grisham','Houston','Kuykendall','Lockett','McSwain','Nolen','Pickens','Ragsdale','Sessions','Thrash','Venable','Wimberly','Wortham','Yancey','Bumgarner','Crockett','Dalton','Echols','Fancher','Gholston','Hickman','Jarrell','Kilgore','Lockhart','Mabry','Pardue','Roper','Starnes','Tilghman','Vann','Wamble','Zorn','Armijo','Baca','Cisneros','Delgado','Escobedo','Gallegos','Hinojosa','Jaramillo','Lujan','Montoya','Ontiveros','Paredes','Quintana','Renteria','Saldivar','Trevino','Ulibarri','Valdez','Vigil','Ybarra','Zuniga'],
+};
+const NL_OVERFLOW=[
+  'Abernathy','Bostic','Carmichael','Daughtry','Echols','Fambrough','Griswold','Hightower','Ivey','Joiner','Kilgore','Lunsford','McDuffie','Redding','Stovall','Thurmond','Vickers','Wooten','Babcock','Crenshaw','Dillard','Easterling','Furlong','Grantham','Holladay','Inscore','Jernigan','Kilpatrick','Locklear','Murdock','Pritchard','Register','Shipman','Thornhill','Vannoy','Whitlock','Yount','Ziegler','Ashford','Bingham','Culbertson','Davenport','Elrod','Faircloth','Grigsby','Hunnicutt','Ireland','Jernigan','Knotts','Lampley','McEntire','Norwood','Pardue','Rountree','Strother','Tindall','Vaughan','Winslow','Yancey',
+];
+function normTalentNameKey(name){
+  if(!name||typeof name!=='string')return '';
+  return name.trim().toLowerCase().replace(/\s+/g,' ');
+}
+function collectMarketTalentNameKeys(G){
+  const usedFirst=new Set();
+  const usedFull=new Set();
+  const usedLast=new Set();
+  if(!G?.stations)return {usedFirst,usedFull,usedLast};
+  G.stations.forEach(st=>{
+    if(!st.prog)return;
+    Object.values(st.prog).forEach(sd=>{
+      const raw=sd?.talent?.name;
+      if(!raw)return;
+      const parts=raw.trim().split(/\s+/).filter(Boolean);
+      if(!parts.length)return;
+      usedFirst.add(parts[0]);
+      if(parts.length>=2)usedLast.add(parts[parts.length-1]);
+      usedFull.add(normTalentNameKey(raw));
+    });
+  });
+  return {usedFirst,usedFull,usedLast};
+}
+function buildWeightedFirstPool(fmt,year,marketId){
+  const yr=year||1970;
+  const mkt=(typeof MARKETS!=='undefined'&&MARKETS[marketId])||{};
+  const blackPop=typeof mkt.blackPop==='number'?mkt.blackPop:0.35;
+  const hispPop1970=mkt.hispPop1970??0.01;
+  const hispPop2000=mkt.hispPop2000??0.08;
+  const hispPop2020=mkt.hispPop2020??0.115;
   const hispPop=yr<=2000
-    ?(_mktCfg.hispPop1970||0.01)+Math.max(0,yr-1970)/30*((_mktCfg.hispPop2000||0.08)-(_mktCfg.hispPop1970||0.01))
-    :Math.min(_mktCfg.hispPop2020||0.115,(_mktCfg.hispPop2000||0.08)+(yr-2000)/20*((_mktCfg.hispPop2020||0.115)-(_mktCfg.hispPop2000||0.08)));
-
-  // Format-specific demographic weighting
-  const isUrbanFmt=['URBAN_CONTEMP','SOUL_RNB','GOSPEL','HIP_HOP','RHYTHMIC'].includes(fmt);
-  const isSpanishFmt=['SPANISH'].includes(fmt);
+    ?hispPop1970+Math.max(0,yr-1970)/30*(hispPop2000-hispPop1970)
+    :Math.min(hispPop2020,hispPop2000+(yr-2000)/20*(hispPop2020-hispPop2000));
+  const isUrbanFmt=['URBAN_CONTEMP','SOUL_RNB','GOSPEL','RHYTHMIC'].includes(fmt);
+  const isSpanishFmt=fmt==='SPANISH';
   const isCountryFmt=['COUNTRY','CLASSIC_HITS','CLASSIC_ROCK','ALBUM_ROCK'].includes(fmt);
   const isModernFmt=yr>=1985;
-
-  // Build weighted pool
+  const isNewsTalkish=TALK_FMTS.includes(fmt)||fmt==='ALL_NEWS';
   let pool=[];
-  // Classic names always available; weighted down after 1990
   const classicWeight=yr<=1985?4:yr<=2000?2:1;
   for(let i=0;i<classicWeight;i++)pool.push(...NF_CLASSIC);
-  // Women: enter from 1972 onward
+  if(isNewsTalkish)for(let i=0;i<3;i++)pool.push(...NF_CLASSIC);
   if(yr>=1972)pool.push(...NF_WOMEN_70S);
-  // Black talent: weighted by format and market demographics
   const blackWeight=isUrbanFmt?6:Math.round(blackPop*10);
   for(let i=0;i<blackWeight;i++)pool.push(...NF_BLACK);
-  // Latino: only after 1990 and weighted by market Hispanic population
   if(yr>=1990&&!isCountryFmt){
     const hispWeight=isSpanishFmt?8:Math.round(hispPop*10);
     for(let i=0;i<hispWeight;i++)pool.push(...NF_LATINO);
   }
-  // Modern names: from 1985
-  if(isModernFmt)pool.push(...(isCountryFmt?[]:NF_MODERN));
-  // Radio handles: CHR/Rock formats
-  if(['CHR','TOP40','ALBUM_ROCK','CLASSIC_ROCK','ALT_ROCK','HOT_AC'].includes(fmt)&&yr>=1975)
-    pool.push(...NF_HANDLES);
-
-  // Country format correction: if country, strip non-period-appropriate names
-  // In Nashville pre-1990, talent was almost exclusively white Southern names
-  if(isCountryFmt&&yr<1990){
-    pool=pool.filter(n=>NF_CLASSIC.includes(n)||NF_WOMEN_70S.includes(n));
+  if(isModernFmt&&!isCountryFmt)pool.push(...NF_MODERN);
+  if(['CHR','TOP40','ALBUM_ROCK','CLASSIC_ROCK','ALT_ROCK','HOT_AC'].includes(fmt)&&yr>=1975)pool.push(...NF_HANDLES);
+  if(isCountryFmt&&yr<1990)pool=pool.filter(n=>NF_CLASSIC.includes(n)||NF_WOMEN_70S.includes(n));
+  return pool;
+}
+function buildLastNamePool(region,usedLastBlock){
+  const regExtra=NL_REGIONAL[region]||NL_REGIONAL.Southeast;
+  let pool=[...NL_BASE,...regExtra];
+  if(usedLastBlock?.size){
+    const filtered=pool.filter(l=>!usedLastBlock.has(l));
+    if(filtered.length)pool=filtered;
   }
-
-  // Deduplicate against names already in use
-  const usedFirst=new Set();
-  if(typeof G!=='undefined'&&G?.stations){
-    G.stations.forEach(st=>{
-      if(!st.prog)return;
-      Object.values(st.prog).forEach(sd=>{if(sd?.talent?.name)usedFirst.add(sd.talent.name.split(' ')[0]);});
-    });
+  return pool;
+}
+const gn=(nameCtx)=>{
+  const ctx=nameCtx||{};
+  const fmt=ctx.fmt;
+  const year=ctx.year??((typeof G!=='undefined'&&G?.year)||1970);
+  const marketId=(typeof G!=='undefined'&&G?.marketId)||ACTIVE_MARKET||'atlanta';
+  const mkt=(typeof MARKETS!=='undefined'&&MARKETS[marketId])||{};
+  const region=mkt.region||'Southeast';
+  const mk=collectMarketTalentNameKeys(typeof G!=='undefined'?G:null);
+  const usedFirst=new Set(mk.usedFirst);
+  const usedFull=new Set(mk.usedFull);
+  if(ctx.usedFullNames)ctx.usedFullNames.forEach(k=>usedFull.add(k));
+  const poolFirst=buildWeightedFirstPool(fmt,year,marketId);
+  const availFirst=poolFirst.filter(f=>!usedFirst.has(f));
+  const poolF=availFirst.length?availFirst:poolFirst;
+  const lastPool=buildLastNamePool(region,ctx.usedLastNames);
+  const overflow=[...NL_OVERFLOW,...NL_BASE];
+  for(let attempt=0;attempt<72;attempt++){
+    const first=pick(poolF);
+    const last=pick(lastPool);
+    const full=`${first} ${last}`;
+    const key=normTalentNameKey(full);
+    if(!usedFull.has(key)){
+      usedFirst.add(first);
+      usedFull.add(key);
+      if(ctx.usedFullNames)ctx.usedFullNames.add(key);
+      return full;
+    }
   }
-  const avail=pool.filter(f=>!usedFirst.has(f));
-  return `${pick(avail.length?avail:pool)} ${pick(NL)}`;
+  for(let attempt=0;attempt<48;attempt++){
+    const first=pick(poolF);
+    const last=pick(overflow);
+    const full=`${first} ${last}`;
+    const key=normTalentNameKey(full);
+    if(!usedFull.has(key)){
+      usedFull.add(key);
+      if(ctx.usedFullNames)ctx.usedFullNames.add(key);
+      return full;
+    }
+  }
+  const fb=`${pick(poolF)} ${pick(lastPool)}`;
+  const fbKey=normTalentNameKey(fb);
+  if(ctx.usedFullNames)ctx.usedFullNames.add(fbKey);
+  return fb;
 };
+
 let UC=new Set(),UB=new Set();
 function gc(){const c='BCDFGJKLMNPRSTVXZ',a=c+'AEIOU';let s,t=0;do{s='W'+c[ri(0,c.length-1)]+a[ri(0,a.length-1)]+a[ri(0,a.length-1)];t++;}while(UC.has(s)&&t<200);UC.add(s);return s;}
 function gb(f,freq,city){const p=BRANDS[f]||['Radio'],av=p.filter(b=>!UB.has(b));const raw=av.length?pick(av):p[0];const b=typeof resolveBrand==='function'?resolveBrand(raw,freq,city):raw;UB.add(raw);return b;}
@@ -1726,7 +1778,7 @@ function salInfl(base,year){
   const m=1.0+p1*0.070+p2*0.035+p3*0.015;
   return Math.round(base*m/500)*500;
 }
-function mkTal(slot,fmt,tier='mid',year=1970){
+function mkTal(slot,fmt,tier='mid',year=1970,nameCtx){
   // Talk format salary discount: the AVERAGE News/Talk or Sports host earns less
   // than the AVERAGE music DJ — the format's value is in the brand and show concept,
   // not purely in individual star power. But this is a starting discount, not a ceiling.
@@ -1780,30 +1832,25 @@ function mkTal(slot,fmt,tier='mid',year=1970){
     // This preserves meaningful variance while eliminating the cliff
     const qualAdjSal=Math.round((qualTarget*0.65+baseSal*0.35)/500)*500;
     const finalSal=Math.round(salInfl(qualAdjSal,year)*talkDiscount/500)*500;
-  return{id:Math.random().toString(36).substr(2,8),name:gn(fmt,year),slot,quality:q,formatFit:ff,salary:finalSal,cyr:ri(1,2),morale:Math.round(rnd(55,85)),_hireYear:year,_careerStartYear};
+  const name=gn({...nameCtx,fmt,year});
+  if(nameCtx?.usedLastNames){
+    const parts=name.trim().split(/\s+/);
+    const last=parts[parts.length-1];
+    if(last)nameCtx.usedLastNames.add(last);
+  }
+  if(nameCtx?.usedFullNames)nameCtx.usedFullNames.add(normTalentNameKey(name));
+  return{id:Math.random().toString(36).substr(2,8),name,slot,quality:q,formatFit:ff,salary:finalSal,cyr:ri(1,2),morale:Math.round(rnd(55,85)),_hireYear:year,_careerStartYear,superstar:false};
   }
 }
 function mkPool(slot,fmt,year){
-  // Collect all first names currently active in the market to avoid duplicates
-  const usedFirstNames=new Set();
-  if(G&&G.stations){
-    G.stations.forEach(st=>{
-      if(st.prog)Object.values(st.prog).forEach(sd=>{
-        if(sd?.talent?.name)usedFirstNames.add(sd.talent.name.split(' ')[0]);
-      });
-    });
-  }
+  const nameCtx={usedLastNames:new Set(),usedFullNames:new Set()};
   const pool=[];
-  let attempts=0;
-  // Tier pool depends on slot importance — drive time attracts better candidates
   const _drivePools={'morningDrive':['mid','mid','star','star'],'afternoonDrive':['mid','mid','star','star'],
     'midday':['entry','mid','mid','star'],'evening':['entry','entry','mid','mid'],'overnight':['entry','entry','entry','mid']};
   const tierPool=_drivePools[slot]||['entry','mid','mid','star'];
   for(const tier of tierPool){
-    let t=null;
-    do{t=mkTal(slot,fmt,tier,year);attempts++;}
-    while(t&&usedFirstNames.has(t.name.split(' ')[0])&&attempts<30);
-    if(t){usedFirstNames.add(t.name.split(' ')[0]);pool.push(t);}
+    const t=mkTal(slot,fmt,tier,year,nameCtx);
+    if(t)pool.push(t);
   }
   return pool.sort((a,b)=>b.quality-a.quality);
 }
@@ -1900,7 +1947,7 @@ const SPORT_SEASONS={
 // Format compatibility with sports rights
 // Sports Talk gets full halo; other formats get partial
 const SPORTS_FORMAT_FIT={
-  SPORTS_TALK:1.00, NEWS_TALK:0.70, PODCAST_TALK:0.65,
+  SPORTS_TALK:1.00,NEWS_TALK:0.70,ALL_NEWS:0.68,PODCAST_TALK:0.65,
   MOR:0.45, ADULT_CONTEMP:0.40, CLASSIC_HITS:0.40,
   COUNTRY:0.38, CLASSIC_ROCK:0.38, ADULT_STANDARDS:0.30,
   CHR:0.35, TOP40:0.35, HOT_AC:0.32, ALBUM_ROCK:0.35,
@@ -2100,6 +2147,28 @@ function resolveRightsAuction(team,rights,G,acts){
   acts.push({v:'HIGH',
     t:`📋 ${team.name} rights awarded to ${winner.callLetters} — ${f$(winnerBid)}/yr for ${team.contractYrs} years.${changeNote}`,
     y:G.year,p:G.period,iy:newPlayer||prevPlayer});
+}
+
+/** Sports bid slider: tiered increments (UI only — does not change fee math elsewhere). */
+function snapSportsBidAmount(v){
+  const x=Math.round(Number(v)||0);
+  if(x<=100000) return Math.round(x/2000)*2000;
+  if(x<=500000) return Math.round(x/10000)*10000;
+  return Math.round(x/25000)*25000;
+}
+function snapSportsBidAmountClamped(v, min, max){
+  const lo=Math.round(min), hi=Math.round(max);
+  const t=Math.max(lo, Math.min(hi, Math.round(Number(v)||0)));
+  let x=snapSportsBidAmount(t);
+  if(x>=lo&&x<=hi) return x;
+  let best=null, dist=Infinity;
+  for(let n=lo;n<=hi;n+=1000){
+    const s=snapSportsBidAmount(n);
+    if(s<lo||s>hi) continue;
+    const d=Math.abs(s-t);
+    if(d<dist){ dist=d; best=s; }
+  }
+  return best!=null?best:t;
 }
 
 // Player places a bid
@@ -2411,6 +2480,7 @@ const MP = {
   // In solo: no-op. In live: tells server (and other clients) what happened.
   action(action, payload) {
     if (this.mode !== 'live') return;
+    if (G && G.mpPhase === 'endgame' && action !== 'mp_continue') return;
     // Host includes current G so server can persist mid-period state on every action.
     // This ensures rejoiners get settings like progBudget, salesForce, etc.
     this.emit('player_action', { action, payload, G: this.isHost ? G : undefined });
@@ -2432,6 +2502,21 @@ const MP = {
     if (this.mode !== 'live') return;
     const bar = document.getElementById('mp-statusbar');
     if (!bar) return;
+    if (G && G.mpPhase === 'endgame' && !G.continuesBeyondEnd) {
+      const btn = document.getElementById('abtn');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '🏆 CAMPAIGN COMPLETE — OPEN FINAL RESULTS';
+      }
+      bar.style.display = 'block';
+      const names = this.players.map(p =>
+        `<span style="color:${p.socketId===this.socketId?'var(--amb)':p.connected?'#fff':'var(--mut)'}">${p.name}</span>`
+      ).join(' &nbsp;·&nbsp; ');
+      document.getElementById('mp-status-players').innerHTML = names;
+      document.getElementById('mp-status-commits').textContent = 'Final results pending';
+      document.getElementById('mp-status-room').textContent = `ROOM ${this.roomId}`;
+      return;
+    }
     bar.style.display = 'block';
     const names = this.players.map(p =>
       `<span style="color:${p.socketId===this.socketId?'var(--amb)':p.connected?'#fff':'var(--mut)'}">${p.name}${this.commitLog[p.socketId]?' ✓':''}</span>`
@@ -3205,6 +3290,7 @@ function genMarketMP(era) {
 // Called by non-host players instead of advTurn()
 function mpCommit() {
   if (MP.mode !== 'live') return;
+  if (G && G.mpPhase === 'endgame' && !G.continuesBeyondEnd) return;
   // Save this player's cash into shared state so it survives the broadcast
   if (G && !G._playerCash) G._playerCash = {};
   if (G) G._playerCash[MP.playerId] = G.cash;
@@ -3218,7 +3304,9 @@ function mpCommit() {
 // Called at the end of advTurn() when in multiplayer host mode
 function mpBroadcastState(decadeYear, sumData) {
   if (MP.mode !== 'live' || !MP.isHost) return;
-  MP.emit('state_update', { G, decadeYear: decadeYear || null, sumData: sumData || null });  // decadeScore computed guest-side from _playerScore
+  const sd = sumData ? { ...sumData } : null;
+  if (sd && G && G.mpPhase === 'endgame') sd.mpEndgame = true;
+  MP.emit('state_update', { G, decadeYear: decadeYear || null, sumData: sd });  // decadeScore computed guest-side from _playerScore
   // Reset: everyone must commit again next period
   MP.commitLog = {};
   MP.players.forEach(p => { MP.commitLog[p.socketId] = false; });
@@ -3665,11 +3753,12 @@ function mkStn(bp,freq,year=1970){
   const afTier=tt==='star'?'mid':tt==='mid'?'entry':'entry';
   const mdTier=tt==='star'?'mid':tt==='mid'?'entry':'entry'; // midday same as afternoon
   const evTier='entry'; // evening always entry-tier
+  const nameCtx={usedLastNames:new Set(),usedFullNames:new Set()};
   const prog={
-    morningDrive:  {talent:mkTal('morningDrive',fmt,tt,year),    quality:Math.round(rnd(qb[0],qb[1]))},
-    midday:        {talent:fmt!=='BEAUTIFUL_MUSIC'?mkTal('midday',fmt,mdTier,year):null,quality:Math.round(rnd(qb[0]-8,qb[1]-8))},
-    afternoonDrive:{talent:mkTal('afternoonDrive',fmt,afTier,year),quality:Math.round(rnd(qb[0]-5,qb[1]-5))},
-    evening:       {talent:Math.random()>.4?mkTal('evening',fmt,evTier,year):null,quality:Math.round(rnd(qb[0]-15,qb[1]-15))},
+    morningDrive:  {talent:mkTal('morningDrive',fmt,tt,year,nameCtx),    quality:Math.round(rnd(qb[0],qb[1]))},
+    midday:        {talent:fmt!=='BEAUTIFUL_MUSIC'?mkTal('midday',fmt,mdTier,year,nameCtx):null,quality:Math.round(rnd(qb[0]-8,qb[1]-8))},
+    afternoonDrive:{talent:mkTal('afternoonDrive',fmt,afTier,year,nameCtx),quality:Math.round(rnd(qb[0]-5,qb[1]-5))},
+    evening:       {talent:Math.random()>.4?mkTal('evening',fmt,evTier,year,nameCtx):null,quality:Math.round(rnd(qb[0]-15,qb[1]-15))},
     overnight:     {talent:null,quality:Math.round(rnd(15,30))},
   };
   Object.values(prog).forEach(s=>s.quality=Math.max(10,Math.min(100,s.quality)));
@@ -4237,6 +4326,118 @@ const DRIFT={
   }
 };
 
+/** Structured tradeoff copy for Format Strategy modal (no dated spoilers). */
+const DRIFT_POLE_GUIDANCE={
+  TOP40:{
+    A:{audience:'Heavy 12–24 and teen skew; family-friendly mass appeal',strengths:'High ceiling in youth-heavy markets; chart familiarity; event tie-ins (concerts, tours)',weaknesses:'Credibility fragile; older demos tune out; vulnerable when pop falls out of favor',monetization:'Mass-reach youth spots; fast-food, movies, mobile; volume over CPM',risks:'Trend churn; competition from CHR and streaming; sounds dated overnight'},
+    B:{audience:'18–34 with rock/alternative lean; some 25–44 holdouts',strengths:'Better male retention; survives when "pop" is uncool; format identity',weaknesses:'Narrower mass appeal; can lose 12–17 to pure hit stations',monetization:'Concerts, beer, automotive; slightly older CPMs',risks:'Squeezed between CHR and rock-leaning formats; rock-cycle moments hit pure pop harder'}
+  },
+  NEWS_TALK:{
+    A:{audience:'35–64 news-first; educated; appointment listening',strengths:'Strong news brand; agency-safe; durable through cycles',weaknesses:'Lower passion metrics; harder to dominate 25–54 talk radio wars',monetization:'Premium news CPMs; local sponsors; network compensation',risks:'Slow build; political cycles favor opinion competitors'},
+    B:{audience:'Passionate 35–64 (often male); ideology-aligned',strengths:'Intense loyalty; election and crisis spikes; network-ready talent',weaknesses:'Advertiser sensitivity; demo can age and narrow',monetization:'Direct response; issue advertisers; high rates in peak cycles',risks:'Host dependency; controversy; brand boycotts'}
+  },
+  SOUL_RNB:{
+    A:{audience:'35–64 Black adults; church-adjacent; tradition-minded',strengths:'Deep community loyalty; stable dayparts; lower churn when authentic',weaknesses:'Younger demos drift to funk/R&B crossover; ceiling in mass-market billing',monetization:'Local services, faith, community; steady mid CPMs',risks:'Sounds "old" to teens; competition from crossover and FM'},
+    B:{audience:'18–34 dance/club skew; younger Black and crossover listeners',strengths:'Explosive ratings when the sound is hot; youth advertiser demand',weaknesses:'Brutal when trends flip; loyalty thinner',monetization:'Club, fashion, beverages; burst revenue in peak years',risks:'Disco-style backlash; one-hit dependency; format whiplash'}
+  },
+  COUNTRY:{
+    A:{audience:'Rural and small-town skew; strong 45+; core country purists',strengths:'Deep loyalty; low churn; strong AM retention in heritage markets',weaknesses:'Lower revenue ceiling; slower youth growth; narrower ad categories',monetization:'Local retail, auto, agriculture-adjacent; steady but modest CPMs',risks:'Core audience aging; suburban listeners skimmed by crossover stations'},
+    B:{audience:'Suburban families; broader 25–44; casual country listeners',strengths:'Larger addressable audience; higher upside when the mix connects',weaknesses:'Softer loyalty; identity blurs toward AC and CHR',monetization:'National tours, big brands, truck/auto; CPM jumps when hot',risks:'High volatility; trend-sensitive; "too pop" backlash from purists'}
+  },
+  ALBUM_ROCK:{
+    A:{audience:'Male 25–54; album-oriented; anti-hit-radio',strengths:'Intense format loyalty; low tolerance for gimmicks; heritage positioning',weaknesses:'Narrower female and youth reach; lower peak share in hit-driven eras',monetization:'Concerts, beverages, automotive; loyal local sponsors',risks:'Classic rock migration steals older core; squeezed by CHR and alt'},
+    B:{audience:'Broader 18–44; women and casual rock listeners',strengths:'Higher peak shares; competes for mainstream rock occasions',weaknesses:'Less "special"; competes directly with CHR and classic rock',monetization:'National rock tours; broader retail',risks:'Identity dilution; rock-format fragmentation'}
+  },
+  MOR:{
+    A:{audience:'Female 35–64; at-work and in-home background listening',strengths:'Smooth transition toward soft AC; high tolerance for spots',weaknesses:'AM music erosion; perceived as "elevator" by younger demos',monetization:'Direct retail, local services; high inventory, moderate CPMs',risks:'FM music wins younger pairs; format sunset pressure'},
+    B:{audience:'Male 35–64; news-adjacent; talk-curious',strengths:'Builds bridge to news/talk; stronger male demos for AM',weaknesses:'Higher talent cost; music identity weakens',monetization:'Talk-oriented local and regional; political-adjacent spots',risks:'Hybrid confusion; neither pure music nor pure talk'}
+  },
+  OLDIES:{
+    A:{audience:'55+ Boomers; nostalgia-first; strict era purists',strengths:'Fierce loyalty in core; low ad avoidance',weaknesses:'Shrinking universe; limited youth; revenue ceiling',monetization:'Pharma, financial, legacy brands; high trust, narrow pool',risks:'Mortality and demo aging; library feels "too old" for buyers'},
+    B:{audience:'45–64; broader nostalgia; accepts 70s–80s expansion',strengths:'Larger sellable demo; path toward classic hits positioning',weaknesses:'Less "pure"; competes with AC and classic rock',monetization:'Broader retail; automotive; travel',risks:'Rebranding confusion; younger competition from classic hits'}
+  },
+  CHR:{
+    A:{audience:'12–24 female-leaning; mass teen and young adult',strengths:'Highest youth ceiling; promotional and hit-driven spikes',weaknesses:'Brutal churn; sounds old fast',monetization:'Youth brands; fast fashion; mobile; volume',risks:'Teen-pop cycles; competition from rhythmic and streaming'},
+    B:{audience:'18–34 urban-leaning; R&B/hip-hop crossover taste',strengths:'Holds better through rock and pop shocks; broader 18–34 stickiness',weaknesses:'Can miss pure-pop mega-moments; format definition debates',monetization:'Urban and lifestyle brands; concerts',risks:'Polarizes older buyers; rhythmic competition'}
+  },
+  ADULT_CONTEMP:{
+    A:{audience:'35–54 women; at-work; stress-relief listening',strengths:'Loyal, long TSL; high spot tolerance; agency-friendly',weaknesses:'Sounds "soft" to younger buyers; ceiling in youth',monetization:'Retail, pharma, packaged goods; strong local direct',risks:'Hot AC and CHR skim younger women'},
+    B:{audience:'25–44 women; younger AC fringe',strengths:'Higher ceiling with younger women; trend-friendly',weaknesses:'Direct battle with CHR and Hot AC; loyalty softer',monetization:'Fashion, beauty, premium retail',risks:'Fragmentation; faster competitive churn'}
+  },
+  CLASSIC_ROCK:{
+    A:{audience:'Male 35–54; album-era purists',strengths:'Dense loyalty; concert and lifestyle tie-ins; format clarity',weaknesses:'Weak female and youth; limited pop crossover',monetization:'Beverages, automotive, concerts',risks:'Aging core; alternative steals young males'},
+    B:{audience:'35–54 mixed gender; broader "hits" rock taste',strengths:'Larger tent; better female demos; adapts as Boomers age',weaknesses:'Softer "rock" identity; classic hits competition',monetization:'Broader national and retail',risks:'Dilution; war on two fronts vs CR and CHR'}
+  },
+  URBAN_CONTEMP:{
+    A:{audience:'18–44 Black adults; R&B-first; community anchor',strengths:'Stable core; community trust; smooth/Quiet Storm lanes',weaknesses:'Can lose 12–24 to hip-hop-heavy competitors',monetization:'Local services, faith, entertainment; solid mid CPMs',risks:'Youth flight; "too soft" perception'},
+    B:{audience:'12–24 heavy; hip-hop-forward; trend chasers',strengths:'Dominant youth share when hot; cultural relevance',weaknesses:'Alienates 35+ core; advertiser sensitivity',monetization:'Youth brands; beverages; entertainment; burst pricing',risks:'Format purity fights; churn when sound shifts'}
+  },
+  SPORTS_TALK:{
+    A:{audience:'Local team diehards; male 25–54 core',strengths:'Unbeatable community identity; resilient in weak syndication markets',weaknesses:'Rights costs; off-season dips; narrow female reach',monetization:'Local auto, beer, gaming; team and event packages',risks:'Team performance; rights fee inflation'},
+    B:{audience:'National sports fans; younger male skew possible',strengths:'Lower local overhead; predictable dayparts with network stars',weaknesses:'Weak local differentiation; affiliate competition',monetization:'National spot packages; network deals',risks:'Host/network disputes; sounds generic vs local'}
+  },
+  SPANISH:{
+    A:{audience:'Mexican-heritage core; regional format loyalists',strengths:'Intense loyalty; community lock-in; lower churn in core',weaknesses:'Narrower national ad pool outside genre',monetization:'Local services, telecom, automotive (ethnic buys)',risks:'Younger shift to tropical/reggaeton pressure'},
+    B:{audience:'Broader Hispanic 18–49; crossover-friendly',strengths:'Larger addressable audience; higher CPM growth potential',weaknesses:'Weaker roots in any single subculture',monetization:'National Latino buys; concerts; brand',risks:'Format blur; competition from English and streaming'}
+  },
+  ALT_ROCK:{
+    A:{audience:'18–29; discovery-first; anti-mainstream',strengths:'Credibility; sponsor-friendly "cool"; loyal fringe',weaknesses:'Lower peak share; spot intolerance; niche billing',monetization:'Local nightlife, beverages, concerts',risks:'College and streaming peel core audience'},
+    B:{audience:'18–34 broader; radio-friendly alt',strengths:'Higher ratings ceiling; more sellable dayparts',weaknesses:'Purist backlash; sounds "corporate"',monetization:'National rock tours; retail',risks:'Post-grunge fatigue; CHR steals pop-leaning tracks'}
+  },
+  RHYTHMIC:{
+    A:{audience:'12–24 urban; hip-hop-first',strengths:'Dominant youth cume when the market fits; cultural center of gravity',weaknesses:'Narrow advertiser set; controversy sensitivity',monetization:'Youth and urban national; entertainment',risks:'Format purity fights; pop crossovers split the log'},
+    B:{audience:'18–34 women-leaning; pop-R&B crossover',strengths:'Broader sellable demo; higher national CPM potential',weaknesses:'Loses edge; rhythmic CHR competition',monetization:'Fashion, beauty, lifestyle',risks:'Sounds "not hip-hop enough" to core; volatile hits'}
+  },
+  HOT_AC:{
+    A:{audience:'18–34 women; current-hit seekers',strengths:'Peak shares when hot; competes for CHR spill',weaknesses:'High burn; direct CHR war',monetization:'Retail, mobile, entertainment',risks:'CHR and streaming define "current" outside your control'},
+    B:{audience:'25–44 women; broader AC acceptance',strengths:'Higher spot load tolerance; stable billing',weaknesses:'Lower peak; "not hot enough" for some buyers',monetization:'Packaged goods, pharma, local services',risks:'AC fragmentation; streaming playlists'}
+  },
+  CLASSIC_HITS:{
+    A:{audience:'40–59; soft rock and singer-songwriter nostalgia',strengths:'Strong hold from oldies migration; loyal core',weaknesses:'Limited youth; ceiling on peak share',monetization:'Financial, pharma, travel',risks:'Core aging; 80s-heavy competitors skim'},
+    B:{audience:'35–49; new wave and power-pop friendly',strengths:'Younger classic demo; higher upside in rebrands',weaknesses:'Weaker pure-oldies identity',monetization:'Broader retail; entertainment',risks:'War with classic rock and CHR gold'}
+  },
+  GOSPEL:{
+    A:{audience:'Church-rooted; older Black listeners; tradition-focused',strengths:'Intense loyalty; brokered dayparts viable; community trust',weaknesses:'Limited secular ad pool; narrow youth',monetization:'Faith, local services, community',risks:'Younger migration to contemporary sound'},
+    B:{audience:'Younger faith listeners; crossover and CCM-curious',strengths:'Broader audience; national CCM tie-ins',weaknesses:'Traditionalists push back; identity dilution',monetization:'Touring artists; family brands; broader retail',risks:'Format definition fights; competition from AC/CHR inspirational'}
+  },
+  PODCAST_TALK:{
+    A:{audience:'Educated 25–54; narrative and documentary fans',strengths:'Premium CPM potential; sponsor trust; binge loyalty',weaknesses:'Slow audience build; less "drive-time electricity"',monetization:'Direct brand podcasts; underwriting; premium national',risks:'Platform competition; expensive production'},
+    B:{audience:'Fan-first; parasocial relationship with host',strengths:'Fast cume growth; merch and live events',weaknesses:'Host exit risk; churn; advertiser controversy',monetization:'Direct response; personality endorsements',risks:'Contract wars; scandal sensitivity'}
+  },
+  BEAUTIFUL_MUSIC:{
+    A:{audience:'55+; passive at-work and in-home',strengths:'Maximum margin; minimal staff',weaknesses:'No growth engine; extreme demo aging',monetization:'High inventory, low CPM; local direct',risks:'Listener mortality; AC steals casuals'},
+    B:{audience:'50–64; light local connection seekers',strengths:'Better retention than pure automation; community goodwill',weaknesses:'Higher cost; still vulnerable to AC',monetization:'Local services; light retail',risks:'Still format-endangered; talent cost vs return'}
+  },
+  ADULT_STANDARDS:{
+    A:{audience:'65+; big band and standards purists',strengths:'Deep niche loyalty; low competitive churn in core',weaknesses:'Tiny ad universe; almost no youth',monetization:'Financial, legacy brands; high trust',risks:'Mortality; station sale/brokerage pressure'},
+    B:{audience:'45–64; nostalgic pop and early rock tolerant',strengths:'Slightly younger sellable demo; slower decline curve',weaknesses:'Less "standards purity"; AC competition',monetization:'Travel, pharma, regional',risks:'Classic hits repositioning eats positioning'}
+  }
+};
+
+function htmlDriftStrategicGuidance(cfg, fmtKey){
+  const g=DRIFT_POLE_GUIDANCE[fmtKey];
+  const row=(label,text)=>`<div style="margin-top:8px"><span style="font-size:11px;letter-spacing:.1em;color:var(--mut);text-transform:uppercase;display:block;margin-bottom:3px">${label}</span><span style="font-size:14px;color:var(--off);line-height:1.45;display:block">${text}</span></div>`;
+  const poleCard=(poleKey, poleCfg, borderCol)=>{
+    const gu=g?.[poleKey];
+    const inner=gu
+      ? row('Audience',gu.audience)+row('Strengths',gu.strengths)+row('Weaknesses',gu.weaknesses)+row('Monetization',gu.monetization)+row('Risk factors',gu.risks)
+      : `<p style="margin:0;font-size:14px;color:var(--mut);line-height:1.45">${poleCfg.desc}</p>`;
+    return `<div class="ibox" style="border-left:3px solid ${borderCol};padding-left:12px">
+      <div style="font-family:var(--fd);font-size:15px;color:var(--wht);margin-bottom:4px">${poleCfg.name}</div>
+      ${inner}
+    </div>`;
+  };
+  return `<div class="ms2" style="margin-top:12px">
+    <div class="msh">POSITIONING TRADEOFFS</div>
+    <p style="font-size:14px;color:var(--mut);margin:6px 0 10px 0;line-height:1.45">Compare the two directions below. Your slider chooses where you sit between them <em>right now</em> — balance audience, revenue, and competitive pressure.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px">
+      ${poleCard('A', cfg.poleA, 'var(--mut)')}
+      ${poleCard('B', cfg.poleB, 'var(--amb)')}
+    </div>
+  </div>`;
+}
+
+
 // Which formats can drift, and their current drift value per station
 // s.drift = {FORMAT_KEY: 0-100}
 function getDrift(s){
@@ -4268,6 +4469,7 @@ function leanMult(coh,lean){
 function appl(s,coh,G){
   // Use smoothstep era curves — computed from year, not event-driven steps
   const year=G.year||1970;
+  const marketId=G.marketId||ACTIVE_MARKET||'atlanta';
   const fmp=fmpForYear(year);
   const satDrag=G.satDrag||0;
   const streamDrag=G.streamDrag||0;
@@ -4304,7 +4506,7 @@ function appl(s,coh,G){
   const isAMMusic=s.sig.type==='AM'&&!s.fmBooster&&amMusicFormats.includes(s.format);
   // Booster with music format: partial immunity — only _tFrac fraction is protected
   const isAMBoosterMusic=s.fmBooster&&amMusicFormats.includes(s.format)&&s._boosterOrigSig;
-  const isAMTalk=s.sig.type==='AM'&&!s.fmBooster&&!s.simulcastWith&&['NEWS_TALK','SPORTS_TALK'].includes(s.format);
+  const isAMTalk=s.sig.type==='AM'&&!s.fmBooster&&!s.simulcastWith&&['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format);
   const amViab=amViabForYear(year);
   // Full AM music penalty (no booster)
   const _rawAMPenalty = Math.max(.10,(1.0-0.60*fmp)*amViab);
@@ -4370,7 +4572,18 @@ function appl(s,coh,G){
     oldiesAgeMult=agePen[coh]!==undefined?(year>=2010?agePen[coh]*Math.max(0.3,1-(year-2010)*0.06):agePen[coh]):1.0;
     oldiesAgeMult=Math.max(0.02,oldiesAgeMult);
   }
-  return Math.max(0,aff*q*eff*amP*atl*sp*sat*strm*simBonus*driftMod*eraMult*oldiesAgeMult);
+  let mktFmt=1;
+  if(s.format==='ALL_NEWS'&&['newyork','losangeles','chicago'].includes(marketId)){
+    mktFmt+=0.04;
+    if(s.sig?.type==='FM'&&(s.sig?.pw==='100kw'||s.sig?.pw==='50kw'))mktFmt+=0.022;
+  }
+  let allNewsSig=1;
+  if(s.format==='ALL_NEWS'){
+    const sigStrength=Math.min(1.15,eff*(s.sig?.type==='FM'?1.08:1));
+    allNewsSig=0.58+0.42*_smoothstep(0.28,0.78,sigStrength);
+  }
+  mktFmt=Math.max(0.86,Math.min(1.24,mktFmt));
+  return Math.max(0,aff*q*eff*amP*atl*sp*sat*strm*simBonus*driftMod*eraMult*oldiesAgeMult*mktFmt*allNewsSig);
 }
 function recalc(stations,G){
   COH.forEach(coh=>{
@@ -4662,11 +4875,11 @@ function calcRev(s,G){
     // News/Talk and Sports command premium sellout — advertisers pay for engaged audiences
     // N/T and Sports command sellout premium — engaged, affluent demo
     // But we cap at 1.12 (not 1.18) to prevent too-wide a gap vs FM music
-    const fmtPrem=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'].includes(s.format)?1.12:1.0;
+    const fmtPrem=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'].includes(s.format)?1.12:1.0;
     // AM signal quality penalty: FM got higher CPMs due to fidelity/reach advantages
     // But Talk/Sports AM was genuinely competitive — smaller penalty than AM music
     const sigMult=s.sig.type==='AM'
-      ?(['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'].includes(s.format)?0.88:0.72)
+      ?(['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'].includes(s.format)?0.88:0.72)
       :1.0;
     const sfBonus=(SF_LEVELS[s.salesForce?.level||0]?.sellBonus||0);
     // Sellout caps: 90%+ is inventory shortage territory (ChatGPT/industry reality).
@@ -4680,7 +4893,8 @@ function calcRev(s,G){
     const fmtSellAffinity={'CHR':0.12,'TOP40':0.10,'HOT_AC':0.10,'ADULT_CONTEMP':0.07,
       'URBAN_CONTEMP':0.08,'RHYTHMIC':0.08,'ALT_ROCK':0.06,'CLASSIC_ROCK':0.06,
       'COUNTRY':0.05,'SOUL_RNB':0.07,'GOSPEL':-0.02,
-      'BEAUTIFUL_MUSIC':-0.05,'ADULT_STANDARDS':-0.04,'MOR':-0.03}[s.format]||0;
+      'BEAUTIFUL_MUSIC':-0.05,'ADULT_STANDARDS':-0.04,'MOR':-0.03,
+      'ALL_NEWS':0.09,'NEWS_TALK':0.08}[s.format]||0;
     // Cluster demo breadth bonus: post-1990, agencies pay a premium for
     // one-stop demo coverage across a cluster. A CHR + Country + News/Talk
     // cluster covers 12-24, 25-54, and 55+ — that's the full advertiser story.
@@ -4692,7 +4906,7 @@ function calcRev(s,G){
       // Primary demo band for each format: Y=youth (12-34), M=mid (25-54), O=older (35+)
       const _demoBand = f => {
         const yFmts = ['TOP40','CHR','ALT_ROCK','RHYTHMIC','HOT_AC','URBAN_CONTEMP'];
-        const oFmts = ['NEWS_TALK','SPORTS_TALK','BEAUTIFUL_MUSIC','ADULT_STANDARDS','GOSPEL','PODCAST_TALK'];
+        const oFmts = ['NEWS_TALK','ALL_NEWS','SPORTS_TALK','BEAUTIFUL_MUSIC','ADULT_STANDARDS','GOSPEL','PODCAST_TALK'];
         if(yFmts.includes(f)) return 'Y';
         if(oFmts.includes(f)) return 'O';
         return 'M'; // Country, AC, Classic Rock, MOR, Soul, Oldies etc.
@@ -4836,8 +5050,9 @@ function calcRev(s,G){
   // Ramp: 45% in 1970 → 100% by 1988. FM pioneer gets extra relief via smallFMDiscount.
   const baseEra=year<=1988?Math.max(0.45,0.45+(year-1970)/18*0.55):1.0;
   const eraCostMult=Math.max(0.45,baseEra*(1-smallFMDiscount));
-  const staffCost=Math.round(staffBase*inflFactor*efficiencyMult*eraCostMult/2);
-  const facCost=Math.round(facBase*inflFactor*efficiencyMult*eraCostMult/2);
+  const allNewsOps=s.format==='ALL_NEWS'?1.24:1;
+  const staffCost=Math.round(staffBase*inflFactor*efficiencyMult*eraCostMult/2*allNewsOps);
+  const facCost=Math.round(facBase*inflFactor*efficiencyMult*eraCostMult/2*allNewsOps);
   const sfCost=Math.round((SF_LEVELS[s.salesForce?.level||0]?.cost||0)/2);
   const fixedCost=staffCost+facCost+regCost+sfCost;
   // ── STREAMING REVENUE ───────────────────────────────────────────
@@ -4932,7 +5147,7 @@ function calcRev(s,G){
   // compliance burden, often legacy union agreements and news infrastructure.
   // AM base raised from $72K to $110K annual to reflect this structural difference.
   // Scales with inflation but never drops below survival level.
-  const opsFloor=Math.round((isFM2?92000:110000)*Math.min(2.8,rawInfl)*Math.max(0.80,eraCostMult)/2);
+  const opsFloor=Math.round((isFM2?92000:110000)*Math.min(2.8,rawInfl)*Math.max(0.80,eraCostMult)/2*(s.format==='ALL_NEWS'?1.12:1));
 
   const totalCost=fixedCost+talCost+salesAdminCost+stationOpsCost+opsFloor
     +(s.ops.promo||0)+(s.ops.progBudget||0)+(s.identityBudget||0)+streamUpkeep+syndicationCost+musicLicenseCost;
@@ -5553,25 +5768,11 @@ function openDrift(sid){
   const cfg=dr.cfg;
   const val=dr.val;
 
-  // Upcoming inflections this decade
-  const upcoming=cfg.inflections.filter(inf=>
-    inf.y>G.year||(inf.y===G.year&&inf.p>=G.period)
-  ).slice(0,3);
-
-  const upcomingHtml=upcoming.length?`
-    <div class="ms2" style="margin-top:12px">
-      <div class="msh">⚡ UPCOMING INFLECTIONS</div>
-      ${upcoming.map(inf=>`
-        <div class="sr" style="flex-direction:column;align-items:flex-start;gap:4px;padding:8px 0;border-bottom:1px solid var(--adm)">
-          <span style="font-family:var(--fd);color:var(--amb)">${inf.name} — ${inf.y} ${inf.p===1?'Spring':'Fall'}</span>
-          <span style="font-family:var(--ft);font-size:14px;color:var(--mut)">${inf.desc}</span>
-          <span style="font-family:var(--ft);font-size:15px;color:var(--wht)">Your current positioning: <strong>${val<35?'favors '+cfg.poleA.name:val>65?'favors '+cfg.poleB.name:'neutral'}</strong></span>
-        </div>`).join('')}
-    </div>`:'<div class="ibox" style="margin-top:8px">No major inflections on the horizon this decade.</div>';
+  const strategicGuidanceHtml=htmlDriftStrategicGuidance(cfg, s.format);
 
   document.getElementById('drift-title').textContent=`${s.callLetters} — ${cfg.label.toUpperCase()}`;
   document.getElementById('driftb').innerHTML=`
-    <p class="di">Your positioning within <strong>${FM[s.format]?.l||s.format}</strong> affects which demographics you attract and how exposed you are to format inflection events. Move the slider deliberately — overcorrecting can cost you your core audience.</p>
+    <p class="di">Your positioning within <strong>${FM[s.format]?.l||s.format}</strong> shapes how the station sounds and who it serves. Move the slider deliberately — overcorrecting can cost you your core audience.</p>
     <div class="slsec">
       <div style="display:flex;justify-content:space-between;margin-bottom:4px">
         <span style="font-family:var(--fd);font-size:15px;color:var(--mut);text-transform:uppercase">${cfg.poleA.name}</span>
@@ -5585,7 +5786,7 @@ function openDrift(sid){
       </div>
       <div class="sln2" id="drift-note" style="margin-top:10px;font-size:15px"></div>
     </div>
-    ${upcomingHtml}
+    ${strategicGuidanceHtml}
     <button class="cfm" id="drift-btn" onclick="doDrift('${sid}')">COMMIT POSITIONING</button>
     <button class="cnl" onclick="cm('m-drift')">CANCEL</button>`;
   updDrift(sid, val);
@@ -5648,41 +5849,253 @@ function pledgeDriveCheck(G){
   });
   return acts;
 }
+
+/** Half-year index from game start (1970 Spring = 0). */
+function tradeNewsPeriodIndex(y,p){
+  return (y-1970)*2+(p-1);
+}
+
+/**
+ * Trade news foreshadows timeline shifts 1–3 years (2–6 half-years) ahead: LOW → MEDIUM → HIGH.
+ * Anchors align with EVDATA unlocks / shocks; copy stays observational — no named impact dates or guarantees.
+ */
+const TRADE_NEWS_CHAINS=[
+  {id:'tn_disco_backlash',anchorYear:1979,anchorPeriod:2,
+    low:[
+      'Record stores report slowing disco sales in several markets.',
+      'Record stores report slowing dance-single sell-through in several major markets.',
+      'Retail buyers quietly trim reorders on club-heavy releases.',
+      'Rock programmers seeing increased callout interest.',
+      'Rock programmers in a few metros note rising callout scores on guitar-driven titles.',
+    ],
+    medium:[
+      'Consultants circulate memos questioning whether dance-heavy clocks are overheating.',
+      'Some markets show restless male 18–24 diary behavior away from pure disco dayparts.',
+      'Label promo reps grumble that rock-leaning adds are getting longer looks in focus groups.',
+    ],
+    high:[
+      'Program directors whisper about "format fatigue" on dance-intensive stations — nobody agrees what replaces it.',
+      'Trade chatter links crowded dance playlists to softer male numbers in multiple books.',
+      'A few heritage FM brands are testing slightly leaner dance rotations without announcing anything publicly.',
+    ],
+  },
+  {id:'tn_fm_overtakes',anchorYear:1977,anchorPeriod:1,
+    low:[
+      'Diary vendors note FM gaining younger cume in car-heavy dayparts.',
+      'Sales houses say AM music sellers are being asked sharper questions about demo skew.',
+    ],
+    medium:[
+      'Several markets show FM music stations winning diary battles AM used to own outright.',
+      'Agency buyers hint they will pay for FM reach even where AM still posts raw numbers.',
+    ],
+    high:[
+      'Cluster managers quietly model scenarios where FM becomes the default music band.',
+      'Trade press runs pieces on AM stations "rethinking music" without prescribing formats.',
+    ],
+  },
+  {id:'tn_classic_rock',anchorYear:1980,anchorPeriod:1,
+    low:[
+      'Album-oriented programmers talk more about catalog depth in panel Q&A.',
+      'Label reps push heritage rock titles for adds alongside current singles.',
+    ],
+    medium:[
+      'A few FM brands experiment with longer non-current stretches in afternoon drive.',
+      'Consultants note male 25–54 diary strength on guitar-based playlists in several books.',
+    ],
+    high:[
+      'Format panels debate "how classic is too classic" before anyone names a new lane.',
+      'Promo budgets shift slightly toward established rock acts in competitive metros.',
+    ],
+  },
+  {id:'tn_adult_contemp',anchorYear:1980,anchorPeriod:2,
+    low:[
+      'Soft hits gaining traction among 25–49 women.',
+      'Soft hits show upticks among 25–49 women in scattered PPM and diary markets.',
+      'Music directors report mellower currents testing well in focus groups.',
+    ],
+    medium:[
+      'Agency planners ask for less aggressive beds under retail spots in several regions.',
+      'Sales decks emphasize "comfort" and "workplace friendly" for midday avails.',
+    ],
+    high:[
+      'Clusters quietly pilot softer clocks on FM outlets that used to chase younger demos.',
+      'Advertisers showing interest in less aggressive music formats.',
+      'Advertisers show interest in formats pitched as less aggressive — nobody commits on paper.',
+    ],
+  },
+  {id:'tn_chr_mature',anchorYear:1982,anchorPeriod:2,
+    low:[
+      'Top-40 trackers see CHR reclaiming diary share in a handful of hot markets.',
+      'Promo priorities tilt toward pop singles that can clear multiple station types.',
+    ],
+    medium:[
+      'Programmers argue on panels about tighter rotations versus broader pop playlists.',
+      'National buys increasingly bundle CHR with adjacent formats in the same cluster.',
+    ],
+    high:[
+      'Consultants warn lagging stations that "hit radio" is stealing younger cume in competitive books.',
+      'Label promo tours target CHR-heavy metros for priority adds.',
+    ],
+  },
+  {id:'tn_urban_contemp',anchorYear:1983,anchorPeriod:1,
+    low:[
+      'R&B crossover singles pick up spins outside traditional soul outlets in a few cities.',
+      'Night-show hosts report heavier requests for rhythmic pop titles.',
+    ],
+    medium:[
+      'Agency buyers ask after stations that can deliver younger Black and Latino diaries.',
+      'Programmers debate how far to lean rhythmic without shedding older core listeners.',
+    ],
+    high:[
+      'Trade gossip says major-market FM clusters are scouting "urban-leaning" dayparts.',
+      'Promo budgets flow toward acts that chart on both R&B and pop lists.',
+    ],
+  },
+  {id:'tn_oldies_wave',anchorYear:1983,anchorPeriod:2,
+    low:[
+      'Nostalgia-themed weekends pull respectable diary spikes in several markets.',
+      'Music libraries from the 50s and 60s get dusted off for specialty programming tests.',
+    ],
+    medium:[
+      'Consultants pitch "boomer memory" formats as a hedge against CHR churn.',
+      'A few AM outlets experiment with older gold hours without rebranding.',
+    ],
+    high:[
+      'Group PDs quietly compare notes on library depth versus personality costs.',
+      'Sales materials start pitching "classic hits" language before formats lock in.',
+    ],
+  },
+  {id:'tn_alt_rock',anchorYear:1991,anchorPeriod:1,
+    low:[
+      'Music press hype around guitar bands spills into programmer email chains.',
+      'Add charts show "alternative" labels gaining spins on adventurous FM outlets.',
+    ],
+    medium:[
+      'A few mainstream rock stations sneak non-current cuts into rotation as experiments.',
+      'Agency creatives ask for spots on outlets that reach teens and college-age listeners.',
+    ],
+    high:[
+      'Format meetings get tense over how "alternative" fits next to heritage rock brands.',
+      'Promo tours route through clubs and markets where new acts break first.',
+    ],
+  },
+  {id:'tn_spanish',anchorYear:1992,anchorPeriod:2,
+    low:[
+      'Spanish-language diary cells show uneven growth in Sun Belt metros.',
+      'Small advertisers test ethnic buys on a handful of standalone AMs.',
+    ],
+    medium:[
+      'Regional promoters report stronger ticket sales for Latin tours in border states.',
+      'Cluster owners ask whether bilingual sellers are worth hiring in certain ZIPs.',
+    ],
+    high:[
+      'National agencies quietly model Hispanic reach as a separate line item in RFPs.',
+      'Engineering filings show a few new FM allocations aimed at Spanish-language use.',
+    ],
+  },
+  {id:'tn_rhythmic_hot_ac',anchorYear:2000,anchorPeriod:1,
+    low:[
+      'CHR panels note rhythmic pop and R&B crossovers eating shared spins.',
+      'Hot AC testers in a few markets add tempo without calling it a rebrand.',
+    ],
+    medium:[
+      'Programmers argue how to label stations that play pop, rhythm, and recurrents on one clock.',
+      'Agency buyers request packages that mirror younger female demos across dayparts.',
+    ],
+    high:[
+      'Group strategy decks compare "rhythmic" and "hot AC" clocks side by side — internally.',
+      'Consultants warn traditional AC brands about flankers from younger-leaning playlists.',
+    ],
+  },
+  {id:'tn_classic_hits',anchorYear:2005,anchorPeriod:1,
+    low:[
+      'Oldies brands report pressure as core listeners age out of prime buying demos.',
+      'Music logs show wider 70s and 80s stretches creeping into daytime hours.',
+    ],
+    medium:[
+      'Sales decks experiment with "classic hits" wording in place of "oldies."',
+      'Programmers swap slogans that sound less "sock hop" and more "throwback."',
+    ],
+    high:[
+      'Cluster managers weigh library costs against rebranding risk on heritage signals.',
+      'Agencies ask which stations still own the 35–54 money demo with gold-based formats.',
+    ],
+  },
+  {id:'tn_streaming',anchorYear:2005,anchorPeriod:2,
+    low:[
+      'Industry blogs buzz about personalized online audio — impact on radio still unclear.',
+      'A few sales reps hear early questions about digital alternatives in younger demos.',
+    ],
+    medium:[
+      'PPM commentary notes phone and web use fragmenting reported listening in dense markets.',
+      'Talk and heritage brands pitch "appointment listening" harder to skeptical buyers.',
+    ],
+    high:[
+      'Group finance teams ask for scenarios where streaming pulls marginal music cume.',
+      'Programmers quietly lengthen stopsets on music stations to protect TSL — opinions vary.',
+    ],
+  },
+  {id:'tn_podcast',anchorYear:2012,anchorPeriod:1,
+    low:[
+      'On-demand audio startups court talent with small guarantees and big equity stories.',
+      'Talk stations notice podcasters recycling similar topics in overnight slots.',
+    ],
+    medium:[
+      'Agencies experiment with host-read ads on downloadable shows alongside terrestrial.',
+      'Talent agents negotiate "digital side rights" in contract talks.',
+    ],
+    high:[
+      'Newsrooms and talk brands debate whether to simulcast or differentiate online.',
+      'Sales leaders ask which dayparts still justify live bodies versus packaged replays.',
+    ],
+  },
+];
+const TRADE_NEWS_STAGE_START={low:6,medium:4,high:2};
+const TRADE_NEWS_STAGE_END={low:5,medium:3,high:1};
+
+function injectTradeNewsForeshadow(G){
+  if(!G||G.score?.isSandbox)return;
+  if(!G._tradeNewsFired)G._tradeNewsFired={};
+  const curIdx=tradeNewsPeriodIndex(G.year,G.period);
+  const candidates=[];
+  for(const chain of TRADE_NEWS_CHAINS){
+    const anchorIdx=tradeNewsPeriodIndex(chain.anchorYear,chain.anchorPeriod);
+    const delta=anchorIdx-curIdx;
+    if(delta<1||delta>6)continue;
+    const stage=delta>=5?'low':delta>=3?'medium':'high';
+    const key=`${chain.id}:${stage}`;
+    if(G._tradeNewsFired[key])continue;
+    const st=TRADE_NEWS_STAGE_START[stage];
+    const en=TRADE_NEWS_STAGE_END[stage];
+    if(delta!==st&&delta!==en)continue;
+    const msgs=chain[stage];
+    if(!msgs||!msgs.length)continue;
+    candidates.push({chain,stage,key,msgs});
+  }
+  if(!candidates.length)return;
+  const pick=candidates[Math.floor(Math.random()*candidates.length)];
+  const text=pick.msgs[Math.floor(Math.random()*pick.msgs.length)];
+  const v=pick.stage==='low'?'LOW':pick.stage==='medium'?'MEDIUM':'HIGH';
+  G._tradeNewsFired[pick.key]=true;
+  G.news.unshift({v,t:text,y:G.year,p:G.period,type:'trade_news'});
+}
+
 function applyDriftInflections(G){
-  // Check each driftable format for historical inflection events this period
-  const acts=[];
   G.stations.forEach(s=>{
     const dr=getDrift(s);
     if(!dr)return;
     (dr.cfg.inflections||[]).forEach(inf=>{
       if(inf.y===G.year&&inf.p===G.period){
-        // Event fires — compute effect based on current drift
         const effect=inf.effect(s,dr.val);
         if(Math.abs(effect)<0.001)return;
-        // Apply as a share modifier by nudging mom targets
         Object.keys(s.mom||{}).forEach(coh=>{
           const m=s.mom[coh];
           if(m)m.tgt=Math.max(0.001,Math.min(0.30,m.tgt+effect));
         });
-        const dir=effect>0?'surge':'decline';
-        const owner=s.isPlayer;
-        // Build a plain-English message using the inflection's desc if available
-        const _stnLabel=(owner?'YOUR ':'')+s.callLetters+' ('+( FM[s.format]?.l||s.format)+')';
-        const _effPct=Math.round(Math.abs(effect)*100);
-        const _desc=inf.desc
-          ? inf.desc
-          : effect>0
-            ? `Listener ${dir} — your format positioning is paying off.`
-            : `Listener ${dir} — format trends are working against your positioning.`;
-        acts.push({v:effect>0?'MEDIUM':'HIGH',
-          t:`📡 ${inf.name}: ${_stnLabel} — ${_effPct>2?'major ':''
-           }${dir}. ${_desc}`,
-          y:G.year, p:G.period,
-          iy:owner});
       }
     });
   });
-  return acts;
+  return [];
 }
 function chkEv(G){
   const f=[];
@@ -6150,7 +6563,7 @@ function genMarket(scenId, marketId){
       fmp:fmpForYear(startYear),adx:adxMod*(1.0+activeMkt2.adxBonus),satDrag:0,
       streamDrag:Math.min(.60,EVDATA.filter(ev=>ev.e==='stream+'&&ev.y<startYear).length*0.06),
       fccAM,fccFM,
-      unlockedFormats:Object.keys(FM).filter(f=>FM[f].unlock<=startYear),
+      unlockedFormats:Object.keys(FM).filter(f=>formatAllowedInMarket(f,ACTIVE_MARKET,startYear)),
       news:[{v:'LOW',t:`Campaign begins — ${G.city||'Atlanta'} radio, ${startYear}. ${sc.d.split('.')[0]}.`,y:startYear,p:1}],
       evq:remainingEvq,
       score:{shareHistory:[],peakRevenue:0,decadeScores:{},isSandbox:false},
@@ -6173,7 +6586,7 @@ function genMarket(scenId, marketId){
     sc,cash:sc.cash,
     fmp:fmpForYear(1970),adx:1.0+activeMkt.adxBonus,satDrag:0,streamDrag:0,
     fccAM:1,fccFM:1,
-    unlockedFormats:Object.keys(FM).filter(f=>FM[f].unlock<=1970),
+    unlockedFormats:Object.keys(FM).filter(f=>formatAllowedInMarket(f,ACTIVE_MARKET,1970)),
     news:[],evq:(()=>{
       // Merge base events with any market-specific additions
       const _mktEvents={'nashville':EVDATA_NASHVILLE}[ACTIVE_MARKET]||[];
@@ -7350,7 +7763,8 @@ function rivalStrategicReview(G){
 
   // Formats absent from market (opportunity gaps)
   const eligibleFmts=Object.keys(FM).filter(f=>
-    !FM[f]?.public&&f!=='FULL_SERVICE'&&(FM[f]?.unlock||0)<=yr&&
+    !FM[f]?.public&&f!=='FULL_SERVICE'&&
+    formatUnlockedForYear(f,G)&&formatAllowedInMarket(f,G.marketId,yr)&&
     yr<({BEAUTIFUL_MUSIC:1995,MOR:1998}[f]||9999)
   );
   const absentFmts=eligibleFmts.filter(f=>!(mktCount[f]));
@@ -7580,7 +7994,8 @@ function rivalReformat(G){
 
   const eligibleFormats=Object.keys(FM).filter(f=>
     !FM[f]?.public && f!=='FULL_SERVICE' &&
-    (G.unlockedFormats?.includes(f)||FM[f].unlock<=yr) &&
+    formatUnlockedForYear(f,G) &&
+    formatAllowedInMarket(f,G.marketId,yr) &&
     (!formatSunset[f]||yr<formatSunset[f])
   );
 
@@ -8229,12 +8644,13 @@ function doLMALessor(sid) {
   // AI operator picks a format — they won't duplicate the lessor's existing formats
   // (real LMA agreements routinely include non-compete clauses on format)
   const _myFormats = G.ps.filter(st=>st.id!==s.id).map(st=>st.format);
-  const _availFmts = G.unlockedFormats.filter(f=>
+  const _availFmts = Object.keys(FM).filter(f=>
     !_myFormats.includes(f) && f!==s.format &&
-    (FM[f]?.ri||1)<=G.year && !['FULL_SERVICE','PUBLIC_RADIO'].includes(f)
+    formatUnlockedForYear(f,G) && formatAllowedInMarket(f,G.marketId,G.year) &&
+    !FM[f]?.public && !['FULL_SERVICE','PUBLIC_RADIO'].includes(f)
   );
   // Prefer formats with decent CPM that suit the signal type
-  const _amFriendly=['NEWS_TALK','SPORTS_TALK','COUNTRY','GOSPEL','ADULT_STANDARDS','OLDIES','CLASSIC_HITS'];
+  const _amFriendly=['NEWS_TALK','ALL_NEWS','SPORTS_TALK','COUNTRY','GOSPEL','ADULT_STANDARDS','OLDIES','CLASSIC_HITS'];
   const _fmtPool = s.sig.type==='AM'
     ? _availFmts.filter(f=>_amFriendly.includes(f)).concat(_availFmts.filter(f=>!_amFriendly.includes(f)))
     : _availFmts;
@@ -8536,6 +8952,7 @@ function advTurn(){
     G.rankerHistory.push(snap);
     acts.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     ev.forEach(e=>G.news.unshift({v:e.v||'HIGH',t:e.d?`📡 ${e.t}: ${e.d}`:(e.t||''),y:e.y||G.year,p:e.p||G.period,iy:e.iy}));
+    injectTradeNewsForeshadow(G);
     // Seasonal market note — brief context at the top of the feed each period
     const nextPeriodName=G.period===2?'FALL':'SPRING'; // period hasn't advanced yet
     const nextIsElection=G.period===2&&G.year%2===0;
@@ -8566,6 +8983,11 @@ function advTurn(){
     // Advance clock before showSum so wasYear/wasPeriod are available to pass in
     const wasYear=G.year,wasPeriod=G.period;
     showSum(profit,ev,acts,alerts,wasYear,wasPeriod);
+    if(MP.mode==='live'&&!G.continuesBeyondEnd&&wasYear===2025&&wasPeriod===2){
+      G.mpPhase='endgame';
+      G._mpFinalResults=buildMpFall2025EndgameResults();
+      G._mpShowEndgameAfterSumClose=true;
+    }
     if(G.period===1){G.period=2;}else{G.period=1;G.year++;}
     G.turn=(G.turn||0)+1;
     // Keep G.fmp in sync with smoothstep curve (used by UI display and legacy references)
@@ -8628,6 +9050,80 @@ function advTurn(){
     }
   },450);
 }
+
+// ── MP FALL 2025 ENDGAME (multiplayer campaign finale) ───────────
+function mpEndgameFrozen(){
+  return MP.mode==='live'&&G&&G.mpPhase==='endgame'&&!G.continuesBeyondEnd;
+}
+function buildMpFall2025EndgameResults(){
+  const allPids=[...new Set(G.ps.map(s=>s._mpOwner).filter(id=>id!==undefined))].sort((a,b)=>a-b);
+  const players=allPids.map(pid=>{
+    const sc=playerScoreCalc(pid);
+    const ps=G._playerScore?.[pid]||{};
+    const totalVP=ps.totalVP||Object.values(ps.decadeScores||{}).reduce((s,d)=>s+(d.vp||0),0);
+    const cash=G._playerCash?.[pid]||0;
+    const stns=G.ps.filter(s=>s._mpOwner===pid);
+    const stationCount=stns.length;
+    const totalRev=stns.reduce((s,st)=>s+(st.fin?.rev||0),0);
+    const estValue=Math.round(stns.reduce((s,st)=>s+Math.max(0,(st.fin?.rev||0))*8,0));
+    const name=(MP.players||[]).find(p=>p.playerId===pid)?.name||`Player ${pid+1}`;
+    const finalScore=totalVP*10000+Math.round(sc.total)*100+Math.floor(cash/1000);
+    return {pid,name,finalScore,totalVP,score100:sc.total,cash,stationCount,totalRev,estValue};
+  });
+  players.sort((a,b)=>b.finalScore-a.finalScore||b.totalVP-a.totalVP||b.cash-a.cash||b.score100-a.score100);
+  const top=players[0]?.finalScore;
+  const winnerPids=players.filter(p=>p.finalScore===top).map(p=>p.pid);
+  const coWinners=winnerPids.length>1;
+  return {year:2025,players,winnerPids,coWinners,topScore:top};
+}
+function showMpEndgameModal(){
+  if(MP.mode!=='live'||!G._mpFinalResults)return;
+  const r=G._mpFinalResults;
+  const winNames=r.winnerPids.map(pid=>(MP.players||[]).find(p=>p.playerId===pid)?.name||`Player ${pid+1}`).join(' · ');
+  const rows=r.players.map((p,i)=>{
+    const isW=r.winnerPids.includes(p.pid);
+    return`<div class="mp-endgame-row" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.08);${isW?'background:rgba(212,175,55,.09)':''}">
+      <div style="font-family:var(--fd);font-size:22px;color:${isW?'var(--amb)':'var(--mut)'};width:32px">${i+1}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:var(--ft);font-size:15px;letter-spacing:.12em;color:${isW?'var(--wht)':'var(--off)'}">${p.name.toUpperCase()}</div>
+        <div style="font-family:var(--ft);font-size:14px;color:var(--mut);margin-top:4px">${f$(p.cash)} cash · ${p.stationCount} station${p.stationCount===1?'':'s'} · ${f$(p.totalRev)}/pd revenue · ~${f$(p.estValue)} est. value</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-family:var(--fd);font-size:24px;color:${isW?'var(--amb)':'var(--off)'}">${p.finalScore}</div>
+        <div style="font-family:var(--ft);font-size:12px;color:var(--mut)">FINAL SCORE</div>
+        <div style="font-family:var(--ft);font-size:13px;color:var(--mut);margin-top:2px">${p.totalVP} VP · ${p.score100}/100</div>
+      </div>
+    </div>`;
+  }).join('');
+  const winLine=r.coWinners
+    ?`<div class="mp-endgame-winner" style="text-align:center;padding:16px 12px 8px;font-family:var(--fd);font-size:22px;color:var(--amb);text-shadow:0 0 24px rgba(212,175,55,.35)">🏆 CO-WINNERS: ${winNames}</div>`
+    :`<div class="mp-endgame-winner" style="text-align:center;padding:16px 12px 8px;font-family:var(--fd);font-size:24px;color:var(--amb);text-shadow:0 0 28px rgba(212,175,55,.4)">🏆 WINNER: ${winNames}</div>`;
+  const el=document.getElementById('mp-endgame-body');
+  if(el) el.innerHTML=`<p class="di" style="font-size:15px;color:var(--mut);margin:0 0 14px 0;line-height:1.5">Fall 2025 ends the competitive campaign. Final score weights victory points, performance index, and cash. You may continue in sandbox after this screen.</p>${winLine}<div style="margin-top:8px;border:1px solid rgba(212,175,55,.25);border-radius:6px;overflow:hidden">${rows}</div>`;
+  document.body.classList.add('mp-endgame');
+  om('m-mp-endgame');
+}
+function mpContinueBeyondEndgame(){
+  if(MP.mode!=='live'||!G)return;
+  if(G.mpPhase!=='endgame')return;
+  G.continuesBeyondEnd=true;
+  G.mpPhase='playing';
+  G._mpShowEndgameAfterSumClose=false;
+  cm('m-mp-endgame');
+  document.body.classList.remove('mp-endgame');
+  renderAll();
+  MP.action('mp_continue',{});
+}
+window._mpApply_mp_continue=function(){
+  if(!G)return;
+  G.continuesBeyondEnd=true;
+  G.mpPhase='playing';
+  G._mpShowEndgameAfterSumClose=false;
+  cm('m-mp-endgame');
+  document.body.classList.remove('mp-endgame');
+  renderAll();
+  MP.renderStatus();
+};
 
 // ── MP END-GAME COMPARISON ───────────────────────────────────────
 function mpEndGameHTML(){
@@ -10039,6 +10535,9 @@ function openSports(sid){
       const myBid=rights.bids?.[s.id]||0;
       const sugBid=Math.round(Math.max(rights.fee*1.1, team.baseFee*(0.9+fmtFit*0.6))/1000)*1000;
       const breakEven=Math.round(estRevLift*0.85/1000)*1000;
+      const _sMin=Math.round(team.baseFee*0.5/1000)*1000;
+      const _sMax=Math.round(team.baseFee*4/1000)*1000;
+      const _sStart=snapSportsBidAmountClamped(myBid||sugBid,_sMin,_sMax);
       bidSection=`<div style="background:rgba(82,227,110,.06);border:1px solid rgba(82,227,110,.2);border-radius:6px;padding:12px;margin-top:8px">
         <div style="font-family:var(--ft);font-size:13px;color:var(--grn);letter-spacing:1px;margin-bottom:8px">🔔 BIDDING OPEN — closes this Fall</div>
         <div class="sr"><span class="lb">Current holder</span><span class="vl">${incumbent?incumbent.callLetters:'None'} — paying ${f$(rights.fee)}/yr</span></div>
@@ -10049,11 +10548,11 @@ function openSports(sid){
         <div style="margin-top:10px">
           <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
             <span style="font-size:14px;color:var(--mut)">Bid:</span>
-            <strong id="bid-val-${team.id}" style="font-family:var(--fd);font-size:16px;color:var(--amb)">${f$(myBid||sugBid)}/yr</strong>
+            <strong id="bid-val-${team.id}" style="font-family:var(--fd);font-size:16px;color:var(--amb)">${f$(_sStart)}/yr</strong>
           </div>
-          <input type="range" id="sports-range-${team.id}" min="${Math.round(team.baseFee*0.5/1000)*1000}" max="${Math.round(team.baseFee*4/1000)*1000}" step="10000"
-            value="${myBid||sugBid}"
-            oninput="document.getElementById('bid-val-${team.id}').textContent=f$(parseInt(this.value))+'/yr'"
+          <input type="range" id="sports-range-${team.id}" min="${_sMin}" max="${_sMax}" step="1000"
+            value="${_sStart}"
+            oninput="(function(el){var lo=parseInt(el.min,10),hi=parseInt(el.max,10),v=snapSportsBidAmountClamped(parseInt(el.value,10),lo,hi);el.value=v;document.getElementById('bid-val-${team.id}').textContent=f$(v)+'/yr';})(this)"
             style="width:100%;margin-bottom:8px">
           <button class="cfm" style="width:100%;padding:8px;font-size:14px"
             onclick="placeSportsBid('${team.id}','${s.id}',parseInt(document.querySelector('#sports-range-${team.id}').value))">
@@ -10582,7 +11081,7 @@ function openSunsetModal(sid, dyingFmt, successorPaths, pathLabel) {
   };
   const evoRates = FMT_EVO[dyingFmt]||{};
 
-  const pathCards = successorPaths.filter(f=>FM[f]&&(FM[f].unlock||0)<=G.year).map(f=>{
+  const pathCards = successorPaths.filter(f=>FM[f]&&formatUnlockedForYear(f,G)&&formatAllowedInMarket(f,G.marketId,G.year)).map(f=>{
     const carry = evoRates[f]||null;
     const kept = carry ? Math.round(identity*carry) : null;
     const fmtLabel = FM[f]?.l||f;
@@ -10623,13 +11122,16 @@ function openFmt(sid, _preselectFmt){const s=G.stations.find(st=>st.id===sid);if
 function rFmt(s){
   const occ=G.stations.filter(st=>st.id!==s.id).map(st=>st.format);
   const isAM=s.sig.type==='AM';
-  const allFmts=Object.keys(FM).filter(f=>f!==s.format);
+  const allFmts=Object.keys(FM).filter(f=>f!==s.format&&!FM[f].public&&formatAllowedInMarket(f,G.marketId,G.year));
   const opts=allFmts.map(f=>{
     const meta=FM[f]||{};
-    const unlocked=G.unlockedFormats.includes(f);
+    const yearOk=G.unlockedFormats.includes(f)||(meta.unlock||9999)<=G.year;
+    const marketOk=formatAllowedInMarket(f,G.marketId,G.year);
+    const unlocked=yearOk&&marketOk;
     const fmr=meta.fm&&isAM,cnt=occ.filter(o=>o===f).length,adj=FADJ[s.format]?.includes(f);
     let badge,bc,cls='fmo';
-    if(!unlocked){badge=`UNLOCKS ${meta.unlock}`;bc='lock';cls+=' locked';}
+    if(!yearOk){badge=`UNLOCKS ${meta.unlock}`;bc='lock';cls+=' locked';}
+    else if(!marketOk){badge='TOP 3 MARKETS';bc='risk';cls+=' locked';}
     else if(fmr&&isAM){badge='AM — low youth reach';bc='risk';}
     else if(cnt>=2){badge='CROWDED';bc='risk';}
     else if(cnt===1){badge='CONTESTED';bc='risk';}
@@ -10732,7 +11234,7 @@ function doFmt(keepSim){
     _simPartner.format = nf;
     _simPartner.brand  = gb(nf, _simPartner.freq, G?.city);
     _simPartner._formatAge = 0;
-    _simPartner.ops.sell = ['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'].includes(nf)?0.60:0.55;
+    _simPartner.ops.sell = ['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'].includes(nf)?0.60:0.55;
     Object.values(_simPartner.prog).forEach(sd=>{if(sd)sd.quality=Math.round(sd.quality*(1-pen));});
     _simPartner.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+(_simPartner.prog[sl]?.quality||20)*w,0));
     COH.forEach(c=>{if(_simPartner.mom[c])_simPartner.mom[c].cur*=(1-pen);});
@@ -11571,6 +12073,8 @@ function migrateSave(G){
   if(!Object.keys(G.sportsRights).length&&G.year>=1970) initSportsRights(G);
   if(G.corps)rehydrateCorps(G); // re-link corp ownership after save/load
   G.corps=G.corps||null;
+  G.mpPhase=G.mpPhase??null;
+  G.continuesBeyondEnd=G.continuesBeyondEnd??false;
   G.rankerHistory=G.rankerHistory||[];
   if(!G.score)G.score={isSandbox:false,shareHistory:[],peakRevenue:0,decadeScores:{}};
   // Ensure fin.fix exists on all stations (added for cost breakdown display)
@@ -12017,8 +12521,21 @@ function om(id){
   if(id==='m-rk')openRanker();
   document.getElementById(id).classList.add('on');
 }
-function cm(id){document.getElementById(id).classList.remove('on');}
-document.querySelectorAll('.ov').forEach(el=>el.addEventListener('click',e=>{if(e.target===el)el.classList.remove('on');}));
+function cm(id){
+  document.getElementById(id).classList.remove('on');
+  if(id==='m-sum'&&typeof G!=='undefined'&&G&&G._mpShowEndgameAfterSumClose){
+    G._mpShowEndgameAfterSumClose=false;
+    if(MP.mode==='live'&&G.mpPhase==='endgame'){
+      setTimeout(()=>showMpEndgameModal(),200);
+    }
+  }
+}
+document.querySelectorAll('.ov').forEach(el=>el.addEventListener('click',e=>{
+  if(e.target===el){
+    if(el.id==='m-mp-endgame'&&typeof mpEndgameFrozen==='function'&&mpEndgameFrozen())return;
+    el.classList.remove('on');
+  }
+}));
 
 // ── PERIOD SUMMARY ────────────────────────────────────────────────
 function showSum(profit,events,acts,alerts,displayYear,displayPeriod){
@@ -12432,6 +12949,7 @@ function renderAll(){
       setTimeout(()=>showTalentTrouble(_pending[0]),600);
     }
   }
+  if(document.body) document.body.classList.toggle('mp-endgame', typeof mpEndgameFrozen==='function'&&mpEndgameFrozen());
 }
 
 function rHdr(){
@@ -12731,7 +13249,7 @@ function rStns(){
           <div class="btn-section-lbl">ON-AIR REVENUE</div>
           <div class="ab">
             <button class="abt" onclick="openSpots('${s.id}')">📻 SPOT LOAD</button>
-            <button class="abt" onclick="openPromo('${s.id}')">📣 MARKETING</button>
+            <button class="abt" onclick="openPromo('${s.id}')">📣 MARKETING BUDGET</button>
             <button class="abt b" onclick="openLean('${s.id}')">🎯 DEMO TARGET</button>
           </div>
         </div>
@@ -12852,7 +13370,9 @@ function rMkt(){
     const _sigBadge=s.fmBooster?'<span class="sig-badge">FM+</span>':s.sig?.type==='FM'?'<span class="sig-badge">FM</span>':'<span class="sig-badge">AM</span>';
     // Corp ownership tag — shown when a corp has bought this station
     const _corpTag=s.corpOwner&&s.corpName?`<span class="corp-tag" style="background:${s.corpColor||'#555'}22;color:${s.corpColor||'#aaa'};border:1px solid ${s.corpColor||'#555'}44">${s.corpName.split(' ')[0].toUpperCase()}</span>`:'';
-    return `<tr class="${_me?'you':''}"${!_anyP&&!s.isPublic?clickAttr:''}><td><span class="rn">${i+1}</span></td><td><span class="clg" style="color:${mpStationColor(s)}">${label}</span>${_sigBadge}${_corpTag}${_me?'<span class="yp">YOU</span>':_anyP?`<span class="yp" style="background:${s.color||'#60a5fa'};color:#000">OPP</span>`:!s.isPublic?'<span style="color:var(--mut);font-size:14px"> &#128269;</span>':''}</td><td><span class="fmtag">${FM[s.format]?.l||s.format}</span></td><td><span class="shn" style="color:${_me?'var(--amb)':_anyP?s.color:'var(--wht)'}">${pct(share)}</span></td><td style="text-align:right"><span class="${tc}" style="font-size:16px;font-weight:bold">${tr}</span></td><td><span class="rvn">${f$(rev)}</span></td></tr>`;
+    const _opp=!_me&&_anyP?`<span class="yp" style="background:${s.color||'#60a5fa'};color:#000">OPP</span>`:'';
+    const _intel=!_me&&!_anyP&&!s.isPublic?'<span style="color:var(--mut);font-size:14px"> &#128269;</span>':'';
+    return `<tr class="station-row${_me?' owned':''}"${!_anyP&&!s.isPublic?clickAttr:''}><td><span class="rn">${i+1}</span></td><td><span class="clg" style="color:${mpStationColor(s)}">${label}</span>${_sigBadge}${_corpTag}${_opp}${_intel}</td><td><span class="fmtag">${FM[s.format]?.l||s.format}</span></td><td><span class="shn" style="color:${_me?'var(--amb)':_anyP?s.color:'var(--wht)'}">${pct(share)}</span></td><td style="text-align:right"><span class="${tc}" style="font-size:16px;font-weight:bold">${tr}</span></td><td><span class="rvn">${f$(rev)}</span></td></tr>`;
   }).join('');
   // In MP, show the current player's lead station; in solo, G.ps[0]
   const _myStns = MP.mode==='live' ? G.ps.filter(s=>s._mpOwner===MP.playerId) : G.ps;
@@ -12926,14 +13446,11 @@ function rNews(){
   const nl=document.getElementById('news');
   if(!G.news.length){nl.innerHTML='<p class="enote">No news yet. Advance a period.</p>';return;}
   const limit=_newsExpanded?50:14;
-  const _nitems=G.news.slice(0,limit).map(n=>`<div class="ni ${n.iy?'you':''}">`+
-    `<div class="nm">${n.y} ${PERIODS[(n.p||1)-1]} · ${n.v||'LOW'}</div>`+
+  const _nitems=G.news.slice(0,limit).map(n=>`<div class="ni ${n.iy?'you':''} ${n.type==='trade_news'?'trade':''}">`+
+    `<div class="nm">${n.y} ${PERIODS[(n.p||1)-1]} · ${n.type==='trade_news'?`Trade · ${n.v||'LOW'}`:(n.v||'LOW')}</div>`+
     `<div class="nt ${n.v==='HIGH'?'hi':''}">${n.t}</div></div>`).join('');
   const moreBtn=G.news.length>14?`<div style="text-align:center;padding:6px 0"><button class="abt" style="font-size:15px;padding:4px 14px" onclick="_newsExpanded=!_newsExpanded;rNews()">${_newsExpanded?'\u25b2 Show less':'\u25bc Show '+(G.news.length-14)+' more'}</button></div>`:'';
   nl.innerHTML=_nitems+moreBtn;
-  const el=document.getElementById('evts');
-  const up=G.evq.filter(ev=>(ev.y===G.year&&ev.p>G.period)||ev.y===G.year+1||ev.y===G.year+2).slice(0,4);
-  el.innerHTML=up.length?up.map(ev=>`<div class="ev"><div class="evt">${ev.y} ${PERIODS[ev.p-1]} · ${evTitle(ev)}</div><div class="evd">${ev.d}</div></div>`).join(''):'<p class="enote">No upcoming events on the horizon.</p>';
 }
 
 init();
