@@ -10506,6 +10506,66 @@ function autoSave(){
   }catch(e){}
 }
 
+// ── COSMETIC: retro station logo (API on game server; does not affect sim) ──
+function wlOpenLogoModal(stationId){
+  const op=G.stations.find(st=>st.id===stationId);
+  if(!op||!op.cosmeticLogoUrl)return;
+  const rel=op.cosmeticLogoUrl+(op.cosmeticLogoV?'?v='+op.cosmeticLogoV:'');
+  const abs=new URL(rel,window.location.href).href;
+  const img=document.getElementById('wl-logo-modal-img');
+  if(!img)return;
+  img.src=abs;
+  const base=op.cosmeticLogoUrl.split('?')[0];
+  const extMatch=base.match(/\.(png|webp|jpe?g)$/i);
+  let ext=extMatch?extMatch[1].toLowerCase():'png';
+  if(ext==='jpeg')ext='jpg';
+  const a=document.getElementById('wl-logo-dl');
+  if(a){
+    a.href=abs;
+    const safe=(callDisplay(op).replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')||'station')+'-logo';
+    a.setAttribute('download',safe+'.'+ext);
+  }
+  om('m-logo');
+}
+async function wlGenerateLogo(stationId,regenerate){
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
+  const op=G.stations.find(st=>st.id===stationId);
+  if(!op)return;
+  const reg=typeof regenerate==='boolean'?regenerate:!!op.cosmeticLogoUrl;
+  const statusEl=document.getElementById('wl-logo-status-'+stationId);
+  if(statusEl)statusEl.textContent=reg?'Regenerating…':'Generating…';
+  const band=(op.fmBooster||op.sig?.type==='FM')?'FM':'AM';
+  const body={
+    stationName:(typeof op.brand==='string'&&op.brand.trim())?op.brand.trim():callDisplay(op),
+    format:FM[op.format]?.l||op.format||'Radio',
+    year:G.year,
+    tone:typeof op.cosmeticLogoTone==='string'?op.cosmeticLogoTone:'',
+    frequency:String(op.freq||''),
+    band,
+    regenerate:!!reg,
+  };
+  try{
+    const res=await fetch('/api/generate-logo',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body),
+    });
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok||!data.ok){
+      const msg=data.error||res.statusText||'Logo generation failed';
+      if(statusEl)statusEl.textContent=msg;
+      return;
+    }
+    op.cosmeticLogoUrl=data.imageUrl;
+    op.cosmeticLogoV=Date.now();
+    if(statusEl)statusEl.textContent=data.cached?'From cache':'New image saved';
+    autoSave();
+    renderAll();
+  }catch(_e){
+    if(statusEl)statusEl.textContent='No API — open the game at http://localhost:3000 (npm start) to generate logos.';
+  }
+}
+
 function exportSave(){
   const _saveStns = MP.mode==='live' ? G.ps.filter(s=>s._mpOwner===MP.playerId) : G.ps;
   const payload=saveGame(`${G.year} ${G.period===1?'Spring':'Fall'} — ${_saveStns.map(s=>s.callLetters).join(', ')}`);
@@ -11725,8 +11785,13 @@ function rStns(){
       </div>`;
     }).join('');
     const qc2=qc(op.oq);
+    const _lid=op.id;
+    const _logoSrc=op.cosmeticLogoUrl?(op.cosmeticLogoUrl+(op.cosmeticLogoV?'?v='+op.cosmeticLogoV:'')):'';
+    const _logoThumb=_logoSrc
+      ?'<div class="sc-logo-thumb" role="button" tabindex="0" title="View full size" onclick="wlOpenLogoModal(\''+_lid+'\')" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();wlOpenLogoModal(\''+_lid+'\');}"><img alt="Station logo" src="'+_logoSrc+'" draggable="false"></div>'
+      :'';
     div.innerHTML=`
-      <div class="sctop"><div>
+      <div class="sctop"><div class="sctop-inner">`+_logoThumb+`<div>
         <div class="sccall">${junior?callDisplay(s)+' + '+callDisplay(junior):callDisplay(s)}</div>
         <div class="scfreq">${junior?`<div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;line-height:1.25"><span>${freqLineHtml(s)}</span><span>${freqLineHtml(junior)}</span></div>`:freqLineHtml(s)}</div>
         <div class="scbrand">${callDisplay(s)} — "${op.brand}" · ${FM[op.format]?.l||op.format} <span style="color:var(--mut);font-size:15px;font-style:normal">· ${genderLabel(op.format)}</span></div>
@@ -11734,7 +11799,7 @@ function rStns(){
         ${s.heritageIncumbent?'<div class="sim-tag" style="color:var(--amb);border-color:rgba(245,166,35,.35)">★ Heritage station</div>':''}
         ${s._lmaStation?'<div class="sim-tag" style="color:var(--blu);border-color:rgba(90,180,255,.4)">📝 LMA — LEASED OPERATION · fee: '+f$(lmaFeeForStation(s))+'/period</div>':''}
         ${s.lmaLessorId?'<div class="sim-tag" style="color:var(--grn);border-color:rgba(82,227,110,.4)">📝 LMA — LEASED OUT · receiving: '+f$(lmaFeeForStation(s))+'/period</div>':''}
-      </div><div><div class="scshv">${pct(shareUi)}</div><div class="scshl">SHARE ${trd}</div></div></div>
+      </div></div><div><div class="scshv">${pct(shareUi)}</div><div class="scshl">SHARE ${trd}</div></div></div>
       <div class="qr"><span class="ql">QUALITY</span><div class="qb"><div class="qf ${qc2}" style="width:${op.oq}%"></div></div><span class="qn">${op.oq}</span></div>
       <div class="fg">
         <div><span class="fl">${s.lmaLessorId?'LICENSE FEE INCOME':'REVENUE/PERIOD'} ${s.lmaLessorId?'':('<span style="font-size:15px;color:'+( G.period===2?'var(--grn)':'var(--amb)')+'">'+(G.period===2?'▲ FALL':'▼ SPRING')+'</span>')}</span><span class="fv">${f$(revUi)}</span></div>
@@ -11819,10 +11884,12 @@ function rStns(){
         if(_m1)fmUniq.push(_m1);
         if(_m2&&_m2!==_m1)fmUniq.push(_m2);
         const adminBtns=[...histArr,...renArr,swapBtn,...fmUniq,...sellArr];
+        const logoBtnLabel=op.cosmeticLogoUrl?'↻ Regenerate Logo':'🖼 Generate Logo';
+        const logoBtn='<button type="button" class="abt" onclick="wlGenerateLogo(\''+op.id+'\')">'+logoBtnLabel+'</button>';
         return '<div class="sc-card-actions">'+
           sec('TALENT',true,pack2(['<button class="abt" onclick="openHire(\''+op.id+'\')">🎙 HIRE TALENT</button>','<button class="abt d" onclick="openFire(\''+op.id+'\')">↕ MANAGE TALENT</button>','<button class="abt" onclick="openXfer(\''+op.id+'\')">⇄ OTHER STATION</button>']))+
           sec('PROGRAMMING',false,pack2(progBtns))+
-          sec('MARKETING',false,pack2(['<button class="abt" onclick="openPromo(\''+op.id+'\')">📣 MARKETING BUDGET</button>','<button class="abt '+idAct+'" onclick="openIdent(\''+op.id+'\')">🏘 IDENTITY'+idLbl+idStar+'</button>','<button class="abt" onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
+          sec('MARKETING',false,'<div class="wl-logo-status" id="wl-logo-status-'+op.id+'" style="font-size:12px;color:var(--amb);margin-bottom:10px;min-height:16px"></div>'+pack2([logoBtn,'<button class="abt" onclick="openPromo(\''+op.id+'\')">📣 MARKETING BUDGET</button>','<button class="abt '+idAct+'" onclick="openIdent(\''+op.id+'\')">🏘 IDENTITY'+idLbl+idStar+'</button>','<button class="abt" onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
           sec('SALES',false,pack2(['<button class="abt '+(sfActive?'g':'')+'" onclick="openSales(\''+op.id+'\')">'+salesLbl+'</button>','<button class="abt" onclick="openSpots(\''+op.id+'\')">📻 SPOT LOAD</button>']))+
           sec('ADMINISTRATION',false,pack2(adminBtns))+
           '</div>';

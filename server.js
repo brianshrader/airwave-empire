@@ -13,8 +13,11 @@
 //   - Saves survive server restarts — rooms are restored from disk on boot
 //
 // Run: node server.js
-// Requires: npm install express socket.io
+// Requires: npm install express socket.io dotenv
+// Logo API: set GROK_API_KEY in .env for /api/generate-logo
 // ═══════════════════════════════════════════════════════════════════
+
+require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 const express  = require('express');
 const http     = require('http');
@@ -24,6 +27,11 @@ const fs       = require('fs');
 const { randomBytes } = require('crypto');
 
 const app        = express();
+const { mountLogoRoutes } = require('./server/logoRoutes');
+
+app.use(express.json({ limit: '64kb' }));
+mountLogoRoutes(app);
+
 const httpServer = http.createServer(app);
 const io         = new Server(httpServer, {
   cors: { origin: '*' },
