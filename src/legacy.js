@@ -12978,7 +12978,7 @@ function rStns(){
         const adminBtns=[...histArr,swapBtn,...fmUniq,...sellArr,streamBtn,simBtn];
         const mkLine='<div style="font-size:13px;color:var(--mut);margin-bottom:10px;line-height:1.45">Marketing <strong style="color:var(--off)">'+f$(op.ops.promo||0)+'</strong>/p · Community ID <strong style="color:var(--off)">'+Math.round(op.identity||0)+'</strong>'+((op.identityBudget||0)>0?' <span style="color:var(--amb)">★</span>':'')+'</div>';
         return '<div class="sc-card-actions">'+
-          sec('TALENT',true,'<button class="abt d" type="button" onclick="openManageTalent(\''+op.id+'\')">🎙 MANAGE TALENT</button>')+
+          sec('TALENT',true,'<button class="abt d" type="button" style="width:100%;box-sizing:border-box;padding:14px;font-size:15px;letter-spacing:0.5px" onclick="openManageTalent(\''+op.id+'\')">🎙 MANAGE TALENT</button>')+
           sec('PROGRAMMING',false,'<div style="display:flex;flex-direction:column;gap:10px;width:100%">'+progHub+(sportsFrHtml||'')+'</div>')+
           sec('MARKETING',false,mkLine+'<div class="wl-logo-status" id="wl-logo-status-'+op.id+'" style="font-size:12px;color:var(--amb);margin-bottom:10px;min-height:16px"></div>'+pack2(['<button class="abt b" onclick="openBrandMarketing(\''+op.id+'\')">📣 BRAND & MARKETING</button>','<button class="abt" onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
           sec('SALES',false,pack2(['<button class="abt '+(sfActive?'g':'')+'" onclick="openSales(\''+op.id+'\')">'+salesLbl+'</button>','<button class="abt" onclick="openSpots(\''+op.id+'\')">📻 SPOT LOAD</button>']))+
