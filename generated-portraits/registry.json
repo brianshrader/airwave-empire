@@ -271,6 +271,54 @@
       "name": "Kent McGill",
       "firstHireYear": 1970,
       "gender": "male"
+    },
+    "sheldon-hall-1970": {
+      "imageUrl": "/generated-portraits/sheldon-hall-1970.png",
+      "fileName": "sheldon-hall-1970.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "semiPro",
+      "expressionType": "smug",
+      "settingType": "plainBackdrop",
+      "identityKey": "sheldon hall|1970",
+      "name": "Sheldon Hall",
+      "firstHireYear": 1970,
+      "gender": "male"
+    },
+    "ike-lynch-1970": {
+      "imageUrl": "/generated-portraits/ike-lynch-1970.png",
+      "fileName": "ike-lynch-1970.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "casual",
+      "expressionType": "serious",
+      "settingType": "officeCorner",
+      "identityKey": "ike lynch|1970",
+      "name": "Ike Lynch",
+      "firstHireYear": 1970,
+      "gender": "male"
+    },
+    "michelle-munoz-1970": {
+      "imageUrl": "/generated-portraits/michelle-munoz-1970.png",
+      "fileName": "michelle-munoz-1970.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "oddball",
+      "expressionType": "tired",
+      "settingType": "plainBackdrop",
+      "identityKey": "michelle munoz|1970",
+      "name": "Michelle Munoz",
+      "firstHireYear": 1970,
+      "gender": "female"
+    },
+    "tiffany-ramos-1970": {
+      "imageUrl": "/generated-portraits/tiffany-ramos-1970.png",
+      "fileName": "tiffany-ramos-1970.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "oddball",
+      "expressionType": "smug",
+      "settingType": "radioStudio",
+      "identityKey": "tiffany ramos|1970",
+      "name": "Tiffany Ramos",
+      "firstHireYear": 1970,
+      "gender": "female"
     }
   }
 }

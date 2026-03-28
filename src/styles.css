@@ -494,6 +494,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   .mh{font-size:15px;margin-bottom:14px}
   .mc{font-size:15px;padding:4px 10px}
 
+  /* Unified Manage Talent */
+  .mt-manage .mt-slot .msh{font-size:14px;letter-spacing:0.12em}
+  .mt-manage .abt{font-size:13px;padding:7px 12px}
+
   /* Hire modal slots */
   .ssb{padding:10px 12px;font-size:15px}
   .to.to-hire{grid-template-columns:1fr;gap:10px}
