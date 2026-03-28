@@ -127,6 +127,8 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .sc-logo-thumb img{max-width:100%;max-height:100%;object-fit:contain;pointer-events:none;vertical-align:middle}
 /* Talent portrait thumbnails (cosmetic) */
 .tp-thumb{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;vertical-align:middle}
+.tp-thumb--live{cursor:pointer;outline:none;border-radius:4px}
+.tp-thumb--live:focus-visible{box-shadow:0 0 0 2px var(--drk),0 0 0 4px var(--amb)}
 .tp-thumb img{width:36px;height:36px;border-radius:4px;object-fit:cover;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.2)}
 .tp-thumb--ph{width:36px;height:36px;border-radius:4px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.15);font-size:18px;display:inline-flex;align-items:center;justify-content:center}
 .tp-sl img,.tp-sl.tp-thumb--ph{width:44px;height:44px;font-size:20px;border-radius:5px}
@@ -193,6 +195,9 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .abt:hover{border-color:var(--amb);color:var(--amb);background:var(--abg)}
 .abt.d:hover{border-color:var(--red);color:var(--red);background:rgba(240,88,88,.08)}
 .abt.g:hover{border-color:var(--grn);color:var(--grn);background:rgba(82,227,110,.08)}
+/* Scenario select — selected market must stay visibly highlighted (do not reuse .g; it is app-wide primary) */
+.abt.scen-mkt-on{border-color:var(--amb);color:var(--amb);background:rgba(245,166,35,.12);box-shadow:0 0 0 1px rgba(245,166,35,.28)}
+.abt.scen-mkt-on:hover{border-color:var(--amb);color:var(--wht);background:rgba(245,166,35,.2)}
 .abt.b:hover{border-color:var(--blu);color:var(--blu);background:rgba(90,180,255,.08)}
 
 /* CENTER */
@@ -426,6 +431,12 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 .cfm{width:100%;background:var(--amb);color:var(--blk);border:none;font-family:var(--fd);font-size:19px;letter-spacing:3px;padding:14px;cursor:pointer;margin-top:18px;transition:all .15s}
 .cfm:hover{background:#fff;box-shadow:0 0 24px rgba(245,166,35,.5)}
 .cfm:disabled{opacity:.3;cursor:not-allowed;background:var(--amb);box-shadow:none}
+/* Commit controls: muted when UI matches saved state, gold when a change is pending */
+.cfm.wl-commit-btn--synced{background:#353535;color:var(--mut);border:1px solid var(--bdh);box-shadow:none;opacity:.92}
+.cfm.wl-commit-btn--synced:hover{background:#404040;color:var(--off);box-shadow:none}
+.cfm.wl-commit-btn--pending{background:var(--amb);color:var(--blk);border:none;opacity:1}
+.cfm.wl-commit-btn--pending:hover{background:#fff;box-shadow:0 0 24px rgba(245,166,35,.5)}
+.cfm.wl-commit-btn--synced:disabled{opacity:.35;background:#2a2a2a;color:var(--mut);border-color:var(--bdh)}
 .cfm.blu{background:var(--blu);color:var(--blk)}
 .cfm.blu:hover{background:#fff}
 .cnl{width:100%;background:transparent;border:1px solid var(--bdh);color:var(--off);font-family:var(--ft);font-size:15px;letter-spacing:2px;padding:11px;cursor:pointer;margin-top:8px;transition:all .15s}

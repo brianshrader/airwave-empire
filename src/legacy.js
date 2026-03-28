@@ -383,7 +383,8 @@ function vacantLabel(fmt,slot,s){
   if(isTalk)return 'NATIONAL SHOW';
   return 'AUTOMATION';
 }
-const DAYPART_SLOTS=['morningDrive','afternoonDrive','midday','evening','overnight'];
+/** Chronological display order: Morning → Midday → Afternoon → Evening → Overnight (do not use object iteration for UI). */
+const DAYPART_SLOTS=['morningDrive','midday','afternoonDrive','evening','overnight'];
 /** Market-wide superstar talent — prior 80/60/5y gates rarely fired by 1980 in normal play; tuned so 0–2 stars can emerge late 70s without trivializing. */
 const SUPERSTAR={
   RAW_QUALITY_MIN:55,
@@ -398,7 +399,7 @@ const SUPERSTAR={
   SALARY_CAP_MULT_BONUS:0.50,
   POACH_RESIST_BONUS:0.30,
 };
-const SUPERSTAR_DAYPART_ORDER={morningDrive:0,afternoonDrive:1,midday:2,evening:3,overnight:4};
+const SUPERSTAR_DAYPART_ORDER={morningDrive:0,midday:1,afternoonDrive:2,evening:3,overnight:4};
 
 /** Effective daypart quality for station OQ weighting — superstars lift slot contribution (capped at 100). */
 function effSlotQForOq(sd){
@@ -878,7 +879,7 @@ function htmlOnAirTalentRoster(s){
       const tq=Math.round(t.quality||0);
       const salStr=(typeof t.salary==='number'&&!Number.isNaN(t.salary))?f$(t.salary)+'/yr':'—';
       const star=t.superstar===true?'⭐ ':'';
-      return `<div class="sr" style="align-items:center;gap:8px">${talentPortraitThumbHtml(t,'tp-intel')}<span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);line-height:1.45"><strong style="font-weight:600;color:var(--wht)">${star}${t.name}</strong> · Q ${tq} · slot ${slotQ} · ${salStr}</span></div>`;
+      return `<div class="sr" style="align-items:center;gap:8px">${talentPortraitThumbHtml(t,'tp-intel',`${callDisplay(s)} · ${lbl}`)}<span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);line-height:1.45"><strong style="font-weight:600;color:var(--wht)">${star}${t.name}</strong> · Q ${tq} · slot ${slotQ} · ${salStr}</span></div>`;
     }
     const cap=nonLocalDaypartCaption(s.format,sl,!!s.isPublic,s);
     return `<div class="sr"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px;color:var(--mut)"><em>${cap}</em> · slot Q ${slotQ}</span></div>`;
@@ -1309,13 +1310,50 @@ const gn=(nameCtx)=>{
   return fb;
 };
 let UC=new Set(),UB=new Set();
+/** Blocked 3-letter suffixes (after W/K) — slurs, sexual/vulgar, KKK, etc. Real-world collisions are OK. */
+const CALL_SUFFIX_DENY=new Set([
+  'FUK','ASS','SEX','CUM','FAG','TIT','NIG','JEW','SPIC','KKK','POO','PEE','SHT','CNT','DIK','FCK','FGT','BCH','DCK','JIZ','PIS','DYK','WET','JAP','GOK','KKX','KFK','RAP',
+]);
+function isAcceptableCallSuffix3(x){
+  const u=String(x||'').toUpperCase();
+  if(u.length!==3)return false;
+  if(/K{3}/.test(u))return false;
+  if(CALL_SUFFIX_DENY.has(u))return false;
+  return true;
+}
+function randomCallSuffix3(){
+  const L='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  if(typeof crypto!=='undefined'&&crypto.getRandomValues){
+    const arr=new Uint8Array(3);
+    crypto.getRandomValues(arr);
+    return L[arr[0]%26]+L[arr[1]%26]+L[arr[2]%26];
+  }
+  return L[Math.floor(Math.random()*26)]+L[Math.floor(Math.random()*26)]+L[Math.floor(Math.random()*26)];
+}
 function gc(){
   // Use ACTIVE_MARKET only — during genMarket(), G may still be the previous session; ACTIVE_MARKET is set in startPlay before genMarket.
   const pref=getCallPrefixForMarket(ACTIVE_MARKET);
-  const c='BCDFGJKLMNPRSTVXZ',a=c+'AEIOU';
+  const L='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   let s,t=0;
-  do{s=pref+c[ri(0,c.length-1)]+a[ri(0,a.length-1)]+a[ri(0,a.length-1)];t++;}
-  while(UC.has(s)&&t<200);
+  do{
+    const x=randomCallSuffix3();
+    s=pref+x;
+    t++;
+  }while((UC.has(s)||!isAcceptableCallSuffix3(s.slice(1)))&&t<900);
+  if(t>=900){
+    let found=null;
+    outer:for(let i=0;i<26;i++){
+      for(let j=0;j<26;j++){
+        for(let k=0;k<26;k++){
+          const x=L[i]+L[j]+L[k];
+          if(!isAcceptableCallSuffix3(x))continue;
+          const cand=pref+x;
+          if(!UC.has(cand)){found=cand;break outer;}
+        }
+      }
+    }
+    s=found||(pref+'ZZX');
+  }
   UC.add(s);
   return s;
 }
@@ -3156,8 +3194,11 @@ window._mpApply_rename = function({ sid, callLetters, brand }) {
   if (!s || !callLetters) return;
   const pref = getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
   if (callLetters[0] !== pref) return;
+  const prevDisp = callDisplay(s);
   s.callLetters = callLetters;
   s.brand = brand;
+  const nextDisp = callDisplay(s);
+  if (prevDisp !== nextDisp) logHistory(s, 'CALLSIGN', `Call letters changed: ${prevDisp} → ${nextDisp}`, G);
 };
 
 // Stream launch
@@ -3249,11 +3290,37 @@ function applyTalentCrossStationXferFull(fromSid, fromSlot, toSid, toSlot) {
   logHistory(dst, 'TALENT', `Received ${talA.name} from ${callDisplay(src)} ${SL[fromSlot]}`, G);
   return true;
 }
+/** Exchange hosts between two dayparts on one station (no bench). */
+function applyTalentSameStationSwapFull(sid, fromSlot, toSlot) {
+  const s = G.stations.find(st => st.id === sid);
+  if (!s || fromSlot === toSlot) return false;
+  const a = s.prog[fromSlot]?.talent;
+  const b = s.prog[toSlot]?.talent;
+  if (!a || !b) return false;
+  const fmt = s.format;
+  s.prog[fromSlot].talent = b;
+  s.prog[toSlot].talent = a;
+  const adj = 0.08;
+  const rec = (sd, t0) => {
+    const fit0 = t0.formatFit[fmt] || 0.3;
+    const boost = Math.round((t0.quality / 100) * fit0 * 0.35 * 18);
+    sd.quality = Math.min(100, Math.max(10, Math.round((sd.quality || 30) * (1 - adj))) + boost);
+  };
+  rec(s.prog[fromSlot], b);
+  rec(s.prog[toSlot], a);
+  applyDaypartPromotionEconomics(b, toSlot, fromSlot);
+  applyDaypartPromotionEconomics(a, fromSlot, toSlot);
+  refreshStationOQ(s, G);
+  G.news.unshift({ v: 'LOW', t: `Swapped ${a.name} and ${b.name} between ${SL[fromSlot]} and ${SL[toSlot]} on ${callDisplay(s)}.`, y: G.year, p: G.period });
+  logHistory(s, 'TALENT', `Swap: ${a.name} ↔ ${b.name} (${SL[fromSlot]} ↔ ${SL[toSlot]})`, G);
+  return true;
+}
 /** Exchange hosts between two dayparts on different owned stations (no bench). */
 function applyTalentCrossStationSwapFull(fromSid, fromSlot, toSid, toSlot) {
+  if (fromSid === toSid) return applyTalentSameStationSwapFull(fromSid, fromSlot, toSlot);
   const src = G.stations.find(st => st.id === fromSid);
   const dst = G.stations.find(st => st.id === toSid);
-  if (!src || !dst || fromSid === toSid) return false;
+  if (!src || !dst) return false;
   const a = src.prog[fromSlot]?.talent;
   const b = dst.prog[toSlot]?.talent;
   if (!a || !b) return false;
@@ -3307,6 +3374,12 @@ window._mpApply_talent_swap = function({ fromSid, fromSlot, toSid, toSlot, _from
     if (_fromPlayerId === undefined || !owns(fromSid) || !owns(toSid)) return;
   }
   applyTalentCrossStationSwapFull(fromSid, fromSlot, toSid, toSlot);
+};
+window._mpApply_same_station_swap = function({ sid, fromSlot, toSlot, _fromPlayerId }) {
+  const s = G.stations.find(st => st.id === sid);
+  if (!s) return;
+  if (MP.mode === 'live' && (s._mpOwner !== _fromPlayerId || _fromPlayerId === undefined)) return;
+  applyTalentSameStationSwapFull(sid, fromSlot, toSlot);
 };
 window._mpApply_bench_add = function({ sid, slot, _fromPlayerId }) {
   const s = G.stations.find(st => st.id === sid);
@@ -4936,7 +5009,9 @@ function calcRev(s,G){
   }
   // Era cost: early stations ran lean. 1970=20% of mature, ramps to 100% by 1985.
   // Small FM (25kw/10kw) pre-1980 gets extra pioneer discount.
-  const regCost=Math.round(60000*(year<1980?earlyEraSmallMarketRegRelief(year,G.marketId||ACTIVE_MARKET):1));
+  const mktIdForFix=G.marketId||ACTIVE_MARKET;
+  const mktFixMult=marketFixedCostScaleMultiplier(mktIdForFix);
+  const regCost=Math.round(60000*(year<1980?earlyEraSmallMarketRegRelief(year,mktIdForFix):1));
   const smallFMDiscount=(s.sig?.type==='FM'&&['25kw','10kw'].includes(s.sig?.pw)&&year<1980)
     ?Math.max(0,(1980-year)/10*0.30):0;
   const baseEra=year<=1985?Math.max(0.20,0.20+(year-1970)/15*0.80):1.0;
@@ -4960,7 +5035,11 @@ function calcRev(s,G){
     else if(_ftr==='large'){staffCost=Math.round(staffCost*0.92);facCost=Math.round(facCost*0.92);}
   }
   const sfCost=Math.round((SF_LEVELS[s.salesForce?.level||0]?.cost||0)/2);
-  const fixedCost=staffCost+facCost+regCost+sfCost;
+  staffCost=Math.round(staffCost*mktFixMult);
+  facCost=Math.round(facCost*mktFixMult);
+  const regCostScaled=Math.round(regCost*mktFixMult);
+  const sfCostScaled=Math.round(sfCost*mktFixMult);
+  const fixedCost=staffCost+facCost+regCostScaled+sfCostScaled;
   // ── STREAMING REVENUE ───────────────────────────────────────────
   let streamRev=0,streamUpkeep=0;
   if(s.stream?.active && year>=2005){
@@ -5040,6 +5119,7 @@ function calcRev(s,G){
     if(_ftr2==='medium')opsFloor=Math.round(opsFloor*0.91);
     else if(_ftr2==='large')opsFloor=Math.round(opsFloor*0.95);
   }
+  opsFloor=Math.round(opsFloor*mktFixMult);
   let simulcastProgFee=0;
   if(isProgReceiver&&progSrcStation){
     const srcTal=Object.values(progSrcStation.prog||{}).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
@@ -5058,25 +5138,57 @@ function calcRev(s,G){
     const row={
       id:s.id,call:s.callLetters,market:G.marketId||ACTIVE_MARKET,year:G.year,period:G.period,
       revGrossPreFm,fmEarlyEraMonMult,mktFmtMon,shareSelloutMult,amTalkSmMult,
-      opsFloor,talCost,regCost,fix:fixedCost,salesAdmin:salesAdminCost,totalRev:s.fin.rev,ebitda:s.fin.ebitda,
+      opsFloor,talCost,regCost:regCostScaled,fix:fixedCost,salesAdmin:salesAdminCost,totalRev:s.fin.rev,ebitda:s.fin.ebitda,mktFixMult,
     };
     if(!G._econDebugLog)G._econDebugLog=[];
     G._econDebugLog.push(row);
     if(typeof console!=='undefined'&&console.log)console.log('[ECON]',row);
   }
 }
+/**
+ * Revenue monetization efficiency by share rank and market size (before billing normalization).
+ * Leaders stay near 1.0; mid/low share and mega markets reduce weak-station efficiency.
+ * seedRev applies this then renormalizes to halfTarget so total market billing is unchanged.
+ */
+function stationRevenueMonetizationEfficiency(rankIndex,nStations,marketId){
+  if(nStations<=1)return 1;
+  const t=rankIndex/Math.max(1,nStations-1);
+  const rs=(MARKETS[marketId]||MARKETS.atlanta).revScale??1;
+  const rsMin=0.45,rsMax=7;
+  const mktBig=Math.max(0,Math.min(1,(rs-rsMin)/Math.max(1e-6,rsMax-rsMin)));
+  let eff=0.57+0.43*Math.pow(1-t,1.18);
+  eff*=1-mktBig*t*0.26;
+  return Math.max(0.52,Math.min(1,eff));
+}
+/** Scales staff/facility/reg/sales-fixed/ops floor with market size (revScale). Mid markets ~1×; mega markets higher. */
+function marketFixedCostScaleMultiplier(marketId){
+  const rs=(MARKETS[marketId]||MARKETS.atlanta).revScale??1;
+  return Math.max(1,0.5+rs*0.35);
+}
 function seedRev(stations,G){
   stations.forEach(s=>{ if(!s||s._bpSlotDeferred)return; calcRev(s,G); });
-  const tot=stations.reduce((sum,s)=>sum+((!s||s._bpSlotDeferred)?0:(s.fin?.rev||0)),0);
-  const annualTarget=marketAnnualBilling(G.year,G.marketId||ACTIVE_MARKET);
+  const comm=stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPublic);
+  const mktId=G.marketId||ACTIVE_MARKET;
+  const sorted=[...comm].sort((a,b)=>(b.rat?.share||0)-(a.rat?.share||0));
+  const n=sorted.length;
+  const effById=new Map();
+  sorted.forEach((s,idx)=>effById.set(s.id,stationRevenueMonetizationEfficiency(idx,n,mktId)));
+  let sumAdj=0;
+  const pack=[];
+  comm.forEach(s=>{
+    const raw=s.fin?.rev||0;
+    const eff=effById.get(s.id)??1;
+    sumAdj+=raw*eff;
+    pack.push({s,eff});
+  });
+  const annualTarget=marketAnnualBilling(G.year,mktId);
   const halfTarget=Math.round(annualTarget*0.5*marketHalfSeasonFactor(G.year,G.period||1)*Math.max(0.75,G.adx||1));
-  if(tot>0&&halfTarget>0){
-    const f=halfTarget/tot;
-    stations.forEach(s=>{
-      if(!s||s._bpSlotDeferred)return;
-      s.fin.rev=Math.round(s.fin.rev*f);
-      if(s.fin.terRev!=null)s.fin.terRev=Math.round(s.fin.terRev*f);
-      if(s.fin.streamRev!=null)s.fin.streamRev=Math.round(s.fin.streamRev*f);
+  const scale=sumAdj>0&&halfTarget>0?halfTarget/sumAdj:1;
+  if(sumAdj>0&&halfTarget>0){
+    pack.forEach(({s,eff})=>{
+      s.fin.rev=Math.round(s.fin.rev*eff*scale);
+      if(s.fin.terRev!=null)s.fin.terRev=Math.round(s.fin.terRev*eff*scale);
+      if(s.fin.streamRev!=null)s.fin.streamRev=Math.round(s.fin.streamRev*eff*scale);
       if(s.fin.salesAdminRate!=null){
         s.fin.salesAdmin=Math.round(s.fin.rev*s.fin.salesAdminRate);
         const pc=promoBudgetCapForPeriod(G),pgc=progBudgetCapForPeriod(G);
@@ -5404,7 +5516,7 @@ function runAI(G){
 
     // ── TALENT: FILL EMPTY KEY DAYPARTS (aggressive but not suicidal) ─────
     if(!s.isPublic){
-      const prioritySlots=['morningDrive','afternoonDrive','midday','evening','overnight'];
+      const prioritySlots=[...DAYPART_SLOTS];
       const wt={morningDrive:1.45,afternoonDrive:1.35,midday:1.0,evening:0.9,overnight:0.55};
       const empty=prioritySlots.filter(sl=>!s.prog[sl]?.talent);
       if(empty.length){
@@ -6539,7 +6651,7 @@ function openScenSelect(localSave){
   }).join('');
 
   const marketPicker=PHASE1_MARKET_IDS.map(id=>{
-    const sel=_selectedMarket===id?' g':'';
+    const sel=_selectedMarket===id?' scen-mkt-on':'';
     const m=MARKETS[id];
     return `<button type="button" class="abt${sel}" style="font-size:13px;padding:6px 12px;letter-spacing:1px" onclick="pickMarketPhase1('${id}')">${m.label}</button>`;
   }).join('');
@@ -8665,7 +8777,7 @@ function renderManageTalentStation(sid){
     <div style="background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.28);border-radius:8px;padding:14px 16px;margin-bottom:10px">
       <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end">
         <div style="flex:1;min-width:220px">
-          <div style="display:flex;align-items:center;gap:10px;font-family:var(--fd);font-size:17px;letter-spacing:1px;color:var(--wht)">${talentPortraitThumbHtml(t,'tp-roster')}<span>BENCH — ${rosterHtmlEsc(t.name)}</span></div>
+          <div style="display:flex;align-items:center;gap:10px;font-family:var(--fd);font-size:17px;letter-spacing:1px;color:var(--wht)">${talentPortraitThumbHtml(t,'tp-roster',`${was?callDisplay(was):'?'} · ${SL[ent.slot]||''} · bench`)}<span>BENCH — ${rosterHtmlEsc(t.name)}</span></div>
           <div style="margin-top:6px;font-size:14px;color:var(--mut)">Was ${was?callDisplay(was):'?'} · ${SL[ent.slot]||''}</div>
           <div style="margin-top:6px;font-size:12px;color:var(--mut)">Not reassigned by period end: host leaves (no buyout). Release now triggers buyout${buyout>0?` (${f$(buyout)})`:''}.</div>
         </div>
@@ -8717,8 +8829,8 @@ function manageTalentDaypartBlockHtml(s,sl,_simSrc,stationOQ){
   return`<div class="mt-slot" style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:12px">
     <div class="msh" style="margin-bottom:10px">${SL[sl]}</div>
     <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start">
-      <div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-roster')}</div>
-      <div style="flex:1;min-width:200px">
+      <div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-roster',`${callDisplay(s)} · ${SL[sl]}`)}</div>
+        <div style="flex:1;min-width:200px">
         <div style="font-family:var(--fd);font-size:18px;color:var(--wht);letter-spacing:0.5px">${rosterHtmlEsc(t.name)}</div>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px 12px;margin-top:10px;font-size:13px;color:var(--off)">
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">TALENT</span><span class="${qc(talQ)}">${talQ}/100</span></div>
@@ -8777,7 +8889,7 @@ function mtOpenMoveSameStation(sid,fromSlot){
     slots.push(rosterMoveDestSlotCardHtml(s,sl,t,fromSlot));
   });
   document.getElementById('fireb').innerHTML=`
-    <p style="font-size:13px;color:var(--mut);margin:0 0 14px 0;line-height:1.45">Choose another daypart on <strong>${callDisplay(s)}</strong>. Occupied slots send that host to the bench.</p>
+    <p style="font-size:13px;color:var(--mut);margin:0 0 14px 0;line-height:1.45">Choose another daypart on <strong>${callDisplay(s)}</strong>. If the slot is filled, <strong style="color:var(--amb)">Swap</strong> exchanges hosts (default). Use <strong>Move — bench other</strong> only if you want the other host on the bench.</p>
     <div class="ms2">${rosterStationSectionHeaderHtml(s)}${slots.join('')||'<p class="di" style="color:var(--mut)">No other dayparts.</p>'}</div>
     <button class="cnl" type="button" onclick="renderManageTalentStation('${sid}')">← BACK</button>`;
   om('m-fire');
@@ -8799,7 +8911,7 @@ function rHire(s, scrollAfter){
   const embed=HS._embed==='manage';
   const hostId=embed?'fireb':'talb';
   const modalId=embed?'m-fire':'m-tal';
-  const slots=['morningDrive','afternoonDrive','midday','evening','overnight'];
+  const slots=DAYPART_SLOTS;
   const _simSrc=simulcastProgrammingSource(s);
   const sbtns=slots.map(sl=>{
     const sd=s.prog[sl];
@@ -8822,7 +8934,7 @@ function rHire(s, scrollAfter){
     const cur=s2.prog[HS.slot]?.talent;
     const slotQcur=Math.round(s2.prog[HS.slot]?.quality||0);
     const poachList=hireModalRivalPoachCandidates(HS.sid,HS.slot);
-    const freeRows=HS.pool.map((t,i)=>{const fit=Math.round((t.formatFit[s2.format]||.3)*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const boost=Math.round((q/100)*fit*.35*35);const newSlotQ=Math.min(100,curSlotQ+boost);const hStar=t.superstar===true?'★ ':'';let deltaHtml='';if(HS._hireKind==='replace'&&cur){const dQ=q-Math.round(cur.quality);const curFit=Math.round((cur.formatFit[s2.format]||.3)*100);const dFit=fit-curFit;const dSal=t.salary-cur.salary;deltaHtml=`<div style="font-size:12px;color:var(--amb);margin-top:4px;font-family:var(--ft)">Δ Talent ${dQ>=0?'+':''}${dQ} · Δ Fit ${dFit>=0?'+':''}${dFit}% · Δ Salary ${dSal>=0?'+':''}${f$(dSal)}/yr</div>`;}return `<div class="to to-hire${HS.sel===i&&!HS.poachRivalId?' sel':''}" onclick="pickTal(${i})"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-hire')}</div><div style="flex:1;min-width:0"><div class="ton">${hStar}${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div>${deltaHtml}<div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">SLOT BOOST</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ}</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div></div></div></div><div class="to-hire-side"><span class="tocl">ANNUAL SAL</span><span class="toc">${f$(t.salary)}</span></div></div>`;}).join('');
+    const freeRows=HS.pool.map((t,i)=>{const fit=Math.round((t.formatFit[s2.format]||.3)*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const boost=Math.round((q/100)*fit*.35*35);const newSlotQ=Math.min(100,curSlotQ+boost);const hStar=t.superstar===true?'★ ':'';let deltaHtml='';if(HS._hireKind==='replace'&&cur){const dQ=q-Math.round(cur.quality);const curFit=Math.round((cur.formatFit[s2.format]||.3)*100);const dFit=fit-curFit;const dSal=t.salary-cur.salary;deltaHtml=`<div style="font-size:12px;color:var(--amb);margin-top:4px;font-family:var(--ft)">Δ Talent ${dQ>=0?'+':''}${dQ} · Δ Fit ${dFit>=0?'+':''}${dFit}% · Δ Salary ${dSal>=0?'+':''}${f$(dSal)}/yr</div>`;}return `<div class="to to-hire${HS.sel===i&&!HS.poachRivalId?' sel':''}" onclick="pickTal(${i})"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-hire',`${callDisplay(s2)} · ${SL[HS.slot]} · hire list`)}</div><div style="flex:1;min-width:0"><div class="ton">${hStar}${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div>${deltaHtml}<div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">SLOT BOOST</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ}</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div></div></div></div><div class="to-hire-side"><span class="tocl">ANNUAL SAL</span><span class="toc">${f$(t.salary)}</span></div></div>`;}).join('');
     const rivalRows=poachList.map(({st,sd:rsd})=>{
       const rt=rsd.talent;
       const fit=Math.round((rt.formatFit[s2.format]||.3)*100);
@@ -8836,7 +8948,7 @@ function rHire(s, scrollAfter){
       const canAfford=G.cash>=minCash;
       const sel=HS.poachRivalId===st.id;
       const rhStar=rt.superstar===true?'★ ':'';
-      return `<div class="to to-hire${sel?' sel':''}" onclick="pickHirePoach('${st.id}')"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(rt,'tp-hire')}</div><div style="flex:1;min-width:0"><div class="ton">${rhStar}${rt.name} <span style="font-size:13px;color:var(--amb);font-family:var(--ft);letter-spacing:.06em">RIVAL</span></div><div class="tos" style="color:var(--mut)">${callDisplay(st)} · ${SL[HS.slot]}</div><div class="tost"><div><span class="tosl">TALENT Q</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">FIT</span><span class="tosv ${fc}">${fit}%</span></div><div><span class="tosl">AT RIVAL</span><span class="tosv">${f$(rt.salary)}/yr</span></div></div><div style="font-size:13px;color:var(--mut);margin-top:4px">Est. offer ~${f$(dispOffer)}/yr · need ≥${f$(minCash)} cash${buyout?` (incl. buyout ${f$(buyout)})`:''}</div></div></div><div class="to-hire-side"><span class="tocl">ACTION</span><span class="toc" style="font-size:14px;color:${canAfford?'var(--mut)':'var(--red)'}">${canAfford?'Select, then HIRE':'Short on cash'}</span></div></div>`;
+      return `<div class="to to-hire${sel?' sel':''}" onclick="pickHirePoach('${st.id}')"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(rt,'tp-hire',`${callDisplay(st)} · ${SL[HS.slot]} · rival poach`)}</div><div style="flex:1;min-width:0"><div class="ton">${rhStar}${rt.name} <span style="font-size:13px;color:var(--amb);font-family:var(--ft);letter-spacing:.06em">RIVAL</span></div><div class="tos" style="color:var(--mut)">${callDisplay(st)} · ${SL[HS.slot]}</div><div class="tost"><div><span class="tosl">TALENT Q</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">FIT</span><span class="tosv ${fc}">${fit}%</span></div><div><span class="tosl">AT RIVAL</span><span class="tosv">${f$(rt.salary)}/yr</span></div></div><div style="font-size:13px;color:var(--mut);margin-top:4px">Est. offer ~${f$(dispOffer)}/yr · need ≥${f$(minCash)} cash${buyout?` (incl. buyout ${f$(buyout)})`:''}</div></div></div><div class="to-hire-side"><span class="tocl">ACTION</span><span class="toc" style="font-size:14px;color:${canAfford?'var(--mut)':'var(--red)'}">${canAfford?'Select, then HIRE':'Short on cash'}</span></div></div>`;
     }).join('');
     const curBox=cur?`<div class="ibox">Current: <strong>${cur.name}</strong> — quality ${Math.round(cur.quality)}, slot quality ${slotQcur}, ${f$(cur.salary)}/yr.</div>`:'';
     const freeSection=HS.pool.length
@@ -8934,9 +9046,10 @@ function openSpots(sid){
       <div class="sln2" id="sp-note"></div>
     </div>
     <div class="ibox"><strong>Current:</strong> ${s.ops.spots} min/hr · ${Math.round(s.ops.sell*100)}% sellout = ${f$(s.fin.rev)}/period</div>
-    <button class="cfm" onclick="doSpots()">SET SPOT LOAD</button>
+    <button class="cfm wl-commit-btn wl-commit-btn--synced" id="sp-commit-btn" onclick="doSpots()">SET SPOT LOAD</button>
     <button class="cnl" onclick="cm('m-sp')">CANCEL</button>`;
   updSpots(sid, s.ops.spots);
+  refreshSpotCommitStandalone();
   om('m-sp');
 }
 function updSpots(sid,v){
@@ -8950,8 +9063,51 @@ function updSpots(sid,v){
   const vEl=document.getElementById('sp-val'),nEl=document.getElementById('sp-note');
   if(vEl)vEl.textContent=`${SS.val} min/hr`;
   if(nEl)nEl.innerHTML=`TSL impact: <strong style="color:${pc}">${plbl}</strong> &nbsp;·&nbsp; Est. revenue change: <strong style="color:${estD>=0?'var(--grn)':'var(--red)'}">${estD>=0?'+':''}${f$(estD)}/period</strong>`;
+  refreshSpotCommitStandalone();
 }
 function doSpots(){const sid=ensureOpsSourceSid(SS.sid);SS.sid=sid;const s=G.stations.find(st=>st.id===sid);if(!s)return;s.ops.spots=SS.val;G.news.unshift({v:'LOW',t:`${s.callLetters} spot load set to ${SS.val} min/hr — revenue impact next period.`,y:G.year,p:G.period});MP.action('spots',{sid,spots:SS.val});cm('m-sp');renderAll();}
+
+/** Slider/input + confirm: gold when pending change, muted when UI matches committed game state. */
+function wlSetCommitButtonState(btnId,isPending){
+  const el=typeof btnId==='string'?document.getElementById(btnId):btnId;
+  if(!el)return;
+  el.classList.toggle('wl-commit-btn--pending',!!isPending);
+  el.classList.toggle('wl-commit-btn--synced',!isPending);
+}
+function refreshSpotCommitStandalone(){
+  const sid=ensureOpsSourceSid(SS.sid);
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const pending=SS.val!==s.ops.spots;
+  wlSetCommitButtonState('sp-commit-btn',pending);
+}
+function refreshProgCommitStandalone(){
+  const sid=ensureOpsSourceSid(PI.sid);
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const cap=progBudgetCapForPeriod(G);
+  const committed=Math.min(s.ops?.progBudget||0,cap);
+  const ui=Math.min(PI.val,cap);
+  wlSetCommitButtonState('pg-commit-btn',ui!==committed);
+}
+function refreshIdentCommitStandalone(){
+  const sid=ensureOpsSourceSid(CI.sid);
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  wlSetCommitButtonState('ident-commit-btn',CI.val!==(s.identityBudget||0));
+}
+function refreshRenameCommitStandalone(){
+  const sid=_renameSid;
+  if(!sid)return;
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const btn=document.getElementById('rn-btn');
+  if(!btn){return;}
+  if(btn.disabled){wlSetCommitButtonState('rn-btn',false);return;}
+  const pfxEl=document.getElementById('rn-prefix');
+  const sfxEl=document.getElementById('rn-suffix');
+  if(!pfxEl||!sfxEl)return;
+  const reqPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
+  const sfx=sfxEl.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,3);
+  const val=(pfxEl.value||reqPref)+sfx;
+  wlSetCommitButtonState('rn-btn',val!==s.callLetters);
+}
 
 // 3. PROMOTION — unified in openBrandMarketing / bmDoPromo (legacy openPromo → same)
 
@@ -9103,6 +9259,42 @@ function bmUpdRenamePreview(sid){
     else note.innerHTML=`<span style="color:var(--grn)">✓ ${val} is available.</span>`;
   }
   if(btn)btn.disabled=!(valid&&!taken);
+  bmRefreshRenameCommitState(sid);
+}
+function bmRefreshRenameCommitState(sid){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const safe=bmSafeElId(sid);
+  const btn=document.getElementById('bm-rn-btn-'+safe);
+  if(!btn)return;
+  if(btn.disabled){wlSetCommitButtonState('bm-rn-btn-'+safe,false);return;}
+  const pfxEl=document.getElementById('bm-rn-prefix-'+safe);
+  const sfxEl=document.getElementById('bm-rn-suffix-'+safe);
+  if(!pfxEl||!sfxEl)return;
+  const reqPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
+  const sfx=sfxEl.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,3);
+  const val=(pfxEl.value||reqPref)+sfx;
+  wlSetCommitButtonState('bm-rn-btn-'+safe,val!==s.callLetters);
+}
+function bmRefreshPromoCommitState(sid){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const safe=bmSafeElId(sid);
+  const r=document.getElementById('bm-pr-range-'+safe);
+  if(!r)return;
+  const prCap=promoBudgetCapForPeriod(G);
+  const ui=Math.min(parseInt(r.value,10)||0,prCap);
+  const committed=Math.min(s.ops?.promo||0,prCap);
+  wlSetCommitButtonState('bm-pr-commit-'+safe,ui!==committed);
+}
+function bmRefreshIdentCommitState(sid){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const safe=bmSafeElId(sid);
+  const r=document.getElementById('bm-ci-range-'+safe);
+  if(!r)return;
+  const ui=parseInt(r.value,10)||0;
+  wlSetCommitButtonState('bm-ci-commit-'+safe,ui!==(s.identityBudget||0));
 }
 function bmDoRename(sid){
   sid=ensureOpsSourceSid(sid);
@@ -9129,6 +9321,7 @@ function bmDoRename(sid){
   if(nameTaken)return;
   const old=callDisplay(s);
   s.callLetters=val;
+  logHistory(s,'CALLSIGN',`Call letters changed: ${old} → ${callDisplay(s)}`,G);
   G.news.unshift({v:'LOW',t:`${old} officially renamed ${callDisplay(s)} (${s.freq}) — brand: "${s.brand}"`,y:G.year,p:G.period});
   MP.action('rename', {sid:s.id, callLetters:s.callLetters, brand:s.brand});
   renderAll();
@@ -9150,6 +9343,7 @@ function bmUpdPromo(sid,v){
     const tier=val>=prCap*0.58?'Major campaign':val>=prCap*0.28?'Active campaign':val>=prCap*0.09?'Light promotion':'Minimal presence';
     nEl.innerHTML=`<strong>${tier}</strong><br>Est. share lift: <strong style="color:var(--grn)">+${(estShareBoost*100).toFixed(2)}%</strong> · Est. revenue: <strong style="color:${net>=0?'var(--grn)':'var(--amb)'}">~${f$(Math.abs(net))} ${net>=0?'net gain':'net cost'}/period</strong><br><span style="color:var(--mut);font-size:13px">Low spend saves cash but slows growth. Heavy spend can support a new brand, but returns may diminish.</span>`;
   }
+  bmRefreshPromoCommitState(sid);
 }
 function bmDoPromo(sid){
   sid=ensureOpsSourceSid(sid);
@@ -9179,6 +9373,7 @@ function bmUpdIdent(sid,v){
       nEl.innerHTML=`Accelerates identity growth by ~<strong style="color:var(--grn)">+${boost}× rate</strong> &nbsp;·&nbsp; charged each period<br><span style="color:var(--mut)">Identity can\'t be bought outright — it grows through consistency.</span>`;
     }
   }
+  bmRefreshIdentCommitState(sid);
 }
 function bmDoIdent(sid){
   sid=ensureOpsSourceSid(sid);
@@ -9225,7 +9420,7 @@ function brandMarketingIdentityBlockHtml(leg){
         style="width:100%;box-sizing:border-box;background:var(--crd);border:1px solid var(--bdh);color:var(--wht);font-family:var(--ft);font-size:15px;padding:10px 12px;outline:none"
         oninput="bmUpdBrand('${sid}',this.value)">
     </div>
-    <button class="cfm" type="button" id="bm-rn-btn-${safe}" onclick="bmDoRename('${sid}')" style="margin-top:12px">APPLY CALL LETTER CHANGE</button>
+    <button class="cfm wl-commit-btn wl-commit-btn--synced" type="button" id="bm-rn-btn-${safe}" onclick="bmDoRename('${sid}')" style="margin-top:12px">APPLY CALL LETTER CHANGE</button>
   </div>`;
 }
 function brandMarketingLogoBlockHtml(leg){
@@ -9260,7 +9455,7 @@ function brandMarketingPromoBlockHtml(leg){
       <div class="sln2" id="bm-pr-note-${safe}"></div>
     </div>
     <div class="ibox">Current: <strong>${f$(s.ops?.promo||0)}/period</strong> · Share: <strong>${pct(s.rat.share)}</strong></div>
-    <button class="cfm" type="button" onclick="bmDoPromo('${sid}')">SET MARKETING BUDGET</button>
+    <button class="cfm wl-commit-btn wl-commit-btn--synced" type="button" id="bm-pr-commit-${safe}" onclick="bmDoPromo('${sid}')">SET MARKETING BUDGET</button>
   </div>`;
 }
 function brandMarketingIdentInvestHtml(leg){
@@ -9279,7 +9474,7 @@ function brandMarketingIdentInvestHtml(leg){
       <input type="range" id="bm-ci-range-${safe}" min="0" max="40000" step="1000" value="${iv}" oninput="bmUpdIdent('${sid}',this.value)">
       <div class="sln2" id="bm-ci-note-${safe}"></div>
     </div>
-    <button class="cfm" type="button" onclick="bmDoIdent('${sid}')">SET COMMUNITY INVESTMENT</button>
+    <button class="cfm wl-commit-btn wl-commit-btn--synced" type="button" id="bm-ci-commit-${safe}" onclick="bmDoIdent('${sid}')">SET COMMUNITY INVESTMENT</button>
   </div>`;
 }
 function renderBrandMarketingStation(primarySid){
@@ -9360,7 +9555,7 @@ function rosterTalentOnAirCardHtml(st,sl,t,contribution,talQ,fitPct,trendWord,tr
       <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:flex-start">
         <div style="flex:1;min-width:200px;max-width:100%">
           <div style="display:flex;align-items:center;gap:12px;font-family:var(--fd);font-size:20px;letter-spacing:1px;color:var(--wht);line-height:1.25;text-transform:uppercase">
-            ${talentPortraitThumbHtml(t,'tp-roster')}
+            ${talentPortraitThumbHtml(t,'tp-roster',`${callDisplay(st)} · ${slotLabel}`)}
             <div><span style="color:var(--amb)">${slotLabel}</span> — ${rosterHtmlEsc(t.name)}</div>
           </div>
           <div style="margin-top:8px;font-size:14px;color:var(--off);font-family:var(--fd)">${callDisplay(st)} · ${rosterFmtLong(st)} · ${f$(t.salary)}/yr</div>
@@ -9380,9 +9575,21 @@ function rosterMoveDestSlotCardHtml(dst,sl,movingTalent,fromSlotKey){
   const occ=dst.prog[sl]?.talent;
   const fitPct=Math.round((t.formatFit[dst.format]||0.3)*100);
   const impact=rosterSlotImpactLine(fromSlotKey,sl);
+  const ctx=MOVE_CTX;
+  const sameStation=ctx&&!ctx.benchId&&ctx.fromSid===dst.id;
   const resultLine=occ
-    ?`Result: ${rosterHtmlEsc(occ.name)} goes to bench`
+    ?(sameStation
+      ?`${rosterHtmlEsc(occ.name)} is on-air here — <strong style="color:var(--amb)">Swap</strong> trades hosts; <strong style="color:var(--mut)">Move</strong> sends them to the bench.`
+      :`Result: ${rosterHtmlEsc(occ.name)} goes to bench`)
     :'Result: Open slot';
+  const destBtns=sameStation
+    ?(occ
+      ?`<div style="display:flex;flex-direction:column;align-items:stretch;gap:8px;width:100%;max-width:300px">
+          <button type="button" class="cfm" style="margin:0;padding:11px 14px;font-size:16px;letter-spacing:2px" onclick="doRosterSameStationSwap('${dst.id}','${sl}')">SWAP — exchange hosts</button>
+          <button type="button" class="abt" style="margin:0;padding:10px 14px;font-size:14px;letter-spacing:1px;border-color:var(--bdh);color:var(--mut);background:transparent" onclick="doRosterSameStationBench('${dst.id}','${sl}')">MOVE — bench other</button>
+        </div>`
+      :`<button type="button" class="cfm" style="margin:0;padding:11px 14px;font-size:16px;letter-spacing:2px" onclick="doRosterPlace('${dst.id}','${sl}')">MOVE HERE</button>`)
+    :`<button class="abt" style="padding:8px 14px;font-size:14px;letter-spacing:1px" onclick="doRosterPlace('${dst.id}','${sl}')">MOVE HERE</button>`;
   return`
     <div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:10px">
       <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:flex-start">
@@ -9390,11 +9597,9 @@ function rosterMoveDestSlotCardHtml(dst,sl,movingTalent,fromSlotKey){
           <div style="font-family:var(--fd);font-size:20px;letter-spacing:1px;color:var(--amb);text-transform:uppercase;line-height:1.2">${SL[sl]}</div>
           <div style="margin-top:8px;font-size:14px;color:var(--mut)">Fit: ${fitPct}%</div>
           <div style="margin-top:4px;font-size:14px;color:var(--off)">${impact}</div>
-          <div style="margin-top:6px;font-size:14px;color:var(--off)">${resultLine}</div>
+          <div style="margin-top:6px;font-size:14px;color:var(--off);line-height:1.45">${resultLine}</div>
         </div>
-        <div style="display:flex;align-items:flex-end;flex-shrink:0;align-self:flex-end">
-          <button class="abt" style="padding:8px 14px;font-size:14px;letter-spacing:1px" onclick="doRosterPlace('${dst.id}','${sl}')">MOVE HERE</button>
-        </div>
+        <div style="display:flex;align-items:flex-end;flex-shrink:0;align-self:flex-end;flex-direction:column">${destBtns}</div>
       </div>
     </div>`;
 }
@@ -9507,7 +9712,7 @@ function openRosterMoveDest(){
   function destHtmlForStation(dst){
     if(!mpIsMe(dst))return'';
     const slots=[];
-    Object.keys(SL).forEach(sl=>{
+    DAYPART_SLOTS.forEach(sl=>{
       if(!ctx.benchId&&srcSid===dst.id&&ctx.fromSlot===sl)return;
       slots.push(rosterMoveDestSlotCardHtml(dst,sl,t,fromSlotKey));
     });
@@ -9562,18 +9767,51 @@ function doRosterPlace(toSid,toSlot){
   const moving=src?.prog[fromSlot]?.talent;
   if(!src||!dst||!moving||!mpIsMe(src)||!mpIsMe(dst))return;
   const occ=dst.prog[toSlot]?.talent;
-  if(occ){
-    if(!confirm(`Move ${moving.name} to ${SL[toSlot]} on ${callDisplay(dst)}? ${occ.name} will be sent to the bench.`))return;
-  }
   if(fromSid===toSid){
+    if(occ){
+      showToast('Choose SWAP — exchange hosts, or MOVE — bench other.','info');
+      return;
+    }
     MOVE_CTX={fromSid:null,fromSlot:null,benchId:null};
     doShuffle(fromSid,fromSlot,toSlot);
     return;
+  }
+  if(occ){
+    if(!confirm(`Move ${moving.name} to ${SL[toSlot]} on ${callDisplay(dst)}? ${occ.name} will be sent to the bench.`))return;
   }
   if(!applyTalentCrossStationXferFull(fromSid,fromSlot,toSid,toSlot))return;
   MP.action('talent_xfer',{fromSid,fromSlot,toSid,toSlot});
   MOVE_CTX={fromSid:null,fromSlot:null,benchId:null};
   mtBackFromSubflow();renderAll();
+}
+/** Same-station move: swap hosts (default when destination is occupied). */
+function doRosterSameStationSwap(toSid,toSlot){
+  const ctx=MOVE_CTX;
+  if(!ctx||ctx.benchId)return;
+  const {fromSid,fromSlot}=ctx;
+  if(fromSid!==toSid)return;
+  const s=G.stations.find(st=>st.id===fromSid);
+  if(!s||!mpIsMe(s))return;
+  if(!s.prog[fromSlot]?.talent||!s.prog[toSlot]?.talent)return;
+  if(!applyTalentSameStationSwapFull(fromSid,fromSlot,toSlot))return;
+  MP.action('same_station_swap',{sid:fromSid,fromSlot,toSlot});
+  MOVE_CTX={fromSid:null,fromSlot:null,benchId:null};
+  mtBackFromSubflow();renderAll();
+}
+/** Same-station move: bench the host currently in the destination slot. */
+function doRosterSameStationBench(toSid,toSlot){
+  const ctx=MOVE_CTX;
+  if(!ctx||ctx.benchId)return;
+  const {fromSid,fromSlot}=ctx;
+  if(fromSid!==toSid)return;
+  const s=G.stations.find(st=>st.id===fromSid);
+  if(!s||!mpIsMe(s))return;
+  const occ=s.prog[toSlot]?.talent;
+  const moving=s.prog[fromSlot]?.talent;
+  if(!occ||!moving)return;
+  if(!confirm(`Move ${moving.name} to ${SL[toSlot]}? ${occ.name} will be sent to the talent bench.`))return;
+  MOVE_CTX={fromSid:null,fromSlot:null,benchId:null};
+  doShuffle(fromSid,fromSlot,toSlot);
 }
 function openShuffle(sid,fromSlot){ openRosterMoveFromSlot(sid,fromSlot); }
 function openSwapSignal(sid){
@@ -9623,7 +9861,7 @@ function openFranchiseBenchManager(stationId,franchiseId){
   const slot=f.slot;
   const t=franchiseBenchTalent(s,slot,G);
   if(!t){showToast('No local talent is currently benched under this franchise.','info');return;}
-  const openSlots=Object.keys(SL).filter(k=>k!==slot&&!getStationFranchise(s,k,G)&&!s.prog?.[k]?.talent);
+  const openSlots=DAYPART_SLOTS.filter(k=>k!==slot&&!getStationFranchise(s,k,G)&&!s.prog?.[k]?.talent);
   document.getElementById('frmoveb').innerHTML=`
     <div class="msh" style="margin-bottom:10px">📻 FRANCHISE SLOT MANAGEMENT — ${s.callLetters}</div>
     <div class="ibox" style="margin-bottom:12px">
@@ -9908,7 +10146,7 @@ function xferRenderDestSlots() {
   const src = G.stations.find(st => st.id === fromSid);
   const tal = src?.prog[fromSlot]?.talent;
   if (!dst || !tal) return;
-  const slots = ['morningDrive', 'afternoonDrive', 'midday', 'evening', 'overnight'];
+  const slots = DAYPART_SLOTS;
   const destRows = slots.map(sl => {
     const sd = dst.prog[sl];
     const occ = sd?.talent;
@@ -9917,13 +10155,13 @@ function xferRenderDestSlots() {
       ? `<span style="color:var(--amb);font-size:15px">${occ.name} on-air</span>`
       : `<span style="color:var(--mut);font-size:15px">vacant · slot Q ${slotQ}</span>`;
     const actions = occ
-      ? `<div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end"><button class="abt" style="border-color:var(--grn);color:var(--grn);font-size:13px;padding:6px 10px" type="button" onclick="doCrossStationXfer('${sl}')">MOVE — bench other</button><button class="abt" type="button" style="font-size:13px;padding:6px 10px" onclick="doCrossStationSwap('${sl}')">SWAP</button></div>`
+      ? `<div style="display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:200px"><button type="button" class="cfm" style="margin:0;padding:8px 10px;font-size:14px;letter-spacing:1px" onclick="doCrossStationSwap('${sl}')">SWAP — exchange hosts</button><button type="button" class="abt" style="margin:0;padding:8px 10px;font-size:13px;border-color:var(--bdh);color:var(--mut);background:transparent" onclick="doCrossStationXfer('${sl}')">MOVE — bench other</button></div>`
       : `<button class="abt" style="border-color:var(--grn);color:var(--grn)" type="button" onclick="doCrossStationXfer('${sl}')">MOVE HERE</button>`;
     return `<div class="sr" style="padding:10px 14px;align-items:flex-start"><span class="lb" style="flex:1;min-width:140px"><strong>${SL[sl]}</strong><br>${occNote}</span>${actions}</div>`;
   }).join('');
   document.getElementById('fire-title').textContent = 'TRANSFER — pick slot';
   document.getElementById('fireb').innerHTML = `
-    <p class="di">Place <strong>${tal.name}</strong> on <strong>${callDisplay(dst)}</strong>. <strong>MOVE — bench other</strong> sends the destination host to the bench. <strong>SWAP</strong> exchanges the two hosts (no bench).</p>
+    <p class="di">Place <strong>${tal.name}</strong> on <strong>${callDisplay(dst)}</strong>. <strong style="color:var(--amb)">SWAP</strong> exchanges the two hosts (default, no bench). <strong>MOVE — bench other</strong> sends the destination host to the bench.</p>
     <div class="ms2"><div class="msh">DESTINATION DAYPART</div>${destRows}</div>
     <button class="cnl" type="button" onclick="xferRenderDestPick()">← BACK</button>`;
 }
@@ -10009,7 +10247,8 @@ function openProg(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const pgCap=progBudgetCapForPeriod(G);
   PI={sid,val:Math.min(s.ops?.progBudget||0,pgCap)};
-  const drows=Object.entries(SL).map(([k,lbl])=>{
+  const drows=DAYPART_SLOTS.map(k=>{
+    const lbl=SL[k];
     const q=Math.round(s.prog[k]?.quality||0),c=qc(q);
     const w=SW[k]||0;
     return `<div class="sr"><span class="lb">${lbl} <span style="color:var(--mut);font-size:15px">(×${(w*100).toFixed(0)}% weight)</span></span><span class="vl" style="color:${c==='good'?'var(--grn)':c==='warn'?'var(--amb)':'var(--red)'}">${q}/100</span></div>`;
@@ -10023,9 +10262,10 @@ function openProg(sid){
       <div class="sln2" id="pg-note"></div>
     </div>
     <div class="ibox">Current: <strong>${f$(s.ops?.progBudget||0)}/period</strong> · Station quality: <strong>${s.oq}/100</strong> · Cash on hand: <strong>${f$(G.cash)}</strong></div>
-    <button class="cfm" onclick="doProg()">SET BUDGET</button>
+    <button class="cfm wl-commit-btn wl-commit-btn--synced" id="pg-commit-btn" onclick="doProg()">SET BUDGET</button>
     <button class="cnl" onclick="cm('m-pg')">CANCEL</button>`;
   updProg(sid, PI.val);
+  refreshProgCommitStandalone();
   om('m-pg');
 }
 function updProg(sid,v){
@@ -10041,6 +10281,7 @@ function updProg(sid,v){
     if(PI.val===0){nEl.textContent='Set to $0 to disable. Quality will decay at normal rate.';}
     else{nEl.innerHTML=`Est. quality boost: <strong style="color:var(--grn)">+${boost} pts/period</strong> across all dayparts &nbsp;·&nbsp; decay reduced <strong style="color:var(--blu)">40%</strong><br><span style="color:var(--mut)">Charged automatically each period — cancel anytime by setting to $0</span>`;}
   }
+  refreshProgCommitStandalone();
 }
 function doProg(){
   const sid=ensureOpsSourceSid(PI.sid);PI.sid=sid;
@@ -10095,9 +10336,10 @@ function openIdent(sid){
       <div class="sln2" id="ci-note"></div>
     </div>
     <div class="ibox">Identity builds slowly and burns fast. A station that's been the community's voice for 15 years is worth protecting — even when the ratings math says otherwise.</div>
-    <button class="cfm" onclick="doIdent()">SET INVESTMENT</button>
+    <button class="cfm wl-commit-btn wl-commit-btn--synced" id="ident-commit-btn" onclick="doIdent()">SET INVESTMENT</button>
     <button class="cnl" onclick="cm('m-ident')">CANCEL</button>`;
   updIdent(sid, CI.val);
+  refreshIdentCommitStandalone();
   om('m-ident');
 }
 function updIdent(sid,v){
@@ -10113,6 +10355,7 @@ function updIdent(sid,v){
       nEl.innerHTML=`Accelerates identity growth by ~<strong style="color:var(--grn)">+${boost}× rate</strong> &nbsp;·&nbsp; charged each period<br><span style="color:var(--mut)">Identity can't be bought outright — it grows through consistency, not spending</span>`;
     }
   }
+  refreshIdentCommitStandalone();
 }
 function doIdent(){
   const sid=ensureOpsSourceSid(CI.sid);CI.sid=sid;
@@ -10349,11 +10592,11 @@ function openRename(sid){
         oninput="updBrand('${s.id}',this.value)">
       <div style="font-size:15px;color:var(--mut);margin-top:6px">Brand appears on station card. Used for logo generation.</div>
     </div>
-    <button class="cfm" id="rn-btn" onclick="doRename('${sid}')" disabled>RENAME STATION</button>
+    <button class="cfm wl-commit-btn wl-commit-btn--synced" id="rn-btn" onclick="doRename('${sid}')" disabled>RENAME STATION</button>
     <button class="cnl" onclick="cm('m-rename')">CANCEL</button>`;
   _renameSid=sid;
   om('m-rename');
-  setTimeout(()=>{updRename();const el=document.getElementById('rn-suffix');if(el){el.focus();el.select();}},120);
+  setTimeout(()=>{updRename();refreshRenameCommitStandalone();const el=document.getElementById('rn-suffix');if(el){el.focus();el.select();}},120);
 }
 let _renameSid=null; // module-level — set when modal opens, read by updRename
 function updRename(){
@@ -10397,6 +10640,7 @@ function updRename(){
     else note.innerHTML=`<span style="color:var(--grn)">✓ ${val} is available.</span>`;
   }
   if(btn)btn.disabled=!(valid&&!taken);
+  refreshRenameCommitStandalone();
 }
 function doRename(sid){
   sid=sid||_renameSid;
@@ -10423,6 +10667,7 @@ function doRename(sid){
   if(nameTaken) return;
   const old=callDisplay(s);
   s.callLetters=val;
+  logHistory(s,'CALLSIGN',`Call letters changed: ${old} → ${callDisplay(s)}`,G);
   // Brand may have been updated live via updBrand — already stored in s.brand
   G.news.unshift({v:'LOW',t:`${old} officially renamed ${callDisplay(s)} (${s.freq}) — brand: "${s.brand}"`,y:G.year,p:G.period});
   MP.action('rename', {sid:s.id, callLetters:s.callLetters, brand:s.brand});
@@ -10480,7 +10725,7 @@ function applyFmSimulcastMigration(amId, fmId) {
   if (!am || !fm) return false;
   if (am.sig.type !== 'AM' || am.fmBooster) return false;
   if (fm.sig.type !== 'FM' || fm.fmBooster) return false;
-  const daySlots = ['morningDrive', 'afternoonDrive', 'midday', 'evening', 'overnight'];
+  const daySlots = DAYPART_SLOTS;
   const oldFormat = am.format;
   const followRate = Math.min(.85, Math.max(.20, G.fmp * 1.1));
 
@@ -11002,8 +11247,7 @@ function applySimulcastPair(sourceId,targetId,opts){
   dst.simulcastWith=src.id;
   src._simulcastSource=true;
   dst._simulcastSource=false;
-  const slots=['morningDrive','afternoonDrive','midday','evening','overnight'];
-  slots.forEach(sl=>{
+  DAYPART_SLOTS.forEach(sl=>{
     const ssd=src.prog[sl];
     if(!ssd){
       dst.prog[sl]={quality:20,talent:null};
@@ -11023,8 +11267,7 @@ function doSim(){
   if(!applySimulcastPair(SimS.a,SimS.b,{}))return;
   const src=G.stations.find(st=>st.id===SimS.a), dst=G.stations.find(st=>st.id===SimS.b);
   logSimulcastPairHistory(src,dst,G);
-  const slots=['morningDrive','afternoonDrive','midday','evening','overnight'];
-  const talentNote=slots.some(sl=>src.prog[sl]?.talent)?` On-air talent remains on ${src.callLetters}.`:'';
+  const talentNote=DAYPART_SLOTS.some(sl=>src.prog[sl]?.talent)?` On-air talent remains on ${src.callLetters}.`:'';
   G.news.unshift({v:'MEDIUM',t:`${dst.callLetters} now simulcasts ${src.callLetters} (${FM[src.format]?.l||src.format}).${talentNote}`,y:G.year,p:G.period});
   MP.action('sim', {sid:SimS.a, partnerId:SimS.b});
   cm('m-sim');renderAll();
@@ -11040,8 +11283,7 @@ function doBreakSim(id){
   else { lead=simLead(s,partner); junior=lead.id===s.id?partner:s; }
 
   // ── TALENT: junior loses all talent (it lives on the lead card) ──
-  const slots=['morningDrive','afternoonDrive','midday','evening','overnight'];
-  slots.forEach(sl=>{
+  DAYPART_SLOTS.forEach(sl=>{
     if(junior.prog[sl]?.talent) junior.prog[sl].talent=null;
   });
   junior.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(junior.prog[sl])*w,0));
@@ -11187,6 +11429,7 @@ async function wlGenerateLogo(stationId,regenerate){
     op.cosmeticLogoUrl=data.imageUrl;
     op.cosmeticLogoV=Date.now();
     if(statusEl)statusEl.textContent=data.cached?'From cache':'New image saved';
+    logHistory(op,'LOGO',reg?'Station logo updated (regenerated).':'Station logo generated.',G);
     autoSave();
     renderAll();
     if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&stationId===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
@@ -11212,13 +11455,35 @@ function talentPortraitFirstYear(t){
   if(typeof t._portraitFirstHireYear==='number'&&!Number.isNaN(t._portraitFirstHireYear))return t._portraitFirstHireYear;
   return t._hireYear||t._careerStartYear||(G&&G.year)||1970;
 }
-function talentPortraitThumbHtml(t,cls){
+function wlPortraitFromDataset(el){
+  try{
+    const raw=el&&el.getAttribute&&el.getAttribute('data-portrait');
+    if(!raw)return;
+    const o=JSON.parse(decodeURIComponent(raw));
+    wlOpenTalentPortraitModal(o);
+  }catch(_e){}
+}
+function wlOpenTalentPortraitModal(o){
+  if(!o||!o.url)return;
+  const img=document.getElementById('wl-portrait-modal-img');
+  const nameEl=document.getElementById('wl-portrait-modal-name');
+  const ctxEl=document.getElementById('wl-portrait-modal-ctx');
+  const v=o.v||0;
+  const src=o.url+(v?'?v='+v:'');
+  if(img)img.src=src;
+  if(nameEl)nameEl.textContent=o.name||'';
+  if(ctxEl)ctxEl.textContent=o.ctx||'';
+  om('m-portrait');
+}
+/** Optional `ctx`: station / daypart line for full-size viewer. */
+function talentPortraitThumbHtml(t,cls,ctx){
   if(!t)return '';
   const url=t._portraitUrl;
   const v=t._portraitV||0;
   const src=url?(url+(v?'?v='+v:'')):'';
-  if(src)return '<span class="tp-thumb '+(cls||'')+'"><img alt="" src="'+src+'" draggable="false"></span>';
-  return '<span class="tp-thumb tp-thumb--ph '+(cls||'')+'" aria-hidden="true">🎙</span>';
+  if(!src)return '<span class="tp-thumb tp-thumb--ph '+(cls||'')+'" aria-hidden="true">🎙</span>';
+  const payload=encodeURIComponent(JSON.stringify({name:t.name||'',url:url,v:v,ctx:ctx||''}));
+  return '<span class="tp-thumb '+(cls||'')+' tp-thumb--live" role="button" tabindex="0" data-portrait="'+payload+'" onclick="event.stopPropagation();wlPortraitFromDataset(this)" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();event.stopPropagation();wlPortraitFromDataset(this);}"><img alt="" src="'+src+'" draggable="false"></span>';
 }
 async function queueTalentPortrait(t){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
@@ -11583,7 +11848,7 @@ const LOAN_TIERS=[
 
 
 // ── STATION HISTORY MODAL ────────────────────────────────────────────────
-const HIST_ICONS={'FORMAT':'📻','TALENT':'🎙','IDENTITY':'🏘','RATINGS':'📊','LAUNCH':'📡','NOTE':'📝'};
+const HIST_ICONS={'FORMAT':'📻','TALENT':'🎙','IDENTITY':'🏘','RATINGS':'📊','LAUNCH':'📡','NOTE':'📝','CALLSIGN':'📇','LOGO':'🖼','SIMULCAST':'📡'};
 
 function renderHistoryRows(hist, fuzzy){
   if(!hist||!hist.length) return '<div class="sr"><span style="color:var(--mut)">No recorded history yet.</span></div>';
@@ -11592,7 +11857,7 @@ function renderHistoryRows(hist, fuzzy){
     const yr=e.y?`<span style="color:var(--mut);font-size:13px;margin-left:auto">${e.y}</span>`:'';
     // Fuzzy mode (competitor intel): hide talent names, show format/ratings only
     if(fuzzy&&e.type==='TALENT') return '';
-    const label=e.type==='FORMAT'?'var(--amb)':e.type==='IDENTITY'?'var(--grn)':e.type==='RATINGS'?'var(--yel)':'var(--off)';
+    const label=e.type==='FORMAT'||e.type==='CALLSIGN'||e.type==='LOGO'?'var(--amb)':e.type==='IDENTITY'?'var(--grn)':e.type==='RATINGS'?'var(--yel)':'var(--off)';
     return `<div class="sr" style="gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">
       <span style="font-size:18px;line-height:1">${icon}</span>
       <span style="font-family:var(--ft);font-size:14px;color:${label};flex:1">${e.msg}</span>
@@ -11619,7 +11884,7 @@ function openHistory(sid){
 
 // ── STATION HISTORY LOG ───────────────────────────────────────────────────
 // Records key station moments: launches, reformats, talent hires/fires,
-// ratings milestones, identity milestones. Shown on station card + intel.
+// ratings milestones, identity milestones, call letter and logo changes. Shown on station card + intel.
 function logHistory(s, type, msg, G){
   if(!s) return;
   if(!s._history) s._history=[];
@@ -12138,7 +12403,7 @@ function openContract(sid, slot){
     ${(()=>{const sh=s.rat?.share||0;const q=t.quality||50;if(sh>0.12&&q>75)return`<div style="background:rgba(245,166,35,.10);border:1px solid var(--amb);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--amb)">📈 Strong station + top talent — expect a premium ask. They know their worth.</div>`;if(sh>0.08&&q>65)return`<div style="background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.3);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--off)">📊 Solid ratings give this talent negotiating leverage.</div>`;if(t.morale<50)return`<div style="background:rgba(220,50,50,.10);border:1px solid var(--red);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--red)">⚠ Low morale — they're unhappy and may ask for extra just to stay.</div>`;return''})()}
 
     <div class="ms2" style="margin-bottom:16px">
-      <div class="sr"><span class="lb">Talent</span><span class="vl" style="display:flex;align-items:center;gap:10px">${talentPortraitThumbHtml(t,'tp-contract-sm')}<strong>${cStar}${t.name}</strong></span></div>
+      <div class="sr"><span class="lb">Talent</span><span class="vl" style="display:flex;align-items:center;gap:10px">${talentPortraitThumbHtml(t,'tp-contract-sm',`${callDisplay(s)} ${SL[slot]} · contract`)}<strong>${cStar}${t.name}</strong></span></div>
       <div class="sr"><span class="lb">Rating</span><span class="vl ${qc(Math.round(t.quality))}">${Math.round(t.quality)}/100</span></div>
       <div class="sr"><span class="lb">Morale</span><span class="vl" style="color:${morCol}">${morLabel} (${mor}) ${morFactors.length?'· '+morFactors[0]:''}</span></div>
       <div class="sr"><span class="lb">Tenure</span><span class="vl">${age} periods (${ageYrs} yrs at station)</span></div>
@@ -12496,14 +12761,15 @@ function rStns(){
     const div=document.createElement('div');
     div.className=`sc ${stnEbitda>=0?'profit':'loss'}`;
     const _simSrc=simulcastProgrammingSource(s);
-    const slrows=Object.entries(SL).map(([k,lbl])=>{
+    const slrows=DAYPART_SLOTS.map(k=>{
+      const lbl=SL[k];
       const sd=s.prog[k],tn=sd?.talent?.name,q=Math.round(sd?.quality||0),c2=qc(q);
       const vlbl=vacantLabel(op.format,k,op);
       const srcTal=!tn&&_simSrc?_simSrc.prog[k]?.talent:null;
       if(!tn&&srcTal){
         const sn=callDisplay(_simSrc);
         const srcStar=srcTal.superstar===true?'★ ':'';
-        return `<div class="slr">${talentPortraitThumbHtml(srcTal,'tp-sl')}<span class="sln">${lbl}</span><span class="slt" style="color:var(--off)" title="Simulcast — on-air from ${sn}">◈ ${srcStar}${srcTal.name} <span style="color:var(--mut);font-size:13px">(${sn})</span></span><span class="slsal">${f$(srcTal.salary/2)}/p · src</span><span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Programming Quality (0-100)">Q ${q}</span></div>`;
+        return `<div class="slr">${talentPortraitThumbHtml(srcTal,'tp-sl',`${sn} · ${lbl} (simulcast)`)}<span class="sln">${lbl}</span><span class="slt" style="color:var(--off)" title="Simulcast — on-air from ${sn}">◈ ${srcStar}${srcTal.name} <span style="color:var(--mut);font-size:13px">(${sn})</span></span><span class="slsal">${f$(srcTal.salary/2)}/p · src</span><span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Programming Quality (0-100)">Q ${q}</span></div>`;
       }
       if(!tn) return `<div class="slr"><span class="sln">${lbl}</span><span class="slt vac">${vlbl}</span><span class="slsal"></span><span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Programming Quality (0-100)">Q ${q}</span></div>`;
       const t=sd.talent;
@@ -12515,7 +12781,7 @@ function rStns(){
       const morCol=mor>=70?'var(--grn)':mor>=45?'var(--amb)':'var(--red)';
       const starT=t.superstar===true?'★ ':'';
       return `<div class="slr">
-        ${talentPortraitThumbHtml(t,'tp-sl')}
+        ${talentPortraitThumbHtml(t,'tp-sl',`${callDisplay(s)} · ${lbl}`)}
         <span class="sln">${lbl}</span>
         <span class="slt clickable" onclick="openContract('${s.id}','${k}')">${starT}${tn}</span>
         ${cyrLbl?`<span class="${cyrCls}" title="${cyrTitle}">${cyrLbl}</span>`:''}
