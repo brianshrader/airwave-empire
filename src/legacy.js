@@ -5039,7 +5039,7 @@ function calcRev(s,G){
   facCost=Math.round(facCost*mktFixMult);
   const regCostScaled=Math.round(regCost*mktFixMult);
   const sfCostScaled=Math.round(sfCost*mktFixMult);
-  const fixedCost=staffCost+facCost+regCostScaled+sfCostScaled;
+  let fixedCost=staffCost+facCost+regCostScaled+sfCostScaled;
   // ── STREAMING REVENUE ───────────────────────────────────────────
   let streamRev=0,streamUpkeep=0;
   if(s.stream?.active && year>=2005){
@@ -5120,6 +5120,11 @@ function calcRev(s,G){
     else if(_ftr2==='large')opsFloor=Math.round(opsFloor*0.95);
   }
   opsFloor=Math.round(opsFloor*mktFixMult);
+  // Very low realized billing (pre–seedRev): taper fixed footprint for early FM music so weak sticks aren’t crushed by market-scaled overhead alone.
+  if(year<1980&&s.sig.type==='FM'&&!TALK_FMTS.includes(s.format)&&totalRev<120000){
+    const _lbu=Math.max(0,Math.min(1,totalRev/120000));
+    fixedCost=Math.round(fixedCost*(0.70+0.30*_lbu));
+  }
   let simulcastProgFee=0;
   if(isProgReceiver&&progSrcStation){
     const srcTal=Object.values(progSrcStation.prog||{}).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);

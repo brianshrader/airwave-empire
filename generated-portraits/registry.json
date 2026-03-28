@@ -917,6 +917,19 @@
       "firstHireYear": 1970,
       "gender": "female",
       "source": "grok"
+    },
+    "paula-vitale-1970": {
+      "imageUrl": "/generated-portraits/paula-vitale-1970.png",
+      "fileName": "paula-vitale-1970.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "semiPro",
+      "expressionType": "awkward",
+      "settingType": "plainBackdrop",
+      "identityKey": "paula vitale|1970",
+      "name": "Paula Vitale",
+      "firstHireYear": 1970,
+      "gender": "female",
+      "source": "grok"
     }
   }
 }
