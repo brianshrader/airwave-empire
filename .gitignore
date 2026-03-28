@@ -1,4 +1,9 @@
 node_modules/
 generated-logos/*
 !generated-logos/.gitkeep
+generated-portraits/*
+!generated-portraits/.gitkeep
+!generated-portraits/registry.json
+!generated-portraits/library/
+!generated-portraits/library/**/*
 .env

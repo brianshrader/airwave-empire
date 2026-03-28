@@ -121,6 +121,16 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .sc-logo-thumb:hover{border-color:rgba(245,166,35,.45);background:rgba(245,166,35,.06)}
 .sc-logo-thumb:focus{outline:2px solid var(--amb);outline-offset:2px}
 .sc-logo-thumb img{max-width:100%;max-height:100%;object-fit:contain;pointer-events:none;vertical-align:middle}
+/* Talent portrait thumbnails (cosmetic) */
+.tp-thumb{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;vertical-align:middle}
+.tp-thumb img{width:36px;height:36px;border-radius:4px;object-fit:cover;border:1px solid rgba(255,255,255,.12);background:rgba(0,0,0,.2)}
+.tp-thumb--ph{width:36px;height:36px;border-radius:4px;border:1px solid rgba(255,255,255,.1);background:rgba(0,0,0,.15);font-size:18px;display:inline-flex;align-items:center;justify-content:center}
+.tp-sl img,.tp-sl.tp-thumb--ph{width:44px;height:44px;font-size:20px;border-radius:5px}
+.slots .slr{align-items:center;gap:8px}
+.tp-roster img,.tp-roster.tp-thumb--ph{width:56px;height:56px;font-size:26px;border-radius:6px}
+.tp-hire img,.tp-hire.tp-thumb--ph{width:72px;height:72px;font-size:28px;border-radius:8px}
+.tp-contract-sm img,.tp-contract-sm.tp-thumb--ph{width:56px;height:56px;font-size:24px;border-radius:6px}
+.tp-intel img,.tp-intel.tp-thumb--ph{width:32px;height:32px;font-size:14px}
 .sccall{font-family:var(--fd);font-size:36px;letter-spacing:3px;color:var(--wht);line-height:1}
 .scshv{font-family:var(--fd);font-size:28px;letter-spacing:1px;color:var(--amb);line-height:1}
 .scshl{font-family:var(--ft);font-size:15px;color:var(--mut);letter-spacing:1px;display:block;text-align:right}
@@ -353,7 +363,12 @@ body.mp-endgame #mp-statusbar,body.mp-endgame #mp-chat-wrap{position:relative;z-
 .ssb.sel{border-color:var(--amb);background:var(--abg);color:var(--amb)}
 .ssb .cur{color:var(--mut);font-size:14px}
 .tg{display:flex;flex-direction:column;gap:9px}
-.to{background:var(--crd);border:1px solid var(--bdr);padding:14px 16px;cursor:pointer;transition:all .15s;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start}
+.to{background:var(--crd);border:1px solid var(--bdr);padding:14px 16px;cursor:pointer;transition:all .15s;display:grid;grid-template-columns:1fr auto;gap:8px 14px;align-items:start}
+.to-hire-main{display:flex;gap:12px;align-items:flex-start;min-width:0}
+.to-hire-side{align-self:start;text-align:right}
+.tg .to-hire .tost{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 12px;margin-top:8px}
+.tg .to-hire .tost>div{min-width:0}
+.tg .to-hire .tosl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .to:hover{border-color:var(--amb);background:var(--abg)}
 .to.sel{border-color:var(--amb);background:rgba(245,166,35,.14)}
 .ton{font-family:var(--fd);font-size:20px;letter-spacing:2px;color:var(--wht)}
@@ -481,6 +496,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 
   /* Hire modal slots */
   .ssb{padding:10px 12px;font-size:15px}
+  .to.to-hire{grid-template-columns:1fr;gap:10px}
+  .to-hire-side{text-align:left;padding-top:8px;margin-top:4px;border-top:1px solid rgba(255,255,255,.08)}
+  .tg .to-hire .tost{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 8px}
+  .tp-hire img,.tp-hire.tp-thumb--ph{width:60px;height:60px;font-size:24px}
 
   /* Format grid */
   .fmg{gap:6px}

@@ -1,19 +1,40 @@
 /**
- * Grok / xAI image generation for station logos.
+ * Grok / xAI image generation (logos, portraits, etc.).
  * Uses GROK_API_KEY (never sent to the client).
+ *
+ * xAI image API (see REST reference): `resolution` is "1k"|"2k"; `aspect_ratio` controls layout.
+ * Only send fields xAI documents (model, prompt, n, aspect_ratio, resolution, response_format).
+ * Omit OpenAI-only fields like `size` and `quality` — they trigger 400 Bad Request.
+ * Exact 512×512 output is enforced with sharp after decode.
  */
+
+const sharp = require('sharp');
 
 const XAI_IMAGES_URL = 'https://api.x.ai/v1/images/generations';
 
+const OUTPUT_SIZE = 512;
+
+/** @type {import('sharp').ResizeOptions} */
+const RESIZE_OPTS = { width: OUTPUT_SIZE, height: OUTPUT_SIZE, fit: 'cover', position: 'centre' };
+
 /**
- * @param {{ prompt: string }} args
+ * @param {{ prompt: string, aspect_ratio?: string }} args
  * @returns {Promise<{ buffer: Buffer, ext: string }>}
  */
-async function generateStationLogo({ prompt }) {
+async function generateXaiImage({ prompt, aspect_ratio = '1:1' }) {
   const apiKey = process.env.GROK_API_KEY;
   if (!apiKey) {
     throw new Error('GROK_API_KEY is not set');
   }
+
+  const body = {
+    model: 'grok-imagine-image',
+    prompt,
+    n: 1,
+    aspect_ratio,
+    resolution: '1k',
+    response_format: 'b64_json',
+  };
 
   const res = await fetch(XAI_IMAGES_URL, {
     method: 'POST',
@@ -21,21 +42,13 @@ async function generateStationLogo({ prompt }) {
       Authorization: `Bearer ${apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({
-      model: 'grok-imagine-image',
-      prompt,
-      n: 1,
-      aspect_ratio: '1:1',
-      quality: 'medium',
-      resolution: '1k',
-      // Prefer inline bytes; still handle URL responses if the API omits b64.
-      response_format: 'b64_json',
-    }),
+    body: JSON.stringify(body),
   });
 
   const data = await res.json().catch(() => ({}));
 
   if (!res.ok) {
+    console.error('[xai-image]', res.status, JSON.stringify(data).slice(0, 2000));
     const msg = data?.error?.message || data?.message || res.statusText || 'xAI image error';
     const err = new Error(msg);
     err.status = res.status >= 400 && res.status < 500 ? res.status : 502;
@@ -47,40 +60,33 @@ async function generateStationLogo({ prompt }) {
     throw new Error('No image in Grok response');
   }
 
+  let buffer;
   if (item.b64_json) {
-    const buffer = Buffer.from(item.b64_json, 'base64');
-    const ext = mimeToExt(item.mime_type) || inferExtFromBuffer(buffer);
-    return { buffer, ext };
-  }
-
-  if (item.url) {
+    buffer = Buffer.from(item.b64_json, 'base64');
+  } else if (item.url) {
     const imgRes = await fetch(item.url);
     if (!imgRes.ok) {
       throw new Error(`Failed to download image URL (${imgRes.status})`);
     }
-    const buffer = Buffer.from(await imgRes.arrayBuffer());
-    const ct = imgRes.headers.get('content-type') || '';
-    const ext = mimeToExt(ct) || mimeToExt(item.mime_type) || 'png';
-    return { buffer, ext };
+    buffer = Buffer.from(await imgRes.arrayBuffer());
+  } else {
+    throw new Error('Grok returned neither b64_json nor url');
   }
 
-  throw new Error('Grok returned neither b64_json nor url');
+  try {
+    buffer = await sharp(buffer).resize(RESIZE_OPTS).png().toBuffer();
+  } catch (e) {
+    const wrap = new Error(`Image post-process failed: ${e.message || e}`);
+    wrap.status = 502;
+    throw wrap;
+  }
+
+  return { buffer, ext: 'png' };
 }
 
-function mimeToExt(mime) {
-  if (!mime || typeof mime !== 'string') return null;
-  if (mime.includes('png')) return 'png';
-  if (mime.includes('webp')) return 'webp';
-  if (mime.includes('jpeg') || mime.includes('jpg')) return 'jpg';
-  return null;
+/** @param {{ prompt: string }} args */
+async function generateStationLogo({ prompt }) {
+  return generateXaiImage({ prompt, aspect_ratio: '1:1' });
 }
 
-function inferExtFromBuffer(buf) {
-  if (!buf || buf.length < 12) return 'png';
-  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'png';
-  if (buf.slice(0, 4).toString('ascii') === 'RIFF' && buf.slice(8, 12).toString('ascii') === 'WEBP') return 'webp';
-  if (buf[0] === 0xff && buf[1] === 0xd8) return 'jpg';
-  return 'png';
-}
-
-module.exports = { generateStationLogo };
+module.exports = { generateXaiImage, generateStationLogo };

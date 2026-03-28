@@ -14,7 +14,9 @@
 //
 // Run: node server.js
 // Requires: npm install express socket.io dotenv
-// Logo API: set GROK_API_KEY in .env for /api/generate-logo
+// Image API: GROK_API_KEY for /api/generate-logo and Grok portraits. Stock portraits:
+// add files under generated-portraits/library/{male|female}/{1970s|1980s|1990s|2000s+}/
+// (see GET /api/portrait-library/status). Set PORTRAIT_LIBRARY_FIRST=0 to prefer Grok when both exist.
 // ═══════════════════════════════════════════════════════════════════
 
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
@@ -28,9 +30,11 @@ const { randomBytes } = require('crypto');
 
 const app        = express();
 const { mountLogoRoutes } = require('./server/logoRoutes');
+const { mountPortraitRoutes } = require('./server/portraitRoutes');
 
 app.use(express.json({ limit: '64kb' }));
 mountLogoRoutes(app);
+mountPortraitRoutes(app);
 
 const httpServer = http.createServer(app);
 const io         = new Server(httpServer, {

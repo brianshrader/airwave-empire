@@ -878,7 +878,7 @@ function htmlOnAirTalentRoster(s){
       const tq=Math.round(t.quality||0);
       const salStr=(typeof t.salary==='number'&&!Number.isNaN(t.salary))?f$(t.salary)+'/yr':'—';
       const star=t.superstar===true?'⭐ ':'';
-      return `<div class="sr" style="align-items:flex-start"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);line-height:1.45"><strong style="font-weight:600;color:var(--wht)">${star}${t.name}</strong> · Q ${tq} · slot ${slotQ} · ${salStr}</span></div>`;
+      return `<div class="sr" style="align-items:center;gap:8px">${talentPortraitThumbHtml(t,'tp-intel')}<span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);line-height:1.45"><strong style="font-weight:600;color:var(--wht)">${star}${t.name}</strong> · Q ${tq} · slot ${slotQ} · ${salStr}</span></div>`;
     }
     const cap=nonLocalDaypartCaption(s.format,sl,!!s.isPublic,s);
     return `<div class="sr"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px;color:var(--mut)"><em>${cap}</em> · slot Q ${slotQ}</span></div>`;
@@ -1043,7 +1043,11 @@ function resolveBrand(brand, freq, city){
 function getBrandSuggestions(s){
   const raw=BRANDS[s.format]||['Radio'];
   const city=G?.city||'Atlanta';
-  return raw.map(b=>resolveBrand(b, s.freq, city));
+  const base=raw.map(b=>resolveBrand(b, s.freq, city));
+  const def=defaultPlayerStationBrand(s);
+  if(!base.length)return def?[def]:['Radio'];
+  if(def&&!base.includes(def))return[def,...base];
+  return base;
 }
 
 // ── EVENT TIMELINE (period: 1=SPR, 2=FAL) ─────────────────────────
@@ -1153,15 +1157,27 @@ const NF_CLASSIC=[
 const NF_WOMEN_70S=[
   'Betty','Carol','Sandra','Diane','Linda','Sharon','Pat','Ruth','Wanda','Renee','Donna','Pam','Karen','Nancy','Susan','Debbie','Jill','Lynn','Gail','Jan','Kim','Robin','Sherry','Terri','Lori','Dana','Barb','Meg','Judy','Cindy','Brenda','Rhonda','Tammy','Stacy','Amy','Erin','Leah','Faye','Nell','Bette','Dolly','Emmylou','Crystal','Barbara','Loretta','Tanya','Wynonna','Angela','Annette','Beth','Bonnie','Charlene','Cheryl','Christine','Connie','Cynthia','Deborah','Denise','Dianne','Dixie','Dorothy','Elizabeth','Frances','Glenda','Gwen','Heather','Holly','Jacqueline','Janet','Janice','Jean','Jeanne','Joan','Joyce','Juanita','Judith','Julie','Kathleen','Kathy','Kay','Kelly','Kimberly','Kitty','Laura','Laurie','Leslie','Linda','Lisa','Lois','Luanne','Marcia','Margaret','Marilyn','Martha','Mary','Maureen','Melanie','Melissa','Michelle','Mitzi','Mona','Nancy','Naomi','Natalie','Nicole','Nikki','Pamela','Patricia','Paula','Peggy','Penny','Phyllis','Priscilla','Rachel','Rebecca','Regina','Rita','Roberta','Rose','Roxanne','Sally','Samantha','Sandy','Sarah','Shannon','Sheila','Shelley','Sheryl','Stacey','Stephanie','Sue','Susan','Suzanne','Sylvia','Tamara','Tammie','Teresa','Terry','Tina','Tracy','Valerie','Vanessa','Vicki','Virginia','Vivian','Wendy','Yvonne',
 ];
-const NF_BLACK=[
-  'Marcus','Keisha','DeShawn','Tanya','Darnell','Tyrone','Lamont','Antoine','Jamal','Monique','Rochelle','Curtis','Reggie','Andre','Terrence','Darius','Latoya','Shantel','Malik','Derrick','Cedric','Vonetta','Kendrick','Jasmine','Ronell','Shonda','Marquise','Alicia','Deion','Tamika','Leroy','Freddie','Willie','Rufus','Otis','Roscoe','Clyde','Bobby','James','Ray','Sam','Aaliyah','Andre','Angela','Antwan','Bernard','Brandon','Brittany','Calvin','Camille','Chandra','Corey','Crystal','Damon','DeAndre','Deborah','Delores','Demetrius','Denise','Desmond','Dominique','Ebony','Erica','Ernest','Evelyn','Felicia','Gregory','Hakeem','Imani','Janelle','Janine','Jerome','Jevon','Kareem','Keon','Kiesha','Kimberly','LaTanya','LaToya','Loretta','Malcolm','Marlon','Maurice','Montell','Nadine','Naomi','Nichelle','Octavia','Precious','Quincy','Rashad','Rashida','Rickey','Rochelle','Sabrina','Shanice','Sharonda','Sheena','Shelby','Tameka','Tanisha','Tarsha','Terrell','Tiffany','Tisha','Toni','Traci','Trina','Tyrone','Vanessa','Vernon','Yvette','Yvonne',
+const NF_BLACK_M=[
+  'Marcus','DeShawn','Darnell','Tyrone','Lamont','Antoine','Jamal','Curtis','Reggie','Andre','Terrence','Darius','Malik','Derrick','Cedric','Kendrick','Ronell','Marquise','Deion','Leroy','Freddie','Willie','Rufus','Otis','Roscoe','Clyde','Bobby','James','Ray','Sam','Antwan','Bernard','Brandon','Calvin','Corey','Damon','DeAndre','Demetrius','Desmond','Ernest','Gregory','Hakeem','Jerome','Jevon','Kareem','Keon','Malcolm','Marlon','Maurice','Montell','Quincy','Rashad','Rickey','Terrell','Vernon','Tyrone',
 ];
-const NF_LATINO=[
-  'Maria','Carlos','Rosa','Miguel','Elena','Luis','Carmen','Julio','Ana','Rico','Gabriela','Eduardo','Sofia','Alejandro','Isabel','Diego','Marco','Valentina','Javier','Lucia','Fernando','Adriana','Roberto','Camila','Ernesto','Paloma','Alberto','Alma','Amparo','Angel','Antonio','Arturo','Beatriz','Blanca','Catalina','Cecilia','Cesar','Claudia','Consuelo','Cristina','Dolores','Eduardo','Elisa','Emilio','Enrique','Esperanza','Esteban','Estela','Fabiola','Felipe','Francisca','Gloria','Graciela','Guadalupe','Guillermo','Hector','Hilda','Ignacio','Ines','Irene','Isabella','Jaime','Jorge','Jose','Juan','Juana','Leticia','Lourdes','Manuel','Marcela','Marisol','Marta','Mateo','Mercedes','Monica','Natalia','Nora','Oscar','Pablo','Patricia','Pedro','Rafael','Ramona','Raquel','Ricardo','Rita','Rocio','Salvador','Sergio','Silvia','Soledad','Teresa','Veronica','Victor','Virginia','Xavier','Yolanda',
+const NF_BLACK_F=[
+  'Keisha','Tanya','Monique','Rochelle','Latoya','Shantel','Jasmine','Vonetta','Shonda','Alicia','Tamika','Aaliyah','Angela','Brittany','Camille','Chandra','Crystal','Deborah','Delores','Denise','Dominique','Ebony','Erica','Evelyn','Felicia','Imani','Janelle','Janine','Kiesha','Kimberly','LaTanya','LaToya','Loretta','Nadine','Naomi','Nichelle','Octavia','Precious','Rashida','Sabrina','Shanice','Sharonda','Sheena','Shelby','Tameka','Tanisha','Tarsha','Tiffany','Tisha','Toni','Traci','Trina','Vanessa','Yvette','Yvonne',
 ];
-const NF_MODERN=[
-  'Chad','Brad','Zach','Trent','Brett','Kyle','Brandon','Justin','Ryan','Travis','Ashley','Brittany','Heather','Megan','Kristen','Amber','Caitlin','Stephanie','Jordan','Taylor','Alex','Morgan','Casey','Jamie','Skylar','Devon','Brooke','Kayla','Josh','Jake','Cody','Tyler','Caleb','Austin','Blake','Colby','Shane','Drew','Derek','Nicole','Laura','Christina','Rachel','Sara','Eric','Jason','Corey','Shannon','Kelli','Holly','Allison','Melissa','Jessica','Amanda','Lauren','Jennifer','Nathan','Benjamin','Ethan','Logan','Mason','Noah','Owen','Hunter','Connor','Lucas','Jackson','Aidan','Hayden','Bryce','Chase','Dylan','Garrett','Grant','Ian','Jared','Joel','Jordan','Kaleb','Landon','Parker','Reid','Riley','Spencer','Tanner','Trevor','Ty','Zachary','Sierra','Cheyenne','Destiny','Hailey','Kaitlyn','Mackenzie','Paige','Savannah','Tiffany',
+const NF_BLACK=[...NF_BLACK_M,...NF_BLACK_F];
+const NF_LATINO_M=[
+  'Carlos','Miguel','Luis','Julio','Rico','Eduardo','Alejandro','Diego','Marco','Javier','Fernando','Roberto','Ernesto','Alberto','Angel','Antonio','Arturo','Cesar','Emilio','Enrique','Esteban','Felipe','Guillermo','Hector','Ignacio','Jaime','Jorge','Jose','Juan','Manuel','Mateo','Oscar','Pablo','Pedro','Rafael','Ricardo','Salvador','Sergio','Victor','Xavier',
 ];
+const NF_LATINO_F=[
+  'Maria','Rosa','Elena','Carmen','Ana','Gabriela','Sofia','Isabel','Valentina','Lucia','Adriana','Camila','Paloma','Alma','Amparo','Beatriz','Blanca','Catalina','Cecilia','Claudia','Consuelo','Cristina','Dolores','Elisa','Esperanza','Estela','Fabiola','Francisca','Gloria','Graciela','Guadalupe','Hilda','Ines','Irene','Isabella','Juana','Leticia','Lourdes','Marcela','Marisol','Marta','Mercedes','Monica','Natalia','Nora','Patricia','Ramona','Raquel','Rita','Rocio','Silvia','Soledad','Teresa','Veronica','Virginia','Yolanda',
+];
+const NF_LATINO=[...NF_LATINO_M,...NF_LATINO_F];
+const NF_MODERN_M=[
+  'Chad','Brad','Zach','Trent','Brett','Kyle','Brandon','Justin','Ryan','Travis','Jordan','Taylor','Alex','Casey','Josh','Jake','Cody','Tyler','Caleb','Austin','Blake','Colby','Shane','Drew','Derek','Eric','Jason','Corey','Nathan','Benjamin','Ethan','Logan','Mason','Noah','Owen','Hunter','Connor','Lucas','Jackson','Aidan','Hayden','Bryce','Chase','Dylan','Garrett','Grant','Ian','Jared','Joel','Kaleb','Landon','Parker','Reid','Spencer','Tanner','Trevor','Ty','Zachary','Morgan','Jamie','Skylar','Devon','Riley',
+];
+const NF_MODERN_F=[
+  'Ashley','Brittany','Heather','Megan','Kristen','Amber','Caitlin','Stephanie','Jordan','Taylor','Alex','Morgan','Casey','Jamie','Skylar','Devon','Brooke','Kayla','Nicole','Laura','Christina','Rachel','Sara','Shannon','Kelli','Holly','Allison','Melissa','Jessica','Amanda','Lauren','Jennifer','Sierra','Cheyenne','Destiny','Hailey','Kaitlyn','Mackenzie','Paige','Savannah','Tiffany','Riley',
+];
+const NF_MODERN=[...NF_MODERN_M,...NF_MODERN_F];
 const NF_HANDLES=[
   'Ace','Blaze','Flash','Riff','Boom','Jet','Slick','Breezy','Spike','Maverick','Crash','Rocket','Stone','Buzz','Wild','Smooth','Rico','Big','Lil','DJ',
 ];
@@ -1203,7 +1219,8 @@ function collectMarketTalentNameKeys(G){
   });
   return {usedFirst,usedFull,usedLast};
 }
-function buildWeightedFirstPool(fmt,year,marketId){
+function buildWeightedFirstPool(fmt,year,marketId,gender){
+  const isFemale=gender==='female';
   const yr=year||1970;
   const mkt=(typeof MARKETS!=='undefined'&&MARKETS[marketId])||{};
   const blackPop=typeof mkt.blackPop==='number'?mkt.blackPop:0.35;
@@ -1218,20 +1235,23 @@ function buildWeightedFirstPool(fmt,year,marketId){
   const isCountryFmt=['COUNTRY','CLASSIC_HITS','CLASSIC_ROCK','ALBUM_ROCK'].includes(fmt);
   const isModernFmt=yr>=1985;
   const isNewsTalkish=TALK_FMTS.includes(fmt)||fmt==='ALL_NEWS';
+  const firstClassic=isFemale?NF_WOMEN_70S:NF_CLASSIC;
+  const blackPool=isFemale?NF_BLACK_F:NF_BLACK_M;
+  const latinoPool=isFemale?NF_LATINO_F:NF_LATINO_M;
+  const modernPool=isFemale?NF_MODERN_F:NF_MODERN_M;
   let pool=[];
   const classicWeight=yr<=1985?4:yr<=2000?2:1;
-  for(let i=0;i<classicWeight;i++)pool.push(...NF_CLASSIC);
-  if(isNewsTalkish)for(let i=0;i<3;i++)pool.push(...NF_CLASSIC);
-  if(yr>=1972)pool.push(...NF_WOMEN_70S);
+  for(let i=0;i<classicWeight;i++)pool.push(...firstClassic);
+  if(isNewsTalkish)for(let i=0;i<3;i++)pool.push(...firstClassic);
   const blackWeight=isUrbanFmt?6:Math.round(blackPop*10);
-  for(let i=0;i<blackWeight;i++)pool.push(...NF_BLACK);
+  for(let i=0;i<blackWeight;i++)pool.push(...blackPool);
   if(yr>=1990&&!isCountryFmt){
     const hispWeight=isSpanishFmt?8:Math.round(hispPop*10);
-    for(let i=0;i<hispWeight;i++)pool.push(...NF_LATINO);
+    for(let i=0;i<hispWeight;i++)pool.push(...latinoPool);
   }
-  if(isModernFmt&&!isCountryFmt)pool.push(...NF_MODERN);
+  if(isModernFmt&&!isCountryFmt)pool.push(...modernPool);
   if(['CHR','TOP40','ALBUM_ROCK','CLASSIC_ROCK','ALT_ROCK','HOT_AC'].includes(fmt)&&yr>=1975)pool.push(...NF_HANDLES);
-  if(isCountryFmt&&yr<1990)pool=pool.filter(n=>NF_CLASSIC.includes(n)||NF_WOMEN_70S.includes(n));
+  if(isCountryFmt&&yr<1990)pool=pool.filter(n=>isFemale?NF_WOMEN_70S.includes(n):NF_CLASSIC.includes(n));
   return pool;
 }
 function buildLastNamePool(region,usedLastBlock){
@@ -1254,7 +1274,8 @@ const gn=(nameCtx)=>{
   const usedFirst=new Set(mk.usedFirst);
   const usedFull=new Set(mk.usedFull);
   if(ctx.usedFullNames)ctx.usedFullNames.forEach(k=>usedFull.add(k));
-  const poolFirst=buildWeightedFirstPool(fmt,year,marketId);
+  const gender=ctx.gender==='female'?'female':'male';
+  const poolFirst=buildWeightedFirstPool(fmt,year,marketId,gender);
   const availFirst=poolFirst.filter(f=>!usedFirst.has(f));
   const poolF=availFirst.length?availFirst:poolFirst;
   const lastPool=buildLastNamePool(region,ctx.usedLastNames);
@@ -1402,7 +1423,8 @@ function mkTal(slot,fmt,tier='mid',year=1970,nameCtx){
   if(tier!=='star') finalSal*=0.90;
   finalSal=Math.round(finalSal/500)*500;
 
-  const name=gn({...nameCtx,fmt,year});
+  const gender=Math.random()<0.5?'female':'male';
+  const name=gn({...nameCtx,fmt,year,gender});
   if(nameCtx?.usedLastNames){
     const parts=name.trim().split(/\s+/);
     const last=parts[parts.length-1];
@@ -1413,6 +1435,7 @@ function mkTal(slot,fmt,tier='mid',year=1970,nameCtx){
   return{
     id:Math.random().toString(36).substr(2,8),
     name,
+    gender,
     slot,
     quality:q,
     formatFit:ff,
@@ -1421,6 +1444,7 @@ function mkTal(slot,fmt,tier='mid',year=1970,nameCtx){
     morale:Math.round(rnd(55,85)),
     _hireYear:year,
     _careerStartYear,
+    _portraitFirstHireYear:year,
     superstar:false
   };
 }
@@ -2530,6 +2554,7 @@ function mpDraftFinalize() {
       s.isPlayer = true;
       s._mpOwner = p.playerId;  // which player owns this station
       s.color = ['#f5a623','#60a5fa','#34d399','#f87171'][p.playerId % 4];
+      applyDefaultBrandToPlayerStation(s);
       // Set player-specific cash (first station free, second costs market rate)
       if (idx === 0) {
         if (!G._playerCash) G._playerCash = {};
@@ -2839,6 +2864,7 @@ function mpSetupSocketHandlers(socket) {
     MP.renderStatus();
     G.news.unshift({v:'HIGH', t:`🎙 Multiplayer game started — ${players.length} stations in the market.`, y:G.year, p:G.period});
     renderAll();
+    queueAutoLogosForPlayerStations();
   });
 
   // ── Incoming action from another player ───────────────────────
@@ -3316,6 +3342,7 @@ window._mpApply_fmbooster = function({ sid }) {
     const newFm=fmFreqs.find(f=>!usedFm.includes(f))||'107.9 FM';
     s._boosterOrigFreq=s.freq;
     s.freq=newFm;
+    if(s.isPlayer)applyDefaultBrandToPlayerStation(s);
   }
   renderAll();
 };
@@ -3329,6 +3356,7 @@ window._mpApply_acq = function({ sid, playerId, color }) {
   s.color = color || ['#f5a623','#60a5fa','#34d399','#f87171'][(playerId||0)%4];
   // Clear corp ownership if any
   s.corpOwner=null; s.corpName=null; s.corpColor=null;
+  applyDefaultBrandToPlayerStation(s);
   G.ps=G.stations.filter(st=>st.isPlayer); renderAll();
 };
 window._mpApply_loan = function({ tierId, amount, owed, label, rate, periods, takenYear, interestPerPeriod, _fromPlayerId }) {
@@ -6224,6 +6252,10 @@ function genMarket(scenId){
   seedRat(stations,1970);
   const startYear=sc.startYear||1970;
 
+  stations.forEach(s=>{
+    if(s&&!s._bpSlotDeferred&&s.isPlayer)applyDefaultBrandToPlayerStation(s);
+  });
+
   // For non-1970 starts: inject rivals that would have launched between 1970 and startYear.
   // Events with rival- in their effect string add stations; pre-apply them to the market.
   if(startYear>1970){
@@ -6658,6 +6690,8 @@ function startPlay(scenId){
     initFranchiseRights(G);
     refreshAllStationOQ(G);
     renderAll();
+    queuePlayerTalentPortraits();
+    queueAutoLogosForPlayerStations();
   }catch(err){
     showError('Failed during genMarket: '+err.message, err.stack||String(err));
   }
@@ -7707,6 +7741,7 @@ function doLMALessee(sid) {
   s._mpOwner = MP.mode==='live' ? MP.playerId : 0;
   s.isPlayer = true; // appears in player panel
   s._lmaStation = true; // distinguishes from owned stations
+  applyDefaultBrandToPlayerStation(s);
   s.lmaLicensorName = s.corpOwner ? s.corpName : 'Independent';
   s._lmaFeeRate = LMA_FEE_RATE;
   G.ps = G.stations.filter(st => st.isPlayer);
@@ -7831,6 +7866,7 @@ function runCorpLMAOffers(G) {
 window._mpApply_lma_lessee = function({sid}) {
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
   s.lmaLesseeId='player'; s._lmaStation=true; s.isPlayer=true;
+  applyDefaultBrandToPlayerStation(s);
   G.ps=G.stations.filter(st=>st.isPlayer); renderAll();
 };
 window._mpApply_lma_lessor = function({sid}) { renderAll(); };
@@ -8557,7 +8593,7 @@ function rHire(s, scrollAfter){
     const cur=s2.prog[HS.slot]?.talent;
     const slotQcur=Math.round(s2.prog[HS.slot]?.quality||0);
     const poachList=hireModalRivalPoachCandidates(HS.sid,HS.slot);
-    const freeRows=HS.pool.map((t,i)=>{const fit=Math.round((t.formatFit[s2.format]||.3)*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const boost=Math.round((q/100)*fit*.35*35);const newSlotQ=Math.min(100,curSlotQ+boost);const hStar=t.superstar===true?'★ ':'';return `<div class="to${HS.sel===i&&!HS.poachRivalId?' sel':''}" onclick="pickTal(${i})"><div><div class="ton">${hStar}${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div><div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">SLOT BOOST</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ}</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div></div></div><div><span class="tocl">ANNUAL SAL</span><span class="toc">${f$(t.salary)}</span></div></div>`;}).join('');
+    const freeRows=HS.pool.map((t,i)=>{const fit=Math.round((t.formatFit[s2.format]||.3)*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const boost=Math.round((q/100)*fit*.35*35);const newSlotQ=Math.min(100,curSlotQ+boost);const hStar=t.superstar===true?'★ ':'';return `<div class="to to-hire${HS.sel===i&&!HS.poachRivalId?' sel':''}" onclick="pickTal(${i})"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-hire')}</div><div style="flex:1;min-width:0"><div class="ton">${hStar}${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div><div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">SLOT BOOST</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ}</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div></div></div></div><div class="to-hire-side"><span class="tocl">ANNUAL SAL</span><span class="toc">${f$(t.salary)}</span></div></div>`;}).join('');
     const rivalRows=poachList.map(({st,sd:rsd})=>{
       const rt=rsd.talent;
       const fit=Math.round((rt.formatFit[s2.format]||.3)*100);
@@ -8571,7 +8607,7 @@ function rHire(s, scrollAfter){
       const canAfford=G.cash>=minCash;
       const sel=HS.poachRivalId===st.id;
       const rhStar=rt.superstar===true?'★ ':'';
-      return `<div class="to${sel?' sel':''}" onclick="pickHirePoach('${st.id}')"><div><div class="ton">${rhStar}${rt.name} <span style="font-size:13px;color:var(--amb);font-family:var(--ft);letter-spacing:.06em">RIVAL</span></div><div class="tos" style="color:var(--mut)">${callDisplay(st)} · ${SL[HS.slot]}</div><div class="tost"><div><span class="tosl">TALENT Q</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">FIT</span><span class="tosv ${fc}">${fit}%</span></div><div><span class="tosl">AT RIVAL</span><span class="tosv">${f$(rt.salary)}/yr</span></div></div><div style="font-size:13px;color:var(--mut);margin-top:4px">Est. offer ~${f$(dispOffer)}/yr · need ≥${f$(minCash)} cash${buyout?` (incl. buyout ${f$(buyout)})`:''}</div></div><div><span class="tocl">ACTION</span><span class="toc" style="font-size:14px;color:${canAfford?'var(--mut)':'var(--red)'}">${canAfford?'Select, then HIRE':'Short on cash'}</span></div></div>`;
+      return `<div class="to to-hire${sel?' sel':''}" onclick="pickHirePoach('${st.id}')"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(rt,'tp-hire')}</div><div style="flex:1;min-width:0"><div class="ton">${rhStar}${rt.name} <span style="font-size:13px;color:var(--amb);font-family:var(--ft);letter-spacing:.06em">RIVAL</span></div><div class="tos" style="color:var(--mut)">${callDisplay(st)} · ${SL[HS.slot]}</div><div class="tost"><div><span class="tosl">TALENT Q</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">FIT</span><span class="tosv ${fc}">${fit}%</span></div><div><span class="tosl">AT RIVAL</span><span class="tosv">${f$(rt.salary)}/yr</span></div></div><div style="font-size:13px;color:var(--mut);margin-top:4px">Est. offer ~${f$(dispOffer)}/yr · need ≥${f$(minCash)} cash${buyout?` (incl. buyout ${f$(buyout)})`:''}</div></div></div><div class="to-hire-side"><span class="tocl">ACTION</span><span class="toc" style="font-size:14px;color:${canAfford?'var(--mut)':'var(--red)'}">${canAfford?'Select, then HIRE':'Short on cash'}</span></div></div>`;
     }).join('');
     const curBox=cur?`<div class="ibox">Current: <strong>${cur.name}</strong> — quality ${Math.round(cur.quality)}, slot quality ${slotQcur}, ${f$(cur.salary)}/yr.</div>`:'';
     const freeSection=HS.pool.length
@@ -8614,6 +8650,7 @@ function doHire(){
   const s=G.stations.find(st=>st.id===HS.sid),t=HS.pool[HS.sel],sl=HS.slot;
   t.periodsAtStation=0;
   t._hireYear=G.year;
+  if(t._portraitFirstHireYear==null||t._portraitFirstHireYear===undefined)t._portraitFirstHireYear=G.year;
   if(!t._careerStartYear)t._careerStartYear=Math.max(1970,G.year-ri(0,18));
   s.prog[sl].talent=t;
   const fit=t.formatFit[s.format]||.3;
@@ -8622,6 +8659,7 @@ function doHire(){
   G.news.unshift({v:'LOW',t:`You hire ${t.name} for ${s.callLetters} ${SL[sl]}`,y:G.year,p:G.period});
   logHistory(s,'TALENT',`Hired ${t.name} — ${SL[sl]} (Q:${t.quality})`,G);
   MP.action('hire', {sid:s.id, slot:sl, talent:t});
+  queueTalentPortrait(t);
   cm('m-tal');renderAll();
 }
 
@@ -8735,8 +8773,9 @@ function rosterTalentOnAirCardHtml(st,sl,t,contribution,talQ,fitPct,trendWord,tr
     <div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:10px">
       <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:flex-start">
         <div style="flex:1;min-width:200px;max-width:100%">
-          <div style="font-family:var(--fd);font-size:20px;letter-spacing:1px;color:var(--wht);line-height:1.25;text-transform:uppercase">
-            <span style="color:var(--amb)">${slotLabel}</span> — ${rosterHtmlEsc(t.name)}
+          <div style="display:flex;align-items:center;gap:12px;font-family:var(--fd);font-size:20px;letter-spacing:1px;color:var(--wht);line-height:1.25;text-transform:uppercase">
+            ${talentPortraitThumbHtml(t,'tp-roster')}
+            <div><span style="color:var(--amb)">${slotLabel}</span> — ${rosterHtmlEsc(t.name)}</div>
           </div>
           <div style="margin-top:8px;font-size:14px;color:var(--off);font-family:var(--fd)">${callDisplay(st)} · ${rosterFmtLong(st)} · ${f$(t.salary)}/yr</div>
           <div style="margin-top:8px;font-size:14px;color:var(--mut)">Fit: ${fitPct} · Talent: <span class="${qc(talQ)}" style="font-family:var(--fd)">${talQ}</span></div>
@@ -8852,7 +8891,7 @@ function openTalentRoster(){
     <div style="background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.28);border-radius:8px;padding:14px 16px;margin-bottom:10px">
       <div style="display:flex;flex-wrap:wrap;gap:12px;justify-content:space-between;align-items:flex-end">
         <div style="flex:1;min-width:220px">
-          <div style="font-family:var(--fd);font-size:17px;letter-spacing:1px;color:var(--wht)">BENCH — ${rosterHtmlEsc(t.name)}</div>
+          <div style="display:flex;align-items:center;gap:10px;font-family:var(--fd);font-size:17px;letter-spacing:1px;color:var(--wht)">${talentPortraitThumbHtml(t,'tp-roster')}<span>BENCH — ${rosterHtmlEsc(t.name)}</span></div>
           <div style="margin-top:6px;font-size:14px;color:var(--mut)">Was ${was?callDisplay(was):'?'} · ${SL[ent.slot]||''}</div>
           <div style="margin-top:6px;font-size:12px;color:var(--mut)">Not reassigned by period end: host leaves (no buyout). Release now triggers buyout${buyout>0?` (${f$(buyout)})`:''}.</div>
         </div>
@@ -9692,6 +9731,23 @@ function callDisplay(s){
   const isFm=s.fmBooster||s.sig?.type==='FM';
   return `${s.callLetters}-${isFm?'FM':'AM'}`;
 }
+/** Dial from freq string: "670 AM" → "670", "101.1 FM" → "101.1" */
+function stationFreqDial(s){
+  if(!s)return '';
+  return String(s.freq||'').replace(/\s*(AM|FM)\s*$/i,'').trim();
+}
+/** Default on-air brand for player stations: "WABC 770", "WZZZ 101.1" (call + dial). */
+function defaultPlayerStationBrand(s){
+  if(!s)return '';
+  const dial=stationFreqDial(s);
+  const cl=String(s.callLetters||'').trim();
+  if(dial&&cl)return `${cl} ${dial}`;
+  return cl||'Radio';
+}
+function applyDefaultBrandToPlayerStation(s){
+  if(!s)return;
+  s.brand=defaultPlayerStationBrand(s);
+}
 function openRename(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const cur=s.callLetters;
@@ -9874,6 +9930,8 @@ function applyFmSimulcastMigration(amId, fmId) {
   // ── 2. FLAGSHIP PROGRAMMING ON FM (always from former source leg) ─
   fm.format = am.format;
   fm.brand = am.brand;
+  if(fm.isPlayer)applyDefaultBrandToPlayerStation(fm);
+  if(am.isPlayer)applyDefaultBrandToPlayerStation(am);
   fm.flog = [...(am.flog || [])];
 
   // ── 3. MOVE ALL TALENT ───────────────────────────────────────────
@@ -10020,6 +10078,7 @@ function doFmBooster(sid){
   const newFm=fmFreqs.find(f=>!usedFm.includes(f))||'107.9 FM';
   s.freq=newFm;
   s._boosterOrigFreq=oldFreq;
+  if(s.isPlayer)applyDefaultBrandToPlayerStation(s);
 
   G.news.unshift({
     v:'HIGH',
@@ -10232,6 +10291,7 @@ function doAcq(){
   const wasCorpOwned=s.corpOwner?`(from ${s.corpName})`:'';
   s.corpOwner=null;s.corpName=null;s.corpColor=null;
   s.isPlayer=true;s.color=['#f5a623','#60a5fa','#34d399','#f87171'][MP.playerId%4];s._mpOwner=MP.playerId;
+  applyDefaultBrandToPlayerStation(s);
   MP.action('acq',{sid:s.id, playerId:MP.playerId, color:s.color});
   G.ps=G.stations.filter(st=>st.isPlayer);
   // ── ACQUISITION TALENT NORMALIZATION ──────────────────────────
@@ -10566,6 +10626,93 @@ async function wlGenerateLogo(stationId,regenerate){
   }
 }
 
+/** After game start, request logos for this client's player stations (staggered; skips if already cached). */
+function queueAutoLogosForPlayerStations(){
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
+  if(!G||!G.stations)return;
+  const list=MP.mode==='live'?myPS():(G.ps||[]);
+  list.forEach((s,i)=>{
+    if(!s||s.cosmeticLogoUrl)return;
+    setTimeout(()=>{ wlGenerateLogo(s.id,false); },300+i*800);
+  });
+}
+
+// ── COSMETIC: talent portraits (server-side Grok; same identity = same file) ──
+function talentPortraitFirstYear(t){
+  if(!t)return 1970;
+  if(typeof t._portraitFirstHireYear==='number'&&!Number.isNaN(t._portraitFirstHireYear))return t._portraitFirstHireYear;
+  return t._hireYear||t._careerStartYear||(G&&G.year)||1970;
+}
+function talentPortraitThumbHtml(t,cls){
+  if(!t)return '';
+  const url=t._portraitUrl;
+  const v=t._portraitV||0;
+  const src=url?(url+(v?'?v='+v:'')):'';
+  if(src)return '<span class="tp-thumb '+(cls||'')+'"><img alt="" src="'+src+'" draggable="false"></span>';
+  return '<span class="tp-thumb tp-thumb--ph '+(cls||'')+'" aria-hidden="true">🎙</span>';
+}
+async function queueTalentPortrait(t){
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
+  if(!t||!t.name)return;
+  if(t._portraitUrl||t._portraitPending)return;
+  t._portraitPending=true;
+  const firstYear=talentPortraitFirstYear(t);
+  try{
+    const res=await fetch('/api/generate-portrait',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        name:t.name,
+        firstHireYear:firstYear,
+        gender:t.gender==='female'?'female':t.gender==='male'?'male':undefined,
+      }),
+    });
+    const data=await res.json().catch(()=>({}));
+    if(res.ok&&data.ok&&data.imageUrl){
+      t._portraitUrl=data.imageUrl;
+      t._portraitV=Date.now();
+      if(data.profile){
+        t._portraitEra=data.profile.eraBucket;
+        t._portraitWardrobe=data.profile.wardrobeType;
+      }
+      autoSave();
+      renderAll();
+    }
+  }catch(_e){}
+  finally{t._portraitPending=false;}
+}
+function collectPlayerTalentsForPortraits(){
+  if(!G)return[];
+  const out=[];
+  const seen=new Set();
+  const add=t=>{
+    if(!t||!t.name)return;
+    const k=t.id||normTalentNameKey(t.name)+'|'+talentPortraitFirstYear(t);
+    if(seen.has(k))return;
+    seen.add(k);
+    out.push(t);
+  };
+  const my=MP.mode==='live'?G.ps.filter(s=>s._mpOwner===MP.playerId):G.ps;
+  my.forEach(s=>{
+    if(!s.prog)return;
+    Object.values(s.prog).forEach(sd=>add(sd?.talent));
+  });
+  (G.talentBench||[]).forEach(ent=>{
+    if(MP.mode==='live'&&ent._mpOwner!==MP.playerId)return;
+    add(ent?.talent);
+  });
+  return out;
+}
+function queuePlayerTalentPortraits(){
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
+  if(!G)return;
+  const list=collectPlayerTalentsForPortraits();
+  list.forEach((t,i)=>{
+    if(t._portraitUrl)return;
+    setTimeout(()=>queueTalentPortrait(t),i*100);
+  });
+}
+
 function exportSave(){
   const _saveStns = MP.mode==='live' ? G.ps.filter(s=>s._mpOwner===MP.playerId) : G.ps;
   const payload=saveGame(`${G.year} ${G.period===1?'Spring':'Fall'} — ${_saveStns.map(s=>s.callLetters).join(', ')}`);
@@ -10592,6 +10739,7 @@ function importSave(file){
       applyLoadedGameMarket();
       G.news.unshift({v:'HIGH',t:`📂 Save loaded: ${payload.label||'Unknown'} (${payload.saved?.slice(0,10)||'?'})`,y:G.year,p:G.period});
       cm('m-save');renderAll();
+      queuePlayerTalentPortraits();
     }catch(err){
       alert('Could not load save file: '+err.message);
     }
@@ -10762,6 +10910,9 @@ function migrateSave(G){
             if(sd.talent._careerStartYear>sd.talent._hireYear){
               sd.talent._careerStartYear=sd.talent._hireYear;
             }
+            if(sd.talent._portraitFirstHireYear==null||sd.talent._portraitFirstHireYear===undefined){
+              sd.talent._portraitFirstHireYear=sd.talent._hireYear||sd.talent._careerStartYear||(G?.year||1970);
+            }
           }
         });}
     // Ensure color: in MP use per-player color based on _mpOwner, solo always amber
@@ -10818,6 +10969,13 @@ function migrateSave(G){
     G.stations.push(pubClass);
   }
 
+  (G.talentBench||[]).forEach(ent=>{
+    const tal=ent?.talent;
+    if(tal&&(tal._portraitFirstHireYear==null||tal._portraitFirstHireYear===undefined)){
+      tal._portraitFirstHireYear=tal._hireYear||tal._careerStartYear||(G?.year||1970);
+    }
+  });
+
   // Rebuild ps
   G.ps=G.stations.filter(s=>s.isPlayer);
   if(G.pendingDecisionEvent && !TROUBLE_SCENARIOS.find(sc=>sc.id===G.pendingDecisionEvent.scenarioId))
@@ -10841,6 +10999,7 @@ function loadLocalSave(){
   applyLoadedGameMarket();
   G.news.unshift({v:'HIGH',t:`📂 Autosave resumed: ${local.label}`,y:G.year,p:G.period});
   cm('m-save');renderAll();
+  queuePlayerTalentPortraits();
 }
 
 // ── LOAN SYSTEM ──────────────────────────────────────────────────
@@ -11408,7 +11567,7 @@ function openContract(sid, slot){
     ${(()=>{const sh=s.rat?.share||0;const q=t.quality||50;if(sh>0.12&&q>75)return`<div style="background:rgba(245,166,35,.10);border:1px solid var(--amb);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--amb)">📈 Strong station + top talent — expect a premium ask. They know their worth.</div>`;if(sh>0.08&&q>65)return`<div style="background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.3);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--off)">📊 Solid ratings give this talent negotiating leverage.</div>`;if(t.morale<50)return`<div style="background:rgba(220,50,50,.10);border:1px solid var(--red);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--red)">⚠ Low morale — they're unhappy and may ask for extra just to stay.</div>`;return''})()}
 
     <div class="ms2" style="margin-bottom:16px">
-      <div class="sr"><span class="lb">Talent</span><span class="vl"><strong>${cStar}${t.name}</strong></span></div>
+      <div class="sr"><span class="lb">Talent</span><span class="vl" style="display:flex;align-items:center;gap:10px">${talentPortraitThumbHtml(t,'tp-contract-sm')}<strong>${cStar}${t.name}</strong></span></div>
       <div class="sr"><span class="lb">Rating</span><span class="vl ${qc(Math.round(t.quality))}">${Math.round(t.quality)}/100</span></div>
       <div class="sr"><span class="lb">Morale</span><span class="vl" style="color:${morCol}">${morLabel} (${mor}) ${morFactors.length?'· '+morFactors[0]:''}</span></div>
       <div class="sr"><span class="lb">Tenure</span><span class="vl">${age} periods (${ageYrs} yrs at station)</span></div>
@@ -11559,6 +11718,7 @@ function doPoach(sid, slot, rivalId){
   s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w,0));
   G.news.unshift({v:'HIGH',t:`🎙 SIGNED: ${name} joins ${s.callLetters} from ${rival.callLetters} — ${f$(offer)}/yr.`,y:G.year,p:G.period,iy:true});
   MP.action('poach', {sid, slot, rivalId, talentId:t.id||t.name});
+  queueTalentPortrait(t);
   cm('m-contract');cm('m-tal');renderAll();
 }
 
@@ -11764,7 +11924,7 @@ function rStns(){
       if(!tn&&srcTal){
         const sn=callDisplay(_simSrc);
         const srcStar=srcTal.superstar===true?'★ ':'';
-        return `<div class="slr"><span class="sln">${lbl}</span><span class="slt" style="color:var(--off)" title="Simulcast — on-air from ${sn}">◈ ${srcStar}${srcTal.name} <span style="color:var(--mut);font-size:13px">(${sn})</span></span><span class="slsal">${f$(srcTal.salary/2)}/p · src</span><span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Programming Quality (0-100)">Q ${q}</span></div>`;
+        return `<div class="slr">${talentPortraitThumbHtml(srcTal,'tp-sl')}<span class="sln">${lbl}</span><span class="slt" style="color:var(--off)" title="Simulcast — on-air from ${sn}">◈ ${srcStar}${srcTal.name} <span style="color:var(--mut);font-size:13px">(${sn})</span></span><span class="slsal">${f$(srcTal.salary/2)}/p · src</span><span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Programming Quality (0-100)">Q ${q}</span></div>`;
       }
       if(!tn) return `<div class="slr"><span class="sln">${lbl}</span><span class="slt vac">${vlbl}</span><span class="slsal"></span><span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Programming Quality (0-100)">Q ${q}</span></div>`;
       const t=sd.talent;
@@ -11776,6 +11936,7 @@ function rStns(){
       const morCol=mor>=70?'var(--grn)':mor>=45?'var(--amb)':'var(--red)';
       const starT=t.superstar===true?'★ ':'';
       return `<div class="slr">
+        ${talentPortraitThumbHtml(t,'tp-sl')}
         <span class="sln">${lbl}</span>
         <span class="slt clickable" onclick="openContract('${s.id}','${k}')">${starT}${tn}</span>
         ${cyrLbl?`<span class="${cyrCls}" title="${cyrTitle}">${cyrLbl}</span>`:''}

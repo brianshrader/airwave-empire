@@ -154,9 +154,10 @@ function mountLogoRoutes(app) {
     } catch (e) {
       console.error('[logo] Grok / save failed:', e.message || e);
       const status = e.status && Number.isInteger(e.status) ? e.status : 500;
+      const detail = String(e.message || 'Logo generation failed').slice(0, 400);
       return res.status(status).json({
         ok: false,
-        error: 'Logo generation failed',
+        error: detail,
       });
     }
   });
