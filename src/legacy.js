@@ -2902,6 +2902,7 @@ function mpSetupSocketHandlers(socket) {
     MP.renderStatus();
     G.news.unshift({v:'HIGH', t:`🎙 Multiplayer game started — ${players.length} stations in the market.`, y:G.year, p:G.period});
     renderAll();
+    queuePlayerTalentPortraits();
     queueAutoLogosForPlayerStations();
   });
 
@@ -2971,6 +2972,8 @@ function mpSetupSocketHandlers(socket) {
         .forEach(m => MILESTONE_Q.push(m));
     }
     if (MILESTONE_Q.length) setTimeout(flushMilestones, 900);
+    queuePlayerTalentPortraits();
+    queueAutoLogosForPlayerStations();
   });
 
   // ── Host migrated ─────────────────────────────────────────────
@@ -8314,6 +8317,8 @@ function advTurn(){
     }
     autoSave();
     renderAll();
+    queuePlayerTalentPortraits();
+    queueAutoLogosForPlayerStations();
     // MP: if host, broadcast new state to all clients
     if (MP.mode === 'live' && MP.isHost) {
       const _dcYear = decadeEnd.includes(wasYear) && wasPeriod===2 ? wasYear : null;
