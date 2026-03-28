@@ -311,6 +311,9 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 /* MODALS */
 .ov{position:fixed;inset:0;background:rgba(0,0,0,.90);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
 .ov.on{opacity:1;pointer-events:all}
+/* Programming hub below sub-modals opened from Quick actions (Format / Drift / Demo) */
+#m-programming.on{z-index:510}
+#m-fm.on,#m-drift.on,#m-lean.on{z-index:600}
 .mo{background:var(--pnl);border:1px solid var(--bdh);border-top:3px solid var(--amb);max-width:640px;width:93%;max-height:94vh;overflow-y:auto;box-shadow:0 0 90px rgba(245,166,35,.2);padding:28px;transform:translateY(20px);transition:transform .25s}
 .ov.on .mo{transform:translateY(0)}
 .mo.wide{max-width:800px}

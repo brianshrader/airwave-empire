@@ -3790,7 +3790,7 @@ const SC=[
 const DRIFT={
   // TOP 40 / CHR: Bubblegum vs Rock Edge
   TOP40:{
-    label:'Format Strategy',
+    label:'Format Positioning',
     poleA:{name:'Bubblegum Pop',desc:'Pure hits, youngest demos, maximum share ceiling early'},
     poleB:{name:'Rock Edge',desc:'Credibility with 18-34, resilient through rock surges'},
     default:40,
@@ -3861,7 +3861,7 @@ const DRIFT={
   },
   // COUNTRY: Traditional vs Crossover Pop
   COUNTRY:{
-    label:'Crossover Strategy',
+    label:'Crossover Positioning',
     poleA:{name:'Traditional Country',desc:'Core rural audience. Deep loyalty. Lower ceiling but bulletproof retention.'},
     poleB:{name:'Crossover Pop Country',desc:'Pulls suburban demos who never touched Country. Hot 1990-1997.'},
     default:25,
@@ -4291,7 +4291,7 @@ const DRIFT={
   }
 };
 
-/** Structured tradeoff copy for Format Strategy modal (no dated spoilers). */
+/** Structured tradeoff copy for Format Positioning modal (no dated spoilers). */
 const DRIFT_POLE_GUIDANCE={
   TOP40:{
     A:{audience:'Heavy 12–24 and teen skew; family-friendly mass appeal',strengths:'High ceiling in youth-heavy markets; chart familiarity; event tie-ins (concerts, tours)',weaknesses:'Credibility fragile; older demos tune out; vulnerable when pop falls out of favor',monetization:'Mass-reach youth spots; fast-food, movies, mobile; volume over CPM',risks:'Trend churn; competition from CHR and streaming; sounds dated overnight'},
@@ -5716,12 +5716,12 @@ function runAI(G){
 
 // ── EVENTS & RIVAL ENTRY ──────────────────────────────────────────
 
-// ── FORMAT STRATEGY (DRIFT) MODAL ────────────────────────────────
+// ── FORMAT POSITIONING (DRIFT) MODAL ────────────────────────────────
 function openDrift(sid){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const dr=getDrift(s);
-  if(!dr){alert('No format strategy available for '+FM[s.format]?.l);return;}
+  if(!dr){alert('No format positioning available for '+FM[s.format]?.l);return;}
   const cfg=dr.cfg;
   const val=dr.val;
 
@@ -8639,7 +8639,7 @@ function showCompIntel(sid){
       strategyLine=`<span style="color:var(--amb)">${strength} toward <strong>${pole}</strong></span>`;
     }
   } else {
-    strategyLine=`<span style="color:var(--mut)">Standard format — no strategic positioning</span>`;
+    strategyLine=`<span style="color:var(--mut)">Standard format — no positioning drift</span>`;
   }
 
   // Top demographic
@@ -8687,8 +8687,8 @@ function showCompIntel(sid){
       <div class="sr"><span class="lb">Core Demographic</span><span class="vl">${cohLabels[topCoh]||topCoh}</span></div>
     </div>
     <div class="ms2" style="margin-top:12px">
-      <div class="msh">FORMAT STRATEGY</div>
-      <div class="sr"><span class="lb">Positioning</span><span class="vl">${strategyLine}</span></div>
+      <div class="msh">FORMAT POSITIONING</div>
+      <div class="sr"><span class="lb">Drift</span><span class="vl">${strategyLine}</span></div>
       <div class="sr"><span class="lb">Direct Competition</span><span class="vl" style="font-size:14px">${compText}</span></div>
     </div>
     <div class="ms2" style="margin-top:12px">
@@ -9104,7 +9104,9 @@ function refreshProgCommitStandalone(){
   const cap=progBudgetCapForPeriod(G);
   const committed=Math.min(s.ops?.progBudget||0,cap);
   const ui=Math.min(PI.val,cap);
-  wlSetCommitButtonState('pg-commit-btn',ui!==committed);
+  const pending=ui!==committed;
+  wlSetCommitButtonState('pg-commit-btn',pending);
+  wlSetCommitButtonState('pgu-commit-btn',pending);
 }
 function refreshIdentCommitStandalone(){
   const sid=ensureOpsSourceSid(CI.sid);
@@ -9495,6 +9497,24 @@ function brandMarketingIdentInvestHtml(leg){
     <button class="cfm wl-commit-btn wl-commit-btn--synced" type="button" id="bm-ci-commit-${safe}" onclick="bmDoIdent('${sid}')">SET COMMUNITY INVESTMENT</button>
   </div>`;
 }
+function brandMarketingProgrammingBlockHtml(leg){
+  const sid=ensureOpsSourceSid(leg.id);
+  const s=G.stations.find(st=>st.id===sid);if(!s)return'';
+  const safe=bmSafeElId(leg.id);
+  const pgCap=progBudgetCapForPeriod(G);
+  const val=Math.min(s.ops?.progBudget||0,pgCap);
+  return`<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
+    <div class="msh" style="margin-bottom:8px">PROGRAMMING BUDGET — ${rosterHtmlEsc(callDisplay(s))}</div>
+    <p class="di" style="font-size:14px">Coaching, production, and content development — reduces quality decay and lifts dayparts (charged each period).</p>
+    <div class="slsec">
+      <div class="sll"><span>BUDGET / PERIOD</span><strong id="pgu-val">${f$(val)}</strong></div>
+      <input type="range" id="bm-pg-range-${safe}" min="0" max="${pgCap}" step="2000" value="${val}" oninput="updProg('${sid}',this.value)">
+      <div class="sln2" id="pgu-note"></div>
+    </div>
+    <div class="ibox">Current: <strong>${f$(s.ops?.progBudget||0)}/period</strong> · Station quality: <strong>${s.oq}/100</strong></div>
+    <button class="cfm wl-commit-btn wl-commit-btn--synced" type="button" id="pgu-commit-btn" onclick="doProg()">SET PROGRAMMING BUDGET</button>
+  </div>`;
+}
 function renderBrandMarketingStation(primarySid){
   primarySid=ensureOpsSourceSid(primarySid);
   BM_ACTIVE_SID=primarySid;
@@ -9518,6 +9538,8 @@ function renderBrandMarketingStation(primarySid){
     ${legs.map(leg=>brandMarketingLogoBlockHtml(leg)).join('')}
     <div class="msh" style="margin-bottom:10px;margin-top:6px">MARKETING SPEND</div>
     ${legs.map(leg=>brandMarketingPromoBlockHtml(leg)).join('')}
+    <div class="msh" style="margin-bottom:10px;margin-top:6px">PROGRAMMING BUDGET</div>
+    ${brandMarketingProgrammingBlockHtml(primary)}
     <div class="msh" style="margin-bottom:10px;margin-top:6px">COMMUNITY IDENTITY INVESTMENT</div>
     ${legs.map(leg=>brandMarketingIdentInvestHtml(leg)).join('')}
     <button class="cnl" type="button" onclick="cm('m-brand')" style="margin-top:8px">CLOSE</button>`;
@@ -9530,6 +9552,14 @@ function renderBrandMarketingStation(primarySid){
     const ciEl=document.getElementById('bm-ci-range-'+safe);
     bmUpdIdent(leg.id, ciEl?ciEl.value:String(leg.identityBudget||0));
   });
+  const opSid=ensureOpsSourceSid(primarySid);
+  const sProg=G.stations.find(st=>st.id===opSid);
+  if(sProg){
+    const pgCap0=progBudgetCapForPeriod(G);
+    PI={sid:opSid,val:Math.min(sProg.ops?.progBudget||0,pgCap0)};
+    const pgR=document.getElementById('bm-pg-range-'+bmSafeElId(primary.id));
+    updProg(opSid, pgR?pgR.value:String(PI.val));
+  }
 }
 function openBrandMarketing(sid){
   sid=ensureOpsSourceSid(sid);
@@ -10260,7 +10290,28 @@ function doFire(sid,slot){
 
 // 3b. PROGRAMMING INVESTMENT — scaffold once, update display only
 let PI={sid:null,val:0};
-function openProg(sid){
+function positioningHeaderLine(fmt){
+  const cfg=DRIFT[fmt];
+  return cfg&&cfg.label?cfg.label:'Positioning';
+}
+function programmingModalContextSubtitle(s){
+  return `${callDisplay(s)} · ${FM[s.format]?.l||s.format} · ${positioningHeaderLine(s.format)}`;
+}
+function programmingModalSummaryHtml(s){
+  const cap=progBudgetCapForPeriod(G);
+  const cur=Math.min(s.ops?.progBudget||0,cap);
+  return `Current: <strong>${f$(cur)}</strong>/period · Station quality: <strong>${s.oq}/100</strong> · Cash: <strong>${f$(G.cash)}</strong>`;
+}
+function openFmtFromProgramming(sid){
+  openFmt(sid);
+}
+function openDriftFromProgramming(sid){
+  openDrift(sid);
+}
+function openLeanFromProgramming(sid){
+  openLean(sid);
+}
+function openProgramming(sid){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const pgCap=progBudgetCapForPeriod(G);
@@ -10271,34 +10322,56 @@ function openProg(sid){
     const w=SW[k]||0;
     return `<div class="sr"><span class="lb">${lbl} <span style="color:var(--mut);font-size:15px">(×${(w*100).toFixed(0)}% weight)</span></span><span class="vl" style="color:${c==='good'?'var(--grn)':c==='warn'?'var(--amb)':'var(--red)'}">${q}/100</span></div>`;
   }).join('');
-  document.getElementById('pgb').innerHTML=`
-    <p class="di">Set a recurring programming budget — coaching, production, content development. Charged every period automatically, like your marketing budget. Reduces quality decay and boosts daypart quality each period.</p>
+  const driftQuick=DRIFT[s.format]
+    ?`<button type="button" class="abt" style="background:rgba(245,166,35,.12);border:1px solid var(--amb);color:var(--amb)" onclick="openDriftFromProgramming('${s.id}')">🎚 POSITIONING</button>`
+    :'';
+  const mh=document.getElementById('prog-mh-title');
+  if(mh)mh.textContent='PROGRAMMING';
+  const body=document.getElementById('prog-body');
+  if(!body)return;
+  body.innerHTML=`
+    <p class="di">${programmingModalContextSubtitle(s)}</p>
+    <div style="margin-bottom:14px">
+      <div class="msh" style="margin-bottom:8px">QUICK ACTIONS</div>
+      <div class="sc-act">
+        <button type="button" class="abt d" onclick="openFmtFromProgramming('${s.id}')">⚡ FORMAT</button>
+        ${driftQuick||'<div class="sc-act-empty" aria-hidden="true"></div>'}
+        <button type="button" class="abt b" onclick="openLeanFromProgramming('${s.id}')">🎯 DEMO TARGET</button>
+        <div class="sc-act-empty" aria-hidden="true"></div>
+      </div>
+    </div>
+    <p class="di">Set a recurring programming budget — coaching, production, content development. Charged every period automatically. Reduces quality decay and boosts daypart quality each period.</p>
     <div class="ms2"><div class="msh">CURRENT DAYPART QUALITY</div>${drows}</div>
     <div class="slsec">
       <div class="sll"><span>PROGRAMMING BUDGET / PERIOD</span><strong id="pg-val">${f$(PI.val)}</strong></div>
       <input type="range" min="0" max="${pgCap}" step="2000" value="${PI.val}" oninput="updProg('${s.id}',this.value)">
       <div class="sln2" id="pg-note"></div>
     </div>
-    <div class="ibox">Current: <strong>${f$(s.ops?.progBudget||0)}/period</strong> · Station quality: <strong>${s.oq}/100</strong> · Cash on hand: <strong>${f$(G.cash)}</strong></div>
-    <button class="cfm wl-commit-btn wl-commit-btn--synced" id="pg-commit-btn" onclick="doProg()">SET BUDGET</button>
-    <button class="cnl" onclick="cm('m-pg')">CANCEL</button>`;
+    <div class="ibox">${programmingModalSummaryHtml(s)}</div>
+    <button type="button" class="cfm wl-commit-btn wl-commit-btn--synced" id="pg-commit-btn" onclick="doProg()">SET PROGRAMMING BUDGET</button>
+    <button type="button" class="cnl" onclick="cm('m-programming')">CANCEL</button>`;
   updProg(sid, PI.val);
   refreshProgCommitStandalone();
-  om('m-pg');
+  om('m-programming');
 }
+/** @deprecated Use openProgramming — kept for older onclick strings */
+function openProg(sid){openProgramming(sid);}
 function updProg(sid,v){
   sid=ensureOpsSourceSid(sid);
-  PI.val=parseInt(v);PI.sid=sid;
+  PI.val=parseInt(v,10);PI.sid=sid;
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const pgCap=progBudgetCapForPeriod(G);
   const progRef=Math.max(10000,pgCap/6);
   const boost=Math.round((PI.val/progRef)*4);
-  const vEl=document.getElementById('pg-val'),nEl=document.getElementById('pg-note');
-  if(vEl)vEl.textContent=f$(PI.val);
-  if(nEl){
-    if(PI.val===0){nEl.textContent='Set to $0 to disable. Quality will decay at normal rate.';}
-    else{nEl.innerHTML=`Est. quality boost: <strong style="color:var(--grn)">+${boost} pts/period</strong> across all dayparts &nbsp;·&nbsp; decay reduced <strong style="color:var(--blu)">40%</strong><br><span style="color:var(--mut)">Charged automatically each period — cancel anytime by setting to $0</span>`;}
-  }
+  const dim=PI.val>0&&PI.val>=pgCap*0.75;
+  const noteZero='Set to $0 to disable. Quality will decay at normal rate.';
+  const noteRich=PI.val===0?noteZero:`Est. quality boost: <strong style="color:var(--grn)">+${boost} pts/period</strong> across all dayparts &nbsp;·&nbsp; decay reduced <strong style="color:var(--blu)">40%</strong><br><span style="color:var(--mut)">Charged automatically each period — cancel anytime by setting to $0</span>${dim?'<br><span style="color:var(--mut);font-size:13px">Returns diminish near the spending cap.</span>':''}`;
+  ['pg-val','pgu-val'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=f$(PI.val);});
+  ['pg-note','pgu-note'].forEach(id=>{
+    const el=document.getElementById(id);if(!el)return;
+    if(PI.val===0)el.textContent=noteZero;
+    else el.innerHTML=noteRich;
+  });
   refreshProgCommitStandalone();
 }
 function doProg(){
@@ -10310,7 +10383,9 @@ function doProg(){
   s.ops.progBudget=v;
   MP.action('prog',{sid,progBudget:v});
   G.news.unshift({v:'LOW',t:`${s.callLetters} programming budget set to ${f$(v)}/period${v===0?' — discontinued.':'.'}`,y:G.year,p:G.period});
-  cm('m-pg');renderAll();
+  cm('m-programming');
+  renderAll();
+  if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
 }
 // 3b2. COMMUNITY INVESTMENT
 let CI={sid:null,val:0};
@@ -10728,7 +10803,7 @@ function openMigrate(sid){
       <div class="msh">MOVES TO ${fmCallEsc.toUpperCase()} (NEW FLAGSHIP)</div>
       <div class="sr"><span class="lb">Format &amp; Brand</span><span class="vl pos">✓ ${FM[am.format]?.l||am.format} — "${am.brand}" (from ${am.callLetters})</span></div>
       <div class="sr"><span class="lb">All Talent</span><span class="vl pos">✓ ${Object.values(am.prog).filter(sd=>sd?.talent).map(sd=>sd.talent.name).join(', ')||'None hired'}</span></div>
-      <div class="sr"><span class="lb">Format Strategy</span><span class="vl pos">✓ Drift positioning preserved</span></div>
+      <div class="sr"><span class="lb">Format Positioning</span><span class="vl pos">✓ Drift positioning preserved</span></div>
       <div class="sr"><span class="lb">Demo Target</span><span class="vl pos">✓ Audience lean preserved</span></div>
       <div class="sr"><span class="lb">Programming Quality</span><span class="vl pos">✓ ${am.oq}/100 moves to FM</span></div>
       <div class="sr"><span class="lb">AM after migration</span><span class="vl" style="color:var(--off)">Available to reformat or sell</span></div>
@@ -12840,7 +12915,6 @@ function rStns(){
         const simBtn=junior
           ?'<button class="abt" style="border-color:rgba(255,255,255,.15)" onclick="openSim(\''+s.id+'\')">◈ BREAK SIMULCAST</button>'
           :'<button class="abt b" onclick="openSim(\''+s.id+'\')">◈ SIMULCAST THIS STATION</button>';
-        const driftBtn=DRIFT[op.format]?'<button class="abt" style="background:rgba(245,166,35,.12);border:1px solid var(--amb);color:var(--amb)" onclick="openDrift(\''+op.id+'\')">🎚 STRATEGY</button>':'';
         const streamBtn='<button class="abt '+(op.stream?.active?'g active':G.year>=2005?'b':'')+'" onclick="openStream(\''+op.id+'\')" '+(G.year<2005?'style="opacity:.30;cursor:default"':'')+'>'+(op.stream?.active?'📶 STREAMING ✓':'📶 ADD STREAMING')+'</button>';
         const _fr=G.franchiseRights||{};
         const _teams=(MARKETS[G.marketId||'atlanta']?.teams||[]).filter(t=>G.year>=t.introduced);
@@ -12885,30 +12959,25 @@ function rStns(){
           return '<div class="sc-act">'+cells.join('')+'</div>';
         };
         const sec=(title,first,inner)=>'<div class="sc-card-sec'+(first?' sc-card-sec--first':'')+'"><div class="sc-card-sec-h">'+title+'</div>'+inner+'</div>';
-        const progBtns=['<button class="abt d" onclick="openFmt(\''+op.id+'\')">⚡ FORMAT</button>'];
-        if(driftBtn)progBtns.push(driftBtn);
-        progBtns.push(
-          '<button class="abt b" onclick="openLean(\''+op.id+'\')">🎯 DEMO TARGET</button>',
-          '<button class="abt '+progAct+'" onclick="openProg(\''+op.id+'\')">📈 PROGRAMMING BUDGET'+progLbl+'</button>',
-          streamBtn,
-          simBtn,
-        );
-        if(sportsBtn)progBtns.push(sportsBtn);
-        if(franchiseBtn)progBtns.push(franchiseBtn);
+        const progHub='<button class="abt '+progAct+'" style="width:100%;box-sizing:border-box;padding:14px;font-size:15px;letter-spacing:0.5px" onclick="openProgramming(\''+op.id+'\')">📻 PROGRAMMING'+progLbl+'</button>';
+        const sportsFr=[];
+        if(sportsBtn)sportsFr.push(sportsBtn);
+        if(franchiseBtn)sportsFr.push(franchiseBtn);
+        const sportsFrHtml=sportsFr.length?pack2(sportsFr):'';
         const salesLbl=sfActive?'💼 '+sfLblText+' · '+Math.round(op.ops.sell*100)+'%':'💼 SALES';
         const swapBtn='<button class="abt" onclick="openSwapSignal(\''+op.id+'\')">⇄ SWAP SIGNAL</button>';
         const fmUniq=[];
         const _m1=fmBtn(s),_m2=junior?fmBtn(junior):'';
         if(_m1)fmUniq.push(_m1);
         if(_m2&&_m2!==_m1)fmUniq.push(_m2);
-        const adminBtns=[...histArr,swapBtn,...fmUniq,...sellArr];
+        const adminBtns=[...histArr,swapBtn,...fmUniq,...sellArr,streamBtn,simBtn];
         const mkLine='<div style="font-size:13px;color:var(--mut);margin-bottom:10px;line-height:1.45">Marketing <strong style="color:var(--off)">'+f$(op.ops.promo||0)+'</strong>/p · Community ID <strong style="color:var(--off)">'+Math.round(op.identity||0)+'</strong>'+((op.identityBudget||0)>0?' <span style="color:var(--amb)">★</span>':'')+'</div>';
         return '<div class="sc-card-actions">'+
           sec('TALENT',true,'<button class="abt d" type="button" onclick="openManageTalent(\''+op.id+'\')">🎙 MANAGE TALENT</button>')+
-          sec('PROGRAMMING',false,pack2(progBtns))+
+          sec('PROGRAMMING',false,'<div style="display:flex;flex-direction:column;gap:10px;width:100%">'+progHub+(sportsFrHtml||'')+'</div>')+
           sec('MARKETING',false,mkLine+'<div class="wl-logo-status" id="wl-logo-status-'+op.id+'" style="font-size:12px;color:var(--amb);margin-bottom:10px;min-height:16px"></div>'+pack2(['<button class="abt b" onclick="openBrandMarketing(\''+op.id+'\')">📣 BRAND & MARKETING</button>','<button class="abt" onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
           sec('SALES',false,pack2(['<button class="abt '+(sfActive?'g':'')+'" onclick="openSales(\''+op.id+'\')">'+salesLbl+'</button>','<button class="abt" onclick="openSpots(\''+op.id+'\')">📻 SPOT LOAD</button>']))+
-          sec('ADMINISTRATION',false,pack2(adminBtns))+
+          sec('ADMINISTRATION · STRUCTURE',false,pack2(adminBtns))+
           '</div>';
       })()}`;
     c.appendChild(div);

@@ -930,6 +930,97 @@
       "firstHireYear": 1970,
       "gender": "female",
       "source": "grok"
+    },
+    "tyrone-jennings-1970": {
+      "imageUrl": "/generated-portraits/tyrone-jennings-1970.png",
+      "fileName": "tyrone-jennings-1970.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "semiPro",
+      "expressionType": "tired",
+      "settingType": "plainBackdrop",
+      "identityKey": "tyrone jennings|1970",
+      "name": "Tyrone Jennings",
+      "firstHireYear": 1970,
+      "gender": "male",
+      "source": "grok"
+    },
+    "monique-gentry-1970": {
+      "imageUrl": "/generated-portraits/monique-gentry-1970.png",
+      "fileName": "monique-gentry-1970.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "semiPro",
+      "expressionType": "tired",
+      "settingType": "plainBackdrop",
+      "identityKey": "monique gentry|1970",
+      "name": "Monique Gentry",
+      "firstHireYear": 1970,
+      "gender": "female",
+      "source": "grok"
+    },
+    "wynonna-church-1970": {
+      "imageUrl": "/generated-portraits/wynonna-church-1970.png",
+      "fileName": "wynonna-church-1970.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "casual",
+      "expressionType": "neutral",
+      "settingType": "radioStudio",
+      "identityKey": "wynonna church|1970",
+      "name": "Wynonna Church",
+      "firstHireYear": 1970,
+      "gender": "female",
+      "source": "grok"
+    },
+    "janine-gregory-1970": {
+      "imageUrl": "/generated-portraits/janine-gregory-1970.png",
+      "fileName": "janine-gregory-1970.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "casual",
+      "expressionType": "tired",
+      "settingType": "plainBackdrop",
+      "identityKey": "janine gregory|1970",
+      "name": "Janine Gregory",
+      "firstHireYear": 1970,
+      "gender": "female",
+      "source": "grok"
+    },
+    "eddy-terry-1970": {
+      "imageUrl": "/generated-portraits/eddy-terry-1970.png",
+      "fileName": "eddy-terry-1970.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "casual",
+      "expressionType": "neutral",
+      "settingType": "plainBackdrop",
+      "identityKey": "eddy terry|1970",
+      "name": "Eddy Terry",
+      "firstHireYear": 1970,
+      "gender": "male",
+      "source": "grok"
+    },
+    "latanya-holt-1970": {
+      "imageUrl": "/generated-portraits/latanya-holt-1970.png",
+      "fileName": "latanya-holt-1970.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "casual",
+      "expressionType": "forcedSmile",
+      "settingType": "plainBackdrop",
+      "identityKey": "latanya holt|1970",
+      "name": "LaTanya Holt",
+      "firstHireYear": 1970,
+      "gender": "female",
+      "source": "grok"
+    },
+    "vonetta-ford-1970": {
+      "imageUrl": "/generated-portraits/vonetta-ford-1970.png",
+      "fileName": "vonetta-ford-1970.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "casual",
+      "expressionType": "tired",
+      "settingType": "radioStudio",
+      "identityKey": "vonetta ford|1970",
+      "name": "Vonetta Ford",
+      "firstHireYear": 1970,
+      "gender": "female",
+      "source": "grok"
     }
   }
 }
