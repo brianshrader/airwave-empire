@@ -45,7 +45,17 @@ const ERA_STYLE = {
  *   wardrobeType: string,
  *   expressionType: string,
  *   settingType: string,
- *   gender?: 'male'|'female'|null
+ *   gender?: 'male'|'female'|null,
+ *   heritagePrompt?: string,
+ *   facialDetail?: string,
+ *   demeanor?: string,
+ *   ageRange?: string,
+ *   bodyType?: string,
+ *   faceShape?: string,
+ *   hairStyle?: string,
+ *   personalStyle?: string,
+ *   gameplayNotes?: string,
+ *   variationSeed?: string
  * }} p
  */
 function buildPortraitPrompt(p) {
@@ -60,19 +70,45 @@ function buildPortraitPrompt(p) {
         ? 'Subject is a man; appearance must read clearly as male.'
         : 'Subject is an adult; natural, believable gender presentation.';
 
-  return [
-    'Head-and-shoulders portrait of a single fictional local American radio personality.',
-    genderLine,
-    'Setting: a working radio studio — include a professional studio microphone and/or on-air headphones (broadcast gear, not a concert stage).',
-    'Diverse, natural-looking adult; believable small-market media promo photo or awkward studio snapshot.',
-    'Slightly imperfect lighting and composition — not fashion photography, not glamorous, not celebrity-like, not influencer-style.',
-    `Era is only visual styling: ${era}`,
-    `Wardrobe (visual only): ${wd}`,
-    `Expression: ${ex}`,
-    `Setting: ${st}`,
-    'Subtle human oddness is welcome; avoid grotesque distortion, exaggerated comedy faces, and beauty-retouch glamour.',
-    'CRITICAL: The image must show only the person and environment — absolutely no text, no letters, no numbers, no logos, no captions, no name tags, no station call signs, no watermarks.',
+  const age = p.ageRange || 'adult';
+  const bodyPhrase = p.bodyType ? `${p.bodyType} build` : 'average build';
+  const bodyArticle = /^[aeiou]/i.test(bodyPhrase) ? 'an' : 'a';
+  const face = p.faceShape || 'distinctive';
+  const detail = p.facialDetail || 'individual facial character';
+  const hair = p.hairStyle || 'natural hair';
+  const look = p.personalStyle || 'casual';
+  const eraLabel = p.eraBucket || '2000s+';
+  const who = p.heritagePrompt || 'local radio professional';
+  const vibe = p.demeanor || 'natural, relaxed expression';
+
+  const lead = [
+    `Head-and-shoulders portrait of one specific ${who}, apparently in their ${age}, with ${bodyArticle} ${bodyPhrase}.`,
+    `Their face reads as ${face}, with ${detail} — visibly different from a generic headshot; not a model template.`,
+    `Hair: ${hair}. On-camera presence: ${vibe}; ${look} overall presentation.`,
+    `Small-market ${eraLabel} station promo realism — ${era}.`,
   ].join(' ');
+
+  const gameLine = p.gameplayNotes ? `Light character note (do not erase unique face): ${p.gameplayNotes}.` : '';
+  const seedLine = p.variationSeed
+    ? `Likeness anchor ${p.variationSeed} — this person must read as a distinct individual.`
+    : '';
+
+  return [
+    lead,
+    genderLine,
+    'Avoid identical “same face” results: distinctive features, natural asymmetry, believable skin texture; not airbrushed, not symmetry-perfect.',
+    'Setting: a working radio studio — professional studio microphone and/or on-air headphones visible (broadcast gear, not a concert stage).',
+    `Environment framing: ${st}`,
+    'Believable awkward station snapshot or promo still — one real person, not stock photography.',
+    `Wardrobe: ${wd}`,
+    `Secondary micro-mood (subtle): ${ex}`,
+    gameLine,
+    seedLine,
+    'No caricature, no costume stereotypes, no exaggerated comedy face; subtle human imperfection is good.',
+    'CRITICAL: The image must show only the person and environment — absolutely no text, no letters, no numbers, no logos, no captions, no name tags, no station call signs, no watermarks.',
+  ]
+    .filter(Boolean)
+    .join(' ');
 }
 
 module.exports = { buildPortraitPrompt, WARDROBE_DESC, EXPRESSION_DESC, SETTING_DESC, ERA_STYLE };

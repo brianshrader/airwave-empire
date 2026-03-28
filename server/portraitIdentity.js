@@ -9,6 +9,78 @@ const WARDROBE_TYPES = ['casual', 'semiPro', 'oddball'];
 const EXPRESSION_TYPES = ['forcedSmile', 'serious', 'smug', 'tired', 'awkward', 'neutral'];
 const SETTING_TYPES = ['radioStudio', 'plainBackdrop', 'officeCorner'];
 
+/** Bump when appearance logic changes — forces new deterministic picks vs older cached portrait metadata. */
+const APPEARANCE_HASH_VERSION = 'appearance-v2';
+
+/** Deterministic appearance vocabulary — indices chosen from hash (not gameplay). */
+const APPEARANCE_AGE = ['early 20s', 'late 20s', '30s', '40s', '50s', '60s'];
+const APPEARANCE_BODY = ['slim', 'average', 'stocky', 'heavyset', 'broad-shouldered'];
+const APPEARANCE_FACE = ['round', 'square jaw', 'long', 'sharp angular features', 'soft oval'];
+/** Visible face structure — stronger than face shape alone. */
+const APPEARANCE_FACIAL_DETAIL = [
+  'prominent nose',
+  'wide-set eyes',
+  'deep-set eyes',
+  'high forehead',
+  'strong brow',
+  'full cheeks',
+  'lean face',
+  'soft features',
+  'rugged features',
+];
+/** Neutral heritage cues for visible diversity — no costumes or caricature. */
+const APPEARANCE_HERITAGE = [
+  { id: 'whiteAmerican', prompt: 'white American radio professional' },
+  { id: 'africanAmerican', prompt: 'African American radio personality' },
+  { id: 'latino', prompt: 'Latino radio host' },
+  { id: 'mediterranean', prompt: 'broadcaster with natural Mediterranean features' },
+  { id: 'eastAsian', prompt: 'East Asian radio professional' },
+  { id: 'southAsian', prompt: 'South Asian radio host' },
+];
+/** On-camera demeanor (distinct from wardrobe micro-expression in portraitPrompt). */
+const APPEARANCE_DEMEANOR = [
+  'serious, composed expression',
+  'warm, approachable smile',
+  'confident, subtle smirk',
+  'intense, direct gaze',
+  'relaxed, easy demeanor',
+  'slightly weary but genuine expression',
+  'guarded, reserved expression',
+  'thoughtful, half-smile',
+];
+/** Base hair vocabulary — includes imperfect / unpolished options. */
+const APPEARANCE_HAIR = [
+  'slightly messy natural hair',
+  'receding hairline',
+  'thinning at the crown',
+  'thick curly hair',
+  'tightly coiled natural hair',
+  'unkempt but believable hair',
+  'side-parted neat hair',
+  'short neat hair',
+  'long straight hair',
+  'wavy shoulder-length hair',
+  'straight hair tucked behind the ears',
+  'natural afro-textured hair',
+  'soft waves with natural volume',
+];
+const APPEARANCE_HAIR_1970S = [
+  'feathered 1970s-style hair',
+  'side-parted 1970s station-photo hair',
+  'slightly shaggy period-appropriate hair',
+];
+const APPEARANCE_HAIR_1980S = [
+  'fuller 1980s volume hair',
+  '1980s station promo hairstyle',
+  'layered 1980s cut',
+];
+const APPEARANCE_HAIR_1990S = [
+  'early-1990s casual hair',
+  'short neat 1990s cut',
+  'soft layered 1990s style',
+];
+const APPEARANCE_STYLE = ['clean-cut', 'flashy', 'casual', 'conservative', 'eccentric'];
+
 /** @param {string} name */
 function normalizeNameKey(name) {
   return String(name || '')
@@ -77,16 +149,104 @@ function pickSettingFromHash(hashBytes) {
   return SETTING_TYPES[hashBytes[3] % SETTING_TYPES.length];
 }
 
+/** Stable key for hashing — include talentId when present so two hosts never share the same face. */
+function portraitHashKey(identitySlug, talentId) {
+  const base = String(identitySlug || '').trim();
+  if (talentId != null && String(talentId).trim() !== '') {
+    return `${base}|id:${String(talentId).trim()}`;
+  }
+  return base;
+}
+
 /**
  * Full deterministic profile for an identity slug (same slug → same picks).
  * @param {string} identitySlug — e.g. jane-doe-1978
+ * @param {string} [talentId] — game talent id; varies hash when name+year collide
  */
-function derivePortraitProfile(identitySlug) {
-  const h = crypto.createHash('sha256').update(identitySlug, 'utf8').digest();
+function derivePortraitProfile(identitySlug, talentId) {
+  const key = portraitHashKey(identitySlug, talentId);
+  const h = crypto.createHash('sha256').update(key, 'utf8').digest();
   return {
     wardrobeType: pickWardrobeFromHash(h),
     expressionType: pickExpressionFromHash(h),
     settingType: pickSettingFromHash(h),
+  };
+}
+
+/**
+ * Era-appropriate hair nudge — subset of picks get period styling (deterministic).
+ * @param {string} eraBucket
+ * @param {Buffer} h
+ */
+function pickHairWithEra(eraBucket, h) {
+  let hair = APPEARANCE_HAIR[h[3] % APPEARANCE_HAIR.length];
+  const roll = h[10] % 10;
+  if (eraBucket === '1970s' && roll < 3) {
+    hair = APPEARANCE_HAIR_1970S[h[11] % APPEARANCE_HAIR_1970S.length];
+  } else if (eraBucket === '1980s' && roll < 3) {
+    hair = APPEARANCE_HAIR_1980S[h[11] % APPEARANCE_HAIR_1980S.length];
+  } else if (eraBucket === '1990s' && roll < 2) {
+    hair = APPEARANCE_HAIR_1990S[h[12] % APPEARANCE_HAIR_1990S.length];
+  }
+  return hair;
+}
+
+/**
+ * Structured look variation — deterministic from hashKey, nudged by optional gameplay stats.
+ * Gameplay nudges age / polish / fatigue only; heritage, demeanor, facial detail, hair come from hash.
+ * @param {string} hashKey — portraitHashKey(...)
+ * @param {{ yearsExperience?: number, morale?: number, quality?: number, eraBucket?: string }} [opts]
+ */
+function deriveAppearanceTraits(hashKey, opts = {}) {
+  const h = crypto.createHash('sha256').update(`${hashKey}|${APPEARANCE_HASH_VERSION}`, 'utf8').digest();
+  const eraBucket = opts.eraBucket || '2000s+';
+
+  let ageIdx = h[0] % APPEARANCE_AGE.length;
+  const ye = Number(opts.yearsExperience);
+  if (Number.isFinite(ye) && ye > 0) {
+    ageIdx = Math.min(APPEARANCE_AGE.length - 1, ageIdx + Math.min(3, Math.floor(ye / 10)));
+  }
+
+  let personalStyle = APPEARANCE_STYLE[h[4] % APPEARANCE_STYLE.length];
+  const q = Number(opts.quality);
+  if (Number.isFinite(q) && q >= 78 && h[5] % 3 !== 0) {
+    personalStyle = 'flashy';
+  }
+
+  const heritage = APPEARANCE_HERITAGE[h[6] % APPEARANCE_HERITAGE.length];
+  const facialDetail = APPEARANCE_FACIAL_DETAIL[h[7] % APPEARANCE_FACIAL_DETAIL.length];
+  const demeanor = APPEARANCE_DEMEANOR[h[8] % APPEARANCE_DEMEANOR.length];
+  let hairStyle = pickHairWithEra(eraBucket, h);
+
+  const gameplayNotes = [];
+  if (Number.isFinite(q) && q >= 75) {
+    gameplayNotes.push('confident on-air polish — without erasing individual character');
+  }
+  const morale = Number(opts.morale);
+  if (Number.isFinite(morale) && morale < 42) {
+    gameplayNotes.push('tired eyes, slightly disheveled');
+  } else if (Number.isFinite(morale) && morale < 52) {
+    gameplayNotes.push('subtle fatigue');
+  }
+
+  const variationSeed = crypto
+    .createHash('sha256')
+    .update(`${hashKey}|portrait-seed-v2`, 'utf8')
+    .digest('hex')
+    .slice(0, 16);
+
+  return {
+    heritageId: heritage.id,
+    heritagePrompt: heritage.prompt,
+    facialDetail,
+    demeanor,
+    ageRange: APPEARANCE_AGE[ageIdx],
+    bodyType: APPEARANCE_BODY[h[1] % APPEARANCE_BODY.length],
+    faceShape: APPEARANCE_FACE[h[2] % APPEARANCE_FACE.length],
+    hairStyle,
+    personalStyle,
+    gameplayNotes: gameplayNotes.length ? gameplayNotes.join('; ') : '',
+    variationSeed,
   };
 }
 
@@ -95,8 +255,11 @@ module.exports = {
   portraitFileBase,
   eraBucketFromYear,
   derivePortraitProfile,
+  deriveAppearanceTraits,
+  portraitHashKey,
   normalizeNameKey,
   slugPart,
+  APPEARANCE_HASH_VERSION,
   WARDROBE_TYPES,
   EXPRESSION_TYPES,
   SETTING_TYPES,

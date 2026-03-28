@@ -8,6 +8,8 @@ const {
   portraitFileBase,
   eraBucketFromYear,
   derivePortraitProfile,
+  deriveAppearanceTraits,
+  portraitHashKey,
   portraitIdentityKey,
 } = require('./portraitIdentity');
 const { buildPortraitPrompt } = require('./portraitPrompt');
@@ -33,7 +35,23 @@ function validateBody(body) {
   if (!Number.isFinite(y) || y < 1950 || y > 2040) err.push('firstHireYear must be 1950–2040.');
   const g = body.gender;
   if (g != null && g !== 'male' && g !== 'female') err.push('gender must be male or female if provided.');
+  if (body.talentId != null && typeof body.talentId !== 'string') err.push('talentId must be a string if provided.');
   return err;
+}
+
+function readOptionalPortraitGameplay(body) {
+  const talentId =
+    typeof body.talentId === 'string' && body.talentId.trim() ? body.talentId.trim() : null;
+  let morale = Number(body.morale);
+  if (!Number.isFinite(morale)) morale = undefined;
+  else morale = Math.max(0, Math.min(100, morale));
+  let quality = Number(body.quality);
+  if (!Number.isFinite(quality)) quality = undefined;
+  else quality = Math.max(0, Math.min(100, quality));
+  let yearsExperience = Number(body.yearsExperience);
+  if (!Number.isFinite(yearsExperience)) yearsExperience = undefined;
+  else yearsExperience = Math.max(0, Math.min(80, Math.floor(yearsExperience)));
+  return { talentId, morale, quality, yearsExperience };
 }
 
 function mountPortraitRoutes(app) {
@@ -63,9 +81,11 @@ function mountPortraitRoutes(app) {
     const firstHireYear = Math.floor(Number(req.body.firstHireYear));
     const gender = req.body.gender === 'female' ? 'female' : req.body.gender === 'male' ? 'male' : null;
     const preferGrok = req.body.preferGrok === true;
+    const { talentId, morale, quality, yearsExperience } = readOptionalPortraitGameplay(req.body);
     const fileBase = portraitFileBase(name, firstHireYear);
     const eraBucket = eraBucketFromYear(firstHireYear);
     const identitySlug = fileBase;
+    const hashKey = portraitHashKey(identitySlug, talentId);
 
     try {
       const existingPath = TRY_EXTS.map((e) => path.join(PORTRAIT_DIR, `${fileBase}.${e}`)).find((p) =>
@@ -76,7 +96,13 @@ function mountPortraitRoutes(app) {
         const ext = path.extname(existingPath).slice(1) || 'png';
         const imageUrl = `/generated-portraits/${fileBase}.${ext}`;
         if (!reg?.imageUrl) {
-          const traits = derivePortraitProfile(identitySlug);
+          const traits = derivePortraitProfile(identitySlug, talentId);
+          const appearance = deriveAppearanceTraits(hashKey, {
+            yearsExperience,
+            morale,
+            quality,
+            eraBucket,
+          });
           setRegistryEntry(fileBase, {
             imageUrl,
             fileName: `${fileBase}.${ext}`,
@@ -88,6 +114,7 @@ function mountPortraitRoutes(app) {
             name,
             firstHireYear,
             gender,
+            ...appearance,
           });
         }
         const r = getRegistryEntry(fileBase);
@@ -102,11 +129,27 @@ function mountPortraitRoutes(app) {
             settingType: r?.settingType,
             identityKey: portraitIdentityKey(name, firstHireYear),
             gender: r?.gender ?? gender,
+            ageRange: r?.ageRange,
+            bodyType: r?.bodyType,
+            faceShape: r?.faceShape,
+            hairStyle: r?.hairStyle,
+            personalStyle: r?.personalStyle,
+            heritageId: r?.heritageId,
+            heritagePrompt: r?.heritagePrompt,
+            facialDetail: r?.facialDetail,
+            demeanor: r?.demeanor,
+            variationSeed: r?.variationSeed,
           },
         });
       }
 
-      const traits = derivePortraitProfile(identitySlug);
+      const traits = derivePortraitProfile(identitySlug, talentId);
+      const appearance = deriveAppearanceTraits(hashKey, {
+        yearsExperience,
+        morale,
+        quality,
+        eraBucket,
+      });
       const profile = {
         eraBucket,
         wardrobeType: traits.wardrobeType,
@@ -116,6 +159,8 @@ function mountPortraitRoutes(app) {
         name,
         firstHireYear,
         gender,
+        talentId: talentId || undefined,
+        ...appearance,
       };
 
       if (!preferGrok && libraryFirstEnabled() && gender) {
@@ -143,6 +188,16 @@ function mountPortraitRoutes(app) {
               settingType: profile.settingType,
               identityKey: profile.identityKey,
               gender: profile.gender,
+              ageRange: profile.ageRange,
+              bodyType: profile.bodyType,
+              faceShape: profile.faceShape,
+              hairStyle: profile.hairStyle,
+              personalStyle: profile.personalStyle,
+              heritageId: profile.heritageId,
+              heritagePrompt: profile.heritagePrompt,
+              facialDetail: profile.facialDetail,
+              demeanor: profile.demeanor,
+              variationSeed: profile.variationSeed,
             },
           });
         }
@@ -188,6 +243,16 @@ function mountPortraitRoutes(app) {
           settingType: profile.settingType,
           identityKey: profile.identityKey,
           gender: profile.gender,
+          ageRange: profile.ageRange,
+          bodyType: profile.bodyType,
+          faceShape: profile.faceShape,
+          hairStyle: profile.hairStyle,
+          personalStyle: profile.personalStyle,
+          heritageId: profile.heritageId,
+          heritagePrompt: profile.heritagePrompt,
+          facialDetail: profile.facialDetail,
+          demeanor: profile.demeanor,
+          variationSeed: profile.variationSeed,
         },
       });
     } catch (e) {

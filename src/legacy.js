@@ -3657,6 +3657,19 @@ function setNextFreqListsForMarket(marketId){
   _freqAmList=m.amFreqs&&m.amFreqs.length?m.amFreqs:AMF;
   _freqFmList=m.fmFreqs&&m.fmFreqs.length?m.fmFreqs:FMF;
 }
+/** Randomize dial order each new game so blueprint idx → frequency isn’t fixed (e.g. Underdog idx 1 was always 2nd AM). */
+function shuffleFreqListsForNewGame(){
+  const shuf=arr=>{
+    const a=arr.slice();
+    for(let i=a.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      const t=a[i];a[i]=a[j];a[j]=t;
+    }
+    return a;
+  };
+  _freqAmList=shuf(_freqAmList);
+  _freqFmList=shuf(_freqFmList);
+}
 function nextFreq(type){return type==='AM'?_freqAmList[amfIdx++%_freqAmList.length]:_freqFmList[fmfIdx++%_freqFmList.length];}
 
 // ── AM 50kW density by market tier (structural realism — mega markets still have few true 50kW blowtorches vs blueprint slots) ──
@@ -6342,6 +6355,7 @@ function applyMarketOpeningShape(stations,marketId){
 function genMarket(scenId){
   UC=new Set();UB=new Set();amfIdx=0;fmfIdx=0;
   setNextFreqListsForMarket(ACTIVE_MARKET);
+  shuffleFreqListsForNewGame();
   // Resolve scenario first so we can build BP talent at the correct start year
   const sc=scenId?SC.find(s=>s.id===scenId)||pick(SC):pick(SC);
   const bpYear=sc.startYear||1970;
@@ -11590,6 +11604,9 @@ async function queueTalentPortrait(t){
   t._portraitPending=true;
   const firstYear=talentPortraitFirstYear(t);
   try{
+    const cy=typeof G!=='undefined'&&G?.year!=null?G.year:1970;
+    const start=t._careerStartYear!=null&&t._careerStartYear!==undefined?t._careerStartYear:t._hireYear!=null?t._hireYear:firstYear;
+    const yearsExperience=Math.max(0,Math.floor(cy-start));
     const res=await fetch('/api/generate-portrait',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -11597,6 +11614,10 @@ async function queueTalentPortrait(t){
         name:t.name,
         firstHireYear:firstYear,
         gender:t.gender==='female'?'female':t.gender==='male'?'male':undefined,
+        talentId:t.id||undefined,
+        morale:typeof t.morale==='number'?t.morale:undefined,
+        quality:typeof t.quality==='number'?t.quality:undefined,
+        yearsExperience,
       }),
     });
     const data=await res.json().catch(()=>({}));
@@ -12951,7 +12972,6 @@ function rStns(){
           ?['<button class="abt g" onclick="openSell(\''+s.id+'\')">💰 SELL '+legLbl(s)+'</button>','<button class="abt g" onclick="openSell(\''+junior.id+'\')">💰 SELL '+legLbl(junior)+'</button>']
           :['<button class="abt g" onclick="openSell(\''+s.id+'\')">💰 SELL '+legLbl(s)+'</button>'];
         const progAct=(op.ops?.progBudget||0)>0?'g active':'g';
-        const progLbl=(op.ops?.progBudget||0)>0?' · '+f$(op.ops.progBudget)+'/p':'';
         const scActEmpty='<div class="sc-act-empty" aria-hidden="true"></div>';
         const pack2=btns=>{
           const a=btns.filter(x=>x&&String(x).trim()!=='');
@@ -12964,7 +12984,8 @@ function rStns(){
           return '<div class="sc-act">'+cells.join('')+'</div>';
         };
         const sec=(title,first,inner)=>'<div class="sc-card-sec'+(first?' sc-card-sec--first':'')+'"><div class="sc-card-sec-h">'+title+'</div>'+inner+'</div>';
-        const progHub='<button class="abt '+progAct+'" style="width:100%;box-sizing:border-box;padding:14px;font-size:15px;letter-spacing:0.5px" onclick="openProgramming(\''+op.id+'\')">📻 PROGRAMMING'+progLbl+'</button>';
+        const progBudgetLine='<div style="font-size:13px;color:var(--mut);line-height:1.45">Programming <strong style="color:var(--off)">'+f$(op.ops?.progBudget||0)+'</strong>/p</div>';
+        const progHub='<button class="abt '+progAct+'" style="width:100%;box-sizing:border-box;padding:14px;font-size:15px;letter-spacing:0.5px" onclick="openProgramming(\''+op.id+'\')">📻 PROGRAMMING</button>';
         const sportsFr=[];
         if(sportsBtn)sportsFr.push(sportsBtn);
         if(franchiseBtn)sportsFr.push(franchiseBtn);
@@ -12976,10 +12997,10 @@ function rStns(){
         if(_m1)fmUniq.push(_m1);
         if(_m2&&_m2!==_m1)fmUniq.push(_m2);
         const adminBtns=[...histArr,swapBtn,...fmUniq,...sellArr,streamBtn,simBtn];
-        const mkLine='<div style="font-size:13px;color:var(--mut);margin-bottom:10px;line-height:1.45">Marketing <strong style="color:var(--off)">'+f$(op.ops.promo||0)+'</strong>/p · Community ID <strong style="color:var(--off)">'+Math.round(op.identity||0)+'</strong>'+((op.identityBudget||0)>0?' <span style="color:var(--amb)">★</span>':'')+'</div>';
+        const mkLine='<div style="font-size:13px;color:var(--mut);margin-bottom:10px;line-height:1.45">Marketing <strong style="color:var(--off)">'+f$(op.ops.promo||0)+'</strong>/p · Local Identity <strong style="color:var(--off)">'+Math.round(op.identity||0)+'</strong>'+((op.identityBudget||0)>0?' <span style="color:var(--amb)">★</span>':'')+'</div>';
         return '<div class="sc-card-actions">'+
           sec('TALENT',true,'<button class="abt d" type="button" style="width:100%;box-sizing:border-box;padding:14px;font-size:15px;letter-spacing:0.5px" onclick="openManageTalent(\''+op.id+'\')">🎙 MANAGE TALENT</button>')+
-          sec('PROGRAMMING',false,'<div style="display:flex;flex-direction:column;gap:10px;width:100%">'+progHub+(sportsFrHtml||'')+'</div>')+
+          sec('PROGRAMMING',false,'<div style="display:flex;flex-direction:column;gap:10px;width:100%">'+progBudgetLine+progHub+(sportsFrHtml||'')+'</div>')+
           sec('MARKETING',false,mkLine+'<div class="wl-logo-status" id="wl-logo-status-'+op.id+'" style="font-size:12px;color:var(--amb);margin-bottom:10px;min-height:16px"></div>'+pack2(['<button class="abt b" onclick="openBrandMarketing(\''+op.id+'\')">📣 BRAND & MARKETING</button>','<button class="abt" onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
           sec('SALES',false,pack2(['<button class="abt '+(sfActive?'g':'')+'" onclick="openSales(\''+op.id+'\')">'+salesLbl+'</button>','<button class="abt" onclick="openSpots(\''+op.id+'\')">📻 SPOT LOAD</button>']))+
           sec('ADMINISTRATION · STRUCTURE',false,pack2(adminBtns))+
