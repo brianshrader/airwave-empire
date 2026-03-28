@@ -8712,6 +8712,8 @@ function manageTalentDaypartBlockHtml(s,sl,_simSrc,stationOQ){
   const perfCol=contribution>=25?'var(--grn)':contribution>=12?'var(--amb)':'var(--red)';
   const fitPct=Math.round((t.formatFit[s.format]||0.3)*100);
   const cyr=Math.round((t.cyr||0)*10)/10;
+  const fireBuy=talentFireBuyout(t);
+  const fireLbl=fireBuy>0?`FIRE (${f$(fireBuy)})`:'FIRE';
   return`<div class="mt-slot" style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:12px">
     <div class="msh" style="margin-bottom:10px">${SL[sl]}</div>
     <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start">
@@ -8732,7 +8734,7 @@ function manageTalentDaypartBlockHtml(s,sl,_simSrc,stationOQ){
           <button class="abt" type="button" onclick="mtOpenMoveSameStation('${s.id}','${sl}')">MOVE</button>
           <button class="abt" type="button" onclick="mtBeginTransfer('${s.id}','${sl}')">TRANSFER</button>
           <button class="abt" type="button" style="border-color:var(--amb);color:var(--amb)" onclick="rosterBenchClick('${s.id}','${sl}')">BENCH</button>
-          <button class="abt d" type="button" onclick="rosterFirePrompt('${s.id}','${sl}')">FIRE</button>
+          <button class="abt d" type="button" onclick="rosterFirePrompt('${s.id}','${sl}')">${fireLbl}</button>
         </div>
       </div>
     </div>
@@ -8951,53 +8953,381 @@ function updSpots(sid,v){
 }
 function doSpots(){const sid=ensureOpsSourceSid(SS.sid);SS.sid=sid;const s=G.stations.find(st=>st.id===sid);if(!s)return;s.ops.spots=SS.val;G.news.unshift({v:'LOW',t:`${s.callLetters} spot load set to ${SS.val} min/hr — revenue impact next period.`,y:G.year,p:G.period});MP.action('spots',{sid,spots:SS.val});cm('m-sp');renderAll();}
 
-// 3. PROMOTION — scaffold once, update display only
-let PS={sid:null,val:0};
-function openPromo(sid){
+// 3. PROMOTION — unified in openBrandMarketing / bmDoPromo (legacy openPromo → same)
+
+// ── BRAND & MARKETING (unified modal; alignment + summary are messaging-only for now) ──
+let BM_ACTIVE_SID=null;
+function bmSafeElId(sid){return String(sid==null?'':sid).replace(/[^a-zA-Z0-9]/g,'_');}
+function brandMarketingStationLegs(primarySid){
+  const s=G.stations.find(st=>st.id===primarySid);
+  if(!s)return[];
+  const op=simulcastOperationalSource(s);
+  const out=[op];
+  const p=simulcastPartnerStation(op);
+  if(p&&p.id!==op.id&&mpIsMe(op)&&mpIsMe(p))out.push(p);
+  return out;
+}
+const BRAND_KEYWORD_BUCKETS={
+  country:['country','wolf','wolves','bear','outlaw','bull','legend','honky','nashville','rodeo','cotton','wrangler','hank'],
+  rock:['rock','eagle','eagles','fox','buzz','riff','metal','grunge','hammer'],
+  news:['news','talk','truth','freedom','wins','update','hour'],
+  pop:['hit','mix','kiss','chr','top 40','hot','b106','z100','q100'],
+  ac:['lite','easy','star','soft','breeze','magic','smooth'],
+  oldies:['kool','oldies','classic','gold','memory'],
+  sports:['sports','espn','game','team','score','fan'],
+};
+function formatBrandFamily(fmt){
+  const f=String(fmt||'');
+  if(/COUNTRY|NASHVILLE/.test(f))return 'country';
+  if(/ROCK|ALTERNATIVE|GRUNGE|METAL|ALBUM|CLASSIC_ROCK|ACTIVE_ROCK/.test(f))return 'rock';
+  if(/NEWS|TALK|ALL_NEWS|POLITICAL/.test(f))return 'news';
+  if(/CHR|HIT|RHYTHMIC|URBAN_CONTEMP|TOP|DANCE|PARTY/.test(f))return 'pop';
+  if(/AC$|_AC|ADULT_CONTEMP|SOFT_|HOT_AC|MODERN_AC/.test(f))return 'ac';
+  if(/OLDIES|CLASSIC_HITS|GOLD|NOSTALGIA/.test(f))return 'oldies';
+  if(/SPORTS/.test(f))return 'sports';
+  if(/GOSPEL|INSPIRATIONAL|CHRISTIAN/.test(f))return 'gospel';
+  if(/JAZZ/.test(f))return 'jazz';
+  if(/SOUL|RNB|URBAN/.test(f))return 'soul';
+  return 'general';
+}
+function brandKeywordScoresForText(text){
+  const t=String(text||'').toLowerCase();
+  const scores={};
+  let bestK='general',bestSc=-1;
+  for(const [k,words] of Object.entries(BRAND_KEYWORD_BUCKETS)){
+    let sc=0;
+    for(const w of words){if(w.trim()&&t.includes(w.trim()))sc++;}
+    scores[k]=sc;
+    if(sc>bestSc){bestSc=sc;bestK=k;}
+  }
+  return {scores,bestK,bestSc:Math.max(0,bestSc)};
+}
+/** Returns lightweight alignment state (UI / future hooks). No ratings impact yet. */
+function computeBrandAlignment(s){
+  const fmt=formatBrandFamily(s.format);
+  const text=((s.brand||'')+' '+(s.callLetters||'')).toLowerCase();
+  const {scores,bestK,bestSc}=brandKeywordScoresForText(text);
+  const home=fmt!=='general'?(scores[fmt]||0):0;
+  let mismatch='none';
+  if(fmt!=='general'&&bestK!==fmt&&bestSc>=2&&bestSc>home)mismatch='strong';
+  else if(fmt!=='general'&&bestK!==fmt&&bestSc>home)mismatch='weak';
+  const prCap=promoBudgetCapForPeriod(G);
+  const promo=s.ops?.promo||0;
+  const prRatio=prCap>0?promo/prCap:0;
+  let promoTier='mid';
+  if(prRatio<0.09)promoTier='low';
+  else if(prRatio>0.58)promoTier='high';
+  const flipRecent=(s._formatAge!==undefined&&s._formatAge<4);
+  let score=55;
+  if(mismatch==='strong')score-=28;
+  else if(mismatch==='weak')score-=12;
+  if(flipRecent)score-=12;
+  if(promoTier==='low')score-=8;
+  if(promoTier==='high')score+=6;
+  if(home>=bestSc&&fmt!=='general')score+=15;
+  if(s.cosmeticLogoUrl)score+=5;
+  score=Math.max(0,Math.min(100,Math.round(score)));
+  const bucket=score>=68?'strong':score>=42?'moderate':'weak';
+  return {score,bucket,mismatch,flipRecent,promoTier,fmtFamily:fmt};
+}
+function buildMarketingManagerSummary(s){
+  const a=computeBrandAlignment(s);
+  const cand=[];
+  if(a.mismatch==='strong'||a.mismatch==='weak')
+    cand.push({p:1,t:'Your branding doesn\'t match your format. Listeners may be confused.'});
+  if(a.flipRecent)cand.push({p:2,t:'Recent format change — your identity may not be clear yet.'});
+  const prCap=promoBudgetCapForPeriod(G);
+  const promo=s.ops?.promo||0;
+  const prRatio=prCap>0?promo/prCap:0;
+  if(prRatio<0.09)cand.push({p:3,t:'Marketing spend is low. Awareness is limited.'});
+  else if(prRatio>0.58)cand.push({p:3,t:'Heavy marketing spend — good for launches; returns may taper.'});
+  cand.sort((x,y)=>x.p-y.p);
+  const lines=cand.map(c=>c.t);
+  if(lines.length===0)lines.push('Brand and format are well aligned.');
+  else if(a.bucket==='strong'&&lines.length<3)lines.push('Strong overall brand alignment.');
+  return lines.slice(0,3);
+}
+function bmPickBrand(sid,b){
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  s.brand=b;
+  const safe=bmSafeElId(sid);
+  const prev=document.getElementById('bm-brand-preview-'+safe);
+  if(prev)prev.textContent='"'+b+'"';
+  const inp=document.getElementById('bm-brand-custom-'+safe);
+  if(inp)inp.value=b;
+  document.querySelectorAll('.bm-bp-'+safe).forEach(el=>{el.classList.toggle('bpsel',el.textContent===b);});
+  renderAll();
+}
+function bmUpdBrand(sid,v){
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  s.brand=v||s.brand;
+  const safe=bmSafeElId(sid);
+  const prev=document.getElementById('bm-brand-preview-'+safe);
+  if(prev)prev.textContent='"'+((v||s.brand)||'')+'"';
+  document.querySelectorAll('.bm-bp-'+safe).forEach(el=>el.classList.remove('bpsel'));
+  renderAll();
+}
+function bmUpdRenamePreview(sid){
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const safe=bmSafeElId(sid);
+  const pfxEl=document.getElementById('bm-rn-prefix-'+safe);
+  const sfxEl=document.getElementById('bm-rn-suffix-'+safe);
+  if(!pfxEl||!sfxEl)return;
+  const sfx=sfxEl.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,3);
+  sfxEl.value=sfx;
+  const reqPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
+  const val=(pfxEl.value||reqPref)+sfx;
+  const preview=document.getElementById('bm-rn-preview-'+safe);
+  const note=document.getElementById('bm-rn-note-'+safe);
+  const btn=document.getElementById('bm-rn-btn-'+safe);
+  const partnerId=s?.simulcastWith;
+  const myStationIds=new Set((MP.mode==='live'?G.ps.filter(st=>st._mpOwner===MP.playerId):G.ps).map(st=>st.id));
+  const taken=G.stations.some(st=>{
+    if(st.callLetters!==val)return false;
+    if(st.id===sid||st.id===partnerId)return false;
+    const stIsAM=st.sig.type==='AM'&&!st.fmBooster;
+    const sIsAM2=s?(s.sig.type==='AM'&&!s.fmBooster):false;
+    if(myStationIds.has(st.id)&&stIsAM!==sIsAM2)return false;
+    return true;
+  });
+  const prefixOk=(pfxEl.value||reqPref)===reqPref;
+  const valid=sfx.length>=2&&prefixOk;
+  const partnerHasSame=s&&partnerId&&G.stations.find(st=>st.id===partnerId)?.callLetters===val;
+  const dispVal=s?.simulcastWith&&!partnerHasSame?val:(s?.simulcastWith?val+(s.sig.type==='AM'?'-AM':'-FM'):val);
+  if(preview)preview.textContent=valid?dispVal:'—';
+  if(note){
+    if(!prefixOk)note.innerHTML=`<span style="color:var(--red)">This market requires ${reqPref} call letters only.</span>`;
+    else if(!sfx)note.textContent='Enter 2–3 letters after the prefix.';
+    else if(sfx.length<2)note.textContent='Need at least 2 letters after the prefix.';
+    else if(taken)note.innerHTML=`<span style="color:var(--red)">${val} is already in use.</span>`;
+    else note.innerHTML=`<span style="color:var(--grn)">✓ ${val} is available.</span>`;
+  }
+  if(btn)btn.disabled=!(valid&&!taken);
+}
+function bmDoRename(sid){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const safe=bmSafeElId(sid);
+  const pfxEl=document.getElementById('bm-rn-prefix-'+safe);
+  const sfxEl=document.getElementById('bm-rn-suffix-'+safe);
+  if(!pfxEl||!sfxEl)return;
+  const reqPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
+  const sfx=sfxEl.value.toUpperCase().replace(/[^A-Z]/g,'').slice(0,3);
+  const val=(pfxEl.value||reqPref)+sfx;
+  if(sfx.length<2)return;
+  if(val[0]!==reqPref){showToast(`Call letters in this market must start with ${reqPref}.`,'warn');return;}
+  const partnerId=s.simulcastWith;
+  const myIds=new Set((MP.mode==='live'?G.ps.filter(st=>st._mpOwner===MP.playerId):G.ps).map(st=>st.id));
+  const sIsAMr=s.sig.type==='AM'&&!s.fmBooster;
+  const nameTaken=G.stations.some(st=>{
+    if(st.callLetters!==val)return false;
+    if(st.id===sid||st.id===partnerId)return false;
+    const stIsAMr=st.sig.type==='AM'&&!st.fmBooster;
+    if(myIds.has(st.id)&&stIsAMr!==sIsAMr)return false;
+    return true;
+  });
+  if(nameTaken)return;
+  const old=callDisplay(s);
+  s.callLetters=val;
+  G.news.unshift({v:'LOW',t:`${old} officially renamed ${callDisplay(s)} (${s.freq}) — brand: "${s.brand}"`,y:G.year,p:G.period});
+  MP.action('rename', {sid:s.id, callLetters:s.callLetters, brand:s.brand});
+  renderAll();
+  if(BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
+}
+function bmUpdPromo(sid,v){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const prCap=promoBudgetCapForPeriod(G);
-  PS={sid,val:Math.min(s.ops.promo||0,prCap)};
-  const simNote=s.simulcastWith?`<div class="ibox">📡 Simulcast tip: Promote the <strong>FM</strong> to migrate listeners from AM. FM promotion builds the digital audience; AM promotion only sustains the legacy signal.</div>`:'';
-  document.getElementById('prb').innerHTML=`
-    <p class="di">Marketing campaigns — billboards, contests, van tours, giveaways. Audience-facing promotion builds ratings and share over time. Higher budgets produce bigger share boosts each period.</p>
-    ${simNote}
-    <div class="slsec">
-      <div class="sll"><span>MARKETING BUDGET / PERIOD</span><strong id="pr-val">${f$(PS.val)}</strong></div>
-      <input type="range" min="0" max="${prCap}" step="1000" value="${PS.val}" oninput="updPromo('${s.id}',this.value)">
-      <div class="sln2" id="pr-note"></div>
-    </div>
-    <div class="ibox">Current: <strong>${f$(s.ops.promo||0)}/period</strong> · Station share: <strong>${pct(s.rat.share)}</strong></div>
-    <button class="cfm" onclick="doPromo()">SET BUDGET</button>
-    <button class="cnl" onclick="cm('m-pr2')">CANCEL</button>`;
-  updPromo(sid, PS.val);
-  om('m-pr2');
+  const val=Math.min(parseInt(v,10)||0,prCap);
+  const safe=bmSafeElId(sid);
+  const vEl=document.getElementById('bm-pr-val-'+safe),nEl=document.getElementById('bm-pr-note-'+safe);
+  if(vEl)vEl.textContent=f$(val);
+  if(nEl){
+    const baseShare=s.rat.share||0.01;
+    const estShareBoost=Math.min(0.03,(val/Math.max(1,prCap))*0.04*(1/Math.max(baseShare*10,1)));
+    const estRevGain=Math.round(estShareBoost*s.fin.rev/Math.max(baseShare,0.001));
+    const net=estRevGain-val;
+    const tier=val>=prCap*0.58?'Major campaign':val>=prCap*0.28?'Active campaign':val>=prCap*0.09?'Light promotion':'Minimal presence';
+    nEl.innerHTML=`<strong>${tier}</strong><br>Est. share lift: <strong style="color:var(--grn)">+${(estShareBoost*100).toFixed(2)}%</strong> · Est. revenue: <strong style="color:${net>=0?'var(--grn)':'var(--amb)'}">~${f$(Math.abs(net))} ${net>=0?'net gain':'net cost'}/period</strong><br><span style="color:var(--mut);font-size:13px">Low spend saves cash but slows growth. Heavy spend can support a new brand, but returns may diminish.</span>`;
+  }
 }
-function updPromo(sid,v){
+function bmDoPromo(sid){
   sid=ensureOpsSourceSid(sid);
-  PS.val=parseInt(v);PS.sid=sid;
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const safe=bmSafeElId(sid);
+  const range=document.getElementById('bm-pr-range-'+safe);
   const prCap=promoBudgetCapForPeriod(G);
-  // Promotion boosts ratings share — small stations get bigger lift (harder to ignore a newcomer)
-  const baseShare=s.rat.share||0.01;
-  const estShareBoost=Math.min(0.03,(PS.val/Math.max(1,prCap))*0.04*(1/Math.max(baseShare*10,1)));
-  const estRevGain=Math.round(estShareBoost*s.fin.rev/Math.max(baseShare,0.001));
-  const net=estRevGain-PS.val;
-  const tier=PS.val>=prCap*0.58?'Major campaign — billboards + contests + van tour':PS.val>=prCap*0.28?'Active campaign — radio ads + events':PS.val>=prCap*0.09?'Light promotion — social + local ads':'Minimal presence';
-  const vEl=document.getElementById('pr-val'),nEl=document.getElementById('pr-note');
-  if(vEl)vEl.textContent=f$(PS.val);
-  if(nEl)nEl.innerHTML=`<strong>${tier}</strong><br>Est. share lift: <strong style="color:var(--grn)">+${(estShareBoost*100).toFixed(2)}%</strong> · Est. revenue gain: <strong style="color:${net>=0?'var(--grn)':'var(--amb)'}">~${f$(Math.abs(net))} ${net>=0?'net gain':'net cost'}/period</strong>`;
-}
-function doPromo(){
-  const sid=ensureOpsSourceSid(PS.sid);PS.sid=sid;
-  const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  const cap=promoBudgetCapForPeriod(G);
-  const v=Math.min(PS.val,cap);
+  const v=Math.min(parseInt(range?.value||'0',10)||0,prCap);
+  if(!s.ops)s.ops={spots:14,sell:0.65,promo:0,progBudget:0};
   s.ops.promo=v;
-  // Revenue impact applies next period when ratings engine runs — not immediately
   G.news.unshift({v:'LOW',t:`${s.callLetters} marketing budget set to ${f$(v)}/period — takes effect next period.`,y:G.year,p:G.period});
-  MP.action('promo',{sid:PS.sid,promo:v});
-  cm('m-pr2');renderAll();
+  MP.action('promo',{sid,promo:v});
+  renderAll();
+  if(BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
+}
+function bmUpdIdent(sid,v){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const val=parseInt(v,10)||0;
+  const safe=bmSafeElId(sid);
+  const vEl=document.getElementById('bm-ci-val-'+safe),nEl=document.getElementById('bm-ci-note-'+safe);
+  if(vEl)vEl.textContent=f$(val);
+  if(nEl){
+    if(val===0)nEl.textContent='No investment — identity grows only through time and tenure.';
+    else{
+      const boost=Math.round((val/10000)*1.2*10)/10;
+      nEl.innerHTML=`Accelerates identity growth by ~<strong style="color:var(--grn)">+${boost}× rate</strong> &nbsp;·&nbsp; charged each period<br><span style="color:var(--mut)">Identity can\'t be bought outright — it grows through consistency.</span>`;
+    }
+  }
+}
+function bmDoIdent(sid){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const safe=bmSafeElId(sid);
+  const range=document.getElementById('bm-ci-range-'+safe);
+  const v=parseInt(range?.value||'0',10)||0;
+  s.identityBudget=v;
+  G.news.unshift({v:'LOW',t:`${s.callLetters} community investment set to ${f$(v)}/period${v===0?' — discontinued.':'.'}`,y:G.year,p:G.period});
+  MP.action('ident', {sid, budget:v});
+  renderAll();
+  if(BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
+}
+function brandMarketingIdentityBlockHtml(leg){
+  const s=leg;
+  const sid=s.id;
+  const safe=bmSafeElId(sid);
+  const cur=s.callLetters||'';
+  const requiredPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
+  const prefix=requiredPref;
+  const suffix=(cur[0]==='W'||cur[0]==='K')?cur.slice(1):cur;
+  const partner=G.stations.find(st=>st.id!==s.id&&(st.simulcastWith===s.id||s.simulcastWith===st.id));
+  const partnerNote=partner?`<div class="ibox" style="margin-bottom:10px">Simulcast with <strong>${partner.callLetters}</strong> — matching calls on both can show as <strong>-AM</strong> / <strong>-FM</strong>.</div>`:'';
+  const pills=getBrandSuggestions(s).map(b=>'<span class="bp bm-bp-'+safe+(s.brand===b?' bpsel':'')+'" onclick="bmPickBrand(\''+sid+'\',\''+b.replace(/'/g,"\\'")+'\')">'+rosterHtmlEsc(b)+'</span>').join('');
+  return`<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
+    <div class="msh" style="margin-bottom:10px">${callDisplay(s)} · ${rosterHtmlEsc(FM[s.format]?.l||s.format)}</div>
+    ${partnerNote}
+    <div class="slsec">
+      <div class="sll"><span>CALL LETTERS</span><strong id="bm-rn-preview-${safe}">${rosterHtmlEsc(callDisplay(s))}</strong></div>
+      <div style="display:flex;align-items:center;gap:0;margin-top:10px">
+        <input type="hidden" id="bm-rn-prefix-${safe}" value="${prefix}">
+        <span style="background:var(--crd);border:1px solid var(--bdh);border-right:none;color:var(--amb);font-family:var(--fd);font-size:22px;letter-spacing:3px;padding:10px 12px;min-width:40px;text-align:center">${prefix}</span>
+        <input type="text" id="bm-rn-suffix-${safe}" maxlength="3" value="${suffix}"
+          style="width:100%;background:var(--crd);border:1px solid var(--bdh);color:var(--wht);font-family:var(--fd);font-size:22px;letter-spacing:4px;padding:10px 14px;outline:none;text-transform:uppercase"
+          oninput="bmUpdRenamePreview('${sid}')" onkeydown="if(event.key==='Enter')bmDoRename('${sid}')">
+      </div>
+      <div class="sln2" id="bm-rn-note-${safe}" style="margin-top:8px"></div>
+    </div>
+    <div style="margin-top:14px;border-top:1px solid var(--bdr);padding-top:12px">
+      <div class="sll" style="margin-bottom:6px"><span>BRAND / POSITIONING</span><strong id="bm-brand-preview-${safe}" style="color:var(--amb)">"${rosterHtmlEsc(s.brand||'')}"</strong></div>
+      <div style="font-size:14px;color:var(--mut);margin-bottom:8px">Suggestions — or type your own (used for logos and presentation):</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${pills}</div>
+      <input type="text" id="bm-brand-custom-${safe}" value="${rosterHtmlEsc(s.brand||'')}"
+        style="width:100%;box-sizing:border-box;background:var(--crd);border:1px solid var(--bdh);color:var(--wht);font-family:var(--ft);font-size:15px;padding:10px 12px;outline:none"
+        oninput="bmUpdBrand('${sid}',this.value)">
+    </div>
+    <button class="cfm" type="button" id="bm-rn-btn-${safe}" onclick="bmDoRename('${sid}')" style="margin-top:12px">APPLY CALL LETTER CHANGE</button>
+  </div>`;
+}
+function brandMarketingLogoBlockHtml(leg){
+  const s=leg;
+  const safe=bmSafeElId(s.id);
+  const rel=s.cosmeticLogoUrl?(s.cosmeticLogoUrl+(s.cosmeticLogoV?'?v='+s.cosmeticLogoV:'')):'';
+  const img=rel?`<div style="text-align:center;margin:10px 0"><img class="bm-logo-hero" src="${rel}" alt="" draggable="false" onclick="wlOpenLogoModal('${s.id}')" title="View full size"></div>`:`<p class="di" style="color:var(--mut)">No logo yet — generate one from your brand name and format.</p>`;
+  return`<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
+    <div class="msh" style="margin-bottom:8px">VISUAL BRANDING — ${rosterHtmlEsc(callDisplay(s))}</div>
+    <div id="bm-logo-status-${safe}" style="font-size:12px;color:var(--amb);min-height:18px;margin-bottom:6px"></div>
+    ${img}
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <button type="button" class="abt" onclick="wlGenerateLogo('${s.id}',false)">${s.cosmeticLogoUrl?'↻ Regenerate Logo':'🖼 Generate Logo'}</button>
+      ${s.cosmeticLogoUrl?`<button type="button" class="abt" onclick="wlGenerateLogo('${s.id}',true)">↻ New art (same brief)</button>`:''}
+    </div>
+  </div>`;
+}
+function brandMarketingPromoBlockHtml(leg){
+  const s=leg;
+  const sid=s.id;
+  const safe=bmSafeElId(sid);
+  const prCap=promoBudgetCapForPeriod(G);
+  const val=Math.min(s.ops?.promo||0,prCap);
+  const simNote=s.simulcastWith?`<div class="ibox" style="margin-bottom:10px">📡 Simulcast: promoting the <strong>FM</strong> helps migrate listeners from AM.</div>`:'';
+  return`<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
+    <div class="msh" style="margin-bottom:8px">MARKETING BUDGET — ${rosterHtmlEsc(callDisplay(s))}</div>
+    ${simNote}
+    <p class="di" style="font-size:14px">Billboards, contests, van tours — builds ratings share over time. Takes effect next period.</p>
+    <div class="slsec">
+      <div class="sll"><span>BUDGET / PERIOD</span><strong id="bm-pr-val-${safe}">${f$(val)}</strong></div>
+      <input type="range" id="bm-pr-range-${safe}" min="0" max="${prCap}" step="1000" value="${val}" oninput="bmUpdPromo('${sid}',this.value)">
+      <div class="sln2" id="bm-pr-note-${safe}"></div>
+    </div>
+    <div class="ibox">Current: <strong>${f$(s.ops?.promo||0)}/period</strong> · Share: <strong>${pct(s.rat.share)}</strong></div>
+    <button class="cfm" type="button" onclick="bmDoPromo('${sid}')">SET MARKETING BUDGET</button>
+  </div>`;
+}
+function brandMarketingIdentInvestHtml(leg){
+  const s=leg;
+  const sid=s.id;
+  const safe=bmSafeElId(sid);
+  const iv=s.identityBudget||0;
+  const identity=Math.round(s.identity||0);
+  const idLabel=identity>=70?'CORNERSTONE':identity>=45?'EMBEDDED':identity>=25?'RECOGNIZED':identity>=10?'EMERGING':'UNKNOWN';
+  return`<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
+    <div class="msh" style="margin-bottom:8px">COMMUNITY IDENTITY — ${rosterHtmlEsc(callDisplay(s))}</div>
+    <p class="di" style="font-size:14px">Local remotes, sponsorships, civic presence — deepens listener loyalty beyond ratings (charged each period).</p>
+    <div class="sr" style="margin-bottom:8px"><span class="lb">Identity score</span><span class="vl">${identity}/100 — ${idLabel}</span></div>
+    <div class="slsec">
+      <div class="sll"><span>INVESTMENT / PERIOD</span><strong id="bm-ci-val-${safe}">${f$(iv)}</strong></div>
+      <input type="range" id="bm-ci-range-${safe}" min="0" max="40000" step="1000" value="${iv}" oninput="bmUpdIdent('${sid}',this.value)">
+      <div class="sln2" id="bm-ci-note-${safe}"></div>
+    </div>
+    <button class="cfm" type="button" onclick="bmDoIdent('${sid}')">SET COMMUNITY INVESTMENT</button>
+  </div>`;
+}
+function renderBrandMarketingStation(primarySid){
+  primarySid=ensureOpsSourceSid(primarySid);
+  BM_ACTIVE_SID=primarySid;
+  const legs=brandMarketingStationLegs(primarySid);
+  const primary=legs[0];
+  if(!primary||!mpIsMe(primary))return;
+  const sum=buildMarketingManagerSummary(primary);
+  const align=computeBrandAlignment(primary);
+  const sumHtml=sum.map(t=>`<div style="font-size:15px;color:var(--off);line-height:1.45;margin-bottom:6px;padding-left:12px;border-left:3px solid var(--amb)">${rosterHtmlEsc(t)}</div>`).join('');
+  const sub=`${callDisplay(primary)} · ${FM[primary.format]?.l||primary.format} · Alignment: <span style="color:${align.bucket==='strong'?'var(--grn)':align.bucket==='moderate'?'var(--amb)':'var(--red)'}">${align.bucket.toUpperCase()}</span> (${align.score})`;
+  document.getElementById('brand-title').textContent='BRAND & MARKETING';
+  document.getElementById('brandb').innerHTML=`
+    <p class="di" style="margin-bottom:10px;color:var(--mut)">${rosterHtmlEsc(sub)}</p>
+    <div style="background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.25);border-radius:8px;padding:14px 16px;margin-bottom:18px">
+      <div class="msh" style="margin-bottom:10px">MARKETING MANAGER</div>
+      ${sumHtml}
+    </div>
+    <div class="msh" style="margin-bottom:10px">STATION IDENTITY</div>
+    ${legs.map(leg=>brandMarketingIdentityBlockHtml(leg)).join('')}
+    <div class="msh" style="margin-bottom:10px;margin-top:6px">LOGOS</div>
+    ${legs.map(leg=>brandMarketingLogoBlockHtml(leg)).join('')}
+    <div class="msh" style="margin-bottom:10px;margin-top:6px">MARKETING SPEND</div>
+    ${legs.map(leg=>brandMarketingPromoBlockHtml(leg)).join('')}
+    <div class="msh" style="margin-bottom:10px;margin-top:6px">COMMUNITY IDENTITY INVESTMENT</div>
+    ${legs.map(leg=>brandMarketingIdentInvestHtml(leg)).join('')}
+    <button class="cnl" type="button" onclick="cm('m-brand')" style="margin-top:8px">CLOSE</button>`;
+  const prCap0=promoBudgetCapForPeriod(G);
+  legs.forEach(leg=>{
+    bmUpdRenamePreview(leg.id);
+    const safe=bmSafeElId(leg.id);
+    const prEl=document.getElementById('bm-pr-range-'+safe);
+    bmUpdPromo(leg.id, prEl?prEl.value:String(Math.min(leg.ops?.promo||0,prCap0)));
+    const ciEl=document.getElementById('bm-ci-range-'+safe);
+    bmUpdIdent(leg.id, ciEl?ciEl.value:String(leg.identityBudget||0));
+  });
+}
+function openBrandMarketing(sid){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);if(!s||!mpIsMe(s))return;
+  renderBrandMarketingStation(sid);
+  om('m-brand');
+  scrollModalContentToTop('m-brand');
+}
+/** Legacy: standalone promotion modal — prefer openBrandMarketing. */
+function openPromo(sid){
+  openBrandMarketing(sid);
 }
 
 // 3a. TALENT ROSTER — assigned / bench / release (no instant fire from roster)
@@ -9023,6 +9353,8 @@ function rosterStationSectionHeaderHtml(st){
 }
 function rosterTalentOnAirCardHtml(st,sl,t,contribution,talQ,fitPct,trendWord,trendCol,perfCol){
   const slotLabel=SL[sl];
+  const fireBuy=talentFireBuyout(t);
+  const fireLbl=fireBuy>0?`FIRE (${f$(fireBuy)})`:'FIRE';
   return`
     <div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:10px">
       <div style="display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:flex-start">
@@ -9038,7 +9370,7 @@ function rosterTalentOnAirCardHtml(st,sl,t,contribution,talQ,fitPct,trendWord,tr
         <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-items:center;align-self:flex-end;flex-shrink:0">
           <button class="abt" style="padding:8px 14px;font-size:14px;letter-spacing:1px" onclick="openRosterMoveFromSlot('${st.id}','${sl}')">MOVE</button>
           <button class="abt" style="padding:8px 14px;font-size:14px;letter-spacing:1px;border-color:var(--amb);color:var(--amb)" onclick="rosterBenchClick('${st.id}','${sl}')">BENCH</button>
-          <button class="abt d" style="padding:8px 14px;font-size:14px;letter-spacing:1px" onclick="rosterFirePrompt('${st.id}','${sl}')">FIRE</button>
+          <button class="abt d" style="padding:8px 14px;font-size:14px;letter-spacing:1px" onclick="rosterFirePrompt('${st.id}','${sl}')">${fireLbl}</button>
         </div>
       </div>
     </div>`;
@@ -9126,6 +9458,11 @@ function rosterBenchClick(sid,slot){
   if(benchTalentFromSlot(sid,slot)) renderManageTalentStation(sid);
   renderAll();
 }
+/** Contract buyout to fire immediately (same formula as contract modal / station card). */
+function talentFireBuyout(t){
+  if(!t)return 0;
+  return (t.cyr||0)>0.1?Math.round(t.salary*t.cyr*0.60/500)*500:0;
+}
 /** Confirm then fire — same rules as station-card release (buyout if contract time remains). */
 function rosterFirePrompt(sid,slot){
   sid=ensureOpsSourceSid(sid);
@@ -9134,7 +9471,7 @@ function rosterFirePrompt(sid,slot){
   const sd=s.prog?.[slot];
   const t=sd?.talent;
   if(!t)return;
-  const buyout=(t.cyr||0)>0.1?Math.round(t.salary*t.cyr*0.60/500)*500:0;
+  const buyout=talentFireBuyout(t);
   const msg=`Fire ${t.name} from ${callDisplay(s)} ${SL[slot]}?${buyout>0?` Contract buyout ${f$(buyout)}.`:' No buyout.'} They leave immediately — not benched.`;
   if(!confirm(msg))return;
   doFire(sid,slot);
@@ -9718,6 +10055,7 @@ function doProg(){
 }
 // 3b2. COMMUNITY INVESTMENT
 let CI={sid:null,val:0};
+/** Community identity investment — also available inside Brand & Marketing. */
 function openIdent(sid){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
@@ -9976,6 +10314,7 @@ function applyDefaultBrandToPlayerStation(s){
   if(!s)return;
   s.brand=defaultPlayerStationBrand(s);
 }
+/** Legacy standalone rename modal — same rules as Brand & Marketing identity fields. */
 function openRename(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const cur=s.callLetters;
@@ -10820,7 +11159,8 @@ async function wlGenerateLogo(stationId,regenerate){
   const op=G.stations.find(st=>st.id===stationId);
   if(!op)return;
   const reg=typeof regenerate==='boolean'?regenerate:!!op.cosmeticLogoUrl;
-  const statusEl=document.getElementById('wl-logo-status-'+stationId);
+  const _bmSafe=bmSafeElId(stationId);
+  const statusEl=document.getElementById('wl-logo-status-'+stationId)||(_bmSafe?document.getElementById('bm-logo-status-'+_bmSafe):null);
   if(statusEl)statusEl.textContent=reg?'Regenerating…':'Generating…';
   const band=(op.fmBooster||op.sig?.type==='FM')?'FM':'AM';
   const body={
@@ -10849,6 +11189,7 @@ async function wlGenerateLogo(stationId,regenerate){
     if(statusEl)statusEl.textContent=data.cached?'From cache':'New image saved';
     autoSave();
     renderAll();
+    if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&stationId===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
   }catch(_e){
     if(statusEl)statusEl.textContent='No API — open the game at http://localhost:3000 (npm start) to generate logos.';
   }
@@ -11444,6 +11785,7 @@ function om(id){
 }
 function cm(id){
   document.getElementById(id).classList.remove('on');
+  if(id==='m-brand')BM_ACTIVE_SID=null;
   if(id==='m-sum'&&typeof G!=='undefined'&&G&&G._mpShowEndgameAfterSumClose){
     G._mpShowEndgameAfterSumClose=false;
     if(MP.mode==='live'&&G.mpPhase==='endgame'){
@@ -11454,6 +11796,7 @@ function cm(id){
 document.querySelectorAll('.ov').forEach(el=>el.addEventListener('click',e=>{
   if(e.target===el){
     if(el.id==='m-mp-endgame'&&typeof mpEndgameFrozen==='function'&&mpEndgameFrozen())return;
+    if(el.id==='m-brand')BM_ACTIVE_SID=null;
     el.classList.remove('on');
   }
 }));
@@ -12241,15 +12584,9 @@ function rStns(){
         const histArr=junior
           ?['<button class="abt" onclick="openHistory(\''+s.id+'\')">📋 HISTORY '+legLbl(s)+'</button>','<button class="abt" onclick="openHistory(\''+junior.id+'\')">📋 HISTORY '+legLbl(junior)+'</button>']
           :['<button class="abt" onclick="openHistory(\''+s.id+'\')">📋 HISTORY '+legLbl(s)+'</button>'];
-        const renArr=junior
-          ?['<button class="abt" onclick="openRename(\''+s.id+'\')">✏ RENAME '+legLbl(s)+'</button>','<button class="abt" onclick="openRename(\''+junior.id+'\')">✏ RENAME '+legLbl(junior)+'</button>']
-          :['<button class="abt" onclick="openRename(\''+s.id+'\')">✏ RENAME '+legLbl(s)+'</button>'];
         const sellArr=junior
           ?['<button class="abt g" onclick="openSell(\''+s.id+'\')">💰 SELL '+legLbl(s)+'</button>','<button class="abt g" onclick="openSell(\''+junior.id+'\')">💰 SELL '+legLbl(junior)+'</button>']
           :['<button class="abt g" onclick="openSell(\''+s.id+'\')">💰 SELL '+legLbl(s)+'</button>'];
-        const idAct=(op.identityBudget||0)>0||(op.identity||0)>=30?'g active':'';
-        const idLbl=(op.identity||0)>=1?' · '+Math.round(op.identity):'';
-        const idStar=(op.identityBudget||0)>0?' ★':'';
         const progAct=(op.ops?.progBudget||0)>0?'g active':'g';
         const progLbl=(op.ops?.progBudget||0)>0?' · '+f$(op.ops.progBudget)+'/p':'';
         const scActEmpty='<div class="sc-act-empty" aria-hidden="true"></div>';
@@ -12280,13 +12617,12 @@ function rStns(){
         const _m1=fmBtn(s),_m2=junior?fmBtn(junior):'';
         if(_m1)fmUniq.push(_m1);
         if(_m2&&_m2!==_m1)fmUniq.push(_m2);
-        const adminBtns=[...histArr,...renArr,swapBtn,...fmUniq,...sellArr];
-        const logoBtnLabel=op.cosmeticLogoUrl?'↻ Regenerate Logo':'🖼 Generate Logo';
-        const logoBtn='<button type="button" class="abt" onclick="wlGenerateLogo(\''+op.id+'\')">'+logoBtnLabel+'</button>';
+        const adminBtns=[...histArr,swapBtn,...fmUniq,...sellArr];
+        const mkLine='<div style="font-size:13px;color:var(--mut);margin-bottom:10px;line-height:1.45">Marketing <strong style="color:var(--off)">'+f$(op.ops.promo||0)+'</strong>/p · Community ID <strong style="color:var(--off)">'+Math.round(op.identity||0)+'</strong>'+((op.identityBudget||0)>0?' <span style="color:var(--amb)">★</span>':'')+'</div>';
         return '<div class="sc-card-actions">'+
           sec('TALENT',true,'<button class="abt d" type="button" onclick="openManageTalent(\''+op.id+'\')">🎙 MANAGE TALENT</button>')+
           sec('PROGRAMMING',false,pack2(progBtns))+
-          sec('MARKETING',false,'<div class="wl-logo-status" id="wl-logo-status-'+op.id+'" style="font-size:12px;color:var(--amb);margin-bottom:10px;min-height:16px"></div>'+pack2([logoBtn,'<button class="abt" onclick="openPromo(\''+op.id+'\')">📣 MARKETING BUDGET</button>','<button class="abt '+idAct+'" onclick="openIdent(\''+op.id+'\')">🏘 IDENTITY'+idLbl+idStar+'</button>','<button class="abt" onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
+          sec('MARKETING',false,mkLine+'<div class="wl-logo-status" id="wl-logo-status-'+op.id+'" style="font-size:12px;color:var(--amb);margin-bottom:10px;min-height:16px"></div>'+pack2(['<button class="abt b" onclick="openBrandMarketing(\''+op.id+'\')">📣 BRAND & MARKETING</button>','<button class="abt" onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
           sec('SALES',false,pack2(['<button class="abt '+(sfActive?'g':'')+'" onclick="openSales(\''+op.id+'\')">'+salesLbl+'</button>','<button class="abt" onclick="openSpots(\''+op.id+'\')">📻 SPOT LOAD</button>']))+
           sec('ADMINISTRATION',false,pack2(adminBtns))+
           '</div>';
