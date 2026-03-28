@@ -5160,10 +5160,23 @@ function stationRevenueMonetizationEfficiency(rankIndex,nStations,marketId){
   eff*=1-mktBig*t*0.26;
   return Math.max(0.52,Math.min(1,eff));
 }
-/** Scales staff/facility/reg/sales-fixed/ops floor with market size (revScale). Mid markets ~1×; mega markets higher. */
+/**
+ * Scales staff/facility/reg/sales-fixed/ops floor with market size (revScale).
+ * ~1× at Atlanta-scale (rs≤1); steeper lift through mid-large (Chicago ~2.8 sits on this ramp);
+ * past rs≈3 the multiplier steps down with rs so mega markets (LA ~5.2, NY higher) are softened vs extrapolating the mid ramp.
+ */
 function marketFixedCostScaleMultiplier(marketId){
   const rs=(MARKETS[marketId]||MARKETS.atlanta).revScale??1;
-  return Math.max(1,0.5+rs*0.35);
+  if(rs<=1)return 1;
+  const MID_BREAK=3;
+  const slopeMid=0.64;
+  const slopeMegaDecay=0.182;
+  const floorMega=1.72;
+  if(rs<=MID_BREAK){
+    return 1+slopeMid*(rs-1);
+  }
+  const atMid=1+slopeMid*(MID_BREAK-1);
+  return Math.max(floorMega,atMid-slopeMegaDecay*(rs-MID_BREAK));
 }
 function seedRev(stations,G){
   stations.forEach(s=>{ if(!s||s._bpSlotDeferred)return; calcRev(s,G); });

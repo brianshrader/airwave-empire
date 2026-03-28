@@ -839,6 +839,84 @@
       "firstHireYear": 1974,
       "gender": "male",
       "source": "grok"
+    },
+    "sarah-romero-1978": {
+      "imageUrl": "/generated-portraits/sarah-romero-1978.png",
+      "fileName": "sarah-romero-1978.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "casual",
+      "expressionType": "tired",
+      "settingType": "plainBackdrop",
+      "identityKey": "sarah romero|1978",
+      "name": "Sarah Romero",
+      "firstHireYear": 1978,
+      "gender": "female",
+      "source": "grok"
+    },
+    "crystal-lawrence-1978": {
+      "imageUrl": "/generated-portraits/crystal-lawrence-1978.png",
+      "fileName": "crystal-lawrence-1978.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "oddball",
+      "expressionType": "awkward",
+      "settingType": "plainBackdrop",
+      "identityKey": "crystal lawrence|1978",
+      "name": "Crystal Lawrence",
+      "firstHireYear": 1978,
+      "gender": "female",
+      "source": "grok"
+    },
+    "paul-donovan-1978": {
+      "imageUrl": "/generated-portraits/paul-donovan-1978.png",
+      "fileName": "paul-donovan-1978.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "casual",
+      "expressionType": "smug",
+      "settingType": "plainBackdrop",
+      "identityKey": "paul donovan|1978",
+      "name": "Paul Donovan",
+      "firstHireYear": 1978,
+      "gender": "male",
+      "source": "grok"
+    },
+    "sheila-cook-1978": {
+      "imageUrl": "/generated-portraits/sheila-cook-1978.png",
+      "fileName": "sheila-cook-1978.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "casual",
+      "expressionType": "tired",
+      "settingType": "plainBackdrop",
+      "identityKey": "sheila cook|1978",
+      "name": "Sheila Cook",
+      "firstHireYear": 1978,
+      "gender": "female",
+      "source": "grok"
+    },
+    "faye-diaz-1970": {
+      "imageUrl": "/generated-portraits/faye-diaz-1970.png",
+      "fileName": "faye-diaz-1970.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "casual",
+      "expressionType": "serious",
+      "settingType": "plainBackdrop",
+      "identityKey": "faye diaz|1970",
+      "name": "Faye Diaz",
+      "firstHireYear": 1970,
+      "gender": "female",
+      "source": "grok"
+    },
+    "melissa-zell-1970": {
+      "imageUrl": "/generated-portraits/melissa-zell-1970.png",
+      "fileName": "melissa-zell-1970.png",
+      "eraBucket": "1970s",
+      "wardrobeType": "casual",
+      "expressionType": "awkward",
+      "settingType": "radioStudio",
+      "identityKey": "melissa zell|1970",
+      "name": "Melissa Zell",
+      "firstHireYear": 1970,
+      "gender": "female",
+      "source": "grok"
     }
   }
 }
