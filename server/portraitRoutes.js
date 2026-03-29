@@ -102,6 +102,7 @@ function mountPortraitRoutes(app) {
             morale,
             quality,
             eraBucket,
+            gender,
           });
           setRegistryEntry(fileBase, {
             imageUrl,
@@ -149,6 +150,7 @@ function mountPortraitRoutes(app) {
         morale,
         quality,
         eraBucket,
+        gender,
       });
       const profile = {
         eraBucket,

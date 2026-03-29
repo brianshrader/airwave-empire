@@ -65,10 +65,10 @@ function buildPortraitPrompt(p) {
   const st = SETTING_DESC[p.settingType] || SETTING_DESC.plainBackdrop;
   const genderLine =
     p.gender === 'female'
-      ? 'Subject is a woman; appearance must read clearly as female.'
+      ? 'Subject is a woman; appearance must read clearly as female. Use a feminine hairstyle and a natural feminine hairline — no male-pattern baldness, no receding hairline in the male-typical sense, and no other cues that read as a man’s hair loss.'
       : p.gender === 'male'
-        ? 'Subject is a man; appearance must read clearly as male.'
-        : 'Subject is an adult; natural, believable gender presentation.';
+        ? 'Subject is a man; appearance must read clearly as male. Hairstyle and hairline may be masculine, including age-typical receding or thinning if it matches the described hair and era.'
+        : 'Subject is an adult; natural, believable gender presentation — avoid male-pattern balding or a receding male hairline unless the described hair explicitly calls for it.';
 
   const age = p.ageRange || 'adult';
   const bodyPhrase = p.bodyType ? `${p.bodyType} build` : 'average build';

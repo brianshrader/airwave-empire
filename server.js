@@ -14,6 +14,9 @@
 //
 // Run: node server.js
 // Requires: npm install express socket.io dotenv
+//
+// Spectator TV (read-only rankings, same room code): open /spectate.html?room=CODE
+// Uses socket event spectate_room — updates on each host state_broadcast (every period).
 // Image API: GROK_API_KEY for /api/generate-logo and Grok portraits. Stock portraits:
 // add files under generated-portraits/library/{male|female}/{1970s|1980s|1990s|2000s+}/
 // (see GET /api/portrait-library/status). Set PORTRAIT_LIBRARY_FIRST=0 to prefer Grok when both exist.
@@ -219,6 +222,27 @@ io.on('connection', socket => {
   });
 
   // ── JOIN ROOM ─────────────────────────────────────────────────
+  // ── SPECTATE (read-only TV board — not a player, no commit slot) ──
+  socket.on('spectate_room', ({ roomId }) => {
+    const room = getRoom(roomId);
+    if (!room) {
+      socket.emit('spectate_error', { message: 'Room not found. Check the code and try again.' });
+      return;
+    }
+    socket.join(room.id);
+    socket.emit('spectate_ok', {
+      roomId: room.id,
+      phase: room.phase,
+      G: room.G,
+      players: room.players.map(p => ({
+        name: p.name,
+        playerId: p.playerId,
+        connected: p.connected,
+      })),
+    });
+    console.log(`[SPEC] ${socket.id} spectating ${room.id} (phase=${room.phase})`);
+  });
+
   socket.on('join_room', ({ roomId, name }) => {
     const room = getRoom(roomId);
     if (!room) { socket.emit('join_error', 'Room not found.'); return; }
@@ -344,6 +368,8 @@ io.on('connection', socket => {
     if (!room.G) return;
     if (!room.G._playerCash) room.G._playerCash = {};
     room.G._playerCash[playerId] = cash;
+    // Mirror to every client so MP wallets stay aligned (guests don't apply host's full G each action).
+    io.to(roomId).emit('player_cash_mirrored', { playerId, cash });
   });
 
   // ── PLAYER ACTION ─────────────────────────────────────────────
@@ -383,9 +409,12 @@ io.on('connection', socket => {
   });
 
   // ── STATE UPDATE (host broadcasts result of advTurn) ──────────
-  socket.on('state_update', ({ roomId, G, decadeYear, sumData }) => {
+  socket.on('state_update', ({ roomId, G, decadeYear, sumData }, ack) => {
     const room = getRoom(roomId);
-    if (!room || room.hostId !== socket.id) return;
+    if (!room || room.hostId !== socket.id) {
+      if (typeof ack === 'function') ack({ ok: false, reason: 'not_host' });
+      return;
+    }
 
     room.G = G;
     room.commitLog  = {};
@@ -398,6 +427,7 @@ io.on('connection', socket => {
 
     io.to(roomId).emit('state_broadcast', { G: room.G, decadeYear: decadeYear || null, sumData: sumData || null });
     console.log(`[STATE] ${roomId} — year ${G?.year} ${G?.period===2?'FALL':'SPRING'} saved`);
+    if (typeof ack === 'function') ack({ ok: true });
   });
 
   // ── CHAT ──────────────────────────────────────────────────────

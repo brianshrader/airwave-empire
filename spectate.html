@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Wavelength — Spectator</title>
+  <style>
+    :root {
+      --bg: #0a0e14;
+      --panel: #121820;
+      --bd: #2a3544;
+      --mut: #8b9cae;
+      --off: #e6edf3;
+      --amb: #f5a623;
+      --grn: #52e36e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--off);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    header {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--bd);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px 20px;
+      background: var(--panel);
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(18px, 2.2vw, 26px);
+      letter-spacing: 0.12em;
+      font-weight: 700;
+      color: var(--amb);
+    }
+    .meta {
+      font-size: clamp(16px, 2vw, 22px);
+      color: var(--mut);
+    }
+    .meta strong { color: var(--off); }
+    .phase {
+      padding: 6px 14px;
+      border-radius: 6px;
+      background: rgba(245, 166, 35, 0.12);
+      border: 1px solid rgba(245, 166, 35, 0.35);
+      color: var(--amb);
+      font-size: clamp(13px, 1.4vw, 16px);
+      letter-spacing: 0.08em;
+    }
+    .connect-bar {
+      padding: 14px 24px;
+      background: #0d1118;
+      border-bottom: 1px solid var(--bd);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .connect-bar input {
+      padding: 10px 14px;
+      font-size: 18px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      width: 160px;
+      background: var(--panel);
+      border: 1px solid var(--bd);
+      color: var(--off);
+      border-radius: 6px;
+    }
+    .connect-bar button {
+      padding: 10px 20px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--amb);
+      color: #111;
+      border: none;
+      border-radius: 6px;
+      letter-spacing: 0.06em;
+    }
+    .connect-bar button:disabled { opacity: 0.45; cursor: not-allowed; }
+    .err {
+      color: #f87171;
+      font-size: 15px;
+      width: 100%;
+    }
+    main { flex: 1; padding: 16px 24px 32px; overflow: auto; }
+    .hint {
+      color: var(--mut);
+      font-size: clamp(14px, 1.5vw, 17px);
+      margin-bottom: 20px;
+      line-height: 1.45;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: clamp(15px, 1.8vw, 22px);
+    }
+    th {
+      text-align: left;
+      padding: 12px 14px;
+      color: var(--mut);
+      font-size: 0.72em;
+      letter-spacing: 0.14em;
+      border-bottom: 2px solid var(--bd);
+    }
+    th.num, td.num { text-align: right; width: 4rem; }
+    td {
+      padding: 14px 14px;
+      border-bottom: 1px solid var(--bd);
+    }
+    tr.player-row td.call { font-weight: 700; }
+    .pct { font-variant-numeric: tabular-nums; color: var(--grn); }
+    .owner-tag {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 4px;
+      font-size: 0.75em;
+      font-weight: 600;
+      color: #111;
+    }
+    .owner-ai { background: #4b5563; color: #e5e7eb; }
+    .draft-note {
+      font-size: clamp(16px, 2vw, 22px);
+      color: var(--mut);
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>WAVELENGTH</h1>
+    <span class="meta">Room <strong id="roomDisp">—</strong></span>
+    <span class="meta" id="whenDisp"></span>
+    <span class="phase" id="phaseDisp">Disconnected</span>
+  </header>
+  <div class="connect-bar" id="connectBar">
+    <label class="meta" for="roomIn">Code</label>
+    <input id="roomIn" maxlength="8" autocomplete="off" placeholder="ABC123"/>
+    <button type="button" id="btnConnect">Connect</button>
+    <span class="err" id="connectErr" style="display:none"></span>
+  </div>
+  <main>
+    <p class="hint" id="hint">
+      Read-only board for a TV or projector. Enter the multiplayer room code — rankings refresh automatically every time the host finishes a period (<strong>NEXT PERIOD</strong>).
+    </p>
+    <div id="board"></div>
+  </main>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+(function () {
+  const PLAYER_COLORS = ['#f5a623', '#60a5fa', '#34d399', '#f87171'];
+  const FORMAT_PRETTY = {
+    NEWS_TALK: 'News / Talk', SPORTS_TALK: 'Sports Talk', PODCAST_TALK: 'Podcast Talk', ALL_NEWS: 'All News',
+    MOR: 'MOR', TOP40: 'Top 40', CHR: 'CHR', ALBUM_ROCK: 'Album Rock', CLASSIC_ROCK: 'Classic Rock',
+    ADULT_CONTEMP: 'Hot AC / AC', HOT_AC: 'Hot AC', URBAN_CONTEMP: 'Urban', SOUL_RNB: 'Soul / R&B',
+    COUNTRY: 'Country', GOSPEL: 'Gospel', BEAUTIFUL_MUSIC: 'Beautiful Music', OLDIES: 'Oldies',
+    CLASSIC_HITS: 'Classic Hits', SPANISH: 'Spanish', ALT_ROCK: 'Alternative', PUBLIC_NEWS: 'Public',
+    PUBLIC_CLASSICAL: 'Public Classical', ADULT_STANDARDS: 'Adult Standards', RHYTHMIC: 'Rhythmic CHR',
+  };
+  function fmtLabel(key) {
+    if (!key) return '—';
+    return FORMAT_PRETTY[key] || key.replace(/_/g, ' ');
+  }
+  function pct(x) {
+    if (x == null || !isFinite(x)) return '—';
+    return (x * 100).toFixed(1) + '%';
+  }
+  let socket = null;
+  let roomId = null;
+  let playerById = {};
+  let lastG = null;
+
+  const roomIn = document.getElementById('roomIn');
+  const btnConnect = document.getElementById('btnConnect');
+  const connectErr = document.getElementById('connectErr');
+  const roomDisp = document.getElementById('roomDisp');
+  const whenDisp = document.getElementById('whenDisp');
+  const phaseDisp = document.getElementById('phaseDisp');
+  const board = document.getElementById('board');
+
+  const params = new URLSearchParams(window.location.search);
+  const initialRoom = (params.get('room') || '').trim().toUpperCase();
+  if (initialRoom) roomIn.value = initialRoom;
+
+  function setErr(msg) {
+    if (!msg) {
+      connectErr.style.display = 'none';
+      connectErr.textContent = '';
+      return;
+    }
+    connectErr.style.display = 'block';
+    connectErr.textContent = msg;
+  }
+
+  function mergePlayers(list) {
+    (list || []).forEach(function (p) {
+      playerById[p.playerId] = p.name || ('Player ' + (p.playerId + 1));
+    });
+  }
+
+  function ownerLabel(st) {
+    if (!st.isPlayer) return { text: 'AI / rival', cls: 'owner-ai' };
+    const pid = st._mpOwner;
+    const name = pid != null ? playerById[pid] : 'Player';
+    const col = PLAYER_COLORS[(pid != null ? pid : 0) % PLAYER_COLORS.length];
+    return { text: name || 'Player', style: 'background:' + col };
+  }
+
+  function renderRankings(G) {
+    if (!G || !G.stations) {
+      board.innerHTML = '<p class="draft-note">No market data yet.</p>';
+      return;
+    }
+    const comm = G.stations.filter(function (s) {
+      return s && !s._bpSlotDeferred && !s.isPublic;
+    });
+    comm.sort(function (a, b) {
+      return (b.rat && b.rat.share || 0) - (a.rat && a.rat.share || 0);
+    });
+    let rows = comm.map(function (s, i) {
+      const own = ownerLabel(s);
+      const rowCls = s.isPlayer ? 'player-row' : '';
+      const styleAttr = own.style ? ' style="' + own.style + '"' : '';
+      return (
+        '<tr class="' + rowCls + '">' +
+        '<td class="num">' + (i + 1) + '</td>' +
+        '<td class="call">' + (s.callLetters || '?') + '</td>' +
+        '<td>' + fmtLabel(s.format) + '</td>' +
+        '<td class="num pct">' + pct(s.rat && s.rat.share) + '</td>' +
+        '<td><span class="owner-tag ' + (own.cls || '') + '"' + styleAttr + '>' + esc(own.text) + '</span></td>' +
+        '</tr>'
+      );
+    }).join('');
+    board.innerHTML =
+      '<table><thead><tr>' +
+      '<th class="num">#</th><th>Station</th><th>Format</th><th class="num">Share</th><th>Owner</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table>';
+  }
+
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  function setWhen(G) {
+    if (!G) {
+      whenDisp.textContent = '';
+      return;
+    }
+    const p = G.period === 2 ? 'Fall' : 'Spring';
+    whenDisp.innerHTML = '<strong>' + G.year + '</strong> · ' + p;
+  }
+
+  function setPhase(text) {
+    phaseDisp.textContent = text;
+  }
+
+  function renderDraft(G) {
+    if (!G || !G.stations) {
+      board.innerHTML = '<p class="draft-note">Draft in progress…</p>';
+      return;
+    }
+    board.innerHTML =
+      '<p class="draft-note">Players are drafting stations. Rankings will appear when the game starts.</p>' +
+      '<p class="hint" style="margin-top:8px">' +
+      (G.city || 'Market') + ' · ' + (G.stations.filter(function (s) { return s && !s._bpSlotDeferred; }).length) +
+      ' on-air signals in the pool.</p>';
+  }
+
+  function onGameState(G, phase) {
+    lastG = G;
+    setWhen(G);
+    if (phase === 'draft') {
+      setPhase('Draft');
+      renderDraft(G);
+    } else if (phase === 'playing' && G) {
+      setPhase('Live');
+      renderRankings(G);
+    } else if (phase === 'lobby') {
+      setPhase('Lobby');
+      board.innerHTML =
+        '<p class="draft-note">Waiting for the host to start the draft or game.</p>';
+    } else {
+      setPhase(phase || '—');
+      if (G) renderRankings(G);
+      else board.innerHTML = '<p class="draft-note">Connected — waiting for data…</p>';
+    }
+  }
+
+  function connect(code) {
+    const rid = (code || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    if (rid.length < 4) {
+      setErr('Enter a valid room code (from the host).');
+      return;
+    }
+    setErr('');
+    if (socket && socket.connected) {
+      socket.disconnect();
+    }
+    roomId = rid;
+    roomDisp.textContent = rid;
+    btnConnect.disabled = true;
+    setPhase('Connecting…');
+
+    socket = io({ transports: ['websocket', 'polling'] });
+
+    socket.on('connect', function () {
+      socket.emit('spectate_room', { roomId: rid });
+    });
+
+    socket.on('spectate_ok', function (payload) {
+      btnConnect.disabled = false;
+      mergePlayers(payload.players);
+      onGameState(payload.G, payload.phase);
+    });
+
+    socket.on('spectate_error', function (data) {
+      btnConnect.disabled = false;
+      setPhase('Error');
+      setErr(data && data.message ? data.message : 'Could not spectate.');
+      board.innerHTML = '';
+    });
+
+    socket.on('state_broadcast', function (payload) {
+      if (!payload || !payload.G) return;
+      lastG = payload.G;
+      onGameState(payload.G, 'playing');
+    });
+
+    socket.on('room_state', function (state) {
+      if (!state || state.roomId !== roomId) return;
+      mergePlayers(state.players);
+      if (state.phase === 'playing' && lastG) onGameState(lastG, 'playing');
+      else if (state.phase === 'lobby') onGameState(null, 'lobby');
+      else if (state.phase === 'draft') onGameState(lastG, 'draft');
+    });
+
+    socket.on('draft_started', function (data) {
+      if (data && data.G) {
+        lastG = data.G;
+        mergePlayers(data.players);
+      }
+      onGameState(lastG, 'draft');
+    });
+
+    socket.on('game_started', function (data) {
+      if (data && data.G) lastG = data.G;
+      mergePlayers(data.players);
+      onGameState(lastG, 'playing');
+    });
+
+    socket.on('disconnect', function () {
+      setPhase('Disconnected');
+      btnConnect.disabled = false;
+    });
+
+    socket.on('connect_error', function () {
+      btnConnect.disabled = false;
+      setErr('Could not reach the game server. Check URL and network.');
+      setPhase('Offline');
+    });
+  }
+
+  btnConnect.addEventListener('click', function () {
+    connect(roomIn.value);
+  });
+  roomIn.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') connect(roomIn.value);
+  });
+
+  if (initialRoom) connect(initialRoom);
+})();
+  </script>
+</body>
+</html>

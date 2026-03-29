@@ -10,7 +10,7 @@ const EXPRESSION_TYPES = ['forcedSmile', 'serious', 'smug', 'tired', 'awkward', 
 const SETTING_TYPES = ['radioStudio', 'plainBackdrop', 'officeCorner'];
 
 /** Bump when appearance logic changes — forces new deterministic picks vs older cached portrait metadata. */
-const APPEARANCE_HASH_VERSION = 'appearance-v2';
+const APPEARANCE_HASH_VERSION = 'appearance-v3';
 
 /** Deterministic appearance vocabulary — indices chosen from hash (not gameplay). */
 const APPEARANCE_AGE = ['early 20s', 'late 20s', '30s', '40s', '50s', '60s'];
@@ -48,8 +48,8 @@ const APPEARANCE_DEMEANOR = [
   'guarded, reserved expression',
   'thoughtful, half-smile',
 ];
-/** Base hair vocabulary — includes imperfect / unpolished options. */
-const APPEARANCE_HAIR = [
+/** Male-presenting hair — may include age-typical male-pattern thinning (not used for women). */
+const APPEARANCE_HAIR_MALE = [
   'slightly messy natural hair',
   'receding hairline',
   'thinning at the crown',
@@ -64,20 +64,55 @@ const APPEARANCE_HAIR = [
   'natural afro-textured hair',
   'soft waves with natural volume',
 ];
-const APPEARANCE_HAIR_1970S = [
+/** Feminine hairstyles only — no male-pattern hairline or balding cues. */
+const APPEARANCE_HAIR_FEMALE = [
+  'slightly messy natural hair',
+  'soft layered hair with natural movement',
+  'thick curly hair',
+  'tightly coiled natural hair',
+  'unkempt but believable hair',
+  'side-parted neat hair',
+  'short stylish professional cut (feminine)',
+  'long straight hair',
+  'wavy shoulder-length hair',
+  'straight hair tucked behind the ears',
+  'natural afro-textured hair',
+  'soft waves with natural volume',
+  'fine hair with soft body and volume',
+  'practical on-air hairstyle (clipped or pulled back, clearly feminine)',
+  'collar-length cut with natural body',
+];
+/** When gender unknown — avoid male-pattern loss so the model does not default to masculine balding. */
+const APPEARANCE_HAIR_NEUTRAL = APPEARANCE_HAIR_FEMALE;
+const APPEARANCE_HAIR_1970S_MALE = [
   'feathered 1970s-style hair',
   'side-parted 1970s station-photo hair',
   'slightly shaggy period-appropriate hair',
 ];
-const APPEARANCE_HAIR_1980S = [
+const APPEARANCE_HAIR_1970S_FEMALE = [
+  'soft feathered 1970s women’s station-photo hairstyle',
+  '1970s collar-length cut with natural body',
+  'period-appropriate 1970s feminine hairstyle',
+];
+const APPEARANCE_HAIR_1980S_MALE = [
   'fuller 1980s volume hair',
   '1980s station promo hairstyle',
   'layered 1980s cut',
 ];
-const APPEARANCE_HAIR_1990S = [
+const APPEARANCE_HAIR_1980S_FEMALE = [
+  'fuller 1980s volume (feminine station promo style)',
+  'layered 1980s women’s cut',
+  '1980s professional women’s on-air hairstyle',
+];
+const APPEARANCE_HAIR_1990S_MALE = [
   'early-1990s casual hair',
   'short neat 1990s cut',
   'soft layered 1990s style',
+];
+const APPEARANCE_HAIR_1990S_FEMALE = [
+  'early-1990s casual women’s hairstyle',
+  'short neat 1990s women’s cut',
+  'soft layered 1990s women’s style',
 ];
 const APPEARANCE_STYLE = ['clean-cut', 'flashy', 'casual', 'conservative', 'eccentric'];
 
@@ -177,16 +212,28 @@ function derivePortraitProfile(identitySlug, talentId) {
  * Era-appropriate hair nudge — subset of picks get period styling (deterministic).
  * @param {string} eraBucket
  * @param {Buffer} h
+ * @param {'male'|'female'|null|undefined} gender
  */
-function pickHairWithEra(eraBucket, h) {
-  let hair = APPEARANCE_HAIR[h[3] % APPEARANCE_HAIR.length];
+function pickHairWithEra(eraBucket, h, gender) {
+  const pool =
+    gender === 'female'
+      ? APPEARANCE_HAIR_FEMALE
+      : gender === 'male'
+        ? APPEARANCE_HAIR_MALE
+        : APPEARANCE_HAIR_NEUTRAL;
+  let hair = pool[h[3] % pool.length];
   const roll = h[10] % 10;
+  // Unknown gender: use women’s era styling so period nudges never imply male-pattern looks
+  const useFemEra = gender !== 'male';
   if (eraBucket === '1970s' && roll < 3) {
-    hair = APPEARANCE_HAIR_1970S[h[11] % APPEARANCE_HAIR_1970S.length];
+    const eraPool = useFemEra ? APPEARANCE_HAIR_1970S_FEMALE : APPEARANCE_HAIR_1970S_MALE;
+    hair = eraPool[h[11] % eraPool.length];
   } else if (eraBucket === '1980s' && roll < 3) {
-    hair = APPEARANCE_HAIR_1980S[h[11] % APPEARANCE_HAIR_1980S.length];
+    const eraPool = useFemEra ? APPEARANCE_HAIR_1980S_FEMALE : APPEARANCE_HAIR_1980S_MALE;
+    hair = eraPool[h[11] % eraPool.length];
   } else if (eraBucket === '1990s' && roll < 2) {
-    hair = APPEARANCE_HAIR_1990S[h[12] % APPEARANCE_HAIR_1990S.length];
+    const eraPool = useFemEra ? APPEARANCE_HAIR_1990S_FEMALE : APPEARANCE_HAIR_1990S_MALE;
+    hair = eraPool[h[12] % eraPool.length];
   }
   return hair;
 }
@@ -195,11 +242,12 @@ function pickHairWithEra(eraBucket, h) {
  * Structured look variation — deterministic from hashKey, nudged by optional gameplay stats.
  * Gameplay nudges age / polish / fatigue only; heritage, demeanor, facial detail, hair come from hash.
  * @param {string} hashKey — portraitHashKey(...)
- * @param {{ yearsExperience?: number, morale?: number, quality?: number, eraBucket?: string }} [opts]
+ * @param {{ yearsExperience?: number, morale?: number, quality?: number, eraBucket?: string, gender?: 'male'|'female'|null }} [opts]
  */
 function deriveAppearanceTraits(hashKey, opts = {}) {
   const h = crypto.createHash('sha256').update(`${hashKey}|${APPEARANCE_HASH_VERSION}`, 'utf8').digest();
   const eraBucket = opts.eraBucket || '2000s+';
+  const gender = opts.gender === 'female' || opts.gender === 'male' ? opts.gender : null;
 
   let ageIdx = h[0] % APPEARANCE_AGE.length;
   const ye = Number(opts.yearsExperience);
@@ -214,9 +262,12 @@ function deriveAppearanceTraits(hashKey, opts = {}) {
   }
 
   const heritage = APPEARANCE_HERITAGE[h[6] % APPEARANCE_HERITAGE.length];
-  const facialDetail = APPEARANCE_FACIAL_DETAIL[h[7] % APPEARANCE_FACIAL_DETAIL.length];
+  let facialDetail = APPEARANCE_FACIAL_DETAIL[h[7] % APPEARANCE_FACIAL_DETAIL.length];
+  if (gender === 'female' && facialDetail === 'rugged features') {
+    facialDetail = 'striking, memorable features';
+  }
   const demeanor = APPEARANCE_DEMEANOR[h[8] % APPEARANCE_DEMEANOR.length];
-  let hairStyle = pickHairWithEra(eraBucket, h);
+  let hairStyle = pickHairWithEra(eraBucket, h, gender);
 
   const gameplayNotes = [];
   if (Number.isFinite(q) && q >= 75) {

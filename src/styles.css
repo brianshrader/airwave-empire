@@ -125,6 +125,8 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .sc-logo-thumb:hover{border-color:rgba(245,166,35,.45);background:rgba(245,166,35,.06)}
 .sc-logo-thumb:focus{outline:2px solid var(--amb);outline-offset:2px}
 .sc-logo-thumb img{max-width:100%;max-height:100%;object-fit:contain;pointer-events:none;vertical-align:middle}
+.sc-logo-thumb--compact{width:44px;height:44px;padding:3px;border-radius:5px}
+.sc-logo-thumb--compact img{object-fit:contain}
 /* Talent portrait thumbnails (cosmetic) */
 .tp-thumb{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;vertical-align:middle}
 .tp-thumb--live{cursor:pointer;outline:none;border-radius:4px}
@@ -234,6 +236,8 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .rn{font-family:var(--ft);font-size:14px;color:var(--mut)}
 .clg{font-family:var(--fd);font-size:19px;letter-spacing:2px}
 .yp{font-family:var(--ft);font-size:14px;background:var(--amb);color:var(--blk);padding:2px 5px;margin-left:5px;letter-spacing:1px;vertical-align:middle}
+/* MP ranker: tiny opponent marker (replaces OPP pill — less horizontal space) */
+.mt-opp-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-left:3px;flex-shrink:0;vertical-align:middle;box-shadow:0 0 0 1px rgba(0,0,0,.4)}
 .fmtag{font-family:var(--ft);font-size:14px;color:var(--off)}
 .shn{font-family:var(--ft);font-size:14px;text-align:right}
 .rvn{font-family:var(--ft);font-size:14px;color:var(--off);text-align:right}
@@ -483,6 +487,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   .sctop{flex-wrap:wrap;gap:6px}
   .sctop-inner{flex-wrap:wrap;gap:10px}
   .sc-logo-thumb{width:76px;height:76px}
+  .sc-logo-thumb--compact{width:40px;height:40px;padding:2px}
   .scn{font-size:18px}
 
   /* Talent rows */
