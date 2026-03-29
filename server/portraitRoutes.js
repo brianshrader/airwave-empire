@@ -20,10 +20,73 @@ const {
   libraryRelativePortraitsPath,
   installLibraryFileToPortrait,
   libraryInventory,
+  grokInventory,
   libraryFirstEnabled,
+  normalizeEraDir,
+  ERA_DIRS,
 } = require('./portraitLibrary');
 
 const TRY_EXTS = ['png', 'webp', 'jpg'];
+const TRY_DOT_EXTS = ['.png', '.webp', '.jpg'];
+
+/**
+ * @returns {{ absPath: string, relPosix: string } | null}
+ * relPosix is relative to PORTRAIT_DIR with forward slashes (for URLs + registry).
+ */
+function locateExistingPortraitFile(fileBase) {
+  const reg = getRegistryEntry(fileBase);
+  if (reg?.fileName && typeof reg.fileName === 'string') {
+    const normalized = reg.fileName.replace(/\\/g, path.sep);
+    const absReg = path.join(PORTRAIT_DIR, normalized);
+    if (fs.existsSync(absReg)) {
+      return { absPath: absReg, relPosix: reg.fileName.split(path.sep).join('/') };
+    }
+  }
+  for (const e of TRY_EXTS) {
+    const flat = path.join(PORTRAIT_DIR, `${fileBase}.${e}`);
+    if (fs.existsSync(flat)) return { absPath: flat, relPosix: `${fileBase}.${e}` };
+  }
+  const grokRoot = path.join(PORTRAIT_DIR, 'grok');
+  if (fs.existsSync(grokRoot)) {
+    for (const gender of ['male', 'female', 'unknown']) {
+      for (const era of ERA_DIRS) {
+        for (const e of TRY_EXTS) {
+          const relSegs = ['grok', gender, era, `${fileBase}.${e}`];
+          const abs = path.join(PORTRAIT_DIR, ...relSegs);
+          if (fs.existsSync(abs)) {
+            return { absPath: abs, relPosix: relSegs.join('/') };
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
+
+/** Remove other extension variants for this fileBase (flat + grok tree). */
+function unlinkPortraitVariantsExcept(fileBase, keepAbsPath) {
+  for (const dotExt of TRY_DOT_EXTS) {
+    const flat = path.join(PORTRAIT_DIR, `${fileBase}${dotExt}`);
+    if (fs.existsSync(flat) && flat !== keepAbsPath) {
+      try {
+        fs.unlinkSync(flat);
+      } catch (_e) {}
+    }
+    const grokRoot = path.join(PORTRAIT_DIR, 'grok');
+    if (fs.existsSync(grokRoot)) {
+      for (const gender of ['male', 'female', 'unknown']) {
+        for (const era of ERA_DIRS) {
+          const p = path.join(grokRoot, gender, era, `${fileBase}${dotExt}`);
+          if (fs.existsSync(p) && p !== keepAbsPath) {
+            try {
+              fs.unlinkSync(p);
+            } catch (_e) {}
+          }
+        }
+      }
+    }
+  }
+}
 
 function validateBody(body) {
   const err = [];
@@ -60,9 +123,13 @@ function mountPortraitRoutes(app) {
   app.get('/api/portrait-library/status', (_req, res) => {
     try {
       const inv = libraryInventory();
+      const grok = grokInventory();
       return res.json({
         ok: true,
         ...inv,
+        grok,
+        note:
+          'library = hand-placed stock pool for random assignment; grok = AI-generated portraits saved by gender/era.',
         libraryFirst: libraryFirstEnabled(),
         grokConfigured: Boolean(process.env.GROK_API_KEY),
       });
@@ -88,13 +155,11 @@ function mountPortraitRoutes(app) {
     const hashKey = portraitHashKey(identitySlug, talentId);
 
     try {
-      const existingPath = TRY_EXTS.map((e) => path.join(PORTRAIT_DIR, `${fileBase}.${e}`)).find((p) =>
-        fs.existsSync(p)
-      );
+      const located = locateExistingPortraitFile(fileBase);
       const reg = getRegistryEntry(fileBase);
-      if (existingPath) {
-        const ext = path.extname(existingPath).slice(1) || 'png';
-        const imageUrl = `/generated-portraits/${fileBase}.${ext}`;
+      if (located) {
+        const ext = path.extname(located.absPath).slice(1) || 'png';
+        const imageUrl = `/generated-portraits/${located.relPosix}`;
         if (!reg?.imageUrl) {
           const traits = derivePortraitProfile(identitySlug, talentId);
           const appearance = deriveAppearanceTraits(hashKey, {
@@ -106,7 +171,7 @@ function mountPortraitRoutes(app) {
           });
           setRegistryEntry(fileBase, {
             imageUrl,
-            fileName: `${fileBase}.${ext}`,
+            fileName: located.relPosix,
             eraBucket,
             wardrobeType: traits.wardrobeType,
             expressionType: traits.expressionType,
@@ -216,19 +281,20 @@ function mountPortraitRoutes(app) {
       const prompt = buildPortraitPrompt(profile);
       const { buffer, ext } = await generateXaiImage({ prompt, aspect_ratio: '1:1' });
       const safeExt = TRY_EXTS.includes(ext) ? ext : 'png';
-      const finalName = `${fileBase}.${safeExt}`;
-      const absPath = path.join(PORTRAIT_DIR, finalName);
-
-      for (const e of TRY_EXTS) {
-        const p = path.join(PORTRAIT_DIR, `${fileBase}.${e}`);
-        if (fs.existsSync(p) && p !== absPath) fs.unlinkSync(p);
-      }
+      const genderSeg =
+        gender === 'male' ? 'male' : gender === 'female' ? 'female' : 'unknown';
+      const eraSeg = normalizeEraDir(eraBucket);
+      const relSegs = ['grok', genderSeg, eraSeg, `${fileBase}.${safeExt}`];
+      const absPath = path.join(PORTRAIT_DIR, ...relSegs);
+      const relPosix = relSegs.join('/');
+      fs.mkdirSync(path.dirname(absPath), { recursive: true });
+      unlinkPortraitVariantsExcept(fileBase, absPath);
       fs.writeFileSync(absPath, buffer);
 
-      const imageUrl = `/generated-portraits/${finalName}`;
+      const imageUrl = `/generated-portraits/${relPosix}`;
       setRegistryEntry(fileBase, {
         imageUrl,
-        fileName: finalName,
+        fileName: relPosix,
         ...profile,
         source: 'grok',
       });

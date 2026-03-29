@@ -2403,9 +2403,9 @@ const DRAFT = {
 
 // Era descriptions for the lobby
 const ERA_DESC = {
-  '1970': 'Start in 1970 Atlanta — AM dominates, FM is wide open. Full 50-year arc.',
-  '1978': 'Start in 1978 — FM just passed AM in total audience. The format wars are beginning.',
-  '1985': 'Start in 1985 — CHR wars peak, AM is fading fast, consolidation on the horizon.',
+  '1970': 'Start in 1970 — AM dominates, FM is wide open. Host picks the market in the waiting room. Full 50-year arc.',
+  '1978': 'Start in 1978 — FM just passed AM in total audience. Host picks the market next. Lean early years.',
+  '1985': 'Start in 1985 — CHR wars peak, AM fading fast. Host picks the market next. Harder opening.',
 };
 
 function mpPickEra(era) {
@@ -2924,7 +2924,7 @@ function mpRejoinRoom() {
   if (!MP.socket) { mpShowError('Not connected to server.'); return; }
   const name = document.getElementById('mp-player-name').value.trim();
   const code = document.getElementById('mp-rejoin-code').value.trim().toUpperCase();
-  if (!name) { mpShowError('Enter the name you used originally.'); return; }
+  if (!name) { mpShowError('Enter the company name you used originally.'); return; }
   if (code.length !== 6) { mpShowError('Room code must be 6 characters.'); return; }
   // Store name so server can match the player slot
   // Include stored playerId so server can match slot reliably
@@ -2964,7 +2964,7 @@ function mpConnect() {
       MP.socket = socket;
 
       socket.on('connect', () => {
-        status.textContent = '✓ Connected · Enter your name to create or join a room';
+        status.textContent = '✓ Connected · Enter your company name to create or join a room';
         status.style.color = 'var(--grn)';
         const cbtn = document.getElementById('mp-connect-btn');
         if (cbtn) cbtn.style.display = 'none';
@@ -2999,6 +2999,21 @@ function mpSetupSocketHandlers(socket) {
   // and would otherwise stack duplicate listeners (double advTurn / double broadcasts).
   if (socket.__wlMpHandlersBound) return;
   socket.__wlMpHandlersBound = true;
+  // ── Cosmetic logo synced from server (persisted room G / other clients) ──
+  socket.on('mp_station_logo_sync', ({ stationId, cosmeticLogoUrl, cosmeticLogoV, cosmeticLogoTone }) => {
+    if (!G || !G.stations || !stationId) return;
+    const st = G.stations.find(s => s && s.id === stationId);
+    if (!st) return;
+    if (cosmeticLogoUrl) {
+      st.cosmeticLogoUrl = cosmeticLogoUrl;
+      if (cosmeticLogoV != null && Number.isFinite(Number(cosmeticLogoV))) st.cosmeticLogoV = Number(cosmeticLogoV);
+    }
+    if (typeof cosmeticLogoTone === 'string') {
+      if (cosmeticLogoTone) st.cosmeticLogoTone = cosmeticLogoTone;
+      else delete st.cosmeticLogoTone;
+    }
+    renderAll();
+  });
   // ── Room state update ──────────────────────────────────────────
   socket.on('room_state', (state) => {
     MP.players = state.players;
@@ -7287,7 +7302,7 @@ function openOnboarding(scenId){
         <input type="text" id="company-name-input" maxlength="48" value="${escCo}" placeholder="${escCo}"
           style="width:100%;box-sizing:border-box;background:var(--crd);border:1px solid var(--bdh);color:var(--wht);font-family:var(--ft);font-size:15px;padding:10px 12px;outline:none;border-radius:2px"/>
       </span></div>
-      <div style="font-size:13px;color:var(--mut);margin-top:6px;line-height:1.45">Shown in the header like multiplayer names. Leave default or enter your own.</div>
+      <div style="font-size:13px;color:var(--mut);margin-top:6px;line-height:1.45">Shown in the header like multiplayer company names. Leave default or enter your own.</div>
     </div>
     <div class="ob-sec">
       <div class="ob-hd">THE GOAL</div>
@@ -12172,6 +12187,14 @@ async function wlGenerateLogo(stationId,regenerate){
     if(statusEl)statusEl.textContent=data.cached?'From cache':'New image saved';
     logHistory(op,'LOGO',reg?'Station logo updated (regenerated).':'Station logo generated.',G);
     autoSave();
+    if(MP.mode==='live'&&MP.socket&&MP.roomId){
+      MP.emit('mp_station_logo',{
+        stationId:op.id,
+        cosmeticLogoUrl:data.imageUrl,
+        cosmeticLogoV:op.cosmeticLogoV,
+        cosmeticLogoTone:typeof op.cosmeticLogoTone==='string'?op.cosmeticLogoTone:'',
+      });
+    }
     renderAll();
     if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&stationId===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
   }catch(_e){

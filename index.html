@@ -19,7 +19,26 @@
 <div id="mp-lobby" style="display:none;position:fixed;inset:0;background:#0a0a0a;z-index:9000;overflow-y:auto;font-family:var(--ft)">
   <div style="max-width:520px;margin:60px auto;padding:0 20px">
     <div style="font-size:28px;color:var(--amb);letter-spacing:4px;margin-bottom:6px">WAVELENGTH</div>
-    <div style="font-size:15px;color:var(--mut);letter-spacing:3px;margin-bottom:40px">MULTIPLAYER</div>
+    <div style="font-size:15px;color:var(--mut);letter-spacing:3px;margin-bottom:24px">MULTIPLAYER</div>
+
+    <div style="margin-bottom:28px;padding:14px 16px;background:#111;border:1px solid #2a2a2a;border-radius:4px;font-size:13px;color:var(--off);line-height:1.55">
+      <div style="font-size:12px;color:var(--mut);letter-spacing:2px;margin-bottom:10px">MARKETS</div>
+      <p style="margin:0 0 10px;color:var(--mut)">The host picks the city once everyone is in the waiting room.</p>
+      <ul style="margin:0;padding-left:18px;color:var(--off)">
+        <li><strong>Atlanta</strong></li>
+        <li><strong>Nashville</strong></li>
+        <li><strong>New York</strong></li>
+        <li><strong>Los Angeles</strong></li>
+        <li><strong>Chicago</strong></li>
+      </ul>
+      <div style="font-size:12px;color:var(--mut);letter-spacing:2px;margin:14px 0 8px">STARTING ERAS</div>
+      <p style="margin:0 0 8px;color:var(--mut)">The host picks the start year when creating a room (CREATE GAME tab):</p>
+      <ul style="margin:0;padding-left:18px;color:var(--off)">
+        <li><strong>1970s</strong> — AM-heavy opening, full arc through 2020</li>
+        <li><strong>1978</strong> — FM overtakes AM; lean early years</li>
+        <li><strong>1985</strong> — CHR / classic rock peak; harder opening</li>
+      </ul>
+    </div>
 
     <!-- Server connect panel -->
     <div id="mp-connect-panel">
@@ -47,10 +66,10 @@
           REJOIN</button>
       </div>
 
-      <!-- Name input (shared) -->
+      <!-- Company name (shared — shown in header & rejoin matching) -->
       <div style="margin-bottom:16px">
-        <div style="font-size:14px;color:var(--mut);letter-spacing:2px;margin-bottom:6px">YOUR NAME</div>
-        <input id="mp-player-name" type="text" maxlength="20" placeholder="Call sign or handle"
+        <div style="font-size:14px;color:var(--mut);letter-spacing:2px;margin-bottom:6px">YOUR COMPANY'S NAME</div>
+        <input id="mp-player-name" type="text" maxlength="40" placeholder="e.g. Peachtree Broadcasting Group"
           style="width:100%;box-sizing:border-box;background:#111;border:1px solid #333;color:#fff;padding:10px 12px;font-family:var(--ft);font-size:15px;outline:none"/>
       </div>
 
@@ -64,7 +83,7 @@
         </div>
         <input type="hidden" id="mp-era" value="1970"/>
         <div id="mp-era-desc" style="font-size:15px;color:var(--mut);margin-bottom:16px;line-height:1.6;min-height:48px">
-          Start in 1970 Atlanta — AM dominates, FM is wide open. Full 50-year arc.
+          Start in 1970 — AM dominates, FM is wide open. Host picks the market in the waiting room. Full 50-year arc.
         </div>
         <button onclick="mpCreateRoom()" class="abt g" style="width:100%;padding:14px;font-size:15px">CREATE ROOM</button>
       </div>
@@ -80,7 +99,7 @@
       <!-- REJOIN tab — for mid-game reconnects and refreshes -->
       <div id="mp-rejoin-tab" style="display:none">
         <div style="font-size:15px;color:var(--mut);margin-bottom:16px;line-height:1.6">
-          Use this if you were already in a game and got disconnected, hit refresh, or lost your connection. Enter the same room code and your original name.
+          Use this if you were already in a game and got disconnected, hit refresh, or lost your connection. Enter the same room code and the same company name you used when you joined.
         </div>
         <div style="font-size:14px;color:var(--mut);letter-spacing:2px;margin-bottom:6px">ROOM CODE</div>
         <input id="mp-rejoin-code" type="text" maxlength="6" placeholder="6-character code"
@@ -105,11 +124,11 @@
         <div style="font-size:14px;color:var(--mut);letter-spacing:2px;margin-bottom:6px">MARKET</div>
         <select id="mp-market" title="City for this multiplayer game"
           style="width:100%;box-sizing:border-box;background:#111;border:1px solid #333;color:#fff;padding:10px 12px;font-family:var(--ft);font-size:16px;outline:none;margin-bottom:18px;border-radius:4px">
-          <option value="atlanta">Atlanta</option>
-          <option value="nashville">Nashville</option>
-          <option value="newyork">New York</option>
-          <option value="losangeles">Los Angeles</option>
-          <option value="chicago">Chicago</option>
+          <option value="atlanta">Atlanta — Southeast · large</option>
+          <option value="nashville">Nashville — South · medium</option>
+          <option value="newyork">New York — Northeast · mega</option>
+          <option value="losangeles">Los Angeles — West Coast · mega</option>
+          <option value="chicago">Chicago — Midwest · mega</option>
         </select>
         <div style="font-size:15px;color:var(--mut);margin-bottom:12px">All players must be connected. You can start with 2–4.</div>
         <button onclick="mpStartGame()" id="mp-start-btn" class="abt g" style="width:100%;padding:14px;font-size:15px;opacity:.4" disabled>
@@ -117,7 +136,7 @@
       </div>
       <div id="mp-guest-waiting" style="display:none;font-size:14px;color:var(--mut);text-align:center;line-height:1.5">
         Waiting for host to start the game…<br/>
-        <span style="font-size:13px;opacity:.85">The host picks the market before the draft.</span></div>
+        <span style="font-size:13px;opacity:.85">The host already chose the start era when creating the room; they pick the market here before the draft.</span></div>
     </div>
 
   </div>

@@ -17,9 +17,10 @@
 //
 // Spectator TV (read-only rankings, same room code): open /spectate.html?room=CODE
 // Uses socket event spectate_room — updates on each host state_broadcast (every period).
-// Image API: GROK_API_KEY for /api/generate-logo and Grok portraits. Stock portraits:
-// add files under generated-portraits/library/{male|female}/{1970s|1980s|1990s|2000s+}/
-// (see GET /api/portrait-library/status). Set PORTRAIT_LIBRARY_FIRST=0 to prefer Grok when both exist.
+// Image API: GROK_API_KEY for /api/generate-logo and Grok portraits.
+// Stock pool (random assignment before Grok): generated-portraits/library/{male|female}/{era}/
+// Grok output (organized by hire-era bucket + gender): generated-portraits/grok/{male|female|unknown}/{era}/
+// See GET /api/portrait-library/status (includes both library + grok counts). PORTRAIT_LIBRARY_FIRST=0 prefers Grok when both exist.
 // ═══════════════════════════════════════════════════════════════════
 
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
@@ -77,6 +78,29 @@ function persistRoom(room) {
   } catch(e) {
     console.error(`[SAVE] Failed to persist room ${room.id}:`, e.message);
   }
+}
+
+/** Host snapshots can omit cosmetic fields (e.g. guest generated a logo). Fill gaps from prior room.G. */
+function mergeMpStationLogosFromPrior(intoG, priorG) {
+  if (!intoG?.stations || !priorG?.stations) return;
+  const priorById = Object.fromEntries(priorG.stations.filter(Boolean).map(s => [s.id, s]));
+  for (const s of intoG.stations) {
+    if (!s) continue;
+    const p = priorById[s.id];
+    if (!p?.cosmeticLogoUrl || s.cosmeticLogoUrl) continue;
+    s.cosmeticLogoUrl = p.cosmeticLogoUrl;
+    if (p.cosmeticLogoV != null) s.cosmeticLogoV = p.cosmeticLogoV;
+    if (p.cosmeticLogoTone) s.cosmeticLogoTone = p.cosmeticLogoTone;
+  }
+}
+
+function isSafeGeneratedLogoUrl(u) {
+  return (
+    typeof u === 'string' &&
+    u.startsWith('/generated-logos/') &&
+    !u.includes('..') &&
+    u.length < 500
+  );
 }
 
 function loadPersistedRooms() {
@@ -286,7 +310,7 @@ io.on('connection', socket => {
       if (alreadyIn) {
         socket.emit('join_error', `"${name}" is already connected to this game. Are you in another tab?`);
       } else {
-        socket.emit('join_error', `Could not match you to a player slot. Re-enter the name you used originally.`);
+        socket.emit('join_error', `Could not match you to a player slot. Re-enter the company name you used originally.`);
       }
       return;
     }
@@ -387,9 +411,37 @@ io.on('connection', socket => {
     // If the host includes their current G snapshot, update room.G so rejoiners
     // get the latest state including mid-period changes (ops, salesForce, etc.)
     if (hostG && room.hostId === socket.id) {
+      mergeMpStationLogosFromPrior(hostG, room.G);
       room.G = hostG;
       persistRoom(room);
     }
+  });
+
+  // ── STATION LOGO (cosmetic) — persist to room so saves / rejoin keep art ──
+  socket.on('mp_station_logo', ({ roomId, stationId, cosmeticLogoUrl, cosmeticLogoV, cosmeticLogoTone }) => {
+    const room = getRoom(roomId);
+    if (!room || room.phase !== 'playing' || !room.G?.stations) return;
+    const player = room.players.find(p => p.socketId === socket.id);
+    if (!player) return;
+    if (!isSafeGeneratedLogoUrl(cosmeticLogoUrl)) return;
+    const st = room.G.stations.find(s => s && s.id === stationId);
+    if (!st || !st.isPlayer || st._mpOwner !== player.playerId) return;
+    st.cosmeticLogoUrl = cosmeticLogoUrl;
+    if (cosmeticLogoV != null) {
+      const v = Number(cosmeticLogoV);
+      if (Number.isFinite(v)) st.cosmeticLogoV = v;
+    }
+    if (typeof cosmeticLogoTone === 'string' && cosmeticLogoTone.length <= 400) {
+      if (cosmeticLogoTone) st.cosmeticLogoTone = cosmeticLogoTone;
+      else delete st.cosmeticLogoTone;
+    }
+    persistRoom(room);
+    io.to(roomId).emit('mp_station_logo_sync', {
+      stationId,
+      cosmeticLogoUrl: st.cosmeticLogoUrl,
+      cosmeticLogoV: st.cosmeticLogoV,
+      cosmeticLogoTone: st.cosmeticLogoTone || '',
+    });
   });
 
   // ── COMMIT PERIOD ─────────────────────────────────────────────
@@ -416,6 +468,7 @@ io.on('connection', socket => {
       return;
     }
 
+    mergeMpStationLogosFromPrior(G, room.G);
     room.G = G;
     room.commitLog  = {};
     room.players.forEach(p => { room.commitLog[p.socketId] = false; });
