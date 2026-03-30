@@ -1710,6 +1710,22 @@ function progBudgetCapForPeriod(G){
   const ceil=Math.round(940000+_smoothstep(1970,2020,y)*780000);
   return Math.max(floor,Math.min(ceil,raw));
 }
+/** UI slider 0–1000 = 0–100.0% of `progBudgetCapForPeriod` (stable thumb as cap scales). */
+const PROG_BUDGET_PERMILLE_MAX=1000;
+function progBudgetPermilleFromDollars(d,cap){
+  if(cap<=0) return 0;
+  const clamped=Math.max(0,Math.min(cap,d));
+  return Math.max(0,Math.min(PROG_BUDGET_PERMILLE_MAX,Math.round((clamped/cap)*PROG_BUDGET_PERMILLE_MAX)));
+}
+function progBudgetDollarsFromPermille(p,cap){
+  if(cap<=0) return 0;
+  const pp=Math.max(0,Math.min(PROG_BUDGET_PERMILLE_MAX,parseInt(p,10)||0));
+  return Math.max(0,Math.min(cap,Math.round((pp/PROG_BUDGET_PERMILLE_MAX)*cap)));
+}
+function progBudgetPctOfCap(dollars,cap){
+  if(cap<=0) return 0;
+  return Math.min(100,Math.round((Math.min(dollars,cap)/cap)*100));
+}
 function slotLeverageWeight(sl){ return SW[sl]||0.08; }
 /** True when destination daypart pulls materially more audience weight (for salary / anti-exploit). */
 function isMaterialUpSlotMove(fromSlot,toSlot){
@@ -2035,7 +2051,8 @@ function placeSportsBid(teamId,stationId,amount){
     mpForPids:MP.mode==='live'&&_spid!==undefined?[_spid]:undefined});
   MP.action('sports_bid',{teamId,stationId,amount});
   showToast(`Bid of ${f$(amount)}/yr submitted.`,'info');
-  cm('m-sports');renderAll();
+  openSports(stationId);
+  renderAll();
 }
 
 const NATIONAL_FRANCHISES=[
@@ -2245,7 +2262,8 @@ function placeFranchiseBid(franchiseId,stationId,amount){
     mpForPids:MP.mode==='live'&&_fpid!==undefined?[_fpid]:undefined});
   MP.action('franchise_bid',{franchiseId,stationId,amount});
   showToast(`Bid of ${f$(amount)}/yr submitted for "${f.name}".`,'info');
-  cm('m-franchise');renderAll();
+  openFranchise(stationId);
+  renderAll();
 }
 
 function triggerFranchiseTrouble(G){
@@ -2316,6 +2334,7 @@ const MP = {
   // In solo: no-op. In live: tells server (and other clients) what happened.
   action(action, payload) {
     if (this.mode !== 'live') return;
+    if (G && G._mpBankrupt && G._mpBankrupt[MP.playerId]) return;
     if (G && G.mpPhase === 'endgame' && action !== 'mp_continue') return;
     // Host includes current G so server can persist mid-period state on every action.
     // This ensures rejoiners get settings like progBudget, salesForce, etc.
@@ -2354,9 +2373,12 @@ const MP = {
       return;
     }
     bar.style.display = 'block';
-    const names = this.players.map(p =>
-      `<span style="color:${p.socketId===this.socketId?'var(--amb)':p.connected?'#fff':'var(--mut)'}">${p.name}${this.commitLog[p.socketId]?' ✓':''}</span>`
-    ).join(' &nbsp;·&nbsp; ');
+    const names = this.players.map(p => {
+      const obs = G && G._mpBankrupt && G._mpBankrupt[p.playerId];
+      const lbl = obs ? `${p.name} (observer)` : p.name;
+      const done = obs || this.commitLog[p.socketId];
+      return `<span style="color:${p.socketId===this.socketId?'var(--amb)':p.connected?'#fff':'var(--mut)'}">${lbl}${done ? ' ✓' : ''}</span>`;
+    }).join(' &nbsp;·&nbsp; ');
     const committed = Object.values(this.commitLog).filter(Boolean).length;
     const total = this.players.filter(p=>p.connected).length;
     document.getElementById('mp-status-players').innerHTML = names;
@@ -2426,6 +2448,23 @@ function stationDifficulty(s) {
   return              { stars: 3, label: '★★★ HARD', color: '#f87171' };
 }
 
+/** Multiplayer draft: ★★★ HARD (tier 3) is OK as a second gamble, not as a player’s only first pick. */
+function mpDraftStationIsWeak(s) {
+  return stationDifficulty(s).stars === 3;
+}
+
+/** Every player must have at least one ★ EASY or ★★ MED (not weak-only portfolio). */
+function mpDraftEveryPlayerHasAnchorStation() {
+  if (!G || !MP.players || !DRAFT.picks) return false;
+  for (const p of MP.players) {
+    const ids = DRAFT.picks[p.socketId] || [];
+    const stns = ids.map(id => G.stations.find(st => st.id === id)).filter(Boolean);
+    if (!stns.length) return false;
+    if (!stns.some(st => !mpDraftStationIsWeak(st))) return false;
+  }
+  return true;
+}
+
 // VP underdog bonus based on difficulty
 function underdogVP(s) {
   const d = stationDifficulty(s);
@@ -2473,6 +2512,14 @@ function mpOpenDraft(draftData, players, era) {
   document.getElementById('draft-subtitle').textContent =
     `${era} ${_city.toUpperCase()}  ·  ${players.length} PLAYERS  ·  SNAKE DRAFT  ·  STARTING CASH ${f$(cash)} (1st station free · 2nd capped so you stay solvent)`;
   document.getElementById('draft-cash-show').textContent = f$(cash);
+
+  const hint = document.getElementById('draft-fairness-hint');
+  if (hint) {
+    hint.style.display = 'block';
+    hint.innerHTML =
+      '<span style="color:var(--amb)">Draft tip:</span> Your <strong style="color:var(--off)">first</strong> pick must be a viable anchor — <strong style="color:var(--grn)">★ EASY</strong> or <strong style="color:var(--amb)">★★ MED</strong>. ' +
+      '<strong style="color:#f87171">★★★ HARD</strong> stations are still in the pool — best as a <em>second</em> station gamble or turnaround, not your only starter.';
+  }
 
   mpRenderDraft(players, era);
 }
@@ -2524,10 +2571,11 @@ function mpRenderDraft(players, era) {
       const pickedBy = players.find(p => (draft.picks[p.socketId]||[]).includes(s.id));
       const isPicked = !!pickedBy;
       const isMyStation = (draft.picks[mySocketId]||[]).includes(s.id);
-      const canPick = isMyTurn && !isPicked && !isDone &&
-        (draft.pickIdx < draft.order.length);
       // In round 2, can only pick if I haven't already passed or picked
       const myPickCount = (draft.picks[mySocketId]||[]).length;
+      const weakFirstPickBlocked = isMyTurn && myPickCount === 0 && mpDraftStationIsWeak(s);
+      const canPick = isMyTurn && !isPicked && !isDone &&
+        (draft.pickIdx < draft.order.length) && !weakFirstPickBlocked;
       const isRound2 = draft.pickIdx >= players.length;
       // Enforce 1 AM + 1 FM max: check what sig types I've already picked
       const myPickedStations = (draft.picks[mySocketId]||[]).map(id => playerStations.find(st=>st.id===id)).filter(Boolean);
@@ -2549,7 +2597,7 @@ function mpRenderDraft(players, era) {
         style="background:${isMyStation?'rgba(245,166,35,.08)':isPicked?'rgba(255,255,255,.03)':'#111'};
                border:1px solid ${isMyStation?'var(--amb)':isPicked?'#1a1a1a':'#2a2a2a'};
                padding:16px;border-radius:2px;cursor:${canPick||canPickRound2?'pointer':'default'};
-               opacity:${isPicked&&!isMyStation?'.45':'1'};
+               opacity:${isPicked&&!isMyStation?'.45':weakFirstPickBlocked&&!isPicked?'.5':'1'};
                transition:border-color .15s,background .15s;
                ${canPick||canPickRound2?'hover:border-color:var(--amb)':''}"
         onmouseover="if(${canPick||canPickRound2})this.style.borderColor='var(--amb)'"
@@ -2572,6 +2620,7 @@ function mpRenderDraft(players, era) {
 
         ${isPicked ? `<div style="margin-top:8px;font-size:14px;color:${isMyStation?'var(--amb)':'var(--mut)'};letter-spacing:1px">
           ${isMyStation ? '✓ YOUR STATION' : `PICKED BY ${pickedBy?.name?.toUpperCase()}`}</div>` : ''}
+        ${weakFirstPickBlocked && !isPicked ? `<div style="margin-top:8px;font-size:12px;color:#f87171;line-height:1.4">First pick: choose ★ EASY or ★★ MED as your anchor. ★★★ HARD opens up for your second pick.</div>` : ''}
         ${canPick ? `<div style="margin-top:8px;font-size:14px;color:var(--amb);letter-spacing:1px">▶ CLICK TO PICK</div>` : ''}
         ${canPickRound2 ? `<div style="margin-top:8px;font-size:14px;color:var(--amb);letter-spacing:1px">▶ BUY FOR ${f$(price)}</div>` : ''}
         ${isRound2 && !isPicked && !isMyStation && wouldExceedSigLimit ? `<div style="margin-top:8px;font-size:14px;color:var(--mut);letter-spacing:1px">— ALREADY HAVE ${thisSigType}</div>` : ''}
@@ -2643,6 +2692,14 @@ function mpDraftFinalize() {
   const players = MP.players;
   const era = document.getElementById('mp-era')?.value || '1970';
   const cash = DRAFT_CASH[era] || 800000;
+
+  if (!mpDraftEveryPlayerHasAnchorStation()) {
+    showToast(
+      'Each player needs at least one ★ EASY or ★★ MED anchor. ★★★ HARD-only starts are not allowed — pick a stronger first station.',
+      'warn'
+    );
+    return;
+  }
 
   // Apply picks to G: mark stations as player-owned
   players.forEach(p => {
@@ -2999,6 +3056,9 @@ function mpSetupSocketHandlers(socket) {
   // and would otherwise stack duplicate listeners (double advTurn / double broadcasts).
   if (socket.__wlMpHandlersBound) return;
   socket.__wlMpHandlersBound = true;
+  socket.on('draft_error', (msg) => {
+    showToast(String(msg || 'Draft error'), 'warn');
+  });
   // ── Cosmetic logo synced from server (persisted room G / other clients) ──
   socket.on('mp_station_logo_sync', ({ stationId, cosmeticLogoUrl, cosmeticLogoV, cosmeticLogoTone }) => {
     if (!G || !G.stations || !stationId) return;
@@ -3383,6 +3443,12 @@ function genMarketMP(era) {
 function mpCommit() {
   if (MP.mode !== 'live') return;
   if (G && G.mpPhase === 'endgame' && !G.continuesBeyondEnd) return;
+  if (G && G._mpBankrupt && G._mpBankrupt[MP.playerId]) {
+    MP.commitLog[MP.socketId] = true;
+    MP.emit('commit_period', { roomId: MP.roomId });
+    MP.renderStatus();
+    return;
+  }
   // Save this player's cash into shared state so it survives the broadcast
   if (G && !G._playerCash) G._playerCash = {};
   if (G) G._playerCash[MP.playerId] = G.cash;
@@ -3804,26 +3870,39 @@ window._mpApply_acq = function({ sid, playerId, color }) {
   applyDefaultBrandToPlayerStation(s);
   G.ps=G.stations.filter(st=>st.isPlayer); renderAll();
 };
-window._mpApply_loan = function({ tierId, amount, owed, label, rate, periods, takenYear, interestPerPeriod, _fromPlayerId }) {
-  // Host stores guest's loan in _playerLoans so playerScoreCalc can include debt penalty
+window._mpApply_loan = function({ amount, _fromPlayerId }) {
   if(_fromPlayerId === undefined) return;
   if(!G._playerLoans) G._playerLoans = {};
   if(!G._playerLoans[_fromPlayerId]) G._playerLoans[_fromPlayerId] = [];
-  const loanKey = tierId + (takenYear || G.year);
-  if(G._playerLoans[_fromPlayerId].some(l=>l.tierId===tierId)) return; // already have it
-  G._playerLoans[_fromPlayerId].push({tierId, id:loanKey, label:label||'Loan', amount:amount||0,
-    owed:owed||0, rate:rate||0, periods:periods||4, takenYear:takenYear||G.year,
-    interestPerPeriod:interestPerPeriod||0});
-  // Host never runs the borrower's doLoan — mirror principal credit on shared G for advTurn / broadcasts
-  if(MP.mode==='live'&&amount){
-    if(!G._playerCash)G._playerCash={};
-    G._playerCash[_fromPlayerId]=(G._playerCash[_fromPlayerId]||0)+amount;
+  const loans = G._playerLoans[_fromPlayerId];
+  let f = loans.find(l=>l.kind==='facility'||l.id==='credit');
+  if(!f){
+    f = { id:'credit', kind:'facility', label:'Line of credit', principal:0, takenYear:G.year };
+    loans.push(f);
+  }
+  f.principal = (f.principal||0) + (amount||0);
+  if(MP.mode==='live' && amount){
+    if(!G._playerCash) G._playerCash = {};
+    G._playerCash[_fromPlayerId] = (G._playerCash[_fromPlayerId]||0) + amount;
   }
 };
-window._mpApply_repay = function({ loanKey, _fromPlayerId }) {
+window._mpApply_repay = function({ loanKey, amt, _fromPlayerId }) {
   if(_fromPlayerId === undefined) return;
   if(G._playerLoans?.[_fromPlayerId])
     G._playerLoans[_fromPlayerId] = G._playerLoans[_fromPlayerId].filter(l=>(l.id+'')!==(loanKey+''));
+  if(!G._playerCash) G._playerCash = {};
+  const pay = amt != null ? amt : 0;
+  if(pay) G._playerCash[_fromPlayerId] = (G._playerCash[_fromPlayerId]||0) - pay;
+};
+window._mpApply_repay_partial = function({ loanKey, amt, remaining, _fromPlayerId }) {
+  if(_fromPlayerId === undefined) return;
+  const loan = G._playerLoans?.[_fromPlayerId]?.find(l=>(l.id+'')===(loanKey+''));
+  if(loan){
+    if(typeof remaining === 'number') loan.principal = remaining;
+    else if(loan.owed != null) loan.owed = remaining;
+  }
+  if(!G._playerCash) G._playerCash = {};
+  G._playerCash[_fromPlayerId] = (G._playerCash[_fromPlayerId]||0) - (amt||0);
 };
 
 
@@ -6604,6 +6683,105 @@ function applyEv(G,ev){
   });
 }
 
+// ── BANK LENDING (capacity from station value; simple interest) ──
+function loanPrincipalFromEntry(l){
+  if(!l) return 0;
+  if(typeof l.principal === 'number') return Math.max(0, Math.round(l.principal));
+  return Math.max(0, Math.round(l.owed||0));
+}
+function loanPidForGame(){
+  return MP.mode==='live' ? (MP.playerId ?? 0) : 0;
+}
+function stationsOwnedByLoanPid(G, pid){
+  if(MP.mode==='live') return G.ps.filter(s=>s._mpOwner===pid);
+  return G.ps;
+}
+/** Lending collateral estimate — not a full M&A valuation. */
+function estimateStationValue(station, G){
+  const ebitda = station.fin?.ebitda ?? 0;
+  const pos = Math.max(0, ebitda);
+  const annual = pos * 2;
+  const mkt = MARKETS[G.marketId||'atlanta']||MARKETS.atlanta;
+  const rs = mkt.revScale ?? 1;
+  const share = Math.max(0, Math.min(1, station.rat?.share ?? 0));
+  const ebitdaMult = 3.5;
+  let v = annual * ebitdaMult;
+  v *= 1 + 0.55 * Math.min(share / 0.18, 1);
+  v *= 0.88 + 0.12 * Math.min(Math.log2(rs + 1), 3.2);
+  const floor = Math.round(35000 + 25000 * Math.sqrt(rs));
+  return Math.round(Math.max(floor, v));
+}
+function totalEstimatedCompanyValue(G, pid){
+  return stationsOwnedByLoanPid(G, pid).reduce((s,st)=>s+estimateStationValue(st,G),0);
+}
+function borrowingCapacityRaw(G, pid){
+  return Math.round(totalEstimatedCompanyValue(G, pid) * 0.45);
+}
+function borrowingCapacityForPlayer(G, pid){
+  const raw = borrowingCapacityRaw(G, pid);
+  const portEbitda = stationsOwnedByLoanPid(G, pid).reduce((s,st)=>s+(st.fin?.ebitda||0),0);
+  let mult = 1;
+  if(portEbitda < 0) mult *= 0.72;
+  return Math.max(0, Math.round(raw * mult));
+}
+function debtPrincipalForPid(G, pid){
+  const arr = MP.mode==='live' ? (G._playerLoans?.[pid]||[]) : (G.loans||[]);
+  return arr.reduce((s,l)=>s+loanPrincipalFromEntry(l),0);
+}
+function effectiveAnnualLoanRate(G, pid){
+  const cap = Math.max(1, borrowingCapacityForPlayer(G, pid));
+  const debt = debtPrincipalForPid(G, pid);
+  const lev = Math.min(1.5, debt / cap);
+  return Math.min(0.30, 0.08 + lev * 0.14);
+}
+function loanLeverageRatio(G, pid){
+  const cap = borrowingCapacityForPlayer(G, pid);
+  if(cap <= 0) return debtPrincipalForPid(G, pid) > 0 ? 1 : 0;
+  return debtPrincipalForPid(G, pid) / cap;
+}
+function canBorrowAmount(G, pid, amount){
+  if(amount <= 0) return { ok:false, reason:'Enter a positive amount.' };
+  if(G._mpBankrupt?.[pid]) return { ok:false, reason:'Observers cannot borrow.' };
+  if(MP.mode!=='live' && G._soloBankrupt) return { ok:false, reason:'Company is out of active play.' };
+  const cap = borrowingCapacityForPlayer(G, pid);
+  const debt = debtPrincipalForPid(G, pid);
+  const cash = MP.mode==='live' ? (G._playerCash?.[pid]??0) : (G.cash||0);
+  if(cash < 0) return { ok:false, reason:'Bank will not extend credit while cash is negative.' };
+  if((G._mpDebtWarningQ?.[pid]||0) >= 2 && MP.mode==='live')
+    return { ok:false, reason:'Too many periods in distress — restore cash before new borrowing.' };
+  if((G.debtWarningQ||0) >= 2 && MP.mode!=='live')
+    return { ok:false, reason:'Too many periods in distress — restore cash before new borrowing.' };
+  if(debt + amount > cap) return { ok:false, reason:`Exceeds available capacity (${f$(Math.max(0, cap-debt))} left).` };
+  const levAfter = (debt + amount) / Math.max(1, cap);
+  if(levAfter > 0.88) return { ok:false, reason:'That would push leverage past what lenders allow (~88%).' };
+  return { ok:true };
+}
+function migrateLoansV2(G){
+  function normalizeLoanArray(arr){
+    if(!Array.isArray(arr)||!arr.length) return [];
+    if(!arr.some(l=>l.tierId)) return arr;
+    let totalP = 0;
+    arr.forEach(l=>{
+      if(l.kind==='facility'||(l.principal!=null&&!l.tierId)){
+        totalP += loanPrincipalFromEntry(l);
+        return;
+      }
+      const amt=l.amount||0,rate=l.rate||0.08,per=l.periods||8;
+      const totalOrig = amt>0 ? amt*(1+rate*per/2) : 0;
+      const frac = totalOrig>0 ? amt/totalOrig : 1;
+      totalP += Math.round((l.owed||0)*frac);
+    });
+    return totalP>0 ? [{id:'credit',kind:'facility',label:'Line of credit',principal:totalP,takenYear:G.year||1970}] : [];
+  }
+  G.loans = normalizeLoanArray(G.loans||[]);
+  if(!G._playerLoans) G._playerLoans = {};
+  Object.keys(G._playerLoans).forEach(k=>{
+    G._playerLoans[k] = normalizeLoanArray(G._playerLoans[k]||[]);
+  });
+  if(!G._playerLoans[0] || !G._playerLoans[0].length)
+    G._playerLoans[0] = (G.loans||[]).slice();
+}
+
 // ── SCORING ───────────────────────────────────────────────────────
 // Decade VP values — earlier decades worth less, finale weighted heaviest
 const DECADE_VP={1979:8,1989:10,1999:12,2009:12,2019:14,2020:20};
@@ -6645,8 +6823,8 @@ function playerScoreCalc(pid){
   else if(decade<=2009) total=Math.round(shareScore*.42+cashScore*.18+peakScore*.18+streamScore*.14+identityScore*.08);
   else                  total=Math.round(shareScore*.37+cashScore*.13+peakScore*.13+streamScore*.29+identityScore*.08);
   const maxVP=DECADE_VP[decade]||10;
-  // Per-player loan penalty: only count this player's loans
-  const myLoans=(G._playerLoans?.[pid]||[]).reduce((s,l)=>s+l.owed,0);
+  // Per-player loan penalty: only count this player's debt principal
+  const myLoans=debtPrincipalForPid(G, pid);
   const debtPenalty=Math.min(20,Math.round(myLoans/625000)*3);
   const finalTotal=Math.max(0,total-debtPenalty);
   const finalVP=Math.round((finalTotal/100)*maxVP);
@@ -6696,8 +6874,8 @@ function scoreCalc(G){
   const maxVP=DECADE_VP[decade]||10;
   const vp=Math.round((total/100)*maxVP);
 
-  // Loan penalty: outstanding loans at checkpoint reduce score and VP
-  const outstandingDebt=(G.loans||[]).reduce((s,l)=>s+l.owed,0);
+  // Loan penalty: outstanding principal at checkpoint reduces score and VP
+  const outstandingDebt=debtPrincipalForPid(G, loanPidForGame());
   const debtPenalty=Math.min(20,Math.round(outstandingDebt/625000)*3);
   const finalTotal=Math.max(0,total-debtPenalty);
   const finalVP=Math.round((finalTotal/100)*maxVP);
@@ -6705,13 +6883,86 @@ function scoreCalc(G){
 }
 function gradeFromScore(t){return t>=85?'A':t>=70?'B':t>=55?'C':t>=40?'D':'F';}
 
+function mpEnsureBankruptFlags(G){
+  if(!G._mpBankrupt||typeof G._mpBankrupt!=='object')G._mpBankrupt={};
+}
+
+/** MP: sell weakest of several stations — returns true if a sale ran. */
+function mpExecuteForcedDistressSale(G,pid,pname){
+  const pStns=G.ps.filter(s=>s._mpOwner===pid);
+  if(pStns.length<2)return false;
+  const weakest=[...pStns].sort((a,b)=>(a.fin?.ebitda||0)-(b.fin?.ebitda||0))[0];
+  if(!weakest)return false;
+  const price=distressSaleProceeds(weakest);
+  const _soldCall=weakest.callLetters;
+  if(!G._playerCash)G._playerCash={};
+  G._playerCash[pid]=(G._playerCash[pid]||0)+price;
+  if(MP.playerId===pid)G.cash=G._playerCash[pid];
+  MP.emit('player_cash_update',{playerId:pid,cash:G._playerCash[pid]});
+  breakSimulcast(G,weakest.id);
+  normalizeSimulcastLinksInPlace(G);
+  weakest.isPlayer=false;
+  weakest._mpOwner=undefined;
+  weakest.color=weakest.color||'#6b7280';
+  G.ps=G.stations.filter(s=>s.isPlayer);
+  aiRebrandStationAfterDistressSale(G,weakest);
+  G.news.unshift({v:'HIGH',t:`Still negative: distress sale — ${pname}'s ${_soldCall} sold for ${f$(price)}. New operators launch ${weakest.callLetters} (${FM[weakest.format]?.l||weakest.format}).`,y:G.year,p:G.period});
+  return true;
+}
+
+/** MP: last station, still underwater after grace — remove from play (observer). */
+function mpExecuteBankruptcy(G,pid,pname){
+  mpEnsureBankruptFlags(G);
+  const pStns=G.ps.filter(s=>s._mpOwner===pid);
+  pStns.forEach(weakest=>{
+    const price=distressSaleProceeds(weakest);
+    const _soldCall=weakest.callLetters;
+    if(!G._playerCash)G._playerCash={};
+    G._playerCash[pid]=(G._playerCash[pid]||0)+price;
+    breakSimulcast(G,weakest.id);
+    normalizeSimulcastLinksInPlace(G);
+    weakest.isPlayer=false;
+    weakest._mpOwner=undefined;
+    weakest.color=weakest.color||'#6b7280';
+    G.ps=G.stations.filter(s=>s.isPlayer);
+    aiRebrandStationAfterDistressSale(G,weakest);
+    G.news.unshift({v:'HIGH',t:`Bankruptcy: ${pname} — ${_soldCall} leaves the dial. The company is shut down.`,y:G.year,p:G.period});
+  });
+  G._playerCash[pid]=Math.max(0,G._playerCash[pid]||0);
+  if(MP.playerId===pid)G.cash=G._playerCash[pid];
+  MP.emit('player_cash_update',{playerId:pid,cash:G._playerCash[pid]});
+  G._mpBankrupt[pid]=true;
+  G._mpDebtWarningQ[pid]=0;
+  if(MP.playerId===pid)showToast('Bankruptcy: You are out of active play. You can stay and watch the market.','warn');
+}
+
+/** Solo: bankrupt — no playable stations; sim can still advance. */
+function soloExecuteBankruptcy(G){
+  const stns=[...G.ps];
+  stns.forEach(weakest=>{
+    const price=distressSaleProceeds(weakest);
+    const _soldCall=weakest.callLetters;
+    G.cash=(G.cash||0)+price;
+    breakSimulcast(G,weakest.id);
+    normalizeSimulcastLinksInPlace(G);
+    weakest.isPlayer=false;
+    G.ps=G.stations.filter(s=>s.isPlayer);
+    aiRebrandStationAfterDistressSale(G,weakest);
+    G.news.unshift({v:'HIGH',t:`Bankruptcy: ${_soldCall} is sold. Your group is out of the business.`,y:G.year,p:G.period});
+  });
+  G.cash=Math.max(0,G.cash||0);
+  G._soloBankrupt=true;
+  G.debtWarningQ=0;
+  showToast('Bankruptcy: You are out of active play. You can still advance periods to watch the market.','warn');
+}
+
 // ── PRESSURE ──────────────────────────────────────────────────────
 function checkPressure(G){
   const alerts=[];
   if(G.score.isSandbox)return alerts;
   // Warn player if on a format past its sunset — revenue will keep falling
   const fmtSunsets={BEAUTIFUL_MUSIC:1995,MOR:1998};
-  (MP.mode==='live' ? G.ps.filter(s=>s._mpOwner===MP.playerId) : G.ps).forEach(s=>{
+  (MP.mode==='live' ? G.ps.filter(s=>s._mpOwner===MP.playerId&&!G._mpBankrupt?.[MP.playerId]) : (G._soloBankrupt?[]:G.ps)).forEach(s=>{
     const sunset=fmtSunsets[s.format];
     if(sunset&&G.year>=sunset){
       const yearsOver=G.year-sunset;
@@ -6720,36 +6971,32 @@ function checkPressure(G){
     }
   });
   if(MP.mode==='live'){
+    mpEnsureBankruptFlags(G);
     if(!G._mpDebtWarningQ||typeof G._mpDebtWarningQ!=='object')G._mpDebtWarningQ={};
     const owners=[...new Set(G.ps.map(s=>s._mpOwner).filter(id=>id!==undefined&&id!==null))].sort((a,b)=>a-b);
     owners.forEach(pid=>{
+      if(G._mpBankrupt[pid])return;
       const pCash=G._playerCash?.[pid]??0;
       const pStns=G.ps.filter(s=>s._mpOwner===pid);
       const pname=(MP.players||[]).find(p=>p.playerId===pid)?.name||`Player ${pid+1}`;
       if(pCash<0){
         G._mpDebtWarningQ[pid]=(G._mpDebtWarningQ[pid]||0)+1;
         const q=G._mpDebtWarningQ[pid];
-        alerts.push(`⚠ DEBT: ${pname} — cash ${f$(pCash)}. Recover within ${Math.max(0,2-q)} periods or face forced sale of one station.`);
-        if(q>=2){
-          const weakest=[...pStns].sort((a,b)=>(a.fin?.ebitda||0)-(b.fin?.ebitda||0))[0];
-          if(weakest&&pStns.length>1){
-            const price=distressSaleProceeds(weakest);
-            const _soldCall=weakest.callLetters;
+        if(q===1){
+          alerts.push(`⚠ Distress — ${pname}: cash ${f$(pCash)}. Restore positive cash by next period or face a forced sale.`);
+          if(MP.playerId===pid)showToast('You are in distress. Restore positive cash by next period or face a forced sale.','warn');
+        }else if(q>=2){
+          if(pStns.length>1){
+            if(mpExecuteForcedDistressSale(G,pid,pname))G._mpDebtWarningQ[pid]=0;
+          }else if(pStns.length===1){
+            mpExecuteBankruptcy(G,pid,pname);
+            alerts.push(`Bankruptcy: ${pname} is out of active play.`);
+          }else{
             if(!G._playerCash)G._playerCash={};
-            G._playerCash[pid]=(G._playerCash[pid]||0)+price;
+            G._playerCash[pid]=Math.max(0,G._playerCash[pid]||0);
             if(MP.playerId===pid)G.cash=G._playerCash[pid];
             MP.emit('player_cash_update',{playerId:pid,cash:G._playerCash[pid]});
-            breakSimulcast(G,weakest.id);
-            normalizeSimulcastLinksInPlace(G);
-            weakest.isPlayer=false;
-            weakest._mpOwner=undefined;
-            weakest.color=weakest.color||'#6b7280';
-            G.ps=G.stations.filter(s=>s.isPlayer);
-            aiRebrandStationAfterDistressSale(G,weakest);
-            G.news.unshift({v:'HIGH',t:`🏦 FORCED SALE: ${pname}'s ${_soldCall} sold (distress) for ${f$(price)} to cover debt. New operators sign on as ${weakest.callLetters} (${FM[weakest.format]?.l||weakest.format}).`,y:G.year,p:G.period});
             G._mpDebtWarningQ[pid]=0;
-          }else if(pStns.length<=1){
-            alerts.push(`🚨 ${pname}: cash still negative — no second station to liquidate.`);
           }
         }
       }else{
@@ -6759,13 +7006,17 @@ function checkPressure(G){
     return alerts;
   }
 
+  if(G._soloBankrupt)return alerts;
+
   const _pressCash=G.cash;
   const _pressMyStns=G.ps;
   if(_pressCash<0){
     G.debtWarningQ=(G.debtWarningQ||0)+1;
-    alerts.push(`⚠ DEBT: Cash negative (${f$(_pressCash)}). Recover within ${Math.max(0,2-G.debtWarningQ)} periods or face forced asset sale.`);
-    if(G.debtWarningQ>=2){
-      const weakest=[..._pressMyStns].sort((a,b)=>(a.fin?.ebitda||0)-(b.fin?.ebitda||0))[0];
+    if(G.debtWarningQ===1){
+      alerts.push(`⚠ Distress: cash ${f$(_pressCash)}. Restore positive cash by next period or face a forced sale.`);
+      showToast('You are in distress. Restore positive cash by next period or face a forced sale.','warn');
+    }else if(G.debtWarningQ>=2){
+      const weakest=_pressMyStns.length?[..._pressMyStns].sort((a,b)=>(a.fin?.ebitda||0)-(b.fin?.ebitda||0))[0]:null;
       if(weakest&&_pressMyStns.length>1){
         const price=distressSaleProceeds(weakest);
         const _soldCall=weakest.callLetters;
@@ -6773,8 +7024,11 @@ function checkPressure(G){
         normalizeSimulcastLinksInPlace(G);
         weakest.isPlayer=false;G.ps=G.stations.filter(s=>s.isPlayer);
         aiRebrandStationAfterDistressSale(G,weakest);
-        G.news.unshift({v:'HIGH',t:`🏦 FORCED SALE: ${_soldCall} sold for ${f$(price)} to cover debt. New operators launch ${weakest.callLetters} (${FM[weakest.format]?.l||weakest.format}).`,y:G.year,p:G.period});
+        G.news.unshift({v:'HIGH',t:`Still negative: distress sale — ${_soldCall} sold for ${f$(price)}. New operators launch ${weakest.callLetters} (${FM[weakest.format]?.l||weakest.format}).`,y:G.year,p:G.period});
         G.debtWarningQ=0;
+      }else if(_pressMyStns.length===1&&weakest){
+        soloExecuteBankruptcy(G);
+        alerts.push('Bankruptcy: You are out of active play.');
       }
     }
   }else{G.debtWarningQ=0;}
@@ -8151,67 +8405,63 @@ function runConsolidation(G){
     if(!c.budget||c.budget<500000) c.budget=CORPS.find(t=>t.id===c.id)?.budget||5000000;
   });
   const acts=[];
+  const MIN_IND_SHARE=0.012; // ~1.2% — in fragmented markets many independents sit below a flat 2% floor
+  const MAX_SPEND_FRAC=0.5; // max single deal as fraction of remaining acquisition budget
 
-  // Each corporate group attempts 1-2 acquisitions per year (Fall period)
+  // Each corporate group attempts acquisitions in Fall only (after revenue is known for pricing)
   if(G.period!==2)return[];
 
   G.corps.forEach(corp=>{
     if(corp.budget<=0)return;
-    const acqCount=corp.aggression>0.75?Math.random()<0.7?2:1:Math.random()<0.4?1:0;
+    // High-aggression groups try 1–2 deals; others always attempt at least one pass (old logic gave 60% of years with zero tries)
+    const acqCount=corp.aggression>0.75?(Math.random()<0.68?2:1):1;
 
     for(let i=0;i<acqCount;i++){
-      // Target: independent stations (not player, not public, not already corporate)
-      // Also filter by FCC cap — corp cannot exceed market-size limit
       const corpTargetsAM=G.stations.filter(s=>
-        !s.isPlayer&&!s.isPublic&&!s.corpOwner&&s.rat.share>0.02&&
+        !s.isPlayer&&!s.isPublic&&!s.corpOwner&&s.rat.share>MIN_IND_SHARE&&
         (s.sig.type==='AM'||s.fmBooster)&&fccCanAcquire(corp.id,'AM',G)
       );
       const corpTargetsFM=G.stations.filter(s=>
-        !s.isPlayer&&!s.isPublic&&!s.corpOwner&&s.rat.share>0.02&&
+        !s.isPlayer&&!s.isPublic&&!s.corpOwner&&s.rat.share>MIN_IND_SHARE&&
         s.sig.type==='FM'&&!s.fmBooster&&fccCanAcquire(corp.id,'FM',G)
       );
       const targets=[...corpTargetsAM,...corpTargetsFM];
       if(!targets.length)break;
 
-      // Corporate buyers prefer: FM stations, higher share, formats with scale
-      // They'll pay a premium — 1.5-2.5x "market value"
       const scored=targets.map(s=>{
         let score=s.rat.share*100;
         if(s.sig.type==='FM')score*=1.4;
         if(['NEWS_TALK','ALL_NEWS','SPORTS_TALK','CHR','COUNTRY','ADULT_CONTEMP'].includes(s.format))score*=1.2;
-        // Prefer stations in formats they don't already own in this market
         const ownedFormats=corp.stations.map(id=>G.stations.find(st=>st.id===id)?.format).filter(Boolean);
         if(!ownedFormats.includes(s.format))score*=1.3;
         return {s, score};
       }).sort((a,b)=>b.score-a.score);
 
-      const target=scored[0]?.s;
-      if(!target)break;
+      let acquired=null,price=0;
+      for(const {s:target} of scored){
+        const annualRev=(target.fin.rev||0)*2;
+        const multiple=8+Math.random()*4;
+        const p=Math.round(annualRev*multiple/100000)*100000;
+        if(p>corp.budget*MAX_SPEND_FRAC) continue;
+        acquired=target;
+        price=p;
+        break;
+      }
+      if(!acquired)break;
 
-      // Price: based on revenue multiple (radio stations trade at 8-12x cash flow)
-      const annualRev=target.fin.rev*2;
-      const multiple=8+Math.random()*4;
-      const price=Math.round(annualRev*multiple/100000)*100000;
-
-      if(price>corp.budget*0.4)break; // won't spend more than 40% budget on one deal
-
-      // Execute acquisition
-      target.corpOwner=corp.id;
-      target.corpName=corp.name;
-      target.corpColor=corp.color;
-      corp.stations.push(target.id);
+      acquired.corpOwner=corp.id;
+      acquired.corpName=corp.name;
+      acquired.corpColor=corp.color;
+      corp.stations.push(acquired.id);
       corp.budget-=price;
 
-      // Corporate ownership effects:
-      // + Better cost efficiency (centralized sales, voicetracking)
-      // - Quality drops over time (generic programming, lost local feel)
-      target.pers={...PD.CORP_RADIO};
-      target._corpAcqYear=G.year;
-      target._qualityDecayRate=0.8; // quality decays 0.8 pts/period under corporate
+      acquired.pers={...PD.CORP_RADIO};
+      acquired._corpAcqYear=G.year;
+      acquired._qualityDecayRate=0.8;
 
       const shortName=corp.name.split(' ')[0];
       acts.push({v:'HIGH',
-        t:`🏢 ${shortName} acquires ${target.callLetters} (${FM[target.format]?.l}) for ~${f$(price)} — consolidation accelerates.`,
+        t:`🏢 ${shortName} acquires ${acquired.callLetters} (${FM[acquired.format]?.l}) for ~${f$(price)} — consolidation accelerates.`,
         iy:false});
     }
   });
@@ -8762,7 +9012,7 @@ function advTurn(mpCoalesceSeq){
       normalizeSimulcastLinksInPlace(G);
       finalizeTalentBenchEndOfTurn(G);
       processAtlanta1970DeferredLaunches(G);
-      const ev=[...chkEv(G),...applyDriftInflections(G),...pledgeDriveCheck(G),...runConsolidation(G),...runMarketAttrition(G)];
+      const ev=[...chkEv(G),...applyDriftInflections(G),...pledgeDriveCheck(G),...runMarketAttrition(G)];
     corporateDecay(G);
     runCorpLMAOffers(G);
     talentEvents(G);
@@ -8786,6 +9036,8 @@ function advTurn(mpCoalesceSeq){
     checkRankMilestones(G);
     const acts=runAI(G);
     seedRev(G.stations,G);
+    // Post-revenue consolidation uses current-period fin.rev for deal pricing; news merged below like runAI acts.
+    const consolidationActs=runConsolidation(G);
     processLMAFees(G);
     // MP: credit each player's cash independently from their own stations
     if (MP.mode === 'live') {
@@ -8835,6 +9087,7 @@ function advTurn(mpCoalesceSeq){
     G.stations.forEach(s=>{ if(!s||s._bpSlotDeferred||!s.id)return; snap.shares[s.id]=s.rat.share; });
     G.rankerHistory.push(snap);
     acts.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
+    consolidationActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     ev.forEach(e=>G.news.unshift({v:'HIGH',t:`📡 ${e.t}: ${e.d}`,y:e.y,p:e.p}));
     injectTradeNewsForeshadow(G);
     // Seasonal market note — brief context at the top of the feed each period
@@ -10150,11 +10403,12 @@ function brandMarketingProgrammingBlockHtml(leg){
     <div class="msh" style="margin-bottom:8px">PROGRAMMING BUDGET — ${rosterHtmlEsc(callDisplay(s))}</div>
     <p class="di" style="font-size:14px">Coaching, production, and content development — reduces quality decay and lifts dayparts (charged each period).</p>
     <div class="slsec">
-      <div class="sll"><span>BUDGET / PERIOD</span><strong id="pgu-val">${f$(val)}</strong></div>
-      <input type="range" id="bm-pg-range-${safe}" min="0" max="${pgCap}" step="2000" value="${val}" oninput="updProg('${sid}',this.value)">
+      <div class="sll"><span>BUDGET / PERIOD</span><span><strong id="pgu-val">${f$(val)}</strong><span id="pgu-pct" style="color:var(--mut);font-weight:400"> · ${progBudgetPctOfCap(val,pgCap)}% of cap</span></span></div>
+      <input type="range" id="bm-pg-range-${safe}" min="0" max="${PROG_BUDGET_PERMILLE_MAX}" step="1" value="${progBudgetPermilleFromDollars(val,pgCap)}" oninput="updProg('${sid}',this.value)" aria-label="Programming budget as percent of period cap">
+      <div class="sln2" style="color:var(--mut);font-size:13px;margin-top:4px">0–100% of cap (max ${f$(pgCap)})</div>
       <div class="sln2" id="pgu-note"></div>
     </div>
-    <div class="ibox">Current: <strong>${f$(s.ops?.progBudget||0)}/period</strong> · Station quality: <strong>${s.oq}/100</strong></div>
+    <div class="ibox">Committed: <strong>${f$(s.ops?.progBudget||0)}/period</strong> · Station quality: <strong>${s.oq}/100</strong></div>
     <button class="cfm wl-commit-btn wl-commit-btn--synced" type="button" id="pgu-commit-btn" onclick="doProg()">SET PROGRAMMING BUDGET</button>
   </div>`;
 }
@@ -10205,7 +10459,9 @@ function renderBrandMarketingStation(primarySid){
     const pgCap0=progBudgetCapForPeriod(G);
     PI={sid:opSid,val:Math.min(sProg.ops?.progBudget||0,pgCap0)};
     const pgR=document.getElementById('bm-pg-range-'+bmSafeElId(primary.id));
-    updProg(opSid, pgR?pgR.value:String(PI.val));
+    const pm=progBudgetPermilleFromDollars(PI.val,pgCap0);
+    if(pgR) pgR.value=String(pm);
+    updProg(opSid, String(pm));
   }
 }
 function openBrandMarketing(sid){
@@ -10961,7 +11217,8 @@ function programmingModalContextSubtitle(s){
 function programmingModalSummaryHtml(s){
   const cap=progBudgetCapForPeriod(G);
   const cur=Math.min(s.ops?.progBudget||0,cap);
-  return `Current: <strong>${f$(cur)}</strong>/period · Station quality: <strong>${s.oq}/100</strong> · Cash: <strong>${f$(G.cash)}</strong>`;
+  const pct=progBudgetPctOfCap(cur,cap);
+  return `Committed: <strong>${f$(cur)}</strong>/period (${pct}% of cap · max ${f$(cap)}) · Quality: <strong>${s.oq}/100</strong> · Cash: <strong>${f$(G.cash)}</strong>`;
 }
 function openFmtFromProgramming(sid){
   openFmt(sid);
@@ -11004,14 +11261,15 @@ function openProgramming(sid){
     <p class="di">Set a recurring programming budget — coaching, production, content development. Charged every period automatically. Reduces quality decay and boosts daypart quality each period.</p>
     <div class="ms2"><div class="msh">CURRENT DAYPART QUALITY</div>${drows}</div>
     <div class="slsec">
-      <div class="sll"><span>PROGRAMMING BUDGET / PERIOD</span><strong id="pg-val">${f$(PI.val)}</strong></div>
-      <input type="range" min="0" max="${pgCap}" step="2000" value="${PI.val}" oninput="updProg('${s.id}',this.value)">
+      <div class="sll"><span>PROGRAMMING BUDGET / PERIOD</span><span><strong id="pg-val">${f$(PI.val)}</strong><span id="pg-pct" style="color:var(--mut);font-weight:400"> · ${progBudgetPctOfCap(PI.val,pgCap)}% of cap</span></span></div>
+      <input type="range" min="0" max="${PROG_BUDGET_PERMILLE_MAX}" step="1" value="${progBudgetPermilleFromDollars(PI.val,pgCap)}" oninput="updProg('${s.id}',this.value)" aria-label="Programming budget as percent of period cap">
+      <div class="sln2" style="color:var(--mut);font-size:13px;margin-top:4px">Slider: 0–100% of this period's cap (max <strong>${f$(pgCap)}</strong>)</div>
       <div class="sln2" id="pg-note"></div>
     </div>
     <div class="ibox">${programmingModalSummaryHtml(s)}</div>
     <button type="button" class="cfm wl-commit-btn wl-commit-btn--synced" id="pg-commit-btn" onclick="doProg()">SET PROGRAMMING BUDGET</button>
     <button type="button" class="cnl" onclick="cm('m-programming')">CANCEL</button>`;
-  updProg(sid, PI.val);
+  updProg(sid, String(progBudgetPermilleFromDollars(PI.val,pgCap)));
   refreshProgCommitStandalone();
   om('m-programming');
 }
@@ -11019,15 +11277,18 @@ function openProgramming(sid){
 function openProg(sid){openProgramming(sid);}
 function updProg(sid,v){
   sid=ensureOpsSourceSid(sid);
-  PI.val=parseInt(v,10);PI.sid=sid;
-  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  PI.sid=sid;
   const pgCap=progBudgetCapForPeriod(G);
+  PI.val=progBudgetDollarsFromPermille(v,pgCap);
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const progRef=Math.max(10000,pgCap/6);
   const boost=Math.round((PI.val/progRef)*4);
   const dim=PI.val>0&&PI.val>=pgCap*0.75;
+  const pct=progBudgetPctOfCap(PI.val,pgCap);
   const noteZero='Set to $0 to disable. Quality will decay at normal rate.';
   const noteRich=PI.val===0?noteZero:`Est. quality boost: <strong style="color:var(--grn)">+${boost} pts/period</strong> across all dayparts &nbsp;·&nbsp; decay reduced <strong style="color:var(--blu)">40%</strong><br><span style="color:var(--mut)">Charged automatically each period — cancel anytime by setting to $0</span>${dim?'<br><span style="color:var(--mut);font-size:13px">Returns diminish near the spending cap.</span>':''}`;
   ['pg-val','pgu-val'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=f$(PI.val);});
+  ['pg-pct','pgu-pct'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent=` · ${pct}% of cap`;});
   ['pg-note','pgu-note'].forEach(id=>{
     const el=document.getElementById(id);if(!el)return;
     if(PI.val===0)el.textContent=noteZero;
@@ -12399,10 +12660,14 @@ function migrateSave(G){
     G.companyName=`${mktLbl} Broadcasting Group`;
   }
   G.loans=G.loans||[];
+  migrateLoansV2(G);
   if(G.corps)rehydrateCorps(G); // re-link corp ownership after save/load
   G.corps=G.corps||null;
   G.mpPhase=G.mpPhase??null;
   G.continuesBeyondEnd=G.continuesBeyondEnd??false;
+  if(!G._mpBankrupt||typeof G._mpBankrupt!=='object')G._mpBankrupt={};
+  if(G._soloBankrupt===undefined)G._soloBankrupt=false;
+  if(!G._mpDebtWarningQ||typeof G._mpDebtWarningQ!=='object')G._mpDebtWarningQ={};
   G.rankerHistory=G.rankerHistory||[];
   G.finHistory=G.finHistory||[];
   G._playerFinHistory=G._playerFinHistory||{};
@@ -12618,16 +12883,7 @@ function loadLocalSave(){
   queuePlayerTalentPortraits();
 }
 
-// ── LOAN SYSTEM ──────────────────────────────────────────────────
-// Tiers: Operating loan ($250K), Expansion loan ($750K), Major deal ($2M)
-// Interest accrues each period. Penalty for non-repayment at decade end.
-const LOAN_TIERS=[
-  {id:'op',    label:'Operating Loan',   amount:300000,   rate:.065, periods:6,  desc:'Short-term cash relief. 6.5% interest, due within 3 years.'},
-  {id:'exp',   label:'Expansion Loan',   amount:900000,  rate:.075, periods:12, desc:'Fund a new station acquisition or major upgrade. 7.5% interest, 6-year term.'},
-  {id:'major', label:'Major Deal Loan',  amount:2500000,  rate:.085, periods:20, desc:'Finance a cluster acquisition. 8.5% interest, 10-year term.'},
-];
-
-
+// ── LOAN UI (capacity-based line of credit; see bank lending helpers near scoring) ──
 
 // ── STATION HISTORY MODAL ────────────────────────────────────────────────
 const HIST_ICONS={'FORMAT':'📻','TALENT':'🎙','IDENTITY':'🏘','RATINGS':'📊','LAUNCH':'📡','NOTE':'📝','CALLSIGN':'📇','LOGO':'🖼','SIMULCAST':'📡'};
@@ -12688,125 +12944,166 @@ function updRepay(loanId, maxOwed, rawVal){
   const btnEl=document.getElementById('rpay-btn-'+loanId);
   if(valEl) valEl.textContent=f$(amt);
   if(noteEl){
-    if(remaining===0) noteEl.innerHTML='<span style="color:var(--grn)">✓ Full repayment — loan cleared</span>';
-    else noteEl.innerHTML=`Remaining after payment: <strong style="color:var(--amb)">${f$(remaining)}</strong>`;
+    if(remaining===0) noteEl.innerHTML='<span style="color:var(--grn)">✓ Full repayment — balance cleared</span>';
+    else noteEl.innerHTML=`Remaining principal: <strong style="color:var(--amb)">${f$(remaining)}</strong>`;
   }
   if(btnEl) btnEl.textContent=`PAY ${f$(amt)}`;
+}
+
+function updBorrowPreview(rawVal){
+  const v=Math.max(0,parseInt(rawVal,10)||0);
+  const el=document.getElementById('loan-borrow-display');
+  if(el) el.textContent=f$(v);
 }
 
 function doRepayPartial(loanId){
   if(!G.loans)return;
   const loan=G.loans.find(l=>(l.id+'')===(loanId+''));
   if(!loan)return;
-  // Read current slider value
+  const pid=loanPidForGame();
+  const bal=loan.principal!=null?loan.principal:loan.owed;
   const sliders=document.querySelectorAll(`input[oninput*="updRepay('${loanId}'"]`);
-  let amt=loan.owed;
-  if(sliders.length) amt=Math.min(parseInt(sliders[0].value)||loan.owed, loan.owed);
+  let amt=bal;
+  if(sliders.length) amt=Math.min(parseInt(sliders[0].value,10)||bal, bal);
   if(amt<=0){showToast('Choose a payment amount greater than zero.','warn');return;}
-  if(amt<loan.owed&&amt<10000){showToast('Partial payments must be at least $10,000 — or pay the full remaining balance.','warn');return;}
+  if(amt<bal&&amt<10000){showToast('Partial payments must be at least $10,000 — or pay the full remaining balance.','warn');return;}
   if(G.cash<amt){showToast(`Need ${f$(amt-G.cash)} more to make this payment.`,'warn');return;}
   G.cash-=amt;
-  const fullRepay=(amt>=loan.owed);
+  const fullRepay=(amt>=bal);
   if(fullRepay){
     G.loans=G.loans.filter(l=>(l.id+'')!==(loanId+''));
-    if(G._playerLoans?.[MP.playerId]) G._playerLoans[MP.playerId]=G._playerLoans[MP.playerId].filter(l=>(l.id+'')!==(loanId+''));
-    G.news.unshift({v:'LOW',t:`💳 ${loan.label} fully repaid.`,y:G.year,p:G.period});
-    MP.action('repay',{loanKey:loanId});
+    if(G._playerLoans?.[pid]) G._playerLoans[pid]=G._playerLoans[pid].filter(l=>(l.id+'')!==(loanId+''));
+    G.news.unshift({v:'LOW',t:`💳 ${loan.label||'Line of credit'} fully repaid.`,y:G.year,p:G.period});
+    MP.action('repay',{loanKey:loanId,amt:bal});
   } else {
-    loan.owed=loan.owed-amt;
-    if(G._playerLoans?.[MP.playerId]){
-      const mp=G._playerLoans[MP.playerId].find(l=>(l.id+'')===(loanId+''));
-      if(mp) mp.owed=loan.owed;
+    const rem=bal-amt;
+    if(loan.principal!=null) loan.principal=rem; else loan.owed=rem;
+    if(G._playerLoans?.[pid]){
+      const mp=G._playerLoans[pid].find(l=>(l.id+'')===(loanId+''));
+      if(mp){
+        if(mp.principal!=null) mp.principal=rem; else mp.owed=rem;
+      }
     }
-    G.news.unshift({v:'LOW',t:`💳 ${loan.label}: ${f$(amt)} payment made. ${f$(loan.owed)} remaining.`,y:G.year,p:G.period});
-    MP.action('repay_partial',{loanKey:loanId,amt,remaining:loan.owed});
+    G.news.unshift({v:'LOW',t:`💳 ${loan.label||'Line of credit'}: ${f$(amt)} toward principal. ${f$(rem)} left.`,y:G.year,p:G.period});
+    MP.action('repay_partial',{loanKey:loanId,amt,remaining:rem});
   }
-  if(MP.mode==='live'){if(!G._playerCash)G._playerCash={};G._playerCash[MP.playerId]=G.cash;MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash});}
+  if(MP.mode==='live'){if(!G._playerCash)G._playerCash={};G._playerCash[pid]=G.cash;MP.emit('player_cash_update',{playerId:pid,cash:G.cash});}
   openLoan();renderAll();
 }
 
 function openLoan(){
+  const pid=loanPidForGame();
+  if(MP.mode==='live'&&G._mpBankrupt?.[pid]){
+    document.getElementById('loanb').innerHTML='<p class="di">You are observing this market — financing is closed.</p><button class="cnl" onclick="cm(\'m-loan\')">CLOSE</button>';
+    om('m-loan');
+    return;
+  }
+  if(MP.mode!=='live'&&G._soloBankrupt){
+    document.getElementById('loanb').innerHTML='<p class="di">Your company is out of active play.</p><button class="cnl" onclick="cm(\'m-loan\')">CLOSE</button>';
+    om('m-loan');
+    return;
+  }
   const activeLoans=G.loans||[];
-  const totalOwed=activeLoans.reduce((s,l)=>s+l.owed,0);
+  const totalPrincipal=activeLoans.reduce((s,l)=>s+loanPrincipalFromEntry(l),0);
+  const coVal=totalEstimatedCompanyValue(G,pid);
+  const cap=borrowingCapacityForPlayer(G,pid);
+  const debt=debtPrincipalForPid(G,pid);
+  const avail=Math.max(0,cap-debt);
+  const effRate=effectiveAnnualLoanRate(G,pid);
+  const lev=loanLeverageRatio(G,pid);
+  const perInt=debt>0?Math.round(debt*(effRate/2)):0;
+  let warn='';
+  if(lev>=0.82) warn='<div class="wbox" style="border-color:var(--red)"><strong>Leverage critical.</strong> Distress and bankruptcy remain possible if cash stays weak.</div>';
+  else if(lev>=0.65) warn='<div class="ibox" style="border-color:var(--amb)">Leverage is elevated — interest costs rise with debt.</div>';
+
   const loanRows=activeLoans.length?activeLoans.map(l=>{
-    const o=Math.max(0,Math.round(l.owed));
+    const o=Math.max(0,Math.round(l.principal!=null?l.principal:l.owed));
     const under10k=o>0&&o<=10000;
     const minSl=under10k?o:10000;
-    const stepSl=under10k?1:1000; /* $1k steps above $10K so remainder (e.g. $25K) can hit full payoff */
+    const stepSl=under10k?1:1000;
     const lowLbl=under10k?`Full: ${f$(o)}`:'$10K min';
     return`
     <div style="padding:10px 0;border-bottom:1px solid var(--bdh)">
       <div class="sr">
-        <span class="lb">${l.label} <span style="color:var(--mut);font-size:14px">(${G.year-l.takenYear} yrs old)</span></span>
-        <span class="vl neg">${f$(l.owed)} owed</span>
+        <span class="lb">${l.label||'Line of credit'}</span>
+        <span class="vl neg">${f$(o)} principal</span>
       </div>
       <div class="slsec" style="margin-top:8px">
-        <div class="sll" style="margin-bottom:4px"><span style="color:var(--mut);font-size:14px">PAYMENT AMOUNT</span><strong id="rpay-val-${l.id}">${f$(l.owed)}</strong></div>
+        <div class="sll" style="margin-bottom:4px"><span style="color:var(--mut);font-size:14px">PAYMENT AMOUNT</span><strong id="rpay-val-${l.id}">${f$(o)}</strong></div>
         <input type="range" min="${minSl}" max="${o}" step="${stepSl}" value="${o}"
                oninput="updRepay('${l.id}',${o},this.value)">
         <div style="display:flex;justify-content:space-between;font-family:var(--ft);font-size:13px;color:var(--mut);margin-top:3px"><span>${lowLbl}</span><span>Full: ${f$(o)}</span></div>
-        <div class="sln2" id="rpay-note-${l.id}">Remaining after payment: <strong>${f$(0)}</strong></div>
+        <div class="sln2" id="rpay-note-${l.id}">Remaining principal: <strong>${f$(0)}</strong></div>
       </div>
-      <button class="abt g" id="rpay-btn-${l.id}" style="width:100%;margin-top:6px;font-size:15px" onclick="doRepayPartial('${l.id}')">PAY ${f$(l.owed)}</button>
+      <button class="abt g" id="rpay-btn-${l.id}" style="width:100%;margin-top:6px;font-size:15px" onclick="doRepayPartial('${l.id}')">PAY ${f$(o)}</button>
     </div>`;
-  }).join(''):'<div class="sr"><span class="lb" style="color:var(--mut)">No active loans.</span></div>';
+  }).join(''):'<div class="sr"><span class="lb" style="color:var(--mut)">No principal outstanding.</span></div>';
 
-  const availTiers=LOAN_TIERS.filter(t=>{
-    // Can't take same tier twice simultaneously
-    const hasThis=activeLoans.some(l=>l.tierId===t.id);
-    // Major deal only available post-1990 (complexity/regulatory)
-    if(t.id==='major'&&G.year<1990)return false;
-    return !hasThis;
-  });
-
-  const tierRows=availTiers.map(t=>`
-    <div class="sr" style="flex-direction:column;align-items:flex-start;gap:6px;padding:12px 0;border-bottom:1px solid var(--bdh)">
-      <div style="display:flex;justify-content:space-between;width:100%;align-items:center">
-        <strong style="color:var(--wht);font-family:var(--fd)">${t.label}</strong>
-        <span style="color:var(--grn);font-family:var(--fd);font-size:18px">${f$(t.amount)}</span>
+  const maxB=avail;
+  const step=maxB>=5000?5000:(maxB>=1000?1000:Math.max(1,Math.floor(maxB)));
+  const smin=Math.min(step,maxB);
+  const borrowChk=maxB>0?canBorrowAmount(G,pid,maxB):{ok:false,reason:''};
+  let borrowSection='';
+  if(maxB<=0) borrowSection='<div class="ibox">No borrowing capacity left — repay principal or improve station performance.</div>';
+  else if(!borrowChk.ok) borrowSection=`<div class="ibox" style="color:var(--amb)">${borrowChk.reason}</div>`;
+  else borrowSection=`
+    <div class="ms2"><div class="msh">DRAW ON THE LINE</div>
+      <div class="slsec" style="margin-top:8px">
+        <div class="sll" style="margin-bottom:4px"><span style="color:var(--mut);font-size:14px">AMOUNT</span><strong id="loan-borrow-display">${f$(maxB)}</strong></div>
+        <input type="range" id="loan-borrow-slider" min="${smin}" max="${maxB}" step="${step}" value="${maxB}"
+               oninput="updBorrowPreview(this.value)">
+        <div style="display:flex;justify-content:space-between;font-family:var(--ft);font-size:13px;color:var(--mut);margin-top:3px"><span>Min ${f$(smin)}</span><span>Max ${f$(maxB)}</span></div>
       </div>
-      <div style="font-family:var(--ft);font-size:15px;color:var(--mut)">${t.desc}</div>
-      <div style="font-family:var(--ft);font-size:15px;color:var(--off)">
-        Total repayment: ${f$(Math.round(t.amount*(1+t.rate*t.periods/2)))} · 
-        ~${f$(Math.round(t.amount*(1+t.rate*t.periods/2)/t.periods))}/period
-      </div>
-      <button class="abt b" style="width:100%;margin-top:4px" onclick="doLoan('${t.id}')">TAKE ${t.label.toUpperCase()}</button>
-    </div>`).join('');
+      <button class="abt b" style="width:100%;margin-top:8px" onclick="doBorrowConfirm()">BORROW SELECTED AMOUNT</button>
+    </div>`;
 
   document.getElementById('loanb').innerHTML=`
-    <p class="di">Financing lets you invest ahead of revenue — acquire stations, weather a downturn, fund streaming. Interest accrues each period. Outstanding loans at decade end reduce your score.</p>
-    ${activeLoans.length?`<div class="ms2"><div class="msh">ACTIVE LOANS — ${f$(totalOwed)} TOTAL OWED</div>${loanRows}</div>`:''}
-    ${availTiers.length?`<div class="ms2"><div class="msh">AVAILABLE FINANCING</div>${tierRows}</div>`:'<div class="ibox">No additional financing available — repay existing loans first.</div>'}
-    <div class="ibox">Cash on hand: <strong>${f$(G.cash)}</strong> · Interest charges appear in your period costs.</div>
+    <p class="di">Borrow against your group’s estimated station value. Interest is charged from cash each period (simple interest); principal only changes when you draw or repay.</p>
+    <div class="ms2"><div class="msh">YOUR BANKING SNAPSHOT</div>
+      <div class="sr"><span class="lb">Est. company value (stations)</span><span class="vl">${f$(coVal)}</span></div>
+      <div class="sr"><span class="lb">Borrowing capacity (~45% of value)</span><span class="vl">${f$(cap)}</span></div>
+      <div class="sr"><span class="lb">Principal outstanding</span><span class="vl neg">${f$(debt)}</span></div>
+      <div class="sr"><span class="lb">Available to borrow</span><span class="vl ${avail>0?'pos':'neg'}">${f$(avail)}</span></div>
+      <div class="sr"><span class="lb">Effective annual rate (now)</span><span class="vl">${(effRate*100).toFixed(1)}%</span></div>
+      <div class="sr"><span class="lb">Interest this period (est.)</span><span class="vl neg">${debt?f$(perInt):'$0'}</span></div>
+      <div class="sr"><span class="lb">Leverage (debt / capacity)</span><span class="vl">${Math.round(lev*100)}%</span></div>
+    </div>
+    ${warn}
+    ${activeLoans.length?`<div class="ms2"><div class="msh">REPAY PRINCIPAL — ${f$(totalPrincipal)} TOTAL</div>${loanRows}</div>`:''}
+    ${borrowSection}
+    <div class="ibox">Cash on hand: <strong>${f$(G.cash)}</strong> · Outstanding debt reduces decade score.</div>
     <button class="cnl" onclick="cm('m-loan')">CLOSE</button>`;
-  activeLoans.forEach(l=>updRepay(l.id,Math.max(0,Math.round(l.owed)),String(Math.max(0,Math.round(l.owed)))));
+  activeLoans.forEach(l=>{
+    const o=Math.max(0,Math.round(l.principal!=null?l.principal:l.owed));
+    updRepay(l.id,o,String(o));
+  });
   om('m-loan');
 }
 
-function doLoan(tierId){
-  const tier=LOAN_TIERS.find(t=>t.id===tierId);if(!tier)return;
-  if(!G.loans)G.loans=[];
-  const loanKey=tierId+G.year;
-  if(G.loans.some(l=>l.tierId===tierId)){alert('Already have this loan type. Repay first.');return;}
-  G.cash+=tier.amount;
-  const totalOwed=Math.round(tier.amount*(1+tier.rate*tier.periods/2));
+function doBorrowConfirm(){
+  const pid=loanPidForGame();
+  const el=document.getElementById('loan-borrow-slider');
+  const amount=Math.round(parseInt(el&&el.value,10)||0);
+  const chk=canBorrowAmount(G,pid,amount);
+  if(!chk.ok){showToast(chk.reason,'warn');return;}
   if(!G._playerLoans)G._playerLoans={};
-  if(!G._playerLoans[MP.playerId])G._playerLoans[MP.playerId]=[];
-  G._playerLoans[MP.playerId].push({tierId,id:loanKey,label:tier.label,amount:tier.amount,owed:totalOwed,
-    rate:tier.rate,periods:tier.periods,takenYear:G.year,interestPerPeriod:Math.round(tier.amount*tier.rate/2)});
-  // Keep G.loans in sync as this player's loans (used by solo mode and display)
-  G.loans=G._playerLoans[MP.playerId];
-  G.news.unshift({v:'MEDIUM',t:`💳 ${tier.label}: ${f$(tier.amount)} received. Repay ${f$(totalOwed)} over ${tier.periods/2} years.`,y:G.year,p:G.period});
+  if(!G._playerLoans[pid])G._playerLoans[pid]=[];
+  G.loans=G._playerLoans[pid];
+  let f=G.loans.find(l=>l.kind==='facility'||l.id==='credit');
+  if(!f){
+    f={id:'credit',kind:'facility',label:'Line of credit',principal:0,takenYear:G.year};
+    G.loans.push(f);
+  }
+  f.principal=(f.principal||0)+amount;
+  G.cash=(G.cash||0)+amount;
   if(MP.mode==='live'){
     if(!G._playerCash)G._playerCash={};
-    G._playerCash[MP.playerId]=G.cash;
-    MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash});
+    G._playerCash[pid]=G.cash;
+    MP.emit('player_cash_update',{playerId:pid,cash:G.cash});
+    MP.action('loan',{amount});
   }
-  // Broadcast to host so _playerLoans[guestPid] is recorded server-side
-  MP.action('loan',{tierId,amount:tier.amount,owed:totalOwed,label:tier.label,
-    rate:tier.rate,periods:tier.periods,takenYear:G.year,
-    interestPerPeriod:Math.round(tier.amount*tier.rate/2)});
-  openLoan(); // re-render modal
+  G.news.unshift({v:'MEDIUM',t:`💳 Line of credit: ${f$(amount)} received. Principal now ${f$(f.principal)}.`,y:G.year,p:G.period});
+  openLoan();
   renderAll();
 }
 
@@ -12814,29 +13111,47 @@ function doRepay(loanKey){
   if(!G.loans)return;
   const loan=G.loans.find(l=>(l.id+'')===(loanKey+''));
   if(!loan)return;
-  if(G.cash<loan.owed){alert(`Need ${f$(loan.owed-G.cash)} more to repay this loan.`);return;}
-  G.cash-=loan.owed;
+  const bal=loan.principal!=null?loan.principal:loan.owed;
+  if(G.cash<bal){alert(`Need ${f$(bal-G.cash)} more to repay.`);return;}
+  const pid=loanPidForGame();
+  G.cash-=bal;
   G.loans=G.loans.filter(l=>(l.id+'')!==(loanKey+''));
-  if(G._playerLoans?.[MP.playerId]) G._playerLoans[MP.playerId]=G._playerLoans[MP.playerId].filter(l=>(l.id+'')!==(loanKey+''));
-  G.news.unshift({v:'LOW',t:`💳 ${loan.label} fully repaid.`,y:G.year,p:G.period});
-  MP.action('repay',{loanKey});
+  if(G._playerLoans?.[pid]) G._playerLoans[pid]=G._playerLoans[pid].filter(l=>(l.id+'')!==(loanKey+''));
+  G.news.unshift({v:'LOW',t:`💳 ${loan.label||'Line of credit'} fully repaid.`,y:G.year,p:G.period});
+  MP.action('repay',{loanKey,amt:bal});
+  if(MP.mode==='live'){if(!G._playerCash)G._playerCash={};G._playerCash[pid]=G.cash;MP.emit('player_cash_update',{playerId:pid,cash:G.cash});}
   openLoan();
   renderAll();
 }
 
-// Apply loan interest to costs each period (called in advTurn)
 function applyLoanInterest(){
-  // In MP, restore this player's loan array from _playerLoans before processing
-  if(MP.mode==='live' && G._playerLoans){
-    G.loans = G._playerLoans[MP.playerId] || [];
+  if(!G._lastLoanInterestByPlayer) G._lastLoanInterestByPlayer = {};
+  G._lastLoanInterestCharge = 0;
+  const applyCharge = pid=>{
+    if(G._mpBankrupt?.[pid]) return;
+    const pr = debtPrincipalForPid(G, pid);
+    if(pr <= 0) return;
+    const rate = effectiveAnnualLoanRate(G, pid);
+    const interest = Math.round(pr * (rate/2));
+    if(interest <= 0) return;
+    if(MP.mode==='live'){
+      if(!G._playerCash) G._playerCash = {};
+      G._playerCash[pid] = (G._playerCash[pid]||0) - interest;
+      G._lastLoanInterestByPlayer[pid] = interest;
+      if(MP.playerId===pid) G.cash = G._playerCash[pid];
+    } else {
+      G.cash = (G.cash||0) - interest;
+      G._lastLoanInterestCharge = interest;
+    }
+  };
+  if(MP.mode==='live'){
+    const pids = new Set();
+    Object.keys(G._playerLoans||{}).forEach(k=> pids.add(Number(k)));
+    G.ps.forEach(s=>{ if(s._mpOwner!=null) pids.add(s._mpOwner); });
+    pids.forEach(applyCharge);
+  } else {
+    applyCharge(0);
   }
-  if(!G.loans||!G.loans.length)return;
-  G.loans.forEach(l=>{
-    // Interest already baked into total owed — just track it for display
-    // Penalty: loans older than their term at decade end cost VP
-    l.periodsHeld=(l.periodsHeld||0)+1;
-  });
-  // Score penalty for loans outstanding at decade checkpoints is handled in scoreCalc
 }
 
 // 7. SELL STATION
@@ -13030,6 +13345,8 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra
   const periodName=per===2?'FALL':'SPRING';
   const isElYr=yr%2===0&&per===2;
   const rightsLines=playerRelevantRightsActs(rightsExtra?.sportsActs,rightsExtra?.franchiseActs);
+  const myLoanInt=MP.mode==='live'?(G._lastLoanInterestByPlayer?.[MP.playerId]||0):(G._lastLoanInterestCharge||0);
+  const debtShow=debtPrincipalForPid(G,loanPidForGame());
   document.getElementById('sumt').textContent=`${yr} ${periodName} — PERIOD END`;
   document.getElementById('sumb').innerHTML=`
     <div class="ms2"><div class="msh">YOUR RESULTS</div>
@@ -13037,8 +13354,9 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra
       <div class="sr"><span class="lb">Operating Costs</span><span class="vl">${f$(tCost)}/period</span></div>
       <div class="sr"><span class="lb">Net EBITDA</span><span class="vl ${profit>=0?'pos':'neg'}">${profit>=0?'+':''}${f$(profit)}</span></div>
       <div class="sr"><span class="lb">Margin</span><span class="vl" style="color:${marginColor}">${margin}%</span></div>
+      ${myLoanInt>0?`<div class="sr"><span class="lb">Loan interest</span><span class="vl neg">−${f$(myLoanInt)}</span></div>`:''}
       <div class="sr"><span class="lb">Cash on Hand</span><span class="vl amb">${f$(mpMyCashOnHand())}</span></div>
-      ${(G.loans&&G.loans.length)?`<div class="sr"><span class="lb" style="color:var(--red)">Outstanding Loans</span><span class="vl neg">${f$(G.loans.reduce((s,l)=>s+l.owed,0))} owed — click &#36; to manage</span></div>`:''}
+      ${debtShow>0?`<div class="sr"><span class="lb" style="color:var(--red)">Debt principal</span><span class="vl neg">${f$(debtShow)} — click &#36; to manage</span></div>`:''}
       <div class="sr"><span class="lb" style="color:var(--mut)">Ad Market</span><span class="vl" style="color:${per===2?'var(--grn)':'var(--amb)'}">${per===2?'FALL — peak season (+12%)':'SPRING — lean season (−12%)'}${isElYr?' 🗳 +4% political for Talk/Sports':''}</span></div>
     </div>
     ${rightsLines.length?`<div class="ms2"><div class="msh">RIGHTS &amp; SYNDICATION (THIS PERIOD)</div>${rightsLines.map(t=>`<div class="sr"><span class="vl" style="color:var(--off);font-size:15px;font-family:var(--ft)">${t}</span></div>`).join('')}</div>`:''}
@@ -13406,6 +13724,11 @@ function renderAll(){
     }
     return;
   }
+  if(MP.mode!=='live'){
+    if(!G._playerLoans) G._playerLoans = {};
+    if(!G._playerLoans[0]) G._playerLoans[0] = G.loans || [];
+    G.loans = G._playerLoans[0];
+  }
   // MP: G.loans on the wire is the host's snapshot — always show *this* player's loans only
   if(MP.mode==='live'){
     const mine=G._playerLoans?.[MP.playerId];
@@ -13464,8 +13787,15 @@ function rHdr(){
     .filter(([,sd])=>sd?.talent&&(sd.talent.cyr||0)<=0)
     .map(([sl,sd])=>`${s.callLetters} ${SL[sl]} (${sd.talent.name})`));
   const _myDisplayCash = _hdrCash;
-  if(_myDisplayCash<0&&!G.score.isSandbox){
+  if((MP.mode==='live'&&G._mpBankrupt?.[MP.playerId])||G._soloBankrupt){
     ab.className='on';
+    ab.style.background='rgba(240,88,88,.1)';
+    ab.style.borderColor='var(--mut)';
+    ab.style.color='var(--mut)';
+    ab.textContent='Bankruptcy: You are out of active play. Keep advancing to watch the market.';
+  }else if(_myDisplayCash<0&&!G.score.isSandbox){
+    ab.className='on';
+    ab.style.background='';ab.style.borderColor='';ab.style.color='';
     const _dq=MP.mode==='live'?(G._mpDebtWarningQ?.[MP.playerId]||0):(G.debtWarningQ||0);
     const _rem=Math.max(0,2-_dq);
     ab.textContent=`⚠ NEGATIVE CASH — ${f$(_myDisplayCash)} — Recover within ${_rem} period${_rem!==1?'s':''} or face forced sale${MP.mode==='live'&&myPS().length<=1?' (you have no extra station to sell)' : ''}.`;
@@ -13566,7 +13896,8 @@ function rTick(){
 }
 
 function mpIsMe(s){
-  if(MP.mode!=='live') return s.isPlayer;
+  if(MP.mode!=='live') return s.isPlayer && !G._soloBankrupt;
+  if(G._mpBankrupt&&G._mpBankrupt[MP.playerId]) return false;
   return s.isPlayer && s._mpOwner===MP.playerId;
 }
 function mpStationColor(s){

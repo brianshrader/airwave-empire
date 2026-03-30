@@ -35,6 +35,7 @@ const { randomBytes } = require('crypto');
 const app        = express();
 const { mountLogoRoutes } = require('./server/logoRoutes');
 const { mountPortraitRoutes } = require('./server/portraitRoutes');
+const { isWeakDraftStation } = require('./server/draftFairness');
 
 app.use(express.json({ limit: '64kb' }));
 mountLogoRoutes(app);
@@ -217,7 +218,10 @@ function checkAllCommitted(room) {
     return;
   }
   console.log(`[CHECK] room ${room.id} phase=${room.phase} commitLog=${JSON.stringify(room.commitLog)} connected=${connected.map(p=>p.name+'='+p.socketId)}`);
-  const allCommitted = connected.every(p => room.commitLog[p.socketId]);
+  const allCommitted = connected.every(p => {
+    if (room.G && room.G._mpBankrupt && room.G._mpBankrupt[p.playerId]) return true;
+    return room.commitLog[p.socketId];
+  });
   if (allCommitted) {
     const hostSock = io.sockets.sockets.get(room.hostId);
     if (hostSock) {
@@ -556,6 +560,14 @@ io.on('connection', socket => {
         const sigType = station.sig?.type === 'FM' ? 'FM' : 'AM';
         if ((sigType === 'AM' && myAM >= 1) || (sigType === 'FM' && myFM >= 1)) {
           socket.emit('draft_error', `You already have an ${sigType} station. Pick the other signal type.`);
+          return;
+        }
+        // First pick must be a viable anchor (★ EASY or ★★ MED — not ★★★ HARD only)
+        if (myPicks.length === 0 && isWeakDraftStation(station)) {
+          socket.emit(
+            'draft_error',
+            'Your first pick must be ★ EASY or ★★ MED. ★★★ HARD stations are for a second gamble — not as your only starter.'
+          );
           return;
         }
       }
