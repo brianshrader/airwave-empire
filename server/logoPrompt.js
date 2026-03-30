@@ -33,7 +33,7 @@ function formatStyleNotes(formatRaw) {
     return 'Bright chart-radio energy, bubble letters or playful condensed sans, disco-to-MTV era billboard feel without digital chrome.';
   }
   if (/adult contemp|hot ac|soft ac|ac\b|beautiful|easy/.test(f)) {
-    return 'Soft rounded letterforms, lifestyle magazine calm, upscale but still analog — airbrush or soft gradient acceptable, not glassy.';
+    return 'Soft rounded letterforms, lifestyle magazine calm, upscale but still analog — airbrush or soft gradient only if contrast stays strong (no whisper-pale pastels on white), not glassy.';
   }
   if (/oldies|classic hits|nostalgia|standards|golden/.test(f)) {
     return 'Nostalgic marquee or jukebox feel, heritage “greatest hits” mood, warm retro palette, celebration of the back catalog.';
@@ -96,7 +96,8 @@ function buildLogoPrompt(meta) {
     `Graphic vocabulary (invisible cues — not words to render): ${fmtNotes}`,
     `Period surface treatment (invisible cues — not words to render): ${eraNotes}`,
     'Layout: bold retro typography for the station name string only; print-era radio feel; limited color palette (2–4 colors); flat or lightly airbrushed; bumper-sticker or van-decal composition.',
-    'Background: transparent or plain flat field. Hard constraints: no modern glossy effects, no esports or gaming aesthetic, no photorealism, no stock-photo collage, no fake 3D chrome, no smartphone-app icon style.',
+    'Readability (mandatory): the wordmark must be legible at small size. Use strong contrast — never pale pastel, ice blue, blush pink, or washed-out tints on white or off-white. Never put yellow, cream, gold, or light lime on white or near-white (those combinations are illegible). If the background is light, use deep navy, black, dark red, forest green, or other saturated dark ink for the letters; if the letters are light, place them on a solid mid or dark band, badge, or field — not on white. Prefer either a solid colored or mid-gray background behind the name, or a dark outline / heavy stroke / crisp drop shadow around the letters so they separate clearly from the background.',
+    'Background: transparent or plain flat field. If the field is white or very light, the station name must still read clearly (outline, shadow, or dark letters as above). Hard constraints: no modern glossy effects, no esports or gaming aesthetic, no photorealism, no stock-photo collage, no fake 3D chrome, no smartphone-app icon style.',
   ]
     .filter(Boolean)
     .join(' ');

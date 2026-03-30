@@ -7,3 +7,4 @@ generated-portraits/*
 !generated-portraits/library/
 !generated-portraits/library/**/*
 .env
+data/

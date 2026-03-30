@@ -314,7 +314,7 @@
     btnConnect.disabled = true;
     setPhase('Connecting…');
 
-    socket = io({ transports: ['websocket', 'polling'] });
+    socket = io({ transports: ['websocket', 'polling'], auth: { spectate: true } });
 
     socket.on('connect', function () {
       socket.emit('spectate_room', { roomId: rid });

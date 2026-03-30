@@ -96,6 +96,26 @@ If the host disconnects, the server automatically promotes the next connected pl
 
 ---
 
+## Accounts (Clerk) and billing (Stripe)
+
+**Optional in development:** If `CLERK_SECRET_KEY` is not set in `.env`, multiplayer behaves as before (no login).
+
+**Production:** Set `CLERK_SECRET_KEY` on the game server and put your **Publishable key** in `index.html`:
+
+```html
+<meta name="wl-clerk-publishable-key" content="pk_live_...">
+```
+
+Players use **Sign in** in the multiplayer lobby, then **CONNECT**. The client sends a Clerk session JWT on the Socket.io handshake; the server verifies it and attaches a stable **Clerk user id** to each player slot (`accountId` in room saves). Rejoining a slot that was claimed by another account is rejected.
+
+**Solo games** still save only in the browser (`localStorage`) unless you add cloud saves later.
+
+**Stripe:** With `STRIPE_SECRET_KEY` (and related vars in `.env.example`), `POST /api/billing/create-checkout-session` creates a Checkout session after verifying the same Bearer JWT. Clerk user ids are mapped to Stripe Customer ids in `data/stripe_customers.json` (replace with a real database when you scale). Configure `POST /api/stripe/webhook` in the Stripe Dashboard using `STRIPE_WEBHOOK_SECRET`.
+
+**Spectator TV** (`spectate.html`) uses `auth: { spectate: true }` so the read-only board still works when Clerk is required for normal connections.
+
+---
+
 ## Troubleshooting
 
 **"Could not reach server"**  

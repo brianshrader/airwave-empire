@@ -33,19 +33,29 @@ const fs       = require('fs');
 const { randomBytes } = require('crypto');
 
 const app        = express();
+
+// Stripe webhook must see raw body (register before express.json)
+const { stripeWebhookHandler, mountStripeBilling } = require('./server/stripeBilling');
+app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhookHandler);
+
+app.use(express.json({ limit: '64kb' }));
+
 const { mountLogoRoutes } = require('./server/logoRoutes');
 const { mountPortraitRoutes } = require('./server/portraitRoutes');
 const { isWeakDraftStation } = require('./server/draftFairness');
 
-app.use(express.json({ limit: '64kb' }));
 mountLogoRoutes(app);
 mountPortraitRoutes(app);
+mountStripeBilling(app);
 
 const httpServer = http.createServer(app);
 const io         = new Server(httpServer, {
   cors: { origin: '*' },
   maxHttpBufferSize: 10e6,   // 10MB — G state + history can grow
 });
+
+const { attachSocketAuth } = require('./server/mpAuth');
+attachSocketAuth(io);
 
 const PORT     = process.env.PORT || 3000;
 const SAVE_DIR = path.join(__dirname, 'saves');
@@ -69,6 +79,7 @@ function persistRoom(room) {
         // Save name + playerId but NOT socketId — that changes on reconnect
         name:     p.name,
         playerId: p.playerId,
+        accountId: p.accountId || undefined, // Clerk user id when using accounts
         // Store the most recent socket id so we can match on rejoin by name+playerId
         lastSocketId: p.socketId,
       })),
@@ -125,6 +136,7 @@ function loadPersistedRooms() {
           ready:     false,
           connected: false,
           lastSocketId: p.lastSocketId,
+          accountId:    p.accountId || null,
         })),
         G:          data.G,
         commitLog:  {},
@@ -170,6 +182,7 @@ function makeRoom(hostSocketId, hostName) {
       playerId:  0,
       ready:     false,
       connected: true,
+      accountId: null,
     }],
     G:          null,
     commitLog:  {},
@@ -238,11 +251,20 @@ function checkAllCommitted(room) {
 
 // ── SOCKET HANDLERS ───────────────────────────────────────────────
 io.on('connection', socket => {
-  console.log(`[+] ${socket.id}`);
+  console.log(`[+] ${socket.id}${socket.data.spectator ? ' (spectator)' : ''}`);
+
+  if (socket.data.spectator) {
+    socket.use((packet, next) => {
+      const ev = packet[0];
+      if (ev !== 'spectate_room') return next(new Error('spectator_readonly'));
+      next();
+    });
+  }
 
   // ── CREATE ROOM ───────────────────────────────────────────────
   socket.on('create_room', ({ name }) => {
     const room = makeRoom(socket.id, name || 'Host');
+    if (room.players[0]) room.players[0].accountId = socket.data.clerkUserId || null;
     socket.join(room.id);
     socket.emit('room_created', { roomId: room.id, playerId: 0, socketId: socket.id });
     broadcastRoomState(room);
@@ -278,7 +300,14 @@ io.on('connection', socket => {
     if (room.players.length >= 4) { socket.emit('join_error', 'Room is full (max 4 players).'); return; }
 
     const playerId = room.players.length;
-    room.players.push({ socketId: socket.id, name: name || `Player ${playerId+1}`, playerId, ready: false, connected: true });
+    room.players.push({
+      socketId: socket.id,
+      name: name || `Player ${playerId+1}`,
+      playerId,
+      ready: false,
+      connected: true,
+      accountId: socket.data.clerkUserId || null,
+    });
     socket.join(roomId);
     socket.emit('room_joined', { roomId, playerId, socketId: socket.id });
     broadcastRoomState(room);
@@ -317,6 +346,15 @@ io.on('connection', socket => {
         socket.emit('join_error', `Could not match you to a player slot. Re-enter the company name you used originally.`);
       }
       return;
+    }
+
+    const uid = socket.data.clerkUserId || null;
+    if (player.accountId && uid && player.accountId !== uid) {
+      socket.emit('join_error', 'This player slot is linked to a different account. Sign in with the correct account.');
+      return;
+    }
+    if (uid && !player.accountId) {
+      player.accountId = uid;
     }
 
     // Update socket id — this is their new connection
@@ -697,13 +735,25 @@ setInterval(() => {
 }, 15 * 60 * 1000); // check every 15 minutes
 
 // ── STATIC FILES ──────────────────────────────────────────────────
+// Vite output (npm run build) bundles Clerk + src/main.js — required for Clerk on :3000.
+// Without dist/, the browser loads raw /src/main.js and cannot resolve @clerk/clerk-js imports.
+const DIST_DIR = path.join(__dirname, 'dist');
+const DIST_INDEX = path.join(DIST_DIR, 'index.html');
+const HAS_DIST = fs.existsSync(DIST_INDEX);
+
+if (HAS_DIST) {
+  app.use(express.static(DIST_DIR));
+}
 app.use(express.static(path.join(__dirname)));
+
 app.get('/', (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.set('Pragma', 'no-cache');
+  if (HAS_DIST) {
+    return res.sendFile(DIST_INDEX);
+  }
   const indexPath = path.join(__dirname, 'index.html');
   const legacyPath = path.join(__dirname, 'wavelength-ui.html');
-  // Prefer the modular index.html; fall back to the legacy monolithic page.
   res.sendFile(fs.existsSync(indexPath) ? indexPath : legacyPath);
 });
 
@@ -744,9 +794,36 @@ app.delete('/admin/saves', (req, res) => {
 // ── BOOT ──────────────────────────────────────────────────────────
 loadPersistedRooms();
 
+httpServer.on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    console.error(`\n✗ Port ${PORT} is already in use (EADDRINUSE).`);
+    console.error('  Usually another node server.js is still running, or a second terminal started the same app.');
+    console.error(`  Stop it:  lsof -nP -iTCP:${PORT} -sTCP:LISTEN   then   kill <PID>`);
+    console.error(`  Or use another port:  PORT=3001 npm run dev\n`);
+  } else {
+    console.error('[SERVER]', err);
+  }
+  process.exit(1);
+});
+
 httpServer.listen(PORT, () => {
   console.log(`\n🎙 WAVELENGTH SERVER`);
   console.log(`   http://localhost:${PORT}`);
+  if (HAS_DIST) {
+    console.log(`   Client: Vite build (dist/) — Clerk + bundled JS`);
+  } else {
+    console.log(`   Client: source HTML/JS only — Clerk needs \`npm run build\` or open Vite at http://localhost:5173 (\`npm run client:dev\`)`);
+  }
   console.log(`   Saves: ${SAVE_DIR}`);
+  if (process.env.CLERK_SECRET_KEY) {
+    console.log(`   Auth: Clerk JWT required for multiplayer sockets`);
+  } else {
+    console.log(`   Auth: off — set CLERK_SECRET_KEY to require accounts`);
+  }
+  if (process.env.STRIPE_SECRET_KEY) {
+    console.log(`   Stripe: billing API enabled`);
+  } else {
+    console.log(`   Stripe: off — set STRIPE_SECRET_KEY for Checkout`);
+  }
   console.log(`   Share your local IP for LAN play\n`);
 });

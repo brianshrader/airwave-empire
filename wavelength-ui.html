@@ -53,7 +53,8 @@ body{background:var(--blk);color:var(--wht);font-family:var(--fm);min-height:100
 body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:9999}
 
 /* HEADER */
-#hdr{background:var(--pnl);border-bottom:2px solid var(--amb);padding:0 22px;display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:24px;height:62px;position:sticky;top:0;z-index:200;box-shadow:0 4px 48px rgba(245,166,35,.18)}
+#hdr{background:var(--pnl);border-bottom:2px solid var(--amb);padding:0 22px;display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:24px;height:62px;position:sticky;top:0;z-index:200;box-shadow:0 4px 48px rgba(245,166,35,.18);pointer-events:none}
+#hdr #abtn,#hdr #hsc{pointer-events:auto}
 #logo{font-family:var(--fd);font-size:36px;letter-spacing:6px;color:var(--amb);text-shadow:0 0 28px rgba(245,166,35,.55)}
 #hmeta{display:flex;flex-direction:column;gap:3px}
 #hmetarow{font-family:var(--ft);font-size:15px;color:var(--off);letter-spacing:1px}
@@ -95,7 +96,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .sbh{font-family:var(--fd);font-size:15px;letter-spacing:3px;color:var(--amb);margin-bottom:10px}
 .sbr{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(51,51,51,.5);font-size:15px}
 /* Compact score strip for left column */
-#scorebar{display:flex;align-items:center;gap:16px;padding:8px 14px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.18);border-radius:2px;margin-bottom:10px;flex-wrap:wrap;position:sticky;top:0;z-index:10;backdrop-filter:blur(4px)}
+#scorebar{display:flex;align-items:center;gap:16px;padding:8px 14px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.18);border-radius:2px;margin-bottom:10px;flex-wrap:wrap;position:sticky;top:0;z-index:10;backdrop-filter:blur(4px);pointer-events:none}
 .sbi{display:flex;flex-direction:column;align-items:flex-start;min-width:60px}
 .sbi-lbl{font-family:var(--ft);font-size:11px;color:var(--mut);letter-spacing:2px}
 .sbi-val{font-family:var(--fd);font-size:20px;color:var(--wht);line-height:1.1}
@@ -299,9 +300,10 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .boost-card .bc-sub{font-family:var(--ft);font-size:15px;color:var(--mut);margin-bottom:8px}
 
 /* MODALS */
-.ov{position:fixed;inset:0;background:rgba(0,0,0,.90);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
+html.wl-modal-open,body.wl-modal-open{overflow:hidden}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.90);z-index:500;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;overscroll-behavior:contain}
 .ov.on{opacity:1;pointer-events:all}
-.mo{background:var(--pnl);border:1px solid var(--bdh);border-top:3px solid var(--amb);max-width:640px;width:93%;max-height:94vh;overflow-y:auto;box-shadow:0 0 90px rgba(245,166,35,.2);padding:28px;transform:translateY(20px);transition:transform .25s}
+.mo{background:var(--pnl);border:1px solid var(--bdh);border-top:3px solid var(--amb);max-width:640px;width:93%;max-height:94vh;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;box-shadow:0 0 90px rgba(245,166,35,.2);padding:28px;transform:translateY(20px);transition:transform .25s}
 .ov.on .mo{transform:translateY(0)}
 .mo.wide{max-width:800px}
 .mo.full{max-width:96vw;width:96vw;max-height:92vh}
@@ -1155,9 +1157,8 @@ const FM={
   CLASSIC_HITS:   {l:'Classic Hits',       cpm:.92, sp:16,fm:true, ab:0,   unlock:2005,d:'70s–80s nostalgia. Rebranded Oldies with broader library. 35–55.'},
   PODCAST_TALK:   {l:'Podcast / Talk',     cpm:1.40,sp:8,  fm:false,ab:0,  unlock:2012,d:'Hybrid terrestrial/digital. Premium CPM.'},
   ADULT_STANDARDS:{l:'Adult Standards',   cpm:.82, sp:14,fm:false,ab:0,  unlock:1981,d:'Sinatra, Ella, Nat King Cole. "Music of Your Life" blazed the trail in \'81. AM\'s refuge after MOR dies — low shares, intensely loyal 55+ audience.'},
-  ALL_NEWS:       {l:'All-News',           cpm:1.72,sp:8,  fm:false,ab:0,  unlock:1997,talk:true,
-    marketsOnly:['newyork','losangeles','chicago'],
-    d:'24/7 wire-service news — massive newsroom and network costs. Premium CPM in top-3 markets only. Scales with signal reach; weak sticks cannot carry the format. No personality premium (anchors are interchangeable to agencies).'},
+  ALL_NEWS:       {l:'All-News',           cpm:1.72,sp:8,  fm:false,ab:0,  unlock:1970,talk:true,
+    d:'24/7 wire-service news — massive newsroom and network costs. Viable where ad depth can carry the payroll (strongest in major markets). Scales with signal reach; weak sticks struggle. No personality premium (anchors are interchangeable to agencies).'},
   // Public stations — rival-only, non-commercial
   PUBLIC_NEWS:    {l:'Public News / Talk', cpm:0,   sp:0,  fm:true, ab:0,  unlock:1975,d:'NPR affiliate. Non-commercial. Educated 35-64. Unbeatable loyalty.',public:true},
   PUBLIC_CLASSICAL:{l:'Public Classical',  cpm:0,   sp:0,  fm:true, ab:0,  unlock:1975,d:'Classical and jazz. Older educated demos. Pledge-drive funded.',public:true},
@@ -1166,7 +1167,7 @@ function formatUnlockedForYear(f,G){
   const y=G?.year??1970;
   return !!(G?.unlockedFormats?.includes(f)||(FM[f]?.unlock??9999)<=y);
 }
-/** Year unlock + optional marketsOnly (e.g. ALL_NEWS → NY/LA/Chicago only). */
+/** Year unlock + optional marketsOnly (restrict format to listed marketIds). */
 function formatAllowedInMarket(fmt,marketId,year){
   const fd=FM[fmt];
   if(!fd||fd.public)return false;
@@ -1565,7 +1566,7 @@ const EVDATA=[
   {y:1995,p:1,t:'Beautiful Music Extinct',d:'The last Beautiful Music stations have converted. Adult Contemporary is the successor format.',e:'fmt_purge:BEAUTIFUL_MUSIC'},
   {y:1996,p:1,t:'MOR Extinct',d:'Middle of Road no longer viable as a commercial format. The format is dead.',e:'fmt_purge:MOR'},
   {y:1996,p:1,t:'Telecom Act — Deregulation',d:'Ownership caps lifted. Up to 8 stations per market. Consolidation begins.',e:'fcc-1996'},
-  {y:1997,p:1,t:'FM Saturation Complete',d:'97% of new cars have FM. A music AM in 1997 is a museum piece. In the largest markets, 24-hour all-news (massive newsroom cost) becomes a strategic option where ad depth can carry the payroll.',e:'fp+.03|unlock-ALL_NEWS'},
+  {y:1997,p:1,t:'FM Saturation Complete',d:'97% of new cars have FM. A music AM in 1997 is a museum piece. Talk and all-news AMs with real newsrooms hold up better than music on the band — if the market can support the cost.',e:'fp+.03'},
   {y:1997,p:2,t:'Consolidation Wave',d:'Clear Channel and Infinity buying everything. Independents pressured.',e:'consolidate'},
   {y:1998,p:1,t:'Corporate Radio Peaks',d:'Clear Channel and Chancellor are buying stations faster than regulators can process the filings. Independent operators are getting offers they can\'t refuse. The era of local radio is ending.',e:'consolidate'},
   {y:1998,p:2,t:'Tech Ad Money Arrives',d:'Silicon Valley start-ups are buying radio time. The dot-com ad boom is starting to flood local markets. Revenue is climbing ahead of expectations.',e:'ad+.08'},
