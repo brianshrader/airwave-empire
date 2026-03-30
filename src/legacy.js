@@ -13419,6 +13419,13 @@ function playerRelevantRightsActs(sportsActs,franchiseActs){
 }
 
 // ── Performance explanation (qualitative drivers — no raw engine numbers) ──
+/** Programming source vs follower in a linked pair (_simulcastSource), or null. */
+function simulcastPairProgrammingLegs(a,b){
+  if(!a||!b||a.simulcastWith!==b.id||b.simulcastWith!==a.id)return null;
+  if(a._simulcastSource===true)return{src:a,flw:b};
+  if(b._simulcastSource===true)return{src:b,flw:a};
+  return null;
+}
 // cat: 'audience' = ratings/revenue-from-audience, 'cost' = costs/profit/financing, 'cross' = both
 function stationDriverCandidates(s,G,junior){
   const op=simulcastOperationalSource(s);
@@ -13475,14 +13482,32 @@ function stationDriverCandidates(s,G,junior){
   if(sm<0.9) add(46,'Soft season for this format — expect lighter billing.','audience');
   else if(sm>1.07) add(44,'Peak season is helping this format’s billings.','audience');
   if(junior){
-    const {lead,rcv}=simulcastPairLeadReceiver(s,junior);
-    const el=lead.fin?.ebitda||0, er=rcv.fin?.ebitda||0;
-    if(Math.abs(el-er)>35000){
-      if(rcv.sig?.type==='AM'&&el>er) add(70,'The FM leg is monetizing better — the AM source bears more burden.','cross');
-      if(lead.sig?.type==='AM'&&er>el) add(70,'The FM follower is more profitable than the AM source this period.','cross');
+    const legs=simulcastPairProgrammingLegs(s,junior);
+    if(legs){
+      const {src:srcLeg,flw:flwLeg}=legs;
+      const srcCall=callDisplay(srcLeg), flwCall=callDisplay(flwLeg);
+      const rS=srcLeg.fin?.rev||0,rF=flwLeg.fin?.rev||0;
+      const eS=srcLeg.fin?.ebitda||0,eF=flwLeg.fin?.ebitda||0;
+      const mS=rS>0?eS/rS:0,mF=rF>0?eF/rF:0;
+      const costRtS=rS>0?(srcLeg.fin?.cost||0)/rS:0,costRtF=rF>0?(flwLeg.fin?.cost||0)/rF:0;
+      const divProf=Math.abs(eS-eF)>30000,marginDiv=Math.abs(mS-mF)>0.11,costDiv=costRtS-costRtF>0.13;
+      if(divProf||marginDiv||costDiv){
+        let sc=64;
+        if(divProf)sc+=10;
+        if(costDiv)sc+=10;
+        if(marginDiv)sc+=6;
+        if(srcLeg.sig?.type==='AM'&&flwLeg.sig?.type==='FM'&&eF>eS+18000)
+          add(Math.min(92,sc+8),'The AM ('+srcCall+') is carrying more programming cost while the FM ('+flwCall+') monetizes shared content with less cost on that license.','cross');
+        else if(eF>eS+40000&&mF>mS+0.05)
+          add(Math.min(90,sc+6),flwCall+' is more profitable this period — same programming, but economics favor the follower license.','cross');
+        else if(costDiv)
+          add(Math.min(86,sc),srcCall+' runs a heavier cost ratio; '+flwCall+' keeps a leaner load as the simulcast follower.','cross');
+        else
+          add(Math.min(82,sc-4),srcCall+' feeds the simulcast and carries most programming spend; '+flwCall+' adds reach without duplicating full production cost.','cross');
+      }
     }
     const simFee=(s.fin?.simulcastProgFee||0)+(junior.fin?.simulcastProgFee||0);
-    if(simFee>0) add(58,'Simulcast fees are adding to the cost stack here.','cost');
+    if(simFee>0) add(58,'Simulcast fees are adding to the cost stack on the paying leg.','cost');
   }else if((s.fin?.simulcastProgFee||0)>0) add(58,'Simulcast fees are adding to the cost stack here.','cost');
   const pid=loanPidForGame();
   const lev=loanLeverageRatio(G,pid);
@@ -13570,11 +13595,39 @@ function stationPeriodChangeLine(st,G){
   cand.sort((a,b)=>b.s-a.s);
   return cand[0]?.t||'';
 }
+function buildPeriodSimulcastSummaryLine(G){
+  const ps=myPS();
+  const seen=new Set();
+  for(const st of ps){
+    const p=simulcastPartnerStation(st);
+    if(!p||!ps.some(x=>x.id===p.id))continue;
+    const pk=[st.id,p.id].sort((a,b)=>a-b).join('|');
+    if(seen.has(pk))continue;
+    seen.add(pk);
+    const legs=simulcastPairProgrammingLegs(st,p);
+    if(!legs)continue;
+    const {src:srcLeg,flw:flwLeg}=legs;
+    const rS=srcLeg.fin?.rev||0,rF=flwLeg.fin?.rev||0;
+    const eS=srcLeg.fin?.ebitda||0,eF=flwLeg.fin?.ebitda||0;
+    const mS=rS>0?eS/rS:0,mF=rF>0?eF/rF:0;
+    const costRtS=rS>0?(srcLeg.fin?.cost||0)/rS:0,costRtF=rF>0?(flwLeg.fin?.cost||0)/rF:0;
+    if(Math.abs(eS-eF)<22000&&Math.abs(mS-mF)<0.09&&Math.abs(costRtS-costRtF)<0.11)continue;
+    if(srcLeg.sig?.type==='AM'&&flwLeg.sig?.type==='FM'&&eF>eS+10000&&costRtS>=costRtF-0.02)
+      return 'Your FM is more profitable this period while the AM carries more of the programming cost.';
+    if(costRtS-costRtF>0.11)
+      return 'Simulcast extends audience reach but concentrates heavier cost ratios on the source license.';
+    if(eF>eS+28000)
+      return 'The follower station is generating stronger profit from shared programming than the source this period.';
+  }
+  return null;
+}
 function buildPeriodChangeCompanyLines(G){
   const hist=MP.mode==='live'?(G._playerFinHistory?.[MP.playerId]||[]):(G.finHistory||[]);
-  if(hist.length<2)return [];
+  const simLine=buildPeriodSimulcastSummaryLine(G);
+  if(hist.length<2)return simLine?[simLine]:[];
   const cur=hist[hist.length-1], prev=hist[hist.length-2];
   const out=[];
+  if(simLine)out.push(simLine);
   const de=cur.ebitda-prev.ebitda;
   const dRev=cur.revenue-prev.revenue;
   const dSh=cur.shareSum-prev.shareSum;
@@ -13609,11 +13662,24 @@ function competitorIntelStoryLine(s){
   else if(pr?.col||pr?.under) pool.push({p:1,t:'Losing ground with weak audience performance.'});
   const partner=simulcastPartnerStation(s);
   if(partner){
-    const {lead,rcv}=simulcastPairLeadReceiver(s,partner);
-    const el=lead.fin?.ebitda||0, er=rcv.fin?.ebitda||0;
-    if(Math.abs(el-er)>25000){
-      if(rcv.sig?.type==='AM'&&el>er) pool.push({p:2,t:'FM signal is monetizing better than the AM.'});
-      else if(lead.sig?.type==='AM'&&er>el) pool.push({p:2,t:'FM leg is outperforming the AM cluster mate.'});
+    const legs=simulcastPairProgrammingLegs(s,partner);
+    if(legs){
+      const eS=legs.src.fin?.ebitda||0,eF=legs.flw.fin?.ebitda||0;
+      if(legs.src.sig?.type==='AM'&&legs.flw.sig?.type==='FM'&&eF>eS+8000)
+        pool.push({p:2,t:'FM likely monetizes better while the AM carries more programming cost.'});
+      else if(Math.abs(eS-eF)>18000&&eF>eS)
+        pool.push({p:2,t:'Follower leg appears to be outperforming the source on profit.'});
+      else if(s._simulcastSource===true)
+        pool.push({p:3,t:'Likely the programming source — higher cost center than the paired leg.'});
+      else if(s._simulcastSource===false)
+        pool.push({p:3,t:'Likely benefiting from shared programming vs the simulcast source.'});
+    }else{
+      const {lead,rcv}=simulcastPairLeadReceiver(s,partner);
+      const el=lead.fin?.ebitda||0, er=rcv.fin?.ebitda||0;
+      if(Math.abs(el-er)>25000){
+        if(rcv.sig?.type==='AM'&&el>er) pool.push({p:2,t:'FM signal is monetizing better than the AM.'});
+        else if(lead.sig?.type==='AM'&&er>el) pool.push({p:2,t:'FM leg is outperforming the AM cluster mate.'});
+      }
     }
   }
   const sell=op.ops?.sell||0;
@@ -14264,12 +14330,17 @@ function rStns(){
     }).join('');
     const qc2=qc(op.oq);
     const _logoThumb=cosmeticLogoThumbHtmlForStation(s,{});
+    const _simLegs=junior?simulcastPairProgrammingLegs(s,junior):null;
+    const _simRoleStrip=_simLegs?'<div class="sim-role-strip"><span class="sim-role-pill sim-role-pill--src">'+callDisplay(_simLegs.src)+' · SIMULCAST SOURCE ('+_simLegs.src.sig.type+')</span><span class="sim-role-pill sim-role-pill--flw">'+callDisplay(_simLegs.flw)+' · SIMULCAST FOLLOWER ('+_simLegs.flw.sig.type+')</span></div>':'';
+    const _soloSimRole=!_simLegs&&partner&&!isPlayerPair?'<div class="sim-role-strip sim-role-strip--solo"><span class="sim-role-pill sim-role-pill--solo">'+(s._simulcastSource===true?'SIMULCAST SOURCE':'SIMULCAST FOLLOWER')+' ('+s.sig.type+') · paired with '+callDisplay(partner)+'</span></div>':'';
+    const _simEconHint=_simLegs?'<div class="sim-econ-hint"><div><span class="sim-econ-hint-lbl">'+callDisplay(_simLegs.src)+'</span> · Higher programming cost center</div><div><span class="sim-econ-hint-lbl">'+callDisplay(_simLegs.flw)+'</span> · Lower programming cost (simulcast)</div></div>':'';
     div.innerHTML=`
       <div class="sctop"><div class="sctop-inner">`+_logoThumb+`<div>
         <div class="sccall">${junior?callDisplay(s)+' + '+callDisplay(junior):callDisplay(s)}</div>
         <div class="scfreq">${junior?`<div style="display:flex;flex-direction:column;align-items:flex-start;gap:4px;line-height:1.25"><span>${freqLineHtml(s)}</span><span>${freqLineHtml(junior)}</span></div>`:freqLineHtml(s)}</div>
         <div class="scbrand">${callDisplay(s)} — "${op.brand}" · ${FM[op.format]?.l||op.format} <span style="color:var(--mut);font-size:15px;font-style:normal">· ${genderLabel(op.format)}</span></div>
         ${junior?(()=>{const bL=s.sig.type,bJ=junior.sig.type;const lbl=bL===bJ?(bL+'/'+bL+' SIMULCAST'):'AM/FM SIMULCAST';return '<div class="sim-tag" style="color:var(--grn)">◈ '+lbl+' · '+callDisplay(s)+' + '+callDisplay(junior)+'</div>';})():partner&&!isPlayerPair?'<div class="sim-tag">◈ SIMULCAST WITH '+callDisplay(partner)+'</div>':''}
+        ${_simRoleStrip}${_soloSimRole}
         ${s.heritageIncumbent?'<div class="sim-tag" style="color:var(--amb);border-color:rgba(245,166,35,.35)">★ Heritage station</div>':''}
         ${s._lmaStation?'<div class="sim-tag" style="color:var(--blu);border-color:rgba(90,180,255,.4)">📝 LMA — LEASED OPERATION · fee: '+f$(lmaFeeForStation(s))+'/period</div>':''}
         ${s.lmaLessorId?'<div class="sim-tag" style="color:var(--grn);border-color:rgba(82,227,110,.4)">📝 LMA — LEASED OUT · receiving: '+f$(lmaFeeForStation(s))+'/period</div>':''}
@@ -14281,6 +14352,7 @@ function rStns(){
         <div><span class="fl">EBITDA</span><span class="fv ${stnEbitda>=0?'pos':'neg'}">${stnEbitda>=0?'+':''}${f$(stnEbitda)}</span></div>
         <div><span class="fl">SELLOUT</span><span class="fv ${op.ops.sell>.75?'pos':op.ops.sell>.55?'amb':'neg'}">${Math.round(op.ops.sell*100)}%</span></div>
       </div>
+      ${_simEconHint}
       ${(()=>{
         const drv=buildStationPerformanceDrivers(s,G,junior);
         if(!drv.length)return '';
