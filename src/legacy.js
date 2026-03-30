@@ -9581,6 +9581,7 @@ function showCompIntel(sid){
     :`<div class="sr"><span class="lb">Ownership</span><span class="vl" style="color:var(--mut)">Independent</span></div>`;
 
   document.getElementById('ci-title').textContent=`${s.callLetters} — ${isOwn?'STATION INTEL':'COMPETITOR INTEL'}`;
+  const intelStory=!isOwn?competitorIntelStoryLine(s):'';
   const ciLogo=cosmeticLogoThumbHtmlForStation(s,{});
   const ciHead=ciLogo?`<div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:14px">
       ${ciLogo}
@@ -9610,6 +9611,7 @@ function showCompIntel(sid){
       <div class="sr"><span class="lb">Overall Share</span><span class="vl amb">${pct(s.rat.share)}</span></div>
       <div class="sr"><span class="lb">AQH Listeners</span><span class="vl">${s.rat.aqh.toLocaleString()}</span></div>
       <div class="sr"><span class="lb">Trend</span><span class="vl" style="color:${trendColor}">${trend}</span></div>
+      ${intelStory?`<div class="sr"><span class="lb">Likely story</span><span class="vl" style="font-size:14px;color:var(--mut);line-height:1.45">${intelStory}</span></div>`:''}
       <div class="sr"><span class="lb">${isOwn||isHumanRival?'Revenue / Period':'Est. Revenue / Period'}</span><span class="vl">${f$((isOwn||isHumanRival)?Math.round((s.fin?.rev||0)/50000)*50000:Math.round(estRev/50000)*50000)}</span></div>
       <div class="sr"><span class="lb">Core Demographic</span><span class="vl">${cohLabels[topCoh]||topCoh}</span></div>
     </div>
@@ -13279,7 +13281,10 @@ function recordCompanyFinHistory(G, wasYear, wasPeriod, profit){
     const fixedCost=ps.reduce((s,st)=>s+(st.fin.fix||0),0);
     const shareSum=ps.reduce((s,st)=>s+st.rat.share,0);
     const avgSellout=ps.length?Math.round((ps.reduce((s,st)=>s+(st.ops?.sell||0),0)/ps.length)*1000)/1000:0;
-    const entry={year:wasYear,period:wasPeriod,revenue,cost,ebitda:pProfit,margin,cash:pCash,talentCost,fixedCost,shareSum,avgSellout};
+    const _loanPid=pid!=null&&pid!==undefined?pid:0;
+    const debtPrincipal=debtPrincipalForPid(G,_loanPid);
+    const loanInterest=MP.mode==='live'?(G._lastLoanInterestByPlayer?.[_loanPid]||0):(G._lastLoanInterestCharge||0);
+    const entry={year:wasYear,period:wasPeriod,revenue,cost,ebitda:pProfit,margin,cash:pCash,talentCost,fixedCost,shareSum,avgSellout,debtPrincipal,loanInterest};
     return entry;
   };
   if(MP.mode==='live'){
@@ -13412,6 +13417,214 @@ function playerRelevantRightsActs(sportsActs,franchiseActs){
   consider(franchiseActs);
   return out;
 }
+
+// ── Performance explanation (qualitative drivers — no raw engine numbers) ──
+// cat: 'audience' = ratings/revenue-from-audience, 'cost' = costs/profit/financing, 'cross' = both
+function stationDriverCandidates(s,G,junior){
+  const op=simulcastOperationalSource(s);
+  const rev=junior?(s.fin.rev||0)+(junior.fin.rev||0):(s.fin.rev||0);
+  const fix=junior?(s.fin.fix||0)+(junior.fin.fix||0):(s.fin.fix||0);
+  const tal=junior?(s.fin.tal||0)+(junior.fin.tal||0):(s.fin.tal||0);
+  const ebitda=junior?(s.fin.ebitda||0)+(junior.fin.ebitda||0):(s.fin.ebitda||0);
+  const margin=rev>0?ebitda/rev:0;
+  const pr=s.cp;
+  const candidates=[];
+  const add=(score,text,cat)=>{candidates.push({score,text,cat});};
+  if(s.lmaLessorId){
+    add(78,'Leased-out license — fee income with no operating spend on this line.','cost');
+    return candidates;
+  }
+  const shareN=(junior?s.rat.share+junior.rat.share:s.rat.share)||0;
+  if(pr){
+    if(pr.col) add(96,'Sharp share losses are cutting billing power.','cross');
+    else if(pr.under) add(84,'Slipping share is capping what you can bill.','cross');
+    else if(pr.sur) add(78,'Rising share is opening up ad demand.','audience');
+  }
+  if(rev>0){
+    if(margin<-0.12) add(92,'Costs are running ahead of revenue — profits are squeezed.','cost');
+    else if(margin<0.03&&ebitda<0) add(88,'Thin margins mean small revenue swings hit the bottom line hard.','cost');
+    else if(margin>0.32&&(op.ops?.sell||0)>0.58) add(72,'Strong share and sellout are supporting profits.','cross');
+    else if(margin>0.32) add(68,'Profits are holding up on decent margins at this signal.','cost');
+    const fixR=fix/rev,talR=tal/rev;
+    if(fixR>0.38){
+      if(shareN<0.06) add(86,'High fixed costs are hard to cover at this share level.','cross');
+      else add(84,'High fixed costs are pressuring profits despite the audience you have.','cross');
+    }else if(fixR>0.28) add(58,'Fixed overhead is a big slice of every dollar you bill.','cost');
+    if(talR>0.42) add(82,'Heavy talent payroll is weighing on margins.','cost');
+    else if(talR>0.30) add(54,'Talent spend is a noticeable drag on profit.','cost');
+  }
+  const mdQ=Math.round(op.prog?.morningDrive?.quality||0);
+  const slotQs=DAYPART_SLOTS.map(k=>Math.round(op.prog?.[k]?.quality||0)).filter(q=>q>0);
+  const avgQ=slotQs.length?slotQs.reduce((a,b)=>a+b,0)/slotQs.length:mdQ;
+  if(mdQ>=avgQ+10&&mdQ>=52) add(76,'Strong mornings are lifting overall audience.','audience');
+  if(mdQ>0&&mdQ<avgQ-8&&mdQ<48) add(78,'Weak mornings are dragging overall audience share.','audience');
+  const aftQ=Math.round(op.prog?.afternoonDrive?.quality||0);
+  if(aftQ>0&&aftQ<avgQ-8&&aftQ<45) add(64,'Soft afternoons are letting listeners slip away.','audience');
+  if(op.oq>=72) add(66,'High programming quality is helping ratings hold up.','audience');
+  else if(op.oq<=38) add(74,'Thin programming is holding back audience growth.','audience');
+  const progBudget=op.ops?.progBudget||0;
+  if(rev>0&&progBudget/rev<0.014&&op.oq<52) add(70,'Under-spend on programming is limiting audience growth.','cross');
+  const sell=op.ops?.sell||0;
+  if(sell<0.42) add(76,'Low sellout means share isn’t converting to full ad revenue.','cross');
+  else if(sell>0.74) add(62,'Strong sellout is turning audience into ad dollars.','audience');
+  const fmp=G.fmp||0;
+  const talkFmt=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'].includes(op.format);
+  if(s.sig.type==='AM'&&!talkFmt&&fmp>0.52) add(74,'This AM is losing listeners to FM — billing suffers.','cross');
+  if(s.sig.type==='FM'&&fmp>0.48) add(50,'FM listening is strong here — tailwind for this signal.','audience');
+  const sm=seasonMult(G.year,G.period,op.format);
+  if(sm<0.9) add(46,'Soft season for this format — expect lighter billing.','audience');
+  else if(sm>1.07) add(44,'Peak season is helping this format’s billings.','audience');
+  if(junior){
+    const {lead,rcv}=simulcastPairLeadReceiver(s,junior);
+    const el=lead.fin?.ebitda||0, er=rcv.fin?.ebitda||0;
+    if(Math.abs(el-er)>35000){
+      if(rcv.sig?.type==='AM'&&el>er) add(70,'The FM leg is monetizing better — the AM source bears more burden.','cross');
+      if(lead.sig?.type==='AM'&&er>el) add(70,'The FM follower is more profitable than the AM source this period.','cross');
+    }
+    const simFee=(s.fin?.simulcastProgFee||0)+(junior.fin?.simulcastProgFee||0);
+    if(simFee>0) add(58,'Simulcast fees are adding to the cost stack here.','cost');
+  }else if((s.fin?.simulcastProgFee||0)>0) add(58,'Simulcast fees are adding to the cost stack here.','cost');
+  const pid=loanPidForGame();
+  const lev=loanLeverageRatio(G,pid);
+  const streakKey=MP.mode==='live'?MP.playerId:0;
+  const streak=G._loanNegEbitdaStreak?.[streakKey]||0;
+  if(lev>0.52) add(64,'Company debt is adding interest pressure on cash.','cost');
+  else if(lev>0.36&&streak>=2) add(60,'Losses plus leverage are tightening financing room.','cost');
+  return candidates.sort((a,b)=>b.score-a.score);
+}
+function pickBalancedStationDrivers(candidates,max){
+  max=max||4;
+  if(!candidates.length)return [];
+  const byScore=[...candidates].sort((a,b)=>b.score-a.score);
+  const majorCost=candidates.some(c=>c.cat==='cost'&&c.score>=80);
+  const out=[];
+  const used=new Set();
+  const take=c=>{
+    if(!c||used.has(c.text)||out.length>=max)return false;
+    used.add(c.text);
+    out.push(c.text);
+    return true;
+  };
+  const cross=byScore.filter(c=>c.cat==='cross');
+  const cost=byScore.filter(c=>c.cat==='cost');
+  const aud=byScore.filter(c=>c.cat==='audience');
+  if(majorCost){
+    cost.slice(0,2).forEach(c=>take(c));
+    aud.slice(0,1).forEach(c=>take(c));
+    cross.forEach(c=>{if(out.length<max)take(c);});
+  }else{
+    if(cross.length&&cross[0].score>=62)take(cross[0]);
+    take(cost[0]);
+    take(aud[0]);
+    for(const c of byScore){
+      if(out.length>=max)break;
+      take(c);
+    }
+  }
+  if(!majorCost)return out.slice(0,max);
+  for(const c of byScore){
+    if(out.length>=max)break;
+    take(c);
+  }
+  return out.slice(0,max);
+}
+function buildStationPerformanceDrivers(s,G,junior){
+  const c=stationDriverCandidates(s,G,junior);
+  let out=pickBalancedStationDrivers(c,4);
+  if(!out.length){
+    const e=junior?(s.fin.ebitda||0)+(junior.fin.ebitda||0):(s.fin.ebitda||0);
+    const rev=junior?(s.fin.rev||0)+(junior.fin.rev||0):(s.fin.rev||0);
+    out.push(e>=0&&rev>0
+      ?'Audience and billing are relatively stable — no single major pressure point.'
+      :'Results are tight — neither audience nor costs have a clear edge yet.');
+  }
+  return out.slice(0,4);
+}
+function stationPeriodChangeLine(st,G){
+  const hist=G.stationFinHistory?.[st.id];
+  if(!hist||hist.length<2)return '';
+  const cur=hist[hist.length-1], prev=hist[hist.length-2];
+  const dE=cur.ebitda-prev.ebitda;
+  const dRev=cur.revenue-prev.revenue;
+  const dCost=cur.cost-prev.cost;
+  const rh=st.rat?.hist;
+  let dShare=0;
+  if(rh&&rh.length>=2) dShare=(rh[rh.length-1]?.share||0)-(rh[rh.length-2]?.share||0);
+  const bigDrop=dE<-Math.max(35000,Math.abs(prev.ebitda||0)*0.12+1);
+  const bigGain=dE>Math.max(45000,(prev.ebitda||0)*0.1+1);
+  const cand=[];
+  if(bigDrop&&dShare<=-0.006&&dRev<0) cand.push({s:95,t:'Profits fell as share and revenue weakened.'});
+  else if(bigDrop&&dShare<=-0.006) cand.push({s:93,t:'Profits fell as audience share slipped.'});
+  else if(bigDrop&&dCost>Math.max(25000,dRev)) cand.push({s:91,t:'Costs rose faster than revenue — margins took a hit.'});
+  else if(bigDrop) cand.push({s:88,t:'Profitability fell sharply vs last period.'});
+  if(bigGain&&dShare>=0.006&&dRev>0) cand.push({s:92,t:'Revenue improved as audience share recovered.'});
+  else if(bigGain&&dRev>0) cand.push({s:88,t:'Bottom line improved on stronger revenue.'});
+  else if(bigGain) cand.push({s:84,t:'This signal’s profit improved vs last period.'});
+  if(!bigDrop&&!bigGain){
+    if(dShare<=-0.007) cand.push({s:80,t:'Share dipped — watch billing on this signal.'});
+    if(dShare>=0.007) cand.push({s:76,t:'Share ticked up — a better billing base.'});
+  }
+  const dM=cur.margin-prev.margin;
+  if(dM<=-7&&!cand.some(x=>x.s>=90)) cand.push({s:72,t:'Margins compressed as costs ate into revenue.'});
+  if(dM>=7&&!cand.some(x=>x.s>=85)) cand.push({s:70,t:'Margins widened vs last period.'});
+  cand.sort((a,b)=>b.s-a.s);
+  return cand[0]?.t||'';
+}
+function buildPeriodChangeCompanyLines(G){
+  const hist=MP.mode==='live'?(G._playerFinHistory?.[MP.playerId]||[]):(G.finHistory||[]);
+  if(hist.length<2)return [];
+  const cur=hist[hist.length-1], prev=hist[hist.length-2];
+  const out=[];
+  const de=cur.ebitda-prev.ebitda;
+  const dRev=cur.revenue-prev.revenue;
+  const dSh=cur.shareSum-prev.shareSum;
+  const thr=Math.max(20000,Math.abs(prev.ebitda||0)*0.06);
+  const debtUp=typeof cur.debtPrincipal==='number'&&typeof prev.debtPrincipal==='number'&&cur.debtPrincipal>prev.debtPrincipal+50000;
+  const intUp=typeof cur.loanInterest==='number'&&typeof prev.loanInterest==='number'&&cur.loanInterest>prev.loanInterest+6000;
+  if(de>thr){
+    if(dSh>0.012&&dRev>0) out.push('Profits improved as audience share and revenue strengthened.');
+    else if(dRev>0) out.push('Profits improved on higher revenue.');
+    else out.push('Profits improved vs last period.');
+  }else if(de<-thr){
+    if(dSh<-0.012&&dRev<0) out.push('Profits fell as share and revenue weakened.');
+    else if(dSh<-0.012) out.push('Profits fell as audience share slipped.');
+    else if(dRev<0) out.push('Profits fell as revenue softened.');
+    else out.push('Profits slipped vs last period.');
+  }
+  if(intUp){
+    if(debtUp) out.push('Interest expense rose after new borrowing.');
+    else out.push('Interest expense rose — rates or timing on existing debt.');
+  }else if(debtUp&&!intUp) out.push('Debt load increased — interest may follow.');
+  if(!debtUp&&dSh<-0.012&&!out.some(t=>t.includes('share'))) out.push('Combined share is down — billing headwind company-wide.');
+  else if(!debtUp&&dSh>0.012&&!out.some(t=>t.includes('share'))) out.push('Combined share is up — better billing leverage.');
+  return out.slice(0,3);
+}
+/** Competitor intel: strategic one-liners from safe, visible signals only (no debt/cash). */
+function competitorIntelStoryLine(s){
+  if(!G||!s)return '';
+  const op=simulcastOperationalSource(s);
+  const pr=s.cp;
+  const pool=[];
+  if(pr?.sur) pool.push({p:1,t:'Gaining share with stronger programming.'});
+  else if(pr?.col||pr?.under) pool.push({p:1,t:'Losing ground with weak audience performance.'});
+  const partner=simulcastPartnerStation(s);
+  if(partner){
+    const {lead,rcv}=simulcastPairLeadReceiver(s,partner);
+    const el=lead.fin?.ebitda||0, er=rcv.fin?.ebitda||0;
+    if(Math.abs(el-er)>25000){
+      if(rcv.sig?.type==='AM'&&el>er) pool.push({p:2,t:'FM signal is monetizing better than the AM.'});
+      else if(lead.sig?.type==='AM'&&er>el) pool.push({p:2,t:'FM leg is outperforming the AM cluster mate.'});
+    }
+  }
+  const sell=op.ops?.sell||0;
+  if(sell>0.72) pool.push({p:3,t:'Strong sellout suggests efficient billing.'});
+  else if(sell<0.45) pool.push({p:3,t:'Hurting from weak billing efficiency.'});
+  const mdQ=Math.round(op.prog?.morningDrive?.quality||0);
+  if(mdQ>=52&&!pr?.sur) pool.push({p:4,t:'Strong mornings appear to be helping.'});
+  pool.sort((a,b)=>a.p-b.p);
+  return [...new Set(pool.map(x=>x.t))].slice(0,2).join(' ');
+}
+
 function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   const ps=myPS(),tRev=ps.reduce((s,st)=>s+st.fin.rev,0),tCost=ps.reduce((s,st)=>s+st.fin.cost,0);
@@ -13425,6 +13638,8 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra
   const rightsLines=playerRelevantRightsActs(rightsExtra?.sportsActs,rightsExtra?.franchiseActs);
   const myLoanInt=MP.mode==='live'?(G._lastLoanInterestByPlayer?.[MP.playerId]||0):(G._lastLoanInterestCharge||0);
   const debtShow=debtPrincipalForPid(G,loanPidForGame());
+  const _periodNarr=buildPeriodChangeCompanyLines(G);
+  const _periodNarrHtml=_periodNarr.length?`<div class="sum-period-narr">${_periodNarr.map(t=>`<div class="sum-narr-line">${t}</div>`).join('')}</div>`:'';
   document.getElementById('sumt').textContent=`${yr} ${periodName} — PERIOD END`;
   document.getElementById('sumb').innerHTML=`
     <div class="ms2"><div class="msh">YOUR RESULTS</div>
@@ -13436,6 +13651,7 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra
       <div class="sr"><span class="lb">Cash on Hand</span><span class="vl amb">${f$(mpMyCashOnHand())}</span></div>
       ${debtShow>0?`<div class="sr"><span class="lb" style="color:var(--red)">Debt principal</span><span class="vl neg">${f$(debtShow)} — click &#36; to manage</span></div>`:''}
       <div class="sr"><span class="lb" style="color:var(--mut)">Ad Market</span><span class="vl" style="color:${per===2?'var(--grn)':'var(--amb)'}">${per===2?'FALL — peak season (+12%)':'SPRING — lean season (−12%)'}${isElYr?' 🗳 +4% political for Talk/Sports':''}</span></div>
+      ${_periodNarrHtml}
     </div>
     ${rightsLines.length?`<div class="ms2"><div class="msh">RIGHTS &amp; SYNDICATION (THIS PERIOD)</div>${rightsLines.map(t=>`<div class="sr"><span class="vl" style="color:var(--off);font-size:15px;font-family:var(--ft)">${t}</span></div>`).join('')}</div>`:''}
     ${ps.map(s=>{
@@ -13464,6 +13680,7 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra
         ${simFeeLine}
         <div class="sr"><span class="lb">Quality</span><span class="vl">${op.oq}/100${hostStr?' · '+hostStr:''}</span></div>
         ${vacant.length?`<div class="sr"><span class="lb" style="color:var(--red)">⚠ Vacant</span><span class="vl" style="color:var(--red);font-size:14px">${vacant.join(', ')}</span></div>`:''}
+      ${(()=>{const ln=stationPeriodChangeLine(s,G);return ln?`<div class="sum-stn-narr">${ln}</div>`:'';})()}
       </div>`;
     }).join('')}
     ${events.length?`<div class="ms2"><div class="msh">MARKET EVENTS</div>${events.map(ev=>`<div class="sr"><span class="lb" style="color:var(--amb)">📡 ${ev.t}</span><span class="vl" style="color:var(--off);font-size:15px;font-family:var(--fm)">${ev.d}</span></div>`).join('')}</div>`:''}
@@ -14064,6 +14281,11 @@ function rStns(){
         <div><span class="fl">EBITDA</span><span class="fv ${stnEbitda>=0?'pos':'neg'}">${stnEbitda>=0?'+':''}${f$(stnEbitda)}</span></div>
         <div><span class="fl">SELLOUT</span><span class="fv ${op.ops.sell>.75?'pos':op.ops.sell>.55?'amb':'neg'}">${Math.round(op.ops.sell*100)}%</span></div>
       </div>
+      ${(()=>{
+        const drv=buildStationPerformanceDrivers(s,G,junior);
+        if(!drv.length)return '';
+        return '<div class="sc-drivers"><div class="sc-drivers-h">What’s driving performance</div><ul>'+drv.map(t=>'<li>'+t+'</li>').join('')+'</ul></div>';
+      })()}
       <div class="slots">${slrows}</div>
             ${(()=>{
         // Management routes through programming source (op) — junior is not rendered as its own card.

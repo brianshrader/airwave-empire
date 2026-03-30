@@ -163,6 +163,14 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .qf.good{background:var(--grn)}.qf.warn{background:var(--amb)}.qf.poor{background:var(--red)}
 .qn{font-family:var(--ft);font-size:15px;color:var(--wht);width:28px;text-align:right;flex-shrink:0}
 .fg{display:grid;grid-template-columns:1fr 1fr;gap:10px 18px;margin:12px 0;padding:14px 0;border-top:1px solid var(--bdr);border-bottom:1px solid var(--bdr)}
+/* Performance explanation layer — compact, station cards + period summary */
+.sc-drivers{margin:0 0 12px;padding:10px 12px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.06);border-radius:4px}
+.sc-drivers-h{font-family:var(--ft);font-size:12px;color:var(--mut);letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px}
+.sc-drivers ul{margin:0;padding-left:18px;font-size:14px;color:var(--off);line-height:1.45}
+.sc-drivers li{margin:3px 0}
+.sum-period-narr{margin-top:10px;padding-top:10px;border-top:1px dashed rgba(255,255,255,.08)}
+.sum-period-narr .sum-narr-line{font-size:14px;color:var(--off);line-height:1.45;margin:4px 0}
+.sum-stn-narr{font-size:13px;color:var(--mut);line-height:1.4;margin-top:6px;padding-top:6px;border-top:1px dashed rgba(255,255,255,.06)}
 .fl{font-family:var(--ft);font-size:15px;color:var(--mut);letter-spacing:1px;display:block;margin-bottom:3px}
 .fv{font-family:var(--ft);font-size:15px;color:var(--wht)}
 .fv.pos{color:var(--grn)}.fv.neg{color:var(--red)}.fv.amb{color:var(--amb)}
