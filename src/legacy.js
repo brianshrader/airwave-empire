@@ -3877,10 +3877,12 @@ window._mpApply_loan = function({ amount, _fromPlayerId }) {
   const loans = G._playerLoans[_fromPlayerId];
   let f = loans.find(l=>l.kind==='facility'||l.id==='credit');
   if(!f){
-    f = { id:'credit', kind:'facility', label:'Line of credit', principal:0, takenYear:G.year };
+    f = { id:'credit', kind:'facility', label:'Line of credit', principal:0, takenYear:G.year, openedYear:G.year, openedPeriod:G.period };
     loans.push(f);
   }
   f.principal = (f.principal||0) + (amount||0);
+  f.rateAtLastDraw = effectiveAnnualLoanRate(G, _fromPlayerId);
+  if(f.openedYear==null){ f.openedYear=G.year; f.openedPeriod=G.period; }
   if(MP.mode==='live' && amount){
     if(!G._playerCash) G._playerCash = {};
     G._playerCash[_fromPlayerId] = (G._playerCash[_fromPlayerId]||0) + amount;
@@ -6683,7 +6685,14 @@ function applyEv(G,ev){
   });
 }
 
-// ── BANK LENDING (capacity from station value; simple interest) ──
+// ── BANK LENDING (collateral-based capacity; principal + periodic interest) ──
+/** Max debt ≈ this fraction of estimated portfolio value (broadcast-style secured lending). */
+const LOAN_BORROW_CAP_FRAC = 0.45;
+const LOAN_BASE_ANNUAL_RATE = 0.08;
+const LOAN_MAX_ANNUAL_RATE = 0.30;
+/** After this many consecutive negative-EBITDA periods, new borrowing is blocked until performance recovers. */
+const LOAN_MAX_NEG_EBITDA_STREAK_FOR_NEW_DEBT = 2;
+
 function loanPrincipalFromEntry(l){
   if(!l) return 0;
   if(typeof l.principal === 'number') return Math.max(0, Math.round(l.principal));
@@ -6696,7 +6705,10 @@ function stationsOwnedByLoanPid(G, pid){
   if(MP.mode==='live') return G.ps.filter(s=>s._mpOwner===pid);
   return G.ps;
 }
-/** Lending collateral estimate — not a full M&A valuation. */
+/**
+ * Collateral / lending value — conservative, not M&A fair value.
+ * Positive EBITDA × moderate multiple, modest share & market-size lift, floor so weak-but-viable sticks still count.
+ */
 function estimateStationValue(station, G){
   const ebitda = station.fin?.ebitda ?? 0;
   const pos = Math.max(0, ebitda);
@@ -6708,14 +6720,14 @@ function estimateStationValue(station, G){
   let v = annual * ebitdaMult;
   v *= 1 + 0.55 * Math.min(share / 0.18, 1);
   v *= 0.88 + 0.12 * Math.min(Math.log2(rs + 1), 3.2);
-  const floor = Math.round(35000 + 25000 * Math.sqrt(rs));
+  const floor = Math.round(42000 + 28000 * Math.sqrt(rs));
   return Math.round(Math.max(floor, v));
 }
 function totalEstimatedCompanyValue(G, pid){
   return stationsOwnedByLoanPid(G, pid).reduce((s,st)=>s+estimateStationValue(st,G),0);
 }
 function borrowingCapacityRaw(G, pid){
-  return Math.round(totalEstimatedCompanyValue(G, pid) * 0.45);
+  return Math.round(totalEstimatedCompanyValue(G, pid) * LOAN_BORROW_CAP_FRAC);
 }
 function borrowingCapacityForPlayer(G, pid){
   const raw = borrowingCapacityRaw(G, pid);
@@ -6732,7 +6744,9 @@ function effectiveAnnualLoanRate(G, pid){
   const cap = Math.max(1, borrowingCapacityForPlayer(G, pid));
   const debt = debtPrincipalForPid(G, pid);
   const lev = Math.min(1.5, debt / cap);
-  return Math.min(0.30, 0.08 + lev * 0.14);
+  const streak = G._loanNegEbitdaStreak?.[pid] ?? 0;
+  const streakPrem = Math.min(0.06, streak * 0.012);
+  return Math.min(LOAN_MAX_ANNUAL_RATE, LOAN_BASE_ANNUAL_RATE + lev * 0.14 + streakPrem);
 }
 function loanLeverageRatio(G, pid){
   const cap = borrowingCapacityForPlayer(G, pid);
@@ -6743,6 +6757,9 @@ function canBorrowAmount(G, pid, amount){
   if(amount <= 0) return { ok:false, reason:'Enter a positive amount.' };
   if(G._mpBankrupt?.[pid]) return { ok:false, reason:'Observers cannot borrow.' };
   if(MP.mode!=='live' && G._soloBankrupt) return { ok:false, reason:'Company is out of active play.' };
+  if((G._loanNegEbitdaStreak?.[pid] ?? 0) >= LOAN_MAX_NEG_EBITDA_STREAK_FOR_NEW_DEBT) {
+    return { ok:false, reason:'Lenders will not add debt after repeated operating losses. Restore positive EBITDA or pay down principal.' };
+  }
   const cap = borrowingCapacityForPlayer(G, pid);
   const debt = debtPrincipalForPid(G, pid);
   const cash = MP.mode==='live' ? (G._playerCash?.[pid]??0) : (G.cash||0);
@@ -6756,22 +6773,55 @@ function canBorrowAmount(G, pid, amount){
   if(levAfter > 0.88) return { ok:false, reason:'That would push leverage past what lenders allow (~88%).' };
   return { ok:true };
 }
+
+/** Call after station financials are final for the period, before interest charges. */
+function updateLoanNegEbitdaStreaks(G){
+  if(!G._loanNegEbitdaStreak) G._loanNegEbitdaStreak = {};
+  if(MP.mode==='live'){
+    const owners = [...new Set(G.ps.map(s => s._mpOwner).filter(id => id !== undefined))];
+    owners.forEach(pid => {
+      if(G._mpBankrupt?.[pid]) return;
+      const ebitda = G.ps.filter(s => s._mpOwner === pid).reduce((s, st) => s + (st.fin?.ebitda || 0), 0);
+      if(ebitda < 0) G._loanNegEbitdaStreak[pid] = (G._loanNegEbitdaStreak[pid] || 0) + 1;
+      else G._loanNegEbitdaStreak[pid] = 0;
+    });
+  } else {
+    if(G._soloBankrupt) return;
+    const ebitda = G.ps.reduce((s, st) => s + (st.fin?.ebitda || 0), 0);
+    if(ebitda < 0) G._loanNegEbitdaStreak[0] = (G._loanNegEbitdaStreak[0] || 0) + 1;
+    else G._loanNegEbitdaStreak[0] = 0;
+  }
+}
 function migrateLoansV2(G){
   function normalizeLoanArray(arr){
     if(!Array.isArray(arr)||!arr.length) return [];
-    if(!arr.some(l=>l.tierId)) return arr;
-    let totalP = 0;
-    arr.forEach(l=>{
-      if(l.kind==='facility'||(l.principal!=null&&!l.tierId)){
-        totalP += loanPrincipalFromEntry(l);
-        return;
+    if(arr.some(l=>l.tierId)){
+      let totalP = 0;
+      arr.forEach(l=>{
+        if(l.kind==='facility'||(l.principal!=null&&!l.tierId)){
+          totalP += loanPrincipalFromEntry(l);
+          return;
+        }
+        const amt=l.amount||0,rate=l.rate||0.08,per=l.periods||8;
+        const totalOrig = amt>0 ? amt*(1+rate*per/2) : 0;
+        const frac = totalOrig>0 ? amt/totalOrig : 1;
+        totalP += Math.round((l.owed||0)*frac);
+      });
+      return totalP>0 ? [{id:'credit',kind:'facility',label:'Line of credit',principal:totalP,takenYear:G.year||1970,migratedFromTiers:true}] : [];
+    }
+    return arr.map(l=>{
+      if(l.kind==='facility' && typeof l.principal === 'number') return l;
+      if(typeof l.principal === 'number' && !l.tierId) return l;
+      if(l.owed!=null && l.principal==null && l.amount!=null && l.rate!=null && l.periods!=null){
+        const totalOrig = l.amount*(1+l.rate*l.periods/2);
+        const frac = totalOrig>0 ? l.amount/totalOrig : 1;
+        return {id:l.id||'credit',kind:'facility',label:l.label||'Term loan',principal:Math.round(l.owed*frac),takenYear:l.takenYear||G.year||1970,migratedLegacyTerm:true};
       }
-      const amt=l.amount||0,rate=l.rate||0.08,per=l.periods||8;
-      const totalOrig = amt>0 ? amt*(1+rate*per/2) : 0;
-      const frac = totalOrig>0 ? amt/totalOrig : 1;
-      totalP += Math.round((l.owed||0)*frac);
+      if(l.owed!=null && l.principal==null){
+        return {id:l.id||'credit',kind:'facility',label:l.label||'Credit line',principal:Math.round(l.owed),takenYear:l.takenYear||G.year||1970,migratedLegacyOwed:true};
+      }
+      return l;
     });
-    return totalP>0 ? [{id:'credit',kind:'facility',label:'Line of credit',principal:totalP,takenYear:G.year||1970}] : [];
   }
   G.loans = normalizeLoanArray(G.loans||[]);
   if(!G._playerLoans) G._playerLoans = {};
@@ -9098,6 +9148,7 @@ function advTurn(mpCoalesceSeq){
       :`📉 Spring ad market: lean season. Revenue runs ~12% below annual average. Plan cash flow accordingly.`;
     G.news.unshift({v:'LOW',t:seasonNote,y:G.year,p:G.period});
     if(G.news.length>50)G.news=G.news.slice(0,50);
+    updateLoanNegEbitdaStreaks(G);
     applyLoanInterest();
     // Ad market recovery: recessions cause permanent hits in the current model,
     // but real markets recover. Drift adx back toward baseline at 2.5%/period.
@@ -12668,6 +12719,7 @@ function migrateSave(G){
   if(!G._mpBankrupt||typeof G._mpBankrupt!=='object')G._mpBankrupt={};
   if(G._soloBankrupt===undefined)G._soloBankrupt=false;
   if(!G._mpDebtWarningQ||typeof G._mpDebtWarningQ!=='object')G._mpDebtWarningQ={};
+  if(!G._loanNegEbitdaStreak||typeof G._loanNegEbitdaStreak!=='object')G._loanNegEbitdaStreak={};
   G.rankerHistory=G.rankerHistory||[];
   G.finHistory=G.finHistory||[];
   G._playerFinHistory=G._playerFinHistory||{};
@@ -12955,6 +13007,16 @@ function updBorrowPreview(rawVal){
   const el=document.getElementById('loan-borrow-display');
   if(el) el.textContent=f$(v);
 }
+/** Quick-pick in financing modal: `frac` is 0–1 of max slider. */
+function setLoanBorrowFrac(frac){
+  const el=document.getElementById('loan-borrow-slider');
+  if(!el) return;
+  const maxB=parseInt(el.max,10)||0;
+  const minB=parseInt(el.min,10)||0;
+  const v=Math.max(minB,Math.round(maxB*Math.max(0,Math.min(1,frac))));
+  el.value=String(v);
+  updBorrowPreview(v);
+}
 
 function doRepayPartial(loanId){
   if(!G.loans)return;
@@ -13012,9 +13074,12 @@ function openLoan(){
   const effRate=effectiveAnnualLoanRate(G,pid);
   const lev=loanLeverageRatio(G,pid);
   const perInt=debt>0?Math.round(debt*(effRate/2)):0;
+  const negSt=G._loanNegEbitdaStreak?.[pid] ?? 0;
   let warn='';
-  if(lev>=0.82) warn='<div class="wbox" style="border-color:var(--red)"><strong>Leverage critical.</strong> Distress and bankruptcy remain possible if cash stays weak.</div>';
-  else if(lev>=0.65) warn='<div class="ibox" style="border-color:var(--amb)">Leverage is elevated — interest costs rise with debt.</div>';
+  if(negSt>=LOAN_MAX_NEG_EBITDA_STREAK_FOR_NEW_DEBT) warn='<div class="wbox" style="border-color:var(--red)"><strong>Operating losses streak.</strong> No new debt until EBITDA turns positive or you repay principal.</div>';
+  else if(negSt>=1) warn='<div class="ibox" style="border-color:var(--amb)">Negative EBITDA streak — rates rise; another loss period may freeze new borrowing.</div>';
+  if(lev>=0.82) warn+='<div class="wbox" style="border-color:var(--red)"><strong>Leverage critical.</strong> Distress and bankruptcy remain possible if cash stays weak.</div>';
+  else if(lev>=0.65) warn+='<div class="ibox" style="border-color:var(--amb)">Leverage is elevated — interest costs rise with debt.</div>';
 
   const loanRows=activeLoans.length?activeLoans.map(l=>{
     const o=Math.max(0,Math.round(l.principal!=null?l.principal:l.owed));
@@ -13022,12 +13087,14 @@ function openLoan(){
     const minSl=under10k?o:10000;
     const stepSl=under10k?1:1000;
     const lowLbl=under10k?`Full: ${f$(o)}`:'$10K min';
+    const rateNote=l.rateAtLastDraw!=null?`<div class="sr"><span class="lb" style="color:var(--mut)">Last draw rate</span><span class="vl">${(l.rateAtLastDraw*100).toFixed(1)}% /yr</span></div>`:'';
     return`
     <div style="padding:10px 0;border-bottom:1px solid var(--bdh)">
       <div class="sr">
         <span class="lb">${l.label||'Line of credit'}</span>
         <span class="vl neg">${f$(o)} principal</span>
       </div>
+      ${rateNote}
       <div class="slsec" style="margin-top:8px">
         <div class="sll" style="margin-bottom:4px"><span style="color:var(--mut);font-size:14px">PAYMENT AMOUNT</span><strong id="rpay-val-${l.id}">${f$(o)}</strong></div>
         <input type="range" min="${minSl}" max="${o}" step="${stepSl}" value="${o}"
@@ -13053,20 +13120,27 @@ function openLoan(){
         <input type="range" id="loan-borrow-slider" min="${smin}" max="${maxB}" step="${step}" value="${maxB}"
                oninput="updBorrowPreview(this.value)">
         <div style="display:flex;justify-content:space-between;font-family:var(--ft);font-size:13px;color:var(--mut);margin-top:3px"><span>Min ${f$(smin)}</span><span>Max ${f$(maxB)}</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+          <button type="button" class="abt" style="font-size:12px;padding:6px 10px" onclick="setLoanBorrowFrac(0.25)">25%</button>
+          <button type="button" class="abt" style="font-size:12px;padding:6px 10px" onclick="setLoanBorrowFrac(0.5)">Half</button>
+          <button type="button" class="abt" style="font-size:12px;padding:6px 10px" onclick="setLoanBorrowFrac(0.75)">75%</button>
+          <button type="button" class="abt" style="font-size:12px;padding:6px 10px" onclick="setLoanBorrowFrac(1)">Max</button>
+        </div>
       </div>
       <button class="abt b" style="width:100%;margin-top:8px" onclick="doBorrowConfirm()">BORROW SELECTED AMOUNT</button>
     </div>`;
 
   document.getElementById('loanb').innerHTML=`
-    <p class="di">Borrow against your group’s estimated station value. Interest is charged from cash each period (simple interest); principal only changes when you draw or repay.</p>
+    <p class="di">Borrow against your stations’ estimated value (like real broadcast-secured lending). <strong>Principal</strong> is what you owe; <strong>interest</strong> hits cash each half-year. Rates rise when you’re more leveraged or coming off losses.</p>
     <div class="ms2"><div class="msh">YOUR BANKING SNAPSHOT</div>
       <div class="sr"><span class="lb">Est. company value (stations)</span><span class="vl">${f$(coVal)}</span></div>
-      <div class="sr"><span class="lb">Borrowing capacity (~45% of value)</span><span class="vl">${f$(cap)}</span></div>
+      <div class="sr"><span class="lb">Borrowing capacity (${Math.round(LOAN_BORROW_CAP_FRAC*100)}% of value, EBITDA-adjusted)</span><span class="vl">${f$(cap)}</span></div>
       <div class="sr"><span class="lb">Principal outstanding</span><span class="vl neg">${f$(debt)}</span></div>
       <div class="sr"><span class="lb">Available to borrow</span><span class="vl ${avail>0?'pos':'neg'}">${f$(avail)}</span></div>
       <div class="sr"><span class="lb">Effective annual rate (now)</span><span class="vl">${(effRate*100).toFixed(1)}%</span></div>
       <div class="sr"><span class="lb">Interest this period (est.)</span><span class="vl neg">${debt?f$(perInt):'$0'}</span></div>
       <div class="sr"><span class="lb">Leverage (debt / capacity)</span><span class="vl">${Math.round(lev*100)}%</span></div>
+      ${negSt>0?`<div class="sr"><span class="lb">Negative-EBITDA streak</span><span class="vl ${negSt>=LOAN_MAX_NEG_EBITDA_STREAK_FOR_NEW_DEBT?'neg':'amb'}">${negSt} period(s)</span></div>`:''}
     </div>
     ${warn}
     ${activeLoans.length?`<div class="ms2"><div class="msh">REPAY PRINCIPAL — ${f$(totalPrincipal)} TOTAL</div>${loanRows}</div>`:''}
@@ -13091,10 +13165,12 @@ function doBorrowConfirm(){
   G.loans=G._playerLoans[pid];
   let f=G.loans.find(l=>l.kind==='facility'||l.id==='credit');
   if(!f){
-    f={id:'credit',kind:'facility',label:'Line of credit',principal:0,takenYear:G.year};
+    f={id:'credit',kind:'facility',label:'Line of credit',principal:0,takenYear:G.year,openedYear:G.year,openedPeriod:G.period};
     G.loans.push(f);
   }
   f.principal=(f.principal||0)+amount;
+  f.rateAtLastDraw=effectiveAnnualLoanRate(G,pid);
+  if(f.openedYear==null){ f.openedYear=G.year; f.openedPeriod=G.period; }
   G.cash=(G.cash||0)+amount;
   if(MP.mode==='live'){
     if(!G._playerCash)G._playerCash={};
@@ -13126,12 +13202,14 @@ function doRepay(loanKey){
 
 function applyLoanInterest(){
   if(!G._lastLoanInterestByPlayer) G._lastLoanInterestByPlayer = {};
+  if(!G._lastLoanRateByPlayer) G._lastLoanRateByPlayer = {};
   G._lastLoanInterestCharge = 0;
   const applyCharge = pid=>{
     if(G._mpBankrupt?.[pid]) return;
     const pr = debtPrincipalForPid(G, pid);
     if(pr <= 0) return;
     const rate = effectiveAnnualLoanRate(G, pid);
+    G._lastLoanRateByPlayer[pid] = rate;
     const interest = Math.round(pr * (rate/2));
     if(interest <= 0) return;
     if(MP.mode==='live'){
