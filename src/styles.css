@@ -47,6 +47,13 @@ body{background:var(--blk);color:var(--wht);font-family:var(--fm);min-height:100
 /* Brand & Marketing modal */
 .bm-manage .msh{font-size:14px;letter-spacing:0.12em}
 .bm-manage .bm-logo-hero{max-width:min(280px,100%);max-height:220px;object-fit:contain;border-radius:8px;cursor:pointer;border:1px solid var(--bdh);background:rgba(0,0,0,.2)}
+.bm-manage .bm-logo-hero--svg{display:inline-flex;align-items:center;justify-content:center;max-width:min(280px,100%);min-height:120px;padding:8px;box-sizing:border-box}
+.bm-manage .bm-logo-hero--svg svg{max-width:100%;max-height:min(280px,42vh);width:auto;height:auto;display:block}
+/* Brand & Marketing — station name hero */
+.bm-station-hero-square{display:flex;flex-direction:column;align-items:stretch;justify-content:center;min-height:0;padding:10px 12px;box-sizing:border-box;background:rgba(0,0,0,.22);border:1px solid rgba(245,166,35,.35);border-radius:8px}
+.bm-station-hero-lbl{font-family:var(--fm);font-size:12px;font-weight:600;letter-spacing:0.03em;color:var(--off);margin-bottom:6px;text-transform:none}
+.bm-station-hero-inp{flex:0 1 auto;width:100%;min-height:36px;box-sizing:border-box;background:transparent;border:none;color:var(--wht);font-family:var(--fm),ui-sans-serif,system-ui,sans-serif;font-size:clamp(15px,2.2vw,20px);font-weight:600;letter-spacing:0.02em;line-height:1.35;text-align:center;outline:none;text-transform:none}
+.bm-station-hero-inp::placeholder{color:var(--mut);opacity:.65;font-weight:500}
 body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:9999}
 
 /* HEADER */
@@ -127,6 +134,10 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .sc-logo-thumb:hover{border-color:rgba(245,166,35,.45);background:rgba(245,166,35,.06)}
 .sc-logo-thumb:focus{outline:2px solid var(--amb);outline-offset:2px}
 .sc-logo-thumb img{max-width:100%;max-height:100%;object-fit:contain;pointer-events:none;vertical-align:middle}
+.sc-logo-thumb-svgwrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;pointer-events:none;overflow:hidden}
+.sc-logo-thumb-svgwrap svg{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;display:block}
+.wl-logo-modal-svg-host svg{width:100%;height:auto;max-height:min(78vh,880px);display:block;border-radius:6px;background:rgba(0,0,0,.15)}
+.bm-manage .wl-logo-modal-svg-host svg{max-height:220px}
 .sc-logo-thumb--compact{width:44px;height:44px;padding:3px;border-radius:5px}
 .sc-logo-thumb--compact img{object-fit:contain}
 /* Talent portrait thumbnails (cosmetic) */
@@ -217,6 +228,8 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .abt:hover{border-color:var(--amb);color:var(--amb);background:var(--abg)}
 .abt.d:hover{border-color:var(--red);color:var(--red);background:rgba(240,88,88,.08)}
 .abt.g:hover{border-color:var(--grn);color:var(--grn);background:rgba(82,227,110,.08)}
+.abt:disabled,.abt[disabled]{opacity:.48;cursor:not-allowed;color:var(--mut);border-color:rgba(255,255,255,.12);background:transparent}
+.abt.g:disabled,.abt.g[disabled]{background:transparent}
 /* Scenario select — selected market must stay visibly highlighted (do not reuse .g; it is app-wide primary) */
 .abt.scen-mkt-on{border-color:var(--amb);color:var(--amb);background:rgba(245,166,35,.12);box-shadow:0 0 0 1px rgba(245,166,35,.28)}
 .abt.scen-mkt-on:hover{border-color:var(--amb);color:var(--wht);background:rgba(245,166,35,.2)}
@@ -339,6 +352,22 @@ html.wl-modal-open,body.wl-modal-open{overflow:hidden}
 /* Programming hub below sub-modals opened from Quick actions (Format / Drift / Demo) */
 #m-programming.on{z-index:510}
 #m-fm.on,#m-drift.on,#m-lean.on{z-index:600}
+/* First-turn tutorial (solo) — below programming sub-modals, above main UI */
+#wl-ft-tut-root{position:fixed;inset:0;pointer-events:none}
+#wl-ft-tut-shades{position:fixed;inset:0;pointer-events:none}
+.wl-ft-tut-spotlight{box-shadow:0 0 0 3px rgba(245,166,35,.95),0 8px 40px rgba(0,0,0,.55);border-radius:4px}
+#wl-ft-tut-card{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);width:min(420px,calc(100vw - 32px));box-sizing:border-box;background:var(--pnl);border:1px solid var(--bdh);border-top:3px solid var(--amb);padding:18px 20px 16px;box-shadow:0 12px 48px rgba(0,0,0,.65);font-family:var(--ft);pointer-events:auto}
+#wl-ft-tut-card.wl-ft-tut-card--center{bottom:auto;top:50%;transform:translate(-50%,-50%)}
+.wl-ft-tut-h{font-family:var(--fd);font-size:17px;letter-spacing:2px;color:var(--amb);margin:0 0 10px}
+.wl-ft-tut-p{margin:0 0 12px;font-size:15px;color:var(--off);line-height:1.5}
+.wl-ft-tut-p strong{color:var(--wht);font-weight:600}
+.wl-ft-tut-muted{font-size:14px;color:var(--mut)}
+.wl-ft-tut-btns{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:flex-end;margin-top:4px}
+.wl-ft-tut-btn{font-family:var(--ft);font-size:14px;padding:8px 14px;cursor:pointer;border:1px solid var(--bdh);background:var(--crd);color:var(--off);letter-spacing:.5px}
+.wl-ft-tut-btn:hover{border-color:var(--amb);color:var(--wht)}
+.wl-ft-tut-btn--pri{background:rgba(245,166,35,.12);border-color:rgba(245,166,35,.45);color:var(--amb)}
+.wl-ft-tut-btn--pri:hover{background:rgba(245,166,35,.2)}
+.wl-ft-tut-skip{color:var(--mut);border-color:rgba(255,255,255,.12)}
 .mo{background:var(--pnl);border:1px solid var(--bdh);border-top:3px solid var(--amb);max-width:640px;width:93%;max-height:94vh;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;box-shadow:0 0 90px rgba(245,166,35,.2);padding:28px;transform:translateY(20px);transition:transform .25s}
 .ov.on .mo{transform:translateY(0)}
 .mo.wide{max-width:800px}

@@ -5,8 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Clerk Publishable Key (optional). Get from https://dashboard.clerk.com — enables Sign in for multiplayer. -->
 <meta name="wl-clerk-publishable-key" content="">
-<title>WAVELENGTH — Radio 1970–2020</title>
+<title>Airwave Empire — Radio 1970–2020</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<!-- Station logo templates (curated subset — deterministic SVG typography) -->
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=Archivo+Narrow:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Oswald:wght@400;500;600;700&family=Pacifico&family=Playfair+Display:wght@400;600;700&family=Roboto+Slab:wght@400;600;700&display=swap" rel="stylesheet">
 
 <!-- Socket.io — loaded dynamically only in multiplayer mode -->
 <!-- <script src="/socket.io/socket.io.js"></script> -->
@@ -20,7 +22,7 @@
      ══════════════════════════════════════════════════════════════ -->
 <div id="mp-lobby" style="display:none;position:fixed;inset:0;background:#0a0a0a;z-index:9000;overflow-y:auto;font-family:var(--ft)">
   <div style="max-width:520px;margin:60px auto;padding:0 20px">
-    <div style="font-size:28px;color:var(--amb);letter-spacing:4px;margin-bottom:6px">WAVELENGTH</div>
+    <div style="font-size:28px;color:var(--amb);letter-spacing:4px;margin-bottom:6px">AIRWAVE EMPIRE</div>
     <div style="font-size:15px;color:var(--mut);letter-spacing:3px;margin-bottom:24px">MULTIPLAYER</div>
 
     <div style="margin-bottom:28px;padding:14px 16px;background:#111;border:1px solid #2a2a2a;border-radius:4px;font-size:13px;color:var(--off);line-height:1.55">
@@ -217,7 +219,7 @@
   </div>
 </div>
 <header id="hdr">
-  <div id="logo">WAVELENGTH</div>
+  <div id="logo">AIRWAVE EMPIRE</div>
   <div id="hmeta">
     <div id="hmetarow"><span id="hcity">ATLANTA</span> &nbsp;·&nbsp; <strong id="hy">1970</strong> <strong id="hp">SPRING</strong> &nbsp;·&nbsp; <strong id="hsc" onclick="openScenSelect(getLocalSave())" title="Click to change scenario / new game" style="cursor:pointer;border-bottom:1px dotted rgba(245,166,35,.4)">—</strong> &nbsp;·&nbsp; <span id="hmode" style="color:var(--amb)">CAMPAIGN</span></div>
     <div id="progwrap"><div id="progbar"><div id="progfill" style="width:0%"></div></div><span id="proglbl">1970 → 2020</span></div>
@@ -249,6 +251,7 @@
         <button type="button" class="phbtn" onclick="openFinancials()">📈 FINANCIALS</button>
         <button type="button" class="phbtn" onclick="openLoan()">💳 LOANS</button>
         <button type="button" class="phbtn" onclick="openSaveLoad()">💾 SAVE / LOAD</button>
+        <button type="button" class="phbtn" onclick="wlFtTutorialRestartFromMenu()" title="Replay the short solo first-turn walkthrough">📘 TIPS</button>
       </div>
     </div>
     <div class="ph">YOUR STATIONS <sub id="ownlbl">1 AM · 1 FM</sub></div>
@@ -305,11 +308,13 @@
 <div class="ov" id="m-trade"><div class="mo"><div class="mh"><span id="trade-title">🤝 TRADE OFFER</span><button class="mc" onclick="cm('m-trade')">CLOSE ×</button></div><div id="tradeb" style="padding:16px 20px 20px"></div></div></div>
 <div class="ov" id="m-mp-endgame"><div class="mo wide mp-endgame-mo" style="max-width:560px;border:2px solid rgba(212,175,55,.45);box-shadow:0 0 60px rgba(212,175,55,.18),0 12px 40px rgba(0,0,0,.5)"><div class="mh mp-endgame-mh" style="background:linear-gradient(180deg,rgba(212,175,55,.12),transparent);border-bottom:1px solid rgba(212,175,55,.25)"><span id="mp-endgame-title" style="font-family:var(--fd);letter-spacing:3px;color:var(--amb)">FINAL RESULTS — 2025</span></div><div id="mp-endgame-body" style="padding:16px 20px 8px"></div><div style="padding:0 20px 22px"><button type="button" class="cfm" id="mp-endgame-continue" onclick="mpContinueBeyondEndgame()" style="width:100%;font-size:16px;padding:14px">Continue Playing →</button><p style="font-family:var(--ft);font-size:13px;color:var(--mut);margin:10px 0 0 0;text-align:center">Resumes normal play from Spring 2026 onward.</p></div></div></div>
 
-<div class="ov" id="m-logo"><div class="mo wide" style="max-width:min(96vw,960px)"><div class="mh"><span>STATION LOGO</span><button type="button" class="mc" onclick="cm('m-logo')">← BACK</button></div><div style="text-align:center;padding:8px 0 20px"><img id="wl-logo-modal-img" alt="Station logo" style="max-width:100%;max-height:min(78vh,880px);width:auto;height:auto;object-fit:contain;border-radius:4px;background:rgba(0,0,0,.2)"></div><div style="display:flex;justify-content:center;padding-bottom:8px"><a id="wl-logo-dl" class="cfm" href="#" download="station-logo.png" style="display:inline-block;text-decoration:none;min-width:220px;text-align:center">💾 Save image</a></div></div></div>
+<div class="ov" id="m-logo"><div class="mo wide" style="max-width:min(96vw,960px)"><div class="mh"><span>STATION LOGO</span><button type="button" class="mc" onclick="cm('m-logo')">← BACK</button></div><div style="text-align:center;padding:8px 0 20px"><img id="wl-logo-modal-img" alt="Station logo" style="display:none;max-width:100%;max-height:min(78vh,880px);width:auto;height:auto;object-fit:contain;border-radius:4px;background:rgba(0,0,0,.2)"><div id="wl-logo-modal-svg" class="wl-logo-modal-svg-host" style="display:none;max-width:min(92vw,720px);max-height:min(78vh,880px);margin:0 auto"></div></div><div style="display:flex;justify-content:center;padding-bottom:8px"><a id="wl-logo-dl" class="cfm" href="#" download="station-logo.svg" style="display:inline-block;text-decoration:none;min-width:220px;text-align:center">💾 Save file</a></div></div></div>
 <div class="ov" id="m-portrait" style="z-index:600"><div class="mo" style="max-width:min(96vw,520px)"><div class="mh"><span>TALENT PORTRAIT</span><button type="button" class="mc" onclick="cm('m-portrait')">← BACK</button></div><div style="text-align:center;padding:12px 16px 8px"><img id="wl-portrait-modal-img" alt="" style="max-width:100%;max-height:min(70vh,640px);object-fit:contain;border-radius:6px;background:rgba(0,0,0,.2)"></div><div id="wl-portrait-modal-name" style="font-family:var(--fd);font-size:22px;text-align:center;color:var(--wht);letter-spacing:1px"></div><div id="wl-portrait-modal-ctx" style="font-family:var(--ft);font-size:14px;color:var(--mut);text-align:center;margin:8px 0 16px;line-height:1.45"></div></div></div>
 
   <!-- Vite: env in src/main.js (VITE_CLERK_PUBLISHABLE_KEY). Plain server: set meta above or use .env only after vite build. -->
   <script type="module" src="/src/main.js"></script>
+  <script defer src="/src/stationLogoConfig.js"></script>
+  <script defer src="/src/stationLogoSvg.js"></script>
   <script defer src="/src/legacy.js"></script>
 </body>
 </html>

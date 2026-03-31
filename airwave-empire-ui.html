@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WAVELENGTH — Atlanta Radio 1970–2020</title>
+<title>Airwave Empire — Radio 1970–2020</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -541,7 +541,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
      ══════════════════════════════════════════════════════════════ -->
 <div id="mp-lobby" style="display:none;position:fixed;inset:0;background:#0a0a0a;z-index:9000;overflow-y:auto;font-family:var(--ft)">
   <div style="max-width:520px;margin:60px auto;padding:0 20px">
-    <div style="font-size:28px;color:var(--amb);letter-spacing:4px;margin-bottom:6px">WAVELENGTH</div>
+    <div style="font-size:28px;color:var(--amb);letter-spacing:4px;margin-bottom:6px">AIRWAVE EMPIRE</div>
     <div style="font-size:15px;color:var(--mut);letter-spacing:3px;margin-bottom:24px">MULTIPLAYER</div>
 
     <div style="margin-bottom:28px;padding:14px 16px;background:#111;border:1px solid #2a2a2a;border-radius:4px;font-size:13px;color:var(--off);line-height:1.55">
@@ -729,7 +729,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   </div>
 </div>
 <header id="hdr">
-  <div id="logo">WAVELENGTH</div>
+  <div id="logo">AIRWAVE EMPIRE</div>
   <div id="hmeta">
     <div id="hmetarow"><span id="hcity">ATLANTA</span> &nbsp;·&nbsp; <strong id="hy">1970</strong> <strong id="hp">SPRING</strong> &nbsp;·&nbsp; <strong id="hsc" onclick="openScenSelect(getLocalSave())" title="Click to change scenario / new game" style="cursor:pointer;border-bottom:1px dotted rgba(245,166,35,.4)">—</strong> &nbsp;·&nbsp; <span id="hmode" style="color:var(--amb)">CAMPAIGN</span> &nbsp;·&nbsp; <span style="color:rgba(255,255,255,.18);font-size:13px;font-family:var(--ft);letter-spacing:1px">S30</span></div>
     <div id="progwrap"><div id="progbar"><div id="progfill" style="width:0%"></div></div><span id="proglbl">1970 → 2020</span></div>
@@ -809,7 +809,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 
 <script>
 // ── VERSION: 2026-03-10-SESSION29 ──────────────────────────────────
-console.log('[WAVELENGTH] v2026-03-16-S30 loaded. If you see this, JS is running.');
+console.log('[Airwave Empire] v2026-03-16-S30 loaded. If you see this, JS is running.');
 // ── TALENT POACH COUNTEROFFER SYSTEM (MP Option A) ─────────────────
 
 function checkPendingPoach(){
@@ -6646,13 +6646,31 @@ function genMarket(scenId, marketId){
 // ── STATE ─────────────────────────────────────────────────────────
 let G=null;
 let _selectedMarket='atlanta';
+
+const LEGACY_SAVE_KEY='wavelength_autosave';
+const SAVE_KEY='airwave_empire_autosave';
+const SAVE_VERSION=1;
+
+function wlClearAutosaveAndReload(){
+  try{localStorage.removeItem(SAVE_KEY);localStorage.removeItem(LEGACY_SAVE_KEY);}catch(e){}
+  location.reload();
+}
+
+function getLocalSave(){
+  try{
+    let raw=localStorage.getItem(SAVE_KEY);
+    if(!raw) raw=localStorage.getItem(LEGACY_SAVE_KEY);
+    return raw?JSON.parse(raw):null;
+  }catch(e){return null;}
+}
+
 function evTitle(ev){return(ev.t||'').replace('__CITY__',(G&&G.city)||'Market');} // set by market selector on scenario screen
 function showError(msg,detail){
   document.body.innerHTML=`<div style="padding:40px;font-family:monospace;color:#f87171;background:#0a0a0a;min-height:100vh">
-    <div style="font-size:20px;margin-bottom:16px;color:#f5a623">⚠ WAVELENGTH — STARTUP ERROR</div>
+    <div style="font-size:20px;margin-bottom:16px;color:#f5a623">⚠ AIRWAVE EMPIRE — STARTUP ERROR</div>
     <div style="font-size:14px;margin-bottom:12px">${msg}</div>
     <pre style="font-size:15px;color:#9ca3af;white-space:pre-wrap">${detail}</pre>
-    <button onclick="localStorage.removeItem('wavelength_autosave');location.reload()" 
+    <button onclick="wlClearAutosaveAndReload()" 
       style="margin-top:24px;background:#f5a623;color:#000;border:none;padding:10px 24px;font-family:monospace;font-size:14px;cursor:pointer">
       CLEAR SAVE &amp; RESTART
     </button>
@@ -6662,22 +6680,22 @@ function showError(msg,detail){
 let _pendingScenId=null; // set during scenario selection before genMarket runs
 
 function init(){
-  console.log('[WAVELENGTH] init() called');
+  console.log('[Airwave Empire] init() called');
   try{
     const local=getLocalSave();
-    console.log('[WAVELENGTH] localSave:', local ? `found (year=${local?.G?.year}, sc=${local?.G?.sc?.id}, cash=${local?.G?.cash}, sc.cash=${local?.G?.sc?.cash})` : 'none');
+    console.log('[Airwave Empire] localSave:', local ? `found (year=${local?.G?.year}, sc=${local?.G?.sc?.id}, cash=${local?.G?.cash}, sc.cash=${local?.G?.sc?.cash})` : 'none');
     // Validate the save before trusting it — protect against corrupt/partial saves
     const isValidSave = local?.G?.year && local?.G?.sc && local?.G?.stations?.length
       && (local.G.cash > 0 || local.G.cash === 0) // cash=0 is technically valid on a fresh load
       && local.G.sc.cash > 0; // sc must have a starting cash value
-    console.log('[WAVELENGTH] isValidSave:', isValidSave);
+    console.log('[Airwave Empire] isValidSave:', isValidSave);
     if(isValidSave){
       openScenSelect(local); // pass autosave so the screen can offer resume
       return;
     }
     if(local && !isValidSave){
       // There's a save but it's corrupt — log it but still show welcome screen
-      console.warn('[WAVELENGTH] Corrupt or incompatible autosave found — showing fresh start screen.');
+      console.warn('[Airwave Empire] Corrupt or incompatible autosave found — showing fresh start screen.');
     }
     openScenSelect(null);
   }catch(err){
@@ -6742,7 +6760,7 @@ function openScenSelect(localSave){
 
   document.getElementById('scenb').innerHTML=`
     <div class="scn-hero">
-      <div class="scn-logo">WAVELENGTH</div>
+      <div class="scn-logo">AIRWAVE EMPIRE</div>
       <div style="font-family:var(--ft);font-size:13px;letter-spacing:4px;color:var(--mut);margin-top:8px">ATLANTA RADIO · 1970 TO 2020</div>
       <div style="font-size:15px;color:var(--off);margin-top:10px;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.5">Build a station. Survive the formats. Own the market.</div>
     </div>
@@ -12006,13 +12024,10 @@ function doSell(sid,price){
 }
 
 // ── SAVE / LOAD ────────────────────────────────────────────────────
-const SAVE_KEY='wavelength_autosave';
-const SAVE_VERSION=1;
-
 function saveGame(label){
   const payload={v:SAVE_VERSION,saved:new Date().toISOString(),label:label||'Manual Save',G};
   // localStorage autosave
-  try{localStorage.setItem(SAVE_KEY,JSON.stringify(payload));}catch(e){}
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify(payload));localStorage.removeItem(LEGACY_SAVE_KEY);}catch(e){}
   return payload;
 }
 
@@ -12020,6 +12035,7 @@ function autoSave(){
   try{
     const payload={v:SAVE_VERSION,saved:new Date().toISOString(),label:'Autosave',G};
     localStorage.setItem(SAVE_KEY,JSON.stringify(payload));
+    try{localStorage.removeItem(LEGACY_SAVE_KEY);}catch(e){}
   }catch(e){}
 }
 
@@ -12031,7 +12047,7 @@ function exportSave(){
   const a=document.createElement('a');
   a.href=url;
   const d=new Date();
-  a.download=`wavelength-${G.year}-${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+  a.download=`airwave-empire-${G.year}-${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
   a.click();URL.revokeObjectURL(url);
   G.news.unshift({v:'LOW',t:`💾 Game saved: ${payload.label}`,y:G.year,p:G.period});
   openSaveLoad();
@@ -12053,13 +12069,6 @@ function importSave(file){
     }
   };
   reader.readAsText(file);
-}
-
-function getLocalSave(){
-  try{
-    const raw=localStorage.getItem(SAVE_KEY);
-    return raw?JSON.parse(raw):null;
-  }catch(e){return null;}
 }
 
 function openSaveLoad(){
@@ -13014,7 +13023,7 @@ function rHdr(){
     ab.style.background='rgba(245,166,35,.12)';
     ab.style.borderColor='var(--amb)';
     ab.style.color='var(--amb)';
-    ab.innerHTML=`⚠ Game state appears incomplete. <a href="#" onclick="openScenSelect(getLocalSave());return false;" style="color:var(--amb);font-weight:bold">← Back to scenario select</a> &nbsp;|&nbsp; <a href="#" onclick="localStorage.removeItem('wavelength_autosave');location.reload();return false;" style="color:var(--red)">🗑 Clear save &amp; restart</a>`;
+    ab.innerHTML=`⚠ Game state appears incomplete. <a href="#" onclick="openScenSelect(getLocalSave());return false;" style="color:var(--amb);font-weight:bold">← Back to scenario select</a> &nbsp;|&nbsp; <a href="#" onclick="wlClearAutosaveAndReload();return false;" style="color:var(--red)">🗑 Clear save &amp; restart</a>`;
     return;
   }
   const expiring=myPS().flatMap(s=>Object.entries(s.prog)

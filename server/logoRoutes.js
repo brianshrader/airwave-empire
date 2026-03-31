@@ -1,5 +1,5 @@
 /**
- * POST /api/generate-logo — cosmetic station logos via Grok (xAI Images).
+ * POST /api/generate-logo — cosmetic station logos via ShortAPI (z-image) or Grok (xAI Images).
  * Caches files under /generated-logos. Regenerate overwrites the cached file.
  */
 
@@ -7,7 +7,11 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { buildLogoPrompt } = require('./logoPrompt');
-const { generateStationLogo } = require('./services/logoProvider');
+const {
+  generateStationLogo,
+  imageGenerationConfigured,
+  getActiveImageProvider,
+} = require('./services/logoProvider');
 
 const GENERATED_DIR = path.join(__dirname, '..', 'generated-logos');
 
@@ -88,17 +92,17 @@ function validateBody(body) {
 function mountLogoRoutes(app) {
   ensureDir();
 
-  if (process.env.GROK_API_KEY) {
-    console.log('[logo] Grok API key detected');
+  if (imageGenerationConfigured()) {
+    console.log('[logo] Image generation:', getActiveImageProvider());
   } else {
-    console.warn('[logo] Grok API key missing — set GROK_API_KEY in .env for logo generation');
+    console.warn('[logo] No image API — set SHORTAPI_KEY or GROK_API_KEY in .env');
   }
 
   app.post('/api/generate-logo', async (req, res) => {
-    if (!process.env.GROK_API_KEY) {
+    if (!imageGenerationConfigured()) {
       return res.status(503).json({
         ok: false,
-        error: 'Logo generation failed',
+        error: 'Logo generation unavailable — set SHORTAPI_KEY or GROK_API_KEY in .env',
       });
     }
 
@@ -152,7 +156,7 @@ function mountLogoRoutes(app) {
 
       return res.json({ ok: true, cached: false, imageUrl: `/generated-logos/${finalName}` });
     } catch (e) {
-      console.error('[logo] Grok / save failed:', e.message || e);
+      console.error('[logo] Image API / save failed:', e.message || e);
       const status = e.status && Number.isInteger(e.status) ? e.status : 500;
       const detail = String(e.message || 'Logo generation failed').slice(0, 400);
       return res.status(status).json({

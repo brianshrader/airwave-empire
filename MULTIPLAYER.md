@@ -1,4 +1,4 @@
-# Wavelength — Multiplayer Setup
+# Airwave Empire — Multiplayer Setup
 
 ## Quick Start
 

@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Station logo audit gallery (internal)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=Archivo+Narrow:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Oswald:wght@400;500;600;700&family=Pacifico&family=Playfair+Display:wght@400;600;700&family=Roboto+Slab:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0d0d0f;
+      --panel: #16161a;
+      --bd: #2a2a30;
+      --txt: #e8e8ec;
+      --mut: #8888a0;
+      --accent: #c9a227;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--txt);
+      font-size: 13px;
+      line-height: 1.4;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(13, 13, 15, 0.92);
+      border-bottom: 1px solid var(--bd);
+      padding: 12px 16px 14px;
+      backdrop-filter: blur(8px);
+    }
+    h1 {
+      margin: 0 0 4px;
+      font-size: 15px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .hint {
+      color: var(--mut);
+      font-size: 12px;
+      max-width: 900px;
+    }
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      align-items: center;
+      margin-top: 12px;
+    }
+    .controls label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--mut);
+      font-size: 12px;
+    }
+    select, button {
+      background: var(--panel);
+      border: 1px solid var(--bd);
+      color: var(--txt);
+      padding: 6px 10px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+    button {
+      cursor: pointer;
+      color: var(--accent);
+      border-color: rgba(201, 162, 39, 0.4);
+    }
+    button:hover { background: rgba(201, 162, 39, 0.08); }
+    main { padding: 16px; max-width: 1800px; margin: 0 auto; }
+    section { margin-bottom: 28px; }
+    section h2 {
+      margin: 0 0 10px;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--mut);
+      font-weight: 600;
+    }
+    .lg-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 12px;
+    }
+    #lg-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+      gap: 14px;
+    }
+    .lg-tile {
+      background: var(--panel);
+      border: 1px solid var(--bd);
+      border-radius: 6px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .lg-tile:hover {
+      border-color: rgba(201, 162, 39, 0.35);
+      box-shadow: 0 0 0 1px rgba(201, 162, 39, 0.12);
+    }
+    .lg-tile:focus { outline: 2px solid var(--accent); outline-offset: 2px; }
+    .lg-tile--copied { border-color: #52e36e; }
+    .lg-svg {
+      width: 100%;
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 6px;
+    }
+    .lg-svg svg {
+      width: 100%;
+      height: 100%;
+      max-width: 156px;
+      max-height: 156px;
+      display: block;
+    }
+    .lg-cap {
+      padding: 8px 8px 10px;
+      font-size: 10px;
+      color: var(--mut);
+      border-top: 1px solid var(--bd);
+    }
+    .lg-cap-line { margin-bottom: 3px; word-break: break-word; }
+    .lg-cap-line strong { color: var(--txt); font-weight: 600; }
+    .lg-cap-meta { font-size: 9px; opacity: 0.9; }
+    .lg-cap-meta code {
+      font-size: 9px;
+      background: rgba(0, 0, 0, 0.35);
+      padding: 1px 4px;
+      border-radius: 2px;
+      color: #b8c0d4;
+    }
+    .lg-cap-swatches {
+      display: flex;
+      gap: 3px;
+      margin-top: 6px;
+    }
+    .lg-cap-swatches span {
+      width: 14px;
+      height: 14px;
+      border-radius: 2px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Station logo — audit gallery</h1>
+    <p class="hint">
+      Internal review tool. Uses the same <code>stationLogoConfig.js</code> + <code>stationLogoSvg.js</code> as the game.
+      <strong>Click a tile</strong> to copy debug JSON (input + spec) to the clipboard.
+      Family / era / band filters apply to the <strong>sample matrix</strong> at the bottom; consistency rows stay fixed for A/B checks.
+      Serve from Vite (<code>npm run client:dev</code>) and open <code>/logo-gallery.html</code>.
+    </p>
+    <div class="controls">
+      <label>Family <select id="lg-f-family">
+        <option value="all">All families</option>
+        <option value="hit">hit (CHR)</option>
+        <option value="news">news</option>
+        <option value="sports">sports</option>
+        <option value="country">country</option>
+        <option value="rock">rock</option>
+        <option value="ac">ac</option>
+        <option value="oldies">oldies</option>
+        <option value="urban">urban</option>
+      </select></label>
+      <label>Era <select id="lg-f-era">
+        <option value="all">All eras</option>
+        <option value="1970s">1970s</option>
+        <option value="1980s">1980s</option>
+        <option value="1990s">1990s</option>
+        <option value="2000s">2000s</option>
+        <option value="2010s+">2010s+</option>
+      </select></label>
+      <label>Band <select id="lg-f-band">
+        <option value="all">AM + FM</option>
+        <option value="AM">AM only</option>
+        <option value="FM">FM only</option>
+      </select></label>
+      <label>Layout <select id="lg-layout">
+        <option value="brandHero">Brand hero (modal / marketing)</option>
+        <option value="thumb">Card / thumb (dense)</option>
+      </select></label>
+      <button type="button" id="lg-refresh">Re-render grid</button>
+    </div>
+  </header>
+  <main>
+    <section>
+      <h2>Consistency — same News/Talk identity across years (era drift)</h2>
+      <div class="lg-row" id="lg-era-row"></div>
+    </section>
+    <section>
+      <h2>Consistency — same CHR identity, variant bump 0 / 1 / 2</h2>
+      <div class="lg-row" id="lg-bump-row"></div>
+    </section>
+    <section>
+      <h2>Sample matrix (filtered by controls above)</h2>
+      <div id="lg-grid"></div>
+    </section>
+  </main>
+  <script defer src="/src/stationLogoConfig.js"></script>
+  <script defer src="/src/stationLogoSvg.js"></script>
+  <script defer src="/src/logoGalleryPage.js"></script>
+</body>
+</html>

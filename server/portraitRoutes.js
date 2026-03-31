@@ -1,5 +1,5 @@
 /**
- * POST /api/generate-portrait — cosmetic talent portraits (Grok / xAI).
+ * POST /api/generate-portrait — cosmetic talent portraits (ShortAPI or Grok / xAI).
  */
 
 const fs = require('fs');
@@ -13,7 +13,7 @@ const {
   portraitIdentityKey,
 } = require('./portraitIdentity');
 const { buildPortraitPrompt } = require('./portraitPrompt');
-const { generateXaiImage } = require('./services/logoProvider');
+const { generateXaiImage, imageGenerationConfigured, getActiveImageProvider } = require('./services/logoProvider');
 const { PORTRAIT_DIR, getRegistryEntry, setRegistryEntry, ensureDir } = require('./portraitRegistry');
 const {
   pickRandomLibraryImage,
@@ -132,6 +132,9 @@ function mountPortraitRoutes(app) {
           'library = hand-placed stock pool for random assignment; grok = AI-generated portraits saved by gender/era.',
         libraryFirst: libraryFirstEnabled(),
         grokConfigured: Boolean(process.env.GROK_API_KEY),
+        shortapiConfigured: Boolean(process.env.SHORTAPI_KEY),
+        imageGenerationConfigured: imageGenerationConfigured(),
+        activeImageProvider: getActiveImageProvider(),
       });
     } catch (e) {
       return res.status(500).json({ ok: false, error: String(e.message || e) });
@@ -270,16 +273,17 @@ function mountPortraitRoutes(app) {
         }
       }
 
-      if (!process.env.GROK_API_KEY) {
+      if (!imageGenerationConfigured()) {
         return res.status(503).json({
           ok: false,
           error:
-            'No portrait source: add images under generated-portraits/library/<male|female>/<era>/ or set GROK_API_KEY.',
+            'No portrait source: add images under generated-portraits/library/<male|female>/<era>/ or set SHORTAPI_KEY or GROK_API_KEY.',
         });
       }
 
       const prompt = buildPortraitPrompt(profile);
       const { buffer, ext } = await generateXaiImage({ prompt, aspect_ratio: '1:1' });
+      const aiSource = getActiveImageProvider() || 'ai';
       const safeExt = TRY_EXTS.includes(ext) ? ext : 'png';
       const genderSeg =
         gender === 'male' ? 'male' : gender === 'female' ? 'female' : 'unknown';
@@ -296,13 +300,13 @@ function mountPortraitRoutes(app) {
         imageUrl,
         fileName: relPosix,
         ...profile,
-        source: 'grok',
+        source: aiSource,
       });
 
       return res.json({
         ok: true,
         cached: false,
-        source: 'grok',
+        source: aiSource,
         imageUrl,
         profile: {
           eraBucket: profile.eraBucket,

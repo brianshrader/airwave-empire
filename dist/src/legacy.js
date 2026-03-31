@@ -1,5 +1,5 @@
 // ── VERSION: 2026-03-10-SESSION29 ──────────────────────────────────
-console.log('[WAVELENGTH] v2026-03-10-S29 loaded. If you see this, JS is running.');
+console.log('[Airwave Empire] v2026-03-10-S29 loaded. If you see this, JS is running.');
 // ════════════════════════════════════════════════════════════════
 // CONSTANTS
 // ════════════════════════════════════════════════════════════════
@@ -1750,7 +1750,7 @@ function applyDaypartPromotionEconomics(talent,fromSlot,toSlot){
 syncMarketPopToMarket(ACTIVE_MARKET);
 
 // ══════════════════════════════════════════════════════════════════
-// SPORTS RIGHTS + NATIONAL FRANCHISES (ported from monolith wavelength-ui.html)
+// SPORTS RIGHTS + NATIONAL FRANCHISES (ported from monolith airwave-empire-ui.html)
 // Simulcast rule: holderId on G.sportsRights / G.franchiseRights is the LICENSEE (legal station).
 //   · CASH FEES (calcRev): only the station whose id === holderId pays rights/franchise fees.
 //   · PROGRAMMING HALO (ratings share bonus, franchise demoBoost, OQ slot quality): applies to
@@ -2949,16 +2949,21 @@ function mpSetSpectateHint(roomId) {
 function mpOpenLobby() {
   document.getElementById('mp-lobby').style.display = 'block';
   wlMpRefreshAuthBar();
+  const defaultSrv =
+    window.__WL_GAME_SERVER_URL || 'http://localhost:3000';
   // If browser has a stored MP session, pre-fill rejoin tab and switch to it
   try {
     const saved = JSON.parse(localStorage.getItem('wl_mp_session') || 'null');
+    const urlInp = document.getElementById('mp-server-url');
     if (saved?.roomId && saved?.name) {
       document.getElementById('mp-player-name').value = saved.name;
       document.getElementById('mp-rejoin-code').value = saved.roomId;
-      document.getElementById('mp-server-url').value  = saved.serverUrl || 'http://localhost:3000';
+      if (urlInp) urlInp.value = saved.serverUrl || defaultSrv;
       mpShowTab('rejoin');
       document.getElementById('mp-connect-status').textContent =
         `Last session: room ${saved.roomId} · Connect to rejoin`;
+    } else if (urlInp && window.__WL_GAME_SERVER_URL) {
+      urlInp.value = window.__WL_GAME_SERVER_URL;
     }
   } catch(e) {}
 }
@@ -3004,6 +3009,33 @@ function mpSaveSession() {
 }
 function mpClearSession() {
   try { localStorage.removeItem('wl_mp_session'); } catch(e) {}
+}
+
+/** Origin of the Node game server (Socket.io + /api + /generated-*). Set from VITE_GAME_SERVER_URL in main.js; else current page origin (Vite proxy or single-host deploy). */
+function wlGameServerOrigin(){
+  try{
+    const u=typeof window!=='undefined'&&window.__WL_GAME_SERVER_URL&&String(window.__WL_GAME_SERVER_URL).trim();
+    if(u)return String(u).replace(/\/$/,'');
+  }catch(_e){}
+  if(typeof location!=='undefined'&&location.origin)return location.origin;
+  return '';
+}
+/** Absolute URL for game API routes (e.g. /api/generate-logo). */
+function wlGameApiUrl(path){
+  const p=path.startsWith('/')?path:'/'+path;
+  return wlGameServerOrigin()+p;
+}
+/** Absolute URL for <img> / download when stored paths are /generated-logos/* or /generated-portraits/* and the API lives on another host. */
+function wlGameMediaAbsUrl(pathOrUrlWithQuery){
+  if(pathOrUrlWithQuery==null||pathOrUrlWithQuery==='')return pathOrUrlWithQuery;
+  const s=String(pathOrUrlWithQuery);
+  if(/^https?:\/\//i.test(s))return s;
+  const qIdx=s.indexOf('?');
+  const pathOnly=qIdx>=0?s.slice(0,qIdx):s;
+  const qs=qIdx>=0?s.slice(qIdx):'';
+  const origin=wlGameServerOrigin();
+  if(pathOnly.startsWith('/generated-logos/')||pathOnly.startsWith('/generated-portraits/'))return origin+pathOnly+qs;
+  return pathOnly.startsWith('/')?pathOnly+qs:s;
 }
 
 // ── Clerk (optional) — meta wl-clerk-publishable-key + server CLERK_SECRET_KEY ──
@@ -3169,10 +3201,18 @@ function mpSetupSocketHandlers(socket) {
     showToast(String(msg || 'Draft error'), 'warn');
   });
   // ── Cosmetic logo synced from server (persisted room G / other clients) ──
-  socket.on('mp_station_logo_sync', ({ stationId, cosmeticLogoUrl, cosmeticLogoV, cosmeticLogoTone }) => {
-    if (!G || !G.stations || !stationId) return;
-    const st = G.stations.find(s => s && s.id === stationId);
+  socket.on('mp_station_logo_sync', (payload) => {
+    if (!G || !G.stations || !payload?.stationId) return;
+    const st = G.stations.find(s => s && s.id === payload.stationId);
     if (!st) return;
+    if (payload.clearCosmeticLogo) {
+      delete st.cosmeticLogoUrl;
+      delete st.cosmeticLogoV;
+      delete st.cosmeticLogoTone;
+      renderAll();
+      return;
+    }
+    const { cosmeticLogoUrl, cosmeticLogoV, cosmeticLogoTone } = payload;
     if (cosmeticLogoUrl) {
       st.cosmeticLogoUrl = cosmeticLogoUrl;
       if (cosmeticLogoV != null && Number.isFinite(Number(cosmeticLogoV))) st.cosmeticLogoV = Number(cosmeticLogoV);
@@ -4309,11 +4349,48 @@ function applyMarketTierAmPowerCaps(stations, marketId){
     const newPw=AM50_DOWNGRADE_CHAIN[Math.min(i, AM50_DOWNGRADE_CHAIN.length-1)];
     applyAmPwToStation(stations[idx], newPw);
   });
-  stations.forEach(s=>{ if(s) delete s.clearChannel; });
-  sorted.slice(0, Math.min(cap, sorted.length)).slice(0,2).forEach(idx=>{
-    const st=stations[idx];
-    if(st&&st.sig?.type==='AM'&&st.sig.pw==='50kw') st.clearChannel=true;
+  // Local/regional frequencies cannot keep inflated power after tier trim (e.g. 10 kW on a local channel).
+  applyAmFccPowerNormalization(stations, null);
+  reassignAmClearChannelFlags(stations);
+}
+
+/** Lower-48 AM frequency ↔ power normalization (loads/saves + post–BP build). */
+function applyAmFccPowerNormalization(stations, logCtx){
+  const AMFCC=typeof window!=='undefined'?window.AMFCC:null;
+  if(!AMFCC||typeof AMFCC.normalizeAmPw!=='function')return;
+  stations.forEach(s=>{
+    if(!s||s._bpSlotDeferred||s.fmBooster||s.sig?.type!=='AM')return;
+    const prev=s.sig.pw;
+    const next=AMFCC.normalizeAmPw(s.freq, prev);
+    if(next===prev)return;
+    applyAmPwToStation(s, next);
+    if(logCtx){
+      logCtx._amFccAuditLog=logCtx._amFccAuditLog||[];
+      logCtx._amFccAuditLog.push({callLetters:s.callLetters,freq:s.freq,from:prev,to:next});
+    }
+    if(typeof console!=='undefined'&&console.debug) console.debug('[AM FCC]', s.callLetters, s.freq, prev, '→', next);
   });
+}
+
+/** Clear-channel universe/revenue bonus only for 50 kW on clear-style dial positions. */
+function reassignAmClearChannelFlags(stations){
+  const AMFCC=typeof window!=='undefined'?window.AMFCC:null;
+  stations.forEach(s=>{ if(s) delete s.clearChannel; });
+  const idxs=[];
+  stations.forEach((s,i)=>{
+    if(!s||s._bpSlotDeferred||s.sig?.type!=='AM'||s.sig.pw!=='50kw')return;
+    if(AMFCC&&typeof AMFCC.isClearChannelFreq==='function'){
+      if(!AMFCC.isClearChannelFreq(s.freq))return;
+    }
+    idxs.push(i);
+  });
+  idxs.sort((a,b)=>{
+    const pa=AM50_PRIORITY_BP_IDX.indexOf(a), pb=AM50_PRIORITY_BP_IDX.indexOf(b);
+    const oa=pa===-1?999:pa, ob=pb===-1?999:pb;
+    if(oa!==ob)return oa-ob;
+    return a-b;
+  });
+  idxs.slice(0,2).forEach(i=>{ if(stations[i]) stations[i].clearChannel=true; });
 }
 
 function mkStn(bp,freq,year=1970){
@@ -4324,6 +4401,9 @@ function mkStn(bp,freq,year=1970){
     if(cap<99&&n>=cap){
       pw=AM50_DOWNGRADE_CHAIN[Math.min(n-cap, AM50_DOWNGRADE_CHAIN.length-1)];
     }
+  }
+  if(type==='AM'&&typeof window!=='undefined'&&window.AMFCC&&typeof window.AMFCC.normalizeAmPw==='function'){
+    pw=window.AMFCC.normalizeAmPw(freq,pw);
   }
   const tt=STT[str]||'mid',qb=STQ[str]||[40,60];
   const stId=Math.random().toString(36).substr(2,8);
@@ -7732,12 +7812,281 @@ function processAtlanta1970DeferredLaunches(G){
 
 // ── STATE ─────────────────────────────────────────────────────────
 let G=null;
+
+const LEGACY_SAVE_KEY='wavelength_autosave';
+const SAVE_KEY='airwave_empire_autosave';
+const SAVE_VERSION=1;
+
+function wlClearAutosaveAndReload(){
+  try{localStorage.removeItem(SAVE_KEY);localStorage.removeItem(LEGACY_SAVE_KEY);}catch(e){}
+  location.reload();
+}
+
+function getLocalSave(){
+  try{
+    let raw=localStorage.getItem(SAVE_KEY);
+    if(!raw) raw=localStorage.getItem(LEGACY_SAVE_KEY);
+    return raw?JSON.parse(raw):null;
+  }catch(e){return null;}
+}
+
+// ── FIRST-TURN TUTORIAL (solo coach marks) ───────────────────────
+const WL_FT_TUTORIAL_LS='ae_ft_tutorial_v1';
+const _wlFtTut={
+  active:false,
+  step:1,
+  progOpened:false,
+  awaitingSum:false,
+  root:null,
+  shadeWrap:null,
+  card:null,
+  onResize:null
+};
+function wlFtTutorialLsSet(v){
+  try{localStorage.setItem(WL_FT_TUTORIAL_LS,v);}catch(e){}
+}
+function wlFtTutorialTeardownShades(){
+  if(_wlFtTut.shadeWrap)_wlFtTut.shadeWrap.innerHTML='';
+  document.querySelectorAll('.wl-ft-tut-spotlight').forEach(el=>{
+    el.classList.remove('wl-ft-tut-spotlight');
+    el.style.zIndex='';
+    el.style.position='';
+  });
+  if(_wlFtTut.onResize){
+    window.removeEventListener('resize',_wlFtTut.onResize);
+    window.removeEventListener('scroll',_wlFtTut.onResize,true);
+    _wlFtTut.onResize=null;
+  }
+}
+function wlFtTutorialEnsureRoot(){
+  if(_wlFtTut.root&&document.body.contains(_wlFtTut.root))return _wlFtTut.root;
+  const root=document.createElement('div');
+  root.id='wl-ft-tut-root';
+  root.setAttribute('aria-live','polite');
+  root.innerHTML='<div id="wl-ft-tut-shades"></div><div id="wl-ft-tut-card" role="dialog" aria-label="Tutorial"></div>';
+  document.body.appendChild(root);
+  _wlFtTut.root=root;
+  _wlFtTut.shadeWrap=root.querySelector('#wl-ft-tut-shades');
+  _wlFtTut.card=root.querySelector('#wl-ft-tut-card');
+  return root;
+}
+function wlFtTutorialLayoutHole(targetEl,zBase){
+  if(!_wlFtTut.shadeWrap||!targetEl||!document.body.contains(targetEl))return;
+  _wlFtTut.shadeWrap.innerHTML='';
+  const r=targetEl.getBoundingClientRect();
+  const pad=10;
+  const t=Math.max(0,r.top-pad), l=Math.max(0,r.left-pad);
+  const b=Math.min(window.innerHeight,r.bottom+pad), rt=Math.min(window.innerWidth,r.right+pad);
+  const w=window.innerWidth, h=window.innerHeight;
+  const mk=(top,left,height,width)=>{
+    const d=document.createElement('div');
+    d.className='wl-ft-tut-shade';
+    d.style.cssText=`position:fixed;left:${left}px;top:${top}px;width:${width}px;height:${height}px;z-index:${zBase};pointer-events:auto;background:rgba(6,8,12,.78)`;
+    _wlFtTut.shadeWrap.appendChild(d);
+  };
+  mk(0,0,t,w);
+  mk(t,0,h-t,l);
+  mk(t,rt,h-t,w-rt);
+  mk(b,l,h-b,rt-l);
+  targetEl.classList.add('wl-ft-tut-spotlight');
+  targetEl.style.position='relative';
+  targetEl.style.zIndex=String(zBase+1);
+}
+function wlFtTutorialGetTarget(){
+  const st=_wlFtTut.step;
+  if(st===1)return document.getElementById('wl-ft-player-station-card');
+  if(st===2)return document.querySelector('#wl-ft-player-station-card .fg');
+  if(st===3)return document.getElementById('wl-ft-tut-programming-btn');
+  if(st===4)return document.getElementById('abtn');
+  if(st===5)return document.getElementById('sumb');
+  return null;
+}
+function wlFtTutorialZBase(){
+  return _wlFtTut.step>=5?520:450;
+}
+function wlFtTutorialBindResize(){
+  if(_wlFtTut.onResize)return;
+  let t=0;
+  _wlFtTut.onResize=()=>{
+    clearTimeout(t);
+    t=setTimeout(()=>{if(_wlFtTut.active)wlFtTutorialLayoutStep();},120);
+  };
+  window.addEventListener('resize',_wlFtTut.onResize);
+  window.addEventListener('scroll',_wlFtTut.onResize,true);
+}
+function wlFtTutorialWireCard(){
+  _wlFtTut.card.querySelector('[data-wl-ft-act="next"]')?.addEventListener('click',wlFtTutorialNext);
+  _wlFtTut.card.querySelector('[data-wl-ft-act="back"]')?.addEventListener('click',wlFtTutorialBack);
+  _wlFtTut.card.querySelector('[data-wl-ft-act="skip"]')?.addEventListener('click',wlFtTutorialSkip);
+  _wlFtTut.card.querySelector('[data-wl-ft-act="done"]')?.addEventListener('click',wlFtTutorialDone);
+}
+function wlFtTutorialLayoutStep(){
+  if(!_wlFtTut.active)return;
+  wlFtTutorialEnsureRoot();
+  wlFtTutorialTeardownShades();
+  wlFtTutorialBindResize();
+  const z=wlFtTutorialZBase();
+  _wlFtTut.root.style.display='block';
+  _wlFtTut.root.style.zIndex=String(z+2);
+  _wlFtTut.shadeWrap.style.zIndex=String(z);
+  _wlFtTut.card.style.zIndex=String(z+3);
+
+  const st=_wlFtTut.step;
+  if(st===6){
+    _wlFtTut.card.className='wl-ft-tut-card wl-ft-tut-card--center';
+    const full=document.createElement('div');
+    full.className='wl-ft-tut-shade wl-ft-tut-shade--full';
+    full.style.cssText=`position:fixed;inset:0;z-index:${z};pointer-events:auto;background:rgba(6,8,12,.84)`;
+    _wlFtTut.shadeWrap.appendChild(full);
+    _wlFtTut.card.innerHTML=`<h3 class="wl-ft-tut-h">What next</h3>
+<p class="wl-ft-tut-p">Keep tuning your station over the next few periods. Try different moves and watch share and profit respond.</p>
+<p class="wl-ft-tut-p wl-ft-tut-muted">Replay this walkthrough anytime from <strong>Save / Load → First-turn guide</strong>.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" data-wl-ft-act="done">Done</button></div>`;
+    wlFtTutorialWireCard();
+    return;
+  }
+
+  const el=wlFtTutorialGetTarget();
+  if(!el){
+    _wlFtTut.card.className='wl-ft-tut-card wl-ft-tut-card--bottom';
+    _wlFtTut.card.innerHTML=`<h3 class="wl-ft-tut-h">Tutorial</h3><p class="wl-ft-tut-p">Part of the layout isn’t visible. Close other dialogs or skip for now.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn" data-wl-ft-act="skip">Skip</button></div>`;
+    wlFtTutorialWireCard();
+    return;
+  }
+  wlFtTutorialLayoutHole(el,z);
+  _wlFtTut.card.className='wl-ft-tut-card wl-ft-tut-card--bottom';
+
+  let title, body, showNext=true, showBack=true;
+  if(st===1){
+    title='Your station';
+    body='This card is your station. Grow your audience (share) and keep the station profitable.';
+  }else if(st===2){
+    title='Core stats';
+    body='<strong>Share</strong> is your piece of the audience. <strong>Revenue</strong> and <strong>costs</strong> are per period; <strong>EBITDA</strong> is what’s left after costs — your operating profit.';
+  }else if(st===3){
+    title='Make one change';
+    body='Click <strong>Programming</strong>. Move the budget or just look — then close the window to continue.';
+    showNext=false;
+  }else if(st===4){
+    title='End the turn';
+    body='Press <strong>Next Period</strong> when you’re ready. The market updates, then you’ll see a summary of results.';
+    showNext=false;
+    _wlFtTut.awaitingSum=true;
+  }else if(st===5){
+    title='Read the result';
+    body='This summary shows what changed: money, share, and costs. The loop is: adjust your station → Next Period → read what happened.';
+    showBack=false;
+  }
+  if(st===1)showBack=false;
+
+  _wlFtTut.card.innerHTML=`<h3 class="wl-ft-tut-h">${title}</h3><p class="wl-ft-tut-p">${body}</p><div class="wl-ft-tut-btns">`+
+    (showBack?`<button type="button" class="wl-ft-tut-btn" data-wl-ft-act="back">Back</button>`:'')+
+    (showNext?`<button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" data-wl-ft-act="next">Next</button>`:'')+
+    `<button type="button" class="wl-ft-tut-btn wl-ft-tut-skip" data-wl-ft-act="skip">Skip</button></div>`;
+  wlFtTutorialWireCard();
+}
+function wlFtTutorialStop(opts){
+  const persistSkip=opts&&opts.persistSkip;
+  _wlFtTut.active=false;
+  _wlFtTut.awaitingSum=false;
+  _wlFtTut.progOpened=false;
+  wlFtTutorialTeardownShades();
+  if(_wlFtTut.root)_wlFtTut.root.style.display='none';
+  if(persistSkip)wlFtTutorialLsSet('skipped');
+}
+function wlFtTutorialStart(){
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
+  if(!G||!G.sc)return;
+  if(MP.mode==='live')return;
+  wlFtTutorialStop({});
+  _wlFtTut.active=true;
+  _wlFtTut.step=1;
+  wlFtTutorialLayoutStep();
+}
+function wlFtTutorialMaybeStartAfterNewGame(){
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
+  if(!G||!G.sc)return;
+  if(MP.mode==='live')return;
+  try{
+    const v=localStorage.getItem(WL_FT_TUTORIAL_LS);
+    if(v==='done'||v==='skipped')return;
+  }catch(e){}
+  wlFtTutorialStart();
+}
+function wlFtTutorialAfterRender(){
+  if(!_wlFtTut.active||_wlFtTut.step>=5)return;
+  wlFtTutorialLayoutStep();
+}
+function wlFtTutorialNotifyProgrammingOpen(){
+  if(_wlFtTut.active&&_wlFtTut.step===3)_wlFtTut.progOpened=true;
+}
+function wlFtTutorialNotifyProgrammingClose(){
+  if(!_wlFtTut.active||_wlFtTut.step!==3||!_wlFtTut.progOpened)return;
+  _wlFtTut.step=4;
+  _wlFtTut.progOpened=false;
+  requestAnimationFrame(()=>wlFtTutorialLayoutStep());
+}
+function wlFtTutorialOnPeriodSummaryShown(){
+  if(!_wlFtTut.active||!_wlFtTut.awaitingSum)return;
+  _wlFtTut.awaitingSum=false;
+  _wlFtTut.step=5;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>wlFtTutorialLayoutStep()));
+}
+function wlFtTutorialNext(){
+  if(!_wlFtTut.active)return;
+  if(_wlFtTut.step===5){
+    _wlFtTut.step=6;
+    wlFtTutorialLayoutStep();
+    return;
+  }
+  if(_wlFtTut.step<3){
+    _wlFtTut.step++;
+    wlFtTutorialLayoutStep();
+  }
+}
+function wlFtTutorialBack(){
+  if(!_wlFtTut.active)return;
+  if(_wlFtTut.step===5||_wlFtTut.step===6)return;
+  if(_wlFtTut.step===4){
+    _wlFtTut.awaitingSum=false;
+    _wlFtTut.step=3;
+    _wlFtTut.progOpened=false;
+  }else if(_wlFtTut.step===3){
+    _wlFtTut.step=2;
+  }else if(_wlFtTut.step===2){
+    _wlFtTut.step=1;
+  }
+  wlFtTutorialLayoutStep();
+}
+function wlFtTutorialSkip(){
+  wlFtTutorialLsSet('skipped');
+  wlFtTutorialStop({});
+}
+function wlFtTutorialDone(){
+  wlFtTutorialLsSet('done');
+  wlFtTutorialStop({});
+}
+function wlFtTutorialRestartFromMenu(){
+  if(!G||!G.sc){
+    showToast('Start or load a solo game first.','info');
+    return;
+  }
+  if(MP.mode==='live'){
+    showToast('First-turn guide is for solo play only.','info');
+    return;
+  }
+  cm('m-save');
+  try{localStorage.removeItem(WL_FT_TUTORIAL_LS);}catch(e){}
+  wlFtTutorialStart();
+}
+
 function showError(msg,detail){
   document.body.innerHTML=`<div style="padding:40px;font-family:monospace;color:#f87171;background:#0a0a0a;min-height:100vh">
-    <div style="font-size:20px;margin-bottom:16px;color:#f5a623">⚠ WAVELENGTH — STARTUP ERROR</div>
+    <div style="font-size:20px;margin-bottom:16px;color:#f5a623">⚠ AIRWAVE EMPIRE — STARTUP ERROR</div>
     <div style="font-size:14px;margin-bottom:12px">${msg}</div>
     <pre style="font-size:15px;color:#9ca3af;white-space:pre-wrap">${detail}</pre>
-    <button onclick="localStorage.removeItem('wavelength_autosave');location.reload()" 
+    <button onclick="wlClearAutosaveAndReload()" 
       style="margin-top:24px;background:#f5a623;color:#000;border:none;padding:10px 24px;font-family:monospace;font-size:14px;cursor:pointer">
       CLEAR SAVE &amp; RESTART
     </button>
@@ -7747,15 +8096,15 @@ function showError(msg,detail){
 let _pendingScenId=null; // set during scenario selection before genMarket runs
 
 function init(){
-  console.log('[WAVELENGTH] init() called');
+  console.log('[Airwave Empire] init() called');
   try{
     const local=getLocalSave();
-    console.log('[WAVELENGTH] localSave:', local ? `found (year=${local?.G?.year}, sc=${local?.G?.sc?.id}, cash=${local?.G?.cash}, sc.cash=${local?.G?.sc?.cash})` : 'none');
+    console.log('[Airwave Empire] localSave:', local ? `found (year=${local?.G?.year}, sc=${local?.G?.sc?.id}, cash=${local?.G?.cash}, sc.cash=${local?.G?.sc?.cash})` : 'none');
     // Validate the save before trusting it — protect against corrupt/partial saves
     const isValidSave = local?.G?.year && local?.G?.sc && local?.G?.stations?.length
       && (local.G.cash > 0 || local.G.cash === 0) // cash=0 is technically valid on a fresh load
       && local.G.sc.cash > 0; // sc must have a starting cash value
-    console.log('[WAVELENGTH] isValidSave:', isValidSave);
+    console.log('[Airwave Empire] isValidSave:', isValidSave);
     if(isValidSave){
       const sm=local.G.marketId;
       const mid=(sm&&PHASE1_MARKET_IDS.includes(sm))?sm:'atlanta';
@@ -7767,7 +8116,7 @@ function init(){
     }
     if(local && !isValidSave){
       // There's a save but it's corrupt — log it but still show welcome screen
-      console.warn('[WAVELENGTH] Corrupt or incompatible autosave found — showing fresh start screen.');
+      console.warn('[Airwave Empire] Corrupt or incompatible autosave found — showing fresh start screen.');
     }
     openScenSelect(null);
   }catch(err){
@@ -7843,7 +8192,7 @@ function openScenSelect(localSave){
   document.getElementById('scenb').innerHTML=`
     <div style="padding:18px 20px 20px;max-width:760px;margin:0 auto">
     <div class="scn-hero">
-      <div class="scn-logo">WAVELENGTH</div>
+      <div class="scn-logo">AIRWAVE EMPIRE</div>
       <div class="scn-tagline" id="scn-tagline">${mktLabel.toUpperCase()} RADIO · 1970 TO 2020</div>
     </div>
     ${hasSave?`<div style="background:rgba(82,227,110,.08);border:1px solid rgba(82,227,110,.25);padding:12px 16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center">
@@ -8017,6 +8366,7 @@ function startPlay(scenId){
     renderAll();
     queuePlayerTalentPortraits();
     queueAutoLogosForPlayerStations();
+    setTimeout(()=>wlFtTutorialMaybeStartAfterNewGame(),0);
   }catch(err){
     showError('Failed during genMarket: '+err.message, err.stack||String(err));
   }
@@ -9905,18 +10255,26 @@ function signalLineForIntel(s){
   parts.push(freq);
   return parts.join(' · ');
 }
-/** Retro logo thumb — uses programming source when simulcast (same as station cards). */
+/** Station logo thumb — AI raster if present, else deterministic SVG. */
 function cosmeticLogoThumbHtmlForStation(s, opts){
   opts=opts||{};
   const op=simulcastOperationalSource(s);
-  if(!op?.cosmeticLogoUrl)return '';
-  const src=op.cosmeticLogoUrl+(op.cosmeticLogoV?'?v='+op.cosmeticLogoV:'');
+  if(!op)return '';
   const id=op.id;
   let cls='sc-logo-thumb';
   if(opts.compact)cls+=' sc-logo-thumb--compact';
   const sp=opts.stopPropagation?'event.stopPropagation();':'';
   const title=(opts.title!=null&&opts.title!=='')?opts.title:'View full size';
-  return `<div class="${cls}" role="button" tabindex="0" title="${title.replace(/"/g,'&quot;')}" onclick="${sp}wlOpenLogoModal('${id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${sp}wlOpenLogoModal('${id}');}"><img alt="Station logo" src="${src}" draggable="false"></div>`;
+  let inner='';
+  if(op.cosmeticLogoUrl){
+    const src=wlGameMediaAbsUrl(op.cosmeticLogoUrl+(op.cosmeticLogoV?'?v='+op.cosmeticLogoV:''));
+    inner=`<img alt="Station logo" src="${src}" draggable="false">`;
+  }else{
+    const svg=wlProceduralLogoSvgString(op);
+    if(svg)inner=`<div class="sc-logo-thumb-svgwrap">${svg}</div>`;
+  }
+  if(!inner)return '';
+  return `<div class="${cls}" role="button" tabindex="0" title="${title.replace(/"/g,'&quot;')}" onclick="${sp}wlOpenLogoModal('${id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();${sp}wlOpenLogoModal('${id}');}">${inner}</div>`;
 }
 function showCompIntel(sid){
   const s=G.stations.find(st=>st.id===sid);
@@ -10573,20 +10931,18 @@ function bmPickBrand(sid,b){
   s.brand=b;
   if((prev||'').trim()!==(b||'').trim()) logHistory(s,'BRAND',`Station name: "${prev}" → "${b}"`,G);
   const safe=bmSafeElId(sid);
-  const prevEl=document.getElementById('bm-brand-preview-'+safe);
-  if(prevEl)prevEl.textContent='"'+b+'"';
-  const inp=document.getElementById('bm-brand-custom-'+safe);
-  if(inp)inp.value=b;
+  const hero=document.getElementById('bm-station-hero-inp-'+safe);
+  if(hero)hero.value=b||'';
   document.querySelectorAll('.bm-bp-'+safe).forEach(el=>{el.classList.toggle('bpsel',el.textContent===b);});
+  bmRefreshBrandMarketingLogoPreview(sid);
   renderAll();
 }
 function bmUpdBrand(sid,v){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   s.brand=v||s.brand;
   const safe=bmSafeElId(sid);
-  const prev=document.getElementById('bm-brand-preview-'+safe);
-  if(prev)prev.textContent='"'+((v||s.brand)||'')+'"';
   document.querySelectorAll('.bm-bp-'+safe).forEach(el=>el.classList.remove('bpsel'));
+  bmRefreshBrandMarketingLogoPreview(sid);
   renderAll();
 }
 function bmUpdRenamePreview(sid){
@@ -10767,9 +11123,8 @@ function brandMarketingIdentityBlockHtml(leg){
   const partnerNote=partner?`<div class="ibox" style="margin-bottom:10px">Simulcast with <strong>${stripCallBandSuffix(partner.callLetters||'')}</strong> — matching calls on both can show as <strong>-AM</strong> / <strong>-FM</strong>.</div>`:'';
   const pills=getBrandSuggestions(s).map(b=>'<span class="bp bm-bp-'+safe+(s.brand===b?' bpsel':'')+'" onclick="bmPickBrand(\''+sid+'\',\''+b.replace(/'/g,"\\'")+'\')">'+rosterHtmlEsc(b)+'</span>').join('');
   return`<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
-    <div class="msh" style="margin-bottom:10px">${callDisplay(s)} · ${rosterHtmlEsc(FM[s.format]?.l||s.format)}</div>
     ${partnerNote}
-    <div class="slsec">
+    <div class="slsec" style="margin-bottom:14px">
       <div class="sll"><span>CALL LETTERS</span><strong id="bm-rn-preview-${safe}">${rosterHtmlEsc(callDisplay(s))}</strong></div>
       <div style="display:flex;align-items:center;gap:0;margin-top:10px">
         <input type="hidden" id="bm-rn-prefix-${safe}" value="${prefix}">
@@ -10780,29 +11135,38 @@ function brandMarketingIdentityBlockHtml(leg){
       </div>
       <div class="sln2" id="bm-rn-note-${safe}" style="margin-top:8px"></div>
     </div>
-    <div style="margin-top:14px;border-top:1px solid var(--bdr);padding-top:12px">
-      <div class="sll" style="margin-bottom:6px"><span>BRAND / POSITIONING</span><strong id="bm-brand-preview-${safe}" style="color:var(--amb)">"${rosterHtmlEsc(s.brand||'')}"</strong></div>
-      <div style="font-size:14px;color:var(--mut);margin-bottom:8px">Suggestions — or type your own (used for logos and presentation):</div>
-      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${pills}</div>
-      <input type="text" id="bm-brand-custom-${safe}" value="${rosterHtmlEsc(s.brand||'')}"
-        style="width:100%;box-sizing:border-box;background:var(--crd);border:1px solid var(--bdh);color:var(--wht);font-family:var(--ft);font-size:15px;padding:10px 12px;outline:none"
+    <button class="cfm wl-commit-btn wl-commit-btn--synced" type="button" id="bm-rn-btn-${safe}" onclick="bmDoRename('${sid}')" style="margin-bottom:16px">APPLY CALL LETTER CHANGE</button>
+    <div class="bm-station-hero-square">
+      <label for="bm-station-hero-inp-${safe}" class="bm-station-hero-lbl">STATION NAME</label>
+      <input type="text" id="bm-station-hero-inp-${safe}" class="bm-station-hero-inp" maxlength="48" value="${rosterHtmlEsc(s.brand||'')}"
+        placeholder="${rosterHtmlEsc(defaultPlayerStationBrand(s))}"
         onfocus="bmBrandFocus('${sid}')" onblur="bmBrandBlur('${sid}')" oninput="bmUpdBrand('${sid}',this.value)">
     </div>
-    <button class="cfm wl-commit-btn wl-commit-btn--synced" type="button" id="bm-rn-btn-${safe}" onclick="bmDoRename('${sid}')" style="margin-top:12px">APPLY CALL LETTER CHANGE</button>
+    <div style="margin-top:14px;border-top:1px solid var(--bdr);padding-top:12px">
+      <div style="font-size:14px;color:var(--mut);margin-bottom:8px">Suggestions:</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${pills}</div>
+    </div>
   </div>`;
 }
 function brandMarketingLogoBlockHtml(leg){
   const s=leg;
   const safe=bmSafeElId(s.id);
-  const rel=s.cosmeticLogoUrl?(s.cosmeticLogoUrl+(s.cosmeticLogoV?'?v='+s.cosmeticLogoV:'')):'';
-  const img=rel?`<div style="text-align:center;margin:10px 0"><img class="bm-logo-hero" src="${rel}" alt="" draggable="false" onclick="wlOpenLogoModal('${s.id}')" title="View full size"></div>`:`<p class="di" style="color:var(--mut)">No logo yet — generate one from your brand name and format.</p>`;
+  const rel=s.cosmeticLogoUrl?wlGameMediaAbsUrl(s.cosmeticLogoUrl+(s.cosmeticLogoV?'?v='+s.cosmeticLogoV:'')):'';
+  const procSvg=wlProceduralLogoSvgString(s,{layoutMode:'brandHero'});
+  const hero=rel
+    ?`<div style="text-align:center;margin:10px 0"><img class="bm-logo-hero" src="${rel}" alt="" draggable="false" onclick="wlOpenLogoModal('${s.id}')" title="View full size"></div><p class="di" style="color:var(--mut);font-size:13px;margin-top:4px">AI-generated image. Use “Template logo” to return to the free procedural lockup.</p>`
+    :(procSvg
+      ?`<div style="text-align:center;margin:10px 0;cursor:pointer" onclick="wlOpenLogoModal('${s.id}')" title="View full size (full lockup in modal)"><div id="bm-logo-svg-wrap-${safe}" class="bm-logo-hero bm-logo-hero--svg">${procSvg}</div></div><p class="di" style="color:var(--mut);font-size:13px;margin-top:4px">Updates when you change station name or format. Card thumbnails use the full lockup (calls + dial).</p>`
+      :`<p class="di" style="color:var(--mut)">Logo preview unavailable.</p>`);
   return`<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
-    <div class="msh" style="margin-bottom:8px">VISUAL BRANDING — ${rosterHtmlEsc(callDisplay(s))}</div>
+    <div class="msh" style="margin-bottom:8px">TEMPLATE LOGO (SVG)</div>
     <div id="bm-logo-status-${safe}" style="font-size:12px;color:var(--amb);min-height:18px;margin-bottom:6px"></div>
-    ${img}
+    ${hero}
     <div style="display:flex;flex-wrap:wrap;gap:8px">
-      <button type="button" class="abt" onclick="wlGenerateLogo('${s.id}',false)">${s.cosmeticLogoUrl?'↻ Regenerate Logo':'🖼 Generate Logo'}</button>
-      ${s.cosmeticLogoUrl?`<button type="button" class="abt" onclick="wlGenerateLogo('${s.id}',true)">↻ New art (same brief)</button>`:''}
+      ${s.cosmeticLogoUrl?'':`<button type="button" class="abt g" onclick="wlBumpProceduralLogoVariant('${s.id}')">↻ New SVG look</button>`}
+      ${s.cosmeticLogoUrl?`<button type="button" class="abt" onclick="wlClearAiStationLogo('${s.id}')">○ Use template logo</button>`:''}
+      <button type="button" class="abt" onclick="wlGenerateLogo('${s.id}',false)">${s.cosmeticLogoUrl?'↻ Regenerate AI image':'🖼 Optional: AI image (server)'}</button>
+      ${s.cosmeticLogoUrl?`<button type="button" class="abt" onclick="wlGenerateLogo('${s.id}',true)">↻ New AI art (same brief)</button>`:''}
     </div>
   </div>`;
 }
@@ -10877,10 +11241,11 @@ function renderBrandMarketingStation(primarySid){
   const ptn=simulcastPartnerStation(opLeg);
   const dual=ptn&&ptn.id!==opLeg.id&&mpIsMe(opLeg)&&mpIsMe(ptn);
   const callsignLine=dual?`${callDisplay(opLeg)} + ${callDisplay(ptn)}`:callDisplay(primary);
-  const sub=`${callsignLine} · ${FM[primary.format]?.l||primary.format} · Alignment: <span style="color:${align.bucket==='strong'?'var(--grn)':align.bucket==='moderate'?'var(--amb)':'var(--red)'}">${align.bucket.toUpperCase()}</span> (${align.score})`;
+  const alignCol=align.bucket==='strong'?'var(--grn)':align.bucket==='moderate'?'var(--amb)':'var(--red)';
+  const subHtml=`${rosterHtmlEsc(callsignLine)} · ${rosterHtmlEsc(FM[primary.format]?.l||primary.format)} · Alignment: <span style="color:${alignCol}">${rosterHtmlEsc(align.bucket.toUpperCase())}</span> (${align.score})`;
   document.getElementById('brand-title').textContent='BRAND & MARKETING';
   document.getElementById('brandb').innerHTML=`
-    <p class="di" style="margin-bottom:10px;color:var(--mut)">${rosterHtmlEsc(sub)}</p>
+    <p class="di" style="margin-bottom:10px;color:var(--mut)">${subHtml}</p>
     <div style="background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.25);border-radius:8px;padding:14px 16px;margin-bottom:18px">
       <div class="msh" style="margin-bottom:10px">MARKETING MANAGER</div>
       ${sumHtml}
@@ -11760,6 +12125,7 @@ function openProgramming(sid){
   updProg(sid, String(progBudgetPermilleFromDollars(PI.val,pgCap)));
   refreshProgCommitStandalone();
   om('m-programming');
+  wlFtTutorialNotifyProgrammingOpen();
 }
 /** @deprecated Use openProgramming — kept for older onclick strings */
 function openProg(sid){openProgramming(sid);}
@@ -12877,13 +13243,10 @@ function doSell(sid,price){
 }
 
 // ── SAVE / LOAD ────────────────────────────────────────────────────
-const SAVE_KEY='wavelength_autosave';
-const SAVE_VERSION=1;
-
 function saveGame(label){
   const payload={v:SAVE_VERSION,saved:new Date().toISOString(),label:label||'Manual Save',G};
   // localStorage autosave
-  try{localStorage.setItem(SAVE_KEY,JSON.stringify(payload));}catch(e){}
+  try{localStorage.setItem(SAVE_KEY,JSON.stringify(payload));localStorage.removeItem(LEGACY_SAVE_KEY);}catch(e){}
   return payload;
 }
 
@@ -12892,29 +13255,124 @@ function autoSave(){
   try{
     const payload={v:SAVE_VERSION,saved:new Date().toISOString(),label:'Autosave',G};
     localStorage.setItem(SAVE_KEY,JSON.stringify(payload));
+    try{localStorage.removeItem(LEGACY_SAVE_KEY);}catch(e){}
   }catch(e){}
 }
 
-// ── COSMETIC: retro station logo (API on game server; does not affect sim) ──
+// ── COSMETIC: procedural SVG logos (default) + optional AI image from server ──
+function wlBuildProceduralLogoInput(op, layoutMode){
+  if(!op||!G)return null;
+  const band=(op.fmBooster||op.sig?.type==='FM')?'FM':'AM';
+  const brand=(typeof op.brand==='string'&&op.brand.trim())?op.brand.trim():defaultPlayerStationBrand(op);
+  const o={
+    id:op.id,
+    callDisplay:callDisplay(op),
+    brand:brand||callDisplay(op),
+    formatKey:op.format||'ADULT_CONTEMP',
+    formatLabel:FM[op.format]?.l||op.format||'Radio',
+    dial:stationFreqDial(op),
+    band,
+    year:G.year||1970,
+    variantBump:Math.max(0,Math.floor(Number(op.cosmeticLogoVariant)||0)),
+  };
+  if(layoutMode)o.layoutMode=layoutMode;
+  return o;
+}
+function wlProceduralLogoSvgString(op, opts){
+  opts=opts||{};
+  if(!op||typeof globalThis.wlStationLogoSvg==='undefined'||typeof globalThis.wlStationLogoSvg.build!=='function')return '';
+  try{
+    const input=wlBuildProceduralLogoInput(op,opts.layoutMode);
+    if(!input)return '';
+    return globalThis.wlStationLogoSvg.build(input)||'';
+  }catch(_e){
+    return '';
+  }
+}
+/** Refresh template logo in Brand & Marketing when name/format/year changes (modal stays mounted). */
+function bmRefreshBrandMarketingLogoPreview(sid){
+  sid=ensureOpsSourceSid(sid);
+  if(typeof BM_ACTIVE_SID==='undefined'||ensureOpsSourceSid(BM_ACTIVE_SID)!==sid)return;
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||s.cosmeticLogoUrl)return;
+  const safe=bmSafeElId(sid);
+  const wrap=document.getElementById('bm-logo-svg-wrap-'+safe);
+  if(!wrap)return;
+  const svg=wlProceduralLogoSvgString(s,{layoutMode:'brandHero'});
+  if(svg)wrap.innerHTML=svg;
+}
+function bmRefreshOpenBrandModalLogos(){
+  if(!document.getElementById('m-brand')?.classList.contains('on'))return;
+  if(typeof BM_ACTIVE_SID==='undefined'||!BM_ACTIVE_SID)return;
+  bmRefreshBrandMarketingLogoPreview(BM_ACTIVE_SID);
+}
+function wlBumpProceduralLogoVariant(stationId){
+  stationId=ensureOpsSourceSid(stationId);
+  const op=G.stations.find(st=>st.id===stationId);
+  if(!op)return;
+  op.cosmeticLogoVariant=Math.max(0,Math.floor(Number(op.cosmeticLogoVariant)||0))+1;
+  autoSave();
+  bmRefreshBrandMarketingLogoPreview(stationId);
+  renderAll();
+  showToast('New template logo look.','info');
+}
 function wlOpenLogoModal(stationId){
   const op=G.stations.find(st=>st.id===stationId);
-  if(!op||!op.cosmeticLogoUrl)return;
-  const rel=op.cosmeticLogoUrl+(op.cosmeticLogoV?'?v='+op.cosmeticLogoV:'');
-  const abs=new URL(rel,window.location.href).href;
+  if(!op)return;
   const img=document.getElementById('wl-logo-modal-img');
-  if(!img)return;
-  img.src=abs;
-  const base=op.cosmeticLogoUrl.split('?')[0];
-  const extMatch=base.match(/\.(png|webp|jpe?g)$/i);
-  let ext=extMatch?extMatch[1].toLowerCase():'png';
-  if(ext==='jpeg')ext='jpg';
+  const svgHost=document.getElementById('wl-logo-modal-svg');
+  if(!img||!svgHost)return;
   const a=document.getElementById('wl-logo-dl');
-  if(a){
-    a.href=abs;
-    const safe=(callDisplay(op).replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')||'station')+'-logo';
-    a.setAttribute('download',safe+'.'+ext);
+  const safe=(callDisplay(op).replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')||'station')+'-logo';
+  if(op.cosmeticLogoUrl){
+    const rel=op.cosmeticLogoUrl+(op.cosmeticLogoV?'?v='+op.cosmeticLogoV:'');
+    const abs=wlGameMediaAbsUrl(rel);
+    svgHost.style.display='none';
+    svgHost.innerHTML='';
+    img.style.display='block';
+    img.src=abs;
+    if(a){
+      a.style.display='inline-block';
+      a.href=abs;
+      const base=op.cosmeticLogoUrl.split('?')[0];
+      const extMatch=base.match(/\.(png|webp|jpe?g|svg)$/i);
+      let ext=extMatch?extMatch[1].toLowerCase():'png';
+      if(ext==='jpeg')ext='jpg';
+      a.setAttribute('download',safe+'.'+ext);
+    }
+  }else{
+    img.style.display='none';
+    img.removeAttribute('src');
+    const svg=wlProceduralLogoSvgString(op);
+    if(!svg){showToast('Logo preview unavailable.','warn');return;}
+    svgHost.style.display='block';
+    svgHost.innerHTML=svg;
+    if(a){
+      a.style.display='inline-block';
+      a.href='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+      a.setAttribute('download',safe+'.svg');
+    }
   }
   om('m-logo');
+}
+function wlClearAiStationLogo(stationId){
+  const op=G.stations.find(st=>st.id===stationId);
+  if(!op||!op.cosmeticLogoUrl)return;
+  delete op.cosmeticLogoUrl;
+  delete op.cosmeticLogoV;
+  delete op.cosmeticLogoTone;
+  logHistory(op,'LOGO','Switched to template logo (AI image cleared).',G);
+  autoSave();
+  if(MP.mode==='live'&&MP.socket&&MP.roomId){
+    MP.emit('mp_station_logo',{
+      roomId:MP.roomId,
+      stationId:op.id,
+      clearCosmeticLogo:true,
+    });
+  }
+  renderAll();
+  if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&stationId===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
+  showToast('Using template logo.','info');
 }
 async function wlGenerateLogo(stationId,regenerate){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
@@ -12935,7 +13393,7 @@ async function wlGenerateLogo(stationId,regenerate){
     regenerate:!!reg,
   };
   try{
-    const res=await fetch('/api/generate-logo',{
+    const res=await fetch(wlGameApiUrl('/api/generate-logo'),{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify(body),
@@ -12953,6 +13411,7 @@ async function wlGenerateLogo(stationId,regenerate){
     autoSave();
     if(MP.mode==='live'&&MP.socket&&MP.roomId){
       MP.emit('mp_station_logo',{
+        roomId:MP.roomId,
         stationId:op.id,
         cosmeticLogoUrl:data.imageUrl,
         cosmeticLogoV:op.cosmeticLogoV,
@@ -12962,19 +13421,18 @@ async function wlGenerateLogo(stationId,regenerate){
     renderAll();
     if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&stationId===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
   }catch(_e){
-    if(statusEl)statusEl.textContent='No API — open the game at http://localhost:3000 (npm start) to generate logos.';
+    if(statusEl){
+      const base=window.__WL_GAME_SERVER_URL||(typeof location!=='undefined'?location.origin:'');
+      statusEl.textContent=base
+        ?`No API — open the game at ${base} (game server) to generate logos.`
+        :'No API — run the game server to generate logos.';
+    }
   }
 }
 
-/** After game start, request logos for this client's player stations (staggered; skips if already cached). */
+/** Procedural SVG logos need no server prefetch; AI logos are opt-in from Brand & Marketing. */
 function queueAutoLogosForPlayerStations(){
-  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
-  if(!G||!G.stations)return;
-  const list=MP.mode==='live'?myPS():(G.ps||[]);
-  list.forEach((s,i)=>{
-    if(!s||s.cosmeticLogoUrl)return;
-    setTimeout(()=>{ wlGenerateLogo(s.id,false); },300+i*800);
-  });
+  return;
 }
 
 // ── COSMETIC: talent portraits (server-side Grok; same identity = same file) ──
@@ -13033,7 +13491,7 @@ function wlOpenTalentPortraitModal(o){
   const nameEl=document.getElementById('wl-portrait-modal-name');
   const ctxEl=document.getElementById('wl-portrait-modal-ctx');
   const v=o.v||0;
-  const src=o.url+(v?'?v='+v:'');
+  const src=wlGameMediaAbsUrl(o.url+(v?'?v='+v:''));
   const prevFb=document.getElementById('wl-portrait-modal-fallback');
   if(prevFb)prevFb.remove();
   if(img){
@@ -13066,7 +13524,7 @@ function talentPortraitThumbHtml(t,cls,ctx){
   if(!t)return '';
   const url=t._portraitUrl;
   const v=t._portraitV||0;
-  const src=url?(url+(v?'?v='+v:'')):'';
+  const src=url?wlGameMediaAbsUrl(url+(v?'?v='+v:'')):'';
   if(!src)return '<span class="tp-thumb tp-thumb--ph '+(cls||'')+'" aria-hidden="true">🎙</span>';
   const payload=encodeURIComponent(JSON.stringify({id:t.id||null,name:t.name||'',url:url,v:v,ctx:ctx||''}));
   return '<span class="tp-thumb '+(cls||'')+' tp-thumb--live" role="button" tabindex="0" data-portrait="'+payload+'" onclick="event.stopPropagation();wlPortraitFromDataset(this)" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();event.stopPropagation();wlPortraitFromDataset(this);}"><img alt="" src="'+src+'" draggable="false" onerror="wlPortraitImgError(this)"></span>';
@@ -13081,7 +13539,7 @@ async function queueTalentPortrait(t){
     const cy=typeof G!=='undefined'&&G?.year!=null?G.year:1970;
     const start=t._careerStartYear!=null&&t._careerStartYear!==undefined?t._careerStartYear:t._hireYear!=null?t._hireYear:firstYear;
     const yearsExperience=Math.max(0,Math.floor(cy-start));
-    const res=await fetch('/api/generate-portrait',{
+    const res=await fetch(wlGameApiUrl('/api/generate-portrait'),{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
@@ -13148,7 +13606,7 @@ function exportSave(){
   const a=document.createElement('a');
   a.href=url;
   const d=new Date();
-  a.download=`wavelength-${G.year}-${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
+  a.download=`airwave-empire-${G.year}-${String(d.getMonth()+1).padStart(2,'0')}${String(d.getDate()).padStart(2,'0')}.json`;
   a.click();URL.revokeObjectURL(url);
   G.news.unshift({v:'LOW',t:`💾 Game saved: ${payload.label}`,y:G.year,p:G.period});
   openSaveLoad();
@@ -13172,13 +13630,6 @@ function importSave(file){
     }
   };
   reader.readAsText(file);
-}
-
-function getLocalSave(){
-  try{
-    const raw=localStorage.getItem(SAVE_KEY);
-    return raw?JSON.parse(raw):null;
-  }catch(e){return null;}
 }
 
 function openSaveLoad(){
@@ -13208,6 +13659,7 @@ function openSaveLoad(){
         <input type="file" accept=".json" style="display:none" onchange="importSave(this.files[0])">
       </label>
     </div>
+    <button type="button" class="abt" style="width:100%;margin-top:10px" onclick="wlFtTutorialRestartFromMenu()">📘 FIRST-TURN GUIDE (replay)</button>
     <button class="cnl" style="margin-top:8px" onclick="cm('m-save')">CLOSE</button>`;
   om('m-save');
 }
@@ -13421,6 +13873,9 @@ function migrateSave(G){
   }
 
   normalizeSimulcastLinksInPlace(G);
+
+  applyAmFccPowerNormalization(G.stations, G);
+  reassignAmClearChannelFlags(G.stations);
 
   // Rebuild ps
   G.ps=G.stations.filter(s=>s.isPlayer);
@@ -13785,6 +14240,7 @@ function om(id){
 function cm(id){
   document.getElementById(id).classList.remove('on');
   syncModalBodyScrollLock();
+  if(id==='m-programming')wlFtTutorialNotifyProgrammingClose();
   if(id==='m-brand')BM_ACTIVE_SID=null;
   if(id==='m-sum'&&typeof G!=='undefined'&&G&&G._mpShowEndgameAfterSumClose){
     G._mpShowEndgameAfterSumClose=false;
@@ -14333,6 +14789,7 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra
       '<div style="font-family:var(--ft);color:var(--mut);font-size:15px;margin-top:4px">Your '+displayYear+' decade score will appear after you close this summary</div></div>';
   }
   om('m-sum');
+  wlFtTutorialOnPeriodSummaryShown();
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -14683,6 +15140,8 @@ function renderAll(){
   rHdr();rTick();rScore();rStns();rMkt();rIntel();rNews();
   if(document.body) document.body.classList.toggle('mp-endgame', typeof mpEndgameFrozen==='function'&&mpEndgameFrozen());
   maybeShowPendingTroubleModal();
+  bmRefreshOpenBrandModalLogos();
+  wlFtTutorialAfterRender();
 }
 
 function maybeShowPendingTroubleModal(){
@@ -14724,7 +15183,7 @@ function rHdr(){
     ab.style.background='rgba(245,166,35,.12)';
     ab.style.borderColor='var(--amb)';
     ab.style.color='var(--amb)';
-    ab.innerHTML=`⚠ Game state appears incomplete. <a href="#" onclick="openScenSelect(getLocalSave());return false;" style="color:var(--amb);font-weight:bold">← Back to scenario select</a> &nbsp;|&nbsp; <a href="#" onclick="localStorage.removeItem('wavelength_autosave');location.reload();return false;" style="color:var(--red)">🗑 Clear save &amp; restart</a>`;
+    ab.innerHTML=`⚠ Game state appears incomplete. <a href="#" onclick="openScenSelect(getLocalSave());return false;" style="color:var(--amb);font-weight:bold">← Back to scenario select</a> &nbsp;|&nbsp; <a href="#" onclick="wlClearAutosaveAndReload();return false;" style="color:var(--red)">🗑 Clear save &amp; restart</a>`;
     return;
   }
   const expiring=myPS().flatMap(s=>Object.entries(s.prog)
@@ -14854,6 +15313,7 @@ function rStns(){
   const myStations = MP.mode==='live'
     ? G.ps.filter(s => s._mpOwner === MP.playerId)
     : G.ps;
+  let _assignFtTutIds=MP.mode!=='live';
   const freqLineHtml=st=>{
     if(!st)return '';
     return st.fmBooster?st.freq+' · <span style="color:var(--grn);font-family:var(--ft);font-size:14px">FM TRANSLATOR</span>'+(st._boosterOrigFreq?' · <span style="color:var(--mut)">+'+st._boosterOrigFreq+'</span>':''): st.sig.pw==='DA'?st.freq+' · AM · <span style="color:var(--red);font-family:var(--ft);font-size:14px" title="Daytimer: 50kW day, 1-5kW night">DAYTIMER</span>': st.freq+' · '+st.sig.type+' · '+st.sig.pw.toUpperCase();
@@ -14988,7 +15448,7 @@ function rStns(){
         };
         const sec=(title,first,inner)=>'<div class="sc-card-sec'+(first?' sc-card-sec--first':'')+'"><div class="sc-card-sec-h">'+title+'</div>'+inner+'</div>';
         const progBudgetLine='<div style="font-size:13px;color:var(--mut);line-height:1.45">Programming <strong style="color:var(--off)">'+f$(op.ops?.progBudget||0)+'</strong>/p</div>';
-        const progHub='<button class="abt '+progAct+'" style="width:100%;box-sizing:border-box;padding:14px;font-size:15px;letter-spacing:0.5px" onclick="openProgramming(\''+op.id+'\')">📻 PROGRAMMING</button>';
+        const progHub='<button class="abt '+progAct+'" '+(_assignFtTutIds?'id="wl-ft-tut-programming-btn" ':'')+'style="width:100%;box-sizing:border-box;padding:14px;font-size:15px;letter-spacing:0.5px" onclick="openProgramming(\''+op.id+'\')">📻 PROGRAMMING</button>';
         const sportsFr=[];
         if(sportsBtn)sportsFr.push(sportsBtn);
         if(franchiseBtn)sportsFr.push(franchiseBtn);
@@ -15009,6 +15469,10 @@ function rStns(){
           sec('ADMINISTRATION · STRUCTURE',false,pack2(adminBtns))+
           '</div>';
       })()}`;
+    if(_assignFtTutIds){
+      div.id='wl-ft-player-station-card';
+      _assignFtTutIds=false;
+    }
     c.appendChild(div);
   });
   // Acquire button at bottom if under FCC limit

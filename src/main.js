@@ -1,7 +1,14 @@
 /**
  * Vite entry — Clerk (@clerk/clerk-js), UI bundle, SignIn / UserButton in MP lobby, then legacy.js.
  */
+import './amFccRules.js';
 import { Clerk } from '@clerk/clerk-js';
+
+/** Public URL of the Node game server (Socket.io + /api). Set in .env for production builds. */
+const gameServerUrl = import.meta.env?.VITE_GAME_SERVER_URL?.trim?.() ?? '';
+if (gameServerUrl) {
+  window.__WL_GAME_SERVER_URL = gameServerUrl;
+}
 
 const fromEnv = import.meta.env?.VITE_CLERK_PUBLISHABLE_KEY?.trim?.() ?? '';
 const fromMeta =

@@ -1,5 +1,5 @@
 // ═══════════════════════════════════════════════════════════════════
-// WAVELENGTH MULTIPLAYER SERVER
+// AIRWAVE EMPIRE — multiplayer game server
 // Node.js + Socket.io
 //
 // Architecture: host-authoritative
@@ -17,7 +17,8 @@
 //
 // Spectator TV (read-only rankings, same room code): open /spectate.html?room=CODE
 // Uses socket event spectate_room — updates on each host state_broadcast (every period).
-// Image API: GROK_API_KEY for /api/generate-logo and Grok portraits.
+// Image API: SHORTAPI_KEY (ShortAPI z-image, default) and/or GROK_API_KEY for /api/generate-logo and AI portraits.
+// IMAGE_GEN_PROVIDER=shortapi | grok | auto — auto prefers SHORTAPI_KEY when set.
 // Stock pool (random assignment before Grok): generated-portraits/library/{male|female}/{era}/
 // Grok output (organized by hire-era bucket + gender): generated-portraits/grok/{male|female|unknown}/{era}/
 // See GET /api/portrait-library/status (includes both library + grok counts). PORTRAIT_LIBRARY_FIRST=0 prefers Grok when both exist.
@@ -26,13 +27,17 @@
 require('dotenv').config({ path: require('path').join(__dirname, '.env') });
 
 const express  = require('express');
+const cors     = require('cors');
 const http     = require('http');
 const { Server } = require('socket.io');
 const path     = require('path');
 const fs       = require('fs');
 const { randomBytes } = require('crypto');
+const { getSharedCorsOptions, allowedOriginsList } = require('./server/corsConfig');
 
 const app        = express();
+const corsOpts   = getSharedCorsOptions();
+app.use(cors(corsOpts));
 
 // Stripe webhook must see raw body (register before express.json)
 const { stripeWebhookHandler, mountStripeBilling } = require('./server/stripeBilling');
@@ -50,7 +55,7 @@ mountStripeBilling(app);
 
 const httpServer = http.createServer(app);
 const io         = new Server(httpServer, {
-  cors: { origin: '*' },
+  cors: corsOpts,
   maxHttpBufferSize: 10e6,   // 10MB — G state + history can grow
 });
 
@@ -460,14 +465,26 @@ io.on('connection', socket => {
   });
 
   // ── STATION LOGO (cosmetic) — persist to room so saves / rejoin keep art ──
-  socket.on('mp_station_logo', ({ roomId, stationId, cosmeticLogoUrl, cosmeticLogoV, cosmeticLogoTone }) => {
+  socket.on('mp_station_logo', (payload) => {
+    const { roomId, stationId, cosmeticLogoUrl, cosmeticLogoV, cosmeticLogoTone, clearCosmeticLogo } = payload || {};
     const room = getRoom(roomId);
     if (!room || room.phase !== 'playing' || !room.G?.stations) return;
     const player = room.players.find(p => p.socketId === socket.id);
     if (!player) return;
-    if (!isSafeGeneratedLogoUrl(cosmeticLogoUrl)) return;
     const st = room.G.stations.find(s => s && s.id === stationId);
     if (!st || !st.isPlayer || st._mpOwner !== player.playerId) return;
+    if (clearCosmeticLogo === true) {
+      delete st.cosmeticLogoUrl;
+      delete st.cosmeticLogoV;
+      delete st.cosmeticLogoTone;
+      persistRoom(room);
+      io.to(roomId).emit('mp_station_logo_sync', {
+        stationId,
+        clearCosmeticLogo: true,
+      });
+      return;
+    }
+    if (!isSafeGeneratedLogoUrl(cosmeticLogoUrl)) return;
     st.cosmeticLogoUrl = cosmeticLogoUrl;
     if (cosmeticLogoV != null) {
       const v = Number(cosmeticLogoV);
@@ -753,7 +770,9 @@ app.get('/', (req, res) => {
     return res.sendFile(DIST_INDEX);
   }
   const indexPath = path.join(__dirname, 'index.html');
-  const legacyPath = path.join(__dirname, 'wavelength-ui.html');
+  const legacyPath = fs.existsSync(path.join(__dirname, 'airwave-empire-ui.html'))
+    ? path.join(__dirname, 'airwave-empire-ui.html')
+    : path.join(__dirname, 'wavelength-ui.html');
   res.sendFile(fs.existsSync(indexPath) ? indexPath : legacyPath);
 });
 
@@ -807,8 +826,9 @@ httpServer.on('error', (err) => {
 });
 
 httpServer.listen(PORT, () => {
-  console.log(`\n🎙 WAVELENGTH SERVER`);
+  console.log(`\n🎙 AIRWAVE EMPIRE SERVER`);
   console.log(`   http://localhost:${PORT}`);
+  console.log(`   CORS allowed origins (${allowedOriginsList().length}): ${allowedOriginsList().join(', ')}`);
   if (HAS_DIST) {
     console.log(`   Client: Vite build (dist/) — Clerk + bundled JS`);
   } else {

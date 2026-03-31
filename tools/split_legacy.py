@@ -46,7 +46,7 @@ def _extract_game_script(html_wo_style: str) -> tuple[str, str]:
 
 
 def main() -> None:
-    inp = ROOT / "wavelength-ui.html"
+    inp = ROOT / "airwave-empire-ui.html"
     html = inp.read_text(encoding="utf-8")
 
     # Extract the first <style>...</style> block.
