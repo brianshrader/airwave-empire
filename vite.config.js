@@ -10,11 +10,16 @@ export default defineConfig({
   appType: 'spa',
   plugins: [
     {
-      name: 'copy-legacy-js',
+      name: 'copy-legacy-and-logo-js',
       writeBundle() {
         const destDir = join(__dirname, 'dist', 'src');
         mkdirSync(destDir, { recursive: true });
-        copyFileSync(join(__dirname, 'src', 'legacy.js'), join(destDir, 'legacy.js'));
+        const copy = (name) =>
+          copyFileSync(join(__dirname, 'src', name), join(destDir, name));
+        copy('legacy.js');
+        // index.html loads these as classic scripts (before legacy.js). Must exist in dist or production 404s and wlStationLogoSvg never mounts.
+        copy('stationLogoConfig.js');
+        copy('stationLogoSvg.js');
       },
     },
   ],

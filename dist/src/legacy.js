@@ -1012,45 +1012,92 @@ const FMT_COMPETITION={
 };
 const COMPETITION_BLEED=0.16; // per competing station, max 22% total bleed
 
-const BRANDS={
-  TOP40:['The Rocket','Power {FREQ}','The Pulse','Flash {FREQ}','The Buzz','Hit {FREQ}','{FREQ} Jams','Party {FREQ}'],
-  COUNTRY:['The Wagon Wheel','Ranch Radio','The Heartland','Dixie {FREQ}','Country Roads','Big Country','Y-{FREQ}','The Bull'],
-  SOUL_RNB:['The Soul Station','Groove {FREQ}','The Vibe','Soul City','The Sound','Silk {FREQ}','Old School {FREQ}'],
-  MOR:['Easy {FREQ}','The Standard','Melody Radio','{FREQ} Gold','Soft {FREQ}','Beautiful {FREQ}','Mellow {FREQ}'],
-  ADULT_STANDARDS:['The Standard','{FREQ} Classics','Memories {FREQ}','The Great Songs','{FREQ} Timeless','Easy {FREQ}','Forever {FREQ}'],
-  NEWS_TALK:['News {FREQ}','Talk of the Town','The Voice','{CITY} Talks','{CITY} News Radio','Freedom {FREQ}','Patriot {FREQ}','{FREQ} Talk','The Truth','Real Talk {FREQ}','{FREQ} Opinion'],
-  ALBUM_ROCK:['The Rock','Free {FREQ}','Album Radio','The Underground','Deep Tracks','The Planet','Raw {FREQ}'],
-  BEAUTIFUL_MUSIC:['Soft {FREQ}','The Breeze','Easy Sounds','Smooth Radio','Mellow {FREQ}','Tranquil {FREQ}'],
-  GOSPEL:['The Light','Gospel {FREQ}','The Word','Grace Radio','Praise {FREQ}','Heaven {FREQ}','Inspiration {FREQ}'],
-  CHR:['Z-{FREQ}','Kiss {FREQ}','Hot {FREQ}','The Beat','Pop {FREQ}','{FREQ} Hits','{CITY} Pop'],
-  CLASSIC_ROCK:['The Eagle','The Fox','Rock {FREQ}','Classic Rock {FREQ}','The Mountain','Thunder {FREQ}','The Hawk'],
-  ADULT_CONTEMP:['Lite {FREQ}','Star {FREQ}','Sunny {FREQ}','The Mix','Soft Hits','Warm {FREQ}','{FREQ} Today'],
-  URBAN_CONTEMP:['The Spot','Power {FREQ}','The Heat','Urban {FREQ}','Flavor {FREQ}','Fire {FREQ}'],
-  SPORTS_TALK:['The Fan','Sports {FREQ}','ESPN {FREQ}','The Game','Sports Talk {FREQ}','The Lineup','The Blitz'],
-  SPANISH:['La Mega','Latino {FREQ}','El Sol','La Raza','Ritmo {FREQ}','Fuego {FREQ}','La Kalle'],
-  ALT_ROCK:['The Edge','X-{FREQ}','Alternative {FREQ}','The Buzz','Indie {FREQ}','The Ramp'],
-  RHYTHMIC:['The Beat','Jammin {FREQ}','Hip Hop {FREQ}','The Banger','Urban Hits','{FREQ} Jams'],
-  HOT_AC:['The Mix','Today\'s Hits','Fresh {FREQ}','The Vibe','Now {FREQ}','{FREQ} Now','Breeze {FREQ}'],
-  OLDIES:['Oldies {FREQ}','Rock & Roll {FREQ}','{FREQ} Oldies','Super Oldies {FREQ}','Golden {FREQ}','The Memories','Sock Hop {FREQ}'],
-  CLASSIC_HITS:['Classic Hits {FREQ}','The Vault','{FREQ} Throwback','{FREQ} Gold','The Classics','Magic {FREQ}','Rewind {FREQ}'],
-  PODCAST_TALK:['The Feed','Talk Plus','Podcast {FREQ}','The Stream','Digital Talk'],
-  PUBLIC_NEWS:['Public Radio','Community Radio','Metro Public Radio','{CITY} Public Radio','Public Broadcasting Radio'],
-  PUBLIC_CLASSICAL:['Public Classical','Classical Radio','Jazz & Classical','Community Classical','Fine Arts Radio'],
+/** Short on-air market tags for "{ABBREV} {FREQ}" patterns (NY 94.7, LA 100.3, …) */
+const MARKET_BRAND_ABBREV={
+  newyork:'NY',losangeles:'LA',chicago:'Chicago',atlanta:'Atlanta',nashville:'Nashville',
 };
-// Resolve {FREQ} and {CITY} tokens in a brand name
-function resolveBrand(brand, freq, city){
-  const freqShort=(freq||'').replace(/ (AM|FM)$/,''); // "96.1" or "920"
-  return brand.replace(/{FREQ}/g, freqShort).replace(/{CITY}/g, city||'City');
+const BRANDS={
+  TOP40:['{FREQ} Hits','Hit {FREQ}','Power {FREQ}','Party {FREQ}','Flash {FREQ}','Rocket {FREQ}','{FREQ} Jamz','The Pulse {FREQ}','{CITY} {FREQ}','{ABBREV} {FREQ}'],
+  COUNTRY:['Big Country {FREQ}','The Bull {FREQ}','Ranch {FREQ}','Dixie {FREQ}','Y-{FREQ}','Country {FREQ}','Heartland {FREQ}','{CITY} Country {FREQ}','{ABBREV} {FREQ}'],
+  SOUL_RNB:['Groove {FREQ}','Soul {FREQ}','The Sound {FREQ}','Silk {FREQ}','Old School {FREQ}','Vibe {FREQ}','{CITY} Soul {FREQ}'],
+  MOR:['Easy {FREQ}','Melody {FREQ}','{FREQ} Gold','Soft {FREQ}','Beautiful {FREQ}','Mellow {FREQ}','Standard {FREQ}'],
+  ADULT_STANDARDS:['{FREQ} Classics','Memories {FREQ}','Timeless {FREQ}','Easy {FREQ}','Standards {FREQ}','Great Songs {FREQ}'],
+  NEWS_TALK:['News {FREQ}','{CITY} News {FREQ}','{ABBREV} News {FREQ}','{FREQ} Talk','Freedom {FREQ}','Patriot {FREQ}','Real Talk {FREQ}','Voice {FREQ}'],
+  ALBUM_ROCK:['Rock {FREQ}','Free {FREQ}','The Planet {FREQ}','Deep {FREQ}','Raw {FREQ}','Underground {FREQ}','{CITY} Rock {FREQ}'],
+  BEAUTIFUL_MUSIC:['Soft {FREQ}','Breeze {FREQ}','Easy Sounds {FREQ}','Smooth {FREQ}','Mellow {FREQ}','Tranquil {FREQ}'],
+  GOSPEL:['Gospel {FREQ}','Praise {FREQ}','The Word {FREQ}','Grace {FREQ}','Heaven {FREQ}','Light {FREQ}','Inspiration {FREQ}'],
+  CHR:['{FREQ} the Beat','Kiss {FREQ}','Hot {FREQ}','Z-{FREQ}','Pop {FREQ}','{FREQ} Hits','{CITY} {FREQ}','{ABBREV} {FREQ}'],
+  CLASSIC_ROCK:['Classic Rock {FREQ}','Thunder {FREQ}','The Eagle {FREQ}','The Fox {FREQ}','The Hawk {FREQ}','Mountain {FREQ}','{CITY} Rock {FREQ}'],
+  ADULT_CONTEMP:['Lite {FREQ}','Star {FREQ}','Sunny {FREQ}','Mix {FREQ}','Soft Hits {FREQ}','Warm {FREQ}','Today {FREQ}','{CITY} {FREQ}'],
+  URBAN_CONTEMP:['Power {FREQ}','The Heat {FREQ}','Urban {FREQ}','Flavor {FREQ}','Fire {FREQ}','The Spot {FREQ}','{ABBREV} {FREQ}'],
+  SPORTS_TALK:['Sports {FREQ}','The Fan {FREQ}','The Game {FREQ}','{FREQ} Sports','Lineup {FREQ}','Blitz {FREQ}','{CITY} Sports {FREQ}'],
+  SPANISH:['Latino {FREQ}','Ritmo {FREQ}','Fuego {FREQ}','La Mega {FREQ}','El Sol {FREQ}','La Raza {FREQ}','{FREQ} Latino'],
+  ALT_ROCK:['Alt {FREQ}','X-{FREQ}','Alternative {FREQ}','Indie {FREQ}','Edge {FREQ}','Buzz {FREQ}','{CITY} Alt {FREQ}'],
+  RHYTHMIC:['Rhythm {FREQ}','Jammin {FREQ}','Hip Hop {FREQ}','Banger {FREQ}','Urban Hits {FREQ}','{FREQ} Jamz','{ABBREV} {FREQ}'],
+  HOT_AC:['Fresh {FREQ}','Now {FREQ}','Breeze {FREQ}','Today\'s Hits {FREQ}','Vibe {FREQ}','Mix {FREQ}','{FREQ} Now'],
+  OLDIES:['Oldies {FREQ}','Rock & Roll {FREQ}','Super Oldies {FREQ}','Golden {FREQ}','Sock Hop {FREQ}','Memories {FREQ}'],
+  CLASSIC_HITS:['Classic Hits {FREQ}','The Vault {FREQ}','Throwback {FREQ}','Gold {FREQ}','Magic {FREQ}','Rewind {FREQ}'],
+  PODCAST_TALK:['Podcast {FREQ}','The Feed {FREQ}','Talk Plus {FREQ}','Stream {FREQ}','Digital Talk {FREQ}'],
+  PUBLIC_NEWS:['{CITY} Public Radio {FREQ}','Community Radio {FREQ}','Public News {FREQ}','{ABBREV} Public {FREQ}'],
+  PUBLIC_CLASSICAL:['Classical {FREQ}','Fine Arts {FREQ}','Community Classical {FREQ}','{CITY} Classical {FREQ}'],
+};
+/** Resolve {FREQ}, {CITY}, {ABBREV} in a brand name */
+function resolveBrand(brand, freq, city, marketId){
+  const freqShort=String(freq||'').replace(/\s*(AM|FM)\s*$/i,'').trim();
+  const mkt=MARKETS[marketId]||MARKETS.atlanta;
+  const cityLabel=mkt.label||city||'City';
+  const abbrev=MARKET_BRAND_ABBREV[marketId]||cityLabel.split(/\s+/)[0]||'City';
+  return String(brand||'')
+    .replace(/{FREQ}/g, freqShort)
+    .replace(/{CITY}/g, cityLabel)
+    .replace(/{ABBREV}/g, abbrev);
 }
-// Get format-aware brand suggestions for a station (with resolved tokens)
+/** Same marketing identity after stripping a leading dial (e.g. "94.7 the Beat" → "the beat") — blocks duplicate slogans on different frequencies. */
+function brandMarketIdentityKey(brand){
+  const s=String(brand||'').toLowerCase().replace(/\s+/g,' ').trim();
+  const m=s.match(/^\d+(\.\d+)?\s+(.+)$/);
+  if(m)return m[2].trim();
+  return s;
+}
+function collectBrandIdentityKeysFromStationList(list, excludeId){
+  const set=new Set();
+  (list||[]).forEach(st=>{
+    if(!st||!st.brand)return;
+    if(excludeId&&st.id===excludeId)return;
+    set.add(brandMarketIdentityKey(st.brand));
+  });
+  return set;
+}
+function collectMarketBrandIdentityKeys(excludeSid){
+  return collectBrandIdentityKeysFromStationList(typeof G!=='undefined'?G.stations:null, excludeSid);
+}
+// Get format-aware brand suggestions for a station (with resolved tokens; no duplicate slogans vs rivals)
 function getBrandSuggestions(s){
-  const raw=BRANDS[s.format]||['Radio'];
+  const raw=BRANDS[s.format]||['{FREQ} Radio'];
   const city=G?.city||'Atlanta';
-  const base=raw.map(b=>resolveBrand(b, s.freq, city));
+  const mktId=G?.marketId||ACTIVE_MARKET||'atlanta';
+  const taken=new Set(
+    (G.stations||[]).filter(st=>st&&st.id!==s.id).map(st=>brandMarketIdentityKey(st.brand||''))
+  );
+  const seen=new Set();
+  const base=[];
+  raw.forEach(b=>{
+    const resolved=resolveBrand(b, s.freq, city, mktId);
+    if(!resolved)return;
+    const idK=brandMarketIdentityKey(resolved);
+    if(taken.has(idK))return;
+    if(seen.has(idK))return;
+    seen.add(idK);
+    base.push(resolved);
+  });
   const def=defaultPlayerStationBrand(s);
-  if(!base.length)return def?[def]:['Radio'];
-  if(def&&!base.includes(def))return[def,...base];
-  return base;
+  const out=[];
+  if(def){
+    const dk=brandMarketIdentityKey(def);
+    if(!taken.has(dk)&&!seen.has(dk)){out.push(def);seen.add(dk);}
+  }
+  base.forEach(b=>{if(!out.includes(b))out.push(b);});
+  return out.length?out:[def||resolveBrand('{FREQ} Radio', s.freq, city, mktId)];
 }
 
 // ── EVENT TIMELINE (period: 1=SPR, 2=FAL) ─────────────────────────
@@ -1314,7 +1361,9 @@ const gn=(nameCtx)=>{
   if(ctx.usedFullNames)ctx.usedFullNames.add(fbKey);
   return fb;
 };
-let UC=new Set(),UB=new Set();
+let UC=new Set();
+/** During genMarket(), accumulates brand identity keys so rivals don't share slogans (e.g. two "the Beat"). */
+let _gbBrandIdTaken=null;
 /** Blocked 3-letter suffixes (after W/K) — slurs, sexual/vulgar, KKK, etc. Real-world collisions are OK. */
 const CALL_SUFFIX_DENY=new Set([
   'FUK','ASS','SEX','CUM','FAG','TIT','NIG','JEW','SPIC','KKK','POO','PEE','SHT','CNT','DIK','FCK','FGT','BCH','DCK','JIZ','PIS','DYK','WET','JAP','GOK','KKX','KFK','RAP',
@@ -1362,7 +1411,32 @@ function gc(){
   UC.add(s);
   return s;
 }
-function gb(f,freq,city){const p=BRANDS[f]||['Radio'],av=p.filter(b=>!UB.has(b));const raw=av.length?pick(av):p[0];const b=typeof resolveBrand==='function'?resolveBrand(raw,freq,city):raw;UB.add(raw);return b;}
+function gb(f,freq,city,marketId,identityTaken){
+  const p=BRANDS[f]||['{FREQ} Radio'];
+  const mkt=marketId||(typeof G!=='undefined'&&G?.marketId)||ACTIVE_MARKET||'atlanta';
+  const c=city||(typeof G!=='undefined'&&G?.city)||MARKETS[mkt]?.label||'Atlanta';
+  const taken=identityTaken instanceof Set?identityTaken:(_gbBrandIdTaken instanceof Set?_gbBrandIdTaken:collectMarketBrandIdentityKeys());
+  const pool=[...p].sort(()=>Math.random()-0.5);
+  for(let attempt=0;attempt<Math.min(160,pool.length*12);attempt++){
+    const raw=pool[attempt%pool.length];
+    const resolved=resolveBrand(raw, freq, c, mkt);
+    if(!resolved)continue;
+    const idKey=brandMarketIdentityKey(resolved);
+    if(taken.has(idKey))continue;
+    taken.add(idKey);
+    return resolved;
+  }
+  const fb=resolveBrand('{FREQ} Radio', freq, c, mkt);
+  const fk=brandMarketIdentityKey(fb);
+  if(!taken.has(fk))taken.add(fk);
+  return fb;
+}
+/** Pick a new brand for `s` that doesn't collide with other stations' on-air identities. */
+function gbBrandForStationReplace(s,newFmt){
+  const taken=collectMarketBrandIdentityKeys(s.id);
+  taken.delete(brandMarketIdentityKey(s.brand||''));
+  return gb(newFmt,s.freq,G?.city,G?.marketId,taken);
+}
 const rnd=(a,b)=>Math.random()*(b-a)+a;
 const ri=(a,b)=>Math.floor(rnd(a,b+1));
 const pick=a=>a[Math.floor(Math.random()*a.length)];
@@ -1532,7 +1606,6 @@ const MARKETS={
     fmFreqs:['96.1 FM','99.7 FM','102.3 FM','104.5 FM','107.1 FM','94.9 FM','95.3 FM','101.5 FM','103.3 FM'],
     blackPop:0.358,hispPop1970:0.010,hispPop2000:0.080,hispPop2020:0.115,churchGoing:0.54,countryBonus:0,urbanBonus:0.05,
     culture:{country:0.06,urban:0.06,newsTalk:0.05,religion:0.10,spanish:0.02},
-    heritageCall3:'WFR',
     selectBlurb:'Reference Sunbelt market: diverse formats, strong soul/R&B and Top 40 battlegrounds, heritage AMs that still matter in the 70s, then FM specialization accelerates.',
     fmPenBias:0, fmMusicFragMult:1, spokenWordAmResilience:1.02, heritageAmResilience:1.02, countryAmHoldout:1,
     teams:[
@@ -1544,7 +1617,6 @@ const MARKETS={
   },
   nashville:{
     id:'nashville', callPrefix:'W', label:'Nashville', region:'South', rankTier:'medium', archetypeId:'southern_country',
-    heritageCall3:'WTR',
     pop:{'12-17':95,'18-24':110,'25-34':120,'35-49':150,'50-64':125,'65+':75},
     revScale:0.5, adxBonus:0.03,
     amFreqs:['650 AM','760 AM','1040 AM','1160 AM','1240 AM','1300 AM','1400 AM','1470 AM','1510 AM','1560 AM'],
@@ -1567,7 +1639,6 @@ const MARKETS={
     fmFreqs:['92.3 FM','94.7 FM','96.3 FM','98.7 FM','100.3 FM','101.1 FM','102.7 FM','103.5 FM','104.3 FM','106.7 FM'],
     blackPop:0.21,hispPop1970:0.12,hispPop2000:0.22,hispPop2020:0.26,churchGoing:0.42,countryBonus:0,urbanBonus:0.14,
     culture:{country:0.008,urban:0.16,newsTalk:0.12,religion:0.06,spanish:0.14},
-    heritageCall3:'WLC',
     selectBlurb:'Huge billing pool and ruthless competition. Spoken-word and AC/Top 40 paydays reward winners; the dial fragments early. Country is a sideline, not the main story.',
     fmPenBias:0.055, fmMusicFragMult:1.06, spokenWordAmResilience:1.11, heritageAmResilience:1.08, countryAmHoldout:0.76,
     teams:[
@@ -1587,7 +1658,6 @@ const MARKETS={
     fmFreqs:['93.5 FM','95.5 FM','97.1 FM','98.7 FM','100.3 FM','101.9 FM','102.7 FM','104.3 FM','105.1 FM'],
     blackPop:0.14,hispPop1970:0.14,hispPop2000:0.38,hispPop2020:0.45,churchGoing:0.38,countryBonus:0.02,urbanBonus:0.12,
     culture:{country:0.03,urban:0.12,newsTalk:0.07,religion:0.05,spanish:0.22},
-    heritageCall3:'KRM',
     selectBlurb:'FM-first battlefield: fast fragmentation, constant format churn, and big upside for whoever owns a lane. Spanish and rhythmic/urban-adjacent formats gain ground as the metro evolves.',
     fmPenBias:0.068, fmMusicFragMult:1.1, spokenWordAmResilience:1.02, heritageAmResilience:0.96, countryAmHoldout:0.78,
     teams:[
@@ -1606,7 +1676,6 @@ const MARKETS={
     fmFreqs:['93.1 FM','94.7 FM','96.3 FM','97.9 FM','99.5 FM','101.9 FM','103.5 FM','104.3 FM','105.9 FM'],
     blackPop:0.22,hispPop1970:0.06,hispPop2000:0.18,hispPop2020:0.22,churchGoing:0.48,countryBonus:0.04,urbanBonus:0.08,
     culture:{country:0.08,urban:0.08,newsTalk:0.08,religion:0.08,spanish:0.12},
-    heritageCall3:'WMG',
     selectBlurb:'Big-signal Midwest hub: heritage AM survivors, durable talk, and bruising FM music fights. Sports and spoken-word become natural revenue engines as the dial matures.',
     fmPenBias:0.034, fmMusicFragMult:1.03, spokenWordAmResilience:1.1, heritageAmResilience:1.09, countryAmHoldout:0.9,
     teams:[
@@ -1622,15 +1691,6 @@ const MARKETS={
 function getCallPrefixForMarket(marketId){
   const m=MARKETS[marketId||'atlanta']||MARKETS.atlanta;
   return m.callPrefix==='K'?'K':'W';
-}
-/** Ensure 3-letter heritage matches market prefix (data should already; saves / typos get corrected). */
-function normalizeHeritageCall3(hc,marketId){
-  const pref=getCallPrefixForMarket(marketId);
-  if(!hc||typeof hc!=='string')return null;
-  let u=hc.toUpperCase().replace(/[^A-Z]/g,'');
-  if(u.length!==3)return null;
-  if(u[0]!==pref) u=pref+u.slice(1);
-  return u;
 }
 /** Phase 1 pilot markets — same engine, data-driven params; more cities follow this schema */
 const PHASE1_MARKET_IDS=['atlanta','nashville','newyork','losangeles','chicago'];
@@ -2818,7 +2878,7 @@ function aiRebrandStationAfterDistressSale(G, s) {
   const adj = FADJ[oldFmt]?.includes(nf);
   const pen = adj ? 0.3 : 0.42;
   s.format = nf;
-  s.brand = gb(nf, s.freq, G?.city);
+  s.brand = gbBrandForStationReplace(s, nf);
   s._formatAge = 0;
   s.identity = 0;
   s._identityPeak = 0;
@@ -3687,7 +3747,7 @@ window._mpApply_fmt = function({ sid, format }) {
   s.ops.sell = _talkFmts.includes(format) ? 0.60 : 0.55;
   s._formatAge = 0;
   s.format = format;
-  s.brand = gb(format, s.freq, G?.city);
+  s.brand = gbBrandForStationReplace(s, format);
   calcRev(s, G);
   logHistory(s, 'FORMAT', `Reformatted: ${preFlipFmt} → ${FM[format]?.l || format}`, G);
 };
@@ -3759,7 +3819,7 @@ window._mpApply_rename = function({ sid, callLetters, brand }) {
   const nextDisp = callDisplay(s);
   if (prevDisp !== nextDisp) logHistory(s, 'CALLSIGN', `Call letters changed: ${prevDisp} → ${nextDisp}`, G);
   const nb = (brand ?? '').trim(), ob = (prevBrand ?? '').trim();
-  if (nb && nb !== ob) logHistory(s, 'BRAND', ob ? `Station name: "${ob}" → "${nb}"` : `Station name: "${nb}"`, G);
+  if (nb && nb !== ob) logHistory(s, 'BRAND', ob ? `Brand: "${ob}" → "${nb}"` : `Brand: "${nb}"`, G);
 };
 
 // Stream launch
@@ -4054,6 +4114,7 @@ window._mpApply_acq = function({ sid, playerId, color }) {
   s.corpOwner=null; s.corpName=null; s.corpColor=null;
   applyDefaultBrandToPlayerStation(s);
   G.ps=G.stations.filter(st=>st.isPlayer); renderAll();
+  queueAutoLogosForPlayerStations();
 };
 window._mpApply_loan = function({ amount, _fromPlayerId }) {
   if(_fromPlayerId === undefined) return;
@@ -4427,7 +4488,7 @@ function mkStn(bp,freq,year=1970){
   const sb=SBR[str]||[.50,.70];
   return{
     id:stId,
-    callLetters:gc(),freq,brand:gb(fmt),
+    callLetters:gc(),freq,brand:gb(fmt,freq,(typeof G!=='undefined'&&G?.city)||MARKETS[ACTIVE_MARKET]?.label||'Atlanta',ACTIVE_MARKET,_gbBrandIdTaken),
     sig:{type,pw,reach,universe:UNIVERSE[`${type}_${pw}`]||0.65},
     launchPeriod:0, // set after creation — total periods elapsed at launch
     format:fmt,prog,oq,str,
@@ -7383,6 +7444,28 @@ function mpEnsureBankruptFlags(G){
   if(!G._mpBankrupt||typeof G._mpBankrupt!=='object')G._mpBankrupt={};
 }
 
+/** Solo: minimum cash to buy at least one commercial signal (FCC limits + listing). */
+function soloCheapestAcquisitionPrice(G){
+  if(!G?.stations)return null;
+  const avail=G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic);
+  let best=null;
+  avail.forEach(s=>{
+    const sigType=s.sig.type==='AM'||s.fmBooster?'AM':'FM';
+    if(!fccCanAcquire('player',sigType,G))return;
+    const price=s.isPublic
+      ? Math.round((s.oq*2000+62500)/12500)*12500
+      : (acqPrice(s,G)||ACP[s.str]||50000);
+    if(best==null||price<best)best=price;
+  });
+  return best;
+}
+function soloPlayerCanAffordReentry(G){
+  if(MP.mode==='live')return false;
+  const minP=soloCheapestAcquisitionPrice(G);
+  if(minP==null||!Number.isFinite(minP))return false;
+  return (G.cash||0)>=minP;
+}
+
 /** MP: sell weakest of several stations — returns true if a sale ran. */
 function mpExecuteForcedDistressSale(G,pid,pname){
   const pStns=G.ps.filter(s=>s._mpOwner===pid);
@@ -7391,6 +7474,9 @@ function mpExecuteForcedDistressSale(G,pid,pname){
   if(!weakest)return false;
   const price=distressSaleProceeds(weakest);
   const _soldCall=weakest.callLetters;
+  const _oldFreq=weakest.freq;
+  const _oldFmt=weakest.format;
+  const _oldLbl=FM[_oldFmt]?.l||_oldFmt;
   if(!G._playerCash)G._playerCash={};
   G._playerCash[pid]=(G._playerCash[pid]||0)+price;
   if(MP.playerId===pid)G.cash=G._playerCash[pid];
@@ -7402,7 +7488,8 @@ function mpExecuteForcedDistressSale(G,pid,pname){
   weakest.color=weakest.color||'#6b7280';
   G.ps=G.stations.filter(s=>s.isPlayer);
   aiRebrandStationAfterDistressSale(G,weakest);
-  G.news.unshift({v:'HIGH',t:`Still negative: distress sale — ${pname}'s ${_soldCall} sold for ${f$(price)}. New operators launch ${weakest.callLetters} (${FM[weakest.format]?.l||weakest.format}).`,y:G.year,p:G.period});
+  const newLbl=FM[weakest.format]?.l||weakest.format;
+  G.news.unshift({v:'HIGH',t:`Still negative: distress sale — ${pname}'s ${_soldCall} (${_oldFreq}, ${_oldLbl}) sold for ${f$(price)}. The license continues as ${weakest.callLetters} on ${weakest.freq} — ${newLbl}, "${weakest.brand}".`,y:G.year,p:G.period});
   return true;
 }
 
@@ -7413,6 +7500,9 @@ function mpExecuteBankruptcy(G,pid,pname){
   pStns.forEach(weakest=>{
     const price=distressSaleProceeds(weakest);
     const _soldCall=weakest.callLetters;
+    const _oldFreq=weakest.freq;
+    const _oldFmt=weakest.format;
+    const _oldLbl=FM[_oldFmt]?.l||_oldFmt;
     if(!G._playerCash)G._playerCash={};
     G._playerCash[pid]=(G._playerCash[pid]||0)+price;
     breakSimulcast(G,weakest.id);
@@ -7422,7 +7512,8 @@ function mpExecuteBankruptcy(G,pid,pname){
     weakest.color=weakest.color||'#6b7280';
     G.ps=G.stations.filter(s=>s.isPlayer);
     aiRebrandStationAfterDistressSale(G,weakest);
-    G.news.unshift({v:'HIGH',t:`Bankruptcy: ${pname} — ${_soldCall} leaves the dial. The company is shut down.`,y:G.year,p:G.period});
+    const newLbl=FM[weakest.format]?.l||weakest.format;
+    G.news.unshift({v:'HIGH',t:`Bankruptcy: ${pname} — ${_soldCall} (${_oldFreq}, ${_oldLbl}) sold for ${f$(price)}. License continues as ${weakest.callLetters} on ${weakest.freq} — ${newLbl}, "${weakest.brand}".`,y:G.year,p:G.period});
   });
   G._playerCash[pid]=Math.max(0,G._playerCash[pid]||0);
   if(MP.playerId===pid)G.cash=G._playerCash[pid];
@@ -7432,24 +7523,33 @@ function mpExecuteBankruptcy(G,pid,pname){
   if(MP.playerId===pid)showToast('Bankruptcy: You are out of active play. You can stay and watch the market.','warn');
 }
 
-/** Solo: bankrupt — no playable stations; sim can still advance. */
+/** Solo: last station liquidated — observer mode only if you cannot afford any acquisition target. */
 function soloExecuteBankruptcy(G){
   const stns=[...G.ps];
   stns.forEach(weakest=>{
     const price=distressSaleProceeds(weakest);
     const _soldCall=weakest.callLetters;
+    const _oldFreq=weakest.freq;
+    const _oldFmt=weakest.format;
+    const _oldLbl=FM[_oldFmt]?.l||_oldFmt;
     G.cash=(G.cash||0)+price;
     breakSimulcast(G,weakest.id);
     normalizeSimulcastLinksInPlace(G);
     weakest.isPlayer=false;
     G.ps=G.stations.filter(s=>s.isPlayer);
     aiRebrandStationAfterDistressSale(G,weakest);
-    G.news.unshift({v:'HIGH',t:`Bankruptcy: ${_soldCall} is sold. Your group is out of the business.`,y:G.year,p:G.period});
+    const newLbl=FM[weakest.format]?.l||weakest.format;
+    G.news.unshift({v:'HIGH',t:`Forced sale: ${_soldCall} (${_oldFreq}, ${_oldLbl}) sold for ${f$(price)}. The license continues as ${weakest.callLetters} on ${weakest.freq} — ${newLbl}, "${weakest.brand}".`,y:G.year,p:G.period});
   });
   G.cash=Math.max(0,G.cash||0);
-  G._soloBankrupt=true;
   G.debtWarningQ=0;
-  showToast('Bankruptcy: You are out of active play. You can still advance periods to watch the market.','warn');
+  const canContinue=soloPlayerCanAffordReentry(G);
+  G._soloBankrupt=!canContinue;
+  if(G._soloBankrupt){
+    showToast('Bankruptcy: You are out of active play. You can still advance periods to watch the market.','warn');
+  }else{
+    showToast('Your group has no stations, but you have capital. Use Acquire a station to get back on the air.','info');
+  }
 }
 
 // ── PRESSURE ──────────────────────────────────────────────────────
@@ -7516,15 +7616,19 @@ function checkPressure(G){
       if(weakest&&_pressMyStns.length>1){
         const price=distressSaleProceeds(weakest);
         const _soldCall=weakest.callLetters;
+        const _oldFreq=weakest.freq;
+        const _oldFmt=weakest.format;
+        const _oldLbl=FM[_oldFmt]?.l||_oldFmt;
         G.cash+=price;breakSimulcast(G,weakest.id);
         normalizeSimulcastLinksInPlace(G);
         weakest.isPlayer=false;G.ps=G.stations.filter(s=>s.isPlayer);
         aiRebrandStationAfterDistressSale(G,weakest);
-        G.news.unshift({v:'HIGH',t:`Still negative: distress sale — ${_soldCall} sold for ${f$(price)}. New operators launch ${weakest.callLetters} (${FM[weakest.format]?.l||weakest.format}).`,y:G.year,p:G.period});
+        const newLbl=FM[weakest.format]?.l||weakest.format;
+        G.news.unshift({v:'HIGH',t:`Still negative: distress sale — ${_soldCall} (${_oldFreq}, ${_oldLbl}) sold for ${f$(price)}. License continues as ${weakest.callLetters} on ${weakest.freq} — ${newLbl}, "${weakest.brand}".`,y:G.year,p:G.period});
         G.debtWarningQ=0;
       }else if(_pressMyStns.length===1&&weakest){
         soloExecuteBankruptcy(G);
-        alerts.push('Bankruptcy: You are out of active play.');
+        alerts.push(G._soloBankrupt?'Bankruptcy: You are out of active play.':'Your last station was sold — use Acquire when you are ready to buy back in.');
       }
     }
   }else{G.debtWarningQ=0;}
@@ -7575,7 +7679,8 @@ function applyMarketOpeningShape(stations,marketId){
 
 // ── GENERATE MARKET ───────────────────────────────────────────────
 function genMarket(scenId){
-  UC=new Set();UB=new Set();amfIdx=0;fmfIdx=0;
+  UC=new Set();amfIdx=0;fmfIdx=0;
+  _gbBrandIdTaken=new Set();
   setNextFreqListsForMarket(ACTIVE_MARKET);
   shuffleFreqListsForNewGame();
   // Resolve scenario first so we can build BP talent at the correct start year
@@ -7609,18 +7714,14 @@ function genMarket(scenId){
     const hqBonus=sc.heritageIncumbent?3:0;
     Object.values(stations[i].prog).forEach(sd=>{if(sd)sd.quality=Math.max(12,Math.min(90,(sd.quality||30)+oqAdj*0.6+hqBonus));});
     stations[i].color='#f5a623';}});
-  // One fictional 3-letter heritage call per market on the dominant-heritage AM slot (BP idx 4 first); King of the Dial owns that slot, otherwise an AI station.
+  // Random FCC-style call on the dominant-heritage AM slot (BP idx 4 first); King of the Dial owns that slot, otherwise an AI station.
   (function applyMarketHeritageSlot(){
-    const mktHer=MARKETS[ACTIVE_MARKET]||MARKETS.atlanta;
-    const hc=normalizeHeritageCall3(mktHer?.heritageCall3,ACTIVE_MARKET);
-    if(!hc)return;
     const preferAmIdx=[4,0,2,5,1,10,3,13,6,11,12,17];
     for(const i of preferAmIdx){
       const st=stations[i];
       if(!st||st._bpSlotDeferred||st.sig?.type!=='AM')continue;
       UC.delete(st.callLetters);
-      st.callLetters=hc;
-      UC.add(hc);
+      st.callLetters=gc();
       st.heritageIncumbent=true;
       return;
     }
@@ -7649,8 +7750,9 @@ function genMarket(scenId){
       drift:{},flog:[],
     };
   }
-  const pubNews=mkPub(gc(),'88.5 FM','PUBLIC_NEWS','50kw',0.92,gb('PUBLIC_NEWS'),72,1975,'#94a3b8');
-  const pubClass=mkPub(gc(),'90.1 FM','PUBLIC_CLASSICAL','25kw',0.78,gb('PUBLIC_CLASSICAL'),68,1979,'#7c8fa8');
+  const _pubCity=MARKETS[ACTIVE_MARKET]?.label||'Atlanta';
+  const pubNews=mkPub(gc(),'88.5 FM','PUBLIC_NEWS','50kw',0.92,gb('PUBLIC_NEWS','88.5 FM',_pubCity,ACTIVE_MARKET,_gbBrandIdTaken),72,1975,'#94a3b8');
+  const pubClass=mkPub(gc(),'90.1 FM','PUBLIC_CLASSICAL','25kw',0.78,gb('PUBLIC_CLASSICAL','90.1 FM',_pubCity,ACTIVE_MARKET,_gbBrandIdTaken),68,1979,'#7c8fa8');
   stations.push(pubNews,pubClass);
   seedRat(stations,1970);
   const startYear=sc.startYear||1970;
@@ -7692,7 +7794,10 @@ function genMarket(scenId){
             // Cycle through successors so rivals spread across formats naturally
             const target=successors[i%successors.length];
             if(target&&FM[target]){
-              s.format=target;s.brand=gb(target);
+              s.format=target;
+              const taken=collectBrandIdentityKeysFromStationList(stations,s.id);
+              taken.delete(brandMarketIdentityKey(s.brand||''));
+              s.brand=gb(target,s.freq,MARKETS[ACTIVE_MARKET]?.label||'Atlanta',ACTIVE_MARKET,taken);
               if(!s.drift)s.drift={};
               s.drift[target]=DRIFT?.[target]?.default||40;
             }
@@ -7729,6 +7834,7 @@ function genMarket(scenId){
     const activeMkt2=MARKETS[ACTIVE_MARKET]||MARKETS.atlanta;
     // Filter out events that already happened
     const remainingEvq=EVDATA.filter(ev=>ev.y>startYear||(ev.y===startYear&&ev.p===2));
+    _gbBrandIdTaken=null;
     return{
       city:activeMkt2.label,marketId:ACTIVE_MARKET,year:startYear,period:1,
       turn:(startYear-1970)*2,
@@ -7752,6 +7858,7 @@ function genMarket(scenId){
       sportsRights:{},franchiseRights:{},teamRecords:{},
     };
   }
+  _gbBrandIdTaken=null;
 
   const mockG={adx:1.0,streamDrag:0,year:1970};
   seedRev(stations,mockG);
@@ -8869,16 +8976,14 @@ function bmBrandFocus(sid){
   _bmBrandSession[sid]=s.brand;
 }
 function bmBrandBlur(sid){
-  const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  const ob=(_bmBrandSession[sid]??'').trim(), nb=(s.brand||'').trim();
-  if(nb!==ob) logHistory(s,'BRAND',ob?`Station name: "${ob}" → "${nb}"`:`Station name: "${nb}"`,G);
+  /* History + multiplayer sync happen on Apply Brand (or pill pick). */
 }
 function pickBrand(sid,b){
   _brandSid=sid;
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const prev=s.brand;
   s.brand=b;
-  if((prev||'').trim()!==(b||'').trim()) logHistory(s,'BRAND',`Station name: "${prev}" → "${b}"`,G);
+  if((prev||'').trim()!==(b||'').trim()) logHistory(s,'BRAND',`Brand: "${prev}" → "${b}"`,G);
   if(_renameSid===sid) _renameBrandAtOpen=b;
   // Update preview
   const prevEl=document.getElementById('brand-preview');
@@ -9501,6 +9606,7 @@ function doLMALessee(sid) {
   G.news.unshift({v:'HIGH', t:`📝 LMA signed: ${s.callLetters} — you now program and operate this station. Fee: ${f$(fee)}/period to licensor.`, y:G.year, p:G.period, iy:true});
   MP.action('lma_lessee', {sid});
   cm('m-lma'); renderAll();
+  queueAutoLogosForPlayerStations();
 }
 
 function doLMALessor(sid) {
@@ -9532,7 +9638,7 @@ function doLMALessor(sid) {
   const _chosenFmt = _fmtPool.length ? _fmtPool[Math.floor(Math.random()*Math.min(3,_fmtPool.length))] : s.format;
   const _prevFmt = s.format;
   s.format = _chosenFmt;
-  s.brand = gb(_chosenFmt, s.freq, G?.city);
+  s.brand = gbBrandForStationReplace(s, _chosenFmt);
   s._formatAge = 0;
   // Give AI operator a fresh identity start
   s.identity = 0; s._identityPeak = 0;
@@ -10929,21 +11035,52 @@ function bmPickBrand(sid,b){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const prev=s.brand;
   s.brand=b;
-  if((prev||'').trim()!==(b||'').trim()) logHistory(s,'BRAND',`Station name: "${prev}" → "${b}"`,G);
+  if((prev||'').trim()!==(b||'').trim()) logHistory(s,'BRAND',`Brand: "${prev}" → "${b}"`,G);
+  MP.action('rename', {sid:s.id, callLetters:s.callLetters, brand:s.brand});
   const safe=bmSafeElId(sid);
   const hero=document.getElementById('bm-station-hero-inp-'+safe);
   if(hero)hero.value=b||'';
   document.querySelectorAll('.bm-bp-'+safe).forEach(el=>{el.classList.toggle('bpsel',el.textContent===b);});
   bmRefreshBrandMarketingLogoPreview(sid);
+  bmRefreshBrandCommitState(sid);
+  showToast('Brand saved.','info');
   renderAll();
 }
-function bmUpdBrand(sid,v){
+function bmRefreshBrandCommitState(sid){
+  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  s.brand=v||s.brand;
+  const safe=bmSafeElId(sid);
+  const inp=document.getElementById('bm-station-hero-inp-'+safe);
+  if(!inp)return;
+  const ui=(inp.value||'').trim();
+  const committed=(s.brand||'').trim();
+  wlSetCommitButtonState('bm-brand-btn-'+safe, ui!==committed);
+}
+function bmApplyBrand(sid){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const safe=bmSafeElId(sid);
+  const inp=document.getElementById('bm-station-hero-inp-'+safe);
+  const v=(inp?inp.value:String(s.brand||'')).trim();
+  const prev=(s.brand||'').trim();
+  if(v===prev){
+    showToast('Brand unchanged.','info');
+    return;
+  }
+  s.brand=v||defaultPlayerStationBrand(s);
+  if((prev||'')!==(s.brand||'')) logHistory(s,'BRAND',prev?`Brand: "${prev}" → "${s.brand}"`:`Brand: "${s.brand}"`,G);
+  MP.action('rename', {sid:s.id, callLetters:s.callLetters, brand:s.brand});
+  document.querySelectorAll('.bm-bp-'+safe).forEach(el=>{el.classList.toggle('bpsel',el.textContent===s.brand);});
+  showToast('Brand saved.','info');
+  renderAll();
+  if(BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
+}
+function bmUpdBrand(sid){
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const safe=bmSafeElId(sid);
   document.querySelectorAll('.bm-bp-'+safe).forEach(el=>el.classList.remove('bpsel'));
   bmRefreshBrandMarketingLogoPreview(sid);
-  renderAll();
+  bmRefreshBrandCommitState(sid);
 }
 function bmUpdRenamePreview(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
@@ -11137,10 +11274,11 @@ function brandMarketingIdentityBlockHtml(leg){
     </div>
     <button class="cfm wl-commit-btn wl-commit-btn--synced" type="button" id="bm-rn-btn-${safe}" onclick="bmDoRename('${sid}')" style="margin-bottom:16px">APPLY CALL LETTER CHANGE</button>
     <div class="bm-station-hero-square">
-      <label for="bm-station-hero-inp-${safe}" class="bm-station-hero-lbl">STATION NAME</label>
+      <label for="bm-station-hero-inp-${safe}" class="bm-station-hero-lbl">Brand</label>
       <input type="text" id="bm-station-hero-inp-${safe}" class="bm-station-hero-inp" maxlength="48" value="${rosterHtmlEsc(s.brand||'')}"
         placeholder="${rosterHtmlEsc(defaultPlayerStationBrand(s))}"
-        onfocus="bmBrandFocus('${sid}')" onblur="bmBrandBlur('${sid}')" oninput="bmUpdBrand('${sid}',this.value)">
+        onfocus="bmBrandFocus('${sid}')" onblur="bmBrandBlur('${sid}')" oninput="bmUpdBrand('${sid}')">
+      <button class="cfm wl-commit-btn wl-commit-btn--synced" type="button" id="bm-brand-btn-${safe}" onclick="bmApplyBrand('${sid}')" style="margin-top:10px">APPLY BRAND</button>
     </div>
     <div style="margin-top:14px;border-top:1px solid var(--bdr);padding-top:12px">
       <div style="font-size:14px;color:var(--mut);margin-bottom:8px">Suggestions:</div>
@@ -11154,19 +11292,20 @@ function brandMarketingLogoBlockHtml(leg){
   const rel=s.cosmeticLogoUrl?wlGameMediaAbsUrl(s.cosmeticLogoUrl+(s.cosmeticLogoV?'?v='+s.cosmeticLogoV:'')):'';
   const procSvg=wlProceduralLogoSvgString(s,{layoutMode:'brandHero'});
   const hero=rel
-    ?`<div style="text-align:center;margin:10px 0"><img class="bm-logo-hero" src="${rel}" alt="" draggable="false" onclick="wlOpenLogoModal('${s.id}')" title="View full size"></div><p class="di" style="color:var(--mut);font-size:13px;margin-top:4px">AI-generated image. Use “Template logo” to return to the free procedural lockup.</p>`
+    ?`<div style="text-align:center;margin:10px 0"><img class="bm-logo-hero" src="${rel}" alt="" draggable="false" onclick="wlOpenLogoModal('${s.id}')" title="View full size"></div><p class="di" style="color:var(--mut);font-size:13px;margin-top:4px">AI-generated image. Click <strong>Use basic logo</strong> below to switch back to the built-in wordmark (no AI image).</p>`
     :(procSvg
-      ?`<div style="text-align:center;margin:10px 0;cursor:pointer" onclick="wlOpenLogoModal('${s.id}')" title="View full size (full lockup in modal)"><div id="bm-logo-svg-wrap-${safe}" class="bm-logo-hero bm-logo-hero--svg">${procSvg}</div></div><p class="di" style="color:var(--mut);font-size:13px;margin-top:4px">Updates when you change station name or format. Card thumbnails use the full lockup (calls + dial).</p>`
+      ?`<div style="text-align:center;margin:10px 0;cursor:pointer" onclick="wlOpenLogoModal('${s.id}')" title="View full size"><div id="bm-logo-svg-wrap-${safe}" class="bm-logo-hero bm-logo-hero--svg">${procSvg}</div></div><p class="di" style="color:var(--mut);font-size:13px;margin-top:4px">Updates when you change brand or format. Station cards use this same look.</p>`
       :`<p class="di" style="color:var(--mut)">Logo preview unavailable.</p>`);
+  const genArg=s.cosmeticLogoUrl?'true':'false';
   return`<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
-    <div class="msh" style="margin-bottom:8px">TEMPLATE LOGO (SVG)</div>
-    <div id="bm-logo-status-${safe}" style="font-size:12px;color:var(--amb);min-height:18px;margin-bottom:6px"></div>
+    <div class="msh" style="margin-bottom:8px">STATION LOGO</div>
+    <p class="di" style="font-size:13px;color:var(--mut);line-height:1.45;margin:0 0 8px">AI logos are generated on the server and can take up to about a minute. When you click <strong>Generate New Logo</strong>, wait for the status line below — don’t click again until it finishes.</p>
+    <div id="bm-logo-status-${safe}" style="font-size:13px;color:var(--amb);min-height:22px;margin-bottom:8px;font-weight:500"></div>
     ${hero}
     <div style="display:flex;flex-wrap:wrap;gap:8px">
-      ${s.cosmeticLogoUrl?'':`<button type="button" class="abt g" onclick="wlBumpProceduralLogoVariant('${s.id}')">↻ New SVG look</button>`}
-      ${s.cosmeticLogoUrl?`<button type="button" class="abt" onclick="wlClearAiStationLogo('${s.id}')">○ Use template logo</button>`:''}
-      <button type="button" class="abt" onclick="wlGenerateLogo('${s.id}',false)">${s.cosmeticLogoUrl?'↻ Regenerate AI image':'🖼 Optional: AI image (server)'}</button>
-      ${s.cosmeticLogoUrl?`<button type="button" class="abt" onclick="wlGenerateLogo('${s.id}',true)">↻ New AI art (same brief)</button>`:''}
+      ${s.cosmeticLogoUrl?'':`<button type="button" class="abt g" onclick="wlBumpProceduralLogoVariant('${s.id}')">↻ New basic logo look</button>`}
+      ${s.cosmeticLogoUrl?`<button type="button" class="abt" onclick="wlClearAiStationLogo('${s.id}')">○ Use basic logo</button>`:''}
+      <button type="button" id="bm-logo-gen-btn-${safe}" class="abt g" onclick="wlGenerateLogo('${s.id}',${genArg})"${s._logoGenPending?' disabled':''} aria-busy="${s._logoGenPending?'true':'false'}">Generate New Logo</button>
     </div>
   </div>`;
 }
@@ -11269,6 +11408,7 @@ function renderBrandMarketingStation(primarySid){
     bmUpdPromo(leg.id, prEl?prEl.value:String(Math.min(leg.ops?.promo||0,prCap0)));
     const ciEl=document.getElementById('bm-ci-range-'+safe);
     bmUpdIdent(leg.id, ciEl?ciEl.value:String(leg.identityBudget||0));
+    bmRefreshBrandCommitState(leg.id);
   });
   const opSid=ensureOpsSourceSid(primarySid);
   const sProg=G.stations.find(st=>st.id===opSid);
@@ -12550,7 +12690,7 @@ function doRename(sid){
   logHistory(s,'CALLSIGN',`Call letters changed: ${old} → ${callDisplay(s)}`,G);
   // Brand may have been updated live via updBrand — already stored in s.brand
   const nb=(s.brand||'').trim(), ob=(_renameBrandAtOpen??'').trim();
-  if(nb&&nb!==ob) logHistory(s,'BRAND',ob?`Station name: "${ob}" → "${nb}"`:`Station name: "${nb}"`,G);
+  if(nb&&nb!==ob) logHistory(s,'BRAND',ob?`Brand: "${ob}" → "${nb}"`:`Brand: "${nb}"`,G);
   G.news.unshift({v:'LOW',t:`${old} officially renamed ${callDisplay(s)} (${s.freq}) — brand: "${s.brand}"`,y:G.year,p:G.period});
   MP.action('rename', {sid:s.id, callLetters:s.callLetters, brand:s.brand});
   cm('m-rename');renderAll();
@@ -12871,7 +13011,7 @@ function doFmt(keepSim){
   if(_simPartner && keepSim){
     // Apply format to partner silently (no quality penalty — same programming change)
     _simPartner.format = nf;
-    _simPartner.brand  = gb(nf, _simPartner.freq, G?.city);
+    _simPartner.brand  = gbBrandForStationReplace(_simPartner, nf);
     _simPartner._formatAge = 0;
     _simPartner.ops.sell = ['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'].includes(nf)?0.60:0.55;
     Object.values(_simPartner.prog).forEach(sd=>{if(sd)sd.quality=Math.round(sd.quality*(1-pen));});
@@ -12906,7 +13046,7 @@ function doFmt(keepSim){
   }
   const preFlipIdentity=s.identity||0;
   const preFlipFmt=FM[old]?.l||old;
-  s.format=nf;s.brand=gb(nf,s.freq,G?.city);
+  s.format=nf;s.brand=gbBrandForStationReplace(s,nf);
   // Reset format age — community roots tied to the OLD format
   s._formatAge=0;
   // Reset sellout rate — new format starts with a fresh advertiser relationship.
@@ -13037,10 +13177,12 @@ function doAcq(){
   s._acqYear=G.year;
 
   const churnPct=Math.round(churnFrac*100);
+  if(MP.mode!=='live')G._soloBankrupt=false;
   G.news.unshift({v:'HIGH',
     t:`You acquire ${s.callLetters} (${FM[s.format]?.l||s.format}) ${wasCorpOwned||''} for ${f$(price)}. Expect ~${churnPct}% listener churn as the station transitions — keep format and talent stable to minimize losses.`,
     y:G.year,p:G.period,iy:true});
   cm('m-ac');renderAll();
+  queueAutoLogosForPlayerStations();
 }
 
 // 6. SIMULCAST
@@ -13260,11 +13402,16 @@ function autoSave(){
 }
 
 // ── COSMETIC: procedural SVG logos (default) + optional AI image from server ──
-function wlBuildProceduralLogoInput(op, layoutMode){
+function wlBuildProceduralLogoInput(op, opts){
+  opts=opts||{};
   if(!op||!G)return null;
   const band=(op.fmBooster||op.sig?.type==='FM')?'FM':'AM';
-  const brand=(typeof op.brand==='string'&&op.brand.trim())?op.brand.trim():defaultPlayerStationBrand(op);
-  const o={
+  let brand=(typeof op.brand==='string'&&op.brand.trim())?op.brand.trim():defaultPlayerStationBrand(op);
+  if(opts.brandOverride!==undefined&&opts.brandOverride!==null){
+    const o=String(opts.brandOverride).trim();
+    brand=o?o:defaultPlayerStationBrand(op);
+  }
+  return{
     id:op.id,
     callDisplay:callDisplay(op),
     brand:brand||callDisplay(op),
@@ -13274,15 +13421,15 @@ function wlBuildProceduralLogoInput(op, layoutMode){
     band,
     year:G.year||1970,
     variantBump:Math.max(0,Math.floor(Number(op.cosmeticLogoVariant)||0)),
+    defaultBrand:defaultPlayerStationBrand(op),
+    layoutMode:opts.layoutMode||'brandHero',
   };
-  if(layoutMode)o.layoutMode=layoutMode;
-  return o;
 }
 function wlProceduralLogoSvgString(op, opts){
   opts=opts||{};
   if(!op||typeof globalThis.wlStationLogoSvg==='undefined'||typeof globalThis.wlStationLogoSvg.build!=='function')return '';
   try{
-    const input=wlBuildProceduralLogoInput(op,opts.layoutMode);
+    const input=wlBuildProceduralLogoInput(op,opts);
     if(!input)return '';
     return globalThis.wlStationLogoSvg.build(input)||'';
   }catch(_e){
@@ -13298,7 +13445,8 @@ function bmRefreshBrandMarketingLogoPreview(sid){
   const safe=bmSafeElId(sid);
   const wrap=document.getElementById('bm-logo-svg-wrap-'+safe);
   if(!wrap)return;
-  const svg=wlProceduralLogoSvgString(s,{layoutMode:'brandHero'});
+  const inp=document.getElementById('bm-station-hero-inp-'+safe);
+  const svg=wlProceduralLogoSvgString(s,{layoutMode:'brandHero', brandOverride: inp?inp.value:undefined});
   if(svg)wrap.innerHTML=svg;
 }
 function bmRefreshOpenBrandModalLogos(){
@@ -13314,7 +13462,7 @@ function wlBumpProceduralLogoVariant(stationId){
   autoSave();
   bmRefreshBrandMarketingLogoPreview(stationId);
   renderAll();
-  showToast('New template logo look.','info');
+  showToast('New basic logo look.','info');
 }
 function wlOpenLogoModal(stationId){
   const op=G.stations.find(st=>st.id===stationId);
@@ -13361,7 +13509,7 @@ function wlClearAiStationLogo(stationId){
   delete op.cosmeticLogoUrl;
   delete op.cosmeticLogoV;
   delete op.cosmeticLogoTone;
-  logHistory(op,'LOGO','Switched to template logo (AI image cleared).',G);
+  logHistory(op,'LOGO','Switched to basic logo (AI image cleared).',G);
   autoSave();
   if(MP.mode==='live'&&MP.socket&&MP.roomId){
     MP.emit('mp_station_logo',{
@@ -13372,16 +13520,47 @@ function wlClearAiStationLogo(stationId){
   }
   renderAll();
   if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&stationId===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
-  showToast('Using template logo.','info');
+  showToast('Using basic logo.','info');
 }
-async function wlGenerateLogo(stationId,regenerate){
+/** After a failed API logo request, show procedural SVG again (no history log — not a user “clear”). */
+function wlFallbackLogoOnGenerationError(op,silent){
+  if(!op)return;
+  delete op.cosmeticLogoUrl;
+  delete op.cosmeticLogoV;
+  autoSave();
+  if(MP.mode==='live'&&MP.socket&&MP.roomId){
+    MP.emit('mp_station_logo',{roomId:MP.roomId,stationId:op.id,clearCosmeticLogo:true});
+  }
+  renderAll();
+  if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&op.id===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
+  if(!silent)showToast('Logo generation failed — using basic logo.','warn');
+}
+function wlSetLogoGenButtonUi(stationId,busy){
+  const safe=bmSafeElId(stationId);
+  const btn=document.getElementById('bm-logo-gen-btn-'+safe);
+  if(!btn)return;
+  btn.disabled=!!busy;
+  btn.setAttribute('aria-busy',busy?'true':'false');
+}
+async function wlGenerateLogo(stationId,regenerate,opts){
+  opts=opts||{};
+  const silent=!!opts.silent;
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   const op=G.stations.find(st=>st.id===stationId);
   if(!op)return;
+  if(op._logoGenPending){
+    const _bmSafe=bmSafeElId(stationId);
+    const pendingEl=document.getElementById('wl-logo-status-'+stationId)||(_bmSafe?document.getElementById('bm-logo-status-'+_bmSafe):null);
+    if(pendingEl)pendingEl.textContent='Already generating — please wait…';
+    else if(!silent)showToast('Logo generation already in progress for this station.','warn');
+    return;
+  }
   const reg=typeof regenerate==='boolean'?regenerate:!!op.cosmeticLogoUrl;
   const _bmSafe=bmSafeElId(stationId);
   const statusEl=document.getElementById('wl-logo-status-'+stationId)||(_bmSafe?document.getElementById('bm-logo-status-'+_bmSafe):null);
-  if(statusEl)statusEl.textContent=reg?'Regenerating…':'Generating…';
+  op._logoGenPending=true;
+  wlSetLogoGenButtonUi(stationId,true);
+  if(statusEl)statusEl.textContent='Request sent — working… (often under a minute). Do not click again.';
   const band=(op.fmBooster||op.sig?.type==='FM')?'FM':'AM';
   const body={
     stationName:(typeof op.brand==='string'&&op.brand.trim())?op.brand.trim():callDisplay(op),
@@ -13400,8 +13579,8 @@ async function wlGenerateLogo(stationId,regenerate){
     });
     const data=await res.json().catch(()=>({}));
     if(!res.ok||!data.ok){
-      const msg=data.error||res.statusText||'Logo generation failed';
-      if(statusEl)statusEl.textContent=msg;
+      wlFallbackLogoOnGenerationError(op,silent);
+      if(statusEl)statusEl.textContent=data.error||res.statusText||'Generation failed — using basic logo.';
       return;
     }
     op.cosmeticLogoUrl=data.imageUrl;
@@ -13421,18 +13600,30 @@ async function wlGenerateLogo(stationId,regenerate){
     renderAll();
     if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&stationId===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
   }catch(_e){
+    wlFallbackLogoOnGenerationError(op,silent);
     if(statusEl){
       const base=window.__WL_GAME_SERVER_URL||(typeof location!=='undefined'?location.origin:'');
       statusEl.textContent=base
-        ?`No API — open the game at ${base} (game server) to generate logos.`
-        :'No API — run the game server to generate logos.';
+        ?`No API or network error — using basic logo. (${base})`
+        :'No API — using basic logo.';
     }
+  }finally{
+    op._logoGenPending=false;
+    wlSetLogoGenButtonUi(stationId,false);
+    if(silent&&!op.cosmeticLogoUrl)op._logoAutoGenExhausted=true;
   }
 }
 
-/** Procedural SVG logos need no server prefetch; AI logos are opt-in from Brand & Marketing. */
+/** Player-owned stations: auto-request AI logos (rivals stay procedural SVG until acquired). Staggered like portraits. */
 function queueAutoLogosForPlayerStations(){
-  return;
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
+  if(!G)return;
+  const list=MP.mode==='live'?G.ps.filter(s=>s._mpOwner===MP.playerId):G.ps;
+  list.forEach((st,i)=>{
+    if(!st||st.isPublic||st._bpSlotDeferred)return;
+    if(st.cosmeticLogoUrl||st._logoGenPending||st._logoAutoGenExhausted)return;
+    setTimeout(()=>{wlGenerateLogo(st.id,false,{silent:true});},i*450);
+  });
 }
 
 // ── COSMETIC: talent portraits (server-side Grok; same identity = same file) ──
@@ -13625,6 +13816,7 @@ function importSave(file){
       G.news.unshift({v:'HIGH',t:`📂 Save loaded: ${payload.label||'Unknown'} (${payload.saved?.slice(0,10)||'?'})`,y:G.year,p:G.period});
       cm('m-save');renderAll();
       queuePlayerTalentPortraits();
+      queueAutoLogosForPlayerStations();
     }catch(err){
       alert('Could not load save file: '+err.message);
     }
@@ -13901,6 +14093,7 @@ function loadLocalSave(){
   G.news.unshift({v:'HIGH',t:`📂 Autosave resumed: ${local.label}`,y:G.year,p:G.period});
   cm('m-save');renderAll();
   queuePlayerTalentPortraits();
+  queueAutoLogosForPlayerStations();
 }
 
 // ── LOAN UI (capacity-based line of credit; see bank lending helpers near scoring) ──
@@ -15196,6 +15389,12 @@ function rHdr(){
     ab.style.borderColor='var(--mut)';
     ab.style.color='var(--mut)';
     ab.textContent='Bankruptcy: You are out of active play. Keep advancing to watch the market.';
+  }else if(MP.mode!=='live'&&!G._soloBankrupt&&(!G.ps||!G.ps.length)&&_myDisplayCash>0){
+    ab.className='on';
+    ab.style.background='rgba(245,166,35,.1)';
+    ab.style.borderColor='var(--amb)';
+    ab.style.color='var(--off)';
+    ab.textContent='No stations in your group — use Acquire a station (player panel) to get back on the air.';
   }else if(_myDisplayCash<0&&!G.score.isSandbox){
     ab.className='on';
     ab.style.background='';ab.style.borderColor='';ab.style.color='';
@@ -15542,6 +15741,10 @@ function rMkt(){
   // In MP, show the current player's lead station; in solo, G.ps[0]
   const _myStns = MP.mode==='live' ? G.ps.filter(s=>s._mpOwner===MP.playerId) : G.ps;
   const ps = _myStns[0] || G.ps[0];
+  if(!_myStns.length){
+    document.getElementById('dmb').innerHTML='<div class="ibox" style="margin:8px 0;font-size:14px;line-height:1.5">No stations in your group — audience mix appears when you own a signal. Use <strong style="color:var(--amb)">Acquire a station</strong> (below) if you have capital.</div>';
+    return;
+  }
   if(!ps)return;
   // Pick the lead station (highest share among this player's stations)
   const _leadStn = _myStns.reduce((best,s)=>(!best||s.rat.share>best.rat.share)?s:best, null) || ps;
