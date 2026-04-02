@@ -257,7 +257,7 @@ const FA={
   PUBLIC_CLASSICAL:{'12-17':.01,'18-24':.04,'25-34':.12,'35-49':.38,'50-64':.62,'65+':.58},
 };
 const SW={morningDrive:.38,afternoonDrive:.26,midday:.18,evening:.11,overnight:.07};
-const SL={morningDrive:'MORNING',afternoonDrive:'AFTERNOON',midday:'MIDDAY',evening:'EVENING',overnight:'O/NIGHT'};
+const SL={morningDrive:'MORNING',afternoonDrive:'AFTERNOON',midday:'MIDDAY',evening:'EVENING',overnight:'OVERNIGHT'};
 const TALK_FMTS=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'];
 // Light market × format monetization (Duncan-style calibration). Revenue only; ±~10% max.
 // Keys = G.marketId for top-3 metros; omit format → 1. Does not affect shares.
@@ -881,10 +881,10 @@ function htmlOnAirTalentRoster(s){
         ?`${f$(perPd)}/period <span style="color:var(--mut);font-size:13px">(${f$(t.salary)}/yr)</span>`
         :'—';
       const star=t.superstar===true?'⭐ ':'';
-      return `<div class="sr" style="align-items:center;gap:8px">${talentPortraitThumbHtml(t,'tp-intel',`${callDisplay(s)} · ${lbl}`)}<span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);line-height:1.45"><strong style="font-weight:600;color:var(--wht)">${star}${t.name}</strong> · Q ${tq} · slot ${slotQ} · ${salStr}</span></div>`;
+      return `<div class="sr" style="align-items:center;gap:8px">${talentPortraitThumbHtml(t,'tp-intel',`${callDisplay(s)} · ${lbl}`)}<span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);line-height:1.45"><strong style="font-weight:600;color:var(--wht)">${star}${t.name}</strong> · talent ${tq} · slot quality ${slotQ} · ${salStr}</span></div>`;
     }
     const cap=nonLocalDaypartCaption(s.format,sl,!!s.isPublic,s);
-    return `<div class="sr"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px;color:var(--mut)"><em>${cap}</em> · slot Q ${slotQ}</span></div>`;
+    return `<div class="sr"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px;color:var(--mut)"><em>${cap}</em> · slot quality ${slotQ}</span></div>`;
   }).join('');
 }
 /** Ranker modal footer only: all on-air talent in the market, quality desc (no per-station lineup duplication above). */
@@ -1440,7 +1440,26 @@ function gbBrandForStationReplace(s,newFmt){
 const rnd=(a,b)=>Math.random()*(b-a)+a;
 const ri=(a,b)=>Math.floor(rnd(a,b+1));
 const pick=a=>a[Math.floor(Math.random()*a.length)];
-const f$=n=>'$'+(Math.abs(n)>=1000?Math.round(n/1000)+'K':Math.round(n).toLocaleString());
+/** Currency for UI — prefers $6.8M / $47.4M / $489K over $47441K for millions. */
+const f$=n=>{
+  const x=Number(n);
+  if(!Number.isFinite(x))return '$—';
+  const neg=x<0;
+  const v=Math.abs(x);
+  const p=neg?'-$':'$';
+  if(v<1000)return p+Math.round(v).toLocaleString();
+  if(v<1e6){
+    const k=v/1000;
+    const s=k>=100?String(Math.round(k)):(Math.round(k*10)/10).toFixed(1).replace(/\.0$/,'');
+    return p+s+'K';
+  }
+  if(v<1e9){
+    const m=v/1e6;
+    const s=m>=100?String(Math.round(m)):(Math.round(m*10)/10).toFixed(1).replace(/\.0$/,'');
+    return p+s+'M';
+  }
+  return p+(Math.round(v/1e7)/100).toFixed(2)+'B';
+};
 const pct=n=>(n*100).toFixed(1)+'%';
 // Lightweight transient notification — uses alertbar briefly, then restores
 function showToast(msg,type='info'){
@@ -1725,10 +1744,24 @@ function marketRevScaleSecondaryLift(rs){
   if(r>=1)return 1;
   return 1+(1-r)*0.5;
 }
+/**
+ * Sublinear scaling of market revScale for annual billing only.
+ * Raw revScale (e.g. LA 5.2, NY 6.8) used to multiply the national MARKET_BILLING_CURVE baseline (~Atlanta=1.0),
+ * which produced ~2×+ overshoot vs real-world mega-market anchors (e.g. LA total radio ~$112M in ~1980).
+ * pow(rs, BILLING_REVSCALE_EXP) preserves ordering (NY>LA>Chicago) while capping mega inflation.
+ * rs ≤ 1 unchanged so secondary markets + marketRevScaleSecondaryLift behave as before.
+ */
+const BILLING_REVSCALE_EXP=0.60;
+function billingEffectiveRevScale(rs){
+  const r=rs==null||Number.isNaN(rs)?1:Number(rs);
+  if(r<=1)return r;
+  return Math.pow(r,BILLING_REVSCALE_EXP);
+}
 function marketAnnualBilling(year,marketId){
   const mkt=MARKETS[marketId||ACTIVE_MARKET]||MARKETS[ACTIVE_MARKET]||{revScale:1};
-  const rs=mkt.revScale||1;
-  const lift=marketRevScaleSecondaryLift(rs);
+  const rsRaw=mkt.revScale||1;
+  const rs=billingEffectiveRevScale(rsRaw);
+  const lift=marketRevScaleSecondaryLift(rsRaw);
   const ys=Object.keys(MARKET_BILLING_CURVE).map(Number).sort((a,b)=>a-b);
   if(year<=ys[0])return Math.round(MARKET_BILLING_CURVE[ys[0]]*rs*lift);
   if(year>=ys[ys.length-1])return Math.round(MARKET_BILLING_CURVE[ys[ys.length-1]]*rs*lift);
@@ -1742,6 +1775,31 @@ function marketAnnualBilling(year,marketId){
   }
   return Math.round(MARKET_BILLING_CURVE[1987]*rs*lift);
 }
+/** Dev: annual + half-period billing snapshot for calibration (console.table). */
+function billingBenchmarkReport(){
+  const years=[1975,1980,1985,1990,2000,2010];
+  const markets=['losangeles','newyork','chicago','atlanta','nashville'];
+  const rows=[];
+  years.forEach(y=>{
+    markets.forEach(mid=>{
+      const a=marketAnnualBilling(y,mid);
+      const sp=marketHalfSeasonFactor(y,1);
+      const fa=marketHalfSeasonFactor(y,2);
+      rows.push({
+        year:y,
+        market:mid,
+        annualM:Math.round(a/1e5)/10,
+        sprHalfM:Math.round(a*0.5*sp/1e5)/10,
+        falHalfM:Math.round(a*0.5*fa/1e5)/10,
+        rsRaw:(MARKETS[mid]||{}).revScale,
+        rsEff:Number(billingEffectiveRevScale((MARKETS[mid]||{}).revScale||1).toFixed(3)),
+      });
+    });
+  });
+  if(typeof console!=='undefined'&&console.table)console.table(rows);
+  return rows;
+}
+if(typeof window!=='undefined')window.billingBenchmarkReport=billingBenchmarkReport;
 function marketHalfSeasonFactor(year,period){
   const base=period===2?1.04:0.96;
   const election=(period===2&&year%2===0)?1.03:1.00;
@@ -1953,6 +2011,11 @@ function applySportsRatingsToCohorts(s,G,engageWeightedPop){
     return sum+(s.rat.cur[coh]?.share||0)*(pop*engage)/ewp;
   },0);
 }
+/** Sports / franchise auctions close in Fall (period 2) of auctionCloses year — also resolve if we’re past that (never leave bidding hung). */
+function shouldResolveRightsAuction(G,auctionClosesYear){
+  if(auctionClosesYear==null)return false;
+  return G.year>auctionClosesYear||(G.year===auctionClosesYear&&G.period===2);
+}
 function runSportsEvents(G){
   if(!G.sportsRights)G.sportsRights={};
   if(!G.teamRecords)G.teamRecords={};
@@ -1996,7 +2059,7 @@ function runSportsEvents(G){
         t:`📋 ${team.name} broadcast rights up for renewal — bidding opens. Current holder: ${rights.holderName}. Contract expires this period.`,
         y:G.year,p:G.period});
     }
-    if(rights&&rights.auctionOpen&&rights.auctionCloses===G.year&&G.period===2){
+    if(rights&&rights.auctionOpen&&shouldResolveRightsAuction(G,rights.auctionCloses)){
       resolveRightsAuction(team,rights,G,acts);
     }
   });
@@ -2037,7 +2100,13 @@ function resolveRightsAuction(team,rights,G,acts){
     const effBid=bid*(1+rel*0.25+fmtFit);
     if(effBid>winnerEff){winner=stn;winnerBid=bid;winnerEff=effBid;}
   });
-  if(!winner)return;
+  if(!winner){
+    rights.contractEnd=G.year+team.contractYrs;
+    rights.auctionOpen=false;
+    rights.bids={};
+    acts.push({v:'LOW',t:`📋 ${team.name} broadcast rights: auction could not pick a winner (stale bids) — ${rights.holderName||'incumbent'} renewed at prior terms.`,y:G.year,p:G.period});
+    return;
+  }
   const prev=rights.holderId?G.stations.find(st=>st.id===rights.holderId):null;
   const prevPlayer=prev?.isPlayer;
   const newPlayer=winner.isPlayer;
@@ -2222,7 +2291,7 @@ function runFranchiseEvents(G){
         t:`📻 "${f.name}" franchise available — bidding opens for market exclusivity. ${r.holderId?'Current holder: '+r.holderName+'.':'Currently unowned.'}`,
         y:G.year,p:G.period});
     }
-    if(r.auctionOpen&&r.auctionCloses===G.year&&G.period===2){
+    if(r.auctionOpen&&shouldResolveRightsAuction(G,r.auctionCloses)){
       resolveFranchiseAuction(f,r,G,acts);
     }
   });
@@ -2269,7 +2338,15 @@ function resolveFranchiseAuction(franchise,rights,G,acts){
     const effBid=bid*(1+rel*0.20+incumbent)*(0.65+0.35*fmt);
     if(effBid>winnerEff){winner=stn;winnerBid=bid;winnerEff=effBid;}
   });
-  if(!winner){rights.auctionOpen=false;return;}
+  if(!winner){
+    rights.auctionOpen=false;
+    rights.bids={};
+    if(rights.holderId){
+      rights.contractEnd=G.year+franchise.contractYrs;
+      acts.push({v:'LOW',t:`📻 "${franchise.name}" — no valid winning bid; ${rights.holderName||'holder'} retained.`,y:G.year,p:G.period});
+    }
+    return;
+  }
   const prev=rights.holderId?G.stations.find(st=>st.id===rights.holderId):null;
   if(!rights.relationship)rights.relationship={};
   rights.relationship[winner.id]=Math.min(100,(rights.relationship[winner.id]||0)+25);
@@ -2946,6 +3023,7 @@ function mergeCosmeticPreserve(prevG, nextG) {
         if (pt._portraitUrl && !st._portraitUrl) {
           st._portraitUrl = pt._portraitUrl;
           if (pt._portraitV != null) st._portraitV = pt._portraitV;
+          if (pt._portraitLibraryAsset && !st._portraitLibraryAsset) st._portraitLibraryAsset = pt._portraitLibraryAsset;
         }
       }
     }
@@ -2965,6 +3043,7 @@ function mergeCosmeticPreserve(prevG, nextG) {
       if (pt && pt._portraitUrl && !t._portraitUrl) {
         t._portraitUrl = pt._portraitUrl;
         if (pt._portraitV != null) t._portraitV = pt._portraitV;
+        if (pt._portraitLibraryAsset && !t._portraitLibraryAsset) t._portraitLibraryAsset = pt._portraitLibraryAsset;
       }
     });
   }
@@ -6023,6 +6102,79 @@ function seedRev(stations,G){
   });
 }
 
+/**
+ * Revenue diagnostic — read-only. After advTurn, run in devtools:
+ *   debugRevenueTrace(G, 'your-station-id')
+ * Explains market billing spine, half-period pool, per-station split vs seedRev normalization.
+ * @param {object} G
+ * @param {string} [focusStationId]
+ * @returns {object|null}
+ */
+function debugRevenueTrace(G,focusStationId){
+  if(typeof G==='undefined'||!G){console.warn('[debugRevenueTrace] G missing');return null;}
+  const mktId=G.marketId||ACTIVE_MARKET||'atlanta';
+  const mkt=MARKETS[mktId]||MARKETS.atlanta;
+  const year=G.year||1970;
+  const period=G.period||1;
+  const rsRaw=mkt.revScale??1;
+  const rsEff=billingEffectiveRevScale(rsRaw);
+  const lift=marketRevScaleSecondaryLift(rsRaw);
+  const annualTarget=marketAnnualBilling(year,mktId);
+  const billingBaseApprox=rsEff*lift>0?Math.round(annualTarget/(rsEff*lift)):null;
+  const adxUsed=Math.max(0.75,G.adx??1);
+  const halfSeason=marketHalfSeasonFactor(year,period);
+  const halfTarget=Math.round(annualTarget*0.5*halfSeason*adxUsed);
+  const comm=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPublic);
+  const sorted=[...comm].sort((a,b)=>(b.rat?.share||0)-(a.rat?.share||0));
+  const rows=comm.map(s=>{
+    const ri=sorted.findIndex(x=>x.id===s.id);
+    const eff=stationRevenueMonetizationEfficiency(ri,comm.length,mktId);
+    const rev=s.fin?.rev||0;
+    return{
+      id:s.id,callLetters:s.callLetters,
+      shareDecimal:s.rat?.share,
+      sharePct:((s.rat?.share||0)*100).toFixed(2)+'%',
+      rank:ri+1,
+      monetizationEff:Number(eff.toFixed(4)),
+      rev,
+      pctOfHalfPeriodPool:halfTarget>0?Number((rev/halfTarget*100).toFixed(2)):null,
+    };
+  });
+  const totalComm=comm.reduce((a,s)=>a+(s.fin?.rev||0),0);
+  const focus=focusStationId?comm.find(s=>s.id===focusStationId):null;
+  const partner=focus?.simulcastWith?comm.find(s=>s.id===focus.simulcastWith):null;
+  const out={
+    marketId:mktId,year,period,
+    MARKET_BILLING_CURVE_baseYearDollars:billingBaseApprox,
+    revScaleRaw:rsRaw,
+    billingEffectiveRevScale:Number(rsEff.toFixed(4)),
+    billingRevScaleExp:BILLING_REVSCALE_EXP,
+    secondaryMetroLift:lift,
+    annualMarketBilling:annualTarget,
+    halfSeasonFactor_seedRev:halfSeason,
+    note_halfSeason:'Distinct from seasonMult() inside calcRev (spring 0.88 / fall 1.12) — seedRev uses this for the dollar pool only.',
+    adx:G.adx,
+    adxUsedInHalfTarget:adxUsed,
+    halfPeriodDollarPool_halfTarget:halfTarget,
+    nCommercialStations:comm.length,
+    sum_fin_rev_allCommercial:totalComm,
+    poolCheck_absErr:Math.abs(totalComm-halfTarget),
+    ui_f$_format:'f$ uses $XK / $X.XM (e.g. $47.4M) for readability',
+    simulcast: focus&&partner?{
+      focusCall:focus.callLetters,
+      partnerCall:partner.callLetters,
+      focus_fin_rev:focus.fin?.rev,
+      partner_fin_rev:partner.fin?.rev,
+      card_revUi_sum_ifCombined:(focus.fin?.rev||0)+(partner.fin?.rev||0),
+      card_shareUi_sum_ifCombined:(focus.rat?.share||0)+(partner.rat?.share||0),
+    }:null,
+    stations:rows.sort((a,b)=>b.rev-a.rev),
+  };
+  console.log('[debugRevenueTrace]',out);
+  return out;
+}
+window.debugRevenueTrace=debugRevenueTrace;
+
 // ── DECAY ─────────────────────────────────────────────────────────
 function decay(s,year,period){
   if(!s||s._bpSlotDeferred)return;
@@ -7977,6 +8129,28 @@ function wlFtTutorialEnsureRoot(){
   _wlFtTut.card=root.querySelector('#wl-ft-tut-card');
   return root;
 }
+/** Scroll solo tutorial target into view so the highlight isn’t off-screen (sync — layout runs immediately after). */
+function wlFtTutorialScrollTargetIntoView(el){
+  if(!el||!document.body.contains(el))return;
+  const st=el.style;
+  const prevB=st.scrollMarginBottom;
+  const prevT=st.scrollMarginTop;
+  /* Room above fixed bottom tutorial card (~420px wide) so targets aren’t hidden behind it */
+  st.scrollMarginBottom='240px';
+  st.scrollMarginTop='8px';
+  try{
+    el.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'});
+  }catch(e){
+    try{
+      el.scrollIntoView(true);
+    }catch(e2){}
+  }finally{
+    if(prevB)st.scrollMarginBottom=prevB;
+    else st.removeProperty('scroll-margin-bottom');
+    if(prevT)st.scrollMarginTop=prevT;
+    else st.removeProperty('scroll-margin-top');
+  }
+}
 function wlFtTutorialLayoutHole(targetEl,zBase){
   if(!_wlFtTut.shadeWrap||!targetEl||!document.body.contains(targetEl))return;
   _wlFtTut.shadeWrap.innerHTML='';
@@ -8061,6 +8235,7 @@ function wlFtTutorialLayoutStep(){
     wlFtTutorialWireCard();
     return;
   }
+  wlFtTutorialScrollTargetIntoView(el);
   wlFtTutorialLayoutHole(el,z);
   _wlFtTut.card.className='wl-ft-tut-card wl-ft-tut-card--bottom';
 
@@ -8070,14 +8245,14 @@ function wlFtTutorialLayoutStep(){
     body='This card is your station. Grow your audience (share) and keep the station profitable.';
   }else if(st===2){
     title='Core stats';
-    body='<strong>Share</strong> is your piece of the audience. <strong>Revenue</strong> and <strong>costs</strong> are per period; <strong>EBITDA</strong> is what’s left after costs — your operating profit.';
+    body='<strong>Share</strong> is your piece of the audience. <strong>Revenue</strong> and <strong>costs</strong> are per period; <strong>EBITDA</strong> is what’s left after costs — your operating profit. Each <strong>period</strong> is <strong>6 months</strong>: period 1 is <strong>Spring</strong>, period 2 is <strong>Fall</strong> of the same year.';
   }else if(st===3){
     title='Make one change';
     body='Click <strong>Programming</strong>. Move the budget or just look — then close the window to continue.';
     showNext=false;
   }else if(st===4){
     title='End the turn';
-    body='Press <strong>Next Period</strong> when you’re ready. The market updates, then you’ll see a summary of results.';
+    body='Press <strong>Next Period</strong> when you’re ready — that advances the calendar by one period (half a year: Spring or Fall). The market updates, then you’ll see a summary of results.';
     showNext=false;
     _wlFtTut.awaitingSum=true;
   }else if(st===5){
@@ -8087,10 +8262,14 @@ function wlFtTutorialLayoutStep(){
   }
   if(st===1)showBack=false;
 
+  const scrollHint=
+    st>=2&&st<=5
+      ?'<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-top:10px;margin-bottom:0;font-size:13px">The page scrolls automatically so each highlighted area stays on screen.</p>'
+      :'';
   _wlFtTut.card.innerHTML=`<h3 class="wl-ft-tut-h">${title}</h3><p class="wl-ft-tut-p">${body}</p><div class="wl-ft-tut-btns">`+
     (showBack?`<button type="button" class="wl-ft-tut-btn" data-wl-ft-act="back">Back</button>`:'')+
     (showNext?`<button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" data-wl-ft-act="next">Next</button>`:'')+
-    `<button type="button" class="wl-ft-tut-btn wl-ft-tut-skip" data-wl-ft-act="skip">Skip</button></div>`;
+    `<button type="button" class="wl-ft-tut-btn wl-ft-tut-skip" data-wl-ft-act="skip">Skip</button></div>${scrollHint}`;
   wlFtTutorialWireCard();
 }
 function wlFtTutorialStop(opts){
@@ -8296,6 +8475,8 @@ function openScenSelect(localSave){
     ?`<div style="font-size:14px;color:var(--amb);margin:0 0 16px;line-height:1.5">Autosave is for <strong>${saveMktLbl}</strong> — RESUME loads that game. The market you pick below applies to <strong>new</strong> games.</div>`
     :'';
 
+  const wlSiteFooterEmbed=`<div class="site-footer site-footer--embed" role="contentinfo"><div class="site-footer-inner"><span class="site-footer-copy">© 2026 Airwave Empire. All rights reserved.</span><nav class="site-footer-links" aria-label="Legal"><a href="/legal/terms.html" target="_blank" rel="noopener">Terms</a><a href="/legal/privacy.html" target="_blank" rel="noopener">Privacy</a><a href="/legal/contact.html" target="_blank" rel="noopener">Contact</a></nav><p class="site-footer-sim">Fictional simulation — not affiliated with real stations or broadcasters.</p></div></div>`;
+
   document.getElementById('scenb').innerHTML=`
     <div style="padding:18px 20px 20px;max-width:760px;margin:0 auto">
     <div class="scn-hero">
@@ -8316,6 +8497,7 @@ function openScenSelect(localSave){
     </div>
     <div style="display:flex;flex-direction:column;gap:12px">${cards}</div>
     <button class="cfm" id="scn-start-btn" disabled onclick="confirmScen()" style="width:100%;padding:14px;font-size:14px;letter-spacing:3px">SELECT A SCENARIO TO BEGIN</button>
+    ${wlSiteFooterEmbed}
     </div>`;
   om('m-scen');
 }
@@ -8467,6 +8649,7 @@ function startPlay(scenId){
     }
     G=genMarket(scenId);
     G.companyName=companyName;
+    G._portraitSessionId=(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2,11)}`;
     initSportsRights(G);
     initFranchiseRights(G);
     refreshAllStationOQ(G);
@@ -10531,7 +10714,7 @@ function openManageTalent(sid){
   om('m-fire');
   scrollModalContentToTop('m-fire');
 }
-/** Empty / syndicated daypart: slot Q, status bucket, one-line detail, hire hint. */
+/** Empty / syndicated daypart: slot quality, status bucket, one-line detail, hire hint. */
 function manageTalentEmptySlotMeta(s, sl, _simSrc) {
   const slotQ = Math.round(s.prog[sl]?.quality || 0);
   if (daytimerRestrictedSlot(s, sl)) {
@@ -10604,7 +10787,7 @@ function renderManageTalentStation(sid){
   document.getElementById('fireb').innerHTML=`
     <div class="mt-manage">
       ${rosterStationSectionHeaderHtml(s)}
-      <p class="di" style="margin-bottom:14px">All dayparts for this station. Hire, replace, move, transfer, bench, or fire — without leaving this screen.</p>
+      <p class="di" style="margin-bottom:14px">All dayparts for this station. Hire, replace, move, transfer, bench, or fire — without leaving this screen. <strong>Quality share ~%</strong> is roughly how much of this station’s programming quality bar comes from each daypart (morning counts more than overnight). <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:4px" onclick="openTalentMetricsHelp('qualityshare')">?</button></p>
       ${blocks}
       <div class="ms2" style="margin-top:8px"><div class="msh">TALENT BENCH</div>${benchRows||'<p class="di" style="color:var(--mut)">Bench is empty.</p>'}</div>
       <button class="cnl" type="button" onclick="cm('m-fire')" style="margin-top:16px">CLOSE</button>
@@ -10645,10 +10828,12 @@ function manageTalentDaypartBlockHtml(s,sl,_simSrc,stationOQ){
   const moveRow=restrictedHost
     ?`<p style="font-size:12px;color:var(--amb);margin:0 0 10px 0;line-height:1.45">Legacy host in a daytimer night slot — bench or fire to align with license. Replace / move / transfer are disabled here.</p>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">
+          <button class="abt" type="button" style="border-color:var(--blu);color:var(--blu)" onclick="openContractFromManageTalent('${s.id}','${sl}')">CONTRACT / PAY</button>
           <button class="abt" type="button" style="border-color:var(--amb);color:var(--amb)" onclick="rosterBenchClick('${s.id}','${sl}')">BENCH</button>
           <button class="abt d" type="button" onclick="rosterFirePrompt('${s.id}','${sl}')">${fireLbl}</button>
         </div>`
     :`<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">
+          <button class="abt" type="button" style="border-color:var(--blu);color:var(--blu)" onclick="openContractFromManageTalent('${s.id}','${sl}')">CONTRACT / PAY</button>
           <button class="abt" type="button" onclick="mtOpenReplaceSlot('${s.id}','${sl}')">REPLACE</button>
           <button class="abt" type="button" onclick="mtOpenMoveSameStation('${s.id}','${sl}')">MOVE</button>
           <button class="abt" type="button" onclick="mtBeginTransfer('${s.id}','${sl}')">TRANSFER</button>
@@ -10664,10 +10849,10 @@ function manageTalentDaypartBlockHtml(s,sl,_simSrc,stationOQ){
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px 12px;margin-top:10px;font-size:13px;color:var(--off)">
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">TALENT</span><span class="${qc(talQ)}">${talQ}/100</span></div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">FORMAT FIT</span><span style="color:${fitSum.col};font-family:var(--fd)">${fitSum.words}</span></div>
-          <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">SLOT Q</span><span style="color:${slotQ>=70?'var(--grn)':slotQ>=45?'var(--amb)':'var(--red)'}">${slotQ}/100</span></div>
+          <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">SLOT QUALITY</span><span style="color:${slotQ>=70?'var(--grn)':slotQ>=45?'var(--amb)':'var(--red)'}">${slotQ}/100</span></div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">SALARY</span>${f$(t.salary)}/yr</div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">CONTRACT</span>${cyr} yr</div>
-          <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">CONTRIBUTION</span><span style="color:${perfCol}">~${contribution}%</span></div>
+          <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">QUALITY SHARE ~%</span><span style="color:${perfCol}" title="Approx. share of this station’s programming quality from this daypart">~${contribution}%</span> <button type="button" class="abt" style="padding:2px 8px;font-size:10px;vertical-align:middle;margin-left:4px;letter-spacing:0.04em" onclick="openTalentMetricsHelp('qualityshare')">?</button></div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">TREND</span><span style="color:${trendCol}">${trendWord}</span></div>
         </div>
         ${moveRow}
@@ -10749,8 +10934,8 @@ function rHire(s, scrollAfter){
     const slotQ=Math.round(sd?.quality||0);
     const talQ=sd?.talent?.quality?Math.round(sd.talent.quality):null;
     const slotQlbl=`<span style="color:${slotQ>=70?'var(--grn)':slotQ>=45?'var(--amb)':'var(--red)'}"> ${slotQ}</span>`;
-    const talQlbl=talQ!==null?`<span style="color:var(--mut);font-size:14px"> · quality ${talQ}</span>`:'';
-    return `<button class="ssb${HS.slot===sl?' sel':''}" onclick="pickSlot('${s.id}','${sl}')"><span><strong>${SL[sl]}</strong><span style="font-size:14px;color:var(--mut);margin-left:6px">SLOT${slotQlbl}${talQlbl}</span></span><span class="cur">${tn}</span></button>`;
+    const talQlbl=talQ!==null?`<span style="color:var(--mut);font-size:13px"> · talent ${talQ}</span>`:'';
+    return `<button class="ssb${HS.slot===sl?' sel':''}" onclick="pickSlot('${s.id}','${sl}')"><span><strong>${SL[sl]}</strong><span style="font-size:13px;color:var(--mut);margin-left:6px;display:block;line-height:1.35;margin-top:2px">Slot quality${slotQlbl}${talQlbl}</span></span><span class="cur">${tn}</span></button>`;
   }).join('');
   const slotHeader=embed?`<div class="ibox" style="margin-bottom:14px;line-height:1.55"><strong>${SL[HS.slot]}</strong> · ${callDisplay(s)}${HS._hireKind==='replace'?'<br><span style="color:var(--amb);font-size:14px;display:inline-block;margin-top:6px">Replacing current host — they go to the <strong>talent bench</strong>, then the new host is placed on air.</span>':''}</div>`:`<div class="ssl">${sbtns}</div>`;
   let ph='<p class="di" style="margin-top:12px">Select a daypart to see available talent.</p>';
@@ -10759,7 +10944,7 @@ function rHire(s, scrollAfter){
     const cur=s2.prog[HS.slot]?.talent;
     const slotQcur=Math.round(s2.prog[HS.slot]?.quality||0);
     const poachList=hireModalRivalPoachCandidates(HS.sid,HS.slot);
-    const freeRows=HS.pool.map((t,i)=>{const fit=Math.round((t.formatFit[s2.format]||.3)*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const boost=Math.round((q/100)*fit*.35*35);const newSlotQ=Math.min(100,curSlotQ+boost);const hStar=t.superstar===true?'★ ':'';let deltaHtml='';if(HS._hireKind==='replace'&&cur){const dQ=q-Math.round(cur.quality);const curW=talentDestFormatFitSummary(cur,s2.format).words;const newW=talentDestFormatFitSummary(t,s2.format).words;const dSal=t.salary-cur.salary;deltaHtml=`<div style="font-size:12px;color:var(--amb);margin-top:4px;font-family:var(--ft)">Δ Talent ${dQ>=0?'+':''}${dQ} · Δ Fit ${curW} → ${newW} · Δ Salary ${dSal>=0?'+':''}${f$(dSal)}/yr</div>`;}return `<div class="to to-hire${HS.sel===i&&!HS.poachRivalId?' sel':''}" onclick="pickTal(${i})"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-hire',`${callDisplay(s2)} · ${SL[HS.slot]} · hire list`)}</div><div style="flex:1;min-width:0"><div class="ton">${hStar}${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div>${deltaHtml}<div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">SLOT BOOST</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ}</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div></div></div></div><div class="to-hire-side"><span class="tocl">ANNUAL SAL</span><span class="toc">${f$(t.salary)}</span></div></div>`;}).join('');
+    const freeRows=HS.pool.map((t,i)=>{const fit=Math.round((t.formatFit[s2.format]||.3)*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const boost=Math.round((q/100)*fit*.35*35);const newSlotQ=Math.min(100,curSlotQ+boost);const hStar=t.superstar===true?'★ ':'';let deltaHtml='';if(HS._hireKind==='replace'&&cur){const dQ=q-Math.round(cur.quality);const curW=talentDestFormatFitSummary(cur,s2.format).words;const newW=talentDestFormatFitSummary(t,s2.format).words;const dSal=t.salary-cur.salary;deltaHtml=`<div style="font-size:12px;color:var(--amb);margin-top:6px;font-family:var(--ft);line-height:1.55"><div>Δ Talent rating: ${dQ>=0?'+':''}${dQ}</div><div>Δ Format fit: ${curW} → ${newW}</div><div>Δ Salary: ${dSal>=0?'+':''}${f$(dSal)}/yr</div></div>`;}return `<div class="to to-hire${HS.sel===i&&!HS.poachRivalId?' sel':''}" onclick="pickTal(${i})"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-hire',`${callDisplay(s2)} · ${SL[HS.slot]} · hire list`)}</div><div style="flex:1;min-width:0"><div class="ton">${hStar}${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div>${deltaHtml}<div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl" style="font-size:12px;line-height:1.25;white-space:normal" title="Estimated slot quality after hire: current slot score plus boost from talent × format fit (max 100).">PROJECTED SLOT QUALITY</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ}</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div></div></div></div><div class="to-hire-side"><span class="tocl">ANNUAL SAL</span><span class="toc">${f$(t.salary)}</span></div></div>`;}).join('');
     const rivalRows=poachList.map(({st,sd:rsd})=>{
       const rt=rsd.talent;
       const fit=Math.round((rt.formatFit[s2.format]||.3)*100);
@@ -10774,12 +10959,12 @@ function rHire(s, scrollAfter){
       const canAfford=G.cash>=minCash;
       const sel=HS.poachRivalId===st.id;
       const rhStar=rt.superstar===true?'★ ':'';
-      return `<div class="to to-hire${sel?' sel':''}" onclick="pickHirePoach('${st.id}')"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(rt,'tp-hire',`${callDisplay(st)} · ${SL[HS.slot]} · rival poach`)}</div><div style="flex:1;min-width:0"><div class="ton">${rhStar}${rt.name} <span style="font-size:13px;color:var(--amb);font-family:var(--ft);letter-spacing:.06em">RIVAL</span></div><div class="tos" style="color:var(--mut)">${callDisplay(st)} · ${SL[HS.slot]}</div><div class="tost"><div><span class="tosl">TALENT Q</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">FIT</span><span class="tosv ${fc}">${fl}</span></div><div><span class="tosl">AT RIVAL</span><span class="tosv">${f$(rt.salary)}/yr</span></div></div><div style="font-size:13px;color:var(--mut);margin-top:4px">Est. offer ~${f$(dispOffer)}/yr · need ≥${f$(minCash)} cash${buyout?` (incl. buyout ${f$(buyout)})`:''}</div></div></div><div class="to-hire-side"><span class="tocl">ACTION</span><span class="toc" style="font-size:14px;color:${canAfford?'var(--mut)':'var(--red)'}">${canAfford?'Select, then HIRE':'Short on cash'}</span></div></div>`;
+      return `<div class="to to-hire${sel?' sel':''}" onclick="pickHirePoach('${st.id}')"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(rt,'tp-hire',`${callDisplay(st)} · ${SL[HS.slot]} · rival poach`)}</div><div style="flex:1;min-width:0"><div class="ton">${rhStar}${rt.name} <span style="font-size:13px;color:var(--amb);font-family:var(--ft);letter-spacing:.06em">RIVAL</span></div><div class="tos" style="color:var(--mut)">${callDisplay(st)} · ${SL[HS.slot]}</div><div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">FIT</span><span class="tosv ${fc}">${fl}</span></div><div><span class="tosl">AT RIVAL</span><span class="tosv">${f$(rt.salary)}/yr</span></div></div><div style="font-size:13px;color:var(--mut);margin-top:4px">Est. offer ~${f$(dispOffer)}/yr · need ≥${f$(minCash)} cash${buyout?` (incl. buyout ${f$(buyout)})`:''}</div></div></div><div class="to-hire-side"><span class="tocl">ACTION</span><span class="toc" style="font-size:14px;color:${canAfford?'var(--mut)':'var(--red)'}">${canAfford?'Select, then HIRE':'Short on cash'}</span></div></div>`;
     }).join('');
     const curBox=cur?`<div class="ibox">Current: <strong>${cur.name}</strong> — quality ${Math.round(cur.quality)}, slot quality ${slotQcur}, ${f$(cur.salary)}/yr.</div>`:'';
     const freeSection=HS.pool.length
       ?`<div class="msh" style="margin-top:16px;margin-bottom:8px;font-size:13px;letter-spacing:.12em;color:var(--mut)">FREE AGENTS</div>
-    <p class="di">Four market candidates. <strong>Talent Rating</strong> is how good they are — higher talent boosts slot quality on hire. <strong>Format Fit</strong> scales the boost.</p>
+    <p class="di">Four market candidates. <strong>Talent rating</strong> is how good they are. <strong>Format fit</strong> scales how much of that talent translates into this station’s format. <strong>Projected slot quality</strong> estimates the daypart’s new score after hire (current slot quality plus a boost from talent × fit, capped at 100). <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:4px" onclick="openTalentMetricsHelp('slotboost')">Explain metrics</button></p>
     <div class="tg">${freeRows}</div>`
       :'';
     const rivalSection=poachList.length
@@ -11469,7 +11654,7 @@ function rosterTalentOnAirCardHtml(st,sl,t,contribution,talQ,trendWord,trendCol,
           </div>
           <div style="margin-top:8px;font-size:14px;color:var(--off);font-family:var(--fd)">${callDisplay(st)} · ${rosterFmtLong(st)} · ${f$(t.salary)}/yr</div>
           <div style="margin-top:8px;font-size:14px;color:var(--mut)">Format fit: <span style="color:${fs.col};font-family:var(--fd)">${fs.words}</span> · Talent: <span class="${qc(talQ)}" style="font-family:var(--fd)">${talQ}</span></div>
-          <div style="margin-top:6px;font-size:14px;color:var(--off)">Contribution: <span style="font-family:var(--fd);color:${perfCol}">~${contribution}%</span> · <span style="color:${trendCol}">${trendWord}</span></div>
+          <div style="margin-top:6px;font-size:14px;color:var(--off)">Quality share: <span style="font-family:var(--fd);color:${perfCol}" title="Approx. share of this station’s programming quality from this daypart">~${contribution}%</span> · <span style="color:${trendCol}">${trendWord}</span></div>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-items:center;align-self:flex-end;flex-shrink:0">
           <button class="abt" style="padding:8px 14px;font-size:14px;letter-spacing:1px" onclick="openRosterMoveFromSlot('${st.id}','${sl}')">MOVE</button>
@@ -12010,7 +12195,7 @@ function talentDestFormatFitSummary(talent, destFormat) {
   const col = fitPct >= 75 ? 'var(--grn)' : fitPct >= 55 ? 'var(--amb)' : 'var(--red)';
   return { fit, fitPct, label, words, col };
 }
-/** Mirrors applyTalentCrossStationXferFull slot Q math for preview only. */
+/** Mirrors applyTalentCrossStationXferFull slot quality math for preview only. */
 function projectedSlotQAfterCrossXfer(talent, dst, toSlot) {
   const fit = talent.formatFit[dst.format] || 0.3;
   const adjDip = 0.1;
@@ -12103,14 +12288,14 @@ function xferRenderDestSlots() {
     const projQ = projectedSlotQAfterCrossXfer(tal, dst, sl);
     const occNote = occ
       ? `<span style="color:var(--amb);font-size:15px">${rosterHtmlEsc(occ.name)} on-air</span>`
-      : `<span style="color:var(--mut);font-size:15px">vacant · slot Q ${slotQ}</span>`;
+      : `<span style="color:var(--mut);font-size:15px">vacant · slot quality ${slotQ}</span>`;
     const restricted = daytimerRestrictedSlot(dst, sl);
     const actions = restricted
       ? `<span style="color:var(--mut);font-size:14px">Daytimer — off-air (no local host)</span>`
       : occ
         ? `<div style="display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:200px"><button type="button" class="cfm" style="margin:0;padding:8px 10px;font-size:14px;letter-spacing:1px" onclick="doCrossStationSwap('${sl}')">SWAP — exchange hosts</button><button type="button" class="abt" style="margin:0;padding:8px 10px;font-size:13px;border-color:var(--bdh);color:var(--mut);background:transparent" onclick="doCrossStationXfer('${sl}')">MOVE — bench other</button></div>`
         : `<button class="abt" style="border-color:var(--grn);color:var(--grn)" type="button" onclick="doCrossStationXfer('${sl}')">MOVE HERE</button>`;
-    return `<div class="sr" style="padding:10px 14px;align-items:flex-start"><span class="lb" style="flex:1;min-width:140px"><strong>${SL[sl]}</strong><br>${occNote}<br><span style="color:var(--mut);font-size:13px;line-height:1.4">If ${rosterHtmlEsc(tal.name)} lands here: projected slot Q <strong style="color:var(--off)">~${projQ}</strong> (<span style="color:${dstFit.col}">${dstFit.words}</span> vs ${FM[dst.format]?.l || dst.format})</span></span>${actions}</div>`;
+    return `<div class="sr" style="padding:10px 14px;align-items:flex-start"><span class="lb" style="flex:1;min-width:140px"><strong>${SL[sl]}</strong><br>${occNote}<br><span style="color:var(--mut);font-size:13px;line-height:1.4">If ${rosterHtmlEsc(tal.name)} lands here: projected slot quality <strong style="color:var(--off)">~${projQ}</strong> (<span style="color:${dstFit.col}">${dstFit.words}</span> vs ${FM[dst.format]?.l || dst.format})</span></span>${actions}</div>`;
   }).join('');
   document.getElementById('fire-title').textContent = 'TRANSFER — pick slot';
   document.getElementById('fireb').innerHTML = `
@@ -13720,6 +13905,27 @@ function talentPortraitThumbHtml(t,cls,ctx){
   const payload=encodeURIComponent(JSON.stringify({id:t.id||null,name:t.name||'',url:url,v:v,ctx:ctx||''}));
   return '<span class="tp-thumb '+(cls||'')+' tp-thumb--live" role="button" tabindex="0" data-portrait="'+payload+'" onclick="event.stopPropagation();wlPortraitFromDataset(this)" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();event.stopPropagation();wlPortraitFromDataset(this);}"><img alt="" src="'+src+'" draggable="false" onerror="wlPortraitImgError(this)"></span>';
 }
+/** Library paths already assigned to talents this game (excludes duplicates for /api/generate-portrait). */
+function collectClaimedLibraryPortraitAssets(){
+  if(!G)return[];
+  const out=[];
+  const seen=new Set();
+  const add=t=>{
+    if(!t)return;
+    const a=t._portraitLibraryAsset;
+    if(a==null||a==='')return;
+    const s=String(a).replace(/\\/g,'/').trim();
+    if(!s||seen.has(s))return;
+    seen.add(s);
+    out.push(s);
+  };
+  (G.ps||[]).forEach(s=>{
+    if(!s||!s.prog)return;
+    Object.values(s.prog).forEach(sd=>add(sd?.talent));
+  });
+  (G.talentBench||[]).forEach(ent=>add(ent?.talent));
+  return out;
+}
 async function queueTalentPortrait(t){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   if(!t||!t.name)return;
@@ -13730,6 +13936,8 @@ async function queueTalentPortrait(t){
     const cy=typeof G!=='undefined'&&G?.year!=null?G.year:1970;
     const start=t._careerStartYear!=null&&t._careerStartYear!==undefined?t._careerStartYear:t._hireYear!=null?t._hireYear:firstYear;
     const yearsExperience=Math.max(0,Math.floor(cy-start));
+    const claimed=collectClaimedLibraryPortraitAssets();
+    const sessionId=typeof G!=='undefined'&&G&&G._portraitSessionId?String(G._portraitSessionId):'';
     const res=await fetch(wlGameApiUrl('/api/generate-portrait'),{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -13741,12 +13949,20 @@ async function queueTalentPortrait(t){
         morale:typeof t.morale==='number'?t.morale:undefined,
         quality:typeof t.quality==='number'?t.quality:undefined,
         yearsExperience,
+        claimedLibraryAssets:claimed,
+        gamePortraitSession:sessionId||undefined,
       }),
     });
     const data=await res.json().catch(()=>({}));
     if(res.ok&&data.ok&&data.imageUrl){
       t._portraitUrl=data.imageUrl;
       t._portraitV=Date.now();
+      const libRaw=data.libraryAsset!=null&&data.libraryAsset!==''?data.libraryAsset:(data.profile&&data.profile.libraryAsset);
+      if(libRaw!=null&&libRaw!==''){
+        t._portraitLibraryAsset=String(libRaw).replace(/\\/g,'/');
+      }else if(data.source&&data.source!=='library'){
+        delete t._portraitLibraryAsset;
+      }
       if(data.profile){
         t._portraitEra=data.profile.eraBucket;
         t._portraitWardrobe=data.profile.wardrobeType;
@@ -13852,12 +14068,16 @@ function openSaveLoad(){
       </label>
     </div>
     <button type="button" class="abt" style="width:100%;margin-top:10px" onclick="wlFtTutorialRestartFromMenu()">📘 FIRST-TURN GUIDE (replay)</button>
+    <p class="di" style="font-size:12px;color:var(--mut);margin-top:14px;line-height:1.5">Paid plans, if offered, renew automatically until you cancel. <a href="/legal/terms.html" target="_blank" rel="noopener" style="color:var(--amb)">Terms</a> · <a href="/legal/privacy.html" target="_blank" rel="noopener" style="color:var(--amb)">Privacy</a> · <a href="/legal/contact.html" target="_blank" rel="noopener" style="color:var(--amb)">Contact</a></p>
     <button class="cnl" style="margin-top:8px" onclick="cm('m-save')">CLOSE</button>`;
   om('m-save');
 }
 
 function migrateSave(G){
   // Fix missing fields added in recent updates
+  if(!G._portraitSessionId||typeof G._portraitSessionId!=='string'){
+    G._portraitSessionId=(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2,11)}`;
+  }
   if(!G.marketId||!MARKETS[G.marketId])G.marketId='atlanta';
   if(!G.city)G.city=(MARKETS[G.marketId]||MARKETS.atlanta).label;
   if(!G.companyName){
@@ -14423,8 +14643,20 @@ function syncModalBodyScrollLock(){
     _wlModalScrollLock.active=false;
     _wlModalScrollLock.y=0;
     window.scrollTo(0,y);
+  }else if(!anyOpen&&(document.body.classList.contains('wl-modal-open')||document.body.style.position==='fixed')){
+    /* Stray lock (navigation / refresh / interrupted close) — don’t leave body fixed with no modal */
+    document.documentElement.classList.remove('wl-modal-open');
+    document.body.classList.remove('wl-modal-open');
+    document.body.style.position='';
+    document.body.style.top='';
+    document.body.style.left='';
+    document.body.style.right='';
+    document.body.style.width='';
+    _wlModalScrollLock.active=false;
+    _wlModalScrollLock.y=0;
   }
 }
+window.addEventListener('pageshow',()=>{ syncModalBodyScrollLock(); });
 function om(id){
   if(id==='m-rk')openRanker();
   document.getElementById(id).classList.add('on');
@@ -14986,6 +15218,37 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra
 }
 
 // ════════════════════════════════════════════════════════════════
+// TALENT METRICS (help — station card lineup, Manage Talent)
+// ════════════════════════════════════════════════════════════════
+function openTalentMetricsHelp(section){
+  const el=document.getElementById('talent-helpb');
+  if(!el)return;
+  el.innerHTML=`
+    <p class="di" style="margin-top:0"><strong>Time</strong> — Each turn is one <strong>period</strong> (6 months): Spring is period 1, Fall is period 2 of the same year.</p>
+    <h4 id="tm-morale" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">MORALE</h4>
+    <p class="di">How happy the host is in this role (roughly 0–100). Low morale can drag programming quality and salary asks; bonuses and fair contracts help.</p>
+    <h4 id="tm-talent" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">TALENT RATING</h4>
+    <p class="di">The host’s skill (0–100). Higher talent contributes more to <strong>slot quality</strong> when paired with good <strong>format fit</strong>.</p>
+    <h4 id="tm-slotq" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">SLOT QUALITY</h4>
+    <p class="di">The daypart’s on-air programming score (0–100). It feeds the station’s <strong>Programming Quality</strong> bar (weighted by daypart — mornings count more than overnight). It blends the slot baseline with the host’s talent, format fit, morale, syndication, and tenure. Hiring a stronger host or improving fit raises it over time.</p>
+    <h4 id="tm-qualityshare" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">QUALITY SHARE (~%)</h4>
+    <p class="di">In <strong>Manage Talent</strong>, this approximates what share of the station’s overall programming quality comes from this daypart: (slot quality × daypart weight) ÷ station quality. It is not the same as audience share, but heavier dayparts move the station quality bar more.</p>
+    <h4 id="tm-slotboost" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">PROJECTED SLOT QUALITY (HIRING)</h4>
+    <p class="di">On hire/replace lists, this estimates the daypart’s <strong>new slot quality</strong> after the hire: the current slot score plus a boost from the candidate’s <strong>talent rating</strong> and <strong>format fit</strong> (capped at 100).</p>`;
+  om('m-talent-help');
+  if(section){
+    requestAnimationFrame(()=>{
+      const t=document.getElementById('tm-'+section);
+      if(t)t.scrollIntoView({block:'nearest',behavior:'smooth'});
+    });
+  }
+}
+function openContractFromManageTalent(sid,slot){
+  cm('m-fire');
+  openContract(sid,slot);
+}
+
+// ════════════════════════════════════════════════════════════════
 // TALENT CONTRACT MANAGEMENT
 // ════════════════════════════════════════════════════════════════
 function openContract(sid, slot){
@@ -15004,6 +15267,7 @@ function openContract(sid, slot){
     openHire(sid);return;
   }
   const t=sd.talent;
+  const slotQContract=Math.round(sd?.quality||0);
   const cyr=Math.round((t.cyr||0)*10)/10;
   const contractFit=talentDestFormatFitSummary(t,s.format);
   const mor=t.morale||65;
@@ -15130,7 +15394,8 @@ function openContract(sid, slot){
 
     <div class="ms2" style="margin-bottom:16px">
       <div class="sr"><span class="lb">Talent</span><span class="vl" style="display:flex;align-items:center;gap:10px">${talentPortraitThumbHtml(t,'tp-contract-sm',`${callDisplay(s)} ${SL[slot]} · contract`)}<strong>${cStar}${t.name}</strong></span></div>
-      <div class="sr"><span class="lb">Rating</span><span class="vl ${qc(Math.round(t.quality))}">${Math.round(t.quality)}/100</span></div>
+      <div class="sr"><span class="lb">Talent rating</span><span class="vl ${qc(Math.round(t.quality))}">${Math.round(t.quality)}/100</span></div>
+      <div class="sr"><span class="lb">Slot quality</span><span class="vl" style="font-family:var(--fd)">${slotQContract}/100 <span style="color:var(--mut);font-size:14px">(${SL[slot]} · on-air score)</span> <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:6px" onclick="openTalentMetricsHelp('slotq')">?</button></span></div>
       <div class="sr"><span class="lb">Format fit</span><span class="vl"><span style="color:${contractFit.col};font-family:var(--fd)">${contractFit.words}</span><span style="color:var(--mut);font-size:14px;font-family:var(--ft)"> · ${rosterFmtLong(s)}</span></span></div>
       <div class="sr"><span class="lb">Morale</span><span class="vl" style="color:${morCol}">${morLabel} (${mor}) ${morFactors.length?'· '+morFactors[0]:''}</span></div>
       <div class="sr"><span class="lb">Tenure</span><span class="vl">${age} periods (${ageYrs} yrs at station)</span></div>
@@ -15141,7 +15406,7 @@ function openContract(sid, slot){
 
     <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px">
       <button type="button" class="abt" style="border-color:var(--amb);color:var(--amb);padding:10px 16px;font-size:14px;letter-spacing:0.06em" onclick="cm('m-contract');openManageTalent('${sid}')">OPEN MANAGE TALENT</button>
-      <span style="font-size:13px;color:var(--mut);line-height:1.45;max-width:440px">Same station: move dayparts, transfer to another of your stations, hire/replace, bench, or fire.</span>
+      <span style="font-size:13px;color:var(--mut);line-height:1.45;max-width:440px">Roster, hiring, moves, transfers, bench, and fire — same station. Use <strong>Contract / Pay</strong> on Manage Talent to return here.</span>
     </div>
 
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
@@ -15541,7 +15806,8 @@ function rStns(){
     const div=document.createElement('div');
     div.className=`sc ${stnEbitda>=0?'profit':'loss'}`;
     const _simSrc=simulcastProgrammingSource(s);
-    const slrows=DAYPART_SLOTS.map(k=>{
+    const slotsLegend=`<div class="slots-legend"><span class="slots-legend-title">Lineup</span> Daypart · On-air host · Morale (bar) · Pay/period · Slot quality · Talent rating · <button type="button" class="abt" style="padding:4px 10px;font-size:11px;letter-spacing:0.04em;vertical-align:middle" onclick="openTalentMetricsHelp()">What is this?</button></div>`;
+    const slrows=slotsLegend+DAYPART_SLOTS.map(k=>{
       const lbl=SL[k];
       const sd=s.prog[k],tn=sd?.talent?.name,q=Math.round(sd?.quality||0),c2=qc(q);
       const vlbl=vacantLabel(op.format,k,op);
@@ -15549,9 +15815,12 @@ function rStns(){
       if(!tn&&srcTal){
         const sn=callDisplay(_simSrc);
         const srcStar=srcTal.superstar===true?'★ ':'';
-        return `<div class="slr">${talentPortraitThumbHtml(srcTal,'tp-sl',`${sn} · ${lbl} (simulcast)`)}<span class="sln">${lbl}</span><span class="slt" style="color:var(--off)" title="Simulcast — on-air from ${sn}">◈ ${srcStar}${srcTal.name} <span style="color:var(--mut);font-size:13px">(${sn})</span></span><span class="slsal">${f$(srcTal.salary/2)}/p · src</span><span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Programming Quality (0-100)">Q ${q}</span></div>`;
+        const morS=srcTal.morale||65;
+        const morColS=morS>=70?'var(--grn)':morS>=45?'var(--amb)':'var(--red)';
+        const tqS=Math.round(srcTal.quality||0);
+        return `<div class="slr">${talentPortraitThumbHtml(srcTal,'tp-sl',`${sn} · ${lbl} (simulcast)`)}<span class="sln">${lbl}</span><span class="slt" style="color:var(--off)" title="Simulcast — on-air from ${sn}">◈ ${srcStar}${srcTal.name} <span style="color:var(--mut);font-size:13px">(${sn})</span></span><svg class="mor-bar" viewBox="0 0 28 4" aria-label="Morale"><rect width="28" height="4" fill="rgba(255,255,255,.1)" rx="2"/><rect width="${Math.round(morS*.28)}" height="4" fill="${morColS}" rx="2"/></svg><span class="slsal">${f$(srcTal.salary/2)}/p · src</span><span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Slot quality (0–100)">${q}</span><span class="stal" title="Talent rating">${tqS}</span></div>`;
       }
-      if(!tn) return `<div class="slr"><span class="sln">${lbl}</span><span class="slt vac">${vlbl}</span><span class="slsal"></span><span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Programming Quality (0-100)">Q ${q}</span></div>`;
+      if(!tn) return `<div class="slr"><span style="width:40px;flex-shrink:0" aria-hidden="true"></span><span class="sln">${lbl}</span><span class="slt vac">${vlbl}</span><span style="width:32px;flex-shrink:0" aria-hidden="true"></span><span class="slsal"></span><span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Slot quality (0–100)">${q}</span><span class="stal" style="color:var(--mut)">—</span></div>`;
       const t=sd.talent;
       const cyr=t.cyr||0;
       const cyrCls=cyr<=0?'cyr-exp':cyr<=0.5?'cyr-warn':'cyr-ok';
@@ -15560,14 +15829,16 @@ function rStns(){
       const mor=t.morale||65;
       const morCol=mor>=70?'var(--grn)':mor>=45?'var(--amb)':'var(--red)';
       const starT=t.superstar===true?'★ ':'';
+      const talR=Math.round(t.quality||0);
       return `<div class="slr">
         ${talentPortraitThumbHtml(t,'tp-sl',`${callDisplay(s)} · ${lbl}`)}
         <span class="sln">${lbl}</span>
         <span class="slt clickable" onclick="openContract('${s.id}','${k}')">${starT}${tn}</span>
         ${cyrLbl?`<span class="${cyrCls}" title="${cyrTitle}">${cyrLbl}</span>`:''}
-        <svg class="mor-bar" viewBox="0 0 28 4"><rect width="28" height="4" fill="rgba(255,255,255,.1)" rx="2"/><rect width="${Math.round(mor*.28)}" height="4" fill="${morCol}" rx="2"/></svg>
+        <svg class="mor-bar" viewBox="0 0 28 4" aria-label="Morale"><rect width="28" height="4" fill="rgba(255,255,255,.1)" rx="2"/><rect width="${Math.round(mor*.28)}" height="4" fill="${morCol}" rx="2"/></svg>
         <span class="slsal">${f$(t.salary/2)}/p</span>
-        <span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}">${q}</span>
+        <span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Slot quality (0–100)">${q}</span>
+        <span class="stal" title="Talent rating">${talR}</span>
       </div>`;
     }).join('');
     const qc2=qc(op.oq);

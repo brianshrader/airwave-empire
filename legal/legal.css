@@ -1,0 +1,17 @@
+/* Standalone legal pages — complements src/styles.css variables */
+.legal-body{background:var(--blk);min-height:100vh;margin:0;}
+.legal-back{display:inline-block;font-family:var(--ft);font-size:14px;color:var(--amb);text-decoration:none;margin:20px 20px 0;padding:6px 0;border-bottom:1px solid transparent;}
+.legal-back:hover{border-bottom-color:rgba(245,166,35,.45);}
+.legal-doc{max-width:640px;margin:0 auto;padding:12px 20px 48px;font-family:var(--ft);color:var(--off);line-height:1.65;font-size:15px;}
+.legal-doc--short{padding-bottom:32px;}
+.legal-doc h1{font-family:var(--fd);color:var(--amb);letter-spacing:3px;font-size:24px;margin:0 0 12px;font-weight:400;}
+.legal-doc h2{font-family:var(--fd);color:var(--wht);font-size:16px;letter-spacing:2px;margin:28px 0 10px;font-weight:400;}
+.legal-doc p{margin:0 0 14px;}
+.legal-doc ul{margin:0 0 14px;padding-left:22px;}
+.legal-doc li{margin-bottom:8px;}
+.legal-doc a{color:var(--amb);text-decoration:none;border-bottom:1px solid rgba(245,166,35,.35);}
+.legal-doc a:hover{border-bottom-color:var(--amb);}
+.legal-lead{color:var(--mut);font-size:14px;margin-bottom:20px;}
+.legal-contact-email{font-size:18px;margin:16px 0 20px;}
+.legal-muted{font-size:13px;color:var(--mut);}
+.legal-doc-footer{margin-top:32px;padding-top:20px;}

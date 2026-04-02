@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync } from 'fs';
+import { copyFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
 import { dirname, join } from 'path';
 import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
@@ -20,6 +20,16 @@ export default defineConfig({
         // index.html loads these as classic scripts (before legacy.js). Must exist in dist or production 404s and wlStationLogoSvg never mounts.
         copy('stationLogoConfig.js');
         copy('stationLogoSvg.js');
+        const legalDir = join(__dirname, 'legal');
+        if (existsSync(legalDir)) {
+          const legalDest = join(__dirname, 'dist', 'legal');
+          mkdirSync(legalDest, { recursive: true });
+          for (const f of readdirSync(legalDir)) {
+            if (f.endsWith('.html') || f.endsWith('.css')) {
+              copyFileSync(join(legalDir, f), join(legalDest, f));
+            }
+          }
+        }
       },
     },
   ],

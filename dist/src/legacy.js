@@ -1440,7 +1440,26 @@ function gbBrandForStationReplace(s,newFmt){
 const rnd=(a,b)=>Math.random()*(b-a)+a;
 const ri=(a,b)=>Math.floor(rnd(a,b+1));
 const pick=a=>a[Math.floor(Math.random()*a.length)];
-const f$=n=>'$'+(Math.abs(n)>=1000?Math.round(n/1000)+'K':Math.round(n).toLocaleString());
+/** Currency for UI — prefers $6.8M / $47.4M / $489K over $47441K for millions. */
+const f$=n=>{
+  const x=Number(n);
+  if(!Number.isFinite(x))return '$—';
+  const neg=x<0;
+  const v=Math.abs(x);
+  const p=neg?'-$':'$';
+  if(v<1000)return p+Math.round(v).toLocaleString();
+  if(v<1e6){
+    const k=v/1000;
+    const s=k>=100?String(Math.round(k)):(Math.round(k*10)/10).toFixed(1).replace(/\.0$/,'');
+    return p+s+'K';
+  }
+  if(v<1e9){
+    const m=v/1e6;
+    const s=m>=100?String(Math.round(m)):(Math.round(m*10)/10).toFixed(1).replace(/\.0$/,'');
+    return p+s+'M';
+  }
+  return p+(Math.round(v/1e7)/100).toFixed(2)+'B';
+};
 const pct=n=>(n*100).toFixed(1)+'%';
 // Lightweight transient notification — uses alertbar briefly, then restores
 function showToast(msg,type='info'){
@@ -1725,10 +1744,24 @@ function marketRevScaleSecondaryLift(rs){
   if(r>=1)return 1;
   return 1+(1-r)*0.5;
 }
+/**
+ * Sublinear scaling of market revScale for annual billing only.
+ * Raw revScale (e.g. LA 5.2, NY 6.8) used to multiply the national MARKET_BILLING_CURVE baseline (~Atlanta=1.0),
+ * which produced ~2×+ overshoot vs real-world mega-market anchors (e.g. LA total radio ~$112M in ~1980).
+ * pow(rs, BILLING_REVSCALE_EXP) preserves ordering (NY>LA>Chicago) while capping mega inflation.
+ * rs ≤ 1 unchanged so secondary markets + marketRevScaleSecondaryLift behave as before.
+ */
+const BILLING_REVSCALE_EXP=0.60;
+function billingEffectiveRevScale(rs){
+  const r=rs==null||Number.isNaN(rs)?1:Number(rs);
+  if(r<=1)return r;
+  return Math.pow(r,BILLING_REVSCALE_EXP);
+}
 function marketAnnualBilling(year,marketId){
   const mkt=MARKETS[marketId||ACTIVE_MARKET]||MARKETS[ACTIVE_MARKET]||{revScale:1};
-  const rs=mkt.revScale||1;
-  const lift=marketRevScaleSecondaryLift(rs);
+  const rsRaw=mkt.revScale||1;
+  const rs=billingEffectiveRevScale(rsRaw);
+  const lift=marketRevScaleSecondaryLift(rsRaw);
   const ys=Object.keys(MARKET_BILLING_CURVE).map(Number).sort((a,b)=>a-b);
   if(year<=ys[0])return Math.round(MARKET_BILLING_CURVE[ys[0]]*rs*lift);
   if(year>=ys[ys.length-1])return Math.round(MARKET_BILLING_CURVE[ys[ys.length-1]]*rs*lift);
@@ -1742,6 +1775,31 @@ function marketAnnualBilling(year,marketId){
   }
   return Math.round(MARKET_BILLING_CURVE[1987]*rs*lift);
 }
+/** Dev: annual + half-period billing snapshot for calibration (console.table). */
+function billingBenchmarkReport(){
+  const years=[1975,1980,1985,1990,2000,2010];
+  const markets=['losangeles','newyork','chicago','atlanta','nashville'];
+  const rows=[];
+  years.forEach(y=>{
+    markets.forEach(mid=>{
+      const a=marketAnnualBilling(y,mid);
+      const sp=marketHalfSeasonFactor(y,1);
+      const fa=marketHalfSeasonFactor(y,2);
+      rows.push({
+        year:y,
+        market:mid,
+        annualM:Math.round(a/1e5)/10,
+        sprHalfM:Math.round(a*0.5*sp/1e5)/10,
+        falHalfM:Math.round(a*0.5*fa/1e5)/10,
+        rsRaw:(MARKETS[mid]||{}).revScale,
+        rsEff:Number(billingEffectiveRevScale((MARKETS[mid]||{}).revScale||1).toFixed(3)),
+      });
+    });
+  });
+  if(typeof console!=='undefined'&&console.table)console.table(rows);
+  return rows;
+}
+if(typeof window!=='undefined')window.billingBenchmarkReport=billingBenchmarkReport;
 function marketHalfSeasonFactor(year,period){
   const base=period===2?1.04:0.96;
   const election=(period===2&&year%2===0)?1.03:1.00;
@@ -1953,6 +2011,11 @@ function applySportsRatingsToCohorts(s,G,engageWeightedPop){
     return sum+(s.rat.cur[coh]?.share||0)*(pop*engage)/ewp;
   },0);
 }
+/** Sports / franchise auctions close in Fall (period 2) of auctionCloses year — also resolve if we’re past that (never leave bidding hung). */
+function shouldResolveRightsAuction(G,auctionClosesYear){
+  if(auctionClosesYear==null)return false;
+  return G.year>auctionClosesYear||(G.year===auctionClosesYear&&G.period===2);
+}
 function runSportsEvents(G){
   if(!G.sportsRights)G.sportsRights={};
   if(!G.teamRecords)G.teamRecords={};
@@ -1996,7 +2059,7 @@ function runSportsEvents(G){
         t:`📋 ${team.name} broadcast rights up for renewal — bidding opens. Current holder: ${rights.holderName}. Contract expires this period.`,
         y:G.year,p:G.period});
     }
-    if(rights&&rights.auctionOpen&&rights.auctionCloses===G.year&&G.period===2){
+    if(rights&&rights.auctionOpen&&shouldResolveRightsAuction(G,rights.auctionCloses)){
       resolveRightsAuction(team,rights,G,acts);
     }
   });
@@ -2037,7 +2100,13 @@ function resolveRightsAuction(team,rights,G,acts){
     const effBid=bid*(1+rel*0.25+fmtFit);
     if(effBid>winnerEff){winner=stn;winnerBid=bid;winnerEff=effBid;}
   });
-  if(!winner)return;
+  if(!winner){
+    rights.contractEnd=G.year+team.contractYrs;
+    rights.auctionOpen=false;
+    rights.bids={};
+    acts.push({v:'LOW',t:`📋 ${team.name} broadcast rights: auction could not pick a winner (stale bids) — ${rights.holderName||'incumbent'} renewed at prior terms.`,y:G.year,p:G.period});
+    return;
+  }
   const prev=rights.holderId?G.stations.find(st=>st.id===rights.holderId):null;
   const prevPlayer=prev?.isPlayer;
   const newPlayer=winner.isPlayer;
@@ -2222,7 +2291,7 @@ function runFranchiseEvents(G){
         t:`📻 "${f.name}" franchise available — bidding opens for market exclusivity. ${r.holderId?'Current holder: '+r.holderName+'.':'Currently unowned.'}`,
         y:G.year,p:G.period});
     }
-    if(r.auctionOpen&&r.auctionCloses===G.year&&G.period===2){
+    if(r.auctionOpen&&shouldResolveRightsAuction(G,r.auctionCloses)){
       resolveFranchiseAuction(f,r,G,acts);
     }
   });
@@ -2269,7 +2338,15 @@ function resolveFranchiseAuction(franchise,rights,G,acts){
     const effBid=bid*(1+rel*0.20+incumbent)*(0.65+0.35*fmt);
     if(effBid>winnerEff){winner=stn;winnerBid=bid;winnerEff=effBid;}
   });
-  if(!winner){rights.auctionOpen=false;return;}
+  if(!winner){
+    rights.auctionOpen=false;
+    rights.bids={};
+    if(rights.holderId){
+      rights.contractEnd=G.year+franchise.contractYrs;
+      acts.push({v:'LOW',t:`📻 "${franchise.name}" — no valid winning bid; ${rights.holderName||'holder'} retained.`,y:G.year,p:G.period});
+    }
+    return;
+  }
   const prev=rights.holderId?G.stations.find(st=>st.id===rights.holderId):null;
   if(!rights.relationship)rights.relationship={};
   rights.relationship[winner.id]=Math.min(100,(rights.relationship[winner.id]||0)+25);
@@ -6023,6 +6100,79 @@ function seedRev(stations,G){
   });
 }
 
+/**
+ * Revenue diagnostic — read-only. After advTurn, run in devtools:
+ *   debugRevenueTrace(G, 'your-station-id')
+ * Explains market billing spine, half-period pool, per-station split vs seedRev normalization.
+ * @param {object} G
+ * @param {string} [focusStationId]
+ * @returns {object|null}
+ */
+function debugRevenueTrace(G,focusStationId){
+  if(typeof G==='undefined'||!G){console.warn('[debugRevenueTrace] G missing');return null;}
+  const mktId=G.marketId||ACTIVE_MARKET||'atlanta';
+  const mkt=MARKETS[mktId]||MARKETS.atlanta;
+  const year=G.year||1970;
+  const period=G.period||1;
+  const rsRaw=mkt.revScale??1;
+  const rsEff=billingEffectiveRevScale(rsRaw);
+  const lift=marketRevScaleSecondaryLift(rsRaw);
+  const annualTarget=marketAnnualBilling(year,mktId);
+  const billingBaseApprox=rsEff*lift>0?Math.round(annualTarget/(rsEff*lift)):null;
+  const adxUsed=Math.max(0.75,G.adx??1);
+  const halfSeason=marketHalfSeasonFactor(year,period);
+  const halfTarget=Math.round(annualTarget*0.5*halfSeason*adxUsed);
+  const comm=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPublic);
+  const sorted=[...comm].sort((a,b)=>(b.rat?.share||0)-(a.rat?.share||0));
+  const rows=comm.map(s=>{
+    const ri=sorted.findIndex(x=>x.id===s.id);
+    const eff=stationRevenueMonetizationEfficiency(ri,comm.length,mktId);
+    const rev=s.fin?.rev||0;
+    return{
+      id:s.id,callLetters:s.callLetters,
+      shareDecimal:s.rat?.share,
+      sharePct:((s.rat?.share||0)*100).toFixed(2)+'%',
+      rank:ri+1,
+      monetizationEff:Number(eff.toFixed(4)),
+      rev,
+      pctOfHalfPeriodPool:halfTarget>0?Number((rev/halfTarget*100).toFixed(2)):null,
+    };
+  });
+  const totalComm=comm.reduce((a,s)=>a+(s.fin?.rev||0),0);
+  const focus=focusStationId?comm.find(s=>s.id===focusStationId):null;
+  const partner=focus?.simulcastWith?comm.find(s=>s.id===focus.simulcastWith):null;
+  const out={
+    marketId:mktId,year,period,
+    MARKET_BILLING_CURVE_baseYearDollars:billingBaseApprox,
+    revScaleRaw:rsRaw,
+    billingEffectiveRevScale:Number(rsEff.toFixed(4)),
+    billingRevScaleExp:BILLING_REVSCALE_EXP,
+    secondaryMetroLift:lift,
+    annualMarketBilling:annualTarget,
+    halfSeasonFactor_seedRev:halfSeason,
+    note_halfSeason:'Distinct from seasonMult() inside calcRev (spring 0.88 / fall 1.12) — seedRev uses this for the dollar pool only.',
+    adx:G.adx,
+    adxUsedInHalfTarget:adxUsed,
+    halfPeriodDollarPool_halfTarget:halfTarget,
+    nCommercialStations:comm.length,
+    sum_fin_rev_allCommercial:totalComm,
+    poolCheck_absErr:Math.abs(totalComm-halfTarget),
+    ui_f$_format:'f$ uses $XK / $X.XM (e.g. $47.4M) for readability',
+    simulcast: focus&&partner?{
+      focusCall:focus.callLetters,
+      partnerCall:partner.callLetters,
+      focus_fin_rev:focus.fin?.rev,
+      partner_fin_rev:partner.fin?.rev,
+      card_revUi_sum_ifCombined:(focus.fin?.rev||0)+(partner.fin?.rev||0),
+      card_shareUi_sum_ifCombined:(focus.rat?.share||0)+(partner.rat?.share||0),
+    }:null,
+    stations:rows.sort((a,b)=>b.rev-a.rev),
+  };
+  console.log('[debugRevenueTrace]',out);
+  return out;
+}
+window.debugRevenueTrace=debugRevenueTrace;
+
 // ── DECAY ─────────────────────────────────────────────────────────
 function decay(s,year,period){
   if(!s||s._bpSlotDeferred)return;
@@ -7977,6 +8127,28 @@ function wlFtTutorialEnsureRoot(){
   _wlFtTut.card=root.querySelector('#wl-ft-tut-card');
   return root;
 }
+/** Scroll solo tutorial target into view so the highlight isn’t off-screen (sync — layout runs immediately after). */
+function wlFtTutorialScrollTargetIntoView(el){
+  if(!el||!document.body.contains(el))return;
+  const st=el.style;
+  const prevB=st.scrollMarginBottom;
+  const prevT=st.scrollMarginTop;
+  /* Room above fixed bottom tutorial card (~420px wide) so targets aren’t hidden behind it */
+  st.scrollMarginBottom='240px';
+  st.scrollMarginTop='8px';
+  try{
+    el.scrollIntoView({block:'center',inline:'nearest',behavior:'auto'});
+  }catch(e){
+    try{
+      el.scrollIntoView(true);
+    }catch(e2){}
+  }finally{
+    if(prevB)st.scrollMarginBottom=prevB;
+    else st.removeProperty('scroll-margin-bottom');
+    if(prevT)st.scrollMarginTop=prevT;
+    else st.removeProperty('scroll-margin-top');
+  }
+}
 function wlFtTutorialLayoutHole(targetEl,zBase){
   if(!_wlFtTut.shadeWrap||!targetEl||!document.body.contains(targetEl))return;
   _wlFtTut.shadeWrap.innerHTML='';
@@ -8061,6 +8233,7 @@ function wlFtTutorialLayoutStep(){
     wlFtTutorialWireCard();
     return;
   }
+  wlFtTutorialScrollTargetIntoView(el);
   wlFtTutorialLayoutHole(el,z);
   _wlFtTut.card.className='wl-ft-tut-card wl-ft-tut-card--bottom';
 
@@ -8087,10 +8260,14 @@ function wlFtTutorialLayoutStep(){
   }
   if(st===1)showBack=false;
 
+  const scrollHint=
+    st>=2&&st<=5
+      ?'<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-top:10px;margin-bottom:0;font-size:13px">The page scrolls automatically so each highlighted area stays on screen.</p>'
+      :'';
   _wlFtTut.card.innerHTML=`<h3 class="wl-ft-tut-h">${title}</h3><p class="wl-ft-tut-p">${body}</p><div class="wl-ft-tut-btns">`+
     (showBack?`<button type="button" class="wl-ft-tut-btn" data-wl-ft-act="back">Back</button>`:'')+
     (showNext?`<button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" data-wl-ft-act="next">Next</button>`:'')+
-    `<button type="button" class="wl-ft-tut-btn wl-ft-tut-skip" data-wl-ft-act="skip">Skip</button></div>`;
+    `<button type="button" class="wl-ft-tut-btn wl-ft-tut-skip" data-wl-ft-act="skip">Skip</button></div>${scrollHint}`;
   wlFtTutorialWireCard();
 }
 function wlFtTutorialStop(opts){
@@ -8296,6 +8473,8 @@ function openScenSelect(localSave){
     ?`<div style="font-size:14px;color:var(--amb);margin:0 0 16px;line-height:1.5">Autosave is for <strong>${saveMktLbl}</strong> — RESUME loads that game. The market you pick below applies to <strong>new</strong> games.</div>`
     :'';
 
+  const wlSiteFooterEmbed=`<div class="site-footer site-footer--embed" role="contentinfo"><div class="site-footer-inner"><span class="site-footer-copy">© 2026 Airwave Empire. All rights reserved.</span><nav class="site-footer-links" aria-label="Legal"><a href="/legal/terms.html" target="_blank" rel="noopener">Terms</a><a href="/legal/privacy.html" target="_blank" rel="noopener">Privacy</a><a href="/legal/contact.html" target="_blank" rel="noopener">Contact</a></nav><p class="site-footer-sim">Fictional simulation — not affiliated with real stations or broadcasters.</p></div></div>`;
+
   document.getElementById('scenb').innerHTML=`
     <div style="padding:18px 20px 20px;max-width:760px;margin:0 auto">
     <div class="scn-hero">
@@ -8316,6 +8495,7 @@ function openScenSelect(localSave){
     </div>
     <div style="display:flex;flex-direction:column;gap:12px">${cards}</div>
     <button class="cfm" id="scn-start-btn" disabled onclick="confirmScen()" style="width:100%;padding:14px;font-size:14px;letter-spacing:3px">SELECT A SCENARIO TO BEGIN</button>
+    ${wlSiteFooterEmbed}
     </div>`;
   om('m-scen');
 }
@@ -13852,6 +14032,7 @@ function openSaveLoad(){
       </label>
     </div>
     <button type="button" class="abt" style="width:100%;margin-top:10px" onclick="wlFtTutorialRestartFromMenu()">📘 FIRST-TURN GUIDE (replay)</button>
+    <p class="di" style="font-size:12px;color:var(--mut);margin-top:14px;line-height:1.5">Paid plans, if offered, renew automatically until you cancel. <a href="/legal/terms.html" target="_blank" rel="noopener" style="color:var(--amb)">Terms</a> · <a href="/legal/privacy.html" target="_blank" rel="noopener" style="color:var(--amb)">Privacy</a> · <a href="/legal/contact.html" target="_blank" rel="noopener" style="color:var(--amb)">Contact</a></p>
     <button class="cnl" style="margin-top:8px" onclick="cm('m-save')">CLOSE</button>`;
   om('m-save');
 }
@@ -14423,8 +14604,20 @@ function syncModalBodyScrollLock(){
     _wlModalScrollLock.active=false;
     _wlModalScrollLock.y=0;
     window.scrollTo(0,y);
+  }else if(!anyOpen&&(document.body.classList.contains('wl-modal-open')||document.body.style.position==='fixed')){
+    /* Stray lock (navigation / refresh / interrupted close) — don’t leave body fixed with no modal */
+    document.documentElement.classList.remove('wl-modal-open');
+    document.body.classList.remove('wl-modal-open');
+    document.body.style.position='';
+    document.body.style.top='';
+    document.body.style.left='';
+    document.body.style.right='';
+    document.body.style.width='';
+    _wlModalScrollLock.active=false;
+    _wlModalScrollLock.y=0;
   }
 }
+window.addEventListener('pageshow',()=>{ syncModalBodyScrollLock(); });
 function om(id){
   if(id==='m-rk')openRanker();
   document.getElementById(id).classList.add('on');

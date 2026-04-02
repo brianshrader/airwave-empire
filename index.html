@@ -3,9 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Airwave Empire (beta): a radio station simulation and management game spanning 1970–2020 — build formats, hire talent, and compete in major US markets.">
+<meta name="keywords" content="Airwave Empire, radio game, station simulation, music radio, broadcasting game, tycoon">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Airwave Empire - BETA">
+<meta property="og:description" content="Radio station simulation and management from the 1970s through 2020. Build your empire in real US markets — now in beta.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Airwave Empire - BETA">
+<meta name="twitter:description" content="Radio station simulation and management from the 1970s through 2020. Build your empire in real US markets — now in beta.">
 <!-- Clerk Publishable Key (optional). Get from https://dashboard.clerk.com — enables Sign in for multiplayer. -->
 <meta name="wl-clerk-publishable-key" content="">
-<title>Airwave Empire — Radio 1970–2020</title>
+<title>Airwave Empire - BETA</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <!-- Station logo templates (curated subset — deterministic SVG typography) -->
 <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=Archivo+Narrow:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Oswald:wght@400;500;600;700&family=Pacifico&family=Playfair+Display:wght@400;600;700&family=Roboto+Slab:wght@400;600;700&display=swap" rel="stylesheet">
@@ -149,6 +158,18 @@
         <span style="font-size:13px;opacity:.85">The host already chose the start era when creating the room; they pick the market here before the draft.</span></div>
     </div>
 
+    <div class="site-footer site-footer--embed" role="contentinfo">
+      <div class="site-footer-inner">
+        <span class="site-footer-copy">© 2026 Airwave Empire. All rights reserved.</span>
+        <nav class="site-footer-links" aria-label="Legal">
+          <a href="/legal/terms.html" target="_blank" rel="noopener">Terms</a>
+          <a href="/legal/privacy.html" target="_blank" rel="noopener">Privacy</a>
+          <a href="/legal/contact.html" target="_blank" rel="noopener">Contact</a>
+        </nav>
+        <p class="site-footer-sim">Fictional simulation — not affiliated with real stations or broadcasters.</p>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -188,6 +209,18 @@
 
     <!-- Draft log -->
     <div id="draft-log" style="font-size:15px;color:var(--mut);line-height:1.9"></div>
+
+    <div class="site-footer site-footer--embed" role="contentinfo">
+      <div class="site-footer-inner">
+        <span class="site-footer-copy">© 2026 Airwave Empire. All rights reserved.</span>
+        <nav class="site-footer-links" aria-label="Legal">
+          <a href="/legal/terms.html" target="_blank" rel="noopener">Terms</a>
+          <a href="/legal/privacy.html" target="_blank" rel="noopener">Privacy</a>
+          <a href="/legal/contact.html" target="_blank" rel="noopener">Contact</a>
+        </nav>
+        <p class="site-footer-sim">Fictional simulation — not affiliated with real stations or broadcasters.</p>
+      </div>
+    </div>
 
   </div>
 </div>
@@ -296,6 +329,7 @@
 <div class="ov" id="m-period-news"><div class="mo" style="max-width:560px"><div class="mh"><span>📰 NEWS — LAST PERIOD</span><button class="mc" onclick="cm('m-period-news')">CLOSE ×</button></div><div id="periodnewsb" style="padding:16px 20px 20px"></div></div></div>
 
 
+<div class="ov" id="m-talent-help" style="z-index:520"><div class="mo" style="max-width:540px"><div class="mh"><span>TALENT METRICS</span><button class="mc" onclick="cm('m-talent-help')">CLOSE ×</button></div><div id="talent-helpb" style="padding:16px 20px 20px"></div></div></div>
 <div class="ov" id="m-contract"><div class="mo"><div class="mh"><span>📋 TALENT CONTRACT</span><button class="mc" onclick="cm('m-contract')">CLOSE ×</button></div><div id="contractb"></div></div></div>
 <div class="ov" id="m-lma"><div class="mo" style="max-width:640px"><div class="mh"><span>📝 LOCAL MARKETING AGREEMENT</span><button class="mc" onclick="cm('m-lma')">CLOSE ×</button></div><div id="lmab"></div></div></div>
 
@@ -310,6 +344,18 @@
 
 <div class="ov" id="m-logo"><div class="mo wide" style="max-width:min(96vw,960px)"><div class="mh"><span>STATION LOGO</span><button type="button" class="mc" onclick="cm('m-logo')">← BACK</button></div><div style="text-align:center;padding:8px 0 20px"><img id="wl-logo-modal-img" alt="Station logo" style="display:none;max-width:100%;max-height:min(78vh,880px);width:auto;height:auto;object-fit:contain;border-radius:4px;background:rgba(0,0,0,.2)"><div id="wl-logo-modal-svg" class="wl-logo-modal-svg-host" style="display:none;max-width:min(92vw,720px);max-height:min(78vh,880px);margin:0 auto"></div></div><div style="display:flex;justify-content:center;padding-bottom:8px"><a id="wl-logo-dl" class="cfm" href="#" download="station-logo.svg" style="display:inline-block;text-decoration:none;min-width:220px;text-align:center">💾 Save file</a></div></div></div>
 <div class="ov" id="m-portrait" style="z-index:600"><div class="mo" style="max-width:min(96vw,520px)"><div class="mh"><span>TALENT PORTRAIT</span><button type="button" class="mc" onclick="cm('m-portrait')">← BACK</button></div><div style="text-align:center;padding:12px 16px 8px"><img id="wl-portrait-modal-img" alt="" style="max-width:100%;max-height:min(70vh,640px);object-fit:contain;border-radius:6px;background:rgba(0,0,0,.2)"></div><div id="wl-portrait-modal-name" style="font-family:var(--fd);font-size:22px;text-align:center;color:var(--wht);letter-spacing:1px"></div><div id="wl-portrait-modal-ctx" style="font-family:var(--ft);font-size:14px;color:var(--mut);text-align:center;margin:8px 0 16px;line-height:1.45"></div></div></div>
+
+<footer id="site-footer" class="site-footer" role="contentinfo">
+  <div class="site-footer-inner">
+    <span class="site-footer-copy">© 2026 Airwave Empire. All rights reserved.</span>
+    <nav class="site-footer-links" aria-label="Legal">
+      <a href="/legal/terms.html" target="_blank" rel="noopener">Terms</a>
+      <a href="/legal/privacy.html" target="_blank" rel="noopener">Privacy</a>
+      <a href="/legal/contact.html" target="_blank" rel="noopener">Contact</a>
+    </nav>
+    <p class="site-footer-sim">Fictional simulation — not affiliated with real stations or broadcasters.</p>
+  </div>
+</footer>
 
   <!-- Vite: env in src/main.js (VITE_CLERK_PUBLISHABLE_KEY). Plain server: set meta above or use .env only after vite build. -->
   <script type="module" src="/src/main.js"></script>

@@ -6,11 +6,22 @@
 const crypto = require('crypto');
 
 const WARDROBE_TYPES = ['casual', 'semiPro', 'oddball'];
-const EXPRESSION_TYPES = ['forcedSmile', 'serious', 'smug', 'tired', 'awkward', 'neutral'];
+/** Strong non-smile — image models default to grins; these are weighted heavily in pickExpressionFromHash. */
+const EXPRESSION_TYPES_NO_SMILE_STRONG = ['restingFace', 'deadpan', 'serious', 'stern'];
+const EXPRESSION_TYPES_NO_SMILE_SOFT = ['tired', 'neutral', 'preoccupied'];
+const EXPRESSION_TYPES_MIXED = ['smug', 'awkward'];
+const EXPRESSION_TYPES_SMILE = ['forcedSmile'];
+/** Union for API / docs — not a flat rotation (see weighted picker). */
+const EXPRESSION_TYPES = [
+  ...EXPRESSION_TYPES_NO_SMILE_STRONG,
+  ...EXPRESSION_TYPES_NO_SMILE_SOFT,
+  ...EXPRESSION_TYPES_MIXED,
+  ...EXPRESSION_TYPES_SMILE,
+];
 const SETTING_TYPES = ['radioStudio', 'plainBackdrop', 'officeCorner'];
 
 /** Bump when appearance logic changes — forces new deterministic picks vs older cached portrait metadata. */
-const APPEARANCE_HASH_VERSION = 'appearance-v3';
+const APPEARANCE_HASH_VERSION = 'appearance-v7';
 
 /** Deterministic appearance vocabulary — indices chosen from hash (not gameplay). */
 const APPEARANCE_AGE = ['early 20s', 'late 20s', '30s', '40s', '50s', '60s'];
@@ -25,28 +36,95 @@ const APPEARANCE_FACIAL_DETAIL = [
   'strong brow',
   'full cheeks',
   'lean face',
-  'soft features',
+  'plain unremarkable features',
+  'forgettable everyday face — not camera-friendly',
+  'asymmetric features',
+  'noticeable ears',
+  'weak chin',
+  'heavy eyelids',
+  'lines and creases',
+  'soft, ordinary features (not delicate or doll-like)',
   'rugged features',
+  'slightly uneven skin tone and texture',
+  'bland resting face — would not cast as “the attractive one”',
 ];
-/** Neutral heritage cues for visible diversity — no costumes or caricature. */
+/** Pushed into every AI prompt so models stop defaulting to catalog-beautiful faces. */
+const APPEARANCE_ATTRACTIVENESS_ANCHOR = [
+  'Facial attractiveness strictly average — would not stand out in a grocery line.',
+  'Looks like a real coworker, not someone hired for their face — ordinary appeal only.',
+  'Neither conventionally pretty nor ugly — the forgettable face in a staff directory.',
+  'Plain looks: if this were stock art, the label would be “generic adult,” not “model.”',
+  'Unremarkable symmetry and proportions — avoid glow, glamour lighting, or “camera-ready” skin.',
+  'Middle-of-the-bell-curve looks: the opposite of a headshot for an actor or influencer.',
+  'Slightly awkward or bland bone structure — believable small-market radio, not TV.',
+];
+/**
+ * Rotating roster — 10 slots so fair / olive / brown / deep tones all appear often in the hash cycle.
+ * Each prompt names expected skin *range* so image models don’t collapse unrelated heritages into one brown shade.
+ * No costumes or caricature.
+ */
 const APPEARANCE_HERITAGE = [
-  { id: 'whiteAmerican', prompt: 'white American radio professional' },
-  { id: 'africanAmerican', prompt: 'African American radio personality' },
-  { id: 'latino', prompt: 'Latino radio host' },
-  { id: 'mediterranean', prompt: 'broadcaster with natural Mediterranean features' },
-  { id: 'eastAsian', prompt: 'East Asian radio professional' },
-  { id: 'southAsian', prompt: 'South Asian radio host' },
+  {
+    id: 'whiteEuroAmerican',
+    prompt:
+      'white European-American radio host — fair to lightly sun-tanned skin, ordinary US white appearance',
+  },
+  {
+    id: 'africanAmerican',
+    prompt:
+      'African American radio personality — Black features with natural brown to deep brown skin',
+  },
+  {
+    id: 'latino',
+    prompt:
+      'Latino or Latina US radio host — authentic range from fair to medium-brown skin (not one default shade)',
+  },
+  {
+    id: 'eastAsian',
+    prompt: 'East Asian American radio professional — East Asian features; skin often fair to light',
+  },
+  {
+    id: 'southAsian',
+    prompt: 'South Asian American radio host — South Asian features with natural light brown to brown skin',
+  },
+  {
+    id: 'whiteEthnicRegional',
+    prompt:
+      'white American with Irish, Italian, Polish, or Scandinavian roots — fair or ruddy skin, unremarkable regional look',
+  },
+  {
+    id: 'southeastAsian',
+    prompt:
+      'Southeast Asian American broadcaster — natural golden to medium-brown skin, Southeast Asian features',
+  },
+  {
+    id: 'middleEasternSwana',
+    prompt:
+      'Middle Eastern or North African American host — olive to medium-brown skin, authentic SWANA features',
+  },
+  {
+    id: 'pacificIslander',
+    prompt:
+      'Pacific Islander or Native Hawaiian radio host — natural Polynesian features and skin tones',
+  },
+  {
+    id: 'multiracial',
+    prompt:
+      'multiracial or mixed-heritage American radio host — believable blended features and natural skin tone',
+  },
 ];
 /** On-camera demeanor (distinct from wardrobe micro-expression in portraitPrompt). */
 const APPEARANCE_DEMEANOR = [
-  'serious, composed expression',
-  'warm, approachable smile',
-  'confident, subtle smirk',
-  'intense, direct gaze',
-  'relaxed, easy demeanor',
+  'serious, deadpan expression',
+  'unpracticed, slightly awkward tension — mouth may be tight, not necessarily smiling',
+  'harmless goofy energy in the eyes',
+  'tired, endearing “long shift” face',
+  'relaxed, unpolished demeanor',
   'slightly weary but genuine expression',
   'guarded, reserved expression',
-  'thoughtful, half-smile',
+  'distracted, mid-thought look',
+  'nervous polite expression',
+  'resting confused-but-friendly face',
 ];
 /** Male-presenting hair — may include age-typical male-pattern thinning (not used for women). */
 const APPEARANCE_HAIR_MALE = [
@@ -72,7 +150,7 @@ const APPEARANCE_HAIR_FEMALE = [
   'tightly coiled natural hair',
   'unkempt but believable hair',
   'side-parted neat hair',
-  'short stylish professional cut (feminine)',
+  'practical plain cut (feminine, not glamorous)',
   'long straight hair',
   'wavy shoulder-length hair',
   'straight hair tucked behind the ears',
@@ -114,7 +192,7 @@ const APPEARANCE_HAIR_1990S_FEMALE = [
   'short neat 1990s women’s cut',
   'soft layered 1990s women’s style',
 ];
-const APPEARANCE_STYLE = ['clean-cut', 'flashy', 'casual', 'conservative', 'eccentric'];
+const APPEARANCE_STYLE = ['plain', 'slightly disheveled', 'casual', 'conservative', 'eccentric', 'clean-cut', 'flashy'];
 
 /** @param {string} name */
 function normalizeNameKey(name) {
@@ -144,13 +222,20 @@ function slugPart(s, max = 48) {
 }
 
 /**
- * Deterministic filename body: sanitized-name-firsthireyear
+ * Deterministic filename body: sanitized-name-firsthireyear[-sessionslug]
  * @param {string} name
  * @param {number} firstHireYear
+ * @param {string} [gamePortraitSession] — per-game id so new games don’t reuse prior flat files; omit for legacy
  */
-function portraitFileBase(name, firstHireYear) {
+function portraitFileBase(name, firstHireYear, gamePortraitSession) {
   const y = Math.floor(Number(firstHireYear) || 1970);
-  return `${slugPart(name, 40)}-${y}`;
+  let base = `${slugPart(name, 36)}-${y}`;
+  const sess =
+    gamePortraitSession != null && String(gamePortraitSession).trim()
+      ? slugPart(String(gamePortraitSession).trim(), 24)
+      : '';
+  if (sess) base = `${base}-${sess}`;
+  return base;
 }
 
 /**
@@ -176,8 +261,25 @@ function pickWardrobeFromHash(hashBytes) {
   return 'oddball';
 }
 
+/**
+ * Weighted toward non-smiling faces (~70% clear no-smile, ~15% smirk/awkward, ~15% broadcast smile).
+ * @param {Buffer} hashBytes — sha256 digest
+ */
 function pickExpressionFromHash(hashBytes) {
-  return EXPRESSION_TYPES[hashBytes[2] % EXPRESSION_TYPES.length];
+  const r = hashBytes[2] % 100;
+  if (r < 38) {
+    const pool = EXPRESSION_TYPES_NO_SMILE_STRONG;
+    return pool[hashBytes[4] % pool.length];
+  }
+  if (r < 68) {
+    const pool = EXPRESSION_TYPES_NO_SMILE_SOFT;
+    return pool[hashBytes[5] % pool.length];
+  }
+  if (r < 85) {
+    const pool = EXPRESSION_TYPES_MIXED;
+    return pool[hashBytes[6] % pool.length];
+  }
+  return EXPRESSION_TYPES_SMILE[0];
 }
 
 function pickSettingFromHash(hashBytes) {
@@ -258,20 +360,22 @@ function deriveAppearanceTraits(hashKey, opts = {}) {
   let personalStyle = APPEARANCE_STYLE[h[4] % APPEARANCE_STYLE.length];
   const q = Number(opts.quality);
   if (Number.isFinite(q) && q >= 78 && h[5] % 3 !== 0) {
-    personalStyle = 'flashy';
+    personalStyle = 'eccentric';
   }
 
   const heritage = APPEARANCE_HERITAGE[h[6] % APPEARANCE_HERITAGE.length];
   let facialDetail = APPEARANCE_FACIAL_DETAIL[h[7] % APPEARANCE_FACIAL_DETAIL.length];
   if (gender === 'female' && facialDetail === 'rugged features') {
-    facialDetail = 'striking, memorable features';
+    facialDetail = 'strong bone structure without glamor — weathered or plain, not delicate or model-pretty';
   }
   const demeanor = APPEARANCE_DEMEANOR[h[8] % APPEARANCE_DEMEANOR.length];
   let hairStyle = pickHairWithEra(eraBucket, h, gender);
 
   const gameplayNotes = [];
   if (Number.isFinite(q) && q >= 75) {
-    gameplayNotes.push('confident on-air polish — without erasing individual character');
+    gameplayNotes.push(
+      'seasoned on-air presence — competence reads from demeanor, not from being unusually good-looking'
+    );
   }
   const morale = Number(opts.morale);
   if (Number.isFinite(morale) && morale < 42) {
@@ -282,13 +386,17 @@ function deriveAppearanceTraits(hashKey, opts = {}) {
 
   const variationSeed = crypto
     .createHash('sha256')
-    .update(`${hashKey}|portrait-seed-v2`, 'utf8')
+    .update(`${hashKey}|portrait-seed-v3`, 'utf8')
     .digest('hex')
     .slice(0, 16);
+
+  const attractivenessAnchor =
+    APPEARANCE_ATTRACTIVENESS_ANCHOR[h[9] % APPEARANCE_ATTRACTIVENESS_ANCHOR.length];
 
   return {
     heritageId: heritage.id,
     heritagePrompt: heritage.prompt,
+    attractivenessAnchor,
     facialDetail,
     demeanor,
     ageRange: APPEARANCE_AGE[ageIdx],
@@ -311,6 +419,8 @@ module.exports = {
   normalizeNameKey,
   slugPart,
   APPEARANCE_HASH_VERSION,
+  APPEARANCE_HERITAGE,
+  APPEARANCE_ATTRACTIVENESS_ANCHOR,
   WARDROBE_TYPES,
   EXPRESSION_TYPES,
   SETTING_TYPES,

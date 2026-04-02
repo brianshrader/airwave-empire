@@ -6,37 +6,59 @@
 const WARDROBE_DESC = {
   casual: 'simple everyday clothing, relaxed local radio studio look, unpretentious',
   semiPro:
-    'blazer or sport coat with collared shirt, neat but slightly stiff small-market broadcaster look',
+    'neat on-air look: collared shirt or blouse with cardigan, sweater, or light jacket — small-market broadcaster, not corporate head office; avoid a default blazer unless era styling clearly calls for it',
+  /** Used when semiPro + female — reduces samey “woman in blazer” promos. */
+  semiProFemale:
+    'polished but not corporate: neat blouse, knit top, cardigan, sweater, or station polo; if a jacket appears, make it casual or era-appropriate — not a generic business blazer unless the period clearly demands it',
   oddball:
     'slightly mismatched, dated, or eccentric wardrobe — believable and human, not cartoonish or costume-like',
 };
 
+/** These get an extra “not smiling” lock line — models still default to grins without it. */
+const STRICT_NON_SMILE_EXPRESSIONS = new Set([
+  'restingFace',
+  'deadpan',
+  'serious',
+  'stern',
+  'tired',
+  'neutral',
+  'preoccupied',
+]);
+
 const EXPRESSION_DESC = {
+  restingFace:
+    'face at rest — mouth relaxed closed, NOT smiling, no teeth, no polite grin (DMV / employee-ID energy)',
+  deadpan:
+    'deliberately flat mouth line, unsmiling — no upturned corners, no cheer',
+  serious: 'straight-faced, focused, slightly intense — not smiling',
+  stern: 'slight frown or concentration, mouth closed — not smiling',
+  tired: 'mildly worn-out, long-shift energy — mouth neutral or slack, not a smile',
+  neutral: 'plain neutral mouth and eyes — unremarkable, not smiling',
+  preoccupied: 'mid-thought or distracted look, mouth closed neutral — not smiling',
+  smug: 'faint self-satisfied smirk only — not a broad smile, ideally no teeth',
+  awkward:
+    'uncomfortable in front of the camera — tense closed mouth preferred; if any smile, small and awkward, not a big grin',
   forcedSmile: 'a polite broadcaster smile that feels a little forced or tired',
-  serious: 'straight-faced, focused, slightly intense',
-  smug: 'faint self-satisfied smirk, harmless',
-  tired: 'mildly worn-out, long-shift energy',
-  awkward: 'slightly uncomfortable in front of the camera, endearing',
-  neutral: 'plain neutral expression, unremarkable promo face',
 };
 
 const SETTING_DESC = {
   radioStudio:
-    'broadcast radio studio: visible studio microphone and/or broadcast headphones, acoustic treatment — no readable text or logos on equipment',
+    'on-air broadcast booth or radio studio: acoustic foam or panels, equipment rack or mixer edge, typical station clutter — headphones optional but at least one large broadcast microphone on a stand or boom clearly in frame',
   plainBackdrop:
-    'plain painted wall or paper backdrop, institutional portrait setup; still in a radio studio with a studio mic and/or headphones visible',
+    'studio promo portrait against a simple wall inside a real radio station — still show a broadcast microphone on stand or boom in frame plus clear studio/booth context (foam, rack, or console), not a seamless paper sweep with only headphones',
   officeCorner:
-    'small office corner opening into a radio studio feel — studio microphone and/or headphones visible, beige workplace lighting',
+    'small station office that opens into an on-air area — visible broadcast microphone (desk or boom) and cues of a working radio facility (console corner, rack, or booth doorway), not just headphones on a person',
 };
 
 const ERA_STYLE = {
   '1970s':
-    'simpler styling, flatter lighting, older local promo-photo feel, slightly muted colors',
+    'simpler styling, flat ugly fluorescent or flash, older local promo-photo feel, slightly muted colors — not flattering',
   '1980s':
-    'bigger hair, louder or slightly tacky professional polish, saturated film snapshot',
+    'bigger hair, loud dated station energy, saturated film snapshot — still unflattering lighting, not glossy magazine',
   '1990s':
-    'cleaner but still dated station promo look, early digital snapshot softness',
-  '2000s+': 'more modern casual workplace or studio snapshot, believable small-market radio',
+    'dated station promo or early digital snapshot — flat office light, not glamour retouching',
+  '2000s+':
+    'modern casual workplace snapshot, believable small-market radio — flat or harsh light, not a LinkedIn glow-up',
 };
 
 /**
@@ -55,12 +77,16 @@ const ERA_STYLE = {
  *   hairStyle?: string,
  *   personalStyle?: string,
  *   gameplayNotes?: string,
- *   variationSeed?: string
+ *   variationSeed?: string,
+ *   attractivenessAnchor?: string
  * }} p
  */
 function buildPortraitPrompt(p) {
   const era = ERA_STYLE[p.eraBucket] || ERA_STYLE['2000s+'];
-  const wd = WARDROBE_DESC[p.wardrobeType] || WARDROBE_DESC.casual;
+  let wd = WARDROBE_DESC[p.wardrobeType] || WARDROBE_DESC.casual;
+  if (p.wardrobeType === 'semiPro' && p.gender === 'female') {
+    wd = WARDROBE_DESC.semiProFemale;
+  }
   const ex = EXPRESSION_DESC[p.expressionType] || EXPRESSION_DESC.neutral;
   const st = SETTING_DESC[p.settingType] || SETTING_DESC.plainBackdrop;
   const genderLine =
@@ -81,10 +107,17 @@ function buildPortraitPrompt(p) {
   const who = p.heritagePrompt || 'local radio professional';
   const vibe = p.demeanor || 'natural, relaxed expression';
 
+  const anchor =
+    p.attractivenessAnchor ||
+    'Facial attractiveness must read as strictly ordinary — not pretty, not “leading role.”';
+
   const lead = [
+    `NOT a model, actor headshot, dating-app photo, Instagram face, or luxury-brand ad. NOT “Hollywood handsome” or “conventionally stunning.”`,
     `Head-and-shoulders portrait of one specific ${who}, apparently in their ${age}, with ${bodyArticle} ${bodyPhrase}.`,
-    `Their face reads as ${face}, with ${detail} — visibly different from a generic headshot; not a model template.`,
+    `Their face reads as ${face}, with ${detail} — a memorable, ordinary person; visibly not a model, influencer, or network-TV anchor look.`,
+    `MANDATORY LOOKS TARGET: ${anchor}`,
     `Hair: ${hair}. On-camera presence: ${vibe}; ${look} overall presentation.`,
+    `Lighting: flat, harsh, or cheap — office fluorescent, on-camera flash snap, or dull station lighting. No ring light, no beauty dish, no golden-hour glow, no soft glam.`,
     `Small-market ${eraLabel} station promo realism — ${era}.`,
   ].join(' ');
 
@@ -96,12 +129,18 @@ function buildPortraitPrompt(p) {
   return [
     lead,
     genderLine,
-    'Avoid identical “same face” results: distinctive features, natural asymmetry, believable skin texture; not airbrushed, not symmetry-perfect.',
-    'Setting: a working radio studio — professional studio microphone and/or on-air headphones visible (broadcast gear, not a concert stage).',
+    'DIVERSITY LOCK: Follow the exact heritage and skin-tone cues in the subject line above — this portrait is one station employee in a varied staff. Do not reuse one default skin color or ethnicity across images; render natural variation (fair, olive, brown, deep) as described.',
+    'CASTING: local radio personality energy — goofy, average, or slightly odd-looking is ideal; conventionally handsome or pretty is wrong for this image. Think character actor, morning zoo crew, DMV photo energy, or awkward community booster — not a catalog model.',
+    'Avoid identical “same face” results: distinctive features, natural asymmetry, believable skin texture; not airbrushed, not symmetry-perfect, not glamour lighting.',
+    'STUDIO GEAR (mandatory): At least one large broadcast / studio microphone must be clearly visible (desk stand, boom arm, or side-address studio mic). Headphones alone are not enough — do not output only headphones with no microphone.',
+    'STUDIO SETTING (mandatory): The scene must read as a radio on-air studio or booth — acoustic treatment, equipment rack, mixer/console edge, broadcast furniture, or typical station interior. Not a blank void, not a generic office with zero broadcast gear besides headphones.',
     `Environment framing: ${st}`,
-    'Believable awkward station snapshot or promo still — one real person, not stock photography.',
+    'Believable awkward station snapshot or promo still — one real person, not stock photography, not dating-app headshots, not aspirational beauty casting.',
     `Wardrobe: ${wd}`,
     `Secondary micro-mood (subtle): ${ex}`,
+    STRICT_NON_SMILE_EXPRESSIONS.has(p.expressionType)
+      ? 'Expression (mandatory): subject is not smiling — closed or neutral mouth, no visible teeth, no broadcast grin.'
+      : '',
     gameLine,
     seedLine,
     'No caricature, no costume stereotypes, no exaggerated comedy face; subtle human imperfection is good.',
@@ -111,4 +150,11 @@ function buildPortraitPrompt(p) {
     .join(' ');
 }
 
-module.exports = { buildPortraitPrompt, WARDROBE_DESC, EXPRESSION_DESC, SETTING_DESC, ERA_STYLE };
+module.exports = {
+  buildPortraitPrompt,
+  WARDROBE_DESC,
+  EXPRESSION_DESC,
+  SETTING_DESC,
+  ERA_STYLE,
+  STRICT_NON_SMILE_EXPRESSIONS,
+};

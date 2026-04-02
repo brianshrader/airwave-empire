@@ -10,7 +10,10 @@
     "build": "vite build",
     "preview": "vite preview",
     "audit:am": "node scripts/audit-am-stations.mjs",
-    "test:solo-reentry": "node scripts/test-solo-reentry.mjs"
+    "test:solo-reentry": "node scripts/test-solo-reentry.mjs",
+    "dedupe:portraits": "node scripts/dedupe-portrait-library.mjs",
+    "sort:portraits": "node scripts/sort-portraits-into-library.mjs",
+    "gen:portraits:batch": "node scripts/batch-generate-portrait-library.mjs"
   },
   "devDependencies": {
     "vite": "^6.2.0"

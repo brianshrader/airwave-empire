@@ -1,5 +1,5 @@
 /**
- * POST /api/generate-portrait — cosmetic talent portraits (ShortAPI or Grok / xAI).
+ * POST /api/generate-portrait — stock library first (gender + era + fallbacks), then ShortAPI, then xAI/Grok.
  */
 
 const fs = require('fs');
@@ -13,10 +13,15 @@ const {
   portraitIdentityKey,
 } = require('./portraitIdentity');
 const { buildPortraitPrompt } = require('./portraitPrompt');
-const { generateXaiImage, imageGenerationConfigured, getActiveImageProvider } = require('./services/logoProvider');
+const {
+  generateXaiImage,
+  generateShortapiImage,
+  imageGenerationConfigured,
+  getActiveImageProvider,
+} = require('./services/logoProvider');
 const { PORTRAIT_DIR, getRegistryEntry, setRegistryEntry, ensureDir } = require('./portraitRegistry');
 const {
-  pickRandomLibraryImage,
+  pickLibraryImageExclusive,
   libraryRelativePortraitsPath,
   installLibraryFileToPortrait,
   libraryInventory,
@@ -25,6 +30,28 @@ const {
   normalizeEraDir,
   ERA_DIRS,
 } = require('./portraitLibrary');
+
+function shortapiConfigured() {
+  return Boolean(process.env.SHORTAPI_KEY);
+}
+
+/**
+ * @param {object} body
+ * @returns {{ claimedLibraryAssets: string[], gamePortraitSession: string | null }}
+ */
+function readPortraitClaimBody(body) {
+  const claimedLibraryAssets = Array.isArray(body?.claimedLibraryAssets)
+    ? body.claimedLibraryAssets
+        .filter((x) => typeof x === 'string' && x.length < 600)
+        .map((x) => x.replace(/\\/g, '/').trim())
+    : [];
+  let gamePortraitSession = null;
+  if (body?.gamePortraitSession != null && typeof body.gamePortraitSession === 'string') {
+    const t = body.gamePortraitSession.trim();
+    if (t.length > 0 && t.length <= 96) gamePortraitSession = t;
+  }
+  return { claimedLibraryAssets, gamePortraitSession };
+}
 
 const TRY_EXTS = ['png', 'webp', 'jpg'];
 const TRY_DOT_EXTS = ['.png', '.webp', '.jpg'];
@@ -150,9 +177,10 @@ function mountPortraitRoutes(app) {
     const name = req.body.name.trim();
     const firstHireYear = Math.floor(Number(req.body.firstHireYear));
     const gender = req.body.gender === 'female' ? 'female' : req.body.gender === 'male' ? 'male' : null;
-    const preferGrok = req.body.preferGrok === true;
     const { talentId, morale, quality, yearsExperience } = readOptionalPortraitGameplay(req.body);
-    const fileBase = portraitFileBase(name, firstHireYear);
+    const { claimedLibraryAssets, gamePortraitSession } = readPortraitClaimBody(req.body || {});
+    const claimedSet = new Set(claimedLibraryAssets);
+    const fileBase = portraitFileBase(name, firstHireYear, gamePortraitSession || undefined);
     const eraBucket = eraBucketFromYear(firstHireYear);
     const identitySlug = fileBase;
     const hashKey = portraitHashKey(identitySlug, talentId);
@@ -161,7 +189,6 @@ function mountPortraitRoutes(app) {
       const located = locateExistingPortraitFile(fileBase);
       const reg = getRegistryEntry(fileBase);
       if (located) {
-        const ext = path.extname(located.absPath).slice(1) || 'png';
         const imageUrl = `/generated-portraits/${located.relPosix}`;
         if (!reg?.imageUrl) {
           const traits = derivePortraitProfile(identitySlug, talentId);
@@ -190,6 +217,8 @@ function mountPortraitRoutes(app) {
         return res.json({
           ok: true,
           cached: true,
+          libraryAsset: r?.libraryAsset ?? null,
+          source: r?.source ?? null,
           imageUrl: r?.imageUrl || imageUrl,
           profile: {
             eraBucket: r?.eraBucket || eraBucket,
@@ -207,7 +236,9 @@ function mountPortraitRoutes(app) {
             heritagePrompt: r?.heritagePrompt,
             facialDetail: r?.facialDetail,
             demeanor: r?.demeanor,
+            attractivenessAnchor: r?.attractivenessAnchor,
             variationSeed: r?.variationSeed,
+            libraryAsset: r?.libraryAsset ?? null,
           },
         });
       }
@@ -233,8 +264,8 @@ function mountPortraitRoutes(app) {
         ...appearance,
       };
 
-      if (!preferGrok && libraryFirstEnabled() && gender) {
-        const libSrc = pickRandomLibraryImage(gender, eraBucket);
+      if (gender) {
+        const libSrc = pickLibraryImageExclusive(gender, eraBucket, claimedSet);
         if (libSrc) {
           const { finalName } = installLibraryFileToPortrait(libSrc, fileBase, PORTRAIT_DIR);
           const imageUrl = `/generated-portraits/${finalName}`;
@@ -250,6 +281,7 @@ function mountPortraitRoutes(app) {
             ok: true,
             cached: false,
             source: 'library',
+            libraryAsset: libraryRel,
             imageUrl,
             profile: {
               eraBucket: profile.eraBucket,
@@ -267,23 +299,35 @@ function mountPortraitRoutes(app) {
               heritagePrompt: profile.heritagePrompt,
               facialDetail: profile.facialDetail,
               demeanor: profile.demeanor,
+              attractivenessAnchor: profile.attractivenessAnchor,
               variationSeed: profile.variationSeed,
+              libraryAsset: libraryRel,
             },
           });
         }
       }
 
-      if (!imageGenerationConfigured()) {
+      const prompt = buildPortraitPrompt(profile);
+      let buffer;
+      let ext;
+      let aiSource;
+      if (shortapiConfigured()) {
+        const r = await generateShortapiImage({ prompt, aspect_ratio: '1:1' });
+        buffer = r.buffer;
+        ext = r.ext;
+        aiSource = 'shortapi';
+      } else if (imageGenerationConfigured()) {
+        const r = await generateXaiImage({ prompt, aspect_ratio: '1:1' });
+        buffer = r.buffer;
+        ext = r.ext;
+        aiSource = getActiveImageProvider() || 'ai';
+      } else {
         return res.status(503).json({
           ok: false,
           error:
-            'No portrait source: add images under generated-portraits/library/<male|female>/<era>/ or set SHORTAPI_KEY or GROK_API_KEY.',
+            'No portrait source: add stock images under generated-portraits/library/<male|female>/<era>/ (and enable library picks), or set SHORTAPI_KEY / GROK_API_KEY.',
         });
       }
-
-      const prompt = buildPortraitPrompt(profile);
-      const { buffer, ext } = await generateXaiImage({ prompt, aspect_ratio: '1:1' });
-      const aiSource = getActiveImageProvider() || 'ai';
       const safeExt = TRY_EXTS.includes(ext) ? ext : 'png';
       const genderSeg =
         gender === 'male' ? 'male' : gender === 'female' ? 'female' : 'unknown';
@@ -301,12 +345,14 @@ function mountPortraitRoutes(app) {
         fileName: relPosix,
         ...profile,
         source: aiSource,
+        libraryAsset: null,
       });
 
       return res.json({
         ok: true,
         cached: false,
         source: aiSource,
+        libraryAsset: null,
         imageUrl,
         profile: {
           eraBucket: profile.eraBucket,
@@ -324,7 +370,9 @@ function mountPortraitRoutes(app) {
           heritagePrompt: profile.heritagePrompt,
           facialDetail: profile.facialDetail,
           demeanor: profile.demeanor,
+          attractivenessAnchor: profile.attractivenessAnchor,
           variationSeed: profile.variationSeed,
+          libraryAsset: null,
         },
       });
     } catch (e) {
