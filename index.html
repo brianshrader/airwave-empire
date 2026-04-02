@@ -1,366 +1,327 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Airwave Empire (beta): a radio station simulation and management game spanning 1970–2020 — build formats, hire talent, and compete in major US markets.">
-<meta name="keywords" content="Airwave Empire, radio game, station simulation, music radio, broadcasting game, tycoon">
-<meta name="robots" content="index, follow">
-<meta property="og:title" content="Airwave Empire - BETA">
-<meta property="og:description" content="Radio station simulation and management from the 1970s through 2020. Build your empire in real US markets — now in beta.">
-<meta property="og:type" content="website">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Airwave Empire - BETA">
-<meta name="twitter:description" content="Radio station simulation and management from the 1970s through 2020. Build your empire in real US markets — now in beta.">
-<!-- Clerk Publishable Key (optional). Get from https://dashboard.clerk.com — enables Sign in for multiplayer. -->
-<meta name="wl-clerk-publishable-key" content="">
-<title>Airwave Empire - BETA</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
-<!-- Station logo templates (curated subset — deterministic SVG typography) -->
-<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=Archivo+Narrow:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Oswald:wght@400;500;600;700&family=Pacifico&family=Playfair+Display:wght@400;600;700&family=Roboto+Slab:wght@400;600;700&display=swap" rel="stylesheet">
-
-<!-- Socket.io — loaded dynamically only in multiplayer mode -->
-<!-- <script src="/socket.io/socket.io.js"></script> -->
-  <link rel="stylesheet" href="src/styles.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Airwave Empire — Beta</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: #0a0a0a;
+      color: #f3efe6;
+    }
+    .gold {
+      color: #d89b2b;
+    }
+    .gold-bg {
+      background: #d89b2b;
+      color: #111;
+    }
+    .panel {
+      background: linear-gradient(180deg, rgba(35,35,35,.95), rgba(15,15,15,.95));
+      border: 1px solid rgba(216,155,43,.28);
+      box-shadow: 0 0 0 1px rgba(216,155,43,.06) inset;
+    }
+    .gridline {
+      border-color: rgba(216,155,43,.18);
+    }
+  </style>
 </head>
-<body>
-
-<!-- ══════════════════════════════════════════════════════════════
-     MULTIPLAYER LOBBY OVERLAY
-     Shown before game starts. Hidden once game is in progress.
-     ══════════════════════════════════════════════════════════════ -->
-<div id="mp-lobby" style="display:none;position:fixed;inset:0;background:#0a0a0a;z-index:9000;overflow-y:auto;font-family:var(--ft)">
-  <div style="max-width:520px;margin:60px auto;padding:0 20px">
-    <div style="font-size:28px;color:var(--amb);letter-spacing:4px;margin-bottom:6px">AIRWAVE EMPIRE</div>
-    <div style="font-size:15px;color:var(--mut);letter-spacing:3px;margin-bottom:24px">MULTIPLAYER</div>
-
-    <div style="margin-bottom:28px;padding:14px 16px;background:#111;border:1px solid #2a2a2a;border-radius:4px;font-size:13px;color:var(--off);line-height:1.55">
-      <div style="font-size:12px;color:var(--mut);letter-spacing:2px;margin-bottom:10px">MARKETS</div>
-      <p style="margin:0 0 10px;color:var(--mut)">The host picks the city once everyone is in the waiting room.</p>
-      <ul style="margin:0;padding-left:18px;color:var(--off)">
-        <li><strong>Atlanta</strong></li>
-        <li><strong>Nashville</strong></li>
-        <li><strong>New York</strong></li>
-        <li><strong>Los Angeles</strong></li>
-        <li><strong>Chicago</strong></li>
-      </ul>
-      <div style="font-size:12px;color:var(--mut);letter-spacing:2px;margin:14px 0 8px">STARTING ERAS</div>
-      <p style="margin:0 0 8px;color:var(--mut)">The host picks the start year when creating a room (CREATE GAME tab):</p>
-      <ul style="margin:0;padding-left:18px;color:var(--off)">
-        <li><strong>1970s</strong> — AM-heavy opening, full arc through 2020</li>
-        <li><strong>1978</strong> — FM overtakes AM; lean early years</li>
-        <li><strong>1985</strong> — CHR / classic rock peak; harder opening</li>
-      </ul>
-    </div>
-
-    <!-- Account (Clerk) — prebuilt SignIn / UserButton mount here when VITE_CLERK_PUBLISHABLE_KEY is set -->
-    <div id="wl-mp-auth" style="display:none;margin-bottom:20px;padding:12px 14px;background:#111;border:1px solid #2a2a2a;border-radius:4px;font-size:14px;color:var(--off)">
-      <div style="font-size:12px;color:var(--mut);letter-spacing:2px;margin-bottom:10px">ACCOUNT</div>
-      <div id="wl-clerk-components" style="min-height:40px;display:flex;flex-wrap:wrap;align-items:flex-start;gap:10px;width:100%"></div>
-    </div>
-
-    <!-- Server connect panel -->
-    <div id="mp-connect-panel">
-      <div style="font-size:15px;color:var(--mut);letter-spacing:2px;margin-bottom:12px">SERVER ADDRESS</div>
-      <div style="display:flex;gap:8px;margin-bottom:20px">
-        <input id="mp-server-url" type="text" value="http://localhost:3000"
-          style="flex:1;background:#111;border:1px solid #333;color:#fff;padding:10px 12px;font-family:var(--ft);font-size:15px;outline:none"
-          placeholder="http://localhost:3000"/>
-        <button onclick="mpConnect()" class="abt" style="padding:10px 20px;font-size:14px" id="mp-connect-btn">CONNECT</button>
+<body class="antialiased">
+  <header class="border-b gridline">
+    <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between flex-wrap gap-4">
+      <div class="text-3xl md:text-4xl font-black tracking-[0.22em] uppercase gold">
+        Airwave Empire
       </div>
-      <div id="mp-connect-status" style="font-size:14px;color:var(--amb);margin-bottom:24px">Connecting…</div>
+      <nav class="flex items-center gap-6 md:gap-8 text-sm uppercase tracking-[0.16em] text-stone-300 flex-wrap">
+        <a href="#gameplay" class="hover:text-white hidden sm:inline">Gameplay</a>
+        <a href="#eras" class="hover:text-white hidden sm:inline">Eras</a>
+        <a href="#pricing" class="hover:text-white hidden sm:inline">Pricing</a>
+        <a href="#faq" class="hover:text-white hidden sm:inline">FAQ</a>
+        <a href="/play.html" class="gold-bg px-5 py-2.5 rounded-md font-bold uppercase tracking-[0.14em] text-stone-900 hover:opacity-95">Play now</a>
+      </nav>
     </div>
+  </header>
 
-    <!-- Create/Join tabs — shown after connect -->
-    <div id="mp-cj-panel" style="display:none">
-      <div style="display:flex;gap:0;margin-bottom:24px;border-bottom:1px solid #222">
-        <button id="mp-tab-create" onclick="mpShowTab('create')"
-          style="flex:1;background:none;border:none;color:var(--amb);font-family:var(--ft);font-size:15px;letter-spacing:2px;padding:10px;cursor:pointer;border-bottom:2px solid var(--amb)">
-          CREATE GAME</button>
-        <button id="mp-tab-join" onclick="mpShowTab('join')"
-          style="flex:1;background:none;border:none;color:var(--mut);font-family:var(--ft);font-size:15px;letter-spacing:2px;padding:10px;cursor:pointer;border-bottom:2px solid transparent">
-          JOIN GAME</button>
-        <button id="mp-tab-rejoin" onclick="mpShowTab('rejoin')"
-          style="flex:1;background:none;border:none;color:var(--mut);font-family:var(--ft);font-size:15px;letter-spacing:2px;padding:10px;cursor:pointer;border-bottom:2px solid transparent">
-          REJOIN</button>
-      </div>
-
-      <!-- Company name (shared — shown in header & rejoin matching) -->
-      <div style="margin-bottom:16px">
-        <div style="font-size:14px;color:var(--mut);letter-spacing:2px;margin-bottom:6px">YOUR COMPANY'S NAME</div>
-        <input id="mp-player-name" type="text" maxlength="40" placeholder="e.g. Peachtree Broadcasting Group"
-          style="width:100%;box-sizing:border-box;background:#111;border:1px solid #333;color:#fff;padding:10px 12px;font-family:var(--ft);font-size:15px;outline:none"/>
-      </div>
-
-      <!-- CREATE tab -->
-      <div id="mp-create-tab">
-        <div style="font-size:14px;color:var(--mut);letter-spacing:2px;margin-bottom:6px">STARTING ERA</div>
-        <div style="display:flex;gap:8px;margin-bottom:20px">
-          <button id="mp-era-1970" onclick="mpPickEra('1970')" class="abt g" style="flex:1;padding:12px;font-size:14px">1970s</button>
-          <button id="mp-era-1978" onclick="mpPickEra('1978')" class="abt" style="flex:1;padding:12px;font-size:14px">1978</button>
-          <button id="mp-era-1985" onclick="mpPickEra('1985')" class="abt" style="flex:1;padding:12px;font-size:14px">1985</button>
+  <main>
+    <section class="max-w-7xl mx-auto px-6 py-16 md:py-24">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <p class="gold uppercase tracking-[0.22em] text-sm mb-4">
+            Radio strategy across the decades · Beta
+          </p>
+          <h1 class="text-5xl md:text-7xl font-black uppercase leading-[0.95] tracking-tight">
+            Build a <span class="gold">Radio Empire</span>
+          </h1>
+          <p class="mt-6 text-lg md:text-xl text-stone-300 max-w-2xl leading-relaxed">
+            Start in 1970. Launch stations. Hire talent. Chase ratings. Survive format wars,
+            FM disruption, consolidation, and the changing economics of broadcasting.
+          </p>
+          <p class="mt-4 text-stone-400 text-base leading-relaxed max-w-2xl">
+            <strong class="text-stone-300">Beta:</strong> create a free account with Clerk to play with
+            <strong class="text-stone-200">unlimited access</strong> while we test and tune the game.
+          </p>
+          <div class="mt-8 flex flex-col sm:flex-row gap-4">
+            <a href="/play.html" class="gold-bg px-8 py-4 rounded-md text-lg font-bold uppercase tracking-[0.14em] text-center">
+              Play now — sign in
+            </a>
+            <a href="#gameplay" class="border border-stone-600 px-8 py-4 rounded-md text-lg font-bold uppercase tracking-[0.14em] text-center hover:border-stone-300">
+              See How It Works
+            </a>
+          </div>
+          <div class="mt-6 text-sm uppercase tracking-[0.16em] text-stone-400">
+            No download • You’ll sign in with Clerk on the next screen
+          </div>
         </div>
-        <input type="hidden" id="mp-era" value="1970"/>
-        <div id="mp-era-desc" style="font-size:15px;color:var(--mut);margin-bottom:16px;line-height:1.6;min-height:48px">
-          Start in 1970 — AM dominates, FM is wide open. Host picks the market in the waiting room. Full 50-year arc.
+
+        <div class="panel rounded-2xl p-4">
+          <img
+            src="/landing-images/overview.png"
+            alt="Airwave Empire gameplay screenshot"
+            class="rounded-xl w-full h-auto object-cover"
+          />
         </div>
-        <button onclick="mpCreateRoom()" class="abt g" style="width:100%;padding:14px;font-size:15px">CREATE ROOM</button>
       </div>
+    </section>
 
-      <!-- JOIN tab -->
-      <div id="mp-join-tab" style="display:none">
-        <div style="font-size:14px;color:var(--mut);letter-spacing:2px;margin-bottom:6px">ROOM CODE</div>
-        <input id="mp-room-code" type="text" maxlength="6" placeholder="6-character code"
-          style="width:100%;box-sizing:border-box;text-transform:uppercase;letter-spacing:4px;background:#111;border:1px solid #333;color:var(--amb);padding:10px 12px;font-family:var(--ft);font-size:18px;outline:none;margin-bottom:16px"/>
-        <button onclick="mpJoinRoom()" class="abt" style="width:100%;padding:14px;font-size:15px">JOIN ROOM</button>
-      </div>
-
-      <!-- REJOIN tab — for mid-game reconnects and refreshes -->
-      <div id="mp-rejoin-tab" style="display:none">
-        <div style="font-size:15px;color:var(--mut);margin-bottom:16px;line-height:1.6">
-          Use this if you were already in a game and got disconnected, hit refresh, or lost your connection. Enter the same room code and the same company name you used when you joined.
+    <section class="border-t gridline border-b">
+      <div class="max-w-7xl mx-auto px-6 py-12 grid md:grid-cols-4 gap-6">
+        <div class="panel rounded-xl p-6">
+          <div class="gold text-sm uppercase tracking-[0.18em] mb-3">Launch Stations</div>
+          <p class="text-stone-300 leading-relaxed">
+            Pick formats, build brands, and decide whether to chase mass appeal or carve out a niche.
+          </p>
         </div>
-        <div style="font-size:14px;color:var(--mut);letter-spacing:2px;margin-bottom:6px">ROOM CODE</div>
-        <input id="mp-rejoin-code" type="text" maxlength="6" placeholder="6-character code"
-          style="width:100%;box-sizing:border-box;text-transform:uppercase;letter-spacing:4px;background:#111;border:1px solid #333;color:var(--amb);padding:10px 12px;font-family:var(--ft);font-size:18px;outline:none;margin-bottom:16px"/>
-        <button onclick="mpRejoinRoom()" class="abt" style="width:100%;padding:14px;font-size:15px">RECONNECT TO GAME</button>
+        <div class="panel rounded-xl p-6">
+          <div class="gold text-sm uppercase tracking-[0.18em] mb-3">Hire Talent</div>
+          <p class="text-stone-300 leading-relaxed">
+            Build lineups that win listeners — and decide when expensive stars are worth the risk.
+          </p>
+        </div>
+        <div class="panel rounded-xl p-6">
+          <div class="gold text-sm uppercase tracking-[0.18em] mb-3">Compete for Ratings</div>
+          <p class="text-stone-300 leading-relaxed">
+            Watch rivals react, markets shift, and revenue rise or collapse with your decisions.
+          </p>
+        </div>
+        <div class="panel rounded-xl p-6">
+          <div class="gold text-sm uppercase tracking-[0.18em] mb-3">Evolve with the Industry</div>
+          <p class="text-stone-300 leading-relaxed">
+            Adapt as AM fades, FM takes over, consolidation changes the business, and new eras rewrite strategy.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="gameplay" class="max-w-7xl mx-auto px-6 py-16 md:py-24">
+      <div class="max-w-3xl mb-12">
+        <p class="gold uppercase tracking-[0.22em] text-sm mb-3">Gameplay</p>
+        <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tight">
+          Run the Dial. Own the Market.
+        </h2>
+        <p class="mt-5 text-stone-300 text-lg leading-relaxed">
+          Every turn forces tradeoffs: format choices, talent costs, branding, programming,
+          debt, and market timing. Build a winner — or watch a once-great station fade.
+        </p>
       </div>
 
-      <div id="mp-cj-error" style="margin-top:12px;font-size:14px;color:var(--red)"></div>
-    </div>
+      <div class="grid lg:grid-cols-3 gap-8">
+        <div class="panel rounded-2xl p-4">
+          <img src="/landing-images/market.png" alt="Market overview" class="rounded-xl w-full h-auto object-cover" />
+          <div class="pt-4">
+            <h3 class="text-2xl font-bold uppercase tracking-wide">Compete in Real Markets</h3>
+            <p class="mt-2 text-stone-300 leading-relaxed">
+              Battle through markets like Los Angeles, Atlanta, or Nashville and see how strategy changes by city.
+            </p>
+          </div>
+        </div>
 
-    <!-- Waiting room — shown after create/join -->
-    <div id="mp-waiting-panel" style="display:none">
-      <div style="font-size:14px;color:var(--mut);letter-spacing:2px;margin-bottom:8px">ROOM CODE</div>
-      <div id="mp-room-display" style="font-size:36px;color:var(--amb);letter-spacing:8px;margin-bottom:4px"></div>
-      <div id="mp-spectate-line" style="font-size:13px;color:var(--mut);margin-bottom:16px;line-height:1.55;word-break:break-all"></div>
-      <div style="font-size:15px;color:var(--mut);margin-bottom:28px">Share this code with other players</div>
+        <div class="panel rounded-2xl p-4">
+          <img src="/landing-images/station.png" alt="Station management" class="rounded-xl w-full h-auto object-cover" />
+          <div class="pt-4">
+            <h3 class="text-2xl font-bold uppercase tracking-wide">Build Winning Stations</h3>
+            <p class="mt-2 text-stone-300 leading-relaxed">
+              Shape station identity, choose formats, and manage the lineup that drives ratings and revenue.
+            </p>
+          </div>
+        </div>
 
-      <div style="font-size:14px;color:var(--mut);letter-spacing:2px;margin-bottom:10px">PLAYERS</div>
-      <div id="mp-player-list" style="margin-bottom:28px"></div>
-
-      <div id="mp-host-controls" style="display:none">
-        <div style="font-size:14px;color:var(--mut);letter-spacing:2px;margin-bottom:6px">MARKET</div>
-        <select id="mp-market" title="City for this multiplayer game"
-          style="width:100%;box-sizing:border-box;background:#111;border:1px solid #333;color:#fff;padding:10px 12px;font-family:var(--ft);font-size:16px;outline:none;margin-bottom:18px;border-radius:4px">
-          <option value="atlanta">Atlanta — Southeast · large</option>
-          <option value="nashville">Nashville — South · medium</option>
-          <option value="newyork">New York — Northeast · mega</option>
-          <option value="losangeles">Los Angeles — West Coast · mega</option>
-          <option value="chicago">Chicago — Midwest · mega</option>
-        </select>
-        <div style="font-size:15px;color:var(--mut);margin-bottom:12px">All players must be connected. You can start with 2–4.</div>
-        <button onclick="mpStartGame()" id="mp-start-btn" class="abt g" style="width:100%;padding:14px;font-size:15px;opacity:.4" disabled>
-          START DRAFT →</button>
+        <div class="panel rounded-2xl p-4">
+          <img src="/landing-images/finances.png" alt="Financial results" class="rounded-xl w-full h-auto object-cover" />
+          <div class="pt-4">
+            <h3 class="text-2xl font-bold uppercase tracking-wide">Live with the Consequences</h3>
+            <p class="mt-2 text-stone-300 leading-relaxed">
+              Great ratings do not guarantee survival. Costs, competition, and timing can wreck a station fast.
+            </p>
+          </div>
+        </div>
       </div>
-      <div id="mp-guest-waiting" style="display:none;font-size:14px;color:var(--mut);text-align:center;line-height:1.5">
-        Waiting for host to start the game…<br/>
-        <span style="font-size:13px;opacity:.85">The host already chose the start era when creating the room; they pick the market here before the draft.</span></div>
-    </div>
+    </section>
 
-    <div class="site-footer site-footer--embed" role="contentinfo">
-      <div class="site-footer-inner">
-        <span class="site-footer-copy">© 2026 Airwave Empire. All rights reserved.</span>
-        <nav class="site-footer-links" aria-label="Legal">
-          <a href="/legal/terms.html" target="_blank" rel="noopener">Terms</a>
-          <a href="/legal/privacy.html" target="_blank" rel="noopener">Privacy</a>
-          <a href="/legal/contact.html" target="_blank" rel="noopener">Contact</a>
-        </nav>
-        <p class="site-footer-sim">Fictional simulation — not affiliated with real stations or broadcasters.</p>
+    <section id="eras" class="border-t gridline border-b">
+      <div class="max-w-7xl mx-auto px-6 py-16 md:py-20">
+        <div class="max-w-3xl mb-10">
+          <p class="gold uppercase tracking-[0.22em] text-sm mb-3">The Twist</p>
+          <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tight">
+            Radio Changes. You Adapt.
+          </h2>
+          <p class="mt-5 text-stone-300 text-lg leading-relaxed">
+            This is not one static board. What works in 1973 may fail by 1993. The business changes underneath you.
+          </p>
+        </div>
+
+        <div class="grid md:grid-cols-4 gap-6">
+          <div class="panel rounded-xl p-6">
+            <div class="gold text-sm uppercase tracking-[0.16em] mb-3">1970s</div>
+            <h3 class="text-2xl font-bold uppercase">AM still matters</h3>
+            <p class="mt-3 text-stone-300 leading-relaxed">
+              Full-service giants, Top 40 battles, and the old rules of local radio still shape the market.
+            </p>
+          </div>
+
+          <div class="panel rounded-xl p-6">
+            <div class="gold text-sm uppercase tracking-[0.16em] mb-3">1980s</div>
+            <h3 class="text-2xl font-bold uppercase">FM takes over</h3>
+            <p class="mt-3 text-stone-300 leading-relaxed">
+              Music moves up the dial. AM stations face pressure to reinvent or decline.
+            </p>
+          </div>
+
+          <div class="panel rounded-xl p-6">
+            <div class="gold text-sm uppercase tracking-[0.16em] mb-3">1990s</div>
+            <h3 class="text-2xl font-bold uppercase">Consolidation hits</h3>
+            <p class="mt-3 text-stone-300 leading-relaxed">
+              Ownership rules change, clusters rise, and strategy becomes more corporate and more ruthless.
+            </p>
+          </div>
+
+          <div class="panel rounded-xl p-6">
+            <div class="gold text-sm uppercase tracking-[0.16em] mb-3">2000s+</div>
+            <h3 class="text-2xl font-bold uppercase">New pressures</h3>
+            <p class="mt-3 text-stone-300 leading-relaxed">
+              Fragmentation, changing ad markets, and shifting audience habits force hard choices.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="pricing" class="max-w-7xl mx-auto px-6 py-16 md:py-24">
+      <div class="max-w-3xl mb-12">
+        <p class="gold uppercase tracking-[0.22em] text-sm mb-3">Beta access</p>
+        <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tight">
+          Play free while we build
+        </h2>
+        <p class="mt-5 text-stone-300 text-lg leading-relaxed">
+          During beta, sign in with Clerk for <strong class="text-stone-200">unlimited</strong> play at no charge.
+          Paid subscriptions will arrive later for long-term perks (saves, multiplayer, AI assets, and more).
+        </p>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-8">
+        <div class="panel rounded-2xl p-8 border border-amber-500/40">
+          <div class="gold text-sm uppercase tracking-[0.18em] mb-4">While in beta</div>
+          <div class="text-4xl md:text-5xl font-black uppercase leading-tight tracking-[0.12em]">Beta testing</div>
+          <ul class="mt-6 space-y-3 text-stone-300 text-lg">
+            <li>• Full gameplay</li>
+            <li>• Unlimited access</li>
+            <li>• Please send feedback to <a href="mailto:beta@airwaveempire.com" class="gold underline decoration-amber-600/60 underline-offset-2 hover:text-amber-200">beta@airwaveempire.com</a></li>
+          </ul>
+          <a href="/play.html" class="mt-8 inline-block gold-bg px-6 py-3 rounded-md font-bold uppercase tracking-[0.14em]">
+            Enter the beta
+          </a>
+        </div>
+
+        <div class="relative rounded-2xl overflow-hidden">
+          <div
+            class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 px-6 text-center rounded-2xl bg-black/65 backdrop-blur-[2px] border border-stone-600/50"
+            aria-live="polite"
+          >
+            <span class="text-2xl md:text-3xl font-black uppercase tracking-[0.2em] text-stone-100">Coming soon</span>
+            <span class="text-sm text-stone-400 max-w-xs leading-relaxed">Stripe subscription — unlimited saves, multiplayer, AI images &amp; sounds, and more.</span>
+          </div>
+          <div class="panel rounded-2xl p-8 border-2 border-amber-500/30 opacity-[0.38] saturate-[0.65] pointer-events-none select-none grayscale-[0.35]">
+            <div class="gold text-sm uppercase tracking-[0.18em] mb-4">Subscriber</div>
+            <div class="text-5xl font-black uppercase">$5/mo</div>
+            <ul class="mt-6 space-y-3 text-stone-300 text-lg">
+              <li>• Unlimited games</li>
+              <li>• Multiple saves</li>
+              <li>• Multiplayer</li>
+              <li>• AI-generated logos &amp; portraits</li>
+              <li>• Full access to future updates</li>
+            </ul>
+            <span class="mt-8 inline-block gold-bg px-6 py-3 rounded-md font-bold uppercase tracking-[0.14em] opacity-80">
+              Unlock Full Access
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="border-t gridline border-b">
+      <div class="max-w-7xl mx-auto px-6 py-16 text-center">
+        <p class="gold uppercase tracking-[0.22em] text-sm mb-3">Start Now</p>
+        <h2 class="text-4xl md:text-6xl font-black uppercase tracking-tight">
+          Start Your First Station
+        </h2>
+        <p class="mt-5 text-stone-300 text-lg max-w-2xl mx-auto leading-relaxed">
+          Build your lineup. Pick your format. Chase the ratings. See if you can survive long enough to build a broadcasting empire.
+        </p>
+        <a href="/play.html" class="mt-8 inline-block gold-bg px-10 py-4 rounded-md text-lg font-bold uppercase tracking-[0.16em]">
+          Play now
+        </a>
+      </div>
+    </section>
+
+    <section id="faq" class="max-w-7xl mx-auto px-6 py-16 md:py-24">
+      <div class="max-w-4xl">
+        <p class="gold uppercase tracking-[0.22em] text-sm mb-3">FAQ</p>
+        <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tight">
+          Questions
+        </h2>
+
+        <div class="mt-10 space-y-6">
+          <div class="panel rounded-xl p-6">
+            <h3 class="text-2xl font-bold">Do I need to know radio to play?</h3>
+            <p class="mt-2 text-stone-300 leading-relaxed">
+              No. If you like strategy, management, and competition, you can play. Radio knowledge helps, but it is not required.
+            </p>
+          </div>
+
+          <div class="panel rounded-xl p-6">
+            <h3 class="text-2xl font-bold">Is this single-player or multiplayer?</h3>
+            <p class="mt-2 text-stone-300 leading-relaxed">
+              Single-player is available during beta. Multiplayer will be part of the future subscription tier when we launch paid plans.
+            </p>
+          </div>
+
+          <div class="panel rounded-xl p-6">
+            <h3 class="text-2xl font-bold">What does beta access include?</h3>
+            <p class="mt-2 text-stone-300 leading-relaxed">
+              Sign in with Clerk for full gameplay and unlimited access while we’re in beta. We’ll add Stripe subscriptions later for saves, multiplayer, AI branding, and other premium features.
+            </p>
+          </div>
+
+          <div class="panel rounded-xl p-6">
+            <h3 class="text-2xl font-bold">Do I need to download anything?</h3>
+            <p class="mt-2 text-stone-300 leading-relaxed">
+              No. Airwave Empire runs right in your browser.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="border-t gridline">
+    <div class="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row gap-4 items-center justify-between text-sm text-stone-400 uppercase tracking-[0.14em]">
+      <div>Airwave Empire</div>
+      <div class="flex gap-6">
+        <a href="/legal/terms.html" class="hover:text-white">Terms</a>
+        <a href="/legal/privacy.html" class="hover:text-white">Privacy</a>
+        <a href="/legal/contact.html" class="hover:text-white">Contact</a>
       </div>
     </div>
-
-  </div>
-</div>
-
-
-<!-- ══════════════════════════════════════════════════════════════
-     MULTIPLAYER DRAFT SCREEN
-     Shown after host starts game, before game begins.
-     All players pick their stations in snake-draft order.
-     ══════════════════════════════════════════════════════════════ -->
-<div id="mp-draft" style="display:none;position:fixed;inset:0;background:#0a0a0a;z-index:8500;overflow-y:auto;font-family:var(--ft)">
-  <div style="max-width:860px;margin:0 auto;padding:32px 20px">
-
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:12px">
-      <div>
-        <div style="font-size:22px;color:var(--amb);letter-spacing:3px">STATION DRAFT</div>
-        <div id="draft-subtitle" style="font-size:14px;color:var(--mut);margin-top:4px;letter-spacing:1px"></div>
-      </div>
-      <div id="draft-order-strip" style="display:flex;gap:6px;flex-wrap:wrap"></div>
-    </div>
-
-    <!-- Current pick banner -->
-    <div id="draft-banner" style="background:#111;border:1px solid #333;padding:14px 18px;margin-bottom:20px;border-radius:2px">
-      <span id="draft-banner-text" style="font-size:15px;color:#fff"></span>
-    </div>
-
-    <div id="draft-fairness-hint" style="display:none;font-size:13px;color:var(--mut);line-height:1.55;margin-bottom:16px;padding:10px 14px;background:#141414;border:1px solid #2a2a2a;border-radius:2px"></div>
-
-    <!-- Station cards grid -->
-    <div id="draft-cards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px;margin-bottom:24px"></div>
-
-    <!-- Second station option (after first pick) -->
-    <div id="draft-second-wrap" style="display:none;background:#111;border:1px solid #333;padding:16px 18px;margin-bottom:20px;border-radius:2px">
-      <div style="font-size:15px;color:var(--amb);letter-spacing:2px;margin-bottom:6px">OPTIONAL: BUY A SECOND STATION</div>
-      <div style="font-size:14px;color:var(--mut);margin-bottom:10px">You start with <strong id="draft-cash-show" style="color:#fff"></strong>. Buying a second station costs its market value — deducted from your starting cash.</div>
-      <button id="draft-pass-btn" onclick="mpDraftPass()" class="abt" style="padding:10px 24px;font-size:14px">PASS — START WITH ONE STATION</button>
-    </div>
-
-    <!-- Draft log -->
-    <div id="draft-log" style="font-size:15px;color:var(--mut);line-height:1.9"></div>
-
-    <div class="site-footer site-footer--embed" role="contentinfo">
-      <div class="site-footer-inner">
-        <span class="site-footer-copy">© 2026 Airwave Empire. All rights reserved.</span>
-        <nav class="site-footer-links" aria-label="Legal">
-          <a href="/legal/terms.html" target="_blank" rel="noopener">Terms</a>
-          <a href="/legal/privacy.html" target="_blank" rel="noopener">Privacy</a>
-          <a href="/legal/contact.html" target="_blank" rel="noopener">Contact</a>
-        </nav>
-        <p class="site-footer-sim">Fictional simulation — not affiliated with real stations or broadcasters.</p>
-      </div>
-    </div>
-
-  </div>
-</div>
-
-<!-- MP Status Bar — shown during multiplayer game (injected into header area) -->
-<div id="mp-statusbar" style="display:none;background:#111;border-bottom:1px solid #222;padding:6px 22px;font-size:15px;font-family:var(--ft);letter-spacing:1px;display:none">
-  <span id="mp-status-players"></span>
-  <span style="color:var(--mut)"> &nbsp;·&nbsp; </span>
-  <span id="mp-status-commits"></span>
-  <span style="color:var(--mut)"> &nbsp;·&nbsp; </span>
-  <span id="mp-status-room"></span>
-</div>
-
-<!-- MP Chat -->
-<div id="mp-chat-wrap" style="display:none;position:fixed;bottom:16px;right:16px;width:280px;z-index:8000">
-  <div style="background:#111;border:1px solid #333;border-radius:2px">
-    <div onclick="mpToggleChat()" style="padding:8px 12px;cursor:pointer;display:flex;justify-content:between;align-items:center">
-      <span style="font-size:15px;color:var(--amb);letter-spacing:2px">RADIO ROOM</span>
-      <span id="mp-chat-badge" style="margin-left:auto;background:var(--red);color:#000;font-size:14px;padding:2px 6px;border-radius:2px;display:none">!</span>
-    </div>
-    <div id="mp-chat-body" style="display:none;max-height:200px;overflow-y:auto;padding:8px 12px;border-top:1px solid #222">
-      <div id="mp-chat-msgs" style="font-size:15px;color:#ccc;line-height:1.7"></div>
-    </div>
-    <div id="mp-chat-input-row" style="display:none;padding:6px 8px;border-top:1px solid #222;display:none">
-      <input id="mp-chat-in" type="text" maxlength="200" placeholder="Say something…"
-        style="width:100%;box-sizing:border-box;background:#0a0a0a;border:none;color:#fff;font-family:var(--ft);font-size:15px;padding:6px 8px;outline:none"
-        onkeydown="if(event.key==='Enter')mpSendChat()"/>
-    </div>
-  </div>
-</div>
-<header id="hdr">
-  <div id="logo">AIRWAVE EMPIRE</div>
-  <div id="hmeta">
-    <div id="hmetarow"><span id="hcity">ATLANTA</span> &nbsp;·&nbsp; <strong id="hy">1970</strong> <strong id="hp">SPRING</strong> &nbsp;·&nbsp; <strong id="hsc" onclick="openScenSelect(getLocalSave())" title="Click to change scenario / new game" style="cursor:pointer;border-bottom:1px dotted rgba(245,166,35,.4)">—</strong> &nbsp;·&nbsp; <span id="hmode" style="color:var(--amb)">CAMPAIGN</span></div>
-    <div id="progwrap"><div id="progbar"><div id="progfill" style="width:0%"></div></div><span id="proglbl">1970 → 2020</span></div>
-  </div>
-  <div id="cash">$<span id="hcash">0</span></div>
-  <button id="abtn">▶ NEXT PERIOD</button>
-</header>
-<div id="alertbar"></div>
-<div id="tkr"><div id="ti"></div></div>
-<main id="main">
-  <!-- LEFT COLUMN: score strip, market standings, news feed -->
-  <div class="pnl" id="pl">
-    <div id="scorebar"></div>
-    <div class="ph"><span>MARKET <sub id="mkt-city">ATLANTA</sub><span style="color:var(--mut);font-size:13px;font-weight:400;margin-left:6px;font-family:var(--ft)">· tap for intel</span></span><button type="button" class="phbtn" onclick="om('m-rk')">📊 RANKER</button></div>
-    <table class="mt"><thead><tr><th>#</th><th>STATION</th><th>FORMAT</th><th style="text-align:right">SHARE</th><th style="text-align:right">△</th><th style="text-align:right">REV/PD</th></tr></thead><tbody id="mtb"></tbody></table>
-    <div class="sep"></div>
-    <div class="dh">DEMO BREAKDOWN — YOUR LEAD STATION</div>
-    <div id="dmb"></div>
-    <div class="sep"></div>
-    <div class="ph">NEWS FEED <sub>RECENT</sub></div><div id="news"></div>
-  </div>
-  <!-- RIGHT COLUMN: scenario banner, your stations -->
-  <div class="pnl" id="pc">
-    <div id="scen-banner"></div>
-    <div class="corp-actions-wrap">
-      <div class="corp-actions-h">CORPORATE ACTIONS</div>
-      <div class="corp-actions-btns">
-        <button type="button" class="phbtn" onclick="openPeriodNews()" title="Headlines from the period you just finished">📰 NEWS</button>
-        <button type="button" class="phbtn" onclick="openFinancials()">📈 FINANCIALS</button>
-        <button type="button" class="phbtn" onclick="openLoan()">💳 LOANS</button>
-        <button type="button" class="phbtn" onclick="openSaveLoad()">💾 SAVE / LOAD</button>
-        <button type="button" class="phbtn" onclick="wlFtTutorialRestartFromMenu()" title="Replay the short solo first-turn walkthrough">📘 TIPS</button>
-      </div>
-    </div>
-    <div class="ph">YOUR STATIONS <sub id="ownlbl">1 AM · 1 FM</sub></div>
-    <div id="stns"></div>
-  </div>
-  <!-- Hidden targets — score detail + scenario sync + competitor intel (rIntel / rScore / rMkt) -->
-  <div style="display:none"><div id="intel"></div><div id="scorebox"></div><div id="scenwrap"></div></div>
-</main>
-
-<!-- Modals -->
-<div class="ov" id="m-sum"><div class="mo"><div class="mh"><span id="sumt">PERIOD END</span><button class="mc" onclick="cm('m-sum')">CLOSE ×</button></div><div id="sumb"></div></div></div>
-<div class="ov" id="m-grade"><div class="mo wide"><div class="mh"><span id="gradet">DECADE REPORT</span><button class="mc" onclick="cm('m-grade')">CONTINUE →</button></div><div id="gradeb"></div></div></div>
-<div class="ov" id="m-rk"><div class="mo full"><div class="mh"><span id="m-rk-title">MARKET RANKER</span><button class="mc" onclick="cm('m-rk')">CLOSE ×</button></div><div id="rkwrap"></div><div class="rkleg" id="rk-legend"></div></div></div>
-<div class="ov" id="m-ci"><div class="mo"><div class="mh"><span id="ci-title">COMPETITOR INTEL</span><button class="mc" onclick="cm('m-ci')">CLOSE ×</button></div><div style="font-family:var(--fm);font-size:14px;color:var(--amb);padding:4px 20px 0;font-style:italic;letter-spacing:0.5px" id="ci-subtitle"></div><div id="ci-body" style="padding:16px 20px 20px"></div></div></div>
-<div class="ov" id="m-tal"><div class="mo"><div class="mh"><span>HIRE TALENT</span><button class="mc" onclick="cm('m-tal')">CLOSE ×</button></div><div id="talb"></div></div></div>
-<div class="ov" id="m-sp"><div class="mo"><div class="mh"><span>SPOT LOAD</span><button class="mc" onclick="cm('m-sp')">CLOSE ×</button></div><div id="spb"></div></div></div>
-<div class="ov" id="m-pr2"><div class="mo"><div class="mh"><span>PROMOTION BUDGET</span><button class="mc" onclick="cm('m-pr2')">CLOSE ×</button></div><div id="prb"></div></div></div>
-<div class="ov" id="m-fm"><div class="mo"><div class="mh"><span>FORMAT CHANGE</span><button class="mc" onclick="cm('m-fm')">CLOSE ×</button></div><div id="fmb"></div></div></div>
-<div class="ov" id="m-ac"><div class="mo"><div class="mh"><span>ACQUIRE STATION</span><button class="mc" onclick="cm('m-ac')">CLOSE ×</button></div><div id="acb"></div></div></div>
-<div class="ov" id="m-sim"><div class="mo"><div class="mh"><span>SIMULCAST</span><button class="mc" onclick="cm('m-sim')">CLOSE ×</button></div><div id="simb"></div></div></div>
-<div class="ov" id="m-drift"><div class="mo"><div class="mh"><span id="drift-title">POSITIONING</span><button class="mc" onclick="cm('m-drift')">CLOSE ×</button></div><div id="driftb"></div></div></div>
-<div class="ov" id="m-save"><div class="mo"><div class="mh"><span>💾 SAVE / LOAD</span><button class="mc" onclick="cm('m-save')">CLOSE ×</button></div><div id="saveb"></div></div></div>
-<div class="ov" id="m-fin"><div class="mo wide"><div class="mh"><span>FINANCIALS</span><button class="mc" onclick="cm('m-fin')">CLOSE ×</button></div><div id="finb"></div></div></div>
-<div class="ov" id="m-loan"><div class="mo"><div class="mh"><span>💳 FINANCING</span><button class="mc" onclick="cm('m-loan')">CLOSE ×</button></div><div id="loanb"></div></div></div>
-<div class="ov" id="m-stream"><div class="mo"><div class="mh"><span>📶 STREAMING</span><button class="mc" onclick="cm('m-stream')">CLOSE ×</button></div><div id="streamb"></div></div></div>
-<div class="ov" id="m-rename"><div class="mo"><div class="mh"><span>RENAME STATION</span><button class="mc" onclick="cm('m-rename')">CLOSE ×</button></div><div id="renameb"></div></div></div>
-<div class="ov" id="m-migrate"><div class="mo"><div class="mh"><span>MOVE FORMAT TO FM</span><button class="mc" onclick="cm('m-migrate')">CLOSE ×</button></div><div id="migrateb"></div></div></div>
-<div class="ov" id="m-fire"><div class="mo"><div class="mh"><span id="fire-title">MANAGE TALENT</span><button class="mc" onclick="cm('m-fire')">CLOSE ×</button></div><div id="fireb"></div></div></div>
-<div class="ov" id="m-pg"><div class="mo"><div class="mh"><span>INVEST IN PROGRAMMING</span><button class="mc" onclick="cm('m-pg')">CLOSE ×</button></div><div id="pgb"></div></div></div>
-<div class="ov" id="m-programming"><div class="mo"><div class="mh"><span id="prog-mh-title">PROGRAMMING</span><button class="mc" onclick="cm('m-programming')">CLOSE ×</button></div><div id="prog-body" class="bm-manage"></div></div></div>
-<div class="ov" id="m-ident"><div class="mo"><div class="mh"><span>COMMUNITY IDENTITY</span><button class="mc" onclick="cm('m-ident')">CLOSE ×</button></div><div id="identb"></div></div></div>
-<div class="ov" id="m-brand"><div class="mo"><div class="mh"><span id="brand-title">BRAND & MARKETING</span><button class="mc" onclick="cm('m-brand')">CLOSE ×</button></div><div id="brandb" class="bm-manage"></div></div></div>
-<div class="ov" id="m-lean"><div class="mo"><div class="mh"><span>DEMO TARGETING</span><button class="mc" onclick="cm('m-lean')">CLOSE ×</button></div><div id="leanb"></div></div></div>
-<div class="ov" id="m-hist"><div class="mo"><div class="mh"><span id="hist-title">STATION HISTORY</span><button class="mc" onclick="cm('m-hist')">CLOSE ×</button></div><div id="histb"></div></div></div>
-<div class="ov" id="m-sell"><div class="mo"><div class="mh"><span>SELL STATION</span><button class="mc" onclick="cm('m-sell')">CLOSE ×</button></div><div id="sellb"></div></div></div>
-<div class="ov" id="m-scen"><div class="mo wide" style="max-width:780px"><div id="scenb"></div></div></div>
-<div class="ov" id="m-onboard"><div class="mo" style="max-width:660px"><div class="mh"><span>HOW TO PLAY</span><button class="mc" onclick="cm('m-onboard');startPlay(_pendingScenId)">START →</button></div><div id="onboardb"></div></div></div>
-<div class="ov" id="m-boost"><div class="mo"><div class="mh"><span>FM BOOSTER</span><button class="mc" onclick="cm('m-boost')">CLOSE ×</button></div><div id="boostb"></div></div></div>
-<div class="ov" id="m-sales"><div class="mo"><div class="mh"><span>SALES FORCE</span><button class="mc" onclick="cm('m-sales')">CLOSE ×</button></div><div id="salesb"></div></div></div>
-<div class="ov" id="m-research"><div class="mo" style="max-width:580px"><div class="mh"><span id="research-title">📊 STATION RESEARCH</span><button class="mc" onclick="cm('m-research')">CLOSE ×</button></div><div id="researchb"></div></div></div>
-<div class="ov" id="m-milestone"><div class="mo" style="max-width:520px"><div id="milestoneb"></div></div></div>
-<div class="ov" id="m-period-news"><div class="mo" style="max-width:560px"><div class="mh"><span>📰 NEWS — LAST PERIOD</span><button class="mc" onclick="cm('m-period-news')">CLOSE ×</button></div><div id="periodnewsb" style="padding:16px 20px 20px"></div></div></div>
-
-
-<div class="ov" id="m-talent-help" style="z-index:520"><div class="mo" style="max-width:540px"><div class="mh"><span>TALENT METRICS</span><button class="mc" onclick="cm('m-talent-help')">CLOSE ×</button></div><div id="talent-helpb" style="padding:16px 20px 20px"></div></div></div>
-<div class="ov" id="m-contract"><div class="mo"><div class="mh"><span>📋 TALENT CONTRACT</span><button class="mc" onclick="cm('m-contract')">CLOSE ×</button></div><div id="contractb"></div></div></div>
-<div class="ov" id="m-lma"><div class="mo" style="max-width:640px"><div class="mh"><span>📝 LOCAL MARKETING AGREEMENT</span><button class="mc" onclick="cm('m-lma')">CLOSE ×</button></div><div id="lmab"></div></div></div>
-
-<div class="ov" id="m-talent-trouble"><div class="mo" style="border:2px solid var(--red);box-shadow:0 0 40px rgba(240,88,88,.25)"><div class="mh" style="background:rgba(240,88,88,.10);border-bottom:1px solid rgba(240,88,88,.3)"><span id="trouble-title" style="color:var(--red);letter-spacing:2px">⚠ TALENT INCIDENT</span></div><div id="trouble-body" style="padding:20px"></div></div></div>
-<div class="ov" id="m-poach-alert"><div class="mo" style="border:2px solid var(--red);box-shadow:0 0 40px rgba(240,88,88,.25)"><div class="mh" style="background:rgba(240,88,88,.12);border-bottom:1px solid rgba(240,88,88,.3)"><span style="color:var(--red);letter-spacing:2px">⚠ TALENT RAID IN PROGRESS</span></div><div id="poach-alert-body" style="padding:20px"></div></div></div>
-<div class="ov" id="m-sports"><div class="mo"><div class="mh"><span id="sports-title">🏟 SPORTS RIGHTS</span><button class="mc" onclick="cm('m-sports')">CLOSE ×</button></div><div id="sportsb" style="padding:16px 20px 20px"></div></div></div>
-<div class="ov" id="m-franchise"><div class="mo"><div class="mh"><span id="franchise-title">📻 NATIONAL FRANCHISES</span><button class="mc" onclick="cm('m-franchise')">CLOSE ×</button></div><div id="franchiseb" style="padding:16px 20px 20px"></div></div></div>
-<div class="ov" id="m-frmove"><div class="mo"><div class="mh"><span>📻 FRANCHISE SLOT</span><button class="mc" onclick="cm('m-frmove')">CLOSE ×</button></div><div id="frmoveb" style="padding:16px 20px 20px"></div></div></div>
-<div class="ov" id="m-swap"><div class="mo"><div class="mh"><span id="swap-title">⇄ SWAP SIGNAL</span><button class="mc" onclick="cm('m-swap')">CLOSE ×</button></div><div id="swapb" style="padding:16px 20px 20px"></div></div></div>
-<div class="ov" id="m-trade"><div class="mo"><div class="mh"><span id="trade-title">🤝 TRADE OFFER</span><button class="mc" onclick="cm('m-trade')">CLOSE ×</button></div><div id="tradeb" style="padding:16px 20px 20px"></div></div></div>
-<div class="ov" id="m-mp-endgame"><div class="mo wide mp-endgame-mo" style="max-width:560px;border:2px solid rgba(212,175,55,.45);box-shadow:0 0 60px rgba(212,175,55,.18),0 12px 40px rgba(0,0,0,.5)"><div class="mh mp-endgame-mh" style="background:linear-gradient(180deg,rgba(212,175,55,.12),transparent);border-bottom:1px solid rgba(212,175,55,.25)"><span id="mp-endgame-title" style="font-family:var(--fd);letter-spacing:3px;color:var(--amb)">FINAL RESULTS — 2025</span></div><div id="mp-endgame-body" style="padding:16px 20px 8px"></div><div style="padding:0 20px 22px"><button type="button" class="cfm" id="mp-endgame-continue" onclick="mpContinueBeyondEndgame()" style="width:100%;font-size:16px;padding:14px">Continue Playing →</button><p style="font-family:var(--ft);font-size:13px;color:var(--mut);margin:10px 0 0 0;text-align:center">Resumes normal play from Spring 2026 onward.</p></div></div></div>
-
-<div class="ov" id="m-logo"><div class="mo wide" style="max-width:min(96vw,960px)"><div class="mh"><span>STATION LOGO</span><button type="button" class="mc" onclick="cm('m-logo')">← BACK</button></div><div style="text-align:center;padding:8px 0 20px"><img id="wl-logo-modal-img" alt="Station logo" style="display:none;max-width:100%;max-height:min(78vh,880px);width:auto;height:auto;object-fit:contain;border-radius:4px;background:rgba(0,0,0,.2)"><div id="wl-logo-modal-svg" class="wl-logo-modal-svg-host" style="display:none;max-width:min(92vw,720px);max-height:min(78vh,880px);margin:0 auto"></div></div><div style="display:flex;justify-content:center;padding-bottom:8px"><a id="wl-logo-dl" class="cfm" href="#" download="station-logo.svg" style="display:inline-block;text-decoration:none;min-width:220px;text-align:center">💾 Save file</a></div></div></div>
-<div class="ov" id="m-portrait" style="z-index:600"><div class="mo" style="max-width:min(96vw,520px)"><div class="mh"><span>TALENT PORTRAIT</span><button type="button" class="mc" onclick="cm('m-portrait')">← BACK</button></div><div style="text-align:center;padding:12px 16px 8px"><img id="wl-portrait-modal-img" alt="" style="max-width:100%;max-height:min(70vh,640px);object-fit:contain;border-radius:6px;background:rgba(0,0,0,.2)"></div><div id="wl-portrait-modal-name" style="font-family:var(--fd);font-size:22px;text-align:center;color:var(--wht);letter-spacing:1px"></div><div id="wl-portrait-modal-ctx" style="font-family:var(--ft);font-size:14px;color:var(--mut);text-align:center;margin:8px 0 16px;line-height:1.45"></div></div></div>
-
-<footer id="site-footer" class="site-footer" role="contentinfo">
-  <div class="site-footer-inner">
-    <span class="site-footer-copy">© 2026 Airwave Empire. All rights reserved.</span>
-    <nav class="site-footer-links" aria-label="Legal">
-      <a href="/legal/terms.html" target="_blank" rel="noopener">Terms</a>
-      <a href="/legal/privacy.html" target="_blank" rel="noopener">Privacy</a>
-      <a href="/legal/contact.html" target="_blank" rel="noopener">Contact</a>
-    </nav>
-    <p class="site-footer-sim">Fictional simulation — not affiliated with real stations or broadcasters.</p>
-  </div>
-</footer>
-
-  <!-- Vite: env in src/main.js (VITE_CLERK_PUBLISHABLE_KEY). Plain server: set meta above or use .env only after vite build. -->
-  <script type="module" src="/src/main.js"></script>
-  <script defer src="/src/stationLogoConfig.js"></script>
-  <script defer src="/src/stationLogoSvg.js"></script>
-  <script defer src="/src/legacy.js"></script>
+  </footer>
 </body>
 </html>

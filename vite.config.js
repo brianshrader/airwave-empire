@@ -1,14 +1,34 @@
 import { copyFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
-import { dirname, join } from 'path';
+import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { defineConfig } from 'vite';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
+/** Old /landing URL → site root (marketing page). */
+function landingRedirectPlugin() {
+  return {
+    name: 'airwave-landing-redirect',
+    enforce: 'pre',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const pathOnly = (req.url || '').split('?')[0];
+        if (pathOnly === '/landing' || pathOnly === '/landing/') {
+          res.writeHead(302, { Location: '/' });
+          res.end();
+          return;
+        }
+        next();
+      });
+    },
+  };
+}
+
 export default defineConfig({
   root: '.',
-  appType: 'spa',
+  appType: 'mpa',
   plugins: [
+    landingRedirectPlugin(),
     {
       name: 'copy-legacy-and-logo-js',
       writeBundle() {
@@ -47,5 +67,11 @@ export default defineConfig({
     emptyOutDir: true,
     // Top-level await in src/main.js (Clerk init before legacy.js)
     target: 'es2022',
+    rollupOptions: {
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        play: resolve(__dirname, 'play.html'),
+      },
+    },
   },
 });

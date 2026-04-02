@@ -257,7 +257,7 @@ const FA={
   PUBLIC_CLASSICAL:{'12-17':.01,'18-24':.04,'25-34':.12,'35-49':.38,'50-64':.62,'65+':.58},
 };
 const SW={morningDrive:.38,afternoonDrive:.26,midday:.18,evening:.11,overnight:.07};
-const SL={morningDrive:'MORNING',afternoonDrive:'AFTERNOON',midday:'MIDDAY',evening:'EVENING',overnight:'O/NIGHT'};
+const SL={morningDrive:'MORNING',afternoonDrive:'AFTERNOON',midday:'MIDDAY',evening:'EVENING',overnight:'OVERNIGHT'};
 const TALK_FMTS=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'];
 // Light market × format monetization (Duncan-style calibration). Revenue only; ±~10% max.
 // Keys = G.marketId for top-3 metros; omit format → 1. Does not affect shares.
@@ -881,10 +881,10 @@ function htmlOnAirTalentRoster(s){
         ?`${f$(perPd)}/period <span style="color:var(--mut);font-size:13px">(${f$(t.salary)}/yr)</span>`
         :'—';
       const star=t.superstar===true?'⭐ ':'';
-      return `<div class="sr" style="align-items:center;gap:8px">${talentPortraitThumbHtml(t,'tp-intel',`${callDisplay(s)} · ${lbl}`)}<span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);line-height:1.45"><strong style="font-weight:600;color:var(--wht)">${star}${t.name}</strong> · Q ${tq} · slot ${slotQ} · ${salStr}</span></div>`;
+      return `<div class="sr" style="align-items:center;gap:8px">${talentPortraitThumbHtml(t,'tp-intel',`${callDisplay(s)} · ${lbl}`)}<span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);line-height:1.45"><strong style="font-weight:600;color:var(--wht)">${star}${t.name}</strong> · talent ${tq} · slot quality ${slotQ} · ${salStr}</span></div>`;
     }
     const cap=nonLocalDaypartCaption(s.format,sl,!!s.isPublic,s);
-    return `<div class="sr"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px;color:var(--mut)"><em>${cap}</em> · slot Q ${slotQ}</span></div>`;
+    return `<div class="sr"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px;color:var(--mut)"><em>${cap}</em> · slot quality ${slotQ}</span></div>`;
   }).join('');
 }
 /** Ranker modal footer only: all on-air talent in the market, quality desc (no per-station lineup duplication above). */
@@ -1153,8 +1153,8 @@ const EVDATA=[
   {y:1996,p:1,t:'MOR Extinct',d:'Middle of Road no longer viable as a commercial format. The format is dead.',e:'fmt_purge:MOR'},
   {y:1996,p:1,t:'Telecom Act — Deregulation',d:'Ownership caps lifted. Up to 8 stations per market. Consolidation begins.',e:'fcc-1996'},
   {y:1997,p:1,t:'FM Saturation Complete',d:'97% of new cars have FM. A music AM in 1997 is a museum piece. Talk and all-news AMs with real newsrooms hold up better than music on the band — if the market can support the cost.',e:'fp+.03'},
-  {y:1997,p:2,t:'Consolidation Wave',d:'Clear Channel and Infinity buying everything. Independents pressured.',e:'consolidate'},
-  {y:1998,p:1,t:'Corporate Radio Peaks',d:'Clear Channel and Chancellor are buying stations faster than regulators can process the filings. Independent operators are getting offers they can\'t refuse. The era of local radio is ending.',e:'consolidate'},
+  {y:1997,p:2,t:'Consolidation Wave',d:'ClearWave and Veridian Media buying everything. Independents pressured.',e:'consolidate'},
+  {y:1998,p:1,t:'Corporate Radio Peaks',d:'ClearWave and Summit Broadcasting are buying stations faster than regulators can process the filings. Independent operators are getting offers they can\'t refuse. The era of local radio is ending.',e:'consolidate'},
   {y:1998,p:2,t:'Tech Ad Money Arrives',d:'Silicon Valley start-ups are buying radio time. The dot-com ad boom is starting to flood local markets. Revenue is climbing ahead of expectations.',e:'ad+.08'},
   {y:1999,p:1,t:'Dot-Com Ad Boom',d:'Tech companies flooding radio with ad dollars. Revenue peaks.',e:'ad+.20'},
   {y:2000,p:1,t:'New Formats Emerge',d:'Rhythmic CHR and Hot AC become dominant with younger demos.',e:'unlock-RHYTHMIC|unlock-HOT_AC|rival-RHYTHMIC-FM-100kw-emerging|rival-HOT_AC-FM-50kw-emerging'},
@@ -1172,20 +1172,20 @@ const EVDATA=[
   {y:2008,p:1,t:'Sirius-XM Merger',d:'Satellite consolidates. Drag on terrestrial intensifies.',e:'sat+'},
   {y:2008,p:2,t:'Financial Crisis',d:'Worst recession since 1930s. Ad spending collapses.',e:'ad-.25'},
   {y:2009,p:2,t:'Slow Recovery',d:'Green shoots. Ad market begins cautious recovery.',e:'ad+.06'},
-  {y:2010,p:2,t:'Smartphone Radio',d:'iHeartRadio launches. Terrestrial content finds new distribution.',e:'stream+'},
+  {y:2010,p:2,t:'Smartphone Radio',d:'PulseCast Radio app launches. Terrestrial content finds new distribution.',e:'stream+'},
   {y:2011,p:1,t:'Pandora Goes Public',d:'Pandora\'s IPO values the streaming service at $2.6 billion. For the first time, Wall Street is betting against terrestrial radio. The existential threat is now priced in.',e:'stream+'},
   {y:2011,p:2,t:'Talk Radio Polarizes',d:'AM Talk has become the loudest voice in American politics. Ratings are strong but the demo is aging and getting narrower. You\'re winning the argument and losing the audience.',e:'ad+.04'},
   {y:2012,p:1,t:'Podcast Era Begins',d:'Podcast listening goes mainstream. Hybrid talk format unlocked.',e:'unlock-PODCAST_TALK|rival-PODCAST_TALK-AM-10kw-niche'},
   {y:2012,p:2,t:'Oldies Format Extinct',d:'The last pure Oldies stations have converted. Classic Hits is the successor — or the demo is 75+ and the format is dying.',e:'fmt_purge:OLDIES'},
   {y:2012,p:2,t:'Streaming Accelerates',d:'Spotify growing fast. 18–34 demo drifting from terrestrial FM.',e:'stream+'},
   {y:2013,p:1,t:'Ad Market Recovers',d:'Digital ad spend growing. Radio holds share in local markets.',e:'ad+.08'},
-  {y:2013,p:2,t:'AM Signal Becoming a Liability',d:'Clear Channel (now iHeart) and CBS Radio scramble to add FM simulcasts for their AM flagships. The AM signal quality gap vs. FM and streaming is now undeniable — even for dominant News/Talk and Sports stations.',e:'amtalk_warn2'},
+  {y:2013,p:2,t:'AM Signal Becoming a Liability',d:'ClearWave (now PulseCast Group) and Tri-State Radio scramble to add FM simulcasts for their AM flagships. The AM signal quality gap vs. FM and streaming is now undeniable — even for dominant News/Talk and Sports stations.',e:'amtalk_warn2'},
   {y:2014,p:1,t:'Spotify Mainstream',d:'Spotify crosses 40 million active users. The 18-34 demo now has a credible alternative to FM for music. Radio still wins in the car — for now.',e:'stream+'},
   {y:2014,p:2,t:'Radio\'s Last Peak',d:'Broadcast radio will generate $17.4 billion this year — the last time the industry posts growth before a multi-year slide. If you\'re not positioned now, you won\'t be.',e:'ad+.06'},
   {y:2015,p:1,t:'Streaming Mainstream',d:'Half of all 18–34s now stream more than they listen to radio.',e:'stream+'},
   {y:2016,p:2,t:'Political Ad Bonanza',d:'Election year. News/Talk and local stations flooded with political spend.',e:'ntb2'},
   {y:2017,p:1,t:'Smart Speakers',d:'Amazon Echo and Google Home put a radio in every kitchen — but also Spotify, podcasts, and Pandora. Radio\'s smart speaker presence is strong. The competition is stronger.',e:'ad-.02'},
-  {y:2017,p:2,t:'iHeart Debt Crisis',d:'iHeartMedia warns of possible bankruptcy — $20 billion in debt from the Clear Channel LBO. The consolidation era is eating itself. Highly-leveraged group owners are cutting costs everywhere.',e:'ad-.04'},
+  {y:2017,p:2,t:'Debt Crisis — Mega-Groups',d:'PulseCast Group warns of possible bankruptcy — massive debt left over from the ClearWave-era buyout wave. The consolidation era is eating itself. Highly-leveraged group owners are cutting costs everywhere.',e:'ad-.04'},
   {y:2018,p:1,t:'Podcast Advertising Boom',d:'Podcast ad revenue explodes. Podcast/Talk CPM rises further.',e:'podboost'},
   {y:2019,p:2,t:'Streaming Saturation',d:'Streaming has fundamentally reshaped radio economics.',e:'stream+'},
   {y:2020,p:1,t:'COVID-19 — Ad Collapse',d:'Pandemic. Ad spending collapses overnight. Drive-time audiences vanish.',e:'ad-.30'},
@@ -1460,6 +1460,12 @@ const f$=n=>{
   }
   return p+(Math.round(v/1e7)/100).toFixed(2)+'B';
 };
+/** Period pay on station lineup — round to nearest $500 before formatting for cleaner numbers. */
+const f$Pd=n=>{
+  const x=Number(n);
+  if(!Number.isFinite(x))return f$(NaN);
+  return f$(Math.round(x/500)*500);
+};
 const pct=n=>(n*100).toFixed(1)+'%';
 // Lightweight transient notification — uses alertbar briefly, then restores
 function showToast(msg,type='info'){
@@ -1628,10 +1634,10 @@ const MARKETS={
     selectBlurb:'Reference Sunbelt market: diverse formats, strong soul/R&B and Top 40 battlegrounds, heritage AMs that still matter in the 70s, then FM specialization accelerates.',
     fmPenBias:0, fmMusicFragMult:1, spokenWordAmResilience:1.02, heritageAmResilience:1.02, countryAmHoldout:1,
     teams:[
-      {id:'braves',name:'Atlanta Braves',sport:'MLB',introduced:1970,baseFee:95000,baseBonus:0.012,contractYrs:3},
-      {id:'falcons',name:'Atlanta Falcons',sport:'NFL',introduced:1970,baseFee:420000,baseBonus:0.025,contractYrs:4},
-      {id:'hawks',name:'Atlanta Hawks',sport:'NBA',introduced:1970,baseFee:85000,baseBonus:0.010,contractYrs:3},
-      {id:'thrashers',name:'Atlanta Thrashers',sport:'NHL',introduced:2000,baseFee:80000,baseBonus:0.009,contractYrs:3},
+      {id:'braves',name:'Atlanta Fire Ants',sport:'PRO_BASEBALL',introduced:1970,baseFee:95000,baseBonus:0.012,contractYrs:3},
+      {id:'falcons',name:'Atlanta Peach Pit Crew',sport:'PRO_FOOTBALL',introduced:1970,baseFee:420000,baseBonus:0.025,contractYrs:4},
+      {id:'hawks',name:'Atlanta Hoop Snakes',sport:'PRO_BASKETBALL',introduced:1970,baseFee:85000,baseBonus:0.010,contractYrs:3},
+      {id:'thrashers',name:'Atlanta Ice Weasels',sport:'PRO_HOCKEY',introduced:2000,baseFee:80000,baseBonus:0.009,contractYrs:3},
     ],
   },
   nashville:{
@@ -1645,9 +1651,9 @@ const MARKETS={
     selectBlurb:'Country-first listening culture: format loyalty runs deep, AM country keeps its footing longer, and the FM transition still arrives — just a beat later than generic Sunbelt markets.',
     fmPenBias:-0.058, fmMusicFragMult:0.96, spokenWordAmResilience:1, heritageAmResilience:1.06, countryAmHoldout:1.2,
     teams:[
-      {id:'sounds',name:'Nashville Sounds',sport:'MLB',introduced:1978,baseFee:28000,baseBonus:0.006,contractYrs:3},
-      {id:'predators',name:'Nashville Predators',sport:'NHL',introduced:1998,baseFee:115000,baseBonus:0.014,contractYrs:3},
-      {id:'titans',name:'Tennessee Titans',sport:'NFL',introduced:1997,baseFee:340000,baseBonus:0.028,contractYrs:4},
+      {id:'sounds',name:'Nashville Hot Chicken',sport:'PRO_BASEBALL',introduced:1978,baseFee:28000,baseBonus:0.006,contractYrs:3},
+      {id:'predators',name:'Nashville Catfish Rodeo',sport:'PRO_HOCKEY',introduced:1998,baseFee:115000,baseBonus:0.014,contractYrs:3},
+      {id:'titans',name:'Tennessee Titan-Ups',sport:'PRO_FOOTBALL',introduced:1997,baseFee:340000,baseBonus:0.028,contractYrs:4},
     ],
   },
   newyork:{
@@ -1661,12 +1667,12 @@ const MARKETS={
     selectBlurb:'Huge billing pool and ruthless competition. Spoken-word and AC/Top 40 paydays reward winners; the dial fragments early. Country is a sideline, not the main story.',
     fmPenBias:0.055, fmMusicFragMult:1.06, spokenWordAmResilience:1.11, heritageAmResilience:1.08, countryAmHoldout:0.76,
     teams:[
-      {id:'yankees',name:'New York Yankees',sport:'MLB',introduced:1970,baseFee:520000,baseBonus:0.030,contractYrs:4},
-      {id:'mets',name:'New York Mets',sport:'MLB',introduced:1970,baseFee:240000,baseBonus:0.018,contractYrs:3},
-      {id:'giants_ny',name:'New York Giants',sport:'NFL',introduced:1970,baseFee:580000,baseBonus:0.032,contractYrs:4},
-      {id:'jets',name:'New York Jets',sport:'NFL',introduced:1970,baseFee:380000,baseBonus:0.026,contractYrs:4},
-      {id:'knicks',name:'New York Knicks',sport:'NBA',introduced:1970,baseFee:220000,baseBonus:0.020,contractYrs:3},
-      {id:'rangers',name:'New York Rangers',sport:'NHL',introduced:1970,baseFee:180000,baseBonus:0.016,contractYrs:3},
+      {id:'yankees',name:'New York Cows',sport:'PRO_BASEBALL',introduced:1970,baseFee:520000,baseBonus:0.030,contractYrs:4},
+      {id:'mets',name:'New York Pigeon Lords',sport:'PRO_BASEBALL',introduced:1970,baseFee:240000,baseBonus:0.018,contractYrs:3},
+      {id:'giants_ny',name:'New York Commuter Rage',sport:'PRO_FOOTBALL',introduced:1970,baseFee:580000,baseBonus:0.032,contractYrs:4},
+      {id:'jets',name:'New York Bodega Cats',sport:'PRO_FOOTBALL',introduced:1970,baseFee:380000,baseBonus:0.026,contractYrs:4},
+      {id:'knicks',name:'New York Pizza Rats',sport:'PRO_BASKETBALL',introduced:1970,baseFee:220000,baseBonus:0.020,contractYrs:3},
+      {id:'rangers',name:'New York Frost Giants',sport:'PRO_HOCKEY',introduced:1970,baseFee:180000,baseBonus:0.016,contractYrs:3},
     ],
   },
   losangeles:{
@@ -1680,11 +1686,11 @@ const MARKETS={
     selectBlurb:'FM-first battlefield: fast fragmentation, constant format churn, and big upside for whoever owns a lane. Spanish and rhythmic/urban-adjacent formats gain ground as the metro evolves.',
     fmPenBias:0.068, fmMusicFragMult:1.1, spokenWordAmResilience:1.02, heritageAmResilience:0.96, countryAmHoldout:0.78,
     teams:[
-      {id:'dodgers',name:'Los Angeles Dodgers',sport:'MLB',introduced:1970,baseFee:480000,baseBonus:0.028,contractYrs:4},
-      {id:'angels',name:'Los Angeles Angels',sport:'MLB',introduced:1970,baseFee:180000,baseBonus:0.014,contractYrs:3},
-      {id:'lakers',name:'Los Angeles Lakers',sport:'NBA',introduced:1970,baseFee:320000,baseBonus:0.024,contractYrs:3},
-      {id:'chargers_la',name:'Los Angeles Chargers',sport:'NFL',introduced:2017,baseFee:420000,baseBonus:0.026,contractYrs:4},
-      {id:'rams_la',name:'Los Angeles Rams',sport:'NFL',introduced:2016,baseFee:440000,baseBonus:0.027,contractYrs:4},
+      {id:'dodgers',name:'Los Angeles Commodes',sport:'PRO_BASEBALL',introduced:1970,baseFee:480000,baseBonus:0.028,contractYrs:4},
+      {id:'angels',name:'Los Angeles Smog Angels',sport:'PRO_BASEBALL',introduced:1970,baseFee:180000,baseBonus:0.014,contractYrs:3},
+      {id:'lakers',name:'Los Angeles Palm Readers',sport:'PRO_BASKETBALL',introduced:1970,baseFee:320000,baseBonus:0.024,contractYrs:3},
+      {id:'chargers_la',name:'Los Angeles Outlet Malls',sport:'PRO_FOOTBALL',introduced:2017,baseFee:420000,baseBonus:0.026,contractYrs:4},
+      {id:'rams_la',name:'Los Angeles Freeway Rams',sport:'PRO_FOOTBALL',introduced:2016,baseFee:440000,baseBonus:0.027,contractYrs:4},
     ],
   },
   chicago:{
@@ -1698,11 +1704,11 @@ const MARKETS={
     selectBlurb:'Big-signal Midwest hub: heritage AM survivors, durable talk, and bruising FM music fights. Sports and spoken-word become natural revenue engines as the dial matures.',
     fmPenBias:0.034, fmMusicFragMult:1.03, spokenWordAmResilience:1.1, heritageAmResilience:1.09, countryAmHoldout:0.9,
     teams:[
-      {id:'cubs',name:'Chicago Cubs',sport:'MLB',introduced:1970,baseFee:280000,baseBonus:0.020,contractYrs:3},
-      {id:'whitesox',name:'Chicago White Sox',sport:'MLB',introduced:1970,baseFee:160000,baseBonus:0.014,contractYrs:3},
-      {id:'bears',name:'Chicago Bears',sport:'NFL',introduced:1970,baseFee:520000,baseBonus:0.030,contractYrs:4},
-      {id:'bulls',name:'Chicago Bulls',sport:'NBA',introduced:1970,baseFee:260000,baseBonus:0.022,contractYrs:3},
-      {id:'blackhawks',name:'Chicago Blackhawks',sport:'NHL',introduced:1970,baseFee:140000,baseBonus:0.012,contractYrs:3},
+      {id:'cubs',name:'Chicago Deep Dishes',sport:'PRO_BASEBALL',introduced:1970,baseFee:280000,baseBonus:0.020,contractYrs:3},
+      {id:'whitesox',name:'Chicago L-Train Bandits',sport:'PRO_BASEBALL',introduced:1970,baseFee:160000,baseBonus:0.014,contractYrs:3},
+      {id:'bears',name:'Chicago Wind Chills',sport:'PRO_FOOTBALL',introduced:1970,baseFee:520000,baseBonus:0.030,contractYrs:4},
+      {id:'bulls',name:'Chicago Beanstalks',sport:'PRO_BASKETBALL',introduced:1970,baseFee:260000,baseBonus:0.022,contractYrs:3},
+      {id:'blackhawks',name:'Chicago Goose Islands',sport:'PRO_HOCKEY',introduced:1970,baseFee:140000,baseBonus:0.012,contractYrs:3},
     ],
   },
 };
@@ -1875,7 +1881,17 @@ syncMarketPopToMarket(ACTIVE_MARKET);
 //     the licensee AND any simulcast partner that carries the same feed (explicit _simulcastSource pair).
 // ══════════════════════════════════════════════════════════════════
 const SPORT_SEASONS={
-  NFL:{p1:0.25,p2:0.75},MLB:{p1:0.50,p2:0.50},NBA:{p1:0.60,p2:0.40},NHL:{p1:0.55,p2:0.45},
+  PRO_FOOTBALL:{p1:0.25,p2:0.75},
+  PRO_BASEBALL:{p1:0.50,p2:0.50},
+  PRO_BASKETBALL:{p1:0.60,p2:0.40},
+  PRO_HOCKEY:{p1:0.55,p2:0.45},
+};
+/** Display strings — no real league trademarks */
+const SPORT_LABEL={
+  PRO_FOOTBALL:'Professional Football',
+  PRO_BASEBALL:'Professional Baseball',
+  PRO_BASKETBALL:'Professional Basketball',
+  PRO_HOCKEY:'Professional Hockey',
 };
 const SPORTS_FORMAT_FIT={
   SPORTS_TALK:1.00,NEWS_TALK:0.70,ALL_NEWS:0.68,PODCAST_TALK:0.65,
@@ -2032,10 +2048,10 @@ function runSportsEvents(G){
     rec.record=Math.max(5,Math.min(98,Math.round(rec.record+shock+reversion)));
     const tier=sportsTierFromRecord(rec.record);
     const prevTier=sportsTierFromRecord(rec.record-shock-reversion);
-    const isSeasonStart=(team.sport==='NFL'&&G.period===2)||
-      (team.sport==='MLB'&&G.period===1)||
-      (team.sport==='NBA'&&G.period===2)||
-      (team.sport==='NHL'&&G.period===2);
+    const isSeasonStart=(team.sport==='PRO_FOOTBALL'&&G.period===2)||
+      (team.sport==='PRO_BASEBALL'&&G.period===1)||
+      (team.sport==='PRO_BASKETBALL'&&G.period===2)||
+      (team.sport==='PRO_HOCKEY'&&G.period===2);
     if(isSeasonStart||(tier!==prevTier&&Math.random()<0.7)){
       const labels=TEAM_TIER_LABELS[tier];
       const label=labels[Math.floor(Math.random()*labels.length)];
@@ -3023,6 +3039,7 @@ function mergeCosmeticPreserve(prevG, nextG) {
         if (pt._portraitUrl && !st._portraitUrl) {
           st._portraitUrl = pt._portraitUrl;
           if (pt._portraitV != null) st._portraitV = pt._portraitV;
+          if (pt._portraitLibraryAsset && !st._portraitLibraryAsset) st._portraitLibraryAsset = pt._portraitLibraryAsset;
         }
       }
     }
@@ -3042,6 +3059,7 @@ function mergeCosmeticPreserve(prevG, nextG) {
       if (pt && pt._portraitUrl && !t._portraitUrl) {
         t._portraitUrl = pt._portraitUrl;
         if (pt._portraitV != null) t._portraitV = pt._portraitV;
+        if (pt._portraitLibraryAsset && !t._portraitLibraryAsset) t._portraitLibraryAsset = pt._portraitLibraryAsset;
       }
     });
   }
@@ -6309,7 +6327,7 @@ function decay(s,year,period){
       for(const m of milestones){
         if(cur<m.threshold&&newIdentity>=m.threshold){
           G.news.unshift({v:'HIGH',t:m.msg,y:G.year,p:G.period,iy:true});
-          logHistory(s,'IDENTITY',`Identity milestone: ${m.threshold} — ${m.threshold===25?'Recognized local voice':m.threshold===50?'Community institution':m.threshold===75?'Cornerstone station':'Landmark'}`,G);
+          logHistory(s,'IDENTITY',`Identity milestone: ${m.threshold} — ${m.threshold===25?'Recognized local voice':m.threshold===50?'Community institution':m.threshold===75?'Cornerstone station':'Legend status'}`,G);
         }
       }
     }
@@ -8243,14 +8261,14 @@ function wlFtTutorialLayoutStep(){
     body='This card is your station. Grow your audience (share) and keep the station profitable.';
   }else if(st===2){
     title='Core stats';
-    body='<strong>Share</strong> is your piece of the audience. <strong>Revenue</strong> and <strong>costs</strong> are per period; <strong>EBITDA</strong> is what’s left after costs — your operating profit.';
+    body='<strong>Share</strong> is your piece of the audience. <strong>Revenue</strong> and <strong>costs</strong> are per period; <strong>EBITDA</strong> is what’s left after costs — your operating profit. Each <strong>period</strong> is <strong>6 months</strong>: period 1 is <strong>Spring</strong>, period 2 is <strong>Fall</strong> of the same year.';
   }else if(st===3){
     title='Make one change';
     body='Click <strong>Programming</strong>. Move the budget or just look — then close the window to continue.';
     showNext=false;
   }else if(st===4){
     title='End the turn';
-    body='Press <strong>Next Period</strong> when you’re ready. The market updates, then you’ll see a summary of results.';
+    body='Press <strong>Next Period</strong> when you’re ready — that advances the calendar by one period (half a year: Spring or Fall). The market updates, then you’ll see a summary of results.';
     showNext=false;
     _wlFtTut.awaitingSum=true;
   }else if(st===5){
@@ -8379,8 +8397,21 @@ function showError(msg,detail){
 
 let _pendingScenId=null; // set during scenario selection before genMarket runs
 
+/** Solo entry waits for this when <meta name="wl-require-clerk" content="1"> or VITE_REQUIRE_CLERK (see src/main.js). */
 function init(){
-  console.log('[Airwave Empire] init() called');
+  if(!window.__WL_REQUIRE_CLERK){
+    initCore();
+    return;
+  }
+  if(window.__wlBetaAuthUnlocked){
+    initCore();
+    return;
+  }
+  window.addEventListener('wl-beta-auth-ok', ()=>initCore(), {once:true});
+}
+
+function initCore(){
+  console.log('[Airwave Empire] initCore() called');
   try{
     const local=getLocalSave();
     console.log('[Airwave Empire] localSave:', local ? `found (year=${local?.G?.year}, sc=${local?.G?.sc?.id}, cash=${local?.G?.cash}, sc.cash=${local?.G?.sc?.cash})` : 'none');
@@ -8647,6 +8678,7 @@ function startPlay(scenId){
     }
     G=genMarket(scenId);
     G.companyName=companyName;
+    G._portraitSessionId=(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2,11)}`;
     initSportsRights(G);
     initFranchiseRights(G);
     refreshAllStationOQ(G);
@@ -8963,7 +8995,7 @@ function buildResearchReport(s,G){
       ? `AM signal eroding: -${amTalkPenalty}% audience reach vs FM/digital. FM simulcast eliminates this.`
       : `News, Talk and Sports are the AM-native formats. Music AM erosion doesn't apply.`;
     sigSection+=row('Signal type','AM — Talk/News native', amTalkNote, amTalkColor);
-    if(s.clearChannel)sigSection+=row('Clear Channel','Class A — Unlimited','No nighttime directionality. Signal covers the full region at night, expanding your effective audience by ~18%. Revenue premium applies through 1995.','var(--amb)');
+    if(s.clearChannel)sigSection+=row('Clear-channel AM (Class A)','Unlimited night power','No nighttime directionality. Signal covers the full region at night, expanding your effective audience by ~18%. Revenue premium applies through 1995.','var(--amb)');
     else if(s.sig.pw==='DA')sigSection+=row('Daytimer / DA','50kW day · 1-5kW night','Power drops sharply at sunset to protect clear-channel signals. Evening drive audiences in fringe areas lose your signal. Effective reach ≈ 72% of a full-time 50kW. An FM simulcast or translator eliminates this.','var(--red)');
     else if(s.sig.pw==='50kw')sigSection+=row('50kW Directional','50kW day / reduced night','Power drops and signal rotates at night to protect clear-channel stations. Daytime market coverage only.','var(--mut)');
     sigSection+=row('AM Talk viability',`${Math.round(amViab*100)}%`,year>=1990?'AM talk still strong but FM competitors emerging.':year>=1985?'Some FM competition for News/Talk emerging.':'Full AM advantage for talk formats.','var(--grn)');
@@ -8974,7 +9006,7 @@ function buildResearchReport(s,G){
     const viabPct=Math.round(amPenalty*100);
     const viabColor=amPenalty>0.7?'var(--grn)':amPenalty>0.4?'var(--amb)':'var(--red)';
     sigSection+=row('Signal type','AM — Music format','AM music stations face audience defection to FM as FM penetration rises.','var(--red)');
-    if(s.clearChannel)sigSection+=row('Clear Channel','Class A — Unlimited','No nighttime power reduction. Wider coverage buys time vs non-clear-channel AM music stations — but FM erosion still applies to all AM music formats.','var(--amb)');
+    if(s.clearChannel)sigSection+=row('Clear-channel AM (Class A)','Unlimited night power','No nighttime power reduction. Wider coverage buys time vs non-clear-channel AM music stations — but FM erosion still applies to all AM music formats.','var(--amb)');
     else if(s.sig.pw==='DA')sigSection+=row('Daytimer / DA','50kW day · 1-5kW night','Power drops sharply at sunset. Fringe listeners lose the signal in evening drive — when music radio is most valuable. High incentive to get an FM signal.','var(--red)');
     else if(s.sig.pw==='50kw')sigSection+=row('50kW Directional','50kW day / reduced night','Power drops and signal rotates at night. Same erosion penalties as other AM music.','var(--mut)');
     if(s.fmBooster){
@@ -9438,11 +9470,11 @@ function rivalReformat(G){
 
 // ── CONSOLIDATION SYSTEM ──────────────────────────────────────────
 // Post-1996 Telecom Act: corporate radio groups acquire independents
-// Three fictional consolidators modeled on Clear Channel, Cumulus, Citadel
+// Fictional consolidators (corp ids stable for save compatibility; names are parody)
 const CORPS=[
-  {id:'clearwave', name:'ClearWave Media',    color:'#dc2626', stations:[], budget:50000000, aggression:0.85},
-  {id:'cumulus2',  name:'Cumulus Broadcasting',color:'#7c3aed', stations:[], budget:30000000, aggression:0.65},
-  {id:'landmark',  name:'Landmark Radio Group',color:'#0369a1', stations:[], budget:5000000, aggression:0.50},
+  {id:'clearwave', name:'ClearWave Media',           color:'#dc2626', stations:[], budget:50000000, aggression:0.85},
+  {id:'cumulus2',  name:'Nimbus Broadcasting Group', color:'#7c3aed', stations:[], budget:30000000, aggression:0.65},
+  {id:'landmark',  name:'Keystone Radio Holdings', color:'#0369a1', stations:[], budget:5000000, aggression:0.50},
 ];
 
 function initConsolidation(G){
@@ -10711,7 +10743,7 @@ function openManageTalent(sid){
   om('m-fire');
   scrollModalContentToTop('m-fire');
 }
-/** Empty / syndicated daypart: slot Q, status bucket, one-line detail, hire hint. */
+/** Empty / syndicated daypart: slot quality, status bucket, one-line detail, hire hint. */
 function manageTalentEmptySlotMeta(s, sl, _simSrc) {
   const slotQ = Math.round(s.prog[sl]?.quality || 0);
   if (daytimerRestrictedSlot(s, sl)) {
@@ -10784,7 +10816,7 @@ function renderManageTalentStation(sid){
   document.getElementById('fireb').innerHTML=`
     <div class="mt-manage">
       ${rosterStationSectionHeaderHtml(s)}
-      <p class="di" style="margin-bottom:14px">All dayparts for this station. Hire, replace, move, transfer, bench, or fire — without leaving this screen.</p>
+      <p class="di" style="margin-bottom:14px">All dayparts for this station. Hire, replace, move, transfer, bench, or fire — without leaving this screen. <strong>Quality share ~%</strong> is roughly how much of this station’s programming quality bar comes from each daypart (morning counts more than overnight). <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:4px" onclick="openTalentMetricsHelp('qualityshare')">?</button> <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:4px" onclick="openTalentMetricsHelp()">Full metrics</button></p>
       ${blocks}
       <div class="ms2" style="margin-top:8px"><div class="msh">TALENT BENCH</div>${benchRows||'<p class="di" style="color:var(--mut)">Bench is empty.</p>'}</div>
       <button class="cnl" type="button" onclick="cm('m-fire')" style="margin-top:16px">CLOSE</button>
@@ -10825,10 +10857,12 @@ function manageTalentDaypartBlockHtml(s,sl,_simSrc,stationOQ){
   const moveRow=restrictedHost
     ?`<p style="font-size:12px;color:var(--amb);margin:0 0 10px 0;line-height:1.45">Legacy host in a daytimer night slot — bench or fire to align with license. Replace / move / transfer are disabled here.</p>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">
+          <button class="abt" type="button" style="border-color:var(--blu);color:var(--blu)" onclick="openContractFromManageTalent('${s.id}','${sl}')">CONTRACT / PAY</button>
           <button class="abt" type="button" style="border-color:var(--amb);color:var(--amb)" onclick="rosterBenchClick('${s.id}','${sl}')">BENCH</button>
           <button class="abt d" type="button" onclick="rosterFirePrompt('${s.id}','${sl}')">${fireLbl}</button>
         </div>`
     :`<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">
+          <button class="abt" type="button" style="border-color:var(--blu);color:var(--blu)" onclick="openContractFromManageTalent('${s.id}','${sl}')">CONTRACT / PAY</button>
           <button class="abt" type="button" onclick="mtOpenReplaceSlot('${s.id}','${sl}')">REPLACE</button>
           <button class="abt" type="button" onclick="mtOpenMoveSameStation('${s.id}','${sl}')">MOVE</button>
           <button class="abt" type="button" onclick="mtBeginTransfer('${s.id}','${sl}')">TRANSFER</button>
@@ -10844,10 +10878,10 @@ function manageTalentDaypartBlockHtml(s,sl,_simSrc,stationOQ){
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px 12px;margin-top:10px;font-size:13px;color:var(--off)">
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">TALENT</span><span class="${qc(talQ)}">${talQ}/100</span></div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">FORMAT FIT</span><span style="color:${fitSum.col};font-family:var(--fd)">${fitSum.words}</span></div>
-          <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">SLOT Q</span><span style="color:${slotQ>=70?'var(--grn)':slotQ>=45?'var(--amb)':'var(--red)'}">${slotQ}/100</span></div>
+          <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">SLOT QUALITY</span><span style="color:${slotQ>=70?'var(--grn)':slotQ>=45?'var(--amb)':'var(--red)'}">${slotQ}/100</span></div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">SALARY</span>${f$(t.salary)}/yr</div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">CONTRACT</span>${cyr} yr</div>
-          <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">CONTRIBUTION</span><span style="color:${perfCol}">~${contribution}%</span></div>
+          <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">QUALITY SHARE ~%</span><span style="color:${perfCol}" title="Approx. share of this station’s programming quality from this daypart">~${contribution}%</span> <button type="button" class="abt" style="padding:2px 8px;font-size:10px;vertical-align:middle;margin-left:4px;letter-spacing:0.04em" onclick="openTalentMetricsHelp('qualityshare')">?</button></div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">TREND</span><span style="color:${trendCol}">${trendWord}</span></div>
         </div>
         ${moveRow}
@@ -10929,8 +10963,8 @@ function rHire(s, scrollAfter){
     const slotQ=Math.round(sd?.quality||0);
     const talQ=sd?.talent?.quality?Math.round(sd.talent.quality):null;
     const slotQlbl=`<span style="color:${slotQ>=70?'var(--grn)':slotQ>=45?'var(--amb)':'var(--red)'}"> ${slotQ}</span>`;
-    const talQlbl=talQ!==null?`<span style="color:var(--mut);font-size:14px"> · quality ${talQ}</span>`:'';
-    return `<button class="ssb${HS.slot===sl?' sel':''}" onclick="pickSlot('${s.id}','${sl}')"><span><strong>${SL[sl]}</strong><span style="font-size:14px;color:var(--mut);margin-left:6px">SLOT${slotQlbl}${talQlbl}</span></span><span class="cur">${tn}</span></button>`;
+    const talQlbl=talQ!==null?`<span style="color:var(--mut);font-size:13px"> · talent ${talQ}</span>`:'';
+    return `<button class="ssb${HS.slot===sl?' sel':''}" onclick="pickSlot('${s.id}','${sl}')"><span><strong>${SL[sl]}</strong><span style="font-size:13px;color:var(--mut);margin-left:6px;display:block;line-height:1.35;margin-top:2px">Slot quality${slotQlbl}${talQlbl}</span></span><span class="cur">${tn}</span></button>`;
   }).join('');
   const slotHeader=embed?`<div class="ibox" style="margin-bottom:14px;line-height:1.55"><strong>${SL[HS.slot]}</strong> · ${callDisplay(s)}${HS._hireKind==='replace'?'<br><span style="color:var(--amb);font-size:14px;display:inline-block;margin-top:6px">Replacing current host — they go to the <strong>talent bench</strong>, then the new host is placed on air.</span>':''}</div>`:`<div class="ssl">${sbtns}</div>`;
   let ph='<p class="di" style="margin-top:12px">Select a daypart to see available talent.</p>';
@@ -10939,7 +10973,7 @@ function rHire(s, scrollAfter){
     const cur=s2.prog[HS.slot]?.talent;
     const slotQcur=Math.round(s2.prog[HS.slot]?.quality||0);
     const poachList=hireModalRivalPoachCandidates(HS.sid,HS.slot);
-    const freeRows=HS.pool.map((t,i)=>{const fit=Math.round((t.formatFit[s2.format]||.3)*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const boost=Math.round((q/100)*fit*.35*35);const newSlotQ=Math.min(100,curSlotQ+boost);const hStar=t.superstar===true?'★ ':'';let deltaHtml='';if(HS._hireKind==='replace'&&cur){const dQ=q-Math.round(cur.quality);const curW=talentDestFormatFitSummary(cur,s2.format).words;const newW=talentDestFormatFitSummary(t,s2.format).words;const dSal=t.salary-cur.salary;deltaHtml=`<div style="font-size:12px;color:var(--amb);margin-top:4px;font-family:var(--ft)">Δ Talent ${dQ>=0?'+':''}${dQ} · Δ Fit ${curW} → ${newW} · Δ Salary ${dSal>=0?'+':''}${f$(dSal)}/yr</div>`;}return `<div class="to to-hire${HS.sel===i&&!HS.poachRivalId?' sel':''}" onclick="pickTal(${i})"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-hire',`${callDisplay(s2)} · ${SL[HS.slot]} · hire list`)}</div><div style="flex:1;min-width:0"><div class="ton">${hStar}${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div>${deltaHtml}<div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">SLOT BOOST</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ}</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div></div></div></div><div class="to-hire-side"><span class="tocl">ANNUAL SAL</span><span class="toc">${f$(t.salary)}</span></div></div>`;}).join('');
+    const freeRows=HS.pool.map((t,i)=>{const fit=Math.round((t.formatFit[s2.format]||.3)*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const boost=Math.round((q/100)*fit*.35*35);const newSlotQ=Math.min(100,curSlotQ+boost);const hStar=t.superstar===true?'★ ':'';let deltaHtml='';if(HS._hireKind==='replace'&&cur){const dQ=q-Math.round(cur.quality);const curW=talentDestFormatFitSummary(cur,s2.format).words;const newW=talentDestFormatFitSummary(t,s2.format).words;const dSal=t.salary-cur.salary;deltaHtml=`<div style="font-size:12px;color:var(--amb);margin-top:6px;font-family:var(--ft);line-height:1.55"><div>Δ Talent rating: ${dQ>=0?'+':''}${dQ}</div><div>Δ Format fit: ${curW} → ${newW}</div><div>Δ Salary: ${dSal>=0?'+':''}${f$(dSal)}/yr</div></div>`;}return `<div class="to to-hire${HS.sel===i&&!HS.poachRivalId?' sel':''}" onclick="pickTal(${i})"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-hire',`${callDisplay(s2)} · ${SL[HS.slot]} · hire list`)}</div><div style="flex:1;min-width:0"><div class="ton">${hStar}${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div>${deltaHtml}<div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl" style="font-size:12px;line-height:1.25;white-space:normal" title="Estimated slot quality after hire: current slot score plus boost from talent × format fit (max 100).">PROJECTED SLOT QUALITY</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ}</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div></div></div></div><div class="to-hire-side"><span class="tocl">ANNUAL SAL</span><span class="toc">${f$(t.salary)}</span></div></div>`;}).join('');
     const rivalRows=poachList.map(({st,sd:rsd})=>{
       const rt=rsd.talent;
       const fit=Math.round((rt.formatFit[s2.format]||.3)*100);
@@ -10954,12 +10988,12 @@ function rHire(s, scrollAfter){
       const canAfford=G.cash>=minCash;
       const sel=HS.poachRivalId===st.id;
       const rhStar=rt.superstar===true?'★ ':'';
-      return `<div class="to to-hire${sel?' sel':''}" onclick="pickHirePoach('${st.id}')"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(rt,'tp-hire',`${callDisplay(st)} · ${SL[HS.slot]} · rival poach`)}</div><div style="flex:1;min-width:0"><div class="ton">${rhStar}${rt.name} <span style="font-size:13px;color:var(--amb);font-family:var(--ft);letter-spacing:.06em">RIVAL</span></div><div class="tos" style="color:var(--mut)">${callDisplay(st)} · ${SL[HS.slot]}</div><div class="tost"><div><span class="tosl">TALENT Q</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">FIT</span><span class="tosv ${fc}">${fl}</span></div><div><span class="tosl">AT RIVAL</span><span class="tosv">${f$(rt.salary)}/yr</span></div></div><div style="font-size:13px;color:var(--mut);margin-top:4px">Est. offer ~${f$(dispOffer)}/yr · need ≥${f$(minCash)} cash${buyout?` (incl. buyout ${f$(buyout)})`:''}</div></div></div><div class="to-hire-side"><span class="tocl">ACTION</span><span class="toc" style="font-size:14px;color:${canAfford?'var(--mut)':'var(--red)'}">${canAfford?'Select, then HIRE':'Short on cash'}</span></div></div>`;
+      return `<div class="to to-hire${sel?' sel':''}" onclick="pickHirePoach('${st.id}')"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(rt,'tp-hire',`${callDisplay(st)} · ${SL[HS.slot]} · rival poach`)}</div><div style="flex:1;min-width:0"><div class="ton">${rhStar}${rt.name} <span style="font-size:13px;color:var(--amb);font-family:var(--ft);letter-spacing:.06em">RIVAL</span></div><div class="tos" style="color:var(--mut)">${callDisplay(st)} · ${SL[HS.slot]}</div><div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">FIT</span><span class="tosv ${fc}">${fl}</span></div><div><span class="tosl">AT RIVAL</span><span class="tosv">${f$(rt.salary)}/yr</span></div></div><div style="font-size:13px;color:var(--mut);margin-top:4px">Est. offer ~${f$(dispOffer)}/yr · need ≥${f$(minCash)} cash${buyout?` (incl. buyout ${f$(buyout)})`:''}</div></div></div><div class="to-hire-side"><span class="tocl">ACTION</span><span class="toc" style="font-size:14px;color:${canAfford?'var(--mut)':'var(--red)'}">${canAfford?'Select, then HIRE':'Short on cash'}</span></div></div>`;
     }).join('');
     const curBox=cur?`<div class="ibox">Current: <strong>${cur.name}</strong> — quality ${Math.round(cur.quality)}, slot quality ${slotQcur}, ${f$(cur.salary)}/yr.</div>`:'';
     const freeSection=HS.pool.length
       ?`<div class="msh" style="margin-top:16px;margin-bottom:8px;font-size:13px;letter-spacing:.12em;color:var(--mut)">FREE AGENTS</div>
-    <p class="di">Four market candidates. <strong>Talent Rating</strong> is how good they are — higher talent boosts slot quality on hire. <strong>Format Fit</strong> scales the boost.</p>
+    <p class="di">Four market candidates. <strong>Talent rating</strong> is how good they are. <strong>Format fit</strong> scales how much of that talent translates into this station’s format. <strong>Projected slot quality</strong> estimates the daypart’s new score after hire (current slot quality plus a boost from talent × fit, capped at 100). <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:4px" onclick="openTalentMetricsHelp('slotboost')">Explain metrics</button></p>
     <div class="tg">${freeRows}</div>`
       :'';
     const rivalSection=poachList.length
@@ -11649,7 +11683,7 @@ function rosterTalentOnAirCardHtml(st,sl,t,contribution,talQ,trendWord,trendCol,
           </div>
           <div style="margin-top:8px;font-size:14px;color:var(--off);font-family:var(--fd)">${callDisplay(st)} · ${rosterFmtLong(st)} · ${f$(t.salary)}/yr</div>
           <div style="margin-top:8px;font-size:14px;color:var(--mut)">Format fit: <span style="color:${fs.col};font-family:var(--fd)">${fs.words}</span> · Talent: <span class="${qc(talQ)}" style="font-family:var(--fd)">${talQ}</span></div>
-          <div style="margin-top:6px;font-size:14px;color:var(--off)">Contribution: <span style="font-family:var(--fd);color:${perfCol}">~${contribution}%</span> · <span style="color:${trendCol}">${trendWord}</span></div>
+          <div style="margin-top:6px;font-size:14px;color:var(--off)">Quality share: <span style="font-family:var(--fd);color:${perfCol}" title="Approx. share of this station’s programming quality from this daypart">~${contribution}%</span> · <span style="color:${trendCol}">${trendWord}</span></div>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;align-items:center;align-self:flex-end;flex-shrink:0">
           <button class="abt" style="padding:8px 14px;font-size:14px;letter-spacing:1px" onclick="openRosterMoveFromSlot('${st.id}','${sl}')">MOVE</button>
@@ -12031,7 +12065,7 @@ function openSports(sid){
     const tierCol={dynasty:'var(--grn)',playoff:'var(--grn)',competitive:'var(--off)',mediocre:'var(--mut)',rebuilding:'var(--red)'}[tier];
     const tierLabel={dynasty:'Dynasty',playoff:'Playoff Contender',competitive:'Competitive',mediocre:'Mediocre',rebuilding:'Rebuilding'}[tier];
     const season=SPORT_SEASONS[team.sport]||{p1:0.5,p2:0.5};
-    const seasonNote=team.sport==='NFL'?'Fall-heavy':team.sport==='MLB'?'Year-round':team.sport==='NBA'?'Spring-heavy':'Spring-heavy';
+    const seasonNote=team.sport==='PRO_FOOTBALL'?'Fall-heavy':team.sport==='PRO_BASEBALL'?'Year-round':team.sport==='PRO_BASKETBALL'?'Spring-heavy':'Spring-heavy';
     const holding=rights.holderId===s.id;
     const fmtFit=SPORTS_FORMAT_FIT[s.format]||0.3;
     const fmtFitPct=Math.round(fmtFit*100);
@@ -12083,7 +12117,7 @@ function openSports(sid){
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
         <div>
           <div style="font-family:var(--fd);font-size:16px;color:var(--wht)">${team.name} ${holding?'<span style="color:var(--grn);font-size:14px">◆ YOU HOLD</span>':''}</div>
-          <div style="font-size:14px;color:var(--mut);margin-top:2px">${team.sport} · ${seasonNote} · Format fit: ${fmtFitPct}%</div>
+          <div style="font-size:14px;color:var(--mut);margin-top:2px">${SPORT_LABEL[team.sport]||team.sport} · ${seasonNote} · Format fit: ${fmtFitPct}%</div>
         </div>
         <div style="text-align:right">
           <div style="font-family:var(--fd);font-size:16px;color:${tierCol}">${tierLabel}</div>
@@ -12190,7 +12224,7 @@ function talentDestFormatFitSummary(talent, destFormat) {
   const col = fitPct >= 75 ? 'var(--grn)' : fitPct >= 55 ? 'var(--amb)' : 'var(--red)';
   return { fit, fitPct, label, words, col };
 }
-/** Mirrors applyTalentCrossStationXferFull slot Q math for preview only. */
+/** Mirrors applyTalentCrossStationXferFull slot quality math for preview only. */
 function projectedSlotQAfterCrossXfer(talent, dst, toSlot) {
   const fit = talent.formatFit[dst.format] || 0.3;
   const adjDip = 0.1;
@@ -12283,14 +12317,14 @@ function xferRenderDestSlots() {
     const projQ = projectedSlotQAfterCrossXfer(tal, dst, sl);
     const occNote = occ
       ? `<span style="color:var(--amb);font-size:15px">${rosterHtmlEsc(occ.name)} on-air</span>`
-      : `<span style="color:var(--mut);font-size:15px">vacant · slot Q ${slotQ}</span>`;
+      : `<span style="color:var(--mut);font-size:15px">vacant · slot quality ${slotQ}</span>`;
     const restricted = daytimerRestrictedSlot(dst, sl);
     const actions = restricted
       ? `<span style="color:var(--mut);font-size:14px">Daytimer — off-air (no local host)</span>`
       : occ
         ? `<div style="display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:200px"><button type="button" class="cfm" style="margin:0;padding:8px 10px;font-size:14px;letter-spacing:1px" onclick="doCrossStationSwap('${sl}')">SWAP — exchange hosts</button><button type="button" class="abt" style="margin:0;padding:8px 10px;font-size:13px;border-color:var(--bdh);color:var(--mut);background:transparent" onclick="doCrossStationXfer('${sl}')">MOVE — bench other</button></div>`
         : `<button class="abt" style="border-color:var(--grn);color:var(--grn)" type="button" onclick="doCrossStationXfer('${sl}')">MOVE HERE</button>`;
-    return `<div class="sr" style="padding:10px 14px;align-items:flex-start"><span class="lb" style="flex:1;min-width:140px"><strong>${SL[sl]}</strong><br>${occNote}<br><span style="color:var(--mut);font-size:13px;line-height:1.4">If ${rosterHtmlEsc(tal.name)} lands here: projected slot Q <strong style="color:var(--off)">~${projQ}</strong> (<span style="color:${dstFit.col}">${dstFit.words}</span> vs ${FM[dst.format]?.l || dst.format})</span></span>${actions}</div>`;
+    return `<div class="sr" style="padding:10px 14px;align-items:flex-start"><span class="lb" style="flex:1;min-width:140px"><strong>${SL[sl]}</strong><br>${occNote}<br><span style="color:var(--mut);font-size:13px;line-height:1.4">If ${rosterHtmlEsc(tal.name)} lands here: projected slot quality <strong style="color:var(--off)">~${projQ}</strong> (<span style="color:${dstFit.col}">${dstFit.words}</span> vs ${FM[dst.format]?.l || dst.format})</span></span>${actions}</div>`;
   }).join('');
   document.getElementById('fire-title').textContent = 'TRANSFER — pick slot';
   document.getElementById('fireb').innerHTML = `
@@ -13900,6 +13934,27 @@ function talentPortraitThumbHtml(t,cls,ctx){
   const payload=encodeURIComponent(JSON.stringify({id:t.id||null,name:t.name||'',url:url,v:v,ctx:ctx||''}));
   return '<span class="tp-thumb '+(cls||'')+' tp-thumb--live" role="button" tabindex="0" data-portrait="'+payload+'" onclick="event.stopPropagation();wlPortraitFromDataset(this)" onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();event.stopPropagation();wlPortraitFromDataset(this);}"><img alt="" src="'+src+'" draggable="false" onerror="wlPortraitImgError(this)"></span>';
 }
+/** Library paths already assigned to talents this game (excludes duplicates for /api/generate-portrait). */
+function collectClaimedLibraryPortraitAssets(){
+  if(!G)return[];
+  const out=[];
+  const seen=new Set();
+  const add=t=>{
+    if(!t)return;
+    const a=t._portraitLibraryAsset;
+    if(a==null||a==='')return;
+    const s=String(a).replace(/\\/g,'/').trim();
+    if(!s||seen.has(s))return;
+    seen.add(s);
+    out.push(s);
+  };
+  (G.ps||[]).forEach(s=>{
+    if(!s||!s.prog)return;
+    Object.values(s.prog).forEach(sd=>add(sd?.talent));
+  });
+  (G.talentBench||[]).forEach(ent=>add(ent?.talent));
+  return out;
+}
 async function queueTalentPortrait(t){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   if(!t||!t.name)return;
@@ -13910,6 +13965,8 @@ async function queueTalentPortrait(t){
     const cy=typeof G!=='undefined'&&G?.year!=null?G.year:1970;
     const start=t._careerStartYear!=null&&t._careerStartYear!==undefined?t._careerStartYear:t._hireYear!=null?t._hireYear:firstYear;
     const yearsExperience=Math.max(0,Math.floor(cy-start));
+    const claimed=collectClaimedLibraryPortraitAssets();
+    const sessionId=typeof G!=='undefined'&&G&&G._portraitSessionId?String(G._portraitSessionId):'';
     const res=await fetch(wlGameApiUrl('/api/generate-portrait'),{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -13921,12 +13978,20 @@ async function queueTalentPortrait(t){
         morale:typeof t.morale==='number'?t.morale:undefined,
         quality:typeof t.quality==='number'?t.quality:undefined,
         yearsExperience,
+        claimedLibraryAssets:claimed,
+        gamePortraitSession:sessionId||undefined,
       }),
     });
     const data=await res.json().catch(()=>({}));
     if(res.ok&&data.ok&&data.imageUrl){
       t._portraitUrl=data.imageUrl;
       t._portraitV=Date.now();
+      const libRaw=data.libraryAsset!=null&&data.libraryAsset!==''?data.libraryAsset:(data.profile&&data.profile.libraryAsset);
+      if(libRaw!=null&&libRaw!==''){
+        t._portraitLibraryAsset=String(libRaw).replace(/\\/g,'/');
+      }else if(data.source&&data.source!=='library'){
+        delete t._portraitLibraryAsset;
+      }
       if(data.profile){
         t._portraitEra=data.profile.eraBucket;
         t._portraitWardrobe=data.profile.wardrobeType;
@@ -14039,6 +14104,9 @@ function openSaveLoad(){
 
 function migrateSave(G){
   // Fix missing fields added in recent updates
+  if(!G._portraitSessionId||typeof G._portraitSessionId!=='string'){
+    G._portraitSessionId=(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2,11)}`;
+  }
   if(!G.marketId||!MARKETS[G.marketId])G.marketId='atlanta';
   if(!G.city)G.city=(MARKETS[G.marketId]||MARKETS.atlanta).label;
   if(!G.companyName){
@@ -14048,6 +14116,17 @@ function migrateSave(G){
   G.loans=G.loans||[];
   migrateLoansV2(G);
   if(G.corps)rehydrateCorps(G); // re-link corp ownership after save/load
+  if(G.corps){
+    G.corps.forEach(c=>{
+      const tmpl=CORPS.find(t=>t.id===c.id);
+      if(tmpl)c.name=tmpl.name;
+    });
+  }
+  (G.stations||[]).forEach(s=>{
+    if(!s.corpOwner)return;
+    const tmpl=CORPS.find(t=>t.id===s.corpOwner);
+    if(tmpl)s.corpName=tmpl.name;
+  });
   G.corps=G.corps||null;
   G.mpPhase=G.mpPhase??null;
   G.continuesBeyondEnd=G.continuesBeyondEnd??false;
@@ -15179,6 +15258,77 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra
 }
 
 // ════════════════════════════════════════════════════════════════
+// TALENT METRICS (help — station card lineup vs Manage Talent / hiring)
+// ════════════════════════════════════════════════════════════════
+/** Station card “What is this?” — matches lineup table only (no Manage-only columns). */
+function openStationLineupHelp(){
+  const el=document.getElementById('talent-helpb');
+  const mh=document.querySelector('#m-talent-help .mh > span:first-child');
+  if(mh)mh.textContent='STATION LINEUP';
+  if(!el)return;
+  el.innerHTML=`
+    <p class="di" style="margin-top:0"><strong>Programming Quality</strong> — On each station card, the horizontal <strong>QUALITY</strong> bar directly under the share line (above <strong>REVENUE/PERIOD (6 MONTHS)</strong>) is the station’s overall programming score (0–100). Each daypart’s <strong>slot quality</strong> contributes, weighted by daypart importance.</p>
+    <h4 style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">DAYPART</h4>
+    <p class="di">The time block (Morning through Overnight).</p>
+    <h4 style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">PORTRAIT</h4>
+    <p class="di">Host photo when available; sits next to the name so you can scan faces quickly.</p>
+    <h4 style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">ON-AIR HOST</h4>
+    <p class="di">Who is scheduled in this slot. Click to open the contract when you employ them.</p>
+    <h4 style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">CONTRACT</h4>
+    <p class="di">Shows <strong>EXP</strong> when the deal is expired or expiring next period; otherwise blank if things are fine.</p>
+    <h4 style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">MORALE</h4>
+    <p class="di">How happy the host is in this role (roughly 0–100). Low morale can drag quality and salary asks.</p>
+    <h4 style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">PAY / PERIOD</h4>
+    <p class="di">Cash per <strong>6-month period</strong> (half of annual salary). Totals on the card use the same period — see <strong>REVENUE/PERIOD (6 MONTHS)</strong>.</p>
+    <h4 style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">TALENT RATING</h4>
+    <p class="di">The host’s skill (0–100). Higher talent helps drive slot quality when paired with good format fit.</p>
+    <h4 style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">SLOT QUALITY</h4>
+    <p class="di">This daypart’s on-air score (0–100) — the blend that feeds the station Programming Quality bar, along with talent, fit, morale, syndication, and tenure.</p>
+    <p class="di" style="margin-top:14px"><button type="button" class="abt" style="padding:4px 12px;font-size:12px;letter-spacing:0.04em;margin-right:8px" onclick="openTalentMetricsHelp()">Full talent metrics</button><span style="color:var(--mut);font-size:14px">Includes <strong>quality share</strong> and <strong>projected slot quality</strong> (Manage Talent & hiring).</span></p>`;
+  om('m-talent-help');
+}
+/** Full glossary + scroll to <code>tm-${section}</code> (Manage Talent, contract, hiring). */
+function openTalentMetricsHelp(section){
+  const el=document.getElementById('talent-helpb');
+  const mh=document.querySelector('#m-talent-help .mh > span:first-child');
+  if(mh)mh.textContent='TALENT METRICS';
+  if(!el)return;
+  el.innerHTML=`
+    <p class="di" style="margin-top:0"><strong>Programming Quality</strong> — On each station card, the horizontal <strong>QUALITY</strong> bar directly under the share line (above <strong>REVENUE/PERIOD (6 MONTHS)</strong>) is the station’s overall programming score (0–100). It rolls up weighted daypart slot scores.</p>
+    <h4 id="tm-daypart" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">DAYPART</h4>
+    <p class="di">The time block (Morning through Overnight).</p>
+    <h4 id="tm-photo" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">PORTRAIT</h4>
+    <p class="di">Host photo on the station lineup when available.</p>
+    <h4 id="tm-host" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">ON-AIR HOST</h4>
+    <p class="di">Scheduled talent for the slot; click to contract when applicable.</p>
+    <h4 id="tm-contract" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">CONTRACT</h4>
+    <p class="di"><strong>EXP</strong> when expired or expiring next period.</p>
+    <h4 id="tm-morale" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">MORALE</h4>
+    <p class="di">How happy the host is in this role (roughly 0–100). Low morale can drag programming quality and salary asks; bonuses and fair contracts help.</p>
+    <h4 id="tm-pay" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">PAY / PERIOD</h4>
+    <p class="di">Half of annual salary per <strong>6-month period</strong> (same basis as <strong>REVENUE/PERIOD (6 MONTHS)</strong> on the card).</p>
+    <h4 id="tm-talent" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">TALENT RATING</h4>
+    <p class="di">The host’s skill (0–100). Higher talent contributes more to <strong>slot quality</strong> when paired with good <strong>format fit</strong>.</p>
+    <h4 id="tm-slotq" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">SLOT QUALITY</h4>
+    <p class="di">The daypart’s on-air programming score (0–100). It feeds the station’s Programming Quality bar (weighted by daypart). It blends the slot baseline with the host’s talent, format fit, morale, syndication, and tenure. Hiring a stronger host or improving fit raises it over time.</p>
+    <h4 id="tm-qualityshare" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">QUALITY SHARE (~%) — MANAGE TALENT</h4>
+    <p class="di">Only on the <strong>Manage Talent</strong> roster: approx. share of the station’s overall programming quality from this daypart — (slot quality × daypart weight) ÷ station quality. Not audience share; heavier dayparts move the station bar more.</p>
+    <h4 id="tm-slotboost" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">PROJECTED SLOT QUALITY — HIRING</h4>
+    <p class="di">On hire/replace lists: estimates the daypart’s <strong>new slot quality</strong> after the hire — current slot score plus a boost from the candidate’s <strong>talent rating</strong> and <strong>format fit</strong> (capped at 100).</p>`;
+  om('m-talent-help');
+  if(section){
+    requestAnimationFrame(()=>{
+      const t=document.getElementById('tm-'+section);
+      if(t)t.scrollIntoView({block:'nearest',behavior:'smooth'});
+    });
+  }
+}
+function openContractFromManageTalent(sid,slot){
+  cm('m-fire');
+  openContract(sid,slot);
+}
+
+// ════════════════════════════════════════════════════════════════
 // TALENT CONTRACT MANAGEMENT
 // ════════════════════════════════════════════════════════════════
 function openContract(sid, slot){
@@ -15197,6 +15347,7 @@ function openContract(sid, slot){
     openHire(sid);return;
   }
   const t=sd.talent;
+  const slotQContract=Math.round(sd?.quality||0);
   const cyr=Math.round((t.cyr||0)*10)/10;
   const contractFit=talentDestFormatFitSummary(t,s.format);
   const mor=t.morale||65;
@@ -15323,7 +15474,8 @@ function openContract(sid, slot){
 
     <div class="ms2" style="margin-bottom:16px">
       <div class="sr"><span class="lb">Talent</span><span class="vl" style="display:flex;align-items:center;gap:10px">${talentPortraitThumbHtml(t,'tp-contract-sm',`${callDisplay(s)} ${SL[slot]} · contract`)}<strong>${cStar}${t.name}</strong></span></div>
-      <div class="sr"><span class="lb">Rating</span><span class="vl ${qc(Math.round(t.quality))}">${Math.round(t.quality)}/100</span></div>
+      <div class="sr"><span class="lb">Talent rating</span><span class="vl ${qc(Math.round(t.quality))}">${Math.round(t.quality)}/100</span></div>
+      <div class="sr"><span class="lb">Slot quality</span><span class="vl" style="font-family:var(--fd)">${slotQContract}/100 <span style="color:var(--mut);font-size:14px">(${SL[slot]} · on-air score)</span> <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:6px" onclick="openTalentMetricsHelp('slotq')">?</button></span></div>
       <div class="sr"><span class="lb">Format fit</span><span class="vl"><span style="color:${contractFit.col};font-family:var(--fd)">${contractFit.words}</span><span style="color:var(--mut);font-size:14px;font-family:var(--ft)"> · ${rosterFmtLong(s)}</span></span></div>
       <div class="sr"><span class="lb">Morale</span><span class="vl" style="color:${morCol}">${morLabel} (${mor}) ${morFactors.length?'· '+morFactors[0]:''}</span></div>
       <div class="sr"><span class="lb">Tenure</span><span class="vl">${age} periods (${ageYrs} yrs at station)</span></div>
@@ -15334,7 +15486,7 @@ function openContract(sid, slot){
 
     <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px">
       <button type="button" class="abt" style="border-color:var(--amb);color:var(--amb);padding:10px 16px;font-size:14px;letter-spacing:0.06em" onclick="cm('m-contract');openManageTalent('${sid}')">OPEN MANAGE TALENT</button>
-      <span style="font-size:13px;color:var(--mut);line-height:1.45;max-width:440px">Same station: move dayparts, transfer to another of your stations, hire/replace, bench, or fire.</span>
+      <span style="font-size:13px;color:var(--mut);line-height:1.45;max-width:440px">Roster, hiring, moves, transfers, bench, and fire — same station. Use <strong>Contract / Pay</strong> on Manage Talent to return here.</span>
     </div>
 
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
@@ -15734,7 +15886,8 @@ function rStns(){
     const div=document.createElement('div');
     div.className=`sc ${stnEbitda>=0?'profit':'loss'}`;
     const _simSrc=simulcastProgrammingSource(s);
-    const slrows=DAYPART_SLOTS.map(k=>{
+    const slotsLegend=`<div class="slots-lineup-meta"><span class="slots-legend-title">Lineup</span><button type="button" class="abt" style="padding:4px 10px;font-size:11px;letter-spacing:0.04em" onclick="openStationLineupHelp()">What is this?</button></div><div class="slots-lineup-hdr"><div class="slots-lineup-grid slots-lineup-grid--hdr"><span>Daypart</span><span class="sl-h-pad" aria-hidden="true"></span><span>On-air host</span><span class="slots-hdr-contract" title="Contract status: shows EXP when the deal is expired or expiring next period (empty if fine)">Contract</span><span class="slots-hdr-mor">Morale</span><span class="slots-hdr-pay">Pay / pd</span><span class="slots-hdr-tal">Talent</span><span class="slots-hdr-sq">Slot Q</span></div></div>`;
+    const slrows=slotsLegend+DAYPART_SLOTS.map(k=>{
       const lbl=SL[k];
       const sd=s.prog[k],tn=sd?.talent?.name,q=Math.round(sd?.quality||0),c2=qc(q);
       const vlbl=vacantLabel(op.format,k,op);
@@ -15742,9 +15895,12 @@ function rStns(){
       if(!tn&&srcTal){
         const sn=callDisplay(_simSrc);
         const srcStar=srcTal.superstar===true?'★ ':'';
-        return `<div class="slr">${talentPortraitThumbHtml(srcTal,'tp-sl',`${sn} · ${lbl} (simulcast)`)}<span class="sln">${lbl}</span><span class="slt" style="color:var(--off)" title="Simulcast — on-air from ${sn}">◈ ${srcStar}${srcTal.name} <span style="color:var(--mut);font-size:13px">(${sn})</span></span><span class="slsal">${f$(srcTal.salary/2)}/p · src</span><span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Programming Quality (0-100)">Q ${q}</span></div>`;
+        const morS=srcTal.morale||65;
+        const morColS=morS>=70?'var(--grn)':morS>=45?'var(--amb)':'var(--red)';
+        const tqS=Math.round(srcTal.quality||0);
+        return `<div class="slr slots-lineup-grid"><span class="sl-cell-day sln">${lbl}</span><span class="sl-cell-thumb">${talentPortraitThumbHtml(srcTal,'tp-sl',`${sn} · ${lbl} (simulcast)`)}</span><span class="sl-cell-host slt" style="color:var(--off)" title="Simulcast — on-air from ${sn}">◈ ${srcStar}${srcTal.name} <span style="color:var(--mut);font-size:12px">(${sn})</span></span><span class="sl-cell-cyr" aria-hidden="true"></span><span class="sl-cell-mor"><svg class="mor-bar" viewBox="0 0 28 4" aria-label="Morale"><rect width="28" height="4" fill="rgba(255,255,255,.1)" rx="2"/><rect width="${Math.round(morS*.28)}" height="4" fill="${morColS}" rx="2"/></svg></span><span class="sl-cell-pay slsal">${f$Pd(srcTal.salary/2)}/p · src</span><span class="sl-cell-tal stal" title="Talent rating">${tqS}</span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Slot quality (0–100)">${q}</span></div>`;
       }
-      if(!tn) return `<div class="slr"><span class="sln">${lbl}</span><span class="slt vac">${vlbl}</span><span class="slsal"></span><span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Programming Quality (0-100)">Q ${q}</span></div>`;
+      if(!tn) return `<div class="slr slots-lineup-grid"><span class="sl-cell-day sln">${lbl}</span><span class="sl-cell-thumb" aria-hidden="true"></span><span class="sl-cell-host slt vac">${vlbl}</span><span class="sl-cell-cyr"></span><span class="sl-cell-mor"></span><span class="sl-cell-pay slsal"></span><span class="sl-cell-tal stal" style="color:var(--mut)">—</span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Slot quality (0–100)">${q}</span></div>`;
       const t=sd.talent;
       const cyr=t.cyr||0;
       const cyrCls=cyr<=0?'cyr-exp':cyr<=0.5?'cyr-warn':'cyr-ok';
@@ -15753,15 +15909,8 @@ function rStns(){
       const mor=t.morale||65;
       const morCol=mor>=70?'var(--grn)':mor>=45?'var(--amb)':'var(--red)';
       const starT=t.superstar===true?'★ ':'';
-      return `<div class="slr">
-        ${talentPortraitThumbHtml(t,'tp-sl',`${callDisplay(s)} · ${lbl}`)}
-        <span class="sln">${lbl}</span>
-        <span class="slt clickable" onclick="openContract('${s.id}','${k}')">${starT}${tn}</span>
-        ${cyrLbl?`<span class="${cyrCls}" title="${cyrTitle}">${cyrLbl}</span>`:''}
-        <svg class="mor-bar" viewBox="0 0 28 4"><rect width="28" height="4" fill="rgba(255,255,255,.1)" rx="2"/><rect width="${Math.round(mor*.28)}" height="4" fill="${morCol}" rx="2"/></svg>
-        <span class="slsal">${f$(t.salary/2)}/p</span>
-        <span class="slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}">${q}</span>
-      </div>`;
+      const talR=Math.round(t.quality||0);
+      return `<div class="slr slots-lineup-grid"><span class="sl-cell-day sln">${lbl}</span><span class="sl-cell-thumb">${talentPortraitThumbHtml(t,'tp-sl',`${callDisplay(s)} · ${lbl}`)}</span><span class="sl-cell-host slt clickable" onclick="openContract('${s.id}','${k}')">${starT}${tn}</span>${cyrLbl?`<span class="sl-cell-cyr ${cyrCls}" title="${cyrTitle}">${cyrLbl}</span>`:'<span class="sl-cell-cyr" aria-hidden="true"></span>'}<span class="sl-cell-mor"><svg class="mor-bar" viewBox="0 0 28 4" aria-label="Morale"><rect width="28" height="4" fill="rgba(255,255,255,.1)" rx="2"/><rect width="${Math.round(mor*.28)}" height="4" fill="${morCol}" rx="2"/></svg></span><span class="sl-cell-pay slsal">${f$Pd(t.salary/2)}/p</span><span class="sl-cell-tal stal" title="Talent rating">${talR}</span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Slot quality (0–100)">${q}</span></div>`;
     }).join('');
     const qc2=qc(op.oq);
     const _logoThumb=cosmeticLogoThumbHtmlForStation(s,{});
@@ -15781,7 +15930,7 @@ function rStns(){
       </div></div><div><div class="scshv">${pct(shareUi)}</div><div class="scshl">SHARE ${trd}</div></div></div>
       <div class="qr"><span class="ql">QUALITY</span><div class="qb"><div class="qf ${qc2}" style="width:${op.oq}%"></div></div><span class="qn">${op.oq}</span></div>
       <div class="fg">
-        <div><span class="fl">${s.lmaLessorId?'LICENSE FEE INCOME':'REVENUE/PERIOD'} ${s.lmaLessorId?'':('<span style="font-size:15px;color:'+( G.period===2?'var(--grn)':'var(--amb)')+'">'+(G.period===2?'▲ FALL':'▼ SPRING')+'</span>')}</span><span class="fv">${f$(revUi)}</span></div>
+        <div><span class="fl">${s.lmaLessorId?'LICENSE FEE INCOME':'REVENUE/PERIOD (6 MONTHS)'} ${s.lmaLessorId?'':('<span style="font-size:15px;color:'+( G.period===2?'var(--grn)':'var(--amb)')+'">'+(G.period===2?'▲ FALL':'▼ SPRING')+'</span>')}</span><span class="fv">${f$(revUi)}</span></div>
         <div><span class="fl">${s.lmaLessorId?'OPERATOR COSTS':''}${!s.lmaLessorId?'COSTS/PERIOD':''}</span><span class="fv ${s.lmaLessorId?'pos':''}">${s.lmaLessorId?'BORNE BY OPERATOR':f$(costUi)}</span></div>
         <div><span class="fl">EBITDA</span><span class="fv ${stnEbitda>=0?'pos':'neg'}">${stnEbitda>=0?'+':''}${f$(stnEbitda)}</span></div>
         <div><span class="fl">SELLOUT</span><span class="fv ${op.ops.sell>.75?'pos':op.ops.sell>.55?'amb':'neg'}">${Math.round(op.ops.sell*100)}%</span></div>

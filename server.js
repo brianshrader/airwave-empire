@@ -763,6 +763,12 @@ if (HAS_DIST) {
 }
 app.use(express.static(path.join(__dirname)));
 
+if (HAS_DIST) {
+  app.get(['/landing', '/landing/'], (req, res) => {
+    res.redirect(302, '/');
+  });
+}
+
 app.get('/', (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate');
   res.set('Pragma', 'no-cache');
