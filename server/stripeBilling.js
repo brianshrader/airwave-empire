@@ -63,11 +63,31 @@ function mountStripeBilling(app) {
   });
 }
 
+async function syncSubscriptionFromStripeObject(stripe, sub) {
+  const accountStore = require('./accountStore');
+  try {
+    const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer?.id;
+    if (!customerId) return;
+    const customer = await stripe.customers.retrieve(customerId);
+    const uid = customer.metadata?.clerk_user_id;
+    if (!uid) return;
+    const active = ['active', 'trialing'].includes(sub.status);
+    accountStore.setSubscriptionState(uid, {
+      active,
+      status: sub.status,
+      subscriptionId: sub.id,
+    });
+    console.log('[STRIPE] subscription', sub.id, sub.status, '→ user', uid, active ? 'active' : 'inactive');
+  } catch (e) {
+    console.warn('[STRIPE] syncSubscriptionFromStripeObject:', e.message);
+  }
+}
+
 /**
  * Raw body webhook handler — call as:
  *   app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhookHandler);
  */
-function stripeWebhookHandler(req, res) {
+async function stripeWebhookHandler(req, res) {
   const secret = process.env.STRIPE_SECRET_KEY;
   const whSecret = process.env.STRIPE_WEBHOOK_SECRET;
   if (!secret || !whSecret) {
@@ -83,19 +103,33 @@ function stripeWebhookHandler(req, res) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  switch (event.type) {
-    case 'checkout.session.completed': {
-      const s = event.data.object;
-      const uid = s.metadata?.clerk_user_id;
-      if (uid) console.log('[STRIPE] checkout.session.completed for Clerk user', uid);
-      break;
+  try {
+    switch (event.type) {
+      case 'checkout.session.completed': {
+        const s = event.data.object;
+        const uid = s.metadata?.clerk_user_id;
+        if (uid) console.log('[STRIPE] checkout.session.completed for Clerk user', uid);
+        let subId = s.subscription;
+        if (subId && typeof subId === 'object') subId = subId.id;
+        if (typeof subId === 'string') {
+          const sub = await stripe.subscriptions.retrieve(subId);
+          await syncSubscriptionFromStripeObject(stripe, sub);
+        }
+        break;
+      }
+      case 'customer.subscription.created':
+      case 'customer.subscription.updated':
+      case 'customer.subscription.deleted': {
+        const sub = event.data.object;
+        await syncSubscriptionFromStripeObject(stripe, sub);
+        break;
+      }
+      default:
+        break;
     }
-    case 'customer.subscription.updated':
-    case 'customer.subscription.deleted':
-      console.log('[STRIPE]', event.type, event.data.object.id);
-      break;
-    default:
-      break;
+  } catch (e) {
+    console.error('[STRIPE] webhook handler error:', e.message);
+    return res.status(500).json({ error: 'Webhook processing failed' });
   }
   res.json({ received: true });
 }

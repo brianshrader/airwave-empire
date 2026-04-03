@@ -53,6 +53,9 @@ mountLogoRoutes(app);
 mountPortraitRoutes(app);
 mountStripeBilling(app);
 
+const { mountCloudSaves } = require('./server/cloudSaves');
+mountCloudSaves(app);
+
 const httpServer = http.createServer(app);
 const io         = new Server(httpServer, {
   cors: corsOpts,

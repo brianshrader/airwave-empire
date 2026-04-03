@@ -2587,7 +2587,7 @@ function mpPickEra(era) {
   document.getElementById('mp-era-desc').textContent = ERA_DESC[era] || '';
   ['1970','1978','1985'].forEach(e => {
     const btn = document.getElementById('mp-era-' + e);
-    if (btn) btn.className = e === era ? 'abt g' : 'abt';
+    if (btn) btn.className = e === era ? 'abt mp-era-on' : 'abt';
   });
 }
 
@@ -3079,27 +3079,6 @@ function mpHandleNextPeriod() {
   }
 }
 
-/** Spectator TV link in waiting room — uses server URL field or page origin. */
-function mpSetSpectateHint(roomId) {
-  const el = document.getElementById('mp-spectate-line');
-  if (!el || !roomId) return;
-  let base = '';
-  try {
-    const inp = document.getElementById('mp-server-url');
-    const u = inp && inp.value && inp.value.trim();
-    if (u && /^https?:\/\//i.test(u)) base = u.replace(/\/$/, '');
-    else if (typeof location !== 'undefined' && location.protocol.startsWith('http')) base = location.origin;
-  } catch (_) {}
-  const path = `/spectate.html?room=${encodeURIComponent(roomId)}`;
-  const full = base ? base + path : path;
-  el.innerHTML =
-    'Read-only rankings for a TV: <a href="' +
-    full +
-    '" target="_blank" rel="noopener" style="color:var(--amb)">' +
-    full +
-    '</a> (updates every period)';
-}
-
 // ── LOBBY FUNCTIONS ──────────────────────────────────────────────
 function mpOpenLobby() {
   document.getElementById('mp-lobby').style.display = 'block';
@@ -3281,12 +3260,245 @@ async function wlMpAuthAction(){
     if (Clerk.session) {
       await Clerk.signOut();
     } else {
-      Clerk.openSignIn({});
+      const after = `${typeof location !== 'undefined' ? location.origin : ''}/play.html`;
+      Clerk.openSignIn({ forceRedirectUrl: after, fallbackRedirectUrl: after });
     }
     setTimeout(() => wlMpRefreshAuthBar(), 600);
   } catch(e) {
     showToast(String(e.message || e), 'warn');
   }
+}
+
+// ── CLOUD SAVES (solo, Clerk + optional Stripe subscription on API server) ──
+function wlCloudEsc(t) {
+  return String(t == null ? '' : t)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/"/g, '&quot;');
+}
+async function wlCloudSaveSignIn() {
+  const pk = wlClerkPublishableKey();
+  if (!pk) return;
+  try {
+    await wlLoadClerkScript();
+    const Clerk = window.Clerk;
+    if (!window.__wlClerkLoaded) {
+      await Clerk.load({ publishableKey: pk });
+      window.__wlClerkLoaded = true;
+    }
+    const after = `${typeof location !== 'undefined' ? location.origin : ''}/play.html`;
+    Clerk.openSignIn({ forceRedirectUrl: after, fallbackRedirectUrl: after });
+  } catch (e) {
+    showToast(String(e.message || e), 'warn');
+  }
+}
+async function wlStripeCheckoutForSubscription() {
+  const token = await wlGetClerkToken();
+  if (!token) {
+    showToast('Sign in first.', 'warn');
+    return;
+  }
+  let r;
+  try {
+    r = await fetch(wlGameApiUrl('/api/billing/create-checkout-session'), {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({}),
+    });
+  } catch (e) {
+    showToast('Could not reach billing server.', 'warn');
+    return;
+  }
+  const j = await r.json().catch(() => ({}));
+  if (r.status === 503) {
+    showToast('Billing is not configured on the server.', 'warn');
+    return;
+  }
+  if (!r.ok || !j.url) {
+    showToast(j.error || 'Could not start checkout', 'warn');
+    return;
+  }
+  window.location.href = j.url;
+}
+async function wlCloudSaveUploadCurrent() {
+  if (!G || MP.mode === 'live') {
+    showToast('Cloud saves are for solo games only.', 'warn');
+    return;
+  }
+  const token = await wlGetClerkToken();
+  if (!token) {
+    showToast('Sign in to use cloud saves.', 'warn');
+    return;
+  }
+  const _saveStns = G.ps;
+  const payload = saveGame(
+    `${G.year} ${G.period === 1 ? 'Spring' : 'Fall'} — ${_saveStns.map(s => s.callLetters).join(', ')}`,
+  );
+  let r;
+  try {
+    r = await fetch(wlGameApiUrl('/api/saves/cloud'), {
+      method: 'POST',
+      headers: { Authorization: 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (e) {
+    showToast('Could not reach the game server.', 'warn');
+    return;
+  }
+  const j = await r.json().catch(() => ({}));
+  if (r.status === 402) {
+    showToast('Active subscription required for cloud saves.', 'warn');
+    wlCloudSaveRenderPanel('wl-cloud-save-panel');
+    return;
+  }
+  if (r.status === 413) {
+    showToast('Save is too large for cloud storage.', 'warn');
+    return;
+  }
+  if (!r.ok) {
+    showToast(j.error || j.message || 'Cloud save failed', 'warn');
+    return;
+  }
+  showToast('Saved to cloud.', 'info');
+  wlCloudSaveRenderPanel('wl-cloud-save-panel');
+}
+async function wlCloudSaveLoadById(saveId) {
+  const token = await wlGetClerkToken();
+  if (!token) return;
+  let r;
+  try {
+    r = await fetch(wlGameApiUrl('/api/saves/cloud/' + encodeURIComponent(saveId)), {
+      headers: { Authorization: 'Bearer ' + token },
+    });
+  } catch (e) {
+    showToast('Could not reach the game server.', 'warn');
+    return;
+  }
+  if (!r.ok) {
+    const j = await r.json().catch(() => ({}));
+    showToast(j.error || 'Could not load cloud save', 'warn');
+    return;
+  }
+  const payload = await r.json();
+  if (!payload.G || payload.G.year == null) {
+    showToast('Invalid cloud save', 'warn');
+    return;
+  }
+  if (!G) G = {};
+  Object.assign(G, payload.G);
+  migrateSave(G);
+  applyLoadedGameMarket();
+  G.news.unshift({
+    v: 'HIGH',
+    t: `☁ Cloud save loaded: ${payload.label || 'Save'}`,
+    y: G.year,
+    p: G.period,
+  });
+  cm('m-save');
+  renderAll();
+  queuePlayerTalentPortraits();
+  queueAutoLogosForPlayerStations();
+}
+async function wlCloudSaveDelete(saveId) {
+  if (!confirm('Delete this cloud save?')) return;
+  const token = await wlGetClerkToken();
+  if (!token) return;
+  let r;
+  try {
+    r = await fetch(wlGameApiUrl('/api/saves/cloud/' + encodeURIComponent(saveId)), {
+      method: 'DELETE',
+      headers: { Authorization: 'Bearer ' + token },
+    });
+  } catch (e) {
+    showToast('Could not reach the game server.', 'warn');
+    return;
+  }
+  if (!r.ok) {
+    const j = await r.json().catch(() => ({}));
+    showToast(j.error || 'Delete failed', 'warn');
+    return;
+  }
+  wlCloudSaveRenderPanel('wl-cloud-save-panel');
+}
+async function wlCloudSaveRenderPanel(hostId) {
+  const el = document.getElementById(hostId);
+  if (!el) return;
+  if (MP.mode === 'live') {
+    el.innerHTML =
+      '<div class="ibox" style="color:var(--mut);margin-top:12px">Cloud saves are for solo games only.</div>';
+    return;
+  }
+  if (!wlClerkPublishableKey()) {
+    el.innerHTML =
+      '<div class="bbox" style="margin-top:12px"><strong>CLOUD SAVES</strong><br><span style="color:var(--mut);font-size:14px">Not available — sign-in is not configured in this build.</span></div>';
+    return;
+  }
+  const token = await wlGetClerkToken();
+  if (!token) {
+    el.innerHTML = `<div class="bbox" style="margin-top:12px"><strong>CLOUD SAVES</strong><br><span style="color:var(--mut);font-size:14px">Sign in to save progress to your account.</span><br><button type="button" class="abt g" style="margin-top:10px;width:100%" onclick="wlCloudSaveSignIn()">Sign in</button></div>`;
+    return;
+  }
+  el.innerHTML =
+    '<div class="ibox" style="margin-top:12px;color:var(--mut)">Loading cloud saves…</div>';
+  let stRes;
+  try {
+    stRes = await fetch(wlGameApiUrl('/api/saves/cloud/status'), {
+      headers: { Authorization: 'Bearer ' + token },
+    });
+  } catch (e) {
+    el.innerHTML =
+      '<div class="ibox" style="color:var(--mut);margin-top:12px">Could not reach the game server. Use the same API host as your game (see <code>VITE_GAME_SERVER_URL</code>) or run the Node server locally.</div>';
+    return;
+  }
+  if (stRes.status === 503) {
+    el.innerHTML =
+      '<div class="ibox" style="color:var(--mut);margin-top:12px">Cloud saves need <code>CLERK_SECRET_KEY</code> on the game server.</div>';
+    return;
+  }
+  const st = await stRes.json().catch(() => ({}));
+  if (!stRes.ok) {
+    el.innerHTML =
+      '<div class="ibox" style="color:var(--mut);margin-top:12px">Could not read cloud save status.</div>';
+    return;
+  }
+  if (st.subscriptionRequired && !st.subscriptionActive) {
+    el.innerHTML = `<div class="bbox" style="margin-top:12px"><strong>CLOUD SAVES</strong><br><span style="color:var(--mut);font-size:14px">Active subscription required (up to ${st.maxSaves || 10} slots).</span><br><button type="button" class="abt g" style="margin-top:10px;width:100%" onclick="wlStripeCheckoutForSubscription()">Subscribe</button></div>`;
+    return;
+  }
+  let listRes;
+  try {
+    listRes = await fetch(wlGameApiUrl('/api/saves/cloud'), {
+      headers: { Authorization: 'Bearer ' + token },
+    });
+  } catch (e) {
+    el.innerHTML =
+      '<div class="ibox" style="color:var(--mut);margin-top:12px">Could not list cloud saves.</div>';
+    return;
+  }
+  if (listRes.status === 402) {
+    el.innerHTML = `<div class="bbox" style="margin-top:12px"><strong>CLOUD SAVES</strong><br><span style="color:var(--mut);font-size:14px">Active subscription required.</span><br><button type="button" class="abt g" style="margin-top:10px;width:100%" onclick="wlStripeCheckoutForSubscription()">Subscribe</button></div>`;
+    return;
+  }
+  const list = listRes.ok ? await listRes.json().catch(() => ({ saves: [] })) : { saves: [] };
+  const saves = list.saves || [];
+  const rows = saves
+    .map(s => {
+      const id = String(s.id || '').replace(/[^a-zA-Z0-9_-]/g, '');
+      if (!id) return '';
+      const per = s.period === 1 ? 'Spring' : s.period === 2 ? 'Fall' : '';
+      return `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.06)">
+      <div style="flex:1;min-width:160px;font-size:14px;color:var(--off)">${wlCloudEsc(s.label || id)}<br><span style="color:var(--mut);font-size:12px">${wlCloudEsc(s.saved ? String(s.saved).slice(0, 10) : '')} · ${s.year != null ? s.year : '?'} ${per}</span></div>
+      <button type="button" class="abt g" onclick="wlCloudSaveLoadById('${id}')">Load</button>
+      <button type="button" class="abt d" onclick="wlCloudSaveDelete('${id}')">Delete</button>
+    </div>`;
+    })
+    .filter(Boolean)
+    .join('');
+  const maxS = st.maxSaves || 10;
+  const uploadDisabled = !G ? ' disabled' : '';
+  el.innerHTML = `<div class="bbox" style="margin-top:12px"><strong>CLOUD SAVES</strong> <span style="color:var(--mut);font-size:12px">(${saves.length}/${maxS})</span>
+    <button type="button" class="abt g" style="width:100%;margin-top:10px"${uploadDisabled} onclick="wlCloudSaveUploadCurrent()">☁ Upload current game to cloud</button>
+    ${rows || '<div style="color:var(--mut);font-size:14px;margin-top:8px">No cloud saves yet.</div>'}</div>`;
 }
 
 // ── CONNECT TO SERVER ─────────────────────────────────────────────
@@ -3402,7 +3614,6 @@ function mpSetupSocketHandlers(socket) {
     document.getElementById('mp-cj-panel').style.display = 'none';
     document.getElementById('mp-waiting-panel').style.display = 'block';
     document.getElementById('mp-room-display').textContent = roomId;
-    mpSetSpectateHint(roomId);
     const _mSel = document.getElementById('mp-market');
     if (_mSel) {
       const _cur =
@@ -3425,7 +3636,6 @@ function mpSetupSocketHandlers(socket) {
     document.getElementById('mp-cj-panel').style.display = 'none';
     document.getElementById('mp-waiting-panel').style.display = 'block';
     document.getElementById('mp-room-display').textContent = roomId;
-    mpSetSpectateHint(roomId);
     document.getElementById('mp-host-controls').style.display = 'none';
     document.getElementById('mp-guest-waiting').style.display = 'block';
   });
@@ -14080,8 +14290,9 @@ function openSaveLoad(){
     :'<div class="ibox" style="color:var(--mut)">No autosave found in this browser.</div>';
 
   document.getElementById('saveb').innerHTML=`
-    <p class="di">Save your game to a file or resume from a previous session.</p>
+    <p class="di">Save your game to a file, your account (subscription), or resume from a previous session.</p>
     ${localInfo}
+    <div id="wl-cloud-save-panel"></div>
     <div class="ms2">
       <div class="msh">CURRENT GAME — ${G.year} ${G.period===1?'Spring':'Fall'}</div>
       <div class="sr"><span class="lb">Stations</span><span class="vl">${(MP.mode==='live'?G.ps.filter(s=>s._mpOwner===MP.playerId):G.ps).map(s=>s.callLetters).join(', ')}</span></div>
@@ -14100,6 +14311,7 @@ function openSaveLoad(){
     <p class="di" style="font-size:12px;color:var(--mut);margin-top:14px;line-height:1.5">Paid plans, if offered, renew automatically until you cancel. <a href="/legal/terms.html" target="_blank" rel="noopener" style="color:var(--amb)">Terms</a> · <a href="/legal/privacy.html" target="_blank" rel="noopener" style="color:var(--amb)">Privacy</a> · <a href="/legal/contact.html" target="_blank" rel="noopener" style="color:var(--amb)">Contact</a></p>
     <button class="cnl" style="margin-top:8px" onclick="cm('m-save')">CLOSE</button>`;
   om('m-save');
+  wlCloudSaveRenderPanel('wl-cloud-save-panel');
 }
 
 function migrateSave(G){

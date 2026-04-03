@@ -42,4 +42,29 @@ function setStripeCustomerId(clerkUserId, stripeCustomerId) {
   writeAll(m);
 }
 
-module.exports = { getStripeCustomerId, setStripeCustomerId, DATA_DIR, FILE };
+/** Stripe subscription cache (updated from webhooks + occasional live checks). */
+function setSubscriptionState(clerkUserId, { active, status, subscriptionId }) {
+  const m = readAll();
+  m[clerkUserId] = {
+    ...(m[clerkUserId] || {}),
+    subscriptionActive: !!active,
+    subscriptionStatus: status || null,
+    subscriptionId: subscriptionId || null,
+    subscriptionUpdatedAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+  writeAll(m);
+}
+
+function getSubscriptionActive(clerkUserId) {
+  return !!readAll()[clerkUserId]?.subscriptionActive;
+}
+
+module.exports = {
+  getStripeCustomerId,
+  setStripeCustomerId,
+  setSubscriptionState,
+  getSubscriptionActive,
+  DATA_DIR,
+  FILE,
+};

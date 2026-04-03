@@ -301,6 +301,9 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .abt:hover{border-color:var(--amb);color:var(--amb);background:var(--abg)}
 .abt.d:hover{border-color:var(--red);color:var(--red);background:rgba(240,88,88,.08)}
 .abt.g:hover{border-color:var(--grn);color:var(--grn);background:rgba(82,227,110,.08)}
+/* Multiplayer lobby — starting era stays visibly selected (.abt.g is hover-only; no default fill) */
+.abt.mp-era-on{border-color:var(--grn);color:var(--grn);background:rgba(82,227,110,.12);box-shadow:0 0 0 1px rgba(82,227,110,.28)}
+.abt.mp-era-on:hover{border-color:var(--grn);color:var(--wht);background:rgba(82,227,110,.2)}
 .abt:disabled,.abt[disabled]{opacity:.48;cursor:not-allowed;color:var(--mut);border-color:rgba(255,255,255,.12);background:transparent}
 .abt.g:disabled,.abt.g[disabled]{background:transparent}
 /* Scenario select — selected market must stay visibly highlighted (do not reuse .g; it is app-wide primary) */

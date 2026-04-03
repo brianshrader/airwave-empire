@@ -22,6 +22,17 @@ const requireClerk =
   document.querySelector('meta[name="wl-require-clerk"]')?.getAttribute('content') === '1';
 window.__WL_REQUIRE_CLERK = !!requireClerk;
 
+/** Clerk defaults sign-in fallback to `/` (marketing). Force completed OAuth/email sign-in to the game shell. */
+function playAfterAuthUrl() {
+  if (typeof window === 'undefined') return '/play.html';
+  return `${window.location.origin}/play.html`;
+}
+
+function signInMountProps() {
+  const url = playAfterAuthUrl();
+  return { forceRedirectUrl: url, fallbackRedirectUrl: url };
+}
+
 function emitBetaAuthOk() {
   if (window.__wlBetaAuthDone) return;
   window.__wlBetaAuthDone = true;
@@ -73,12 +84,47 @@ function mountClerkInHost(clerk, host) {
   if (clerk.isSignedIn) {
     clerk.mountUserButton(mountEl);
   } else {
-    clerk.mountSignIn(mountEl);
+    clerk.mountSignIn(mountEl, signInMountProps());
   }
+}
+
+/** Clear Clerk widgets from a host (e.g. when skipping duplicate mounts). */
+function clearClerkHost(clerk, host) {
+  if (!host || !clerk) return;
+  const prev = host.__wlClerkMountEl;
+  if (prev) {
+    try {
+      clerk.unmountSignIn(prev);
+    } catch (_) {
+      /* noop */
+    }
+    try {
+      clerk.unmountUserButton(prev);
+    } catch (_) {
+      /* noop */
+    }
+    host.__wlClerkMountEl = null;
+  }
+  host.innerHTML = '';
+}
+
+/**
+ * When beta requires Clerk (`requireClerk`), the solo gate mounts SignIn in #wl-solo-clerk-mount.
+ * Do not also mount SignIn in the MP lobby until signed in — two mounts load Cloudflare Turnstile twice
+ * and trigger duplicate-widget warnings / flaky Google OAuth.
+ */
+function shouldMountClerkLobby(clerk) {
+  if (!requireClerk) return true;
+  return !!clerk?.isSignedIn;
 }
 
 function mountClerkLobbyComponents(clerk) {
   const host = document.getElementById('wl-clerk-components');
+  if (!host) return;
+  if (!shouldMountClerkLobby(clerk)) {
+    clearClerkHost(clerk, host);
+    return;
+  }
   mountClerkInHost(clerk, host);
 }
 
@@ -126,8 +172,13 @@ if (!publishableKey) {
     });
 
     const clerk = new Clerk(publishableKey);
+    const afterAuth = playAfterAuthUrl();
     await clerk.load({
       ui: { ClerkUI: window.__internal_ClerkUICtor },
+      signInFallbackRedirectUrl: afterAuth,
+      signUpFallbackRedirectUrl: afterAuth,
+      signInForceRedirectUrl: afterAuth,
+      signUpForceRedirectUrl: afterAuth,
     });
 
     window.Clerk = clerk;

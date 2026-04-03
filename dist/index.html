@@ -3,6 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- Clerk OAuth / session handshake must run on /play.html (game bundle + Clerk). Root is static marketing only. -->
+  <script>
+(function () {
+  try {
+    var q = window.location.search || '';
+    var h = window.location.hash || '';
+    // Forward any Clerk OAuth / session callback to play.html (where main.js + Clerk load).
+    // Clerk uses several query keys (__clerk_status, __clerk_created_session, __clerk_handshake, …).
+    if (q.indexOf('__clerk_') === -1 && h.indexOf('__clerk_') === -1) return;
+    window.location.replace('/play.html' + q + h);
+  } catch (e) {}
+})();
+  </script>
   <title>Airwave Empire — Beta</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
