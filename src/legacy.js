@@ -3320,6 +3320,16 @@ async function wlStripeCheckoutForSubscription() {
   }
   window.location.href = j.url;
 }
+function wlCloudSaveUploadStatus(msg, opts) {
+  const el = document.getElementById('wl-cloud-save-status');
+  if (!el) return;
+  el.textContent = msg || '';
+  let col = 'var(--mut)';
+  if (opts && opts.error) col = 'var(--red)';
+  else if (opts && opts.working) col = 'var(--amb)';
+  el.style.color = col;
+  el.style.display = msg ? 'block' : 'none';
+}
 async function wlCloudSaveUploadCurrent() {
   if (!G || MP.mode === 'live') {
     showToast('Cloud saves are for solo games only.', 'warn');
@@ -3330,10 +3340,30 @@ async function wlCloudSaveUploadCurrent() {
     showToast('Sign in to use cloud saves.', 'warn');
     return;
   }
-  const _saveStns = G.ps;
-  const payload = saveGame(
-    `${G.year} ${G.period === 1 ? 'Spring' : 'Fall'} — ${_saveStns.map(s => s.callLetters).join(', ')}`,
-  );
+  wlCloudSaveUploadStatus('Uploading…', { working: true });
+  const uploadBtn = document.querySelector('#wl-cloud-save-panel .wl-cloud-upload-btn');
+  const reenableUploadBtn = () => {
+    if (uploadBtn) {
+      uploadBtn.disabled = false;
+      uploadBtn.style.opacity = '';
+    }
+  };
+  if (uploadBtn) {
+    uploadBtn.disabled = true;
+    uploadBtn.style.opacity = '0.65';
+  }
+  let payload;
+  try {
+    const _saveStns = G.ps;
+    payload = saveGame(
+      `${G.year} ${G.period === 1 ? 'Spring' : 'Fall'} — ${_saveStns.map(s => s.callLetters).join(', ')}`,
+    );
+  } catch (e) {
+    wlCloudSaveUploadStatus(String(e.message || e || 'Could not build save'), { error: true });
+    showToast(String(e.message || e), 'warn');
+    reenableUploadBtn();
+    return;
+  }
   let r;
   try {
     r = await fetch(wlGameApiUrl('/api/saves/cloud'), {
@@ -3342,23 +3372,40 @@ async function wlCloudSaveUploadCurrent() {
       body: JSON.stringify(payload),
     });
   } catch (e) {
+    wlCloudSaveUploadStatus('Could not reach the game server. Check <code>VITE_GAME_SERVER_URL</code> and that the API is up.', {
+      error: true,
+    });
     showToast('Could not reach the game server.', 'warn');
+    reenableUploadBtn();
     return;
   }
   const j = await r.json().catch(() => ({}));
   if (r.status === 402) {
+    wlCloudSaveUploadStatus('Active subscription required for cloud saves.', { error: true });
     showToast('Active subscription required for cloud saves.', 'warn');
     wlCloudSaveRenderPanel('wl-cloud-save-panel');
     return;
   }
   if (r.status === 413) {
-    showToast('Save is too large for cloud storage.', 'warn');
+    const maxB = j.maxBytes != null ? Number(j.maxBytes) : null;
+    const mb = maxB != null && Number.isFinite(maxB) ? (maxB / (1024 * 1024)).toFixed(1) : null;
+    const line =
+      mb != null
+        ? `This save is larger than the server limit (${mb} MB). Use “Download save file” as a backup, or ask the host to raise CLOUD_SAVE_MAX_BYTES in .env (max 24 MB).`
+        : 'This save is larger than the server cloud limit. Use “Download save file”, or ask the host to raise CLOUD_SAVE_MAX_BYTES in .env.';
+    wlCloudSaveUploadStatus(line, { error: true });
+    showToast('Save too large for cloud — see message in panel.', 'warn');
+    reenableUploadBtn();
     return;
   }
   if (!r.ok) {
-    showToast(j.error || j.message || 'Cloud save failed', 'warn');
+    const detail = j.error || j.message || 'Cloud save failed';
+    wlCloudSaveUploadStatus(detail, { error: true });
+    showToast(detail, 'warn');
+    reenableUploadBtn();
     return;
   }
+  wlCloudSaveUploadStatus('');
   showToast('Saved to cloud.', 'info');
   wlCloudSaveRenderPanel('wl-cloud-save-panel');
 }
@@ -3497,7 +3544,8 @@ async function wlCloudSaveRenderPanel(hostId) {
   const maxS = st.maxSaves || 10;
   const uploadDisabled = !G ? ' disabled' : '';
   el.innerHTML = `<div class="bbox" style="margin-top:12px"><strong>CLOUD SAVES</strong> <span style="color:var(--mut);font-size:12px">(${saves.length}/${maxS})</span>
-    <button type="button" class="abt g" style="width:100%;margin-top:10px"${uploadDisabled} onclick="wlCloudSaveUploadCurrent()">☁ Upload current game to cloud</button>
+    <div id="wl-cloud-save-status" style="display:none;margin-top:10px;font-size:14px;line-height:1.45;font-family:var(--ft)" aria-live="polite"></div>
+    <button type="button" class="abt g wl-cloud-upload-btn" style="width:100%;margin-top:10px"${uploadDisabled} onclick="wlCloudSaveUploadCurrent()">☁ Upload current game to cloud</button>
     ${rows || '<div style="color:var(--mut);font-size:14px;margin-top:8px">No cloud saves yet.</div>'}</div>`;
 }
 
@@ -8408,8 +8456,9 @@ function wlFtTutorialGetTarget(){
   if(st===5)return document.getElementById('sumb');
   return null;
 }
+/** Must stay above .ov modals (8000), #m-programming / sub-modals (8010–8100), .wl-feedback-fab (7990), mp-draft (8500), mp-lobby (9000). */
 function wlFtTutorialZBase(){
-  return _wlFtTut.step>=5?520:450;
+  return _wlFtTut.step>=5?11010:11000;
 }
 function wlFtTutorialBindResize(){
   if(_wlFtTut.onResize)return;
@@ -8722,6 +8771,10 @@ function openScenSelect(localSave){
       <div class="scn-logo">AIRWAVE EMPIRE</div>
       <div class="scn-tagline" id="scn-tagline">${mktLabel.toUpperCase()} RADIO · 1970 TO 2020</div>
     </div>
+    <div style="text-align:center;margin-bottom:18px">
+      <button type="button" class="cfm" style="padding:10px 22px;font-size:14px;letter-spacing:2px" onclick="cm('m-scen');openSaveLoad()" title="Cloud saves, download/upload file, or browser autosave">📂 LOAD GAME</button>
+      <div style="font-size:13px;color:var(--mut);margin-top:8px;line-height:1.45">Cloud, save file, or autosave — then return here to start fresh if you like</div>
+    </div>
     ${hasSave?`<div style="background:rgba(82,227,110,.08);border:1px solid rgba(82,227,110,.25);padding:12px 16px;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center">
       <span style="font-size:15px;color:var(--off)">💾 <strong style="color:var(--grn)">${saveLabel||'Autosave'}</strong> — ${saveScen?.l||''} · ${saveMktLbl} · ${saveYear} ${savePeriod}</span>
       <button class="cfm" style="padding:6px 18px;font-size:14px" onclick="loadLocalSave();cm('m-scen')">▶ RESUME</button>
@@ -8888,6 +8941,7 @@ function startPlay(scenId){
     }
     G=genMarket(scenId);
     G.companyName=companyName;
+    G.ps=(G.stations||[]).filter(s=>s&&s.isPlayer);
     G._portraitSessionId=(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2,11)}`;
     initSportsRights(G);
     initFranchiseRights(G);
@@ -13888,14 +13942,71 @@ function wlBumpProceduralLogoVariant(stationId){
   renderAll();
   showToast('New basic logo look.','info');
 }
+/** Set in wlOpenLogoModal — cross-origin <a download> navigates instead of saving; we Blob-download instead. */
+window.__wlLogoDl = null;
+
+function wlDownloadBlobToFile(blob, filename) {
+  const u = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = u;
+  a.download = filename;
+  a.rel = 'noopener';
+  a.style.display = 'none';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(u), 250);
+}
+
+async function wlLogoDownloadClick(ev) {
+  try {
+    if (ev && typeof ev.preventDefault === 'function') ev.preventDefault();
+  } catch (_e) {}
+  const p = window.__wlLogoDl;
+  if (!p || !p.filename) {
+    showToast('Nothing to download.', 'warn');
+    return;
+  }
+  const btn = document.getElementById('wl-logo-dl');
+  if (btn) btn.disabled = true;
+  try {
+    if (p.kind === 'svg' && p.svg) {
+      wlDownloadBlobToFile(
+        new Blob([p.svg], { type: 'image/svg+xml;charset=utf-8' }),
+        p.filename,
+      );
+      showToast('Download started.', 'info');
+      return;
+    }
+    if (p.kind === 'url' && p.url) {
+      const r = await fetch(p.url, { mode: 'cors', credentials: 'omit' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const blob = await r.blob();
+      wlDownloadBlobToFile(blob, p.filename);
+      showToast('Download started.', 'info');
+      return;
+    }
+    throw new Error('invalid payload');
+  } catch (e) {
+    console.warn('[logo dl]', e);
+    showToast(
+      'Could not download file. If this persists, your browser may be blocking cross-origin requests — try the same action from the game page on the same host as the API.',
+      'warn',
+    );
+  } finally {
+    if (btn) btn.disabled = false;
+  }
+}
+
 function wlOpenLogoModal(stationId){
   const op=G.stations.find(st=>st.id===stationId);
   if(!op)return;
   const img=document.getElementById('wl-logo-modal-img');
   const svgHost=document.getElementById('wl-logo-modal-svg');
   if(!img||!svgHost)return;
-  const a=document.getElementById('wl-logo-dl');
+  const dlBtn=document.getElementById('wl-logo-dl');
   const safe=(callDisplay(op).replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')||'station')+'-logo';
+  window.__wlLogoDl=null;
   if(op.cosmeticLogoUrl){
     const rel=op.cosmeticLogoUrl+(op.cosmeticLogoV?'?v='+op.cosmeticLogoV:'');
     const abs=wlGameMediaAbsUrl(rel);
@@ -13903,15 +14014,12 @@ function wlOpenLogoModal(stationId){
     svgHost.innerHTML='';
     img.style.display='block';
     img.src=abs;
-    if(a){
-      a.style.display='inline-block';
-      a.href=abs;
-      const base=op.cosmeticLogoUrl.split('?')[0];
-      const extMatch=base.match(/\.(png|webp|jpe?g|svg)$/i);
-      let ext=extMatch?extMatch[1].toLowerCase():'png';
-      if(ext==='jpeg')ext='jpg';
-      a.setAttribute('download',safe+'.'+ext);
-    }
+    const base=op.cosmeticLogoUrl.split('?')[0];
+    const extMatch=base.match(/\.(png|webp|jpe?g|svg)$/i);
+    let ext=extMatch?extMatch[1].toLowerCase():'png';
+    if(ext==='jpeg')ext='jpg';
+    window.__wlLogoDl={ kind:'url', url:abs, filename:safe+'.'+ext };
+    if(dlBtn)dlBtn.style.display='inline-block';
   }else{
     img.style.display='none';
     img.removeAttribute('src');
@@ -13919,11 +14027,8 @@ function wlOpenLogoModal(stationId){
     if(!svg){showToast('Logo preview unavailable.','warn');return;}
     svgHost.style.display='block';
     svgHost.innerHTML=svg;
-    if(a){
-      a.style.display='inline-block';
-      a.href='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
-      a.setAttribute('download',safe+'.svg');
-    }
+    window.__wlLogoDl={ kind:'svg', svg, filename:safe+'.svg' };
+    if(dlBtn)dlBtn.style.display='inline-block';
   }
   om('m-logo');
 }
@@ -14223,13 +14328,19 @@ function collectPlayerTalentsForPortraits(){
     seen.add(k);
     out.push(t);
   };
-  const my=MP.mode==='live'?G.ps.filter(s=>s._mpOwner===MP.playerId):G.ps;
+  // Derive from G.stations — G.ps can be missing or stale vs stations (e.g. before migrateSave).
+  const mpPid=MP.mode==='live'?(MP.playerId!=null?MP.playerId:0):null;
+  const my=(G.stations||[]).filter(s=>{
+    if(!s||!s.isPlayer||s._bpSlotDeferred)return false;
+    if(MP.mode!=='live')return true;
+    return (s._mpOwner??0)===mpPid;
+  });
   my.forEach(s=>{
     if(!s.prog)return;
     Object.values(s.prog).forEach(sd=>add(sd?.talent));
   });
   (G.talentBench||[]).forEach(ent=>{
-    if(MP.mode==='live'&&ent._mpOwner!==MP.playerId)return;
+    if(MP.mode==='live'&&(ent._mpOwner??0)!==mpPid)return;
     add(ent?.talent);
   });
   return out;
@@ -14237,11 +14348,13 @@ function collectPlayerTalentsForPortraits(){
 function queuePlayerTalentPortraits(){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   if(!G)return;
-  const list=collectPlayerTalentsForPortraits();
-  list.forEach((t,i)=>{
-    if(t._portraitUrl)return;
-    setTimeout(()=>queueTalentPortrait(t),i*100);
-  });
+  const run=async()=>{
+    const list=collectPlayerTalentsForPortraits().filter(t=>t&&!t._portraitUrl);
+    for(const t of list){
+      await queueTalentPortrait(t);
+    }
+  };
+  void run();
 }
 
 function exportSave(){
@@ -14289,17 +14402,22 @@ function openSaveLoad(){
       </div>`
     :'<div class="ibox" style="color:var(--mut)">No autosave found in this browser.</div>';
 
-  document.getElementById('saveb').innerHTML=`
-    <p class="di">Save your game to a file, your account (subscription), or resume from a previous session.</p>
-    ${localInfo}
-    <div id="wl-cloud-save-panel"></div>
-    <div class="ms2">
+  const hasActiveGame=typeof G!=='undefined'&&G&&G.sc&&G.stations;
+  const currentGameBlock=hasActiveGame
+    ?`<div class="ms2">
       <div class="msh">CURRENT GAME — ${G.year} ${G.period===1?'Spring':'Fall'}</div>
       <div class="sr"><span class="lb">Stations</span><span class="vl">${(MP.mode==='live'?G.ps.filter(s=>s._mpOwner===MP.playerId):G.ps).map(s=>s.callLetters).join(', ')}</span></div>
       <div class="sr"><span class="lb">Cash</span><span class="vl ${G.cash>=0?'pos':'neg'}">${f$(G.cash)}</span></div>
       <div class="sr"><span class="lb">Total Listeners</span><span class="vl">${(MP.mode==='live'?G.ps.filter(s=>s._mpOwner===MP.playerId):G.ps).reduce((s,st)=>s+(st.rat?.aqh||0),0).toLocaleString()} AQH</span></div>
     </div>
-    <button class="cfm" onclick="exportSave()">💾 DOWNLOAD SAVE FILE</button>
+    <button class="cfm" onclick="exportSave()">💾 DOWNLOAD SAVE FILE</button>`
+    :`<div class="ibox" style="color:var(--mut);margin-top:4px;line-height:1.5">No game in progress. Resume autosave above, load from the cloud or a file, or close and pick a scenario.</div>`;
+
+  document.getElementById('saveb').innerHTML=`
+    <p class="di">Save your game to a file, your account (subscription), or resume from a previous session.</p>
+    ${localInfo}
+    <div id="wl-cloud-save-panel"></div>
+    ${currentGameBlock}
     <button class="abt" style="width:100%;margin-top:8px" onclick="cm('m-save');openScenSelect(null)">🎮 NEW GAME</button>
     <div style="margin-top:12px">
       <label class="cfm" style="display:block;text-align:center;cursor:pointer">
@@ -14312,6 +14430,121 @@ function openSaveLoad(){
     <button class="cnl" style="margin-top:8px" onclick="cm('m-save')">CLOSE</button>`;
   om('m-save');
   wlCloudSaveRenderPanel('wl-cloud-save-panel');
+}
+
+function wlFeedbackGameContext(){
+  if(typeof G==='undefined'||!G||!G.sc)return '';
+  try{
+    const p=G.period===1?'Spring':'Fall';
+    const m=G.marketId||'?';
+    const sc=G.sc?.l||G.sc?.id||'';
+    const mode=typeof MP!=='undefined'&&MP.mode==='live'?'multiplayer':'solo';
+    return `Mode: ${mode}\nYear/period: ${G.year} ${p}\nMarket: ${m}\nScenario: ${sc}`;
+  }catch(_e){
+    return '';
+  }
+}
+function openFeedback(){
+  const st=document.getElementById('wl-feedback-status');
+  if(st){
+    st.textContent='';
+    st.style.color='';
+  }
+  const hp=document.getElementById('wl-feedback-hp');
+  if(hp)hp.value='';
+  const em=document.getElementById('wl-feedback-email');
+  if(em)em.value='';
+  const msg=document.getElementById('wl-feedback-msg');
+  if(msg){
+    msg.value='';
+    msg.placeholder='Bugs, ideas, difficulty, UI…';
+  }
+  om('m-feedback');
+}
+async function wlSubmitFeedback(){
+  const hp=document.getElementById('wl-feedback-hp');
+  if(hp&&String(hp.value||'').trim()){
+    cm('m-feedback');
+    return;
+  }
+  const msgEl=document.getElementById('wl-feedback-msg');
+  const emEl=document.getElementById('wl-feedback-email');
+  const st=document.getElementById('wl-feedback-status');
+  const raw=(msgEl?.value||'').trim();
+  if(raw.length<3){
+    if(st){
+      st.textContent='Please enter a bit more detail.';
+      st.style.color='var(--red)';
+    }
+    return;
+  }
+  const ctx=wlFeedbackGameContext();
+  const message=ctx?`${ctx}\n\n${raw}`:raw;
+  const replyEmail=(emEl?.value||'').trim();
+  const btn=document.getElementById('wl-feedback-send');
+  if(btn){
+    btn.disabled=true;
+    btn.textContent='Sending…';
+  }
+  if(st){
+    st.textContent='';
+    st.style.color='';
+  }
+  const formTo=typeof window!=='undefined'&&window.__WL_FEEDBACK_FORMSUBMIT_EMAIL&&String(window.__WL_FEEDBACK_FORMSUBMIT_EMAIL).trim();
+  try{
+    let r;
+    let j={};
+    if(formTo){
+      const params=new URLSearchParams();
+      params.set('name','Airwave Empire beta');
+      params.set('email',replyEmail||'anonymous@airwaveempire.com');
+      params.set('message',message);
+      params.set('_subject','Airwave Empire — beta feedback');
+      params.set('_template','table');
+      params.set('_captcha','false');
+      r=await fetch('https://formsubmit.co/ajax/'+encodeURIComponent(formTo),{
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',Accept:'application/json'},
+        body:params.toString(),
+      });
+      j=await r.json().catch(()=>({}));
+    }else{
+      r=await fetch(wlGameApiUrl('/api/feedback'),{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({message,replyEmail,_gotcha:''}),
+      });
+      j=await r.json().catch(()=>({}));
+    }
+    if(!r.ok){
+      const err=j.error||(j.message&&String(j.message))||'Could not send feedback.';
+      if(st){
+        st.textContent=err;
+        st.style.color='var(--red)';
+      }
+      showToast(err,'warn');
+      return;
+    }
+    if(st){
+      st.textContent='Thanks — your message was sent.';
+      st.style.color='var(--grn)';
+    }
+    showToast('Feedback sent. Thank you!','info');
+    if(msgEl)msgEl.value='';
+    if(emEl)emEl.value='';
+    setTimeout(()=>cm('m-feedback'),2400);
+  }catch(e){
+    if(st){
+      st.textContent=formTo?'Could not reach the feedback service. Try again or use the Contact page.':'Could not reach the game server.';
+      st.style.color='var(--red)';
+    }
+    showToast(formTo?'Could not reach the feedback service.':'Could not reach the game server.','warn');
+  }finally{
+    if(btn){
+      btn.disabled=false;
+      btn.textContent='Send feedback';
+    }
+  }
 }
 
 function migrateSave(G){
@@ -15430,7 +15663,10 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra
       const pr=s.cp;
       const trd=!pr?'':'  '+( pr.col?'<span style="color:var(--red)">⬇⬇ collapsing</span>':pr.under?'<span style="color:var(--red)">⬇ declining</span>':pr.sur?'<span style="color:var(--grn)">⬆ surging</span>':'<span style="color:var(--mut)">→ stable</span>');
       const stnMargin=s.fin.rev>0?Math.round((s.fin.ebitda/s.fin.rev)*100):0;
-      const mc=stnMargin>=35?'pos':stnMargin>=10?'amb':'neg';
+      // Match intuition: any positive station EBITDA = green; loss = red. (Old code used margin % only and painted thin profits red.)
+      let mc='amb';
+      if(s.fin.ebitda<0) mc='neg';
+      else if(s.fin.ebitda>0) mc='pos';
       const talCost=Object.values(s.prog).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
       const simSrc=s.simulcastWith&&s._simulcastSource===false?G.stations.find(st=>st.id===s.simulcastWith):null;
       const localMD=s.prog.morningDrive?.talent;
@@ -15684,8 +15920,8 @@ function openContract(sid, slot){
     ${(()=>{const rp=s._rivalPoachPending;if(!rp||rp.slot!==slot||rp.talentId!==t.id)return'';const riv=G.stations.find(st=>st.id===rp.rivalId);const minM=Math.round(rp.offerSalary*0.95/500)*500;return`<div class="ibox" style="border-color:var(--amb);margin-bottom:12px"><strong style="color:var(--amb)">⚡ RIVAL OFFER / COUNTER-POACH</strong><br><span style="font-size:14px;color:var(--off)"><strong>${riv?riv.callLetters:'Rival'}</strong> offered <strong>${f$(rp.offerSalary)}</strong>/yr. Sign at <strong>≥${f$(minM)}</strong>/yr to retain ${t.name} next period.</span></div>`;})()}
     ${(()=>{const sh=s.rat?.share||0;const q=t.quality||50;if(sh>0.12&&q>75)return`<div style="background:rgba(245,166,35,.10);border:1px solid var(--amb);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--amb)">📈 Strong station + top talent — expect a premium ask. They know their worth.</div>`;if(sh>0.08&&q>65)return`<div style="background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.3);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--off)">📊 Solid ratings give this talent negotiating leverage.</div>`;if(t.morale<50)return`<div style="background:rgba(220,50,50,.10);border:1px solid var(--red);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--red)">⚠ Low morale — they're unhappy and may ask for extra just to stay.</div>`;return''})()}
 
-    <div class="ms2" style="margin-bottom:16px">
-      <div class="sr"><span class="lb">Talent</span><span class="vl" style="display:flex;align-items:center;gap:10px">${talentPortraitThumbHtml(t,'tp-contract-sm',`${callDisplay(s)} ${SL[slot]} · contract`)}<strong>${cStar}${t.name}</strong></span></div>
+    <div class="ms2 contract-summary" style="margin-bottom:16px">
+      <div class="sr"><span class="lb">Talent</span><span class="vl contract-talent-row" style="display:flex;align-items:center;gap:10px;text-align:left">${talentPortraitThumbHtml(t,'tp-contract-sm',`${callDisplay(s)} ${SL[slot]} · contract`)}<strong style="min-width:0">${cStar}${t.name}</strong></span></div>
       <div class="sr"><span class="lb">Talent rating</span><span class="vl ${qc(Math.round(t.quality))}">${Math.round(t.quality)}/100</span></div>
       <div class="sr"><span class="lb">Slot quality</span><span class="vl" style="font-family:var(--fd)">${slotQContract}/100 <span style="color:var(--mut);font-size:14px">(${SL[slot]} · on-air score)</span> <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:6px" onclick="openTalentMetricsHelp('slotq')">?</button></span></div>
       <div class="sr"><span class="lb">Format fit</span><span class="vl"><span style="color:${contractFit.col};font-family:var(--fd)">${contractFit.words}</span><span style="color:var(--mut);font-size:14px;font-family:var(--ft)"> · ${rosterFmtLong(s)}</span></span></div>
@@ -15695,6 +15931,7 @@ function openContract(sid, slot){
       <div class="sr"><span class="lb">Current salary</span><span class="vl">${f$(t.salary)}/yr · ${f$(t.salary/2)}/period</span></div>
       <div class="sr"><span class="lb">Contract</span><span class="vl">${contractStatus}</span></div>
     </div>
+    ${t.superstar===true?`<div class="ibox" style="margin-bottom:16px;font-size:13px;color:var(--off);line-height:1.5;border-color:rgba(245,166,35,.35)"><strong style="color:var(--amb)">⭐ Superstar</strong> — Among the market's top on-air draws (blended talent + slot quality, with tenure). Boosts station impact; rivals may poach harder.</div>`:''}
 
     <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px">
       <button type="button" class="abt" style="border-color:var(--amb);color:var(--amb);padding:10px 16px;font-size:14px;letter-spacing:0.06em" onclick="cm('m-contract');openManageTalent('${sid}')">OPEN MANAGE TALENT</button>
@@ -15703,7 +15940,7 @@ function openContract(sid, slot){
 
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
       <div class="msh">EXTEND CONTRACT</div>
-      <div style="display:flex;gap:8px">
+      <div class="contract-extend-grid">
         <div class="to" style="flex:1;cursor:default">
           <div><div class="ton">1-Year</div>${poach1yrMatchLabel}
           <div class="tost"><div><span class="tosl">SALARY</span><span class="tosv ${qc(70)}">${f$(ext1Annual)}/yr</span></div><div><span class="tosl">RAISE</span><span class="tosv warn">${Math.round((ext1Annual/t.salary-1)*100)}%</span></div></div>
@@ -15724,7 +15961,7 @@ function openContract(sid, slot){
         </div>
       </div>
 
-      <div style="display:flex;gap:8px;margin-top:4px">
+      <div class="contract-extend-grid" style="margin-top:4px">
         <div class="to" style="flex:1;cursor:default;border-color:var(--grn)">
           <div><div class="ton" style="color:var(--grn)">Morale Bonus</div>
           <div style="font-size:14px;color:var(--mut);margin-top:4px">One-time cash bonus — boosts morale +15 to +20 pts. No contract change.</div></div>

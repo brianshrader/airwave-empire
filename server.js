@@ -43,7 +43,9 @@ app.use(cors(corsOpts));
 const { stripeWebhookHandler, mountStripeBilling } = require('./server/stripeBilling');
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhookHandler);
 
-app.use(express.json({ limit: '64kb' }));
+// Default 32mb — Express default (~100kb) rejects large cloud saves. Override with JSON_BODY_LIMIT; nginx needs client_max_body_size to match.
+const JSON_BODY_LIMIT = process.env.JSON_BODY_LIMIT || '32mb';
+app.use(express.json({ limit: JSON_BODY_LIMIT }));
 
 const { mountLogoRoutes } = require('./server/logoRoutes');
 const { mountPortraitRoutes } = require('./server/portraitRoutes');
@@ -55,6 +57,9 @@ mountStripeBilling(app);
 
 const { mountCloudSaves } = require('./server/cloudSaves');
 mountCloudSaves(app);
+
+const { mountFeedback } = require('./server/feedbackRoutes');
+mountFeedback(app);
 
 const httpServer = http.createServer(app);
 const io         = new Server(httpServer, {
@@ -844,10 +849,13 @@ httpServer.listen(PORT, () => {
     console.log(`   Client: source HTML/JS only — Clerk needs \`npm run build\` or open Vite at http://localhost:5173 (\`npm run client:dev\`)`);
   }
   console.log(`   Saves: ${SAVE_DIR}`);
+  console.log(`   JSON body limit: ${JSON_BODY_LIMIT} (JSON_BODY_LIMIT env; nginx: client_max_body_size)`);
   if (process.env.CLERK_SECRET_KEY) {
     console.log(`   Auth: Clerk JWT required for multiplayer sockets`);
+    console.log(`   Cloud saves: /api/saves/cloud enabled`);
   } else {
-    console.log(`   Auth: off — set CLERK_SECRET_KEY to require accounts`);
+    console.log(`   Auth: off — set CLERK_SECRET_KEY for multiplayer + cloud saves`);
+    console.log(`   Cloud saves: disabled until CLERK_SECRET_KEY is set (same key as Clerk Dashboard → API keys)`);
   }
   if (process.env.STRIPE_SECRET_KEY) {
     console.log(`   Stripe: billing API enabled`);

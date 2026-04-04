@@ -7,7 +7,7 @@
  *
  * ShortAPI: async job create + poll (https://api.shortapi.ai).
  * Grok: synchronous xAI images/generations.
- * Output is always resized to 512×512 PNG via sharp.
+ * Logos: resized to 512×512 PNG.
  *
  * ShortAPI z-image: resolution must be exactly "1K" or "1.5K" (API-enforced). Default 1K.
  */
@@ -348,7 +348,7 @@ function shortapiPixelSizeForAspect(ar, resLabel) {
  * Walk the job result, try every https URL then every base64 blob until sharp accepts one.
  * Avoids picking a single wrong "output" string before a real image_url elsewhere in the JSON.
  * @param {unknown} payloadRoot
- * @returns {Promise<Buffer | null>} 512×512 PNG or null
+ * @returns {Promise<Buffer | null>}
  */
 async function attemptShortapiPayloadToPng(payloadRoot) {
   const acc = { urls: [], b64Explicit: [], b64Heuristic: [], b64Late: [] };

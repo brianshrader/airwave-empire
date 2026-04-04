@@ -16,6 +16,8 @@
 <meta name="wl-clerk-publishable-key" content="">
 <!-- Set content="1" (or VITE_REQUIRE_CLERK=true in .env) to require sign-in before solo / scenario select (beta testers). -->
 <meta name="wl-require-clerk" content="">
+<!-- Optional: FormSubmit destination for beta feedback (same as FEEDBACK_TO). Prefer VITE_FEEDBACK_FORMSUBMIT_EMAIL in .env at build. -->
+<meta name="wl-feedback-formsubmit-email" content="">
 <title>Airwave Empire - BETA</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <!-- Station logo templates (curated subset — deterministic SVG typography) -->
@@ -23,10 +25,16 @@
 
 <!-- Socket.io — loaded dynamically only in multiplayer mode -->
 <!-- <script src="/socket.io/socket.io.js"></script> -->
-  <script type="module" crossorigin src="/assets/play-C2EdAa-g.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/play-D_GvfYuC.css">
+  <script type="module" crossorigin src="/assets/play-Dq5zwftL.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/play-BqbkgG0D.css">
 </head>
 <body>
+
+<!-- Google blocks “Sign in with Google” in embedded in-app browsers (Instagram, FB, TikTok, etc.). -->
+<div id="wl-inapp-browser-hint" style="display:none;position:fixed;top:0;left:0;right:0;z-index:10060;background:rgba(20,18,12,.97);border-bottom:1px solid rgba(245,166,35,.35);padding:10px 40px 10px 16px;font-family:var(--ft),system-ui,sans-serif;font-size:13px;color:var(--off);line-height:1.45;text-align:center;box-sizing:border-box">
+  <strong style="color:var(--amb)">Sign-in:</strong> Google may block sign-in inside this app’s browser. Open <strong>airwaveempire.com</strong> in <strong>Safari</strong> or <strong>Chrome</strong> (⋯ menu → “Open in Browser” / “Open in Safari”).
+  <button type="button" id="wl-inapp-browser-hint-close" aria-label="Dismiss" style="position:absolute;top:8px;right:10px;background:transparent;border:none;color:var(--mut);font-size:18px;line-height:1;cursor:pointer;padding:4px 8px">&times;</button>
+</div>
 
 <!-- Beta / Clerk — blocks scenario select until signed in when wl-require-clerk or VITE_REQUIRE_CLERK is set -->
 <div id="wl-beta-auth-gate" style="display:none;position:fixed;inset:0;z-index:10050;flex-direction:column;align-items:center;justify-content:center;background:#0a0a0a;padding:24px;box-sizing:border-box;font-family:var(--ft),system-ui,sans-serif">
@@ -296,6 +304,7 @@
         <button type="button" class="phbtn" onclick="openFinancials()">📈 FINANCIALS</button>
         <button type="button" class="phbtn" onclick="openLoan()">💳 LOANS</button>
         <button type="button" class="phbtn" onclick="openSaveLoad()">💾 SAVE / LOAD</button>
+        <button type="button" class="phbtn" onclick="openFeedback()" title="Send beta feedback to the team">💬 FEEDBACK</button>
         <button type="button" class="phbtn" onclick="wlFtTutorialRestartFromMenu()" title="Replay the short solo first-turn walkthrough">📘 TIPS</button>
       </div>
     </div>
@@ -340,6 +349,16 @@
 <div class="ov" id="m-milestone"><div class="mo" style="max-width:520px"><div id="milestoneb"></div></div></div>
 <div class="ov" id="m-period-news"><div class="mo" style="max-width:560px"><div class="mh"><span>📰 NEWS — LAST PERIOD</span><button class="mc" onclick="cm('m-period-news')">CLOSE ×</button></div><div id="periodnewsb" style="padding:16px 20px 20px"></div></div></div>
 
+<div class="ov" id="m-feedback"><div class="mo" style="max-width:520px"><div class="mh"><span>BETA FEEDBACK</span><button type="button" class="mc" onclick="cm('m-feedback')">CLOSE ×</button></div><div id="feedbackb" style="padding:16px 20px 22px;position:relative">
+  <p class="di" style="margin-top:0">What should we improve? Bugs, balance, clarity — everything helps.</p>
+  <label for="wl-feedback-email" style="display:block;font-size:13px;color:var(--mut);margin-bottom:6px">Your email <span style="opacity:.85">(optional — if we may follow up)</span></label>
+  <input type="email" id="wl-feedback-email" autocomplete="email" placeholder="you@example.com" style="width:100%;box-sizing:border-box;background:var(--crd);border:1px solid var(--bdr);color:var(--wht);font-family:var(--ft);font-size:15px;padding:10px 12px;margin-bottom:14px;border-radius:2px;outline:none"/>
+  <label for="wl-feedback-msg" style="display:block;font-size:13px;color:var(--mut);margin-bottom:6px">Message</label>
+  <textarea id="wl-feedback-msg" rows="9" placeholder="Bugs, ideas, difficulty, UI…" style="width:100%;box-sizing:border-box;background:var(--crd);border:1px solid var(--bdr);color:var(--off);font-family:var(--ft);font-size:15px;line-height:1.5;padding:10px 12px;margin-bottom:12px;border-radius:2px;resize:vertical;min-height:140px;outline:none"></textarea>
+  <input type="text" id="wl-feedback-hp" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0"/>
+  <button type="button" class="cfm" id="wl-feedback-send" onclick="wlSubmitFeedback()" style="width:100%">Send feedback</button>
+  <p id="wl-feedback-status" style="margin-top:14px;font-size:14px;font-family:var(--ft);line-height:1.45;min-height:1.2em"></p>
+</div></div></div>
 
 <div class="ov" id="m-talent-help" style="z-index:520"><div class="mo" style="max-width:540px"><div class="mh"><span>TALENT METRICS</span><button class="mc" onclick="cm('m-talent-help')">CLOSE ×</button></div><div id="talent-helpb" style="padding:16px 20px 20px"></div></div></div>
 <div class="ov" id="m-contract"><div class="mo"><div class="mh"><span>📋 TALENT CONTRACT</span><button class="mc" onclick="cm('m-contract')">CLOSE ×</button></div><div id="contractb"></div></div></div>
@@ -354,15 +373,22 @@
 <div class="ov" id="m-trade"><div class="mo"><div class="mh"><span id="trade-title">🤝 TRADE OFFER</span><button class="mc" onclick="cm('m-trade')">CLOSE ×</button></div><div id="tradeb" style="padding:16px 20px 20px"></div></div></div>
 <div class="ov" id="m-mp-endgame"><div class="mo wide mp-endgame-mo" style="max-width:560px;border:2px solid rgba(212,175,55,.45);box-shadow:0 0 60px rgba(212,175,55,.18),0 12px 40px rgba(0,0,0,.5)"><div class="mh mp-endgame-mh" style="background:linear-gradient(180deg,rgba(212,175,55,.12),transparent);border-bottom:1px solid rgba(212,175,55,.25)"><span id="mp-endgame-title" style="font-family:var(--fd);letter-spacing:3px;color:var(--amb)">FINAL RESULTS — 2025</span></div><div id="mp-endgame-body" style="padding:16px 20px 8px"></div><div style="padding:0 20px 22px"><button type="button" class="cfm" id="mp-endgame-continue" onclick="mpContinueBeyondEndgame()" style="width:100%;font-size:16px;padding:14px">Continue Playing →</button><p style="font-family:var(--ft);font-size:13px;color:var(--mut);margin:10px 0 0 0;text-align:center">Resumes normal play from Spring 2026 onward.</p></div></div></div>
 
-<div class="ov" id="m-logo"><div class="mo wide" style="max-width:min(96vw,960px)"><div class="mh"><span>STATION LOGO</span><button type="button" class="mc" onclick="cm('m-logo')">← BACK</button></div><div style="text-align:center;padding:8px 0 20px"><img id="wl-logo-modal-img" alt="Station logo" style="display:none;max-width:100%;max-height:min(78vh,880px);width:auto;height:auto;object-fit:contain;border-radius:4px;background:rgba(0,0,0,.2)"><div id="wl-logo-modal-svg" class="wl-logo-modal-svg-host" style="display:none;max-width:min(92vw,720px);max-height:min(78vh,880px);margin:0 auto"></div></div><div style="display:flex;justify-content:center;padding-bottom:8px"><a id="wl-logo-dl" class="cfm" href="#" download="station-logo.svg" style="display:inline-block;text-decoration:none;min-width:220px;text-align:center">💾 Save file</a></div></div></div>
-<div class="ov" id="m-portrait" style="z-index:600"><div class="mo" style="max-width:min(96vw,520px)"><div class="mh"><span>TALENT PORTRAIT</span><button type="button" class="mc" onclick="cm('m-portrait')">← BACK</button></div><div style="text-align:center;padding:12px 16px 8px"><img id="wl-portrait-modal-img" alt="" style="max-width:100%;max-height:min(70vh,640px);object-fit:contain;border-radius:6px;background:rgba(0,0,0,.2)"></div><div id="wl-portrait-modal-name" style="font-family:var(--fd);font-size:22px;text-align:center;color:var(--wht);letter-spacing:1px"></div><div id="wl-portrait-modal-ctx" style="font-family:var(--ft);font-size:14px;color:var(--mut);text-align:center;margin:8px 0 16px;line-height:1.45"></div></div></div>
+<div class="ov" id="m-logo"><div class="mo wide" style="max-width:min(96vw,960px)"><div class="mh"><span>STATION LOGO</span><button type="button" class="mc" onclick="cm('m-logo')">← BACK</button></div><div style="text-align:center;padding:8px 0 20px"><img id="wl-logo-modal-img" alt="Station logo" style="display:none;max-width:100%;max-height:min(78vh,880px);width:auto;height:auto;object-fit:contain;border-radius:4px;background:rgba(0,0,0,.2)"><div id="wl-logo-modal-svg" class="wl-logo-modal-svg-host" style="display:none;max-width:min(92vw,720px);max-height:min(78vh,880px);margin:0 auto"></div></div><div style="display:flex;justify-content:center;padding-bottom:8px"><button type="button" id="wl-logo-dl" class="cfm" onclick="wlLogoDownloadClick(event)" style="display:inline-block;min-width:220px;text-align:center;width:auto;margin-top:0">💾 Save file</button></div></div></div>
+<div class="ov" id="m-portrait"><div class="mo" style="max-width:min(96vw,520px)"><div class="mh"><span>TALENT PORTRAIT</span><button type="button" class="mc" onclick="cm('m-portrait')">← BACK</button></div><div style="text-align:center;padding:12px 16px 8px"><img id="wl-portrait-modal-img" alt="" style="max-width:100%;max-height:min(70vh,640px);object-fit:contain;border-radius:6px;background:rgba(0,0,0,.2)"></div><div id="wl-portrait-modal-name" style="font-family:var(--fd);font-size:22px;text-align:center;color:var(--wht);letter-spacing:1px"></div><div id="wl-portrait-modal-ctx" style="font-family:var(--ft);font-size:14px;color:var(--mut);text-align:center;margin:8px 0 16px;line-height:1.45"></div></div></div>
 
-<footer id="site-footer" class="site-footer" role="contentinfo">
+<button type="button" id="wl-feedback-fab" class="wl-feedback-fab" onclick="openFeedback()" title="Beta feedback">💬 Feedback</button>
+
+<footer id="site-footer" class="site-footer site-footer--compact" role="contentinfo">
   <div class="site-footer-inner">
-    <span class="site-footer-copy">© 2026 Airwave Empire. All rights reserved.</span>
-    <nav class="site-footer-links" aria-label="Legal">
+    <nav class="site-footer-links" aria-label="Legal and feedback">
+      <span class="site-footer-copy">© 2026 Airwave Empire</span>
+      <span class="site-footer-dot" aria-hidden="true">·</span>
+      <button type="button" class="site-footer-linkbtn" onclick="openFeedback()">Feedback</button>
+      <span class="site-footer-dot" aria-hidden="true">·</span>
       <a href="/legal/terms.html" target="_blank" rel="noopener">Terms</a>
+      <span class="site-footer-dot" aria-hidden="true">·</span>
       <a href="/legal/privacy.html" target="_blank" rel="noopener">Privacy</a>
+      <span class="site-footer-dot" aria-hidden="true">·</span>
       <a href="/legal/contact.html" target="_blank" rel="noopener">Contact</a>
     </nav>
     <p class="site-footer-sim">Fictional simulation — not affiliated with real stations or broadcasters.</p>

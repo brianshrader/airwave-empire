@@ -10,6 +10,40 @@ if (gameServerUrl) {
   window.__WL_GAME_SERVER_URL = gameServerUrl;
 }
 
+/**
+ * FormSubmit destination email — browser POSTs directly to formsubmit.co/ajax/… so Cloudflare does not
+ * block datacenter/VPS IPs (server-side forwarding often gets HTTP 403 “Just a moment…”).
+ * Match FEEDBACK_TO. Optional meta: wl-feedback-formsubmit-email on play.html.
+ */
+const feedbackFormsubmit =
+  import.meta.env?.VITE_FEEDBACK_FORMSUBMIT_EMAIL?.trim?.() ??
+  document.querySelector('meta[name="wl-feedback-formsubmit-email"]')?.getAttribute('content')?.trim?.() ??
+  '';
+if (feedbackFormsubmit) {
+  window.__WL_FEEDBACK_FORMSUBMIT_EMAIL = feedbackFormsubmit;
+}
+
+/** Google OAuth rejects embedded WebViews (Instagram, TikTok, FB in-app, etc.) — “secure browsers” policy. */
+function wlDetectInAppBrowser() {
+  const ua = navigator.userAgent || '';
+  return /Instagram|FBAN|FBAV|FB_IAB|Line\/|musical_ly|BytedanceWebview|MicroMessenger|Snapchat/i.test(ua);
+}
+
+function wlInitInAppBrowserHint() {
+  if (!wlDetectInAppBrowser() || sessionStorage.getItem('wl-hide-inapp-hint') === '1') return;
+  const bar = document.getElementById('wl-inapp-browser-hint');
+  if (!bar) return;
+  bar.style.display = 'block';
+  const close = document.getElementById('wl-inapp-browser-hint-close');
+  if (close) {
+    close.onclick = () => {
+      bar.style.display = 'none';
+      sessionStorage.setItem('wl-hide-inapp-hint', '1');
+    };
+  }
+}
+queueMicrotask(() => wlInitInAppBrowserHint());
+
 const fromEnv = import.meta.env?.VITE_CLERK_PUBLISHABLE_KEY?.trim?.() ?? '';
 const fromMeta =
   document.querySelector('meta[name="wl-clerk-publishable-key"]')?.getAttribute('content')?.trim?.() ?? '';

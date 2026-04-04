@@ -40,6 +40,8 @@ export default defineConfig({
         // index.html loads these as classic scripts (before legacy.js). Must exist in dist or production 404s and wlStationLogoSvg never mounts.
         copy('stationLogoConfig.js');
         copy('stationLogoSvg.js');
+        // Legal pages link /src/styles.css — Vite does not emit this path; copy so contact/terms/privacy match the game theme.
+        copy('styles.css');
         const legalDir = join(__dirname, 'legal');
         if (existsSync(legalDir)) {
           const legalDest = join(__dirname, 'dist', 'legal');

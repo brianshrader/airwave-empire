@@ -11,9 +11,10 @@ const { userHasActiveSubscription, subscriptionCheckEnabled } = require('./subsc
 
 const ROOT = path.join(__dirname, '..', 'data', 'cloud_saves');
 const MAX_SAVES = Math.min(50, parseInt(process.env.CLOUD_SAVE_MAX_SLOTS || '10', 10) || 10);
+/** Default 12 MiB — late-game JSON can exceed 6 MiB; hard cap 24 MiB. Must stay ≤ server.js express.json (JSON_BODY_LIMIT). */
 const MAX_BYTES = Math.min(
-  16 * 1024 * 1024,
-  parseInt(process.env.CLOUD_SAVE_MAX_BYTES || String(6 * 1024 * 1024), 10) || 6 * 1024 * 1024,
+  24 * 1024 * 1024,
+  parseInt(process.env.CLOUD_SAVE_MAX_BYTES || String(12 * 1024 * 1024), 10) || 12 * 1024 * 1024,
 );
 
 function safeUid(uid) {
@@ -96,7 +97,7 @@ function validatePayload(body) {
 
 function mountCloudSaves(app) {
   const router = express.Router();
-  router.use(express.json({ limit: '8mb' }));
+  // JSON body is parsed by app-level express.json (see server.js). We only enforce MAX_BYTES on POST/PUT.
 
   /** Who can use cloud (auth + subscription gate for UI). */
   router.get('/status', async (req, res) => {

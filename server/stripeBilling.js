@@ -5,7 +5,6 @@
  * Webhook: configure endpoint POST /api/stripe/webhook in Stripe Dashboard
  * with signing secret STRIPE_WEBHOOK_SECRET.
  */
-const express = require('express');
 const accountStore = require('./accountStore');
 const { verifyClerkBearer } = require('./clerkVerify');
 
@@ -15,7 +14,8 @@ function mountStripeBilling(app) {
     console.log('[STRIPE] STRIPE_SECRET_KEY not set — billing routes return 503');
   }
 
-  app.post('/api/billing/create-checkout-session', express.json(), async (req, res) => {
+  // Body parsed by app-level express.json in server.js (do not add express.json() here — default limit is ~100kb).
+  app.post('/api/billing/create-checkout-session', async (req, res) => {
     if (!secret) return res.status(503).json({ error: 'Billing not configured' });
     let stripe;
     try {
