@@ -167,4 +167,10 @@ function mountLogoRoutes(app) {
   });
 }
 
-module.exports = { mountLogoRoutes, GENERATED_DIR };
+module.exports = {
+  mountLogoRoutes,
+  GENERATED_DIR,
+  cacheKeyParts,
+  logoBaseFileName,
+  validateBody,
+};

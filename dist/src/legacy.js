@@ -1841,7 +1841,7 @@ function getCallPrefixForMarket(marketId){
   return m.callPrefix==='K'?'K':'W';
 }
 /** Phase 1 pilot markets — same engine, data-driven params; more cities follow this schema */
-const PHASE1_MARKET_IDS=['atlanta','nashville','newyork','losangeles','chicago'];
+const PHASE1_MARKET_IDS=['newyork','losangeles','chicago','atlanta','nashville'];
 let ACTIVE_MARKET='atlanta';
 let _selectedMarket='atlanta';
 let _lastScenSelectLocal=null;
@@ -1857,6 +1857,26 @@ function scenarioIdsForMarket(marketId){
     if(scid==='cntry')return['atlanta','nashville'].includes(mid);
     return true;
   });
+}
+/**
+ * Starting cash scales with market vs Atlanta (revScale=1): mega markets need more runway
+ * because fixed costs and competitive pressure scale with market size.
+ * @param {string} [marketId]
+ * @returns {number} multiplier applied to scenario base cash
+ */
+function marketStartingCashMultiplier(marketId){
+  const m=MARKETS[marketId]||MARKETS.atlanta;
+  const rs=Math.max(0.22,Number(m.revScale)||1);
+  const tier=m.rankTier||'large';
+  let mult=Math.pow(rs,0.9);
+  if(tier==='mega')mult*=1.58;
+  else if(tier==='medium')mult*=0.86;
+  else mult*=1.02;
+  return Math.min(5.2,Math.max(0.62,mult));
+}
+function scaledScenarioCash(scBaseCash,marketId){
+  const base=Number(scBaseCash);
+  return Math.round((Number.isFinite(base)?base:0)*marketStartingCashMultiplier(marketId));
 }
 function pickMarketPhase1(id){
   if(!PHASE1_MARKET_IDS.includes(id))return;
@@ -1907,7 +1927,7 @@ function marketAnnualBilling(year,marketId){
 /** Dev: annual + half-period billing snapshot for calibration (console.table). */
 function billingBenchmarkReport(){
   const years=[1975,1980,1985,1990,2000,2010];
-  const markets=['losangeles','newyork','chicago','atlanta','nashville'];
+  const markets=['newyork','losangeles','chicago','atlanta','nashville'];
   const rows=[];
   years.forEach(y=>{
     markets.forEach(mid=>{
@@ -1945,6 +1965,18 @@ function promoBudgetCapForPeriod(G){
   const ceil=Math.round(820000+_smoothstep(1970,2020,y)*680000);
   return Math.max(floor,Math.min(ceil,raw));
 }
+/** One-time remote broadcast van — rough era-appropriate outfitting cost (tunable). */
+function remoteVanPurchaseCostDollars(G){
+  const y=G&&G.year||1990;
+  if(y<1975)return 16000;
+  if(y<1985)return 24000;
+  if(y<1995)return 42000;
+  if(y<2005)return 68000;
+  if(y<2015)return 92000;
+  return 115000;
+}
+/** Multiplier applied in `recalc` audience share (small marketing edge once the van is owned). */
+const REMOTE_VAN_MARKETING_LIFT=0.025;
 /** Half-year programming cap — same spine as promo, ~15% higher billing multiplier. */
 function progBudgetCapForPeriod(G){
   const y=G.year||1970;
@@ -3034,6 +3066,20 @@ function mpMyCashOnHand() {
   const w = G._playerCash?.[MP.playerId];
   return w !== undefined && w !== null ? w : (G.cash ?? 0);
 }
+/** Solo or MP: adjust this player's cash and sync MP wallet display. */
+function wlAdjustMyCash(delta) {
+  const d = Math.round(delta);
+  if (!d || !G) return;
+  if (MP.mode === 'live') {
+    if (!G._playerCash) G._playerCash = {};
+    const pid = MP.playerId;
+    G._playerCash[pid] = (G._playerCash[pid] || 0) + d;
+    if (MP.playerId === pid) G.cash = G._playerCash[pid];
+    MP.emit('player_cash_update', { playerId: pid, cash: G._playerCash[pid] });
+  } else {
+    G.cash = (G.cash || 0) + d;
+  }
+}
 /** Forced / distress sale: floor so low-revenue stations are not sold for trivial cash. */
 function distressSaleProceeds(s) {
   if (!s) return 150000;
@@ -3106,6 +3152,9 @@ function aiRebrandStationAfterDistressSale(G, s) {
   delete s.cosmeticLogoUrl;
   delete s.cosmeticLogoV;
   delete s.cosmeticLogoTone;
+  delete s.cosmeticRemoteVanUrl;
+  delete s.cosmeticRemoteVanV;
+  delete s.remoteVanMarketingLift;
   delete s.heritageIncumbent;
   delete s._simulcastSource;
   Object.values(s.prog).forEach((sd) => {
@@ -3154,6 +3203,13 @@ function mergeCosmeticPreserve(prevG, nextG) {
       if (p.cosmeticLogoV != null) s.cosmeticLogoV = p.cosmeticLogoV;
     }
     if (p.cosmeticLogoTone && !s.cosmeticLogoTone) s.cosmeticLogoTone = p.cosmeticLogoTone;
+    if (p.cosmeticRemoteVanUrl && !s.cosmeticRemoteVanUrl) {
+      s.cosmeticRemoteVanUrl = p.cosmeticRemoteVanUrl;
+      if (p.cosmeticRemoteVanV != null) s.cosmeticRemoteVanV = p.cosmeticRemoteVanV;
+    }
+    if (p.remoteVanMarketingLift != null && s.remoteVanMarketingLift == null) {
+      s.remoteVanMarketingLift = p.remoteVanMarketingLift;
+    }
     if (p.prog && s.prog && slotKeys.length) {
       for (const slot of slotKeys) {
         const pt = p.prog[slot] && p.prog[slot].talent;
@@ -3282,7 +3338,7 @@ function wlGameApiUrl(path){
   const p=path.startsWith('/')?path:'/'+path;
   return wlGameServerOrigin()+p;
 }
-/** Absolute URL for <img> / download when stored paths are /generated-logos/* or /generated-portraits/* and the API lives on another host. */
+/** Absolute URL for <img> / download when stored paths are /generated-* and the API lives on another host. */
 function wlGameMediaAbsUrl(pathOrUrlWithQuery){
   if(pathOrUrlWithQuery==null||pathOrUrlWithQuery==='')return pathOrUrlWithQuery;
   const s=String(pathOrUrlWithQuery);
@@ -3291,7 +3347,7 @@ function wlGameMediaAbsUrl(pathOrUrlWithQuery){
   const pathOnly=qIdx>=0?s.slice(0,qIdx):s;
   const qs=qIdx>=0?s.slice(qIdx):'';
   const origin=wlGameServerOrigin();
-  if(pathOnly.startsWith('/generated-logos/')||pathOnly.startsWith('/generated-portraits/'))return origin+pathOnly+qs;
+  if(pathOnly.startsWith('/generated-logos/')||pathOnly.startsWith('/generated-portraits/')||pathOnly.startsWith('/generated-remote-vans/'))return origin+pathOnly+qs;
   return pathOnly.startsWith('/')?pathOnly+qs:s;
 }
 
@@ -3743,14 +3799,24 @@ function mpSetupSocketHandlers(socket) {
     if (!G || !G.stations || !payload?.stationId) return;
     const st = G.stations.find(s => s && s.id === payload.stationId);
     if (!st) return;
+    if (payload.clearCosmeticRemoteVan) {
+      delete st.cosmeticRemoteVanUrl;
+      delete st.cosmeticRemoteVanV;
+      delete st.remoteVanMarketingLift;
+      renderAll();
+      return;
+    }
     if (payload.clearCosmeticLogo) {
       delete st.cosmeticLogoUrl;
       delete st.cosmeticLogoV;
       delete st.cosmeticLogoTone;
+      delete st.cosmeticRemoteVanUrl;
+      delete st.cosmeticRemoteVanV;
+      delete st.remoteVanMarketingLift;
       renderAll();
       return;
     }
-    const { cosmeticLogoUrl, cosmeticLogoV, cosmeticLogoTone } = payload;
+    const { cosmeticLogoUrl, cosmeticLogoV, cosmeticLogoTone, cosmeticRemoteVanUrl, cosmeticRemoteVanV, remoteVanMarketingLift } = payload;
     if (cosmeticLogoUrl) {
       st.cosmeticLogoUrl = cosmeticLogoUrl;
       if (cosmeticLogoV != null && Number.isFinite(Number(cosmeticLogoV))) st.cosmeticLogoV = Number(cosmeticLogoV);
@@ -3758,6 +3824,13 @@ function mpSetupSocketHandlers(socket) {
     if (typeof cosmeticLogoTone === 'string') {
       if (cosmeticLogoTone) st.cosmeticLogoTone = cosmeticLogoTone;
       else delete st.cosmeticLogoTone;
+    }
+    if (cosmeticRemoteVanUrl) {
+      st.cosmeticRemoteVanUrl = cosmeticRemoteVanUrl;
+      if (cosmeticRemoteVanV != null && Number.isFinite(Number(cosmeticRemoteVanV))) st.cosmeticRemoteVanV = Number(cosmeticRemoteVanV);
+    }
+    if (remoteVanMarketingLift != null && Number.isFinite(Number(remoteVanMarketingLift))) {
+      st.remoteVanMarketingLift = Number(remoteVanMarketingLift);
     }
     renderAll();
   });
@@ -5845,7 +5918,8 @@ function recalc(stations,G){
       const promoCap=promoBudgetCapForPeriod(G);
       const effPr=Math.min(s.ops?.promo||0,promoCap);
       const promoBoost=1+((effPr/Math.max(1,promoCap))*0.08);
-      return Math.max(0,appl(s,coh,G)*effB*promoBoost);
+      const vanLift=typeof s.remoteVanMarketingLift==='number'&&!Number.isNaN(s.remoteVanMarketingLift)?1+Math.max(0,s.remoteVanMarketingLift):1;
+      return Math.max(0,appl(s,coh,G)*effB*promoBoost*vanLift);
     });
     const tot=sc.reduce((a,b)=>a+b,0);
     if(!tot)return;
@@ -8452,6 +8526,8 @@ function genMarket(scenId){
   // Resolve scenario first so we can build BP talent at the correct start year
   const sc=scenId?SC.find(s=>s.id===scenId)||pick(SC):pick(SC);
   const bpYear=sc.startYear||1970;
+  const startCash=scaledScenarioCash(sc.cash,ACTIVE_MARKET);
+  const scForGame={...sc,cash:startCash};
   const stations=BP.map((bp,i)=>{
     const eff=effectiveBpForMarket(i,ACTIVE_MARKET);
     const freq=nextFreq(eff.type);
@@ -8480,6 +8556,19 @@ function genMarket(scenId){
     const hqBonus=sc.heritageIncumbent?3:0;
     Object.values(stations[i].prog).forEach(sd=>{if(sd)sd.quality=Math.max(12,Math.min(90,(sd.quality||30)+oqAdj*0.6+hqBonus));});
     stations[i].color='#f5a623';}});
+  // Underdog: morning drive is empty — the scenario says the host just quit
+  if(sc.id==='under'){
+    sc.idx.forEach(i=>{
+      const st=stations[i];
+      if(!st||st._bpSlotDeferred||!st.isPlayer)return;
+      const md=st.prog?.morningDrive;
+      if(md){
+        md.talent=null;
+        md.quality=Math.max(12,Math.round((md.quality||30)*0.52));
+      }
+      refreshStationOQ(st,{year:bpYear});
+    });
+  }
   // One old-style 3-letter call (W/K + 2 letters) on the dominant-heritage AM slot (BP idx 4 first); same K/W rule as gc(); only one per market.
   (function applyMarketHeritageSlot(){
     const preferAmIdx=[4,0,2,5,1,10,3,13,6,11,12,17];
@@ -8612,7 +8701,7 @@ function genMarket(scenId){
       city:activeMkt2.label,marketId:ACTIVE_MARKET,year:startYear,period:1,
       turn:(startYear-1970)*2,
       stations,ps:stations.filter(s=>s&&s.isPlayer),
-      sc,cash:sc.cash,
+      sc:scForGame,cash:startCash,
       fmp:effectiveFmpForMarket(startYear,ACTIVE_MARKET),adx:adxMod*(1.0+activeMkt2.adxBonus),satDrag:0,
       streamDrag:Math.min(.60,EVDATA.filter(ev=>ev.e==='stream+'&&ev.y<startYear).length*0.06),
       fccAM,fccFM,
@@ -8639,7 +8728,7 @@ function genMarket(scenId){
   return{
     city:activeMkt.label,marketId:ACTIVE_MARKET,year:1970,period:1,turn:0,
     stations,ps:stations.filter(s=>s&&s.isPlayer),
-    sc,cash:sc.cash,
+    sc:scForGame,cash:startCash,
     fmp:effectiveFmpForMarket(1970,ACTIVE_MARKET),adx:1.0+activeMkt.adxBonus,satDrag:0,streamDrag:0,
     fccAM:1,fccFM:1,
     unlockedFormats:Object.keys(FM).filter(f=>formatAllowedInMarket(f,ACTIVE_MARKET,1970)),
@@ -9200,16 +9289,21 @@ function wlGoToScenarioSelectFromLogo(){
   wlFtTutorialStop({});
   document.querySelectorAll('.ov.on').forEach(el=>{el.classList.remove('on');});
   syncModalBodyScrollLock();
+  if(G?.marketId&&PHASE1_MARKET_IDS.includes(G.marketId)){
+    _selectedMarket=G.marketId;
+    ACTIVE_MARKET=G.marketId;
+    syncMarketPopToMarket(G.marketId);
+  }
   openScenSelect(getLocalSave());
 }
 
 function openScenSelect(localSave){
   _pendingScenId=null;
   _lastScenSelectLocal=localSave||null;
-  if(typeof G!=='undefined'&&G&&G.marketId&&PHASE1_MARKET_IDS.includes(G.marketId)){
-    _selectedMarket=G.marketId;
-    ACTIVE_MARKET=G.marketId;
-    syncMarketPopToMarket(G.marketId);
+  if(!_selectedMarket||!PHASE1_MARKET_IDS.includes(_selectedMarket)){
+    _selectedMarket='atlanta';
+    ACTIVE_MARKET='atlanta';
+    syncMarketPopToMarket('atlanta');
   }
   const hasSave=!!(localSave?.G?.year);
   const saveYear=localSave?.G?.year||null;
@@ -9229,12 +9323,12 @@ function openScenSelect(localSave){
   ];
   const eraGroupsFiltered=eraGroups.map(era=>({...era,ids:era.ids.filter(id=>allowed.has(id))})).filter(era=>era.ids.length>0);
 
-  const diffHints={under:'Survival mode. Thin cash, no morning host.',soul:'Great audience, terrible CPM. Grind for every dollar.',fmpn:'Lean years 1970–72. Survive them and FM makes you wealthy.',cntry:'Profitable now. Erosion will catch up.',stack:'AM/FM combo. High ceiling, high overhead.',wsb:'Dominant now, eroding fast. Every format decision has a cost.',fmrev:'Thin margins until 1980. Album Rock will make you rich if you survive.',acrise:'AC gets crowded fast. Brand loyalty is everything.',chrwar:'Three viable format bets. Only one will dominate.',amtalk:'Revenue cliff is coming. Move fast or move on.'};
+  const diffHints={under:'Survival mode. Thin cash — morning slot empty; hire fast.',soul:'Great audience, terrible CPM. Grind for every dollar.',fmpn:'Lean years 1970–72. Survive them and FM makes you wealthy.',cntry:'Profitable now. Erosion will catch up.',stack:'AM/FM combo. High ceiling, high overhead.',wsb:'Dominant now, eroding fast. Every format decision has a cost.',fmrev:'Thin margins until 1980. Album Rock will make you rich if you survive.',acrise:'AC gets crowded fast. Brand loyalty is everything.',chrwar:'Three viable format bets. Only one will dominate.',amtalk:'Revenue cliff is coming. Move fast or move on.'};
   const makeCard=sc=>{
     const diff=sc.diff||(sc.id==='under'||sc.id==='soul'||sc.id==='fmpn'||sc.id==='amtalk'||sc.id==='fmrev'?'HARD':sc.id==='cntry'||sc.id==='stack'||sc.id==='acrise'||sc.id==='chrwar'?'MEDIUM':'EASY');
     const diffCls=diff==='HARD'?'hard':diff==='MEDIUM'?'med':'easy';
     const stnInfo=sc.idx.length===2?'AM/FM Combo':'Single Station';
-    const cashFmt=`$${(sc.cash/1000).toFixed(0)}K starting cash`;
+    const cashFmt=`$${(scaledScenarioCash(sc.cash,_selectedMarket)/1000).toFixed(0)}K starting cash`;
     const hint=sc.hint||diffHints[sc.id]||'';
     const span=`${sc.startYear||1970}–2020`;
     return `<div class="scn-card" id="scn-${sc.id}" onclick="pickScen('${sc.id}')">
@@ -12352,23 +12446,47 @@ function brandMarketingIdentityBlockHtml(leg){
 function brandMarketingLogoBlockHtml(leg){
   const s=leg;
   const safe=bmSafeElId(s.id);
+  const turn=G.turn||0;
+  const logoTurnBlocked=s._lastLogoGenTurn===turn;
+  const vanTurnBlocked=s._lastVanGenTurn===turn;
+  const vanCost=remoteVanPurchaseCostDollars(G);
+  const myCash=mpMyCashOnHand();
+  const hasVanImg=!!s.cosmeticRemoteVanUrl;
+  const hasVanBoost=typeof s.remoteVanMarketingLift==='number'&&!Number.isNaN(s.remoteVanMarketingLift);
+  const vanBusy=!!(s._vanGenPending||s._logoGenPending);
+  const canPurchaseVan=!hasVanImg&&!vanTurnBlocked&&!vanBusy&&myCash>=vanCost;
   const rel=s.cosmeticLogoUrl?wlGameMediaAbsUrl(s.cosmeticLogoUrl+(s.cosmeticLogoV?'?v='+s.cosmeticLogoV:'')):'';
   const procSvg=wlProceduralLogoSvgString(s,{layoutMode:'brandHero'});
   const hero=rel
-    ?`<div style="text-align:center;margin:10px 0"><img class="bm-logo-hero" src="${rel}" alt="" draggable="false" onclick="wlOpenLogoModal('${s.id}')" title="View full size"></div><p class="di" style="color:var(--mut);font-size:13px;margin-top:4px">AI-generated image. Click <strong>Use basic logo</strong> below to switch back to the built-in wordmark (no AI image).</p>`
+    ?`<div style="text-align:center;margin:10px 0"><img class="bm-logo-hero" src="${rel}" alt="" draggable="false" onclick="wlOpenLogoModal('${s.id}')" title="View full size"></div><p class="di" style="color:var(--mut);font-size:13px;margin-top:4px">AI-generated image. <strong>Click the image</strong> for a full-size view and to save a copy. Use <strong>Use basic logo</strong> below to switch back to the built-in wordmark.</p>`
     :(procSvg
-      ?`<div style="text-align:center;margin:10px 0;cursor:pointer" onclick="wlOpenLogoModal('${s.id}')" title="View full size"><div id="bm-logo-svg-wrap-${safe}" class="bm-logo-hero bm-logo-hero--svg">${procSvg}</div></div><p class="di" style="color:var(--mut);font-size:13px;margin-top:4px">Updates when you change brand or format. Station cards use this same look.</p>`
+      ?`<div style="text-align:center;margin:10px 0;cursor:pointer" onclick="wlOpenLogoModal('${s.id}')" title="View full size"><div id="bm-logo-svg-wrap-${safe}" class="bm-logo-hero bm-logo-hero--svg">${procSvg}</div></div><p class="di" style="color:var(--mut);font-size:13px;margin-top:4px"><strong>Click the image</strong> for a full-size view and to save a copy. Updates when you change brand or format.</p>`
       :`<p class="di" style="color:var(--mut)">Logo preview unavailable.</p>`);
   const genArg=s.cosmeticLogoUrl?'true':'false';
+  const vanRel=s.cosmeticRemoteVanUrl?wlGameMediaAbsUrl(s.cosmeticRemoteVanUrl+(s.cosmeticRemoteVanV?'?v='+s.cosmeticRemoteVanV:'')):'';
+  const logoBtnDisabled=s._logoGenPending||logoTurnBlocked;
+  const vanPurchaseDisabled=!canPurchaseVan;
+  const vanTitle=!canPurchaseVan&&myCash<vanCost&&!hasVanImg&&!vanTurnBlocked&&!vanBusy?`Need ${f$(vanCost)} (you have ${f$(myCash)})`:'';
   return`<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
     <div class="msh" style="margin-bottom:8px">STATION LOGO</div>
-    <p class="di" style="font-size:13px;color:var(--mut);line-height:1.45;margin:0 0 8px">AI logos are generated on the server and can take up to about a minute. When you click <strong>Generate New Logo</strong>, wait for the status line below — don’t click again until it finishes.</p>
+    <p class="di" style="font-size:13px;color:var(--mut);line-height:1.45;margin:0 0 8px">AI logos are generated on the server and can take up to about a minute. <strong>Click the preview</strong> to open a larger version you can save. When you use <strong>Generate New Logo</strong>, wait for the status line — the button stays disabled until the request finishes (one new logo per period).</p>
     <div id="bm-logo-status-${safe}" style="font-size:13px;color:var(--amb);min-height:22px;margin-bottom:8px;font-weight:500"></div>
     ${hero}
     <div style="display:flex;flex-wrap:wrap;gap:8px">
       ${s.cosmeticLogoUrl?'':`<button type="button" class="abt g" onclick="wlBumpProceduralLogoVariant('${s.id}')">↻ New basic logo look</button>`}
       ${s.cosmeticLogoUrl?`<button type="button" class="abt" onclick="wlClearAiStationLogo('${s.id}')">○ Use basic logo</button>`:''}
-      <button type="button" id="bm-logo-gen-btn-${safe}" class="abt g" onclick="wlGenerateLogo('${s.id}',${genArg})"${s._logoGenPending?' disabled':''} aria-busy="${s._logoGenPending?'true':'false'}">Generate New Logo</button>
+      <button type="button" id="bm-logo-gen-btn-${safe}" class="abt g" onclick="wlGenerateLogo('${s.id}',${genArg})"${logoBtnDisabled?' disabled':''} aria-busy="${s._logoGenPending?'true':'false'}" title="${logoTurnBlocked?'Already generated a logo this period — try next period.':''}">${logoTurnBlocked?'Logo (this period)':'Generate New Logo'}</button>
+    </div>
+    <div style="margin-top:14px;border-top:1px solid var(--bdr);padding-top:12px">
+      <div class="msh" style="margin-bottom:8px">REMOTE BROADCAST VAN</div>
+      <p class="di" style="font-size:13px;color:var(--mut);line-height:1.45;margin:0 0 8px">Buy a custom remote truck for your station: <strong>one-time ${f$(vanCost)}</strong> (era-typical outfitting), a small permanent boost to how far your marketing spend goes, and a generated van image from your logo. <strong>Click the image</strong> when present for a full-size view and to save a copy. One purchase per period.</p>
+      ${hasVanBoost?`<p class="di" style="font-size:13px;color:var(--amb);margin:0 0 8px">Remote van active: <strong>+${Math.round(REMOTE_VAN_MARKETING_LIFT*100)}%</strong> promotional effectiveness in audience share.</p>`:''}
+      <div id="bm-van-status-${safe}" style="font-size:13px;color:var(--amb);min-height:22px;margin-bottom:8px;font-weight:500"></div>
+      ${vanRel?`<div style="text-align:center;margin:10px 0;cursor:pointer" onclick="wlOpenRemoteVanModal('${s.id}')" title="View full size"><img class="bm-van-hero" src="${vanRel}" alt="" style="max-width:100%;border-radius:8px;border:1px solid var(--bdr)" draggable="false"></div>`:''}
+      ${!hasVanImg&&vanTurnBlocked?`<p class="di" style="font-size:13px;color:var(--mut);margin:0 0 8px">Remote van slot already used this period — try again next period.</p>`:''}
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+        ${hasVanImg?`<button type="button" class="abt" onclick="wlClearRemoteVan('${s.id}')">Sell / remove van</button>`:`<button type="button" id="bm-van-gen-btn-${safe}" class="abt g" onclick="wlPurchaseRemoteVan('${s.id}')"${vanPurchaseDisabled?' disabled':''} aria-busy="${s._vanGenPending?'true':'false'}" title="${vanTitle||''}">Purchase remote van — ${f$(vanCost)}</button>`}
+      </div>
     </div>
   </div>`;
 }
@@ -12482,6 +12600,9 @@ function renderBrandMarketingStation(primarySid){
     const pm=progBudgetPermilleFromDollars(PI.val,pgCap0);
     if(pgR) pgR.value=String(pm);
     updProg(opSid, String(pm));
+  }
+  if(document.getElementById('m-brand')?.classList.contains('on')){
+    requestAnimationFrame(()=>{ syncModalBodyScrollLock(); });
   }
 }
 function openBrandMarketing(sid){
@@ -14619,12 +14740,66 @@ function wlOpenLogoModal(stationId){
   }
   om('m-logo');
 }
+/** Remote van image — same download pattern as `wlOpenLogoModal` / `wlLogoDownloadClick`. */
+window.__wlVanDl = null;
+function wlOpenRemoteVanModal(stationId){
+  const op=G.stations.find(st=>st.id===stationId);
+  if(!op||!op.cosmeticRemoteVanUrl)return;
+  const img=document.getElementById('wl-remote-van-modal-img');
+  if(!img)return;
+  const dlBtn=document.getElementById('wl-remote-van-dl');
+  const rel=op.cosmeticRemoteVanUrl+(op.cosmeticRemoteVanV?'?v='+op.cosmeticRemoteVanV:'');
+  const abs=wlGameMediaAbsUrl(rel);
+  window.__wlVanDl=null;
+  img.style.display='block';
+  img.src=abs;
+  const base=op.cosmeticRemoteVanUrl.split('?')[0];
+  const extMatch=base.match(/\.(png|webp|jpe?g)$/i);
+  let ext=extMatch?extMatch[1].toLowerCase():'png';
+  if(ext==='jpeg')ext='jpg';
+  const safe=(callDisplay(op).replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')||'station')+'-remote-van';
+  window.__wlVanDl={ kind:'url', url:abs, filename:safe+'.'+ext };
+  if(dlBtn)dlBtn.style.display='inline-block';
+  om('m-remote-van');
+}
+async function wlRemoteVanDownloadClick(ev){
+  try{
+    if(ev&&typeof ev.preventDefault==='function')ev.preventDefault();
+  }catch(_e){}
+  const p=window.__wlVanDl;
+  if(!p||!p.filename){
+    showToast('Nothing to download.','warn');
+    return;
+  }
+  const btn=document.getElementById('wl-remote-van-dl');
+  if(btn)btn.disabled=true;
+  try{
+    if(p.kind==='url'&&p.url){
+      const r=await fetch(p.url,{mode:'cors',credentials:'omit'});
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      const blob=await r.blob();
+      wlDownloadBlobToFile(blob,p.filename);
+      showToast('Download started.','info');
+      return;
+    }
+    throw new Error('invalid payload');
+  }catch(e){
+    console.warn('[van dl]',e);
+    showToast('Could not download file. Try again from the same host as the game server.','warn');
+  }finally{
+    if(btn)btn.disabled=false;
+  }
+}
 function wlClearAiStationLogo(stationId){
   const op=G.stations.find(st=>st.id===stationId);
   if(!op||!op.cosmeticLogoUrl)return;
   delete op.cosmeticLogoUrl;
   delete op.cosmeticLogoV;
   delete op.cosmeticLogoTone;
+  delete op.cosmeticRemoteVanUrl;
+  delete op.cosmeticRemoteVanV;
+  delete op.remoteVanMarketingLift;
+  recalc(G.stations,G);
   logHistory(op,'LOGO','Switched to basic logo (AI image cleared).',G);
   autoSave();
   if(MP.mode==='live'&&MP.socket&&MP.roomId){
@@ -14643,6 +14818,10 @@ function wlFallbackLogoOnGenerationError(op,silent){
   if(!op)return;
   delete op.cosmeticLogoUrl;
   delete op.cosmeticLogoV;
+  delete op.cosmeticRemoteVanUrl;
+  delete op.cosmeticRemoteVanV;
+  delete op.remoteVanMarketingLift;
+  recalc(G.stations,G);
   autoSave();
   if(MP.mode==='live'&&MP.socket&&MP.roomId){
     MP.emit('mp_station_logo',{roomId:MP.roomId,stationId:op.id,clearCosmeticLogo:true});
@@ -14655,8 +14834,116 @@ function wlSetLogoGenButtonUi(stationId,busy){
   const safe=bmSafeElId(stationId);
   const btn=document.getElementById('bm-logo-gen-btn-'+safe);
   if(!btn)return;
+  const op=G.stations.find(st=>st.id===stationId);
+  const turnBlocked=op&&(G.turn||0)===op._lastLogoGenTurn;
+  btn.disabled=!!busy||!!turnBlocked;
+  btn.setAttribute('aria-busy',busy?'true':'false');
+}
+function wlSetVanGenButtonUi(stationId,busy){
+  const safe=bmSafeElId(stationId);
+  const btn=document.getElementById('bm-van-gen-btn-'+safe);
+  if(!btn)return;
   btn.disabled=!!busy;
   btn.setAttribute('aria-busy',busy?'true':'false');
+}
+function wlClearRemoteVan(stationId){
+  const op=G.stations.find(st=>st.id===stationId);
+  if(!op||!op.cosmeticRemoteVanUrl)return;
+  delete op.cosmeticRemoteVanUrl;
+  delete op.cosmeticRemoteVanV;
+  delete op.remoteVanMarketingLift;
+  recalc(G.stations,G);
+  logHistory(op,'LOGO','Remote van sold / removed (marketing boost cleared).',G);
+  autoSave();
+  if(MP.mode==='live'&&MP.socket&&MP.roomId){
+    MP.emit('mp_station_logo',{roomId:MP.roomId,stationId:op.id,clearCosmeticRemoteVan:true});
+  }
+  renderAll();
+  if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&stationId===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
+  showToast('Van removed — marketing boost cleared.','info');
+}
+async function wlPurchaseRemoteVan(stationId){
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
+  const op=G.stations.find(st=>st.id===stationId);
+  if(!op)return;
+  if(op.cosmeticRemoteVanUrl){
+    showToast('You already have a remote van for this station.','info');
+    return;
+  }
+  const turn=G.turn||0;
+  if(op._lastVanGenTurn===turn){
+    const _bmSafe=bmSafeElId(stationId);
+    const el=document.getElementById('bm-van-status-'+_bmSafe);
+    if(el)el.textContent='Remote van slot already used this period.';
+    else showToast('Already purchased or generated a remote van this period.','warn');
+    return;
+  }
+  const vanCost=remoteVanPurchaseCostDollars(G);
+  if(mpMyCashOnHand()<vanCost){
+    showToast(`Need ${f$(vanCost)} to purchase a remote van.`,'warn');
+    return;
+  }
+  if(op._vanGenPending||op._logoGenPending){
+    const _bmSafe=bmSafeElId(stationId);
+    const el=document.getElementById('bm-van-status-'+_bmSafe);
+    if(el)el.textContent='Wait for the other image request to finish…';
+    else showToast('Another logo or van image is still generating.','warn');
+    return;
+  }
+  const _bmSafe=bmSafeElId(stationId);
+  const statusEl=document.getElementById('bm-van-status-'+_bmSafe);
+  op._vanGenPending=true;
+  wlSetVanGenButtonUi(stationId,true);
+  if(statusEl)statusEl.textContent='Processing purchase — generating your remote van (often 30–90s). Do not click again.';
+  const band=(op.fmBooster||op.sig?.type==='FM')?'FM':'AM';
+  const body={
+    stationName:(typeof op.brand==='string'&&op.brand.trim())?op.brand.trim():callDisplay(op),
+    format:FM[op.format]?.l||op.format||'Radio',
+    year:G.year,
+    tone:typeof op.cosmeticLogoTone==='string'?op.cosmeticLogoTone:'',
+    frequency:String(op.freq||''),
+    band,
+    regenerate:false,
+  };
+  try{
+    const res=await fetch(wlGameApiUrl('/api/generate-remote-van'),{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body),
+    });
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok||!data.ok){
+      if(statusEl)statusEl.textContent=data.error||res.statusText||'Van image failed.';
+      showToast(data.error||'Remote van generation failed.','warn');
+      return;
+    }
+    wlAdjustMyCash(-vanCost);
+    op.cosmeticRemoteVanUrl=data.imageUrl;
+    op.cosmeticRemoteVanV=Date.now();
+    op.remoteVanMarketingLift=REMOTE_VAN_MARKETING_LIFT;
+    op._lastVanGenTurn=turn;
+    recalc(G.stations,G);
+    if(statusEl)statusEl.textContent=data.cached?'From cache (purchase complete)':'Purchase complete — van saved';
+    logHistory(op,'LOGO',`Purchased remote broadcast van (${f$(vanCost)}).`,G);
+    autoSave();
+    if(MP.mode==='live'&&MP.socket&&MP.roomId){
+      MP.emit('mp_station_logo',{
+        roomId:MP.roomId,
+        stationId:op.id,
+        cosmeticRemoteVanUrl:data.imageUrl,
+        cosmeticRemoteVanV:op.cosmeticRemoteVanV,
+        remoteVanMarketingLift:op.remoteVanMarketingLift,
+      });
+    }
+    renderAll();
+    if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&stationId===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
+  }catch(_e){
+    if(statusEl)statusEl.textContent='Network error — try again.';
+    showToast('Remote van request failed.','warn');
+  }finally{
+    op._vanGenPending=false;
+    wlSetVanGenButtonUi(stationId,false);
+  }
 }
 async function wlGenerateLogo(stationId,regenerate,opts){
   opts=opts||{};
@@ -14664,16 +14951,19 @@ async function wlGenerateLogo(stationId,regenerate,opts){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   const op=G.stations.find(st=>st.id===stationId);
   if(!op)return;
+  const _bmSafe=bmSafeElId(stationId);
+  const statusEl=document.getElementById('wl-logo-status-'+stationId)||(_bmSafe?document.getElementById('bm-logo-status-'+_bmSafe):null);
   if(op._logoGenPending){
-    const _bmSafe=bmSafeElId(stationId);
-    const pendingEl=document.getElementById('wl-logo-status-'+stationId)||(_bmSafe?document.getElementById('bm-logo-status-'+_bmSafe):null);
-    if(pendingEl)pendingEl.textContent='Already generating — please wait…';
+    if(statusEl)statusEl.textContent='Already generating — please wait…';
     else if(!silent)showToast('Logo generation already in progress for this station.','warn');
     return;
   }
+  if(!silent&&(G.turn||0)===op._lastLogoGenTurn){
+    if(statusEl)statusEl.textContent='Already generated a station logo this period — try next period.';
+    else showToast('Already generated a station logo this period.','warn');
+    return;
+  }
   const reg=typeof regenerate==='boolean'?regenerate:!!op.cosmeticLogoUrl;
-  const _bmSafe=bmSafeElId(stationId);
-  const statusEl=document.getElementById('wl-logo-status-'+stationId)||(_bmSafe?document.getElementById('bm-logo-status-'+_bmSafe):null);
   op._logoGenPending=true;
   wlSetLogoGenButtonUi(stationId,true);
   if(statusEl)statusEl.textContent='Request sent — working… (often under a minute). Do not click again.';
@@ -14701,6 +14991,7 @@ async function wlGenerateLogo(stationId,regenerate,opts){
     }
     op.cosmeticLogoUrl=data.imageUrl;
     op.cosmeticLogoV=Date.now();
+    op._lastLogoGenTurn=G.turn||0;
     if(statusEl)statusEl.textContent=data.cached?'From cache':'New image saved';
     logHistory(op,'LOGO',reg?'Station logo updated (regenerated).':'Station logo generated.',G);
     autoSave();

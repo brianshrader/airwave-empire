@@ -54,7 +54,8 @@ body{background:var(--blk);color:var(--wht);font-family:var(--fm);min-height:100
 .bm-station-hero-lbl{font-family:var(--fm);font-size:12px;font-weight:600;letter-spacing:0.03em;color:var(--off);margin-bottom:6px;text-transform:none}
 .bm-station-hero-inp{flex:0 1 auto;width:100%;min-height:36px;box-sizing:border-box;background:transparent;border:none;color:var(--wht);font-family:var(--fm),ui-sans-serif,system-ui,sans-serif;font-size:clamp(15px,2.2vw,20px);font-weight:600;letter-spacing:0.02em;line-height:1.35;text-align:center;outline:none;text-transform:none}
 .bm-station-hero-inp::placeholder{color:var(--mut);opacity:.65;font-weight:500}
-body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:9999}
+/* Below modals (.ov z-index 8000) — 9999 sat above overlays and broke taps/sliders in some browsers */
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:100}
 
 /* HEADER — solid bar: capture clicks here so they don’t fall through to the game (sticky scorebar same idea) */
 #hdr{background:var(--pnl);border-bottom:2px solid var(--amb);padding:0 22px;display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:24px;height:62px;position:sticky;top:0;z-index:200;box-shadow:0 4px 48px rgba(245,166,35,.18);pointer-events:auto}

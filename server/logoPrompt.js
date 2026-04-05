@@ -103,4 +103,34 @@ function buildLogoPrompt(meta) {
     .join(' ');
 }
 
-module.exports = { buildLogoPrompt, eraBucket, formatStyleNotes };
+/**
+ * Prompt for Grok image *edit*: reference must be the station logo; output is a remote van scene.
+ * @param {{
+ *   stationName: string,
+ *   format: string,
+ *   year: number,
+ *   tone?: string,
+ *   band?: string
+ * }} meta
+ */
+function buildRemoteVanPrompt(meta) {
+  const stationName = String(meta.stationName || 'Station').trim();
+  const format = String(meta.format || 'Radio').trim();
+  const year = Math.floor(Number(meta.year) || 1970);
+  const tone = String(meta.tone || '').trim();
+  const band = String(meta.band || '').trim().toUpperCase();
+  const { label: eraLabel } = eraBucket(year);
+  const bandNote = band === 'AM' ? 'AM heritage' : band === 'FM' ? 'FM broadcast' : 'radio';
+
+  return [
+    'The attached reference image is the official station logo artwork. Preserve it faithfully: use this exact graphic on the side of the van as printed vinyl or a magnetic panel — same colors, shapes, and lettering. Do not invent different call letters or a new logo.',
+    `Station identity (for scene context only — do not add extra readable text beyond the logo): "${stationName}", ${format} format, ${year}, ${bandNote}.`,
+    tone ? `Mood for the scene (not as on-image text): ${tone}.` : '',
+    `Photorealistic wide shot of a ${eraLabel} American radio remote broadcast van at a live street fair, concert gate, or county fair parking lot. Include mast antenna, coiled cables, sandbags or folding chairs, engineer silhouette optional. The van body must show the reference logo prominently on one side panel.`,
+    'Natural light, documentary news photography style, shallow depth of field, no CGI sheen, no futuristic holograms, no duplicate logos on every surface.',
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
+module.exports = { buildLogoPrompt, buildRemoteVanPrompt, eraBucket, formatStyleNotes };

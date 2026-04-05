@@ -1,6 +1,8 @@
 node_modules/
 generated-logos/*
 !generated-logos/.gitkeep
+generated-remote-vans/*
+!generated-remote-vans/.gitkeep
 generated-portraits/*
 !generated-portraits/.gitkeep
 !generated-portraits/registry.json

@@ -15,6 +15,7 @@
 const sharp = require('sharp');
 
 const XAI_IMAGES_URL = 'https://api.x.ai/v1/images/generations';
+const XAI_IMAGES_EDITS_URL = 'https://api.x.ai/v1/images/edits';
 const SHORTAPI_CREATE_URL = 'https://api.shortapi.ai/api/v1/job/create';
 const SHORTAPI_QUERY_URL = 'https://api.shortapi.ai/api/v1/job/query';
 
@@ -37,6 +38,9 @@ const OUTPUT_SIZE = 512;
 
 /** @type {import('sharp').ResizeOptions} */
 const RESIZE_OPTS = { width: OUTPUT_SIZE, height: OUTPUT_SIZE, fit: 'cover', position: 'centre' };
+
+/** Remote van art: cap long edge for cache + UI (xAI may return 1k–2k wide). */
+const VAN_MAX_EDGE = 1680;
 
 const POLL_MS = 1500;
 const POLL_MAX_MS = 120000;
@@ -575,6 +579,98 @@ async function generateGrokImage({ prompt, aspect_ratio = '1:1' }) {
 }
 
 /**
+ * Grok Imagine: edit / compose from a source image (reference logo → scene).
+ * @param {{ prompt: string, sourcePngBuffer: Buffer, aspect_ratio?: string, resolution?: string }} args
+ * @returns {Promise<{ buffer: Buffer, ext: string }>}
+ */
+async function generateGrokImageEdit({ prompt, sourcePngBuffer, aspect_ratio = '16:9', resolution = '1k' }) {
+  const apiKey = process.env.GROK_API_KEY;
+  if (!apiKey) {
+    const err = new Error('GROK_API_KEY is not set');
+    err.status = 503;
+    throw err;
+  }
+  if (!Buffer.isBuffer(sourcePngBuffer) || sourcePngBuffer.length < 32) {
+    const err = new Error('Reference logo image is missing or invalid');
+    err.status = 400;
+    throw err;
+  }
+
+  const dataUri = `data:image/png;base64,${sourcePngBuffer.toString('base64')}`;
+  const body = {
+    model: 'grok-imagine-image',
+    prompt,
+    image: {
+      url: dataUri,
+      type: 'image_url',
+    },
+    n: 1,
+    aspect_ratio,
+    resolution: resolution === '2k' ? '2k' : '1k',
+    response_format: 'b64_json',
+  };
+
+  const res = await fetch(XAI_IMAGES_EDITS_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    console.error('[xai-image-edit]', res.status, JSON.stringify(data).slice(0, 2000));
+    const msg = data?.error?.message || data?.message || res.statusText || 'xAI image edit error';
+    const err = new Error(msg);
+    err.status = res.status >= 400 && res.status < 500 ? res.status : 502;
+    throw err;
+  }
+
+  const item = data?.data?.[0];
+  if (!item) {
+    throw new Error('No image in Grok edit response');
+  }
+
+  let buffer;
+  if (item.b64_json) {
+    buffer = Buffer.from(item.b64_json, 'base64');
+  } else if (item.url) {
+    const imgRes = await fetch(item.url);
+    if (!imgRes.ok) {
+      throw new Error(`Failed to download edited image URL (${imgRes.status})`);
+    }
+    buffer = Buffer.from(await imgRes.arrayBuffer());
+  } else {
+    throw new Error('Grok edit returned neither b64_json nor url');
+  }
+
+  try {
+    buffer = await sharp(buffer, { failOn: 'none', unlimited: true })
+      .resize({
+        width: VAN_MAX_EDGE,
+        height: VAN_MAX_EDGE,
+        fit: 'inside',
+        withoutEnlargement: true,
+      })
+      .png()
+      .toBuffer();
+  } catch (e) {
+    const wrap = new Error(e.message || String(e));
+    wrap.status = 502;
+    throw wrap;
+  }
+
+  return { buffer, ext: 'png' };
+}
+
+function grokImageEditConfigured() {
+  return !!process.env.GROK_API_KEY;
+}
+
+/**
  * @param {{ prompt: string, aspect_ratio?: string }} args
  * @returns {Promise<{ buffer: Buffer, ext: string }>}
  */
@@ -599,6 +695,8 @@ module.exports = {
   generateStationLogo,
   generateShortapiImage,
   generateGrokImage,
+  generateGrokImageEdit,
+  grokImageEditConfigured,
   resolveImageProvider,
   imageGenerationConfigured,
   getActiveImageProvider,

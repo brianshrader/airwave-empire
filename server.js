@@ -17,7 +17,7 @@
 //
 // Spectator TV (read-only rankings, same room code): open /spectate.html?room=CODE
 // Uses socket event spectate_room — updates on each host state_broadcast (every period).
-// Image API: SHORTAPI_KEY (ShortAPI z-image, default) and/or GROK_API_KEY for /api/generate-logo and AI portraits.
+// Image API: SHORTAPI_KEY (ShortAPI z-image, default) and/or GROK_API_KEY for /api/generate-logo, /api/generate-remote-van (Grok edit + logo reference), and AI portraits.
 // IMAGE_GEN_PROVIDER=shortapi | grok | auto — auto prefers SHORTAPI_KEY when set.
 // Stock pool (random assignment before Grok): generated-portraits/library/{male|female}/{era}/
 // Grok output (organized by hire-era bucket + gender): generated-portraits/grok/{male|female|unknown}/{era}/
@@ -48,10 +48,12 @@ const JSON_BODY_LIMIT = process.env.JSON_BODY_LIMIT || '32mb';
 app.use(express.json({ limit: JSON_BODY_LIMIT }));
 
 const { mountLogoRoutes } = require('./server/logoRoutes');
+const { mountRemoteVanRoutes } = require('./server/remoteVanRoutes');
 const { mountPortraitRoutes } = require('./server/portraitRoutes');
 const { isWeakDraftStation } = require('./server/draftFairness');
 
 mountLogoRoutes(app);
+mountRemoteVanRoutes(app);
 mountPortraitRoutes(app);
 mountStripeBilling(app);
 
@@ -116,13 +118,21 @@ function mergeMpStationLogosFromPrior(intoG, priorG) {
     s.cosmeticLogoUrl = p.cosmeticLogoUrl;
     if (p.cosmeticLogoV != null) s.cosmeticLogoV = p.cosmeticLogoV;
     if (p.cosmeticLogoTone) s.cosmeticLogoTone = p.cosmeticLogoTone;
+    if (p.cosmeticRemoteVanUrl && !s.cosmeticRemoteVanUrl) {
+      s.cosmeticRemoteVanUrl = p.cosmeticRemoteVanUrl;
+      if (p.cosmeticRemoteVanV != null) s.cosmeticRemoteVanV = p.cosmeticRemoteVanV;
+    }
+    if (p.remoteVanMarketingLift != null && s.remoteVanMarketingLift == null) {
+      const lift = Number(p.remoteVanMarketingLift);
+      if (Number.isFinite(lift)) s.remoteVanMarketingLift = lift;
+    }
   }
 }
 
-function isSafeGeneratedLogoUrl(u) {
+function isSafeGeneratedCosmeticUrl(u) {
   return (
     typeof u === 'string' &&
-    u.startsWith('/generated-logos/') &&
+    (u.startsWith('/generated-logos/') || u.startsWith('/generated-remote-vans/')) &&
     !u.includes('..') &&
     u.length < 500
   );
@@ -472,19 +482,46 @@ io.on('connection', socket => {
     }
   });
 
-  // ── STATION LOGO (cosmetic) — persist to room so saves / rejoin keep art ──
+  // ── STATION LOGO + REMOTE VAN (cosmetic) — persist to room so saves / rejoin keep art ──
   socket.on('mp_station_logo', (payload) => {
-    const { roomId, stationId, cosmeticLogoUrl, cosmeticLogoV, cosmeticLogoTone, clearCosmeticLogo } = payload || {};
+    const {
+      roomId,
+      stationId,
+      cosmeticLogoUrl,
+      cosmeticLogoV,
+      cosmeticLogoTone,
+      clearCosmeticLogo,
+      cosmeticRemoteVanUrl,
+      cosmeticRemoteVanV,
+      clearCosmeticRemoteVan,
+      remoteVanMarketingLift: payloadRemoteVanLift,
+    } = payload || {};
     const room = getRoom(roomId);
     if (!room || room.phase !== 'playing' || !room.G?.stations) return;
     const player = room.players.find(p => p.socketId === socket.id);
     if (!player) return;
     const st = room.G.stations.find(s => s && s.id === stationId);
     if (!st || !st.isPlayer || st._mpOwner !== player.playerId) return;
+
+    if (clearCosmeticRemoteVan === true) {
+      delete st.cosmeticRemoteVanUrl;
+      delete st.cosmeticRemoteVanV;
+      delete st.remoteVanMarketingLift;
+      persistRoom(room);
+      io.to(roomId).emit('mp_station_logo_sync', {
+        stationId,
+        clearCosmeticRemoteVan: true,
+      });
+      return;
+    }
+
     if (clearCosmeticLogo === true) {
       delete st.cosmeticLogoUrl;
       delete st.cosmeticLogoV;
       delete st.cosmeticLogoTone;
+      delete st.cosmeticRemoteVanUrl;
+      delete st.cosmeticRemoteVanV;
+      delete st.remoteVanMarketingLift;
       persistRoom(room);
       io.to(roomId).emit('mp_station_logo_sync', {
         stationId,
@@ -492,22 +529,43 @@ io.on('connection', socket => {
       });
       return;
     }
-    if (!isSafeGeneratedLogoUrl(cosmeticLogoUrl)) return;
-    st.cosmeticLogoUrl = cosmeticLogoUrl;
-    if (cosmeticLogoV != null) {
-      const v = Number(cosmeticLogoV);
-      if (Number.isFinite(v)) st.cosmeticLogoV = v;
+
+    let changed = false;
+    if (cosmeticLogoUrl && isSafeGeneratedCosmeticUrl(cosmeticLogoUrl)) {
+      st.cosmeticLogoUrl = cosmeticLogoUrl;
+      if (cosmeticLogoV != null) {
+        const v = Number(cosmeticLogoV);
+        if (Number.isFinite(v)) st.cosmeticLogoV = v;
+      }
+      if (typeof cosmeticLogoTone === 'string' && cosmeticLogoTone.length <= 400) {
+        if (cosmeticLogoTone) st.cosmeticLogoTone = cosmeticLogoTone;
+        else delete st.cosmeticLogoTone;
+      }
+      changed = true;
     }
-    if (typeof cosmeticLogoTone === 'string' && cosmeticLogoTone.length <= 400) {
-      if (cosmeticLogoTone) st.cosmeticLogoTone = cosmeticLogoTone;
-      else delete st.cosmeticLogoTone;
+    if (cosmeticRemoteVanUrl && isSafeGeneratedCosmeticUrl(cosmeticRemoteVanUrl)) {
+      st.cosmeticRemoteVanUrl = cosmeticRemoteVanUrl;
+      if (cosmeticRemoteVanV != null) {
+        const vv = Number(cosmeticRemoteVanV);
+        if (Number.isFinite(vv)) st.cosmeticRemoteVanV = vv;
+      }
+      if (payloadRemoteVanLift != null) {
+        const lift = Number(payloadRemoteVanLift);
+        if (Number.isFinite(lift) && lift >= 0 && lift <= 0.15) st.remoteVanMarketingLift = lift;
+      }
+      changed = true;
     }
+    if (!changed) return;
+
     persistRoom(room);
     io.to(roomId).emit('mp_station_logo_sync', {
       stationId,
       cosmeticLogoUrl: st.cosmeticLogoUrl,
       cosmeticLogoV: st.cosmeticLogoV,
       cosmeticLogoTone: st.cosmeticLogoTone || '',
+      cosmeticRemoteVanUrl: st.cosmeticRemoteVanUrl,
+      cosmeticRemoteVanV: st.cosmeticRemoteVanV,
+      remoteVanMarketingLift: st.remoteVanMarketingLift,
     });
   });
 
