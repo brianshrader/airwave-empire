@@ -1018,7 +1018,7 @@ const MARKET_BRAND_ABBREV={
 };
 const BRANDS={
   TOP40:['{FREQ} Hits','Hit {FREQ}','Power {FREQ}','Party {FREQ}','Flash {FREQ}','Rocket {FREQ}','{FREQ} Jamz','The Pulse {FREQ}','{CITY} {FREQ}','{ABBREV} {FREQ}'],
-  COUNTRY:['Big Country {FREQ}','The Bull {FREQ}','Ranch {FREQ}','Dixie {FREQ}','Y-{FREQ}','Country {FREQ}','Heartland {FREQ}','{CITY} Country {FREQ}','{ABBREV} {FREQ}'],
+  COUNTRY:['Big Country {FREQ}','The Bull {FREQ}','Ranch {FREQ}','Dixie {FREQ}','Country {FREQ}','Heartland {FREQ}','{CITY} Country {FREQ}','{ABBREV} {FREQ}'],
   SOUL_RNB:['Groove {FREQ}','Soul {FREQ}','The Sound {FREQ}','Silk {FREQ}','Old School {FREQ}','Vibe {FREQ}','{CITY} Soul {FREQ}'],
   MOR:['Easy {FREQ}','Melody {FREQ}','{FREQ} Gold','Soft {FREQ}','Beautiful {FREQ}','Mellow {FREQ}','Standard {FREQ}'],
   ADULT_STANDARDS:['{FREQ} Classics','Memories {FREQ}','Timeless {FREQ}','Easy {FREQ}','Standards {FREQ}','Great Songs {FREQ}'],
@@ -1026,13 +1026,13 @@ const BRANDS={
   ALBUM_ROCK:['Rock {FREQ}','Free {FREQ}','The Planet {FREQ}','Deep {FREQ}','Raw {FREQ}','Underground {FREQ}','{CITY} Rock {FREQ}'],
   BEAUTIFUL_MUSIC:['Soft {FREQ}','Breeze {FREQ}','Easy Sounds {FREQ}','Smooth {FREQ}','Mellow {FREQ}','Tranquil {FREQ}'],
   GOSPEL:['Gospel {FREQ}','Praise {FREQ}','The Word {FREQ}','Grace {FREQ}','Heaven {FREQ}','Light {FREQ}','Inspiration {FREQ}'],
-  CHR:['{FREQ} the Beat','Kiss {FREQ}','Hot {FREQ}','Z-{FREQ}','Pop {FREQ}','{FREQ} Hits','{CITY} {FREQ}','{ABBREV} {FREQ}'],
+  CHR:['{FREQ} the Beat','Kiss {FREQ}','Hot {FREQ}','Pop {FREQ}','{FREQ} Hits','{CITY} {FREQ}','{ABBREV} {FREQ}'],
   CLASSIC_ROCK:['Classic Rock {FREQ}','Thunder {FREQ}','The Eagle {FREQ}','The Fox {FREQ}','The Hawk {FREQ}','Mountain {FREQ}','{CITY} Rock {FREQ}'],
   ADULT_CONTEMP:['Lite {FREQ}','Star {FREQ}','Sunny {FREQ}','Mix {FREQ}','Soft Hits {FREQ}','Warm {FREQ}','Today {FREQ}','{CITY} {FREQ}'],
   URBAN_CONTEMP:['Power {FREQ}','The Heat {FREQ}','Urban {FREQ}','Flavor {FREQ}','Fire {FREQ}','The Spot {FREQ}','{ABBREV} {FREQ}'],
   SPORTS_TALK:['Sports {FREQ}','The Fan {FREQ}','The Game {FREQ}','{FREQ} Sports','Lineup {FREQ}','Blitz {FREQ}','{CITY} Sports {FREQ}'],
   SPANISH:['Latino {FREQ}','Ritmo {FREQ}','Fuego {FREQ}','La Mega {FREQ}','El Sol {FREQ}','La Raza {FREQ}','{FREQ} Latino'],
-  ALT_ROCK:['Alt {FREQ}','X-{FREQ}','Alternative {FREQ}','Indie {FREQ}','Edge {FREQ}','Buzz {FREQ}','{CITY} Alt {FREQ}'],
+  ALT_ROCK:['Alt {FREQ}','Alternative {FREQ}','Indie {FREQ}','Edge {FREQ}','Buzz {FREQ}','{CITY} Alt {FREQ}'],
   RHYTHMIC:['Rhythm {FREQ}','Jammin {FREQ}','Hip Hop {FREQ}','Banger {FREQ}','Urban Hits {FREQ}','{FREQ} Jamz','{ABBREV} {FREQ}'],
   HOT_AC:['Fresh {FREQ}','Now {FREQ}','Breeze {FREQ}','Today\'s Hits {FREQ}','Vibe {FREQ}','Mix {FREQ}','{FREQ} Now'],
   OLDIES:['Oldies {FREQ}','Rock & Roll {FREQ}','Super Oldies {FREQ}','Golden {FREQ}','Sock Hop {FREQ}','Memories {FREQ}'],
@@ -1051,6 +1051,18 @@ function resolveBrand(brand, freq, city, marketId){
     .replace(/{FREQ}/g, freqShort)
     .replace(/{CITY}/g, cityLabel)
     .replace(/{ABBREV}/g, abbrev);
+}
+/** V/X/Y/Z/Q appearing after the leading W or K (real stations use the last/exotic letter in "X-100.3" style brands). */
+const EXOTIC_CALL_BRAND_LETTERS=new Set(['V','X','Y','Z','Q']);
+function exoticLettersInCallSign(callLetters){
+  const base=stripCallBandSuffix(String(callLetters||'')).toUpperCase().replace(/[^A-Z]/g,'');
+  if(base.length<2)return [];
+  const out=[],seen=new Set();
+  for(let i=1;i<base.length;i++){
+    const ch=base[i];
+    if(EXOTIC_CALL_BRAND_LETTERS.has(ch)&&!seen.has(ch)){seen.add(ch);out.push(ch);}
+  }
+  return out;
 }
 /** Same marketing identity after stripping a leading dial (e.g. "94.7 the Beat" → "the beat") — blocks duplicate slogans on different frequencies. */
 function brandMarketIdentityKey(brand){
@@ -1076,6 +1088,7 @@ function getBrandSuggestions(s){
   const raw=BRANDS[s.format]||['{FREQ} Radio'];
   const city=G?.city||'Atlanta';
   const mktId=G?.marketId||ACTIVE_MARKET||'atlanta';
+  const freqShort=String(s.freq||'').replace(/\s*(AM|FM)\s*$/i,'').trim();
   const taken=new Set(
     (G.stations||[]).filter(st=>st&&st.id!==s.id).map(st=>brandMarketIdentityKey(st.brand||''))
   );
@@ -1097,6 +1110,14 @@ function getBrandSuggestions(s){
     if(!taken.has(dk)&&!seen.has(dk)){out.push(def);seen.add(dk);}
   }
   base.forEach(b=>{if(!out.includes(b))out.push(b);});
+  exoticLettersInCallSign(s.callLetters).forEach(L=>{
+    const resolved=`${L}-${freqShort}`;
+    const idK=brandMarketIdentityKey(resolved);
+    if(taken.has(idK)||seen.has(idK))return;
+    if(out.includes(resolved))return;
+    seen.add(idK);
+    out.push(resolved);
+  });
   return out.length?out:[def||resolveBrand('{FREQ} Radio', s.freq, city, mktId)];
 }
 
@@ -1375,6 +1396,52 @@ function isAcceptableCallSuffix3(x){
   if(CALL_SUFFIX_DENY.has(u))return false;
   return true;
 }
+/** Blocked 2-letter suffixes (after W/K). K+KK → KKK is rejected in isAcceptableCallSuffix2. */
+const CALL_SUFFIX2_DENY=new Set([
+  'FU','AS','SE','CU','TI','NI','JE','SP','PO','PE','SH','CN','DI','FC','FG','BC','DC','JI','PI','DY','WE','JA','GO','KF','RA',
+]);
+function isAcceptableCallSuffix2(x,pref){
+  const u=String(x||'').toUpperCase();
+  if(u.length!==2)return false;
+  if(CALL_SUFFIX2_DENY.has(u))return false;
+  if(pref==='K'&&u==='KK')return false;
+  return true;
+}
+function randomCallSuffix2(){
+  const L='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  if(typeof crypto!=='undefined'&&crypto.getRandomValues){
+    const arr=new Uint8Array(2);
+    crypto.getRandomValues(arr);
+    return L[arr[0]%26]+L[arr[1]%26];
+  }
+  return L[Math.floor(Math.random()*26)]+L[Math.floor(Math.random()*26)];
+}
+/** One per market: old-style 3-character call (W/K + 2 letters), e.g. WLW, KGO — respects market prefix; unique in UC. */
+function gcHeritage3Letter(){
+  const pref=getCallPrefixForMarket(ACTIVE_MARKET);
+  const L='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let s,t=0;
+  do{
+    const x=randomCallSuffix2();
+    if(!isAcceptableCallSuffix2(x,pref))continue;
+    s=pref+x;
+    t++;
+  }while((UC.has(s)||!isAcceptableCallSuffix2(s.slice(1),pref))&&t<900);
+  if(t>=900){
+    let found=null;
+    outer:for(let i=0;i<26;i++){
+      for(let j=0;j<26;j++){
+        const x=L[i]+L[j];
+        if(!isAcceptableCallSuffix2(x,pref))continue;
+        const cand=pref+x;
+        if(!UC.has(cand)){found=cand;break outer;}
+      }
+    }
+    s=found||(pref+'ZZ');
+  }
+  UC.add(s);
+  return s;
+}
 function randomCallSuffix3(){
   const L='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   if(typeof crypto!=='undefined'&&crypto.getRandomValues){
@@ -1411,12 +1478,14 @@ function gc(){
   UC.add(s);
   return s;
 }
-function gb(f,freq,city,marketId,identityTaken){
+function gb(f,freq,city,marketId,identityTaken,callLetters){
   const p=BRANDS[f]||['{FREQ} Radio'];
   const mkt=marketId||(typeof G!=='undefined'&&G?.marketId)||ACTIVE_MARKET||'atlanta';
   const c=city||(typeof G!=='undefined'&&G?.city)||MARKETS[mkt]?.label||'Atlanta';
   const taken=identityTaken instanceof Set?identityTaken:(_gbBrandIdTaken instanceof Set?_gbBrandIdTaken:collectMarketBrandIdentityKeys());
-  const pool=[...p].sort(()=>Math.random()-0.5);
+  const pool=[...p];
+  exoticLettersInCallSign(callLetters).forEach(L=>{ pool.push(`${L}-{FREQ}`); });
+  pool.sort(()=>Math.random()-0.5);
   for(let attempt=0;attempt<Math.min(160,pool.length*12);attempt++){
     const raw=pool[attempt%pool.length];
     const resolved=resolveBrand(raw, freq, c, mkt);
@@ -1435,7 +1504,7 @@ function gb(f,freq,city,marketId,identityTaken){
 function gbBrandForStationReplace(s,newFmt){
   const taken=collectMarketBrandIdentityKeys(s.id);
   taken.delete(brandMarketIdentityKey(s.brand||''));
-  return gb(newFmt,s.freq,G?.city,G?.marketId,taken);
+  return gb(newFmt,s.freq,G?.city,G?.marketId,taken,s.callLetters);
 }
 const rnd=(a,b)=>Math.random()*(b-a)+a;
 const ri=(a,b)=>Math.floor(rnd(a,b+1));
@@ -4839,9 +4908,10 @@ function mkStn(bp,freq,year=1970){
   const oq=Math.round(Object.entries(SW).reduce((acc,[sl,w])=>acc+effSlotQForOq(prog[sl])*w,0));
   const reach=type==='AM'?(RA[pw]||.85):(RF[pw]||.70);
   const sb=SBR[str]||[.50,.70];
+  const callLetters=gc();
   return{
     id:stId,
-    callLetters:gc(),freq,brand:gb(fmt,freq,(typeof G!=='undefined'&&G?.city)||MARKETS[ACTIVE_MARKET]?.label||'Atlanta',ACTIVE_MARKET,_gbBrandIdTaken),
+    callLetters,freq,brand:gb(fmt,freq,(typeof G!=='undefined'&&G?.city)||MARKETS[ACTIVE_MARKET]?.label||'Atlanta',ACTIVE_MARKET,_gbBrandIdTaken,callLetters),
     sig:{type,pw,reach,universe:UNIVERSE[`${type}_${pw}`]||0.65},
     launchPeriod:0, // set after creation — total periods elapsed at launch
     format:fmt,prog,oq,str,
@@ -8140,15 +8210,21 @@ function genMarket(scenId){
     const hqBonus=sc.heritageIncumbent?3:0;
     Object.values(stations[i].prog).forEach(sd=>{if(sd)sd.quality=Math.max(12,Math.min(90,(sd.quality||30)+oqAdj*0.6+hqBonus));});
     stations[i].color='#f5a623';}});
-  // Random FCC-style call on the dominant-heritage AM slot (BP idx 4 first); King of the Dial owns that slot, otherwise an AI station.
+  // One old-style 3-letter call (W/K + 2 letters) on the dominant-heritage AM slot (BP idx 4 first); same K/W rule as gc(); only one per market.
   (function applyMarketHeritageSlot(){
     const preferAmIdx=[4,0,2,5,1,10,3,13,6,11,12,17];
     for(const i of preferAmIdx){
       const st=stations[i];
       if(!st||st._bpSlotDeferred||st.sig?.type!=='AM')continue;
       UC.delete(st.callLetters);
-      st.callLetters=gc();
-      st.heritageIncumbent=true;
+      st.callLetters=gcHeritage3Letter();
+      return;
+    }
+    for(let i=0;i<stations.length;i++){
+      const st=stations[i];
+      if(!st||st._bpSlotDeferred)continue;
+      UC.delete(st.callLetters);
+      st.callLetters=gcHeritage3Letter();
       return;
     }
   })();
@@ -8177,8 +8253,9 @@ function genMarket(scenId){
     };
   }
   const _pubCity=MARKETS[ACTIVE_MARKET]?.label||'Atlanta';
-  const pubNews=mkPub(gc(),'88.5 FM','PUBLIC_NEWS','50kw',0.92,gb('PUBLIC_NEWS','88.5 FM',_pubCity,ACTIVE_MARKET,_gbBrandIdTaken),72,1975,'#94a3b8');
-  const pubClass=mkPub(gc(),'90.1 FM','PUBLIC_CLASSICAL','25kw',0.78,gb('PUBLIC_CLASSICAL','90.1 FM',_pubCity,ACTIVE_MARKET,_gbBrandIdTaken),68,1979,'#7c8fa8');
+  const _pubClNews=gc(),_pubClClass=gc();
+  const pubNews=mkPub(_pubClNews,'88.5 FM','PUBLIC_NEWS','50kw',0.92,gb('PUBLIC_NEWS','88.5 FM',_pubCity,ACTIVE_MARKET,_gbBrandIdTaken,_pubClNews),72,1975,'#94a3b8');
+  const pubClass=mkPub(_pubClClass,'90.1 FM','PUBLIC_CLASSICAL','25kw',0.78,gb('PUBLIC_CLASSICAL','90.1 FM',_pubCity,ACTIVE_MARKET,_gbBrandIdTaken,_pubClClass),68,1979,'#7c8fa8');
   stations.push(pubNews,pubClass);
   seedRat(stations,1970);
   const startYear=sc.startYear||1970;
@@ -8223,7 +8300,7 @@ function genMarket(scenId){
               s.format=target;
               const taken=collectBrandIdentityKeysFromStationList(stations,s.id);
               taken.delete(brandMarketIdentityKey(s.brand||''));
-              s.brand=gb(target,s.freq,MARKETS[ACTIVE_MARKET]?.label||'Atlanta',ACTIVE_MARKET,taken);
+              s.brand=gb(target,s.freq,MARKETS[ACTIVE_MARKET]?.label||'Atlanta',ACTIVE_MARKET,taken,s.callLetters);
               if(!s.drift)s.drift={};
               s.drift[target]=DRIFT?.[target]?.default||40;
             }
@@ -14786,6 +14863,8 @@ function migrateSave(G){
     const tmpl=CORPS.find(t=>t.id===s.corpOwner);
     if(tmpl)s.corpName=tmpl.name;
   });
+  // Old saves: drop internal flag (never shown in UI — 3-letter call is the only cue)
+  (G.stations||[]).forEach(s=>{ if(s) delete s.heritageIncumbent; });
   G.corps=G.corps||null;
   G.mpPhase=G.mpPhase??null;
   G.continuesBeyondEnd=G.continuesBeyondEnd??false;
