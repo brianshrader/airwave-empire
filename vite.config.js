@@ -24,11 +24,25 @@ function landingRedirectPlugin() {
   };
 }
 
-export default defineConfig({
+/** Dev-only: `marketSimHarness.js` is not copied to dist; script tag stripped from HTML on `vite build`. */
+function devOnlyMarketHarnessPlugin(command) {
+  return {
+    name: 'dev-only-market-sim-harness',
+    transformIndexHtml(html) {
+      if (command === 'build') {
+        return html.replace(/\s*<script defer src="\/src\/marketSimHarness\.js"><\/script>\s*/i, '\n');
+      }
+      return html;
+    },
+  };
+}
+
+export default defineConfig(({ command }) => ({
   root: '.',
   appType: 'mpa',
   plugins: [
     landingRedirectPlugin(),
+    devOnlyMarketHarnessPlugin(command),
     {
       name: 'copy-legacy-and-logo-js',
       writeBundle() {
@@ -76,4 +90,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

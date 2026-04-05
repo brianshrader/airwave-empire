@@ -287,6 +287,60 @@ function getSelloutRate(sharePct){
   if(sharePct<15)return 0.92;
   return 0.98;
 }
+/** Unweighted mean of cohort CPM — soft anchor for early-era reach blending (does not replace demo CPM). */
+function neutralCpmMean(){
+  return COH.reduce((sum,c)=>sum+(CPM[c]||0),0)/Math.max(1,COH.length);
+}
+/**
+ * Pre-1986: for market leaders / near-leaders, blend book CPM slightly toward demo-neutral
+ * so stacked demo × format premiums do not crush a #1 station (1970s buyers still chased gross reach).
+ */
+function earlyEraWcpmReachBlend(s,G,wcpm,year,fmd,podBonus,gcpm){
+  if(year>=1986||!G?.stations)return wcpm;
+  const comm=[...G.stations].filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic)
+    .sort((a,b)=>(b.rat?.share||0)-(a.rat?.share||0));
+  if(comm.length<2)return wcpm;
+  const idx=comm.findIndex(st=>st.id===s.id);
+  if(idx>1)return wcpm;
+  const shr=s.rat?.share||0;
+  if(shr<0.092)return wcpm;
+  if(idx===1){
+    const leader=comm[0]?.rat?.share||0;
+    if(leader-shr>0.045)return wcpm;
+  }
+  const wcpmNeutral=neutralCpmMean()*(fmd.cpm||1)*(1+(fmd.ab||0))*podBonus*gcpm;
+  const eraFade=year<=1970?1:Math.max(0,1-(year-1970)/16);
+  const shareK=Math.max(0,Math.min(1,(shr-0.092)/0.095));
+  const rankW=idx===0?1:0.42;
+  const b=0.13*eraFade*shareK*rankW;
+  return wcpm*(1-b)+wcpmNeutral*b;
+}
+/**
+ * Pre-1986: top-two share stations retain meaningful billing vs stacked weak-signal / format penalties.
+ * Extra nudge for small-power AM music #1 — local retail still bought the station that won the diary.
+ */
+function earlyEraDominantAudienceMonMult(s,G,year){
+  if(year>=1986||!G?.stations)return 1;
+  const comm=[...G.stations].filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic)
+    .sort((a,b)=>(b.rat?.share||0)-(a.rat?.share||0));
+  if(comm.length<2)return 1;
+  const idx=comm.findIndex(st=>st.id===s.id);
+  if(idx>1)return 1;
+  const shr=s.rat?.share||0;
+  if(shr<0.086)return 1;
+  if(idx===1){
+    const leader=comm[0]?.rat?.share||0;
+    if(leader-shr>0.048)return 1;
+  }
+  const eraFade=year<=1970?1:Math.max(0,1-(year-1970)/16);
+  const shareK=Math.max(0,Math.min(1,(shr-0.086)/0.095));
+  let rankW=idx===0?1:0.48;
+  let mult=1+0.24*eraFade*shareK*rankW;
+  if(s.sig?.type==='AM'&&!TALK_FMTS.includes(s.format)&&idx===0&&['1kw','5kw','10kw'].includes(s.sig?.pw)){
+    mult+=0.07*eraFade*shareK;
+  }
+  return Math.min(1.32,mult);
+}
 function fmEarlyEraBaseMult(year){
   if(year<1973)return 0.68;
   if(year<1976)return 0.75;
@@ -2827,7 +2881,7 @@ function mpRenderDraft(players, era) {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
           <div>
             <div style="font-size:16px;color:${isMyStation?'var(--amb)':'#fff'};letter-spacing:1px">${s.callLetters}</div>
-            <div style="font-size:14px;color:var(--mut)">${s.sig?.type} · ${s.sig?.pw==='DA'?'DAYTIMER (day only)':s.sig?.pw} · ${(s.str||'').toUpperCase()}</div>
+            <div style="font-size:14px;color:var(--mut)">${s.sig?.type} · ${signalPowerDisplayLabel(s.sig?.pw)} · ${(s.str||'').toUpperCase()}</div>
           </div>
           <div style="text-align:right">
             <div style="font-size:14px;color:${diff.color}">${diff.label}</div>
@@ -4617,7 +4671,7 @@ const BP=[
   // Gospel was one of the few AM formats that survived into the 2000s
   {type:'AM',fmt:'GOSPEL',     pw:'5kw', str:'niche'},
 
-  // idx 13: AM Country 10kw/DA moderate — second country station, runs DA (daytime only at full power)
+  // idx 13: AM Country 10kw/DA moderate — second country station, DA pattern (strong day / reduced night)
   // Country AM fled to FM by mid-80s; this will erode and flip
   {type:'AM',fmt:'COUNTRY',    pw:'DA',str:'moderate'},
 
@@ -4697,7 +4751,7 @@ const SF_LEVELS=[
 ];
 // Signal reach efficiency (quality of signal within universe)
 const RA={'50kw':.97,'10kw':.92,'5kw':.85,'1kw':.72,'DA':.88};
-// DA = Directional Antenna / Daytimer: licensed 50kw or 10kw daytime, drops to 1-5kw at night
+// Internal token 'DA': strong day / weaker night (not a literal sunrise–sunset daytimer). Gameplay also skips local eve/overnight hosts.
 // Night power reduction means listeners in fringe areas lose the signal after sunset.
 // In drive-time radio this matters a lot — morning drive is unaffected but evening is diminished.
 const RF={'100kw':.92,'50kw':.82,'25kw':.68,'10kw':.52};
@@ -4783,14 +4837,19 @@ function applyAmPwToStation(s,pw){
   s.sig.universe=UNIVERSE[`AM_${pw}`]||0.65;
   if(pw==='DA') applyAmDaytimerNightSlotsToStation(s, typeof G!=='undefined'?G:null);
 }
-/** AM daytimer (DA): daytime authorization — no credible local evening/overnight show. */
+/** AM night-limited pattern (internal pw 'DA'): reduced night power; sim bars local evening/overnight hosts (not FCC “daytimer” hours). */
 function stationIsAmDaytimer(s){
   return !!(s&&s.sig&&s.sig.type==='AM'&&s.sig.pw==='DA'&&!s.fmBooster);
 }
 function daytimerRestrictedSlot(s,sl){
   return stationIsAmDaytimer(s)&&(sl==='evening'||sl==='overnight');
 }
-const DAYTIMER_AM_NIGHT_MSG='Daytimer AMs are daytime-only. Evening and Overnight stay off-air — no local host there.';
+/** UI label for `sig.pw` (internal code remains `'DA'` = high day / reduced night, not “sign off at sunset”). */
+function signalPowerDisplayLabel(pw){
+  if(pw==='DA')return 'Reduced at night';
+  return String(pw||'').toUpperCase();
+}
+const DAYTIMER_AM_NIGHT_MSG='Evening and Overnight don’t carry a local host on this signal — night power and coverage are limited.';
 /** Clear evening/overnight hosts on DA; bench player-owned talent when G is available. */
 function applyAmDaytimerNightSlotsToStation(s,gState){
   if(!s||!s.prog||!stationIsAmDaytimer(s))return;
@@ -4928,6 +4987,11 @@ function mkStn(bp,freq,year=1970){
     identityBudget:0,   // recurring community investment spend per period
     _formatAge:0,       // periods in current format (resets on format change)
     _identityPeak:0,    // highest identity ever reached (used for betrayal penalty)
+    aiArchetype:null,   // rival strategic persona (assigned lazily)
+    aiMem:null,
+    _aiSnap:null,
+    _aiStrategicState:null,
+    _aiLastMajorReason:null,
   };
 }
 
@@ -6075,11 +6139,16 @@ function calcRev(s,G){
     // Format sellout affinity: youth-skewing and high-demo formats command higher floor rates
     // CHR/Hot AC/Top40 sold out fastest in 1990s; Country had strong regional buyers.
     // Adult Standards/Beautiful Music/MOR had thin ad markets — low ceilings.
-    const fmtSellAffinity={'CHR':0.12,'TOP40':0.10,'HOT_AC':0.10,'ADULT_CONTEMP':0.07,
+    let fmtSellAffinity={'CHR':0.12,'TOP40':0.10,'HOT_AC':0.10,'ADULT_CONTEMP':0.07,
       'URBAN_CONTEMP':0.08,'RHYTHMIC':0.08,'ALT_ROCK':0.06,'CLASSIC_ROCK':0.06,
       'COUNTRY':0.05,'SOUL_RNB':0.07,'GOSPEL':-0.02,
       'BEAUTIFUL_MUSIC':-0.05,'ADULT_STANDARDS':-0.04,'MOR':-0.03,
       'ALL_NEWS':0.09,'NEWS_TALK':0.08}[s.format]||0;
+    // Pre-1980: agencies still bought “the big station” — compress spread so format sellout affinity stacks less vs rank
+    if(year<1980){
+      const mid=0.066;
+      fmtSellAffinity=mid+(fmtSellAffinity-mid)*0.56;
+    }
     // Cluster demo breadth bonus: post-1990, agencies pay a premium for
     // one-stop demo coverage across a cluster. A CHR + Country + News/Talk
     // cluster covers 12-24, 25-54, and 55+ — that's the full advertiser story.
@@ -6115,7 +6184,8 @@ function calcRev(s,G){
   const fmd=FM[s.format]||{};
   const podBonus=s.format==='PODCAST_TALK'?1+Math.min((streamDrag*2),.4):1;
   const gcpm=genderCPM(s.format); // gender audience concentration CPM premium
-  const wcpm=COH.reduce((sum,c)=>{const w=(s.rat.cur[c]?.aqh||0)/aqh;return sum+w*(CPM[c]||1)*(fmd.cpm||1)*(1+(fmd.ab||0))*podBonus*gcpm;},0);
+  let wcpm=COH.reduce((sum,c)=>{const w=(s.rat.cur[c]?.aqh||0)/aqh;return sum+w*(CPM[c]||1)*(fmd.cpm||1)*(1+(fmd.ab||0))*podBonus*gcpm;},0);
+  wcpm=earlyEraWcpmReachBlend(s,G,wcpm,year,fmd,podBonus,gcpm);
   const revDrag=s.format==='PODCAST_TALK'?1:Math.max(.7,1-streamDrag*.25); // terrestrial radio retained ~88% of ad revenue vs pre-streaming peak
   // Spot revenue: spots = min/hr commercial load, treated as 30-sec units per hour
   // 18hr broadcast day, 182 days per half-year period
@@ -6143,11 +6213,17 @@ function calcRev(s,G){
   rev=Math.round(rev*mktFmtMon);
   // Inventory sell-through vs share: low-share stations do not monetize full avails at book CPM.
   let shareSelloutMult=getSelloutRate((s.rat.share||0)*100);
-  if(year<1980)shareSelloutMult*=0.95;
+  // Pre-1980: high-share leaders still cleared inventory — ease flat 0.95× as share rises (stacked with getSelloutRate).
+  if(year<1980){
+    const shr=s.rat?.share||0;
+    shareSelloutMult*=(0.95+0.04*Math.min(1,Math.max(0,(shr*100-9)/10)));
+  }
   const _sellTier=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
   if(year<1980&&_sellTier!=='mega')shareSelloutMult=Math.min(0.98,shareSelloutMult*1.1);
   if(year<1980&&_sellTier!=='mega'&&s.sig.type==='FM'&&!TALK_FMTS.includes(s.format)&&shareSelloutMult<0.76)shareSelloutMult=0.76;
   rev=Math.round(rev*shareSelloutMult);
+  const dominantEarlyEraMult=earlyEraDominantAudienceMonMult(s,G,year);
+  rev=Math.round(rev*dominantEarlyEraMult);
   const amTalkSmMult=earlyEraAmTalkSmallMarketSupport(s.format,year,G.marketId||ACTIVE_MARKET,s.sig?.type||'');
   rev=Math.round(rev*amTalkSmMult);
   const promoCap=promoBudgetCapForPeriod(G);
@@ -6289,7 +6365,7 @@ function calcRev(s,G){
   const ccBonus = (s.clearChannel && s.sig.type==='AM' && !s.fmBooster)
     ? 1 + CLEAR_CHANNEL_REVENUE_BONUS * Math.max(0, 1 - Math.max(0,(G.year-1995)/20))
     : 1;
-  // Daytimer (DA) penalty: power drops at sunset, losing evening drive — the highest-CPM daypart.
+  // Reduced night power (DA) penalty: fringe loses evening drive — the highest-CPM daypart.
   // Evening drive CPM ~1.4x daytime. Losing it costs ~15% of total revenue (pre-1985 era).
   // Post FM-migration era, this gap shrinks (AM evening was already weak anyway).
   const daPenalty = (s.sig.pw==='DA' && s.sig.type==='AM' && !s.fmBooster)
@@ -6358,9 +6434,11 @@ function calcRev(s,G){
   s.fin.cost=fixedCost+talCost+salesAdminCost+opsFloor+effPromo+effProg+(s.identityBudget||0)+streamUpkeep+simulcastProgFee+rightsHalfPeriod+aiLoanInt;
   s.fin.ebitda=s.fin.rev-s.fin.cost;
   if(typeof G!=='undefined'&&G._econDebugIds&&Array.isArray(G._econDebugIds)&&G._econDebugIds.includes(s.id)){
+    const _commDbg=[...(G.stations||[])].filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic).sort((a,b)=>(b.rat?.share||0)-(a.rat?.share||0));
+    const _rankDbg=_commDbg.findIndex(st=>st.id===s.id)+1;
     const row={
       id:s.id,call:s.callLetters,market:G.marketId||ACTIVE_MARKET,year:G.year,period:G.period,
-      revGrossPreFm,fmEarlyEraMonMult,mktFmtMon,shareSelloutMult,amTalkSmMult,
+      shareDecimal:s.rat?.share,rank:_rankDbg,revGrossPreFm,fmEarlyEraMonMult,mktFmtMon,shareSelloutMult,dominantEarlyEraMult,amTalkSmMult,
       opsFloor,talCost,regCost:regCostScaled,fix:fixedCost,salesAdmin:salesAdminCost,totalRev:s.fin.rev,ebitda:s.fin.ebitda,mktFixMult,
     };
     if(!G._econDebugLog)G._econDebugLog=[];
@@ -6480,6 +6558,7 @@ function debugRevenueTrace(G,focusStationId){
       sharePct:((s.rat?.share||0)*100).toFixed(2)+'%',
       rank:ri+1,
       monetizationEff:Number(eff.toFixed(4)),
+      earlyEraDominantMult_preSeed:earlyEraDominantAudienceMonMult(s,G,year),
       rev,
       pctOfHalfPeriodPool:halfTarget>0?Number((rev/halfTarget*100).toFixed(2)):null,
     };
@@ -6805,6 +6884,191 @@ function rivalFormatCrowdingTier(fmt, G){
   if(count>=4)return 1;
   return 0;
 }
+
+// ── RIVAL AI STRATEGIC LAYER (archetypes, memory, era, inertia) ───
+// Biases existing heuristics; does not replace core planning.
+const AI_ARCHETYPE_IDS=['leader_defender','underdog_gambler','conservative_owner','trend_chaser','legacy_slow'];
+const AI_ARCHETYPE_DEF={
+  leader_defender:{
+    label:'Leader / Defender',
+    spendMul:1.04,hireMul:1.03,threatReact:1.13,flipEager:0.84,noise:0.042,pickErr:0.055,
+    dominantFlip:0.26,panicFlip:1.05,
+  },
+  underdog_gambler:{
+    label:'Underdog / Gambler',
+    spendMul:1.02,hireMul:1.06,threatReact:1.07,flipEager:1.18,noise:0.058,pickErr:0.09,
+    dominantFlip:0.55,panicFlip:1.28,
+  },
+  conservative_owner:{
+    label:'Conservative Owner',
+    spendMul:0.90,hireMul:0.93,threatReact:0.94,flipEager:0.76,noise:0.034,pickErr:0.045,
+    dominantFlip:0.22,panicFlip:0.92,
+  },
+  trend_chaser:{
+    label:'Trend Chaser',
+    spendMul:1.03,hireMul:1.04,threatReact:1.16,flipEager:1.14,noise:0.052,pickErr:0.085,
+    dominantFlip:0.42,panicFlip:1.18,
+  },
+  legacy_slow:{
+    label:'Legacy / Slow Mover',
+    spendMul:0.96,hireMul:0.97,threatReact:0.98,flipEager:0.68,noise:0.038,pickErr:0.05,
+    dominantFlip:0.30,panicFlip:0.98,
+  },
+};
+function aiRivalHashPick(str){
+  let h=2166136261>>>0;
+  for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)>>>0;}
+  return h>>>0;
+}
+function ensureAiRivalArchetype(s,G){
+  if(!s||s.isPlayer||s.isPublic||s._bpSlotDeferred)return;
+  if(s.aiArchetype&&AI_ARCHETYPE_IDS.includes(s.aiArchetype))return;
+  const mkt=G&&G.marketId?G.marketId:'';
+  const h=aiRivalHashPick(mkt+'::'+s.id);
+  s.aiArchetype=AI_ARCHETYPE_IDS[h%AI_ARCHETYPE_IDS.length];
+}
+function aiFormatsCompete(fmtA,fmtB){
+  if(!fmtA||!fmtB||fmtA===fmtB)return true;
+  return (FADJ[fmtA]||[]).includes(fmtB)||(FADJ[fmtB]||[]).includes(fmtA);
+}
+function aiCommercialRank(st,G){
+  const comm=(G.stations||[]).filter(x=>x&&!x._bpSlotDeferred&&!x.isPublic)
+    .sort((a,b)=>(b.rat?.share||0)-(a.rat?.share||0));
+  const i=comm.findIndex(x=>x.id===st.id);
+  return i<0?comm.length+5:i+1;
+}
+function aiEraStrategicDial(year){
+  const y=year||1970;
+  if(y<1976)return{churn:0.70,fmPull:0.88,spendNudge:0.94,cluster:0.88,localism:1.10};
+  if(y<1990)return{churn:0.94,fmPull:1.14,spendNudge:1.02,cluster:0.95,localism:1.0};
+  if(y<2000)return{churn:1.10,fmPull:1.06,spendNudge:1.05,cluster:1.12,localism:0.97};
+  return{churn:0.86,fmPull:1.0,spendNudge:0.93,cluster:1.06,localism:0.94};
+}
+function computeAiStrategicState(s,G){
+  const sh=s.rat?.share||0;
+  const eb=s.fin?.ebitda||0;
+  const rank=aiCommercialRank(s,G);
+  const pr=s.cp;
+  const snap=s._aiSnap;
+  const prevR=snap?.rank;
+  const prevSh=snap?.share;
+  if(sh<0.026||eb<-90000&&sh<0.044)return'desperate';
+  if(sh<0.041||eb<-40000&&sh<0.056)return'troubled';
+  if(rank===1&&sh>=0.076)return'dominant';
+  if(prevR===1&&rank>1)return'slipping';
+  if(pr?.col||(prevSh!=null&&sh<prevSh-0.009))return'slipping';
+  if(pr?.under&&sh<0.068)return'slipping';
+  if(sh<0.058&&rank>=6)return'troubled';
+  return'stable';
+}
+function aiSeededNoise(stId, turn, salt){
+  const x=aiRivalHashPick(String(stId)+':'+(turn||0)+':'+salt);
+  return(x%20001)/10000-1;
+}
+function aiRivalBehaviorLayer(s,G,baseBeh){
+  ensureAiRivalArchetype(s,G);
+  const arch=AI_ARCHETYPE_DEF[s.aiArchetype]||AI_ARCHETYPE_DEF.trend_chaser;
+  const state=computeAiStrategicState(s,G);
+  s._aiStrategicState=state;
+  const era=aiEraStrategicDial(G.year||1970);
+  const mem=s.aiMem||{laneThreat:0,oppWeak:0};
+  const threat=mem.laneThreat||0;
+  const oppW=mem.oppWeak||0;
+  let spendMult=baseBeh.spendMult*arch.spendMul*era.spendNudge;
+  let hireMult=baseBeh.hireMult*arch.hireMul;
+  let skipPoach=baseBeh.skipPoach;
+  if(state==='dominant'){
+    if(s.aiArchetype==='leader_defender')spendMult*=1.07;
+    if(s.aiArchetype==='underdog_gambler')spendMult*=0.93;
+    if(s.aiArchetype==='conservative_owner')spendMult*=0.94;
+  }
+  if(state==='desperate'||state==='troubled'){
+    if(s.aiArchetype==='underdog_gambler'){spendMult*=1.12;hireMult*=1.10;}
+    if(s.aiArchetype==='conservative_owner')spendMult*=0.88;
+    if(s.aiArchetype==='trend_chaser')spendMult*=1.08;
+    if(s.aiArchetype==='legacy_slow'){spendMult*=1.05;hireMult*=0.96;}
+  }
+  if(state==='slipping'){
+    if(s.aiArchetype==='leader_defender')spendMult*=1.09;
+    if(s.aiArchetype==='trend_chaser')spendMult*=1.06;
+  }
+  if(threat>0.35){
+    const tr=Math.min(2.2,threat);
+    spendMult*=1+(arch.threatReact-1)*tr*0.55;
+    if(s.aiArchetype==='legacy_slow')spendMult*=1+0.04*tr;
+  }
+  if(oppW>0.3&&state!=='dominant'){
+    const o=Math.min(1.8,oppW);
+    if(s.aiArchetype==='underdog_gambler'||s.aiArchetype==='trend_chaser')spendMult*=1+0.05*o;
+  }
+  const fmtAge=s._formatAge||0;
+  if(fmtAge<4&&(s.aiArchetype==='conservative_owner'||s.aiArchetype==='legacy_slow'))spendMult*=0.87;
+  if(state==='dominant'&&(s.aiArchetype==='conservative_owner'||s.aiArchetype==='legacy_slow'))spendMult*=0.92;
+  const errAmp=arch.noise*(state==='desperate'?1.28:state==='troubled'?1.12:state==='slipping'?1.06:1);
+  spendMult*=1+errAmp*aiSeededNoise(s.id,G.turn||0,11);
+  hireMult*=1+errAmp*0.45*aiSeededNoise(s.id,G.turn||0,17);
+  if(state==='desperate'&&s.aiArchetype==='underdog_gambler')skipPoach=false;
+  if(state==='dominant'&&s.aiArchetype==='conservative_owner')skipPoach=true;
+  spendMult=Math.max(0.18,Math.min(1.58,spendMult));
+  hireMult=Math.max(0.2,Math.min(1.48,hireMult));
+  return{...baseBeh,spendMult,hireMult,skipPoach,_aiState:state,_aiArch:arch,_aiEra:era};
+}
+/** Call at start of runAI: decay memory, detect flips vs last turn snapshot, set reactive fields. */
+function aiRivalBeginTurn(G){
+  const rivals=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic);
+  rivals.forEach(s=>{
+    ensureAiRivalArchetype(s,G);
+    if(!s.aiMem)s.aiMem={laneThreat:0,oppWeak:0};
+    s.aiMem.laneThreat=(s.aiMem.laneThreat||0)*0.62;
+    s.aiMem.oppWeak=(s.aiMem.oppWeak||0)*0.55;
+  });
+  rivals.forEach(r=>{
+    const prev=r._aiSnap;
+    if(!prev||!prev.fmt)return;
+    if(r.format===prev.fmt)return;
+    r._aiLastMajorReason='reformat:'+(FM[r.format]?.l||r.format);
+    rivals.forEach(o=>{
+      if(o.id===r.id)return;
+      if(!aiFormatsCompete(o.format,r.format))return;
+      o.aiMem.laneThreat=Math.min(3,(o.aiMem.laneThreat||0)+(r.format===o.format?1.7:1.1));
+    });
+  });
+  rivals.forEach(o=>{
+    const snap=o._aiSnap;
+    if(!snap)return;
+    const d=(o.rat?.share||0)-(snap.share||0);
+    if(d<-0.026){
+      rivals.forEach(s=>{
+        if(s.id===o.id)return;
+        if(s.format===o.format||aiFormatsCompete(s.format,o.format))
+          s.aiMem.oppWeak=Math.min(2.5,(s.aiMem.oppWeak||0)+0.65);
+      });
+    }
+  });
+}
+function aiRivalPersistTurnSnapshot(G){
+  (G.stations||[]).forEach(s=>{
+    if(!s||s._bpSlotDeferred||s.isPlayer||s.isPublic)return;
+    s._aiSnap={fmt:s.format,share:s.rat?.share||0,rank:aiCommercialRank(s,G),y:G.year,p:G.period};
+  });
+}
+function aiRivalPublishDebug(G){
+  if(!G._aiDebug)G._aiDebug={};
+  const turn=G.turn||0;
+  G._aiDebug.turn=turn;
+  G._aiDebug.year=G.year;
+  G._aiDebug.period=G.period;
+  G._aiDebug.stations=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic).map(s=>({
+    call:s.callLetters,
+    archetype:s.aiArchetype,
+    archetypeLabel:(AI_ARCHETYPE_DEF[s.aiArchetype]||{}).label||s.aiArchetype,
+    state:s._aiStrategicState,
+    lastMove:s._aiLastMajorReason||'',
+    mem:{laneThreat:+(s.aiMem?.laneThreat||0).toFixed(2),oppWeak:+(s.aiMem?.oppWeak||0).toFixed(2)},
+  }));
+  if(typeof window!=='undefined')window.__AI_RIVAL_DEBUG=G._aiDebug;
+}
+
 function aiRivalRecoveryScore(group, G){
   if(!group||!group.length)return 0;
   const portE=group.reduce((a,st)=>a+(st.fin?.ebitda||0),0);
@@ -6943,6 +7207,7 @@ function aiRivalStationBehavior(s, G){
 // ── COMPETITOR AI ─────────────────────────────────────────────────
 function runAI(G){
   runAIVirtualLoanBorrow(G);
+  aiRivalBeginTurn(G);
   const acts=[];
   // Pre-compute player station snapshot once — rivals use this for targeting decisions
   const playerStns=G.ps;
@@ -6951,10 +7216,10 @@ function runAI(G){
   const playerWeak=playerShares.filter(ps=>ps.cp&&ps.cp.col);   // player stations in freefall
   const playerStrong=playerShares.filter(ps=>ps.share>0.08);    // player's dominant stations
 
-  G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer).forEach(s=>{
+  G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic).forEach(s=>{
     const p=s.pers;if(!p)return;
     const pr=s.cp;
-    const aiBeh=aiRivalStationBehavior(s,G);
+    const aiBeh=aiRivalBehaviorLayer(s,G,aiRivalStationBehavior(s,G));
     const crisis=pr&&pr.d2<-p.pt;
     const notic=pr&&Math.random()<p.rs&&Math.abs(pr.d2)>p.pt*.5;
     const surging=pr&&pr.sur;
@@ -7065,6 +7330,7 @@ function runAI(G){
         const old=ms.talent.name;
         ms.talent=mkTal('morningDrive',s.format,p.ag>.6?'mid':'entry',G.year);
         ms.quality=Math.min(100,ms.quality+ms.talent.quality*.3);
+        s._aiLastMajorReason='defensive:morning-replace';
         acts.push({v:'MEDIUM',t:`${s.callLetters} replaces morning host (was ${old})`});
       }
     }
@@ -7096,6 +7362,7 @@ function runAI(G){
               announcedY:G.year,announcedP:G.period,matched:false
             };
             s._poachCooldown=4;
+            s._aiLastMajorReason='poach:player-morning';
             acts.push({v:'HIGH',
               t:`⚡ ${s.callLetters} is courting ${nm} at ${pStn.callLetters} (${f$(newSal)}/yr) — you have one period to match in contract.`,
               iy:true});
@@ -7121,6 +7388,7 @@ function runAI(G){
                 announcedY:G.year,announcedP:G.period,matched:false
               };
               s._poachCooldown=4;
+              s._aiLastMajorReason='poach:player-morning-open';
               acts.push({v:'HIGH',t:`⚡ ${s.callLetters} is courting ${tal.name} at ${pStn.callLetters} (${f$(newSal)}/yr).`,iy:true});
             }
           } else {
@@ -7129,6 +7397,7 @@ function runAI(G){
             s.prog.morningDrive.talent={...best.t,salary:Math.round(best.t.salary*rnd(1.30,1.60)/500)*500};
             s.prog.morningDrive.quality=Math.min(100,s.prog.morningDrive.quality+bq*.4);
             const iy=G.ps.some(st=>st.callLetters===best.st.callLetters);
+            s._aiLastMajorReason='poach:rival-morning';
             acts.push({v:'HIGH',t:`⚡ ${s.callLetters} poaches ${nm} from ${best.st.callLetters}`,iy});
           }
         }
@@ -7163,6 +7432,7 @@ function runAI(G){
       s.ops.sell=Math.max(.20,Math.min(.96,s.ops.sell+d));
     }
   });
+  aiRivalPublishDebug(G);
   return acts;
 }
 
@@ -9496,7 +9766,7 @@ function buildResearchReport(s,G){
       : `News, Talk and Sports are the AM-native formats. Music AM erosion doesn't apply.`;
     sigSection+=row('Signal type','AM — Talk/News native', amTalkNote, amTalkColor);
     if(s.clearChannel)sigSection+=row('Clear-channel AM (Class A)','Unlimited night power','No nighttime directionality. Signal covers the full region at night, expanding your effective audience by ~18%. Revenue premium applies through 1995.','var(--amb)');
-    else if(s.sig.pw==='DA')sigSection+=row('Daytimer / DA','50kW day · 1-5kW night','Power drops sharply at sunset to protect clear-channel signals. Evening drive audiences in fringe areas lose your signal. Effective reach ≈ 72% of a full-time 50kW. An FM simulcast or translator eliminates this.','var(--red)');
+    else if(s.sig.pw==='DA')sigSection+=row('Reduced night power','50kW day · 1-5kW night','Still on air 24/7 — night power is lower and often directional to protect clear-channel co-channels. Fringe listeners lose you in evening drive. Effective reach ≈ 72% of a full-time 50kW. An FM simulcast or translator eliminates this.','var(--red)');
     else if(s.sig.pw==='50kw')sigSection+=row('50kW Directional','50kW day / reduced night','Power drops and signal rotates at night to protect clear-channel stations. Daytime market coverage only.','var(--mut)');
     sigSection+=row('AM Talk viability',`${Math.round(amViab*100)}%`,year>=1990?'AM talk still strong but FM competitors emerging.':year>=1985?'Some FM competition for News/Talk emerging.':'Full AM advantage for talk formats.','var(--grn)');
     // Even NT AM gets an FMP note — listeners in cars are increasingly on FM, even for talk
@@ -9507,7 +9777,7 @@ function buildResearchReport(s,G){
     const viabColor=amPenalty>0.7?'var(--grn)':amPenalty>0.4?'var(--amb)':'var(--red)';
     sigSection+=row('Signal type','AM — Music format','AM music stations face audience defection to FM as FM penetration rises.','var(--red)');
     if(s.clearChannel)sigSection+=row('Clear-channel AM (Class A)','Unlimited night power','No nighttime power reduction. Wider coverage buys time vs non-clear-channel AM music stations — but FM erosion still applies to all AM music formats.','var(--amb)');
-    else if(s.sig.pw==='DA')sigSection+=row('Daytimer / DA','50kW day · 1-5kW night','Power drops sharply at sunset. Fringe listeners lose the signal in evening drive — when music radio is most valuable. High incentive to get an FM signal.','var(--red)');
+    else if(s.sig.pw==='DA')sigSection+=row('Reduced night power','50kW day · 1-5kW night','Still on air 24/7 with lower night power. Fringe listeners lose the signal in evening drive — when music radio is most valuable. High incentive to get an FM signal.','var(--red)');
     else if(s.sig.pw==='50kw')sigSection+=row('50kW Directional','50kW day / reduced night','Power drops and signal rotates at night. Same erosion penalties as other AM music.','var(--mut)');
     if(s.fmBooster){
       const _tFracR=Math.min(1,(s.sig.universe||0.32)/Math.max(s._boosterOrigSig?.universe||0.85,0.01));
@@ -9663,7 +9933,7 @@ function buildResearchReport(s,G){
         <span style="font-size:15px;color:var(--mut)">${G.city} · ${G.year}</span>
       </div>
       ${row('Format',FM[s.format]?.l||s.format,'','var(--off)')}
-      ${row('Signal',`${s.sig.type} · ${s.sig.pw}`,'','var(--off)')}
+      ${row('Signal',`${s.sig.type} · ${signalPowerDisplayLabel(s.sig.pw)}`,'','var(--off)')}
       ${row('Share',`${(cur*100).toFixed(1)}%`,`Trend: ${pill(trending,trendColor)}`,'var(--off)')}
       ${sigSection}
       ${qSection}
@@ -9917,17 +10187,32 @@ function rivalReformat(G){
       }
     }
 
-    // Stage 3 (periods 6+): Reformat — only if consistently bad
-    if(p>=6&&Math.random()<0.20){
+    // Stage 3 (periods 6+): Reformat — only if consistently bad (archetype + era + inertia bias flip odds)
+    if(p>=6){
+      ensureAiRivalArchetype(s,G);
+      const arch=AI_ARCHETYPE_DEF[s.aiArchetype]||AI_ARCHETYPE_DEF.trend_chaser;
+      const era=aiEraStrategicDial(G.year);
+      const st=computeAiStrategicState(s,G);
+      const fAge=s._formatAge||0;
+      let inertiaM=fAge<4?0.32:fAge<10?0.74:1;
+      if(s.aiArchetype==='legacy_slow')inertiaM*=0.58;
+      if(s.aiArchetype==='trend_chaser')inertiaM*=1.1;
+      let flipProb=0.20*era.churn*arch.flipEager*inertiaM;
+      if(st==='dominant')flipProb*=arch.dominantFlip;
+      else if(st==='desperate')flipProb*=arch.panicFlip;
+      else if(st==='troubled')flipProb*=1.07;
+      if((s.aiMem?.laneThreat||0)>0.85)flipProb*=s.aiArchetype==='leader_defender'?1.09:1.04;
+      flipProb=Math.min(0.88,Math.max(0.035,flipProb));
+      if(Math.random()>=flipProb)return;
       const candidates=eligibleFormats.filter(f=>
         f!==s.format&&(FM[f]?.unlock||1900)<=G.year
       );
       if(!candidates.length)return;
       // Weighted format selection: favor growing formats, penalize oversaturated ones
       const mktComm=G.stations.filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic);
-      const sorted=[...mktComm].sort((a,b)=>b.rat.share-a.rat.share);
       const fmtCounts={};mktComm.forEach(st=>{fmtCounts[st.format]=(fmtCounts[st.format]||0)+1;});
       const fmtShares={};mktComm.forEach(st=>{fmtShares[st.format]=(fmtShares[st.format]||0)+st.rat.share;});
+      const y=G.year||1970;
       // Score each candidate format
       const scored=candidates.map(f=>{
         let score=1.0;
@@ -9948,6 +10233,15 @@ function rivalReformat(G){
         }
         // Maverick/Scrapper more willing to bet on emerging formats
         if(s.pers?.ag>=0.70&&count===0)score*=1.4;
+        // Imperfect evaluation — top choice favored, not guaranteed
+        score*=1+arch.pickErr*aiSeededNoise(s.id+':'+f,G.turn||0,31);
+        if(s.aiArchetype==='trend_chaser'&&y>=1976&&y<=1998){
+          if(['CHR','ADULT_CONTEMP','URBAN_CONTEMP','ALT_ROCK','HOT_AC'].includes(f))score*=1+0.11*era.fmPull;
+          if(s.sig?.type==='FM'&&['ALBUM_ROCK','CLASSIC_ROCK'].includes(f))score*=1+0.05*era.fmPull;
+        }
+        if(s.aiArchetype==='legacy_slow'&&fAge>12&&(FADJ[s.format]||[]).includes(f))score*=1.12;
+        if(s.aiArchetype==='conservative_owner')score*=(fmtCounts[f]||0)>=2?1.08:0.94;
+        if(s.aiArchetype==='underdog_gambler'&&count===0&&share<0.04)score*=1.15;
         return {f, score};
       }).sort((a,b)=>b.score-a.score);
       // Weighted random pick — top 3 candidates get most weight
@@ -9957,6 +10251,7 @@ function rivalReformat(G){
       for(const {f,score} of pool){r-=score;if(r<=0){newFmt=f;break;}}
       const oldFmt=FM[s.format]?.l||s.format;
       s.format=newFmt;
+      s._aiLastMajorReason='reformat:'+(FM[newFmt]?.l||newFmt);
       s._lowSharePeriods=0;
       if(!s.drift)s.drift={};
       s.drift[newFmt]=DRIFT[newFmt]?.default||40;
@@ -10286,7 +10581,7 @@ function rLMA() {
       return `<div class="lma-row${ok?'':' nope'}" style="opacity:${ok?1:.4}">
         <div>
           <div class="lma-call" style="color:${s.color||'var(--wht)'}">${s.callLetters}${corpTag}</div>
-          <div class="lma-meta">${s.freq} · ${s.sig.pw} · ${FM[s.format]?.l||s.format} · Quality: ${Math.round(s.oq)}</div>
+          <div class="lma-meta">${s.freq} · ${signalPowerDisplayLabel(s.sig.pw)} · ${FM[s.format]?.l||s.format} · Quality: ${Math.round(s.oq)}</div>
           <div class="lma-meta">Share: ${pct(s.rat.share)} · Revenue: ${f$(s.fin?.rev||0)}/period</div>
           <div class="lma-terms">Fee: ${f$(fee)}/period → Est. net to you: ${f$(netEst)}/period</div>
         </div>
@@ -10695,6 +10990,7 @@ function advTurn(mpCoalesceSeq){
     }
     checkRankMilestones(G);
     const acts=runAI(G);
+    aiRivalPersistTurnSnapshot(G);
     seedRev(G.stations,G);
     runAIVirtualLoanRepay(G);
     updateAiRivalNegEbitdaStreaks(G);
@@ -11118,7 +11414,7 @@ function signalLineForIntel(s){
   let band=sig.type==='FM'?'FM':sig.type==='AM'?'AM':(sig.type?String(sig.type).trim():'');
   if(!band)band=inferBandFromDialStr(raw);
   if(!band)band='AM/FM';
-  const pw=sig.pw!=null&&sig.pw!==''?String(sig.pw):'';
+  const pw=sig.pw!=null&&sig.pw!==''?signalPowerDisplayLabel(sig.pw):'';
   const parts=[band];
   if(pw)parts.push(pw);
   parts.push(freq);
@@ -11302,8 +11598,8 @@ function manageTalentEmptySlotMeta(s, sl, _simSrc) {
     return {
       slotQ,
       status: 'Off-air',
-      detail: 'Daytimer license — no local evening/overnight show',
-      hireNote: 'Evening and Overnight stay automation/syndication. Hire is not available on a daytimer AM.',
+      detail: 'Night-limited signal — no local evening/overnight show',
+      hireNote: 'Evening and Overnight stay automation/syndication. Hire is not available on this night-limited AM pattern.',
     };
   }
   const fr = getStationFranchise(s, sl, G);
@@ -11407,7 +11703,7 @@ function manageTalentDaypartBlockHtml(s,sl,_simSrc,stationOQ){
   const fireLbl=fireBuy>0?`FIRE (${f$(fireBuy)})`:'FIRE';
   const restrictedHost=daytimerRestrictedSlot(s,sl);
   const moveRow=restrictedHost
-    ?`<p style="font-size:12px;color:var(--amb);margin:0 0 10px 0;line-height:1.45">Legacy host in a daytimer night slot — bench or fire to align with license. Replace / move / transfer are disabled here.</p>
+    ?`<p style="font-size:12px;color:var(--amb);margin:0 0 10px 0;line-height:1.45">Legacy host in Evening or Overnight on a night-limited AM — bench or fire to align with this signal pattern. Replace / move / transfer are disabled here.</p>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">
           <button class="abt" type="button" style="border-color:var(--blu);color:var(--blu)" onclick="openContractFromManageTalent('${s.id}','${sl}')">CONTRACT / PAY</button>
           <button class="abt" type="button" style="border-color:var(--amb);color:var(--amb)" onclick="rosterBenchClick('${s.id}','${sl}')">BENCH</button>
@@ -12252,7 +12548,7 @@ function rosterMoveDestSlotCardHtml(dst,sl,movingTalent,fromSlotKey){
     return`
     <div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:10px;opacity:.92">
       <div style="font-family:var(--fd);font-size:20px;letter-spacing:1px;color:var(--mut);text-transform:uppercase;line-height:1.2">${SL[sl]}</div>
-      <p style="margin:10px 0 0 0;font-size:14px;color:var(--off);line-height:1.45">Daytimer AM — no local host in Evening or Overnight.</p>
+      <p style="margin:10px 0 0 0;font-size:14px;color:var(--off);line-height:1.45">Night-limited AM — no local host in Evening or Overnight.</p>
     </div>`;
   }
   const t=movingTalent;
@@ -12874,7 +13170,7 @@ function xferRenderDestSlots() {
       : `<span style="color:var(--mut);font-size:15px">vacant · slot quality ${slotQ}</span>`;
     const restricted = daytimerRestrictedSlot(dst, sl);
     const actions = restricted
-      ? `<span style="color:var(--mut);font-size:14px">Daytimer — off-air (no local host)</span>`
+      ? `<span style="color:var(--mut);font-size:14px">Evening/overnight — no local host (night-limited)</span>`
       : occ
         ? `<div style="display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:200px"><button type="button" class="cfm" style="margin:0;padding:8px 10px;font-size:14px;letter-spacing:1px" onclick="doCrossStationSwap('${sl}')">SWAP — exchange hosts</button><button type="button" class="abt" style="margin:0;padding:8px 10px;font-size:13px;border-color:var(--bdh);color:var(--mut);background:transparent" onclick="doCrossStationXfer('${sl}')">MOVE — bench other</button></div>`
         : `<button class="abt" style="border-color:var(--grn);color:var(--grn)" type="button" onclick="doCrossStationXfer('${sl}')">MOVE HERE</button>`;
@@ -13637,7 +13933,7 @@ function openFmBooster(sid){
     <div class="ms2">
       <div class="msh">TRANSLATOR DETAILS — ${G.year}</div>
       <div class="sr"><span class="lb">Station</span><span class="vl">${s.callLetters} · ${FM[s.format]?.l||s.format}</span></div>
-      <div class="sr"><span class="lb">Current Signal</span><span class="vl">AM ${s.sig.pw} · ${s.freq}</span></div>
+      <div class="sr"><span class="lb">Current Signal</span><span class="vl">AM ${signalPowerDisplayLabel(s.sig.pw)} · ${s.freq}</span></div>
       <div class="sr"><span class="lb">After Translator</span><span class="vl" style="color:var(--grn)">FM Translator · city core coverage</span></div>
       <div class="sr"><span class="lb">Metro Coverage</span><span class="vl" style="color:var(--grn)">Full AM coverage + FM city core pickup</span></div>
       <div class="sr"><span class="lb">AM Erosion</span><span class="vl pos">✓ Stops immediately</span></div>
@@ -13868,7 +14164,7 @@ function rAcq(){
     const isSel=AS.chosen===s.id;
     return `<div class="aco ${(can&&typeOk)?'':'nope'}" style="${isSel?'border-color:var(--grn);background:rgba(82,227,110,.06)':''}">
       <div style="flex:1"><div class="acn" style="color:${s.color}">${callDisplay(s)}</div>
-      <div class="aci">${s.freq} · ${s.sig.pw} · ${FM[s.format]?.l||s.format} · ${s.sig.type} · Quality: ${s.oq}${s.isPublic?'  <span style="color:#7dd3fc;font-size:14px">PUBLIC — converts to commercial on acquisition</span>':''}</div>
+      <div class="aci">${s.freq} · ${signalPowerDisplayLabel(s.sig.pw)} · ${FM[s.format]?.l||s.format} · ${s.sig.type} · Quality: ${s.oq}${s.isPublic?'  <span style="color:#7dd3fc;font-size:14px">PUBLIC — converts to commercial on acquisition</span>':''}</div>
       <div class="aci" style="margin-top:2px">Share: ${pct(s.rat.share)} · Rev: ${f$(s.fin.rev)}/period${s.isPublic?' · <span style="color:#7dd3fc">Non-commercial</span>':''}</div></div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;margin-left:8px">
         <span style="font-family:var(--fd);font-size:15px;color:${(can&&typeOk)?'var(--amb)':'var(--red)'}">${f$(price)}</span>
@@ -16620,7 +16916,7 @@ function rStns(){
   let _assignFtTutIds=MP.mode!=='live';
   const freqLineHtml=st=>{
     if(!st)return '';
-    return st.fmBooster?st.freq+' · <span style="color:var(--grn);font-family:var(--ft);font-size:14px">FM TRANSLATOR</span>'+(st._boosterOrigFreq?' · <span style="color:var(--mut)">+'+st._boosterOrigFreq+'</span>':''): st.sig.pw==='DA'?st.freq+' · AM · <span style="color:var(--red);font-family:var(--ft);font-size:14px" title="Daytimer: 50kW day, 1-5kW night">DAYTIMER</span>': st.freq+' · '+st.sig.type+' · '+st.sig.pw.toUpperCase();
+    return st.fmBooster?st.freq+' · <span style="color:var(--grn);font-family:var(--ft);font-size:14px">FM TRANSLATOR</span>'+(st._boosterOrigFreq?' · <span style="color:var(--mut)">+'+st._boosterOrigFreq+'</span>':''): st.sig.pw==='DA'?st.freq+' · AM · <span style="color:var(--red);font-family:var(--ft);font-size:14px" title="High power by day, lower at night (still broadcasting overnight; fringe coverage drops)">Reduced at night</span>': st.freq+' · '+st.sig.type+' · '+signalPowerDisplayLabel(st.sig.pw);
   };
   const renderedPlayerSimPairKeys=new Set();
   myStations.forEach(s=>{

@@ -3721,7 +3721,7 @@ const SF_LEVELS=[
 ];
 // Signal reach efficiency (quality of signal within universe)
 const RA={'50kw':.97,'10kw':.92,'5kw':.85,'1kw':.72,'DA':.88};
-// DA = Directional Antenna / Daytimer: licensed 50kw or 10kw daytime, drops to 1-5kw at night
+// Internal token 'DA': strong day / weaker night (not literal sunrise–sunset sign-off)
 // Night power reduction means listeners in fringe areas lose the signal after sunset.
 // In drive-time radio this matters a lot — morning drive is unaffected but evening is diminished.
 const RF={'100kw':.92,'50kw':.82,'25kw':.68,'10kw':.52};
@@ -5126,7 +5126,7 @@ function calcRev(s,G){
   const ccBonus = (s.clearChannel && s.sig.type==='AM' && !s.fmBooster)
     ? 1 + CLEAR_CHANNEL_REVENUE_BONUS * Math.max(0, 1 - Math.max(0,(G.year-1995)/20))
     : 1;
-  // Daytimer (DA) penalty: power drops at sunset, losing evening drive — the highest-CPM daypart.
+  // Daytime-only (DA) penalty: power drops at sunset, losing evening drive — the highest-CPM daypart.
   // Evening drive CPM ~1.4x daytime. Losing it costs ~15% of total revenue (pre-1985 era).
   // Post FM-migration era, this gap shrinks (AM evening was already weak anyway).
   const daPenalty = (s.sig.pw==='DA' && s.sig.type==='AM' && !s.fmBooster)
@@ -7081,7 +7081,7 @@ function buildResearchReport(s,G){
       : `News, Talk and Sports are the AM-native formats. Music AM erosion doesn't apply.`;
     sigSection+=row('Signal type','AM — Talk/News native', amTalkNote, amTalkColor);
     if(s.clearChannel)sigSection+=row('Clear Channel','Class A — Unlimited','No nighttime directionality. Signal covers the full region at night, expanding your effective audience by ~18%. Revenue premium applies through 1995.','var(--amb)');
-    else if(s.sig.pw==='DA')sigSection+=row('Daytimer / DA','50kW day · 1-5kW night','Power drops sharply at sunset to protect clear-channel signals. Evening drive audiences in fringe areas lose your signal. Effective reach ≈ 72% of a full-time 50kW. An FM simulcast or translator eliminates this.','var(--red)');
+    else if(s.sig.pw==='DA')sigSection+=row('Reduced night power','50kW day · 1-5kW night','Still on air 24/7 — night power is lower and often directional to protect clear-channel co-channels. Fringe listeners lose you in evening drive. Effective reach ≈ 72% of a full-time 50kW. An FM simulcast or translator eliminates this.','var(--red)');
     else if(s.sig.pw==='50kw')sigSection+=row('50kW Directional','50kW day / reduced night','Power drops and signal rotates at night to protect clear-channel stations. Daytime market coverage only.','var(--mut)');
     sigSection+=row('AM Talk viability',`${Math.round(amViab*100)}%`,year>=1990?'AM talk still strong but FM competitors emerging.':year>=1985?'Some FM competition for News/Talk emerging.':'Full AM advantage for talk formats.','var(--grn)');
     // Even NT AM gets an FMP note — listeners in cars are increasingly on FM, even for talk
@@ -7092,7 +7092,7 @@ function buildResearchReport(s,G){
     const viabColor=amPenalty>0.7?'var(--grn)':amPenalty>0.4?'var(--amb)':'var(--red)';
     sigSection+=row('Signal type','AM — Music format','AM music stations face audience defection to FM as FM penetration rises.','var(--red)');
     if(s.clearChannel)sigSection+=row('Clear Channel','Class A — Unlimited','No nighttime power reduction. Wider coverage buys time vs non-clear-channel AM music stations — but FM erosion still applies to all AM music formats.','var(--amb)');
-    else if(s.sig.pw==='DA')sigSection+=row('Daytimer / DA','50kW day · 1-5kW night','Power drops sharply at sunset. Fringe listeners lose the signal in evening drive — when music radio is most valuable. High incentive to get an FM signal.','var(--red)');
+    else if(s.sig.pw==='DA')sigSection+=row('Reduced night power','50kW day · 1-5kW night','Still on air 24/7 with lower night power. Fringe listeners lose the signal in evening drive — when music radio is most valuable. High incentive to get an FM signal.','var(--red)');
     else if(s.sig.pw==='50kw')sigSection+=row('50kW Directional','50kW day / reduced night','Power drops and signal rotates at night. Same erosion penalties as other AM music.','var(--mut)');
     if(s.fmBooster){
       const _tFracR=Math.min(1,(s.sig.universe||0.32)/Math.max(s._boosterOrigSig?.universe||0.85,0.01));
@@ -9615,7 +9615,7 @@ function showCompIntel(sid){
       <div class="msh">STATION PROFILE</div>
       ${s.brand?`<div class="sr"><span class="lb">Brand</span><span class="vl" style="color:var(--amb);font-style:italic">"${s.brand}"</span></div>`:''}
       <div class="sr"><span class="lb">Format</span><span class="vl">${fmd.l||s.format}</span></div>
-      <div class="sr"><span class="lb">Signal</span><span class="vl">${s.sig.type} ${s.sig.pw==='DA'?'Daytimer':s.sig.pw.toUpperCase()} · ${s.freq||s.sig.freq||'—'}</span></div>
+      <div class="sr"><span class="lb">Signal</span><span class="vl">${s.sig.type} ${s.sig.pw==='DA'?'Reduced at night':s.sig.pw.toUpperCase()} · ${s.freq||s.sig.freq||'—'}</span></div>
       ${corpLine}
       <div class="sr"><span class="lb">On-Air Quality</span><span class="vl" style="color:${qColor}">${qLevel}</span></div>
     </div>
@@ -13217,14 +13217,14 @@ function rStns(){
     div.innerHTML=`
       <div class="sctop"><div>
         <div class="sccall">${callDisplay(s)}</div>
-        <div class="scfreq">${s.fmBooster?s.freq+' · <span style="color:var(--grn);font-family:var(--ft);font-size:14px">FM TRANSLATOR</span>'+(s._boosterOrigFreq?' · <span style="color:var(--mut)">+'+s._boosterOrigFreq+'</span>':''): s.sig.pw==='DA'?s.freq+' · AM · <span style="color:var(--red);font-family:var(--ft);font-size:14px" title="Daytimer: 50kW day, 1-5kW night">DAYTIMER</span>': s.freq+' · '+s.sig.type+' · '+s.sig.pw.toUpperCase()}</div>
+        <div class="scfreq">${s.fmBooster?s.freq+' · <span style="color:var(--grn);font-family:var(--ft);font-size:14px">FM TRANSLATOR</span>'+(s._boosterOrigFreq?' · <span style="color:var(--mut)">+'+s._boosterOrigFreq+'</span>':''): s.sig.pw==='DA'?s.freq+' · AM · <span style="color:var(--red);font-family:var(--ft);font-size:14px" title="High power by day, lower at night (still broadcasting overnight; fringe coverage drops)">Reduced at night</span>': s.freq+' · '+s.sig.type+' · '+s.sig.pw.toUpperCase()}</div>
         <div style="font-family:var(--ft);font-size:13px;color:var(--mut);margin-top:1px;letter-spacing:0.3px">${(()=>{
           // Build signal details line
           function sigDetail(st){
             const univ=effUniverse(st);
             const pct=Math.round(univ*100);
             const cc=st.clearChannel?' · Clear Channel':'';
-            const da=(!st.fmBooster&&st.sig.pw==='DA')?' · Daytimer (50kw day / reduced night)':'';
+            const da=(!st.fmBooster&&st.sig.pw==='DA')?' · Reduced at night (50 kW day / lower at night)':'';
             if(st.fmBooster){
               // FM Translator: AM tower provides the coverage, translator adds FM pickup
               const amPw=st._boosterOrigSig?.pw||st.sig.pw;
