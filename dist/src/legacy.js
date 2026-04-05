@@ -8364,11 +8364,17 @@ function getLocalSave(){
 }
 
 // ── FIRST-TURN TUTORIAL (solo coach marks) ───────────────────────
-const WL_FT_TUTORIAL_LS='ae_ft_tutorial_v1';
+/** v2: expanded solo walkthrough (talent, programming, marketing, research, sales, spots, period). */
+const WL_FT_TUTORIAL_LS='ae_ft_tutorial_v2';
 const _wlFtTut={
   active:false,
   step:1,
+  talentOpened:false,
   progOpened:false,
+  brandOpened:false,
+  researchOpened:false,
+  salesOpened:false,
+  spotsOpened:false,
   awaitingSum:false,
   root:null,
   shadeWrap:null,
@@ -8451,14 +8457,18 @@ function wlFtTutorialGetTarget(){
   const st=_wlFtTut.step;
   if(st===1)return document.getElementById('wl-ft-player-station-card');
   if(st===2)return document.querySelector('#wl-ft-player-station-card .fg');
-  if(st===3)return document.getElementById('wl-ft-tut-programming-btn');
-  if(st===4)return document.getElementById('abtn');
-  if(st===5)return document.getElementById('sumb');
+  if(st===3)return document.getElementById('wl-ft-tut-talent-btn');
+  if(st===5)return document.getElementById('wl-ft-tut-programming-btn');
+  if(st===6)return document.getElementById('wl-ft-tut-brand-btn');
+  if(st===7)return document.getElementById('wl-ft-tut-research-btn');
+  if(st===8)return document.getElementById('wl-ft-tut-sales-btn');
+  if(st===9)return document.getElementById('wl-ft-tut-spots-btn');
+  if(st===10)return document.getElementById('abtn');
   return null;
 }
 /** Must stay above .ov modals (8000), #m-programming / sub-modals (8010–8100), .wl-feedback-fab (7990), mp-draft (8500), mp-lobby (9000). */
 function wlFtTutorialZBase(){
-  return _wlFtTut.step>=5?11010:11000;
+  return _wlFtTut.step>=12?11010:11000;
 }
 function wlFtTutorialBindResize(){
   if(_wlFtTut.onResize)return;
@@ -8481,23 +8491,61 @@ function wlFtTutorialLayoutStep(){
   wlFtTutorialEnsureRoot();
   wlFtTutorialTeardownShades();
   wlFtTutorialBindResize();
+  const st=_wlFtTut.step;
+  const fireOpen=document.getElementById('m-fire')?.classList.contains('on');
+  const progOpen=document.getElementById('m-programming')?.classList.contains('on');
+  const brandOpen=document.getElementById('m-brand')?.classList.contains('on');
+  const researchOpen=document.getElementById('m-research')?.classList.contains('on');
+  const salesOpen=document.getElementById('m-sales')?.classList.contains('on');
+  const spotsOpen=document.getElementById('m-sp')?.classList.contains('on');
+  const sumOpen=document.getElementById('m-sum')?.classList.contains('on');
+  const contractOpen=document.getElementById('m-contract')?.classList.contains('on');
+  /* Tutorial root is z~11k — above .ov modals — hide while the player must use a modal. */
+  if(st===3&&(fireOpen||contractOpen)){if(_wlFtTut.root)_wlFtTut.root.style.display='none';return;}
+  if(st===5&&progOpen){if(_wlFtTut.root)_wlFtTut.root.style.display='none';return;}
+  if(st===6&&brandOpen){if(_wlFtTut.root)_wlFtTut.root.style.display='none';return;}
+  if(st===7&&researchOpen){if(_wlFtTut.root)_wlFtTut.root.style.display='none';return;}
+  if(st===8&&salesOpen){if(_wlFtTut.root)_wlFtTut.root.style.display='none';return;}
+  if(st===9&&spotsOpen){if(_wlFtTut.root)_wlFtTut.root.style.display='none';return;}
+  if(st===11&&sumOpen){if(_wlFtTut.root)_wlFtTut.root.style.display='none';return;}
+  /* If summary just closed but step wasn’t advanced yet (race), jump to finale instead of the missing-target fallback. */
+  if(st===11&&!sumOpen){
+    _wlFtTut.step=13;
+    wlFtTutorialLayoutStep();
+    return;
+  }
   const z=wlFtTutorialZBase();
   _wlFtTut.root.style.display='block';
   _wlFtTut.root.style.zIndex=String(z+2);
   _wlFtTut.shadeWrap.style.zIndex=String(z);
   _wlFtTut.card.style.zIndex=String(z+3);
 
-  const st=_wlFtTut.step;
-  if(st===6){
+  if(st===13){
     _wlFtTut.card.className='wl-ft-tut-card wl-ft-tut-card--center';
     const full=document.createElement('div');
     full.className='wl-ft-tut-shade wl-ft-tut-shade--full';
     full.style.cssText=`position:fixed;inset:0;z-index:${z};pointer-events:auto;background:rgba(6,8,12,.84)`;
     _wlFtTut.shadeWrap.appendChild(full);
     _wlFtTut.card.innerHTML=`<h3 class="wl-ft-tut-h">What next</h3>
-<p class="wl-ft-tut-p">Keep tuning your station over the next few periods. Try different moves and watch share and profit respond.</p>
+<p class="wl-ft-tut-p">You’ve seen the main levers: talent, programming & format, marketing, research, sales, and spot load. The <strong>period summary</strong> you just closed breaks down money, share, and costs — check it every turn.</p>
+<p class="wl-ft-tut-p">Each period: adjust your station → <strong>Next Period</strong> → read what happened.</p>
 <p class="wl-ft-tut-p wl-ft-tut-muted">Replay this walkthrough anytime from <strong>Save / Load → First-turn guide</strong>.</p>
 <div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" data-wl-ft-act="done">Done</button></div>`;
+    wlFtTutorialWireCard();
+    return;
+  }
+
+  /* Format / positioning / demo — before opening Programming, then Marketing. */
+  if(st===4){
+    _wlFtTut.card.className='wl-ft-tut-card wl-ft-tut-card--center';
+    const full=document.createElement('div');
+    full.className='wl-ft-tut-shade wl-ft-tut-shade--full';
+    full.style.cssText=`position:fixed;inset:0;z-index:${z};pointer-events:auto;background:rgba(6,8,12,.84)`;
+    _wlFtTut.shadeWrap.appendChild(full);
+    _wlFtTut.card.innerHTML=`<h3 class="wl-ft-tut-h">Format, positioning & audience</h3>
+<p class="wl-ft-tut-p">Next you’ll open <strong>Programming</strong>. There you’ll use <strong>Format</strong> to shape music/news/talk strategy; <strong>Positioning</strong> nudges how “pure” vs broad your format sounds; <strong>Demo target</strong> aims your sound at a listener age band. Those shape who you attract and how you compete.</p>
+<p class="wl-ft-tut-p">Programming <strong>budget</strong> and daypart quality feed ratings — balance that spend with marketing and sales.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn" data-wl-ft-act="back">Back</button><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" data-wl-ft-act="next">Next</button><button type="button" class="wl-ft-tut-btn wl-ft-tut-skip" data-wl-ft-act="skip">Skip</button></div>`;
     wlFtTutorialWireCard();
     return;
   }
@@ -8522,23 +8570,39 @@ function wlFtTutorialLayoutStep(){
     title='Core stats';
     body='<strong>Share</strong> is your piece of the audience. <strong>Revenue</strong> and <strong>costs</strong> are per period; <strong>EBITDA</strong> is what’s left after costs — your operating profit. Each <strong>period</strong> is <strong>6 months</strong>: period 1 is <strong>Spring</strong>, period 2 is <strong>Fall</strong> of the same year.';
   }else if(st===3){
-    title='Make one change';
-    body='Click <strong>Programming</strong>. Move the budget or just look — then close the window to continue.';
+    title='Manage Talent';
+    body='Open <strong>Manage Talent</strong> to hire, extend contracts, and set your lineup. Slot quality and morale feed ratings — then close to continue.';
     showNext=false;
-  }else if(st===4){
+  }else if(st===5){
+    title='Programming';
+    body='Open <strong>Programming</strong> for your <strong>budget</strong>, daypart quality, and the quick actions for <strong>Format</strong>, <strong>Positioning</strong>, and <strong>Demo target</strong>. Peek or tweak, then close.';
+    showNext=false;
+  }else if(st===6){
+    title='Brand & Marketing';
+    body='Open <strong>Brand & Marketing</strong> for promotions, branding spend, and local identity — they support audience and revenue. Close when you’re done.';
+    showNext=false;
+  }else if(st===7){
+    title='Research';
+    body='Open <strong>Research</strong> to buy a consultant report on why ratings are where they are — useful when you’re stuck. Close to continue.';
+    showNext=false;
+  }else if(st===8){
+    title='Sales force';
+    body='Open <strong>Sales</strong> to upgrade your sales team — stronger teams improve <strong>sellout</strong> (how much ad time you actually sell). Close when finished.';
+    showNext=false;
+  }else if(st===9){
+    title='Spot load';
+    body='Open <strong>Spot Load</strong> to set commercial minutes per hour. More spots can mean more revenue but can hurt listening — balance against format norms. Close to continue.';
+    showNext=false;
+  }else if(st===10){
     title='End the turn';
-    body='Press <strong>Next Period</strong> when you’re ready — that advances the calendar by one period (half a year: Spring or Fall). The market updates, then you’ll see a summary of results.';
+    body='Press <strong>Next Period</strong> when you’re ready — that advances the calendar by one period (half a year). The market updates, then read the <strong>period summary</strong> (money, share, costs) before you continue.';
     showNext=false;
     _wlFtTut.awaitingSum=true;
-  }else if(st===5){
-    title='Read the result';
-    body='This summary shows what changed: money, share, and costs. The loop is: adjust your station → Next Period → read what happened.';
-    showBack=false;
   }
   if(st===1)showBack=false;
 
   const scrollHint=
-    st>=2&&st<=5
+    st>=2&&st<=11
       ?'<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-top:10px;margin-bottom:0;font-size:13px">The page scrolls automatically so each highlighted area stays on screen.</p>'
       :'';
   _wlFtTut.card.innerHTML=`<h3 class="wl-ft-tut-h">${title}</h3><p class="wl-ft-tut-p">${body}</p><div class="wl-ft-tut-btns">`+
@@ -8551,7 +8615,12 @@ function wlFtTutorialStop(opts){
   const persistSkip=opts&&opts.persistSkip;
   _wlFtTut.active=false;
   _wlFtTut.awaitingSum=false;
+  _wlFtTut.talentOpened=false;
   _wlFtTut.progOpened=false;
+  _wlFtTut.brandOpened=false;
+  _wlFtTut.researchOpened=false;
+  _wlFtTut.salesOpened=false;
+  _wlFtTut.spotsOpened=false;
   wlFtTutorialTeardownShades();
   if(_wlFtTut.root)_wlFtTut.root.style.display='none';
   if(persistSkip)wlFtTutorialLsSet('skipped');
@@ -8576,28 +8645,80 @@ function wlFtTutorialMaybeStartAfterNewGame(){
   wlFtTutorialStart();
 }
 function wlFtTutorialAfterRender(){
-  if(!_wlFtTut.active||_wlFtTut.step>=5)return;
+  if(!_wlFtTut.active||_wlFtTut.step>=11)return;
   wlFtTutorialLayoutStep();
 }
+function wlFtTutorialNotifyTalentOpen(){
+  if(_wlFtTut.active&&_wlFtTut.step===3)_wlFtTut.talentOpened=true;
+}
+/** Called only when cm() runs without wlTutorialSuppress (user Close/backdrop, not internal handoffs). */
+function wlFtTutorialNotifyTalentClose(){
+  if(!_wlFtTut.active||_wlFtTut.step!==3||!_wlFtTut.talentOpened)return;
+  _wlFtTut.step=4;
+  _wlFtTut.talentOpened=false;
+  requestAnimationFrame(()=>wlFtTutorialLayoutStep());
+}
 function wlFtTutorialNotifyProgrammingOpen(){
-  if(_wlFtTut.active&&_wlFtTut.step===3)_wlFtTut.progOpened=true;
+  if(_wlFtTut.active&&_wlFtTut.step===5)_wlFtTut.progOpened=true;
 }
 function wlFtTutorialNotifyProgrammingClose(){
-  if(!_wlFtTut.active||_wlFtTut.step!==3||!_wlFtTut.progOpened)return;
-  _wlFtTut.step=4;
+  if(!_wlFtTut.active||_wlFtTut.step!==5||!_wlFtTut.progOpened)return;
+  _wlFtTut.step=6;
   _wlFtTut.progOpened=false;
+  requestAnimationFrame(()=>wlFtTutorialLayoutStep());
+}
+function wlFtTutorialNotifyBrandOpen(){
+  if(_wlFtTut.active&&_wlFtTut.step===6)_wlFtTut.brandOpened=true;
+}
+function wlFtTutorialNotifyBrandClose(){
+  if(!_wlFtTut.active||_wlFtTut.step!==6||!_wlFtTut.brandOpened)return;
+  _wlFtTut.step=7;
+  _wlFtTut.brandOpened=false;
+  requestAnimationFrame(()=>wlFtTutorialLayoutStep());
+}
+function wlFtTutorialNotifyResearchOpen(){
+  if(_wlFtTut.active&&_wlFtTut.step===7)_wlFtTut.researchOpened=true;
+}
+function wlFtTutorialNotifyResearchClose(){
+  if(!_wlFtTut.active||_wlFtTut.step!==7||!_wlFtTut.researchOpened)return;
+  _wlFtTut.step=8;
+  _wlFtTut.researchOpened=false;
+  requestAnimationFrame(()=>wlFtTutorialLayoutStep());
+}
+function wlFtTutorialNotifySalesOpen(){
+  if(_wlFtTut.active&&_wlFtTut.step===8)_wlFtTut.salesOpened=true;
+}
+function wlFtTutorialNotifySalesClose(){
+  if(!_wlFtTut.active||_wlFtTut.step!==8||!_wlFtTut.salesOpened)return;
+  _wlFtTut.step=9;
+  _wlFtTut.salesOpened=false;
+  requestAnimationFrame(()=>wlFtTutorialLayoutStep());
+}
+function wlFtTutorialNotifySpotsOpen(){
+  if(_wlFtTut.active&&_wlFtTut.step===9)_wlFtTut.spotsOpened=true;
+}
+function wlFtTutorialNotifySpotsClose(){
+  if(!_wlFtTut.active||_wlFtTut.step!==9||!_wlFtTut.spotsOpened)return;
+  _wlFtTut.step=10;
+  _wlFtTut.spotsOpened=false;
   requestAnimationFrame(()=>wlFtTutorialLayoutStep());
 }
 function wlFtTutorialOnPeriodSummaryShown(){
   if(!_wlFtTut.active||!_wlFtTut.awaitingSum)return;
   _wlFtTut.awaitingSum=false;
-  _wlFtTut.step=5;
+  _wlFtTut.step=11;
   requestAnimationFrame(()=>requestAnimationFrame(()=>wlFtTutorialLayoutStep()));
+}
+/** When the player dismisses the period summary during the tutorial, go straight to the finale (no extra card after close). */
+function wlFtTutorialOnPeriodSummaryDismissed(){
+  if(!_wlFtTut.active||_wlFtTut.step!==11)return;
+  _wlFtTut.step=13;
+  requestAnimationFrame(()=>wlFtTutorialLayoutStep());
 }
 function wlFtTutorialNext(){
   if(!_wlFtTut.active)return;
-  if(_wlFtTut.step===5){
-    _wlFtTut.step=6;
+  if(_wlFtTut.step===4){
+    _wlFtTut.step=5;
     wlFtTutorialLayoutStep();
     return;
   }
@@ -8608,13 +8729,30 @@ function wlFtTutorialNext(){
 }
 function wlFtTutorialBack(){
   if(!_wlFtTut.active)return;
-  if(_wlFtTut.step===5||_wlFtTut.step===6)return;
-  if(_wlFtTut.step===4){
+  if(_wlFtTut.step===13)return;
+  if(_wlFtTut.step===10){
     _wlFtTut.awaitingSum=false;
-    _wlFtTut.step=3;
+    _wlFtTut.step=9;
+    _wlFtTut.spotsOpened=false;
+  }else if(_wlFtTut.step===9){
+    _wlFtTut.step=8;
+    _wlFtTut.salesOpened=false;
+  }else if(_wlFtTut.step===8){
+    _wlFtTut.step=7;
+    _wlFtTut.researchOpened=false;
+  }else if(_wlFtTut.step===7){
+    _wlFtTut.step=6;
+    _wlFtTut.brandOpened=false;
+  }else if(_wlFtTut.step===6){
+    _wlFtTut.step=5;
+  }else if(_wlFtTut.step===5){
+    _wlFtTut.step=4;
     _wlFtTut.progOpened=false;
+  }else if(_wlFtTut.step===4){
+    _wlFtTut.step=3;
   }else if(_wlFtTut.step===3){
     _wlFtTut.step=2;
+    _wlFtTut.talentOpened=false;
   }else if(_wlFtTut.step===2){
     _wlFtTut.step=1;
   }
@@ -8696,6 +8834,26 @@ function initCore(){
   }catch(err){
     showError('Failed during init: '+err.message, err.stack||'');
   }
+}
+
+/** Header logo — solo: return to scenario picker. Autosaves first and dismisses first-turn tutorial overlay. */
+function wlGoToScenarioSelectFromLogo(){
+  if(typeof MP!=='undefined'&&MP.mode==='live'){
+    showToast('To leave multiplayer, use the lobby / room controls. Scenario select is for solo play.','info');
+    return;
+  }
+  if(typeof G==='undefined'||!G||!G.sc){
+    openScenSelect(getLocalSave());
+    return;
+  }
+  if(!confirm('Return to scenario select? Your progress is autosaved in this browser.'))return;
+  try{
+    if(typeof autoSave==='function')autoSave();
+  }catch(_e){}
+  wlFtTutorialStop({});
+  document.querySelectorAll('.ov.on').forEach(el=>{el.classList.remove('on');});
+  syncModalBodyScrollLock();
+  openScenSelect(getLocalSave());
 }
 
 function openScenSelect(localSave){
@@ -9160,6 +9318,7 @@ function openResearch(sid){
     <button class="cfm" onclick="doResearch('${s.id}')" ${G.cash<RESEARCH_COST?'disabled':''}>COMMISSION REPORT — ${f$(RESEARCH_COST)}</button>
     <button class="cnl" onclick="cm('m-research')">CANCEL</button>`;
   om('m-research');
+  wlFtTutorialNotifyResearchOpen();
 }
 function doResearch(sid){
   sid=ensureOpsSourceSid(sid);
@@ -9741,6 +9900,55 @@ const CORPS=[
   {id:'landmark',  name:'Keystone Radio Holdings', color:'#0369a1', stations:[], budget:5000000, aggression:0.50},
 ];
 
+function wlHash32(str){
+  let h=2166136261>>>0;
+  for(let i=0;i<str.length;i++){
+    h^=str.charCodeAt(i);
+    h=Math.imul(h,16777619)>>>0;
+  }
+  return h>>>0;
+}
+
+/** Fictional licensee for AI commercial stations (not post-1996 corp targets). AM/FM simulcast pairs share one parent. */
+const RIVAL_FICTIONAL_PARENTS=[
+  'Midtown Media Group','Peachtree Communications','Southern Sky Broadcasting','Metro Radio Partners',
+  'Heritage Radio Holdings','Crescent City Communications','Lakeside Broadcast Group','Piedmont Radio Network',
+  'Riverbend Radio LLC','Summit Ridge Communications','Beacon Hill Broadcasting','Magnolia Media Group',
+  'Oak Street Radio Group','Frontier Communications Radio','Blue Ridge Broadcast Partners','Capitol City Media',
+  'Sentinel-Register Publishing','Courier-Journal Media','Daily Tribune Broadcasting','Post Dispatch Radio Group',
+  'Independent Press Radio','Herald-Examiner Stations','Morning Call Broadcasting','Ledger-Times Radio',
+  'Press-Herald Media Group','Observer-Dispatch Stations',
+  'Continental Life Broadcasting','Mutual Assurance Radio','Sterling Casualty Media','Prudential Heritage Stations',
+  'Fidelity Broadcast Holdings','Union Trust Radio Group',
+  'Ashland Industries','Whitmore Enterprises','Vanderlyn Group','Eastwood Holdings','Northfield Diversified',
+  'Brunswick Industries Media','Fairfield Capital Broadcasting',
+  'Tri-State Tire & Radio','National Appliance Radio Group','Midwest Grocery Broadcasting','Red River Tractor Media',
+  'Great Lakes Tool & Die Radio','Southern Textile Broadcasting','Pacific Canning Radio Group','Railway Supply Radio Holdings',
+];
+
+function rivalFictionalParentName(s,G){
+  if(!s||s.isPlayer||s.isPublic||s._bpSlotDeferred)return '';
+  if(s.corpOwner)return '';
+  const mkt=String(G&&G.marketId||'');
+  if(s.simulcastWith){
+    const a=s.id,b=s.simulcastWith;
+    const lo=a<b?a:b,hi=a<b?b:a;
+    const key=`${lo}|${hi}`;
+    return RIVAL_FICTIONAL_PARENTS[wlHash32(mkt+'::pair::'+key)%RIVAL_FICTIONAL_PARENTS.length];
+  }
+  return RIVAL_FICTIONAL_PARENTS[wlHash32(mkt+'::st::'+s.id)%RIVAL_FICTIONAL_PARENTS.length];
+}
+
+function rivalOwnershipLabel(s,G,isOwn){
+  if(!s)return '—';
+  if(s.corpOwner)return s.corpName||'Corporate';
+  if(s.isPublic)return 'Non-commercial';
+  if(s.isPlayer&&!isOwn)return 'Independent operator';
+  const fic=rivalFictionalParentName(s,G);
+  if(fic)return fic;
+  return 'Independent';
+}
+
 function initConsolidation(G){
   if(G.corps)return; // already initialized
   G.corps=CORPS.map(c=>({...c,stations:[]}));
@@ -10069,13 +10277,14 @@ function doLMALessee(sid) {
   G.cash -= fee;
   if (MP.mode==='live') { if(!G._playerCash) G._playerCash={}; G._playerCash[MP.playerId]=G.cash; MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash}); }
 
+  const lmaLicensorSnapshot=s.corpOwner?s.corpName:(rivalFictionalParentName(s,G)||'Independent');
   // Mark the station as LMA-operated by player
   s.lmaLesseeId = 'player';
   s._mpOwner = MP.mode==='live' ? MP.playerId : 0;
   s.isPlayer = true; // appears in player panel
   s._lmaStation = true; // distinguishes from owned stations
   applyDefaultBrandToPlayerStation(s);
-  s.lmaLicensorName = s.corpOwner ? s.corpName : 'Independent';
+  s.lmaLicensorName = lmaLicensorSnapshot;
   s._lmaFeeRate = LMA_FEE_RATE;
   G.ps = G.stations.filter(st => st.isPlayer);
 
@@ -10357,6 +10566,7 @@ function openSales(sid){
     '<div class="ibox" style="font-size:15px">Changes take effect next period.</div>'+
     '<button class="cnl" onclick="cm(\'m-sales\')">CLOSE</button>';
   om('m-sales');
+  wlFtTutorialNotifySalesOpen();
 }
 function doSales(sid,level){
   sid=ensureOpsSourceSid(sid);
@@ -10366,7 +10576,7 @@ function doSales(sid,level){
   const sf=SF_LEVELS[level];
   G.news.unshift({v:'LOW',t:'Sales team at '+s.callLetters+' updated to: '+sf.l+'. Sellout ceiling '+(level>prev?'raised':'lowered')+' next period.',y:G.year,p:G.period});
   MP.action('sales',{sid,level});
-  cm('m-sales');renderAll();
+  cm('m-sales',{wlTutorialSuppress:true});renderAll();
 }
 
 function advTurn(mpCoalesceSeq){
@@ -10911,7 +11121,7 @@ function showCompIntel(sid){
 
   const corpLine=s.corpOwner
     ?`<div class="sr"><span class="lb">Ownership</span><span class="vl" style="color:${s.corpColor||'#9ca3af'}">${s.corpName||'Corporate'}</span></div>`
-    :`<div class="sr"><span class="lb">Ownership</span><span class="vl" style="color:var(--mut)">Independent</span></div>`;
+    :`<div class="sr"><span class="lb">Ownership</span><span class="vl" style="color:var(--mut)">${rivalOwnershipLabel(s,G,isOwn)}</span></div>`;
 
   document.getElementById('ci-title').textContent=`${s.callLetters} — ${isOwn?'STATION INTEL':'COMPETITOR INTEL'}`;
   const intelStory=!isOwn?competitorIntelStoryLine(s):'';
@@ -11006,6 +11216,7 @@ function openManageTalent(sid){
   renderManageTalentStation(sid);
   om('m-fire');
   scrollModalContentToTop('m-fire');
+  wlFtTutorialNotifyTalentOpen();
 }
 /** Empty / syndicated daypart: slot quality, status bucket, one-line detail, hire hint. */
 function manageTalentEmptySlotMeta(s, sl, _simSrc) {
@@ -11359,6 +11570,7 @@ function openSpots(sid){
   updSpots(sid, s.ops.spots);
   refreshSpotCommitStandalone();
   om('m-sp');
+  wlFtTutorialNotifySpotsOpen();
 }
 function updSpots(sid,v){
   sid=ensureOpsSourceSid(sid);
@@ -11373,7 +11585,7 @@ function updSpots(sid,v){
   if(nEl)nEl.innerHTML=`TSL impact: <strong style="color:${pc}">${plbl}</strong> &nbsp;·&nbsp; Est. revenue change: <strong style="color:${estD>=0?'var(--grn)':'var(--red)'}">${estD>=0?'+':''}${f$(estD)}/period</strong>`;
   refreshSpotCommitStandalone();
 }
-function doSpots(){const sid=ensureOpsSourceSid(SS.sid);SS.sid=sid;const s=G.stations.find(st=>st.id===sid);if(!s)return;s.ops.spots=SS.val;G.news.unshift({v:'LOW',t:`${s.callLetters} spot load set to ${SS.val} min/hr — revenue impact next period.`,y:G.year,p:G.period});MP.action('spots',{sid,spots:SS.val});cm('m-sp');renderAll();}
+function doSpots(){const sid=ensureOpsSourceSid(SS.sid);SS.sid=sid;const s=G.stations.find(st=>st.id===sid);if(!s)return;s.ops.spots=SS.val;G.news.unshift({v:'LOW',t:`${s.callLetters} spot load set to ${SS.val} min/hr — revenue impact next period.`,y:G.year,p:G.period});MP.action('spots',{sid,spots:SS.val});cm('m-sp',{wlTutorialSuppress:true});renderAll();}
 
 /** Slider/input + confirm: gold when pending change, muted when UI matches committed game state. */
 function wlSetCommitButtonState(btnId,isPending){
@@ -11905,6 +12117,7 @@ function openBrandMarketing(sid){
   renderBrandMarketingStation(sid);
   om('m-brand');
   scrollModalContentToTop('m-brand');
+  wlFtTutorialNotifyBrandOpen();
 }
 /** Legacy: standalone promotion modal — prefer openBrandMarketing. */
 function openPromo(sid){
@@ -12615,7 +12828,7 @@ function doCrossStationSwap(toSlot) {
     XFER.embedMode = false;
     renderManageTalentStation(MT_ACTIVE_SID);
   } else {
-    cm('m-fire');
+    cm('m-fire',{wlTutorialSuppress:true});
   }
   renderAll();
 }
@@ -12636,7 +12849,7 @@ function doCrossStationXfer(toSlot) {
     XFER.embedMode = false;
     renderManageTalentStation(MT_ACTIVE_SID);
   } else {
-    cm('m-fire');
+    cm('m-fire',{wlTutorialSuppress:true});
   }
   renderAll();
 }
@@ -12744,6 +12957,7 @@ function openProgramming(sid){
   refreshProgCommitStandalone();
   om('m-programming');
   wlFtTutorialNotifyProgrammingOpen();
+  if(_wlFtTut.active&&_wlFtTut.step===5)wlFtTutorialLayoutStep();
 }
 /** @deprecated Use openProgramming — kept for older onclick strings */
 function openProg(sid){openProgramming(sid);}
@@ -12778,7 +12992,7 @@ function doProg(){
   MP.action('prog',{sid,progBudget:v});
   syncOwnedSimulcastSpendFromSource(s);
   G.news.unshift({v:'LOW',t:`${s.callLetters} programming budget set to ${f$(v)}/period${v===0?' — discontinued.':'.'}`,y:G.year,p:G.period});
-  cm('m-programming');
+  cm('m-programming',{wlTutorialSuppress:true});
   renderAll();
   if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
 }
@@ -15147,11 +15361,22 @@ function om(id){
   document.getElementById(id).classList.add('on');
   syncModalBodyScrollLock();
 }
-function cm(id){
+/** @param {string} id
+ * @param {{ wlTutorialSuppress?: boolean }} [opts] Pass `{ wlTutorialSuppress: true }` for programmatic closes (e.g. opening a sub-modal from Manage Talent, committing budget) so the tutorial only advances on the user’s main Close/backdrop. */
+function cm(id,opts){
   document.getElementById(id).classList.remove('on');
   syncModalBodyScrollLock();
-  if(id==='m-programming')wlFtTutorialNotifyProgrammingClose();
   if(id==='m-brand')BM_ACTIVE_SID=null;
+  const wlTutSup=opts&&opts.wlTutorialSuppress;
+  if(!wlTutSup){
+    if(id==='m-programming')wlFtTutorialNotifyProgrammingClose();
+    if(id==='m-fire')wlFtTutorialNotifyTalentClose();
+    if(id==='m-brand')wlFtTutorialNotifyBrandClose();
+    if(id==='m-research')wlFtTutorialNotifyResearchClose();
+    if(id==='m-sales')wlFtTutorialNotifySalesClose();
+    if(id==='m-sp')wlFtTutorialNotifySpotsClose();
+  }
+  if(id==='m-sum')wlFtTutorialOnPeriodSummaryDismissed();
   if(id==='m-sum'&&typeof G!=='undefined'&&G&&G._mpShowEndgameAfterSumClose){
     G._mpShowEndgameAfterSumClose=false;
     if(MP.mode==='live'&&G.mpPhase==='endgame'){
@@ -15165,6 +15390,13 @@ document.querySelectorAll('.ov').forEach(el=>el.addEventListener('click',e=>{
     if(el.id==='m-brand')BM_ACTIVE_SID=null;
     el.classList.remove('on');
     syncModalBodyScrollLock();
+    if(el.id==='m-programming')wlFtTutorialNotifyProgrammingClose();
+    if(el.id==='m-fire')wlFtTutorialNotifyTalentClose();
+    if(el.id==='m-brand')wlFtTutorialNotifyBrandClose();
+    if(el.id==='m-research')wlFtTutorialNotifyResearchClose();
+    if(el.id==='m-sales')wlFtTutorialNotifySalesClose();
+    if(el.id==='m-sp')wlFtTutorialNotifySpotsClose();
+    if(el.id==='m-sum')wlFtTutorialOnPeriodSummaryDismissed();
   }
 }));
 
@@ -15772,7 +16004,7 @@ function openTalentMetricsHelp(section){
   }
 }
 function openContractFromManageTalent(sid,slot){
-  cm('m-fire');
+  cm('m-fire',{wlTutorialSuppress:true});
   openContract(sid,slot);
 }
 
@@ -16452,10 +16684,10 @@ function rStns(){
         const adminBtns=[...histArr,swapBtn,...fmUniq,...sellArr,streamBtn,simBtn];
         const mkLine='<div style="font-size:13px;color:var(--mut);margin-bottom:10px;line-height:1.45">Marketing <strong style="color:var(--off)">'+f$(op.ops.promo||0)+'</strong>/p · Local Identity <strong style="color:var(--off)">'+Math.round(op.identity||0)+'</strong>'+((op.identityBudget||0)>0?' <span style="color:var(--amb)">★</span>':'')+'</div>';
         return '<div class="sc-card-actions">'+
-          sec('TALENT',true,'<button class="abt d" type="button" style="width:100%;box-sizing:border-box;padding:14px;font-size:15px;letter-spacing:0.5px" onclick="openManageTalent(\''+op.id+'\')">🎙 MANAGE TALENT</button>')+
+          sec('TALENT',true,'<button class="abt d" type="button" style="width:100%;box-sizing:border-box;padding:14px;font-size:15px;letter-spacing:0.5px" '+(_assignFtTutIds?'id="wl-ft-tut-talent-btn" ':'')+'onclick="openManageTalent(\''+op.id+'\')">🎙 MANAGE TALENT</button>')+
           sec('PROGRAMMING',false,'<div style="display:flex;flex-direction:column;gap:10px;width:100%">'+progBudgetLine+progHub+(sportsFrHtml||'')+'</div>')+
-          sec('MARKETING',false,mkLine+'<div class="wl-logo-status" id="wl-logo-status-'+op.id+'" style="font-size:12px;color:var(--amb);margin-bottom:10px;min-height:16px"></div>'+pack2(['<button type="button" class="abt b" onclick="openBrandMarketing(\''+op.id+'\')">📣 BRAND & MARKETING</button>','<button type="button" class="abt" onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
-          sec('SALES',false,pack2(['<button class="abt '+(sfActive?'g':'')+'" onclick="openSales(\''+op.id+'\')">'+salesLbl+'</button>','<button class="abt" onclick="openSpots(\''+op.id+'\')">📻 SPOT LOAD</button>']))+
+          sec('MARKETING',false,mkLine+'<div class="wl-logo-status" id="wl-logo-status-'+op.id+'" style="font-size:12px;color:var(--amb);margin-bottom:10px;min-height:16px"></div>'+pack2(['<button type="button" class="abt b" '+(_assignFtTutIds?'id="wl-ft-tut-brand-btn" ':'')+'onclick="openBrandMarketing(\''+op.id+'\')">📣 BRAND & MARKETING</button>','<button type="button" class="abt" '+(_assignFtTutIds?'id="wl-ft-tut-research-btn" ':'')+'onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
+          sec('SALES',false,pack2(['<button class="abt '+(sfActive?'g':'')+'" '+(_assignFtTutIds?'id="wl-ft-tut-sales-btn" ':'')+'onclick="openSales(\''+op.id+'\')">'+salesLbl+'</button>','<button class="abt" '+(_assignFtTutIds?'id="wl-ft-tut-spots-btn" ':'')+'onclick="openSpots(\''+op.id+'\')">📻 SPOT LOAD</button>']))+
           sec('ADMINISTRATION · STRUCTURE',false,pack2(adminBtns))+
           '</div>';
       })()}`;
@@ -16597,7 +16829,7 @@ function rIntel(){
       `${_rivalLogo}` +
       `<span class="ic" style="color:${s.color}">${callDisplay(s)}${pubTag}${corpTag}</span>` +
       `<div class="iff"><span class="ifmt">${FM[s.format]?.l||s.format} · ${s.freq}</span>` +
-      `<span class="iper" style="color:${s.corpOwner?s.corpColor||'#9ca3af':'inherit'}">${s.corpOwner?(s.corpName||'Corporate'):s.pers?.l||''}</span></div>` +
+      `<span class="iper" style="color:${s.corpOwner?s.corpColor||'#9ca3af':'inherit'}">${s.corpOwner?(s.corpName||'Corporate'):s.isPublic?(s.pers?.l||'Public'):(rivalFictionalParentName(s,G)||s.pers?.l||'')}</span></div>` +
       `<span class="ish" style="color:${sc2}">${pct(s.rat.share)}</span>` +
       `<span class="itr ${tc}">${tr}</span>` +
       `<span class="ish" style="color:var(--mut);font-size:14px">${f$(s.fin.rev)}</span>` +

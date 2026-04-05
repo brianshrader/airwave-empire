@@ -58,7 +58,8 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 
 /* HEADER — solid bar: capture clicks here so they don’t fall through to the game (sticky scorebar same idea) */
 #hdr{background:var(--pnl);border-bottom:2px solid var(--amb);padding:0 22px;display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:24px;height:62px;position:sticky;top:0;z-index:200;box-shadow:0 4px 48px rgba(245,166,35,.18);pointer-events:auto}
-#logo{font-family:var(--fd);font-size:36px;letter-spacing:6px;color:var(--amb);text-shadow:0 0 28px rgba(245,166,35,.55)}
+#logo{font-family:var(--fd);font-size:36px;letter-spacing:6px;color:var(--amb);text-shadow:0 0 28px rgba(245,166,35,.55);cursor:pointer;user-select:none}
+#logo:hover{color:#ffc14d}
 #hmeta{display:flex;flex-direction:column;gap:3px}
 #hmetarow{font-family:var(--ft);font-size:15px;color:var(--off);letter-spacing:1px}
 #hmetarow strong{color:var(--wht);font-weight:normal}
