@@ -465,6 +465,8 @@ html.wl-modal-open,body.wl-modal-open{overflow:hidden}
 #wl-ft-tut-shades{position:fixed;inset:0;pointer-events:none}
 .wl-ft-tut-spotlight{box-shadow:0 0 0 3px rgba(245,166,35,.95),0 8px 40px rgba(0,0,0,.55);border-radius:4px}
 #wl-ft-tut-card{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);width:min(420px,calc(100vw - 32px));box-sizing:border-box;background:var(--pnl);border:1px solid var(--bdh);border-top:3px solid var(--amb);padding:18px 20px 16px;box-shadow:0 12px 48px rgba(0,0,0,.65);font-family:var(--ft);pointer-events:auto}
+/* Anchored near spotlight (JS sets top/left) — avoids covering Marketing / actions on wide layouts */
+#wl-ft-tut-card.wl-ft-tut-card--anchored{max-height:min(420px,calc(100vh - 24px));overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
 #wl-ft-tut-card.wl-ft-tut-card--center{bottom:auto;top:50%;transform:translate(-50%,-50%)}
 .wl-ft-tut-h{font-family:var(--fd);font-size:17px;letter-spacing:2px;color:var(--amb);margin:0 0 10px}
 .wl-ft-tut-p{margin:0 0 12px;font-size:15px;color:var(--off);line-height:1.5}
@@ -496,7 +498,23 @@ html.wl-modal-open,body.wl-modal-open{overflow:hidden}
 #m-contract #contractb .contract-summary .sr .vl{flex:1 1 12rem;min-width:0;text-align:right;word-break:break-word}
 #m-contract #contractb .contract-talent-row{min-width:0}
 #m-contract #contractb .contract-extend-grid{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch}
-#m-contract #contractb .contract-extend-grid > .to{flex:1 1 min(100%,200px);min-width:0;box-sizing:border-box}
+/* Stack copy then action — full-width button at bottom (override global .to 1fr / auto grid). */
+#m-contract #contractb .contract-extend-grid > .to{
+  flex:1 1 min(100%,200px);
+  min-width:0;
+  box-sizing:border-box;
+  display:flex;
+  flex-direction:column;
+  align-items:stretch;
+  gap:10px;
+}
+#m-contract #contractb .contract-extend-grid > .to > .cfm,
+#m-contract #contractb .contract-extend-grid > .to > .abt{
+  margin-top:auto;
+  width:100%;
+  box-sizing:border-box;
+  text-align:center;
+}
 .di{font-size:14px;color:var(--off);line-height:1.65;margin-bottom:16px;font-style:italic}
 body.mp-endgame #pl,body.mp-endgame #pc{position:relative}
 body.mp-endgame #pl::after,body.mp-endgame #pc::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.22);z-index:4;pointer-events:auto}

@@ -54,6 +54,9 @@ export default defineConfig(({ command }) => ({
         // index.html loads these as classic scripts (before legacy.js). Must exist in dist or production 404s and wlStationLogoSvg never mounts.
         copy('stationLogoConfig.js');
         copy('stationLogoSvg.js');
+        // inspect-shares.html (share calibration batch tool)
+        copy('marketSimHarness.js');
+        copy('inspectSharesBoot.js');
         // Legal pages link /src/styles.css — Vite does not emit this path; copy so contact/terms/privacy match the game theme.
         copy('styles.css');
         const legalDir = join(__dirname, 'legal');
@@ -87,6 +90,7 @@ export default defineConfig(({ command }) => ({
       input: {
         main: resolve(__dirname, 'index.html'),
         play: resolve(__dirname, 'play.html'),
+        'inspect-shares': resolve(__dirname, 'inspect-shares.html'),
       },
     },
   },

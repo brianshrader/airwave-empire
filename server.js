@@ -24,14 +24,20 @@
 // See GET /api/portrait-library/status (includes both library + grok counts). PORTRAIT_LIBRARY_FIRST=0 prefers Grok when both exist.
 // ═══════════════════════════════════════════════════════════════════
 
-require('dotenv').config({ path: require('path').join(__dirname, '.env') });
+const path = require('path');
+const fs = require('fs');
+// Local: copy .env.example → .env (gitignored). Deploys that rsync/git-clean the app dir often
+// wipe `.env`; set secrets on the host (systemd Environment=, Docker -e, PaaS) or put them in a
+// file outside the deploy tree and set WL_ENV_FILE=/path/to/secrets.env — loaded second with override.
+require('dotenv').config({ path: path.join(__dirname, '.env') });
+if (process.env.WL_ENV_FILE && fs.existsSync(process.env.WL_ENV_FILE)) {
+  require('dotenv').config({ path: process.env.WL_ENV_FILE, override: true });
+}
 
 const express  = require('express');
 const cors     = require('cors');
 const http     = require('http');
 const { Server } = require('socket.io');
-const path     = require('path');
-const fs       = require('fs');
 const { randomBytes } = require('crypto');
 const { getSharedCorsOptions, allowedOriginsList } = require('./server/corsConfig');
 

@@ -9,4 +9,5 @@ generated-portraits/*
 !generated-portraits/library/
 !generated-portraits/library/**/*
 .env
+ecosystem.config.local.cjs
 data/

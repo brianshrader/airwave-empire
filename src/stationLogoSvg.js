@@ -1018,6 +1018,7 @@
     var ms2 = thumbMicroShift(seed, 41);
     var resolved = o.resolved;
     var typo = o.typo;
+    var casingBrand = spec.brandPreserveCasing ? 'mixed' : typo.casing;
     var coords = o.coords;
     var fg = o.fg;
     var ac = o.ac;
@@ -1036,7 +1037,7 @@
     var freqE = escXml(freqRaw);
     var callRaw = applyCasingLine(String(spec.callDisplay || '').replace(/-/g, ' '), typo.casing);
     var callE = escXml(callRaw);
-    var brandRaw = applyCasingLine(String(spec.brand || ''), typo.casing);
+    var brandRaw = applyCasingLine(String(spec.brand || ''), casingBrand);
     var brandE = escXml(brandRaw);
     var it1 = o.it1;
     var it2 = o.it2;
@@ -1063,7 +1064,7 @@
       var fitSg = fitTextToMaxWidth(single0, fsBig, maxWx, 34, fsBig + 10, teH('brand'), fpH, it1, archH);
       var fmtHS = fitTertiaryPlainText(fmtLab, maxWx, 15, fsH, teH('fmt'), archH, it2);
       var outS =
-        svgTextEl(xa, yBase + ms, ta, fsP, fitSg.fontSize, String(w800), fitSg.trackingEm, it1, fg, 1, escXml(applyCasingLine(single0, typo.casing)));
+        svgTextEl(xa, yBase + ms, ta, fsP, fitSg.fontSize, String(w800), fitSg.trackingEm, it1, fg, 1, escXml(applyCasingLine(single0, casingBrand)));
       if (fmtHS) {
         var fitFmtS = fitTextToMaxWidth(fmtHS, 15, maxWx, 10, 17, teH('fmt'), fsH, it2, archH);
         outS +=
@@ -1210,6 +1211,9 @@
     var band = String(input.band || 'AM').toUpperCase() === 'FM' ? 'FM' : 'AM';
     var year = Math.floor(Number(input.year) || 1970);
     var defaultBrand = String(input.defaultBrand ?? '').trim();
+    /** User-edited brand: skip title/upper casing so call letters & mixed-case names stay as typed. */
+    var brandPreserveCasing =
+      brandRaw.length > 0 && normBrandKey(brandRaw) !== normBrandKey(defaultBrand);
 
     var family = formatToFamily(formatKey);
     var era = eraBucket(year);
@@ -1264,6 +1268,7 @@
       brand: brand,
       brandRaw: brandRaw,
       defaultBrand: defaultBrand,
+      brandPreserveCasing: brandPreserveCasing,
       layoutMode: layoutMode,
       variant: variant,
       variantBump: variantBump,
@@ -1307,15 +1312,16 @@
     var ws = spec.fonts.weightSecondary;
 
     var resolvedRaw = resolveHeroLines(brand, dial, callDisplay, defaultBrand);
+    var casingHero = spec.brandPreserveCasing ? 'mixed' : typo.casing;
     var resolved;
     if (resolvedRaw.stack) {
       resolved = {
         stack: true,
-        line1: applyCasingLine(resolvedRaw.line1, typo.casing),
-        line2: applyCasingLine(resolvedRaw.line2, typo.casing),
+        line1: applyCasingLine(resolvedRaw.line1, casingHero),
+        line2: applyCasingLine(resolvedRaw.line2, casingHero),
       };
     } else {
-      resolved = { stack: false, single: applyCasingLine(resolvedRaw.single, typo.casing) };
+      resolved = { stack: false, single: applyCasingLine(resolvedRaw.single, casingHero) };
     }
     var gloss =
       es.glow > 0
