@@ -6180,28 +6180,53 @@ function applyOtherAudioListeningDilution(stations,G,engageWeightedPop){
   }
 }
 /**
+ * Sanitize `rat.share` for ranking and display (finite, non-negative).
+ */
+function sanitizeStationShareForRanking(s){
+  if(!s?.rat)return 0;
+  let sh=s.rat.share;
+  if(!isFinite(sh)||sh<0)sh=0;
+  s.rat.share=Math.round(sh*1e8)/1e8;
+  return s.rat.share;
+}
+/**
  * Competition ranking by `rat.share` (ties share one rank). Deterministic tie-break: station id.
- * Used for diagnostics and any UI that should not show fake “rank 4” among equal shares.
+ * Zero-share stations never rank above positive-share; all-zero markets tie at last place (n), never all #1.
  */
 function rankStationsByShareCompetition(stations){
   const EPS=1e-10;
-  const list=(stations||[]).filter(s=>s&&!s._bpSlotDeferred&&s.rat&&typeof s.rat.share==='number');
+  const list=(stations||[]).filter(s=>s&&!s._bpSlotDeferred&&s.rat);
+  list.forEach(s=>sanitizeStationShareForRanking(s));
+  const n=list.length;
+  if(n===0)return{n:0,rankById:{}};
+  const sumShare=list.reduce((a,s)=>a+(s.rat.share||0),0);
+  const rankById={};
+  if(sumShare<=0){
+    list.forEach(s=>{rankById[s.id]=n;});
+    return{n,rankById};
+  }
   list.sort((a,b)=>{
     const sa=a.rat.share||0,sb=b.rat.share||0;
     if(Math.abs(sb-sa)>EPS)return sb-sa;
     return String(a.id).localeCompare(String(b.id));
   });
-  const rankById={};
   let i=0;
-  while(i<list.length){
+  while(i<n){
     const sh=list[i].rat.share||0;
     let j=i+1;
-    while(j<list.length&&Math.abs((list[j].rat.share||0)-sh)<EPS)j++;
+    while(j<n&&Math.abs((list[j].rat.share||0)-sh)<EPS)j++;
     const rank=i+1;
     for(let k=i;k<j;k++)rankById[list[k].id]=rank;
     i=j;
   }
-  return{n:list.length,rankById};
+  if(typeof process!=='undefined'&&process.env&&process.env.NODE_ENV!=='production'&&typeof console!=='undefined'&&console.error){
+    list.forEach(s=>{
+      const sh=s.rat.share||0;
+      const rk=rankById[s.id];
+      if(sh===0&&rk===1&&n>1)console.error('INVALID RANK: zero-share station ranked #1',s.id,s.callLetters);
+    });
+  }
+  return{n,rankById};
 }
 window.rankStationsByShareCompetition=rankStationsByShareCompetition;
 
@@ -6259,7 +6284,12 @@ function publicNewsHabitEngageMult(s,G){
   m+=0.16*post2010*Math.max(0,edu-0.88);
   m+=0.05*_smoothstep(2015,2024,y)*Math.max(0,edu-1.07);
   m+=publicNewsHabitStick(y,edu)*2.1;
-  return Math.max(1,Math.min(1.62,m));
+  // Post-2000 AQH / habit: public news has higher time-spent than music (~1.26× by 2010+)
+  if(y>=2000)m*=1.15;
+  if(y>=2010)m*=1.10;
+  // Small extra modern habit lift (post-2010 news listening intensity)
+  if(y>=2010)m*=1.045;
+  return Math.max(1,Math.min(2.28,m));
 }
 /** Extra pre-normalization appeal for standout public News/Talk markets (signal + edu + era). Capped. */
 function publicNewsBreakoutMult(s,G){
@@ -6276,6 +6306,16 @@ function publicNewsBreakoutMult(s,G){
   m+=0.09*Math.max(0,edu-0.88)*_smoothstep(2005,2020,y)*(sigN-0.82);
   m+=0.06*Math.max(0,edu-1.02)*Math.min(1,era*2);
   return Math.max(1,Math.min(1.32,m));
+}
+/** Rare strong-book run in educated markets (revert this first if public news dominates). */
+function publicNewsHighEduBreakoutMult(s,G){
+  if(!s?.isPublic||s.format!=='PUBLIC_NEWS')return 1;
+  const y=G?.year||1970;
+  if(y<2005)return 1;
+  const edu=marketEduIndex(G?.marketId||ACTIVE_MARKET);
+  if(edu<1.05)return 1;
+  if(Math.random()<0.08)return 1.3;
+  return 1;
 }
 /** Denominator for weighted rat.share when PUBLIC_NEWS uses habit-adjusted engagement. */
 function publicRadioWeightedListeningDenominator(stations,G){
@@ -6306,16 +6346,16 @@ function publicEduAudienceMultiplier(s,G,yearOverride){
   if(Math.abs(dev)<1e-8)return 1;
   if(fmt==='PUBLIC_NEWS'){
     const era=publicNewsEraLift(y);
-    const eraModern=_smoothstep(1990,2008,y);
-    const eraMill=_smoothstep(2000,2018,y);
-    let m=1+dev*era*1.48;
-    m+=dev*eraModern*0.38;
-    m+=dev*eraMill*0.32;
+    let m=Math.pow(edu,1.25);
+    m*=0.94+0.06*era;
     m+=publicNewsHabitStick(y,edu)*1.25;
-    // Targeted: elite educated markets in 2010s–2020s only (modest top-end lift; not a blanket buff)
-    const eliteModern=_smoothstep(2010,2024,y)*Math.max(0,edu-1.04);
-    m+=dev*eliteModern*0.27;
-    return Math.max(0.82,Math.min(1.66,m));
+    const eraModern=_smoothstep(1990,2008,y);
+    m*=0.97+0.03*eraModern;
+    if(edu>=1.10){
+      const topEduMod=_smoothstep(2010,2025,y);
+      m*=1+0.048*topEduMod;
+    }
+    return Math.max(0.78,Math.min(1.85,m));
   }
   const eraC=publicClassicalEraLift(y);
   const m=1+dev*eraC*0.82;
@@ -6411,6 +6451,7 @@ window.marketEduIndex=marketEduIndex;
 window.publicNewsCompetitionInsulationFactor=publicNewsCompetitionInsulationFactor;
 window.publicNewsHabitEngageMult=publicNewsHabitEngageMult;
 window.publicNewsBreakoutMult=publicNewsBreakoutMult;
+window.publicNewsHighEduBreakoutMult=publicNewsHighEduBreakoutMult;
 
 function recalc(stations,G){
   const _pubEduMultCache=new Map();
@@ -6432,7 +6473,10 @@ function recalc(stations,G){
         const pubT=Math.min(1,pubAge/20);
         const pubPeak=s.format==='PUBLIC_NEWS'?0.80:0.55;
         let rawPub=Math.max(0,appl(s,coh,G)*(0.15+pubPeak*pubT)*pubEduM(s));
-      if(s.format==='PUBLIC_NEWS')rawPub*=publicNewsBreakoutMult(s,G);
+      if(s.format==='PUBLIC_NEWS'){
+        rawPub*=publicNewsBreakoutMult(s,G);
+        rawPub*=publicNewsHighEduBreakoutMult(s,G);
+      }
       return rawPub;
       }
       const t=Math.min(1,age/m.ramp);
@@ -6456,7 +6500,10 @@ function recalc(stations,G){
       const competitors=(FMT_COMPETITION[s.format]||[]);
       const count=activeIx.filter(j=>j!==i&&competitors.includes(stations[j].format)).length;
       let bleedPenalty=Math.min(0.22,COMPETITION_BLEED*(count/5));
-      if(s.format==='PUBLIC_NEWS')bleedPenalty*=publicNewsCompetitionInsulationFactor(s,G);
+      if(s.format==='PUBLIC_NEWS'){
+        bleedPenalty*=publicNewsCompetitionInsulationFactor(s,G);
+        bleedPenalty*=0.75;
+      }
       const bleed=1-bleedPenalty;
       return r*bleed;
     });
@@ -7396,7 +7443,7 @@ function runMarketAttrition(G){
     RHYTHMIC:1992, CHR:2000, ALT_ROCK:2002, HOT_AC:2008, URBAN_CONTEMP:2005
   };
 
-  // Survival reformat pool for struggling AMs
+  // Survival reformat pool for struggling AMs (brokered / ethnic / religious / fringe talk)
   const amSurvivalFormats = (year) => {
     const pool = [];
     if(year>=1992)pool.push('ADULT_STANDARDS');
@@ -7404,6 +7451,7 @@ function runMarketAttrition(G){
     if(year>=1992)pool.push('SPANISH');
     if(year>=1970)pool.push('NEWS_TALK');
     if(year>=1990)pool.push('SPORTS_TALK');
+    if(year>=2012)pool.push('PODCAST_TALK');
     return pool;
   };
 
@@ -7466,7 +7514,9 @@ function runMarketAttrition(G){
     // 2. Ghost / weak AM — 3-outcome ecology: rare true removal, default zombie limp, occasional niche flip
     const tooWeakMusic = isAMMusic&&s.rat.share<DARK_THRESHOLD_MUSIC_AM(year);
     const tooWeakTalk  = isAMTalk&&s.rat.share<DARK_THRESHOLD_TALK_AM(year);
-    const inAttritionPool = shareIsGhost||(removed<overCap&&canRemove>removed&&(tooWeakMusic||tooWeakTalk));
+    // Always evaluate survival-mode AMs each Fall (otherwise moderate-share zombies never resolve)
+    const inAttritionPool = s.isZombie||s.isNicheSurvival||shareIsGhost||
+      (removed<overCap&&canRemove>removed&&(tooWeakMusic||tooWeakTalk));
     if(!inAttritionPool){
       if((s._amWeakFallCount||0)>0){
         const relax=Math.max(DARK_THRESHOLD_MUSIC_AM(year),DARK_THRESHOLD_TALK_AM(year))*1.9;
@@ -7478,29 +7528,82 @@ function runMarketAttrition(G){
     const thM=DARK_THRESHOLD_MUSIC_AM(year),thT=DARK_THRESHOLD_TALK_AM(year);
     const recoveryBar=Math.max(thM,thT)*2.75;
     if((s.isZombie||s.isNicheSurvival)&&s.rat.share>=recoveryBar){
-      s.isZombie=false;s.isNicheSurvival=false;s._amWeakFallCount=0;
+      s.isZombie=false;s.isNicheSurvival=false;s._amWeakFallCount=0;s._zombieFallStreak=0;
       acts.push({v:'LOW',t:`📻 ${s.callLetters} is no longer in survival mode — measurable audience returns.`});
       continue;
     }
-    if(s.isZombie||s.isNicheSurvival)continue;
 
-    const alreadyNiche = ['GOSPEL','SPANISH','ADULT_STANDARDS'].includes(s.format);
+    const alreadyNicheFmt = ['GOSPEL','SPANISH','ADULT_STANDARDS','PODCAST_TALK'].includes(s.format);
+    const densityRatio=MKTCAP>0?allComm.length/MKTCAP:1;
+
+    // ── Long-run zombies: resolve niche / removal / stay — prevents indefinite undead pile-up
+    // (Previously, zombies `continue`d here and never rolled removal again unless ratings recovered.)
+    if(s.isZombie){
+      s._zombieFallStreak=(s._zombieFallStreak||0)+1;
+      const streak=s._zombieFallStreak;
+      const poolZ = buildPool();
+      const canFmtFlip = !alreadyNicheFmt && poolZ.length;
+      const eraZ = year>=2020?1.06:year>=2010?1.0:0.94;
+      let pNicZ = (0.16 + Math.min(0.34, streak*0.044)) * eraZ;
+      let pRemZ = (0.09 + Math.min(0.40, streak*0.052)) * eraZ;
+      if(densityRatio<0.82){pRemZ*=0.42;pNicZ*=1.05;}
+      if(allComm.length<=MKTFLOOR+4)pRemZ*=0.48;
+      if(!canFmtFlip)pNicZ=0;
+      const capZ=0.88;
+      const sumZ=pNicZ+pRemZ;
+      if(sumZ>capZ){const sc=capZ/sumZ;pNicZ*=sc;pRemZ*=sc;}
+      const uz=Math.random();
+      if(canFmtFlip&&uz<pNicZ){
+        const newFmt=poolZ[Math.floor(Math.random()*poolZ.length)];
+        const prevFmt=s.format;
+        const oldFmt=FM[s.format]?.l||s.format;
+        s.format=newFmt;s.str='emerging';s.launchPeriod=G.turn||0;
+        s.isNicheSurvival=true;s.isZombie=false;s._amWeakFallCount=0;s._zombieFallStreak=0;
+        Object.keys(s.mom||{}).forEach(c=>s.mom[c]={tgt:0.008,cur:0.008});
+        reformattedThisPeriod.add(newFmt);
+        if(!G._attritionNicheFlipsCumulative)G._attritionNicheFlipsCumulative=0;
+        G._attritionNicheFlipsCumulative++;
+        if(!Array.isArray(s.flog))s.flog=[];
+        s.flog.push({from:prevFmt,to:newFmt,_attritionNiche:true,y:G.year,p:G.period,_fromZombie:true});
+        acts.push({v:'LOW',t:`📻 ${s.callLetters} (${oldFmt}) → ${FM[newFmt]?.l||newFmt}: niche pivot after long marginal run on AM.`});
+        continue;
+      }
+      if(uz<pNicZ+pRemZ&&canRemove>removed){
+        if(!G._attritionRemovedCumulative)G._attritionRemovedCumulative=0;
+        G._attritionRemovedCumulative++;
+        acts.push({v:'LOW',t:`📻 ${s.callLetters} goes dark — ${FM[s.format]?.l||s.format} on AM, license surrendered or sold off-air.`});
+        removedIds.add(s.id);
+        G.stations.splice(G.stations.indexOf(s),1);
+        removed++;
+        continue;
+      }
+      if(s.str&&s.str!=='legend')s.str='declining';
+      continue;
+    }
+
+    if(s.isNicheSurvival)continue;
+
     const pool = buildPool();
     if(tooWeakMusic||tooWeakTalk||shareIsGhost)s._amWeakFallCount=(s._amWeakFallCount||0)+1;
     const sustained=(s._amWeakFallCount||0)>=4;
     const ghostSustained=shareIsGhost&&(s._amWeakFallCount||0)>=2;
-    const densityRatio=MKTCAP>0?allComm.length/MKTCAP:1;
-    let pRemove=0.15,pNiche=0.27;
-    if(densityRatio<0.82){pRemove*=0.22;pNiche*=1.06;}
-    if(allComm.length<=MKTFLOOR+4)pRemove*=0.18;
+    // First sustained hit: more niche & removal, less default zombie than the market-pass-safety pass
+    let pRemove=0.21,pNiche=0.36;
+    if(densityRatio<0.82){pRemove*=0.28;pNiche*=1.05;}
+    if(allComm.length<=MKTFLOOR+4)pRemove*=0.22;
     const u=Math.random();
-    if(!alreadyNiche&&pool.length&&u<pNiche){
+    if(!alreadyNicheFmt&&pool.length&&u<pNiche){
       const newFmt=pool[Math.floor(Math.random()*pool.length)];
+      const prevFmt=s.format;
       const oldFmt=FM[s.format]?.l||s.format;
       s.format=newFmt;s.str='emerging';s.launchPeriod=G.turn||0;
-      s.isNicheSurvival=true;s.isZombie=false;s._amWeakFallCount=0;
+      s.isNicheSurvival=true;s.isZombie=false;s._amWeakFallCount=0;s._zombieFallStreak=0;
       Object.keys(s.mom||{}).forEach(c=>s.mom[c]={tgt:0.008,cur:0.008});
       reformattedThisPeriod.add(newFmt);
+      if(!G._attritionNicheFlipsCumulative)G._attritionNicheFlipsCumulative=0;
+      G._attritionNicheFlipsCumulative++;
+      if(!Array.isArray(s.flog))s.flog=[];
+      s.flog.push({from:prevFmt,to:newFmt,_attritionNiche:true,y:G.year,p:G.period});
       acts.push({v:'LOW',t:`📻 ${s.callLetters} (${oldFmt}) → ${FM[newFmt]?.l||newFmt}: niche / brokered-style survival on AM.`});
       continue;
     }
@@ -7514,7 +7617,7 @@ function runMarketAttrition(G){
       removed++;
       continue;
     }
-    s.isZombie=true;s.isNicheSurvival=false;s._amWeakFallCount=0;
+    s.isZombie=true;s.isNicheSurvival=false;s._amWeakFallCount=0;s._zombieFallStreak=0;
     if(s.str&&s.str!=='legend')s.str='declining';
     acts.push({v:'LOW',t:`📻 ${s.callLetters} stays on-air in minimal form — brokered / lean ops (${FM[s.format]?.l||s.format}).`});
   }
@@ -16376,6 +16479,7 @@ function migrateSave(G){
   G.turn=_turnN;
   G.loans=G.loans||[];
   if(G._attritionRemovedCumulative==null)G._attritionRemovedCumulative=0;
+  if(G._attritionNicheFlipsCumulative==null)G._attritionNicheFlipsCumulative=0;
   migrateLoansV2(G);
   if(G.corps)rehydrateCorps(G); // re-link corp ownership after save/load
   if(G.corps){
@@ -16426,6 +16530,7 @@ function migrateSave(G){
     if(s.isZombie==null)s.isZombie=false;
     if(s.isNicheSurvival==null)s.isNicheSurvival=false;
     if(s._amWeakFallCount==null)s._amWeakFallCount=0;
+    if(s._zombieFallStreak==null)s._zombieFallStreak=0;
     // Ensure fmBooster field exists
     if(s.fmBooster===undefined)s.fmBooster=false;
   // Translator signal restoration: old saves had universe/reach replaced with translator's weak values.
