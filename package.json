@@ -13,6 +13,8 @@
     "pm2:logs": "pm2 logs airwave-empire",
     "preview": "vite preview",
     "inspect:shares": "npm run build && node scripts/inspect-share-calibration.mjs",
+    "sim:public-radio": "npm run build && node scripts/sim-public-radio.mjs",
+    "sim:market-health": "npm run build && node scripts/sim-market-health.mjs",
     "audit:am": "node scripts/audit-am-stations.mjs",
     "test:solo-reentry": "node scripts/test-solo-reentry.mjs",
     "dedupe:portraits": "node scripts/dedupe-portrait-library.mjs",

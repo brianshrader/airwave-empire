@@ -132,6 +132,10 @@ function mergeMpStationLogosFromPrior(intoG, priorG) {
       const lift = Number(p.remoteVanMarketingLift);
       if (Number.isFinite(lift)) s.remoteVanMarketingLift = lift;
     }
+    if (p.remoteVanPurchasedYear != null && s.remoteVanPurchasedYear == null) {
+      const py = Number(p.remoteVanPurchasedYear);
+      if (Number.isFinite(py)) s.remoteVanPurchasedYear = py;
+    }
   }
 }
 
@@ -501,6 +505,7 @@ io.on('connection', socket => {
       cosmeticRemoteVanV,
       clearCosmeticRemoteVan,
       remoteVanMarketingLift: payloadRemoteVanLift,
+      remoteVanPurchasedYear: payloadRemoteVanYear,
     } = payload || {};
     const room = getRoom(roomId);
     if (!room || room.phase !== 'playing' || !room.G?.stations) return;
@@ -513,6 +518,7 @@ io.on('connection', socket => {
       delete st.cosmeticRemoteVanUrl;
       delete st.cosmeticRemoteVanV;
       delete st.remoteVanMarketingLift;
+      delete st.remoteVanPurchasedYear;
       persistRoom(room);
       io.to(roomId).emit('mp_station_logo_sync', {
         stationId,
@@ -528,6 +534,7 @@ io.on('connection', socket => {
       delete st.cosmeticRemoteVanUrl;
       delete st.cosmeticRemoteVanV;
       delete st.remoteVanMarketingLift;
+      delete st.remoteVanPurchasedYear;
       persistRoom(room);
       io.to(roomId).emit('mp_station_logo_sync', {
         stationId,
@@ -559,6 +566,10 @@ io.on('connection', socket => {
         const lift = Number(payloadRemoteVanLift);
         if (Number.isFinite(lift) && lift >= 0 && lift <= 0.15) st.remoteVanMarketingLift = lift;
       }
+      if (payloadRemoteVanYear != null) {
+        const py = Number(payloadRemoteVanYear);
+        if (Number.isFinite(py) && py >= 1930 && py <= 2100) st.remoteVanPurchasedYear = py;
+      }
       changed = true;
     }
     if (!changed) return;
@@ -572,6 +583,7 @@ io.on('connection', socket => {
       cosmeticRemoteVanUrl: st.cosmeticRemoteVanUrl,
       cosmeticRemoteVanV: st.cosmeticRemoteVanV,
       remoteVanMarketingLift: st.remoteVanMarketingLift,
+      remoteVanPurchasedYear: st.remoteVanPurchasedYear,
     });
   });
 

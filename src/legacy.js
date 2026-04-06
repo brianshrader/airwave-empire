@@ -1063,6 +1063,8 @@ const FMT_COMPETITION={
   PODCAST_TALK:['PODCAST_TALK','NEWS_TALK'],
   URBAN_CONTEMP:['URBAN_CONTEMP','SOUL_RNB','RHYTHMIC'],
   RHYTHMIC:['RHYTHMIC','CHR','SOUL_RNB','URBAN_CONTEMP'],
+  /** Used only for competition-bleed count: public news competes with commercial spoken-word, but bleed is scaled down via publicNewsCompetitionInsulationFactor. */
+  PUBLIC_NEWS:['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'],
 };
 const COMPETITION_BLEED=0.16; // per competing station, max 22% total bleed
 
@@ -1756,6 +1758,8 @@ const MARKETS={
     culture:{country:0.06,urban:0.06,newsTalk:0.05,religion:0.10,spanish:0.02},
     selectBlurb:'Reference Sunbelt market: diverse formats, strong soul/R&B and Top 40 battlegrounds, heritage AMs that still matter in the 70s, then FM specialization accelerates.',
     fmPenBias:0, fmMusicFragMult:1, spokenWordAmResilience:1.02, heritageAmResilience:1.02, countryAmHoldout:1,
+    /** ~1.0 = neutral public-radio / educated-listener proxy; used only for PUBLIC_NEWS / PUBLIC_CLASSICAL audience math (not commercial rev). */
+    eduIndex:0.96,
     teams:[
       {id:'braves',name:'Atlanta Fire Ants',sport:'PRO_BASEBALL',introduced:1970,baseFee:95000,baseBonus:0.012,contractYrs:3},
       {id:'falcons',name:'Atlanta Peach Pit Crew',sport:'PRO_FOOTBALL',introduced:1970,baseFee:420000,baseBonus:0.025,contractYrs:4},
@@ -1773,6 +1777,7 @@ const MARKETS={
     culture:{country:0.26,urban:0.03,newsTalk:0.04,religion:0.10,spanish:0.02},
     selectBlurb:'Country-first listening culture: format loyalty runs deep, AM country keeps its footing longer, and the FM transition still arrives — just a beat later than generic Sunbelt markets.',
     fmPenBias:-0.058, fmMusicFragMult:0.96, spokenWordAmResilience:1, heritageAmResilience:1.06, countryAmHoldout:1.2,
+    eduIndex:0.88,
     teams:[
       {id:'sounds',name:'Nashville Hot Chicken',sport:'PRO_BASEBALL',introduced:1978,baseFee:28000,baseBonus:0.006,contractYrs:3},
       {id:'predators',name:'Nashville Catfish Rodeo',sport:'PRO_HOCKEY',introduced:1998,baseFee:115000,baseBonus:0.014,contractYrs:3},
@@ -1789,6 +1794,7 @@ const MARKETS={
     culture:{country:0.008,urban:0.16,newsTalk:0.12,religion:0.06,spanish:0.14},
     selectBlurb:'Huge billing pool and ruthless competition. Spoken-word and AC/Top 40 paydays reward winners; the dial fragments early. Country is a sideline, not the main story.',
     fmPenBias:0.055, fmMusicFragMult:1.06, spokenWordAmResilience:1.11, heritageAmResilience:1.08, countryAmHoldout:0.76,
+    eduIndex:1.22,
     teams:[
       {id:'yankees',name:'New York Cows',sport:'PRO_BASEBALL',introduced:1970,baseFee:520000,baseBonus:0.030,contractYrs:4},
       {id:'mets',name:'New York Pigeon Lords',sport:'PRO_BASEBALL',introduced:1970,baseFee:240000,baseBonus:0.018,contractYrs:3},
@@ -1808,6 +1814,7 @@ const MARKETS={
     culture:{country:0.03,urban:0.12,newsTalk:0.07,religion:0.05,spanish:0.22},
     selectBlurb:'FM-first battlefield: fast fragmentation, constant format churn, and big upside for whoever owns a lane. Spanish and rhythmic/urban-adjacent formats gain ground as the metro evolves.',
     fmPenBias:0.068, fmMusicFragMult:1.1, spokenWordAmResilience:1.02, heritageAmResilience:0.96, countryAmHoldout:0.78,
+    eduIndex:1.14,
     teams:[
       {id:'dodgers',name:'Los Angeles Commodes',sport:'PRO_BASEBALL',introduced:1970,baseFee:480000,baseBonus:0.028,contractYrs:4},
       {id:'angels',name:'Los Angeles Smog Angels',sport:'PRO_BASEBALL',introduced:1970,baseFee:180000,baseBonus:0.014,contractYrs:3},
@@ -1826,6 +1833,7 @@ const MARKETS={
     culture:{country:0.08,urban:0.08,newsTalk:0.08,religion:0.08,spanish:0.12},
     selectBlurb:'Big-signal Midwest hub: heritage AM survivors, durable talk, and bruising FM music fights. Sports and spoken-word become natural revenue engines as the dial matures.',
     fmPenBias:0.034, fmMusicFragMult:1.03, spokenWordAmResilience:1.1, heritageAmResilience:1.09, countryAmHoldout:0.9,
+    eduIndex:1.10,
     teams:[
       {id:'cubs',name:'Chicago Deep Dishes',sport:'PRO_BASEBALL',introduced:1970,baseFee:280000,baseBonus:0.020,contractYrs:3},
       {id:'whitesox',name:'Chicago L-Train Bandits',sport:'PRO_BASEBALL',introduced:1970,baseFee:160000,baseBonus:0.014,contractYrs:3},
@@ -1977,6 +1985,23 @@ function remoteVanPurchaseCostDollars(G){
 }
 /** Multiplier applied in `recalc` audience share (small marketing edge once the van is owned). */
 const REMOTE_VAN_MARKETING_LIFT=0.025;
+/** Years until the remote van’s marketing boost is treated as worn out (replace to restore). */
+const REMOTE_VAN_LIFETIME_YEARS=10;
+/** Effective lift after fleet age (saved lift × age factor). Legacy saves without purchase year keep full lift. */
+function effectiveRemoteVanMarketingLift(s,G){
+  const base=typeof s.remoteVanMarketingLift==='number'&&!Number.isNaN(s.remoteVanMarketingLift)?Math.max(0,s.remoteVanMarketingLift):0;
+  if(base<=0)return 0;
+  const y0=s.remoteVanPurchasedYear;
+  if(y0==null||!Number.isFinite(y0))return base;
+  const age=(G&&G.year||1970)-y0;
+  if(age>=REMOTE_VAN_LIFETIME_YEARS)return 0;
+  return base;
+}
+/** Repaint van art to match current logo — fraction of purchase, floor a few thousand. */
+function remoteVanRepaintCostDollars(G){
+  const p=remoteVanPurchaseCostDollars(G);
+  return Math.max(8500,Math.round(p*0.34));
+}
 /** Half-year programming cap — same spine as promo, ~15% higher billing multiplier. */
 function progBudgetCapForPeriod(G){
   const y=G.year||1970;
@@ -3210,6 +3235,9 @@ function mergeCosmeticPreserve(prevG, nextG) {
     if (p.remoteVanMarketingLift != null && s.remoteVanMarketingLift == null) {
       s.remoteVanMarketingLift = p.remoteVanMarketingLift;
     }
+    if (p.remoteVanPurchasedYear != null && s.remoteVanPurchasedYear == null) {
+      s.remoteVanPurchasedYear = p.remoteVanPurchasedYear;
+    }
     if (p.prog && s.prog && slotKeys.length) {
       for (const slot of slotKeys) {
         const pt = p.prog[slot] && p.prog[slot].talent;
@@ -3803,6 +3831,7 @@ function mpSetupSocketHandlers(socket) {
       delete st.cosmeticRemoteVanUrl;
       delete st.cosmeticRemoteVanV;
       delete st.remoteVanMarketingLift;
+      delete st.remoteVanPurchasedYear;
       renderAll();
       return;
     }
@@ -3813,10 +3842,11 @@ function mpSetupSocketHandlers(socket) {
       delete st.cosmeticRemoteVanUrl;
       delete st.cosmeticRemoteVanV;
       delete st.remoteVanMarketingLift;
+      delete st.remoteVanPurchasedYear;
       renderAll();
       return;
     }
-    const { cosmeticLogoUrl, cosmeticLogoV, cosmeticLogoTone, cosmeticRemoteVanUrl, cosmeticRemoteVanV, remoteVanMarketingLift } = payload;
+    const { cosmeticLogoUrl, cosmeticLogoV, cosmeticLogoTone, cosmeticRemoteVanUrl, cosmeticRemoteVanV, remoteVanMarketingLift, remoteVanPurchasedYear } = payload;
     if (cosmeticLogoUrl) {
       st.cosmeticLogoUrl = cosmeticLogoUrl;
       if (cosmeticLogoV != null && Number.isFinite(Number(cosmeticLogoV))) st.cosmeticLogoV = Number(cosmeticLogoV);
@@ -3831,6 +3861,9 @@ function mpSetupSocketHandlers(socket) {
     }
     if (remoteVanMarketingLift != null && Number.isFinite(Number(remoteVanMarketingLift))) {
       st.remoteVanMarketingLift = Number(remoteVanMarketingLift);
+    }
+    if (remoteVanPurchasedYear != null && Number.isFinite(Number(remoteVanPurchasedYear))) {
+      st.remoteVanPurchasedYear = Number(remoteVanPurchasedYear);
     }
     renderAll();
   });
@@ -4570,6 +4603,13 @@ window._mpApply_same_station_swap = function({ sid, fromSlot, toSlot, _fromPlaye
   if (!s) return;
   if (MP.mode === 'live' && (s._mpOwner !== _fromPlayerId || _fromPlayerId === undefined)) return;
   applyTalentSameStationSwapFull(sid, fromSlot, toSlot);
+};
+window._mpApply_swap = function({ sidA, sidB, _fromPlayerId }) {
+  if (MP.mode === 'live') {
+    const owns = id => G.ps.some(st => st.id === id && st._mpOwner === _fromPlayerId);
+    if (_fromPlayerId === undefined || !owns(sidA) || !owns(sidB)) return;
+  }
+  applySignalSwapBetweenStations(sidA, sidB);
 };
 window._mpApply_bench_add = function({ sid, slot, _fromPlayerId }) {
   const s = G.stations.find(st => st.id === sid);
@@ -5875,6 +5915,12 @@ function appl(s,coh,G){
     if(sh>=0.075)fmLeaderAppealTrim=1-_smoothstep(0.075,0.148,sh)*0.05;
   }
   const cult=mkt.culture||{};
+  // AM survival: brokered / zombie / ethnic-religious limp-along — minimal competitive footprint
+  let zombieNicheMult=1;
+  if(!s.isPlayer&&!s.isPublic){
+    if(s.isZombie)zombieNicheMult=0.26;
+    else if(s.isNicheSurvival)zombieNicheMult=0.48;
+  }
   let mktFmt=1;
   if(s.format==='COUNTRY'){
     mktFmt+=(mkt.countryBonus||0)*0.38+(cult.country||0)*0.38;
@@ -5898,7 +5944,7 @@ function appl(s,coh,G){
     allNewsSig=0.58+0.42*_smoothstep(0.28,0.78,sigStrength);
   }
   mktFmt=Math.max(0.86,Math.min(1.24,mktFmt));
-  return Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G) * mktFmt * allNewsSig);
+  return Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G) * mktFmt * allNewsSig * zombieNicheMult);
 }
 
 /**
@@ -6053,21 +6099,27 @@ function applyOtherAudioListeningDilution(stations,G,engageWeightedPop){
       fEff=Math.max(0,Math.min(0.52,fEff));
     }
     const scale=1-fEff;
+    const H=publicNewsHabitEngageMult(s,G);
     COH.forEach(coh=>{
       const cur=s.rat.cur[coh];
       if(!cur)return;
       cur.share=Math.round(cur.share*scale*10000)/10000;
       const pop=(POP.cohorts[coh]?.t||0)*effUniverse(s);
-      const engage=AQH_ENGAGE[coh]||0.060;
+      const engage=(AQH_ENGAGE[coh]||0.060)*H;
       cur.aqh=Math.round(cur.share*pop*engage);
       if(s.mom[coh])s.mom[coh].cur=cur.share;
     });
     s.rat.aqh=COH.reduce((sum,c)=>sum+(s.rat.cur[c]?.aqh||0),0);
+  });
+  const dilutionHabitDenom=publicRadioWeightedListeningDenominator(stations,G);
+  stations.forEach(s=>{
+    if(!s||s._bpSlotDeferred||!s.rat)return;
+    const H=publicNewsHabitEngageMult(s,G);
     s.rat.share=COH.reduce((sum,c)=>{
       const pop=POP.cohorts[c]?.t||0;
-      const engage=AQH_ENGAGE[c]||0.060;
-      return sum+(s.rat.cur[c]?.share||0)*(pop*engage)/Math.max(engageWeightedPop,1);
-    },0);
+      const engage=(AQH_ENGAGE[c]||0.060)*H;
+      return sum+(s.rat.cur[c]?.share||0)*(pop*engage);
+    },0)/dilutionHabitDenom;
   });
 
   // Rare leader “breakout” tail (post-2000): one stochastic boost / market / period, then renormalize mass to 1.
@@ -6076,25 +6128,26 @@ function applyOtherAudioListeningDilution(stations,G,engageWeightedPop){
     if(Math.random()<breakoutProb){
       const boost=1+0.08+Math.random()*0.04;
       const lead=sorted[0];
+      const Hlead=publicNewsHabitEngageMult(lead,G);
       COH.forEach(coh=>{
         const cur=lead.rat.cur[coh];
         if(!cur)return;
         cur.share=Math.round(cur.share*boost*10000)/10000;
         const pop=(POP.cohorts[coh]?.t||0)*effUniverse(lead);
-        const engage=AQH_ENGAGE[coh]||0.060;
+        const engage=(AQH_ENGAGE[coh]||0.060)*Hlead;
         cur.aqh=Math.round(cur.share*pop*engage);
         if(lead.mom[coh])lead.mom[coh].cur=cur.share;
       });
       lead.rat.aqh=COH.reduce((sum,c)=>sum+(lead.rat.cur[c]?.aqh||0),0);
-      lead.rat.share=COH.reduce((sum,c)=>{
-        const pop=POP.cohorts[c]?.t||0;
-        const engage=AQH_ENGAGE[c]||0.060;
-        return sum+(lead.rat.cur[c]?.share||0)*(pop*engage)/Math.max(engageWeightedPop,1);
-      },0);
       let totShare=0;
       stations.forEach(st=>{
         if(!st||st._bpSlotDeferred||!st.rat)return;
-        totShare+=st.rat.share;
+        const H=publicNewsHabitEngageMult(st,G);
+        totShare+=COH.reduce((sum,c)=>{
+          const pop=POP.cohorts[c]?.t||0;
+          const engage=(AQH_ENGAGE[c]||0.060)*H;
+          return sum+(st.rat.cur[c]?.share||0)*(pop*engage);
+        },0);
       });
       if(totShare>1e-12){
         const inv=1/totShare;
@@ -6105,22 +6158,269 @@ function applyOtherAudioListeningDilution(stations,G,engageWeightedPop){
             if(!cur)return;
             cur.share=Math.round(cur.share*inv*10000)/10000;
             const pop=(POP.cohorts[coh]?.t||0)*effUniverse(st);
-            const engage=AQH_ENGAGE[coh]||0.060;
+            const H=publicNewsHabitEngageMult(st,G);
+            const engage=(AQH_ENGAGE[coh]||0.060)*H;
             cur.aqh=Math.round(cur.share*pop*engage);
             if(st.mom[coh])st.mom[coh].cur=cur.share;
           });
           st.rat.aqh=COH.reduce((sum,c)=>sum+(st.rat.cur[c]?.aqh||0),0);
+        });
+        const renormDenom=publicRadioWeightedListeningDenominator(stations,G);
+        stations.forEach(st=>{
+          if(!st||st._bpSlotDeferred||!st.rat)return;
+          const H=publicNewsHabitEngageMult(st,G);
           st.rat.share=COH.reduce((sum,c)=>{
             const pop=POP.cohorts[c]?.t||0;
-            const engage=AQH_ENGAGE[c]||0.060;
-            return sum+(st.rat.cur[c]?.share||0)*(pop*engage)/Math.max(engageWeightedPop,1);
-          },0);
+            const engage=(AQH_ENGAGE[c]||0.060)*H;
+            return sum+(st.rat.cur[c]?.share||0)*(pop*engage);
+          },0)/renormDenom;
         });
       }
     }
   }
 }
+/**
+ * Competition ranking by `rat.share` (ties share one rank). Deterministic tie-break: station id.
+ * Used for diagnostics and any UI that should not show fake “rank 4” among equal shares.
+ */
+function rankStationsByShareCompetition(stations){
+  const EPS=1e-10;
+  const list=(stations||[]).filter(s=>s&&!s._bpSlotDeferred&&s.rat&&typeof s.rat.share==='number');
+  list.sort((a,b)=>{
+    const sa=a.rat.share||0,sb=b.rat.share||0;
+    if(Math.abs(sb-sa)>EPS)return sb-sa;
+    return String(a.id).localeCompare(String(b.id));
+  });
+  const rankById={};
+  let i=0;
+  while(i<list.length){
+    const sh=list[i].rat.share||0;
+    let j=i+1;
+    while(j<list.length&&Math.abs((list[j].rat.share||0)-sh)<EPS)j++;
+    const rank=i+1;
+    for(let k=i;k<j;k++)rankById[list[k].id]=rank;
+    i=j;
+  }
+  return{n:list.length,rankById};
+}
+window.rankStationsByShareCompetition=rankStationsByShareCompetition;
+
+/** Market education / civic-news proxy for public-station audience only (not commercial revenue). ~1.0 neutral. */
+function marketEduIndex(marketId){
+  const m=MARKETS[marketId||ACTIVE_MARKET]||MARKETS.atlanta;
+  const e=m.eduIndex;
+  if(e==null||Number.isNaN(Number(e)))return 1;
+  return Math.max(0.82,Math.min(1.32,Number(e)));
+}
+/** Era weight 0–1: NPR-style public News/Talk strength ramps mostly after 1980, full by ~2015+. */
+function publicNewsEraLift(year){
+  const y=year||1970;
+  if(y<1980)return 0.06+0.12*_smoothstep(1970,1980,y);
+  if(y<2000)return 0.18+0.50*_smoothstep(1980,2000,y);
+  if(y<2010)return 0.68+0.17*_smoothstep(2000,2010,y);
+  return 0.85+0.15*_smoothstep(2010,2025,y);
+}
+/** More conservative curve for public Classical (same markets, smaller lift). */
+function publicClassicalEraLift(year){
+  return publicNewsEraLift(year)*0.52;
+}
+/** Small habit / routine-listening nudge for public News/Talk in educated markets (post-2000). */
+function publicNewsHabitStick(year,eduIndex){
+  const y=year||1970;
+  if(y<1998)return 0;
+  return Math.max(0,eduIndex-1)*0.07*_smoothstep(1998,2018,y);
+}
+/**
+ * Scales competition-bleed penalty for PUBLIC_NEWS (lower = more insulation). ~0.38–1.0.
+ * Educated markets + post-1990/2000 eras: spoken-word “crowding” hurts public less than raw format counts suggest.
+ */
+function publicNewsCompetitionInsulationFactor(s,G){
+  if(!s?.isPublic||s.format!=='PUBLIC_NEWS')return 1;
+  const y=G?.year||1970;
+  const edu=marketEduIndex(G?.marketId||ACTIVE_MARKET);
+  const era=_smoothstep(1990,2010,y);
+  const era2=_smoothstep(2000,2020,y);
+  let f=1-0.44*Math.max(0,edu-0.88)*era;
+  f-=0.24*Math.max(0,edu-0.92)*era2;
+  return Math.max(0.38,Math.min(1,f));
+}
+/**
+ * AQH / habit listening intensity vs commercial music (PUBLIC_NEWS only). ≥1. Scaled by eduIndex; ramps after 2000.
+ */
+function publicNewsHabitEngageMult(s,G){
+  if(!s?.isPublic||s.format!=='PUBLIC_NEWS')return 1;
+  const y=G?.year||1970;
+  const edu=marketEduIndex(G?.marketId||ACTIVE_MARKET);
+  const post2000=_smoothstep(2000,2015,y);
+  const post2010=_smoothstep(2010,2024,y);
+  let m=1;
+  m+=0.42*Math.max(0,edu-0.90)*post2000;
+  m+=0.24*Math.max(0,edu-0.85)*_smoothstep(1998,2012,y);
+  m+=0.16*post2010*Math.max(0,edu-0.88);
+  m+=0.05*_smoothstep(2015,2024,y)*Math.max(0,edu-1.07);
+  m+=publicNewsHabitStick(y,edu)*2.1;
+  return Math.max(1,Math.min(1.62,m));
+}
+/** Extra pre-normalization appeal for standout public News/Talk markets (signal + edu + era). Capped. */
+function publicNewsBreakoutMult(s,G){
+  if(!s?.isPublic||s.format!=='PUBLIC_NEWS')return 1;
+  const y=G?.year||1970;
+  if(y<1990)return 1;
+  const edu=marketEduIndex(G?.marketId||ACTIVE_MARKET);
+  const era=_smoothstep(1990,2010,y)*_smoothstep(2000,2020,y);
+  const stm=STM[s.str]||{b:.7};
+  const sigN=Math.min(1.15,(stm.b||0.7)/1.05);
+  const u=effUniverse(s);
+  const signalQ=0.72+0.28*Math.min(1,u/0.88);
+  let m=1+0.14*Math.max(0,edu-0.95)*era*signalQ;
+  m+=0.09*Math.max(0,edu-0.88)*_smoothstep(2005,2020,y)*(sigN-0.82);
+  m+=0.06*Math.max(0,edu-1.02)*Math.min(1,era*2);
+  return Math.max(1,Math.min(1.32,m));
+}
+/** Denominator for weighted rat.share when PUBLIC_NEWS uses habit-adjusted engagement. */
+function publicRadioWeightedListeningDenominator(stations,G){
+  let t=0;
+  stations.forEach(s=>{
+    if(!s||s._bpSlotDeferred||!s.rat)return;
+    const H=publicNewsHabitEngageMult(s,G);
+    COH.forEach(c=>{
+      const pop=POP.cohorts[c]?.t||0;
+      const engage=(AQH_ENGAGE[c]||0.060)*H;
+      t+=(s.rat.cur[c]?.share||0)*pop*engage;
+    });
+  });
+  return Math.max(t,1e-12);
+}
+/**
+ * Multiplier on public station cohort appeal in recalc() only.
+ * Does not touch calcRev — non-commercial stations stay at zero ad revenue.
+ * @param {number} [yearOverride] for diagnostics; defaults to G.year
+ */
+function publicEduAudienceMultiplier(s,G,yearOverride){
+  if(!s?.isPublic)return 1;
+  const fmt=s.format;
+  if(fmt!=='PUBLIC_NEWS'&&fmt!=='PUBLIC_CLASSICAL')return 1;
+  const y=yearOverride!=null?yearOverride:(G?.year||1970);
+  const edu=marketEduIndex(G?.marketId||ACTIVE_MARKET);
+  const dev=edu-1;
+  if(Math.abs(dev)<1e-8)return 1;
+  if(fmt==='PUBLIC_NEWS'){
+    const era=publicNewsEraLift(y);
+    const eraModern=_smoothstep(1990,2008,y);
+    const eraMill=_smoothstep(2000,2018,y);
+    let m=1+dev*era*1.48;
+    m+=dev*eraModern*0.38;
+    m+=dev*eraMill*0.32;
+    m+=publicNewsHabitStick(y,edu)*1.25;
+    // Targeted: elite educated markets in 2010s–2020s only (modest top-end lift; not a blanket buff)
+    const eliteModern=_smoothstep(2010,2024,y)*Math.max(0,edu-1.04);
+    m+=dev*eliteModern*0.27;
+    return Math.max(0.82,Math.min(1.66,m));
+  }
+  const eraC=publicClassicalEraLift(y);
+  const m=1+dev*eraC*0.82;
+  return Math.max(0.88,Math.min(1.34,m));
+}
+/** Console: eduIndex + sample multipliers by era for current market (public formats only). */
+function reportPublicEduDiagnostics(){
+  if(typeof G==='undefined'||!G){
+    console.warn('reportPublicEduDiagnostics: no game state');
+    return;
+  }
+  const mkt=G.marketId||ACTIVE_MARKET||'atlanta';
+  const edu=marketEduIndex(mkt);
+  const mock=(fmt,y)=>publicEduAudienceMultiplier({isPublic:true,format:fmt},G,y);
+  const years=[1975,1985,1995,2005,2015,2020];
+  const rows=years.map(y=>({
+    year:y,
+    eduIndex:edu,
+    PUBLIC_NEWS:mock('PUBLIC_NEWS',y).toFixed(3),
+    PUBLIC_CLASSICAL:mock('PUBLIC_CLASSICAL',y).toFixed(3),
+    eraNewsLift:publicNewsEraLift(y).toFixed(2),
+  }));
+  console.log('[Public edu] market=%s eduIndex=%s',mkt,edu.toFixed(2));
+  console.table(rows);
+}
+/**
+ * Per public station: eduIndex, audience mult, insulation, habit, breakout, share/rank (dev inspection).
+ */
+function reportPublicRadioModelDiagnostics(){
+  if(typeof G==='undefined'||!G||!(G.stations||[]).length){
+    console.warn('reportPublicRadioModelDiagnostics: no game state');
+    return;
+  }
+  const mkt=G.marketId||ACTIVE_MARKET||'atlanta';
+  const edu=marketEduIndex(mkt);
+  const list=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&s.isPublic&&(s.format==='PUBLIC_NEWS'||s.format==='PUBLIC_CLASSICAL'));
+  const r=rankStationsByShareCompetition(G.stations);
+  const rankOf=id=>(r.rankById[id]!=null?r.rankById[id]:null);
+  const rows=list.map(s=>{
+    const base=publicEduAudienceMultiplier(s,G);
+    const row={
+      call:s.callLetters||s.id,
+      format:s.format,
+      year:G.year,
+      eduIndex:+edu.toFixed(3),
+      audienceMult:base.toFixed(3),
+    };
+    if(s.format==='PUBLIC_NEWS'){
+      row.insulation=publicNewsCompetitionInsulationFactor(s,G).toFixed(3);
+      row.habitEngage=publicNewsHabitEngageMult(s,G).toFixed(3);
+      row.breakout=publicNewsBreakoutMult(s,G).toFixed(3);
+    }else{
+      row.insulation='—';
+      row.habitEngage='—';
+      row.breakout='—';
+    }
+    row.share_pct=((s.rat?.share||0)*100).toFixed(2);
+    row.rank=rankOf(s.id);
+    return row;
+  });
+  console.log('[Public radio model] market=%s year=%s eduIndex=%s',mkt,G.year,edu.toFixed(3));
+  console.table(rows);
+  return rows;
+}
+window.reportPublicEduDiagnostics=reportPublicEduDiagnostics;
+window.reportPublicRadioModelDiagnostics=reportPublicRadioModelDiagnostics;
+/** Console: current G snapshot, or batch decade diagnostic if opts.runBatch (requires marketSimHarness.js). */
+function reportMarketHealthByDecade(opts){
+  opts=opts||{};
+  if(opts.runBatch||opts.longSim){
+    if(typeof window.runMarketHealthByDecadeDiagnostic==='function')
+      return window.runMarketHealthByDecadeDiagnostic(opts);
+    console.warn('reportMarketHealthByDecade: load marketSimHarness.js (e.g. play.html?dev=1) for batch diagnostic.');
+    return null;
+  }
+  if(typeof G==='undefined'||!G){
+    console.warn('reportMarketHealthByDecade: no game state G — use { runBatch:true } for headless sim.');
+    return null;
+  }
+  if(typeof window.marketHealthSnapshot!=='function'){
+    console.warn('reportMarketHealthByDecade: marketHealthSnapshot not on window — load marketSimHarness.js.');
+    return null;
+  }
+  const y=G.year||1970;
+  const dec=y<1980?'1970s':y<1990?'1980s':y<2000?'1990s':y<2010?'2000s':y<2020?'2010s':'2020s';
+  const h=window.marketHealthSnapshot(G);
+  const out={marketId:G.marketId||null,decade:dec,year:y,period:G.period,...h,removedCumulative:G._attritionRemovedCumulative||0};
+  if(opts.verbose!==false&&typeof console!=='undefined')console.log('reportMarketHealthByDecade (current G)',out);
+  return out;
+}
+window.reportMarketHealthByDecade=reportMarketHealthByDecade;
+window.marketEduIndex=marketEduIndex;
+window.publicNewsCompetitionInsulationFactor=publicNewsCompetitionInsulationFactor;
+window.publicNewsHabitEngageMult=publicNewsHabitEngageMult;
+window.publicNewsBreakoutMult=publicNewsBreakoutMult;
+
 function recalc(stations,G){
+  const _pubEduMultCache=new Map();
+  const pubEduM=s=>{
+    if(!s?.isPublic)return 1;
+    if(_pubEduMultCache.has(s.id))return _pubEduMultCache.get(s.id);
+    const m=publicEduAudienceMultiplier(s,G);
+    _pubEduMultCache.set(s.id,m);
+    return m;
+  };
   const activeIx=stations.map((s,i)=>s&&!s._bpSlotDeferred?i:-1).filter(i=>i>=0);
   COH.forEach(coh=>{
     const sc=activeIx.map(i=>{
@@ -6131,14 +6431,17 @@ function recalc(stations,G){
         const pubAge=s._pubLaunchYear?Math.max(0,G.year-s._pubLaunchYear)*2:age;
         const pubT=Math.min(1,pubAge/20);
         const pubPeak=s.format==='PUBLIC_NEWS'?0.80:0.55;
-        return Math.max(0,appl(s,coh,G)*(0.15+pubPeak*pubT));
+        let rawPub=Math.max(0,appl(s,coh,G)*(0.15+pubPeak*pubT)*pubEduM(s));
+      if(s.format==='PUBLIC_NEWS')rawPub*=publicNewsBreakoutMult(s,G);
+      return rawPub;
       }
       const t=Math.min(1,age/m.ramp);
       const effB=m.launchB+(m.b-m.launchB)*t;
       const promoCap=promoBudgetCapForPeriod(G);
       const effPr=Math.min(s.ops?.promo||0,promoCap);
       const promoBoost=1+((effPr/Math.max(1,promoCap))*0.08);
-      const vanLift=typeof s.remoteVanMarketingLift==='number'&&!Number.isNaN(s.remoteVanMarketingLift)?1+Math.max(0,s.remoteVanMarketingLift):1;
+      const effVan=effectiveRemoteVanMarketingLift(s,G);
+      const vanLift=effVan>0?1+Math.max(0,effVan):1;
       return Math.max(0,appl(s,coh,G)*effB*promoBoost*vanLift);
     });
     const tot=sc.reduce((a,b)=>a+b,0);
@@ -6152,7 +6455,9 @@ function recalc(stations,G){
       const s=stations[i];
       const competitors=(FMT_COMPETITION[s.format]||[]);
       const count=activeIx.filter(j=>j!==i&&competitors.includes(stations[j].format)).length;
-      const bleed=1-Math.min(0.22,COMPETITION_BLEED*(count/5));
+      let bleedPenalty=Math.min(0.22,COMPETITION_BLEED*(count/5));
+      if(s.format==='PUBLIC_NEWS')bleedPenalty*=publicNewsCompetitionInsulationFactor(s,G);
+      const bleed=1-bleedPenalty;
       return r*bleed;
     });
     // Re-normalize after bleed
@@ -6182,7 +6487,8 @@ function recalc(stations,G){
       // AQH: share × cohort population × universe × engagement rate
       // Engagement rate = fraction listening in an average quarter-hour (Arbitron methodology)
       // Older demos spend more hours/week listening → higher per-listener AQH weight
-      const engage=AQH_ENGAGE[coh]||0.060;
+      let engage=AQH_ENGAGE[coh]||0.060;
+      if(s.format==='PUBLIC_NEWS'&&s.isPublic)engage*=publicNewsHabitEngageMult(s,G);
       s.rat.cur[coh]={share:Math.round(ns*10000)/10000,aqh:Math.round(ns*pop*engage)};
       s.mom[coh]={tgt,cur:ns};
     });
@@ -6195,15 +6501,16 @@ function recalc(stations,G){
     const engage=AQH_ENGAGE[c]||0.060;
     return s+pop*engage;
   },0);
+  const habitDenom=publicRadioWeightedListeningDenominator(stations,G);
   stations.forEach(s=>{
     if(!s||s._bpSlotDeferred)return;
     s.rat.aqh=COH.reduce((sum,c)=>sum+(s.rat.cur[c]?.aqh||0),0);
-    // Weight overall share by listening intensity, not just raw population
+    const H=publicNewsHabitEngageMult(s,G);
     s.rat.share=COH.reduce((sum,c)=>{
       const pop=POP.cohorts[c]?.t||0;
-      const engage=AQH_ENGAGE[c]||0.060;
-      return sum+(s.rat.cur[c]?.share||0)*(pop*engage)/Math.max(engageWeightedPop,1);
-    },0);
+      const engage=(AQH_ENGAGE[c]||0.060)*H;
+      return sum+(s.rat.cur[c]?.share||0)*(pop*engage);
+    },0)/habitDenom;
   });
 
   // Long-tail share smoothing: blend toward the commercial-station mean (1970s-style
@@ -6251,9 +6558,30 @@ function recalc(stations,G){
       });
     }
   }
+  // Reconcile overall rat.share with PUBLIC_NEWS habit weighting after commercial long-tail (if any).
+  const finalHabitDenom = publicRadioWeightedListeningDenominator(stations, G);
+  stations.forEach(s => {
+    if (!s || s._bpSlotDeferred) return;
+    const H = publicNewsHabitEngageMult(s, G);
+    s.rat.share = COH.reduce((sum, c) => {
+      const pop = POP.cohorts[c]?.t || 0;
+      const engage = (AQH_ENGAGE[c] || 0.060) * H;
+      return sum + (s.rat.cur[c]?.share || 0) * (pop * engage);
+    }, 0) / finalHabitDenom;
+  });
 
   // Sports rights: scale cohort shares + AQH + mom so weighted share matches getSportsBonus (internal consistency)
   stations.forEach(s=>applySportsRatingsToCohorts(s,G,engageWeightedPop));
+  const afterSportsHabitDenom=publicRadioWeightedListeningDenominator(stations,G);
+  stations.forEach(s=>{
+    if(!s||s._bpSlotDeferred)return;
+    const H=publicNewsHabitEngageMult(s,G);
+    s.rat.share=COH.reduce((sum,c)=>{
+      const pop=POP.cohorts[c]?.t||0;
+      const engage=(AQH_ENGAGE[c]||0.060)*H;
+      return sum+(s.rat.cur[c]?.share||0)*(pop*engage);
+    },0)/afterSportsHabitDenom;
+  });
 
   refreshAllStationOQ(G);
 
@@ -6669,6 +6997,9 @@ function calcRev(s,G){
     : 1;
   const earlyGlobalRevTrim=year<=1974?0.985:1;
   let totalRev=Math.round((rev+streamRev)*ccBonus*daPenalty*earlyGlobalRevTrim);
+  // Zombie / niche-survival AM: brokered inventory, minimal sales — heavy revenue haircut
+  if(s.isZombie)totalRev=Math.round(totalRev*0.17);
+  else if(s.isNicheSurvival)totalRev=Math.round(totalRev*0.38);
   // Receiver: incremental simulcast monetization (~35–60% of this signal’s standalone billings;
   // scales with programming source oq — stronger show = more sell-through on the echo signal).
   let simulcastRevMult=1;
@@ -7124,6 +7455,7 @@ function runMarketAttrition(G){
         s.format = newFmt;
         s.str = 'emerging';
         s.launchPeriod = G.turn||0;
+        s.isZombie=false;s.isNicheSurvival=false;
         Object.keys(s.mom||{}).forEach(c=>s.mom[c]={tgt:0.003,cur:0.003});
         reformattedThisPeriod.add(newFmt);
         acts.push({v:'LOW',t:`📻 ${s.callLetters} reformats from ${oldFmt} → ${FM[newFmt]?.l||newFmt}: AM survival pivot.`});
@@ -7131,30 +7463,60 @@ function runMarketAttrition(G){
       }
     }
 
-    // 2. Ghost stations & market overcap — remove or reformat
+    // 2. Ghost / weak AM — 3-outcome ecology: rare true removal, default zombie limp, occasional niche flip
     const tooWeakMusic = isAMMusic&&s.rat.share<DARK_THRESHOLD_MUSIC_AM(year);
     const tooWeakTalk  = isAMTalk&&s.rat.share<DARK_THRESHOLD_TALK_AM(year);
-
-    if(shareIsGhost||(removed<overCap&&canRemove>removed&&(tooWeakMusic||tooWeakTalk))){
-      const alreadyNiche = ['GOSPEL','SPANISH','ADULT_STANDARDS'].includes(s.format);
-      const pool = buildPool();
-
-      if(!alreadyNiche&&pool.length&&Math.random()<0.65){
-        const newFmt = pool[Math.floor(Math.random()*pool.length)];
-        const oldFmt = FM[s.format]?.l||s.format;
-        s.format = newFmt;
-        s.str = 'emerging';
-        s.launchPeriod = G.turn||0;
-        Object.keys(s.mom||{}).forEach(c=>s.mom[c]={tgt:0.006,cur:0.006});
-        reformattedThisPeriod.add(newFmt);
-        acts.push({v:'LOW',t:`📻 ${s.callLetters} (${oldFmt}) shifts to ${FM[newFmt]?.l||newFmt}: finding an audience where AM still works.`});
-      } else if((shareIsGhost||(removed<overCap&&alreadyNiche))&&canRemove>removed){
-        acts.push({v:'LOW',t:`📻 ${s.callLetters} goes dark — ${FM[s.format]?.l||s.format} on AM, no viable audience remaining.`});
-        removedIds.add(s.id);
-        G.stations.splice(G.stations.indexOf(s),1);
-        removed++;
+    const inAttritionPool = shareIsGhost||(removed<overCap&&canRemove>removed&&(tooWeakMusic||tooWeakTalk));
+    if(!inAttritionPool){
+      if((s._amWeakFallCount||0)>0){
+        const relax=Math.max(DARK_THRESHOLD_MUSIC_AM(year),DARK_THRESHOLD_TALK_AM(year))*1.9;
+        if(s.rat.share>=relax)s._amWeakFallCount=0;
       }
+      continue;
     }
+
+    const thM=DARK_THRESHOLD_MUSIC_AM(year),thT=DARK_THRESHOLD_TALK_AM(year);
+    const recoveryBar=Math.max(thM,thT)*2.75;
+    if((s.isZombie||s.isNicheSurvival)&&s.rat.share>=recoveryBar){
+      s.isZombie=false;s.isNicheSurvival=false;s._amWeakFallCount=0;
+      acts.push({v:'LOW',t:`📻 ${s.callLetters} is no longer in survival mode — measurable audience returns.`});
+      continue;
+    }
+    if(s.isZombie||s.isNicheSurvival)continue;
+
+    const alreadyNiche = ['GOSPEL','SPANISH','ADULT_STANDARDS'].includes(s.format);
+    const pool = buildPool();
+    if(tooWeakMusic||tooWeakTalk||shareIsGhost)s._amWeakFallCount=(s._amWeakFallCount||0)+1;
+    const sustained=(s._amWeakFallCount||0)>=4;
+    const ghostSustained=shareIsGhost&&(s._amWeakFallCount||0)>=2;
+    const densityRatio=MKTCAP>0?allComm.length/MKTCAP:1;
+    let pRemove=0.15,pNiche=0.27;
+    if(densityRatio<0.82){pRemove*=0.22;pNiche*=1.06;}
+    if(allComm.length<=MKTFLOOR+4)pRemove*=0.18;
+    const u=Math.random();
+    if(!alreadyNiche&&pool.length&&u<pNiche){
+      const newFmt=pool[Math.floor(Math.random()*pool.length)];
+      const oldFmt=FM[s.format]?.l||s.format;
+      s.format=newFmt;s.str='emerging';s.launchPeriod=G.turn||0;
+      s.isNicheSurvival=true;s.isZombie=false;s._amWeakFallCount=0;
+      Object.keys(s.mom||{}).forEach(c=>s.mom[c]={tgt:0.008,cur:0.008});
+      reformattedThisPeriod.add(newFmt);
+      acts.push({v:'LOW',t:`📻 ${s.callLetters} (${oldFmt}) → ${FM[newFmt]?.l||newFmt}: niche / brokered-style survival on AM.`});
+      continue;
+    }
+    const canRemoveNow=canRemove>removed&&(sustained||ghostSustained);
+    if(u<pNiche+pRemove&&canRemoveNow){
+      if(!G._attritionRemovedCumulative)G._attritionRemovedCumulative=0;
+      G._attritionRemovedCumulative++;
+      acts.push({v:'LOW',t:`📻 ${s.callLetters} goes dark — ${FM[s.format]?.l||s.format} on AM, license surrendered or sold off-air.`});
+      removedIds.add(s.id);
+      G.stations.splice(G.stations.indexOf(s),1);
+      removed++;
+      continue;
+    }
+    s.isZombie=true;s.isNicheSurvival=false;s._amWeakFallCount=0;
+    if(s.str&&s.str!=='legend')s.str='declining';
+    acts.push({v:'LOW',t:`📻 ${s.callLetters} stays on-air in minimal form — brokered / lean ops (${FM[s.format]?.l||s.format}).`});
   }
   return acts;
 }
@@ -12783,11 +13145,15 @@ function brandMarketingLogoBlockHtml(leg){
   const logoTurnBlocked=stationCosmeticGenMatchesTurn(s,turnN,'_lastLogoGenTurn');
   const vanTurnBlocked=stationCosmeticGenMatchesTurn(s,turnN,'_lastVanGenTurn');
   const vanCost=remoteVanPurchaseCostDollars(G);
+  const repaintCost=remoteVanRepaintCostDollars(G);
   const myCash=mpMyCashOnHand();
   const hasVanImg=!!s.cosmeticRemoteVanUrl;
-  const hasVanBoost=typeof s.remoteVanMarketingLift==='number'&&!Number.isNaN(s.remoteVanMarketingLift);
+  const vanLiftActive=effectiveRemoteVanMarketingLift(s,G)>0;
+  const vanAgeYears=s.remoteVanPurchasedYear!=null&&Number.isFinite(s.remoteVanPurchasedYear)?Math.max(0,(G.year||1970)-s.remoteVanPurchasedYear):null;
   const vanBusy=!!(s._vanGenPending||s._logoGenPending);
   const canPurchaseVan=!hasVanImg&&!vanTurnBlocked&&!vanBusy&&myCash>=vanCost;
+  const canRepaintVan=hasVanImg&&!!s.cosmeticLogoUrl&&!vanTurnBlocked&&!vanBusy&&myCash>=repaintCost;
+  const canReplaceVan=hasVanImg&&!vanLiftActive&&!vanTurnBlocked&&!vanBusy&&myCash>=vanCost;
   const rel=s.cosmeticLogoUrl?wlGameMediaAbsUrl(s.cosmeticLogoUrl+(s.cosmeticLogoV?'?v='+s.cosmeticLogoV:'')):'';
   const procSvg=wlProceduralLogoSvgString(s,{layoutMode:'brandHero'});
   const hero=rel
@@ -12812,13 +13178,14 @@ function brandMarketingLogoBlockHtml(leg){
     </div>
     <div style="margin-top:14px;border-top:1px solid var(--bdr);padding-top:12px">
       <div class="msh" style="margin-bottom:8px">REMOTE BROADCAST VAN</div>
-      <p class="di" style="font-size:13px;color:var(--mut);line-height:1.45;margin:0 0 8px">Buy a custom remote truck for your station: <strong>one-time ${f$(vanCost)}</strong> (era-typical outfitting), a small permanent boost to how far your marketing spend goes, and a generated van image from your logo. <strong>Click the image</strong> when present for a full-size view and to save a copy. One purchase per period.</p>
-      ${hasVanBoost?`<p class="di" style="font-size:13px;color:var(--amb);margin:0 0 8px">Remote van active: <strong>+${Math.round(REMOTE_VAN_MARKETING_LIFT*100)}%</strong> promotional effectiveness in audience share.</p>`:''}
+      <p class="di" style="font-size:13px;color:var(--mut);line-height:1.45;margin:0 0 8px">Buy a custom remote truck: <strong>${f$(vanCost)}</strong> outfitting, a small boost to promotional reach, and van art <strong>matched to your saved AI logo file</strong> (reload-safe). <strong>Repaint</strong> (${f$(repaintCost)}) updates the wrap when you change logos — no need to buy a new van. Fleet vehicles wear out after <strong>~${REMOTE_VAN_LIFETIME_YEARS} years</strong> of in-game time; then replace at full cost to restore the boost. One van action per period. <strong>Click the van image</strong> for full size / save.</p>
+      ${hasVanImg&&vanLiftActive?`<p class="di" style="font-size:13px;color:var(--amb);margin:0 0 8px">Remote van marketing boost: <strong>+${Math.round(REMOTE_VAN_MARKETING_LIFT*100)}%</strong> promotional effectiveness.${vanAgeYears!=null?' Fleet in service <strong>'+vanAgeYears+'</strong> yr — replace after <strong>'+REMOTE_VAN_LIFETIME_YEARS+'</strong> yr when worn.':''}</p>`:''}
+      ${hasVanImg&&!vanLiftActive?`<p class="di" style="font-size:13px;color:var(--red);margin:0 0 8px">Marketing boost <strong>ended</strong> — remote fleet is worn out. Use <strong>Replace fleet</strong> (${f$(vanCost)}) to restore <strong>+${Math.round(REMOTE_VAN_MARKETING_LIFT*100)}%</strong>. You can still <strong>Repaint</strong> the artwork anytime.</p>`:''}
       <div id="bm-van-status-${safe}" style="font-size:13px;color:var(--amb);min-height:22px;margin-bottom:8px;font-weight:500"></div>
       ${vanRel?`<div style="text-align:center;margin:10px 0;cursor:pointer" onclick="wlOpenRemoteVanModal('${s.id}')" title="View full size"><img class="bm-van-hero" src="${vanRel}" alt="" style="max-width:100%;border-radius:8px;border:1px solid var(--bdr)" draggable="false"></div>`:''}
       ${!hasVanImg&&vanTurnBlocked?`<p class="di" style="font-size:13px;color:var(--mut);margin:0 0 8px">Remote van slot already used this period — try again next period.</p>`:''}
       <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-        ${hasVanImg?`<button type="button" class="abt" onclick="wlClearRemoteVan('${s.id}')">Sell / remove van</button>`:`<button type="button" id="bm-van-gen-btn-${safe}" class="abt g" onclick="wlPurchaseRemoteVan('${s.id}')"${vanPurchaseDisabled?' disabled':''} aria-busy="${s._vanGenPending?'true':'false'}" title="${vanTitle||''}">Purchase remote van — ${f$(vanCost)}</button>`}
+        ${hasVanImg?`<button type="button" class="abt" onclick="wlClearRemoteVan('${s.id}')">Sell / remove van</button>`+(s.cosmeticLogoUrl?`<button type="button" id="bm-van-repaint-btn-${safe}" class="abt g" onclick="wlRepaintRemoteVan('${s.id}')"${!canRepaintVan?' disabled':''} aria-busy="${s._vanGenPending?'true':'false'}" title="${!canRepaintVan&&myCash<repaintCost?'Need '+f$(repaintCost):''}">Repaint van — ${f$(repaintCost)}</button>`:'')+(canReplaceVan?`<button type="button" id="bm-van-replace-btn-${safe}" class="abt g" onclick="wlReplaceRemoteVan('${s.id}')" aria-busy="${s._vanGenPending?'true':'false'}">Replace fleet — ${f$(vanCost)}</button>`:''):`<button type="button" id="bm-van-gen-btn-${safe}" class="abt g" onclick="wlPurchaseRemoteVan('${s.id}')"${vanPurchaseDisabled?' disabled':''} aria-busy="${s._vanGenPending?'true':'false'}" title="${vanTitle||''}">Purchase remote van — ${f$(vanCost)}</button>`}
       </div>
     </div>
   </div>`;
@@ -13255,13 +13622,166 @@ function doRosterSameStationBench(toSid,toSlot){
   doShuffle(fromSid,fromSlot,toSlot);
 }
 function openShuffle(sid,fromSlot){ openRosterMoveFromSlot(sid,fromSlot); }
+function deepCloneStnField(v){
+  if(v===undefined)return undefined;
+  try{if(typeof structuredClone==='function')return structuredClone(v);}catch(_){}
+  try{return JSON.parse(JSON.stringify(v));}catch(_){return v;}
+}
+/** Exchange full programming + brand + audience + facility between two licenses (same as moving “the station” to another dial you own). */
+function swapStationProgrammingAndFacilityPair(a,b){
+  const prim=['freq','format','brand','callLetters','oq','str','fmBooster','clearChannel','_boosterOrigFreq','progInvestment','demoLean','identity','identityBudget','_identityPeak','_formatAge','cp','launchPeriod'];
+  for(const k of prim){
+    const t=a[k];a[k]=b[k];b[k]=t;
+  }
+  const sa={...a.sig},sb={...b.sig};
+  a.sig=sb;b.sig=sa;
+  const boA=a._boosterOrigSig,boB=b._boosterOrigSig;
+  a._boosterOrigSig=boB;b._boosterOrigSig=boA;
+  const deep=['prog','mom','rat','ops','stream','fin','drift','driftHistory','flog','pers','entryTurn'];
+  for(const k of deep){
+    const ca=deepCloneStnField(a[k]);
+    const cb=deepCloneStnField(b[k]);
+    a[k]=cb;b[k]=ca;
+  }
+  const cos=['cosmeticLogoUrl','cosmeticLogoV','cosmeticLogoTone','cosmeticRemoteVanUrl','cosmeticRemoteVanV','remoteVanMarketingLift','remoteVanPurchasedYear'];
+  for(const k of cos){
+    const t=a[k];a[k]=b[k];b[k]=t;
+  }
+}
+function swapSportsFranchiseRightsIds(sidA,sidB){
+  const fix=(obj)=>{
+    if(!obj)return;
+    for(const r of Object.values(obj)){
+      if(!r)continue;
+      if(r.holderId===sidA||r.holderId===sidB){
+        r.holderId=r.holderId===sidA?sidB:sidA;
+        const h=G.stations.find(st=>st.id===r.holderId);
+        if(h)r.holderName=h.callLetters;
+      }
+      for(const mapKey of ['relationship','bids']){
+        const m=r[mapKey];
+        if(!m||typeof m!=='object')continue;
+        const va=m[sidA],vb=m[sidB];
+        const ha=Object.prototype.hasOwnProperty.call(m,sidA);
+        const hb=Object.prototype.hasOwnProperty.call(m,sidB);
+        if(ha)delete m[sidA];
+        if(hb)delete m[sidB];
+        if(ha)m[sidB]=va;
+        if(hb)m[sidA]=vb;
+      }
+    }
+  };
+  fix(G.sportsRights);
+  fix(G.franchiseRights);
+}
+function applySignalSwapBetweenStations(sidA,sidB){
+  const a=G.stations.find(st=>st.id===sidA);
+  const b=G.stations.find(st=>st.id===sidB);
+  if(!a||!b)return false;
+  const preLabelA=callDisplay(a),preLabelB=callDisplay(b);
+  const sigA={...a.sig},sigB={...b.sig};
+  const boosterA=a.fmBooster,boosterB=b.fmBooster;
+  const univBeforeA=effUniverse({sig:sigA,fmBooster:boosterA,clearChannel:a.clearChannel});
+  const univBeforeB=effUniverse({sig:sigB,fmBooster:boosterB,clearChannel:b.clearChannel});
+  swapStationProgrammingAndFacilityPair(a,b);
+  swapSportsFranchiseRightsIds(sidA,sidB);
+  function applySwapDisruption(stn,oldUniv,newUniv){
+    const isUpgrade=newUniv>oldUniv;
+    const signalDelta=Math.abs(newUniv-oldUniv);
+    const eraFactor=G.year>=2015?0.5:G.year>=2005?0.7:G.year>=1995?0.85:1.0;
+    const isTalk=TALK_FMTS.includes(stn.format);
+    const habitFactor=isTalk?0.6:1.0;
+    const basePen=isUpgrade
+      ?Math.min(0.15,signalDelta*0.20)
+      :Math.min(0.35,signalDelta*0.50);
+    const pen=basePen*eraFactor*habitFactor;
+    COH.forEach(c=>{
+      if(stn.mom?.[c]){
+        stn.mom[c].tgt=Math.max(0.002,stn.mom[c].tgt*(1-pen));
+        stn.mom[c].cur=Math.max(0.002,stn.mom[c].cur*(1-pen*0.5));
+      }
+    });
+    return Math.round(pen*100);
+  }
+  const univAfterA=effUniverse(a);
+  const univAfterB=effUniverse(b);
+  const penA=applySwapDisruption(a,univBeforeA,univAfterA);
+  const penB=applySwapDisruption(b,univBeforeB,univAfterB);
+  refreshStationOQ(a,G);
+  refreshStationOQ(b,G);
+  calcRev(a,G);
+  calcRev(b,G);
+  const penNote=penA>0||penB>0
+    ?` Expect ${penA>0?callDisplay(a)+' ~'+penA+'% dial confusion / churn':''}${penA>0&&penB>0?' · ':''}${penB>0?callDisplay(b)+' ~'+penB+'%':''} as listeners re-learn the dial.`
+    :'';
+  G.news.unshift({v:'MEDIUM',t:`⇄ Station swap: ${preLabelA} ↔ ${preLabelB} — full programming, identity, and audiences moved between facilities (ratings carry over; momentum reflects dial confusion).${penNote}`,y:G.year,p:G.period,iy:true});
+  logHistory(a,'NOTE',`Station swap: programming and license exchanged with ${preLabelB} (now on this facility).`,G);
+  logHistory(b,'NOTE',`Station swap: programming and license exchanged with ${preLabelA} (now on this facility).`,G);
+  queuePlayerTalentPortraits();
+  queueAutoLogosForPlayerStations();
+  return true;
+}
+function openSwap(sid){
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  if(s.lmaLessorId||s.lmaLesseeId){showToast('End the LMA on this station before swapping facilities.','warn');return;}
+  const _srcStn=s;
+  const _srcSimIds=new Set([_srcStn?.simulcastWith,...G.ps.filter(p=>p.simulcastWith===sid).map(p=>p.id)].filter(Boolean));
+  const elig=st=>!st.lmaLessorId&&!st.lmaLesseeId&&!st.simulcastWith;
+  const myStns=(MP.mode==='live'?G.ps.filter(st=>st._mpOwner===MP.playerId):G.ps)
+    .filter(p=>p.id!==sid&&!_srcSimIds.has(p.id)&&elig(p));
+  const swapb=document.getElementById('swapb');
+  if(!swapb)return;
+  if(!myStns.length){
+    swapb.innerHTML='<p class="di">No other eligible stations to swap with (simulcast partners and LMA stations excluded).</p><button class="cnl" onclick="cm(\'m-swap\')">CLOSE</button>';
+    om('m-swap');return;
+  }
+  const swapCost=25000;
+  const rows=myStns.map(dst=>{
+    const srcSig=s.fmBooster?'FM Translator ('+s.sig.pw+')':s.sig.type+' '+String(s.sig.pw).toUpperCase();
+    const dstSig=dst.fmBooster?'FM Translator ('+dst.sig.pw+')':dst.sig.type+' '+String(dst.sig.pw).toUpperCase();
+    const srcUniv=Math.round(effUniverse(s)*100);
+    const dstUniv=Math.round(effUniverse(dst)*100);
+    const upgrade=effUniverse(dst)>effUniverse(s);
+    const dirColor=upgrade?'var(--grn)':'var(--amb)';
+    const dirLabel=upgrade?'↑ STRONGER SIGNAL':'↓ WEAKER SIGNAL';
+    return `<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:6px;padding:12px 14px;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+        <div>
+          <div style="font-family:var(--fd);font-size:15px;color:var(--wht)">${callDisplay(dst)} <span style="color:var(--mut);font-weight:normal">${FM[dst.format]?.l||dst.format}</span></div>
+          <div style="font-size:14px;margin-top:4px;color:var(--mut)">
+            ${s.callLetters} (${FM[s.format]?.l||s.format}) ↔ ${dst.callLetters}: <span style="color:${upgrade?'var(--grn)':'var(--mut)'}">${srcSig} (${srcUniv}%)</span> ⇄ <span style="color:${upgrade?'var(--amb)':'var(--grn)'}">${dstSig} (${dstUniv}%)</span>
+            <span style="color:${dirColor};margin-left:6px">${dirLabel} for ${s.callLetters}</span>
+          </div>
+          <div style="font-size:13px;color:var(--mut);margin-top:2px">Everything moves: format, hosts, brand, audience, and the facility. The other station’s operation takes your old dial.</div>
+        </div>
+        <button class="cfm" style="padding:6px 16px;font-size:14px;white-space:nowrap" onclick="doSwap('${sid}','${dst.id}')">SWAP — ${f$(swapCost)}</button>
+      </div>
+    </div>`;
+  }).join('');
+  swapb.innerHTML=`
+    <p class="di">Move <strong>${s.callLetters}</strong>’s entire operation — format, programming, talent, brand, and audience — onto another license you own, and put that station’s operation on your current facility. Ratings stay with the programming; expect extra churn on both dials from dial confusion.</p>
+    <div class="ibox"><strong>Cost:</strong> ${f$(swapCost)} — legal, engineering, and marketing retune. Effective immediately.<br><span style="color:var(--mut)">Example: put your Rock station on a 100&nbsp;kW FM you bought while the old facility takes what was on the big stick.</span></div>
+    <div class="ms2"><div class="msh">SWAP WITH</div>${rows}</div>
+    <button class="cnl" onclick="cm('m-swap')">CANCEL</button>`;
+  om('m-swap');
+}
+function doSwap(sidA,sidB){
+  const a=G.stations.find(st=>st.id===sidA);
+  const b=G.stations.find(st=>st.id===sidB);
+  if(!a||!b)return;
+  if(!mpIsMe(a)||!mpIsMe(b)){showToast('You can only swap between stations you own.','warn');return;}
+  if(a.lmaLessorId||a.lmaLesseeId||b.lmaLessorId||b.lmaLesseeId){showToast('End any LMA on these stations before swapping.','warn');return;}
+  const cost=25000;
+  if(G.cash<cost){showToast('Not enough cash for FCC filing fee.','warn');return;}
+  G.cash-=cost;
+  if(MP.mode==='live'){if(!G._playerCash)G._playerCash={};G._playerCash[MP.playerId]=G.cash;MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash});}
+  applySignalSwapBetweenStations(sidA,sidB);
+  MP.action('swap',{sidA,sidB});
+  cm('m-swap');renderAll();
+}
 function openSwapSignal(sid){
   sid=ensureOpsSourceSid(sid);
-  const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  const filled=Object.entries(s.prog).filter(([sl,sd])=>sd?.talent);
-  if(filled.length!==1){openManageTalent(sid);return;}
-  om('m-fire');
-  openRosterMoveFromSlot(sid,filled[0][0]);
+  openSwap(sid);
 }
 function doShuffle(sid,fromSlot,toSlot){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
@@ -15141,6 +15661,7 @@ function wlClearAiStationLogo(stationId){
   delete op.cosmeticRemoteVanUrl;
   delete op.cosmeticRemoteVanV;
   delete op.remoteVanMarketingLift;
+  delete op.remoteVanPurchasedYear;
   recalc(G.stations,G);
   logHistory(op,'LOGO','Switched to basic logo (AI image cleared).',G);
   autoSave();
@@ -15163,13 +15684,13 @@ function wlFallbackLogoOnGenerationError(op,silent){
   delete op.cosmeticRemoteVanUrl;
   delete op.cosmeticRemoteVanV;
   delete op.remoteVanMarketingLift;
+  delete op.remoteVanPurchasedYear;
   recalc(G.stations,G);
   autoSave();
   if(MP.mode==='live'&&MP.socket&&MP.roomId){
     MP.emit('mp_station_logo',{roomId:MP.roomId,stationId:op.id,clearCosmeticLogo:true});
   }
   renderAll();
-  if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&op.id===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
   if(!silent)showToast('Logo generation failed — using basic logo.','warn');
 }
 function wlSetLogoGenButtonUi(stationId,busy){
@@ -15194,6 +15715,7 @@ function wlClearRemoteVan(stationId){
   delete op.cosmeticRemoteVanUrl;
   delete op.cosmeticRemoteVanV;
   delete op.remoteVanMarketingLift;
+  delete op.remoteVanPurchasedYear;
   recalc(G.stations,G);
   logHistory(op,'LOGO','Remote van sold / removed (marketing boost cleared).',G);
   autoSave();
@@ -15204,41 +15726,69 @@ function wlClearRemoteVan(stationId){
   if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&stationId===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
   showToast('Van removed — marketing boost cleared.','info');
 }
-async function wlPurchaseRemoteVan(stationId){
+/**
+ * @param {'purchase'|'repaint'|'replace'} mode
+ */
+async function wlRemoteVanImageOp(stationId,mode){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   const op=G.stations.find(st=>st.id===stationId);
   if(!op)return;
-  if(op.cosmeticRemoteVanUrl){
-    showToast('You already have a remote van for this station.','info');
-    return;
-  }
   const turn=Number(G.turn);
   const turnN=Number.isFinite(turn)?turn:0;
-  if(stationCosmeticGenMatchesTurn(op,turnN,'_lastVanGenTurn')){
-    const _bmSafe=bmSafeElId(stationId);
-    const el=document.getElementById('bm-van-status-'+_bmSafe);
-    if(el)el.textContent='Remote van slot already used this period.';
-    else showToast('Already purchased or generated a remote van this period.','warn');
+  const _bmSafe=bmSafeElId(stationId);
+  const statusEl=document.getElementById('bm-van-status-'+_bmSafe);
+  if(mode==='purchase'){
+    if(op.cosmeticRemoteVanUrl){
+      showToast('You already have a remote van for this station.','info');
+      return;
+    }
+  }else if(mode==='repaint'){
+    if(!op.cosmeticRemoteVanUrl){
+      showToast('Purchase a remote van first.','warn');
+      return;
+    }
+    if(!op.cosmeticLogoUrl){
+      showToast('Repaint needs an AI station logo — generate one so the van can match your current art.','warn');
+      return;
+    }
+  }else if(mode==='replace'){
+    if(!op.cosmeticRemoteVanUrl){
+      showToast('No van to replace.','warn');
+      return;
+    }
+    if(effectiveRemoteVanMarketingLift(op,G)>0){
+      showToast('Fleet is still in service — use Repaint to update artwork with a new logo, or wait until the vehicle wears out (~'+REMOTE_VAN_LIFETIME_YEARS+' years).','info');
+      return;
+    }
+  }
+  const vanCost=mode==='repaint'?remoteVanRepaintCostDollars(G):remoteVanPurchaseCostDollars(G);
+  if(mpMyCashOnHand()<vanCost){
+    showToast(`Need ${f$(vanCost)}.`,'warn');
     return;
   }
-  const vanCost=remoteVanPurchaseCostDollars(G);
-  if(mpMyCashOnHand()<vanCost){
-    showToast(`Need ${f$(vanCost)} to purchase a remote van.`,'warn');
+  if(stationCosmeticGenMatchesTurn(op,turnN,'_lastVanGenTurn')){
+    const el=document.getElementById('bm-van-status-'+_bmSafe);
+    if(el)el.textContent='Remote van actions limited to once per period — try again next period.';
+    else showToast('Already used a remote van action this period.','warn');
     return;
   }
   if(op._vanGenPending||op._logoGenPending){
-    const _bmSafe=bmSafeElId(stationId);
     const el=document.getElementById('bm-van-status-'+_bmSafe);
     if(el)el.textContent='Wait for the other image request to finish…';
     else showToast('Another logo or van image is still generating.','warn');
     return;
   }
-  const _bmSafe=bmSafeElId(stationId);
-  const statusEl=document.getElementById('bm-van-status-'+_bmSafe);
   op._vanGenPending=true;
   wlSetVanGenButtonUi(stationId,true);
-  if(statusEl)statusEl.textContent='Processing purchase — generating your remote van (often 30–90s). Do not click again.';
+  wlSetVanRepaintReplaceUi(stationId,true);
+  const msg=mode==='repaint'
+    ?'Repainting van artwork from your current logo (often 30–90s)…'
+    :mode==='replace'
+      ?'Replacing fleet vehicle — generating new van (often 30–90s)…'
+      :'Processing purchase — generating your remote van (often 30–90s). Do not click again.';
+  if(statusEl)statusEl.textContent=msg;
   const band=(op.fmBooster||op.sig?.type==='FM')?'FM':'AM';
+  const logoRel=(typeof op.cosmeticLogoUrl==='string'&&op.cosmeticLogoUrl.trim())?op.cosmeticLogoUrl.split('?')[0]:'';
   const body={
     stationName:(typeof op.brand==='string'&&op.brand.trim())?op.brand.trim():callDisplay(op),
     format:FM[op.format]?.l||op.format||'Radio',
@@ -15246,7 +15796,8 @@ async function wlPurchaseRemoteVan(stationId){
     tone:typeof op.cosmeticLogoTone==='string'?op.cosmeticLogoTone:'',
     frequency:String(op.freq||''),
     band,
-    regenerate:false,
+    cosmeticLogoUrl:logoRel,
+    regenerate:mode!=='purchase',
   };
   try{
     const res=await fetch(wlGameApiUrl('/api/generate-remote-van'),{
@@ -15263,11 +15814,23 @@ async function wlPurchaseRemoteVan(stationId){
     wlAdjustMyCash(-vanCost);
     op.cosmeticRemoteVanUrl=data.imageUrl;
     op.cosmeticRemoteVanV=Date.now();
-    op.remoteVanMarketingLift=REMOTE_VAN_MARKETING_LIFT;
+    if(mode==='purchase'||mode==='replace'){
+      op.remoteVanMarketingLift=REMOTE_VAN_MARKETING_LIFT;
+      op.remoteVanPurchasedYear=G.year;
+    }
     op._lastVanGenTurn=turnN;
     recalc(G.stations,G);
-    if(statusEl)statusEl.textContent=data.cached?'From cache (purchase complete)':'Purchase complete — van saved';
-    logHistory(op,'LOGO',`Purchased remote broadcast van (${f$(vanCost)}).`,G);
+    if(statusEl){
+      statusEl.textContent=mode==='repaint'
+        ?'Repaint complete — van image updated'
+        :data.cached&&(mode==='purchase')?'From cache (purchase complete)':mode==='replace'?'Fleet replaced — boost restored':'Purchase complete — van saved';
+    }
+    const logMsg=mode==='repaint'
+      ?`Repainted remote van (${f$(vanCost)})`
+      :mode==='replace'
+        ?`Replaced worn remote fleet (${f$(vanCost)})`
+        :`Purchased remote broadcast van (${f$(vanCost)})`;
+    logHistory(op,'LOGO',logMsg+'.',G);
     autoSave();
     if(MP.mode==='live'&&MP.socket&&MP.roomId){
       MP.emit('mp_station_logo',{
@@ -15276,17 +15839,36 @@ async function wlPurchaseRemoteVan(stationId){
         cosmeticRemoteVanUrl:data.imageUrl,
         cosmeticRemoteVanV:op.cosmeticRemoteVanV,
         remoteVanMarketingLift:op.remoteVanMarketingLift,
+        remoteVanPurchasedYear:op.remoteVanPurchasedYear,
       });
     }
     renderAll();
-    if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&stationId===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
   }catch(_e){
     if(statusEl)statusEl.textContent='Network error — try again.';
     showToast('Remote van request failed.','warn');
   }finally{
     op._vanGenPending=false;
     wlSetVanGenButtonUi(stationId,false);
+    wlSetVanRepaintReplaceUi(stationId,false);
+    if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&ensureOpsSourceSid(BM_ACTIVE_SID)===ensureOpsSourceSid(stationId)){
+      renderBrandMarketingStation(BM_ACTIVE_SID);
+    }
   }
+}
+function wlPurchaseRemoteVan(stationId){return wlRemoteVanImageOp(stationId,'purchase');}
+function wlRepaintRemoteVan(stationId){return wlRemoteVanImageOp(stationId,'repaint');}
+function wlReplaceRemoteVan(stationId){return wlRemoteVanImageOp(stationId,'replace');}
+window.wlRepaintRemoteVan=wlRepaintRemoteVan;
+window.wlReplaceRemoteVan=wlReplaceRemoteVan;
+function wlSetVanRepaintReplaceUi(stationId,busy){
+  const safe=bmSafeElId(stationId);
+  ['bm-van-repaint-btn-','bm-van-replace-btn-'].forEach(prefix=>{
+    const btn=document.getElementById(prefix+safe);
+    if(btn){
+      btn.disabled=!!busy;
+      btn.setAttribute('aria-busy',busy?'true':'false');
+    }
+  });
 }
 async function wlGenerateLogo(stationId,regenerate,opts){
   opts=opts||{};
@@ -15351,7 +15933,6 @@ async function wlGenerateLogo(stationId,regenerate,opts){
       });
     }
     renderAll();
-    if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&stationId===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
   }catch(_e){
     wlFallbackLogoOnGenerationError(op,silent);
     if(statusEl){
@@ -15364,6 +15945,9 @@ async function wlGenerateLogo(stationId,regenerate,opts){
     op._logoGenPending=false;
     wlSetLogoGenButtonUi(stationId,false);
     if(silent&&!op.cosmeticLogoUrl)op._logoAutoGenExhausted=true;
+    if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&ensureOpsSourceSid(BM_ACTIVE_SID)===ensureOpsSourceSid(stationId)){
+      renderBrandMarketingStation(BM_ACTIVE_SID);
+    }
   }
 }
 
@@ -15791,6 +16375,7 @@ function migrateSave(G){
   }
   G.turn=_turnN;
   G.loans=G.loans||[];
+  if(G._attritionRemovedCumulative==null)G._attritionRemovedCumulative=0;
   migrateLoansV2(G);
   if(G.corps)rehydrateCorps(G); // re-link corp ownership after save/load
   if(G.corps){
@@ -15838,6 +16423,9 @@ function migrateSave(G){
   // Ensure fin.fix exists on all stations (added for cost breakdown display)
   (G.stations||[]).forEach(s=>{
     if(s._bpSlotDeferred)return;
+    if(s.isZombie==null)s.isZombie=false;
+    if(s.isNicheSurvival==null)s.isNicheSurvival=false;
+    if(s._amWeakFallCount==null)s._amWeakFallCount=0;
     // Ensure fmBooster field exists
     if(s.fmBooster===undefined)s.fmBooster=false;
   // Translator signal restoration: old saves had universe/reach replaced with translator's weak values.

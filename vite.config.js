@@ -57,6 +57,8 @@ export default defineConfig(({ command }) => ({
         // inspect-shares.html (share calibration batch tool)
         copy('marketSimHarness.js');
         copy('inspectSharesBoot.js');
+        copy('inspectPublicRadioBoot.js');
+        copy('inspectMarketHealthBoot.js');
         // Legal pages link /src/styles.css — Vite does not emit this path; copy so contact/terms/privacy match the game theme.
         copy('styles.css');
         const legalDir = join(__dirname, 'legal');
@@ -91,6 +93,8 @@ export default defineConfig(({ command }) => ({
         main: resolve(__dirname, 'index.html'),
         play: resolve(__dirname, 'play.html'),
         'inspect-shares': resolve(__dirname, 'inspect-shares.html'),
+        'inspect-public-radio': resolve(__dirname, 'inspect-public-radio.html'),
+        'inspect-market-health': resolve(__dirname, 'inspect-market-health.html'),
       },
     },
   },

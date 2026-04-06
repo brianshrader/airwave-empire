@@ -24,6 +24,38 @@ function ensureVanDir() {
   if (!fs.existsSync(GENERATED_VAN_DIR)) fs.mkdirSync(GENERATED_VAN_DIR, { recursive: true });
 }
 
+/** Resolve absolute path to a logo file under generated-logos (client passes /generated-logos/…). */
+function safeExistingLogoFileFromUrl(cosmeticLogoUrl) {
+  if (typeof cosmeticLogoUrl !== 'string' || !cosmeticLogoUrl.trim()) return null;
+  const clean = cosmeticLogoUrl.split('?')[0].trim();
+  if (!/^\/generated-logos\/[a-zA-Z0-9._-]+\.(png|webp|jpe?g)$/i.test(clean)) return null;
+  const fname = path.basename(clean);
+  const abs = path.resolve(path.join(GENERATED_DIR, fname));
+  const root = path.resolve(GENERATED_DIR);
+  if (!abs.startsWith(root + path.sep) && abs !== root) return null;
+  return fs.existsSync(abs) ? abs : null;
+}
+
+/**
+ * Prefer the station’s saved AI logo on disk when the client sends cosmeticLogoUrl (fixes reload / cache-key mismatch).
+ * Otherwise generate or load via the same cache key as before.
+ */
+async function resolveLogoBufferForVan(body, regenerateLogo) {
+  const fromUrl = safeExistingLogoFileFromUrl(body.cosmeticLogoUrl);
+  if (fromUrl) return fs.readFileSync(fromUrl);
+  return getOrCreateLogoPngBuffer(body, regenerateLogo);
+}
+
+/** Stable slug for van filename: matches source logo file when provided. */
+function vanFileSlugFromBody(body, keyMaterial) {
+  if (typeof body.cosmeticLogoUrl === 'string' && body.cosmeticLogoUrl.trim()) {
+    const base = path.basename(body.cosmeticLogoUrl.split('?')[0]);
+    const noExt = base.replace(/\.(png|webp|jpe?g)$/i, '');
+    return noExt || logoBaseFileName(body, keyMaterial);
+  }
+  return logoBaseFileName(body, keyMaterial);
+}
+
 /**
  * @param {object} body
  * @param {boolean} regenerate
@@ -108,8 +140,8 @@ function mountRemoteVanRoutes(app) {
 
     const regenerateVan = body.regenerate === true;
     const keyMaterial = cacheKeyParts(body);
-    const logoBase = logoBaseFileName(body, keyMaterial);
-    const vanName = `${logoBase}-remote-van.png`;
+    const slug = vanFileSlugFromBody(body, keyMaterial);
+    const vanName = `${slug}-remote-van.png`;
     const vanPath = path.join(GENERATED_VAN_DIR, vanName);
 
     if (!regenerateVan && fs.existsSync(vanPath)) {
@@ -117,8 +149,7 @@ function mountRemoteVanRoutes(app) {
     }
 
     try {
-      // Always use cached logo for the same brand/format key when present; regenerate station logo separately if needed.
-      const logoBuf = await getOrCreateLogoPngBuffer(body, false);
+      const logoBuf = await resolveLogoBufferForVan(body, false);
       const prompt = buildRemoteVanPrompt({
         stationName: body.stationName.trim(),
         format: body.format.trim(),

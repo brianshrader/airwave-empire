@@ -10,6 +10,10 @@
  *
  * Share calibration (other audio / fragmentation) — plain-English batch report:
  *   runShareCalibrationInspection({ quick: true })  // or npm run inspect:shares (see inspect-shares.html)
+ *
+ * Market structure by decade (station counts; consolidation / deferred slots):
+ *   marketHealthSnapshot(G)  // one-shot when G is loaded
+ *   runMarketHealthByDecadeDiagnostic({ quick: true })  // or npm run sim:market-health (inspect-market-health.html)
  */
 (function () {
   'use strict';
@@ -768,11 +772,620 @@
     return out;
   }
 
+  function decadeLabelPub(y) {
+    if (y < 1980) return '1970s';
+    if (y < 1990) return '1980s';
+    if (y < 2000) return '1990s';
+    if (y < 2010) return '2000s';
+    if (y < 2020) return '2010s';
+    return '2020s';
+  }
+
+  /**
+   * Delegates to legacy `rankStationsByShareCompetition` when present (competition ties).
+   * Fallback keeps harness runnable if legacy loads late.
+   */
+  function rankAmongAllStations(G) {
+    if (typeof window.rankStationsByShareCompetition === 'function') {
+      return window.rankStationsByShareCompetition(G.stations);
+    }
+    var list = (G.stations || []).filter(function (s) {
+      return s && !s._bpSlotDeferred && s.rat && typeof s.rat.share === 'number';
+    });
+    var EPS = 1e-10;
+    list.sort(function (a, b) {
+      var sa = a.rat.share || 0;
+      var sb = b.rat.share || 0;
+      if (Math.abs(sb - sa) > EPS) return sb - sa;
+      return String(a.id).localeCompare(String(b.id));
+    });
+    var rankById = {};
+    var i = 0;
+    while (i < list.length) {
+      var sh = list[i].rat.share || 0;
+      var j = i + 1;
+      while (j < list.length && Math.abs((list[j].rat.share || 0) - sh) < EPS) j++;
+      var rank = i + 1;
+      for (var k = i; k < j; k++) rankById[list[k].id] = rank;
+      i = j;
+    }
+    return { n: list.length, rankById: rankById };
+  }
+
+  function publicRadioSnapshot(G) {
+    var r = rankAmongAllStations(G);
+    var news = (G.stations || []).find(function (s) {
+      return s && s.isPublic && s.format === 'PUBLIC_NEWS';
+    });
+    var klass = (G.stations || []).find(function (s) {
+      return s && s.isPublic && s.format === 'PUBLIC_CLASSICAL';
+    });
+    function row(st) {
+      if (!st || !st.rat) return null;
+      return {
+        callLetters: st.callLetters,
+        share: st.rat.share,
+        rank: r.rankById[st.id] != null ? r.rankById[st.id] : null,
+      };
+    }
+    return {
+      nStations: r.n,
+      PUBLIC_NEWS: row(news),
+      PUBLIC_CLASSICAL: row(klass),
+    };
+  }
+
+  /**
+   * Headless-friendly batch: advTurn through endYear, track public station share & rank vs all stations.
+   * @param {object} [opts]
+   * @param {string[]} [opts.markets]
+   * @param {number} [opts.numRunsPerMarket=4]
+   * @param {number} [opts.endYear=2025]
+   * @param {number} [opts.minRecordYear=1985] — skip snapshots before (warmup)
+   * @param {number} [opts.maxStepsPerRun=240]
+   * @param {number} [opts.seed]
+   * @param {boolean} [opts.verbose]
+   */
+  function runPublicRadioSimulation(opts) {
+    opts = opts || {};
+    var markets =
+      opts.markets && opts.markets.length
+        ? opts.markets
+        : opts.quick
+          ? ['nashville', 'atlanta', 'newyork']
+          : ['nashville', 'atlanta', 'newyork', 'losangeles', 'chicago'];
+    var numRunsPerMarket = opts.numRunsPerMarket != null ? opts.numRunsPerMarket : opts.quick ? 2 : 4;
+    var endYear = opts.endYear != null ? opts.endYear : 2025;
+    var endPeriod = opts.endPeriod != null ? opts.endPeriod : 2;
+    var minRecordYear = opts.minRecordYear != null ? opts.minRecordYear : 1985;
+    var maxStepsPerRun = opts.maxStepsPerRun != null ? opts.maxStepsPerRun : 240;
+    var seed = opts.seed != null ? opts.seed : 20260202;
+    var verbose = opts.verbose !== false;
+
+    if (typeof genMarketMP !== 'function') throw new Error('genMarketMP not found — load legacy.js first');
+    if (typeof advTurn !== 'function') throw new Error('advTurn not found');
+    if (typeof syncMarketPopToMarket !== 'function') throw new Error('syncMarketPopToMarket not found');
+    if (typeof MARKETS === 'undefined') throw new Error('MARKETS not found');
+
+    var savedG = typeof G !== 'undefined' ? G : null;
+    var savedActive = typeof ACTIVE_MARKET !== 'undefined' ? ACTIVE_MARKET : null;
+    var savedMPMode = window.MP && MP.mode;
+    var origRandom = Math.random;
+
+    var samples = [];
+    var timeSeriesLastRun = [];
+
+    try {
+      for (var mi = 0; mi < markets.length; mi++) {
+        var marketId = markets[mi];
+        var mkt = MARKETS[marketId] || {};
+        var eduIndex = mkt.eduIndex != null && !Number.isNaN(Number(mkt.eduIndex)) ? Number(mkt.eduIndex) : 1;
+
+        for (var run = 0; run < numRunsPerMarket; run++) {
+          (function (seedRun) {
+            var s = seedRun;
+            Math.random = function () {
+              s = (s * 9301 + 49297) % 233280;
+              return s / 233280;
+            };
+          })(seed + mi * 7919 + run * 9973);
+
+          ACTIVE_MARKET = marketId;
+          syncMarketPopToMarket(marketId);
+          G = genMarketMP('1985');
+          MP.mode = 'solo';
+          MP.isHost = false;
+          if (MP.players) MP.players = [];
+
+          var ui = patchTimersAndUi();
+          var steps = 0;
+          var isLastRun = mi === markets.length - 1 && run === numRunsPerMarket - 1;
+
+          try {
+            while (steps < maxStepsPerRun) {
+              var y0 = G.year;
+              var p0 = G.period;
+              if (y0 > endYear || (y0 === endYear && p0 > endPeriod)) break;
+
+              advTurn();
+              steps++;
+              if (G.year > endYear || (G.year === endYear && G.period > endPeriod)) break;
+
+              var y = G.year;
+              if (y < minRecordYear) continue;
+
+              var snap = publicRadioSnapshot(G);
+              var rec = {
+                marketId: marketId,
+                eduIndex: eduIndex,
+                run: run,
+                year: y,
+                period: G.period,
+                nStations: snap.nStations,
+                newsShare: snap.PUBLIC_NEWS && snap.PUBLIC_NEWS.share,
+                newsRank: snap.PUBLIC_NEWS && snap.PUBLIC_NEWS.rank,
+                classShare: snap.PUBLIC_CLASSICAL && snap.PUBLIC_CLASSICAL.share,
+                classRank: snap.PUBLIC_CLASSICAL && snap.PUBLIC_CLASSICAL.rank,
+                decade: decadeLabelPub(y),
+              };
+              samples.push(rec);
+              if (isLastRun) timeSeriesLastRun.push(rec);
+            }
+          } finally {
+            ui.restore();
+          }
+        }
+      }
+    } finally {
+      Math.random = origRandom;
+      G = savedG;
+      if (typeof ACTIVE_MARKET !== 'undefined' && savedActive != null) ACTIVE_MARKET = savedActive;
+      if (window.MP && savedMPMode !== undefined) MP.mode = savedMPMode;
+    }
+
+    function summarize(fmtKey) {
+      var shareKey = fmtKey === 'PUBLIC_NEWS' ? 'newsShare' : 'classShare';
+      var rankKey = fmtKey === 'PUBLIC_NEWS' ? 'newsRank' : 'classRank';
+      var byMarket = {};
+      samples.forEach(function (r) {
+        if (r[shareKey] == null || r[rankKey] == null) return;
+        var mk = r.marketId;
+        if (!byMarket[mk]) {
+          byMarket[mk] = {
+            marketId: mk,
+            eduIndex: r.eduIndex,
+            n: 0,
+            sumShare: 0,
+            sumRank: 0,
+            top5: 0,
+            top10: 0,
+            byDecade: {},
+          };
+        }
+        var o = byMarket[mk];
+        o.n++;
+        o.sumShare += r[shareKey];
+        o.sumRank += r[rankKey];
+        if (r[rankKey] <= 5) o.top5++;
+        if (r[rankKey] <= 10) o.top10++;
+        var dec = r.decade;
+        if (!o.byDecade[dec]) {
+          o.byDecade[dec] = { n: 0, sumShare: 0, sumRank: 0, top5: 0, top10: 0 };
+        }
+        var d = o.byDecade[dec];
+        d.n++;
+        d.sumShare += r[shareKey];
+        d.sumRank += r[rankKey];
+        if (r[rankKey] <= 5) d.top5++;
+        if (r[rankKey] <= 10) d.top10++;
+      });
+      var rows = [];
+      Object.keys(byMarket).forEach(function (mk) {
+        var o = byMarket[mk];
+        if (o.n === 0) return;
+        rows.push({
+          market: mk,
+          eduIndex: o.eduIndex,
+          n: o.n,
+          meanShare_pct: Math.round((o.sumShare / o.n) * 10000) / 100,
+          meanRank: Math.round((o.sumRank / o.n) * 100) / 100,
+          pctPeriods_rankLe5: Math.round((o.top5 / o.n) * 10000) / 100,
+          pctPeriods_rankLe10: Math.round((o.top10 / o.n) * 10000) / 100,
+        });
+      });
+      return { byMarket: byMarket, rows: rows };
+    }
+
+    var newsSum = summarize('PUBLIC_NEWS');
+    var classSum = summarize('PUBLIC_CLASSICAL');
+
+    var lines = [];
+    lines.push('══════════════════════════════════════════════════════════════');
+    lines.push('  PUBLIC RADIO SIMULATION (share & rank vs all stations)');
+    lines.push('  Markets: ' + markets.join(', '));
+    lines.push('  Runs/market: ' + numRunsPerMarket + ' · Record year ≥ ' + minRecordYear + ' · End ' + endYear);
+    lines.push('  Rank uses competition-style ties (equal shares → same rank). nStations can fall over time');
+    lines.push('  when weak AM stations are removed (ghost / consolidation) — expected, not a sim bug.');
+    lines.push('══════════════════════════════════════════════════════════════');
+    lines.push('');
+    lines.push('PUBLIC NEWS / TALK — mean share & rank (all sampled periods)');
+    if (console.table && verbose) console.table(newsSum.rows);
+    lines.push(JSON.stringify(newsSum.rows, null, 2));
+    lines.push('');
+    lines.push('PUBLIC CLASSICAL — mean share & rank');
+    lines.push(JSON.stringify(classSum.rows, null, 2));
+    lines.push('');
+    lines.push('--- By decade + market (PUBLIC_NEWS): mean share %, mean rank, % periods rank≤5 / ≤10 ---');
+    Object.keys(newsSum.byMarket).forEach(function (mk) {
+      var o = newsSum.byMarket[mk];
+      lines.push('Market ' + mk + ' (eduIndex ' + o.eduIndex + ')');
+      Object.keys(o.byDecade)
+        .sort()
+        .forEach(function (dec) {
+          var d = o.byDecade[dec];
+          if (!d || d.n === 0) return;
+          lines.push(
+            '  ' +
+              dec +
+              ': n=' +
+              d.n +
+              ' meanShare=' +
+              ((d.sumShare / d.n) * 100).toFixed(2) +
+              '% meanRank=' +
+              (d.sumRank / d.n).toFixed(2) +
+              ' rank≤5 ' +
+              ((d.top5 / d.n) * 100).toFixed(1) +
+              '% rank≤10 ' +
+              ((d.top10 / d.n) * 100).toFixed(1) +
+              '%'
+          );
+        });
+    });
+    lines.push('');
+    lines.push('--- Last run time series (one sample per period, ' + timeSeriesLastRun.length + ' rows) — tail:');
+    var tail = timeSeriesLastRun.slice(-24);
+    lines.push(JSON.stringify(tail, null, 2));
+
+    var plainEnglish = lines.join('\n');
+    var out = {
+      plainEnglish: plainEnglish,
+      samples: samples,
+      newsSummary: newsSum,
+      classicalSummary: classSum,
+      timeSeriesLastRun: timeSeriesLastRun,
+      options: {
+        markets: markets,
+        numRunsPerMarket: numRunsPerMarket,
+        endYear: endYear,
+        minRecordYear: minRecordYear,
+        seed: seed,
+      },
+    };
+    if (verbose && typeof console !== 'undefined') {
+      console.log(out.plainEnglish);
+    }
+    return out;
+  }
+
+  /**
+   * Single-frame counts for market structure (player + AI stations in G.stations).
+   * - total: array length (slots)
+   * - emptySlots: null/undefined entries (unusual)
+   * - deferred: _bpSlotDeferred (blueprint / not yet on-air for ratings)
+   * - active: on-air for sim purposes (!deferred)
+   * - commercial / public: active subsets
+   * - simulcast: stations with simulcastWith set (each leg counts — a pair → 2)
+   */
+  function marketHealthSnapshot(G) {
+    var arr = G.stations || [];
+    var total = arr.length;
+    var emptySlots = 0;
+    var deferred = 0;
+    var active = 0;
+    var commercial = 0;
+    var publicC = 0;
+    var simulcast = 0;
+    var zombie = 0;
+    var nicheSurvival = 0;
+    for (var i = 0; i < arr.length; i++) {
+      var s = arr[i];
+      if (!s) {
+        emptySlots++;
+        continue;
+      }
+      if (s._bpSlotDeferred) {
+        deferred++;
+        continue;
+      }
+      active++;
+      if (s.isZombie) zombie++;
+      if (s.isNicheSurvival) nicheSurvival++;
+      if (s.isPublic) publicC++;
+      else commercial++;
+      if (s.simulcastWith) simulcast++;
+    }
+    return {
+      total: total,
+      emptySlots: emptySlots,
+      active: active,
+      commercial: commercial,
+      public: publicC,
+      simulcast: simulcast,
+      deferred: deferred,
+      zombie: zombie,
+      nicheSurvival: nicheSurvival,
+    };
+  }
+
+  /**
+   * Headless-friendly: advTurn through endYear, aggregate mean/min/max station counts by decade.
+   * Same loop driver as runPublicRadioSimulation.
+   */
+  function runMarketHealthByDecadeDiagnostic(opts) {
+    opts = opts || {};
+    var markets =
+      opts.markets && opts.markets.length
+        ? opts.markets
+        : opts.quick
+          ? ['nashville', 'atlanta', 'newyork']
+          : ['nashville', 'atlanta', 'newyork', 'losangeles', 'chicago'];
+    var numRunsPerMarket = opts.numRunsPerMarket != null ? opts.numRunsPerMarket : opts.quick ? 2 : 4;
+    var endYear = opts.endYear != null ? opts.endYear : 2025;
+    var endPeriod = opts.endPeriod != null ? opts.endPeriod : 2;
+    var minRecordYear = opts.minRecordYear != null ? opts.minRecordYear : 1985;
+    var maxStepsPerRun = opts.maxStepsPerRun != null ? opts.maxStepsPerRun : 240;
+    var seed = opts.seed != null ? opts.seed : 20260202;
+    var verbose = opts.verbose !== false;
+
+    if (typeof genMarketMP !== 'function') throw new Error('genMarketMP not found — load legacy.js first');
+    if (typeof advTurn !== 'function') throw new Error('advTurn not found');
+    if (typeof syncMarketPopToMarket !== 'function') throw new Error('syncMarketPopToMarket not found');
+
+    var savedG = typeof G !== 'undefined' ? G : null;
+    var savedActive = typeof ACTIVE_MARKET !== 'undefined' ? ACTIVE_MARKET : null;
+    var savedMPMode = window.MP && MP.mode;
+    var origRandom = Math.random;
+
+    var samples = [];
+
+    try {
+      for (var mi = 0; mi < markets.length; mi++) {
+        var marketId = markets[mi];
+        for (var run = 0; run < numRunsPerMarket; run++) {
+          (function (seedRun) {
+            var s = seedRun;
+            Math.random = function () {
+              s = (s * 9301 + 49297) % 233280;
+              return s / 233280;
+            };
+          })(seed + mi * 7919 + run * 9973);
+
+          ACTIVE_MARKET = marketId;
+          syncMarketPopToMarket(marketId);
+          G = genMarketMP('1985');
+          MP.mode = 'solo';
+          MP.isHost = false;
+          if (MP.players) MP.players = [];
+
+          var ui = patchTimersAndUi();
+          var steps = 0;
+
+          try {
+            while (steps < maxStepsPerRun) {
+              var y0 = G.year;
+              var p0 = G.period;
+              if (y0 > endYear || (y0 === endYear && p0 > endPeriod)) break;
+
+              advTurn();
+              steps++;
+              if (G.year > endYear || (G.year === endYear && G.period > endPeriod)) break;
+
+              var y = G.year;
+              if (y < minRecordYear) continue;
+
+              var dec = decadeLabelPub(y);
+              var h = marketHealthSnapshot(G);
+              samples.push({
+                marketId: marketId,
+                run: run,
+                year: y,
+                period: G.period,
+                decade: dec,
+                total: h.total,
+                emptySlots: h.emptySlots,
+                active: h.active,
+                commercial: h.commercial,
+                public: h.public,
+                simulcast: h.simulcast,
+                deferred: h.deferred,
+                zombie: h.zombie,
+                nicheSurvival: h.nicheSurvival,
+                removedCumulative: G._attritionRemovedCumulative || 0,
+              });
+            }
+          } finally {
+            ui.restore();
+          }
+        }
+      }
+    } finally {
+      Math.random = origRandom;
+      G = savedG;
+      if (typeof ACTIVE_MARKET !== 'undefined' && savedActive != null) ACTIVE_MARKET = savedActive;
+      if (window.MP && savedMPMode !== undefined) MP.mode = savedMPMode;
+    }
+
+    var key = function (mk, dec) {
+      return mk + '|' + dec;
+    };
+    var buckets = {};
+    samples.forEach(function (r) {
+      var k = key(r.marketId, r.decade);
+      if (!buckets[k]) {
+        buckets[k] = {
+          marketId: r.marketId,
+          decade: r.decade,
+          n: 0,
+          total: [],
+          active: [],
+          commercial: [],
+          public: [],
+          simulcast: [],
+          deferred: [],
+          emptySlots: [],
+          zombie: [],
+          nicheSurvival: [],
+          removedCumulative: [],
+        };
+      }
+      var b = buckets[k];
+      b.n++;
+      b.total.push(r.total);
+      b.active.push(r.active);
+      b.commercial.push(r.commercial);
+      b.public.push(r.public);
+      b.simulcast.push(r.simulcast);
+      b.deferred.push(r.deferred);
+      b.emptySlots.push(r.emptySlots);
+      b.zombie.push(r.zombie);
+      b.nicheSurvival.push(r.nicheSurvival);
+      b.removedCumulative.push(r.removedCumulative);
+    });
+
+    function stats(arr) {
+      if (!arr.length) return { mean: null, min: null, max: null };
+      var sum = 0;
+      var mn = arr[0];
+      var mx = arr[0];
+      for (var i = 0; i < arr.length; i++) {
+        sum += arr[i];
+        if (arr[i] < mn) mn = arr[i];
+        if (arr[i] > mx) mx = arr[i];
+      }
+      return { mean: sum / arr.length, min: mn, max: mx };
+    }
+
+    var lines = [];
+    lines.push('══════════════════════════════════════════════════════════════');
+    lines.push('  MARKET HEALTH BY DECADE (station counts; dev diagnostic)');
+    lines.push('  Markets: ' + markets.join(', '));
+    lines.push('  Runs/market: ' + numRunsPerMarket + ' · Record year ≥ ' + minRecordYear + ' · End ' + endYear);
+    lines.push('  simulcast = stations with a simulcast partner (each leg counted; pair → 2)');
+    lines.push('  deferred = _bpSlotDeferred (off-air / blueprint slots)');
+    lines.push('  zombie / nicheSurvival = AM survival ecology (legacy runMarketAttrition)');
+    lines.push('  removedCumulative = G._attritionRemovedCumulative (true station removals)');
+    lines.push('══════════════════════════════════════════════════════════════');
+    lines.push('');
+
+    var marketOrder = markets.slice();
+    var decadeOrder = ['1970s', '1980s', '1990s', '2000s', '2010s', '2020s'];
+
+    marketOrder.forEach(function (mk) {
+      lines.push('--- ' + mk + ' ---');
+      decadeOrder.forEach(function (dec) {
+        var bk = key(mk, dec);
+        var b = buckets[bk];
+        if (!b || b.n === 0) return;
+        var st = {
+          total: stats(b.total),
+          active: stats(b.active),
+          commercial: stats(b.commercial),
+          public: stats(b.public),
+          simulcast: stats(b.simulcast),
+          deferred: stats(b.deferred),
+          emptySlots: stats(b.emptySlots),
+          zombie: stats(b.zombie),
+          nicheSurvival: stats(b.nicheSurvival),
+          removedCumulative: stats(b.removedCumulative),
+        };
+        lines.push(
+          dec +
+            ': n=' +
+            b.n +
+            ' periods sampled | total mean=' +
+            st.total.mean.toFixed(2) +
+            ' (min ' +
+            st.total.min +
+            ' max ' +
+            st.total.max +
+            ') | active mean=' +
+            st.active.mean.toFixed(2) +
+            ' (' +
+            st.active.min +
+            '–' +
+            st.active.max +
+            ') | commercial mean=' +
+            st.commercial.mean.toFixed(2) +
+            ' | public mean=' +
+            st.public.mean.toFixed(2) +
+            ' | simulcast mean=' +
+            st.simulcast.mean.toFixed(2) +
+            ' | deferred mean=' +
+            st.deferred.mean.toFixed(2) +
+            ' | zombie mean=' +
+            st.zombie.mean.toFixed(2) +
+            ' | niche mean=' +
+            st.nicheSurvival.mean.toFixed(2) +
+            ' | removedCum mean=' +
+            st.removedCumulative.mean.toFixed(1) +
+            (st.emptySlots.max > 0 ? ' | emptySlots max=' + st.emptySlots.max : '')
+        );
+      });
+      lines.push('');
+    });
+
+    lines.push('--- JSON (by decade bucket) ---');
+    var jsonOut = {};
+    Object.keys(buckets).forEach(function (k) {
+      var b = buckets[k];
+      jsonOut[k] = {
+        marketId: b.marketId,
+        decade: b.decade,
+        n: b.n,
+        total: stats(b.total),
+        active: stats(b.active),
+        commercial: stats(b.commercial),
+        public: stats(b.public),
+        simulcast: stats(b.simulcast),
+        deferred: stats(b.deferred),
+        emptySlots: stats(b.emptySlots),
+        zombie: stats(b.zombie),
+        nicheSurvival: stats(b.nicheSurvival),
+        removedCumulative: stats(b.removedCumulative),
+      };
+    });
+    lines.push(JSON.stringify(jsonOut, null, 2));
+
+    var plainEnglish = lines.join('\n');
+    var out = {
+      plainEnglish: plainEnglish,
+      samples: samples,
+      buckets: jsonOut,
+      options: {
+        markets: markets,
+        numRunsPerMarket: numRunsPerMarket,
+        endYear: endYear,
+        minRecordYear: minRecordYear,
+        seed: seed,
+      },
+    };
+    if (verbose && typeof console !== 'undefined') {
+      console.log(out.plainEnglish);
+    }
+    return out;
+  }
+
   window.runMarketSimulationBatch = runMarketSimulationBatch;
   window.runShareCalibrationInspection = runShareCalibrationInspection;
+  window.runPublicRadioSimulation = runPublicRadioSimulation;
+  window.marketHealthSnapshot = marketHealthSnapshot;
+  window.runMarketHealthByDecadeDiagnostic = runMarketHealthByDecadeDiagnostic;
   window.MarketSimHarness = {
     runBatch: runMarketSimulationBatch,
     runShareCalibrationInspection: runShareCalibrationInspection,
+    runPublicRadioSimulation: runPublicRadioSimulation,
+    marketHealthSnapshot: marketHealthSnapshot,
+    runMarketHealthByDecadeDiagnostic: runMarketHealthByDecadeDiagnostic,
     signalStrengthScore: signalStrengthScore,
     otherAudioDilutionTable: otherAudioDilutionTable,
   };
