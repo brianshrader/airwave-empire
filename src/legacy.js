@@ -11286,8 +11286,9 @@ function acqPrice(s,G){
 // Corp AI: Corps can propose LMAs to players as lessees of corp-owned stations.
 
 // LMA_FEE_MODEL_SYNC_START — fee kernel (keep in sync with scripts/lmaFeeModelShared.mjs)
-const LMA_K_BASE = { mega: 0.003, large: 0.0023, medium: 0.0016, small: 0.0012 };
-const LMA_K_PERF = 0.048;
+// Tuned so raw fees usually clear EBITDA cap (~10–24% of seed EBITDA typical); caps remain safety rails.
+const LMA_K_BASE = { mega: 0.0022, large: 0.00165, medium: 0.00072, small: 0.00055 };
+const LMA_K_PERF = 0.0185;
 
 /** Era weight: pre-1990 weak → 1990s ramp → 1996–2003 peak → fade post-mid-2000s. */
 function lmaEraFactor(year) {

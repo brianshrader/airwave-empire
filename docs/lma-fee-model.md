@@ -21,7 +21,7 @@ All fees round to the nearest **$1,000** (unchanged convention).
 **Hybrid**
 
 ```
-raw = (halfPool × K_base[tier] + grossRev × 0.048 × sigFmMult) × lmaEraFactor(year)
+raw = (halfPool × K_base[tier] + grossRev × 0.0185 × sigFmMult) × lmaEraFactor(year)
 fee = min(raw,
           0.11 × grossRev,
           0.28 × seedEBITDA  if seedEBITDA > 0 else ∞,
@@ -32,11 +32,11 @@ fee = min(raw,
 
 | Symbol | Value | Role |
 |--------|-------|------|
-| `K_base` mega | 0.003 | Market rent–like base per dollar of half-pool |
-| `K_base` large | 0.0023 | |
-| `K_base` medium | 0.0016 | |
-| `K_base` small | 0.0012 | Reserved if tiers expand |
-| Perf on gross | 4.8% × FM 1.06 | Scales **slower than revenue** than a flat % |
+| `K_base` mega | 0.0022 | Market rent–like base per dollar of half-pool |
+| `K_base` large | 0.00165 | |
+| `K_base` medium | 0.00072 | |
+| `K_base` small | 0.00055 | Reserved if tiers expand |
+| Perf on gross | 1.85% × FM 1.06 | Scales **slower than revenue** than a flat % |
 | Revenue cap | 11% of gross | Hard guardrail vs billing |
 | EBITDA cap | 28% of positive seed EBITDA | Keeps fee below “rent + profit share” feel |
 | Absolute cap | ~$2.15M × (0.62 + 0.38 × era) × tier | Mega peak ~low single-digit $M / half |

@@ -66,8 +66,8 @@ export function lmaEraFactor(year) {
   return Math.max(0.72, 0.8 - (y - 2012) * 0.004);
 }
 
-const LMA_K_BASE = { mega: 0.003, large: 0.0023, medium: 0.0016, small: 0.0012 };
-const LMA_K_PERF = 0.048;
+const LMA_K_BASE = { mega: 0.0022, large: 0.00165, medium: 0.00072, small: 0.00055 };
+const LMA_K_PERF = 0.0185;
 
 function lmaAbsoluteCapHalfYear(year, rankTier) {
   const e = lmaEraFactor(year);
