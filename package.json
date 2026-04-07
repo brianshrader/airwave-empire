@@ -23,6 +23,7 @@
     "sim:mega-snapshots": "npm run build && node scripts/run-mega-snapshots.mjs",
     "diag:fixed-cluster": "node scripts/fixed-cost-cluster-diag.mjs",
     "diag:late-era-cost-mix": "node scripts/late-era-cost-mix-diag.mjs",
+    "diag:top40-chr": "node scripts/diag-top40-chr-evolution.mjs",
     "audit:am": "node scripts/audit-am-stations.mjs",
     "audit:lma": "node scripts/audit-lma-fees.mjs",
     "audit:van-repaint": "node scripts/audit-van-repaint-cost.mjs",

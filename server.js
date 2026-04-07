@@ -860,9 +860,8 @@ app.get('/', (req, res) => {
     return res.sendFile(DIST_INDEX);
   }
   const indexPath = path.join(__dirname, 'index.html');
-  const legacyPath = fs.existsSync(path.join(__dirname, 'airwave-empire-ui.html'))
-    ? path.join(__dirname, 'airwave-empire-ui.html')
-    : path.join(__dirname, 'wavelength-ui.html');
+  const playPath = path.join(__dirname, 'play.html');
+  const legacyPath = fs.existsSync(playPath) ? playPath : path.join(__dirname, 'wavelength-ui.html');
   res.sendFile(fs.existsSync(indexPath) ? indexPath : legacyPath);
 });
 

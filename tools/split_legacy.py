@@ -47,7 +47,17 @@ def _extract_game_script(html_wo_style: str) -> tuple[str, str]:
 
 def main() -> None:
     inp = ROOT / "airwave-empire-ui.html"
+    if not inp.exists():
+        raise SystemExit(
+            "split_legacy: airwave-empire-ui.html not found. "
+            "Canonical game source is src/legacy.js and src/styles.css."
+        )
     html = inp.read_text(encoding="utf-8")
+    if "VERSION:" not in html or len(html) < 8000:
+        raise SystemExit(
+            "split_legacy: airwave-empire-ui.html is the deprecated redirect stub, not the old monolith.\n"
+            "Edit src/legacy.js directly. To re-run extraction, restore the historical monolith from git."
+        )
 
     # Extract the first <style>...</style> block.
     html_wo_style, css = _extract_one(r"<style[^>]*>(.*?)</style>", html, label="<style> block")

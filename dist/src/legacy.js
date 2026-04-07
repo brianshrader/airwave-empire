@@ -287,30 +287,58 @@ function hitsDriftStoreKey(fmt){
   return isHitsFormatLineage(fmt)?'TOP40':fmt;
 }
 function hitsDriftPolesForYear(year){
-  const t=hitsLineageAxisBlendT(year||1970);
-  if(t<0.38){
+  const y=year||1970;
+  // Year bands (not axisBlendT): mid-80s stays rock-anchored; full CHR poles only from ~1989.
+  if(y>=1989){
     return {
-      poleA:{name:'Bubblegum Pop',desc:'Pure hits, youngest demos; broad, personality-heavy Top 40.'},
-      poleB:{name:'Rock Edge',desc:'Credibility with 18–34; holds better when rock surges.'},
+      poleA:{name:'Pure Pop Hits',desc:'Maximum mainstream appeal, 12–24 focus. Peak CHR ceiling.'},
+      poleB:{name:'Rhythmic Edge',desc:'Hip-hop and R&B-influenced pop; holds better through trend shocks.'},
     };
   }
-  if(t<0.62){
+  if(y>=1983){
     return {
-      poleA:{name:'Pop Hits',desc:'Tighter chart focus as FM wins the hits lane — still mass-appeal, less album-rock overlap.'},
-      poleB:{name:'Rhythmic lean',desc:'Growing R&B and hip-hop crossover in the stack — not full rhythmic, but edging that way.'},
+      poleA:{name:'Pop Hits',desc:'Mass-appeal chart pop and MTV-era hits; still fighting rock for 18–34 ears.'},
+      poleB:{name:'Rock / Rhythmic Edge',desc:'Guitar-driven hits and album-rock credibility; R&B and crossover starting to thread in — rhythmic is emerging, not dominant.'},
     };
   }
   return {
-    poleA:{name:'Pure Pop Hits',desc:'Maximum mainstream appeal, 12–24 focus. Peak CHR ceiling.'},
-    poleB:{name:'Rhythmic Edge',desc:'Hip-hop and R&B-influenced pop; holds better through trend shocks.'},
+    poleA:{name:'Bubblegum Pop',desc:'Pure hits, youngest demos; broad, personality-heavy Top 40.'},
+    poleB:{name:'Rock Edge',desc:'Credibility with 18–34; holds better when rock surges.'},
   };
 }
 function hitsTop40DemoEffect(drift,coh,year){
-  const lean=drift/100;
-  const t=hitsLineageAxisBlendT(year||1970);
-  const early={'12-17':lean*.25,'18-24':lean*.10,'25-34':(1-lean)*.08};
-  const late={'12-17':(1-lean)*.18,'18-24':lean*.12,'25-34':lean*.10,'35-49':(1-lean)*.04};
-  let bonus=(early[coh]||0)*(1-t)+(late[coh]||0)*t;
+  const lean=_clamp01(drift/100);
+  const y=year||1970;
+  // Early: left = teen/mass pop; right = 18–34 rock (not hotter teens than bubblegum).
+  const early={
+    '12-17':(1-lean)*.22+lean*.02,
+    '18-24':(1-lean)*.10+lean*.14,
+    '25-34':(1-lean)*.03+lean*.10,
+    '35-49':lean*.04,
+  };
+  // Transitional (~1983–88): same axis idea as poles — pop left, rock-anchored right with slight rhythmic pull.
+  const trans={
+    '12-17':(1-lean)*.18+lean*.05,
+    '18-24':(1-lean)*.08+lean*.12,
+    '25-34':(1-lean)*.04+lean*.10,
+    '35-49':(1-lean)*.02+lean*.06,
+  };
+  const late={
+    '12-17':(1-lean)*.18,
+    '18-24':lean*.12,
+    '25-34':lean*.10,
+    '35-49':(1-lean)*.04,
+  };
+  let bonus=0;
+  if(y<1982){
+    bonus=early[coh]||0;
+  }else if(y<1989){
+    const bt=_smoothstep(1982,1984,y);
+    bonus=(early[coh]||0)*(1-bt)+(trans[coh]||0)*bt;
+  }else{
+    const t=hitsLineageAxisBlendT(y);
+    bonus=(trans[coh]||0)*(1-t)+(late[coh]||0)*t;
+  }
   return Math.max(0.5,1+bonus);
 }
 function migrateHitsLineage(G){
@@ -5402,7 +5430,7 @@ const DRIFT={
        desc:'Anti-disco backlash sweeps the country. Stations leaning pop/disco lose 18-24 males rapidly to rock.',
        effect:(s,drift)=>{if(drift>60)return -0.04*(drift/100);return 0.01;}},
       {y:1984,p:1,id:'mtv_era',name:'MTV Reshapes Pop',
-       desc:'Video-friendly pop dominates. Pure-pop-leaning hit stations ride the wave; rhythmic leans can miss the visual moment.',
+       desc:'Video-friendly pop dominates. Pure-pop-leaning hit stations ride the wave; heavy rock-lean stations can miss the visual moment.',
        effect:(s,drift)=>{return drift<45?0.025:0;}},
       {y:1991,p:2,id:'grunge_wave',name:'Alternative Breaks Mainstream',
        desc:'Nevermind-era rock surges. Very pop-heavy hit stations lose 18–24 males; rhythmic-leaning holds modestly better.',
