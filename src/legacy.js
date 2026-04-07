@@ -4509,7 +4509,8 @@ window._mpApply_fire = function({ sid, slot }) {
 // Sell station
 window._mpApply_sell = function({ sid }) {
   const s = G.stations.find(st=>st.id===sid);
-  if(s){ s.isPlayer=false; s._mpOwner=undefined; s.color=s.color||'#6b7280'; }
+  if(!s||stationIsPlayerLmaLesseeOperation(s))return;
+  s.isPlayer=false; s._mpOwner=undefined; s.color=s.color||'#6b7280';
   G.ps = G.stations.filter(s=>s.isPlayer);
 };
 
@@ -11717,6 +11718,11 @@ function lmaCountsAgainstLimit(year) {
   return year >= 1999;
 }
 
+/** True when the player operates this station under an LMA (lessee) — not license owner; cannot “sell” the facility. */
+function stationIsPlayerLmaLesseeOperation(s){
+  return !!(s&&(s._lmaStation||s.lmaLesseeId==='player'));
+}
+
 function playerCanEnterLMA(role, G) {
   // role: 'lessee' = player wants to operate another station
   // role: 'lessor' = player wants to lease out one of their own
@@ -16039,6 +16045,10 @@ function doBreakSim(id){
 // 7. SELL STATION
 function openSell(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  if(stationIsPlayerLmaLesseeOperation(s)){
+    showToast('LMA operation: you don’t own this license — use End LMA in the LMA screen. There is no sale proceeds.','warn');
+    return;
+  }
   const _myOwnedStns = MP.mode==='live' ? G.ps.filter(s=>s._mpOwner===MP.playerId) : G.ps;
   if(_myOwnedStns.length<=1){document.getElementById('sellb').innerHTML='<p class="di">You cannot sell your only station.</p><button class="cnl" onclick="cm(\'m-sell\')">CLOSE</button>';om('m-sell');return;}
   // Valuation: market-aware (FM premium, market rank, quality)
@@ -16067,6 +16077,11 @@ function openSell(sid){
 }
 function doSell(sid,price){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  if(stationIsPlayerLmaLesseeOperation(s)){
+    showToast('Cannot sell an LMA-operated station — end the agreement instead (no windfall).','warn');
+    cm('m-sell');
+    return;
+  }
   G.cash+=parseInt(price);
   breakSimulcast(G,sid);
   if(MP.mode==='live'){if(!G._playerCash)G._playerCash={};G._playerCash[MP.playerId]=G.cash;MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash});}
@@ -18950,9 +18965,11 @@ function rStns(){
         const histArr=junior
           ?['<button class="abt" onclick="openHistory(\''+s.id+'\')">📋 HISTORY '+legLbl(s)+'</button>','<button class="abt" onclick="openHistory(\''+junior.id+'\')">📋 HISTORY '+legLbl(junior)+'</button>']
           :['<button class="abt" onclick="openHistory(\''+s.id+'\')">📋 HISTORY '+legLbl(s)+'</button>'];
-        const sellArr=junior
-          ?['<button class="abt g" onclick="openSell(\''+s.id+'\')">💰 SELL '+legLbl(s)+'</button>','<button class="abt g" onclick="openSell(\''+junior.id+'\')">💰 SELL '+legLbl(junior)+'</button>']
-          :['<button class="abt g" onclick="openSell(\''+s.id+'\')">💰 SELL '+legLbl(s)+'</button>'];
+        const mkSellBtn=st=>{
+          if(!st||stationIsPlayerLmaLesseeOperation(st))return '';
+          return '<button class="abt g" onclick="openSell(\''+st.id+'\')">💰 SELL '+legLbl(st)+'</button>';
+        };
+        const sellArr=junior?[mkSellBtn(s),mkSellBtn(junior)].filter(Boolean):[mkSellBtn(s)].filter(Boolean);
         const progAct=(op.ops?.progBudget||0)>0?'g active':'g';
         const scActEmpty='<div class="sc-act-empty" aria-hidden="true"></div>';
         const pack2=btns=>{

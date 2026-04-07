@@ -64,3 +64,7 @@ fee = min(raw,
 ## Maintenance
 
 When tuning, update **both** `legacy.js` and `lmaFeeModelShared.mjs` inside the marked SYNC regions.
+
+## Lessee exit (no “sale” windfall)
+
+Stations the player **operates under an LMA** (`_lmaStation` / `lmaLesseeId === 'player'`) are not owned licenses. The UI omits **Sell** for those rows, and `openSell` / `doSell` / `_mpApply_sell` block sale so ending the agreement is the only exit (via **End LMA**), with no proceeds — matching real-world LMA dissolution for the operator.
