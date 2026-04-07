@@ -21,6 +21,8 @@
     "sim:cash-audit": "npm run build && node scripts/run-cash-flow-audit.mjs",
     "sim:cash-bridge-audit": "npm run build && node scripts/run-cash-bridge-audit.mjs",
     "sim:mega-snapshots": "npm run build && node scripts/run-mega-snapshots.mjs",
+    "diag:fixed-cluster": "node scripts/fixed-cost-cluster-diag.mjs",
+    "diag:late-era-cost-mix": "node scripts/late-era-cost-mix-diag.mjs",
     "audit:am": "node scripts/audit-am-stations.mjs",
     "audit:lma": "node scripts/audit-lma-fees.mjs",
     "audit:van-repaint": "node scripts/audit-van-repaint-cost.mjs",

@@ -2052,6 +2052,39 @@ function progBudgetCapForPeriod(G){
   const ceil=Math.round(940000+_smoothstep(1970,2020,y)*780000);
   return Math.max(floor,Math.min(ceil,raw));
 }
+/**
+ * Player-only minimum promo + programming spend (late-era “cost of defending share”).
+ * AI rivals already get slider values from runAI — do not stack a second floor on them.
+ * effective = max(user slider, baseline); baseline scales with market tier, share, era.
+ * Tunables: tier core % of revenue at full share/era, share ramp, era ramp.
+ */
+const PLAYER_BASELINE_PROMO_SHARE=0.46;
+/** Below this ARP share (decimal), no competitive floor — fringe/niche isn’t “defending #1”. */
+const PLAYER_BASELINE_SHARE_START=0.015;
+/** At/above this share, tier baseline applies at full strength (ramps linearly between start and full). */
+const PLAYER_BASELINE_SHARE_FULL=0.055;
+function playerCompetitiveBaselinePromoProg(s,G,totalRev,promoCap,progCap){
+  if(!s?.isPlayer||totalRev<=0)return{promo:0,prog:0};
+  const year=G.year||1970;
+  if(year<1978)return{promo:0,prog:0};
+  const share=s.rat?.share||0;
+  if(share<PLAYER_BASELINE_SHARE_START)return{promo:0,prog:0};
+  const mktId=G.marketId||ACTIVE_MARKET;
+  const tier=(MARKETS[mktId]||{}).rankTier||'medium';
+  const tierCorePct=tier==='mega'?0.036:tier==='large'?0.027:0.015;
+  const rawK=Math.max(0,Math.min(1,(share-PLAYER_BASELINE_SHARE_START)/(PLAYER_BASELINE_SHARE_FULL-PLAYER_BASELINE_SHARE_START)));
+  const shareK=Math.sqrt(rawK);
+  let eraK=0.22+0.78*_smoothstep(1978,1985,year);
+  eraK*=1+0.12*_smoothstep(1988,1998,year);
+  if(year>=1996)eraK*=1+0.08*Math.min(1,(year-1996)/12);
+  const baselineTotal=Math.round(totalRev*tierCorePct*shareK*eraK);
+  const rawPromo=Math.round(baselineTotal*PLAYER_BASELINE_PROMO_SHARE);
+  const rawProg=Math.max(0,baselineTotal-rawPromo);
+  return{
+    promo:Math.min(promoCap,rawPromo),
+    prog:Math.min(progCap,rawProg),
+  };
+}
 /** UI slider 0–1000 = 0–100.0% of `progBudgetCapForPeriod` (stable thumb as cap scales). */
 const PROG_BUDGET_PERMILLE_MAX=1000;
 function progBudgetPermilleFromDollars(d,cap){
@@ -6908,13 +6941,50 @@ function skipRivalPoachDuplicateSimulcastLeg(st, slot, G){
   return false;
 }
 
+/**
+ * Economic cluster for fixed-cost sharing + demo-breadth sellout: solo `G.ps`, MP same `_mpOwner`,
+ * AI rivals with same `corpOwner`, else standalone.
+ */
+function clusterOwnershipPeersForStation(s,G){
+  if(!s||s._bpSlotDeferred||s.isPublic)return[];
+  if(s.isPlayer){
+    if(typeof MP!=='undefined'&&MP.mode==='live'){
+      const pid=s._mpOwner!==undefined&&s._mpOwner!==null?s._mpOwner:MP.playerId;
+      return(G.ps||[]).filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic&&(st._mpOwner!==undefined&&st._mpOwner!==null?st._mpOwner:0)===pid);
+    }
+    return(G.ps||[]).filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic);
+  }
+  if(s.corpOwner){
+    return(G.stations||[]).filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic&&!st.isPlayer&&st.corpOwner===s.corpOwner);
+  }
+  return[s];
+}
+
+/**
+ * Post–Telecom Act cluster management layer: traffic, regional sales ops, promotions coordination.
+ * Total group cost scales sublinearly (n^0.68) so larger clusters spread overhead — but the layer still
+ * adds real late-1990s friction vs the old model where per-station fixed could collapse too far.
+ */
+function clusterGroupOverheadPerStationHalfPeriod(year,nCluster,mktFixMult,marketId,inflFactor){
+  if(year<1988)return 0;
+  const eraRamp=Math.min(1,(year-1988)/14);
+  const telecomBump=year>=1996?1+0.055*Math.min(1,(year-1996)/10):1;
+  const tier=(MARKETS[marketId]||{}).rankTier||'medium';
+  const tierB=tier==='mega'?1.14:tier==='large'?1.07:1.0;
+  const cappedInfl=Math.min(2.5,inflFactor);
+  const base=Math.round(5200*cappedInfl*tierB*eraRamp*telecomBump);
+  const n=Math.max(1,nCluster);
+  const totalScaled=base*Math.pow(n,0.68);
+  return Math.round((totalScaled/n)*mktFixMult);
+}
+
 // ── REVENUE ENGINE ────────────────────────────────────────────────
 function calcRev(s,G){
   if(s._bpSlotDeferred)return;
   // Non-commercial public stations earn no ad revenue — pledge-funded
   if(s.isPublic){s.fin={rev:0,fix:0,tal:0,cost:0,ebitda:0};return;}
   const adx=G.adx,streamDrag=G.streamDrag,year=G.year;
-  const playerStations=(G?.ps||G?.stations||[]).filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic);
+  const clusterPeers=clusterOwnershipPeersForStation(s,G);
   // Sellout rate drifts toward market-position-appropriate level each period
   // Only runs during live gameplay (G.stations exists), not during initial seeding
   if(G.stations){
@@ -6956,7 +7026,7 @@ function calcRev(s,G){
     // Only applies post-1990 (pre-consolidation, this pitch didn't exist).
     // Max +8% sellout when cluster spans all three major bands.
     let clusterDemoBreadthBonus = 0;
-    if(year >= 1990 && playerStations.length >= 2){
+    if(year >= 1990 && clusterPeers.length >= 2){
       // Primary demo band for each format: Y=youth (12-34), M=mid (25-54), O=older (35+)
       const _demoBand = f => {
         const yFmts = ['TOP40','CHR','ALT_ROCK','RHYTHMIC','HOT_AC','URBAN_CONTEMP'];
@@ -6965,7 +7035,7 @@ function calcRev(s,G){
         if(oFmts.includes(f)) return 'O';
         return 'M'; // Country, AC, Classic Rock, MOR, Soul, Oldies etc.
       };
-      const clusterBands = new Set(playerStations.map(st => _demoBand(st.format)));
+      const clusterBands = new Set(clusterPeers.map(st => _demoBand(st.format)));
       const breadth = clusterBands.size; // 1, 2, or 3
       // 1 band = 0 bonus, 2 bands = 4%, 3 bands = 8%
       // Scales in gradually 1990→1996 as agencies formalize cluster buying
@@ -7026,10 +7096,6 @@ function calcRev(s,G){
   rev=Math.round(rev*dominantEarlyEraMult);
   const amTalkSmMult=earlyEraAmTalkSmallMarketSupport(s.format,year,G.marketId||ACTIVE_MARKET,s.sig?.type||'');
   rev=Math.round(rev*amTalkSmMult);
-  const promoCap=promoBudgetCapForPeriod(G);
-  const progCap=progBudgetCapForPeriod(G);
-  const effPromo=Math.min(s.ops?.promo||0,promoCap);
-  const effProg=Math.min(s.ops?.progBudget||0,progCap);
   // ── COSTS ────────────────────────────────────────────────────────
   // On-air talent (annual salary / 2 for half-year period)
   const talCost=Object.values(s.prog).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
@@ -7063,7 +7129,7 @@ function calcRev(s,G){
   // Simulcast: programming source keeps normal cluster economics; receiver pays incremental
   // facility cost + a partial programming fee tied to the source’s talent load (see below).
   const simPartner=s.simulcastWith?(G.stations||[]).find(st=>st.id===s.simulcastWith):null;
-  const playerPaired=!!(s.simulcastWith&&playerStations.some(st=>st.id===s.simulcastWith));
+  const playerPaired=!!(s.simulcastWith&&clusterPeers.some(st=>st.id===s.simulcastWith));
   const progSrcStation=simulcastProgrammingSourceStation(s,G);
   const isProgReceiver=isSimulcastProgrammingReceiver(s,G);
   const legacySimPair=playerPaired&&simPartner&&s._simulcastSource!==true&&simPartner._simulcastSource!==true;
@@ -7079,13 +7145,15 @@ function calcRev(s,G){
     // Pre-1990: modest sharing discount (physical combo operations, one building, shared admin).
     // 1990-1996: growing consolidation makes cluster ops more systematic.
     // Post-1996 Telecom Act: full cluster efficiency as groups formalize shared services.
-    const sortedByRev=[...playerStations].sort((a,b)=>(b.fin?.rev||0)-(a.fin?.rev||0));
+    const sortedByRev=[...clusterPeers].sort((a,b)=>(b.fin?.rev||0)-(a.fin?.rev||0));
     const stationRank=sortedByRev.findIndex(st=>st.id===s.id);
     // Cluster efficiency: even in 1970, two co-owned stations in the same market
     // shared a building, engineering staff, and often sales. The discount was real
     // from day one — it just became more systematic post-1990 and formalized post-1996.
+    // Post-1996: softer per-station discount + separate group overhead (clusterGroupOverheadPerStationHalfPeriod)
+    // so mega-clusters stay efficient but not frictionless money fountains.
     const clusterEra=year>=1996?1.0:year>=1990?0.70:year>=1980?0.52:0.38;
-    const clusterDiscount=stationRank<=0?0:stationRank===1?.38*clusterEra:(.50+Math.min(.10,(stationRank-2)*.05))*clusterEra;
+    const clusterDiscount=stationRank<=0?0:stationRank===1?0.26*clusterEra:(0.34+Math.min(0.12,(stationRank-2)*0.04))*clusterEra;
     // Automation discount: scales with fraction of slots running on automation.
     // Fully staffed = 0 discount. Fully automated = 0.35 discount. Partial = proportional.
     // e.g. WBRB with 2 talent + 3 automation: 3/5 = 0.21 discount (saves on ops staff).
@@ -7097,7 +7165,7 @@ function calcRev(s,G){
     // Beautiful Music, Adult Standards ran 24hr on reel-to-reel with minimal live staff
     // This reflects their structurally lower labor footprint regardless of talent slots
     const fmtAutoDiscount={'BEAUTIFUL_MUSIC':0.22,'ADULT_STANDARDS':0.18,'MOR':0.08}[s.format]||0;
-    efficiencyMult=Math.max(0.28,1-clusterDiscount-autoDiscount-fmtAutoDiscount);
+    efficiencyMult=Math.max(0.36,1-clusterDiscount-autoDiscount-fmtAutoDiscount);
   }
   // Era cost: early stations ran lean. 1970=20% of mature, ramps to 100% by 1985.
   // Small FM (25kw/10kw) pre-1980 gets extra pioneer discount.
@@ -7132,6 +7200,8 @@ function calcRev(s,G){
   const regCostScaled=Math.round(regCost*mktFixMult);
   const sfCostScaled=Math.round(sfCost*mktFixMult);
   let fixedCost=staffCost+facCost+regCostScaled+sfCostScaled;
+  const groupOverheadHalf=clusterGroupOverheadPerStationHalfPeriod(year,clusterPeers.length,mktFixMult,mktIdForFix,inflFactor);
+  fixedCost+=groupOverheadHalf;
   // ── STREAMING REVENUE ───────────────────────────────────────────
   let streamRev=0,streamUpkeep=0;
   if(s.stream?.active && year>=2005){
@@ -7225,13 +7295,29 @@ function calcRev(s,G){
     const srcTal=Object.values(progSrcStation.prog||{}).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
     simulcastProgFee=Math.round(srcTal*0.38);
   }
+  const promoCap=promoBudgetCapForPeriod(G);
+  const progCap=progBudgetCapForPeriod(G);
+  let effPromo=Math.min(s.ops?.promo||0,promoCap);
+  let effProg=Math.min(s.ops?.progBudget||0,progCap);
+  let competitiveBaselinePromo=0,competitiveBaselineProg=0;
+  if(s.isPlayer){
+    const bp=playerCompetitiveBaselinePromoProg(s,G,totalRev,promoCap,progCap);
+    competitiveBaselinePromo=bp.promo;
+    competitiveBaselineProg=bp.prog;
+    effPromo=Math.max(effPromo,bp.promo);
+    effProg=Math.max(effProg,bp.prog);
+  }
   s.fin.rev=totalRev;
   s.fin.streamRev=isProgReceiver&&progSrcStation?Math.round(streamRev*ccBonus*daPenalty*simulcastRevMult):streamRev;
   s.fin.terRev=isProgReceiver&&progSrcStation?Math.round(rev*ccBonus*daPenalty*simulcastRevMult):Math.round(rev*ccBonus);
-  s.fin.tal=talCost;s.fin.fix=fixedCost;s.fin.opsFloor=opsFloor;s.fin.salesAdminRate=salesAdminRate;s.fin.streamUpkeep=streamUpkeep;
+  s.fin.tal=talCost;s.fin.fix=fixedCost;s.fin.groupOverhead=groupOverheadHalf;s.fin.opsFloor=opsFloor;s.fin.salesAdminRate=salesAdminRate;s.fin.streamUpkeep=streamUpkeep;
   s.fin.simulcastProgFee=simulcastProgFee;
   s.fin.salesAdmin=salesAdminCost;
   s.fin.syndicationRights=rightsHalfPeriod;
+  s.fin.effPromo=effPromo;
+  s.fin.effProg=effProg;
+  s.fin.competitiveBaselinePromo=competitiveBaselinePromo;
+  s.fin.competitiveBaselineProg=competitiveBaselineProg;
   const aiLoanInt=!s.isPlayer&&!s.isPublic?aiRivalDebtInterestForStation(s,G):0;
   s.fin.aiLoanInterest=aiLoanInt;
   s.fin.cost=fixedCost+talCost+salesAdminCost+opsFloor+effPromo+effProg+(s.identityBudget||0)+streamUpkeep+simulcastProgFee+rightsHalfPeriod+aiLoanInt;
@@ -7309,7 +7395,17 @@ function seedRev(stations,G){
       if(s.fin.salesAdminRate!=null){
         s.fin.salesAdmin=Math.round(s.fin.rev*s.fin.salesAdminRate);
         const pc=promoBudgetCapForPeriod(G),pgc=progBudgetCapForPeriod(G);
-        const ep=Math.min(s.ops?.promo||0,pc),epg=Math.min(s.ops?.progBudget||0,pgc);
+        let ep=Math.min(s.ops?.promo||0,pc),epg=Math.min(s.ops?.progBudget||0,pgc);
+        let cbp=0,cbg=0;
+        if(s.isPlayer){
+          const bp=playerCompetitiveBaselinePromoProg(s,G,s.fin.rev,pc,pgc);
+          cbp=bp.promo;cbg=bp.prog;
+          ep=Math.max(ep,bp.promo);epg=Math.max(epg,bp.prog);
+        }
+        s.fin.effPromo=ep;
+        s.fin.effProg=epg;
+        s.fin.competitiveBaselinePromo=cbp;
+        s.fin.competitiveBaselineProg=cbg;
         s.fin.cost=(s.fin.fix||0)+(s.fin.tal||0)+(s.fin.salesAdmin||0)+(s.fin.opsFloor||0)+ep+epg+(s.identityBudget||0)+(s.fin.streamUpkeep||0)+(s.fin.simulcastProgFee||0)+(s.fin.syndicationRights||0)+(s.fin.aiLoanInterest||0);
       }
       s.fin.ebitda=s.fin.rev-s.fin.cost;
@@ -17960,6 +18056,114 @@ function competitorIntelStoryLine(s){
   return [...new Set(pool.map(x=>x.t))].slice(0,2).join(' ');
 }
 
+/** Strip leading emoji / bullets from news lines for AI digest context. */
+function wlStripNewsDecorForDigest(s){
+  if(!s)return '';
+  return String(s).replace(/^[\s\uFE0F\u200d📡📋📻⚠🏆💾📂📈📉🗳✅❌]+/u,'').trim();
+}
+
+/** Build structured brief for POST /api/ratings-digest (ShortAPI trade-press column). */
+function wlBuildRatingsDigestBrief(G,displayYear,displayPeriod){
+  const mkt=MARKETS[G.marketId||ACTIVE_MARKET]||MARKETS.atlanta;
+  const headlines=(G._lastTurnHeadlines||[]).map(n=>wlStripNewsDecorForDigest(n.t)).filter(Boolean);
+  const rh=G.rankerHistory||[];
+  const cur=rh.filter(s=>s&&s.year===displayYear&&s.period===displayPeriod).pop()||(rh.length?rh[rh.length-1]:null);
+  const prev=rh.length>=2?rh[rh.length-2]:null;
+  const movers=[];
+  if(cur&&prev&&cur.shares&&prev.shares){
+    const ids=new Set([...Object.keys(cur.shares),...Object.keys(prev.shares)]);
+    ids.forEach(id=>{
+      const c=cur.shares[id]||0;
+      const p=prev.shares[id]||0;
+      const st=G.stations.find(x=>x&&x.id===id);
+      if(!st||st._bpSlotDeferred||st.isPublic)return;
+      movers.push({
+        call:st.callLetters,
+        fmt:st.format,
+        sharePct:Math.round(c*1000)/10,
+        deltaPP:Math.round((c-p)*1000)/10,
+      });
+    });
+    movers.sort((a,b)=>Math.abs(b.deltaPP)-Math.abs(a.deltaPP));
+  }
+  return{
+    marketLabel:mkt.label,
+    marketId:G.marketId||ACTIVE_MARKET,
+    year:displayYear,
+    period:displayPeriod,
+    season:displayPeriod===2?'Fall':'Spring',
+    headlines,
+    movers:movers.slice(0,14),
+    commercialCount:(G.stations||[]).filter(s=>s&&!s.isPublic&&!s._bpSlotDeferred).length,
+  };
+}
+
+async function wlFetchRatingsDigestArticle(brief){
+  const r=await fetch('/api/ratings-digest',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({brief}),
+  });
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok)throw new Error(j.error||r.message||r.statusText||'Request failed');
+  if(!j.text)throw new Error(j.error||'No article text');
+  return j;
+}
+
+/** Period summary: experimental trade-journal column via ShortAPI (server + SHORTAPI_KEY). */
+async function wlOpenRatingsDigestFromPeriodSummary(displayYear,displayPeriod){
+  if(typeof G==='undefined'||!G){
+    showToast('No game state.','warn');
+    return;
+  }
+  const bodyEl=document.getElementById('ratings-digest-body');
+  const titleEl=document.getElementById('ratings-digest-title');
+  if(titleEl)titleEl.textContent='Radio Business Journal — …';
+  if(bodyEl){
+    bodyEl.textContent='';
+    const load=document.createElement('p');
+    load.style.color='var(--mut)';
+    load.style.fontSize='14px';
+    load.textContent='Requesting column…';
+    bodyEl.appendChild(load);
+  }
+  om('m-ratings-digest');
+  try{
+    const brief=wlBuildRatingsDigestBrief(G,displayYear,displayPeriod);
+    const out=await wlFetchRatingsDigestArticle(brief);
+    if(titleEl)titleEl.textContent=`Radio Business Journal — ${brief.marketLabel} · ${brief.season} ${brief.year}`;
+    if(bodyEl){
+      bodyEl.textContent='';
+      const art=document.createElement('div');
+      art.className='ratings-digest-article';
+      art.style.cssText='font-family:var(--fm);font-size:15px;line-height:1.65;color:var(--off);white-space:pre-wrap';
+      art.textContent=out.text;
+      bodyEl.appendChild(art);
+      if(out.model){
+        const meta=document.createElement('p');
+        meta.style.cssText='font-size:11px;color:var(--mut);margin-top:14px';
+        meta.textContent=`Model: ${out.model} · AI-generated from game state`;
+        bodyEl.appendChild(meta);
+      }
+    }
+  }catch(e){
+    const msg=e&&e.message?String(e.message):'Could not load column.';
+    if(titleEl)titleEl.textContent='Radio Business Journal';
+    if(bodyEl){
+      bodyEl.textContent='';
+      const err=document.createElement('p');
+      err.style.color='var(--red)';
+      err.textContent=msg;
+      bodyEl.appendChild(err);
+      const hint=document.createElement('p');
+      hint.style.cssText='color:var(--mut);font-size:13px;margin-top:10px;line-height:1.45';
+      hint.textContent='Use two terminals: (1) node server.js — loads .env and listens on PORT (default 3000). (2) npm run client:dev — Vite proxies /api to localhost:3000. Open the game at http://localhost:5173/play.html (not file://).';
+      bodyEl.appendChild(hint);
+    }
+    showToast(msg,'warn');
+  }
+}
+
 function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   const ps=myPS(),tRev=ps.reduce((s,st)=>s+st.fin.rev,0),tCost=ps.reduce((s,st)=>s+st.fin.cost,0);
@@ -17987,6 +18191,10 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra
       ${debtShow>0?`<div class="sr"><span class="lb" style="color:var(--red)">Debt principal</span><span class="vl neg">${f$(debtShow)} — click &#36; to manage</span></div>`:''}
       <div class="sr"><span class="lb" style="color:var(--mut)">Ad Market</span><span class="vl" style="color:${per===2?'var(--grn)':'var(--amb)'}">${per===2?'FALL — peak season (+12%)':'SPRING — lean season (−12%)'}${isElYr?' 🗳 +4% political for Talk/Sports':''}</span></div>
       ${_periodNarrHtml}
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08);text-align:center">
+        <button type="button" class="abt g" onclick="wlOpenRatingsDigestFromPeriodSummary(${yr},${per})">📰 Trade press (AI digest)</button>
+        <div style="font-size:11px;color:var(--mut);margin-top:6px;line-height:1.35">Experimental — needs game server + ShortAPI key</div>
+      </div>
     </div>
     ${rightsLines.length?`<div class="ms2"><div class="msh">RIGHTS &amp; SYNDICATION (THIS PERIOD)</div>${rightsLines.map(t=>`<div class="sr"><span class="vl" style="color:var(--off);font-size:15px;font-family:var(--ft)">${t}</span></div>`).join('')}</div>`:''}
     ${ps.map(s=>{

@@ -18,6 +18,7 @@
 // Spectator TV (read-only rankings, same room code): open /spectate.html?room=CODE
 // Uses socket event spectate_room — updates on each host state_broadcast (every period).
 // Image API: SHORTAPI_KEY (ShortAPI z-image, default) and/or GROK_API_KEY for /api/generate-logo, /api/generate-remote-van (Grok edit + logo reference), and AI portraits.
+// Text: POST /api/ratings-digest (trade-press column) uses SHORTAPI_KEY + openai/gpt-5.4-nano (override with SHORTAPI_RATINGS_MODEL).
 // IMAGE_GEN_PROVIDER=shortapi | grok | auto — auto prefers SHORTAPI_KEY when set.
 // Stock pool (random assignment before Grok): generated-portraits/library/{male|female}/{era}/
 // Grok output (organized by hire-era bucket + gender): generated-portraits/grok/{male|female|unknown}/{era}/
@@ -68,6 +69,9 @@ mountCloudSaves(app);
 
 const { mountFeedback } = require('./server/feedbackRoutes');
 mountFeedback(app);
+
+const { mountRatingsDigest } = require('./server/ratingsDigestRoutes');
+mountRatingsDigest(app);
 
 const httpServer = http.createServer(app);
 const io         = new Server(httpServer, {
