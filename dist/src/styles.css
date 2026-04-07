@@ -526,7 +526,7 @@ body.mp-endgame #mp-statusbar,body.mp-endgame #mp-chat-wrap{position:relative;z-
 .rkt th{background:var(--drk);color:var(--mut);padding:6px 10px;border-bottom:2px solid var(--bdr);border-right:1px solid rgba(51,51,51,.4);text-align:center;position:sticky;top:0;z-index:2;letter-spacing:1px;font-size:15px}
 .rkt th.sth{text-align:left;min-width:120px;position:sticky;left:0;z-index:3;background:var(--drk)}
 .rkt td{padding:5px 10px;border-bottom:1px solid rgba(51,51,51,.3);border-right:1px solid rgba(51,51,51,.2);text-align:center;color:var(--mut)}
-.rkt td.stc{text-align:left;position:sticky;left:0;background:var(--pnl);z-index:2;padding-right:14px;box-shadow:4px 0 8px rgba(0,0,0,.45)}
+.rkt td.stc{text-align:left;position:sticky;left:0;background:var(--pnl);z-index:2;padding-right:14px;box-shadow:4px 0 8px rgba(0,0,0,.45);white-space:normal;vertical-align:top}
 .rkt tr:hover td{background:rgba(245,166,35,.04)}
 .rkt tr.rky td{background:rgba(245,166,35,.06)}.rkt tr.rkp2 td{background:rgba(96,165,250,.04)}.rkt tr.rkp td{background:rgba(125,211,252,.04)}.rkt tr.rkp td.stc{background:#0a1a22;}.rkt tr.rky td.stc{background:#1e1800!important;}.rkt tr.rkp2 td.stc{background:#0d1622!important;}.rkt tr:not(.rky):not(.rkp2):not(.rkp) td.stc{background:var(--pnl)!important;}
 .rkt tr.rky td.stc{background:#2a2008;}

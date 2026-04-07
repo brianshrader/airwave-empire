@@ -22,6 +22,7 @@
     "sim:cash-bridge-audit": "npm run build && node scripts/run-cash-bridge-audit.mjs",
     "audit:am": "node scripts/audit-am-stations.mjs",
     "audit:lma": "node scripts/audit-lma-fees.mjs",
+    "audit:van-repaint": "node scripts/audit-van-repaint-cost.mjs",
     "test:solo-reentry": "node scripts/test-solo-reentry.mjs",
     "dedupe:portraits": "node scripts/dedupe-portrait-library.mjs",
     "sort:portraits": "node scripts/sort-portraits-into-library.mjs",

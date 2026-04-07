@@ -1605,15 +1605,16 @@ function showToast(msg,type='info'){
   setTimeout(()=>{ab.className=prev.cls;ab.textContent=prev.txt;ab.style.background=prev.bg;ab.style.borderColor=prev.bc;ab.style.color=prev.col;},3500);
 }
 const qc=q=>q>=68?'good':q>=44?'warn':'poor';
+/** Unrounded price index — same phases as salInfl (talent / general nominal levels in-game). */
+function salInflMultiplier(year){
+  const y=year==null||!Number.isFinite(Number(year))?1970:Number(year);
+  const p1=Math.max(0,Math.min(15,y-1970));
+  const p2=Math.max(0,Math.min(15,y-1985));
+  const p3=Math.max(0,y-2000);
+  return 1.0+p1*0.070+p2*0.035+p3*0.015;
+}
 function salInfl(base,year){
-  // Three-phase talent inflation:
-  // 1970-1985: inflation era + FM talent wars
-  // 1985-2000: moderated growth
-  // 2000+: digital era caps growth
-  const p1=Math.max(0,Math.min(15,year-1970));
-  const p2=Math.max(0,Math.min(15,year-1985));
-  const p3=Math.max(0,year-2000);
-  const m=1.0+p1*0.070+p2*0.035+p3*0.015;
+  const m=salInflMultiplier(year);
   return Math.round(base*m/500)*500;
 }
 
@@ -1997,10 +1998,48 @@ function effectiveRemoteVanMarketingLift(s,G){
   if(age>=REMOTE_VAN_LIFETIME_YEARS)return 0;
   return base;
 }
-/** Repaint van art to match current logo — fraction of purchase, floor a few thousand. */
-function remoteVanRepaintCostDollars(G){
-  const p=remoteVanPurchaseCostDollars(G);
-  return Math.max(8500,Math.round(p*0.34));
+/**
+ * Van repaint / branding — historically plausible ops expense (not capital-scale).
+ * Formula: 1970 standard anchor × salInflMultiplier(year) × graphics catch-up × tier × market × fleet.
+ * - salInflMultiplier: same three-phase curve as salInfl() (shared economy-wide index).
+ * - vanRepaintGraphicsCatchUp: modest extra path for vehicle paint/wrap labor vs pure talent CPI (~real-world body-shop trend).
+ * Tiers: optional s.vanBrandingTier ('basic'|'standard'|'enhanced'|'premium'); default 'standard'.
+ */
+const VAN_REPAINT_BASE_1970_STANDARD=540;
+const VAN_BRANDING_TIER_MULT={basic:0.78,standard:1,enhanced:1.28,premium:1.55};
+function vanRepaintGraphicsCatchUp(year){
+  const y=Math.max(1970,Math.min(2040,year==null||!Number.isFinite(Number(year))?1970:Number(year)));
+  return 1+Math.min(1.28,(y-1970)*0.0225);
+}
+function marketVanRepaintMultiplier(marketId){
+  const tier=(MARKETS[marketId||ACTIVE_MARKET]||MARKETS.atlanta).rankTier||'large';
+  if(tier==='mega')return 1.08;
+  if(tier==='large')return 1.03;
+  if(tier==='medium')return 0.98;
+  return 0.93;
+}
+function fleetVanRepaintMultiplier(station,G){
+  if(!G||!G.ps)return 1;
+  const n=G.ps.filter(st=>st&&st.cosmeticRemoteVanUrl).length;
+  if(n<=1)return 1;
+  return Math.max(0.85,1-0.055*Math.min(n-1,4));
+}
+function roundVanBrandingDollars(x){
+  const v=Math.round(x/25)*25;
+  return Math.max(75,v);
+}
+function remoteVanRepaintCostDollars(G,station){
+  const y=G&&G.year!=null?G.year:1970;
+  const m=salInflMultiplier(y);
+  const catchUp=vanRepaintGraphicsCatchUp(y);
+  const tierKey=(station&&station.vanBrandingTier)||'standard';
+  const tier=VAN_BRANDING_TIER_MULT[tierKey]!=null?VAN_BRANDING_TIER_MULT[tierKey]:VAN_BRANDING_TIER_MULT.standard;
+  let c=VAN_REPAINT_BASE_1970_STANDARD*m*catchUp*tier;
+  if(G){
+    c*=marketVanRepaintMultiplier(G.marketId);
+    if(station)c*=fleetVanRepaintMultiplier(station,G);
+  }
+  return roundVanBrandingDollars(c);
 }
 /** Half-year programming cap — same spine as promo, ~15% higher billing multiplier. */
 function progBudgetCapForPeriod(G){
@@ -12471,19 +12510,21 @@ function openRanker(){
     const freqLine=row.pair?`${row.lead.freq} + ${row.rcv.freq}`:s.freq;
     const lineColor=row.pair?row.lead.color:s.color;
     const ownerNm=stationOwnerLabelForRanker(row.pair?row.lead:s);
-    const ownerHtml=ownerNm
-      ?`<span style="color:var(--mut);flex-shrink:0">·</span><span style="color:var(--off);font-size:13px;font-family:var(--ft);flex-shrink:1;min-width:0;max-width:min(280px,40vw);line-height:1.25" title="${ownerNm.replace(/"/g,'&quot;')}">${ownerNm}</span>`
+    const lineCallFreq=`<div style="display:flex;align-items:center;flex-wrap:wrap;gap:6px;row-gap:2px;min-width:0"><span class="rc" style="color:${lineColor};font-family:var(--fd);flex-shrink:0">${callLine}</span>${simB}${pubBadge}${corpBadge}<span style="color:var(--mut);flex-shrink:0">·</span><span style="color:var(--wht);flex-shrink:0">${freqLine}</span></div>`;
+    const lineFmt=`<div class="rf" style="font-size:15px;line-height:1.3;margin-top:3px;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${fmtLbl.replace(/"/g,'&quot;')}">${fmtLbl}</div>`;
+    const lineOwner=ownerNm
+      ?`<div style="font-size:13px;color:var(--mut);font-family:var(--ft);line-height:1.3;margin-top:2px;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${ownerNm.replace(/"/g,'&quot;')}">${ownerNm}</div>`
       :'';
-    const oneLine=`<span style="display:inline-flex;align-items:center;flex-wrap:wrap;white-space:normal;gap:6px;min-width:0;row-gap:2px"><span class="rc" style="color:${lineColor};font-family:var(--fd);flex-shrink:0">${callLine}</span>${simB}${pubBadge}${corpBadge}${ownerHtml}<span style="color:var(--mut);flex-shrink:0">·</span><span style="color:var(--off);flex-shrink:0">${fmtLbl}</span><span style="color:var(--mut);flex-shrink:0">·</span><span style="color:var(--wht);flex-shrink:0">${freqLine}</span></span>`;
+    const stationCell=`<div style="display:flex;flex-direction:column;gap:0;min-width:0;flex:1;overflow:hidden">${lineCallFreq}${lineFmt}${lineOwner}</div>`;
     const rkCls=`${isP?'rky':s.isPlayer?'rkp2':s.isPublic?'rkp':''}`;
     const rkLogo=cosmeticLogoThumbHtmlForStation(s,{compact:true,stopPropagation:true,title:'View logo'});
     return `<tr class="${rkCls}">
-      <td class="stc"${intelAttr}><div style="display:flex;align-items:center;gap:8px;min-width:0;max-width:min(520px,58vw);overflow:hidden">${rkLogo}<div style="overflow:hidden;text-overflow:ellipsis;min-width:0;flex:1">${oneLine}</div></div></td>
+      <td class="stc"${intelAttr}><div style="display:flex;align-items:flex-start;gap:8px;min-width:0;max-width:min(520px,58vw);overflow:hidden">${rkLogo}${stationCell}</div></td>
       ${cells}
     </tr>`;
   }).join('');
   const wrap=document.getElementById('rkwrap');
-  wrap.innerHTML=`<table class="rkt"><thead><tr><th class="sth">STATION · OWNER · FORMAT · FREQ</th>${thd}</tr></thead><tbody>${rows}</tbody></table>
+  wrap.innerHTML=`<table class="rkt"><thead><tr><th class="sth">STATION</th>${thd}</tr></thead><tbody>${rows}</tbody></table>
     <div style="margin-top:18px;padding-top:14px;border-top:1px solid var(--bdr)">
       <div style="font-family:var(--ft);font-size:14px;color:var(--mut);letter-spacing:2px;margin-bottom:10px">MARKET TALENT <span style="font-size:12px;color:var(--mut);font-weight:400">(quality · all stations)</span></div>
       <div style="max-height:min(38vh,320px);overflow-y:auto;padding-right:4px">${htmlMarketTalentRankerList()}</div>
@@ -13460,7 +13501,7 @@ function brandMarketingLogoBlockHtml(leg){
   const logoTurnBlocked=stationCosmeticGenMatchesTurn(s,turnN,'_lastLogoGenTurn');
   const vanTurnBlocked=stationCosmeticGenMatchesTurn(s,turnN,'_lastVanGenTurn');
   const vanCost=remoteVanPurchaseCostDollars(G);
-  const repaintCost=remoteVanRepaintCostDollars(G);
+  const repaintCost=remoteVanRepaintCostDollars(G,s);
   const myCash=mpMyCashOnHand();
   const hasVanImg=!!s.cosmeticRemoteVanUrl;
   const vanLiftActive=effectiveRemoteVanMarketingLift(s,G)>0;
@@ -16076,7 +16117,7 @@ async function wlRemoteVanImageOp(stationId,mode){
       return;
     }
   }
-  const vanCost=mode==='repaint'?remoteVanRepaintCostDollars(G):remoteVanPurchaseCostDollars(G);
+  const vanCost=mode==='repaint'?remoteVanRepaintCostDollars(G,op):remoteVanPurchaseCostDollars(G);
   if(mpMyCashOnHand()<vanCost){
     showToast(`Need ${f$(vanCost)}.`,'warn');
     return;
