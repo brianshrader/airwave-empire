@@ -4889,6 +4889,95 @@ const ATLANTA_1970_DEFERRED_LAUNCHES=[
   {bpIdx:17, y:1976,p:2}, // weak gospel daytimer — marginal tail
 ];
 const ATLANTA_1970_DEFER_IDX=new Set(ATLANTA_1970_DEFERRED_LAUNCHES.map(e=>e.bpIdx));
+
+/** Extra commercial competitors in rankTier `mega` only (NY/LA/Chicago). Gradual dial fragmentation 1980s→2010s; capped so UI stays manageable. */
+const MEGA_MARKET_FRAGMENTATION_MAX_ADDITIONS=11;
+const MEGA_MARKET_FRAGMENTATION_LAUNCHES=[
+  {y:1983,p:1,bp:{type:'FM',fmt:'CLASSIC_ROCK',pw:'50kw',str:'moderate'}},
+  {y:1985,p:2,bp:{type:'FM',fmt:'CHR',pw:'25kw',str:'emerging'}},
+  {y:1986,p:1,bp:{type:'FM',fmt:'ADULT_CONTEMP',pw:'25kw',str:'emerging'}},
+  {y:1990,p:2,bp:{type:'FM',fmt:'CHR',pw:'50kw',str:'moderate'}},
+  {y:1991,p:1,bp:{type:'FM',fmt:'ALT_ROCK',pw:'50kw',str:'emerging'}},
+  {y:1994,p:1,bp:{type:'FM',fmt:'URBAN_CONTEMP',pw:'50kw',str:'moderate'}},
+  {y:1998,p:2,bp:{type:'AM',fmt:'SPORTS_TALK',pw:'10kw',str:'moderate'}},
+  {y:2002,p:1,bp:{type:'FM',fmt:'RHYTHMIC',pw:'50kw',str:'emerging'}},
+  {y:2006,p:2,bp:{type:'FM',fmt:'SPANISH',pw:'25kw',str:'emerging'}},
+  {y:2010,p:1,bp:{type:'FM',fmt:'HOT_AC',pw:'50kw',str:'moderate'}},
+  {y:2014,p:2,bp:{type:'FM',fmt:'PODCAST_TALK',pw:'10kw',str:'niche'}},
+];
+function isMegaMarketId(marketId){
+  return (MARKETS[marketId||'']||{}).rankTier==='mega';
+}
+function megaMarketFragmentationQueueForNewGame(marketId){
+  if(!isMegaMarketId(marketId))return[];
+  return MEGA_MARKET_FRAGMENTATION_LAUNCHES.map(({y,p,bp})=>({y,p,bp:{...bp}}));
+}
+/** Prefer an unused dial position from the market list; falls back to rotating nextFreq. */
+function nextUnusedCommercialFreq(G,type){
+  const used=new Set((G.stations||[]).map(s=>s&&(s.freq||s._deferFreq)).filter(Boolean));
+  const m=MARKETS[G.marketId||ACTIVE_MARKET]||MARKETS.atlanta;
+  const list=type==='AM'
+    ?(m.amFreqs&&m.amFreqs.length?m.amFreqs:AMF)
+    :(m.fmFreqs&&m.fmFreqs.length?m.fmFreqs:FMF);
+  for(let i=0;i<list.length;i++){
+    const f=list[i];
+    if(!used.has(f))return f;
+  }
+  return nextFreq(type);
+}
+function countMegaFragmentationEligibleCommercial(stations){
+  if(!stations)return 0;
+  return stations.filter(s=>s&&!s.isPublic&&!s._bpSlotDeferred).length;
+}
+function tryLaunchOneMegaMarketFragmentation(G,ent){
+  const mkt=G.marketId||ACTIVE_MARKET;
+  if(!isMegaMarketId(mkt))return false;
+  if((G._megaFragmentationAdded||0)>=MEGA_MARKET_FRAGMENTATION_MAX_ADDITIONS)return false;
+  const bp=ent.bp;
+  if(!bp||!bp.fmt||!FM[bp.fmt])return false;
+  if(!formatAllowedInMarket(bp.fmt,mkt,G.year))return false;
+  if(countMegaFragmentationEligibleCommercial(G.stations)>=19+MEGA_MARKET_FRAGMENTATION_MAX_ADDITIONS)return false;
+  const freq=nextUnusedCommercialFreq(G,bp.type);
+  const s=mkStn(bp,freq,G.year);
+  s.color=CLR[(G.stations?.length||0)%CLR.length];
+  s.entryTurn={year:G.year,period:G.period};
+  s.launchPeriod=G.turn||0;
+  if(bp.type==='FM'){
+    s.oq=Math.min(90,Math.round(s.oq+4));
+    Object.values(s.prog).forEach(sd=>{if(sd&&sd.quality!=null)sd.quality=Math.min(93,Math.round(sd.quality+3));});
+    refreshStationOQ(s,G);
+  }
+  s._megaFragmentationEntrant=true;
+  G.stations.push(s);
+  G._megaFragmentationAdded=(G._megaFragmentationAdded||0)+1;
+  seedNewEntry(s,G);
+  calcRev(s,G);
+  G.news.unshift({v:'MEDIUM',t:`📡 ${s.callLetters} signs on — ${FM[bp.fmt]?.l||bp.fmt} (${bp.type} ${freq}). Another signal joins the ${MARKETS[mkt]?.label||'market'} dial.`,y:G.year,p:G.period});
+  return true;
+}
+/** Process all fragmentation launches due on or before (maxYear,maxPeriod). Used for late campaign starts. */
+function injectMegaFragmentationThroughPeriod(G,maxYear,maxPeriod){
+  if(!isMegaMarketId(G.marketId||ACTIVE_MARKET))return;
+  const q=G._megaFragmentationQueue;
+  if(!q||!q.length)return;
+  const remain=[];
+  for(const ent of q){
+    if(maxYear<ent.y||(maxYear===ent.y&&maxPeriod<ent.p)){remain.push(ent);continue;}
+    tryLaunchOneMegaMarketFragmentation(G,ent);
+  }
+  G._megaFragmentationQueue=remain;
+}
+function processMegaMarketFragmentationLaunches(G){
+  if(!isMegaMarketId(G.marketId||ACTIVE_MARKET))return;
+  const q=G._megaFragmentationQueue;
+  if(!q||!q.length)return;
+  const remain=[];
+  for(const ent of q){
+    if(G.year<ent.y||(G.year===ent.y&&G.period<ent.p)){remain.push(ent);continue;}
+    tryLaunchOneMegaMarketFragmentation(G,ent);
+  }
+  G._megaFragmentationQueue=remain;
+}
 const STT={dominant:'star',strong:'mid',moderate:'mid',emerging:'entry',niche:'entry',weak:'entry'};
 const STQ={dominant:[68,88],strong:[55,75],moderate:[42,62],emerging:[30,52],niche:[25,48],weak:[18,38]};
 // STM: base appeal multiplier at FULL MATURITY for each strength tier.
@@ -9422,6 +9511,24 @@ function genMarket(scenId){
     const mockG2={adx:adxMod,streamDrag:0,year:startYear};
     seedRev(stations,mockG2);
     const activeMkt2=MARKETS[ACTIVE_MARKET]||MARKETS.atlanta;
+    const finalAdx=adxMod*(1.0+activeMkt2.adxBonus);
+    const finalStream=Math.min(.60,EVDATA.filter(ev=>ev.e==='stream+'&&ev.y<startYear).length*0.06);
+    const fragShell={
+      stations,marketId:ACTIVE_MARKET,year:startYear,period:1,
+      turn:(startYear-1970)*2,adx:finalAdx,streamDrag:finalStream,
+      ps:stations.filter(s=>s&&s.isPlayer),
+      _megaFragmentationQueue:megaMarketFragmentationQueueForNewGame(ACTIVE_MARKET),
+      _megaFragmentationAdded:0,
+    };
+    injectMegaFragmentationThroughPeriod(fragShell,startYear,1);
+    const mockGRecalc={
+      stations,marketId:ACTIVE_MARKET,year:startYear,period:1,turn:fragShell.turn,
+      adx:finalAdx,streamDrag:finalStream,satDrag:0,
+      fmp:effectiveFmpForMarket(startYear,ACTIVE_MARKET),
+      ps:fragShell.ps,
+    };
+    recalc(stations,mockGRecalc);
+    seedRev(stations,mockGRecalc);
     // Filter out events that already happened
     const remainingEvq=EVDATA.filter(ev=>ev.y>startYear||(ev.y===startYear&&ev.p===2));
     _gbBrandIdTaken=null;
@@ -9430,8 +9537,8 @@ function genMarket(scenId){
       turn:(startYear-1970)*2,
       stations,ps:stations.filter(s=>s&&s.isPlayer),
       sc:scForGame,cash:startCash,
-      fmp:effectiveFmpForMarket(startYear,ACTIVE_MARKET),adx:adxMod*(1.0+activeMkt2.adxBonus),satDrag:0,
-      streamDrag:Math.min(.60,EVDATA.filter(ev=>ev.e==='stream+'&&ev.y<startYear).length*0.06),
+      fmp:effectiveFmpForMarket(startYear,ACTIVE_MARKET),adx:finalAdx,satDrag:0,
+      streamDrag:finalStream,
       fccAM,fccFM,
       unlockedFormats:Object.keys(FM).filter(f=>formatAllowedInMarket(f,ACTIVE_MARKET,startYear)),
       news:[{v:'LOW',t:`Campaign begins — ${activeMkt2.label} radio, ${startYear}. ${sc.d.split('.')[0]}.`,y:startYear,p:1}],
@@ -9445,6 +9552,8 @@ function genMarket(scenId){
       loans:[],
       talentBench:[],
       _atl1970DeferredQueue:[],
+      _megaFragmentationQueue:fragShell._megaFragmentationQueue||[],
+      _megaFragmentationAdded:fragShell._megaFragmentationAdded||0,
       sportsRights:{},franchiseRights:{},teamRecords:{},
     };
   }
@@ -9470,6 +9579,8 @@ function genMarket(scenId){
     loans:[],
     talentBench:[],
     _atl1970DeferredQueue:ATLANTA_1970_DEFERRED_LAUNCHES.map(({bpIdx,y,p})=>({bpIdx,y,p})),
+    _megaFragmentationQueue:megaMarketFragmentationQueueForNewGame(ACTIVE_MARKET),
+    _megaFragmentationAdded:0,
     sportsRights:{},franchiseRights:{},teamRecords:{},
   };
 }
@@ -11989,6 +12100,7 @@ function advTurn(mpCoalesceSeq){
       normalizeSimulcastLinksInPlace(G);
       finalizeTalentBenchEndOfTurn(G);
       processAtlanta1970DeferredLaunches(G);
+      processMegaMarketFragmentationLaunches(G);
       const ev=[...chkEv(G),...applyDriftInflections(G),...pledgeDriveCheck(G),...runMarketAttrition(G)];
     corporateDecay(G);
     runCorpLMAOffers(G);
@@ -12170,6 +12282,7 @@ function advTurn(mpCoalesceSeq){
     // BP-slot entrants scheduled for the new calendar period appear as soon as the clock advances
     // (start-of-turn processing still runs for launches tied to the period being simulated).
     processAtlanta1970DeferredLaunches(G);
+    processMegaMarketFragmentationLaunches(G);
     // Keep G.fmp in sync with smoothstep curve (used by UI display and legacy references)
     G.fmp=effectiveFmpForMarket(G.year,G.marketId||ACTIVE_MARKET);
     // Decade grade at end of fall of decade-end year
@@ -16769,6 +16882,8 @@ function migrateSave(G){
   G.stationFinHistory=G.stationFinHistory||{};
   if(!G.score)G.score={isSandbox:false,shareHistory:[],peakRevenue:0,decadeScores:{}};
   G._atl1970DeferredQueue=G._atl1970DeferredQueue||[];
+  if(G._megaFragmentationQueue===undefined)G._megaFragmentationQueue=[];
+  if(G._megaFragmentationAdded===undefined)G._megaFragmentationAdded=0;
   G.sportsRights=G.sportsRights||{};
   G.franchiseRights=G.franchiseRights||{};
   G.teamRecords=G.teamRecords||{};

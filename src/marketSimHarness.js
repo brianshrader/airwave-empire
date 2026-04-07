@@ -28,6 +28,9 @@
  *
  * Solo cash bridge (advTurn step labels + modal-equivalent fields + CSV):
  *   runCashBridgeAudit({ quick: true })  // or npm run sim:cash-bridge-audit
+ *
+ * Mega markets (LA / NYC / Chicago) snapshot table — station counts, shares, revenue spread:
+ *   runMegaMarketSnapshotsDiagnostic({ years: [2000, 2019] })  // or npm run sim:mega-snapshots
  */
 (function () {
   'use strict';
@@ -1707,6 +1710,196 @@
   }
 
   /**
+   * Advance global G until calendar (endYear, endPeriod), or error. One advTurn() = one half-year period.
+   */
+  function advanceGToYearPeriod(endYear, endPeriod, maxSteps) {
+    var steps = 0;
+    while (steps < maxSteps) {
+      if (G.year === endYear && G.period === endPeriod) {
+        return { ok: true, steps: steps };
+      }
+      if (G.year > endYear || (G.year === endYear && G.period > endPeriod)) {
+        return { ok: false, steps: steps, error: 'overshot', at: { year: G.year, period: G.period } };
+      }
+      advTurn();
+      steps++;
+    }
+    return { ok: false, steps: steps, error: 'maxSteps', at: { year: G.year, period: G.period } };
+  }
+
+  /** Single-frame metrics for mega-market snapshot reports (inspect-mega-snapshots.html). */
+  function megaSnapshotMetrics(G) {
+    var comm = commercialStations(G);
+    var mh = marketHealthSnapshot(G);
+    var byShare = topN(comm, comm.length, function (s) {
+      return s.rat && s.rat.share ? s.rat.share : 0;
+    });
+    var byRev = topN(comm, comm.length, function (s) {
+      return s.fin && s.fin.rev ? s.fin.rev : 0;
+    });
+    var top5 = byShare.slice(0, 5).map(function (s) {
+      return {
+        call: s.callLetters,
+        fmt: s.format,
+        share_pct: Math.round((s.rat.share || 0) * 10000) / 100,
+        rev: Math.round(s.fin && s.fin.rev ? s.fin.rev : 0),
+      };
+    });
+    var over5 = 0;
+    var over8 = 0;
+    comm.forEach(function (s) {
+      var sh = s.rat && s.rat.share ? s.rat.share : 0;
+      if (sh > 0.05) over5++;
+      if (sh > 0.08) over8++;
+    });
+    var top10rev = byRev.slice(0, 10);
+    var revs = top10rev.map(function (s) {
+      return s.fin && s.fin.rev ? s.fin.rev : 0;
+    });
+    var rmax = revs.length ? Math.max.apply(null, revs) : 0;
+    var rmin = revs.length ? Math.min.apply(null, revs) : 0;
+    var spread = rmax - rmin;
+    return {
+      marketId: G.marketId,
+      year: G.year,
+      period: G.period,
+      stationCountCommercial: mh.commercial,
+      stationCountActive: mh.active,
+      publicStations: mh.public,
+      top5Shares: top5,
+      countShareOver5pct: over5,
+      countShareOver8pct: over8,
+      top10Revenue: top10rev.map(function (s) {
+        return { call: s.callLetters, fmt: s.format, rev: Math.round(s.fin && s.fin.rev ? s.fin.rev : 0) };
+      }),
+      top10RevSpread: Math.round(spread),
+      top10RevMax: Math.round(rmax),
+      top10RevMin: Math.round(rmin),
+    };
+  }
+
+  /**
+   * Headless / inspect page: LA, NYC, Chicago at configured years (default 2000 & 2019, fall).
+   * Uses genMarketMP + advTurn with UI/timer patches (same pattern as runMarketSimulationBatch).
+   */
+  function runMegaMarketSnapshotsDiagnostic(opts) {
+    opts = opts || {};
+    var markets = opts.markets || ['losangeles', 'newyork', 'chicago'];
+    var years = opts.years || [2000, 2019];
+    var endPeriod = opts.endPeriod != null ? opts.endPeriod : 2;
+    var seed = opts.seed != null ? opts.seed : 20260407;
+    var maxSteps = opts.maxStepsPerRun != null ? opts.maxStepsPerRun : 420;
+    var eraKey = opts.eraKey || '1970';
+    var verbose = opts.verbose !== false;
+
+    if (typeof genMarketMP !== 'function') throw new Error('genMarketMP not found — load legacy.js first');
+    if (typeof advTurn !== 'function') throw new Error('advTurn not found');
+    if (typeof syncMarketPopToMarket !== 'function') throw new Error('syncMarketPopToMarket not found');
+
+    var savedG = typeof G !== 'undefined' ? G : null;
+    var savedActive = typeof ACTIVE_MARKET !== 'undefined' ? ACTIVE_MARKET : null;
+    var savedMPMode = window.MP && MP.mode;
+    var origRandom = Math.random;
+
+    var rows = [];
+    var lines = [];
+    lines.push('Mega market snapshots — genMarketMP(' + eraKey + ') → end of target year period ' + endPeriod + ' (fall)');
+    lines.push('Markets: ' + markets.join(', '));
+    lines.push('Years: ' + years.join(', '));
+    lines.push('RNG seed: ' + seed);
+    lines.push('');
+
+    try {
+      for (var mi = 0; mi < markets.length; mi++) {
+        for (var yi = 0; yi < years.length; yi++) {
+          (function (seedRun) {
+            var s = seedRun;
+            Math.random = function () {
+              s = (s * 9301 + 49297) % 233280;
+              return s / 233280;
+            };
+          })(seed + mi * 10007 + yi * 9001);
+
+          var marketId = markets[mi];
+          var targetYear = years[yi];
+          ACTIVE_MARKET = marketId;
+          syncMarketPopToMarket(marketId);
+          G = genMarketMP(eraKey);
+          MP.mode = 'solo';
+          MP.isHost = false;
+          if (MP.players) MP.players = [];
+
+          var ui = patchTimersAndUi();
+          var adv;
+          try {
+            adv = advanceGToYearPeriod(targetYear, endPeriod, maxSteps);
+          } finally {
+            ui.restore();
+          }
+
+          if (!adv.ok) {
+            rows.push({
+              marketId: marketId,
+              targetYear: targetYear,
+              error: adv.error || 'advance failed',
+              at: adv.at,
+            });
+            lines.push('--- ' + marketId + ' ' + targetYear + ' — FAIL (' + (adv.error || '') + ') — ' + JSON.stringify(adv.at || {}));
+            lines.push('');
+            continue;
+          }
+
+          var m = megaSnapshotMetrics(G);
+          m.targetYear = targetYear;
+          m.advSteps = adv.steps;
+          rows.push(m);
+
+          lines.push('=== ' + String(marketId).toUpperCase() + ' — end of ' + targetYear + ' P' + endPeriod + ' ===');
+          lines.push(
+            'Commercial stations: ' +
+              m.stationCountCommercial +
+              ' | on-air active: ' +
+              m.stationCountActive +
+              ' | public: ' +
+              m.publicStations +
+              ' | advTurns from start: ' +
+              adv.steps
+          );
+          lines.push('Top 5 shares (% of market):');
+          m.top5Shares.forEach(function (r, i) {
+            lines.push('  ' + (i + 1) + '. ' + r.call + '  ' + r.fmt + '  ' + r.share_pct + '%  rev≈$' + r.rev);
+          });
+          lines.push('Stations with share > 5%: ' + m.countShareOver5pct);
+          lines.push('Stations with share > 8%: ' + m.countShareOver8pct);
+          lines.push(
+            'Top 10 revenue spread (max−min among top 10 by rev): $' +
+              m.top10RevSpread +
+              '  (max $' +
+              m.top10RevMax +
+              ', min $' +
+              m.top10RevMin +
+              ')'
+          );
+          lines.push('Top 10 by revenue: ' + m.top10Revenue.map(function (x) { return x.call + ' $' + x.rev; }).join(' | '));
+          lines.push('');
+        }
+      }
+    } finally {
+      Math.random = origRandom;
+      if (savedG !== null) G = savedG;
+      if (savedActive !== null) ACTIVE_MARKET = savedActive;
+      if (window.MP && savedMPMode !== undefined) MP.mode = savedMPMode;
+    }
+
+    var plainEnglish = lines.join('\n');
+    var out = { rows: rows, plainEnglish: plainEnglish, options: { markets: markets, years: years, seed: seed, eraKey: eraKey, endPeriod: endPeriod } };
+    if (verbose && typeof console !== 'undefined') {
+      console.log(out.plainEnglish);
+    }
+    return out;
+  }
+
+  /**
    * Headless-friendly: advTurn through endYear, aggregate mean/min/max station counts by decade.
    * Same loop driver as runPublicRadioSimulation.
    */
@@ -2974,6 +3167,9 @@
   window.runFormatEcologyInspection = runFormatEcologyInspection;
   window.runCashFlowIntegrityDiagnostic = runCashFlowIntegrityDiagnostic;
   window.runCashBridgeAudit = runCashBridgeAudit;
+  window.runMegaMarketSnapshotsDiagnostic = runMegaMarketSnapshotsDiagnostic;
+  window.megaSnapshotMetrics = megaSnapshotMetrics;
+  window.advanceGToYearPeriod = advanceGToYearPeriod;
   window.mapFormatToEcologyBucket = mapFormatToEcologyBucket;
   window.classifyCommercialHealthDiagnostic = classifyCommercialHealthDiagnostic;
   window.snapshotFormatEcologyOnePeriod = snapshotFormatEcologyOnePeriod;
@@ -2991,6 +3187,9 @@
     runFormatEcologyInspection: runFormatEcologyInspection,
     runCashFlowIntegrityDiagnostic: runCashFlowIntegrityDiagnostic,
     runCashBridgeAudit: runCashBridgeAudit,
+    runMegaMarketSnapshotsDiagnostic: runMegaMarketSnapshotsDiagnostic,
+    megaSnapshotMetrics: megaSnapshotMetrics,
+    advanceGToYearPeriod: advanceGToYearPeriod,
     mapFormatToEcologyBucket: mapFormatToEcologyBucket,
     classifyCommercialHealthDiagnostic: classifyCommercialHealthDiagnostic,
     snapshotFormatEcologyOnePeriod: snapshotFormatEcologyOnePeriod,
