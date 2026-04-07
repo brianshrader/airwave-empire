@@ -60,6 +60,9 @@ export default defineConfig(({ command }) => ({
         copy('inspectPublicRadioBoot.js');
         copy('inspectMarketHealthBoot.js');
         copy('inspectEcologyDeepBoot.js');
+        copy('inspectFormatEcologyBoot.js');
+        copy('inspectCashFlowBoot.js');
+        copy('inspectCashBridgeBoot.js');
         // Legal pages link /src/styles.css — Vite does not emit this path; copy so contact/terms/privacy match the game theme.
         copy('styles.css');
         const legalDir = join(__dirname, 'legal');
@@ -97,6 +100,9 @@ export default defineConfig(({ command }) => ({
         'inspect-public-radio': resolve(__dirname, 'inspect-public-radio.html'),
         'inspect-market-health': resolve(__dirname, 'inspect-market-health.html'),
         'inspect-ecology-deep': resolve(__dirname, 'inspect-ecology-deep.html'),
+        'inspect-format-ecology': resolve(__dirname, 'inspect-format-ecology.html'),
+        'inspect-cash-flow': resolve(__dirname, 'inspect-cash-flow.html'),
+        'inspect-cash-bridge-audit': resolve(__dirname, 'inspect-cash-bridge-audit.html'),
       },
     },
   },

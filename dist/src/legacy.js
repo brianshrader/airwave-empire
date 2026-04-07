@@ -6229,6 +6229,7 @@ function rankStationsByShareCompetition(stations){
   return{n,rankById};
 }
 window.rankStationsByShareCompetition=rankStationsByShareCompetition;
+window.playerLmaCashNetForSolo=playerLmaCashNetForSolo;
 
 /** Market education / civic-news proxy for public-station audience only (not commercial revenue). ~1.0 neutral. */
 function marketEduIndex(marketId){
@@ -7190,11 +7191,12 @@ function seedRev(stations,G){
   // The LMA operator absorbs all staffing, talent, and facility costs.
   // Override fin values so the station card and revenue phase show correct numbers.
   stations.filter(s=>s.lmaLessorId).forEach(s=>{
-    const fee=Math.round(s.fin.rev*LMA_FEE_RATE/1000)*1000;
-    s._lmaGrossRev=s.fin.rev; // preserve for fee calculation reference
-    s.fin.rev=fee;            // player only sees the fee
-    s.fin.cost=0;             // operator bears all costs
-    s.fin.ebitda=fee;         // pure income
+    s._lmaGrossRev=s.fin.rev;
+    s._lmaSeedEbitda=s.fin.ebitda;
+    const fee=lmaFeeForStation(s,G);
+    s.fin.rev=fee;
+    s.fin.cost=0;
+    s.fin.ebitda=fee;
   });
 }
 
@@ -11275,24 +11277,92 @@ function acqPrice(s,G){
 // before 1992 deregulation opened up multi-station ownership.
 // Peak era: 1978-1996. Still used post-1996 but as pre-sale transitions.
 //
-// LESSOR (you own, they operate): Collect ~65% of station revenue as a fee.
-//   You keep the license. The station's P&L is theirs. No upkeep on your end.
-//   Useful when: at ownership cap, station underperforming, need steady cash.
+// Fee economics (2026): lease-style, not a flat % of revenue. See docs/lma-fee-model.md
+// SYNC: implementation mirrored in scripts/lmaFeeModelShared.mjs (search LMA_FEE_MODEL_SYNC).
 //
-// LESSEE (you operate, they own): Pay ~65% of revenue as fee to licensor.
-//   Station appears on your management panel. You set format, hire talent, etc.
-//   Does NOT count against ownership limits until 1999 FCC rule change.
-//   Useful when: at ownership cap but want to run another signal.
+// LESSOR (you own, they operate): guaranteed license / time-brokerage payment.
+// LESSEE (you operate, they own): pay fee from operating cash; station P&L stays visible.
 //
 // Corp AI: Corps can propose LMAs to players as lessees of corp-owned stations.
 
-const LMA_FEE_RATE = 0.65; // lessor receives 65% of station revenue as fixed fee
+// LMA_FEE_MODEL_SYNC_START — fee kernel (keep in sync with scripts/lmaFeeModelShared.mjs)
+const LMA_K_BASE = { mega: 0.003, large: 0.0023, medium: 0.0016, small: 0.0012 };
+const LMA_K_PERF = 0.048;
 
-function lmaFeeForStation(s) {
-  // Use pre-override gross revenue if available (seedRev stores it in _lmaGrossRev)
-  // so the fee is based on what the station actually earns, not the already-overridden value
-  const base = s._lmaGrossRev || s.fin?.rev || 0;
-  return Math.round(base * LMA_FEE_RATE / 1000) * 1000;
+/** Era weight: pre-1990 weak → 1990s ramp → 1996–2003 peak → fade post-mid-2000s. */
+function lmaEraFactor(year) {
+  const y = year;
+  if (y < 1988) return 0.34;
+  if (y < 1990) return 0.38 + (y - 1988) * 0.02;
+  if (y <= 1995) return 0.46 + ((y - 1990) / 5) * 0.44;
+  if (y <= 2003) return 0.9 + ((y - 1995) / 8) * 0.12;
+  if (y <= 2012) return 1.02 - ((y - 2003) / 9) * 0.22;
+  return Math.max(0.72, 0.8 - (y - 2012) * 0.004);
+}
+
+function lmaAbsoluteCapHalfYear(year, rankTier) {
+  const e = lmaEraFactor(year);
+  const tierM = rankTier === 'mega' ? 1.0 : rankTier === 'large' ? 0.72 : 0.48;
+  const v = 2.15e6 * (0.62 + 0.38 * e) * tierM;
+  return Math.round(v / 5000) * 5000;
+}
+
+/**
+ * Lease-style LMA fee (half-year dollars), rounded to nearest $1k.
+ * Hybrid: (small fraction of market half-period pool) + (sublinear % of gross) × era,
+ * then min of revenue %, EBITDA %, and absolute cap.
+ */
+function lmaComputeFeeRounded(halfPeriodMarketPool, grossRev, seedEbitda, rankTier, year, isFm) {
+  const tier = rankTier || 'large';
+  const kb = LMA_K_BASE[tier] ?? LMA_K_BASE.large;
+  const sigM = isFm ? 1.06 : 1.0;
+  const E = lmaEraFactor(year);
+  const raw = (halfPeriodMarketPool * kb + grossRev * LMA_K_PERF * sigM) * E;
+  const capRev = grossRev * 0.11;
+  const capEbitda = seedEbitda > 0 ? seedEbitda * 0.28 : Number.POSITIVE_INFINITY;
+  const absCap = lmaAbsoluteCapHalfYear(year, tier);
+  let fee = Math.min(raw, capRev, capEbitda, absCap);
+  if (fee < 0) fee = 0;
+  return Math.round(fee / 1000) * 1000;
+}
+
+function lmaHalfPeriodMarketPool(G) {
+  const mktId = G.marketId || ACTIVE_MARKET || 'atlanta';
+  const annual = marketAnnualBilling(G.year, mktId);
+  const hsf = marketHalfSeasonFactor(G.year, G.period || 1);
+  const adx = Math.max(0.75, G.adx || 1);
+  return Math.round(annual * 0.5 * hsf * adx);
+}
+// LMA_FEE_MODEL_SYNC_END
+
+/** Read-only: net cash effect from LMA fees this period (lessor inflows − lessee outflows). Solo / diagnostics. */
+function playerLmaCashNetForSolo(G) {
+  if (!G) return { lesseeFees: 0, lessorFees: 0, net: 0 };
+  let lessee = 0;
+  G.stations.filter(s => s.lmaLesseeId === 'player' && s._lmaStation).forEach(s => {
+    lessee += lmaFeeForStation(s, G);
+  });
+  let lessor = 0;
+  (G.ps || []).filter(s => s.lmaLessorId).forEach(s => {
+    lessor += lmaFeeForStation(s, G);
+  });
+  return { lesseeFees: lessee, lessorFees: lessor, net: lessor - lessee };
+}
+
+function lmaFeeForStation(s, Gopt) {
+  const Gg = Gopt || (typeof G !== 'undefined' ? G : null);
+  const gross = (s._lmaGrossRev != null && s._lmaGrossRev !== undefined) ? s._lmaGrossRev : (s.fin?.rev || 0);
+  let seedEbitda;
+  if (s.lmaLessorId) seedEbitda = s._lmaSeedEbitda != null ? s._lmaSeedEbitda : 0;
+  else seedEbitda = s.fin?.ebitda ?? 0;
+  if (!Gg) {
+    return Math.round(Math.min(gross * 0.08, gross * 0.11) / 1000) * 1000;
+  }
+  const mkt = MARKETS[Gg.marketId || ACTIVE_MARKET] || MARKETS.atlanta;
+  const tier = mkt.rankTier || 'large';
+  const pool = lmaHalfPeriodMarketPool(Gg);
+  const isFm = (s.sig?.type === 'FM') || !!s.fmBooster;
+  return lmaComputeFeeRounded(pool, gross, seedEbitda, tier, Gg.year, isFm);
 }
 
 function lmaCountsAgainstLimit(year) {
@@ -11359,7 +11429,7 @@ function rLMA() {
   let activeHTML = '';
   if (activeLesseeStns.length || activeLessorStns.length) {
     const lesseeRows = activeLesseeStns.map(s => {
-      const fee = lmaFeeForStation(s);
+      const fee = lmaFeeForStation(s, G);
       return `<div class="lma-row active-lma">
         <div>
           <div class="lma-badge lessee">YOU OPERATE</div>
@@ -11373,7 +11443,7 @@ function rLMA() {
     }).join('');
 
     const lessorRows = activeLessorStns.map(s => {
-      const fee = lmaFeeForStation(s);
+      const fee = lmaFeeForStation(s, G);
       return `<div class="lma-row active-lma">
         <div>
           <div class="lma-badge lessor">YOU LICENSE OUT</div>
@@ -11396,8 +11466,8 @@ function rLMA() {
   let lesseeHTML = '';
   if (lesseeTargets.length) {
     const rows = lesseeTargets.map(s => {
-      const fee = lmaFeeForStation(s);
-      const netEst = Math.round((s.fin?.rev||0) * (1 - LMA_FEE_RATE));
+      const fee = lmaFeeForStation(s, G);
+      const netEst = Math.round((s.fin?.rev || 0) - fee);
       const canAfford = G.cash >= fee; // need first period's fee upfront
       const sigType = s.sig.type==='FM'||s.fmBooster ? 'FM' : 'AM';
       const limitOk = !countsAgainstLimit || fccCanAcquire('player', sigType, G);
@@ -11433,7 +11503,7 @@ function rLMA() {
   let lessorHTML = '';
   if (canLessor) {
     const rows = lessorTargets.map(s => {
-      const fee = lmaFeeForStation(s);
+      const fee = lmaFeeForStation(s, G);
       return `<div class="lma-row">
         <div>
           <div class="lma-call">${s.callLetters}</div>
@@ -11446,7 +11516,7 @@ function rLMA() {
     }).join('');
     lessorHTML = `<div class="ms2">
       <div class="msh">YOUR STATIONS AVAILABLE TO LEASE OUT (YOU AS LESSOR)</div>
-      <p class="di" style="font-size:14px">Lease a station you own to an operator. You collect ${Math.round(LMA_FEE_RATE*100)}% of revenue as a fixed fee. No upkeep costs. You keep the license and call letters. Useful when at your ownership cap.</p>
+      <p class="di" style="font-size:14px">Lease a station you own to an operator. You collect a market- and era-scaled license fee (not a flat % of revenue). No upkeep costs. You keep the license and call letters. Useful when at your ownership cap.</p>
       ${rows}
     </div>`;
   } else {
@@ -11469,7 +11539,7 @@ function rLMA() {
 function doLMALessee(sid) {
   const s = G.stations.find(st => st.id === sid);
   if (!s || s.isPlayer || s.lmaLesseeId) return;
-  const fee = lmaFeeForStation(s);
+  const fee = lmaFeeForStation(s, G);
   if (G.cash < fee) { alert('Need ' + f$(fee) + ' for first period fee.'); return; }
   G.cash -= fee;
   if (MP.mode==='live') { if(!G._playerCash) G._playerCash={}; G._playerCash[MP.playerId]=G.cash; MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash}); }
@@ -11482,7 +11552,7 @@ function doLMALessee(sid) {
   s._lmaStation = true; // distinguishes from owned stations
   applyDefaultBrandToPlayerStation(s);
   s.lmaLicensorName = lmaLicensorSnapshot;
-  s._lmaFeeRate = LMA_FEE_RATE;
+  s._lmaFeeRate = s.fin.rev > 0 ? Math.round((fee / s.fin.rev) * 1000) / 1000 : 0;
   G.ps = G.stations.filter(st => st.isPlayer);
 
   G.news.unshift({v:'HIGH', t:`📝 LMA signed: ${s.callLetters} — you now program and operate this station. Fee: ${f$(fee)}/period to licensor.`, y:G.year, p:G.period, iy:true});
@@ -11496,7 +11566,7 @@ function doLMALessor(sid) {
   if (!s || !s.isPlayer) return;
   const myNonLeased = G.ps.filter(st => !st.lmaLessorId && !st._lmaStation);
   if (myNonLeased.length < 2) { alert('You must keep at least 1 station for yourself.'); return; }
-  const fee = lmaFeeForStation(s);
+  const fee = lmaFeeForStation(s, G);
 
   s.lmaLessorId = 'ai_operator'; // an AI entity operates it
   s._lmaStation = false;
@@ -11556,7 +11626,7 @@ function terminateLMA(sid, role) {
 function processLMAFees(G) {
   // Player as lessee: deduct fee from player cash
   G.stations.filter(s => s.lmaLesseeId === 'player' && s._lmaStation).forEach(s => {
-    const fee = lmaFeeForStation(s);
+    const fee = lmaFeeForStation(s, G);
     G.cash = (G.cash || 0) - fee;
     if (MP.mode==='live') { if(!G._playerCash) G._playerCash={}; G._playerCash[MP.playerId]=G.cash; }
     s._lmaFeePaid = fee;
@@ -11564,7 +11634,7 @@ function processLMAFees(G) {
 
   // Player as lessor: add fee to player cash; check for expiration
   G.ps.filter(s => s.lmaLessorId).forEach(s => {
-    const fee = lmaFeeForStation(s);
+    const fee = lmaFeeForStation(s, G);
     G.cash = (G.cash || 0) + fee;
     if (MP.mode==='live') { if(!G._playerCash) G._playerCash={}; G._playerCash[MP.playerId]=G.cash; }
     s._lmaFeeReceived = fee;
@@ -11776,6 +11846,88 @@ function doSales(sid,level){
   cm('m-sales',{wlTutorialSuppress:true});renderAll();
 }
 
+/** Solo dev-only: true when cash-bridge audit logging is active (no gameplay changes). */
+function wlCashBridgeAuditActive(){
+  return typeof globalThis!=='undefined'&&globalThis.__WL_CASH_BRIDGE_AUDIT__&&G&&MP&&MP.mode!=='live';
+}
+function wlCashBridgeAuditCash(){
+  return G.cash||0;
+}
+function wlCashBridgeAuditPush(label,extra){
+  if(!wlCashBridgeAuditActive())return;
+  if(!G._cashBridgeTurnSteps)G._cashBridgeTurnSteps=[];
+  const row=Object.assign({label,cash:wlCashBridgeAuditCash()},extra||{});
+  G._cashBridgeTurnSteps.push(row);
+}
+/**
+ * Records one turn row on globalThis.__WL_CASH_BRIDGE_AUDIT_ROWS__ (solo headless / audit runs).
+ * Identity: cash_after ≈ cash_before + early_pipeline_delta + lma_net + ebitda − interest + pressure_delta
+ */
+function wlCashBridgeAuditEmitTurnRow(ctx){
+  if(!wlCashBridgeAuditActive())return;
+  const wasYear=ctx.wasYear,wasPeriod=ctx.wasPeriod,profit=ctx.profit,cashBefore=ctx.cashBefore;
+  const steps=G._cashBridgeTurnSteps||[];
+  const beforeLMA=steps.find(s=>s.label==='AFTER_REV_AND_AI_BEFORE_LMA');
+  const earlyPipelineDelta=beforeLMA?((beforeLMA.cash||0)-(cashBefore||0)):0;
+  const afterLMAStep=steps.find(s=>s.label==='AFTER_LMA');
+  const lma=afterLMAStep
+    ?{lesseeFees:afterLMAStep.lmaLesseeFees||0,lessorFees:afterLMAStep.lmaLessorFees||0,net:afterLMAStep.lmaNet!=null?afterLMAStep.lmaNet:((afterLMAStep.lmaLessorFees||0)-(afterLMAStep.lmaLesseeFees||0))}
+    :(G._cashBridgeLmaSnapshot||(typeof playerLmaCashNetForSolo==='function'?playerLmaCashNetForSolo(G):{lesseeFees:0,lessorFees:0,net:0}));
+  const ps=myPS();
+  const tRev=ps.reduce((s,st)=>s+(st.fin?.rev||0),0);
+  const tCost=ps.reduce((s,st)=>s+(st.fin?.cost||0),0);
+  const loanInt=G._lastLoanInterestCharge||0;
+  const pressureD=G._lastPressureCashDelta||0;
+  const cashAfterRollover=ctx.cashAfterRollover!=null?ctx.cashAfterRollover:wlCashBridgeAuditCash();
+  const expected=
+    (cashBefore||0)+earlyPipelineDelta+(lma.net||0)+profit-loanInt+pressureD;
+  const delta=cashAfterRollover-expected;
+  const modal=G._cashBridgeModalSnapshot||{};
+  const modalCash=modal.modalCashOnHand;
+  const mkt=G.marketId||'atlanta';
+  const name=(typeof G.companyName==='string'&&G.companyName.trim())?G.companyName.trim():'Player';
+  const row={
+    scenarioId:G._cashBridgeScenarioId||'',
+    marketId:mkt,
+    marketLabel:(MARKETS[mkt]||MARKETS.atlanta)?.label||mkt,
+    year:wasYear,
+    period:wasPeriod,
+    season:wasPeriod===2?'FALL':'SPRING',
+    playerOrGroupName:name,
+    cash_before_advance:cashBefore,
+    early_pipeline_cash_delta:earlyPipelineDelta,
+    total_station_revenue:tRev,
+    total_station_operating_cost:tCost,
+    total_station_ebitda:profit,
+    lma_cash_in:lma.lessorFees,
+    lma_cash_out:lma.lesseeFees,
+    lma_net:lma.net,
+    loan_interest:loanInt,
+    debt_principal_paid:0,
+    acquisitions_or_station_purchase_cost:0,
+    station_sale_or_distress_cash_from_pressure:pressureD>0?pressureD:0,
+    capex_or_upgrade_costs:0,
+    talent_signing_or_buyout_in_rollover:0,
+    pressure_net_cash_delta:pressureD,
+    cash_after_all_rollover_steps:cashAfterRollover,
+    computed_expected_cash_after:expected,
+    delta,
+    modal_net_ebitda:modal.modalNetEbitda,
+    modal_cash_on_hand:modalCash,
+    modal_loan_interest:modal.modalLoanInterest,
+    modal_debt_principal_outstanding:modal.modalDebtPrincipalOutstanding,
+    modal_total_revenue:modal.modalTotalRevenue,
+    modal_total_operating_cost:modal.modalTotalOperatingCost,
+    steps:steps.slice(),
+    anomaly_large_delta:Math.abs(delta)>1,
+    anomaly_modal_cash_mismatch:modalCash!=null&&Math.abs(modalCash-cashAfterRollover)>1,
+    anomaly_modal_ebitda_mismatch:modal.modalNetEbitda!=null&&modal.modalNetEbitda!==profit,
+  };
+  row.anomaly_reconcile_fail=Math.abs(delta)>1;
+  globalThis.__WL_CASH_BRIDGE_AUDIT_ROWS__=globalThis.__WL_CASH_BRIDGE_AUDIT_ROWS__||[];
+  globalThis.__WL_CASH_BRIDGE_AUDIT_ROWS__.push(row);
+}
+
 function advTurn(mpCoalesceSeq){
   if(!G)return;
   const btn=document.getElementById('abtn');
@@ -11787,6 +11939,11 @@ function advTurn(mpCoalesceSeq){
         if (btn) { btn.disabled = false; btn.textContent = '▶ NEXT PERIOD'; }
         MP.renderStatus();
         return;
+      }
+      if(wlCashBridgeAuditActive()){
+        G._cashBridgeTurnSteps=[];
+        G._cashBridgeCashBefore=wlCashBridgeAuditCash();
+        wlCashBridgeAuditPush('BEFORE_ADVANCE',{year:G.year,period:G.period});
       }
       G._fccRegulatoryThisTurn=[];
       normalizeSimulcastLinksInPlace(G);
@@ -11821,7 +11978,13 @@ function advTurn(mpCoalesceSeq){
     updateAiRivalNegEbitdaStreaks(G);
     // Post-revenue consolidation uses current-period fin.rev for deal pricing; news merged below like runAI acts.
     const consolidationActs=runConsolidation(G);
+    if(wlCashBridgeAuditActive())wlCashBridgeAuditPush('AFTER_REV_AND_AI_BEFORE_LMA',{});
     processLMAFees(G);
+    if(wlCashBridgeAuditActive()){
+      const _lma=playerLmaCashNetForSolo(G);
+      G._cashBridgeLmaSnapshot=_lma;
+      wlCashBridgeAuditPush('AFTER_LMA',{lmaLesseeFees:_lma.lesseeFees,lmaLessorFees:_lma.lessorFees,lmaNet:_lma.net});
+    }
     // MP: credit each player's cash independently from their own stations
     if (MP.mode === 'live') {
       if (!G._playerCash) G._playerCash = {};
@@ -11834,6 +11997,7 @@ function advTurn(mpCoalesceSeq){
     }
     const profit = myPS().reduce((s,st) => s + st.fin.ebitda, 0);
     if (MP.mode !== 'live') G.cash += profit;
+    if(wlCashBridgeAuditActive())wlCashBridgeAuditPush('AFTER_EBITDA',{profit});
     // Score tracking
     // UNDERDOG VP: apply once at game start (first period only)
     if(MP.mode==='live'&&G._underdogVP&&!G._underdogVPApplied){
@@ -11883,6 +12047,9 @@ function advTurn(mpCoalesceSeq){
     if(G.news.length>50)G.news=G.news.slice(0,50);
     updateLoanNegEbitdaStreaks(G);
     applyLoanInterest();
+    if(wlCashBridgeAuditActive()){
+      wlCashBridgeAuditPush('AFTER_INTEREST',{loanInterest:G._lastLoanInterestCharge||0});
+    }
     // Ad market recovery: recessions cause permanent hits in the current model,
     // but real markets recover. Drift adx back toward baseline at 2.5%/period.
     // This means a -0.10 shock fully recovers in ~4 periods (2 years) — realistic.
@@ -11901,21 +12068,65 @@ function advTurn(mpCoalesceSeq){
     });
     G.stations.forEach(s=>decay(s,G.year,G.period));
     updateSuperstars(G);
+    const _cashBeforePressure=G.cash;
     const alerts=checkPressure(G);
+    if(G)G._lastPressureCashDelta=(G.cash||0)-(_cashBeforePressure||0);
+    if(wlCashBridgeAuditActive()){
+      wlCashBridgeAuditPush('AFTER_PRESSURE',{pressureCashDelta:G._lastPressureCashDelta||0});
+    }
     // Advance clock before showSum so wasYear/wasPeriod are available to pass in
     const wasYear=G.year,wasPeriod=G.period;
     recordCompanyFinHistory(G, wasYear, wasPeriod, profit);
     recordStationFinHistory(G, wasYear, wasPeriod);
     G._lastTurnHeadlines=(G.news||[]).filter(n=>n&&n.y===wasYear&&n.p===wasPeriod);
+    if(wlCashBridgeAuditActive()){
+      const _ps=myPS();
+      const _tRev=_ps.reduce((s,st)=>s+(st.fin?.rev||0),0);
+      const _tCost=_ps.reduce((s,st)=>s+(st.fin?.cost||0),0);
+      const _myInt=G._lastLoanInterestCharge||0;
+      const _debt=debtPrincipalForPid(G,loanPidForGame());
+      G._cashBridgeModalSnapshot={
+        displayYear:wasYear,
+        displayPeriod:wasPeriod,
+        modalNetEbitda:profit,
+        modalTotalRevenue:_tRev,
+        modalTotalOperatingCost:_tCost,
+        modalLoanInterest:_myInt,
+        modalDebtPrincipalOutstanding:_debt,
+        modalCashOnHand:mpMyCashOnHand(),
+      };
+    }
     showSum(profit,ev,acts,alerts,wasYear,wasPeriod,{sportsActs,franchiseActs});
+    let _cbaCashAfterRollover;
+    if(wlCashBridgeAuditActive()){
+      wlCashBridgeAuditPush('AFTER_SHOWSUM_MODAL_FIELDS_CAPTURED',{note:'G.cash unchanged'});
+      _cbaCashAfterRollover=wlCashBridgeAuditCash();
+    }
     // Multiplayer: campaign ends after Fall 2025 — build scores while G.year is still 2025 (playerScoreCalc weights)
     if(MP.mode==='live'&&!G.continuesBeyondEnd&&wasYear===2025&&wasPeriod===2){
       G.mpPhase='endgame';
       G._mpFinalResults=buildMpFall2025EndgameResults();
       G._mpShowEndgameAfterSumClose=true;
     }
+    if(wlCashBridgeAuditActive())wlCashBridgeAuditPush('FINAL_CASH_PRE_CLOCK',{});
     if(G.period===1){G.period=2;}else{G.period=1;G.year++;}
     G.turn=(G.turn||0)+1;
+    if(wlCashBridgeAuditActive()){
+      wlCashBridgeAuditPush('FINAL_CASH_AFTER_CLOCK',{year:G.year,period:G.period});
+      wlCashBridgeAuditEmitTurnRow({
+        wasYear,
+        wasPeriod,
+        profit,
+        cashBefore:G._cashBridgeCashBefore,
+        cashAfterRollover:_cbaCashAfterRollover,
+      });
+      const _rows=globalThis.__WL_CASH_BRIDGE_AUDIT_ROWS__;
+      if(_rows&&_rows.length){
+        const _last=_rows[_rows.length-1];
+        _last.cash_after_clock_advance=wlCashBridgeAuditCash();
+        _last.anomaly_modal_cash_mismatch=_last.modal_cash_on_hand!=null&&Math.abs(_last.modal_cash_on_hand-_last.cash_after_all_rollover_steps)>1;
+      }
+    }
     // BP-slot entrants scheduled for the new calendar period appear as soon as the clock advances
     // (start-of-turn processing still runs for launches tied to the period being simulated).
     processAtlanta1970DeferredLaunches(G);
@@ -17156,7 +17367,9 @@ function recordCompanyFinHistory(G, wasYear, wasPeriod, profit){
     const _loanPid=pid!=null&&pid!==undefined?pid:0;
     const debtPrincipal=debtPrincipalForPid(G,_loanPid);
     const loanInterest=MP.mode==='live'?(G._lastLoanInterestByPlayer?.[_loanPid]||0):(G._lastLoanInterestCharge||0);
-    const entry={year:wasYear,period:wasPeriod,revenue,cost,ebitda:pProfit,margin,cash:pCash,talentCost,fixedCost,shareSum,avgSellout,debtPrincipal,loanInterest};
+    const lmaNet=MP.mode==='live'?null:playerLmaCashNetForSolo(G).net;
+    const pressureNet=MP.mode==='live'?null:(G._lastPressureCashDelta!=null?G._lastPressureCashDelta:0);
+    const entry={year:wasYear,period:wasPeriod,revenue,cost,ebitda:pProfit,margin,cash:pCash,talentCost,fixedCost,shareSum,avgSellout,debtPrincipal,loanInterest,lmaNet,pressureNet};
     return entry;
   };
   if(MP.mode==='live'){
@@ -18335,8 +18548,8 @@ function rStns(){
         <div class="scbrand">${callDisplay(s)} — "${op.brand}" · ${FM[op.format]?.l||op.format} <span style="color:var(--mut);font-size:15px;font-style:normal">· ${genderLabel(op.format)}</span></div>
         ${junior?(()=>{const bL=s.sig.type,bJ=junior.sig.type;const lbl=bL===bJ?(bL+'/'+bL+' SIMULCAST'):'AM/FM SIMULCAST';return '<div class="sim-tag" style="color:var(--grn)">◈ '+lbl+' · '+callDisplay(s)+' + '+callDisplay(junior)+'</div>';})():partner&&!isPlayerPair?'<div class="sim-tag">◈ SIMULCAST WITH '+callDisplay(partner)+'</div>':''}
         ${_simRoleStrip}${_soloSimRole}
-        ${s._lmaStation?'<div class="sim-tag" style="color:var(--blu);border-color:rgba(90,180,255,.4)">📝 LMA — LEASED OPERATION · fee: '+f$(lmaFeeForStation(s))+'/period</div>':''}
-        ${s.lmaLessorId?'<div class="sim-tag" style="color:var(--grn);border-color:rgba(82,227,110,.4)">📝 LMA — LEASED OUT · receiving: '+f$(lmaFeeForStation(s))+'/period</div>':''}
+        ${s._lmaStation?'<div class="sim-tag" style="color:var(--blu);border-color:rgba(90,180,255,.4)">📝 LMA — LEASED OPERATION · fee: '+f$(lmaFeeForStation(s,G))+'/period</div>':''}
+        ${s.lmaLessorId?'<div class="sim-tag" style="color:var(--grn);border-color:rgba(82,227,110,.4)">📝 LMA — LEASED OUT · receiving: '+f$(lmaFeeForStation(s,G))+'/period</div>':''}
       </div></div><div><div class="scshv">${pct(shareUi)}</div><div class="scshl">SHARE ${trd}</div></div></div>
       <div class="qr"><span class="ql">QUALITY</span><div class="qb"><div class="qf ${qc2}" style="width:${op.oq}%"></div></div><span class="qn">${op.oq}</span></div>
       <div class="fg">

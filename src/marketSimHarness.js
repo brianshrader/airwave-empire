@@ -19,11 +19,37 @@
  *   marketEcologyInputSnapshot('chicago')
  *   compareMegaMarketEcologyInputs(['newyork','losangeles','chicago'])
  *   runMarketEcologyDeepDiagnostic({ quick: true })
+ *
+ * Format mix by decade (commercial buckets, health, share — dev diagnostic):
+ *   runFormatEcologyInspection({ quick: true })  // or inspect-format-ecology.html
+ *
+ * Solo cash identity (finHistory vs EBITDA − interest + LMA net):
+ *   runCashFlowIntegrityDiagnostic({ quick: true })  // or npm run sim:cash-audit
+ *
+ * Solo cash bridge (advTurn step labels + modal-equivalent fields + CSV):
+ *   runCashBridgeAudit({ quick: true })  // or npm run sim:cash-bridge-audit
  */
 (function () {
   'use strict';
 
   var TALK_FMTS = ['NEWS_TALK', 'SPORTS_TALK', 'PODCAST_TALK', 'ALL_NEWS'];
+
+  /** Broad format buckets for inspect-format-ecology (reporting only). */
+  var FORMAT_ECOLOGY_COMMERCIAL_BUCKETS = [
+    'top40_pop',
+    'rock_alt',
+    'ac_hits_oldies',
+    'country',
+    'urban_rnb',
+    'news_talk',
+    'religious_gospel',
+    'spanish',
+    'beautiful_standards_easy',
+    'other_niche',
+    'unmapped',
+  ];
+  /** Spoken-word / mass-appeal music lanes used for “mainstream competition” view (2010s/2020s). */
+  var FORMAT_ECOLOGY_MAINSTREAM_BUCKETS = ['top40_pop', 'rock_alt', 'ac_hits_oldies', 'country', 'urban_rnb', 'news_talk'];
 
   /** Rough ordinal strength for AM/FM power tokens (higher = stronger). */
   function signalStrengthScore(st) {
@@ -1938,6 +1964,1005 @@
     return out;
   }
 
+  /**
+   * Map legacy `s.format` to a broad ecology bucket. Public formats resolve to `public` (use publicKind).
+   * Unknown strings (not in legacy `FM`) → `unmapped` for a visible mapping safety check.
+   */
+  function mapFormatToEcologyBucket(fmt) {
+    if (fmt == null || fmt === '') return { bucket: 'unmapped', publicKind: null, knownInFM: false };
+    var inFm = typeof FM !== 'undefined' && FM && FM[fmt];
+    if (!inFm) return { bucket: 'unmapped', publicKind: null, knownInFM: false };
+    if (fmt === 'PUBLIC_NEWS') return { bucket: 'public', publicKind: 'news', knownInFM: true };
+    if (fmt === 'PUBLIC_CLASSICAL') return { bucket: 'public', publicKind: 'classical', knownInFM: true };
+    var map = {
+      TOP40: 'top40_pop',
+      CHR: 'top40_pop',
+      HOT_AC: 'top40_pop',
+      RHYTHMIC: 'top40_pop',
+      ALBUM_ROCK: 'rock_alt',
+      CLASSIC_ROCK: 'rock_alt',
+      ALT_ROCK: 'rock_alt',
+      ADULT_CONTEMP: 'ac_hits_oldies',
+      CLASSIC_HITS: 'ac_hits_oldies',
+      OLDIES: 'ac_hits_oldies',
+      MOR: 'ac_hits_oldies',
+      COUNTRY: 'country',
+      URBAN_CONTEMP: 'urban_rnb',
+      SOUL_RNB: 'urban_rnb',
+      NEWS_TALK: 'news_talk',
+      ALL_NEWS: 'news_talk',
+      SPORTS_TALK: 'news_talk',
+      PODCAST_TALK: 'news_talk',
+      GOSPEL: 'religious_gospel',
+      SPANISH: 'spanish',
+      BEAUTIFUL_MUSIC: 'beautiful_standards_easy',
+      ADULT_STANDARDS: 'beautiful_standards_easy',
+    };
+    if (map[fmt]) return { bucket: map[fmt], publicKind: null, knownInFM: true };
+    return { bucket: 'other_niche', publicKind: null, knownInFM: true };
+  }
+
+  function sanitizeShareDiagnostic(s) {
+    var sh = s && s.rat && s.rat.share;
+    if (!isFinite(sh) || sh < 0) return 0;
+    return sh;
+  }
+
+  /**
+   * Diagnostic-only health label (does not affect gameplay).
+   * Order: zombie / niche_survivor from legacy ecology flags first, then share + EBITDA vs revenue stress.
+   */
+  function classifyCommercialHealthDiagnostic(s) {
+    if (!s) return 'weak';
+    if (s.isZombie) return 'zombie';
+    if (s.isNicheSurvival) return 'niche_survivor';
+    var share = sanitizeShareDiagnostic(s);
+    var rev = Math.max(s.fin && s.fin.rev ? s.fin.rev : 0, 1);
+    var ebitda = s.fin && isFinite(s.fin.ebitda) ? s.fin.ebitda : 0;
+    var stress = ebitda < -0.28 * rev;
+    if (share >= 0.045 && !stress) return 'healthy';
+    if (share >= 0.022 && ebitda >= -0.22 * rev) return 'viable';
+    if (share >= 0.012 && ebitda >= -0.38 * rev) return 'viable';
+    return 'weak';
+  }
+
+  function snapshotFormatEcologyOnePeriod(G) {
+    var stations = G.stations || [];
+    var commercial = [];
+    var pub = [];
+    var unmapped = [];
+    for (var i = 0; i < stations.length; i++) {
+      var s = stations[i];
+      if (!s || s._bpSlotDeferred) continue;
+      var fmt = s.format;
+      var m = mapFormatToEcologyBucket(fmt);
+      var share = sanitizeShareDiagnostic(s);
+      if (s.isPublic) {
+        pub.push({
+          format: fmt,
+          bucket: m.bucket,
+          publicKind: m.publicKind,
+          share: share,
+        });
+        continue;
+      }
+      var bucket = m.bucket === 'public' ? 'unmapped' : m.bucket;
+      if (FORMAT_ECOLOGY_COMMERCIAL_BUCKETS.indexOf(bucket) < 0) bucket = 'other_niche';
+      commercial.push({
+        format: fmt,
+        bucket: bucket,
+        health: classifyCommercialHealthDiagnostic(s),
+        share: share,
+      });
+      if (!m.knownInFM) unmapped.push(String(fmt));
+    }
+    return {
+      commercial: commercial,
+      public: pub,
+      unmappedSample: unmapped,
+      marketStructure: marketHealthSnapshot(G),
+    };
+  }
+
+  function meanArr(a) {
+    if (!a || !a.length) return 0;
+    var t = 0;
+    for (var i = 0; i < a.length; i++) t += a[i];
+    return t / a.length;
+  }
+
+  function runFormatEcologyInspection(opts) {
+    opts = opts || {};
+    var markets =
+      opts.markets && opts.markets.length
+        ? opts.markets
+        : opts.quick
+          ? ['nashville', 'atlanta', 'newyork']
+          : ['nashville', 'atlanta', 'newyork', 'losangeles', 'chicago'];
+    var numRunsPerMarket = opts.numRunsPerMarket != null ? opts.numRunsPerMarket : opts.quick ? 2 : 4;
+    var endYear = opts.endYear != null ? opts.endYear : 2025;
+    var endPeriod = opts.endPeriod != null ? opts.endPeriod : 2;
+    var minRecordYear = opts.minRecordYear != null ? opts.minRecordYear : 1985;
+    var maxStepsPerRun = opts.maxStepsPerRun != null ? opts.maxStepsPerRun : 240;
+    var seed = opts.seed != null ? opts.seed : 20260406;
+    var verbose = opts.verbose !== false;
+
+    if (typeof genMarketMP !== 'function') throw new Error('genMarketMP not found — load legacy.js first');
+    if (typeof advTurn !== 'function') throw new Error('advTurn not found');
+    if (typeof syncMarketPopToMarket !== 'function') throw new Error('syncMarketPopToMarket not found');
+
+    var savedG = typeof G !== 'undefined' ? G : null;
+    var savedActive = typeof ACTIVE_MARKET !== 'undefined' ? ACTIVE_MARKET : null;
+    var savedMPMode = window.MP && MP.mode;
+    var origRandom = Math.random;
+
+    var samples = [];
+    var allUnmapped = {};
+
+    try {
+      for (var mi = 0; mi < markets.length; mi++) {
+        var marketId = markets[mi];
+        for (var run = 0; run < numRunsPerMarket; run++) {
+          (function (seedRun) {
+            var s = seedRun;
+            Math.random = function () {
+              s = (s * 9301 + 49297) % 233280;
+              return s / 233280;
+            };
+          })(seed + mi * 7919 + run * 9973);
+
+          ACTIVE_MARKET = marketId;
+          syncMarketPopToMarket(marketId);
+          G = genMarketMP('1985');
+          MP.mode = 'solo';
+          MP.isHost = false;
+          if (MP.players) MP.players = [];
+
+          var ui = patchTimersAndUi();
+          var steps = 0;
+
+          try {
+            while (steps < maxStepsPerRun) {
+              var y0 = G.year;
+              var p0 = G.period;
+              if (y0 > endYear || (y0 === endYear && p0 > endPeriod)) break;
+
+              advTurn();
+              steps++;
+              if (G.year > endYear || (G.year === endYear && G.period > endPeriod)) break;
+
+              var y = G.year;
+              if (y < minRecordYear) continue;
+
+              var dec = decadeLabelPub(y);
+              var snap = snapshotFormatEcologyOnePeriod(G);
+              for (var u = 0; u < snap.unmappedSample.length; u++) {
+                allUnmapped[snap.unmappedSample[u]] = (allUnmapped[snap.unmappedSample[u]] || 0) + 1;
+              }
+              samples.push({
+                marketId: marketId,
+                run: run,
+                year: y,
+                period: G.period,
+                decade: dec,
+                commercial: snap.commercial,
+                public: snap.public,
+                marketStructure: snap.marketStructure,
+              });
+            }
+          } finally {
+            ui.restore();
+          }
+        }
+      }
+    } finally {
+      Math.random = origRandom;
+      G = savedG;
+      if (typeof ACTIVE_MARKET !== 'undefined' && savedActive != null) ACTIVE_MARKET = savedActive;
+      if (window.MP && savedMPMode !== undefined) MP.mode = savedMPMode;
+    }
+
+    var healthKeys = ['healthy', 'viable', 'weak', 'zombie', 'niche_survivor'];
+
+    function emptyBucketRollup() {
+      var o = {};
+      FORMAT_ECOLOGY_COMMERCIAL_BUCKETS.forEach(function (b) {
+        o[b] = { stationCount: [], shareSum: [], health: {} };
+        healthKeys.forEach(function (h) {
+          o[b].health[h] = [];
+        });
+      });
+      return o;
+    }
+
+    var byKey = {};
+
+    function ensureKey(marketId, decade) {
+      var k = marketId + '|' + decade;
+      if (!byKey[k]) {
+        byKey[k] = {
+          marketId: marketId,
+          decade: decade,
+          n: 0,
+          commercialMean: [],
+          activeMean: [],
+          bucket: emptyBucketRollup(),
+          publicStations: [],
+          publicShareSum: [],
+          publicNewsStations: [],
+          publicClassicalStations: [],
+          rawFormat: {},
+          remnantByBucket: {},
+        };
+        FORMAT_ECOLOGY_COMMERCIAL_BUCKETS.forEach(function (b) {
+          byKey[k].remnantByBucket[b] = [];
+        });
+      }
+      return byKey[k];
+    }
+
+    samples.forEach(function (row) {
+      var agg = ensureKey(row.marketId, row.decade);
+      agg.n++;
+      var ms = row.marketStructure;
+      agg.commercialMean.push(ms.commercial);
+      agg.activeMean.push(ms.active);
+
+      var bucketCounts = {};
+      var bucketShares = {};
+      FORMAT_ECOLOGY_COMMERCIAL_BUCKETS.forEach(function (b) {
+        bucketCounts[b] = 0;
+        bucketShares[b] = 0;
+      });
+
+      var remnantPerBucket = {};
+      FORMAT_ECOLOGY_COMMERCIAL_BUCKETS.forEach(function (b) {
+        remnantPerBucket[b] = 0;
+      });
+
+      for (var i = 0; i < row.commercial.length; i++) {
+        var c = row.commercial[i];
+        var b = c.bucket;
+        bucketCounts[b]++;
+        bucketShares[b] += c.share;
+
+        var rf = c.format || '?';
+        if (!agg.rawFormat[rf]) agg.rawFormat[rf] = { count: [], shareSum: [] };
+        agg.rawFormat[rf].count.push(1);
+        agg.rawFormat[rf].shareSum.push(c.share);
+
+        if (c.health === 'weak' || c.health === 'zombie' || c.health === 'niche_survivor') {
+          if (remnantPerBucket[b] !== undefined) remnantPerBucket[b]++;
+        }
+      }
+
+      FORMAT_ECOLOGY_COMMERCIAL_BUCKETS.forEach(function (b) {
+        agg.bucket[b].stationCount.push(bucketCounts[b]);
+        agg.bucket[b].shareSum.push(bucketShares[b]);
+        agg.remnantByBucket[b].push(remnantPerBucket[b]);
+        healthKeys.forEach(function (h) {
+          var n = 0;
+          for (var j = 0; j < row.commercial.length; j++) {
+            if (row.commercial[j].bucket === b && row.commercial[j].health === h) n++;
+          }
+          agg.bucket[b].health[h].push(n);
+        });
+      });
+
+      var pCount = row.public.length;
+      var pShare = 0;
+      var pn = 0,
+        pc = 0;
+      for (var p = 0; p < row.public.length; p++) {
+        pShare += row.public[p].share;
+        if (row.public[p].publicKind === 'news') pn++;
+        if (row.public[p].publicKind === 'classical') pc++;
+      }
+      agg.publicStations.push(pCount);
+      agg.publicShareSum.push(pShare);
+      agg.publicNewsStations.push(pn);
+      agg.publicClassicalStations.push(pc);
+    });
+
+    var decadeOrder = ['1980s', '1990s', '2000s', '2010s', '2020s'];
+    var lines = [];
+    lines.push('══════════════════════════════════════════════════════════════');
+    lines.push('  FORMAT ECOLOGY / FORMAT ECONOMY (dev diagnostic)');
+    lines.push('  Commercial stations: broad buckets + share + health (not gameplay).');
+    lines.push('  Public (PUBLIC_NEWS / PUBLIC_CLASSICAL) reported separately from commercial counts.');
+    lines.push('  Deferred slots (_bpSlotDeferred) excluded; simulcast legs each count as one station.');
+    lines.push('  Markets: ' + markets.join(', '));
+    lines.push('  Runs/market: ' + numRunsPerMarket + ' · Record year ≥ ' + minRecordYear + ' · End ' + endYear);
+    lines.push('══════════════════════════════════════════════════════════════');
+    lines.push('');
+
+    lines.push('--- 1. Market + decade summary ---');
+    markets.forEach(function (mk) {
+      lines.push('Market: ' + mk);
+      decadeOrder.forEach(function (dec) {
+        var bk = mk + '|' + dec;
+        var b = byKey[bk];
+        if (!b || !b.n) return;
+        lines.push('  ' + dec + ' (n=' + b.n + ' period samples)');
+        lines.push(
+          '    Mean commercial stations (active non-public): ' + meanArr(b.commercialMean).toFixed(2) + ' | mean active (incl. public): ' + meanArr(b.activeMean).toFixed(2)
+        );
+        lines.push('    Public: mean stations=' + meanArr(b.publicStations).toFixed(2) + ' | mean total public share=' + (meanArr(b.publicShareSum) * 100).toFixed(2) + ' pts | mean NEWS=' + meanArr(b.publicNewsStations).toFixed(2) + ' CLASSICAL=' + meanArr(b.publicClassicalStations).toFixed(2));
+        lines.push('    Commercial buckets (mean stations / mean share pts / mean counts by health):');
+        FORMAT_ECOLOGY_COMMERCIAL_BUCKETS.forEach(function (bucket) {
+          var br = b.bucket[bucket];
+          if (!br) return;
+          var mc = meanArr(br.stationCount);
+          var ms = meanArr(br.shareSum);
+          if (mc < 0.01 && ms < 1e-6) return;
+          var hp = [];
+          healthKeys.forEach(function (h) {
+            var mh = meanArr(br.health[h]);
+            if (mh > 0.01) hp.push(h + '=' + mh.toFixed(2));
+          });
+          lines.push(
+            '      ' +
+              bucket +
+              ': stations≈' +
+              mc.toFixed(2) +
+              ' | share≈' +
+              (ms * 100).toFixed(2) +
+              ' pts' +
+              (hp.length ? ' | ' + hp.join(', ') : '')
+          );
+        });
+      });
+      lines.push('');
+    });
+
+    lines.push('--- 2. Modern mainstream competition (2010s + 2020s, commercial only) ---');
+    var modBuckets = { _perSample: {} };
+
+    samples.forEach(function (row) {
+      if (row.decade !== '2010s' && row.decade !== '2020s') return;
+      var mainstreamStations = 0;
+      var mainstreamHealthy = 0;
+      var mainstreamShare = 0;
+      for (var i = 0; i < row.commercial.length; i++) {
+        var c = row.commercial[i];
+        if (FORMAT_ECOLOGY_MAINSTREAM_BUCKETS.indexOf(c.bucket) < 0) continue;
+        mainstreamStations++;
+        mainstreamShare += c.share;
+        if (c.health === 'healthy') mainstreamHealthy++;
+      }
+      var k = row.marketId + '|' + row.decade;
+      if (!modBuckets._perSample[k]) modBuckets._perSample[k] = { stations: [], healthy: [], share: [] };
+      modBuckets._perSample[k].stations.push(mainstreamStations);
+      modBuckets._perSample[k].healthy.push(mainstreamHealthy);
+      modBuckets._perSample[k].share.push(mainstreamShare);
+    });
+
+    Object.keys(modBuckets._perSample || {}).forEach(function (k) {
+      var o = modBuckets._perSample[k];
+      lines.push('  ' + k + ': mean mainstream stations=' + meanArr(o.stations).toFixed(2) + ' | mean healthy (mainstream)=' + meanArr(o.healthy).toFixed(2) + ' | mean mainstream share pts=' + (meanArr(o.share) * 100).toFixed(2));
+    });
+    lines.push('');
+
+    lines.push('--- 3. Niche residue (weak + zombie + niche_survivor), by bucket ---');
+    markets.forEach(function (mk) {
+      decadeOrder.forEach(function (dec) {
+        var b = byKey[mk + '|' + dec];
+        if (!b || !b.n) return;
+        var rem = [];
+        FORMAT_ECOLOGY_COMMERCIAL_BUCKETS.forEach(function (bucket) {
+          var mr = meanArr(b.remnantByBucket[bucket]);
+          if (mr > 0.02) rem.push(bucket + '=' + mr.toFixed(2));
+        });
+        if (rem.length) lines.push('  ' + mk + ' ' + dec + ': mean remnant stations per bucket → ' + rem.join(', '));
+      });
+    });
+    var globalRemnant = {};
+    samples.forEach(function (row) {
+      for (var i = 0; i < row.commercial.length; i++) {
+        var c = row.commercial[i];
+        if (c.health !== 'weak' && c.health !== 'zombie' && c.health !== 'niche_survivor') continue;
+        globalRemnant[c.format] = (globalRemnant[c.format] || 0) + 1;
+      }
+    });
+    var topRem = Object.keys(globalRemnant)
+      .sort(function (a, b) {
+        return globalRemnant[b] - globalRemnant[a];
+      })
+      .slice(0, 24);
+    lines.push('  Top raw formats among residue observations (global, all markets/decades): ' + topRem.map(function (f) {
+      return f + '×' + globalRemnant[f];
+    }).join(', '));
+    lines.push('');
+
+    lines.push('--- 4. Raw format appendix (mean count per period & mean share pts) ---');
+    markets.forEach(function (mk) {
+      decadeOrder.forEach(function (dec) {
+        var b = byKey[mk + '|' + dec];
+        if (!b || !b.n || !b.rawFormat) return;
+        var rfs = Object.keys(b.rawFormat).sort();
+        if (!rfs.length) return;
+        lines.push('  ' + mk + ' · ' + dec + ' (n=' + b.n + '):');
+        rfs.forEach(function (rf) {
+          var o = b.rawFormat[rf];
+          lines.push(
+            '    ' +
+              rf +
+              ': meanCount=' +
+              meanArr(o.count).toFixed(2) +
+              ' meanSharePts=' +
+              (meanArr(o.shareSum) * 100).toFixed(3)
+          );
+        });
+      });
+    });
+    lines.push('');
+
+    lines.push('--- 5. Unmapped / unknown format strings (safety check) ---');
+    var umKeys = Object.keys(allUnmapped).sort();
+    if (!umKeys.length) lines.push('  (none — every sampled format key exists in legacy FM or mapping.)');
+    else
+      umKeys.forEach(function (k) {
+        lines.push('  ' + k + ': ' + allUnmapped[k] + ' row(s) in samples');
+      });
+    lines.push('');
+
+    lines.push('--- JSON (structured) ---');
+    var jsonOut = {
+      options: {
+        markets: markets,
+        numRunsPerMarket: numRunsPerMarket,
+        endYear: endYear,
+        minRecordYear: minRecordYear,
+        seed: seed,
+      },
+      byMarketDecade: {},
+      unmappedFormats: allUnmapped,
+      mainstream2010s2020s: modBuckets._perSample || {},
+      globalRemnantRawFormatCounts: globalRemnant,
+      helpers: {
+        mapFormatToEcologyBucket: 'see window.mapFormatToEcologyBucket',
+        classifyCommercialHealthDiagnostic: 'see window.classifyCommercialHealthDiagnostic',
+      },
+    };
+    Object.keys(byKey).forEach(function (k) {
+      var b = byKey[k];
+      var entry = {
+        n: b.n,
+        meanCommercialStations: meanArr(b.commercialMean),
+        meanActiveStations: meanArr(b.activeMean),
+        meanPublicStations: meanArr(b.publicStations),
+        meanPublicShare: meanArr(b.publicShareSum),
+        meanPublicNews: meanArr(b.publicNewsStations),
+        meanPublicClassical: meanArr(b.publicClassicalStations),
+        meanRemnantByBucket: {},
+        buckets: {},
+        rawFormat: {},
+      };
+      FORMAT_ECOLOGY_COMMERCIAL_BUCKETS.forEach(function (bucket) {
+        entry.meanRemnantByBucket[bucket] = meanArr(b.remnantByBucket[bucket]);
+      });
+      FORMAT_ECOLOGY_COMMERCIAL_BUCKETS.forEach(function (bucket) {
+        var br = b.bucket[bucket];
+        entry.buckets[bucket] = {
+          meanStationCount: meanArr(br.stationCount),
+          meanShare: meanArr(br.shareSum),
+          health: {},
+        };
+        healthKeys.forEach(function (h) {
+          entry.buckets[bucket].health[h] = meanArr(br.health[h]);
+        });
+      });
+      for (var rf2 in b.rawFormat) {
+        entry.rawFormat[rf2] = {
+          meanCount: meanArr(b.rawFormat[rf2].count),
+          meanShareSum: meanArr(b.rawFormat[rf2].shareSum),
+        };
+      }
+      jsonOut.byMarketDecade[k] = entry;
+    });
+    lines.push(JSON.stringify(jsonOut, null, 2));
+
+    var plainEnglish = lines.join('\n');
+    var out = {
+      plainEnglish: plainEnglish,
+      samples: samples,
+      byMarketDecade: jsonOut.byMarketDecade,
+      unmappedFormats: allUnmapped,
+      options: jsonOut.options,
+    };
+    if (verbose && typeof console !== 'undefined') {
+      console.log(out.plainEnglish);
+    }
+    return out;
+  }
+
+  /**
+   * Verify: each finHistory row satisfies
+   *   cash[i] - cash[i-1] === ebitda[i] - loanInterest[i] + lmaNet[i] + pressureNet[i]
+   * pressureNet = cash after checkPressure(distress / solo bankruptcy clamp) minus cash before.
+   * Optionally injects LMA lessee/lessor mid-run.
+   */
+  function verifySoloFinHistoryChain(fh, initialCash) {
+    var violations = [];
+    if (!fh || !fh.length) return violations;
+    var prevCash = initialCash;
+    for (var i = 0; i < fh.length; i++) {
+      var row = fh[i];
+      var delta = row.cash - prevCash;
+      var lma = row.lmaNet != null && row.lmaNet !== undefined ? row.lmaNet : 0;
+      var pressure = row.pressureNet != null && row.pressureNet !== undefined ? row.pressureNet : 0;
+      var expected = row.ebitda - (row.loanInterest || 0) + lma + pressure;
+      if (delta !== expected) {
+        violations.push({
+          index: i,
+          year: row.year,
+          period: row.period,
+          deltaCash: delta,
+          expectedDelta: expected,
+          ebitda: row.ebitda,
+          loanInterest: row.loanInterest,
+          lmaNet: lma,
+          prevCash: prevCash,
+          cash: row.cash,
+        });
+      }
+      prevCash = row.cash;
+    }
+    return violations;
+  }
+
+  function injectLmaLesseeProbe(G) {
+    var ai = (G.stations || []).find(function (s) {
+      return s && !s.isPlayer && !s._bpSlotDeferred && !s.isPublic;
+    });
+    if (!ai) return false;
+    ai.isPlayer = true;
+    ai.lmaLesseeId = 'player';
+    ai._lmaStation = true;
+    ai.lmaLicensorName = 'AUDIT LICENSOR';
+    if (typeof applyDefaultBrandToPlayerStation === 'function') applyDefaultBrandToPlayerStation(ai);
+    G.ps = G.stations.filter(function (st) {
+      return st.isPlayer;
+    });
+    return true;
+  }
+
+  function injectLmaLessorProbe(G) {
+    var owned = (G.ps || []).filter(function (s) {
+      return s && !s._lmaStation && !s.lmaLessorId;
+    });
+    if (owned.length < 2) return false;
+    var s = owned[owned.length - 1];
+    s.lmaLessorId = 'ai_operator';
+    s._lmaStartPeriod = G.turn || 0;
+    s._lmaDuration = 99;
+    s.lmaOperatorName = 'Audit OpCo';
+    return true;
+  }
+
+  /** Escape a cell for CSV (matches wlCsvEscapeCell in legacy when available). */
+  function cashBridgeCsvCell(v) {
+    var s = v === null || v === undefined ? '' : String(v);
+    if (/[",\n\r]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+
+  /**
+   * Solo automated cash-flow bridge audit: multiple scenarios, step labels on G.cash in advTurn, modal-equivalent fields.
+   * Does not change game rules — only sets globalThis.__WL_CASH_BRIDGE_AUDIT__ for logging.
+   */
+  function runCashBridgeAudit(opts) {
+    opts = opts || {};
+    var quick = !!opts.quick;
+    var startCash = opts.startCash != null ? opts.startCash : 5000000;
+    var seed = opts.seed != null ? opts.seed : 20260406;
+    var maxStepsPerRun = opts.maxStepsPerRun != null ? opts.maxStepsPerRun : 220;
+    var scenarios =
+      opts.scenarios && opts.scenarios.length
+        ? opts.scenarios
+        : quick
+          ? [
+              { id: 'atl_quick', marketId: 'atlanta', era: '1985', periods: 12, injectLesseeAfter: 6, injectLessorAfter: -1 },
+              { id: 'nash_quick', marketId: 'nashville', era: '1985', periods: 12, injectLesseeAfter: 6, injectLessorAfter: -1 },
+              { id: 'chi_quick', marketId: 'chicago', era: '1985', periods: 12, injectLesseeAfter: 6, injectLessorAfter: -1 },
+            ]
+          : [
+              {
+                id: 'atlanta_1985_LMA',
+                marketId: 'atlanta',
+                era: '1985',
+                periods: 44,
+                injectLesseeAfter: 18,
+                injectLessorAfter: 30,
+              },
+              {
+                id: 'nashville_1985_LMA',
+                marketId: 'nashville',
+                era: '1985',
+                periods: 44,
+                injectLesseeAfter: 18,
+                injectLessorAfter: 30,
+              },
+              {
+                id: 'chicago_1985_LMA',
+                marketId: 'chicago',
+                era: '1985',
+                periods: 44,
+                injectLesseeAfter: 18,
+                injectLessorAfter: 30,
+              },
+              {
+                id: 'atlanta_1978_era',
+                marketId: 'atlanta',
+                era: '1978',
+                periods: 40,
+                injectLesseeAfter: 20,
+                injectLessorAfter: -1,
+              },
+              {
+                id: 'nashville_1990s_cluster_window',
+                marketId: 'nashville',
+                era: '1985',
+                periods: 52,
+                injectLesseeAfter: 14,
+                injectLessorAfter: 26,
+              },
+            ];
+
+    if (typeof genMarketMP !== 'function') throw new Error('genMarketMP not found — load legacy.js first');
+    if (typeof advTurn !== 'function') throw new Error('advTurn not found');
+    if (typeof syncMarketPopToMarket !== 'function') throw new Error('syncMarketPopToMarket not found');
+
+    var savedG = typeof G !== 'undefined' ? G : null;
+    var savedActive = typeof ACTIVE_MARKET !== 'undefined' ? ACTIVE_MARKET : null;
+    var savedMPMode = typeof MP !== 'undefined' && MP ? MP.mode : undefined;
+    var savedMPHost = typeof MP !== 'undefined' && MP ? MP.isHost : undefined;
+    var savedMPPlayers = typeof MP !== 'undefined' && MP ? MP.players : undefined;
+    var savedMPPid = typeof MP !== 'undefined' && MP ? MP.playerId : undefined;
+    var savedHeadless = typeof globalThis !== 'undefined' ? globalThis.__WL_HEADLESS__ : undefined;
+    var savedBridge = typeof globalThis !== 'undefined' ? globalThis.__WL_CASH_BRIDGE_AUDIT__ : undefined;
+    var origRandom = Math.random;
+
+    var probeLog = [];
+
+    try {
+      if (typeof globalThis !== 'undefined') {
+        globalThis.__WL_HEADLESS__ = true;
+        globalThis.__WL_CASH_BRIDGE_AUDIT__ = true;
+        globalThis.__WL_CASH_BRIDGE_AUDIT_ROWS__ = [];
+      }
+      if (typeof MP === 'undefined') throw new Error('MP not defined — legacy multiplayer bootstrap missing');
+
+      for (var si = 0; si < scenarios.length; si++) {
+        (function (seedRun) {
+          var s = seedRun;
+          Math.random = function () {
+            s = (s * 9301 + 49297) % 233280;
+            return s / 233280;
+          };
+        })(seed + si * 10007);
+
+        var sc = scenarios[si];
+        var marketId = sc.marketId || 'atlanta';
+        var era = sc.era || '1985';
+        var periods = sc.periods != null ? sc.periods : 40;
+        var injL = sc.injectLesseeAfter != null ? sc.injectLesseeAfter : -1;
+        var injLo = sc.injectLessorAfter != null ? sc.injectLessorAfter : -1;
+
+        ACTIVE_MARKET = marketId;
+        syncMarketPopToMarket(marketId);
+        G = genMarketMP(era);
+        if (typeof migrateSave === 'function') migrateSave(G);
+
+        MP.mode = 'solo';
+        MP.isHost = false;
+        MP.players = [];
+        MP.playerId = 0;
+        G.loans = [];
+        G.finHistory = [];
+
+        var pool = (G.stations || []).filter(function (s) {
+          return s && !s._bpSlotDeferred && !s.isPublic && !s.isPlayer;
+        });
+        var take = Math.min(3, pool.length);
+        for (var t = 0; t < take; t++) {
+          pool[t].isPlayer = true;
+          if (typeof applyDefaultBrandToPlayerStation === 'function') applyDefaultBrandToPlayerStation(pool[t]);
+        }
+        G.ps = G.stations.filter(function (st) {
+          return st.isPlayer;
+        });
+        G.cash = startCash;
+        if (!G.sc) G.sc = {};
+        G.sc.cash = startCash;
+        G._cashBridgeScenarioId = sc.id || 'scenario_' + si;
+
+        var ui = patchTimersAndUi();
+        var step = 0;
+        try {
+          while (step < periods && step < maxStepsPerRun) {
+            var y0 = G.year;
+            var p0 = G.period;
+            if (y0 > 2030 || (y0 === 2030 && p0 > 2)) break;
+
+            if (injL >= 0 && step === injL) {
+              probeLog.push({ scenario: sc.id, kind: 'lessee', ok: injectLmaLesseeProbe(G) });
+            }
+            if (injLo >= 0 && step === injLo) {
+              probeLog.push({ scenario: sc.id, kind: 'lessor', ok: injectLmaLessorProbe(G) });
+            }
+
+            advTurn();
+            step++;
+            if (G.year > 2030) break;
+          }
+        } finally {
+          ui.restore();
+        }
+      }
+    } finally {
+      Math.random = origRandom;
+      if (typeof globalThis !== 'undefined') {
+        globalThis.__WL_CASH_BRIDGE_AUDIT__ = savedBridge;
+        globalThis.__WL_HEADLESS__ = savedHeadless;
+      }
+      G = savedG;
+      if (typeof ACTIVE_MARKET !== 'undefined' && savedActive != null) ACTIVE_MARKET = savedActive;
+      if (typeof MP !== 'undefined' && MP) {
+        if (savedMPMode !== undefined) MP.mode = savedMPMode;
+        if (savedMPHost !== undefined) MP.isHost = savedMPHost;
+        MP.players = savedMPPlayers;
+        if (savedMPPid !== undefined) MP.playerId = savedMPPid;
+      }
+    }
+
+    var rows = (typeof globalThis !== 'undefined' && globalThis.__WL_CASH_BRIDGE_AUDIT_ROWS__) || [];
+    var anomalies = rows.filter(function (r) {
+      return (
+        r.anomaly_large_delta ||
+        r.anomaly_modal_cash_mismatch ||
+        r.anomaly_modal_ebitda_mismatch ||
+        r.anomaly_reconcile_fail
+      );
+    });
+
+    var csvCols = [
+      'scenarioId',
+      'marketId',
+      'year',
+      'period',
+      'season',
+      'cash_before_advance',
+      'early_pipeline_cash_delta',
+      'total_station_revenue',
+      'total_station_operating_cost',
+      'total_station_ebitda',
+      'lma_cash_in',
+      'lma_cash_out',
+      'lma_net',
+      'loan_interest',
+      'pressure_net_cash_delta',
+      'cash_after_all_rollover_steps',
+      'cash_after_clock_advance',
+      'computed_expected_cash_after',
+      'delta',
+      'modal_net_ebitda',
+      'modal_cash_on_hand',
+      'modal_loan_interest',
+      'modal_debt_principal_outstanding',
+      'anomaly_large_delta',
+      'anomaly_modal_cash_mismatch',
+      'anomaly_reconcile_fail',
+    ];
+    var csvLines = [csvCols.join(',')];
+    for (var ri = 0; ri < rows.length; ri++) {
+      var rr = rows[ri];
+      csvLines.push(
+        csvCols
+          .map(function (k) {
+            return cashBridgeCsvCell(rr[k]);
+          })
+          .join(',')
+      );
+    }
+    var csv = csvLines.join('\n');
+
+    var lines = [];
+    lines.push('══════════════════════════════════════════════════════════════');
+    lines.push('  CASH FLOW BRIDGE AUDIT (solo — advTurn step log + modal fields)');
+    lines.push('  Rows: ' + rows.length + ' · Anomalies flagged: ' + anomalies.length);
+    lines.push('  LMA/debt probes: ' + JSON.stringify(probeLog));
+    lines.push('══════════════════════════════════════════════════════════════');
+    if (anomalies.length) {
+      lines.push('--- Anomaly sample (first 12) ---');
+      lines.push(JSON.stringify(anomalies.slice(0, 12), null, 2));
+    } else {
+      lines.push('No anomaly flags (threshold abs(delta)<=1, modal cash matches rollover cash).');
+    }
+    lines.push('--- Full rows: use .rows, .csv, or JSON file from npm run sim:cash-bridge-audit ---');
+
+    var plainEnglish = lines.join('\n');
+    return {
+      rows: rows,
+      anomalies: anomalies,
+      anomalyCount: anomalies.length,
+      csv: csv,
+      json: JSON.stringify(rows, null, 2),
+      probeLog: probeLog,
+      plainEnglish: plainEnglish,
+      options: { startCash: startCash, seed: seed, quick: quick },
+    };
+  }
+
+  function runCashFlowIntegrityDiagnostic(opts) {
+    opts = opts || {};
+    var markets =
+      opts.markets && opts.markets.length
+        ? opts.markets
+        : opts.quick
+          ? ['atlanta']
+          : ['atlanta', 'nashville', 'chicago'];
+    var periodsPerMarket = opts.periodsPerMarket != null ? opts.periodsPerMarket : opts.quick ? 36 : 56;
+    var maxStepsPerRun = opts.maxStepsPerRun != null ? opts.maxStepsPerRun : 200;
+    var injectLesseeAfter = opts.injectLesseeAfter != null ? opts.injectLesseeAfter : 18;
+    var injectLessorAfter = opts.injectLessorAfter != null ? opts.injectLessorAfter : -1;
+    var startCash = opts.startCash != null ? opts.startCash : 5000000;
+    var seed = opts.seed != null ? opts.seed : 20260407;
+    var verbose = opts.verbose !== false;
+
+    if (typeof genMarketMP !== 'function') throw new Error('genMarketMP not found — load legacy.js first');
+    if (typeof advTurn !== 'function') throw new Error('advTurn not found');
+    if (typeof syncMarketPopToMarket !== 'function') throw new Error('syncMarketPopToMarket not found');
+
+    var savedG = typeof G !== 'undefined' ? G : null;
+    var savedActive = typeof ACTIVE_MARKET !== 'undefined' ? ACTIVE_MARKET : null;
+    var savedMPMode = typeof MP !== 'undefined' && MP ? MP.mode : undefined;
+    var savedMPHost = typeof MP !== 'undefined' && MP ? MP.isHost : undefined;
+    var savedMPPlayers = typeof MP !== 'undefined' && MP ? MP.players : undefined;
+    var savedMPPid = typeof MP !== 'undefined' && MP ? MP.playerId : undefined;
+    var savedHeadless = typeof globalThis !== 'undefined' ? globalThis.__WL_HEADLESS__ : undefined;
+    var origRandom = Math.random;
+
+    var allViolations = [];
+    var summaries = [];
+    var lesseeOk = [];
+    var lessorOk = [];
+
+    try {
+      if (typeof globalThis !== 'undefined') globalThis.__WL_HEADLESS__ = true;
+      if (typeof MP === 'undefined') throw new Error('MP not defined — legacy multiplayer bootstrap missing');
+      for (var mi = 0; mi < markets.length; mi++) {
+        (function (seedRun) {
+          var s = seedRun;
+          Math.random = function () {
+            s = (s * 9301 + 49297) % 233280;
+            return s / 233280;
+          };
+        })(seed + mi * 9991);
+
+        var marketId = markets[mi];
+        ACTIVE_MARKET = marketId;
+        syncMarketPopToMarket(marketId);
+        G = genMarketMP('1985');
+        if (typeof migrateSave === 'function') migrateSave(G);
+
+        MP.mode = 'solo';
+        MP.isHost = false;
+        MP.players = [];
+        MP.playerId = 0;
+        G.loans = [];
+        G.finHistory = [];
+
+        var pool = (G.stations || []).filter(function (s) {
+          return s && !s._bpSlotDeferred && !s.isPublic && !s.isPlayer;
+        });
+        var take = Math.min(3, pool.length);
+        for (var t = 0; t < take; t++) {
+          pool[t].isPlayer = true;
+          if (typeof applyDefaultBrandToPlayerStation === 'function') applyDefaultBrandToPlayerStation(pool[t]);
+        }
+        G.ps = G.stations.filter(function (st) {
+          return st.isPlayer;
+        });
+        G.cash = startCash;
+        if (!G.sc) G.sc = {};
+        G.sc.cash = startCash;
+
+        var cashBeforeRun = G.cash;
+        var steps = 0;
+        var ui = patchTimersAndUi();
+        try {
+          while (steps < periodsPerMarket && steps < maxStepsPerRun) {
+            if (injectLesseeAfter >= 0 && steps === injectLesseeAfter) {
+              lesseeOk.push({ marketId: marketId, ok: injectLmaLesseeProbe(G) });
+            }
+            if (injectLessorAfter >= 0 && steps === injectLessorAfter) {
+              lessorOk.push({ marketId: marketId, ok: injectLmaLessorProbe(G) });
+            }
+            var y0 = G.year;
+            var p0 = G.period;
+            if (y0 > 2030 || (y0 === 2030 && p0 > 2)) break;
+
+            advTurn();
+            steps++;
+            if (G.year > 2030) break;
+          }
+        } finally {
+          ui.restore();
+        }
+
+        var fh = G.finHistory || [];
+        var viol = verifySoloFinHistoryChain(fh, cashBeforeRun);
+        for (var v = 0; v < viol.length; v++) {
+          viol[v].marketId = marketId;
+        }
+        allViolations = allViolations.concat(viol);
+        summaries.push({
+          marketId: marketId,
+          periodsSimulated: fh.length,
+          violationCount: viol.length,
+          endingCash: G.cash,
+          finHistoryTail: fh.slice(-3),
+        });
+      }
+    } finally {
+      Math.random = origRandom;
+      if (typeof globalThis !== 'undefined') globalThis.__WL_HEADLESS__ = savedHeadless;
+      G = savedG;
+      if (typeof ACTIVE_MARKET !== 'undefined' && savedActive != null) ACTIVE_MARKET = savedActive;
+      if (typeof MP !== 'undefined' && MP) {
+        if (savedMPMode !== undefined) MP.mode = savedMPMode;
+        if (savedMPHost !== undefined) MP.isHost = savedMPHost;
+        MP.players = savedMPPlayers;
+        if (savedMPPid !== undefined) MP.playerId = savedMPPid;
+      }
+    }
+
+    var lines = [];
+    lines.push('══════════════════════════════════════════════════════════════');
+    lines.push('  CASH FLOW INTEGRITY (solo headless)');
+    lines.push('  Identity: Δcash === ebitda − loanInterest + lmaNet + pressureNet  (solo; see G.finHistory)');
+    lines.push('  Markets: ' + markets.join(', '));
+    lines.push('  Periods/market (cap): ' + periodsPerMarket + ' · startCash ' + startCash);
+    lines.push(
+      '  LMA probes: lessee @ period ' +
+        (injectLesseeAfter >= 0 ? injectLesseeAfter : 'off') +
+        ' · lessor @ ' +
+        (injectLessorAfter >= 0 ? injectLessorAfter : 'off')
+    );
+    lines.push('══════════════════════════════════════════════════════════════');
+    if (allViolations.length === 0) {
+      lines.push('OK — no chain violations across ' + summaries.length + ' market run(s).');
+    } else {
+      lines.push('FAIL — ' + allViolations.length + ' violation(s):');
+      lines.push(JSON.stringify(allViolations, null, 2));
+    }
+    if (lesseeOk.length) lines.push('Lessee inject: ' + JSON.stringify(lesseeOk));
+    if (lessorOk.length) lines.push('Lessor inject: ' + JSON.stringify(lessorOk));
+    lines.push('--- Summaries ---');
+    lines.push(JSON.stringify(summaries, null, 2));
+
+    var plainEnglish = lines.join('\n');
+    var out = {
+      ok: allViolations.length === 0,
+      violations: allViolations,
+      summaries: summaries,
+      lesseeInject: lesseeOk,
+      lessorInject: lessorOk,
+      plainEnglish: plainEnglish,
+      options: {
+        markets: markets,
+        periodsPerMarket: periodsPerMarket,
+        startCash: startCash,
+        seed: seed,
+      },
+    };
+    if (verbose && typeof console !== 'undefined') {
+      console.log(out.plainEnglish);
+    }
+    return out;
+  }
+
   window.runMarketSimulationBatch = runMarketSimulationBatch;
   window.runShareCalibrationInspection = runShareCalibrationInspection;
   window.runPublicRadioSimulation = runPublicRadioSimulation;
@@ -1946,6 +2971,14 @@
   window.marketEcologyInputSnapshot = marketEcologyInputSnapshot;
   window.compareMegaMarketEcologyInputs = compareMegaMarketEcologyInputs;
   window.runMarketEcologyDeepDiagnostic = runMarketEcologyDeepDiagnostic;
+  window.runFormatEcologyInspection = runFormatEcologyInspection;
+  window.runCashFlowIntegrityDiagnostic = runCashFlowIntegrityDiagnostic;
+  window.runCashBridgeAudit = runCashBridgeAudit;
+  window.mapFormatToEcologyBucket = mapFormatToEcologyBucket;
+  window.classifyCommercialHealthDiagnostic = classifyCommercialHealthDiagnostic;
+  window.snapshotFormatEcologyOnePeriod = snapshotFormatEcologyOnePeriod;
+  window.FORMAT_ECOLOGY_COMMERCIAL_BUCKETS = FORMAT_ECOLOGY_COMMERCIAL_BUCKETS;
+  window.FORMAT_ECOLOGY_MAINSTREAM_BUCKETS = FORMAT_ECOLOGY_MAINSTREAM_BUCKETS;
   window.MarketSimHarness = {
     runBatch: runMarketSimulationBatch,
     runShareCalibrationInspection: runShareCalibrationInspection,
@@ -1955,6 +2988,12 @@
     marketEcologyInputSnapshot: marketEcologyInputSnapshot,
     compareMegaMarketEcologyInputs: compareMegaMarketEcologyInputs,
     runMarketEcologyDeepDiagnostic: runMarketEcologyDeepDiagnostic,
+    runFormatEcologyInspection: runFormatEcologyInspection,
+    runCashFlowIntegrityDiagnostic: runCashFlowIntegrityDiagnostic,
+    runCashBridgeAudit: runCashBridgeAudit,
+    mapFormatToEcologyBucket: mapFormatToEcologyBucket,
+    classifyCommercialHealthDiagnostic: classifyCommercialHealthDiagnostic,
+    snapshotFormatEcologyOnePeriod: snapshotFormatEcologyOnePeriod,
     signalStrengthScore: signalStrengthScore,
     otherAudioDilutionTable: otherAudioDilutionTable,
   };

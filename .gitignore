@@ -11,3 +11,4 @@ generated-portraits/*
 .env
 ecosystem.config.local.cjs
 data/
+audit-output/
