@@ -7,7 +7,7 @@
 
   /** Primary sample matrix: diverse formats, brands, dials, years baked into each row. */
   var MATRIX = [
-    { id: 'm-chr-95', formatKey: 'CHR', formatLabel: 'CHR', callDisplay: 'WZMX-FM', dial: '99.5 FM', band: 'FM', brand: 'Hot 99.5', year: 1995 },
+    { id: 'm-chr-95', formatKey: 'TOP40', formatLabel: 'CHR (TOP40)', callDisplay: 'WZMX-FM', dial: '99.5 FM', band: 'FM', brand: 'Hot 99.5', year: 1995 },
     { id: 'm-top40-78', formatKey: 'TOP40', formatLabel: 'Top 40', callDisplay: 'WABC-AM', dial: '770 AM', band: 'AM', brand: '77 WABC', year: 1978 },
     { id: 'm-news-88', formatKey: 'NEWS_TALK', formatLabel: 'News/Talk', callDisplay: 'WINS-AM', dial: '1010 AM', band: 'AM', brand: 'NewsRadio 1010', year: 1988 },
     { id: 'm-news-15', formatKey: 'NEWS_TALK', formatLabel: 'News/Talk', callDisplay: 'WKRP-FM', dial: '92.5 FM', band: 'FM', brand: '92.5 The News', year: 2015 },
@@ -31,7 +31,7 @@
     { id: 'm-span-05', formatKey: 'SPANISH', formatLabel: 'Spanish', callDisplay: 'WLEY-FM', dial: '107.9 FM', band: 'FM', brand: 'La Mega', year: 2005 },
     { id: 'm-gospel-89', formatKey: 'GOSPEL', formatLabel: 'Gospel', callDisplay: 'WGOS-FM', dial: '102.3 FM', band: 'FM', brand: 'Praise 102', year: 1989 },
     { id: 'm-pod-16', formatKey: 'PODCAST_TALK', formatLabel: 'Podcast Talk', callDisplay: 'WPNC-AM', dial: '680 AM', band: 'AM', brand: 'The Feed 680', year: 2016 },
-    { id: 'm-longbrand', formatKey: 'CHR', formatLabel: 'CHR', callDisplay: 'WMMS-FM', dial: '100.7 FM', band: 'FM', brand: 'The Buzz — Today\'s Hits & Throwbacks', year: 2007 },
+    { id: 'm-longbrand', formatKey: 'TOP40', formatLabel: 'CHR (TOP40)', callDisplay: 'WMMS-FM', dial: '100.7 FM', band: 'FM', brand: 'The Buzz — Today\'s Hits & Throwbacks', year: 2007 },
     { id: 'm-shortcall', formatKey: 'NEWS_TALK', formatLabel: 'News/Talk', callDisplay: 'WJR-AM', dial: '760 AM', band: 'AM', brand: 'NewsTalk 760', year: 1984 },
     { id: 'm-plainfreq', formatKey: 'ADULT_CONTEMP', formatLabel: 'AC', callDisplay: 'WLTW-FM', dial: '106.7 FM', band: 'FM', brand: '106.7 Lite FM', year: 1993 },
   ];
@@ -49,8 +49,8 @@
 
   var BUMP_BASE = {
     id: 'audit-bump-chr',
-    formatKey: 'CHR',
-    formatLabel: 'CHR',
+    formatKey: 'TOP40',
+    formatLabel: 'CHR (TOP40)',
     callDisplay: 'WKSC-FM',
     dial: '103.5 FM',
     band: 'FM',
