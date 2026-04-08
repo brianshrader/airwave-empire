@@ -4,8 +4,12 @@
 import './amFccRules.js';
 import { Clerk } from '@clerk/clerk-js';
 
-/** Public URL of the Node game server (Socket.io + /api). Set in .env for production builds. */
-const gameServerUrl = import.meta.env?.VITE_GAME_SERVER_URL?.trim?.() ?? '';
+/** Public URL of the Node game server (Socket.io + /api). Vite: .env VITE_GAME_SERVER_URL; or meta on play.html. */
+let gameServerUrl = import.meta.env?.VITE_GAME_SERVER_URL?.trim?.() ?? '';
+if (!gameServerUrl && typeof document !== 'undefined') {
+  gameServerUrl =
+    document.querySelector('meta[name="wl-game-server-url"]')?.getAttribute('content')?.trim?.() ?? '';
+}
 if (gameServerUrl) {
   window.__WL_GAME_SERVER_URL = gameServerUrl;
 }

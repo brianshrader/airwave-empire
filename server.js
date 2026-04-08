@@ -19,6 +19,7 @@
 // Uses socket event spectate_room — updates on each host state_broadcast (every period).
 // Image API: SHORTAPI_KEY (ShortAPI z-image, default) and/or GROK_API_KEY for /api/generate-logo, /api/generate-remote-van (Grok edit + logo reference), and AI portraits.
 // IMAGE_GEN_PROVIDER=shortapi | grok | auto — auto prefers SHORTAPI_KEY when set.
+// Trade ratings digest: POST /api/ratings-digest — SHORTAPI_KEY, OPENROUTER_API_KEY, and/or OPENAI_API_KEY; see RATINGS_DIGEST_PROVIDER in .env.example.
 // Stock pool (random assignment before Grok): generated-portraits/library/{male|female}/{era}/
 // Grok output (organized by hire-era bucket + gender): generated-portraits/grok/{male|female|unknown}/{era}/
 // See GET /api/portrait-library/status (includes both library + grok counts). PORTRAIT_LIBRARY_FIRST=0 prefers Grok when both exist.
@@ -68,6 +69,9 @@ mountCloudSaves(app);
 
 const { mountFeedback } = require('./server/feedbackRoutes');
 mountFeedback(app);
+
+const { mountRatingsDigestRoutes } = require('./server/ratingsDigestRoutes');
+mountRatingsDigestRoutes(app);
 
 const httpServer = http.createServer(app);
 const io         = new Server(httpServer, {

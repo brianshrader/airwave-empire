@@ -176,7 +176,7 @@ function getBoosterCost(year){
 
 // ── FORMATS ───────────────────────────────────────────────────────
 const FM={
-  TOP40:          {l:'Top 40',            cpm:1.08,sp:14,fm:false,ab:0,   unlock:1970,d:'One hits lineage: broad AM Top 40 evolves into tight FM CHR — same format, era-shaped sound and demos.'},
+  TOP40:          {l:'Top 40',            cpm:1.08,sp:14,fm:false,ab:0,   unlock:1970,d:'Hits / CHR — one lineage (id TOP40). On-air name evolves: Top 40 (AM broad hits) → CHR, i.e. Contemporary Hit Radio (tight FM hits). Same format; era-shaped sound, demos, and positioning slider.'},
   COUNTRY:        {l:'Country',            cpm:.92, sp:14,fm:false,ab:0,   unlock:1970,d:'Strong Southern loyalty. Deep demographic roots.'},
   SOUL_RNB:       {l:'Soul / R&B',         cpm:.88, sp:14,fm:false,ab:.15, unlock:1970,d:'Community-driven. Atlanta bonus. Undervalued by advertisers.'},
   MOR:            {l:'Middle of Road',     cpm:.85, sp:18,fm:false,ab:0,   unlock:1970,d:'Older demos. High spot load. Declining after 1973.'},
@@ -269,8 +269,14 @@ function hitsLineageAxisBlendT(year){
 function hitsFormatSurfaceLabel(year){
   const t=hitsLineageAxisBlendT(year||1970);
   if(t<0.28)return 'Top 40';
-  if(t<0.72)return 'Hit Radio';
   return 'CHR';
+}
+/** First calendar year where the hits lineage surface label is CHR (was Top 40 the year before). */
+function hitsLineageFirstChrCalendarYear(){
+  for(let y=1971;y<=2030;y++){
+    if(hitsFormatSurfaceLabel(y)==='CHR'&&hitsFormatSurfaceLabel(y-1)==='Top 40')return y;
+  }
+  return null;
 }
 function fmtLabel(fmt,yearOpt){
   if(!fmt)return '';
@@ -1306,7 +1312,7 @@ const EVDATA=[
   {y:1980,p:2,t:'Adult Contemporary Arrives',d:'Soft hits format dominates 25–49 demo.',e:'unlock-ADULT_CONTEMP|rival-ADULT_CONTEMP-FM-50kw-moderate'},
   {y:1981,p:1,t:'Cable TV Competition',d:'Cable TV launches. Ad dollars begin diversifying.',e:'ad-.05'},
   {y:1981,p:2,t:'Reagan Recession',d:'Deep recession hits. Radio ad spending contracts.',e:'ad-.10'},
-  {y:1982,p:2,t:'Hit Radio Goes FM-Native',d:'The Top 40 lineage tightens on FM — younger demos, higher stakes, and louder format wars.',e:'rival-TOP40-FM-100kw-strong'},
+  {y:1982,p:2,t:'CHR Goes FM-Native',d:'Contemporary Hit Radio (CHR) — the evolved Top 40 lineage — tightens on FM: younger demos, higher stakes, louder format wars.',e:'rival-TOP40-FM-100kw-strong'},
   {y:1983,p:1,t:'Urban Contemporary Arrives',d:'R&B-pop crossover explodes. Atlanta bonus format.',e:'unlock-URBAN_CONTEMP|rival-URBAN_CONTEMP-FM-50kw-emerging'},
   {y:1983,p:1,t:'FM Dominates Music',d:'FM captures 70% of music listening. AM music stations face existential pressure.',e:'fp+.06'},
   {y:1975,p:1,t:'Talk Radio Emerges',d:'AM stations discover that talk can thrive on personalities and older demos FM cannot easily reach.',e:'rival-NEWS_TALK-AM-50kw-emerging'},
@@ -3538,6 +3544,10 @@ function wlGameServerOrigin(){
   try{
     const u=typeof window!=='undefined'&&window.__WL_GAME_SERVER_URL&&String(window.__WL_GAME_SERVER_URL).trim();
     if(u)return String(u).replace(/\/$/,'');
+  }catch(_e){}
+  try{
+    const m=typeof document!=='undefined'&&document.querySelector('meta[name="wl-game-server-url"]')?.getAttribute('content')?.trim();
+    if(m)return String(m).replace(/\/$/,'');
   }catch(_e){}
   if(typeof location!=='undefined'&&location.origin)return location.origin;
   return '';
@@ -6919,6 +6929,46 @@ function recalc(stations,G){
     const h=s.rat.hist;if(h.length<2)return;
     const cur=s.rat.share,prev=h[h.length-2]?.share||cur,two=h.length>=3?h[h.length-3]?.share||cur:cur;
     s.cp={dq:cur-prev,d2:cur-two,under:cur-two<-.008,col:cur-two<-.020,sur:cur-two>.010};
+  });
+}
+/** Min Δshare (0–1 scale) to list a station in the market digest Up/Down lines. */
+const RATINGS_DIGEST_MIN_DELTA=0.0025;
+function fmtRatingsDigestDeltaPts(dq){
+  const p=(dq||0)*100;
+  if(Math.abs(p)<0.05)return'flat';
+  const sign=p>0?'+':'−';
+  return sign+Math.abs(p).toFixed(1);
+}
+/** Post-recalc: ratings “book” digest in the news feed (market movers + per-player summary). */
+function unshiftRatingsDigest(G){
+  if(!G||!G.stations)return;
+  if(!G.news)G.news=[];
+  const periodLabel=`${G.year} ${PERIODS[(G.period||1)-1]}`;
+  const comm=G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPublic&&s.rat&&s.cp);
+  const MIN=RATINGS_DIGEST_MIN_DELTA;
+  const sorted=comm.slice().sort((a,b)=>(a.cp.dq||0)-(b.cp.dq||0));
+  const risers=sorted.filter(s=>(s.cp.dq||0)>=MIN).slice(-3).reverse();
+  const fallers=sorted.filter(s=>(s.cp.dq||0)<=-MIN).slice(0,3);
+  const parts=[];
+  if(risers.length)parts.push('Up: '+risers.map(s=>`${s.callLetters} ${fmtRatingsDigestDeltaPts(s.cp.dq)}`).join(', '));
+  if(fallers.length)parts.push('Down: '+fallers.map(s=>`${s.callLetters} ${fmtRatingsDigestDeltaPts(s.cp.dq)}`).join(', '));
+  if(parts.length)
+    G.news.unshift({v:'LOW',t:`📊 ${periodLabel} book — ${parts.join(' · ')}`,y:G.year,p:G.period});
+  const mpLive=typeof MP!=='undefined'&&MP&&MP.mode==='live';
+  const playerIds=mpLive
+    ?[...new Set((G.ps||[]).map(s=>s._mpOwner).filter(id=>id!==undefined))]
+    :[undefined];
+  playerIds.forEach(pid=>{
+    const stns=(G.ps||[]).filter(s=>{
+      if(!s||s._bpSlotDeferred||!s.rat||!s.cp)return false;
+      if(pid===undefined)return true;
+      return s._mpOwner===pid;
+    });
+    if(!stns.length)return;
+    const bits=stns.map(s=>`${s.callLetters} ${fmtRatingsDigestDeltaPts(s.cp.dq)}`);
+    const item={v:'LOW',t:`📻 Your book — ${bits.join(', ')}`,y:G.year,p:G.period,iy:true};
+    if(pid!==undefined)item.mpForPids=[pid];
+    G.news.unshift(item);
   });
 }
 function seedNewEntry(s,G){
@@ -10876,6 +10926,143 @@ function doResearch(sid){
   document.getElementById('researchb').innerHTML=report+`<button class="cnl" style="margin-top:12px" onclick="cm('m-research')">CLOSE</button>`;
   renderAll();
 }
+
+// ── TRADE PRESS RATINGS DIGEST (server: ShortAPI and/or OpenAI) ─────────
+function wlEscapeHtml(str){
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+const WL_DIGEST_SEASON={SPR:'Spring',FAL:'Fall'};
+function wlRatingsDigestSeasonWord(period){
+  const code=PERIODS[(period||1)-1];
+  return WL_DIGEST_SEASON[code]||code||'';
+}
+/** Modal headline, e.g. "Los Angeles: Fall 1989" */
+function wlRatingsDigestHeadline(payload){
+  return `${payload.market}: ${wlRatingsDigestSeasonWord(payload.period)} ${payload.year}`;
+}
+function wlRatingsDigestBookSig(book){
+  const s=book.map(r=>String(r.rank)+','+String(r.call)+','+String(r.sharePct)).join('|');
+  let h=0;
+  for(let i=0;i<s.length;i++)h=Math.imul(31,h)+s.charCodeAt(i)|0;
+  return String(h);
+}
+function wlRatingsDigestCacheKey(payload){
+  return `${payload.market}\t${payload.year}\t${payload.period}\t${wlRatingsDigestBookSig(payload.book)}`;
+}
+function wlRatingsDigestCache(){
+  if(typeof window==='undefined')return null;
+  if(!window.__WL_RATINGS_DIGEST_CACHE)window.__WL_RATINGS_DIGEST_CACHE=Object.create(null);
+  return window.__WL_RATINGS_DIGEST_CACHE;
+}
+function wlSanitizeDigestFilenamePart(s){
+  const t=String(s||'market').replace(/[^\w\u00C0-\u024F]+/g,'-').replace(/^-|-$/g,'').slice(0,44);
+  return t||'market';
+}
+function wlRenderRatingsDigestBody(body,payload,articleText){
+  const headline=wlRatingsDigestHeadline(payload);
+  if(typeof window!=='undefined'){
+    window.__wlDigestModal={payload,article:String(articleText||''),headline};
+  }
+  const paras=String(articleText||'').split(/\n\s*\n+/).map(p=>p.trim()).filter(Boolean);
+  const bodyHtml=paras.length
+    ? paras.map(p=>'<p style="margin:0 0 14px;font-size:15px;line-height:1.55;color:var(--off);text-align:left">'+wlEscapeHtml(p).replace(/\n/g,'<br/>')+'</p>').join('')
+    : '<p class="enote">Empty response.</p>';
+  body.innerHTML=
+    '<div style="font-family:var(--fd);font-size:22px;color:var(--amb);letter-spacing:.06em;text-align:center;margin:0 0 10px;line-height:1.25">'+wlEscapeHtml(headline)+'</div>'+
+    '<div class="ibox" style="margin-bottom:14px;font-family:var(--ft);font-size:12px;color:var(--mut);line-height:1.45;text-align:center">'+wlEscapeHtml(payload.periodLabel+' · '+payload.market)+' · AI flavor text from simulation data only</div>'+
+    bodyHtml+
+    '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;align-items:center;justify-content:flex-start">'+
+    '<button type="button" class="cnl" onclick="wlExportRatingsDigestFromModal()">EXPORT .TXT</button>'+
+    '<button type="button" class="cnl" style="opacity:.9" onclick="wlRegenerateRatingsDigest()">NEW COLUMN</button>'+
+    '<button type="button" class="cnl" onclick="cm(\'m-ratings-digest\')">CLOSE</button></div>';
+}
+function wlExportRatingsDigestFromModal(){
+  const st=typeof window!=='undefined'&&window.__wlDigestModal;
+  if(!st||!st.payload||st.article==null){showToast('Nothing to export.','warn');return;}
+  const p=st.payload;
+  const headline=st.headline||wlRatingsDigestHeadline(p);
+  const bom='\uFEFF';
+  const footer='— Airwave Empire · ratings digest from simulation data only · exported '+new Date().toISOString().slice(0,10);
+  const text=[headline,'',String(st.article).trim(),'',footer].join('\n');
+  const blob=new Blob([bom+text],{type:'text/plain;charset=utf-8'});
+  const a=document.createElement('a');
+  const fn='Ratings-Digest-'+wlSanitizeDigestFilenamePart(p.market)+'-'+p.year+'-'+wlSanitizeDigestFilenamePart(wlRatingsDigestSeasonWord(p.period))+'.txt';
+  a.href=URL.createObjectURL(blob);
+  a.download=fn;
+  a.rel='noopener';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(a.href);
+  showToast('Download started.','info');
+}
+function wlRegenerateRatingsDigest(){
+  openRatingsDigestTradeSheet({regenerate:true});
+}
+function wlBuildRatingsDigestPayload(){
+  if(!G||!G.stations)return null;
+  const mkt=MARKETS[G.marketId||ACTIVE_MARKET]?.label||'Market';
+  const periodLabel=`${G.year} ${PERIODS[(G.period||1)-1]}`;
+  const comm=G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPublic&&s.rat)
+    .sort((a,b)=>(b.rat.share||0)-(a.rat.share||0));
+  const book=comm.map((s,i)=>({
+    rank:i+1,
+    call:callDisplay(s),
+    format:fmtLabel(s.format,G.year),
+    sharePct:Math.round((s.rat.share||0)*1000)/10,
+    deltaPts:s.cp&&typeof s.cp.dq==='number'?Math.round(s.cp.dq*1000)/10:null,
+    band:(s.sig?.type==='FM'||s.fmBooster)?'FM':'AM',
+  }));
+  return {market:mkt,periodLabel,year:G.year,period:G.period,book};
+}
+async function openRatingsDigestTradeSheet(opts){
+  const regenerate=opts&&opts.regenerate===true;
+  const body=document.getElementById('ratings-digestb');
+  const title=document.getElementById('ratings-digest-title');
+  if(!body||!title)return;
+  title.textContent='📰 TRADE PRESS — RATINGS DIGEST';
+  const payload=wlBuildRatingsDigestPayload();
+  if(!payload||!payload.book.length){
+    showToast('No ratings data yet.','warn');
+    return;
+  }
+  const cacheKey=wlRatingsDigestCacheKey(payload);
+  const cache=wlRatingsDigestCache();
+  if(!regenerate&&cache&&cache[cacheKey]&&typeof cache[cacheKey].article==='string'&&cache[cacheKey].article.length>20){
+    wlRenderRatingsDigestBody(body,payload,cache[cacheKey].article);
+    om('m-ratings-digest');
+    scrollModalContentToTop('m-ratings-digest');
+    return;
+  }
+  if(regenerate&&cache)delete cache[cacheKey];
+  body.innerHTML='<p class="di" style="color:var(--mut)">Commissioning column from the trade desk…</p>';
+  om('m-ratings-digest');
+  scrollModalContentToTop('m-ratings-digest');
+  try{
+    const res=await fetch(wlGameApiUrl('/api/ratings-digest'),{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({payload}),
+    });
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok||!data.ok){
+      const err=data.error||data.message||('HTTP '+res.status);
+      const hint404='<p class="enote" style="margin-top:12px;line-height:1.5"><strong>HTTP 404</strong> almost always means the browser called the wrong host: <code>/api/ratings-digest</code> only exists on the <strong>Node</strong> server. If the game HTML is on static hosting (or a different domain) than the API, set <code>VITE_GAME_SERVER_URL</code> in <code>.env</code> before <code>npm run build</code>, or add <code>&lt;meta name="wl-game-server-url" content="https://your-api-origin"&gt;</code> to <code>play.html</code> (no trailing slash). Local dev: run <code>node server.js</code> on :3000 and use <code>npm run client:dev</code> so Vite proxies <code>/api</code>, or play from <code>http://localhost:3000</code> after a build.</p>';
+      const hint429='<p class="enote" style="margin-top:12px;line-height:1.5"><strong>HTTP 429</strong> = too many requests. The <strong>game server</strong> limits digest calls per IP per hour (raise <code>RATINGS_DIGEST_MAX_PER_HOUR</code> in server <code>.env</code>, or use <code>0</code> for unlimited in local dev). If the error text mentions OpenRouter, their API is throttling you — wait, switch model, or check <a href="https://openrouter.ai/activity" target="_blank" rel="noopener">openrouter.ai</a>.</p>';
+      const hintDefault='<p class="enote" style="margin-top:12px;line-height:1.5">If the API was reached: configure a digest backend on the server (see <code>.env.example</code>) — <strong>OPENROUTER_API_KEY</strong> (recommended), and/or <strong>SHORTAPI_KEY</strong> / <strong>OPENAI_API_KEY</strong>. Restart <code>server.js</code> after editing <code>.env</code>.</p>';
+      const hintExtra=res.status===404?hint404:res.status===429?hint429:hintDefault;
+      body.innerHTML='<p class="di" style="color:var(--red)">'+wlEscapeHtml(err)+'</p>'+hintExtra+
+        '<button type="button" class="cnl" style="margin-top:14px" onclick="cm(\'m-ratings-digest\')">CLOSE</button>';
+      return;
+    }
+    const article=String(data.article||'');
+    if(cache)cache[cacheKey]={article};
+    wlRenderRatingsDigestBody(body,payload,article);
+    scrollModalContentToTop('m-ratings-digest');
+  }catch(e){
+    body.innerHTML='<p class="di" style="color:var(--red)">'+wlEscapeHtml(e.message||String(e))+'</p><button type="button" class="cnl" style="margin-top:14px" onclick="cm(\'m-ratings-digest\')">CLOSE</button>';
+  }
+}
 function buildResearchReport(s,G){
   const fmd=FM[canonicalHitsFormatKey(s.format)]||{};
   const year=G.year;
@@ -12344,6 +12531,7 @@ function advTurn(mpCoalesceSeq){
     sportsActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     franchiseActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     recalc(G.stations,G);
+    unshiftRatingsDigest(G);
     // Snapshot ranks BEFORE checkRankMilestones updates _prevRank,
     // so the MP broadcast block can build per-player milestones accurately.
     const _rankSnap={};
@@ -12491,6 +12679,11 @@ function advTurn(mpCoalesceSeq){
     }
     if(wlCashBridgeAuditActive())wlCashBridgeAuditPush('FINAL_CASH_PRE_CLOCK',{});
     if(G.period===1){G.period=2;}else{G.period=1;G.year++;}
+    if(G.year>wasYear&&!G._hitsChrTransitionNewsShown&&hitsFormatSurfaceLabel(wasYear)==='Top 40'&&hitsFormatSurfaceLabel(G.year)==='CHR'){
+      const mktLab=MARKETS[G.marketId||'atlanta']?.label||'The market';
+      G.news.unshift({v:'MEDIUM',t:`📡 ${mktLab}: Top 40 gives way to CHR — Contemporary Hit Radio — as the hits lineage is billed for the FM era.`,y:G.year,p:G.period});
+      G._hitsChrTransitionNewsShown=true;
+    }
     G.turn=(G.turn||0)+1;
     if(wlCashBridgeAuditActive()){
       wlCashBridgeAuditPush('FINAL_CASH_AFTER_CLOCK',{year:G.year,period:G.period});
@@ -17064,6 +17257,8 @@ async function wlSubmitFeedback(){
 
 function migrateSave(G){
   migrateHitsLineage(G);
+  const _chrCross=hitsLineageFirstChrCalendarYear();
+  if(_chrCross!=null&&G._hitsChrTransitionNewsShown!==true&&(G.year||1970)>_chrCross)G._hitsChrTransitionNewsShown=true;
   // Fix missing fields added in recent updates
   if(!G._portraitSessionId||typeof G._portraitSessionId!=='string'){
     G._portraitSessionId=(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2,11)}`;

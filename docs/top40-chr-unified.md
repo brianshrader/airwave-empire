@@ -2,11 +2,12 @@
 
 ## A. Design note
 
-Airwave Empire now treats **Top 40** and **CHR** as one **internal format** with id `TOP40`. The on-screen name and the meaning of the **single positioning slider** change with era:
+Airwave Empire treats **Top 40** and **CHR** as one **internal format** with id `TOP40`. The **on-screen name** (`fmtLabel` / `hitsFormatSurfaceLabel`) is only **Top 40** or **CHR** — **CHR** is the usual billing for *Contemporary Hit Radio* (explained in `FM.TOP40`’s format-picker description). The **positioning slider** meaning and pole copy still evolve by calendar year (`hitsDriftPolesForYear`), independent of the two-word surface label.
 
-- **1970s–early 1980s:** Label **Top 40**; poles **Bubblegum Pop ↔ Rock Edge**; demos blend toward the historical broad AM hit station.
-- **Mid/late 1980s:** Label **Hit Radio**; poles describe a **tightening FM hits lane** moving from rock overlap toward **rhythmic crossover**.
-- **1990s+:** Label **CHR**; poles **Pure Pop Hits ↔ Rhythmic Edge**; demo table blends toward the former standalone CHR profile.
+- **Early era (smoothstep t &lt; 0.28):** Label **Top 40**; poles **Bubblegum Pop ↔ Rock Edge**; broad AM-style hits.
+- **Later era (t ≥ 0.28):** Label **CHR**; poles move through **transitional** (≈1983–88) and **late** (≈1989+) bands as described in code — **Pure Pop Hits ↔ Rhythmic Edge** by the 1990s+.
+
+When the calendar first crosses from **Top 40** to **CHR** in a campaign, a **one-time news headline** notes that the lineage is now billed as CHR (Contemporary Hit Radio). Saves loaded after that crossover set `G._hitsChrTransitionNewsShown` so the headline does not repeat.
 
 The blend uses a smoothstep on calendar year from **1978 → 1992** (`hitsLineageAxisBlendT`) so there is no hard year flip. Gameplay keeps one saved drift value under `s.drift.TOP40`.
 
@@ -29,14 +30,15 @@ The blend uses a smoothstep on calendar year from **1978 → 1992** (`hitsLineag
 
 ## D. How it reads by year (examples)
 
-| Year | Surface label   | Slider poles (summary)                          |
-|------|-----------------|-------------------------------------------------|
-| 1970 | **Top 40**      | Bubblegum Pop ↔ Rock Edge                       |
-| 1980 | **Top 40**      | Still early-era poles (blend t ≈ 0.14)          |
-| 1990 | **Hit Radio**   | Transition copy (pop hits ↔ rhythmic lean)    |
-| 2000 | **CHR**         | Pure Pop Hits ↔ Rhythmic Edge                   |
+| Year | Surface label | Slider poles (summary)                          |
+|------|---------------|-------------------------------------------------|
+| 1970 | **Top 40**    | Bubblegum Pop ↔ Rock Edge                       |
+| 1980 | **Top 40**    | Still early-era poles (blend t ≈ 0.14)          |
+| 1985 | **CHR**       | Year-banded poles (see `hitsDriftPolesForYear`) |
+| 1990 | **CHR**       | Pure Pop Hits ↔ Rhythmic Edge (late-era poles)  |
+| 2000 | **CHR**       | Pure Pop Hits ↔ Rhythmic Edge                   |
 
-(Exact thresholds: `hitsFormatSurfaceLabel` uses t &lt; 0.28 → Top 40, t &lt; 0.72 → Hit Radio, else CHR.)
+(Exact threshold: `hitsFormatSurfaceLabel` uses t &lt; 0.28 → **Top 40**, else **CHR**; *Contemporary Hit Radio* is the spelled-out name in copy and the format picker, not a third surface label.)
 
 ## E. Adjacency, demos, economics
 

@@ -18,6 +18,8 @@
 <meta name="wl-require-clerk" content="">
 <!-- Optional: FormSubmit destination for beta feedback (same as FEEDBACK_TO). Prefer VITE_FEEDBACK_FORMSUBMIT_EMAIL in .env at build. -->
 <meta name="wl-feedback-formsubmit-email" content="">
+<!-- When the game is served from a different origin than the Node API, set the API origin here (or use VITE_GAME_SERVER_URL at build). Example: content="https://api.airwaveempire.com" -->
+<meta name="wl-game-server-url" content="">
 <title>Airwave Empire - BETA</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <!-- Station logo templates (curated subset — deterministic SVG typography) -->
@@ -291,7 +293,7 @@
   <!-- LEFT COLUMN: score strip, market standings, news feed -->
   <div class="pnl" id="pl">
     <div id="scorebar"></div>
-    <div class="ph"><span>MARKET <sub id="mkt-city">ATLANTA</sub><span style="color:var(--mut);font-size:13px;font-weight:400;margin-left:6px;font-family:var(--ft)">· tap for intel</span></span><button type="button" class="phbtn" onclick="om('m-rk')">📊 RANKER</button></div>
+    <div class="ph"><span>MARKET <sub id="mkt-city">ATLANTA</sub><span style="color:var(--mut);font-size:13px;font-weight:400;margin-left:6px;font-family:var(--ft)">· tap for intel</span></span><button type="button" class="phbtn" onclick="om('m-rk')">📊 RANKER</button><button type="button" class="phbtn" onclick="openRatingsDigestTradeSheet()" title="AI trade-press column — cached until the book changes; Export .TXT available">📰 DIGEST</button></div>
     <table class="mt"><thead><tr><th>#</th><th>STATION</th><th>FORMAT</th><th style="text-align:right">SHARE</th><th style="text-align:right">△</th><th style="text-align:right">REV/PD</th></tr></thead><tbody id="mtb"></tbody></table>
     <div class="sep"></div>
     <div class="dh">DEMO BREAKDOWN — YOUR LEAD STATION</div>
@@ -350,6 +352,7 @@
 <div class="ov" id="m-boost"><div class="mo"><div class="mh"><span>FM BOOSTER</span><button class="mc" onclick="cm('m-boost')">CLOSE ×</button></div><div id="boostb"></div></div></div>
 <div class="ov" id="m-sales"><div class="mo"><div class="mh"><span>SALES FORCE</span><button class="mc" onclick="cm('m-sales')">CLOSE ×</button></div><div id="salesb"></div></div></div>
 <div class="ov" id="m-research"><div class="mo" style="max-width:580px"><div class="mh"><span id="research-title">📊 STATION RESEARCH</span><button class="mc" onclick="cm('m-research')">CLOSE ×</button></div><div id="researchb"></div></div></div>
+<div class="ov" id="m-ratings-digest"><div class="mo wide" style="max-width:720px"><div class="mh"><span id="ratings-digest-title">📰 TRADE PRESS — RATINGS DIGEST</span><button class="mc" onclick="cm('m-ratings-digest')">CLOSE ×</button></div><div id="ratings-digestb" style="padding:16px 20px 20px"></div></div></div>
 <div class="ov" id="m-milestone"><div class="mo" style="max-width:520px"><div id="milestoneb"></div></div></div>
 <div class="ov" id="m-period-news"><div class="mo" style="max-width:560px"><div class="mh"><span>📰 NEWS — LAST PERIOD</span><button class="mc" onclick="cm('m-period-news')">CLOSE ×</button></div><div id="periodnewsb" style="padding:16px 20px 20px"></div></div></div>
 
