@@ -77,6 +77,7 @@
       year: row.year != null ? row.year : 2000,
       variantBump: row.variantBump != null ? row.variantBump : 0,
       defaultBrand: row.defaultBrand || '',
+      licenseCity: row.licenseCity || '',
       layoutMode: layoutMode || 'brandHero',
     };
   }

@@ -71,6 +71,18 @@
       urban: ['blockContrast', 'sleekStrip', 'diagonalUrban'],
       sports: ['shieldBadge', 'bannerStack', 'angularLockup', 'broadcastSans'],
     },
+    logoTemplateVariantsByFamilyBand: {
+      news: { AM: ['numericLed', 'freqMinimal', 'masthead'], FM: ['masthead', 'broadcastSans', 'freqMinimal'] },
+      hit: { AM: ['textBar', 'freqHero', 'brandHero'], FM: ['freqTitan', 'diagonalBlock', 'textOnlyStrike'] },
+      rhythmic: { AM: ['textBar', 'sleekStrip', 'brandHero'], FM: ['freqTitan', 'sleekStrip', 'textOnlyStrike'] },
+      ac: { AM: ['serifLockup', 'softWordmark', 'freqWhisper'], FM: ['calmMinimal', 'softWordmark', 'framedCard'] },
+      rock: { AM: ['stackedSlab', 'minimalDark', 'diagonalAggro'], FM: ['freqWall', 'slabMinimal', 'diagonalAggro'] },
+      oldies: { AM: ['freqNostalgia', 'classicWordmark', 'plainStack'], FM: ['retroBadge', 'classicWordmark', 'nostalgicFrame'] },
+      country: { AM: ['badgeSeal', 'horizontalWord', 'stackHeritage'], FM: ['openWordmark', 'horizontalWord', 'badgeSeal'] },
+      sports: { AM: ['shieldBadge', 'bannerStack', 'angularLockup'], FM: ['angularLockup', 'shieldBadge', 'broadcastSans'] },
+      gospel: { AM: ['softHeritage', 'horizontalWord', 'softCard'], FM: ['crossInspire', 'horizontalWord', 'softCard'] },
+      urban: { AM: ['blockContrast', 'diagonalUrban', 'sleekStrip'], FM: ['diagonalUrban', 'sleekStrip', 'blockContrast'] },
+    },
     eraLayoutStructure: {
       '1970s': { frameLayers: 0, asymmetry: 0.1, hierarchyGapLayoutMult: 0.9, archetypeEraOffset: 0, shapeAccent: 'minimal' },
       '1980s': { frameLayers: 2, asymmetry: 0.22, hierarchyGapLayoutMult: 1.14, archetypeEraOffset: 1, shapeAccent: 'bold' },
@@ -546,44 +558,28 @@
     return { x1: 256, a1: 'middle', x2: 256, a2: 'middle', xs: 256, as: 'middle' };
   }
 
-  function resolveLayoutArchetype(cfg, family, era, seed, variant, variantBump, formatKey, band) {
+  /** Template pool for a format family and AM/FM (deterministic index from seed + era). */
+  function layoutListForFamilyBand(cfg, family, band) {
+    var tpl = cfg.logoTemplateVariantsByFamilyBand && cfg.logoTemplateVariantsByFamilyBand[family];
+    var bandKey = String(band || '').toUpperCase() === 'FM' ? 'FM' : 'AM';
+    if (tpl && tpl[bandKey] && tpl[bandKey].length) return tpl[bandKey];
     var lists = cfg.layoutArchetypesByFamily;
-    var list = (lists && lists[family]) || ['default'];
+    var fallback = (lists && lists[family]) || ['default'];
+    return fallback.length ? fallback : ['default'];
+  }
+
+  function resolveLayoutArchetype(cfg, family, era, seed, variant, variantBump, formatKey, band) {
+    var list = layoutListForFamilyBand(cfg, family, band);
     if (!list.length) list = ['default'];
     var els = (cfg.eraLayoutStructure && cfg.eraLayoutStructure[era]) || {};
     var off = els.archetypeEraOffset != null ? els.archetypeEraOffset : 0;
     var h = fnv1a('layout|' + seed + '|' + variant + '|' + variantBump + '|' + formatKey);
     var idx = (off + h + variant * 7) % list.length;
     var fk = String(formatKey || '').toUpperCase();
-    var bandU = String(band).toUpperCase();
-    if (family === 'news' && bandU === 'AM') {
-      var fm = list.indexOf('freqMinimal');
-      var nl = list.indexOf('numericLed');
-      var sub = h % 7;
-      if (nl >= 0 && sub < 2) idx = nl;
-      else if (fm >= 0 && sub >= 2 && sub < 5) idx = fm;
-    }
     if (family === 'news' && fk.indexOf('PODCAST') >= 0) {
       var mh = list.indexOf('masthead');
       if (mh >= 0 && h % 4 < 2) idx = mh;
     }
-    if ((family === 'hit' || family === 'rhythmic') && bandU === 'FM') {
-      var ft = list.indexOf('freqTitan');
-      var ts = list.indexOf('textOnlyStrike');
-      var roll = (h + variant * 11) % 9;
-      if (ft >= 0 && roll < 3) idx = ft;
-      else if (ts >= 0 && roll === 3) idx = ts;
-    }
-    if (family === 'rock' && bandU === 'FM') {
-      var fw = list.indexOf('freqWall');
-      if (fw >= 0 && (h >>> 4) % 6 < 2) idx = fw;
-    }
-    var bs = list.indexOf('broadcastSans');
-    if (bs >= 0 && family === 'news' && (era === '2000s' || era === '2010s+')) {
-      if ((h >>> 1) % 5 < 2) idx = bs;
-    }
-    if (bs >= 0 && family === 'sports' && (h >>> 2) % 5 < 2) idx = bs;
-    if (bs >= 0 && (family === 'hit' || family === 'rhythmic') && bandU === 'FM' && (h + variant * 5) % 13 === 3) idx = bs;
     var arch = list[idx];
     return {
       archetype: arch,
@@ -1010,185 +1006,168 @@
     return { shapes: shapes, textBlock: tbC2 };
   }
 
-  function buildBroadcastSansHeroText(o) {
+  /**
+   * Regexes for common US radio spoken dial → replace with digits (logo only; brand string may stay verbose for Suno).
+   */
+  function radioSpokenPatternsForDial(n) {
+    var ones = [
+      'zero',
+      'one',
+      'two',
+      'three',
+      'four',
+      'five',
+      'six',
+      'seven',
+      'eight',
+      'nine',
+      'ten',
+      'eleven',
+      'twelve',
+      'thirteen',
+      'fourteen',
+      'fifteen',
+      'sixteen',
+      'seventeen',
+      'eighteen',
+      'nineteen',
+    ];
+    var tens = ['twenty', 'thirty', 'forty', 'fifty', 'sixty', 'seventy', 'eighty', 'ninety'];
+    var pats = [];
+    function add(s) {
+      pats.push(new RegExp(s, 'gi'));
+    }
+    function cap(w) {
+      return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
+    }
+    function tailWord(r) {
+      if (r < 20) return cap(ones[r]);
+      var ti = Math.floor(r / 10) - 2;
+      var u = r % 10;
+      if (ti < 0 || ti >= tens.length) return null;
+      return u ? cap(tens[ti]) + '\\s+' + cap(ones[u]) : cap(tens[ti]);
+    }
+    if (n === 1010) {
+      add('\\bTen\\s+Ten\\b');
+      return pats;
+    }
+    var h = Math.floor(n / 100);
+    var r = n % 100;
+    if (h >= 1 && h <= 9) {
+      var hw = cap(ones[h]);
+      if (r === 0) add('\\b' + hw + '\\s+Hundred\\b');
+      else {
+        var tw = tailWord(r);
+        if (tw) {
+          add('\\b' + hw + '\\s+' + tw + '\\b');
+          add('\\b' + hw + '\\s+Hundred\\s+' + tw + '\\b');
+        }
+      }
+    }
+    if (h >= 10 && h <= 19) {
+      var hw10 = cap(ones[h]);
+      if (r === 0) add('\\b' + hw10 + '\\s+Hundred\\b');
+      else {
+        var tw2 = tailWord(r);
+        if (tw2) add('\\b' + hw10 + '\\s+' + tw2 + '\\b');
+      }
+    }
+    return pats;
+  }
+
+  /** Replace spoken frequency phrases in brand with dial digits when dial is known (AM integers; skip FM decimals). */
+  function logoBrandVisualDigits(brand, dial) {
+    var b = String(brand || '').trim();
+    if (!b) return b;
+    var dStr = String(dial || '');
+    if (dStr.indexOf('.') >= 0) return b;
+    var dm = dStr.match(/(\d{2,4})/);
+    if (!dm) return b;
+    var intPart = parseInt(dm[1], 10);
+    if (!intPart || intPart < 88 || intPart > 1999) return b;
+    var digitStr = String(intPart);
+    var pats = radioSpokenPatternsForDial(intPart);
+    var out = b;
+    var pi;
+    for (pi = 0; pi < pats.length; pi++) {
+      out = out.replace(pats[pi], digitStr);
+    }
+    return out;
+  }
+
+  /** Large centered brand (1–2 lines) + small calls + city of license. */
+  function buildSimpleCenteredBrandHero(o) {
     var spec = o.spec;
-    var seed = spec.seed;
-    var pat = (seed >>> 4) % 3;
-    var ms = thumbMicroShift(seed, 40);
-    var ms2 = thumbMicroShift(seed, 41);
-    var resolved = o.resolved;
     var typo = o.typo;
+    var arch = o.arch;
+    var xa = 256;
+    var ta = 'middle';
+    var maxWx = maxTextWidthHero(ta, xa, arch);
+    var seed = spec.seed;
+    var ms = thumbMicroShift(seed, 70);
+    var ms2 = thumbMicroShift(seed, 71);
     var casingBrand = spec.brandPreserveCasing ? 'mixed' : typo.casing;
-    var coords = o.coords;
-    var fg = o.fg;
-    var ac = o.ac;
-    var ac2 = o.ac2;
+    var brandSource = String(spec.brand || '').trim() || String(spec.defaultBrand || '').trim() || 'Radio';
+    var visualBrand = logoBrandVisualDigits(brandSource, spec.dial);
+    visualBrand = applyCasingLine(visualBrand, casingBrand);
+
+    var fpH = spec.fonts.primary || 'Inter';
     var fsP = o.fsPrimary;
     var fsS = o.fsSecondary;
     var wp = o.wp;
     var ws = o.ws;
+    var fg = o.fg;
+    var ac = o.ac;
     var lm = o.lm;
-    var family = o.family;
-    var dial = spec.dial;
-    var band = spec.band;
-    var fmtLab = spec.formatLabel || '';
-    var fmtE = escXml(fmtLab.length > 24 ? fmtLab.slice(0, 22) + '…' : fmtLab);
-    var freqRaw = applyCasingLine(freqLine(dial, band), typo.casing);
-    var freqE = escXml(freqRaw);
-    var callRaw = applyCasingLine(String(spec.callDisplay || '').replace(/-/g, ' '), typo.casing);
-    var callE = escXml(callRaw);
-    var brandRaw = applyCasingLine(String(spec.brand || ''), casingBrand);
-    var brandE = escXml(brandRaw);
     var it1 = o.it1;
-    var it2 = o.it2;
-    var fontAnton = fontStack('Anton');
-    var xa = coords.xs;
-    var ta = coords.as;
-    var yBase = 256;
+
+    var trBrand = clampFitTrackingEm(typo.trackingPrimaryEm || 0, arch);
+    var desiredFs = fitHeroSingle(visualBrand, 128, 42, lm);
+    var sp = splitPlainTwoLinesIfNeeded(visualBrand, maxWx, desiredFs, trBrand, fpH, it1, arch);
+    var y1 = sp.lines.length === 1 ? 258 + ms : 228 + ms;
+    var y2 = 296 + ms;
+    var ySub = sp.lines.length === 1 ? 348 + ms2 : 364 + ms2;
+
+    var parts = '';
     var w800 = Math.min(900, wp + 15);
-    var w700 = Math.min(900, ws + 25);
-    var archH = 'broadcastSans';
-    var maxWx = maxTextWidthHero(ta, xa, archH);
-    var fpH = spec.fonts.primary || 'Inter';
-    var fsH = spec.fonts.secondary || 'Inter';
-    function teH(role) {
-      if (role === 'brand') return clampFitTrackingEm(typo.trackingPrimaryEm || 0, archH);
-      if (role === 'fmt') return clampFitTrackingEm((typo.trackingSecondaryEm || 0) * 0.55 + 0.008, archH);
-      return clampFitTrackingEm(typo.trackingSecondaryEm || 0, archH);
+
+    if (sp.lines.length === 1) {
+      var f1 = fitTextToMaxWidth(
+        sp.lines[0],
+        sp.fontSize,
+        maxWx,
+        32,
+        Math.min(132, sp.fontSize + 14),
+        sp.trackingEm,
+        fpH,
+        it1,
+        arch
+      );
+      parts = svgTextEl(xa, y1, ta, fsP, f1.fontSize, String(w800), f1.trackingEm, it1, fg, 1, escXml(sp.lines[0]));
+    } else {
+      var fa = fitTextToMaxWidth(sp.lines[0], sp.fontSize, maxWx, 28, sp.fontSize + 8, sp.trackingEm, fpH, it1, arch);
+      var fb = fitTextToMaxWidth(sp.lines[1], sp.fontSize, maxWx, 26, sp.fontSize + 6, sp.trackingEm, fpH, it1, arch);
+      var fsu = Math.min(fa.fontSize, fb.fontSize);
+      fa = fitTextToMaxWidth(sp.lines[0], fsu, maxWx, 28, fsu + 8, sp.trackingEm, fpH, it1, arch);
+      fb = fitTextToMaxWidth(sp.lines[1], fsu, maxWx, 26, fsu + 6, sp.trackingEm, fpH, it1, arch);
+      parts =
+        svgTextEl(xa, y1, ta, fsP, fa.fontSize, String(w800), fa.trackingEm, it1, fg, 1, escXml(sp.lines[0])) +
+        '\n  ' +
+        svgTextEl(xa, y2, ta, fsP, fb.fontSize, String(w800), fb.trackingEm, it1, fg, 1, escXml(sp.lines[1]));
     }
 
-    if (!resolved.stack) {
-      var single0 = String(resolved.single || '');
-      var fs0 = fitHeroSingle(single0, 132, 40, lm);
-      var fsBig = Math.min(128, Math.round(fs0 * 1.08));
-      var fitSg = fitTextToMaxWidth(single0, fsBig, maxWx, 34, fsBig + 10, teH('brand'), fpH, it1, archH);
-      var fmtHS = fitTertiaryPlainText(fmtLab, maxWx, 15, fsH, teH('fmt'), archH, it2);
-      var outS =
-        svgTextEl(xa, yBase + ms, ta, fsP, fitSg.fontSize, String(w800), fitSg.trackingEm, it1, fg, 1, escXml(applyCasingLine(single0, casingBrand)));
-      if (fmtHS) {
-        var fitFmtS = fitTextToMaxWidth(fmtHS, 15, maxWx, 10, 17, teH('fmt'), fsH, it2, archH);
-        outS +=
-          '\n  ' +
-          svgTextEl(xa, yBase + 72 + ms2, ta, fsS, fitFmtS.fontSize, String(w700), fitFmtS.trackingEm, it2, ac, 0.75, escXml(fmtHS));
-      }
-      return outS;
+    var callTok = String(spec.callDisplay || '').trim().toUpperCase();
+    var cityTok = String(spec.licenseCity || '').trim().toUpperCase();
+    var subRaw = [callTok, cityTok].filter(Boolean).join(' ');
+    if (subRaw) {
+      var trSub = clampFitTrackingEm((typo.trackingSecondaryEm || 0) * 0.85, arch);
+      var subFit = fitTextToMaxWidth(subRaw, 22, maxWx, 10, 26, trSub, fpH, '', arch);
+      parts +=
+        '\n  ' +
+        svgTextEl(xa, ySub, ta, fsS, subFit.fontSize, String(ws), subFit.trackingEm, '', ac, 0.82, escXml(subRaw));
     }
 
-    var fs1b = fitHeroLine(resolved.line1, 122, 48, lm);
-    var fs2b = fitHeroLine(resolved.line2, 104, 42, lm);
-    var fsAnton = Math.min(118, Math.round(fs1b * (pat === 0 ? 2.35 : pat === 2 ? 2.05 : 1.65)));
-    var fsSub = Math.max(34, Math.round(fs2b * (pat === 0 ? 0.62 : pat === 2 ? 0.58 : 0.72)));
-    var fsTiny = Math.max(13, Math.round(fs2b * 0.36));
-
-    if (family === 'news' || family === 'sports') {
-      if (pat === 0) {
-        var ffN0 = fitTextToMaxWidth(freqRaw, fsAnton, maxWx, 26, 120, teH('freq'), 'Anton', it1, archH);
-        var fcN0 = fitTextToMaxWidth(callRaw, fsSub, maxWx, 22, fsSub + 14, teH('call'), fsH, it2, archH);
-        var fmtN0 = fitTertiaryPlainText(fmtLab, maxWx, fsTiny, fsH, teH('fmt'), archH, '');
-        var outN0 =
-          svgTextEl(xa, 198 + ms, ta, fontAnton, ffN0.fontSize, '400', ffN0.trackingEm, it1, fg, 1, freqE) +
-          '\n  ' +
-          svgTextEl(xa, 288 + ms2, ta, fsS, fcN0.fontSize, String(w700), fcN0.trackingEm, it2, ac2, 1, callE);
-        if (fmtN0) {
-          var fFmtN0 = fitTextToMaxWidth(fmtN0, fsTiny, maxWx, 10, fsTiny + 4, teH('fmt'), fsH, '', archH);
-          outN0 += '\n  ' + svgTextEl(xa, 358 + ms, ta, fsS, fFmtN0.fontSize, '600', fFmtN0.trackingEm, '', ac, 0.78, escXml(fmtN0));
-        }
-        return outN0;
-      }
-      if (pat === 1) {
-        var inlPlainH = String(freqRaw + ' ' + callRaw).trim().slice(0, 32);
-        var fsIn0 = Math.min(62, Math.round((fs1b + fs2b) * 0.48));
-        var spH = splitPlainTwoLinesIfNeeded(inlPlainH, maxWx, fsIn0, teH('brand'), fpH, it1, archH);
-        var outN1 = '';
-        if (spH.lines.length === 1) {
-          outN1 =
-            svgTextEl(xa, 268 + ms, ta, fsP, spH.fontSize, String(w800), spH.trackingEm, it1, fg, 1, escXml(spH.lines[0])) + '\n  ';
-        } else {
-          outN1 =
-            svgTextEl(xa, 248 + ms, ta, fsP, spH.fontSize, String(w800), spH.trackingEm, it1, fg, 1, escXml(spH.lines[0])) +
-            '\n  ' +
-            svgTextEl(xa, 298 + ms2, ta, fsP, Math.max(spH.fontSize - 4, 16), String(w700), spH.trackingEm, it1, fg, 1, escXml(spH.lines[1])) +
-            '\n  ';
-        }
-        var fmtN1 = fitTertiaryPlainText(fmtLab, maxWx, 14, fsH, teH('fmt'), archH, it2);
-        if (fmtN1) {
-          var fFmtN1 = fitTextToMaxWidth(fmtN1, 14, maxWx, 10, 16, teH('fmt'), fsH, it2, archH);
-          outN1 += svgTextEl(xa, spH.lines.length === 1 ? 338 + ms2 : 358 + ms2, ta, fsS, fFmtN1.fontSize, '700', fFmtN1.trackingEm, it2, ac, 0.72, escXml(fmtN1));
-        }
-        return outN1;
-      }
-      var ffN2 = fitTextToMaxWidth(freqRaw, Math.min(108, fsAnton + 6), maxWx, 24, 112, teH('freq'), 'Anton', it1, archH);
-      var fcN2 = fitTextToMaxWidth(callRaw, fsSub, maxWx, 20, fsSub + 10, teH('call'), fpH, it2, archH);
-      var fbN2 = fitTextToMaxWidth(brandRaw, 22, maxWx, 14, 26, teH('brand'), fsH, '', archH);
-      var outN2 =
-        svgTextEl(xa, 210 + ms, ta, fontAnton, ffN2.fontSize, '400', ffN2.trackingEm, it1, fg, 1, freqE) +
-        '\n  ' +
-        svgTextEl(xa, 278 + ms2, ta, fsP, fcN2.fontSize, String(w700), fcN2.trackingEm, it2, ac2, 1, callE) +
-        '\n  ' +
-        svgTextEl(xa, 328 + ms, ta, fsS, fbN2.fontSize, '800', fbN2.trackingEm, '', ac, 1, brandE);
-      var fmtN2 = fitTertiaryPlainText(fmtLab, maxWx, fsTiny, fsH, teH('fmt'), archH, '');
-      if (fmtN2) {
-        var fFmtN2 = fitTextToMaxWidth(fmtN2, fsTiny, maxWx, 10, fsTiny + 4, teH('fmt'), fsH, '', archH);
-        outN2 += '\n  ' + svgTextEl(xa, 388 + ms2, ta, fsS, fFmtN2.fontSize, '600', fFmtN2.trackingEm, '', fg, 0.65, escXml(fmtN2));
-      }
-      return outN2;
-    }
-
-    var domBrand = (seed >>> 3) % 2 === 0;
-    if (pat === 0 || (pat === 2 && !domBrand)) {
-      var ffC0 = fitTextToMaxWidth(freqRaw, fsAnton, maxWx, 26, 118, teH('freq'), 'Anton', it1, archH);
-      var fbC0 = fitTextToMaxWidth(brandRaw, Math.round(fs1b * 0.72), maxWx, 18, Math.round(fs1b * 0.78) + 4, teH('brand'), fsH, it2, archH);
-      var fcC0 = fitTextToMaxWidth(callRaw, fsSub, maxWx, 18, fsSub + 8, teH('call'), fsH, '', archH);
-      var outC0 =
-        svgTextEl(xa, 192 + ms, ta, fontAnton, ffC0.fontSize, '400', ffC0.trackingEm, it1, fg, 1, freqE) +
-        '\n  ' +
-        svgTextEl(xa, 282 + ms2, ta, fsS, fbC0.fontSize, String(w700), fbC0.trackingEm, it2, ac2, 1, brandE) +
-        '\n  ' +
-        svgTextEl(xa, 352 + ms, ta, fsS, fcC0.fontSize, String(ws), fcC0.trackingEm, '', ac, 1, callE);
-      var fmtC0 = fitTertiaryPlainText(fmtLab, maxWx, 14, fsH, teH('fmt'), archH, '');
-      if (fmtC0) {
-        var fFmtC0 = fitTextToMaxWidth(fmtC0, 14, maxWx, 10, 16, teH('fmt'), fsH, '', archH);
-        outC0 += '\n  ' + svgTextEl(xa, 414 + ms2, ta, fsS, fFmtC0.fontSize, String(ws), fFmtC0.trackingEm, '', fg, 0.72, escXml(fmtC0));
-      }
-      return outC0;
-    }
-    if (pat === 1) {
-      var inlPlainC = String(freqRaw + ' ' + brandRaw).trim().slice(0, 30);
-      var fsInC = Math.min(64, Math.round(fs1b * 1.05));
-      var spC = splitPlainTwoLinesIfNeeded(inlPlainC, maxWx, fsInC, teH('brand'), fpH, it1, archH);
-      var outC1 = '';
-      if (spC.lines.length === 1) {
-        outC1 =
-          svgTextEl(xa, 262 + ms, ta, fsP, spC.fontSize, String(w800), spC.trackingEm, it1, fg, 1, escXml(spC.lines[0])) + '\n  ';
-      } else {
-        outC1 =
-          svgTextEl(xa, 242 + ms, ta, fsP, spC.fontSize, String(w800), spC.trackingEm, it1, fg, 1, escXml(spC.lines[0])) +
-          '\n  ' +
-          svgTextEl(xa, 292 + ms2, ta, fsP, Math.max(spC.fontSize - 4, 16), String(w700), spC.trackingEm, it1, fg, 1, escXml(spC.lines[1])) +
-          '\n  ';
-      }
-      var fmtC1 = fitTertiaryPlainText(fmtLab, maxWx, 15, fsH, teH('fmt'), archH, it2);
-      if (fmtC1) {
-        var fFmtC1 = fitTextToMaxWidth(fmtC1, 15, maxWx, 10, 17, teH('fmt'), fsH, it2, archH);
-        outC1 += svgTextEl(xa, spC.lines.length === 1 ? 340 + ms2 : 352 + ms2, ta, fsS, fFmtC1.fontSize, String(ws), fFmtC1.trackingEm, it2, ac, 1, escXml(fmtC1));
-      }
-      return outC1;
-    }
-    var fbL = fitTextToMaxWidth(brandRaw, Math.min(66, Math.round(fs1b * 1.12)), maxWx, 18, 68, teH('brand'), fpH, it1, archH);
-    var ffL = fitTextToMaxWidth(freqRaw, Math.min(100, fsAnton), maxWx, 24, 102, teH('freq'), 'Anton', it2, archH);
-    var fcL = fitTextToMaxWidth(callRaw, fsSub, maxWx, 16, fsSub + 6, teH('call'), fsH, '', archH);
-    var outL =
-      svgTextEl(xa, 214 + ms, ta, fsP, fbL.fontSize, String(w800), fbL.trackingEm, it1, fg, 1, brandE) +
-      '\n  ' +
-      svgTextEl(xa, 292 + ms2, ta, fontAnton, ffL.fontSize, '400', ffL.trackingEm, it2, ac2, 1, freqE) +
-      '\n  ' +
-      svgTextEl(xa, 364 + ms, ta, fsS, fcL.fontSize, String(ws), fcL.trackingEm, '', ac, 1, callE);
-    var fmtL = fitTertiaryPlainText(fmtLab, maxWx, 13, fsH, teH('fmt'), archH, '');
-    if (fmtL) {
-      var fFmtL = fitTextToMaxWidth(fmtL, 13, maxWx, 9, 15, teH('fmt'), fsH, '', archH);
-      outL += '\n  ' + svgTextEl(xa, 424 + ms2, ta, fsS, fFmtL.fontSize, String(ws), fFmtL.trackingEm, '', fg, 0.68, escXml(fmtL));
-    }
-    return outL;
+    return parts;
   }
 
   /**
@@ -1211,6 +1190,7 @@
     var band = String(input.band || 'AM').toUpperCase() === 'FM' ? 'FM' : 'AM';
     var year = Math.floor(Number(input.year) || 1970);
     var defaultBrand = String(input.defaultBrand ?? '').trim();
+    var licenseCity = String(input.licenseCity ?? '').trim();
     /** User-edited brand: skip title/upper casing so call letters & mixed-case names stay as typed. */
     var brandPreserveCasing =
       brandRaw.length > 0 && normBrandKey(brandRaw) !== normBrandKey(defaultBrand);
@@ -1220,13 +1200,41 @@
     var seed = fnv1a(id + '|' + formatKey + '|' + era + '|' + callDisplay + '|' + variantBump + '|' + brandRaw);
     var variant = seed % 3;
     var palList = (cfg.palettes && cfg.palettes[family]) || cfg.palettes.ac;
-    var paletteIndex = palList.length ? ((seed >>> 3) % palList.length) : 0;
     var pal = pickPalette(family, seed >>> 3);
+    var paletteIndex = palList.length ? palList.indexOf(pal) : 0;
+    if (paletteIndex < 0) paletteIndex = palList.length ? (seed >>> 3) % palList.length : 0;
+    var cp = input.cosmeticProcPalette;
+    if (cp != null && cp !== '' && Number.isFinite(Number(cp)) && palList.length > 0) {
+      var pi = Math.floor(Number(cp)) % palList.length;
+      if (pi < 0) pi += palList.length;
+      paletteIndex = pi;
+      pal = palList[paletteIndex];
+    }
     var es = getEraModifiers(era);
     var fpList = (cfg.fontPairs && cfg.fontPairs[family]) || cfg.fontPairs.ac;
-    var fontPairIndex = fpList.length ? ((seed >>> 7) % fpList.length) : 0;
     var fp = pickFontPair(family, seed >>> 7);
+    var fontPairIndex = fpList.length ? fpList.indexOf(fp) : 0;
+    if (fontPairIndex < 0) fontPairIndex = fpList.length ? (seed >>> 7) % fpList.length : 0;
+    var cf = input.cosmeticProcFont;
+    if (cf != null && cf !== '' && Number.isFinite(Number(cf)) && fpList.length > 0) {
+      var fi = Math.floor(Number(cf)) % fpList.length;
+      if (fi < 0) fi += fpList.length;
+      fontPairIndex = fi;
+      fp = fpList[fontPairIndex];
+    }
     var layoutPick = resolveLayoutArchetype(cfg, family, era, seed, variant, variantBump, formatKey, band);
+    var cl = input.cosmeticProcLayout;
+    if (cl != null && String(cl).trim() !== '') {
+      var allowed = layoutListForFamilyBand(cfg, family, band);
+      var want = String(cl).trim();
+      if (allowed.indexOf(want) >= 0) {
+        var els0 = (cfg.eraLayoutStructure && cfg.eraLayoutStructure[era]) || {};
+        layoutPick = {
+          archetype: want,
+          eraStructure: Object.assign({}, els0, { archetype: want }),
+        };
+      }
+    }
     var arch0 = layoutPick.archetype;
     var fpUse = fp;
     if (arch0 === 'broadcastSans') {
@@ -1268,6 +1276,7 @@
       brand: brand,
       brandRaw: brandRaw,
       defaultBrand: defaultBrand,
+      licenseCity: licenseCity,
       brandPreserveCasing: brandPreserveCasing,
       layoutMode: layoutMode,
       variant: variant,
@@ -1300,7 +1309,6 @@
     var era = spec.era;
     var dial = spec.dial;
     var callDisplay = spec.callDisplay;
-    var defaultBrand = spec.defaultBrand;
     var typo = spec.typography;
     if (!typo) {
       typo = mergeTypographyRules(getConfig(), spec.family, spec.era, spec.seed, spec.variant, spec.fonts.weightPrimary, spec.fonts.weightSecondary, {});
@@ -1311,18 +1319,6 @@
     var wp = spec.fonts.weightPrimary;
     var ws = spec.fonts.weightSecondary;
 
-    var resolvedRaw = resolveHeroLines(brand, dial, callDisplay, defaultBrand);
-    var casingHero = spec.brandPreserveCasing ? 'mixed' : typo.casing;
-    var resolved;
-    if (resolvedRaw.stack) {
-      resolved = {
-        stack: true,
-        line1: applyCasingLine(resolvedRaw.line1, casingHero),
-        line2: applyCasingLine(resolvedRaw.line2, casingHero),
-      };
-    } else {
-      resolved = { stack: false, single: applyCasingLine(resolvedRaw.single, casingHero) };
-    }
     var gloss =
       es.glow > 0
         ? '<ellipse cx="256" cy="128" rx="220" ry="100" fill="url(#wlGlossBh)" opacity="' + es.glow * 0.85 + '"/>'
@@ -2004,9 +2000,6 @@
     var flExtrasBh = isOpenLayoutArchetype(arch) ? Math.min(fl, 1) : fl;
     shapes += eraLayoutExtras(refineFlExtrasForTaste(flExtrasBh, family, era), r, ac, ac2);
 
-    var coords = skewHeroCoords(heroCoordsForArchetype(typo, arch, family), ls, spec.seed, family);
-    var ls1 = letterSpacingAttr(clampFitTrackingEm(typo.trackingPrimaryEm || 0, arch));
-    var ls2 = letterSpacingAttr(clampFitTrackingEm(typo.trackingSecondaryEm || 0, arch));
     var italicModeBh = spec.italicMode != null ? spec.italicMode : 'none';
     var it1 =
       italicModeBh === 'primary'
@@ -2021,148 +2014,19 @@
           ? ' font-style="italic"'
           : '';
 
-    var text = '';
-    if (
-      arch === 'broadcastSans' &&
-      (family === 'news' || family === 'sports' || family === 'hit' || family === 'rhythmic')
-    ) {
-      text = buildBroadcastSansHeroText({
-        spec: spec,
-        resolved: resolved,
-        typo: typo,
-        coords: coords,
-        fg: fg,
-        ac: ac,
-        ac2: ac2,
-        fsPrimary: fsPrimary,
-        fsSecondary: fsSecondary,
-        wp: wp,
-        ws: ws,
-        lm: lm,
-        family: family,
-        it1: it1,
-        it2: it2,
-      });
-    } else if (resolved.stack) {
-      var raw1 = resolved.line1;
-      var raw2 = resolved.line2;
-      var fs1b = fitHeroLine(raw1, 118, 52, lm);
-      var fs2b = fitHeroLine(raw2, 100, 46, lm);
-      var hz = applyHeroHierarchySizes(fs1b, fs2b, 100, resolved, typo);
-      var faceBh1 = spec.fonts.primary || 'Inter';
-      var faceBh2 = spec.fonts.secondary || 'Inter';
-      var maxBh1 = maxTextWidthHero(coords.a1, coords.x1, arch);
-      var maxBh2 = maxTextWidthHero(coords.a2, coords.x2, arch);
-      var trBh1 = clampFitTrackingEm(typo.trackingPrimaryEm || 0, arch);
-      var trBh2 = clampFitTrackingEm(typo.trackingSecondaryEm || 0, arch);
-      var fitBh1 = fitTextToMaxWidth(
-        raw1,
-        hz.fs1,
-        maxBh1,
-        Math.max(28, Math.round(hz.fs1 * 0.42)),
-        Math.round(hz.fs1 * 1.12),
-        trBh1,
-        faceBh1,
-        it1,
-        arch
-      );
-      var fitBh2 = fitTextToMaxWidth(
-        raw2,
-        hz.fs2,
-        maxBh2,
-        Math.max(24, Math.round(hz.fs2 * 0.42)),
-        Math.round(hz.fs2 * 1.1),
-        trBh2,
-        faceBh2,
-        it2,
-        arch
-      );
-      var ls1Fit = letterSpacingAttr(fitBh1.trackingEm);
-      var ls2Fit = letterSpacingAttr(fitBh2.trackingEm);
-      var l1 = escXml(raw1);
-      var l2 = escXml(raw2);
-      text =
-        '<text x="' +
-        coords.x1 +
-        '" y="' +
-        y1 +
-        '" text-anchor="' +
-        coords.a1 +
-        '" font-family="' +
-        fsPrimary +
-        '" font-size="' +
-        fitBh1.fontSize +
-        '" font-weight="' +
-        wp +
-        '"' +
-        ls1Fit +
-        it1 +
-        ' fill="' +
-        fg +
-        '">' +
-        l1 +
-        '</text>\n  <text x="' +
-        coords.x2 +
-        '" y="' +
-        y2 +
-        '" text-anchor="' +
-        coords.a2 +
-        '" font-family="' +
-        fsSecondary +
-        '" font-size="' +
-        fitBh2.fontSize +
-        '" font-weight="' +
-        ws +
-        '"' +
-        ls2Fit +
-        it2 +
-        ' fill="' +
-        ac2 +
-        '">' +
-        l2 +
-        '</text>';
-    } else {
-      var single = String(resolved.single || '');
-      var fs0 = fitHeroSingle(single, 128, 42, lm);
-      var hz2 = applyHeroHierarchySizes(0, 0, fs0, resolved, typo);
-      var yMid = Math.round((y1 + y2) / 2) + 8;
-      var maxBhs = maxTextWidthHero(coords.as, coords.xs, arch);
-      var trBhs = clampFitTrackingEm(typo.trackingPrimaryEm || 0, arch);
-      var faceBhs = spec.fonts.primary || 'Inter';
-      var fitBhs = fitTextToMaxWidth(
-        single,
-        hz2.fs,
-        maxBhs,
-        Math.max(30, Math.round(hz2.fs * 0.36)),
-        Math.round(hz2.fs * 1.08),
-        trBhs,
-        faceBhs,
-        it1,
-        arch
-      );
-      var ls1Single = letterSpacingAttr(fitBhs.trackingEm);
-      text =
-        '<text x="' +
-        coords.xs +
-        '" y="' +
-        yMid +
-        '" text-anchor="' +
-        coords.as +
-        '" font-family="' +
-        fsPrimary +
-        '" font-size="' +
-        fitBhs.fontSize +
-        '" font-weight="' +
-        wp +
-        '"' +
-        ls1Single +
-        it1 +
-        ' fill="' +
-        fg +
-        '">' +
-        escXml(single) +
-        '</text>';
-    }
+    var text = buildSimpleCenteredBrandHero({
+      spec: spec,
+      typo: typo,
+      arch: arch,
+      fg: fg,
+      ac: ac,
+      fsPrimary: fsPrimary,
+      fsSecondary: fsSecondary,
+      wp: wp,
+      ws: ws,
+      lm: lm,
+      it1: it1,
+    });
 
     return (
       '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512" role="img" aria-label="Station name logo">\n' +
@@ -4229,6 +4093,35 @@
     return renderStationLogoSvg(spec) || '';
   }
 
+  function humanizeLayoutId(id) {
+    var s = String(id || '');
+    return s.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, function (c) {
+      return c.toUpperCase();
+    });
+  }
+
+  /** Options for basic (procedural SVG) logo UI keyed by game format string and AM/FM. */
+  function getBasicLogoLevers(formatKey, bandOpt) {
+    var cfg = getConfig();
+    var family = formatToFamily(formatKey);
+    var palList = (cfg.palettes && cfg.palettes[family]) || cfg.palettes.ac;
+    var fpList = (cfg.fontPairs && cfg.fontPairs[family]) || cfg.fontPairs.ac;
+    var layouts = layoutListForFamilyBand(cfg, family, bandOpt);
+    return {
+      family: family,
+      familyLabel: (cfg.familyLabels && cfg.familyLabels[family]) || family,
+      palettes: palList.map(function (p, i) {
+        return { i: i, bg: p.bg, fg: p.fg, ac: p.ac };
+      }),
+      fontPairs: fpList.map(function (fp, i) {
+        return { i: i, label: String(fp.primary) + ' · ' + String(fp.secondary) };
+      }),
+      layouts: layouts.map(function (lid) {
+        return { id: lid, label: humanizeLayoutId(lid) };
+      }),
+    };
+  }
+
   global.wlStationLogoSvg = {
     build: build,
     generateStationLogoSpec: generateStationLogoSpec,
@@ -4237,5 +4130,6 @@
     eraBucket: eraBucket,
     fnv1a: fnv1a,
     getConfig: getConfig,
+    getBasicLogoLevers: getBasicLogoLevers,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

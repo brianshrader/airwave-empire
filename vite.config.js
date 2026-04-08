@@ -64,6 +64,7 @@ export default defineConfig(({ command }) => ({
         copy('inspectCashFlowBoot.js');
         copy('inspectCashBridgeBoot.js');
         copy('inspectMegaSnapshotsBoot.js');
+        copy('inspectLogoTemplatesBoot.js');
         // Legal pages link /src/styles.css — Vite does not emit this path; copy so contact/terms/privacy match the game theme.
         copy('styles.css');
         const legalDir = join(__dirname, 'legal');
@@ -105,6 +106,7 @@ export default defineConfig(({ command }) => ({
         'inspect-cash-flow': resolve(__dirname, 'inspect-cash-flow.html'),
         'inspect-cash-bridge-audit': resolve(__dirname, 'inspect-cash-bridge-audit.html'),
         'inspect-mega-snapshots': resolve(__dirname, 'inspect-mega-snapshots.html'),
+        'inspect-logo-templates': resolve(__dirname, 'inspect-logo-templates.html'),
       },
     },
   },

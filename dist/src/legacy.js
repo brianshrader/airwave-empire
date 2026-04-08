@@ -12598,8 +12598,8 @@ function advTurn(mpCoalesceSeq){
         _ps.cash=G._playerCash[pid]||0;
       });
     }
-    // Ranker snapshot
-    const snap={year:G.year,period:G.period,label:`${G.year} ${PERIODS[G.period-1]}`,shares:{}};
+    // Ranker snapshot (numeric year/period so JSON saves match entryTurn lookups reliably)
+    const snap={year:Number(G.year),period:Number(G.period),label:`${G.year} ${PERIODS[G.period-1]}`,shares:{}};
     G.stations.forEach(s=>{ if(!s||s._bpSlotDeferred||!s.id)return; snap.shares[s.id]=s.rat.share; });
     G.rankerHistory.push(snap);
     acts.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
@@ -12968,6 +12968,16 @@ function wlCsvEscapeCell(val){
   if(/[",\n\r]/.test(s))return '"'+s.replace(/"/g,'""')+'"';
   return s;
 }
+/**
+ * First rankerHistory column index for a station's entry turn (solo/MP saves may stringify year/period in JSON).
+ * Returns -1 if unknown — caller should not blank pre-entry cells in that case.
+ */
+function rankerHistoryColumnIndexForEntryTurn(h, entry){
+  if(!h||!h.length||!entry)return -1;
+  const ey=Number(entry.year), ep=Number(entry.period);
+  if(!Number.isFinite(ey)||!Number.isFinite(ep))return -1;
+  return h.findIndex(hh=>Number(hh.year)===ey&&Number(hh.period)===ep);
+}
 /** Download market ranker share history as CSV (all stations × periods). */
 function exportRankerHistoryCsv(){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
@@ -12991,8 +13001,8 @@ function exportRankerHistoryCsv(){
     const entry=row.pair?row.lead.entryTurn:s.entryTurn;
     const shareCells=h.map(c=>{
       if(entry){
-        const entryIdx=h.findIndex(hh=>hh.year===entry.year&&hh.period===entry.period);
-        if(h.indexOf(c)<entryIdx)return '';
+        const entryIdx=rankerHistoryColumnIndexForEntryTurn(h, entry);
+        if(entryIdx>=0&&h.indexOf(c)<entryIdx)return '';
       }
       const v=row.pair?(c.shares[row.lead.id]||0)+(c.shares[row.rcv.id]||0):(c.shares[s.id]||0);
       if(!v)return '';
@@ -13025,9 +13035,9 @@ function openRanker(){
     const entry=row.pair?row.lead.entryTurn:s.entryTurn;
     const cells=cols.map(c=>{
       if(entry){
-        const entryIdx=h.findIndex(hh=>hh.year===entry.year&&hh.period===entry.period);
+        const entryIdx=rankerHistoryColumnIndexForEntryTurn(h, entry);
         const colIdx=h.indexOf(c);
-        if(colIdx<entryIdx)return '<td class="stc" style="position:static"></td>';
+        if(entryIdx>=0&&colIdx<entryIdx)return '<td class="stc" style="position:static"></td>';
       }
       const v=row.pair?(c.shares[row.lead.id]||0)+(c.shares[row.rcv.id]||0):(c.shares[s.id]||0);
       if(!v)return '<td>—</td>';
@@ -14028,6 +14038,76 @@ function brandMarketingIdentityBlockHtml(leg){
     </div>
   </div>`;
 }
+/** Dropdowns for procedural SVG logo: cosmeticProcPalette, cosmeticProcFont, cosmeticProcLayout on station (saved with game). */
+function bmProceduralLogoLeversHtml(s){
+  if(s.cosmeticLogoUrl)return '';
+  const api=globalThis.wlStationLogoSvg&&typeof globalThis.wlStationLogoSvg.getBasicLogoLevers==='function'?globalThis.wlStationLogoSvg.getBasicLogoLevers:null;
+  if(!api)return '';
+  let opts;
+  try{
+    const band=(s.fmBooster||s.sig?.type==='FM')?'FM':'AM';
+    opts=api(s.format||'ADULT_CONTEMP',band);
+  }catch(_e){return '';}
+  if(!opts||!opts.palettes||!opts.palettes.length)return '';
+  const sid=s.id;
+  const safe=bmSafeElId(sid);
+  const palHas=s.cosmeticProcPalette!=null&&String(s.cosmeticProcPalette).trim()!==''&&Number.isFinite(Number(s.cosmeticProcPalette));
+  const fontHas=s.cosmeticProcFont!=null&&String(s.cosmeticProcFont).trim()!==''&&Number.isFinite(Number(s.cosmeticProcFont));
+  const layVal=(typeof s.cosmeticProcLayout==='string'&&s.cosmeticProcLayout.trim())?s.cosmeticProcLayout.trim():'';
+  const selPal=palHas?Math.floor(Number(s.cosmeticProcPalette)):null;
+  const selFont=fontHas?Math.floor(Number(s.cosmeticProcFont)):null;
+  const selStyle='width:100%;max-width:320px;padding:8px 10px;border-radius:6px;background:var(--crd);color:var(--wht);border:1px solid var(--bdh);font-size:14px';
+  const palOpts=opts.palettes.map(p=>{
+    const sel=selPal!=null&&p.i===selPal?' selected':'';
+    const sw=p.bg||'#444';
+    return`<option value="${p.i}"${sel}>Set ${p.i+1} — ${rosterHtmlEsc(sw)}</option>`;
+  }).join('');
+  const fontOpts=opts.fontPairs.map(f=>{
+    const sel=selFont!=null&&f.i===selFont?' selected':'';
+    return`<option value="${f.i}"${sel}>${rosterHtmlEsc(f.label)}</option>`;
+  }).join('');
+  const layOpts=opts.layouts.map(l=>{
+    const sel=l.id===layVal?' selected':'';
+    return`<option value="${rosterHtmlEsc(l.id)}"${sel}>${rosterHtmlEsc(l.label)}</option>`;
+  }).join('');
+  return`<div style="margin:12px 0;padding:12px 14px;border:1px solid var(--bdr);border-radius:8px;background:rgba(0,0,0,.1)">
+    <div style="font-size:12px;color:var(--mut);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em">Basic logo design</div>
+    <p class="di" style="font-size:13px;color:var(--mut);line-height:1.4;margin:0 0 10px">Lock colors, font pair, or layout for this format family, or leave <strong>Auto</strong> for seed-based variety. <strong>New basic logo look</strong> still re-rolls accents and details.</p>
+    <div style="display:grid;grid-template-columns:minmax(88px,110px) 1fr;gap:10px 12px;align-items:center;font-size:14px">
+      <label for="bm-proc-pal-${safe}" style="color:var(--mut)">Colors</label>
+      <select id="bm-proc-pal-${safe}" style="${selStyle}" onchange="bmProcLeverChange('${sid}','palette',this.value)">
+        <option value="">Auto</option>${palOpts}
+      </select>
+      <label for="bm-proc-font-${safe}" style="color:var(--mut)">Fonts</label>
+      <select id="bm-proc-font-${safe}" style="${selStyle}" onchange="bmProcLeverChange('${sid}','font',this.value)">
+        <option value="">Auto</option>${fontOpts}
+      </select>
+      <label for="bm-proc-lay-${safe}" style="color:var(--mut)">Layout</label>
+      <select id="bm-proc-lay-${safe}" style="${selStyle}" onchange="bmProcLeverChange('${sid}','layout',this.value)">
+        <option value="">Auto</option>${layOpts}
+      </select>
+    </div>
+  </div>`;
+}
+function bmProcLeverChange(sid,kind,raw){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||s.cosmeticLogoUrl)return;
+  const v=raw==null?'':String(raw);
+  if(kind==='palette'){
+    if(v==='')delete s.cosmeticProcPalette;
+    else{const n=parseInt(v,10);if(Number.isFinite(n))s.cosmeticProcPalette=n;}
+  }else if(kind==='font'){
+    if(v==='')delete s.cosmeticProcFont;
+    else{const n=parseInt(v,10);if(Number.isFinite(n))s.cosmeticProcFont=n;}
+  }else if(kind==='layout'){
+    if(v==='')delete s.cosmeticProcLayout;
+    else s.cosmeticProcLayout=v.trim();
+  }
+  autoSave();
+  bmRefreshBrandMarketingLogoPreview(sid);
+  renderAll();
+}
 function brandMarketingLogoBlockHtml(leg){
   const s=leg;
   const safe=bmSafeElId(s.id);
@@ -14062,6 +14142,7 @@ function brandMarketingLogoBlockHtml(leg){
     <p class="di" style="font-size:13px;color:var(--mut);line-height:1.45;margin:0 0 8px">AI logos are generated on the server and can take up to about a minute. <strong>Click the preview</strong> to open a larger version you can save. When you use <strong>Generate New Logo</strong>, wait for the status line — the button stays disabled until the request finishes (one new logo per period).</p>
     <div id="bm-logo-status-${safe}" style="font-size:13px;color:var(--amb);min-height:22px;margin-bottom:8px;font-weight:500"></div>
     ${hero}
+    ${s.cosmeticLogoUrl?'':bmProceduralLogoLeversHtml(s)}
     <div style="display:flex;flex-wrap:wrap;gap:8px">
       ${s.cosmeticLogoUrl?'':`<button type="button" class="abt g" onclick="wlBumpProceduralLogoVariant('${s.id}')">↻ New basic logo look</button>`}
       ${s.cosmeticLogoUrl?`<button type="button" class="abt" onclick="wlClearAiStationLogo('${s.id}')">○ Use basic logo</button>`:''}
@@ -16359,7 +16440,10 @@ function wlBuildProceduralLogoInput(op, opts){
     const o=String(opts.brandOverride).trim();
     brand=o?o:defaultPlayerStationBrand(op);
   }
-  return{
+  const mktId=G.marketId||ACTIVE_MARKET||'atlanta';
+  const mkt=typeof MARKETS!=='undefined'?MARKETS[mktId]:null;
+  const licenseCity=String(G.city||(mkt&&mkt.label)||'').trim();
+  const out={
     id:op.id,
     callDisplay:callDisplay(op),
     brand:brand||callDisplay(op),
@@ -16370,8 +16454,15 @@ function wlBuildProceduralLogoInput(op, opts){
     year:G.year||1970,
     variantBump:Math.max(0,Math.floor(Number(op.cosmeticLogoVariant)||0)),
     defaultBrand:defaultPlayerStationBrand(op),
+    licenseCity,
     layoutMode:opts.layoutMode||'brandHero',
   };
+  const cpp=op.cosmeticProcPalette;
+  if(cpp!=null&&cpp!==''&&Number.isFinite(Number(cpp)))out.cosmeticProcPalette=Math.floor(Number(cpp));
+  const cff=op.cosmeticProcFont;
+  if(cff!=null&&cff!==''&&Number.isFinite(Number(cff)))out.cosmeticProcFont=Math.floor(Number(cff));
+  if(typeof op.cosmeticProcLayout==='string'&&op.cosmeticProcLayout.trim())out.cosmeticProcLayout=op.cosmeticProcLayout.trim();
+  return out;
 }
 function wlProceduralLogoSvgString(op, opts){
   opts=opts||{};
@@ -17311,6 +17402,11 @@ function migrateSave(G){
   if(!G._aiRivalDebt||typeof G._aiRivalDebt!=='object')G._aiRivalDebt={};
   if(!G._aiRivalNegEbitdaStreak||typeof G._aiRivalNegEbitdaStreak!=='object')G._aiRivalNegEbitdaStreak={};
   G.rankerHistory=G.rankerHistory||[];
+  (G.rankerHistory||[]).forEach(snap=>{
+    if(!snap)return;
+    if(snap.year!=null)snap.year=Number(snap.year);
+    if(snap.period!=null)snap.period=Number(snap.period);
+  });
   G.finHistory=G.finHistory||[];
   G._playerFinHistory=G._playerFinHistory||{};
   G.stationFinHistory=G.stationFinHistory||{};

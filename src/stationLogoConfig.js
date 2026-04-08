@@ -1,5 +1,6 @@
 /**
- * Station logo v1 — centralized config (format → family, palettes, font pairs, era modifiers).
+ * Station logo — centralized config (format → family, palettes, font pairs, era modifiers).
+ * Template variants: see docs/station-logo-templates.md (format + AM/FM + era drive layout pick).
  * Loaded before stationLogoSvg.js. Safe to edit for tuning without touching render logic.
  */
 (function (global) {
@@ -36,7 +37,8 @@
     PUBLIC_NEWS: 'news',
     SPORTS_TALK: 'sports',
     ALBUM_ROCK: 'rock',
-    CLASSIC_ROCK: 'rock',
+    /** Classic-rock / classic-hits station marks — badge, sunburst, heritage lockups (not album-rock aggression). */
+    CLASSIC_ROCK: 'oldies',
     ALT_ROCK: 'rock',
     ADULT_CONTEMP: 'ac',
     HOT_AC: 'ac',
@@ -140,13 +142,11 @@
   var FONT_PAIRS = {
     hit: [
       { primary: 'Anton', secondary: 'Oswald', wp: 400, ws: 600 },
-      { primary: 'Oswald', secondary: 'Inter', wp: 700, ws: 500 },
-      { primary: 'Anton', secondary: 'Archivo Narrow', wp: 400, ws: 700 },
+      { primary: 'Oswald', secondary: 'Archivo Narrow', wp: 700, ws: 700 },
     ],
     news: [
-      { primary: 'Roboto Slab', secondary: 'Inter', wp: 700, ws: 600 },
-      { primary: 'Merriweather', secondary: 'Inter', wp: 700, ws: 500 },
       { primary: 'Roboto Slab', secondary: 'Archivo Narrow', wp: 700, ws: 600 },
+      { primary: 'Merriweather', secondary: 'Inter', wp: 700, ws: 600 },
     ],
     sports: [
       { primary: 'Oswald', secondary: 'Roboto Slab', wp: 700, ws: 700 },
@@ -154,8 +154,7 @@
     ],
     country: [
       { primary: 'Merriweather', secondary: 'Oswald', wp: 700, ws: 600 },
-      { primary: 'Lora', secondary: 'Oswald', wp: 700, ws: 600 },
-      { primary: 'Merriweather', secondary: 'Archivo Narrow', wp: 700, ws: 600 },
+      { primary: 'Lora', secondary: 'Archivo Narrow', wp: 700, ws: 600 },
     ],
     rock: [
       { primary: 'Oswald', secondary: 'Anton', wp: 700, ws: 400 },
@@ -163,13 +162,11 @@
     ],
     ac: [
       { primary: 'Lora', secondary: 'Playfair Display', wp: 600, ws: 400 },
-      { primary: 'Merriweather', secondary: 'Lora', wp: 700, ws: 400 },
-      { primary: 'Playfair Display', secondary: 'Inter', wp: 600, ws: 400 },
+      { primary: 'Merriweather', secondary: 'Inter', wp: 700, ws: 500 },
     ],
     oldies: [
       { primary: 'Libre Baskerville', secondary: 'Abril Fatface', wp: 700, ws: 400 },
       { primary: 'Playfair Display', secondary: 'Lora', wp: 700, ws: 600 },
-      { primary: 'Merriweather', secondary: 'Libre Baskerville', wp: 700, ws: 700 },
     ],
     urban: [
       { primary: 'Oswald', secondary: 'Inter', wp: 700, ws: 600 },
@@ -182,13 +179,16 @@
     gospel: [
       { primary: 'Merriweather', secondary: 'Lora', wp: 700, ws: 600 },
       { primary: 'Playfair Display', secondary: 'Oswald', wp: 700, ws: 600 },
-      { primary: 'Lora', secondary: 'Merriweather', wp: 600, ws: 700 },
     ],
   };
 
   /**
    * Deterministic layout archetypes per family (index chosen from seed + era offset).
    * Names are semantic for renderers — not all imply different geometry in every mode.
+   */
+  /**
+   * Full palette for player layout overrides & tooling. Runtime template pick uses
+   * LOGO_TEMPLATE_VARIANTS_BY_BAND (2–3 variants per band).
    */
   var LAYOUT_ARCHETYPES_BY_FAMILY = {
     hit: ['freqHero', 'brandHero', 'diagonalBlock', 'textBar', 'textOnlyStrike', 'freqTitan', 'broadcastSans'],
@@ -201,6 +201,53 @@
     oldies: ['retroBadge', 'classicWordmark', 'nostalgicFrame', 'plainStack', 'freqNostalgia'],
     urban: ['blockContrast', 'sleekStrip', 'diagonalUrban'],
     sports: ['shieldBadge', 'bannerStack', 'angularLockup', 'broadcastSans'],
+  };
+
+  /**
+   * Deterministic template pool: format family × AM/FM → at most three layout archetypes.
+   * Indices rotate with era offset + seed (see resolveLayoutArchetype in stationLogoSvg.js).
+   */
+  var LOGO_TEMPLATE_VARIANTS_BY_BAND = {
+    news: {
+      AM: ['numericLed', 'freqMinimal', 'masthead'],
+      FM: ['masthead', 'broadcastSans', 'freqMinimal'],
+    },
+    hit: {
+      AM: ['textBar', 'freqHero', 'brandHero'],
+      FM: ['freqTitan', 'diagonalBlock', 'textOnlyStrike'],
+    },
+    rhythmic: {
+      AM: ['textBar', 'sleekStrip', 'brandHero'],
+      FM: ['freqTitan', 'sleekStrip', 'textOnlyStrike'],
+    },
+    ac: {
+      AM: ['serifLockup', 'softWordmark', 'freqWhisper'],
+      FM: ['calmMinimal', 'softWordmark', 'framedCard'],
+    },
+    rock: {
+      AM: ['stackedSlab', 'minimalDark', 'diagonalAggro'],
+      FM: ['freqWall', 'slabMinimal', 'diagonalAggro'],
+    },
+    oldies: {
+      AM: ['freqNostalgia', 'classicWordmark', 'plainStack'],
+      FM: ['retroBadge', 'classicWordmark', 'nostalgicFrame'],
+    },
+    country: {
+      AM: ['badgeSeal', 'horizontalWord', 'stackHeritage'],
+      FM: ['openWordmark', 'horizontalWord', 'badgeSeal'],
+    },
+    sports: {
+      AM: ['shieldBadge', 'bannerStack', 'angularLockup'],
+      FM: ['angularLockup', 'shieldBadge', 'broadcastSans'],
+    },
+    gospel: {
+      AM: ['softHeritage', 'horizontalWord', 'softCard'],
+      FM: ['crossInspire', 'horizontalWord', 'softCard'],
+    },
+    urban: {
+      AM: ['blockContrast', 'diagonalUrban', 'sleekStrip'],
+      FM: ['diagonalUrban', 'sleekStrip', 'blockContrast'],
+    },
   };
 
   /**
@@ -281,10 +328,10 @@
       italicPrimaryMax: 0,
       italicSecondaryMax: 0,
       hierarchyBias: 'brand',
-      primaryLineScale: 0.9,
-      secondaryLineScale: 1.16,
-      singleScale: 1.2,
-      hierarchyGap: 1.1,
+      primaryLineScale: 1.02,
+      secondaryLineScale: 0.88,
+      singleScale: 1.12,
+      hierarchyGap: 1.22,
       heroAlign: 'left',
       casing: 'title',
       thumbBrandScale: 1.06,
@@ -558,6 +605,7 @@
     typographyByFamily: TYPOGRAPHY_BY_FAMILY,
     typographyByEra: TYPOGRAPHY_BY_ERA,
     layoutArchetypesByFamily: LAYOUT_ARCHETYPES_BY_FAMILY,
+    logoTemplateVariantsByFamilyBand: LOGO_TEMPLATE_VARIANTS_BY_BAND,
     eraLayoutStructure: ERA_LAYOUT_STRUCTURE,
   };
 })(typeof window !== 'undefined' ? window : globalThis);
