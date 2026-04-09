@@ -450,7 +450,8 @@ body.wl-modal-open .site-footer{pointer-events:none}
 html.wl-modal-open .wl-feedback-fab,body.wl-modal-open .wl-feedback-fab{pointer-events:none;opacity:.35;}
 @media(max-width:600px){.wl-feedback-fab{font-size:12px;padding:8px 12px;right:10px;bottom:34px}}
 .site-footer-sim{margin:0;font-size:11px;color:var(--mut);opacity:.88;line-height:1.45;max-width:560px;}
-.site-footer-follow{margin-top:1px;padding-top:2px;border-top:1px solid rgba(255,255,255,.06);}
+/* Keep Facebook · X · Instagram on one line when the row wraps (saves vertical space). */
+.site-footer-social{display:inline-flex;flex-wrap:nowrap;align-items:center;white-space:nowrap}
 .site-footer--embed .site-footer-dot{opacity:.45;padding:0 3px;user-select:none;}
 .site-footer--embed{position:relative;left:auto;right:auto;bottom:auto;z-index:1;margin-top:22px;padding:14px 0 0;background:transparent;border-top:1px solid rgba(255,255,255,.1);}
 .site-footer--embed .site-footer-inner{gap:5px;}
