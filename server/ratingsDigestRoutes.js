@@ -2,7 +2,7 @@
 
 /**
  * Trade-press style ratings digest via ShortAPI LLM (job/create + job/query, same transport as images).
- * POST /api/ratings-digest — body: { payload: { market, periodLabel, year, period, book: [...] } }
+ * POST /api/ratings-digest — body: { payload: { market, periodLabel, year, period, book: [{ rank, call, brand?, format, sharePct, deltaPts, band }], marketContext?: string[] } }
  * GET  /api/ratings-digest/status — { configured, model }
  *
  * Env: SHORTAPI_KEY and/or OPENROUTER_API_KEY and/or OPENAI_API_KEY; digest model vars below.
@@ -466,8 +466,10 @@ const DIGEST_SYSTEM = `You are a veteran U.S. radio trade columnist writing for 
 
 Rules:
 - Use ONLY the JSON facts in the user message. Do not invent stations, formats, or numbers not in the data.
+- The ratings table is in "book". Optional "marketContext" is an array of short strings summarizing real in-sim events this book (sports rights, syndication/franchise deals, group consolidation, reformats, simulcasts/translators, talent moves, format positioning, regulatory/timeline notes, etc.). When present, weave 1–3 of the most relevant items into the column as color — still no facts beyond those strings and the book.
 - Write 2–4 short paragraphs of fluent prose. No markdown headings or numbered lists.
-- Refer to stations by call letters as given. Field "sharePct" is AQH share in the radio-industry sense (Arbitron/Nielsen-style points): 12.1 means a **12.1 share** — write "12.1 share", "at a 12.1", "with 12.1s", etc. Never use "%" or the word "percent" for station shares.
+- Refer to stations using field "call" (facility-style ID, e.g. WZZZ-FM). Each row may include "brand" (on-air name / slogan). When "brand" is non-empty, prefer trade-press style **CALL (Brand)** on first mention, e.g. **WZZZ-FM (Power 102.3)** — parentheses, no nested quotes unless the brand itself contains them. If "brand" is empty, use **call** alone. Do not invent brands.
+- Field "sharePct" is AQH share in the radio-industry sense (Arbitron/Nielsen-style points): 12.1 means a **12.1 share** — write "12.1 share", "at a 12.1", "with 12.1s", etc. Never use "%" or the word "percent" for station shares.
 - When "deltaPts" is set, it is change in share points vs the prior book; describe movement without percent signs (e.g. "up six tenths of a share", "slipped two full shares").
 - If every row has deltaPts null, this is the first book in the simulation window — describe the rank/share snapshot only; do not pretend to know trends.
 - Sound like insider trade press: confident, concise, slightly cynical about consultants and format wars — but stay grounded in the numbers provided.`;
@@ -483,18 +485,28 @@ function sanitizeDigestPayload(body) {
   const rows = book.map((r) => ({
     rank: Math.max(0, Math.min(99, parseInt(r.rank, 10) || 0)),
     call: String(r.call || '').slice(0, 36),
+    brand: String(r.brand || '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 72),
     format: String(r.format || '').slice(0, 72),
     sharePct:
       typeof r.sharePct === 'number' && !Number.isNaN(r.sharePct) ? Math.round(r.sharePct * 100) / 100 : 0,
     deltaPts: r.deltaPts == null || r.deltaPts === '' ? null : Math.round(Number(r.deltaPts) * 100) / 100,
     band: r.band === 'FM' ? 'FM' : 'AM',
   }));
+  const mc = Array.isArray(raw.marketContext) ? raw.marketContext : [];
+  const marketContext = mc
+    .map((s) => String(s || '').replace(/\s+/g, ' ').trim().slice(0, 400))
+    .filter(Boolean)
+    .slice(0, 24);
   return {
     market,
     periodLabel,
     year: Number.isFinite(year) ? year : null,
     period: Number.isFinite(period) ? period : null,
     book: rows,
+    marketContext,
   };
 }
 
@@ -535,8 +547,12 @@ function mountRatingsDigestRoutes(app) {
         return res.status(400).json({ error: 'Invalid or empty ratings payload.' });
       }
 
-      const userMsg = JSON.stringify(payload);
-      if (userMsg.length > 14000) {
+      let userMsg = JSON.stringify(payload);
+      if (userMsg.length > 16000) {
+        payload.marketContext = (payload.marketContext || []).slice(0, 12);
+        userMsg = JSON.stringify(payload);
+      }
+      if (userMsg.length > 16000) {
         return res.status(400).json({ error: 'Payload too large.' });
       }
 

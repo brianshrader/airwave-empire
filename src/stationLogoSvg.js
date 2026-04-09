@@ -1203,38 +1203,12 @@
     var pal = pickPalette(family, seed >>> 3);
     var paletteIndex = palList.length ? palList.indexOf(pal) : 0;
     if (paletteIndex < 0) paletteIndex = palList.length ? (seed >>> 3) % palList.length : 0;
-    var cp = input.cosmeticProcPalette;
-    if (cp != null && cp !== '' && Number.isFinite(Number(cp)) && palList.length > 0) {
-      var pi = Math.floor(Number(cp)) % palList.length;
-      if (pi < 0) pi += palList.length;
-      paletteIndex = pi;
-      pal = palList[paletteIndex];
-    }
     var es = getEraModifiers(era);
     var fpList = (cfg.fontPairs && cfg.fontPairs[family]) || cfg.fontPairs.ac;
     var fp = pickFontPair(family, seed >>> 7);
     var fontPairIndex = fpList.length ? fpList.indexOf(fp) : 0;
     if (fontPairIndex < 0) fontPairIndex = fpList.length ? (seed >>> 7) % fpList.length : 0;
-    var cf = input.cosmeticProcFont;
-    if (cf != null && cf !== '' && Number.isFinite(Number(cf)) && fpList.length > 0) {
-      var fi = Math.floor(Number(cf)) % fpList.length;
-      if (fi < 0) fi += fpList.length;
-      fontPairIndex = fi;
-      fp = fpList[fontPairIndex];
-    }
     var layoutPick = resolveLayoutArchetype(cfg, family, era, seed, variant, variantBump, formatKey, band);
-    var cl = input.cosmeticProcLayout;
-    if (cl != null && String(cl).trim() !== '') {
-      var allowed = layoutListForFamilyBand(cfg, family, band);
-      var want = String(cl).trim();
-      if (allowed.indexOf(want) >= 0) {
-        var els0 = (cfg.eraLayoutStructure && cfg.eraLayoutStructure[era]) || {};
-        layoutPick = {
-          archetype: want,
-          eraStructure: Object.assign({}, els0, { archetype: want }),
-        };
-      }
-    }
     var arch0 = layoutPick.archetype;
     var fpUse = fp;
     if (arch0 === 'broadcastSans') {
@@ -4093,35 +4067,6 @@
     return renderStationLogoSvg(spec) || '';
   }
 
-  function humanizeLayoutId(id) {
-    var s = String(id || '');
-    return s.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, function (c) {
-      return c.toUpperCase();
-    });
-  }
-
-  /** Options for basic (procedural SVG) logo UI keyed by game format string and AM/FM. */
-  function getBasicLogoLevers(formatKey, bandOpt) {
-    var cfg = getConfig();
-    var family = formatToFamily(formatKey);
-    var palList = (cfg.palettes && cfg.palettes[family]) || cfg.palettes.ac;
-    var fpList = (cfg.fontPairs && cfg.fontPairs[family]) || cfg.fontPairs.ac;
-    var layouts = layoutListForFamilyBand(cfg, family, bandOpt);
-    return {
-      family: family,
-      familyLabel: (cfg.familyLabels && cfg.familyLabels[family]) || family,
-      palettes: palList.map(function (p, i) {
-        return { i: i, bg: p.bg, fg: p.fg, ac: p.ac };
-      }),
-      fontPairs: fpList.map(function (fp, i) {
-        return { i: i, label: String(fp.primary) + ' · ' + String(fp.secondary) };
-      }),
-      layouts: layouts.map(function (lid) {
-        return { id: lid, label: humanizeLayoutId(lid) };
-      }),
-    };
-  }
-
   global.wlStationLogoSvg = {
     build: build,
     generateStationLogoSpec: generateStationLogoSpec,
@@ -4130,6 +4075,5 @@
     eraBucket: eraBucket,
     fnv1a: fnv1a,
     getConfig: getConfig,
-    getBasicLogoLevers: getBasicLogoLevers,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

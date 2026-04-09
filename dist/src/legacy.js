@@ -2630,6 +2630,30 @@ function getStationFranchise(s,slot,G){
     return syndicationHaloAppliesToStation(s,r.holderId,G);
   })||null;
 }
+/** National syndication covers this daypart for this station — no parallel local show (hire/move) unless a benched host is reassigned via franchise tools. */
+function franchiseSlotBlocksNewLocalTalent(s,slot,G){
+  return !!(getStationFranchise(s,slot,G)&&!s?.prog?.[slot]?.talent);
+}
+/** When franchise rights land on a new holder, any local host already in that daypart must leave the air (player → bench; AI → released). */
+function benchLocalHostDisplacedByFranchiseWin(station,franchise,G){
+  if(!station?.prog||!franchise)return;
+  const slot=franchise.slot;
+  const sd=station.prog[slot];
+  if(!sd?.talent)return;
+  const nm=sd.talent.name;
+  if(station.isPlayer&&mpIsMe(station)){
+    if(removeTalentToBenchInternal(station.id,slot)){
+      G.news.unshift({v:'MEDIUM',
+        t:`📻 "${franchise.name}" now programs ${SL[slot]} on ${station.callLetters} — ${nm} moved to your talent bench. Reassign from Manage Talent or National Franchises.`,
+        y:G.year,p:G.period,iy:true});
+      logHistory(station,'TALENT',`Benched ${nm} — ${SL[slot]} (displaced by "${franchise.name}")`,G);
+    }
+  } else {
+    sd.talent=null;
+    sd.quality=Math.max(10,Math.round((sd.quality||20)*0.72));
+    refreshStationOQ(station,G);
+  }
+}
 function applyFranchiseToSlot(s,slot,G){
   const f=getStationFranchise(s,slot,G);
   if(!f)return null;
@@ -2703,6 +2727,7 @@ function resolveFranchiseAuction(franchise,rights,G,acts){
         rights.contractEnd=G.year+franchise.contractYrs;
         rights.auctionOpen=false;
         acts.push({v:'LOW',t:`📻 "${franchise.name}" picked up by ${fallback.callLetters} — $${Math.round(rights.fee/1000)}K/yr (no auction).`,y:G.year,p:G.period});
+        benchLocalHostDisplacedByFranchiseWin(fallback,franchise,G);
         return;
       }
     }else if(rights.holderId){
@@ -2761,12 +2786,14 @@ function resolveFranchiseAuction(franchise,rights,G,acts){
   if(prev&&prev.id!==winner.id&&prev.isPlayer){
     Object.values(prev.mom||{}).forEach(m=>{if(m)m.tgt=Math.max(0.001,m.tgt-0.004);});
   }
+  const prevHolderId=prev?.id??null;
   rights.holderId=winner.id;
   rights.holderName=winner.callLetters;
   rights.fee=winnerBid;
   rights.contractEnd=G.year+franchise.contractYrs;
   rights.auctionOpen=false;
   rights.bids={};
+  if(prevHolderId!==winner.id)benchLocalHostDisplacedByFranchiseWin(winner,franchise,G);
 }
 function placeFranchiseBid(franchiseId,stationId,amount){
   if(!G.franchiseRights?.[franchiseId])return;
@@ -4529,6 +4556,7 @@ window._mpApply_fmt = function({ sid, format }) {
 window._mpApply_hire = function({ sid, slot, talent }) {
   const s = G.stations.find(st=>st.id===sid);
   if (!s || !s.prog[slot] || daytimerRestrictedSlot(s, slot)) return;
+  if(franchiseSlotBlocksNewLocalTalent(s,slot,G))return;
   s.prog[slot].talent = talent;
   s.oq = Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w, 0));
   if (talent?.name) logHistory(s, 'TALENT', `Hired ${talent.name} — ${SL[slot]}`, G);
@@ -4557,6 +4585,7 @@ window._mpApply_poach = function({ sid, slot, rivalId, talentId }) {
   const s = G.stations.find(st=>st.id===sid);
   const rival = G.stations.find(st=>st.id===rivalId);
   if (!s || !rival || daytimerRestrictedSlot(s, slot)) return;
+  if(getStationFranchise(s,slot,G))return;
   const t = rival.prog[slot]?.talent;
   if (!t) return;
   const nm = t.name;
@@ -4666,6 +4695,10 @@ function applyTalentCrossStationXferFull(fromSid, fromSlot, toSid, toSlot) {
     return false;
   }
   const fromSd = src.prog[fromSlot], toSd = dst.prog[toSlot];
+  if(franchiseSlotBlocksNewLocalTalent(dst,toSlot,G)){
+    showToast('That daypart is reserved for a syndicated franchise on the destination station — use National Franchises / bench tools, not a straight transfer.','warn');
+    return false;
+  }
   if (!fromSd?.talent) return false;
   let displacedName=null;
   if (toSd?.talent){
@@ -6030,8 +6063,12 @@ function getDrift(s){
     s.drift[store]=val;
   }
   const yr=(typeof G!=='undefined'&&G)?(G.year||1970):1970;
-  const poles=hitsDriftPolesForYear(yr);
-  const cfg={...d,poleA:poles.poleA,poleB:poles.poleB};
+  // Only CHR / Top 40 lineage uses era-based hit-radio pole labels; other formats keep DRIFT.* poles.
+  let cfg={...d};
+  if(isHitsFormatLineage(s.format)){
+    const poles=hitsDriftPolesForYear(yr);
+    cfg={...d,poleA:poles.poleA,poleB:poles.poleB};
+  }
   return {cfg,val};
 }
 
@@ -7036,6 +7073,7 @@ function unshiftRatingsDigest(G){
     G.news.unshift(item);
   });
 }
+
 function seedNewEntry(s,G){
   // Seeds a new mid-game station entry with a realistic initial share.
   // Unlike seedRat (which normalizes across only the passed stations),
@@ -8727,8 +8765,10 @@ function doDrift(sid){
       if(!partner.driftHistory[histKey])partner.driftHistory[histKey]={commitYear:G.year};
     }
   }
-  const poles=hitsDriftPolesForYear(G.year);
-  const dir=newVal>oldVal?'→ '+poles.poleB.name:'← '+poles.poleA.name;
+  const drForDir=getDrift(s);
+  const poleAname=drForDir?.cfg?.poleA?.name||'A';
+  const poleBname=drForDir?.cfg?.poleB?.name||'B';
+  const dir=newVal>oldVal?'→ '+poleBname:'← '+poleAname;
   const histNote=`Positioning ${oldVal}→${newVal} ${dir}`;
   logHistory(s,'NOTE',histNote,G);
   if(s.simulcastWith){
@@ -10586,7 +10626,7 @@ function openScenSelect(localSave){
     ?`<div style="font-size:14px;color:var(--amb);margin:0 0 16px;line-height:1.5">Autosave is for <strong>${saveMktLbl}</strong> — RESUME loads that game. The market you pick below applies to <strong>new</strong> games.</div>`
     :'';
 
-  const wlSiteFooterEmbed=`<div class="site-footer site-footer--embed" role="contentinfo"><div class="site-footer-inner"><span class="site-footer-copy">© 2026 Airwave Empire. All rights reserved.</span><nav class="site-footer-links" aria-label="Legal"><a href="/legal/terms.html" target="_blank" rel="noopener">Terms</a><a href="/legal/privacy.html" target="_blank" rel="noopener">Privacy</a><a href="/legal/contact.html" target="_blank" rel="noopener">Contact</a></nav><p class="site-footer-sim">Fictional simulation — not affiliated with real stations or broadcasters.</p></div></div>`;
+  const wlSiteFooterEmbed=`<div class="site-footer site-footer--embed" role="contentinfo"><div class="site-footer-inner"><span class="site-footer-copy">© 2026 Airwave Empire. All rights reserved.</span><nav class="site-footer-links" aria-label="Legal"><a href="/legal/terms.html" target="_blank" rel="noopener">Terms</a><span class="site-footer-dot" aria-hidden="true">·</span><a href="/legal/privacy.html" target="_blank" rel="noopener">Privacy</a><span class="site-footer-dot" aria-hidden="true">·</span><a href="/legal/contact.html" target="_blank" rel="noopener">Contact</a></nav><nav class="site-footer-links site-footer-follow" aria-label="Social media"><a href="https://www.facebook.com/profile.php?id=61575347974985" target="_blank" rel="noopener noreferrer">Facebook</a><span class="site-footer-dot" aria-hidden="true">·</span><a href="https://x.com/airwaveempire" target="_blank" rel="noopener noreferrer">X</a><span class="site-footer-dot" aria-hidden="true">·</span><a href="https://www.instagram.com/airwaveempire" target="_blank" rel="noopener noreferrer">Instagram</a></nav><p class="site-footer-sim">Fictional simulation — not affiliated with real stations or broadcasters.</p></div></div>`;
 
   document.getElementById('scenb').innerHTML=`
     <div style="padding:18px 20px 20px;max-width:760px;margin:0 auto">
@@ -11010,13 +11050,45 @@ function wlRatingsDigestHeadline(payload){
   return `${payload.market}: ${wlRatingsDigestSeasonWord(payload.period)} ${payload.year}`;
 }
 function wlRatingsDigestBookSig(book){
-  const s=book.map(r=>String(r.rank)+','+String(r.call)+','+String(r.sharePct)).join('|');
+  const s=book.map(r=>String(r.rank)+','+String(r.call)+','+String(r.brand||'')+','+String(r.sharePct)).join('|');
   let h=0;
   for(let i=0;i<s.length;i++)h=Math.imul(31,h)+s.charCodeAt(i)|0;
   return String(h);
 }
+function wlRatingsDigestContextSig(lines){
+  const s=(lines||[]).join('\f');
+  let h=0;
+  for(let i=0;i<s.length;i++)h=Math.imul(31,h)+s.charCodeAt(i)|0;
+  return String(h);
+}
+/** Headlines from this period's in-game news for the OpenRouter trade digest (not the ticker). */
+function wlCollectRatingsDigestMarketContext(G, maxLines, maxChars){
+  maxLines=maxLines!=null?maxLines:20;
+  maxChars=maxChars!=null?maxChars:4800;
+  if(!G||!G.news)return[];
+  const y=G.year,p=G.period;
+  const skipRe=/^📊 .* book —|^📊 .* pulse|^📊 .* pulse \(more\)|^Your book —|^📡 Host |^📡 You are|^🎙 Multiplayer|^📡 .* disconnected|^📡 .* reconnected|^📉 Spring ad market|^📈 Fall ad market/i;
+  const wantRe=/📋|📻|🏢|⚡|💸|📢|⚠|📡|syndication|rights|franchise|LMA|acquires|reformat|simulcast|translator|poach|pledge drive|repositions|signs on —|Swapped |consolidation|broadcast rights|goes dark|survival|abandons|management shakeup|courting|terminal decline/i;
+  const out=[];
+  let chars=0;
+  for(let i=0;i<G.news.length;i++){
+    const n=G.news[i];
+    if(!n||n.y!==y||n.p!==p||!n.t)continue;
+    if(skipRe.test(n.t))continue;
+    const line=String(n.t).replace(/\s+/g,' ').trim();
+    if(line.length<14)continue;
+    if(!wantRe.test(line))continue;
+    if(out.indexOf(line)>=0)continue;
+    const slice=line.length>340?line.slice(0,337)+'…':line;
+    out.push(slice);
+    chars+=slice.length;
+    if(out.length>=maxLines||chars>=maxChars)break;
+  }
+  return out;
+}
 function wlRatingsDigestCacheKey(payload){
-  return `${payload.market}\t${payload.year}\t${payload.period}\t${wlRatingsDigestBookSig(payload.book)}`;
+  const ctxSig=wlRatingsDigestContextSig(payload.marketContext||[]);
+  return `${payload.market}\t${payload.year}\t${payload.period}\t${wlRatingsDigestBookSig(payload.book)}\t${ctxSig}`;
 }
 function wlRatingsDigestCache(){
   if(typeof window==='undefined')return null;
@@ -11074,15 +11146,22 @@ function wlBuildRatingsDigestPayload(){
   const periodLabel=`${G.year} ${PERIODS[(G.period||1)-1]}`;
   const comm=G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPublic&&s.rat)
     .sort((a,b)=>(b.rat.share||0)-(a.rat.share||0));
-  const book=comm.map((s,i)=>({
-    rank:i+1,
-    call:callDisplay(s),
-    format:fmtLabel(s.format,G.year),
-    sharePct:Math.round((s.rat.share||0)*1000)/10,
-    deltaPts:s.cp&&typeof s.cp.dq==='number'?Math.round(s.cp.dq*1000)/10:null,
-    band:(s.sig?.type==='FM'||s.fmBooster)?'FM':'AM',
-  }));
-  return {market:mkt,periodLabel,year:G.year,period:G.period,book};
+  const book=comm.map((s,i)=>{
+    const call=callDisplay(s);
+    const br=(typeof s.brand==='string'&&s.brand.trim())?s.brand.trim():defaultPlayerStationBrand(s);
+    const brand=String(br||'').trim().slice(0,72);
+    return{
+      rank:i+1,
+      call,
+      brand,
+      format:fmtLabel(s.format,G.year),
+      sharePct:Math.round((s.rat.share||0)*1000)/10,
+      deltaPts:s.cp&&typeof s.cp.dq==='number'?Math.round(s.cp.dq*1000)/10:null,
+      band:(s.sig?.type==='FM'||s.fmBooster)?'FM':'AM',
+    };
+  });
+  const marketContext=wlCollectRatingsDigestMarketContext(G);
+  return {market:mkt,periodLabel,year:G.year,period:G.period,book,marketContext};
 }
 async function openRatingsDigestTradeSheet(opts){
   const regenerate=opts&&opts.regenerate===true;
@@ -12673,7 +12752,10 @@ function advTurn(mpCoalesceSeq){
     G.rankerHistory.push(snap);
     acts.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     consolidationActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
-    ev.forEach(e=>G.news.unshift({v:'HIGH',t:`📡 ${e.t}: ${e.d}`,y:e.y,p:e.p}));
+    ev.forEach(e=>{
+      const body=e.d!=null&&String(e.d).trim()!==''?String(e.d):'';
+      G.news.unshift({v:'HIGH',t:body?`📡 ${e.t}: ${body}`:`📡 ${e.t}`,y:e.y,p:e.p});
+    });
     injectTradeNewsForeshadow(G);
     // Seasonal market note — brief context at the top of the feed each period
     const nextPeriodName=G.period===2?'FALL':'SPRING'; // period hasn't advanced yet
@@ -13364,11 +13446,14 @@ function manageTalentEmptySlotMeta(s, sl, _simSrc) {
   const srcTal =
     !s.prog[sl]?.talent && _simSrc?.prog[sl]?.talent ? _simSrc.prog[sl].talent : null;
   if (fr) {
+    const hasLocal = !!s.prog[sl]?.talent;
     return {
       slotQ,
       status: 'Syndicated',
       detail: fr.name,
-      hireNote: 'Hiring a local host can build loyalty and lift slot quality over time.',
+      hireNote: hasLocal
+        ? 'A local host is listed under this syndicated daypart — use Replace / Move / bench as needed, or National Franchises to reassign.'
+        : 'This daypart is carried by your syndication rights — you can’t add a second local show here. Reassign benched staff from National Franchises if needed.',
     };
   }
   if (srcTal) {
@@ -13437,7 +13522,8 @@ function manageTalentDaypartBlockHtml(s,sl,_simSrc,stationOQ){
   if(!localTal){
     const em=manageTalentEmptySlotMeta(s,sl,_simSrc);
     const restricted=daytimerRestrictedSlot(s,sl);
-    const hireBtn=restricted?'':`<button class="cfm" type="button" onclick="mtOpenHireSlot('${s.id}','${sl}')">HIRE TALENT</button>`;
+    const syndBlocks=franchiseSlotBlocksNewLocalTalent(s,sl,G);
+    const hireBtn=restricted||syndBlocks?'':`<button class="cfm" type="button" onclick="mtOpenHireSlot('${s.id}','${sl}')">HIRE TALENT</button>`;
     return`<div class="mt-slot mt-slot--empty" style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:12px">
       <div class="msh" style="margin-bottom:8px">${SL[sl]}</div>
       <p style="font-size:14px;color:var(--off);margin:0 0 10px 0;line-height:1.45"><strong style="color:var(--wht)">No local on-air host</strong></p>
@@ -13486,7 +13572,7 @@ function manageTalentDaypartBlockHtml(s,sl,_simSrc,stationOQ){
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">FORMAT FIT</span><span style="color:${fitSum.col};font-family:var(--fd)">${fitSum.words}</span></div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">SLOT QUALITY</span><span style="color:${slotQ>=70?'var(--grn)':slotQ>=45?'var(--amb)':'var(--red)'}">${slotQ}/100</span></div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">SALARY</span>${f$(t.salary)}/yr</div>
-          <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">CONTRACT</span>${cyr} yr</div>
+          <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">CONTRACT</span>${cyr} yr${t._slotPromotionPendingRenewal?` <span style="color:var(--amb);font-size:11px;font-family:var(--ft)" title="Moved dayparts — new deal needed for this slot">· daypart move</span>`:''}</div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">QUALITY SHARE ~%</span><span style="color:${perfCol}" title="Approx. share of this station’s programming quality from this daypart">~${contribution}%</span> <button type="button" class="abt" style="padding:2px 8px;font-size:10px;vertical-align:middle;margin-left:4px;letter-spacing:0.04em" onclick="openTalentMetricsHelp('qualityshare')">?</button></div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">TREND</span><span style="color:${trendCol}">${trendWord}</span></div>
         </div>
@@ -13500,6 +13586,10 @@ function mtOpenHireSlot(sid,slot){
   const s=G.stations.find(st=>st.id===sid);
   if(!s)return;
   if(daytimerRestrictedSlot(s,slot)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
+  if(franchiseSlotBlocksNewLocalTalent(s,slot,G)){
+    showToast('This daypart is programmed under your syndication deal — open National Franchises to manage that slot.','warn');
+    return;
+  }
   if(s.prog[slot]?.talent){
     showToast('This daypart already has a local host — use Replace to change hosts.','warn');
     return;
@@ -13627,7 +13717,15 @@ function rHire(s, scrollAfter){
     requestAnimationFrame(()=>{mo.scrollTop=prevScroll;});
   }
 }
-function pickSlot(sid,sl){const s=G.stations.find(st=>st.id===sid);if(!s)return;if(daytimerRestrictedSlot(s,sl)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}HS.slot=sl;HS.sel=null;HS.poachRivalId=null;HS.pool=mkPool(sl,s.format,G.year);rHire(s,'top');}
+function pickSlot(sid,sl){
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  if(daytimerRestrictedSlot(s,sl)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
+  if(HS._hireKind==='hire'&&franchiseSlotBlocksNewLocalTalent(s,sl,G)){
+    showToast('That daypart is under your syndication deal — pick another slot or use National Franchises.','warn');
+    return;
+  }
+  HS.slot=sl;HS.sel=null;HS.poachRivalId=null;HS.pool=mkPool(sl,s.format,G.year);rHire(s,'top');
+}
 function pickTal(i){HS.sel=i;HS.poachRivalId=null;rHire(G.stations.find(st=>st.id===HS.sid));}
 function pickHirePoach(rivalId){HS.poachRivalId=rivalId;HS.sel=null;rHire(G.stations.find(st=>st.id===HS.sid));}
 function doHire(){
@@ -13650,6 +13748,10 @@ function doHire(){
     benchedReplaceName=incumbent.name;
     removeTalentToBenchInternal(s.id,sl);
   }else if(hk==='hire'){
+    if(franchiseSlotBlocksNewLocalTalent(s,sl,G)){
+      showToast('This daypart is covered by your syndication rights — you can’t hire a parallel local show there.','warn');
+      return;
+    }
     if(incumbent){
       showToast('This slot already has a local host. Use Replace to change hosts.','warn');
       return;
@@ -14107,76 +14209,6 @@ function brandMarketingIdentityBlockHtml(leg){
     </div>
   </div>`;
 }
-/** Dropdowns for procedural SVG logo: cosmeticProcPalette, cosmeticProcFont, cosmeticProcLayout on station (saved with game). */
-function bmProceduralLogoLeversHtml(s){
-  if(s.cosmeticLogoUrl)return '';
-  const api=globalThis.wlStationLogoSvg&&typeof globalThis.wlStationLogoSvg.getBasicLogoLevers==='function'?globalThis.wlStationLogoSvg.getBasicLogoLevers:null;
-  if(!api)return '';
-  let opts;
-  try{
-    const band=(s.fmBooster||s.sig?.type==='FM')?'FM':'AM';
-    opts=api(s.format||'ADULT_CONTEMP',band);
-  }catch(_e){return '';}
-  if(!opts||!opts.palettes||!opts.palettes.length)return '';
-  const sid=s.id;
-  const safe=bmSafeElId(sid);
-  const palHas=s.cosmeticProcPalette!=null&&String(s.cosmeticProcPalette).trim()!==''&&Number.isFinite(Number(s.cosmeticProcPalette));
-  const fontHas=s.cosmeticProcFont!=null&&String(s.cosmeticProcFont).trim()!==''&&Number.isFinite(Number(s.cosmeticProcFont));
-  const layVal=(typeof s.cosmeticProcLayout==='string'&&s.cosmeticProcLayout.trim())?s.cosmeticProcLayout.trim():'';
-  const selPal=palHas?Math.floor(Number(s.cosmeticProcPalette)):null;
-  const selFont=fontHas?Math.floor(Number(s.cosmeticProcFont)):null;
-  const selStyle='width:100%;max-width:320px;padding:8px 10px;border-radius:6px;background:var(--crd);color:var(--wht);border:1px solid var(--bdh);font-size:14px';
-  const palOpts=opts.palettes.map(p=>{
-    const sel=selPal!=null&&p.i===selPal?' selected':'';
-    const sw=p.bg||'#444';
-    return`<option value="${p.i}"${sel}>Set ${p.i+1} — ${rosterHtmlEsc(sw)}</option>`;
-  }).join('');
-  const fontOpts=opts.fontPairs.map(f=>{
-    const sel=selFont!=null&&f.i===selFont?' selected':'';
-    return`<option value="${f.i}"${sel}>${rosterHtmlEsc(f.label)}</option>`;
-  }).join('');
-  const layOpts=opts.layouts.map(l=>{
-    const sel=l.id===layVal?' selected':'';
-    return`<option value="${rosterHtmlEsc(l.id)}"${sel}>${rosterHtmlEsc(l.label)}</option>`;
-  }).join('');
-  return`<div style="margin:12px 0;padding:12px 14px;border:1px solid var(--bdr);border-radius:8px;background:rgba(0,0,0,.1)">
-    <div style="font-size:12px;color:var(--mut);margin-bottom:10px;text-transform:uppercase;letter-spacing:.04em">Basic logo design</div>
-    <p class="di" style="font-size:13px;color:var(--mut);line-height:1.4;margin:0 0 10px">Lock colors, font pair, or layout for this format family, or leave <strong>Auto</strong> for seed-based variety. <strong>New basic logo look</strong> still re-rolls accents and details.</p>
-    <div style="display:grid;grid-template-columns:minmax(88px,110px) 1fr;gap:10px 12px;align-items:center;font-size:14px">
-      <label for="bm-proc-pal-${safe}" style="color:var(--mut)">Colors</label>
-      <select id="bm-proc-pal-${safe}" style="${selStyle}" onchange="bmProcLeverChange('${sid}','palette',this.value)">
-        <option value="">Auto</option>${palOpts}
-      </select>
-      <label for="bm-proc-font-${safe}" style="color:var(--mut)">Fonts</label>
-      <select id="bm-proc-font-${safe}" style="${selStyle}" onchange="bmProcLeverChange('${sid}','font',this.value)">
-        <option value="">Auto</option>${fontOpts}
-      </select>
-      <label for="bm-proc-lay-${safe}" style="color:var(--mut)">Layout</label>
-      <select id="bm-proc-lay-${safe}" style="${selStyle}" onchange="bmProcLeverChange('${sid}','layout',this.value)">
-        <option value="">Auto</option>${layOpts}
-      </select>
-    </div>
-  </div>`;
-}
-function bmProcLeverChange(sid,kind,raw){
-  sid=ensureOpsSourceSid(sid);
-  const s=G.stations.find(st=>st.id===sid);
-  if(!s||s.cosmeticLogoUrl)return;
-  const v=raw==null?'':String(raw);
-  if(kind==='palette'){
-    if(v==='')delete s.cosmeticProcPalette;
-    else{const n=parseInt(v,10);if(Number.isFinite(n))s.cosmeticProcPalette=n;}
-  }else if(kind==='font'){
-    if(v==='')delete s.cosmeticProcFont;
-    else{const n=parseInt(v,10);if(Number.isFinite(n))s.cosmeticProcFont=n;}
-  }else if(kind==='layout'){
-    if(v==='')delete s.cosmeticProcLayout;
-    else s.cosmeticProcLayout=v.trim();
-  }
-  autoSave();
-  bmRefreshBrandMarketingLogoPreview(sid);
-  renderAll();
-}
 function brandMarketingLogoBlockHtml(leg){
   const s=leg;
   const safe=bmSafeElId(s.id);
@@ -14211,7 +14243,6 @@ function brandMarketingLogoBlockHtml(leg){
     <p class="di" style="font-size:13px;color:var(--mut);line-height:1.45;margin:0 0 8px">AI logos are generated on the server and can take up to about a minute. <strong>Click the preview</strong> to open a larger version you can save. When you use <strong>Generate New Logo</strong>, wait for the status line — the button stays disabled until the request finishes (one new logo per period).</p>
     <div id="bm-logo-status-${safe}" style="font-size:13px;color:var(--amb);min-height:22px;margin-bottom:8px;font-weight:500"></div>
     ${hero}
-    ${s.cosmeticLogoUrl?'':bmProceduralLogoLeversHtml(s)}
     <div style="display:flex;flex-wrap:wrap;gap:8px">
       ${s.cosmeticLogoUrl?'':`<button type="button" class="abt g" onclick="wlBumpProceduralLogoVariant('${s.id}')">↻ New basic logo look</button>`}
       ${s.cosmeticLogoUrl?`<button type="button" class="abt" onclick="wlClearAiStationLogo('${s.id}')">○ Use basic logo</button>`:''}
@@ -14415,6 +14446,13 @@ function rosterMoveDestSlotCardHtml(dst,sl,movingTalent,fromSlotKey){
   }
   const t=movingTalent;
   const occ=dst.prog[sl]?.talent;
+  if(franchiseSlotBlocksNewLocalTalent(dst,sl,G)){
+    return`
+    <div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:10px;opacity:.92">
+      <div style="font-family:var(--fd);font-size:20px;letter-spacing:1px;color:var(--mut);text-transform:uppercase;line-height:1.2">${SL[sl]}</div>
+      <p style="margin:10px 0 0 0;font-size:14px;color:var(--off);line-height:1.45">Reserved for your syndicated franchise on this station — not available as a local host destination.</p>
+    </div>`;
+  }
   const destFit=talentDestFormatFitSummary(t,dst.format);
   const impact=rosterSlotImpactLine(fromSlotKey,sl);
   const ctx=MOVE_CTX;
@@ -14586,6 +14624,10 @@ function doRosterPlace(toSid,toSlot){
     const dst=G.stations.find(st=>st.id===toSid);
     if(!dst||!mpIsMe(dst))return;
     if(daytimerRestrictedSlot(dst,toSlot)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
+    if(franchiseSlotBlocksNewLocalTalent(dst,toSlot,G)){
+      showToast('That daypart is reserved for syndicated programming — use National Franchises to place benched talent from a franchise slot.','warn');
+      return;
+    }
     const t=ent.talent;
     const prevSlot=ent.slot||'morningDrive';
     const occ=dst.prog[toSlot]?.talent;
@@ -14827,6 +14869,10 @@ function openSwapSignal(sid){
 function doShuffle(sid,fromSlot,toSlot){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   if(daytimerRestrictedSlot(s,toSlot)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
+  if(franchiseSlotBlocksNewLocalTalent(s,toSlot,G)){
+    showToast('That daypart is covered by your syndicated franchise — you can’t add a local host there while the deal is active.','warn');
+    return;
+  }
   const fromSd=s.prog[fromSlot];
   let toSd=s.prog[toSlot];
   if(!fromSd?.talent)return;
@@ -16151,6 +16197,8 @@ function doFmt(keepSim){
   G.news.unshift({v:'HIGH',t:`You flip ${s.callLetters}: ${preFlipFmt} → ${fmtLabel(nf)} — "${s.brand}".${betrayalNote}`,y:G.year,p:G.period});
   logHistory(s,'FORMAT',`Reformatted: ${preFlipFmt} → ${fmtLabel(nf)} — "${s.brand}"${preFlipIdentity>30?' (identity was '+Math.round(preFlipIdentity)+')':''}`,G);
   calcRev(s,G);cm('m-fm');
+  const _progModal=document.getElementById('m-programming');
+  if(_progModal&&_progModal.classList.contains('on'))openProgramming(s.id);
   MP.action('fmt', {sid:s.id, format:nf});
   renderAll();
 }
@@ -16526,11 +16574,6 @@ function wlBuildProceduralLogoInput(op, opts){
     licenseCity,
     layoutMode:opts.layoutMode||'brandHero',
   };
-  const cpp=op.cosmeticProcPalette;
-  if(cpp!=null&&cpp!==''&&Number.isFinite(Number(cpp)))out.cosmeticProcPalette=Math.floor(Number(cpp));
-  const cff=op.cosmeticProcFont;
-  if(cff!=null&&cff!==''&&Number.isFinite(Number(cff)))out.cosmeticProcFont=Math.floor(Number(cff));
-  if(typeof op.cosmeticProcLayout==='string'&&op.cosmeticProcLayout.trim())out.cosmeticProcLayout=op.cosmeticProcLayout.trim();
   return out;
 }
 function wlProceduralLogoSvgString(op, opts){
@@ -16953,12 +16996,14 @@ async function wlGenerateLogo(stationId,regenerate,opts){
   wlSetLogoGenButtonUi(stationId,true);
   if(statusEl)statusEl.textContent='Request sent — working… (often under a minute). Do not click again.';
   const band=(op.fmBooster||op.sig?.type==='FM')?'FM':'AM';
+  const yr=Math.floor(Number(G.year));
+  const nameRaw=((typeof op.brand==='string'&&op.brand.trim())?op.brand.trim():callDisplay(op)).trim().slice(0,120);
   const body={
-    stationName:(typeof op.brand==='string'&&op.brand.trim())?op.brand.trim():callDisplay(op),
-    format:fmtLabel(op.format)||'Radio',
-    year:G.year,
-    tone:typeof op.cosmeticLogoTone==='string'?op.cosmeticLogoTone:'',
-    frequency:String(op.freq||''),
+    stationName:nameRaw||callDisplay(op)||'Station',
+    format:(fmtLabel(op.format)||'Radio').trim().slice(0,100),
+    year:Number.isFinite(yr)?Math.min(2040,Math.max(1930,yr)):1970,
+    tone:typeof op.cosmeticLogoTone==='string'?op.cosmeticLogoTone.trim().slice(0,80):'',
+    frequency:String(op.freq||'').trim().slice(0,40),
     band,
     regenerate:!!reg,
   };
@@ -17415,6 +17460,57 @@ async function wlSubmitFeedback(){
   }
 }
 
+/**
+ * Legacy bug: a single rankerHistory book can be all zeros (CSV column blank). Repair at load by
+ * copying shares from the nearest prior book with a positive total, then renormalizing to ~1.
+ */
+function repairCollapsedRankerHistorySnaps(G){
+  const rh=G.rankerHistory;
+  if(!rh||!rh.length)return;
+  const COLLAPSE=1e-9;
+  const MIN_KEYS=4;
+  let fixed=0;
+  for(let i=0;i<rh.length;i++){
+    const snap=rh[i];
+    if(!snap||typeof snap.shares!=='object')continue;
+    const ids=Object.keys(snap.shares);
+    if(ids.length<MIN_KEYS)continue;
+    let sum=0;
+    for(let k=0;k<ids.length;k++){
+      const v=Number(snap.shares[ids[k]]);
+      if(Number.isFinite(v))sum+=v;
+    }
+    if(sum>COLLAPSE)continue;
+    let prev=null;
+    for(let j=i-1;j>=0;j--){
+      const p=rh[j];
+      if(!p||typeof p.shares!=='object')continue;
+      let ps=0;
+      const pk=Object.keys(p.shares);
+      for(let q=0;q<pk.length;q++){
+        const v=Number(p.shares[pk[q]]);
+        if(Number.isFinite(v))ps+=v;
+      }
+      if(ps>COLLAPSE){prev=p;break;}
+    }
+    if(!prev)continue;
+    const raw=[];
+    let newSum=0;
+    for(let k=0;k<ids.length;k++){
+      const id=ids[k];
+      const v=Math.max(0,Number(prev.shares[id])||0);
+      raw.push(v);
+      newSum+=v;
+    }
+    if(newSum<COLLAPSE)continue;
+    for(let k=0;k<ids.length;k++){
+      snap.shares[ids[k]]=Math.round((raw[k]/newSum)*1e8)/1e8;
+    }
+    fixed++;
+  }
+  if(fixed>0)G._rankerHistoryCollapsedRowsRepaired=(G._rankerHistoryCollapsedRowsRepaired||0)+fixed;
+}
+
 function migrateSave(G){
   migrateHitsLineage(G);
   const _chrCross=hitsLineageFirstChrCalendarYear();
@@ -17476,6 +17572,7 @@ function migrateSave(G){
     if(snap.year!=null)snap.year=Number(snap.year);
     if(snap.period!=null)snap.period=Number(snap.period);
   });
+  repairCollapsedRankerHistorySnaps(G);
   G.finHistory=G.finHistory||[];
   G._playerFinHistory=G._playerFinHistory||{};
   G.stationFinHistory=G.stationFinHistory||{};
@@ -18606,6 +18703,7 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra
       const hostStr=localMD?localMD.name:(simMD?`${simMD.name} (${callDisplay(simSrc)})`:'');
       const vacant=Object.keys(SL).filter(k=>{
         if(simSrc?.prog?.[k]?.talent)return false;
+        if(getStationFranchise(s,k,G))return false;
         return !s.prog[k]?.talent;
       }).map(k=>SL[k]);
       const simulcastLine=simSrc?`<div class="sr"><span class="lb" style="color:var(--mut)">Programming</span><span class="vl" style="font-size:14px;color:var(--off)">Supplied by <strong>${callDisplay(simSrc)}</strong> (simulcast)</span></div>`:'';
@@ -18724,6 +18822,10 @@ function openContract(sid, slot){
       }
     }
     if(daytimerRestrictedSlot(s,slot)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
+    if(franchiseSlotBlocksNewLocalTalent(s,slot,G)){
+      showToast(`This daypart is filled by your syndication deal — open National Franchises for that slot, not Hire.`,'warn');
+      return;
+    }
     openHire(sid);return;
   }
   const t=sd.talent;
@@ -18850,6 +18952,7 @@ function openContract(sid, slot){
   document.getElementById('contractb').innerHTML=`
     <div class="msh" style="margin-bottom:12px">📋 TALENT CONTRACT — ${callDisplay(s)} ${SL[slot]}</div>
     ${(()=>{const rp=s._rivalPoachPending;if(!rp||rp.slot!==slot||rp.talentId!==t.id)return'';const riv=G.stations.find(st=>st.id===rp.rivalId);const minM=Math.round(rp.offerSalary*0.95/500)*500;return`<div class="ibox" style="border-color:var(--amb);margin-bottom:12px"><strong style="color:var(--amb)">⚡ RIVAL OFFER / COUNTER-POACH</strong><br><span style="font-size:14px;color:var(--off)"><strong>${riv?riv.callLetters:'Rival'}</strong> offered <strong>${f$(rp.offerSalary)}</strong>/yr. Sign at <strong>≥${f$(minM)}</strong>/yr to retain ${t.name} next period.</span></div>`;})()}
+    ${t._slotPromotionPendingRenewal?`<div class="ibox" style="border-color:var(--amb);margin-bottom:12px;line-height:1.5"><strong style="color:var(--amb)">Daypart change — not a “duplicate” renewal</strong><br><span style="font-size:14px;color:var(--off)">${t.name} is now in <strong>${SL[slot]}</strong>${t._promotionFromSlot?` (moved from <strong>${SL[t._promotionFromSlot]}</strong>)`:''}. That’s a higher-leverage role, so their old rate doesn’t carry — the sim requires a <strong>new deal priced for this daypart</strong>. Seeing another negotiation right after you extended them is normal.</span></div>`:''}
     ${(()=>{const sh=s.rat?.share||0;const q=t.quality||50;if(sh>0.12&&q>75)return`<div style="background:rgba(245,166,35,.10);border:1px solid var(--amb);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--amb)">📈 Strong station + top talent — expect a premium ask. They know their worth.</div>`;if(sh>0.08&&q>65)return`<div style="background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.3);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--off)">📊 Solid ratings give this talent negotiating leverage.</div>`;if(t.morale<50)return`<div style="background:rgba(220,50,50,.10);border:1px solid var(--red);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--red)">⚠ Low morale — they're unhappy and may ask for extra just to stay.</div>`;return''})()}
 
     <div class="ms2 contract-summary" style="margin-bottom:16px">
@@ -18977,6 +19080,10 @@ function doLetExpire(sid, slot){
 function doPoach(sid, slot, rivalId){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   if(daytimerRestrictedSlot(s,slot)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
+  if(getStationFranchise(s,slot,G)){
+    showToast('You can’t sign talent into a daypart that belongs to your syndicated franchise.','warn');
+    return;
+  }
   const rival=G.stations.find(st=>st.id===rivalId);if(!rival)return;
   const rsd=rival.prog[slot];if(!rsd?.talent)return;
   const t=rsd.talent;
@@ -19108,6 +19215,9 @@ function rHdr(){
   const expiring=myPS().flatMap(s=>Object.entries(s.prog)
     .filter(([,sd])=>sd?.talent&&(sd.talent.cyr||0)<=0)
     .map(([sl,sd])=>`${s.callLetters} ${SL[sl]} (${sd.talent.name})`));
+  const daypartReneg=myPS().flatMap(s=>Object.entries(s.prog)
+    .filter(([,sd])=>sd?.talent&&sd.talent._slotPromotionPendingRenewal&&(sd.talent.cyr||0)>0)
+    .map(([sl,sd])=>`${s.callLetters} ${SL[sl]} (${sd.talent.name})`));
   const _myDisplayCash = _hdrCash;
   if((MP.mode==='live'&&G._mpBankrupt?.[MP.playerId])||G._soloBankrupt){
     ab.className='on';
@@ -19127,12 +19237,15 @@ function rHdr(){
     const _dq=MP.mode==='live'?(G._mpDebtWarningQ?.[MP.playerId]||0):(G.debtWarningQ||0);
     const _rem=Math.max(0,2-_dq);
     ab.textContent=`⚠ NEGATIVE CASH — ${f$(_myDisplayCash)} — Recover within ${_rem} period${_rem!==1?'s':''} or face forced sale${MP.mode==='live'&&myPS().length<=1?' (you have no extra station to sell)' : ''}.`;
-  } else if(expiring.length){
+  } else if(expiring.length||daypartReneg.length){
     ab.className='on';
     ab.style.background='rgba(245,166,35,.15)';
     ab.style.borderColor='var(--amb)';
     ab.style.color='var(--amb)';
-    ab.textContent=`📋 CONTRACT EXPIRING: ${expiring.join(' · ')} — click their name to negotiate.`;
+    const bits=[];
+    if(expiring.length)bits.push(`Contract ending: ${expiring.join(' · ')}`);
+    if(daypartReneg.length)bits.push(`Daypart move (new deal): ${daypartReneg.join(' · ')}`);
+    ab.textContent=`📋 ${bits.join(' — ')} — open contract from the station card.`;
   } else {
     ab.className='';
     ab.style.background='';ab.style.borderColor='';ab.style.color='';
@@ -19284,9 +19397,10 @@ function rStns(){
       if(!tn) return `<div class="slr slots-lineup-grid"><span class="sl-cell-day sln">${lbl}</span><span class="sl-cell-thumb" aria-hidden="true"></span><span class="sl-cell-host slt vac">${vlbl}</span><span class="sl-cell-cyr"></span><span class="sl-cell-mor"></span><span class="sl-cell-pay slsal"></span><span class="sl-cell-tal stal" style="color:var(--mut)">—</span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Slot quality (0–100)">${q}</span></div>`;
       const t=sd.talent;
       const cyr=t.cyr||0;
-      const cyrCls=cyr<=0?'cyr-exp':cyr<=0.5?'cyr-warn':'cyr-ok';
-      const cyrLbl=cyr<=0?'EXP':cyr<=0.5?'EXP⬆':'';
-      const cyrTitle=cyr<=0?'Contract expired — click name to negotiate now':cyr<=0.5?'Contract expires next period — click name to extend':'ready';
+      const slotRen=t._slotPromotionPendingRenewal===true;
+      const cyrCls=slotRen?'cyr-warn':cyr<=0?'cyr-exp':cyr<=0.5?'cyr-warn':'cyr-ok';
+      const cyrLbl=slotRen?'MOVE':cyr<=0?'EXP':cyr<=0.5?'EXP⬆':'';
+      const cyrTitle=slotRen?`Daypart move — pay must match ${SL[k]} (new deal)`:(cyr<=0?'Contract expired — click name to negotiate now':cyr<=0.5?'Contract expires next period — click name to extend':'ready');
       const mor=t.morale||65;
       const morCol=mor>=70?'var(--grn)':mor>=45?'var(--amb)':'var(--red)';
       const starT=t.superstar===true?'★ ':'';

@@ -10607,6 +10607,33 @@
       "variationSeed": "d3b76ab0f516cc14",
       "source": "library",
       "libraryAsset": "library/female/1980s/cheryl-rose-1987.png"
+    },
+    "chris-rhodes-1992-79b0a2f2-80a5-42b4-8b98-": {
+      "imageUrl": "/generated-portraits/chris-rhodes-1992-79b0a2f2-80a5-42b4-8b98-.png",
+      "fileName": "chris-rhodes-1992-79b0a2f2-80a5-42b4-8b98-.png",
+      "eraBucket": "1990s",
+      "wardrobeType": "oddball",
+      "expressionType": "awkward",
+      "settingType": "radioStudio",
+      "identityKey": "chris rhodes|1992",
+      "name": "Chris Rhodes",
+      "firstHireYear": 1992,
+      "gender": "male",
+      "talentId": "i4nhy1ri",
+      "heritageId": "whiteEuroAmerican",
+      "heritagePrompt": "white European-American radio host — fair to lightly sun-tanned skin, ordinary US white appearance",
+      "attractivenessAnchor": "Neither conventionally pretty nor ugly — the forgettable face in a staff directory.",
+      "facialDetail": "bland resting face — would not cast as “the attractive one”",
+      "demeanor": "serious, deadpan expression",
+      "ageRange": "early 20s",
+      "bodyType": "stocky",
+      "faceShape": "square jaw",
+      "hairStyle": "early-1990s casual hair",
+      "personalStyle": "eccentric",
+      "gameplayNotes": "seasoned on-air presence — competence reads from demeanor, not from being unusually good-looking",
+      "variationSeed": "06b2118b462ee54e",
+      "source": "library",
+      "libraryAsset": "library/male/1990s/lil-gregory-1991.png"
     }
   }
 }
