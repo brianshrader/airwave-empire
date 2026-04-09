@@ -13572,10 +13572,11 @@ function manageTalentDaypartBlockHtml(s,sl,_simSrc,stationOQ){
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">FORMAT FIT</span><span style="color:${fitSum.col};font-family:var(--fd)">${fitSum.words}</span></div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">SLOT QUALITY</span><span style="color:${slotQ>=70?'var(--grn)':slotQ>=45?'var(--amb)':'var(--red)'}">${slotQ}/100</span></div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">SALARY</span>${f$(t.salary)}/yr</div>
-          <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">CONTRACT</span>${cyr} yr${t._slotPromotionPendingRenewal?` <span style="color:var(--amb);font-size:11px;font-family:var(--ft)" title="Moved dayparts — new deal needed for this slot">· daypart move</span>`:''}</div>
+          <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">CONTRACT</span>${cyr} yr${t._slotPromotionPendingRenewal?` <span style="color:var(--amb);font-size:11px;font-family:var(--ft)" title="Moved dayparts — new deal needed for this slot">· moved daypart</span>`:''}</div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">QUALITY SHARE ~%</span><span style="color:${perfCol}" title="Approx. share of this station’s programming quality from this daypart">~${contribution}%</span> <button type="button" class="abt" style="padding:2px 8px;font-size:10px;vertical-align:middle;margin-left:4px;letter-spacing:0.04em" onclick="openTalentMetricsHelp('qualityshare')">?</button></div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">TREND</span><span style="color:${trendCol}">${trendWord}</span></div>
         </div>
+        ${(()=>{const rp=s._rivalPoachPending;if(!rp||rp.slot!==sl||rp.talentId!==t.id)return'';const riv=G.stations.find(st=>st.id===rp.rivalId);const minM=Math.round(rp.offerSalary*0.95/500)*500;return`<div class="ibox" style="border-color:rgba(245,166,35,.42);margin:0 0 10px 0;padding:8px 12px;font-size:13px;line-height:1.45;color:var(--off)"><strong style="color:var(--amb)">⚡ Rival courting this host</strong> — ${riv?riv.callLetters:'A rival'} offered ${f$(rp.offerSalary)}/yr. Use <strong>Contract / Pay</strong> and sign at ≥ ${f$(minM)}/yr to keep them.</div>`;})()}
         ${moveRow}
       </div>
     </div>
@@ -18753,7 +18754,7 @@ function openStationLineupHelp(){
     <h4 style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">ON-AIR HOST</h4>
     <p class="di">Who is scheduled in this slot. Click to open the contract when you employ them.</p>
     <h4 style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">CONTRACT</h4>
-    <p class="di">Shows <strong>EXP</strong> when the deal is expired or expiring next period; otherwise blank if things are fine.</p>
+    <p class="di">Shows <strong>MOVED</strong> when someone was promoted or shifted dayparts and needs a new deal for this slot; <strong>EXP</strong> when the deal is expired or expiring next period; otherwise blank if things are fine. A <strong>⚡</strong> beside the host’s name means a rival is courting them — open <strong>Contract</strong> to match their offer.</p>
     <h4 style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">MORALE</h4>
     <p class="di">How happy the host is in this role (roughly 0–100). Low morale can drag quality and salary asks.</p>
     <h4 style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">PAY / PERIOD</h4>
@@ -18780,7 +18781,7 @@ function openTalentMetricsHelp(section){
     <h4 id="tm-host" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">ON-AIR HOST</h4>
     <p class="di">Scheduled talent for the slot; click to contract when applicable.</p>
     <h4 id="tm-contract" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">CONTRACT</h4>
-    <p class="di"><strong>EXP</strong> when expired or expiring next period.</p>
+    <p class="di"><strong>MOVED</strong> after a daypart change needing a new deal; <strong>EXP</strong> when expired or expiring next period. <strong>⚡</strong> beside the host on the station card means a rival is courting them.</p>
     <h4 id="tm-morale" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">MORALE</h4>
     <p class="di">How happy the host is in this role (roughly 0–100). Low morale can drag programming quality and salary asks; bonuses and fair contracts help.</p>
     <h4 id="tm-pay" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">PAY / PERIOD</h4>
@@ -19380,7 +19381,7 @@ function rStns(){
     const div=document.createElement('div');
     div.className=`sc ${stnEbitda>=0?'profit':'loss'}`;
     const _simSrc=simulcastProgrammingSource(s);
-    const slotsLegend=`<div class="slots-lineup-meta"><span class="slots-legend-title">Lineup</span><button type="button" class="abt" style="padding:4px 10px;font-size:11px;letter-spacing:0.04em" onclick="openStationLineupHelp()">What is this?</button></div><div class="slots-lineup-hdr"><div class="slots-lineup-grid slots-lineup-grid--hdr"><span>Daypart</span><span class="sl-h-pad" aria-hidden="true"></span><span>On-air host</span><span class="slots-hdr-contract" title="Contract status: shows EXP when the deal is expired or expiring next period (empty if fine)">Contract</span><span class="slots-hdr-mor">Morale</span><span class="slots-hdr-pay">Pay / pd</span><span class="slots-hdr-tal">Talent</span><span class="slots-hdr-sq">Slot Q</span></div></div>`;
+    const slotsLegend=`<div class="slots-lineup-meta"><span class="slots-legend-title">Lineup</span><button type="button" class="abt" style="padding:4px 10px;font-size:11px;letter-spacing:0.04em" onclick="openStationLineupHelp()">What is this?</button></div><div class="slots-lineup-hdr"><div class="slots-lineup-grid slots-lineup-grid--hdr"><span>Daypart</span><span class="sl-h-pad" aria-hidden="true"></span><span>On-air host</span><span class="slots-hdr-contract" title="Contract: MOVED after a daypart change (new deal needed); EXP when expired or expiring; empty when fine. ⚡ beside a host means a rival is courting them — open Contract to match.">Contract</span><span class="slots-hdr-mor">Morale</span><span class="slots-hdr-pay">Pay / pd</span><span class="slots-hdr-tal">Talent</span><span class="slots-hdr-sq">Slot Q</span></div></div>`;
     const slrows=slotsLegend+DAYPART_SLOTS.map(k=>{
       const lbl=SL[k];
       const sd=s.prog[k],tn=sd?.talent?.name,q=Math.round(sd?.quality||0),c2=qc(q);
@@ -19398,14 +19399,25 @@ function rStns(){
       const t=sd.talent;
       const cyr=t.cyr||0;
       const slotRen=t._slotPromotionPendingRenewal===true;
+      const rp=s._rivalPoachPending;
+      const poachHere=rp&&rp.slot===k&&rp.talentId===t.id;
+      const rivPo=poachHere?G.stations.find(st=>st.id===rp.rivalId):null;
+      const poachTitle=poachHere?`${rivPo?rivPo.callLetters:'Rival'} offered ${f$(rp.offerSalary)}/yr — open Contract to match or they may leave next period.`:'';
       const cyrCls=slotRen?'cyr-warn':cyr<=0?'cyr-exp':cyr<=0.5?'cyr-warn':'cyr-ok';
-      const cyrLbl=slotRen?'MOVE':cyr<=0?'EXP':cyr<=0.5?'EXP⬆':'';
-      const cyrTitle=slotRen?`Daypart move — pay must match ${SL[k]} (new deal)`:(cyr<=0?'Contract expired — click name to negotiate now':cyr<=0.5?'Contract expires next period — click name to extend':'ready');
+      const cyrLbl=slotRen?'MOVED':cyr<=0?'EXP':cyr<=0.5?'EXP⬆':'';
+      let cyrTitle=slotRen?`Moved dayparts — salary must match ${SL[k]} (new deal required)`:(cyr<=0?'Contract expired — click name to negotiate now':cyr<=0.5?'Contract expires next period — click name to extend':'');
+      if(poachHere&&cyrTitle)cyrTitle+=' · '+poachTitle;
+      else if(poachHere)cyrTitle=poachTitle;
       const mor=t.morale||65;
       const morCol=mor>=70?'var(--grn)':mor>=45?'var(--amb)':'var(--red)';
       const starT=t.superstar===true?'★ ':'';
       const talR=Math.round(t.quality||0);
-      return `<div class="slr slots-lineup-grid"><span class="sl-cell-day sln">${lbl}</span><span class="sl-cell-thumb">${talentPortraitThumbHtml(t,'tp-sl',`${callDisplay(s)} · ${lbl}`)}</span><span class="sl-cell-host slt clickable" onclick="openContract('${s.id}','${k}')">${starT}${tn}</span>${cyrLbl?`<span class="sl-cell-cyr ${cyrCls}" title="${cyrTitle}">${cyrLbl}</span>`:'<span class="sl-cell-cyr" aria-hidden="true"></span>'}<span class="sl-cell-mor"><svg class="mor-bar" viewBox="0 0 28 4" aria-label="Morale"><rect width="28" height="4" fill="rgba(255,255,255,.1)" rx="2"/><rect width="${Math.round(mor*.28)}" height="4" fill="${morCol}" rx="2"/></svg></span><span class="sl-cell-pay slsal">${f$Pd(t.salary/2)}/p</span><span class="sl-cell-tal stal" title="Talent rating">${talR}</span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Slot quality (0–100)">${q}</span></div>`;
+      const poachRowCls=poachHere?' sl-lineup-poach-target':'';
+      const poachIcon=poachHere?`<span class="sl-poach-icon" title="${rosterHtmlEsc(poachTitle)}">⚡</span>`:'';
+      const cyrCell=cyrLbl
+        ?`<span class="sl-cell-cyr ${cyrCls}" title="${rosterHtmlEsc(cyrTitle||poachTitle)}">${cyrLbl}</span>`
+        :'<span class="sl-cell-cyr" aria-hidden="true"></span>';
+      return `<div class="slr slots-lineup-grid${poachRowCls}"><span class="sl-cell-day sln">${lbl}</span><span class="sl-cell-thumb">${talentPortraitThumbHtml(t,'tp-sl',`${callDisplay(s)} · ${lbl}`)}</span><span class="sl-cell-host slt clickable" onclick="openContract('${s.id}','${k}')">${poachIcon}${starT}${tn}</span>${cyrCell}<span class="sl-cell-mor"><svg class="mor-bar" viewBox="0 0 28 4" aria-label="Morale"><rect width="28" height="4" fill="rgba(255,255,255,.1)" rx="2"/><rect width="${Math.round(mor*.28)}" height="4" fill="${morCol}" rx="2"/></svg></span><span class="sl-cell-pay slsal">${f$Pd(t.salary/2)}/p</span><span class="sl-cell-tal stal" title="Talent rating">${talR}</span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Slot quality (0–100)">${q}</span></div>`;
     }).join('');
     const qc2=qc(op.oq);
     const _logoThumb=cosmeticLogoThumbHtmlForStation(s,{});
