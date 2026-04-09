@@ -3156,6 +3156,225 @@
     return out;
   }
 
+  /**
+   * Headless stress: many advTurn() steps × markets × RNG seeds; detect market-wide ratings collapse
+   * (sum of rat.share ~0, NaN shares, bad OQ) and ranker snapshot rows that sum to ~0.
+   * If legacy stitch runs, records rescued:true (post-fix builds self-heal).
+   *
+   * @param {object} [opts]
+   * @param {string[]} [opts.markets] default LA, NYC, Chicago, Atlanta
+   * @param {string} [opts.eraKey] default '1970' (solo / Stack path; more periods through fragmentation).
+   *   Use '1985' for fewer advTurns to the 2010s or parity with mid-80s megamarket CSV-style saves.
+   * @param {number} [opts.endYear] default 2015
+   * @param {number} [opts.endPeriod] default 2
+   * @param {number} [opts.numSeeds] default 24 (8 when opts.quick)
+   * @param {number} [opts.seed] base LCG seed
+   * @param {number} [opts.maxSteps] cap per run (default 320; 1970→2015 needs ~92 half-years per seed)
+   * @param {boolean} [opts.verbose]
+   */
+  function runRatingsCollapseAudit(opts) {
+    opts = opts || {};
+    var markets = opts.markets || ['losangeles', 'newyork', 'chicago', 'atlanta'];
+    var eraKey = opts.eraKey != null ? opts.eraKey : '1970';
+    var endYear = opts.endYear != null ? opts.endYear : 2015;
+    var endPeriod = opts.endPeriod != null ? opts.endPeriod : 2;
+    var numSeeds = opts.numSeeds != null ? opts.numSeeds : opts.quick ? 8 : 24;
+    var baseSeed = opts.seed != null ? opts.seed : 202604071;
+    var maxSteps = opts.maxSteps != null ? opts.maxSteps : 320;
+    var verbose = opts.verbose !== false;
+    var COLLAPSE = 1e-5;
+
+    if (typeof genMarketMP !== 'function') throw new Error('genMarketMP not found — load legacy.js first');
+    if (typeof advTurn !== 'function') throw new Error('advTurn not found');
+    if (typeof syncMarketPopToMarket !== 'function') throw new Error('syncMarketPopToMarket not found');
+
+    var savedG = typeof G !== 'undefined' ? G : null;
+    var savedActive = typeof ACTIVE_MARKET !== 'undefined' ? ACTIVE_MARKET : null;
+    var savedMPMode = window.MP && MP.mode;
+    var origRandom = Math.random;
+
+    var incidents = [];
+    var stitchEvents = [];
+    var totalAdvTurns = 0;
+
+    function inspectAfterTurn(G) {
+      var active = (G.stations || []).filter(function (s) {
+        return s && !s._bpSlotDeferred && s.rat;
+      });
+      var sumLive = 0;
+      var maxLive = 0;
+      var badSh = 0;
+      var badOq = 0;
+      for (var i = 0; i < active.length; i++) {
+        var st = active[i];
+        var sh = Number(st.rat.share);
+        if (!Number.isFinite(sh)) badSh++;
+        else {
+          sumLive += sh;
+          if (sh > maxLive) maxLive = sh;
+        }
+        if (typeof st.oq !== 'number' || !Number.isFinite(st.oq)) badOq++;
+      }
+      var snapSum = null;
+      var snapY = null;
+      var snapP = null;
+      var rh = G.rankerHistory;
+      if (rh && rh.length) {
+        var last = rh[rh.length - 1];
+        if (last && last.shares && typeof last.shares === 'object') {
+          snapY = last.year;
+          snapP = last.period;
+          snapSum = 0;
+          for (var id in last.shares) {
+            if (Object.prototype.hasOwnProperty.call(last.shares, id)) {
+              snapSum += Number(last.shares[id]) || 0;
+            }
+          }
+        }
+      }
+      return {
+        nActive: active.length,
+        sumLive: sumLive,
+        maxLive: maxLive,
+        badSh: badSh,
+        badOq: badOq,
+        snapSum: snapSum,
+        snapYear: snapY,
+        snapPeriod: snapP,
+      };
+    }
+
+    try {
+      for (var mi = 0; mi < markets.length; mi++) {
+        var marketId = markets[mi];
+        for (var si = 0; si < numSeeds; si++) {
+          (function (seedRun) {
+            var s = seedRun;
+            Math.random = function () {
+              s = (s * 9301 + 49297) % 233280;
+              return s / 233280;
+            };
+          })(baseSeed + mi * 7919 + si * 9973);
+
+          ACTIVE_MARKET = marketId;
+          syncMarketPopToMarket(marketId);
+          G = genMarketMP(eraKey);
+          MP.mode = 'solo';
+          MP.isHost = false;
+          if (MP.players) MP.players = [];
+
+          var ui = patchTimersAndUi();
+          var steps = 0;
+          try {
+            while (steps < maxSteps) {
+              var y0 = G.year;
+              var p0 = G.period;
+              if (y0 > endYear || (y0 === endYear && p0 > endPeriod)) break;
+
+              var stitchBefore = G._wlRatingsStitchUsed || 0;
+              advTurn();
+              steps++;
+              totalAdvTurns++;
+              var stitched = (G._wlRatingsStitchUsed || 0) > stitchBefore;
+
+              var m = inspectAfterTurn(G);
+              var snapBad = m.snapSum != null && m.snapSum < COLLAPSE && m.nActive >= 4;
+              var liveBad = m.sumLive < COLLAPSE && m.nActive >= 4;
+              var integrityBad = m.badSh > 0 || m.badOq > 0;
+
+              if (stitched) {
+                stitchEvents.push({
+                  marketId: marketId,
+                  seedIndex: si,
+                  year: m.snapYear,
+                  period: m.snapPeriod,
+                  sumLive: m.sumLive,
+                  snapSum: m.snapSum,
+                });
+              }
+
+              if (snapBad || liveBad || integrityBad) {
+                incidents.push({
+                  marketId: marketId,
+                  seedIndex: si,
+                  step: steps,
+                  at: { year: G.year, period: G.period },
+                  snapBook: { year: m.snapYear, period: m.snapPeriod },
+                  sumLive: m.sumLive,
+                  maxLive: m.maxLive,
+                  snapSum: m.snapSum,
+                  badSh: m.badSh,
+                  badOq: m.badOq,
+                  nActive: m.nActive,
+                  snapBad: snapBad,
+                  liveBad: liveBad,
+                  integrityBad: integrityBad,
+                  rescued: stitched,
+                });
+              }
+            }
+          } finally {
+            ui.restore();
+          }
+        }
+      }
+    } finally {
+      Math.random = origRandom;
+      G = savedG;
+      if (typeof ACTIVE_MARKET !== 'undefined' && savedActive != null) ACTIVE_MARKET = savedActive;
+      if (typeof MP !== 'undefined' && MP && savedMPMode !== undefined) MP.mode = savedMPMode;
+    }
+
+    var lines = [];
+    lines.push('══════════════════════════════════════════════════════════════');
+    lines.push('  RATINGS COLLAPSE AUDIT (headless advTurn × markets × seeds)');
+    lines.push('  Markets: ' + markets.join(', ') + ' · era genMarketMP("' + eraKey + '")');
+    lines.push('  Target calendar: through ' + endYear + ' period ' + endPeriod + ' · seeds/market: ' + numSeeds);
+    lines.push('  Total advTurn calls: ' + totalAdvTurns);
+    lines.push('  Stitch rescues (G._wlRatingsStitchUsed): ' + stitchEvents.length);
+    lines.push('  Incidents (snapΣ<' + COLLAPSE + ' or liveΣ<' + COLLAPSE + ' or NaN): ' + incidents.length);
+    lines.push('  Note: incidents = bad state still visible after advTurn. Stitch often repairs same-turn,');
+    lines.push('        so many rescues with 0 incidents means the self-heal path is working as intended.');
+    lines.push('══════════════════════════════════════════════════════════════');
+    if (incidents.length) {
+      lines.push(JSON.stringify(incidents, null, 2));
+    } else {
+      lines.push('OK — no collapse or integrity flags in this sample.');
+    }
+    if (stitchEvents.length && verbose) {
+      lines.push('--- stitch events (sample up to 12) ---');
+      lines.push(JSON.stringify(stitchEvents.slice(0, 12), null, 2));
+    }
+
+    var plainEnglish = lines.join('\n');
+    var hardFail = incidents.some(function (i) {
+      return (
+        i.integrityBad ||
+        ((i.snapBad || i.liveBad) && !i.rescued)
+      );
+    });
+    var out = {
+      ok: !hardFail,
+      incidents: incidents,
+      stitchEvents: stitchEvents,
+      totalAdvTurns: totalAdvTurns,
+      plainEnglish: plainEnglish,
+      options: {
+        markets: markets,
+        eraKey: eraKey,
+        endYear: endYear,
+        endPeriod: endPeriod,
+        numSeeds: numSeeds,
+        seed: baseSeed,
+        maxSteps: maxSteps,
+      },
+    };
+    if (verbose && typeof console !== 'undefined') {
+      console.log(out.plainEnglish);
+    }
+    return out;
+  }
+
   window.runMarketSimulationBatch = runMarketSimulationBatch;
   window.runShareCalibrationInspection = runShareCalibrationInspection;
   window.runPublicRadioSimulation = runPublicRadioSimulation;
@@ -3168,6 +3387,7 @@
   window.runCashFlowIntegrityDiagnostic = runCashFlowIntegrityDiagnostic;
   window.runCashBridgeAudit = runCashBridgeAudit;
   window.runMegaMarketSnapshotsDiagnostic = runMegaMarketSnapshotsDiagnostic;
+  window.runRatingsCollapseAudit = runRatingsCollapseAudit;
   window.megaSnapshotMetrics = megaSnapshotMetrics;
   window.advanceGToYearPeriod = advanceGToYearPeriod;
   window.mapFormatToEcologyBucket = mapFormatToEcologyBucket;
@@ -3188,6 +3408,7 @@
     runCashFlowIntegrityDiagnostic: runCashFlowIntegrityDiagnostic,
     runCashBridgeAudit: runCashBridgeAudit,
     runMegaMarketSnapshotsDiagnostic: runMegaMarketSnapshotsDiagnostic,
+    runRatingsCollapseAudit: runRatingsCollapseAudit,
     megaSnapshotMetrics: megaSnapshotMetrics,
     advanceGToYearPeriod: advanceGToYearPeriod,
     mapFormatToEcologyBucket: mapFormatToEcologyBucket,

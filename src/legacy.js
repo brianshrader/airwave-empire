@@ -6228,7 +6228,8 @@ function appl(s,coh,G){
     allNewsSig=0.58+0.42*_smoothstep(0.28,0.78,sigStrength);
   }
   mktFmt=Math.max(0.86,Math.min(1.24,mktFmt));
-  return Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * hitsLineageEraMult * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G) * mktFmt * allNewsSig * zombieNicheMult);
+  const out=Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * hitsLineageEraMult * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G) * mktFmt * allNewsSig * zombieNicheMult);
+  return Number.isFinite(out)?out:0;
 }
 
 /**
@@ -6462,6 +6463,68 @@ function applyOtherAudioListeningDilution(stations,G,engageWeightedPop){
       }
     }
   }
+}
+/**
+ * Rare bug: one period can flatline every station to ~0 share/rev (ranker CSV shows an empty column).
+ * Restore from each station's last book in rat.hist and rebuild cohort rows so headline share matches.
+ */
+function stitchCollapsedMarketRatingsFromHistory(stations,G){
+  const active=(stations||[]).filter(s=>s&&!s._bpSlotDeferred&&s.rat);
+  if(active.length<4)return;
+  const sumSh=active.reduce((a,s)=>a+(Number(s.rat.share)||0),0);
+  if(sumSh>1e-5)return;
+  const targets=new Map();
+  for(const s of active){
+    const h=s.rat.hist;
+    if(!h||!h.length)continue;
+    const ps=Number(h[h.length-1]?.share);
+    if(Number.isFinite(ps)&&ps>1e-8)targets.set(s.id,ps);
+  }
+  if(targets.size<Math.min(4,Math.ceil(active.length*0.5)))return;
+  for(let iter=0;iter<2;iter++){
+    const d=Math.max(publicRadioWeightedListeningDenominator(stations,G),1e-12);
+    for(const s of active){
+      const ps=targets.get(s.id);
+      if(ps==null)continue;
+      const H=publicNewsHabitEngageMult(s,G);
+      const W=COH.reduce((a,coh)=>{
+        const pop=POP.cohorts[coh]?.t||0;
+        const engage=(AQH_ENGAGE[coh]||0.060)*H;
+        return a+pop*engage;
+      },0);
+      const per=ps*d/Math.max(W,1e-12);
+      COH.forEach(coh=>{
+        const pop=(POP.cohorts[coh]?.t||0)*effUniverse(s);
+        const engage=(AQH_ENGAGE[coh]||0.060)*H;
+        const sh=Math.round(per*10000)/10000;
+        if(!s.rat.cur[coh])s.rat.cur[coh]={share:0,aqh:0};
+        s.rat.cur[coh].share=sh;
+        s.rat.cur[coh].aqh=Math.round(sh*pop*engage);
+        if(s.mom[coh]){
+          s.mom[coh].cur=sh;
+          s.mom[coh].tgt=Math.max(s.mom[coh].tgt||0,sh);
+        }
+      });
+      s.rat.aqh=COH.reduce((sum,coh)=>sum+(s.rat.cur[coh]?.aqh||0),0);
+    }
+    const d2=Math.max(publicRadioWeightedListeningDenominator(stations,G),1e-12);
+    active.forEach(s=>{
+      const H=publicNewsHabitEngageMult(s,G);
+      s.rat.share=COH.reduce((sum,c)=>{
+        const pop=POP.cohorts[c]?.t||0;
+        const engage=(AQH_ENGAGE[c]||0.060)*H;
+        return sum+(s.rat.cur[c]?.share||0)*pop*engage;
+      },0)/d2;
+    });
+  }
+  active.forEach(s=>{
+    const ps=targets.get(s.id);
+    if(ps!=null)s.rat.share=Math.round(ps*1e8)/1e8;
+  });
+  if(typeof console!=='undefined'&&console.warn){
+    console.warn('[recalc] restored flatlined market ratings from prior book @',G.year,G.period,'stations',targets.size);
+  }
+  if(G)G._wlRatingsStitchUsed=(G._wlRatingsStitchUsed||0)+1;
 }
 /**
  * Sanitize `rat.share` for ranking and display (finite, non-negative).
@@ -6762,7 +6825,7 @@ function recalc(stations,G){
         rawPub*=publicNewsBreakoutMult(s,G);
         rawPub*=publicNewsHighEduBreakoutMult(s,G);
       }
-      return rawPub;
+      return Number.isFinite(rawPub)?Math.max(0,rawPub):0;
       }
       const t=Math.min(1,age/m.ramp);
       const effB=m.launchB+(m.b-m.launchB)*t;
@@ -6771,10 +6834,11 @@ function recalc(stations,G){
       const promoBoost=1+((effPr/Math.max(1,promoCap))*0.08);
       const effVan=effectiveRemoteVanMarketingLift(s,G);
       const vanLift=effVan>0?1+Math.max(0,effVan):1;
-      return Math.max(0,appl(s,coh,G)*effB*promoBoost*vanLift);
+      const rv=Math.max(0,appl(s,coh,G)*effB*promoBoost*vanLift);
+      return Number.isFinite(rv)?rv:0;
     });
-    const tot=sc.reduce((a,b)=>a+b,0);
-    if(!tot)return;
+    const tot=sc.reduce((a,b)=>a+(Number.isFinite(b)?Math.max(0,b):0),0);
+    if(!Number.isFinite(tot)||tot<=0)return;
     let raw=sc.map(v=>v/tot);
 
     // Competition bleed: dense same-format competition erodes everyone's share
@@ -6918,6 +6982,7 @@ function recalc(stations,G){
   refreshAllStationOQ(G);
 
   applyOtherAudioListeningDilution(stations,G,engageWeightedPop);
+  stitchCollapsedMarketRatingsFromHistory(stations,G);
 
   stations.forEach(s=>{
     if(!s||s._bpSlotDeferred||!s.rat)return;
@@ -6983,9 +7048,12 @@ function seedNewEntry(s,G){
   const allStations=G.stations; // includes s (already pushed)
   COH.forEach(coh=>{
     // Compute each station's raw appeal in this market
-    const appeals=allStations.map(st=>Math.max(0,appl(st,coh,G)));
-    const tot=appeals.reduce((a,b)=>a+b,0);
-    if(!tot){s.rat.cur[coh]={share:0,aqh:0};s.mom[coh]={tgt:0,cur:0};return;}
+    const appeals=allStations.map(st=>{
+      const av=Math.max(0,appl(st,coh,G));
+      return Number.isFinite(av)?av:0;
+    });
+    const tot=appeals.reduce((a,b)=>a+(Number.isFinite(b)?Math.max(0,b):0),0);
+    if(!Number.isFinite(tot)||tot<=0){s.rat.cur[coh]={share:0,aqh:0};s.mom[coh]={tgt:0,cur:0};return;}
     // The new station's natural competitive share (what recalc would give it at maturity)
     const idx=allStations.indexOf(s);
     const naturalShare=appeals[idx]/tot;
@@ -7018,10 +7086,11 @@ function seedRat(stations,fmpOrYear){
       const m=STM[s.str]||{b:.7,v:.12,launchB:.20,ramp:8};
       // Established stations (launchPeriod=-999) seed at mature b-value, not launchB
       const seedB=s.launchPeriod===-999?m.b:m.launchB;
-      return Math.max(0,appl(s,coh,mockG)*(seedB+rnd(-m.v*.3,m.v*.3)));
+      const sv=Math.max(0,appl(s,coh,mockG)*(seedB+rnd(-m.v*.3,m.v*.3)));
+      return Number.isFinite(sv)?sv:0;
     });
-    const tot=sc.reduce((a,b)=>a+b,0);
-    let raw=tot?sc.map(v=>v/tot):sc.map(()=>0);
+    const tot=sc.reduce((a,b)=>a+(Number.isFinite(b)?Math.max(0,b):0),0);
+    let raw=Number.isFinite(tot)&&tot>0?sc.map(v=>v/tot):sc.map(()=>0);
     const CAP=0.22;
     for(let iter=0;iter<5;iter++){
       let excess=0,freeSum=0;
@@ -17346,6 +17415,57 @@ async function wlSubmitFeedback(){
   }
 }
 
+/**
+ * Legacy bug: a single rankerHistory book can be all zeros (CSV column blank). Repair at load by
+ * copying shares from the nearest prior book with a positive total, then renormalizing to ~1.
+ */
+function repairCollapsedRankerHistorySnaps(G){
+  const rh=G.rankerHistory;
+  if(!rh||!rh.length)return;
+  const COLLAPSE=1e-9;
+  const MIN_KEYS=4;
+  let fixed=0;
+  for(let i=0;i<rh.length;i++){
+    const snap=rh[i];
+    if(!snap||typeof snap.shares!=='object')continue;
+    const ids=Object.keys(snap.shares);
+    if(ids.length<MIN_KEYS)continue;
+    let sum=0;
+    for(let k=0;k<ids.length;k++){
+      const v=Number(snap.shares[ids[k]]);
+      if(Number.isFinite(v))sum+=v;
+    }
+    if(sum>COLLAPSE)continue;
+    let prev=null;
+    for(let j=i-1;j>=0;j--){
+      const p=rh[j];
+      if(!p||typeof p.shares!=='object')continue;
+      let ps=0;
+      const pk=Object.keys(p.shares);
+      for(let q=0;q<pk.length;q++){
+        const v=Number(p.shares[pk[q]]);
+        if(Number.isFinite(v))ps+=v;
+      }
+      if(ps>COLLAPSE){prev=p;break;}
+    }
+    if(!prev)continue;
+    const raw=[];
+    let newSum=0;
+    for(let k=0;k<ids.length;k++){
+      const id=ids[k];
+      const v=Math.max(0,Number(prev.shares[id])||0);
+      raw.push(v);
+      newSum+=v;
+    }
+    if(newSum<COLLAPSE)continue;
+    for(let k=0;k<ids.length;k++){
+      snap.shares[ids[k]]=Math.round((raw[k]/newSum)*1e8)/1e8;
+    }
+    fixed++;
+  }
+  if(fixed>0)G._rankerHistoryCollapsedRowsRepaired=(G._rankerHistoryCollapsedRowsRepaired||0)+fixed;
+}
+
 function migrateSave(G){
   migrateHitsLineage(G);
   const _chrCross=hitsLineageFirstChrCalendarYear();
@@ -17407,6 +17527,7 @@ function migrateSave(G){
     if(snap.year!=null)snap.year=Number(snap.year);
     if(snap.period!=null)snap.period=Number(snap.period);
   });
+  repairCollapsedRankerHistorySnaps(G);
   G.finHistory=G.finHistory||[];
   G._playerFinHistory=G._playerFinHistory||{};
   G.stationFinHistory=G.stationFinHistory||{};
