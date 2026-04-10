@@ -5,6 +5,8 @@
  *   npm run sim:format-ecology
  *
  * Uses ?quick=1 by default. For full sample (five markets × 4 runs), edit INSPECT_PATH or open inspect-format-ecology.html.
+ *
+ *   FORMAT_ECOLOGY_PATH='/inspect-format-ecology.html?quick=1&markets=chicago' node scripts/sim-format-ecology.mjs
  */
 /* eslint-disable no-console */
 
@@ -16,7 +18,7 @@ import { fileURLToPath } from 'url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, '..');
 const PORT = 4175;
-const INSPECT_PATH = '/inspect-format-ecology.html?quick=1';
+const INSPECT_PATH = process.env.FORMAT_ECOLOGY_PATH || '/inspect-format-ecology.html?quick=1';
 
 function waitForOk(path, maxMs) {
   return new Promise((resolve, reject) => {
