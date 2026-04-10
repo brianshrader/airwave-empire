@@ -6,7 +6,7 @@
  *
  * Env:
  *   FORMAT_ECOLOGY_PATH  — base path+query (default: quick + newyork,chicago,atlanta)
- *   FORMAT_ECOLOGY_SEEDS — comma-separated integers (default: 5 seeds)
+ *   FORMAT_ECOLOGY_SEEDS — comma-separated integers (default: 1–10)
  *
  * Requires: npm run build, playwright, Chromium.
  */
@@ -25,7 +25,7 @@ const DEFAULT_BASE =
   process.env.FORMAT_ECOLOGY_PATH ||
   '/inspect-format-ecology.html?quick=1&markets=newyork,chicago,atlanta';
 
-const DEFAULT_SEEDS = [20260406, 20260407, 20260408, 20260409, 20260410];
+const DEFAULT_SEEDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
 function parseSeeds() {
   const raw = process.env.FORMAT_ECOLOGY_SEEDS;
@@ -82,6 +82,33 @@ function bucketStats(bmd, market, decade, bucket) {
   };
 }
 
+/** Per-period means from inspect rawFormat (CHR lineage reports as TOP40 after normalize). */
+function rawFmtStats(bmd, market, decade, formatKey) {
+  const key = `${market}|${decade}`;
+  const block = bmd[key];
+  const r = block && block.rawFormat && block.rawFormat[formatKey];
+  if (!r) return { st: NaN, wk: NaN };
+  return {
+    st: r.meanCount,
+    wk: r.meanWeak != null ? r.meanWeak : NaN,
+  };
+}
+
+function sumRaw(bmd, market, decade, keys) {
+  let st = 0;
+  let wk = 0;
+  let any = false;
+  for (const k of keys) {
+    const x = rawFmtStats(bmd, market, decade, k);
+    if (!Number.isNaN(x.st)) {
+      any = true;
+      st += x.st;
+    }
+    if (!Number.isNaN(x.wk)) wk += x.wk;
+  }
+  return { st: any ? st : NaN, wk: any ? wk : NaN };
+}
+
 function fmt(n, d = 2) {
   if (n == null || Number.isNaN(n)) return '—';
   return typeof n === 'number' ? n.toFixed(d) : String(n);
@@ -136,6 +163,15 @@ async function main() {
       const chi90n = bucketStats(bmd, 'chicago', '1990s', 'news_talk');
       const ny80r = bucketStats(bmd, 'newyork', '1980s', 'rock_alt');
 
+      const ny80_hot = rawFmtStats(bmd, 'newyork', '1980s', 'HOT_AC');
+      const ny80_ac = rawFmtStats(bmd, 'newyork', '1980s', 'ADULT_CONTEMP');
+      const ny80_co = rawFmtStats(bmd, 'newyork', '1980s', 'COUNTRY');
+      const ny80_top40 = rawFmtStats(bmd, 'newyork', '1980s', 'TOP40');
+      const ny80_rhy = rawFmtStats(bmd, 'newyork', '1980s', 'RHYTHMIC');
+      const ny80_urb = rawFmtStats(bmd, 'newyork', '1980s', 'URBAN_CONTEMP');
+      const ny80_mor = rawFmtStats(bmd, 'newyork', '1980s', 'MOR');
+      const ny80_rock = sumRaw(bmd, 'newyork', '1980s', ['ALBUM_ROCK', 'ALT_ROCK', 'CLASSIC_ROCK']);
+
       rows.push({
         seed,
         ny80t_st: ny80t.st,
@@ -148,6 +184,22 @@ async function main() {
         chi90n_wk: chi90n.weak,
         ny80r_st: ny80r.st,
         ny80r_hl: ny80r.healthy,
+        ny80_hot_st: ny80_hot.st,
+        ny80_hot_wk: ny80_hot.wk,
+        ny80_ac_st: ny80_ac.st,
+        ny80_ac_wk: ny80_ac.wk,
+        ny80_co_st: ny80_co.st,
+        ny80_co_wk: ny80_co.wk,
+        ny80_top40_st: ny80_top40.st,
+        ny80_top40_wk: ny80_top40.wk,
+        ny80_rhy_st: ny80_rhy.st,
+        ny80_rhy_wk: ny80_rhy.wk,
+        ny80_urb_st: ny80_urb.st,
+        ny80_urb_wk: ny80_urb.wk,
+        ny80_mor_st: ny80_mor.st,
+        ny80_mor_wk: ny80_mor.wk,
+        ny80_rock_sum_st: ny80_rock.st,
+        ny80_rock_sum_wk: ny80_rock.wk,
       });
     }
 
@@ -187,7 +239,72 @@ async function main() {
         colRock(avg(rows.map((x) => x.ny80r_st)), avg(rows.map((x) => x.ny80r_hl)))
     );
     console.log('');
-    console.log('Legend: st = mean stations in bucket · wk = mean weak count · hl = mean healthy (rock_alt)');
+    console.log('Legend: st = mean stations in bucket · wk = mean weak count · hl = mean healthy (rock_alt bucket)');
+    console.log('');
+
+    const hdr2 =
+      'seed      HOT_AC(s/w) ADULT_CONTEMP(s/w) COUNTRY(s/w) TOP40(s/w) RHYTHMIC(s/w) URBAN(s/w) MOR(s/w) rockΣ3(s/w)';
+    console.log('NY 1980s — raw formats (mean stations / mean weak); TOP40 = CHR lineage after normalize');
+    console.log(hdr2);
+    console.log('-'.repeat(hdr2.length));
+    for (const r of rows) {
+      console.log(
+        `${String(r.seed).padEnd(9)}` +
+          colPair(r.ny80_hot_st, r.ny80_hot_wk) +
+          colPair(r.ny80_ac_st, r.ny80_ac_wk) +
+          colPair(r.ny80_co_st, r.ny80_co_wk) +
+          colPair(r.ny80_top40_st, r.ny80_top40_wk) +
+          colPair(r.ny80_rhy_st, r.ny80_rhy_wk) +
+          colPair(r.ny80_urb_st, r.ny80_urb_wk) +
+          colPair(r.ny80_mor_st, r.ny80_mor_wk) +
+          colPair(r.ny80_rock_sum_st, r.ny80_rock_sum_wk)
+      );
+    }
+    console.log('-'.repeat(hdr2.length));
+    console.log(
+      `${'mean'.padEnd(9)}` +
+        colPair(avg(rows.map((x) => x.ny80_hot_st)), avg(rows.map((x) => x.ny80_hot_wk))) +
+        colPair(avg(rows.map((x) => x.ny80_ac_st)), avg(rows.map((x) => x.ny80_ac_wk))) +
+        colPair(avg(rows.map((x) => x.ny80_co_st)), avg(rows.map((x) => x.ny80_co_wk))) +
+        colPair(avg(rows.map((x) => x.ny80_top40_st)), avg(rows.map((x) => x.ny80_top40_wk))) +
+        colPair(avg(rows.map((x) => x.ny80_rhy_st)), avg(rows.map((x) => x.ny80_rhy_wk))) +
+        colPair(avg(rows.map((x) => x.ny80_urb_st)), avg(rows.map((x) => x.ny80_urb_wk))) +
+        colPair(avg(rows.map((x) => x.ny80_mor_st)), avg(rows.map((x) => x.ny80_mor_wk))) +
+        colPair(avg(rows.map((x) => x.ny80_rock_sum_st)), avg(rows.map((x) => x.ny80_rock_sum_wk)))
+    );
+    console.log('');
+
+    function nz(x) {
+      return Number.isFinite(x) ? x : 0;
+    }
+    const meanHot = avg(rows.map((x) => x.ny80_hot_st));
+    console.log('--- NY 1980s “absorption pool” mix (mean stations; shares of labeled subtotals) ---');
+    const mRock = avg(rows.map((x) => x.ny80_rock_sum_st));
+    const mHits = avg(rows.map((x) => nz(x.ny80_top40_st) + nz(x.ny80_rhy_st) + nz(x.ny80_urb_st)));
+    const mAc = avg(rows.map((x) => nz(x.ny80_ac_st) + nz(x.ny80_mor_st)));
+    const mCo = avg(rows.map((x) => nz(x.ny80_co_st)));
+    const mHot = Number.isFinite(meanHot) ? meanHot : 0;
+    const pool = nz(mRock) + nz(mHits) + nz(mAc) + nz(mCo) + nz(mHot);
+    if (pool > 0) {
+      const p = (x) => ((100 * x) / pool).toFixed(1);
+      console.log(
+        `Mean subtotals (stations/period): rockΣ=${mRock.toFixed(2)} · hits_adj=${mHits.toFixed(2)} · AC=${mAc.toFixed(2)} · COUNTRY=${mCo.toFixed(2)} · HOT_AC=${mHot.toFixed(2)} · POOL=${pool.toFixed(2)}`
+      );
+      console.log(
+        `Shares of pool: rock=${p(mRock)}% · hits_adj=${p(mHits)}% · AC=${p(mAc)}% · country=${p(mCo)}% · hot_ac=${p(mHot)}%`
+      );
+      const rockDominant = mRock / pool >= 0.45;
+      const diversified = mRock / pool <= 0.35 && mHits / pool >= 0.2;
+      console.log(
+        rockDominant
+          ? 'Rollup: rock is the largest single lane in this pool (check for overflow).'
+          : diversified
+            ? 'Rollup: mix looks spread across rock / hits-adjacent / AC / country / hot AC — no single dump lane.'
+            : 'Rollup: intermediate — rock is material but not sole sink; see per-seed table.'
+      );
+    } else {
+      console.log('(Could not compute pool — missing rawFormat.)');
+    }
     console.log('');
   } catch (e) {
     if (String(e.message || e).includes('Cannot find package') || /playwright/i.test(String(e))) {

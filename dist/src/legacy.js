@@ -4685,6 +4685,7 @@ window._mpApply_sell = function({ sid }) {
   const s = G.stations.find(st=>st.id===sid);
   if(!s||stationIsPlayerLmaLesseeOperation(s))return;
   s.isPlayer=false; s._mpOwner=undefined; s.color=s.color||'#6b7280';
+  clearPlayerLmaLesseeFields(s);
   G.ps = G.stations.filter(s=>s.isPlayer);
 };
 
@@ -7394,15 +7395,25 @@ function skipRivalPoachDuplicateSimulcastLeg(st, slot, G){
 /**
  * Economic cluster for fixed-cost sharing + demo-breadth sellout: solo `G.ps`, MP same `_mpOwner`,
  * AI rivals with same `corpOwner`, else standalone.
+ * Pre-1996: LMA lessee ops do not share cluster economics with owned licenses (operational control ≠ ownership).
+ * 1996+: LMA stations are grouped with the rest of the player portfolio (attributable / consolidation era).
  */
 function clusterOwnershipPeersForStation(s,G){
   if(!s||s._bpSlotDeferred||s.isPublic)return[];
   if(s.isPlayer){
+    let pool;
     if(typeof MP!=='undefined'&&MP.mode==='live'){
       const pid=s._mpOwner!==undefined&&s._mpOwner!==null?s._mpOwner:MP.playerId;
-      return(G.ps||[]).filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic&&(st._mpOwner!==undefined&&st._mpOwner!==null?st._mpOwner:0)===pid);
+      pool=(G.ps||[]).filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic&&(st._mpOwner!==undefined&&st._mpOwner!==null?st._mpOwner:0)===pid);
+    }else{
+      pool=(G.ps||[]).filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic);
     }
-    return(G.ps||[]).filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic);
+    const y=G?.year??1970;
+    if(y<1996){
+      const sLma=stationIsPlayerLmaLesseeOperation(s);
+      return pool.filter(st=>(stationIsPlayerLmaLesseeOperation(st)?1:0)===(sLma?1:0));
+    }
+    return pool;
   }
   if(s.corpOwner){
     return(G.stations||[]).filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic&&!st.isPlayer&&st.corpOwner===s.corpOwner);
@@ -9995,13 +10006,14 @@ function mpExecuteForcedDistressSale(G,pid,pname){
   if(pStns.length<2)return false;
   const weakest=[...pStns].sort((a,b)=>(a.fin?.ebitda||0)-(b.fin?.ebitda||0))[0];
   if(!weakest)return false;
-  const price=distressSaleProceeds(weakest);
+  const lmaOp=stationIsPlayerLmaLesseeOperation(weakest);
+  const price=lmaOp?0:distressSaleProceeds(weakest);
   const _soldCall=weakest.callLetters;
   const _oldFreq=weakest.freq;
   const _oldFmt=weakest.format;
   const _oldLbl=fmtLabel(_oldFmt);
   if(!G._playerCash)G._playerCash={};
-  G._playerCash[pid]=(G._playerCash[pid]||0)+price;
+  if(price>0)G._playerCash[pid]=(G._playerCash[pid]||0)+price;
   if(MP.playerId===pid)G.cash=G._playerCash[pid];
   MP.emit('player_cash_update',{playerId:pid,cash:G._playerCash[pid]});
   breakSimulcast(G,weakest.id);
@@ -10009,10 +10021,13 @@ function mpExecuteForcedDistressSale(G,pid,pname){
   weakest.isPlayer=false;
   weakest._mpOwner=undefined;
   weakest.color=weakest.color||'#6b7280';
+  clearPlayerLmaLesseeFields(weakest);
   G.ps=G.stations.filter(s=>s.isPlayer);
   aiRebrandStationAfterDistressSale(G,weakest);
   const newLbl=fmtLabel(weakest.format);
-  G.news.unshift({v:'HIGH',t:`Still negative: distress sale — ${pname}'s ${_soldCall} (${_oldFreq}, ${_oldLbl}) sold for ${f$(price)}. The license continues as ${weakest.callLetters} on ${weakest.freq} — ${newLbl}, "${weakest.brand}".`,y:G.year,p:G.period});
+  G.news.unshift({v:'HIGH',t:lmaOp
+    ?`Still negative: ${pname} forced to end LMA on ${_soldCall} (${_oldFreq}, ${_oldLbl}) — no license sale; operation returned to licensor. Station continues as ${weakest.callLetters} — ${newLbl}, "${weakest.brand}".`
+    :`Still negative: distress sale — ${pname}'s ${_soldCall} (${_oldFreq}, ${_oldLbl}) sold for ${f$(price)}. The license continues as ${weakest.callLetters} on ${weakest.freq} — ${newLbl}, "${weakest.brand}".`,y:G.year,p:G.period});
   return true;
 }
 
@@ -10021,22 +10036,26 @@ function mpExecuteBankruptcy(G,pid,pname){
   mpEnsureBankruptFlags(G);
   const pStns=G.ps.filter(s=>s._mpOwner===pid);
   pStns.forEach(weakest=>{
-    const price=distressSaleProceeds(weakest);
+    const lmaOp=stationIsPlayerLmaLesseeOperation(weakest);
+    const price=lmaOp?0:distressSaleProceeds(weakest);
     const _soldCall=weakest.callLetters;
     const _oldFreq=weakest.freq;
     const _oldFmt=weakest.format;
     const _oldLbl=fmtLabel(_oldFmt);
     if(!G._playerCash)G._playerCash={};
-    G._playerCash[pid]=(G._playerCash[pid]||0)+price;
+    if(price>0)G._playerCash[pid]=(G._playerCash[pid]||0)+price;
     breakSimulcast(G,weakest.id);
     normalizeSimulcastLinksInPlace(G);
     weakest.isPlayer=false;
     weakest._mpOwner=undefined;
     weakest.color=weakest.color||'#6b7280';
+    clearPlayerLmaLesseeFields(weakest);
     G.ps=G.stations.filter(s=>s.isPlayer);
     aiRebrandStationAfterDistressSale(G,weakest);
     const newLbl=fmtLabel(weakest.format);
-    G.news.unshift({v:'HIGH',t:`Bankruptcy: ${pname} — ${_soldCall} (${_oldFreq}, ${_oldLbl}) sold for ${f$(price)}. License continues as ${weakest.callLetters} on ${weakest.freq} — ${newLbl}, "${weakest.brand}".`,y:G.year,p:G.period});
+    G.news.unshift({v:'HIGH',t:lmaOp
+      ?`Bankruptcy: ${pname} — LMA on ${_soldCall} (${_oldFreq}, ${_oldLbl}) ended (no sale proceeds). Station continues as ${weakest.callLetters} — ${newLbl}, "${weakest.brand}".`
+      :`Bankruptcy: ${pname} — ${_soldCall} (${_oldFreq}, ${_oldLbl}) sold for ${f$(price)}. License continues as ${weakest.callLetters} on ${weakest.freq} — ${newLbl}, "${weakest.brand}".`,y:G.year,p:G.period});
   });
   G._playerCash[pid]=Math.max(0,G._playerCash[pid]||0);
   if(MP.playerId===pid)G.cash=G._playerCash[pid];
@@ -10050,19 +10069,23 @@ function mpExecuteBankruptcy(G,pid,pname){
 function soloExecuteBankruptcy(G){
   const stns=[...G.ps];
   stns.forEach(weakest=>{
-    const price=distressSaleProceeds(weakest);
+    const lmaOp=stationIsPlayerLmaLesseeOperation(weakest);
+    const price=lmaOp?0:distressSaleProceeds(weakest);
     const _soldCall=weakest.callLetters;
     const _oldFreq=weakest.freq;
     const _oldFmt=weakest.format;
     const _oldLbl=fmtLabel(_oldFmt);
-    G.cash=(G.cash||0)+price;
+    if(price>0)G.cash=(G.cash||0)+price;
     breakSimulcast(G,weakest.id);
     normalizeSimulcastLinksInPlace(G);
     weakest.isPlayer=false;
+    clearPlayerLmaLesseeFields(weakest);
     G.ps=G.stations.filter(s=>s.isPlayer);
     aiRebrandStationAfterDistressSale(G,weakest);
     const newLbl=fmtLabel(weakest.format);
-    G.news.unshift({v:'HIGH',t:`Forced sale: ${_soldCall} (${_oldFreq}, ${_oldLbl}) sold for ${f$(price)}. The license continues as ${weakest.callLetters} on ${weakest.freq} — ${newLbl}, "${weakest.brand}".`,y:G.year,p:G.period});
+    G.news.unshift({v:'HIGH',t:lmaOp
+      ?`Forced exit: LMA on ${_soldCall} (${_oldFreq}, ${_oldLbl}) ended — no license sale. Station continues as ${weakest.callLetters} on ${weakest.freq} — ${newLbl}, "${weakest.brand}".`
+      :`Forced sale: ${_soldCall} (${_oldFreq}, ${_oldLbl}) sold for ${f$(price)}. The license continues as ${weakest.callLetters} on ${weakest.freq} — ${newLbl}, "${weakest.brand}".`,y:G.year,p:G.period});
   });
   G.cash=Math.max(0,G.cash||0);
   G.debtWarningQ=0;
@@ -10139,17 +10162,23 @@ function checkPressure(G){
     }else if(G.debtWarningQ>=2){
       const weakest=_pressMyStns.length?[..._pressMyStns].sort((a,b)=>(a.fin?.ebitda||0)-(b.fin?.ebitda||0))[0]:null;
       if(weakest&&_pressMyStns.length>1){
-        const price=distressSaleProceeds(weakest);
+        const lmaOp=stationIsPlayerLmaLesseeOperation(weakest);
+        const price=lmaOp?0:distressSaleProceeds(weakest);
         const _soldCall=weakest.callLetters;
         const _oldFreq=weakest.freq;
         const _oldFmt=weakest.format;
         const _oldLbl=fmtLabel(_oldFmt);
-        G.cash+=price;breakSimulcast(G,weakest.id);
+        if(price>0)G.cash+=price;
+        breakSimulcast(G,weakest.id);
         normalizeSimulcastLinksInPlace(G);
-        weakest.isPlayer=false;G.ps=G.stations.filter(s=>s.isPlayer);
+        weakest.isPlayer=false;
+        clearPlayerLmaLesseeFields(weakest);
+        G.ps=G.stations.filter(s=>s.isPlayer);
         aiRebrandStationAfterDistressSale(G,weakest);
         const newLbl=fmtLabel(weakest.format);
-        G.news.unshift({v:'HIGH',t:`Still negative: distress sale — ${_soldCall} (${_oldFreq}, ${_oldLbl}) sold for ${f$(price)}. License continues as ${weakest.callLetters} on ${weakest.freq} — ${newLbl}, "${weakest.brand}".`,y:G.year,p:G.period});
+        G.news.unshift({v:'HIGH',t:lmaOp
+          ?`Still negative: ended LMA on ${_soldCall} (${_oldFreq}, ${_oldLbl}) — no license sale; operation returned to licensor. Station continues as ${weakest.callLetters} — ${newLbl}, "${weakest.brand}".`
+          :`Still negative: distress sale — ${_soldCall} (${_oldFreq}, ${_oldLbl}) sold for ${f$(price)}. License continues as ${weakest.callLetters} on ${weakest.freq} — ${newLbl}, "${weakest.brand}".`,y:G.year,p:G.period});
         G.debtWarningQ=0;
       }else if(_pressMyStns.length===1&&weakest){
         soloExecuteBankruptcy(G);
@@ -12569,9 +12598,8 @@ function acqPrice(s,G){
 }
 
 // ── LOCAL MARKETING AGREEMENT (LMA) SYSTEM ──────────────────────
-// Historical context: LMAs were the primary way to operate beyond FCC limits
-// before 1992 deregulation opened up multi-station ownership.
-// Peak era: 1978-1996. Still used post-1996 but as pre-sale transitions.
+// Era model: unavailable pre-1990; 1990–1995 workaround (cap, fee friction); 1996+ counts toward FCC cap
+// in sim and is de-emphasized vs outright acquisition. See lmaRegulatoryEra / lmaCountsAgainstLimit.
 //
 // Fee economics (2026): lease-style, not a flat % of revenue. See docs/lma-fee-model.md
 // SYNC: implementation mirrored in scripts/lmaFeeModelShared.mjs (search LMA_FEE_MODEL_SYNC).
@@ -12659,13 +12687,41 @@ function lmaFeeForStation(s, Gopt) {
   const tier = mkt.rankTier || 'large';
   const pool = lmaHalfPeriodMarketPool(Gg);
   const isFm = (s.sig?.type === 'FM') || !!s.fmBooster;
-  return lmaComputeFeeRounded(pool, gross, seedEbitda, tier, Gg.year, isFm);
+  let fee = lmaComputeFeeRounded(pool, gross, seedEbitda, tier, Gg.year, isFm);
+  // 1990–95: looser policy but deals were scrutinized — modest lessee-side premium (lessor payouts unchanged).
+  if (!s.lmaLessorId && lmaRegulatoryEra(Gg.year) === 'transition') {
+    fee = Math.round((fee * 1.1) / 1000) * 1000;
+  }
+  return fee;
 }
 
 function lmaCountsAgainstLimit(year) {
-  // Pre-1999: LMAs don't count toward FCC limits
-  // 1999+: LMAs >15% of broadcast day count (we simplify: all LMAs count post-1999)
-  return year >= 1999;
+  // 1996 Telecom Act era onward: treat LMA operational control as counting toward ownership-style caps (simplified).
+  return (year ?? 1970) >= 1996;
+}
+
+/** Regulatory era for LMA UI and AI — not the fee curve (see lmaEraFactor). */
+function lmaRegulatoryEra(year) {
+  const y = year ?? 1970;
+  if (y < 1990) return 'pre1990';
+  if (y < 1996) return 'transition';
+  return 'postTelecom';
+}
+
+function lmaPlayerMaySignNewAgreements(G) {
+  return lmaRegulatoryEra(G?.year) !== 'pre1990';
+}
+
+/** 1990–1995: cap concurrent LMA *lessee* deals (workaround era, not unlimited). */
+const LMA_TRANSITION_MAX_LESSEE_OPS = 2;
+
+function lmaPlayerLesseeOpCount(G) {
+  return (G.stations || []).filter(s => s && s.lmaLesseeId === 'player' && s._lmaStation).length;
+}
+
+function lmaPlayerUnderTransitionLesseeCap(G) {
+  if (lmaRegulatoryEra(G?.year) !== 'transition') return true;
+  return lmaPlayerLesseeOpCount(G) < LMA_TRANSITION_MAX_LESSEE_OPS;
 }
 
 /** True when the player operates this station under an LMA (lessee) — not license owner; cannot “sell” the facility. */
@@ -12673,21 +12729,41 @@ function stationIsPlayerLmaLesseeOperation(s){
   return !!(s&&(s._lmaStation||s.lmaLesseeId==='player'));
 }
 
+/** Drop player-as-lessee LMA metadata (call when ending LMA or removing station from player portfolio). */
+function clearPlayerLmaLesseeFields(s){
+  if(!s)return;
+  s.lmaLesseeId=null;
+  s._lmaStation=false;
+  delete s.lmaLicensorName;
+  delete s._lmaFeeRate;
+  delete s._lmaFeePaid;
+  delete s._lmaGrossRev;
+}
+
+/** Saves: distress/bankruptcy used to clear isPlayer without stripping LMA flags — leaves phantom “player lessee” on AI stations. */
+function repairOrphanPlayerLmaLesseeFlags(G){
+  (G.stations||[]).forEach(s=>{
+    if(!s||s._bpSlotDeferred)return;
+    if(!s.isPlayer&&(s.lmaLesseeId==='player'||s._lmaStation))clearPlayerLmaLesseeFields(s);
+  });
+}
+
 function playerCanEnterLMA(role, G) {
   // role: 'lessee' = player wants to operate another station
   // role: 'lessor' = player wants to lease out one of their own
+  if (!lmaPlayerMaySignNewAgreements(G)) return false;
+  if (role === 'lessee' && !lmaPlayerUnderTransitionLesseeCap(G)) return false;
   if (role === 'lessor') {
     // Must own at least 2 stations to lease one out (keep at least 1)
     const myStns = G.ps.filter(s => !s.lmaLessorId); // non-leased-out owned stations
     return myStns.length >= 2;
   }
   if (role === 'lessee') {
-    // Pre-1999: can always take on an LMA (bypasses ownership limit)
-    // 1999+: counts toward limit
+    // 1996+: LMA lessee ops count like ownership for cap checks. 1990–95: workaround (bypass).
     if (lmaCountsAgainstLimit(G.year)) {
       return fccCanAcquire('player','AM',G) || fccCanAcquire('player','FM',G);
     }
-    return true; // pre-1999: no limit on LMAs
+    return true; // 1990–1995: LMA can bypass strict cap (workaround era)
   }
   return false;
 }
@@ -12701,31 +12777,42 @@ function rLMA() {
   const el = document.getElementById('lmab');
   if (!el) return;
   const year = G.year;
-  const isPreDeregulation = year < 1992;
+  const era = lmaRegulatoryEra(year);
   const countsAgainstLimit = lmaCountsAgainstLimit(year);
+  const maySign = lmaPlayerMaySignNewAgreements(G);
 
   // Current active LMAs
   const activeLesseeStns = G.stations.filter(s => s.lmaLesseeId === 'player'); // player is lessee
   const activeLessorStns = G.ps.filter(s => s.lmaLessorId); // player is lessor (leased out)
 
-  // Available to lease AS LESSEE: independent non-player stations willing to LMA
-  // Eligibility: AM stations with weak performance, OR corp stations offering leases
-  const lesseeTargets = G.stations.filter(s => {
-    if (s.isPlayer || s.isPublic || s.lmaLesseeId) return false;
-    if (s.lmaLessorId) return false; // already in an LMA
-    // Weak independents are willing; corps offer strategic leases
-    const isWeak = s.rat.share < 0.04 && !s.corpOwner;
-    const isCorpOffering = s.corpOwner && s._corpLMAOffer;
-    return isWeak || isCorpOffering;
-  });
+  const lesseeTargets = maySign
+    ? G.stations.filter(s => {
+        if (s.isPlayer || s.isPublic || s.lmaLesseeId) return false;
+        if (s.lmaLessorId) return false;
+        const isWeak = s.rat.share < 0.04 && !s.corpOwner;
+        const isCorpOffering = s.corpOwner && s._corpLMAOffer;
+        return isWeak || isCorpOffering;
+      })
+    : [];
 
-  // Available to lease AS LESSOR: player's own stations they can lease out
-  const lessorTargets = myPS().filter(s => !s.lmaLessorId && !s.lmaLesseeId);
-  const canLessor = lessorTargets.length >= 2; // must keep at least 1
+  const lessorTargets = maySign ? myPS().filter(s => !s.lmaLessorId && !s.lmaLesseeId) : [];
+  const canLessor = maySign && lessorTargets.length >= 2;
 
-  const feeNote = countsAgainstLimit
-    ? `<div style="background:rgba(240,88,88,.10);border:1px solid rgba(240,88,88,.3);padding:8px 12px;font-family:var(--ft);font-size:14px;color:var(--red);margin-bottom:12px">⚠ Since 1999, LMAs count toward FCC ownership limits. Operating a leased station uses one of your license slots.</div>`
-    : `<div style="background:rgba(90,180,255,.08);border:1px solid rgba(90,180,255,.25);padding:8px 12px;font-family:var(--ft);font-size:14px;color:var(--blu);margin-bottom:12px">📋 Pre-1999: LMAs do not count toward FCC ownership limits. This is the primary way to operate beyond your cap.</div>`;
+  const pre1990CarryWarn =
+    era === 'pre1990' && (activeLesseeStns.length || activeLessorStns.length)
+      ? `<div style="background:rgba(240,180,88,.12);border:1px solid rgba(240,180,88,.35);padding:8px 12px;font-family:var(--ft);font-size:14px;color:var(--amb);margin-bottom:12px">⚠ Before 1990, full programmatic LMAs / time brokerage of this scope were not how the FCC treated control. End legacy agreements when practical — new LMAs cannot be signed this era.</div>`
+      : '';
+
+  let feeNote;
+  if (era === 'pre1990') {
+    feeNote = `<div style="background:rgba(90,180,255,.08);border:1px solid rgba(90,180,255,.25);padding:8px 12px;font-family:var(--ft);font-size:14px;color:var(--blu);margin-bottom:12px">📋 Pre-1990: new Local Marketing Agreements are unavailable. Operational control of another licensee without attribution was not the modern LMA practice.</div>`;
+  } else if (era === 'transition') {
+    feeNote = `<div style="background:rgba(90,180,255,.08);border:1px solid rgba(90,180,255,.25);padding:8px 12px;font-family:var(--ft);font-size:14px;color:var(--blu);margin-bottom:12px">📋 1990–1995: LMAs are a regulatory workaround — operational control without owning the license. They do not count toward your FCC cap here, but you can hold at most ${LMA_TRANSITION_MAX_LESSEE_OPS} concurrent operations as lessee. Fees run ~10% higher (deal scrutiny).</div>`;
+  } else {
+    feeNote = countsAgainstLimit
+      ? `<div style="background:rgba(240,88,88,.10);border:1px solid rgba(240,88,88,.3);padding:8px 12px;font-family:var(--ft);font-size:14px;color:var(--red);margin-bottom:12px">⚠ Since 1996, LMAs count toward FCC-style ownership limits in this sim. Prefer outright acquisition when you can; use LMAs as a bridge or when caps block a buy.</div>`
+      : '';
+  }
 
   // Active LMAs section
   let activeHTML = '';
@@ -12773,8 +12860,10 @@ function rLMA() {
       const canAfford = G.cash >= fee; // need first period's fee upfront
       const sigType = s.sig.type==='FM'||s.fmBooster ? 'FM' : 'AM';
       const limitOk = !countsAgainstLimit || fccCanAcquire('player', sigType, G);
-      const ok = canAfford && limitOk;
+      const atLesseeCap = era === 'transition' && !lmaPlayerUnderTransitionLesseeCap(G);
+      const ok = canAfford && limitOk && !atLesseeCap;
       const corpTag = s.corpOwner ? `<span style="font-size:15px;color:${s.corpColor||'#9ca3af'};margin-left:6px">${s.corpName}</span>` : '';
+      const blockReason = atLesseeCap ? 'EARLY-90S CAP' : !limitOk ? 'FCC LIMIT' : 'NO FUNDS';
       return `<div class="lma-row${ok?'':' nope'}" style="opacity:${ok?1:.4}">
         <div>
           <div class="lma-call" style="color:${s.color||'var(--wht)'}">${s.callLetters}${corpTag}</div>
@@ -12785,7 +12874,7 @@ function rLMA() {
         <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
           <span style="font-family:var(--ft);font-size:15px;color:var(--mut)">First fee upfront</span>
           <span style="font-family:var(--fd);font-size:15px;color:${ok?'var(--amb)':'var(--red)'}">${f$(fee)}</span>
-          ${ok ? `<button class="abt" style="font-size:15px" onclick="doLMALessee('${s.id}')">TAKE OVER →</button>` : `<span style="font-size:15px;color:var(--red)">${!limitOk?'FCC LIMIT':'NO FUNDS'}</span>`}
+          ${ok ? `<button class="abt" style="font-size:15px" onclick="doLMALessee('${s.id}')">TAKE OVER →</button>` : `<span style="font-size:15px;color:var(--red)">${blockReason}</span>`}
         </div>
       </div>`;
     }).join('');
@@ -12797,7 +12886,7 @@ function rLMA() {
   } else {
     lesseeHTML = `<div class="ms2" style="margin-bottom:14px">
       <div class="msh">STATIONS AVAILABLE TO OPERATE</div>
-      <p class="di" style="font-size:15px;color:var(--mut)">No stations currently available for LMA. Weak independent AM stations and corporate offerings appear here when available.</p>
+      <p class="di" style="font-size:15px;color:var(--mut)">${maySign ? 'No stations currently available for LMA. Weak independents under ~4% share and corporate offers appear here when available.' : 'Not available before 1990 — the FCC did not permit this style of operational LMA. Use acquisitions and ordinary station operations.'}</p>
     </div>`;
   }
 
@@ -12824,23 +12913,34 @@ function rLMA() {
   } else {
     lessorHTML = `<div class="ms2">
       <div class="msh">LEASE OUT ONE OF YOUR STATIONS</div>
-      <p class="di" style="font-size:15px;color:var(--mut)">You need at least 2 stations to lease one out — you must retain at least 1 licensed station.</p>
+      <p class="di" style="font-size:15px;color:var(--mut)">${maySign ? 'You need at least 2 stations to lease one out — you must retain at least 1 licensed station.' : 'Leasing out operations in this form is not available before 1990.'}</p>
     </div>`;
   }
 
-  const histNote = isPreDeregulation
-    ? `<p class="di" style="font-size:15px;margin-bottom:14px">LMAs are the primary tool for operating beyond the FCC's one-AM-one-FM-per-market rule. They're legally a <em>time brokerage</em> — you buy airtime blocks and sell the ads yourself. Peak era: 1978–1992.</p>`
-    : year < 1999
-    ? `<p class="di" style="font-size:15px;margin-bottom:14px">Post-1992 deregulation means you can own multiple stations outright — but LMAs remain useful as pre-sale transitions and for operating signals where your FCC limit is tight.</p>`
-    : `<p class="di" style="font-size:15px;margin-bottom:14px">Since 1999, the FCC counts LMAs of more than 15% of broadcast time toward your ownership limits. LMAs are now mainly used to bridge sales and as corporate efficiency tools.</p>`;
+  let histNote;
+  if (era === 'pre1990') {
+    histNote = `<p class="di" style="font-size:15px;margin-bottom:14px">Strict ownership era: the FCC focused on <em>control</em>, not just paper ownership. Full programmatic / sales control of another licensee through an LMA is not modeled as available here.</p>`;
+  } else if (era === 'transition') {
+    histNote = `<p class="di" style="font-size:15px;margin-bottom:14px">1990–1995: LMAs spread as a <em>workaround</em> around ownership caps — operational control without buying the license. They should feel strategic and a bit fragile, not like ordinary expansion.</p>`;
+  } else {
+    histNote = `<p class="di" style="font-size:15px;margin-bottom:14px">Post–Telecom Act (1996+): caps eased and LMAs are treated as attributable in this sim — bridges to purchase, financing workarounds, or gap-fills when you cannot close an acquisition.</p>`;
+  }
 
-  el.innerHTML = histNote + feeNote + activeHTML + lesseeHTML + lessorHTML +
+  el.innerHTML = pre1990CarryWarn + histNote + feeNote + activeHTML + lesseeHTML + lessorHTML +
     `<button class="cnl" onclick="cm('m-lma')">CLOSE</button>`;
 }
 
 function doLMALessee(sid) {
   const s = G.stations.find(st => st.id === sid);
   if (!s || s.isPlayer || s.lmaLesseeId) return;
+  if (!lmaPlayerMaySignNewAgreements(G)) {
+    showToast('Full operational LMAs are not available before 1990.', 'warn');
+    return;
+  }
+  if (!playerCanEnterLMA('lessee', G)) {
+    showToast('Cannot take this LMA (FCC limits, portfolio rules, or early‑90s concurrent LMA cap).', 'warn');
+    return;
+  }
   const fee = lmaFeeForStation(s, G);
   if (G.cash < fee) { alert('Need ' + f$(fee) + ' for first period fee.'); return; }
   G.cash -= fee;
@@ -12866,6 +12966,11 @@ function doLMALessee(sid) {
 function doLMALessor(sid) {
   const s = G.stations.find(st => st.id === sid);
   if (!s || !s.isPlayer) return;
+  if (!lmaPlayerMaySignNewAgreements(G)) {
+    showToast('Leasing out operations in this form is not available before 1990.', 'warn');
+    return;
+  }
+  if (!playerCanEnterLMA('lessor', G)) return;
   const myNonLeased = G.ps.filter(st => !st.lmaLessorId && !st._lmaStation);
   if (myNonLeased.length < 2) { alert('You must keep at least 1 station for yourself.'); return; }
   const fee = lmaFeeForStation(s, G);
@@ -12908,8 +13013,7 @@ function terminateLMA(sid, role) {
   if (!s) return;
   if (role === 'lessee') {
     // End your operation of a station you don't own
-    s.lmaLesseeId = null;
-    s._lmaStation = false;
+    clearPlayerLmaLesseeFields(s);
     s.isPlayer = false;
     s._mpOwner = undefined;
     G.ps = G.stations.filter(st => st.isPlayer);
@@ -12955,18 +13059,26 @@ function processLMAFees(G) {
   });
 }
 
-// Corp AI LMA offers — corps occasionally offer to lease a weak station to the player
+// Corp AI LMA offers — corps occasionally offer to lease a weak station to the player (era-gated)
 function runCorpLMAOffers(G) {
-  if (!G.corps || G.year < 1984) return;
+  if (!G.corps || !lmaPlayerMaySignNewAgreements(G)) return;
+  const era = lmaRegulatoryEra(G.year);
   G.corps.forEach(corp => {
     if (!corp.stations.length) return;
-    // Find a weak corp-owned station they'd rather have someone else operate
     const weakStns = corp.stations
       .map(id => G.stations.find(s => s.id === id))
       .filter(s => s && !s.isPlayer && !s.lmaLesseeId && s.rat.share < 0.025);
+    let chance = era === 'transition' ? 0.26 : 0.12;
+    if (era === 'postTelecom' && G.period === 2 && G.year >= 1996) {
+      const amT = G.stations.some(st =>
+        !st.isPlayer && !st.isPublic && !st.corpOwner && (st.sig.type === 'AM' || st.fmBooster) && fccCanAcquire(corp.id, 'AM', G));
+      const fmT = G.stations.some(st =>
+        !st.isPlayer && !st.isPublic && !st.corpOwner && st.sig.type === 'FM' && !st.fmBooster && fccCanAcquire(corp.id, 'FM', G));
+      if (amT || fmT) chance *= 0.35;
+    }
     weakStns.forEach(s => {
-      if (!s._corpLMAOffer && Math.random() < 0.3) {
-        s._corpLMAOffer = true; // flags it as available in LMA modal
+      if (!s._corpLMAOffer && Math.random() < chance) {
+        s._corpLMAOffer = true;
         G.news.unshift({v:'MEDIUM',
           t:`📋 ${corp.name} is looking for an operator for ${s.callLetters} (${fmtLabel(s.format)}) — check LMA deals.`,
           y:G.year, p:G.period, iy:true});
@@ -12976,6 +13088,7 @@ function runCorpLMAOffers(G) {
 }
 
 window._mpApply_lma_lessee = function({sid}) {
+  if (!lmaPlayerMaySignNewAgreements(G) || !playerCanEnterLMA('lessee', G)) return;
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
   s.lmaLesseeId='player'; s._lmaStation=true; s.isPlayer=true;
   applyDefaultBrandToPlayerStation(s);
@@ -12984,7 +13097,7 @@ window._mpApply_lma_lessee = function({sid}) {
 window._mpApply_lma_lessor = function({sid}) { renderAll(); };
 window._mpApply_lma_terminate = function({sid,role}) {
   const s=G.stations.find(st=>st.id===sid); if(!s) return;
-  if(role==='lessee'){s.lmaLesseeId=null;s._lmaStation=false;s.isPlayer=false;s._mpOwner=undefined;}
+  if(role==='lessee'){clearPlayerLmaLesseeFields(s);s.isPlayer=false;s._mpOwner=undefined;}
   else{s.lmaLessorId=null;}
   G.ps=G.stations.filter(st=>st.isPlayer); renderAll();
 };
@@ -17231,6 +17344,7 @@ function doSell(sid,price){
   breakSimulcast(G,sid);
   if(MP.mode==='live'){if(!G._playerCash)G._playerCash={};G._playerCash[MP.playerId]=G.cash;MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash});}
   s.isPlayer=false;s._mpOwner=undefined;s.color=s.color||'#6b7280';
+  clearPlayerLmaLesseeFields(s);
   G.ps=G.stations.filter(st=>st.isPlayer);
   // Post-1996: sold stations become acquisition targets for corp buyers
   if(G.year>=1996&&G.corps&&Math.random()<0.5){
@@ -18270,6 +18384,9 @@ function migrateSave(G){
       if(tmpl)c.name=tmpl.name;
     });
   }
+  if((G.year||1970)<1990){
+    (G.stations||[]).forEach(s=>{ if(s&&s._corpLMAOffer) delete s._corpLMAOffer; });
+  }
   (G.stations||[]).forEach(s=>{
     if(!s.corpOwner)return;
     const tmpl=CORPS.find(t=>t.id===s.corpOwner);
@@ -18515,6 +18632,8 @@ function migrateSave(G){
 
   applyAmFccPowerNormalization(G.stations, G);
   reassignAmClearChannelFlags(G.stations);
+
+  repairOrphanPlayerLmaLesseeFlags(G);
 
   // Rebuild ps
   G.ps=G.stations.filter(s=>s.isPlayer);
@@ -20167,8 +20286,8 @@ function rStns(){
         <div class="scbrand">${callDisplay(s)} — "${op.brand}" · ${fmtLabel(op.format)} <span style="color:var(--mut);font-size:15px;font-style:normal">· ${genderLabel(op.format)}</span></div>
         ${junior?(()=>{const bL=s.sig.type,bJ=junior.sig.type;const lbl=bL===bJ?(bL+'/'+bL+' SIMULCAST'):'AM/FM SIMULCAST';return '<div class="sim-tag" style="color:var(--grn)">◈ '+lbl+' · '+callDisplay(s)+' + '+callDisplay(junior)+'</div>';})():partner&&!isPlayerPair?'<div class="sim-tag">◈ SIMULCAST WITH '+callDisplay(partner)+'</div>':''}
         ${_simRoleStrip}${_soloSimRole}
-        ${s._lmaStation?'<div class="sim-tag" style="color:var(--blu);border-color:rgba(90,180,255,.4)">📝 LMA — LEASED OPERATION · fee: '+f$(lmaFeeForStation(s,G))+'/period</div>':''}
-        ${s.lmaLessorId?'<div class="sim-tag" style="color:var(--grn);border-color:rgba(82,227,110,.4)">📝 LMA — LEASED OUT · receiving: '+f$(lmaFeeForStation(s,G))+'/period</div>':''}
+        ${s._lmaStation?'<div class="sim-tag" style="color:var(--blu);border-color:rgba(90,180,255,.4)" title="Operational control without owning the license — you program and sell; era rules apply in LMA screen.">📝 LMA — LEASED OPERATION · fee: '+f$(lmaFeeForStation(s,G))+'/period</div>':''}
+        ${s.lmaLessorId?'<div class="sim-tag" style="color:var(--grn);border-color:rgba(82,227,110,.4)" title="You keep the license; an operator runs the station under LMA.">📝 LMA — LEASED OUT · receiving: '+f$(lmaFeeForStation(s,G))+'/period</div>':''}
       </div></div><div><div class="scshv">${pct(shareUi)}</div><div class="scshl">SHARE ${trd}</div></div></div>
       <div class="qr"><span class="ql">QUALITY</span><div class="qb"><div class="qf ${qc2}" style="width:${op.oq}%"></div></div><span class="qn">${op.oq}</span></div>
       <div class="fg">
@@ -20269,14 +20388,16 @@ function rStns(){
     div.innerHTML=`<button class="abt g" style="width:100%;padding:14px;font-size:15px;${canAffordAcq?'':' opacity:.45'}" onclick="openAcq()">🏢 ACQUIRE A STATION${canAffordAcq?'':'  — insufficient funds'}</button>`;
     c.appendChild(div);
   }
-  // LMA button — always available (useful even when at ownership cap)
-  if(G.year>=1978){
-    const hasLMATargets=G.stations.some(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic&&!s.lmaLesseeId&&s.rat?.share<0.04)
-      ||G.stations.some(s=>s.corpOwner&&s._corpLMAOffer&&!s.lmaLesseeId);
-    const hasActiveLMAs=G.ps.some(s=>s._lmaStation)||G.ps.some(s=>s.lmaLessorId);
+  // LMA button — hidden before 1990 unless you still have agreements to wind down
+  const hasActiveLMAs=G.ps.some(s=>s._lmaStation)||G.ps.some(s=>s.lmaLessorId);
+  const lmaMaySign=lmaPlayerMaySignNewAgreements(G);
+  if(hasActiveLMAs||lmaMaySign){
+    const hasLMATargets=lmaMaySign&&(G.stations.some(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic&&!s.lmaLesseeId&&s.rat?.share<0.04)
+      ||G.stations.some(s=>s.corpOwner&&s._corpLMAOffer&&!s.lmaLesseeId));
     const lmaDiv=document.createElement('div');
     lmaDiv.style.cssText='margin-top:6px';
-    lmaDiv.innerHTML=`<button class="abt" style="width:100%;padding:12px;font-size:14px;background:rgba(90,180,255,.10);border:1px solid rgba(90,180,255,.35);color:var(--blu)" onclick="openLMA()">📝 LOCAL MARKETING AGREEMENTS${hasActiveLMAs?' ●':hasLMATargets?' — deals available':''}</button>`;
+    const lmaHint=!lmaMaySign&&hasActiveLMAs?' title="Pre-1990: new LMAs unavailable — end legacy deals here"':' title="Operational control without owning the license (era rules apply)"';
+    lmaDiv.innerHTML=`<button class="abt" style="width:100%;padding:12px;font-size:14px;background:rgba(90,180,255,.10);border:1px solid rgba(90,180,255,.35);color:var(--blu)"${lmaHint} onclick="openLMA()">📝 LOCAL MARKETING AGREEMENTS${hasActiveLMAs?' ●':hasLMATargets?' — deals available':''}</button>`;
     c.appendChild(lmaDiv);
   }
 }

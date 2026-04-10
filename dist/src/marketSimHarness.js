@@ -2510,6 +2510,7 @@
         remnantPerBucket[b] = 0;
       });
 
+      var rfTally = {};
       for (var i = 0; i < row.commercial.length; i++) {
         var c = row.commercial[i];
         var b = c.bucket;
@@ -2517,13 +2518,20 @@
         bucketShares[b] += c.share;
 
         var rf = c.format || '?';
-        if (!agg.rawFormat[rf]) agg.rawFormat[rf] = { count: [], shareSum: [] };
-        agg.rawFormat[rf].count.push(1);
-        agg.rawFormat[rf].shareSum.push(c.share);
-
+        if (!rfTally[rf]) rfTally[rf] = { n: 0, share: 0, weak: 0 };
+        rfTally[rf].n++;
+        rfTally[rf].share += c.share;
         if (c.health === 'weak' || c.health === 'zombie' || c.health === 'niche_survivor') {
+          rfTally[rf].weak++;
           if (remnantPerBucket[b] !== undefined) remnantPerBucket[b]++;
         }
+      }
+      for (var rfKey in rfTally) {
+        if (!agg.rawFormat[rfKey]) agg.rawFormat[rfKey] = { count: [], shareSum: [], weakCount: [] };
+        var rt = rfTally[rfKey];
+        agg.rawFormat[rfKey].count.push(rt.n);
+        agg.rawFormat[rfKey].shareSum.push(rt.share);
+        agg.rawFormat[rfKey].weakCount.push(rt.weak);
       }
 
       FORMAT_ECOLOGY_COMMERCIAL_BUCKETS.forEach(function (b) {
@@ -2674,11 +2682,14 @@
         lines.push('  ' + mk + ' · ' + dec + ' (n=' + b.n + '):');
         rfs.forEach(function (rf) {
           var o = b.rawFormat[rf];
+          var mw = o.weakCount && o.weakCount.length ? meanArr(o.weakCount) : 0;
           lines.push(
             '    ' +
               rf +
-              ': meanCount=' +
+              ': meanStations=' +
               meanArr(o.count).toFixed(2) +
+              ' meanWeak=' +
+              mw.toFixed(2) +
               ' meanSharePts=' +
               (meanArr(o.shareSum) * 100).toFixed(3)
           );
@@ -2743,9 +2754,11 @@
         });
       });
       for (var rf2 in b.rawFormat) {
+        var rfo = b.rawFormat[rf2];
         entry.rawFormat[rf2] = {
-          meanCount: meanArr(b.rawFormat[rf2].count),
-          meanShareSum: meanArr(b.rawFormat[rf2].shareSum),
+          meanCount: meanArr(rfo.count),
+          meanShareSum: meanArr(rfo.shareSum),
+          meanWeak: rfo.weakCount && rfo.weakCount.length ? meanArr(rfo.weakCount) : 0,
         };
       }
       jsonOut.byMarketDecade[k] = entry;
