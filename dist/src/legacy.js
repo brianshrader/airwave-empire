@@ -2067,6 +2067,44 @@ const MARKETS={
     ],
   },
 };
+
+// ── AM/FM non-duplication (game-design caps; not literal FCC text) ────────────
+/** Map pilot market rankTier → FCC simulcast policy tier (1 = largest / strictest). */
+function marketRankTierToFccSimulcastTier(marketId){
+  const rt=(MARKETS[marketId||'atlanta']||MARKETS.atlanta).rankTier||'medium';
+  if(rt==='mega')return 1;
+  if(rt==='large')return 2;
+  return 3;
+}
+/**
+ * Max % of FM schedule that may duplicate co-owned AM (0–100).
+ * @param {number} year
+ * @param {1|2|3} fccTier — from marketRankTierToFccSimulcastTier
+ */
+function getMaxSimulcastPct(year,fccTier){
+  const y=year||1970;
+  const t=fccTier<2?1:fccTier>2?3:Math.round(fccTier);
+  if(y>=1996)return 100;
+  if(y>=1986){
+    if(t===1)return 80;
+    return 100;
+  }
+  if(y>=1979){
+    if(t===1)return 60;
+    if(t===2)return 75;
+    return 100;
+  }
+  if(t===1)return 50;
+  if(t===2)return 60;
+  return 80;
+}
+function getMaxSimulcastPctForMarket(year,marketId){
+  return getMaxSimulcastPct(year,marketRankTierToFccSimulcastTier(marketId));
+}
+window.marketRankTierToFccSimulcastTier=marketRankTierToFccSimulcastTier;
+window.getMaxSimulcastPct=getMaxSimulcastPct;
+window.getMaxSimulcastPctForMarket=getMaxSimulcastPctForMarket;
+
 /** FCC-style call area: W east of Mississippi (in-game), K west — per-market hard rule for gc() / rename */
 function getCallPrefixForMarket(marketId){
   const m=MARKETS[marketId||'atlanta']||MARKETS.atlanta;
@@ -4753,6 +4791,24 @@ window._mpApply_breaksim = function({ sid }) {
   breakSimulcast(G, sid);
 };
 
+window._mpApply_fm_dup=function({sid,dupPct,remainderFormat,_fromPlayerId}){
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s)return;
+  if(MP.mode==='live'&&_fromPlayerId!==undefined&&s._mpOwner!==_fromPlayerId)return;
+  if(!fmAmNonDupQualifiedPair(s,G))return;
+  const tier=marketRankTierToFccSimulcastTier(G.marketId||ACTIVE_MARKET);
+  const maxPct=getMaxSimulcastPct(G.year||1970,tier);
+  let d=Number(dupPct);
+  if(!Number.isFinite(d))return;
+  d=Math.max(0,Math.min(maxPct,d));
+  s.fmSimulcastDupPct=d;
+  if(remainderFormat&&typeof FM!=='undefined'&&FM[remainderFormat])
+    s.fmRemainderFormat=remainderFormat;
+  enforceFmNonDupConstraints(G);
+  recalc(G.stations,G);
+  renderAll();
+};
+
 // Identity investment
 window._mpApply_ident = function({ sid, budget }) {
   const s = G.stations.find(st=>st.id===sid);
@@ -5519,6 +5575,8 @@ function mkStn(bp,freq,year=1970){
     fin:{rev:0,cost:0,ebitda:0},
     cp:null,mom:{},pers:ap(str),isPlayer:false,color:'#888',flog:[],
     simulcastWith:null, // id of paired station, or null
+    fmSimulcastDupPct:100, // % of FM clock duplicating co-owned AM (non-dup era); 100 = full simulcast
+    fmRemainderFormat:null, // FM-only: format for (100−dup)% when AM/FM non-dup applies
     demoLean:0,         // -1.0 younger .. +1.0 older
     progInvestment:0,   // one-time spend this period
     entryTurn:null,     // {year,period} when entered market (for ranker blanks)
@@ -6391,6 +6449,12 @@ function appl(s,coh,G){
   return Number.isFinite(out)?out:0;
 }
 
+/** Appeal with format string overridden (cohort math); used for FM partial simulcast blend. */
+function applWithFormat(s,coh,G,fmt){
+  if(!fmt||!s||fmt===s.format)return appl(s,coh,G);
+  return appl(Object.assign({},s,{format:fmt}),coh,G);
+}
+
 /**
  * "Other audio" / long-tail listening not represented by explicit in-sim stations.
  * Real Nielsen-style books omit non-subscribers, HD minors, much digital use, etc.; published
@@ -6960,6 +7024,105 @@ window.publicNewsHabitEngageMult=publicNewsHabitEngageMult;
 window.publicNewsBreakoutMult=publicNewsBreakoutMult;
 window.publicNewsHighEduBreakoutMult=publicNewsHighEduBreakoutMult;
 
+// ── AM/FM non-duplication (FM programming capacity vs co-owned AM) ────────────
+function stationsSameOwnershipCluster(a,b,G){
+  if(!a||!b)return false;
+  if(a.isPlayer&&b.isPlayer){
+    if(typeof MP!=='undefined'&&MP.mode==='live')return a._mpOwner===b._mpOwner;
+    return true;
+  }
+  if(!a.isPlayer&&!b.isPlayer&&a.corpOwner!=null&&a.corpOwner===b.corpOwner)return true;
+  return false;
+}
+/** FM full-service + co-owned AM full-service simulcast pair; null if rule does not apply. */
+function fmAmNonDupQualifiedPair(fm,G){
+  if(!fm||fm._bpSlotDeferred||fm.sig?.type!=='FM'||fm.fmBooster||!fm.simulcastWith)return null;
+  const am=G.stations.find(st=>st.id===fm.simulcastWith);
+  if(!am||am.simulcastWith!==fm.id||am._bpSlotDeferred)return null;
+  if(am.sig?.type!=='AM'||am.fmBooster)return null;
+  if(!stationsSameOwnershipCluster(fm,am,G))return null;
+  return {fm,am};
+}
+function defaultFmRemainderFormat(amFmt,G){
+  const y=G?.year||1970;
+  const mkt=G?.marketId||ACTIVE_MARKET||'atlanta';
+  const pool=(typeof FM!=='undefined'&&FM?Object.keys(FM):[]).filter(f=>{
+    if(f===amFmt)return false;
+    if(typeof formatAllowedInMarket==='function')return formatAllowedInMarket(f,mkt,y);
+    return true;
+  });
+  const prefer=['ALBUM_ROCK','ADULT_CONTEMP','CLASSIC_ROCK','OLDIES','SOUL_RNB','COUNTRY','MOR'];
+  for(const p of prefer){
+    if(pool.includes(p))return p;
+  }
+  return pool[0]||'ALBUM_ROCK';
+}
+function pickAlternateAiRemainder(amFmt,G){
+  const mkt=G?.marketId||ACTIVE_MARKET||'atlanta';
+  const y=G?.year||1970;
+  const pool=(typeof FM!=='undefined'&&FM?Object.keys(FM):[]).filter(f=>f!==amFmt&&formatAllowedInMarket(f,mkt,y));
+  if(!pool.length)return defaultFmRemainderFormat(amFmt,G);
+  return pool[Math.floor(Math.random()*pool.length)];
+}
+/** Ratings blend: FM leg splits appeal between AM format and remainder format. */
+function fmAmNonDupBlendForRecalc(s,G){
+  const q=fmAmNonDupQualifiedPair(s,G);
+  if(!q)return null;
+  const {fm,am}=q;
+  const tier=marketRankTierToFccSimulcastTier(G.marketId||ACTIVE_MARKET);
+  const maxPct=getMaxSimulcastPct(G.year||1970,tier);
+  if(maxPct>=100)return null;
+  let dupPct=Number.isFinite(fm.fmSimulcastDupPct)?fm.fmSimulcastDupPct:maxPct;
+  dupPct=Math.max(0,Math.min(maxPct,dupPct));
+  const dupW=dupPct/100;
+  const remW=1-dupW;
+  if(remW<=1e-6)return null;
+  let remFmt=fm.fmRemainderFormat||defaultFmRemainderFormat(am.format,G);
+  if(remFmt===am.format)remFmt=defaultFmRemainderFormat(am.format,G);
+  return{dupW,remW,amFormat:am.format,remFormat:remFmt};
+}
+function enforceFmNonDupConstraints(G){
+  if(!G?.stations)return;
+  const y=G.year||1970;
+  const mkt=G.marketId||ACTIVE_MARKET||'atlanta';
+  const tier=marketRankTierToFccSimulcastTier(mkt);
+  const maxPct=getMaxSimulcastPct(y,tier);
+  G.stations.forEach(s=>{
+    if(!s||s._bpSlotDeferred)return;
+    const pair=fmAmNonDupQualifiedPair(s,G);
+    if(!pair)return;
+    const {fm,am}=pair;
+    let dup=Number.isFinite(fm.fmSimulcastDupPct)?fm.fmSimulcastDupPct:maxPct;
+    if(!fm.isPlayer&&maxPct<100&&!fm._aiFmDupTuned){
+      const rt=tier;
+      const lo=rt===1?Math.round(maxPct*0.55):rt===2?Math.round(maxPct*0.65):Math.round(maxPct*0.75);
+      dup=Math.max(0,Math.min(maxPct,Math.round(lo+Math.random()*(maxPct-lo))));
+      fm._aiFmDupTuned=1;
+    }else
+      dup=Math.max(0,Math.min(maxPct,dup));
+    fm.fmSimulcastDupPct=dup;
+    if(maxPct>=100){
+      fm.fmRemainderFormat=fm.fmRemainderFormat||am.format;
+      return;
+    }
+    if(dup>=99.999)fm.fmRemainderFormat=fm.fmRemainderFormat||am.format;
+    else{
+      if(!fm.fmRemainderFormat||fm.fmRemainderFormat===am.format){
+        fm.fmRemainderFormat=fm.isPlayer?defaultFmRemainderFormat(am.format,G):pickAlternateAiRemainder(am.format,G);
+      }
+    }
+  });
+}
+function initFmNonDupAfterPair(src,dst,G){
+  const am=src.sig?.type==='AM'&&!src.fmBooster?src:(dst.sig?.type==='AM'&&!dst.fmBooster?dst:null);
+  const fm=src.sig?.type==='FM'&&!src.fmBooster?src:(dst.sig?.type==='FM'&&!dst.fmBooster?dst:null);
+  if(!am||!fm||!stationsSameOwnershipCluster(am,fm,G))return;
+  const tier=marketRankTierToFccSimulcastTier(G.marketId||ACTIVE_MARKET);
+  const maxPct=getMaxSimulcastPct(G.year||1970,tier);
+  fm.fmSimulcastDupPct=maxPct;
+  fm.fmRemainderFormat=maxPct>=100?am.format:defaultFmRemainderFormat(am.format,G);
+}
+
 function recalc(stations,G){
   const _pubEduMultCache=new Map();
   const pubEduM=s=>{
@@ -6993,7 +7156,16 @@ function recalc(stations,G){
       const promoBoost=1+((effPr/Math.max(1,promoCap))*0.08);
       const effVan=effectiveRemoteVanMarketingLift(s,G);
       const vanLift=effVan>0?1+Math.max(0,effVan):1;
-      const rv=Math.max(0,appl(s,coh,G)*effB*promoBoost*vanLift);
+      const ndBlend=fmAmNonDupBlendForRecalc(s,G);
+      let coreAppl;
+      if(ndBlend){
+        coreAppl=
+          ndBlend.dupW*Math.max(0,applWithFormat(s,coh,G,ndBlend.amFormat))+
+          ndBlend.remW*Math.max(0,applWithFormat(s,coh,G,ndBlend.remFormat));
+      }else{
+        coreAppl=Math.max(0,appl(s,coh,G));
+      }
+      const rv=Math.max(0,coreAppl*effB*promoBoost*vanLift);
       return Number.isFinite(rv)?rv:0;
     });
     // Lane crowding: superlinear pain once a lane has more than `laneStart` commercial stations.
@@ -11341,6 +11513,8 @@ function startPlay(scenId){
     G._portraitSessionId=(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2,11)}`;
     initSportsRights(G);
     initFranchiseRights(G);
+    normalizeSimulcastLinksInPlace(G);
+    enforceFmNonDupConstraints(G);
     refreshAllStationOQ(G);
     snapMarketRankBookDisplay(G);
     renderAll();
@@ -11372,17 +11546,32 @@ function breakSimulcast(G,stnId){
     s.simulcastWith=null;
     delete s._simulcastSource;
     delete s._prevRank;
+    if(s.sig?.type==='FM'&&!s.fmBooster){
+      delete s.fmSimulcastDupPct;
+      delete s.fmRemainderFormat;
+      delete s._aiFmDupTuned;
+    }
   }
   if(partner){
     partner.simulcastWith=null;
     delete partner._simulcastSource;
     delete partner._prevRank;
+    if(partner.sig?.type==='FM'&&!partner.fmBooster){
+      delete partner.fmSimulcastDupPct;
+      delete partner.fmRemainderFormat;
+      delete partner._aiFmDupTuned;
+    }
   }
   (G.stations||[]).forEach(st=>{
     if(st&&st.simulcastWith===stnId){
       st.simulcastWith=null;
       delete st._simulcastSource;
       delete st._prevRank;
+      if(st.sig?.type==='FM'&&!st.fmBooster){
+        delete st.fmSimulcastDupPct;
+        delete st.fmRemainderFormat;
+        delete st._aiFmDupTuned;
+      }
     }
   });
 }
@@ -13394,6 +13583,7 @@ function advTurn(mpCoalesceSeq){
       }
       G._fccRegulatoryThisTurn=[];
       normalizeSimulcastLinksInPlace(G);
+      enforceFmNonDupConstraints(G);
       finalizeTalentBenchEndOfTurn(G);
       processAtlanta1970DeferredLaunches(G);
       processMegaMarketFragmentationLaunches(G);
@@ -17153,6 +17343,21 @@ if(typeof window!=='undefined'){
 }
 
 // 6. SIMULCAST
+function applyFmDupSlider(fmSid,dupStr,remFmt){
+  const fm=G.stations.find(st=>st.id===fmSid);
+  if(!fm)return;
+  const maxP=getMaxSimulcastPctForMarket(G.year,G.marketId);
+  const d=Math.max(0,Math.min(maxP,parseFloat(dupStr)||0));
+  const pctEl=document.getElementById('fm-dup-pct-'+fmSid);
+  const remPcEl=document.getElementById('fm-dup-rem-pct-'+fmSid);
+  if(pctEl)pctEl.textContent=String(Math.round(d));
+  if(remPcEl)remPcEl.textContent=String(100-Math.round(d));
+  const rem=remFmt||fm.fmRemainderFormat;
+  if(typeof MP!=='undefined'&&MP.mode==='live')MP.action('fm_dup',{sid:fmSid,dupPct:d,remainderFormat:rem});
+  else window._mpApply_fm_dup({sid:fmSid,dupPct:d,remainderFormat:rem});
+}
+window.applyFmDupSlider=applyFmDupSlider;
+
 let SimS={a:null,b:null};
 function openSim(sid){
   SimS={a:sid,b:null};rSim();om('m-sim');
@@ -17255,6 +17460,7 @@ function applySimulcastPair(sourceId,targetId,opts){
   // On-air brand matches programming source; receiver keeps local management (drift, demo lean, sales, ops budgets,
   // marketing, salesForce, identity scores, _history, etc.) — do not assign or clear those here.
   dst.brand=src.brand;
+  initFmNonDupAfterPair(src,dst,G);
   return true;
 }
 function doSim(){
@@ -18659,6 +18865,9 @@ function loadLocalSave(){
   Object.assign(G,local.G);
   migrateSave(G);
   applyLoadedGameMarket();
+  normalizeSimulcastLinksInPlace(G);
+  enforceFmNonDupConstraints(G);
+  recalc(G.stations,G);
   G.news.unshift({v:'HIGH',t:`📂 Autosave resumed: ${local.label}`,y:G.year,p:G.period});
   cm('m-save');renderAll();
   queuePlayerTalentPortraits();
@@ -20353,6 +20562,35 @@ function rStns(){
         const sec=(title,first,inner)=>'<div class="sc-card-sec'+(first?' sc-card-sec--first':'')+'"><div class="sc-card-sec-h">'+title+'</div>'+inner+'</div>';
         const progBudgetLine='<div style="font-size:13px;color:var(--mut);line-height:1.45">Programming <strong style="color:var(--off)">'+f$(op.ops?.progBudget||0)+'</strong>/p</div>';
         const progHub='<button class="abt '+progAct+'" '+(_assignFtTutIds?'id="wl-ft-tut-programming-btn" ':'')+'style="width:100%;box-sizing:border-box;padding:14px;font-size:15px;letter-spacing:0.5px" onclick="openProgramming(\''+op.id+'\')">📻 PROGRAMMING</button>';
+        const fmLegForDup=junior
+          ?(junior.sig.type==='FM'&&!junior.fmBooster?junior:(s.sig.type==='FM'&&!s.fmBooster?s:null))
+          :(s.sig.type==='FM'&&!s.fmBooster?s:null);
+        let fmDupUi='';
+        if(fmLegForDup&&mpIsMe(fmLegForDup)){
+          const pairNd=fmAmNonDupQualifiedPair(fmLegForDup,G);
+          if(pairNd){
+            const maxP=getMaxSimulcastPctForMarket(G.year,G.marketId);
+            const mktLbl=(MARKETS[G.marketId||'atlanta']||{}).label||'';
+            if(maxP>=100){
+              fmDupUi='<div class="ibox" style="margin-top:10px;text-align:left;font-size:13px;color:var(--mut);line-height:1.45">FCC max AM duplication on FM · <strong style="color:var(--off)">'+mktLbl+'</strong> · <strong style="color:var(--off)">'+G.year+'</strong>: <strong style="color:var(--grn)">100%</strong> — non-duplication limits do not apply; full simulcast allowed.</div>';
+            }else{
+              const cur=Math.min(maxP,Number.isFinite(fmLegForDup.fmSimulcastDupPct)?fmLegForDup.fmSimulcastDupPct:maxP);
+              const rem0=fmLegForDup.fmRemainderFormat||defaultFmRemainderFormat(pairNd.am.format,G);
+              const fmtOpts=Object.keys(FM).filter(f=>formatAllowedInMarket(f,G.marketId,G.year)).map(f=>
+                '<option value="'+f+'"'+(f===rem0?' selected':'')+'>'+fmtLabel(f)+'</option>').join('');
+              fmDupUi='<div class="ibox" style="margin-top:10px;text-align:left;max-width:100%;box-sizing:border-box">'+
+                '<div style="font-size:13px;color:var(--mut);margin-bottom:8px;line-height:1.45">FCC max AM duplication on this FM in <strong style="color:var(--off)">'+mktLbl+'</strong> · <strong style="color:var(--off)">'+G.year+'</strong>: <strong style="color:var(--amb)">'+maxP+'%</strong></div>'+
+                '<label style="display:block;font-size:13px;color:var(--off);margin-bottom:4px">Simulcast % of FM schedule (AM feed)</label>'+
+                '<input type="range" id="fm-dup-range-'+fmLegForDup.id+'" min="0" max="'+maxP+'" step="1" value="'+Math.round(cur)+'" style="width:100%" '+
+                'oninput="applyFmDupSlider(\''+fmLegForDup.id+'\',this.value,document.getElementById(\'fm-dup-rem-'+fmLegForDup.id+'\').value)"/>'+
+                '<div style="font-size:14px;color:var(--grn);margin:6px 0"><span id="fm-dup-pct-'+fmLegForDup.id+'">'+Math.round(cur)+'</span>% AM duplication · <span id="fm-dup-rem-pct-'+fmLegForDup.id+'">'+(100-Math.round(cur))+'</span>% remainder</div>'+
+                '<label style="display:block;font-size:13px;color:var(--off);margin-top:8px">Remainder programming (rest of FM clock)</label>'+
+                '<select id="fm-dup-rem-'+fmLegForDup.id+'" style="width:100%;margin-top:4px;padding:8px;background:var(--crd);color:var(--off);border:1px solid var(--bdh);border-radius:2px" '+
+                'onchange="applyFmDupSlider(\''+fmLegForDup.id+'\',document.getElementById(\'fm-dup-range-'+fmLegForDup.id+'\').value,this.value)">'+fmtOpts+'</select>'+
+                '</div>';
+            }
+          }
+        }
         const sportsFr=[];
         if(sportsBtn)sportsFr.push(sportsBtn);
         if(franchiseBtn)sportsFr.push(franchiseBtn);
@@ -20367,7 +20605,7 @@ function rStns(){
         const mkLine='<div style="font-size:13px;color:var(--mut);margin-bottom:10px;line-height:1.45">Marketing <strong style="color:var(--off)">'+f$(op.ops.promo||0)+'</strong>/p · Local Identity <strong style="color:var(--off)">'+Math.round(op.identity||0)+'</strong>'+((op.identityBudget||0)>0?' <span style="color:var(--amb)">★</span>':'')+'</div>';
         return '<div class="sc-card-actions">'+
           sec('TALENT',true,'<button class="abt d" type="button" style="width:100%;box-sizing:border-box;padding:14px;font-size:15px;letter-spacing:0.5px" '+(_assignFtTutIds?'id="wl-ft-tut-talent-btn" ':'')+'onclick="openManageTalent(\''+op.id+'\')">🎙 MANAGE TALENT</button>')+
-          sec('PROGRAMMING',false,'<div style="display:flex;flex-direction:column;gap:10px;width:100%">'+progBudgetLine+progHub+(sportsFrHtml||'')+'</div>')+
+          sec('PROGRAMMING',false,'<div style="display:flex;flex-direction:column;gap:10px;width:100%">'+progBudgetLine+progHub+fmDupUi+(sportsFrHtml||'')+'</div>')+
           sec('MARKETING',false,mkLine+'<div class="wl-logo-status" id="wl-logo-status-'+op.id+'" style="font-size:12px;color:var(--amb);margin-bottom:10px;min-height:16px"></div>'+pack2(['<button type="button" class="abt b" '+(_assignFtTutIds?'id="wl-ft-tut-brand-btn" ':'')+'onclick="openBrandMarketing(\''+op.id+'\')">📣 BRAND & MARKETING</button>','<button type="button" class="abt" '+(_assignFtTutIds?'id="wl-ft-tut-research-btn" ':'')+'onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
           sec('SALES',false,pack2(['<button class="abt '+(sfActive?'g':'')+'" '+(_assignFtTutIds?'id="wl-ft-tut-sales-btn" ':'')+'onclick="openSales(\''+op.id+'\')">'+salesLbl+'</button>','<button class="abt" '+(_assignFtTutIds?'id="wl-ft-tut-spots-btn" ':'')+'onclick="openSpots(\''+op.id+'\')">📻 SPOT LOAD</button>']))+
           sec('ADMINISTRATION · STRUCTURE',false,pack2(adminBtns))+
