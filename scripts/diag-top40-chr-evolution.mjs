@@ -55,6 +55,8 @@ function hitsLineageAxisBlendT(year) {
 function hitsFormatSurfaceLabel(year) {
   const t = hitsLineageAxisBlendT(year || 1970);
   if (t < 0.28) return 'Top 40';
+  if (t < 0.72) return 'Hit Radio';
+  if (t < 0.72) return 'Hit Radio';
   return 'CHR';
 }
 

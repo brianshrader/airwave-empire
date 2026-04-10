@@ -355,6 +355,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .mt-station-inner{display:flex;align-items:center;justify-content:flex-start;gap:4px;min-width:0;width:100%;max-width:100%}
 /* Don't flex-grow calls — keeps AM/FM + intel tight; ellipsis only when cell is cramped */
 .mt-station-inner .clg{flex:0 1 auto;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:16px;letter-spacing:1px}
+.mt-station-inner .mt-sim-mark{flex-shrink:0;line-height:1}
 .mt-stn-meta{flex-shrink:0;font-family:var(--ft);font-size:11px;color:var(--mut);font-weight:600}
 #pl .mt .fmtag{font-size:13px}
 .rn{font-family:var(--ft);font-size:14px;color:var(--mut)}

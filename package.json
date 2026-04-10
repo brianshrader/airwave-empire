@@ -31,7 +31,10 @@
     "test:solo-reentry": "node scripts/test-solo-reentry.mjs",
     "dedupe:portraits": "node scripts/dedupe-portrait-library.mjs",
     "sort:portraits": "node scripts/sort-portraits-into-library.mjs",
-    "gen:portraits:batch": "node scripts/batch-generate-portrait-library.mjs"
+    "gen:portraits:batch": "node scripts/batch-generate-portrait-library.mjs",
+    "analyze:snowball-ops": "npm run build && node scripts/analyze-snowball-operating-periods.mjs",
+    "analyze:early-single-station": "npm run build && node scripts/analyze-early-single-station-economics.mjs",
+    "check:benchmark-determinism": "npm run build && node scripts/check-benchmark-determinism.mjs"
   },
   "devDependencies": {
     "playwright": "^1.59.1",

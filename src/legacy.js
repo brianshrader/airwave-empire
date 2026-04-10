@@ -430,7 +430,11 @@ function earlyEraWcpmReachBlend(s,G,wcpm,year,fmd,podBonus,gcpm){
   const eraFade=year<=1970?1:Math.max(0,1-(year-1970)/16);
   const shareK=Math.max(0,Math.min(1,(shr-0.092)/0.095));
   const rankW=idx===0?1:0.42;
-  const b=0.13*eraFade*shareK*rankW;
+  let b=0.13*eraFade*shareK*rankW;
+  // AM Top 40: less CPM "reach insurance" for near-leaders — buyers still chased hits, but the lane stayed contestable.
+  if(year<1986&&s.format==='TOP40'&&s.sig?.type==='AM'){
+    b*=Math.max(0.48,1-0.52*_smoothstep(1971,1980,year));
+  }
   return wcpm*(1-b)+wcpmNeutral*b;
 }
 /**
@@ -457,7 +461,13 @@ function earlyEraDominantAudienceMonMult(s,G,year){
   if(s.sig?.type==='AM'&&!TALK_FMTS.includes(s.format)&&idx===0&&['1kw','5kw','10kw'].includes(s.sig?.pw)){
     mult+=0.07*eraFade*shareK;
   }
-  return Math.min(1.32,mult);
+  mult=Math.min(1.32,mult);
+  // AM Top 40 leadership still bills well, but the model had stacked "small AM #1" comfort — taper toward late-70s / early-80s fragility.
+  if(year<1986&&s.format==='TOP40'&&s.sig?.type==='AM'){
+    const frag=_smoothstep(1972,1982,year)*(0.44+0.44*shareK);
+    mult=1+(mult-1)*Math.max(0.36,1-frag);
+  }
+  return mult;
 }
 function fmEarlyEraBaseMult(year){
   if(year<1973)return 0.68;
@@ -1183,6 +1193,8 @@ const FMT_COMPETITION={
   PUBLIC_NEWS:['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'],
 };
 const COMPETITION_BLEED=0.16; // per competing station, max 22% total bleed
+/** FM formats that steal youth/AC spill from AM Top 40 but are not already in FMT_COMPETITION.TOP40 (avoids double-count). */
+const AM_TOP40_FM_SPILL_FORMATS=['CLASSIC_ROCK','ADULT_CONTEMP','MOR','OLDIES','BEAUTIFUL_MUSIC'];
 
 /** Short on-air market tags for "{ABBREV} {FREQ}" patterns (NY 94.7, LA 100.3, …) */
 const MARKET_BRAND_ABBREV={
@@ -5469,6 +5481,19 @@ const DRIFT={
     default:40,
     demoEffect:null,
     inflections:[
+      {y:1976,p:2,id:'fm_slice',name:'FM Splits the Youth Log',
+       desc:'Album-oriented FM and softer AC skims teens and young adults AM Top 40 still counted on. The fight is ratings-first again.',
+       effect:(s,drift)=>{
+         if(s.sig?.type!=='AM'||s.format!=='TOP40')return 0;
+         const sh=s.rat?.share||0;
+         return -(0.008+0.007*(sh>0.074?1:0)+0.005*(drift>58?1:0));
+       }},
+      {y:1980,p:1,id:'chr_crosscurrents',name:'Cross-Currents Hit AM Hits',
+       desc:'FM CHR prototypes and rock flankers pressure the AM hit station even when the books still look fine.',
+       effect:(s,drift)=>{
+         if(s.sig?.type!=='AM'||s.format!=='TOP40')return 0;
+         return -(0.007+0.010*(drift<44?1:0));
+       }},
       {y:1979,p:1,id:'disco_crash',name:'Disco Demolition Night',
        desc:'Anti-disco backlash sweeps the country. Stations leaning pop/disco lose 18-24 males rapidly to rock.',
        effect:(s,drift)=>{if(drift>60)return -0.04*(drift/100);return 0.01;}},
@@ -6884,7 +6909,17 @@ function recalc(stations,G){
       const i=activeIx[ri];
       const s=stations[i];
       const competitors=(FMT_COMPETITION[s.format]||[]);
-      const count=activeIx.filter(j=>j!==i&&competitors.includes(stations[j].format)).length;
+      let count=activeIx.filter(j=>j!==i&&competitors.includes(stations[j].format)).length;
+      if(s.format==='TOP40'&&s.sig?.type==='AM'&&(G.year||1970)<=1985){
+        const ySp=G.year||1970;
+        const fmpSp=G.fmp!=null?G.fmp:0.5;
+        const spillWt=_smoothstep(1971,1981,ySp)*(0.18+0.40*fmpSp);
+        for(const j of activeIx){
+          if(j===i)continue;
+          const st=stations[j];
+          if(st.sig?.type==='FM'&&AM_TOP40_FM_SPILL_FORMATS.includes(st.format))count+=spillWt;
+        }
+      }
       let bleedPenalty=Math.min(0.22,COMPETITION_BLEED*(count/5));
       if(s.format==='PUBLIC_NEWS'){
         bleedPenalty*=publicNewsCompetitionInsulationFactor(s,G);
@@ -6914,7 +6949,15 @@ function recalc(stations,G){
         :0;
       const tgt=Math.max(raw[ri], identityFloor),cur=s.mom[coh]?.cur||s.rat.cur[coh]?.share||0;
       const d=tgt-cur;
-      const spd=(d>0?.35:.60);
+      let spd=(d>0?.35:.60);
+      const gy=G.year||1970;
+      if(gy<1986&&s.format==='TOP40'&&s.sig?.type==='AM'){
+        const shStation=s.rat?.share||0;
+        if(d<0&&shStation>0.065)
+          spd=Math.min(0.76,spd+0.065+0.055*_smoothstep(1972,1982,gy));
+        if(d>0&&shStation>0.088)
+          spd=Math.max(0.29,spd-0.045);
+      }
       const ns=Math.max(0,cur+d*spd);
       const pop=(POP.cohorts[coh]?.t||0)*effUniverse(s);
       // AQH: share × cohort population × universe × engagement rate
@@ -6963,7 +7006,12 @@ function recalc(stations,G){
       byRank.forEach((s, rank) => {
         const raw = rawById.get(s.id);
         const p = comm.length > 1 ? rank / (comm.length - 1) : 0;
-        const w = Math.min(0.94, Math.max(0.80, 0.94 - p * 0.10));
+        let w = Math.min(0.94, Math.max(0.80, 0.94 - p * 0.10));
+        const gy = G.year || 1970;
+        if (gy < 1986 && s.format === 'TOP40' && s.sig?.type === 'AM') {
+          w = Math.max(0.69, w - 0.036 - _smoothstep(1971, 1983, gy) * 0.058);
+          if (gy <= 1978) w = Math.max(0.67, w - 0.018);
+        }
         const blended = w * raw + (1 - w) * avg;
         blendedById.set(s.id, blended);
         sumBlend += blended;
@@ -7313,11 +7361,46 @@ function calcRev(s,G){
       clusterDemoBreadthBonus = breadth >= 3 ? 0.08 * breadthEra
         : breadth === 2 ? 0.04 * breadthEra : 0;
     }
+    const shrForSell=s.rat.share||0;
+    let shareSellBoost=1.0;
+    if(shrForSell>0.08){
+      if(year<1986&&s.format==='TOP40'&&s.sig?.type==='AM'){
+        const baseAm=1.035+0.025*_smoothstep(1970,1978,year);
+        // Early “high comfort” ~8.8–10%: soften sell-through premium (still AM-only, pre-1979, opening turns)
+        if(year<=1978&&(G.turn||0)<=22&&shrForSell>=0.088&&shrForSell<=0.1){
+          const softAm=1.004+0.012*_smoothstep(1970,1978,year);
+          const u=Math.min(1,Math.max(0,(shrForSell-0.088)/0.012));
+          shareSellBoost=baseAm*(1-u)+softAm*u;
+        }else{
+          shareSellBoost=baseAm;
+        }
+      }else{
+        shareSellBoost=1.08;
+      }
+    }
+    let targetSellAdj=1;
+    if(year<=1982&&s.format==='TOP40'&&s.sig?.type==='AM'){
+      const lump=_smoothstep(1970,1977,year);
+      const lumpOpen=_smoothstep(1970,1974,year);
+      targetSellAdj=1+(G.period===2?0.042:-0.048)*lump+(G.period===2?0.014:-0.018)*lumpOpen;
+    }
     const targetSell=Math.min(sellCap,Math.max(0.16,
-      (rankPct*0.50+0.18)*sigMult*fmtPrem*(s.rat.share>0.08?1.08:1.0)+sfBonus*0.45+fmtSellAffinity+clusterDemoBreadthBonus
+      ((rankPct*0.50+0.18)*sigMult*fmtPrem*shareSellBoost+sfBonus*0.45+fmtSellAffinity+clusterDemoBreadthBonus)*targetSellAdj
     ));
     // Faster drift: ad market responds within 2-3 periods of a ratings change
-    s.ops.sell=s.ops.sell*0.65+targetSell*0.35;
+    // AM Top 40 (≤1980): lumpier local spot books — sell-through tracks ratings with more half-to-half wobble.
+    const sellEmaK=
+      (G.turn||0)<=6&&year<=1971&&s.format==='TOP40'&&s.sig?.type==='AM'
+        ?0.47
+        :(G.turn||0)<=12&&year<=1975&&s.format==='TOP40'&&s.sig?.type==='AM'
+          ?0.48
+          :year<=1975&&s.format==='TOP40'&&s.sig?.type==='AM'
+            ?0.52
+            :year<=1980&&s.format==='TOP40'&&s.sig?.type==='AM'
+              ?0.57
+              :0.65;
+    const sellEmaN=1-sellEmaK;
+    s.ops.sell=s.ops.sell*sellEmaK+targetSell*sellEmaN;
   }
   const aqh=COH.reduce((sum,c)=>sum+(s.rat.cur[c]?.aqh||0),0);
   if(!aqh){s.fin.rev=0;s.fin.cost=s.fin.fix||0;s.fin.ebitda=-(s.fin.fix||0);s.fin.simulcastProgFee=0;s.fin.syndicationRights=0;return;}
@@ -7331,7 +7414,13 @@ function calcRev(s,G){
   // 18hr broadcast day, 182 days per half-year period
   const spotsPerDay=s.ops.spots*18; // 30-sec units/day
   const season=seasonMult(year,G.period,s.format);
-  const ratePerSpot=(aqh/1000)*wcpm*adx*revDrag*season; // CPM × seasonal index
+  let earlyAmHitsSeason=1;
+  if(s.format==='TOP40'&&s.sig?.type==='AM'&&year<=1982){
+    const lump=_smoothstep(1970,1978,year);
+    const lumpOpen=_smoothstep(1970,1974,year);
+    earlyAmHitsSeason=1+(G.period===2?0.034:-0.041)*lump+(G.period===2?0.012:-0.017)*lumpOpen;
+  }
+  const ratePerSpot=(aqh/1000)*wcpm*adx*revDrag*season*earlyAmHitsSeason; // CPM × seasonal index (+ early AM hits retail swing)
   // Ad market era factor: radio CPM was much lower in early decades.
   // AM ad market matured 1970→1984 (smoothstep 0.28→1.0).
   // FM ad market lagged: advertisers discovered FM later (1972→1988, 0.15→1.0).
@@ -7356,7 +7445,17 @@ function calcRev(s,G){
   // Pre-1980: high-share leaders still cleared inventory — ease flat 0.95× as share rises (stacked with getSelloutRate).
   if(year<1980){
     const shr=s.rat?.share||0;
-    shareSelloutMult*=(0.95+0.04*Math.min(1,Math.max(0,(shr*100-9)/10)));
+    let easeHighShare=0.95+0.04*Math.min(1,Math.max(0,(shr*100-9)/10));
+    if(s.format==='TOP40'&&s.sig?.type==='AM'){
+      easeHighShare=0.942+0.026*Math.min(1,Math.max(0,(shr*100-9)/10));
+      easeHighShare*=Math.max(0.91,1-0.065*_smoothstep(1972,1979,year));
+      // Opening-era “cruise” 8.8–10%: trim inventory ease so billings don’t auto-clear (AM only, ≤1978)
+      if(year<=1978&&(G.turn||0)<=24&&shr>=0.088&&shr<=0.101){
+        const u=Math.min(1,Math.max(0,(shr-0.088)/0.013));
+        easeHighShare*=0.875+0.055*u;
+      }
+    }
+    shareSelloutMult*=easeHighShare;
   }
   const _sellTier=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
   if(year<1980&&_sellTier!=='mega')shareSelloutMult=Math.min(0.98,shareSelloutMult*1.1);
@@ -7513,6 +7612,39 @@ function calcRev(s,G){
     : 1;
   const earlyGlobalRevTrim=year<=1974?0.985:1;
   let totalRev=Math.round((rev+streamRev)*ccBonus*daPenalty*earlyGlobalRevTrim);
+  // AM Top 40: first years scale promotion / research / stunt spend with billings — big early books weren't "free cash."
+  if(s.format==='TOP40'&&s.sig?.type==='AM'&&year<=1974&&(G.turn||0)<14){
+    const ramp=Math.min(1,(G.turn||0)/10);
+    const era=_smoothstep(1970,1973,year);
+    const shR=s.rat?.share||0;
+    let trim=0.019*ramp*era;
+    if(shR>0.087&&year<=1972)trim+=0.011*ramp;
+    // Outlier openings often sit ~8.5–9.5%: tiny extra trim 1970–73 only (mean small; breaks smoothest streak seeds).
+    if(shR>0.084&&year<=1973&&(G.turn||0)<=12)trim+=0.004*ramp*era;
+    totalRev=Math.round(totalRev*(1-trim));
+  }
+  // Opening-lane revenue shock only (7.5–10%, ≤1978, turns ≤26): jagged half-to-half billing after contest opex survives seedRev.
+  if (s.format === 'TOP40' && s.sig?.type === 'AM' && year <= 1978 && (G.turn || 0) <= 26) {
+    const shV = s.rat?.share || 0;
+    if (shV >= 0.075 && shV <= 0.1) {
+      const sidV = Number(s.id) || 0;
+      const mktV = String(G.marketId || ACTIVE_MARKET || '');
+      let mkSaltV = 0;
+      for (let iv = 0; iv < mktV.length; iv++) mkSaltV = (mkSaltV + mktV.charCodeAt(iv) * (iv + 11)) % 130081;
+      const tunV = G.turn || 0;
+      const perV = G.period === 2 ? 2 : 1;
+      const uV =
+        ((tunV * 7937 + (year + 397) * perV * 17 + (sidV % 10007) * 601 + mkSaltV) % 10001) / 10000;
+      const u2V = ((tunV * 5843 + year * 419 + sidV * 743 + mkSaltV * 29) % 9973) / 9973;
+      const bandV = Math.min(1, Math.max(0, (shV - 0.075) / 0.025));
+      const rampV =
+        Math.min(1, tunV / 10) *
+        Math.max(0.48, _smoothstep(1970, 1974, year) * (1 - 0.28 * _smoothstep(1976, 1978, year)));
+      const revShock =
+        rampV * bandV * ((uV - 0.38) * 0.052 - (1 - u2V) * 0.036);
+      totalRev = Math.round(totalRev * (1 + revShock));
+    }
+  }
   // Zombie / niche-survival AM: brokered inventory, minimal sales — heavy revenue haircut
   if(s.isZombie)totalRev=Math.round(totalRev*0.17);
   else if(s.isNicheSurvival)totalRev=Math.round(totalRev*0.38);
@@ -7555,6 +7687,14 @@ function calcRev(s,G){
     else if(_ftr2==='large')opsFloor=Math.round(opsFloor*0.95);
   }
   opsFloor=Math.round(opsFloor*mktFixMult);
+  // Early AM Top 40 ~8.9–10.1%: extra local ops/promo traffic load (deterministic; trims cash without FM)
+  if(s.format==='TOP40'&&s.sig?.type==='AM'&&year<=1978&&(G.turn||0)<=28){
+    const shOp=s.rat?.share||0;
+    if(shOp>=0.089&&shOp<=0.101){
+      const rampOp=Math.min(1,(G.turn||0)/11)*Math.max(0.4,_smoothstep(1970,1974,year)*(1-0.32*_smoothstep(1976,1978,year)));
+      opsFloor+=Math.round((4800+8200*Math.min(1,Math.max(0,(shOp-0.089)/0.012)))*mktFixMult*rampOp);
+    }
+  }
   // Very low realized billing (pre–seedRev): taper fixed footprint for early FM music so weak sticks aren’t crushed by market-scaled overhead alone.
   if(year<1980&&s.sig.type==='FM'&&!TALK_FMTS.includes(s.format)&&totalRev<120000){
     const _lbu=Math.max(0,Math.min(1,totalRev/120000));
@@ -7590,7 +7730,37 @@ function calcRev(s,G){
   s.fin.competitiveBaselineProg=competitiveBaselineProg;
   const aiLoanInt=!s.isPlayer&&!s.isPublic?aiRivalDebtInterestForStation(s,G):0;
   s.fin.aiLoanInterest=aiLoanInt;
-  s.fin.cost=fixedCost+talCost+salesAdminCost+opsFloor+effPromo+effProg+(s.identityBudget||0)+streamUpkeep+simulcastProgFee+rightsHalfPeriod+aiLoanInt;
+  let amHitsContestOpex=0;
+  if(s.format==='TOP40'&&s.sig?.type==='AM'&&year>=1972&&year<=1985){
+    const sh=s.rat?.share||0;
+    if(sh>=0.066&&sh<=0.115){
+      const era=_smoothstep(1972,1982,year);
+      const midShare=Math.min(1,Math.max(0,(sh-0.066)/0.049));
+      const bookSeason=(G.period===2?1.45:1.0);
+      let baseHitsContest=Math.round((12200+32200*era*midShare)*mktFixMult*bookSeason);
+      // Pre-1979: lighter now that contest opex survives seedRev normalization (was effectively ~0 post-pool before).
+      if(year<=1978)baseHitsContest=Math.round(baseHitsContest*0.885);
+      amHitsContestOpex=baseHitsContest;
+    }
+  }
+  if(s.format==='TOP40'&&s.sig?.type==='AM'&&year<=1976&&(G.turn||0)<=14){
+    const sh=s.rat?.share||0;
+    const openPulse=Math.round((5000+13800*Math.min(1,(sh-0.055)/0.04))*mktFixMult*(G.period===2?1.28:1));
+    if(openPulse>0)amHitsContestOpex+=openPulse;
+    if(year<=1972&&G.period===1&&(G.turn||0)<=10)
+      amHitsContestOpex+=Math.round((2400+6800*Math.min(1,(sh-0.062)/0.035))*mktFixMult);
+  }
+  // Opening “money fight” band: ~6–9.2% (inclusive) — catches smoothest seeds that sit just above 9.0; off by 1976 / turn 15.
+  if(s.format==='TOP40'&&s.sig?.type==='AM'&&year<=1975&&(G.turn||0)<=14){
+    const shN=s.rat?.share||0;
+    if(shN>=0.06&&shN<=0.092){
+      const rampN=Math.min(1,(G.turn||0)/12)*_smoothstep(1970,1974,year);
+      const posN=Math.min(1,Math.max(0,(shN-0.06)/0.032));
+      amHitsContestOpex+=Math.round((1100+3100*posN)*mktFixMult*rampN);
+    }
+  }
+  s.fin.amHitsContestOpex=amHitsContestOpex;
+  s.fin.cost=fixedCost+talCost+salesAdminCost+opsFloor+effPromo+effProg+(s.identityBudget||0)+streamUpkeep+simulcastProgFee+rightsHalfPeriod+aiLoanInt+amHitsContestOpex;
   s.fin.ebitda=s.fin.rev-s.fin.cost;
   if(typeof G!=='undefined'&&G._econDebugIds&&Array.isArray(G._econDebugIds)&&G._econDebugIds.includes(s.id)){
     const _commDbg=[...(G.stations||[])].filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic).sort((a,b)=>(b.rat?.share||0)-(a.rat?.share||0));
@@ -7676,7 +7846,7 @@ function seedRev(stations,G){
         s.fin.effProg=epg;
         s.fin.competitiveBaselinePromo=cbp;
         s.fin.competitiveBaselineProg=cbg;
-        s.fin.cost=(s.fin.fix||0)+(s.fin.tal||0)+(s.fin.salesAdmin||0)+(s.fin.opsFloor||0)+ep+epg+(s.identityBudget||0)+(s.fin.streamUpkeep||0)+(s.fin.simulcastProgFee||0)+(s.fin.syndicationRights||0)+(s.fin.aiLoanInterest||0);
+        s.fin.cost=(s.fin.fix||0)+(s.fin.tal||0)+(s.fin.salesAdmin||0)+(s.fin.opsFloor||0)+ep+epg+(s.identityBudget||0)+(s.fin.streamUpkeep||0)+(s.fin.simulcastProgFee||0)+(s.fin.syndicationRights||0)+(s.fin.aiLoanInterest||0)+(s.fin.amHitsContestOpex||0);
       }
       s.fin.ebitda=s.fin.rev-s.fin.cost;
     });
@@ -8142,6 +8312,68 @@ function rivalFormatCrowdingTier(fmt, G){
   return 0;
 }
 
+/** 0 = EASY (passive rivals), 1 = MEDIUM, 2 = HARD — ties to scenario `diff` / id (same mapping as UI). */
+function resolveAiDifficultyTier(G){
+  const sc=G&&G.sc;
+  if(!sc)return 1;
+  const d=sc.diff||(sc.id==='under'||sc.id==='soul'||sc.id==='fmpn'||sc.id==='amtalk'||sc.id==='fmrev'?'HARD'
+    :sc.id==='cntry'||sc.id==='stack'||sc.id==='acrise'||sc.id==='chrwar'?'MEDIUM':'EASY');
+  if(d==='HARD')return 2;
+  if(d==='MEDIUM')return 1;
+  return 0;
+}
+/** Scales how strongly “market fights back” vs a dominant human (0..1 aggregate). */
+function computeAiPlayerMarketPressure(G){
+  const comm=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPublic)
+    .sort((a,b)=>(b.rat?.share||0)-(a.rat?.share||0));
+  const player=G.ps||[];
+  let maxP=0,top10=0,sumPlayerTop3=0;
+  const top3=new Set(comm.slice(0,3).map(s=>s.id));
+  player.forEach(p=>{
+    if(!p)return;
+    const sh=p.rat?.share||0;
+    maxP=Math.max(maxP,sh);
+    const rnk=comm.findIndex(c=>c.id===p.id)+1;
+    if(rnk>0&&rnk<=10)top10++;
+    if(top3.has(p.id))sumPlayerTop3+=sh;
+  });
+  const sortedP=player.filter(Boolean).slice().sort((a,b)=>(b.rat?.share||0)-(a.rat?.share||0));
+  const d0=sortedP[0];
+  const dominantFmt=d0?.format||null;
+  const dominantShare=d0?.rat?.share||0;
+  let pressure01=Math.min(1,Math.max(0,
+    Math.max(0,maxP-0.055)*5.0
+    +top10*0.085
+    +Math.max(0,sumPlayerTop3-0.10)*3.2
+  ));
+  if(d0&&d0.format==='TOP40'&&d0.sig?.type==='AM'&&(G.year||1970)<=1985){
+    const y=G.year||1970;
+    const sh=d0.rat?.share||0;
+    const t=_smoothstep(1972,1983,y);
+    if(sh>=0.052)pressure01=Math.min(1,pressure01+t*Math.min(0.19,(sh-0.052)*0.95));
+    // First viable band (~4.8–6.8%): you had a pulse, not a moat — market reaction starts earlier than “dominant.”
+    if(y<=1979&&sh>=0.048&&sh<0.068){
+      const inBand=Math.min(1,(sh-0.048)/0.020);
+      pressure01=Math.min(1,pressure01+0.15*_smoothstep(1970,1977,y)*inBand);
+    }
+  }
+  return{
+    maxPlayerShare:maxP,playerTop10Count:top10,playerShareInMarketTop3:sumPlayerTop3,
+    dominantFmt,dominantShare,pressure01,
+  };
+}
+function aiDifficultyPressureScale(tier){
+  if(tier>=2)return 1.16;
+  if(tier<=0)return 0.50;
+  return 1.0;
+}
+/** Long-run benchmark counters (snowball trace / harness diagnostics). No effect on sim math. */
+function aiBenchInc(G,key,delta){
+  if(!G||!G._aiBench||typeof G._aiBench!=='object')return;
+  const d=delta!=null?delta:1;
+  G._aiBench[key]=(G._aiBench[key]||0)+d;
+}
+
 // ── RIVAL AI STRATEGIC LAYER (archetypes, memory, era, inertia) ───
 // Biases existing heuristics; does not replace core planning.
 const AI_ARCHETYPE_IDS=['leader_defender','underdog_gambler','conservative_owner','trend_chaser','legacy_slow'];
@@ -8258,6 +8490,20 @@ function aiRivalBehaviorLayer(s,G,baseBeh){
     const o=Math.min(1.8,oppW);
     if(s.aiArchetype==='underdog_gambler'||s.aiArchetype==='trend_chaser')spendMult*=1+0.05*o;
   }
+  const pTh=s.aiMem?.playerThreat||0;
+  const pPress=G._aiPlayerPressure?.pressure01||0;
+  const diffT=G._aiDifficultyTier!=null?G._aiDifficultyTier:resolveAiDifficultyTier(G);
+  const pressBlend=Math.min(1.12,pTh*0.38+pPress*0.62);
+  if(pressBlend>0.1&&diffT>=1){
+    const react=(arch.threatReact||1)*(diffT>=2?1.1:1);
+    spendMult*=1+Math.min(0.32,pressBlend*0.22*react);
+    hireMult*=1+Math.min(0.18,pressBlend*0.12*react);
+    if(diffT>=2&&(state==='troubled'||state==='desperate'||state==='slipping')){spendMult*=1.045;hireMult*=1.05;}
+  }
+  if(diffT<=0){
+    spendMult*=1-0.07*Math.min(1,pressBlend);
+    hireMult*=1-0.045*Math.min(1,pressBlend);
+  }
   const fmtAge=s._formatAge||0;
   if(fmtAge<4&&(s.aiArchetype==='conservative_owner'||s.aiArchetype==='legacy_slow'))spendMult*=0.87;
   if(state==='dominant'&&(s.aiArchetype==='conservative_owner'||s.aiArchetype==='legacy_slow'))spendMult*=0.92;
@@ -8266,18 +8512,24 @@ function aiRivalBehaviorLayer(s,G,baseBeh){
   hireMult*=1+errAmp*0.45*aiSeededNoise(s.id,G.turn||0,17);
   if(state==='desperate'&&s.aiArchetype==='underdog_gambler')skipPoach=false;
   if(state==='dominant'&&s.aiArchetype==='conservative_owner')skipPoach=true;
-  spendMult=Math.max(0.18,Math.min(1.58,spendMult));
+  const spendCap=diffT>=2?1.64:1.58;
+  spendMult=Math.max(0.18,Math.min(spendCap,spendMult));
   hireMult=Math.max(0.2,Math.min(1.48,hireMult));
   return{...baseBeh,spendMult,hireMult,skipPoach,_aiState:state,_aiArch:arch,_aiEra:era};
 }
 /** Call at start of runAI: decay memory, detect flips vs last turn snapshot, set reactive fields. */
 function aiRivalBeginTurn(G){
   const rivals=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic);
+  const pp=G._aiPlayerPressure||computeAiPlayerMarketPressure(G);
+  const diffT=G._aiDifficultyTier!=null?G._aiDifficultyTier:resolveAiDifficultyTier(G);
+  const scal=aiDifficultyPressureScale(diffT);
   rivals.forEach(s=>{
     ensureAiRivalArchetype(s,G);
-    if(!s.aiMem)s.aiMem={laneThreat:0,oppWeak:0};
+    if(!s.aiMem)s.aiMem={laneThreat:0,oppWeak:0,playerThreat:0};
     s.aiMem.laneThreat=(s.aiMem.laneThreat||0)*0.62;
     s.aiMem.oppWeak=(s.aiMem.oppWeak||0)*0.55;
+    const add=(pp.pressure01||0)*0.24*scal;
+    s.aiMem.playerThreat=Math.min(2.9,(s.aiMem.playerThreat||0)*0.72+add);
   });
   rivals.forEach(r=>{
     const prev=r._aiSnap;
@@ -8321,8 +8573,11 @@ function aiRivalPublishDebug(G){
     archetypeLabel:(AI_ARCHETYPE_DEF[s.aiArchetype]||{}).label||s.aiArchetype,
     state:s._aiStrategicState,
     lastMove:s._aiLastMajorReason||'',
-    mem:{laneThreat:+(s.aiMem?.laneThreat||0).toFixed(2),oppWeak:+(s.aiMem?.oppWeak||0).toFixed(2)},
+    mem:{laneThreat:+(s.aiMem?.laneThreat||0).toFixed(2),oppWeak:+(s.aiMem?.oppWeak||0).toFixed(2),
+      playerThreat:+(s.aiMem?.playerThreat||0).toFixed(2)},
   }));
+  G._aiDebug.playerPressure=G._aiPlayerPressure;
+  G._aiDebug.difficultyTier=G._aiDifficultyTier;
   if(typeof window!=='undefined')window.__AI_RIVAL_DEBUG=G._aiDebug;
 }
 
@@ -8464,14 +8719,20 @@ function aiRivalStationBehavior(s, G){
 // ── COMPETITOR AI ─────────────────────────────────────────────────
 function runAI(G){
   runAIVirtualLoanBorrow(G);
+  G._aiPlayerPressure=computeAiPlayerMarketPressure(G);
+  G._aiDifficultyTier=resolveAiDifficultyTier(G);
   aiRivalBeginTurn(G);
   const acts=[];
   // Pre-compute player station snapshot once — rivals use this for targeting decisions
   const playerStns=G.ps;
   const playerShares=playerStns.map(s=>({id:s.id,fmt:s.format,share:s.rat.share,
-    callLetters:s.callLetters,cp:s.cp,morningTalent:s.prog.morningDrive?.talent}));
+    callLetters:s.callLetters,cp:s.cp,morningTalent:s.prog.morningDrive?.talent,sigType:s.sig?.type}));
   const playerWeak=playerShares.filter(ps=>ps.cp&&ps.cp.col);   // player stations in freefall
-  const playerStrong=playerShares.filter(ps=>ps.share>0.08);    // player's dominant stations
+  const _gyStrong=G.year||1970;
+  const playerStrong=playerShares.filter(ps=>{
+    if(ps.fmt==='TOP40'&&ps.sigType==='AM'&&_gyStrong<=1985)return (ps.share||0)>0.058;
+    return (ps.share||0)>0.08;
+  });
 
   G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic).forEach(s=>{
     const p=s.pers;if(!p)return;
@@ -8547,7 +8808,11 @@ function runAI(G){
       // Surge: aggressive types reinvest winnings to press their advantage
       const surgeMult=surging&&p.ag>.50?1.4:1.0;
       const pressureMult=crisis?(aiBeh.distress?1.05:1.8):notic?1.35:1.0;
-      const invest=Math.round(baseInvest*Math.max(surgeMult,pressureMult)*rnd(0.8,1.2)*aiBeh.spendMult);
+      const ppR=G._aiPlayerPressure?.pressure01||0;
+      const dTier=G._aiDifficultyTier!=null?G._aiDifficultyTier:1;
+      const trailProg=(dTier>=1&&(s.rat?.share||0)<0.048)?1+ppR*0.13*(dTier>=2?1.14:1):1;
+      const anchorProg=(aiBeh._aiState==='dominant'&&(s.rat?.share||0)>=0.072&&dTier>=1)?1+0.055*(dTier>=2?1.08:1):1;
+      const invest=Math.round(baseInvest*Math.max(surgeMult,pressureMult)*trailProg*anchorProg*rnd(0.8,1.2)*aiBeh.spendMult);
       s.progInvestment=(s.progInvestment||0)+invest;
     }
 
@@ -8573,11 +8838,39 @@ function runAI(G){
             acts.push({v:'MEDIUM',
               t:`📢 ${s.callLetters} launches aggressive promo targeting ${bigHit.callLetters}'s audience`,
               iy:true});
+            aiBenchInc(G,'counterPromoVsPlayer');
+          }
+        }
+      }
+      let counterPlayerPromo=0;
+      const ppM=G._aiPlayerPressure||{pressure01:0,dominantFmt:null};
+      const dProm=G._aiDifficultyTier!=null?G._aiDifficultyTier:1;
+      const earlyAmHitsCounter=y<=1979&&ppM.dominantFmt==='TOP40'&&playerStrong.some(ps=>ps&&ps.fmt==='TOP40'&&ps.sigType==='AM');
+      const ppGate=earlyAmHitsCounter?0.13:0.2;
+      if(dProm>=1&&(ppM.pressure01||0)>ppGate&&p.ag>=0.4&&!crisis){
+        const threatPlayer=playerStrong.find(ps=>{
+          const laneHit=(FADJ[s.format]||[]).includes(ps.fmt)||ps.fmt===s.format;
+          const shTh=(ps.fmt==='TOP40'&&ps.sigType==='AM'&&y<=1985)?0.055:0.072;
+          return laneHit&&((ps.share||0)>=shTh||ps.fmt===ppM.dominantFmt);
+        });
+        if(threatPlayer){
+          let mult=0.32+0.5*(ppM.pressure01||0);
+          if(dProm>=2)mult*=1.1;
+          if(p.ag>=0.54)mult*=1.12;
+          if(threatPlayer.fmt==='TOP40'&&threatPlayer.sigType==='AM'&&y<=1985)
+            mult*=1.14+0.22*_smoothstep(1971,1983,y);
+          counterPlayerPromo=Math.round(rnd(3500,20000)*mult);
+          const _ct2=rivalFormatCrowdingTier(s.format,G);
+          if(_ct2>=2)counterPlayerPromo=Math.round(counterPlayerPromo*0.55);
+          else if(_ct2>=1)counterPlayerPromo=Math.round(counterPlayerPromo*0.78);
+          if(counterPlayerPromo>8000&&Math.random()<0.34){
+            acts.push({v:'LOW',t:`📢 ${s.callLetters} counters ${threatPlayer.callLetters} with heavier marketing`,iy:true});
+            aiBenchInc(G,'counterPromoVsPlayer');
           }
         }
       }
       const promoCap=promoBudgetCapForPeriod(G);
-      s.ops.promo=Math.min(promoCap,Math.round((basePromo+pressureBoost+opportunBoost)*rnd(0.7,1.3)*aiBeh.spendMult));
+      s.ops.promo=Math.min(promoCap,Math.round((basePromo+pressureBoost+opportunBoost+counterPlayerPromo)*rnd(0.7,1.3)*aiBeh.spendMult));
     }
 
     // ── TALENT: DEFENSIVE UPGRADE (own house in crisis) ──────
@@ -8598,7 +8891,35 @@ function runAI(G){
     //   2. Poach best talent in market (any station, existing behavior)
     // Only SCRAPPER / MAVERICK / CORP_RADIO types do this with any regularity.
     const canPoach=(fmMusicAi?p.ag>=0.58:p.ag>=0.65)&&!crisis&&!aiBeh.skipPoach;
-    if(canPoach&&Math.random()<p.ag*0.35){
+    const ppP=G._aiPlayerPressure?.pressure01||0;
+    const aiDiffPoach=G._aiDifficultyTier!=null?G._aiDifficultyTier:1;
+    const poachRoll=Math.min(0.9,p.ag*0.35*(aiDiffPoach>=2&&ppP>0.34?1.14:1)*(aiDiffPoach>=1&&ppP>0.48?1.07:1));
+    if(canPoach&&Math.random()<poachRoll){
+      // Hard / high pressure: occasionally challenge a still-strong player morning show (same or adjacent format)
+      if(aiDiffPoach>=2&&ppP>0.36&&p.ag>=0.56&&Math.random()<0.12+0.22*ppP){
+        const strongMorning=playerShares.find(ps=>{
+          const th=(ps.fmt==='TOP40'&&ps.sigType==='AM'&&y<=1985)?0.068:0.078;
+          return (ps.share||0)>=th&&!(ps.cp&&ps.cp.col)&&ps.morningTalent&&ps.morningTalent.quality>=56&&
+            ((FADJ[s.format]||[]).includes(ps.fmt)||ps.fmt===s.format);
+        });
+        if(strongMorning&&(!s._poachCooldown||s._poachCooldown<=0)){
+          const pStn=playerStns.find(st=>st.id===strongMorning.id);
+          const tal=pStn?.prog?.morningDrive?.talent;
+          if(pStn&&tal&&!pStn._rivalPoachPending){
+            const newSal=Math.round(tal.salary*rnd(1.42,1.85)/500)*500;
+            pStn._rivalPoachPending={
+              rivalId:s.id,slot:'morningDrive',offerSalary:newSal,talentId:tal.id,
+              announcedY:G.year,announcedP:G.period,matched:false
+            };
+            s._poachCooldown=4;
+            s._aiLastMajorReason='poach:player-morning-pressure';
+            acts.push({v:'HIGH',
+              t:`⚡ ${s.callLetters} makes a run at ${tal.name} (${f$(newSal)}/yr) — ${pStn.callLetters} is a prime target.`,
+              iy:true});
+            aiBenchInc(G,'poachPlayerAttempts');
+          }
+        }
+      }
       // Attempt 1: target a vulnerable player morning show
       const targetPlayerStation=playerWeak.find(pw=>{
         const sameFmt=pw.fmt===s.format;
@@ -8623,6 +8944,7 @@ function runAI(G){
             acts.push({v:'HIGH',
               t:`⚡ ${s.callLetters} is courting ${nm} at ${pStn.callLetters} (${f$(newSal)}/yr) — you have one period to match in contract.`,
               iy:true});
+            aiBenchInc(G,'poachPlayerAttempts');
           }
         }
       } else {
@@ -8647,6 +8969,7 @@ function runAI(G){
               s._poachCooldown=4;
               s._aiLastMajorReason='poach:player-morning-open';
               acts.push({v:'HIGH',t:`⚡ ${s.callLetters} is courting ${tal.name} at ${pStn.callLetters} (${f$(newSal)}/yr).`,iy:true});
+              aiBenchInc(G,'poachPlayerAttempts');
             }
           } else {
             const nm=best.t.name;
@@ -9594,6 +9917,8 @@ function checkPressure(G){
       alerts.push(`${urgency} ${s.callLetters} (${fmtLabel(s.format)}): This format has been commercially extinct since ${sunset}. Audience appeal is near zero — reformat immediately.`);
     }
   });
+  // Solo inspect harnesses: keep the human slot on-air for AI pressure metrics (no autopilot bankruptcy).
+  if(MP.mode!=='live'&&typeof window!=='undefined'&&window.__WL_SHARE_INSPECT_ONLY)return alerts;
   if(MP.mode==='live'){
     mpEnsureBankruptFlags(G);
     if(!G._mpDebtWarningQ||typeof G._mpDebtWarningQ!=='object')G._mpDebtWarningQ={};
@@ -9963,6 +10288,11 @@ function genMarket(scenId){
     _megaFragmentationAdded:0,
     sportsRights:{},franchiseRights:{},teamRecords:{},
   };
+}
+if(typeof window!=='undefined'){
+  window.genMarket=genMarket;
+  window.computeAiPlayerMarketPressure=computeAiPlayerMarketPressure;
+  window.resolveAiDifficultyTier=resolveAiDifficultyTier;
 }
 
 // Scheduled Atlanta 1970 BP slots: same entry economics as event-driven `rival-` (seedNewEntry).
@@ -10494,6 +10824,8 @@ let _pendingScenId=null; // set during scenario selection before genMarket runs
 
 /** Solo entry waits for this when <meta name="wl-require-clerk" content="1"> or VITE_REQUIRE_CLERK (see src/main.js). */
 function init(){
+  /** Long-run benchmark HTML: no scenario UI / autosave resume — harness owns G. */
+  if (window.__WL_AI_BENCHMARK_PAGE__) return;
   /** Headless / tooling pages (e.g. inspect-shares.html) load legacy without scenario UI. */
   if (window.__WL_SHARE_INSPECT_ONLY) return;
   if(!window.__WL_REQUIRE_CLERK){
@@ -11649,6 +11981,10 @@ function talentEvents(G){
 function rivalReformat(G){
   // Non-commercial public stations are immune to all of this
   const commercialRivals=G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic);
+  const ppRf=computeAiPlayerMarketPressure(G);
+  const diffRf=resolveAiDifficultyTier(G);
+  const pfDom=ppRf.dominantFmt;
+  const pPressRf=ppRf.pressure01||0;
   // Formats unavailable after their sunset year
   // Formats unavailable after their sunset — can't reformat INTO a dead format
   const formatSunset={BEAUTIFUL_MUSIC:1995,MOR:1998,FULL_SERVICE:1975};
@@ -11738,6 +12074,8 @@ function rivalReformat(G){
       else if(st==='desperate')flipProb*=arch.panicFlip;
       else if(st==='troubled')flipProb*=1.07;
       if((s.aiMem?.laneThreat||0)>0.85)flipProb*=s.aiArchetype==='leader_defender'?1.09:1.04;
+      if(diffRf>=1&&pPressRf>0.32&&(st==='troubled'||st==='desperate'))flipProb*=1.07;
+      if(diffRf>=2&&pPressRf>0.48&&(st==='troubled'||st==='desperate'))flipProb*=1.05;
       flipProb=Math.min(0.88,Math.max(0.035,flipProb));
       if(Math.random()>=flipProb)return;
       const candidates=eligibleFormats.filter(f=>
@@ -11778,6 +12116,13 @@ function rivalReformat(G){
         if(s.aiArchetype==='legacy_slow'&&fAge>12&&(FADJ[s.format]||[]).includes(f))score*=1.12;
         if(s.aiArchetype==='conservative_owner')score*=(fmtCounts[f]||0)>=2?1.08:0.94;
         if(s.aiArchetype==='underdog_gambler'&&count===0&&share<0.04)score*=1.15;
+        if(pfDom&&pPressRf>0.18&&diffRf>=1){
+          const adjacent=(FADJ[pfDom]||[]).includes(f)&&f!==pfDom;
+          if(adjacent)score*=1+(0.085+0.105*pPressRf)*(diffRf>=2?1.1:1);
+          if(f===pfDom&&(fmtCounts[f]||0)>=3&&pPressRf>0.26)
+            score*=0.58+0.24*(1-pPressRf);
+        }
+        if(diffRf<=0&&pfDom&&pPressRf>0.38&&(FADJ[pfDom]||[]).includes(f)&&f!==pfDom)score*=0.94;
         return {f, score};
       }).sort((a,b)=>b.score-a.score);
       // Weighted random pick — top 3 candidates get most weight
@@ -11795,6 +12140,12 @@ function rivalReformat(G){
       s.str='emerging'; // fresh start
       s.launchPeriod=G.turn||0;
       G.news.unshift({v:'MEDIUM',t:`📻 ${s.callLetters} abandons ${oldFmt} → relaunches as ${fmtLabel(newFmt)}.`,y:G.year,p:G.period});
+      if(G._aiBench){
+        aiBenchInc(G,'rivalReformatsTotal');
+        if(pPressRf>=0.22)aiBenchInc(G,'rivalReformatsHighPlayerPressure');
+        if(pfDom&&newFmt&&(newFmt===pfDom||(FADJ[pfDom]||[]).includes(newFmt)))
+          aiBenchInc(G,'rivalReformatsVsPlayerLane');
+      }
     }
   });
 }
@@ -12563,7 +12914,9 @@ function doSales(sid,level){
 
 /** Solo dev-only: true when cash-bridge audit logging is active (no gameplay changes). */
 function wlCashBridgeAuditActive(){
-  return typeof globalThis!=='undefined'&&globalThis.__WL_CASH_BRIDGE_AUDIT__&&G&&MP&&MP.mode!=='live';
+  return typeof globalThis!=='undefined'&&G&&MP&&MP.mode!=='live'&&(
+    !!globalThis.__WL_CASH_BRIDGE_AUDIT__||G._traceCashBridge===true
+  );
 }
 function wlCashBridgeAuditCash(){
   return G.cash||0;
@@ -12589,7 +12942,16 @@ function wlCashBridgeAuditEmitTurnRow(ctx){
     ?{lesseeFees:afterLMAStep.lmaLesseeFees||0,lessorFees:afterLMAStep.lmaLessorFees||0,net:afterLMAStep.lmaNet!=null?afterLMAStep.lmaNet:((afterLMAStep.lmaLessorFees||0)-(afterLMAStep.lmaLesseeFees||0))}
     :(G._cashBridgeLmaSnapshot||(typeof playerLmaCashNetForSolo==='function'?playerLmaCashNetForSolo(G):{lesseeFees:0,lessorFees:0,net:0}));
   const ps=myPS();
-  const tRev=ps.reduce((s,st)=>s+(st.fin?.rev||0),0);
+  let portfolioTalent=0,portfolioFixed=0,portfolioEffPromo=0,portfolioEffProg=0,portfolioSynd=0;
+  const tRev=ps.reduce((s,st)=>{
+    const f=st.fin||{};
+    portfolioTalent+=f.tal||0;
+    portfolioFixed+=f.fix||0;
+    portfolioEffPromo+=f.effPromo||0;
+    portfolioEffProg+=f.effProg||0;
+    portfolioSynd+=f.syndicationRights||0;
+    return s+(f.rev||0);
+  },0);
   const tCost=ps.reduce((s,st)=>s+(st.fin?.cost||0),0);
   const loanInt=G._lastLoanInterestCharge||0;
   const pressureD=G._lastPressureCashDelta||0;
@@ -12597,6 +12959,10 @@ function wlCashBridgeAuditEmitTurnRow(ctx){
   const expected=
     (cashBefore||0)+earlyPipelineDelta+(lma.net||0)+profit-loanInt+pressureD;
   const delta=cashAfterRollover-expected;
+  const debtAfter=typeof debtPrincipalForPid==='function'?debtPrincipalForPid(G,loanPidForGame()):0;
+  const debtBefore=G._cashBridgeDebtBeforeAdvTurn!=null?G._cashBridgeDebtBeforeAdvTurn:debtAfter;
+  const debtPrincipalDelta=debtAfter-debtBefore;
+  const advTurnNetCashChange=cashAfterRollover-(cashBefore||0);
   const modal=G._cashBridgeModalSnapshot||{};
   const modalCash=modal.modalCashOnHand;
   const mkt=G.marketId||'atlanta';
@@ -12614,10 +12980,21 @@ function wlCashBridgeAuditEmitTurnRow(ctx){
     total_station_revenue:tRev,
     total_station_operating_cost:tCost,
     total_station_ebitda:profit,
+    portfolio_talent_cost:portfolioTalent,
+    portfolio_fixed_cost:portfolioFixed,
+    portfolio_eff_promo:portfolioEffPromo,
+    portfolio_eff_prog:portfolioEffProg,
+    portfolio_promo_prog_total:portfolioEffPromo+portfolioEffProg,
+    portfolio_syndication_rights:portfolioSynd,
     lma_cash_in:lma.lessorFees,
     lma_cash_out:lma.lesseeFees,
     lma_net:lma.net,
     loan_interest:loanInt,
+    loan_interest_cash_out:loanInt,
+    debt_principal_start:debtBefore,
+    debt_principal_end:debtAfter,
+    debt_principal_delta:debtPrincipalDelta,
+    new_borrowing_principal_increase:debtPrincipalDelta>0?debtPrincipalDelta:0,
     debt_principal_paid:0,
     acquisitions_or_station_purchase_cost:0,
     station_sale_or_distress_cash_from_pressure:pressureD>0?pressureD:0,
@@ -12626,6 +13003,8 @@ function wlCashBridgeAuditEmitTurnRow(ctx){
     pressure_net_cash_delta:pressureD,
     cash_after_all_rollover_steps:cashAfterRollover,
     computed_expected_cash_after:expected,
+    adv_turn_net_cash_change:advTurnNetCashChange,
+    cash_bridge_residual:delta,
     delta,
     modal_net_ebitda:modal.modalNetEbitda,
     modal_cash_on_hand:modalCash,
@@ -12641,6 +13020,9 @@ function wlCashBridgeAuditEmitTurnRow(ctx){
   row.anomaly_reconcile_fail=Math.abs(delta)>1;
   globalThis.__WL_CASH_BRIDGE_AUDIT_ROWS__=globalThis.__WL_CASH_BRIDGE_AUDIT_ROWS__||[];
   globalThis.__WL_CASH_BRIDGE_AUDIT_ROWS__.push(row);
+  if(G._traceCashBridge){
+    try{G._lastSoloCashBridge=JSON.parse(JSON.stringify(row));}catch(_e){G._lastSoloCashBridge=row;}
+  }
 }
 
 function advTurn(mpCoalesceSeq){
@@ -12658,6 +13040,7 @@ function advTurn(mpCoalesceSeq){
       if(wlCashBridgeAuditActive()){
         G._cashBridgeTurnSteps=[];
         G._cashBridgeCashBefore=wlCashBridgeAuditCash();
+        G._cashBridgeDebtBeforeAdvTurn=typeof debtPrincipalForPid==='function'?debtPrincipalForPid(G,loanPidForGame()):0;
         wlCashBridgeAuditPush('BEFORE_ADVANCE',{year:G.year,period:G.period});
       }
       G._fccRegulatoryThisTurn=[];
@@ -15685,6 +16068,26 @@ function callDisplay(s){
   const base=stripCallBandSuffix(s.callLetters);
   return `${base}-${isFm?'FM':'AM'}`;
 }
+/** Histogram of `callDisplay` for commercial stations (ranker / intel disambiguation). */
+function marketRankCallDisplayHistogram(stations){
+  const m=new Map();
+  (stations||[]).forEach(st=>{
+    if(!st||st._bpSlotDeferred||st.isPublic||!st.rat)return;
+    const k=callDisplay(st);
+    m.set(k,(m.get(k)||0)+1);
+  });
+  return m;
+}
+/** Stable label for market table: add dial when two stations would read as the same call. */
+function marketRankCallLabel(st,hist){
+  if(!st)return '';
+  let d=callDisplay(st);
+  if((hist.get(d)||0)>1){
+    const dial=stationFreqDial(st);
+    d+=dial?` · ${dial}`:` · ${String(st.id||'').slice(-4)}`;
+  }
+  return d;
+}
 /** Dial from freq string: "670 AM" → "670", "101.1 FM" → "101.1" */
 function stationFreqDial(s){
   if(!s)return '';
@@ -16312,6 +16715,87 @@ function doAcq(){
     y:G.year,p:G.period,iy:true});
   cm('m-ac');renderAll();
   queueAutoLogosForPlayerStations();
+}
+
+/** Solo benchmark bot: purchase rival station (no UI). Returns false if blocked. */
+function benchmarkSoloAcquireStation(G,s){
+  if(!G||!s||s.isPlayer||s._bpSlotDeferred||s.isPublic)return false;
+  const price=acqPrice(s,G);
+  if(!Number.isFinite(price)||G.cash<price)return false;
+  const sigType=s.sig.type==='AM'||s.fmBooster?'AM':'FM';
+  if(!fccCanAcquire('player',sigType,G))return false;
+  G.cash-=price;
+  if(s.corpOwner&&G.corps){
+    const corp=G.corps.find(c=>c.id===s.corpOwner);
+    if(corp){corp.stations=corp.stations.filter(id=>id!==s.id);corp.budget+=price*0.5;}
+  }
+  s.corpOwner=null;s.corpName=null;s.corpColor=null;
+  s.isPlayer=true;s.color='#f5a623';
+  applyDefaultBrandToPlayerStation(s);
+  G.ps=G.stations.filter(st=>st.isPlayer);
+  (function normAcqTalent(){
+    const isTalk=TALK_FMTS.includes(s.format);
+    const talkDisc=isTalk?0.88:1.0;
+    const salMid=(slot,tier)=>{const r=SAL[slot]?.[tier];return r?Math.round((r[0]+r[1])/2):20000;};
+    Object.entries(s.prog).forEach(([sl,sd])=>{
+      if(!sd?.talent)return;
+      const q=sd.talent.quality||30;
+      const tier=q<42?'entry':q<68?'mid':'star';
+      const fair=Math.round(salInfl(salMid(sl,tier),G.year)*talkDisc/500)*500;
+      if(sd.talent.salary>fair*1.4)sd.talent.salary=fair;
+      if(sd.talent.salary<fair*0.6)sd.talent.salary=fair;
+      sd.talent.cyr=2;
+      sd.talent.morale=Math.max(sd.talent.morale||55,55);
+    });
+  })();
+  const churnFrac=0.22;
+  Object.keys(s.mom||{}).forEach(coh=>{
+    const m=s.mom[coh];
+    if(m){
+      m.tgt=Math.max(0.002,m.tgt*(1-churnFrac));
+      m.cur=Math.max(0.002,m.cur*(1-churnFrac*0.5));
+    }
+  });
+  s._acqYear=G.year;
+  G._soloBankrupt=false;
+  calcRev(s,G);
+  refreshStationOQ(s,G);
+  return true;
+}
+
+/** Solo benchmark bot: format change without modal (breaks simulcast). */
+function benchmarkSoloPlayerReformat(G,s,newFmt){
+  if(!G||!s||!newFmt||s.format===newFmt||!s.isPlayer||s.isPublic||s._bpSlotDeferred)return false;
+  if(!FM[newFmt]||FM[newFmt]?.public)return false;
+  if(!formatUnlockedForYear(newFmt,G)||!formatAllowedInMarket(newFmt,G.marketId,G.year))return false;
+  breakSimulcast(G,s.id);
+  const old=s.format;
+  const adj=(FADJ[old]||[]).includes(newFmt);
+  const pen=adj?0.30:0.55;
+  const preFlipIdentity=s.identity||0;
+  s.format=newFmt;
+  s.brand=gbBrandForStationReplace(s,newFmt);
+  s._formatAge=0;
+  const _talkFmts=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'];
+  s.ops.sell=_talkFmts.includes(newFmt)?0.60:0.55;
+  if(preFlipIdentity>0){
+    s.identity=Math.round(preFlipIdentity*0.25);
+    const newCeiling=Math.round((COMMUNITY_IDENTITY[newFmt]||0.3)*100);
+    s.identity=Math.min(s.identity,newCeiling);
+  }
+  Object.values(s.prog).forEach(sd=>{if(sd)sd.quality=Math.round(sd.quality*(1-pen));});
+  s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w,0));
+  COH.forEach(c=>{if(s.mom[c])s.mom[c].cur*=(1-pen);});
+  if(!adj)Object.entries(s.prog).forEach(([sl,sd])=>{if(sd?.talent&&Math.random()<.25){sd.talent=null;sd.quality*=.60;}});
+  s.flog=s.flog||[];
+  s.flog.push({from:old,to:newFmt});
+  calcRev(s,G);
+  refreshStationOQ(s,G);
+  return true;
+}
+if(typeof window!=='undefined'){
+  window.benchmarkSoloAcquireStation=benchmarkSoloAcquireStation;
+  window.benchmarkSoloPlayerReformat=benchmarkSoloPlayerReformat;
 }
 
 // 6. SIMULCAST
@@ -17639,15 +18123,22 @@ function migrateSave(G){
     _seenIds.add(s.id);
     return true;
   });
-  // Fix duplicate call letters — append suffix to later duplicates (base only — never stack -FM-FM)
-  const _seenCalls={};
+  // Fix duplicate call letters: `callDisplay()` strips -AM/-FM and re-adds band, so "WNSS" vs "WNSS-FM"
+  // both render as WNSS-FM — append a numeric base suffix until the *display* string is unique.
+  const _seenCallDisp=new Set();
   G.stations.forEach(s=>{
     if(s._bpSlotDeferred)return;
-    if(_seenCalls[s.callLetters]){
-      const band=s.sig?.type==='FM'?'-FM':'-AM';
+    let disp=callDisplay(s);
+    if(_seenCallDisp.has(disp)){
       const base=stripCallBandSuffix(s.callLetters);
-      s.callLetters=base+band;
-    } else { _seenCalls[s.callLetters]=true; }
+      let n=2;
+      for(;n<400;n++){
+        s.callLetters=base+String(n);
+        disp=callDisplay(s);
+        if(!_seenCallDisp.has(disp))break;
+      }
+    }
+    _seenCallDisp.add(callDisplay(s));
   });
 
   G.stations.forEach(s=>{
@@ -19569,6 +20060,7 @@ function rMkt(){
   const sw=document.getElementById('scenwrap');
   if(sw&&MP.mode!=='live'){if(!sw.dataset.id||sw.dataset.id!==G.sc.id){sw.dataset.id=G.sc.id;sw.innerHTML='';}}
   const rankRows=buildSimulcastCombinedRankRows(G.stations);
+  const _rankCallHist=marketRankCallDisplayHistogram(G.stations.filter(st=>st&&!st._bpSlotDeferred&&st.rat&&!st.isPublic));
   document.getElementById('mtb').innerHTML=rankRows.map((row,i)=>{
     const s=row.pair?row.lead:row.st;
     const op=simulcastOperationalSource(s);
@@ -19576,17 +20068,27 @@ function rMkt(){
     const pr=s.cp,tr=!pr?'—':pr.col?'⬇⬇':pr.under?'⬇':pr.sur?'⬆':'→';
     const tc=!pr?'tfl':pr.col||pr.under?'tdn':pr.sur?'tup':'tfl';
     const band=s.fmBooster?'FM+':(s.sig.type==='FM'?'FM':'AM');
-    const simMark='<span style="color:var(--blu);font-size:13px">◈</span>';
-    const calls=row.pair
-      ?`${callDisplay(simulcastOperationalSource(row.lead))} + ${simMark}`
-      :s.simulcastWith
-        ?`${callDisplay(simulcastOperationalSource(s))} + ${simMark}`
-        :callDisplay(s);
+    const simMark='<span class="mt-sim-mark" style="color:var(--blu);font-size:13px" title="Simulcast">◈</span>';
+    let callText,tipExtra='';
+    if(row.pair){
+      const a=marketRankCallLabel(row.lead,_rankCallHist);
+      const b=marketRankCallLabel(row.rcv,_rankCallHist);
+      callText=`${a} · ${b}`;
+      tipExtra=' · simulcast pair';
+    }else if(s.simulcastWith){
+      callText=marketRankCallLabel(s,_rankCallHist);
+      tipExtra=' · simulcast';
+    }else{
+      callText=marketRankCallLabel(s,_rankCallHist);
+    }
+    const simBadge=(row.pair||s.simulcastWith)?simMark:'';
+    const _lblEsc=String(callText+tipExtra).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
     const _me=row.pair?(mpIsMe(row.lead)||mpIsMe(row.rcv)):mpIsMe(s);
     const _anyP=s.isPlayer;
-    const clickAttr=!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="${_me?'Open station intel':_anyP?'View opponent intel':'View competitor intel'}"`:'';
+    const _intelVerb=_me?'Open station intel':_anyP?'View opponent intel':'View competitor intel';
+    const clickAttr=!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="${_intelVerb}${_lblEsc?': '+_lblEsc:''}"`:'';
     const badges=!_me&&_anyP?`<span class="mt-opp-dot" style="background:${s.color||'#60a5fa'}" title="Opponent" aria-label="Opponent"></span>`:'';
-    const stationCell=`<div class="mt-station-inner"><span class="clg" style="color:${mpStationColor(s)}">${calls}</span><span class="mt-stn-meta" title="Band">${band}</span>${badges||''}</div>`;
+    const stationCell=`<div class="mt-station-inner"><span class="clg" style="color:${mpStationColor(s)}" title="${_lblEsc}">${callText}</span>${simBadge}<span class="mt-stn-meta" title="Band">${band}</span>${badges||''}</div>`;
     return `<tr class="station-row${_me?' owned':''}"${clickAttr}><td><span class="rn">${i+1}</span></td><td class="mt-station">${stationCell}</td><td><span class="fmtag">${fmtLabel(op.format)}</span></td><td><span class="shn" style="color:${_me?'var(--amb)':_anyP?s.color:'var(--wht)'}">${pct(share)}</span></td><td class="mt-trend"><span class="${tc}" style="font-size:15px">${tr}</span></td><td><span class="rvn">${f$(rev)}</span></td></tr>`;
   }).join('');
   // In MP, show the current player's lead station; in solo, G.ps[0]

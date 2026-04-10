@@ -12,3 +12,4 @@ generated-portraits/*
 ecosystem.config.local.cjs
 data/
 audit-output/
+trace-output/

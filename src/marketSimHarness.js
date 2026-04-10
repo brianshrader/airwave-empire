@@ -251,6 +251,105 @@
     };
   }
 
+  if (typeof window !== 'undefined') {
+    window._harnessPatchTimersAndUi = patchTimersAndUi;
+  }
+
+  /**
+   * Replace Math.random and (when available) crypto.getRandomValues / crypto.randomUUID with the same
+   * LCG stream used by snowball trace (9301 / 49297 / 233280). Call restore() after the benchmark run.
+   * Typed-array fills use byte-sized draws so getRandomValues matches Web Crypto expectations.
+   */
+  function installSeededBenchmarkRng(seed) {
+    var st = seed != null ? Number(seed) : 505050;
+    if (!isFinite(st)) st = 505050;
+    st = Math.floor(st);
+    var origRandom = Math.random;
+    var c = typeof crypto !== 'undefined' ? crypto : null;
+    var origGetRandomValues = c && typeof c.getRandomValues === 'function' ? c.getRandomValues.bind(c) : null;
+    var origRandomUUID = c && typeof c.randomUUID === 'function' ? c.randomUUID.bind(c) : null;
+
+    function lcgStep() {
+      st = (st * 9301 + 49297) % 233280;
+      return st;
+    }
+
+    function nextUnit() {
+      return lcgStep() / 233280;
+    }
+
+    Math.random = function () {
+      return nextUnit();
+    };
+
+    if (c && origGetRandomValues) {
+      c.getRandomValues = function (typedArray) {
+        if (!typedArray || !typedArray.length) return typedArray;
+        var u8 = new Uint8Array(typedArray.buffer, typedArray.byteOffset, typedArray.byteLength);
+        for (var i = 0; i < u8.length; i++) {
+          u8[i] = Math.min(255, Math.floor(nextUnit() * 256));
+        }
+        return typedArray;
+      };
+    }
+
+    if (c && origRandomUUID) {
+      c.randomUUID = function () {
+        var bytes = new Uint8Array(16);
+        c.getRandomValues(bytes);
+        bytes[6] = (bytes[6] & 0x0f) | 0x40;
+        bytes[8] = (bytes[8] & 0x3f) | 0x80;
+        var hex = [];
+        for (var j = 0; j < 16; j++) {
+          var h = bytes[j].toString(16);
+          hex.push(h.length === 1 ? '0' + h : h);
+        }
+        return (
+          hex.slice(0, 4).join('') +
+          '-' +
+          hex.slice(4, 6).join('') +
+          '-' +
+          hex.slice(6, 8).join('') +
+          '-' +
+          hex.slice(8, 10).join('') +
+          '-' +
+          hex.slice(10, 16).join('')
+        );
+      };
+    }
+
+    return {
+      restore: function () {
+        Math.random = origRandom;
+        if (c && origGetRandomValues) c.getRandomValues = origGetRandomValues;
+        if (c && origRandomUUID) c.randomUUID = origRandomUUID;
+      },
+    };
+  }
+
+  /** Block storage writes during headless traces so autosave/session noise cannot affect the next run. */
+  function quietWebStorageForBenchmark() {
+    if (typeof localStorage === 'undefined' || typeof sessionStorage === 'undefined') {
+      return { restore: function () {} };
+    }
+    var lsSet = localStorage.setItem.bind(localStorage);
+    var ssSet = sessionStorage.setItem.bind(sessionStorage);
+    var noop = function () {};
+    localStorage.setItem = noop;
+    sessionStorage.setItem = noop;
+    return {
+      restore: function () {
+        localStorage.setItem = lsSet;
+        sessionStorage.setItem = ssSet;
+      },
+    };
+  }
+
+  if (typeof window !== 'undefined') {
+    window._harnessInstallSeededBenchmarkRng = installSeededBenchmarkRng;
+    window._harnessQuietWebStorageForBenchmark = quietWebStorageForBenchmark;
+  }
+
   function eraForGenMarketMP(startYear) {
     if (startYear <= 1970) return '1970';
     if (startYear <= 1978) return '1978';
@@ -284,7 +383,6 @@
     var savedG = typeof G !== 'undefined' ? G : null;
     var savedActive = typeof ACTIVE_MARKET !== 'undefined' ? ACTIVE_MARKET : null;
     var savedMPMode = window.MP && MP.mode;
-    var origRandom = Math.random;
 
     var runs = [];
     var aggregateByEraFormat = { '1970s': {}, '1980s': {}, '1990s': {} };
@@ -296,14 +394,10 @@
 
     try {
       for (var run = 0; run < numRuns; run++) {
-        (function (seedRun) {
-          var s = seedRun;
-          Math.random = function () {
-            s = (s * 9301 + 49297) % 233280;
-            return s / 233280;
-          };
-        })(seed + run * 9973);
-
+        var perRunSeed = seed + run * 9973;
+        var rngH = installSeededBenchmarkRng(perRunSeed);
+        var stQ = quietWebStorageForBenchmark();
+        try {
         ACTIVE_MARKET = marketId;
         syncMarketPopToMarket(marketId);
 
@@ -412,10 +506,13 @@
           ui.restore();
         }
 
-        runs.push({ runIndex: run, seed: seed + run * 9973, steps: steps, periodSnapshots: periodSnapshots });
+        runs.push({ runIndex: run, seed: perRunSeed, steps: steps, periodSnapshots: periodSnapshots });
+        } finally {
+          stQ.restore();
+          rngH.restore();
+        }
       }
     } finally {
-      Math.random = origRandom;
       G = savedG;
       if (typeof ACTIVE_MARKET !== 'undefined' && savedActive != null) ACTIVE_MARKET = savedActive;
       if (window.MP && savedMPMode !== undefined) MP.mode = savedMPMode;

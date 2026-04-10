@@ -66,6 +66,8 @@ export default defineConfig(({ command }) => ({
         copy('inspectMegaSnapshotsBoot.js');
         copy('inspectRatingsCollapseBoot.js');
         copy('inspectLogoTemplatesBoot.js');
+        copy('inspectMarketSnowballBoot.js');
+        copy('marketSimHarnessSnowball.js');
         // Legal pages link /src/styles.css — Vite does not emit this path; copy so contact/terms/privacy match the game theme.
         copy('styles.css');
         const legalDir = join(__dirname, 'legal');
@@ -109,6 +111,7 @@ export default defineConfig(({ command }) => ({
         'inspect-mega-snapshots': resolve(__dirname, 'inspect-mega-snapshots.html'),
         'inspect-ratings-collapse': resolve(__dirname, 'inspect-ratings-collapse.html'),
         'inspect-logo-templates': resolve(__dirname, 'inspect-logo-templates.html'),
+        'inspect-market-snowball': resolve(__dirname, 'inspect-market-snowball.html'),
       },
     },
   },
