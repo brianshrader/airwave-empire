@@ -11920,30 +11920,269 @@ function scrollModalContentToTop(overlayId){
   setTimeout(()=>{mo.scrollTop=0;},0);
 }
 
-// ── STATION RESEARCH CONSULTANT ──────────────────────────────────
-const RESEARCH_COST = 40000; // $40K per report — meaningful but not punishing
+// ── STATION RESEARCH CONSULTANT + LISTENER FEEDBACK ───────────────
+const RESEARCH_CONSULTANT_BASE = 40000;
+/** Scales consultant report fee with inflation, market billing depth, tier, and portfolio size. */
+function researchConsultantReportCost(s,G){
+  const mkt=MARKETS[G?.marketId||ACTIVE_MARKET]||MARKETS.atlanta;
+  const rs=Math.max(0.42,Math.min(8,Number(mkt.revScale)||1));
+  const revPow=Math.pow(rs,0.38);
+  const tier=mkt.rankTier||'medium';
+  const tierX=tier==='mega'?1.10:tier==='large'?1.04:0.96;
+  const nOwn=Math.max(1,(G.ps||[]).filter(st=>st&&st.isPlayer).length);
+  const cluster=1+0.028*Math.max(0,nOwn-1);
+  const raw=RESEARCH_CONSULTANT_BASE*salInflMultiplier(G?.year||1970)*revPow*tierX*cluster;
+  return Math.max(12000,Math.round(raw/500)*500);
+}
+function _lfsHash32(str){
+  let h=0;
+  const s=String(str||'');
+  for(let i=0;i<s.length;i++)h=Math.imul(31,h)+s.charCodeAt(i)|0;
+  return h>>>0;
+}
+function _lfsMulberry32(seed){
+  let a=seed>>>0;
+  return function(){
+    a+=0x6d2b79f5;
+    let t=a;
+    t=Math.imul(t^t>>>15,t|1);
+    t^=t+Math.imul(t^t>>>7,t|61);
+    return((t^t>>>14)>>>0)/4294967296;
+  };
+}
+/**
+ * Free, noisy “street” lines — grounded in sim state, not raw stats. 3–6 lines; mix of categories.
+ * @param {number} [nonce] — change to reshuffle (e.g. Date.now()).
+ */
+function buildListenerFeedbackLines(s,G,nonce){
+  if(!s||!G)return[];
+  const rng=_lfsMulberry32(_lfsHash32(`${s.id}|${G.turn||0}|${G.period||1}|${nonce||0}|${G.marketId||''}`));
+  const pick=a=>a[Math.floor(rng()*a.length)];
+  const maybeFlip=p=>rng()<p;
+  const call=callDisplay(s);
+  const fmtLab=fmtLabel(s.format,G.year);
+  const buckets=[];
+  const push=(tag,line)=>{if(line&&String(line).trim())buckets.push({tag,line:String(line).trim()});};
+
+  const share=s.rat?.share||0;
+  const hist=s.rat?.hist||[];
+  const prev=hist.length>=2?hist[hist.length-2]?.share??share:share;
+  const dq=(s.cp&&typeof s.cp.dq==='number')?s.cp.dq:0;
+  const momUp=dq>0.003||share>prev*1.025;
+  const momDn=dq<-0.003||share<prev*0.975;
+
+  if(momUp&&!maybeFlip(0.12))push('station',pick([
+    `Coffee-shop take: ${call} sounds like it’s got a little wind in the sails lately.`,
+    `Listeners mention ${call} more often this book — not scientific, but the buzz is up.`,
+    `Street-level read: people think ${call} is punching above where it was a few months ago.`,
+  ]));
+  else if(momDn&&!maybeFlip(0.12))push('station',pick([
+    `Some regulars say ${call} doesn’t feel as “must-listen” as it used to.`,
+    `You hear grumbling that ${call} has lost a step — could be noise, could be real.`,
+    `A few callers said they’re sampling other buttons more than ${call} lately.`,
+  ]));
+  else push('station',pick([
+    `Mixed bag on ${call} — half the room says “fine,” half wants something to change.`,
+    `${call} still has fans; nobody agrees whether it’s hot, cold, or just there.`,
+  ]));
+
+  const fmd=FM[canonicalHitsFormatKey(s.format)]||{};
+  const spotN=fmd.sp||14;
+  const rv=(s.ops?.spots||spotN)/spotN;
+  if(rv>1.18&&!maybeFlip(0.18))push('sound',pick([
+    `Complaint line: “Too many spots back-to-back.” (Then they sat through six minutes of ads.)`,
+    `Some say ${call} feels cluttered — like a sales meeting with music between.`,
+  ]));
+  else if(rv<0.88&&!maybeFlip(0.2))push('sound',pick([
+    `Odd compliment: “Doesn’t feel as greedy as the other guys.”`,
+    `A listener said ${call} “breathes” more than the competition — make of that what you will.`,
+  ]));
+  else if(!maybeFlip(0.35))push('format',pick([
+    `The ${fmtLab} crowd is opinionated — a few swear the mix got sharper; others want the old clock back.`,
+    `PD gossip: ${fmtLab} on ${call} is either “finally clicking” or “stuck in a rut,” depending who you ask.`,
+  ]));
+
+  const fmtAge=s._formatAge||0;
+  if(fmtAge>0&&fmtAge<5&&!maybeFlip(0.25))push('format',pick([
+    `Reaction to the recent format move is still all over the map — too early for a verdict.`,
+    `Some love the new direction; others ask “what happened to my station?”`,
+  ]));
+
+  const talentOpts=[];
+  const slotsShuf=[...DAYPART_SLOTS];
+  for(let i=slotsShuf.length-1;i>0;i--){
+    const j=Math.floor(rng()*(i+1));
+    const t=slotsShuf[i];slotsShuf[i]=slotsShuf[j];slotsShuf[j]=t;
+  }
+  slotsShuf.forEach(sl=>{
+    const t=s.prog?.[sl]?.talent;
+    if(!t)return;
+    const scout=Math.round(t.quality||0);
+    const tru=talentTrueQuality(t);
+    const gap=scout-tru;
+    const ten=t.periodsAtStation||0;
+    const nm=t.name.split(/\s+/)[0]||'the host';
+    let line=null;
+    if(ten<4){
+      if(Math.abs(gap)>5){
+        if(gap>5&&!maybeFlip(0.22))line=pick([
+          `${nm} gets talked about — not everyone’s convinced yet.`,
+          `Early word on ${nm}: sounds confident on the air; jury’s out with listeners.`,
+        ]);
+        else if(gap<-5&&!maybeFlip(0.2))line=pick([
+          `Whisper chain: ${nm} might be outperforming what people expected.`,
+          `Some listeners are surprised how quickly ${nm} is growing on them.`,
+        ]);
+      }
+      if(!line&&!maybeFlip(0.3))line=pick([
+        `Mixed calls on ${nm} — half the board loves the energy, half wants the old voice back.`,
+        `It’s too soon to know if ${nm} is a hit; the phones are noisy either way.`,
+      ]);
+    }else{
+      if(scout>72&&tru>68&&!maybeFlip(0.15))line=pick([
+        `${nm} has that “people actually like them” energy lately.`,
+        `Afternoon coffee consensus: ${nm} is one of the stronger voices on the dial.`,
+      ]);
+      else if(tru<52&&!maybeFlip(0.12))line=pick([
+        `Honest chatter: a few loyal listeners are tiring of ${nm}’s act.`,
+        `Someone said ${nm} “means well” — which is never entirely a compliment.`,
+      ]);
+      else if(!maybeFlip(0.35))line=pick([
+        `${nm} is a known quantity now — fans defend them; haters dial anyway.`,
+      ]);
+    }
+    if(line)talentOpts.push(line);
+  });
+  if(talentOpts.length)push('talent',pick(talentOpts));
+
+  const comm=G.stations.filter(o=>o&&!o._bpSlotDeferred&&!o.isPublic&&o.rat&&o.id!==s.id)
+    .sort((a,b)=>(b.rat.share||0)-(a.rat.share||0));
+  const rival=comm[0];
+  if(rival&&(rival.rat?.share||0)>(share*1.08)&&!maybeFlip(0.28)){
+    const rc=callDisplay(rival);
+    push('competitor',pick([
+      `Water-cooler line: “Everyone’s sampling ${rc} this month.”`,
+      `${rc} is the name that keeps coming up when people talk “who’s winning.”`,
+      `Your rival ${rc} still owns a lot of the conversation — fair or not.`,
+    ]));
+  }else if(rival&&!maybeFlip(0.4)){
+    push('competitor',pick([
+      `${callDisplay(rival)} gets mentioned — sometimes as threat, sometimes as punchline.`,
+      `Competitive dial: listeners compare you to ${callDisplay(rival)} whether you want them to or not.`,
+    ]));
+  }
+
+  const isAM=s.sig?.type==='AM'&&!s.fmBooster;
+  const fmp=G.fmp||0.5;
+  if(isAM&&fmp>0.55&&G.year>=1978&&!maybeFlip(0.3))
+    push('market',pick([
+      `Younger ears keep saying “I only use AM for games/traffic” — FM is where music lives.`,
+      `Car talk: more dashboards on FM; AM loyalists swear by habit, not trend.`,
+    ]));
+  if(s.simulcastWith){
+    const p=G.stations.find(st=>st.id===s.simulcastWith);
+    if(p&&p.isPlayer){
+      const am=s.sig.type==='AM'?s:p;
+      const fm=s.sig.type==='FM'||s.fmBooster?s:p;
+      if(am&&fm&&(fm.rat?.share||0)>(am.rat?.share||0)*1.15&&!maybeFlip(0.25))
+        push('market',pick([
+          `Listeners gravitate to the FM leg — the AM still matters to some, but FM feels “main.”`,
+          `Street read: the FM side is picking up buzz; AM is the heritage anchor.`,
+        ]));
+    }
+  }
+  if(G.year>=1995&&!maybeFlip(0.45))
+    push('market',pick([
+      `Satellite and streams get name-dropped more — terrestrial still argues it’s “real radio.”`,
+      `Market mood: consolidation chatter everywhere; listeners mostly want fewer commercials.`,
+    ]));
+
+  if(!maybeFlip(0.55))push('flavor',pick([
+    `One caller said your DJ talks too much — then talked for four straight minutes.`,
+    `“Pretty good, actually,” one listener said about mornings. High praise from that guy.`,
+    `Someone insisted you play the same songs daily. They sang along to prove it.`,
+    `A complaint ended with “still better than the other station.” Radio love is complicated.`,
+    `PD gut: the phones are liars, but they’re your liars.`,
+  ]));
+
+  for(let i=buckets.length-1;i>0;i--){
+    const j=Math.floor(rng()*(i+1));
+    const t=buckets[i];buckets[i]=buckets[j];buckets[j]=t;
+  }
+  const want=4+Math.floor(rng()*3);
+  const used=new Set();
+  const out=[];
+  const preferOrder=['station','talent','format','sound','competitor','market','flavor'];
+  preferOrder.forEach(tag=>{
+    if(out.length>=want)return;
+    const b=buckets.find(x=>x.tag===tag&&!used.has(x.line));
+    if(b){used.add(b.line);out.push(b.line);}
+  });
+  buckets.forEach(b=>{
+    if(out.length>=want)return;
+    if(!used.has(b.line)){used.add(b.line);out.push(b.line);}
+  });
+  return out.slice(0,want);
+}
+function _listenerFeedbackHtml(lines){
+  if(!lines||!lines.length)return'<p class="di" style="color:var(--mut)">No buzz right now — check back next period.</p>';
+  return'<ul id="listener-feedback-list" style="margin:0;padding-left:18px;line-height:1.55;font-size:14px;color:var(--off)">'+
+    lines.map(l=>'<li style="margin-bottom:10px">'+wlEscapeHtml(l)+'</li>').join('')+'</ul>';
+}
+function renderResearchModalBody(sid,listenerNonce){
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s)return'';
+  const cost=researchConsultantReportCost(s,G);
+  const lines=buildListenerFeedbackLines(s,G,listenerNonce);
+  const canAfford=G.cash>=cost;
+  return`<div class="ibox" style="margin-bottom:16px;text-align:left;border-color:rgba(245,166,35,.25)">
+    <div style="font-size:12px;color:var(--amb);letter-spacing:.12em;margin-bottom:6px">FREE — LISTENER FEEDBACK</div>
+    <p class="di" style="margin:0 0 10px">Street buzz, caller blurts, and break-room gossip. Useful hints — not reliable enough to bet the company on.</p>
+    ${_listenerFeedbackHtml(lines)}
+    <button type="button" class="cnl" style="margin-top:10px" onclick="refreshListenerFeedback('${s.id}')">Refresh chatter</button>
+  </div>
+  <div style="border-top:1px solid var(--bdh);margin:16px 0;padding-top:14px"></div>
+  <div style="font-size:12px;color:var(--grn);letter-spacing:.12em;margin-bottom:6px">PAID — CONSULTANT REPORT</div>
+  <p class="di">Structured analysis for <strong>${s.callLetters}</strong> — signal, competition, quality, format health, and recommendations. Clearer than the rumor mill.</p>
+  <div class="ibox">Report fee: <strong>${f$(cost)}</strong> <span style="color:var(--mut);font-size:13px">(scales with market size, inflation, and how many stations you run)</span><br/>Cash on hand: <strong>${f$(G.cash)}</strong>${!canAfford?' <span style="color:var(--red)">— insufficient funds</span>':''}</div>
+  <button class="cfm" onclick="doResearch('${s.id}')" ${!canAfford?'disabled':''}>COMMISSION CONSULTANT REPORT — ${f$(cost)}</button>
+  <button class="cnl" onclick="cm('m-research')">CANCEL</button>`;
+}
+function refreshListenerFeedback(sid){
+  sid=ensureOpsSourceSid(sid);
+  const rb=document.getElementById('researchb');
+  if(!rb)return;
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s)return;
+  const nonce=Date.now();
+  const lines=buildListenerFeedbackLines(s,G,nonce);
+  const ul=rb.querySelector('#listener-feedback-list');
+  if(ul)ul.innerHTML=lines.map(l=>'<li style="margin-bottom:10px">'+wlEscapeHtml(l)+'</li>').join('');
+  else rb.innerHTML=renderResearchModalBody(sid,nonce);
+}
 function openResearch(sid){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   document.getElementById('research-title').textContent=`📊 RESEARCH — ${s.callLetters}`;
   const rb=document.getElementById('researchb');
-  rb.innerHTML=`<p class="di">Commission a research report on <strong>${s.callLetters}</strong>. Costs <strong>${f$(RESEARCH_COST)}</strong>. You'll receive an honest assessment of why your ratings are where they are — signal, competition, quality, format health, and actionable recommendations.</p>
-    <div class="ibox">Cash on hand: <strong>${f$(G.cash)}</strong>${G.cash<RESEARCH_COST?' <span style="color:var(--red)">— insufficient funds</span>':''}</div>
-    <button class="cfm" onclick="doResearch('${s.id}')" ${G.cash<RESEARCH_COST?'disabled':''}>COMMISSION REPORT — ${f$(RESEARCH_COST)}</button>
-    <button class="cnl" onclick="cm('m-research')">CANCEL</button>`;
+  rb.innerHTML=renderResearchModalBody(sid,Date.now());
   om('m-research');
   wlFtTutorialNotifyResearchOpen();
 }
 function doResearch(sid){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  if(G.cash<RESEARCH_COST)return;
-  G.cash-=RESEARCH_COST;
+  const cost=researchConsultantReportCost(s,G);
+  if(G.cash<cost)return;
+  G.cash-=cost;
   if(MP.mode==='live') MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash});
   const report=buildResearchReport(s,G);
-  document.getElementById('researchb').innerHTML=report+`<button class="cnl" style="margin-top:12px" onclick="cm('m-research')">CLOSE</button>`;
+  document.getElementById('researchb').innerHTML=report+
+    `<div style="margin-top:18px;padding-top:12px;border-top:1px solid var(--bdh)"><button type="button" class="cnl" onclick="openResearch('${s.id}')">← BACK TO RESEARCH</button></div>`+
+    `<button class="cnl" style="margin-top:12px" onclick="cm('m-research')">CLOSE</button>`;
   renderAll();
 }
+window.refreshListenerFeedback=refreshListenerFeedback;
 
 // ── TRADE PRESS RATINGS DIGEST (server: ShortAPI and/or OpenAI) ─────────
 function wlEscapeHtml(str){
