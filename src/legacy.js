@@ -567,8 +567,8 @@ function vacantLabel(fmt,slot,s){
 const DAYPART_SLOTS=['morningDrive','midday','afternoonDrive','evening','overnight'];
 /** Market-wide superstar talent — prior 80/60/5y gates rarely fired by 1980 in normal play; tuned so 0–2 stars can emerge late 70s without trivializing. */
 const SUPERSTAR={
-  RAW_QUALITY_MIN:55,
-  QUALITY_THRESHOLD:75,
+  RAW_QUALITY_MIN:52,
+  QUALITY_THRESHOLD:72,
   TENURE_THRESHOLD:3,
   MAX_PER_MARKET:2,
   EFF_Q_MULT:1.40,
@@ -924,7 +924,11 @@ function applyTroubleResolution(sid,slot,optionIdx,appealRemote){
     }
   }
   if(eff.morale)t.morale=Math.max(20,Math.min(100,(t.morale||65)+eff.morale));
-  if(eff.quality)t.quality=Math.max(20,Math.min(100,(t.quality||50)+eff.quality));
+  if(eff.quality){
+    t.quality=Math.max(20,Math.min(100,(t.quality||50)+eff.quality));
+    if(typeof t._trueQuality==='number'&&!Number.isNaN(t._trueQuality))
+      t._trueQuality=Math.max(20,Math.min(100,Math.round(t._trueQuality+eff.quality)));
+  }
   if(eff.loyalty)t._poachResist=(t._poachResist||0)+eff.loyalty/100;
   if(eff.suspendPeriods){t._suspended=(t._suspended||0)+eff.suspendPeriods;t._preSuspendQuality=t.quality;}
   if(eff.sell&&s)s.ops.sell=Math.max(0.20,Math.min(0.96,(s.ops.sell||0.65)+eff.sell));
@@ -1021,7 +1025,7 @@ function updateSuperstars(G){
       const sd=st.prog[sl];
       const t=sd?.talent;
       if(!t)return;
-      const rawQ=Math.round(t.quality||0);
+      const rawQ=talentTrueQuality(t);
       if(rawQ<S.RAW_QUALITY_MIN)return;
       const slotQ=Math.round(sd.quality||0);
       const effQ=Math.round(rawQ*0.65+slotQ*0.35);
@@ -1495,7 +1499,63 @@ const DECADE_NAMES={1979:'THE SEVENTIES',1989:'THE EIGHTIES',1999:'THE NINETIES'
 
 // ── TALENT & GENERATION ───────────────────────────────────────────
 const SAL={morningDrive:{entry:[12000,20000],mid:[22000,35000],star:[35000,60000]},afternoonDrive:{entry:[9000,16000],mid:[16000,26000],star:[26000,45000]},midday:{entry:[7000,12000],mid:[12000,20000],star:[20000,32000]},evening:{entry:[6000,10000],mid:[10000,17000],star:[17000,26000]},overnight:{entry:[5000,8000],mid:[8000,13000],star:[13000,20000]}};
-const QRG={entry:[28,52],mid:[45,72],star:[68,92]};
+/** True on-air quality bands (scouting noise layered on top; pool skews middling vs legacy). */
+const QRG={entry:[26,48],mid:[40,62],star:[54,78]};
+/** Periods on-air (~4 calendar years at 2 periods/yr) to fold hidden performance into slot quality. */
+const TALENT_REVEAL_PERIODS=8;
+function clampTalentFit01(v){
+  return Math.max(0.08,Math.min(0.98,typeof v==='number'&&!Number.isNaN(v)?v:0.3));
+}
+/** Actual ability (internal ratings / salary merit); falls back to visible scout rating for legacy saves. */
+function talentTrueQuality(t){
+  if(t&&typeof t._trueQuality==='number'&&!Number.isNaN(t._trueQuality))return Math.round(t._trueQuality);
+  return Math.round(t?.quality||0);
+}
+function talentTrueFormatFit(t,fmt){
+  const m=t?._trueFormatFit;
+  if(m&&typeof m[fmt]==='number'&&!Number.isNaN(m[fmt]))return clampTalentFit01(m[fmt]);
+  return clampTalentFit01(t?.formatFit?.[fmt]);
+}
+/** Rounded delta (slot quality points) between true vs scouted contribution for this station format. */
+function talentPerformanceRevealDeltaForStation(fmt,t,kind){
+  const sq=Math.round(t.quality||0), tq=talentTrueQuality(t);
+  const sf=clampTalentFit01(t.formatFit?.[fmt]), tf=talentTrueFormatFit(t,fmt);
+  if(kind==='xfer'){
+    const scout=(sq/100)*sf*0.35*18, tru=(tq/100)*tf*0.35*18;
+    return Math.round(tru-scout);
+  }
+  const scout=(sq/100)*sf*35, tru=(tq/100)*tf*35;
+  return Math.round(tru-scout);
+}
+/** After hire / shuffle / xfer, schedule gradual slot-quality drift toward true performance. */
+function initTalentPerformanceReveal(sd,t,fmt,kind){
+  if(!sd||!t)return;
+  const d=talentPerformanceRevealDeltaForStation(fmt,t,kind);
+  if(!d){
+    t._perfRevealStepsLeft=0;
+    t._perfRevealDeltaRemaining=0;
+    t._talentPerfRevealed=true;
+    return;
+  }
+  t._perfRevealStepsLeft=TALENT_REVEAL_PERIODS;
+  t._perfRevealDeltaRemaining=d;
+  t._talentPerfRevealed=false;
+}
+function applyTalentPerformanceRevealDecayStep(sd){
+  const t=sd?.talent;
+  if(!t)return;
+  const left=t._perfRevealStepsLeft|0;
+  if(left<1)return;
+  const rem=t._perfRevealDeltaRemaining|0;
+  if(!rem)return;
+  let step=Math.round(rem/left);
+  if(step===0)step=rem>0?1:(rem<0?-1:0);
+  if(step===0)return;
+  t._perfRevealDeltaRemaining=rem-step;
+  t._perfRevealStepsLeft=left-1;
+  if(t._perfRevealStepsLeft===0)t._talentPerfRevealed=true;
+  sd.quality=Math.min(100,Math.max(10,Math.round((sd.quality||20)+step)));
+}
 const NF_CLASSIC=[
   'Jack','Bobby','Ray','Don','Mike','Larry','Gary','Jim','Dave','Steve','Tom','Bill','Frank','Gene','Roy','Earl','Hank','Al','Jerry','Ted','Bob','Chuck','Rick','Scott','Paul','Dan','Doug','Ron','Wayne','Dale','Glen','Barry','Roger','Terry','Randy','Keith','Craig','Dean','Russ','Len','Bud','Skip','Chet','Hal','Vic','Stan','Norm','Wes','Stu','Clyde','Mel','Sal','Monty','Buck','Scotty','Marty','Benny','Lou','Ike','Duke','Johnny','Eddy','Porter','Faron','Webb','Ferlin','Sonny','Lefty','Slim','Tex','Ken','Greg','Phil','Jeff','Matt','Chris','John','Joe','Tim','Tony','Nick','Andy','Bruce','Carl','Dennis','George','Harry','Kevin','Mark','Neil','Patrick','Peter','Richard','Robert','Samuel','Stephen','Walter','Will','Hugh','Gordon','Murray','Herb','Brent','Todd','Casey','Les','Mac','Chip','Rod','Vince','Edward','Charles','Franklin','Harold','Louis','Philip','Randall','Russell','Sheldon','Stuart','Theodore','Warren','Billy','Bobby','Cliff','Curt','Danny','Darryl','Duane','Eddie','Freddy','Gerald','Glenn','Howard','Irvin','Jerome','Joey','Kent','Kurt','Lance','Lloyd','Marc','Mitch','Myron','Nolan','Orville','Ralph','Rex','Rodney','Rudy','Rusty','Sean','Sheldon','Toby','Troy','Vernon','Wade','Wiley',
 ];
@@ -1869,8 +1929,18 @@ function mkTal(slot,fmt,tier='mid',year=1970,nameCtx){
   if(!FM[fmt]||FM[fmt]?.public)return null;
 
   const sr=SAL[slot]?.[tier]||[15000,40000],qr=QRG[tier]||QRG.mid;
-  const q=Math.round(rnd(qr[0],qr[1]));
-  const ff={};Object.keys(FM).forEach(f=>{ff[f]=f===fmt?rnd(.70,.95):rnd(.12,.50);});
+  const trueQ=Math.round(rnd(qr[0],qr[1]));
+  const trueFf={};
+  Object.keys(FM).forEach(f=>{
+    trueFf[f]=f===fmt?rnd(0.52,0.88):rnd(0.10,0.48);
+  });
+  let scoutQ=Math.round(trueQ+rnd(-11,11));
+  scoutQ=Math.max(18,Math.min(97,scoutQ));
+  const scoutFf={};
+  Object.keys(trueFf).forEach(f=>{
+    const noise=f===fmt?rnd(-0.07,0.07):rnd(-0.11,0.11);
+    scoutFf[f]=clampTalentFit01(trueFf[f]+noise);
+  });
 
   const _rawSal = tier==='star'
     ? Math.max(rnd(sr[0],sr[1]), rnd(sr[0],sr[1]))
@@ -1880,15 +1950,15 @@ function mkTal(slot,fmt,tier='mid',year=1970,nameCtx){
 
   const entryLo=SAL[slot]?.entry?.[0]||5000;
   const starHi=SAL[slot]?.star?.[1]||40000;
-  const qNorm=Math.max(0,Math.min(1,q/100));
+  const qNorm=Math.max(0,Math.min(1,trueQ/100));
   const salSpan=starHi-entryLo;
   const salPos=qNorm*qNorm*(3-2*qNorm);
   const qualTarget=Math.round((entryLo+salSpan*salPos)/500)*500;
 
   let qualAdjSal=Math.round((qualTarget*0.82+baseSal*0.18)/500)*500;
 
-  if(q<80) qualAdjSal=Math.round(qualAdjSal*0.85/500)*500;
-  if(year>=1974 && year<=1978 && q<80) qualAdjSal=Math.round(qualAdjSal*0.90/500)*500;
+  if(trueQ<80) qualAdjSal=Math.round(qualAdjSal*0.85/500)*500;
+  if(year>=1974 && year<=1978 && trueQ<80) qualAdjSal=Math.round(qualAdjSal*0.90/500)*500;
 
   const marketId=(typeof G!=='undefined'&&G?.marketId)||ACTIVE_MARKET||'atlanta';
   let finalSal=Math.round(
@@ -1928,8 +1998,12 @@ function mkTal(slot,fmt,tier='mid',year=1970,nameCtx){
     name,
     gender,
     slot,
-    quality:q,
-    formatFit:ff,
+    quality:scoutQ,
+    _trueQuality:trueQ,
+    formatFit:scoutFf,
+    _trueFormatFit:trueFf,
+    _perfRevealStepsLeft:0,
+    _perfRevealDeltaRemaining:0,
     salary:finalSal,
     cyr:ri(1,2),
     morale:Math.round(rnd(55,85)),
@@ -1940,14 +2014,23 @@ function mkTal(slot,fmt,tier='mid',year=1970,nameCtx){
   };
 }
 
+function shuffleTalentPoolInPlace(pool){
+  for(let i=pool.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    const tmp=pool[i];pool[i]=pool[j];pool[j]=tmp;
+  }
+  return pool;
+}
+
 function mkPool(slot,fmt,year){
   const nameCtx={usedLastNames:new Set(),usedFullNames:new Set()};
   const pool=[];
-  for(const tier of['entry','mid','mid','star']){
+  const tiers=['entry','mid','mid',Math.random()<0.22?'star':'mid'];
+  for(const tier of tiers){
     const t=mkTal(slot,fmt,tier,year,nameCtx);
     if(t)pool.push(t);
   }
-  return pool.sort((a,b)=>b.quality-a.quality);
+  return shuffleTalentPoolInPlace(pool);
 }
 
 /** Hire modal only: experience + rough remaining-career band (does not expose retirement triggers). */
@@ -4876,6 +4959,7 @@ function applyTalentCrossStationXferFull(fromSid, fromSlot, toSid, toSlot) {
   const boost = t => Math.round((t.quality / 100) * fit(t) * 0.35 * 18);
   toSd.talent = talA;
   toSd.quality = Math.min(100, Math.max(10, Math.round((toSd.quality || 30) * (1 - adjDip))) + boost(talA));
+  initTalentPerformanceReveal(toSd, talA, dst.format, 'xfer');
   applyDaypartPromotionEconomics(talA, fromSlot, toSlot);
   fromSd.talent = null;
   const pen = { morningDrive: .20, afternoonDrive: .14, midday: .09, evening: .06, overnight: .03 }[fromSlot] || .09;
@@ -4911,6 +4995,8 @@ function applyTalentSameStationSwapFull(sid, fromSlot, toSlot) {
   };
   rec(s.prog[fromSlot], b);
   rec(s.prog[toSlot], a);
+  initTalentPerformanceReveal(s.prog[fromSlot], b, s.format, 'xfer');
+  initTalentPerformanceReveal(s.prog[toSlot], a, s.format, 'xfer');
   applyDaypartPromotionEconomics(b, toSlot, fromSlot);
   applyDaypartPromotionEconomics(a, fromSlot, toSlot);
   refreshStationOQ(s, G);
@@ -4941,6 +5027,8 @@ function applyTalentCrossStationSwapFull(fromSid, fromSlot, toSid, toSlot) {
   };
   rec(src.prog[fromSlot], b, src.format);
   rec(dst.prog[toSlot], a, dst.format);
+  initTalentPerformanceReveal(src.prog[fromSlot], b, src.format, 'xfer');
+  initTalentPerformanceReveal(dst.prog[toSlot], a, dst.format, 'xfer');
   applyDaypartPromotionEconomics(b, toSlot, fromSlot);
   applyDaypartPromotionEconomics(a, fromSlot, toSlot);
   refreshStationOQ(src, G);
@@ -4967,6 +5055,7 @@ window._mpApply_shuffle = function({ sid, fromSlot, toSlot }) {
   const toSd2 = s.prog[toSlot];
   toSd2.talent = talA;
   toSd2.quality = Math.min(100, Math.max(10, Math.round((toSd2.quality || 30) * (1 - adjDip))) + boost(talA));
+  initTalentPerformanceReveal(toSd2, talA, s.format, 'xfer');
   applyDaypartPromotionEconomics(talA, fromSlot, toSlot);
   fromSd.talent = null;
   const pen = {morningDrive:.20,afternoonDrive:.14,midday:.09,evening:.06,overnight:.03}[fromSlot] || .09;
@@ -7043,7 +7132,31 @@ function fmAmNonDupQualifiedPair(fm,G){
   if(!stationsSameOwnershipCluster(fm,am,G))return null;
   return {fm,am};
 }
-function defaultFmRemainderFormat(amFmt,G){
+/** Plausible FM “other clock” vs co-owned AM — ordered by era fit; intersected with market/year pool. */
+const FM_REMAINDER_CANDIDATES_BY_AM={
+  TOP40:         ['ALBUM_ROCK','BEAUTIFUL_MUSIC','SOUL_RNB','COUNTRY','MOR','GOSPEL'],
+  MOR:           ['ALBUM_ROCK','BEAUTIFUL_MUSIC','COUNTRY','TOP40','SOUL_RNB','GOSPEL'],
+  COUNTRY:       ['ALBUM_ROCK','TOP40','MOR','BEAUTIFUL_MUSIC','SOUL_RNB','GOSPEL'],
+  SOUL_RNB:      ['ALBUM_ROCK','TOP40','MOR','COUNTRY','BEAUTIFUL_MUSIC','GOSPEL'],
+  NEWS_TALK:     ['ALBUM_ROCK','MOR','BEAUTIFUL_MUSIC','TOP40','COUNTRY','SOUL_RNB'],
+  ALL_NEWS:      ['ALBUM_ROCK','MOR','BEAUTIFUL_MUSIC','TOP40','COUNTRY','SOUL_RNB'],
+  SPORTS_TALK:   ['ALBUM_ROCK','TOP40','MOR','COUNTRY','BEAUTIFUL_MUSIC','SOUL_RNB'],
+  GOSPEL:        ['SOUL_RNB','COUNTRY','MOR','ALBUM_ROCK','TOP40','BEAUTIFUL_MUSIC'],
+  ADULT_STANDARDS:['ALBUM_ROCK','BEAUTIFUL_MUSIC','MOR','COUNTRY','TOP40','SOUL_RNB'],
+  BEAUTIFUL_MUSIC:['ALBUM_ROCK','MOR','TOP40','COUNTRY','SOUL_RNB','GOSPEL'],
+};
+const FM_REMAINDER_DEFAULT_FALLBACK=['ALBUM_ROCK','BEAUTIFUL_MUSIC','SOUL_RNB','COUNTRY','MOR','TOP40','GOSPEL'];
+function fmRemainderStableHash(str){
+  let h=2166136261>>>0;
+  const s=String(str||'');
+  for(let i=0;i<s.length;i++)h=Math.imul(h^s.charCodeAt(i),16777619)>>>0;
+  return h>>>0;
+}
+/**
+ * Default remainder format for FM non-dup: plausible set per AM family + stable pick by FM station id
+ * (varied defaults, reproducible for a given pair — no year in seed so it does not flicker each period).
+ */
+function defaultFmRemainderFormat(amFmt,G,fmStationId){
   const y=G?.year||1970;
   const mkt=G?.marketId||ACTIVE_MARKET||'atlanta';
   const pool=(typeof FM!=='undefined'&&FM?Object.keys(FM):[]).filter(f=>{
@@ -7051,17 +7164,20 @@ function defaultFmRemainderFormat(amFmt,G){
     if(typeof formatAllowedInMarket==='function')return formatAllowedInMarket(f,mkt,y);
     return true;
   });
-  const prefer=['ALBUM_ROCK','ADULT_CONTEMP','CLASSIC_ROCK','OLDIES','SOUL_RNB','COUNTRY','MOR'];
-  for(const p of prefer){
-    if(pool.includes(p))return p;
-  }
-  return pool[0]||'ALBUM_ROCK';
+  if(!pool.length)return'ALBUM_ROCK';
+  const canon=canonicalHitsFormatKey(amFmt||'');
+  const preferred=FM_REMAINDER_CANDIDATES_BY_AM[amFmt]||FM_REMAINDER_CANDIDATES_BY_AM[canon]||FM_REMAINDER_DEFAULT_FALLBACK;
+  let ordered=preferred.filter(f=>pool.includes(f));
+  if(!ordered.length)ordered=[...pool].sort((a,b)=>a.localeCompare(b));
+  const seed=`${fmStationId||'na'}|${mkt}|${amFmt||''}`;
+  const idx=fmRemainderStableHash(seed)%ordered.length;
+  return ordered[idx];
 }
 function pickAlternateAiRemainder(amFmt,G){
   const mkt=G?.marketId||ACTIVE_MARKET||'atlanta';
   const y=G?.year||1970;
   const pool=(typeof FM!=='undefined'&&FM?Object.keys(FM):[]).filter(f=>f!==amFmt&&formatAllowedInMarket(f,mkt,y));
-  if(!pool.length)return defaultFmRemainderFormat(amFmt,G);
+  if(!pool.length)return defaultFmRemainderFormat(amFmt,G,'');
   return pool[Math.floor(Math.random()*pool.length)];
 }
 /** Ratings blend: FM leg splits appeal between AM format and remainder format. */
@@ -7077,8 +7193,8 @@ function fmAmNonDupBlendForRecalc(s,G){
   const dupW=dupPct/100;
   const remW=1-dupW;
   if(remW<=1e-6)return null;
-  let remFmt=fm.fmRemainderFormat||defaultFmRemainderFormat(am.format,G);
-  if(remFmt===am.format)remFmt=defaultFmRemainderFormat(am.format,G);
+  let remFmt=fm.fmRemainderFormat||defaultFmRemainderFormat(am.format,G,fm.id);
+  if(remFmt===am.format)remFmt=defaultFmRemainderFormat(am.format,G,fm.id);
   return{dupW,remW,amFormat:am.format,remFormat:remFmt};
 }
 function enforceFmNonDupConstraints(G){
@@ -7093,22 +7209,39 @@ function enforceFmNonDupConstraints(G){
     if(!pair)return;
     const {fm,am}=pair;
     let dup=Number.isFinite(fm.fmSimulcastDupPct)?fm.fmSimulcastDupPct:maxPct;
-    if(!fm.isPlayer&&maxPct<100&&!fm._aiFmDupTuned){
+    dup=Math.max(0,Math.min(maxPct,dup));
+    if(!fm.isPlayer&&maxPct<100){
       const rt=tier;
       const lo=rt===1?Math.round(maxPct*0.55):rt===2?Math.round(maxPct*0.65):Math.round(maxPct*0.75);
-      dup=Math.max(0,Math.min(maxPct,Math.round(lo+Math.random()*(maxPct-lo))));
-      fm._aiFmDupTuned=1;
-    }else
+      const seen=fm._aiFmDupMaxCapSeen;
+      if(seen==null||seen===undefined){
+        if(!fm._aiFmDupTuned){
+          dup=Math.max(0,Math.min(maxPct,Math.round(lo+Math.random()*(maxPct-lo))));
+        }
+        fm._aiFmDupMaxCapSeen=maxPct;
+        fm._aiFmDupTuned=1;
+      }else if(maxPct>seen){
+        const headroom=maxPct-dup;
+        if(headroom>0.5){
+          const take=Math.random()<0.72?(0.17+Math.random()*0.63):(0.04+Math.random()*0.22);
+          dup=Math.max(lo,Math.min(maxPct,Math.round(dup+headroom*take)));
+        }
+        fm._aiFmDupMaxCapSeen=maxPct;
+      }
+    }else{
       dup=Math.max(0,Math.min(maxPct,dup));
-    fm.fmSimulcastDupPct=dup;
+      if(!fm.isPlayer&&maxPct>=100)fm._aiFmDupMaxCapSeen=100;
+    }
     if(maxPct>=100){
+      fm.fmSimulcastDupPct=100;
       fm.fmRemainderFormat=fm.fmRemainderFormat||am.format;
       return;
     }
+    fm.fmSimulcastDupPct=dup;
     if(dup>=99.999)fm.fmRemainderFormat=fm.fmRemainderFormat||am.format;
     else{
       if(!fm.fmRemainderFormat||fm.fmRemainderFormat===am.format){
-        fm.fmRemainderFormat=fm.isPlayer?defaultFmRemainderFormat(am.format,G):pickAlternateAiRemainder(am.format,G);
+        fm.fmRemainderFormat=fm.isPlayer?defaultFmRemainderFormat(am.format,G,fm.id):pickAlternateAiRemainder(am.format,G);
       }
     }
   });
@@ -7120,7 +7253,7 @@ function initFmNonDupAfterPair(src,dst,G){
   const tier=marketRankTierToFccSimulcastTier(G.marketId||ACTIVE_MARKET);
   const maxPct=getMaxSimulcastPct(G.year||1970,tier);
   fm.fmSimulcastDupPct=maxPct;
-  fm.fmRemainderFormat=maxPct>=100?am.format:defaultFmRemainderFormat(am.format,G);
+  fm.fmRemainderFormat=maxPct>=100?am.format:defaultFmRemainderFormat(am.format,G,fm.id);
 }
 
 function recalc(stations,G){
@@ -8314,6 +8447,8 @@ function decay(s,year,period){
     if(sd.talent){
       const md=sd.talent.morale<60?d*1.5:d*.5;
       sd.talent.quality=Math.max(15,sd.talent.quality*(1-md));
+      if(typeof sd.talent._trueQuality==='number'&&!Number.isNaN(sd.talent._trueQuality))
+        sd.talent._trueQuality=Math.max(15,Math.round(sd.talent._trueQuality*(1-md)));
       sd.talent.cyr=Math.max(0,(sd.talent.cyr||2)-.5);
       if((sd.talent._suspended||0)>0){
         sd.talent._suspended--;
@@ -8326,6 +8461,7 @@ function decay(s,year,period){
         }
       }
       sd.talent.periodsAtStation=(sd.talent.periodsAtStation||0)+1;
+      applyTalentPerformanceRevealDecayStep(sd);
       if(!sd.talent._hireYear)sd.talent._hireYear=G.year;
       if(!sd.talent._careerStartYear)sd.talent._careerStartYear=sd.talent._hireYear;
       if(sd.talent._careerStartYear>sd.talent._hireYear)sd.talent._careerStartYear=sd.talent._hireYear;
@@ -8342,7 +8478,8 @@ function decay(s,year,period){
         // High-rated stations = talent knows their value = bigger asks.
         // Faster pre-1990 (inflation era), slower post-2000 (consolidation/digital).
         const baseInflation=year<=1980?0.012:year<=1990?0.018:year<=2000?0.015:year<=2010?0.010:0.008;
-        const merit=sd.talent.quality>85?0.008:sd.talent.quality>72?0.004:0.001;
+        const tqMerit=talentTrueQuality(sd.talent);
+        const merit=tqMerit>85?0.008:tqMerit>72?0.004:0.001;
         // Performance pressure: strong ratings = talent demands more at renewal
         // Share > 8 = solid performer asking for their cut; > 12 = they KNOW they're valuable
         const stShare=s.rat?.share||0;
@@ -8351,7 +8488,7 @@ function decay(s,year,period){
         const moraleMod=sd.talent.morale<50?0.004:sd.talent.morale>80?-0.002:0;
         sd.talent.salary=Math.round(sd.talent.salary*(1+baseInflation+merit+perfPressure+moraleMod)/500)*500;
         // Salary floor: 75% of market rate (up from 55%) — long-tenured talent never drifts low
-        {const tier=(sd.talent.quality||30)<42?'entry':(sd.talent.quality||30)<68?'mid':'star';
+        {const tier=tqMerit<42?'entry':tqMerit<68?'mid':'star';
          // Floor = 100% of entry-tier minimum (was 75%) so no one earns poverty wages
          const baseFl=Math.round(salInfl((SAL[sl]?.[tier]?.[0]||5000),G.year)*0.60/500)*500;
          // Tenure premium: each year over 5 adds 2% to floor, up to +40% at 25 years
@@ -8367,7 +8504,8 @@ function decay(s,year,period){
         if(sd.talent.salary>mktCap)sd.talent.salary=mktCap;
       }
       // Universal floor (applies every period, not just Fall — catches legacy saves and new hires)
-      {const tier2=(sd.talent.quality||30)<42?'entry':(sd.talent.quality||30)<68?'mid':'star';
+      {const tqFloor=talentTrueQuality(sd.talent);
+       const tier2=tqFloor<42?'entry':tqFloor<68?'mid':'star';
        const flBase2=Math.round(salInfl((SAL[sl]?.[tier2]?.[0]||5000),G.year)*0.60/500)*500;
        const tenYrs2=G.year-(sd.talent._hireYear||G.year);
        const tenPrem2=Math.min(0.10, Math.max(0, tenYrs2-10)*0.01);
@@ -14691,6 +14829,7 @@ function doHire(){
   s.prog[sl].talent=t;
   const fit=t.formatFit[s.format]||.3;
   s.prog[sl].quality=Math.min(100,Math.round(s.prog[sl].quality+(t.quality/100)*fit*35));
+  initTalentPerformanceReveal(s.prog[sl],t,s.format,'hire');
   s.oq=Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+effSlotQForOq(s.prog[sl2])*w,0));
   G.news.unshift({v:'LOW',t:`You hire ${t.name} for ${s.callLetters} ${SL[sl]}`,y:G.year,p:G.period});
   logHistory(s,'TALENT',`Hired ${t.name} — ${SL[sl]} (Q:${t.quality})`,G);
@@ -15565,6 +15704,7 @@ function doRosterPlace(toSid,toSlot){
     const boost=t0=>Math.round((t0.quality/100)*fit(t0)*0.35*18);
     toSd.talent=t;
     toSd.quality=Math.min(100,Math.max(10,Math.round((toSd.quality||30)*(1-adjDip)))+boost(t));
+    initTalentPerformanceReveal(toSd,t,dst.format,'xfer');
     applyDaypartPromotionEconomics(t,prevSlot,toSlot);
     G.talentBench=G.talentBench.filter(e=>e.id!==ctx.benchId);
     G.news.unshift({v:'LOW',t:`${t.name} assigned from bench to ${callDisplay(dst)} ${SL[toSlot]}.`,y:G.year,p:G.period});
@@ -15815,6 +15955,7 @@ function doShuffle(sid,fromSlot,toSlot){
   const boost=t=>Math.round((t.quality/100)*fit(t)*0.35*18);
   toSd.talent=talA;
   toSd.quality=Math.min(100,Math.max(10,Math.round((toSd.quality||30)*(1-adjDip)))+boost(talA));
+  initTalentPerformanceReveal(toSd,talA,s.format,'xfer');
   applyDaypartPromotionEconomics(talA,fromSlot,toSlot);
   fromSd.talent=null;
   const pen={morningDrive:.20,afternoonDrive:.14,midday:.09,evening:.06,overnight:.03}[fromSlot]||.09;
@@ -18768,6 +18909,10 @@ function migrateSave(G){
             if(sd.talent._portraitFirstHireYear==null||sd.talent._portraitFirstHireYear===undefined){
               sd.talent._portraitFirstHireYear=sd.talent._hireYear||sd.talent._careerStartYear||(G?.year||1970);
             }
+            if(sd.talent._trueQuality==null||sd.talent._trueQuality===undefined)
+              sd.talent._trueQuality=Math.round(sd.talent.quality||50);
+            if(!sd.talent._trueFormatFit||typeof sd.talent._trueFormatFit!=='object')
+              sd.talent._trueFormatFit={...(sd.talent.formatFit||{})};
           }
         });}
     // Ensure color: in MP use per-player color based on _mpOwner, solo always amber
@@ -20189,6 +20334,7 @@ function doPoach(sid, slot, rivalId){
   s.prog[slot].talent=t;
   const fit=t.formatFit[s.format]||.3;
   s.prog[slot].quality=Math.min(100,Math.round(s.prog[slot].quality+(t.quality/100)*fit*35));
+  initTalentPerformanceReveal(s.prog[slot],t,s.format,'hire');
   s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w,0));
   G.news.unshift({v:'HIGH',t:`🎙 SIGNED: ${name} joins ${s.callLetters} from ${rival.callLetters} — ${f$(offer)}/yr.`,y:G.year,p:G.period,iy:true});
   logHistory(s,'TALENT',`Poached ${name} from ${callDisplay(rival)} — ${SL[slot]}`,G);
@@ -20580,7 +20726,7 @@ function rStns(){
               fmDupUi='<div class="ibox" style="margin-top:10px;text-align:left;font-size:13px;color:var(--mut);line-height:1.45">FCC max AM duplication on FM · <strong style="color:var(--off)">'+mktLbl+'</strong> · <strong style="color:var(--off)">'+G.year+'</strong>: <strong style="color:var(--grn)">100%</strong> — non-duplication limits do not apply; full simulcast allowed.</div>';
             }else{
               const cur=Math.min(maxP,Number.isFinite(fmLegForDup.fmSimulcastDupPct)?fmLegForDup.fmSimulcastDupPct:maxP);
-              const rem0=fmLegForDup.fmRemainderFormat||defaultFmRemainderFormat(pairNd.am.format,G);
+              const rem0=fmLegForDup.fmRemainderFormat||defaultFmRemainderFormat(pairNd.am.format,G,fmLegForDup.id);
               const fmtOpts=Object.keys(FM).filter(f=>formatAllowedInMarket(f,G.marketId,G.year)).map(f=>
                 '<option value="'+f+'"'+(f===rem0?' selected':'')+'>'+fmtLabel(f)+'</option>').join('');
               fmDupUi='<div class="ibox" style="margin-top:10px;text-align:left;max-width:100%;box-sizing:border-box">'+
