@@ -565,6 +565,69 @@ function vacantLabel(fmt,slot,s){
 }
 /** Chronological display order: Morning → Midday → Afternoon → Evening → Overnight (do not use object iteration for UI). */
 const DAYPART_SLOTS=['morningDrive','midday','afternoonDrive','evening','overnight'];
+/** One station-level lever: PD/coaching attention on one daypart vs balanced (see `programmingFocusSlotDecayMult` in decay). */
+const PROGRAMMING_FOCUS_BALANCED='balanced';
+function normalizeProgrammingFocus(v){
+  if(v==null||v===undefined||v===PROGRAMMING_FOCUS_BALANCED)return PROGRAMMING_FOCUS_BALANCED;
+  const x=String(v);
+  return DAYPART_SLOTS.includes(x)?x:PROGRAMMING_FOCUS_BALANCED;
+}
+function ensureStationProgrammingFocus(s){
+  if(!s)return;
+  s.programmingFocus=normalizeProgrammingFocus(s.programmingFocus);
+}
+/** Focused slot: gentler programming-product decay; other slots decay a bit faster. Talent skill decay still uses the baseline rate (see decay). */
+function programmingFocusSlotDecayMult(station,slotKey){
+  if(!station)return 1;
+  ensureStationProgrammingFocus(station);
+  const f=station.programmingFocus;
+  if(f===PROGRAMMING_FOCUS_BALANCED)return 1;
+  if(slotKey===f)return 0.84;
+  return 1.07;
+}
+function computeAiProgrammingFocusDesired(s,G){
+  ensureStationProgrammingFocus(s);
+  let wSum=0,wTot=0;
+  DAYPART_SLOTS.forEach(sl=>{
+    const w=SW[sl]||0.1;
+    wSum+=(s.prog?.[sl]?.quality||0)*w;
+    wTot+=w;
+  });
+  const wAvg=wTot?wSum/wTot:50;
+  const staffed=DAYPART_SLOTS.filter(sl=>s.prog?.[sl]?.talent);
+  if(!staffed.length)return PROGRAMMING_FOCUS_BALANCED;
+  const weak=staffed.filter(sl=>Math.round(s.prog[sl]?.quality||0)<=wAvg-9);
+  if(weak.length){
+    weak.sort((a,b)=>Math.round(s.prog[a].quality||0)-Math.round(s.prog[b].quality||0));
+    return weak[0];
+  }
+  const comm=(G.stations||[]).filter(o=>o&&!o._bpSlotDeferred&&!o.isPublic&&o.rat);
+  const sorted=[...comm].sort((a,b)=>(b.rat?.share||0)-(a.rat?.share||0));
+  const rank=sorted.findIndex(st=>st.id===s.id)+1;
+  if(rank>0&&rank<=3&&(s.rat?.share||0)>=0.07){
+    const strong=staffed.filter(sl=>Math.round(s.prog[sl]?.quality||0)>=wAvg+5);
+    strong.sort((a,b)=>(SW[b]||0.1)-(SW[a]||0.1));
+    if(strong[0]&&(SW[strong[0]]||0)>=0.22)return strong[0];
+  }
+  return PROGRAMMING_FOCUS_BALANCED;
+}
+function setStationProgrammingFocus(sid,value){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||!mpIsMe(s))return;
+  const v=normalizeProgrammingFocus(value);
+  s.programmingFocus=v;
+  if(s.simulcastWith){
+    const p=G.stations.find(st=>st.id===s.simulcastWith);
+    if(p&&mpIsMe(p))p.programmingFocus=v;
+  }
+  MP.action('progFocus',{sid,focus:v});
+  autoSave();
+  const pfLbl=v===PROGRAMMING_FOCUS_BALANCED?'Balanced':({morningDrive:'Morning',midday:'Midday',afternoonDrive:'Afternoon',evening:'Evening',overnight:'Overnight'}[v]||v);
+  showToast(`Programming focus: ${pfLbl}.`,'info');
+  renderAll();
+}
+window.setStationProgrammingFocus=setStationProgrammingFocus;
 /** Market-wide superstar talent — prior 80/60/5y gates rarely fired by 1980 in normal play; tuned so 0–2 stars can emerge late 70s without trivializing. */
 const SUPERSTAR={
   RAW_QUALITY_MIN:52,
@@ -1256,8 +1319,10 @@ const MARKET_BRAND_ABBREV={
   newyork:'NY',losangeles:'LA',chicago:'Chicago',atlanta:'Atlanta',nashville:'Nashville',
 };
 /**
- * Token for `{AMCHOP}`: AM stations mix full kHz ("680") vs dropped-zero ("68") like the real dial.
- * Choice is stable per market+calls+frequency (FM returns dial without band suffix).
+ * Token for `{AMCHOP}`: AM stations mix full kHz ("680") vs decade chop ("68") like the real dial.
+ * Through 990 kHz, "99" for 990 is fine; above that, decade chop is misleading (no "100" for 1000).
+ * Exceptions: round hundreds 1000–1600 kHz historically branded as "10"…"16" (e.g. WTAM 1100 "Radio 11", WTOP 1500 "News Radio 15").
+ * Choice is stable per market+calls+frequency for the probabilistic band (FM returns dial without band suffix).
  */
 function amDialBrandToken(freq, callLetters, marketId){
   const s=String(freq||'').trim();
@@ -1266,10 +1331,25 @@ function amDialBrandToken(freq, callLetters, marketId){
   const k=parseInt(amm[1],10);
   const digits=amm[1];
   if(k%10!==0||k<540||k>1700)return digits;
+  if(k>=1000&&k<=1600&&k%100===0)return String(k/100);
+  if(k>990)return digits;
   const mid=String(marketId||'');
   const h=wlHash32(`${mid}::brandDial::${String(callLetters||'')}::${digits}`)%100;
   if(h<52)return String(Math.round(k/10));
   return digits;
+}
+/** 1970–1983: FM dials without digital readouts — .1 / .9 MHz often spoken as whole MHz ("106.1" → "106"). */
+function fmBrandAnalogWholeMhz(freq, year){
+  const y=year==null||!Number.isFinite(Number(year))?1970:Number(year);
+  if(y<1970||y>1983)return null;
+  const s=String(freq||'').trim();
+  const m=s.match(/^(\d+)\.([19])\s*FM$/i);
+  if(!m)return null;
+  const whole=parseInt(m[1],10);
+  const tenths=parseInt(m[2],10);
+  if(tenths!==1&&tenths!==9)return null;
+  const mhz=whole+tenths/10;
+  return String(Math.round(mhz));
 }
 function brandCallBaseForToken(callLetters){
   return stripCallBandSuffix(callLetters);
@@ -1313,7 +1393,9 @@ const BRANDS={
 };
 /** Resolve {FREQ}, {CITY}, {ABBREV}, {AMCHOP}, {CALL} in a brand name */
 function resolveBrand(brand, freq, city, marketId, callLetters){
-  const freqShort=String(freq||'').replace(/\s*(AM|FM)\s*$/i,'').trim();
+  const yr=(typeof G!=='undefined'&&G?.year)||1970;
+  const fmWhole=fmBrandAnalogWholeMhz(freq, yr);
+  const freqShort=fmWhole!=null?fmWhole:String(freq||'').replace(/\s*(AM|FM)\s*$/i,'').trim();
   const mkt=MARKETS[marketId]||MARKETS.atlanta;
   const cityLabel=mkt.label||city||'City';
   const abbrev=MARKET_BRAND_ABBREV[marketId]||cityLabel.split(/\s+/)[0]||'City';
@@ -1363,7 +1445,7 @@ function getBrandSuggestions(s){
   const raw=BRANDS[canonicalHitsFormatKey(s.format)]||['{FREQ} Radio'];
   const city=G?.city||'Atlanta';
   const mktId=G?.marketId||ACTIVE_MARKET||'atlanta';
-  const freqShort=String(s.freq||'').replace(/\s*(AM|FM)\s*$/i,'').trim();
+  const freqShort=stationFreqDial(s);
   const taken=new Set(
     (G.stations||[]).filter(st=>st&&st.id!==s.id).map(st=>brandMarketIdentityKey(st.brand||''))
   );
@@ -5154,6 +5236,16 @@ window._mpApply_lean = function({ sid, val }) {
   if(s.simulcastWith){ const p=G.stations.find(st=>st.id===s.simulcastWith); if(p) p.demoLean=val; }
   renderAll();
 };
+window._mpApply_progFocus = function({ sid, focus }) {
+  const s = G.stations.find(st=>st.id===sid); if(!s) return;
+  const v = normalizeProgrammingFocus(focus);
+  s.programmingFocus = v;
+  if(s.simulcastWith){
+    const p = G.stations.find(st=>st.id===s.simulcastWith);
+    if(p) p.programmingFocus = v;
+  }
+  renderAll();
+};
 window._mpApply_fmbooster = function({ sid }) {
   // Apply the same station mutations that doFmBooster does on the host
   const s = G.stations.find(st=>st.id===sid);
@@ -5678,6 +5770,7 @@ function mkStn(bp,freq,year=1970){
     _aiSnap:null,
     _aiStrategicState:null,
     _aiLastMajorReason:null,
+    programmingFocus:PROGRAMMING_FOCUS_BALANCED,
   };
 }
 
@@ -8442,10 +8535,20 @@ function decay(s,year,period){
   }
   const decayMod=totalProgSpend>0?0.60:1.0;
   s.progInvestment=0; // clear one-shot; progBudget persists
+  ensureStationProgrammingFocus(s);
   Object.entries(s.prog).forEach(([sl,sd])=>{
-    if(!sd)return;const d=(D[sl]||.040)*decayMod;sd.quality=Math.max(10,sd.quality*(1-d));
+    if(!sd)return;
+    const dBase=(D[sl]||.040)*decayMod;
+    const dSlot=dBase*programmingFocusSlotDecayMult(s,sl);
+    sd.quality=Math.max(10,sd.quality*(1-dSlot));
+    const pf=normalizeProgrammingFocus(s.programmingFocus);
+    if(pf!==PROGRAMMING_FOCUS_BALANCED&&sl===pf){
+      const bumpR=wlHash32(`${s.id||''}::progFocusBump::${sl}::${year}::${period}`)%31;
+      const bump=0.2+bumpR/100;
+      sd.quality=Math.min(100,Math.round((sd.quality||0)+bump));
+    }
     if(sd.talent){
-      const md=sd.talent.morale<60?d*1.5:d*.5;
+      const md=sd.talent.morale<60?dBase*1.5:dBase*.5;
       sd.talent.quality=Math.max(15,sd.talent.quality*(1-md));
       if(typeof sd.talent._trueQuality==='number'&&!Number.isNaN(sd.talent._trueQuality))
         sd.talent._trueQuality=Math.max(15,Math.round(sd.talent._trueQuality*(1-md)));
@@ -9504,6 +9607,8 @@ function runAI(G){
       if(pr.sur)d=+.025;else if(pr.col)d=-.040;else if(pr.under)d=-.018;
       s.ops.sell=Math.max(.20,Math.min(.96,s.ops.sell+d));
     }
+
+    s.programmingFocus=computeAiProgrammingFocusDesired(s,G);
   });
   aiRivalPublishDebug(G);
   return acts;
@@ -12139,7 +12244,6 @@ function renderResearchModalBody(sid,listenerNonce){
     <div style="font-size:12px;color:var(--amb);letter-spacing:.12em;margin-bottom:6px">FREE — LISTENER FEEDBACK</div>
     <p class="di" style="margin:0 0 10px">Street buzz, caller blurts, and break-room gossip. Useful hints — not reliable enough to bet the company on.</p>
     ${_listenerFeedbackHtml(lines)}
-    <button type="button" class="cnl" style="margin-top:10px" onclick="refreshListenerFeedback('${s.id}')">Refresh chatter</button>
   </div>
   <div style="border-top:1px solid var(--bdh);margin:16px 0;padding-top:14px"></div>
   <div style="font-size:12px;color:var(--grn);letter-spacing:.12em;margin-bottom:6px">PAID — CONSULTANT REPORT</div>
@@ -12147,18 +12251,6 @@ function renderResearchModalBody(sid,listenerNonce){
   <div class="ibox">Report fee: <strong>${f$(cost)}</strong> <span style="color:var(--mut);font-size:13px">(scales with market size, inflation, and how many stations you run)</span><br/>Cash on hand: <strong>${f$(G.cash)}</strong>${!canAfford?' <span style="color:var(--red)">— insufficient funds</span>':''}</div>
   <button class="cfm" onclick="doResearch('${s.id}')" ${!canAfford?'disabled':''}>COMMISSION CONSULTANT REPORT — ${f$(cost)}</button>
   <button class="cnl" onclick="cm('m-research')">CANCEL</button>`;
-}
-function refreshListenerFeedback(sid){
-  sid=ensureOpsSourceSid(sid);
-  const rb=document.getElementById('researchb');
-  if(!rb)return;
-  const s=G.stations.find(st=>st.id===sid);
-  if(!s)return;
-  const nonce=Date.now();
-  const lines=buildListenerFeedbackLines(s,G,nonce);
-  const ul=rb.querySelector('#listener-feedback-list');
-  if(ul)ul.innerHTML=lines.map(l=>'<li style="margin-bottom:10px">'+wlEscapeHtml(l)+'</li>').join('');
-  else rb.innerHTML=renderResearchModalBody(sid,nonce);
 }
 function openResearch(sid){
   sid=ensureOpsSourceSid(sid);
@@ -12182,7 +12274,6 @@ function doResearch(sid){
     `<button class="cnl" style="margin-top:12px" onclick="cm('m-research')">CLOSE</button>`;
   renderAll();
 }
-window.refreshListenerFeedback=refreshListenerFeedback;
 
 // ── TRADE PRESS RATINGS DIGEST (server: ShortAPI and/or OpenAI) ─────────
 function wlEscapeHtml(str){
@@ -12359,6 +12450,36 @@ async function openRatingsDigestTradeSheet(opts){
     body.innerHTML='<p class="di" style="color:var(--red)">'+wlEscapeHtml(e.message||String(e))+'</p><button type="button" class="cnl" style="margin-top:14px" onclick="cm(\'m-ratings-digest\')">CLOSE</button>';
   }
 }
+/** Share delta for consultant modules — prefers ratings pass `cp.dq` when present. */
+function researchStationShareDelta(st){
+  if(!st||!st.rat)return 0;
+  if(st.cp&&typeof st.cp.dq==='number')return st.cp.dq;
+  const hist=st.rat.hist||[];
+  const cur=st.rat.share||0;
+  const prev=hist.length>=2?hist[hist.length-2]?.share??cur:cur;
+  return cur-prev;
+}
+/** 0–1 proxy for audience overlap between formats (not measured diary transfer). */
+function researchFormatAudienceAffinity(fmtA,fmtB){
+  if(!fmtA||!fmtB)return 0.12;
+  if(fmtA===fmtB)return 1;
+  const adj=FMT_COMPETITION[fmtA]||[];
+  if(adj.includes(fmtB))return 0.78;
+  const rev=FMT_COMPETITION[fmtB]||[];
+  if(rev.includes(fmtA))return 0.66;
+  const la=formatEcologyLaneId(fmtA);
+  const lb=formatEcologyLaneId(fmtB);
+  if(la===lb&&la!==String(fmtA))return 0.48;
+  return 0.15;
+}
+function consultantMemoSection(title,bodyHtml){
+  return'<div class="ms2" style="margin-top:12px"><div class="msh" style="border-bottom:1px solid var(--bdh);padding-bottom:6px;margin-bottom:10px;letter-spacing:.06em">'+title+'</div>'+
+    '<div style="font-size:14px;line-height:1.55;color:var(--off)">'+bodyHtml+'</div></div>';
+}
+function consultantBulletList(items){
+  if(!items||!items.length)return'';
+  return'<ul style="margin:8px 0 0;padding-left:20px;line-height:1.5">'+items.map(x=>'<li style="margin-bottom:8px">'+x+'</li>').join('')+'</ul>';
+}
 function buildResearchReport(s,G){
   const fmd=FM[canonicalHitsFormatKey(s.format)]||{};
   const year=G.year;
@@ -12423,6 +12544,182 @@ function buildResearchReport(s,G){
   const rank=allByShare.findIndex(st=>st.id===s.id)+1;
   const total=allByShare.length;
 
+  const call=callDisplay(s);
+  const comm=G.stations.filter(o=>o&&!o._bpSlotDeferred&&!o.isPublic&&o.rat&&o.id!==s.id);
+  const myDq=researchStationShareDelta(s);
+  let memoNarrowDifferentiation=false;
+
+  // ── CONSULTANT ANALYTIC MODULES (structured memo — not listener chatter) ──
+  const leadSameFmt=sameFormat.length?[...sameFormat].sort((a,b)=>(b.rat.share||0)-(a.rat.share||0))[0]:null;
+  const topOtherFmt=comm.filter(o=>o.format!==s.format).sort((a,b)=>(b.rat.share||0)-(a.rat.share||0))[0];
+
+  const flowParas=[];
+  if(myDq<-0.001){
+    const scored=comm.map(o=>{
+      const od=researchStationShareDelta(o);
+      if(od<=0.0006)return null;
+      const aff=researchFormatAudienceAffinity(s.format,o.format);
+      const w=aff*(0.035+od)*(0.025+(o.rat.share||0));
+      return{o,w};
+    }).filter(Boolean).sort((a,b)=>b.w-a.w);
+    const top=scored.slice(0,2).map(x=>x.o);
+    if(top.length){
+      const dest=top.map(o=>callDisplay(o)+' ('+fmtLabel(o.format,year)+')').join(', ');
+      flowParas.push('<p style="margin:0 0 8px"><strong>Soft book.</strong> Share is down; the cleanest parallel gainers look like <strong>'+dest+'</strong> (model inference from overlap + deltas — not diary-level).</p>');
+    }else{
+      flowParas.push('<p style="margin:0 0 8px"><strong>Soft book.</strong> No single rival mirrors your loss — listening likely splitting across several stations.</p>');
+    }
+  }
+  if(myDq>0.001){
+    const losers=comm.map(o=>{
+      const od=researchStationShareDelta(o);
+      if(od>=-0.0008)return null;
+      const aff=researchFormatAudienceAffinity(s.format,o.format);
+      return{o,w:aff*Math.abs(od)};
+    }).filter(Boolean).sort((a,b)=>b.w-a.w);
+    if(losers.length){
+      const picks=losers.slice(0,2).map(x=>callDisplay(x.o));
+      flowParas.push('<p style="margin:0 0 8px"><strong>Up book.</strong> Part of your gain lines up with slippage at <strong>'+picks.join('</strong> and <strong>')+'</strong>.</p>');
+    }
+  }
+  if(topOtherFmt&&(topOtherFmt.rat.share||0)>Math.max(0.04,cur*0.88)){
+    const td=researchStationShareDelta(topOtherFmt);
+    if(td>=myDq-0.001)
+      flowParas.push('<p style="margin:0 0 8px"><strong>Cross-format pressure.</strong> '+callDisplay(topOtherFmt)+' ('+fmtLabel(topOtherFmt.format,year)+') pulls as much weight as many same-format rivals.</p>');
+  }
+  if(!flowParas.length){
+    flowParas.push('<p style="margin:0">No strong flow signal — moves are incremental this book.</p>');
+  }
+  flowParas.push('<p style="margin:8px 0 0;font-size:12px;color:var(--mut)">Flow lines are modeled estimates, not measured tune-in paths.</p>');
+  const audienceFlowHtml=consultantMemoSection('AUDIENCE FLOW / DEFECTION ANALYSIS',flowParas.join(''));
+
+  let positioningHtml='';
+  const gds=getDrift(s);
+  const posParas=[];
+  if(gds&&gds.cfg){
+    const v=gds.val;
+    const t=(v??50)/100;
+    if(t<0.38){
+      posParas.push('<p style="margin:0 0 8px"><strong>Lane.</strong> Reads <strong>'+gds.cfg.poleA.name+'</strong> — softer / broader than the format’s aggressive edge.</p>');
+    }else if(t>0.62){
+      posParas.push('<p style="margin:0 0 8px"><strong>Lane.</strong> Sits <strong>'+gds.cfg.poleB.name+'</strong> — harder / younger than mid-pack.</p>');
+    }else{
+      posParas.push('<p style="margin:0 0 8px"><strong>Lane.</strong> Mid-pack '+fmtLabel(s.format,year)+' — familiar, not sharply differentiated by sound alone.</p>');
+    }
+    if(sameFormat.length&&leadSameFmt){
+      let sum=0,cn=0;
+      sameFormat.forEach(o=>{
+        const gd=getDrift(o);
+        if(gd&&typeof gd.val==='number'){sum+=gd.val;cn++;}
+      });
+      if(cn){
+        const avg=sum/cn;
+        if(Math.abs(v-avg)<9){
+          memoNarrowDifferentiation=true;
+          posParas.push('<p style="margin:0 0 8px"><strong>Overlap.</strong> Sound profile almost matches <strong>'+callDisplay(leadSameFmt)+'</strong> — listeners won’t separate you on format alone.</p>');
+        }else if(v>avg+11){
+          posParas.push('<p style="margin:0 0 8px"><strong>Vs same-format pack.</strong> Hotter than average — closer to <strong>'+gds.cfg.poleB.name+'</strong>.</p>');
+        }else if(v<avg-11){
+          posParas.push('<p style="margin:0 0 8px"><strong>Vs same-format pack.</strong> Milder than average — closer to <strong>'+gds.cfg.poleA.name+'</strong>.</p>');
+        }
+      }
+    }
+  }else{
+    posParas.push('<p style="margin:0 0 8px">No sound-axis slider for this format — image comes from brand, talent, and marketing.</p>');
+  }
+  const dl=s.demoLean||0;
+  if(dl<-0.28)posParas.push('<p style="margin:0"><strong>Demo.</strong> Skew <strong>young</strong> — watch rhythmic / rock / urban flanks.</p>');
+  else if(dl>0.28)posParas.push('<p style="margin:0"><strong>Demo.</strong> Skew <strong>old</strong> — vulnerable to younger-positioned stations.</p>');
+  positioningHtml=consultantMemoSection('POSITIONING / PERCEPTION',posParas.join(''));
+
+  let wSum=0,wTot=0;
+  DAYPART_SLOTS.forEach(sl=>{const w=SW[sl]||0.1;wSum+=(s.prog?.[sl]?.quality||0)*w;wTot+=w;});
+  const wAvg=wTot?wSum/wTot:50;
+  const talentBullets=[];
+  DAYPART_SLOTS.forEach(sl=>{
+    const sd=s.prog?.[sl];
+    const t=sd?.talent;
+    const q=Math.round(sd?.quality||0);
+    const lab=SL[sl]||sl;
+    if(!t){
+      talentBullets.push('<strong>'+lab+':</strong> No fixed host — compare to staffed dayparts at competitors.');
+      return;
+    }
+    const ten=t.periodsAtStation|0;
+    const settling=(t._perfRevealStepsLeft|0)>0&&!t._talentPerfRevealed;
+    const first=t.name.split(/\s+/)[0]||'Host';
+    let line='<strong>'+lab+':</strong> '+first+' — ';
+    if(settling)line+='still settling; books can lie early — give it another trend unless phones crater.';
+    else if(q>=wAvg+9)line+='<strong>Strength</strong> vs your other dayparts.';
+    else if(q<=wAvg-9)line+='<strong>Weak link</strong> vs the rest of the clock.';
+    else line+='Roughly in line with the rest of the schedule.';
+    if(ten<4&&!settling)line+=' New to the station.';
+    talentBullets.push(line);
+  });
+  const talentDaypartHtml=consultantMemoSection('TALENT / DAYPART PERFORMANCE',consultantBulletList(talentBullets)+'<p style="margin:8px 0 0;font-size:12px;color:var(--mut)">From on-air slot quality and tenure, not hidden scout math.</p>');
+
+  const prodParas=[];
+  if(spotSevere)prodParas.push('<p style="margin:0 0 8px"><strong>Spots.</strong> Well over format norm — likely hurting tolerance.</p>');
+  else if(spotIssue)prodParas.push('<p style="margin:0 0 8px"><strong>Spots.</strong> Above norm — first lever if trend weakens.</p>');
+  else prodParas.push('<p style="margin:0 0 8px"><strong>Spots.</strong> At or under norm.</p>');
+  const fa=s._formatAge|0;
+  if(fa>0&&fa<6)prodParas.push('<p style="margin:0 0 8px"><strong>Format.</strong> Recent change — audience still adjusting.</p>');
+  const idN=s.identity|0;
+  if(idN<26)prodParas.push('<p style="margin:0 0 8px"><strong>Brand.</strong> Not yet clearly defined in-market.</p>');
+  else if(idN>64)prodParas.push('<p style="margin:0 0 8px"><strong>Brand.</strong> Strong familiarity — defend before others copy the clock.</p>');
+  else prodParas.push('<p style="margin:0 0 8px"><strong>Brand.</strong> Average recognition.</p>');
+  if(trending==='DOWN'&&!spotIssue)prodParas.push('<p style="margin:0"><strong>Product.</strong> Spots aren’t the obvious culprit — check library depth and overlap next.</p>');
+  const productHtml=consultantMemoSection('PROGRAMMING / PRODUCT',prodParas.join(''));
+
+  const weakSlot=DAYPART_SLOTS.find(sl=>{
+    const sd=s.prog?.[sl];
+    return sd?.talent&&Math.round(sd.quality||0)<=wAvg-9;
+  });
+  const avgCompQ=directCompetitors.length?Math.round(directCompetitors.reduce((a,c)=>a+(c.oq||50),0)/directCompetitors.length):null;
+  const slotQs=DAYPART_SLOTS.map(k=>Math.round(s.prog?.[k]?.quality||0)).filter(q=>q>0);
+  const maxSlotQ=slotQs.length?Math.max(...slotQs):0;
+  const minSlotQ=slotQs.length?Math.min(...slotQs):99;
+  const scheduleImb=slotQs.length>=2&&maxSlotQ-minSlotQ>16&&rank<=Math.ceil(total*0.65);
+
+  const strBul=[];
+  if(rank<=3)strBul.push('Top-three share in the market.');
+  if(trending==='UP')strBul.push('Share up vs last book.');
+  if(sameFormat.length===0)strBul.push('Sole same-format station — you own the lane.');
+  if((s.identity||0)>=55)strBul.push('Solid brand familiarity for this format life.');
+
+  const weakBul=[];
+  if(weakSlot)weakBul.push(SL[weakSlot]+' underperforming vs rest of schedule');
+  if(scheduleImb)weakBul.push('Large gap between strongest and weakest dayparts');
+  if(memoNarrowDifferentiation&&leadSameFmt)weakBul.push('Minimal differentiation vs '+callDisplay(leadSameFmt));
+  else if(sameFormat.length>=2)weakBul.push('Crowded '+fmtLabel(s.format,year)+' lane ('+sameFormat.length+' rivals)');
+  if(rank>Math.ceil(total*0.55))weakBul.push('Below-median rank');
+  if(trending==='DOWN')weakBul.push('Share down vs last book');
+  if(spotIssue)weakBul.push('Heavy spot load');
+  if(isAMMusic&&amPenalty<0.55)weakBul.push('AM music structurally weak vs FM');
+  if(idN<26)weakBul.push('Weak brand definition');
+  if(fa>0&&fa<6)weakBul.push('Recent format change — still bedding in');
+  if(myDq<-0.001)weakBul.push('Negative share momentum this book');
+  if(avgCompQ!=null&&oq<avgCompQ-6)weakBul.push('Overall quality below adjacent-format set');
+
+  const riser=comm.filter(o=>researchStationShareDelta(o)>0.002).sort((a,b)=>researchStationShareDelta(b)-researchStationShareDelta(a))[0];
+  const vulnerable=comm.filter(o=>(o.rat.share||0)>0.035&&researchStationShareDelta(o)<-0.0015).sort((a,b)=>(b.rat.share||0)-(a.rat.share||0))[0];
+  const compObsPick=[];
+  if(riser&&(!topOtherFmt||riser.id!==topOtherFmt.id))compObsPick.push(callDisplay(riser)+' ('+fmtLabel(riser.format,year)+') is rising fast.');
+  else if(vulnerable)compObsPick.push(callDisplay(vulnerable)+' is big but leaking — possible target if formats line up.');
+  const keyCompLines=[];
+  if(leadSameFmt)keyCompLines.push('<strong>Same format:</strong> '+callDisplay(leadSameFmt));
+  if(topOtherFmt&&(!leadSameFmt||topOtherFmt.id!==leadSameFmt.id))
+    keyCompLines.push('<strong>Other format:</strong> '+callDisplay(topOtherFmt)+' ('+fmtLabel(topOtherFmt.format,year)+')');
+  let compLandBody='<p style="margin:0">#'+rank+' of '+total+' · '+(cur*100).toFixed(1)+'% · Trend '+pill(trending,trendColor)+'</p>';
+  if(keyCompLines.length)compLandBody+='<p style="margin:10px 0 0;font-size:14px;line-height:1.45">'+keyCompLines.slice(0,2).join('<br/>')+'</p>';
+  if(compObsPick.length)compLandBody+='<p style="margin:10px 0 6px;font-size:12px;color:var(--mut)">Watch</p>'+consultantBulletList(compObsPick);
+  const competitiveLandscapeHtml=consultantMemoSection('COMPETITIVE LANDSCAPE',compLandBody);
+
+  const swHtml=consultantMemoSection('STRENGTHS / WEAKNESSES',
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px">'+
+    '<div><div style="font-size:12px;color:var(--grn);letter-spacing:.08em;margin-bottom:6px">STRENGTHS</div>'+(strBul.length?consultantBulletList(strBul):'<p style="margin:0;color:var(--mut)">No standout positives — roughly average.</p>')+'</div>'+
+    '<div><div style="font-size:12px;color:var(--red);letter-spacing:.08em;margin-bottom:6px">WEAKNESSES / RISKS</div>'+(weakBul.length?consultantBulletList(weakBul):'<p style="margin:0;color:var(--mut)">Nothing major flagged — still read Talent and Flow for edge cases.</p>')+'</div></div>');
+
   // ── BUILD SECTIONS ──
   function row(label,val,note,color){
     return `<div class="sr"><span class="lb">${label}</span><span class="vl" style="color:${color||'var(--off)'}">${val}</span>${note?`<span style="font-size:15px;color:var(--mut);margin-left:8px">${note}</span>`:''}</div>`;
@@ -12472,39 +12769,15 @@ function buildResearchReport(s,G){
   }
 
   // QUALITY section
-  let qSection=hdr('ON-AIR QUALITY');
+  let qSection=hdr('QUALITY BENCHMARK');
   const qColor=oq>=70?'var(--grn)':oq>=50?'var(--amb)':'var(--red)';
   qSection+=row('Overall quality',`${oq}/100`,'','var(--off)');
   const qNotes=[];
-  if(oq>=70)qNotes.push('Quality is competitive. Not a primary problem.');
-  else if(oq>=50)qNotes.push('Quality is average. Programming investment could help.');
-  else qNotes.push('Quality is below market. Programming investment needed urgently.');
-  // Compare to direct competitors
-  const avgCompQ=directCompetitors.length?Math.round(directCompetitors.reduce((a,c)=>a+(c.oq||50),0)/directCompetitors.length):null;
-  if(avgCompQ!==null)qSection+=row('Competitor avg quality',`${avgCompQ}/100`,oq>avgCompQ?'You are above average — quality is not your problem here.':oq<avgCompQ?'Competitors outgun you on quality. Invest in programming or upgrade talent.':'Roughly equal.',oq>=avgCompQ?'var(--grn)':'var(--red)');
+  if(oq>=70)qNotes.push('Quality is not your main problem.');
+  else if(oq>=50)qNotes.push('Room to grow with programming spend.');
+  else qNotes.push('Quality is a liability — fix soon.');
+  if(avgCompQ!==null)qSection+=row('Competitor avg quality',`${avgCompQ}/100`,oq>avgCompQ?'Above adjacent-format average.':oq<avgCompQ?'Below that set — invest or upgrade talent.':'About even.',oq>=avgCompQ?'var(--grn)':'var(--red)');
   qSection+=`<div style="font-size:14px;color:var(--mut);padding:4px 0">${qNotes.join(' ')}</div>`;
-
-  // COMPETITION section
-  let compSection=hdr('COMPETITIVE LANDSCAPE');
-  compSection+=row('Market rank',`#${rank} of ${total}`,'All stations combined','var(--off)');
-  compSection+=row('Current share',`${(cur*100).toFixed(1)}%`,`Trend: ${pill(trending,trendColor)}`,'var(--off)');
-  if(sameFormat.length>0){
-    const sfShares=sameFormat.map(o=>`${o.callLetters} ${(o.rat.share*100).toFixed(1)}%`).join(', ');
-    compSection+=row('Same format',sameFormat.length===1?`1 competitor: ${sfShares}`:`${sameFormat.length} competitors: ${sfShares}`,'Direct format competition for your core demo.','var(--amb)');
-  } else {
-    compSection+=row('Same format','No direct competition','You own this format in the market.','var(--grn)');
-  }
-  if(totalCompCount>0){
-    const bleedPct=Math.round(competitionBleed*100);
-    compSection+=row('Adjacent competition',`${totalCompCount} stations`,`Compatible formats bleed ~${bleedPct}% from your potential share pool.`,totalCompCount>=3?'var(--red)':'var(--amb)');
-  }
-  // List top 3 direct competitors by share
-  if(directCompetitors.length){
-    const topComp=[...directCompetitors].sort((a,b)=>b.rat.share-a.rat.share).slice(0,3);
-    topComp.forEach(c=>{
-      compSection+=row(`  ${c.callLetters}`,`${(c.rat.share*100).toFixed(1)}% · Q${c.oq||'?'}`,`${fmtLabel(c.format)}`,c.rat.share>cur?'var(--red)':'var(--mut)');
-    });
-  }
 
   // SIMULCAST BREAKDOWN (if this station is in a simulcast)
   let simSection='';
@@ -12561,71 +12834,90 @@ function buildResearchReport(s,G){
   // ── RECOMMENDATIONS ──
   const recs=[];
 
-  // AM Music → reformat pressure
   if(isAMMusic&&amPenalty<0.5){
-    recs.push({sev:'HIGH',txt:`Your AM music signal has lost ${Math.round((1-amPenalty)*100)}% of its potential reach to FM. This is structural — you can't market your way out of it. The options are: acquire an FM license, convert to an AM-native format (News/Talk, Sports Talk), or sell and redeploy the capital.`});
+    recs.push({sev:'HIGH',txt:`AM music is ~${Math.round((1-amPenalty)*100)}% structurally eroded vs FM — get FM, flip to talk, or exit; marketing won’t fix it.`});
   } else if(isAMMusic&&amPenalty<0.75){
-    recs.push({sev:'MED',txt:`AM music is viable now but the window is closing. FM penetration will continue rising. Plan your transition: FM acquisition, simulcast on FM, or format change to AM-native content within 1-2 periods.`});
+    recs.push({sev:'MED',txt:'AM music window is closing — line up FM, simulcast, or talk within a couple of books.'});
   }
 
-  // AM Talk signal issue in late era
   if(isTalkAM&&year>=1995&&sameFormat.length>0){
     const fmTalkComp=sameFormat.filter(o=>o.sig.type==='FM'||o.fmBooster);
     if(fmTalkComp.length>0){
-      recs.push({sev:'MED',txt:`You have ${fmTalkComp.length} FM News/Talk competitor${fmTalkComp.length>1?'s':''}. FM talk is increasingly preferred in cars. Your content quality (Q${oq}) is your main defense — keep it above 70 and consider an FM simulcast or translator to protect your younger demographics.`});
+      recs.push({sev:'MED',txt:`FM talk competitor${fmTalkComp.length>1?'s':''} in-market — keep Q high; add FM leg if you can.`});
     }
   }
 
-  // Quality gap
   if(avgCompQ!==null&&oq<avgCompQ-10){
-    recs.push({sev:'HIGH',txt:`Your programming quality (Q${oq}) is ${avgCompQ-oq} points below your competitive average. Invest in programming (coaching, production) and upgrade underperforming talent slots. Target Q${Math.min(100,avgCompQ+5)}+ to be competitive.`});
+    recs.push({sev:'HIGH',txt:`Programming quality (${oq}) trails adjacent-format avg (~${avgCompQ}) — coach, produce, or replace weak slots; aim ~${Math.min(100,avgCompQ+5)}+.`});
   } else if(avgCompQ!==null&&oq<avgCompQ){
-    recs.push({sev:'LOW',txt:`Your quality is slightly below your competitive set. A programming investment push would help hold your core audience.`});
+    recs.push({sev:'LOW',txt:'Quality slightly under the adjacent-format pack — a programming push helps.'});
   }
 
-  // Spot load
   if(spotSevere){
-    recs.push({sev:'HIGH',txt:`Your spot load is ${spotPct}% of format norm — you're running too many ads. Listeners are tuning out between breaks. Reduce spot count to protect ratings; the revenue loss will be smaller than the ratings damage.`});
+    recs.push({sev:'HIGH',txt:`Cut spots (${spotPct}% of norm) before chasing other fixes — meters notice clutter first.`});
   } else if(spotIssue){
-    recs.push({sev:'MED',txt:`Spot load is slightly elevated. Watch this — more is not always more in radio. If ratings slip further, spots should be the first dial you turn down.`});
+    recs.push({sev:'MED',txt:'Spots above norm — trim if trend slips.'});
   }
 
-  // Format sunset
   if(fs2&&eraViab<0.6){
-    recs.push({sev:'HIGH',txt:`${fmtLabel(s.format)} is a fading format. You are operating at ${Math.round(eraViab*100)}% of peak viability. Begin transition planning now — reformat to a compatible growth format before the audience dries up entirely.`});
+    recs.push({sev:'HIGH',txt:`${fmtLabel(s.format)} is fading (~${Math.round(eraViab*100)}% of peak) — plan a move before ${fs2.dead}.`});
   }
 
-  // Competition saturation
-  if(sameFormat.length>=2){
-    recs.push({sev:'MED',txt:`${sameFormat.length} other stations are competing for the same format audience. In a saturated format, differentiation matters: demo targeting, talent quality, and spot load management are the levers that separate #1 from #3 in the same format.`});
+  if(sameFormat.length>=2&&!memoNarrowDifferentiation){
+    recs.push({sev:'MED',txt:'Crowded lane — win on talent, imaging, and demo focus; not on being louder with the same recipe.'});
   }
 
-  // Healthy station
+  if(weakSlot){
+    recs.push({sev:'MED',txt:`${SL[weakSlot]} lags your other dayparts — coach, support, or replace there first.`});
+  }
+  if(memoNarrowDifferentiation&&leadSameFmt){
+    recs.push({sev:'MED',txt:`Open perceptual space vs ${callDisplay(leadSameFmt)} — drift slider, imaging, star dayparts.`});
+  }
+  if(myDq<-0.002&&topOtherFmt&&(topOtherFmt.rat.share||0)>cur*0.95){
+    recs.push({sev:'MED',txt:`Treat ${callDisplay(topOtherFmt)} as a head-to-head rival, not a side threat.`});
+  }
+
   if(recs.length===0){
-    recs.push({sev:'OK',txt:`No critical issues detected. Your ratings position reflects the competitive market. Continue monitoring trend direction — a flat or slowly declining share in a healthy station often responds to incremental quality investment.`});
+    recs.push({sev:'OK',txt:'No burning issues — keep investing where you’re winning; watch the next book for drift.'});
   }
+
+  const recRank={HIGH:0,MED:1,LOW:2,OK:3};
+  recs.sort((a,b)=>(recRank[a.sev]??9)-(recRank[b.sev]??9));
+  const recsTop=recs.slice(0,3);
 
   const recColors={HIGH:'var(--red)',MED:'var(--amb)',LOW:'var(--off)',OK:'var(--grn)'};
-  const recHTML=recs.map(r=>`<div style="margin:8px 0;padding:8px 10px;background:${recColors[r.sev]}18;border-left:3px solid ${recColors[r.sev]};font-size:14px;line-height:1.5;color:var(--off)">${pill(r.sev,recColors[r.sev])} ${r.txt}</div>`).join('');
+  const recHTML=recsTop.map(r=>`<div style="margin:8px 0;padding:8px 10px;background:${recColors[r.sev]}18;border-left:3px solid ${recColors[r.sev]};font-size:14px;line-height:1.5;color:var(--off)">${pill(r.sev,recColors[r.sev])} ${r.txt}</div>`).join('');
 
   return `
     <div class="ms2">
       <div class="msh" style="display:flex;justify-content:space-between;align-items:center">
-        <span>STATION OVERVIEW</span>
+        <span>CONSULTANT REPORT — OVERVIEW</span>
         <span style="font-size:15px;color:var(--mut)">${G.city} · ${G.year}</span>
       </div>
+      <p class="di" style="margin:0 0 10px;font-size:13px;color:var(--mut)">Paid memo — not Listener Feedback.</p>
+      ${row('Station',call,'','var(--off)')}
       ${row('Format',fmtLabel(s.format),'','var(--off)')}
       ${row('Signal',`${s.sig.type} · ${signalPowerDisplayLabel(s.sig.pw)}`,'','var(--off)')}
       ${row('Share',`${(cur*100).toFixed(1)}%`,`Trend: ${pill(trending,trendColor)}`,'var(--off)')}
+    </div>
+    ${audienceFlowHtml}
+    ${positioningHtml}
+    ${talentDaypartHtml}
+    ${productHtml}
+    ${competitiveLandscapeHtml}
+    ${swHtml}
+    <div class="ms2" style="margin-top:12px">
+      <div class="msh" style="border-bottom:1px solid var(--bdh);padding-bottom:6px;margin-bottom:8px;letter-spacing:.06em">TECHNICAL APPENDIX</div>
+      <p class="di" style="margin:0 0 8px;font-size:12px;color:var(--mut)">Signal, quality index, simulcast, ops.</p>
       ${sigSection}
       ${qSection}
-      ${compSection}
       ${simSection}
       ${opsSection}
       ${fmtSection}
     </div>
     <div class="ms2" style="margin-top:12px">
       ${hdr('RECOMMENDATIONS')}
+      <p class="di" style="margin:0 0 6px;font-size:12px;color:var(--mut)">Top three actions.</p>
       ${recHTML}
     </div>`;
 }
@@ -14804,10 +15096,29 @@ function renderManageTalentStation(sid){
       </div>
     </div>`;
   }).join('');
+  ensureStationProgrammingFocus(s);
+  const pfCur=normalizeProgrammingFocus(s.programmingFocus);
+  const pfOpts=[
+    [PROGRAMMING_FOCUS_BALANCED,'Balanced'],
+    ['morningDrive','Morning'],
+    ['midday','Midday'],
+    ['afternoonDrive','Afternoon'],
+    ['evening','Evening'],
+    ['overnight','Overnight'],
+  ];
+  const pfSel=pfOpts.map(([val,lab])=>'<option value="'+val+'"'+(pfCur===val?' selected':'')+'>'+lab+'</option>').join('');
+  const progFocusPanel='<div class="ms2" style="margin-bottom:14px;padding:12px 14px">'+
+    '<div class="msh" style="margin-bottom:8px">PROGRAMMING FOCUS</div>'+
+    '<p class="di" style="margin:0 0 10px 0;font-size:13px;color:var(--mut)">Where PD attention, coaching, and promos lean. One daypart gets extra support; the rest take a small back seat — no separate budget.</p>'+
+    '<label style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--off)">'+
+    '<span style="color:var(--mut);font-size:12px;letter-spacing:0.06em">Focus</span>'+
+    '<select class="abt" style="padding:6px 10px;font-size:14px;min-width:190px;cursor:pointer" onchange="setStationProgrammingFocus(\''+s.id+'\',this.value)">'+pfSel+'</select>'+
+    '</label></div>';
   document.getElementById('fireb').innerHTML=`
     <div class="mt-manage">
       ${rosterStationSectionHeaderHtml(s)}
-      <p class="di" style="margin-bottom:14px">All dayparts for this station. Hire, replace, move, transfer, bench, or fire — without leaving this screen. <strong>Quality share ~%</strong> is roughly how much of this station’s programming quality bar comes from each daypart (morning counts more than overnight). <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:4px" onclick="openTalentMetricsHelp('qualityshare')">?</button> <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:4px" onclick="openTalentMetricsHelp()">Full metrics</button></p>
+      <p class="di" style="margin-bottom:14px">All dayparts for this station. Hire, replace, move, transfer, bench, or fire — without leaving this screen. <strong>Quality share ~%</strong> is roughly how much of this station’s programming quality bar comes from each daypart (morning counts more than overnight). <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:4px" onclick="openTalentMetricsHelp()" title="Talent metrics glossary">?</button></p>
+      ${progFocusPanel}
       ${blocks}
       <div class="ms2" style="margin-top:8px"><div class="msh">TALENT BENCH</div>${benchRows||'<p class="di" style="color:var(--mut)">Bench is empty.</p>'}</div>
       <button class="cnl" type="button" onclick="cm('m-fire')" style="margin-top:16px">CLOSE</button>
@@ -17015,7 +17326,11 @@ function marketRankCallLabel(st,hist){
 /** Dial from freq string: "670 AM" → "670", "101.1 FM" → "101.1" */
 function stationFreqDial(s){
   if(!s)return '';
-  return String(s.freq||'').replace(/\s*(AM|FM)\s*$/i,'').trim();
+  const raw=String(s.freq||'').trim();
+  const yr=(typeof G!=='undefined'&&G?.year)||1970;
+  const fmW=fmBrandAnalogWholeMhz(raw, yr);
+  if(fmW!=null)return fmW;
+  return raw.replace(/\s*(AM|FM)\s*$/i,'').trim();
 }
 /** Default on-air brand for player stations: "WABC 770", "WZZZ 101.1" (call + dial). */
 function defaultPlayerStationBrand(s){
@@ -19604,15 +19919,23 @@ function syncModalBodyScrollLock(){
   }
 }
 window.addEventListener('pageshow',()=>{ syncModalBodyScrollLock(); });
+/** Modals where backdrop click must not dismiss — player must use OK / Close in the panel (Windows-style ack). */
+const OV_REQUIRE_ACK_CLOSE=new Set([
+  'm-sum','m-grade','m-milestone','m-tal','m-programming','m-pg','m-fire',
+  'm-talent-trouble','m-poach-alert','m-period-news','m-contract','m-trade','m-swap','m-frmove',
+]);
 function om(id){
   if(id==='m-rk')openRanker();
-  document.getElementById(id).classList.add('on');
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.classList.add('on');
   syncModalBodyScrollLock();
 }
 /** @param {string} id
  * @param {{ wlTutorialSuppress?: boolean }} [opts] Pass `{ wlTutorialSuppress: true }` for programmatic closes (e.g. opening a sub-modal from Manage Talent, committing budget) so the tutorial only advances on the user’s main Close/backdrop. */
 function cm(id,opts){
-  document.getElementById(id).classList.remove('on');
+  const el=document.getElementById(id);
+  if(el)el.classList.remove('on');
   syncModalBodyScrollLock();
   if(id==='m-brand')BM_ACTIVE_SID=null;
   const wlTutSup=opts&&opts.wlTutorialSuppress;
@@ -19634,6 +19957,7 @@ function cm(id,opts){
 }
 document.querySelectorAll('.ov').forEach(el=>el.addEventListener('click',e=>{
   if(e.target===el){
+    if(OV_REQUIRE_ACK_CLOSE.has(el.id))return;
     if(el.id==='m-mp-endgame'&&typeof mpEndgameFrozen==='function'&&mpEndgameFrozen())return;
     if(el.id==='m-brand')BM_ACTIVE_SID=null;
     el.classList.remove('on');

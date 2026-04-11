@@ -477,6 +477,8 @@ html.wl-modal-open,body.wl-modal-open{overflow:hidden}
 /* Programming hub below sub-modals opened from Quick actions (Format / Drift / Demo) */
 #m-programming.on{z-index:8010}
 #m-fm.on,#m-drift.on,#m-lean.on{z-index:8100}
+/* Above Manage Talent (m-fire) so glossary stays visible when opened from roster */
+#m-talent-help.on{z-index:8200}
 /* First-turn tutorial (solo) — z-index set in JS (wlFtTutorialZBase ~11k) so card/shades stay above modals + feedback FAB */
 #wl-ft-tut-root{position:fixed;inset:0;pointer-events:none}
 #wl-ft-tut-shades{position:fixed;inset:0;pointer-events:none}
