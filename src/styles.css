@@ -76,6 +76,13 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 
 #alertbar{display:none;background:rgba(240,88,88,.12);border-bottom:1px solid rgba(240,88,88,.4);padding:8px 22px;font-family:var(--ft);font-size:14px;color:var(--red);letter-spacing:1px}
 #alertbar.on{display:block}
+/* Turnaround scripted tutorial coach (spotlight + cards — parallel to #wl-ft-tut-root) */
+#wl-tu-tr-root{position:fixed;inset:0;pointer-events:none;z-index:11020}
+#wl-tu-tr-shades{position:fixed;inset:0;pointer-events:none}
+#wl-tu-tr-card{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);width:min(420px,calc(100vw - 32px));box-sizing:border-box;background:var(--pnl);border:1px solid var(--bdh);border-top:3px solid var(--amb);padding:18px 20px 16px;box-shadow:0 12px 48px rgba(0,0,0,.65);font-family:var(--ft);pointer-events:auto}
+#wl-tu-tr-card.wl-ft-tut-card--anchored{max-height:min(420px,calc(100vh - 24px));overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+#wl-tu-tr-card.wl-ft-tut-card--modal-gutter{max-height:min(520px,calc(100vh - 24px))}
+#wl-tu-tr-card.wl-ft-tut-card--center{bottom:auto;top:50%;transform:translate(-50%,-50%)}
 
 #tkr{background:#0a0a0a;border-bottom:1px solid var(--bdr);overflow:hidden;height:32px;display:flex;align-items:center}
 #ti{display:flex;white-space:nowrap;animation:scrl 50s linear infinite}
@@ -476,7 +483,9 @@ html.wl-modal-open,body.wl-modal-open{overflow:hidden}
 .ov.on{opacity:1;pointer-events:all}
 /* Programming hub below sub-modals opened from Quick actions (Format / Drift / Demo) */
 #m-programming.on{z-index:8010}
-#m-fm.on,#m-drift.on,#m-lean.on{z-index:8100}
+#m-drift.on,#m-lean.on{z-index:8100}
+/* Above turnaround coach (#wl-tu-tr-root ~11020) so the format list is never buried under scripted tips */
+#m-fm.on{z-index:12060}
 /* Above Manage Talent (m-fire) so glossary stays visible when opened from roster */
 #m-talent-help.on{z-index:8200}
 /* First-turn tutorial (solo) — z-index set in JS (wlFtTutorialZBase ~11k) so card/shades stay above modals + feedback FAB */
@@ -605,15 +614,18 @@ input[type=range]{width:100%;-webkit-appearance:none;background:var(--bdr);heigh
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:20px;background:var(--amb);cursor:pointer;border-radius:0}
 .sln2{font-size:15px;color:var(--off);line-height:1.65;margin-top:10px;font-style:italic}
 .fmg{display:flex;flex-direction:column;gap:8px}
-.fmo{background:var(--crd);border:1px solid var(--bdr);padding:12px 16px;cursor:pointer;transition:all .15s;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:center}
+.fmo{background:var(--crd);border:1px solid var(--bdr);padding:12px 16px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:stretch;gap:0}
 .fmo:hover{border-color:var(--amb);background:var(--abg)}
 .fmo.sel{border-color:var(--amb);background:rgba(245,166,35,.14)}
 .fmo.unavail{opacity:.3;cursor:not-allowed}
 .fmo.locked{opacity:.45;cursor:not-allowed}
 .fmn{font-family:var(--fd);font-size:19px;letter-spacing:2px;color:var(--wht)}
-.fmd{font-size:15px;color:var(--off);margin-top:3px}
+.fmd{font-size:15px;color:var(--off);margin-top:6px;line-height:1.5}
+.fmo-meta{display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px;margin-top:12px;padding-top:10px;border-top:1px solid rgba(255,255,255,.1);font-family:var(--ft);font-size:13px;color:var(--mut);letter-spacing:.04em}
+.fmo-meta .fmbdg{flex-shrink:0}
+.fmo-meta-sim{line-height:1.4;max-width:100%}
 .fmp2{font-size:14px;color:var(--mut);margin-top:2px}
-.fmbdg{font-family:var(--ft);font-size:15px;padding:3px 9px;border:1px solid;letter-spacing:1px;text-align:center;white-space:nowrap}
+.fmbdg{font-family:var(--ft);font-size:13px;padding:3px 9px;border:1px solid;letter-spacing:1px;text-align:center;white-space:nowrap}
 .fmbdg.ok{border-color:var(--grn);color:var(--grn)}.fmbdg.risk{border-color:var(--amb);color:var(--amb)}.fmbdg.bad{border-color:var(--red);color:var(--red)}.fmbdg.lock{border-color:var(--mut);color:var(--mut)}
 .acg{display:flex;flex-direction:column;gap:9px}
 .aco{background:var(--crd);border:1px solid var(--bdr);padding:14px 16px;cursor:pointer;transition:all .15s;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start}
@@ -638,6 +650,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 .wbox{background:rgba(240,88,88,.08);border:1px solid rgba(240,88,88,.3);border-left:3px solid var(--red);padding:11px 14px;font-size:15px;color:var(--off);line-height:1.65;margin:14px 0}
 .bbox{background:rgba(90,180,255,.08);border:1px solid rgba(90,180,255,.3);border-left:3px solid var(--blu);padding:11px 14px;font-size:15px;color:var(--off);line-height:1.65;margin:14px 0}
 .wbox strong{color:var(--red)}.ibox strong{color:var(--amb)}.bbox strong{color:var(--blu)}
+#m-game-confirm .cfm.gameconf-ok--danger{background:var(--red);color:#fff}
+#m-game-confirm .cfm.gameconf-ok--danger:hover{background:#f87171;box-shadow:0 0 20px rgba(248,113,113,.35)}
 .cfm{width:100%;background:var(--amb);color:var(--blk);border:none;font-family:var(--fd);font-size:19px;letter-spacing:3px;padding:14px;cursor:pointer;margin-top:18px;transition:all .15s}
 .cfm:hover{background:#fff;box-shadow:0 0 24px rgba(245,166,35,.5)}
 .cfm:disabled{opacity:.3;cursor:not-allowed;background:var(--amb);box-shadow:none}
