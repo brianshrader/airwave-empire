@@ -1127,8 +1127,25 @@ function htmlOnAirTalentRoster(s){
     const sd=s.prog?.[sl];
     if(!sd)return '';
     const lbl=SL[sl];
-    const t=sd.talent;
     const slotQ=Math.round(sd.quality||0);
+    const fr=getStationFranchise(s,sl,G);
+    const t=sd.talent;
+    // Franchise programs the daypart for the licensee and simulcast halo partners — show syndication first
+    // so stale local rows (e.g. junior simulcast leg) are not mistaken for the on-air show.
+    if(fr){
+      const fq=Math.round(fr.quality||0);
+      let body=`<strong style="font-weight:600;color:var(--wht)">National syndication: &quot;${fr.name}&quot;</strong> · show Q ${fq} · slot quality ${slotQ}`;
+      if(t){
+        const tq=Math.round(t.quality||0);
+        const perPd=(typeof t.salary==='number'&&!Number.isNaN(t.salary))?Math.round(t.salary/2):0;
+        const salStr=(typeof t.salary==='number'&&!Number.isNaN(t.salary))
+          ?`${f$(perPd)}/period <span style="color:var(--mut);font-size:13px">(${f$(t.salary)}/yr)</span>`
+          :'—';
+        const star=t.superstar===true?'⭐ ':'';
+        body+=`<div style="margin-top:6px;display:flex;align-items:center;gap:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,.08)">${talentPortraitThumbHtml(t,'tp-intel',`${callDisplay(s)} · ${lbl}`)}<span style="font-size:14px;color:var(--mut);line-height:1.45"><span style="color:var(--off)">Local on books</span> — ${star}<strong style="color:var(--off);font-weight:600">${t.name}</strong> · talent ${tq} · ${salStr}</span></div>`;
+      }
+      return `<div class="sr" style="align-items:flex-start;gap:8px"><span class="lb" style="font-size:13px;letter-spacing:1px;padding-top:2px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);line-height:1.45;flex:1;min-width:0">${body}</span></div>`;
+    }
     if(t){
       const tq=Math.round(t.quality||0);
       const perPd=(typeof t.salary==='number'&&!Number.isNaN(t.salary))?Math.round(t.salary/2):0;
@@ -1148,6 +1165,7 @@ function htmlMarketTalentRankerList(){
   G.stations.forEach(st=>{
     if(!st.prog)return;
     DAYPART_SLOTS.forEach(sl=>{
+      if(getStationFranchise(st,sl,G))return;
       const tal=st.prog[sl]?.talent;
       if(!tal)return;
       const q=Math.round(tal.quality||0);
@@ -1587,9 +1605,10 @@ const GRADE_TITLES={
 const DECADE_NAMES={1979:'THE SEVENTIES',1989:'THE EIGHTIES',1999:'THE NINETIES',2009:'THE 2000s',2019:'THE 2010s',2020:'THE FULL ERA'};
 
 // ── TALENT & GENERATION ───────────────────────────────────────────
-const SAL={morningDrive:{entry:[12000,20000],mid:[22000,35000],star:[35000,60000]},afternoonDrive:{entry:[9000,16000],mid:[16000,26000],star:[26000,45000]},midday:{entry:[7000,12000],mid:[12000,20000],star:[20000,32000]},evening:{entry:[6000,10000],mid:[10000,17000],star:[17000,26000]},overnight:{entry:[5000,8000],mid:[8000,13000],star:[13000,20000]}};
+/** Free-agent ask ranges by daypart × tier ($/yr, pre-inflation). Wider bands = more “shopping” feel; still ordered star > mid > entry. */
+const SAL={morningDrive:{entry:[9500,24000],mid:[19000,42000],star:[32000,75000]},afternoonDrive:{entry:[7500,20000],mid:[14000,34000],star:[24000,58000]},midday:{entry:[6000,16000],mid:[11000,28000],star:[18000,42000]},evening:{entry:[5000,13000],mid:[8500,24000],star:[15000,34000]},overnight:{entry:[4000,10000],mid:[6500,18000],star:[11000,26000]}};
 /** True on-air quality bands (scouting noise layered on top; pool skews middling vs legacy). */
-const QRG={entry:[26,48],mid:[40,62],star:[54,78]};
+const QRG={entry:[24,52],mid:[36,66],star:[50,82]};
 /** Periods on-air (~4 calendar years at 2 periods/yr) to fold hidden performance into slot quality. */
 const TALENT_REVEAL_PERIODS=8;
 function clampTalentFit01(v){
@@ -1604,6 +1623,17 @@ function talentTrueFormatFit(t,fmt){
   const m=t?._trueFormatFit;
   if(m&&typeof m[fmt]==='number'&&!Number.isNaN(m[fmt]))return clampTalentFit01(m[fmt]);
   return clampTalentFit01(t?.formatFit?.[fmt]);
+}
+/** Scout `formatFit` vs station format — CHR/TOP40 save drift won’t zero out fit in hire UI / doHire. */
+function talentScoutFormatFit01(t,stationFormat){
+  if(!t?.formatFit||!stationFormat)return 0.3;
+  let v=t.formatFit[stationFormat];
+  if(typeof v!=='number'||Number.isNaN(v)){
+    const alt=canonicalHitsFormatKey(stationFormat);
+    if(alt!==stationFormat)v=t.formatFit[alt];
+  }
+  if(typeof v!=='number'||Number.isNaN(v))return 0.3;
+  return clampTalentFit01(v);
 }
 /** Rounded delta (slot quality points) between true vs scouted contribution for this station format. */
 function talentPerformanceRevealDeltaForStation(fmt,t,kind){
@@ -2061,10 +2091,10 @@ function mkTal(slot,fmt,tier='mid',year=1970,nameCtx){
   const salPos=qNorm*qNorm*(3-2*qNorm);
   const qualTarget=Math.round((entryLo+salSpan*salPos)/500)*500;
 
-  let qualAdjSal=Math.round((qualTarget*0.82+baseSal*0.18)/500)*500;
+  let qualAdjSal=Math.round((qualTarget*0.62+baseSal*0.38)/500)*500;
 
-  if(trueQ<80) qualAdjSal=Math.round(qualAdjSal*0.85/500)*500;
-  if(year>=1974 && year<=1978 && trueQ<80) qualAdjSal=Math.round(qualAdjSal*0.90/500)*500;
+  if(trueQ<80) qualAdjSal=Math.round(qualAdjSal*0.88/500)*500;
+  if(year>=1974 && year<=1978 && trueQ<80) qualAdjSal=Math.round(qualAdjSal*0.92/500)*500;
 
   const marketId=(typeof G!=='undefined'&&G?.marketId)||ACTIVE_MARKET||'atlanta';
   let finalSal=Math.round(
@@ -2074,7 +2104,8 @@ function mkTal(slot,fmt,tier='mid',year=1970,nameCtx){
     * marketTalentMult(marketId)
   /500)*500;
 
-  // Anchor new hires to on-air salaries for this daypart (same slot across the market).
+  // Anchor to market on-air pay for this daypart — loose cap so pools don’t collapse to one number;
+  // stars may ask further above the average than entry-level candidates.
   if(G?.stations?.length){
     const salz=[];
     for(let i=0;i<G.stations.length;i++){
@@ -2083,12 +2114,12 @@ function mkTal(slot,fmt,tier='mid',year=1970,nameCtx){
     }
     if(salz.length>=3){
       const avg=salz.reduce((a,b)=>a+b,0)/salz.length;
-      finalSal=Math.min(finalSal,avg*1.25);
+      const capMult=tier==='star'?1.78:tier==='mid'?1.45:1.30;
+      finalSal=Math.min(finalSal,Math.round(avg*capMult/500)*500);
     }
   }
-  // Mild pool bias: entry/mid draw slightly below star ask (does not touch superstar scaling later).
-  if(tier!=='star') finalSal*=0.90;
-  finalSal=Math.round(finalSal/500)*500;
+  const tierSalMult=tier==='star'?1:tier==='mid'?0.93:0.84;
+  finalSal=Math.round(finalSal*tierSalMult/500)*500;
 
   const gender=Math.random()<0.5?'female':'male';
   const name=gn({...nameCtx,fmt,year,gender});
@@ -2137,6 +2168,28 @@ function mkPool(slot,fmt,year){
     if(t)pool.push(t);
   }
   return shuffleTalentPoolInPlace(pool);
+}
+
+/** Cache key for hire/replace free-agent lists — same draw until period advances or a hire/poach lands (no reroll-by-back). */
+function wlFreeAgentPoolCacheKey(sid,slot,hireKind){
+  return `${sid}\t${G.turn|0}\t${G.year}\t${G.period|0}\t${slot}\t${hireKind}`;
+}
+/** @param {'hire'|'replace'} hireKind */
+function getOrCreateFreeAgentPool(s,slot,hireKind){
+  if(!G._wlFaPoolCache)G._wlFaPoolCache={};
+  const k=wlFreeAgentPoolCacheKey(s.id,slot,hireKind);
+  const ent=G._wlFaPoolCache[k];
+  if(Array.isArray(ent)&&ent.length)return ent;
+  const pool=mkPool(slot,s.format,G.year);
+  G._wlFaPoolCache[k]=pool;
+  return pool;
+}
+function invalidateFreeAgentPoolCachesForSlot(sid,slot){
+  if(!G._wlFaPoolCache)return;
+  const p=`${sid}\t${G.turn|0}\t${G.year}\t${G.period|0}\t${slot}\t`;
+  Object.keys(G._wlFaPoolCache).forEach(k=>{
+    if(k.startsWith(p))delete G._wlFaPoolCache[k];
+  });
 }
 
 /** Hire modal only: experience + rough remaining-career band (does not expose retirement triggers). */
@@ -2595,6 +2648,14 @@ const SPORT_LABEL={
   PRO_BASKETBALL:'Professional Basketball',
   PRO_HOCKEY:'Professional Hockey',
 };
+/** Leading emoji in sports UI / news so teams scan by sport at a glance */
+const SPORT_TEAM_EMOJI={
+  PRO_FOOTBALL:'🏈',
+  PRO_BASEBALL:'⚾',
+  PRO_BASKETBALL:'🏀',
+  PRO_HOCKEY:'🏒',
+};
+function sportTeamEmoji(sport){return SPORT_TEAM_EMOJI[sport]||'🏟';}
 const SPORTS_FORMAT_FIT={
   SPORTS_TALK:1.00,NEWS_TALK:0.70,ALL_NEWS:0.68,PODCAST_TALK:0.65,
   MOR:0.45,ADULT_CONTEMP:0.40,CLASSIC_HITS:0.40,
@@ -2766,7 +2827,7 @@ function runSportsEvents(G){
         tier==='rebuilding'?'📉 Listeners tuning out.':'';
       const mpForPids=MP.mode==='live'&&holder&&holder.isPlayer&&holder._mpOwner!==undefined?[holder._mpOwner]:undefined;
       acts.push({v:tier==='dynasty'?'HIGH':tier==='rebuilding'?'MEDIUM':'LOW',
-        t:`🏟 ${team.name}: ${label} (${rec.record}/100).${holderNote}${impact?'  '+impact:''}`,
+        t:`${sportTeamEmoji(team.sport)} ${team.name}: ${label} (${rec.record}/100).${holderNote}${impact?'  '+impact:''}`,
         y:G.year,p:G.period,iy:!!holderIsMine,mpForPids});
     }
     if(rights&&rights.contractEnd===G.year&&G.period===1&&!rights.auctionOpen){
@@ -2774,7 +2835,7 @@ function runSportsEvents(G){
       rights.auctionCloses=G.year;
       rights.bids={};
       acts.push({v:'HIGH',
-        t:`📋 ${team.name} broadcast rights up for renewal — bidding opens. Current holder: ${rights.holderName}. Contract expires this period.`,
+        t:`📋 ${sportTeamEmoji(team.sport)} ${team.name} broadcast rights up for renewal — bidding opens. Current holder: ${rights.holderName}. Contract expires this period.`,
         y:G.year,p:G.period});
     }
     if(rights&&rights.auctionOpen&&shouldResolveRightsAuction(G,rights.auctionCloses)){
@@ -2805,7 +2866,7 @@ function resolveRightsAuction(team,rights,G,acts){
       const h=G.stations.find(st=>st.id===rights.holderId);
       if(h&&h.isPlayer&&h._mpOwner!==undefined)holdMp=[h._mpOwner];
     }
-    acts.push({v:'LOW',t:`📋 ${team.name} rights renewed by ${rights.holderName} — no competing bids.`,y:G.year,p:G.period,
+    acts.push({v:'LOW',t:`📋 ${sportTeamEmoji(team.sport)} ${team.name} rights renewed by ${rights.holderName} — no competing bids.`,y:G.year,p:G.period,
       mpForPids:holdMp});
     return;
   }
@@ -2822,7 +2883,7 @@ function resolveRightsAuction(team,rights,G,acts){
     rights.contractEnd=G.year+team.contractYrs;
     rights.auctionOpen=false;
     rights.bids={};
-    acts.push({v:'LOW',t:`📋 ${team.name} broadcast rights: auction could not pick a winner (stale bids) — ${rights.holderName||'incumbent'} renewed at prior terms.`,y:G.year,p:G.period});
+    acts.push({v:'LOW',t:`📋 ${sportTeamEmoji(team.sport)} ${team.name} broadcast rights: auction could not pick a winner (stale bids) — ${rights.holderName||'incumbent'} renewed at prior terms.`,y:G.year,p:G.period});
     return;
   }
   const prev=rights.holderId?G.stations.find(st=>st.id===rights.holderId):null;
@@ -2857,7 +2918,7 @@ function resolveRightsAuction(team,rights,G,acts){
     if(prevPlayer&&prev&&prev._mpOwner!==undefined&&(!newPlayer||prev._mpOwner!==winner._mpOwner))mpForPids.push(prev._mpOwner);
   }
   acts.push({v:'HIGH',
-    t:`📋 ${team.name} rights awarded to ${winner.callLetters} — ${f$(winnerBid)}/yr for ${team.contractYrs} years.${changeNote}`,
+    t:`📋 ${sportTeamEmoji(team.sport)} ${team.name} rights awarded to ${winner.callLetters} — ${f$(winnerBid)}/yr for ${team.contractYrs} years.${changeNote}`,
     y:G.year,p:G.period,iy:newPlayer||prevPlayer,
     mpForPids:mpForPids&&mpForPids.length?mpForPids:undefined});
 }
@@ -2891,7 +2952,8 @@ function placeSportsBid(teamId,stationId,amount){
   const myCash=MP.mode==='live'?(G._playerCash?.[ownerPid]??G.cash):G.cash;
   if(myCash<amount){showToast('Insufficient funds.','warn');return;}
   rights.bids[stationId]=amount;
-  const tname=(MARKETS[G.marketId||'atlanta']?.teams||[]).find(t=>t.id===teamId)?.name||teamId;
+  const tm=(MARKETS[G.marketId||'atlanta']?.teams||[]).find(t=>t.id===teamId);
+  const tname=tm?`${sportTeamEmoji(tm.sport)} ${tm.name}`:teamId;
   const _spid=st?._mpOwner;
   G.news.unshift({v:'LOW',t:`📋 Bid submitted for ${tname} rights — ${f$(amount)}/yr.`,y:G.year,p:G.period,iy:true,
     mpForPids:MP.mode==='live'&&_spid!==undefined?[_spid]:undefined});
@@ -13144,6 +13206,32 @@ function snapMarketRankBookDisplay(G){
     turn:G.turn,
     rows:rows.map((row,i)=>({key:marketRankRowKey(row),rank:i+1,share:row.share})),
   };
+  snapStationCardShareDisplay(G);
+}
+/** Per-leg audience share shown on player station cards — frozen at each book until Next Period (live model still updates for sim/revenue). */
+function snapStationCardShareDisplay(G){
+  if(!G?.stations?.length)return;
+  const byId=Object.create(null);
+  G.stations.forEach(st=>{
+    if(!st||st._bpSlotDeferred||st.id==null)return;
+    const sh=st.rat&&typeof st.rat.share==='number'&&!Number.isNaN(st.rat.share)?st.rat.share:0;
+    byId[st.id]=Math.round(sh*1e8)/1e8;
+  });
+  G._stationCardShareSnap={
+    year:G.year,
+    period:G.period,
+    turn:G.turn,
+    byId,
+  };
+}
+function stationCardDisplayShare01(s){
+  if(!s||s._bpSlotDeferred)return 0;
+  const snap=G._stationCardShareSnap&&G._stationCardShareSnap.byId;
+  if(snap&&Object.prototype.hasOwnProperty.call(snap,s.id)){
+    const v=snap[s.id];
+    return typeof v==='number'&&!Number.isNaN(v)?v:(s.rat&&s.rat.share)||0;
+  }
+  return(s.rat&&s.rat.share)||0;
 }
 /** Rows for rMkt: book rank/share when snap exists; new stations append at bottom by live share. */
 function buildMarketRankRowsForDisplay(G){
@@ -13254,6 +13342,7 @@ function buildListenerFeedbackLines(s,G,nonce){
   const maybeFlip=p=>rng()<p;
   const call=callDisplay(s);
   const fmtLab=fmtLabel(s.format,G.year);
+  const musicHeavy=!s.isPublic&&!TALK_FMTS.includes(s.format)&&s.format!=='ALL_NEWS';
   const buckets=[];
   const push=(tag,line)=>{if(line&&String(line).trim())buckets.push({tag,line:String(line).trim()});};
 
@@ -13282,17 +13371,23 @@ function buildListenerFeedbackLines(s,G,nonce){
   const fmd=FM[canonicalHitsFormatKey(s.format)]||{};
   const spotN=fmd.sp||14;
   const rv=(s.ops?.spots||spotN)/spotN;
-  if(rv>1.18&&!maybeFlip(0.18))push('sound',pick([
+  if(rv>1.18&&!maybeFlip(0.18))push('sound',pick(musicHeavy?[
     `Complaint line: “Too many spots back-to-back.” (Then they sat through six minutes of ads.)`,
     `Some say ${call} feels cluttered — like a sales meeting with music between.`,
+  ]:[
+    `Complaint line: “Too many spots back-to-back.” (Then they sat through six minutes of ads.)`,
+    `Some say ${call} feels clogged — long stop-sets eating the show.`,
   ]));
   else if(rv<0.88&&!maybeFlip(0.2))push('sound',pick([
     `Odd compliment: “Doesn’t feel as greedy as the other guys.”`,
     `A listener said ${call} “breathes” more than the competition — make of that what you will.`,
   ]));
-  else if(!maybeFlip(0.35))push('format',pick([
+  else if(!maybeFlip(0.35))push('format',pick(musicHeavy?[
     `The ${fmtLab} crowd is opinionated — a few swear the mix got sharper; others want the old clock back.`,
     `PD gossip: ${fmtLab} on ${call} is either “finally clicking” or “stuck in a rut,” depending who you ask.`,
+  ]:[
+    `The ${fmtLab} crowd is opinionated — some say the lineup “found its voice”; others miss what it used to be.`,
+    `Water-cooler take: ${fmtLab} on ${call} is either “must-listen” or “background noise,” depending who you ask.`,
   ]));
 
   const fmtAge=s._formatAge||0;
@@ -13390,13 +13485,22 @@ function buildListenerFeedbackLines(s,G,nonce){
       `Market mood: consolidation chatter everywhere; listeners mostly want fewer commercials.`,
     ]));
 
-  if(!maybeFlip(0.55))push('flavor',pick([
-    `One caller said your DJ talks too much — then talked for four straight minutes.`,
-    `“Pretty good, actually,” one listener said about mornings. High praise from that guy.`,
-    `Someone insisted you play the same songs daily. They sang along to prove it.`,
-    `A complaint ended with “still better than the other station.” Radio love is complicated.`,
-    `PD gut: the phones are liars, but they’re your liars.`,
-  ]));
+  if(!maybeFlip(0.55)){
+    const flavorMusic=[
+      `One caller said your DJ talks too much — then talked for four straight minutes.`,
+      `Someone insisted you play the same songs daily. They sang along to prove it.`,
+    ];
+    const flavorSpoken=[
+      `One caller said the host talks too much — then talked for four straight minutes.`,
+      `Someone keeps calling in about “the old show” — nobody agrees which old show.`,
+    ];
+    const flavorAny=[
+      `“Pretty good, actually,” one listener said about mornings. High praise from that guy.`,
+      `A complaint ended with “still better than the other station.” Radio love is complicated.`,
+      `PD gut: the phones are liars, but they’re your liars.`,
+    ];
+    push('flavor',pick([...(musicHeavy?flavorMusic:flavorSpoken),...flavorAny]));
+  }
 
   for(let i=buckets.length-1;i>0;i--){
     const j=Math.floor(rng()*(i+1));
@@ -13577,17 +13681,18 @@ function wlBuildRatingsDigestPayload(){
   const mkt=MARKETS[G.marketId||ACTIVE_MARKET]?.label||'Market';
   const periodLabel=`${G.year} ${PERIODS[(G.period||1)-1]}`;
   const comm=G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPublic&&s.rat)
-    .sort((a,b)=>(b.rat.share||0)-(a.rat.share||0));
+    .sort((a,b)=>stationCardDisplayShare01(b)-stationCardDisplayShare01(a));
   const book=comm.map((s,i)=>{
     const call=callDisplay(s);
     const br=(typeof s.brand==='string'&&s.brand.trim())?s.brand.trim():defaultPlayerStationBrand(s);
     const brand=String(br||'').trim().slice(0,72);
+    const sh01=stationCardDisplayShare01(s);
     return{
       rank:i+1,
       call,
       brand,
       format:fmtLabel(s.format,G.year),
-      sharePct:Math.round((s.rat.share||0)*1000)/10,
+      sharePct:Math.round(sh01*1000)/10,
       deltaPts:s.cp&&typeof s.cp.dq==='number'?Math.round(s.cp.dq*1000)/10:null,
       band:(s.sig?.type==='FM'||s.fmBooster)?'FM':'AM',
     };
@@ -15471,6 +15576,9 @@ function advTurn(mpCoalesceSeq){
         G._cashBridgeDebtBeforeAdvTurn=typeof debtPrincipalForPid==='function'?debtPrincipalForPid(G,loanPidForGame()):0;
         wlCashBridgeAuditPush('BEFORE_ADVANCE',{year:G.year,period:G.period});
       }
+      // Solo: snapshot wallet before revenue phase — franchise/sports resolution & other pre-seedRev hooks can move cash;
+      // finHistory + harness verify use this with EBITDA/LMA/interest/pressure for a closed cash identity.
+      if(MP.mode!=='live') G._advTurnCashStartOfTurn=G.cash||0;
       G._fccRegulatoryThisTurn=[];
       normalizeSimulcastLinksInPlace(G);
       enforceFmNonDupConstraints(G);
@@ -15512,6 +15620,9 @@ function advTurn(mpCoalesceSeq){
     // Post-revenue consolidation uses current-period fin.rev for deal pricing; news merged below like runAI acts.
     const consolidationActs=simQuiet?[]:runConsolidation(G);
     if(wlCashBridgeAuditActive())wlCashBridgeAuditPush('AFTER_REV_AND_AI_BEFORE_LMA',{});
+    if(MP.mode!=='live'){
+      G._advTurnEarlyPipelineCashDelta=(G.cash||0)-(G._advTurnCashStartOfTurn||0);
+    }
     processLMAFees(G);
     if(wlCashBridgeAuditActive()){
       const _lma=playerLmaCashNetForSolo(G);
@@ -16436,7 +16547,7 @@ function mtOpenHireSlot(sid,slot){
     showToast('This daypart already has a local host — use Replace to change hosts.','warn');
     return;
   }
-  HS={sid,slot,pool:mkPool(slot,s.format,G.year),sel:null,poachRivalId:null,_embed:'manage',_hireKind:'hire'};
+  HS={sid,slot,pool:getOrCreateFreeAgentPool(s,slot,'hire'),sel:null,poachRivalId:null,_embed:'manage',_hireKind:'hire'};
   document.getElementById('fire-title').textContent='HIRE — '+SL[slot];
   rHire(s,'top');
   om('m-fire');
@@ -16447,7 +16558,7 @@ function mtOpenReplaceSlot(sid,slot){
   const s=G.stations.find(st=>st.id===sid);
   if(!s||!s.prog[slot]?.talent)return;
   if(daytimerRestrictedSlot(s,slot)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
-  HS={sid,slot,pool:mkPool(slot,s.format,G.year),sel:null,poachRivalId:null,_embed:'manage',_hireKind:'replace'};
+  HS={sid,slot,pool:getOrCreateFreeAgentPool(s,slot,'replace'),sel:null,poachRivalId:null,_embed:'manage',_hireKind:'replace'};
   document.getElementById('fire-title').textContent='REPLACE — '+SL[slot]+' · current host → bench';
   rHire(s,'top');
   om('m-fire');
@@ -16511,10 +16622,10 @@ function rHire(s, scrollAfter){
     const cur=s2.prog[HS.slot]?.talent;
     const slotQcur=Math.round(s2.prog[HS.slot]?.quality||0);
     const poachList=hireModalRivalPoachCandidates(HS.sid,HS.slot);
-    const freeRows=HS.pool.map((t,i)=>{const fitF=t.formatFit[s2.format]||.3;const fit=Math.round(fitF*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const newSlotQ=Math.min(100,Math.round(curSlotQ+(q/100)*fitF*35));const hStar=t.superstar===true?'★ ':'';let deltaHtml='';if(HS._hireKind==='replace'&&cur){const dQ=q-Math.round(cur.quality);const curW=talentDestFormatFitSummary(cur,s2.format).words;const newW=talentDestFormatFitSummary(t,s2.format).words;const dSal=t.salary-cur.salary;deltaHtml=`<div style="font-size:12px;color:var(--amb);margin-top:6px;font-family:var(--ft);line-height:1.55"><div>Δ Talent rating: ${dQ>=0?'+':''}${dQ}</div><div>Δ Format fit: ${curW} → ${newW}</div><div>Δ Salary: ${dSal>=0?'+':''}${f$(dSal)}/yr</div></div>`;}return `<div class="to to-hire${HS.sel===i&&!HS.poachRivalId?' sel':''}" onclick="pickTal(${i})"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-hire',`${callDisplay(s2)} · ${SL[HS.slot]} · hire list`)}</div><div style="flex:1;min-width:0"><div class="ton">${hStar}${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div>${deltaHtml}<div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl" style="font-size:12px;line-height:1.25;white-space:normal" title="Estimated slot quality after hire: current slot score plus (talent÷100)×(format fit)×35, max 100 — same as confirm hire.">PROJECTED SLOT QUALITY</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ}</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div></div></div></div><div class="to-hire-side"><span class="tocl">ANNUAL SAL</span><span class="toc">${f$(t.salary)}</span></div></div>`;}).join('');
+    const freeRows=HS.pool.map((t,i)=>{const fitF=talentScoutFormatFit01(t,s2.format);const fit=Math.round(fitF*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const liftRaw=(q/100)*fitF*35;const liftDec=Math.round(liftRaw*10)/10;const newSlotQ=Math.min(100,Math.round(curSlotQ+liftRaw));const liftLbl=`${liftDec>=0?'+':''}${liftDec.toFixed(1)}`;const hStar=t.superstar===true?'★ ':'';let deltaHtml='';if(HS._hireKind==='replace'&&cur){const dQ=q-Math.round(cur.quality);const curW=talentDestFormatFitSummary(cur,s2.format).words;const newW=talentDestFormatFitSummary(t,s2.format,{scout:true}).words;const dSal=t.salary-cur.salary;deltaHtml=`<div style="font-size:12px;color:var(--amb);margin-top:6px;font-family:var(--ft);line-height:1.55"><div>Δ Talent rating: ${dQ>=0?'+':''}${dQ}</div><div>Δ Format fit: ${curW} → ${newW}</div><div>Δ Salary: ${dSal>=0?'+':''}${f$(dSal)}/yr</div></div>`;}return `<div class="to to-hire${HS.sel===i&&!HS.poachRivalId?' sel':''}" onclick="pickTal(${i})"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-hire',`${callDisplay(s2)} · ${SL[HS.slot]} · hire list`)}</div><div style="flex:1;min-width:0"><div class="ton">${hStar}${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div>${deltaHtml}<div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl" style="font-size:12px;line-height:1.25;white-space:normal" title="After hire: current slot ${curSlotQ} + lift (${liftLbl} pts), rounded, max 100 — same formula as confirm hire.">PROJECTED SLOT QUALITY</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ} <span style="font-size:12px;color:var(--mut);font-family:var(--ft);font-weight:400">(${liftLbl})</span></span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div></div></div></div><div class="to-hire-side"><span class="tocl">ANNUAL SAL</span><span class="toc">${f$(t.salary)}</span></div></div>`;}).join('');
     const rivalRows=poachList.map(({st,sd:rsd})=>{
       const rt=rsd.talent;
-      const fit=Math.round((rt.formatFit[s2.format]||.3)*100);
+      const fit=Math.round(talentScoutFormatFit01(rt,s2.format)*100);
       const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';
       const fc=fit>=75?'good':fit>=55?'warn':'poor';
       const q=Math.round(rt.quality);
@@ -16531,7 +16642,7 @@ function rHire(s, scrollAfter){
     const curBox=cur?`<div class="ibox">Current: <strong>${cur.name}</strong> — quality ${Math.round(cur.quality)}, slot quality ${slotQcur}, ${f$(cur.salary)}/yr.</div>`:'';
     const freeSection=HS.pool.length
       ?`<div class="msh" style="margin-top:16px;margin-bottom:8px;font-size:13px;letter-spacing:.12em;color:var(--mut)">FREE AGENTS</div>
-    <p class="di">Four market candidates. <strong>Talent rating</strong> is how good they are. <strong>Format fit</strong> scales how much of that talent translates into this station’s format. <strong>Projected slot quality</strong> is the daypart score right after hire: current slot quality plus <strong>(talent÷100)×(fit as 0–1)×35</strong>, capped at 100. <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:4px" onclick="openTalentMetricsHelp('slotboost')">Explain metrics</button></p>
+    <p class="di">Four market candidates. <strong>Talent rating</strong> is how good they are. <strong>Format fit</strong> scales how much of that talent translates into this station’s format. <strong>Projected slot quality</strong> is the daypart score right after hire: current slot quality plus <strong>(talent÷100)×(fit as 0–1)×35</strong>, capped at 100. The parenthetical <strong>(+N.N)</strong> is the raw lift in slot points so similar totals don’t hide different talent×fit mixes. <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:4px" onclick="openTalentMetricsHelp('slotboost')">Explain metrics</button></p>
     <div class="tg">${freeRows}</div>`
       :'';
     const rivalSection=poachList.length
@@ -16568,7 +16679,10 @@ function pickSlot(sid,sl){
     showToast('That daypart is under your syndication deal — pick another slot or use National Franchises.','warn');
     return;
   }
-  HS.slot=sl;HS.sel=null;HS.poachRivalId=null;HS.pool=mkPool(sl,s.format,G.year);rHire(s,'top');
+  HS.slot=sl;HS.sel=null;HS.poachRivalId=null;
+  const poolKind=HS._hireKind==='replace'?'replace':HS._hireKind==='hire'?'hire':(s.prog[sl]?.talent?'replace':'hire');
+  HS.pool=getOrCreateFreeAgentPool(s,sl,poolKind);
+  rHire(s,'top');
 }
 function pickTal(i){HS.sel=i;HS.poachRivalId=null;rHire(G.stations.find(st=>st.id===HS.sid));}
 function pickHirePoach(rivalId){HS.poachRivalId=rivalId;HS.sel=null;rHire(G.stations.find(st=>st.id===HS.sid));}
@@ -16609,7 +16723,7 @@ function doHire(){
   if(t._portraitFirstHireYear==null||t._portraitFirstHireYear===undefined)t._portraitFirstHireYear=G.year;
   if(!t._careerStartYear)t._careerStartYear=Math.max(1970,G.year-ri(0,18));
   s.prog[sl].talent=t;
-  const fit=t.formatFit[s.format]||.3;
+  const fit=talentScoutFormatFit01(t,s.format);
   s.prog[sl].quality=Math.min(100,Math.round(s.prog[sl].quality+(t.quality/100)*fit*35));
   initTalentPerformanceReveal(s.prog[sl],t,s.format,'hire');
   s.oq=Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+effSlotQForOq(s.prog[sl2])*w,0));
@@ -16617,6 +16731,7 @@ function doHire(){
   logHistory(s,'TALENT',`Hired ${t.name} — ${SL[sl]} (Q:${t.quality})`,G);
   if(benchedReplaceName) logHistory(s,'TALENT',`Benched ${benchedReplaceName} — ${SL[sl]} (replaced)`,G);
   MP.action('hire', {sid:s.id, slot:sl, talent:t});
+  invalidateFreeAgentPoolCachesForSlot(s.id,sl);
   queueTalentPortrait(t);
   if(s.isPlayer&&(HS._hireKind==='replace'||HS._hireKind==='hire'))tutorialTurnaroundOnTalentAdjusted();
   if(HS._embed==='manage'){
@@ -17948,7 +18063,7 @@ function openSports(sid){
     return `<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:6px;padding:12px 14px;margin-bottom:10px;${holding?'border-color:var(--grn)':''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
         <div>
-          <div style="font-family:var(--fd);font-size:16px;color:var(--wht)">${team.name} ${holding?'<span style="color:var(--grn);font-size:14px">◆ YOU HOLD</span>':''}</div>
+          <div style="font-family:var(--fd);font-size:16px;color:var(--wht)">${sportTeamEmoji(team.sport)} ${team.name} ${holding?'<span style="color:var(--grn);font-size:14px">◆ YOU HOLD</span>':''}</div>
           <div style="font-size:14px;color:var(--mut);margin-top:2px">${SPORT_LABEL[team.sport]||team.sport} · ${seasonNote} · Format fit: ${fmtFitPct}%</div>
         </div>
         <div style="text-align:right">
@@ -18047,9 +18162,17 @@ function openFranchise(sid){
 }
 
 // Cross-station talent transfer (player-owned stations only; separate from within-station shuffle)
-/** Format fit for talent vs a station format — UI uses `words` (GREAT FIT / DECENT FIT / POOR FIT) everywhere. */
-function talentDestFormatFitSummary(talent, destFormat) {
-  const fit = talent.formatFit[destFormat] ?? 0.3;
+/**
+ * Format fit for talent vs a station format — UI uses `words` (GREAT FIT / DECENT FIT / POOR FIT).
+ * Default: true (_trueFormatFit) for on-air hosts so roster / transfer / contract match simulation (no scout spike mid-modal).
+ * Hire lists pass `{ scout: true }` so free agents still show scouting estimates.
+ */
+function talentDestFormatFitSummary(talent, destFormat, opts) {
+  const useScout = opts && opts.scout === true;
+  const raw = useScout
+    ? (talent && talent.formatFit && talent.formatFit[destFormat] != null ? talent.formatFit[destFormat] : 0.3)
+    : talentTrueFormatFit(talent, destFormat);
+  const fit = typeof raw === 'number' && !Number.isNaN(raw) ? raw : 0.3;
   const fitPct = Math.round(fit * 100);
   const words = fitPct >= 75 ? 'GREAT FIT' : fitPct >= 55 ? 'DECENT FIT' : 'POOR FIT';
   const label = fitPct >= 75 ? 'Great fit' : fitPct >= 55 ? 'Decent fit' : 'Poor fit';
@@ -21014,6 +21137,8 @@ function migrateSave(G){
     G.pendingDecisionEvent=null;
   if(!G._mktRankBookSnap||!Array.isArray(G._mktRankBookSnap.rows)||!G._mktRankBookSnap.rows.length){
     snapMarketRankBookDisplay(G);
+  } else if(!G._stationCardShareSnap||typeof G._stationCardShareSnap.byId!=='object'){
+    snapStationCardShareDisplay(G);
   }
   return G;
 }
@@ -21035,6 +21160,7 @@ function loadLocalSave(){
   normalizeSimulcastLinksInPlace(G);
   enforceFmNonDupConstraints(G);
   recalc(G.stations,G);
+  snapStationCardShareDisplay(G);
   G.news.unshift({v:'HIGH',t:`📂 Autosave resumed: ${local.label}`,y:G.year,p:G.period});
   cm('m-save');renderAll();
   queuePlayerTalentPortraits();
@@ -21520,7 +21646,8 @@ function recordCompanyFinHistory(G, wasYear, wasPeriod, profit){
     const loanInterest=MP.mode==='live'?(G._lastLoanInterestByPlayer?.[_loanPid]||0):(G._lastLoanInterestCharge||0);
     const lmaNet=MP.mode==='live'?null:playerLmaCashNetForSolo(G).net;
     const pressureNet=MP.mode==='live'?null:(G._lastPressureCashDelta!=null?G._lastPressureCashDelta:0);
-    const entry={year:wasYear,period:wasPeriod,revenue,cost,ebitda:pProfit,margin,cash:pCash,talentCost,fixedCost,shareSum,avgSellout,debtPrincipal,loanInterest,lmaNet,pressureNet};
+    const earlyPipelineNet=MP.mode==='live'?null:(G._advTurnEarlyPipelineCashDelta!=null?G._advTurnEarlyPipelineCashDelta:0);
+    const entry={year:wasYear,period:wasPeriod,revenue,cost,ebitda:pProfit,margin,cash:pCash,talentCost,fixedCost,shareSum,avgSellout,debtPrincipal,loanInterest,lmaNet,pressureNet,earlyPipelineNet};
     return entry;
   };
   if(MP.mode==='live'){
@@ -22099,7 +22226,7 @@ function openTalentMetricsHelp(section){
     <h4 id="tm-qualityshare" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">QUALITY SHARE (~%) — MANAGE TALENT</h4>
     <p class="di">Only on the <strong>Manage Talent</strong> roster: approx. share of the station’s overall programming quality from this daypart — (slot quality × daypart weight) ÷ station quality. Not audience share; heavier dayparts move the station bar more.</p>
     <h4 id="tm-slotboost" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">PROJECTED SLOT QUALITY — HIRING</h4>
-    <p class="di">On hire/replace lists: matches confirm hire — <strong>new slot quality</strong> = current slot score + <strong>(talent÷100)×(format fit 0–1)×35</strong>, min 10 / max 100.</p>`;
+    <p class="di">On hire/replace lists: matches confirm hire — <strong>new slot quality</strong> = current slot score + <strong>(talent÷100)×(format fit 0–1)×35</strong>, min 10 / max 100. The list shows <strong>(+N.N)</strong> one-decimal <strong>slot lift</strong> so you can separate candidates when the rounded total looks the same.</p>`;
   om('m-talent-help');
   if(section){
     requestAnimationFrame(()=>{
@@ -22425,7 +22552,7 @@ function doPoach(sid, slot, rivalId){
   if(t._careerStartYear>t._hireYear)t._careerStartYear=t._hireYear;
   t._letExpire=false;
   s.prog[slot].talent=t;
-  const fit=t.formatFit[s.format]||.3;
+  const fit=talentScoutFormatFit01(t,s.format);
   s.prog[slot].quality=Math.min(100,Math.round(s.prog[slot].quality+(t.quality/100)*fit*35));
   initTalentPerformanceReveal(s.prog[slot],t,s.format,'hire');
   s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w,0));
@@ -22434,6 +22561,7 @@ function doPoach(sid, slot, rivalId){
   logHistory(rival,'TALENT',`${name} signed by ${callDisplay(s)} — ${SL[slot]}`,G);
   if(oldTal) logHistory(s,'TALENT',`Released ${oldTal.name} — ${SL[slot]} (replaced by poach)`,G);
   MP.action('poach', {sid, slot, rivalId, talentId:t.id||t.name});
+  invalidateFreeAgentPoolCachesForSlot(sid,slot);
   if(s.isPlayer)tutorialTurnaroundOnTalentAdjusted();
   queueTalentPortrait(t);
   cm('m-contract');
@@ -22685,7 +22813,7 @@ function rStns(){
     const revUi=junior?s.fin.rev+junior.fin.rev:s.fin.rev;
     const costUi=junior?s.fin.cost+junior.fin.cost:s.fin.cost;
     const stnEbitda=revUi-costUi;
-    const shareUi=junior?s.rat.share+junior.rat.share:s.rat.share;
+    const shareUi=junior?stationCardDisplayShare01(s)+stationCardDisplayShare01(junior):stationCardDisplayShare01(s);
     const div=document.createElement('div');
     div.className=`sc ${stnEbitda>=0?'profit':'loss'}`;
     const _simSrc=simulcastProgrammingSource(s);
@@ -22765,7 +22893,7 @@ function rStns(){
         const _teams=(MARKETS[G.marketId||'atlanta']?.teams||[]).filter(t=>G.year>=t.introduced);
         const _openSp=_teams.some(t=>G.sportsRights?.[t.id]?.auctionOpen);
         const _holdsSp=_teams.filter(t=>G.sportsRights?.[t.id]?.holderId===op.id);
-        const sportsBtn=_teams.length?'<button class="abt '+(_openSp?'g':'b')+'" onclick="openSports(\''+op.id+'\')" style="'+(_openSp?'border-color:var(--grn);color:var(--grn)':'')+'">🏟 '+(_holdsSp.length?_holdsSp.map(t=>t.name.split(' ').pop()).join('+')+' RIGHTS':'SPORTS RIGHTS')+'</button>':'';
+        const sportsBtn=_teams.length?'<button class="abt '+(_openSp?'g':'b')+'" onclick="openSports(\''+op.id+'\')" style="'+(_openSp?'border-color:var(--grn);color:var(--grn)':'')+'">🏟 '+(_holdsSp.length?_holdsSp.map(t=>sportTeamEmoji(t.sport)+' '+t.name.split(' ').pop()).join(' · ')+' RIGHTS':'SPORTS RIGHTS')+'</button>':'';
         const _myFr=NATIONAL_FRANCHISES.filter(f=>_fr[f.id]?.holderId===op.id);
         const _openFr=NATIONAL_FRANCHISES.filter(f=>G.year>=f.introduced&&f.formats.includes(op.format)&&_fr[f.id]?.auctionOpen);
         const _eligFr=NATIONAL_FRANCHISES.filter(f=>G.year>=f.introduced&&f.formats.includes(op.format));

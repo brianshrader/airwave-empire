@@ -23,6 +23,7 @@
     "sim:fm-nondup": "node scripts/fm-nondup-validation.mjs",
     "sim:cash-audit": "npm run build && node scripts/run-cash-flow-audit.mjs",
     "sim:cash-bridge-audit": "npm run build && node scripts/run-cash-bridge-audit.mjs",
+    "sim:scenario-probe": "npm run build && node scripts/run-scenario-probe.mjs",
     "sim:mega-snapshots": "npm run build && node scripts/run-mega-snapshots.mjs",
     "sim:ratings-collapse": "npm run build && node scripts/run-ratings-collapse-audit.mjs",
     "diag:fixed-cluster": "node scripts/fixed-cost-cluster-diag.mjs",

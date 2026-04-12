@@ -2781,7 +2781,8 @@
 
   /**
    * Verify: each finHistory row satisfies
-   *   cash[i] - cash[i-1] === ebitda[i] - loanInterest[i] + lmaNet[i] + pressureNet[i]
+   *   cash[i] - cash[i-1] === earlyPipelineNet[i] + ebitda[i] - loanInterest[i] + lmaNet[i] + pressureNet[i]
+   * earlyPipelineNet = wallet delta after events/franchise/sports (pre-seedRev) through start of LMA step (solo).
    * pressureNet = cash after checkPressure(distress / solo bankruptcy clamp) minus cash before.
    * Optionally injects LMA lessee/lessor mid-run.
    */
@@ -2792,9 +2793,11 @@
     for (var i = 0; i < fh.length; i++) {
       var row = fh[i];
       var delta = row.cash - prevCash;
+      var early =
+        row.earlyPipelineNet != null && row.earlyPipelineNet !== undefined ? row.earlyPipelineNet : 0;
       var lma = row.lmaNet != null && row.lmaNet !== undefined ? row.lmaNet : 0;
       var pressure = row.pressureNet != null && row.pressureNet !== undefined ? row.pressureNet : 0;
-      var expected = row.ebitda - (row.loanInterest || 0) + lma + pressure;
+      var expected = early + row.ebitda - (row.loanInterest || 0) + lma + pressure;
       if (delta !== expected) {
         violations.push({
           index: i,
@@ -2802,6 +2805,7 @@
           period: row.period,
           deltaCash: delta,
           expectedDelta: expected,
+          earlyPipelineNet: early,
           ebitda: row.ebitda,
           loanInterest: row.loanInterest,
           lmaNet: lma,
@@ -3097,6 +3101,239 @@
     };
   }
 
+  /**
+   * Solo: load a real scenario preset (e.g. King of the Dial `wsb` in Chicago) and advance the clock
+   * with deterministic RNG. Summarizes cash bridge components + finHistory chain integrity.
+   *
+   * @param {object} [opts]
+   * @param {string} [opts.marketId] default 'chicago'
+   * @param {string} [opts.scenarioId] default 'wsb' (King of the Dial — BP idx 4 AM MOR dominant)
+   * @param {number} [opts.seed] LCG seed for Math.random patch
+   * @param {number} [opts.maxSteps] safety cap (default 200)
+   * @param {number} [opts.stopYear] with stopPeriod: exit loop once G.year/G.period passes that slot (after advTurn)
+   * @param {number} [opts.stopPeriod] 1=spring 2=fall
+   */
+  function runScenarioSoloCashProbe(opts) {
+    opts = opts || {};
+    var marketId = opts.marketId || 'chicago';
+    var scenarioId = opts.scenarioId || 'wsb';
+    var maxSteps = opts.maxSteps != null ? opts.maxSteps : 200;
+    var stopYear = opts.stopYear;
+    var stopPeriod = opts.stopPeriod;
+    var seed = opts.seed != null ? opts.seed : 202604071;
+    var verbose = opts.verbose !== false;
+
+    if (typeof genMarket !== 'function') throw new Error('genMarket not found — load legacy.js first');
+    if (typeof advTurn !== 'function') throw new Error('advTurn not found');
+    if (typeof syncMarketPopToMarket !== 'function') throw new Error('syncMarketPopToMarket not found');
+
+    var savedG = typeof G !== 'undefined' ? G : null;
+    var savedActive = typeof ACTIVE_MARKET !== 'undefined' ? ACTIVE_MARKET : null;
+    var savedSel = typeof _selectedMarket !== 'undefined' ? _selectedMarket : null;
+    var savedMPMode = typeof MP !== 'undefined' && MP ? MP.mode : undefined;
+    var savedMPPlayers = typeof MP !== 'undefined' && MP ? MP.players : undefined;
+    var savedMPPid = typeof MP !== 'undefined' && MP ? MP.playerId : undefined;
+    var savedHeadless = typeof globalThis !== 'undefined' ? globalThis.__WL_HEADLESS__ : undefined;
+    var origRandom = Math.random;
+
+    var lines = [];
+    var steps = 0;
+    var minCash = 0;
+    var maxAbsEarly = 0;
+    var sumEbitda = 0;
+    var sumInterest = 0;
+    var sumLma = 0;
+    var sumPressure = 0;
+    var chainViolations = [];
+
+    try {
+      if (typeof globalThis !== 'undefined') globalThis.__WL_HEADLESS__ = true;
+      if (typeof MP === 'undefined') throw new Error('MP not defined');
+      MP.mode = 'solo';
+      MP.players = [];
+      MP.playerId = 0;
+      ACTIVE_MARKET = marketId;
+      if (typeof _selectedMarket !== 'undefined') _selectedMarket = marketId;
+      syncMarketPopToMarket(marketId);
+
+      var s = seed;
+      Math.random = function () {
+        s = (s * 9301 + 49297) % 233280;
+        return s / 233280;
+      };
+
+      G = genMarket(scenarioId);
+      if (typeof migrateSave === 'function') migrateSave(G);
+
+      var startCash = G.cash || 0;
+      minCash = startCash;
+      var ps = G.ps || [];
+      var st0 = ps[0];
+      var scRow = typeof SC !== 'undefined' && SC ? SC.find(function (x) { return x.id === scenarioId; }) : null;
+      var baseScenarioCash = scRow && scRow.cash != null ? scRow.cash : null;
+
+      lines.push('══════════════════════════════════════════════════════════════');
+      lines.push('  SCENARIO SOLO CASH PROBE');
+      lines.push('  Market: ' + marketId + ' · Scenario: ' + scenarioId + (scRow && scRow.l ? ' (' + scRow.l + ')' : ''));
+      lines.push('  RNG seed: ' + seed);
+      lines.push('══════════════════════════════════════════════════════════════');
+      if (baseScenarioCash != null) {
+        lines.push('Scenario base cash (SC table): ' + baseScenarioCash);
+        lines.push('G.cash after genMarket (scaled for market): ' + startCash);
+      } else {
+        lines.push('G.cash after genMarket: ' + startCash);
+      }
+      if (st0) {
+        lines.push(
+          'Player station: ' +
+            st0.callLetters +
+            ' · ' +
+            st0.format +
+            ' · OQ ' +
+            (st0.oq != null ? st0.oq : '—') +
+            ' · share ' +
+            (st0.rat && st0.rat.share != null ? (st0.rat.share * 100).toFixed(2) + '%' : '—')
+        );
+        if (scRow && scRow.heritageIncumbent) lines.push('Scenario heritageIncumbent: true (OQ/slot-quality boost at gen)');
+      } else {
+        lines.push('WARNING: no player station in G.ps');
+      }
+      lines.push('Start clock: ' + G.year + ' period ' + G.period + ' (1=SPR 2=FAL)');
+
+      var ui = patchTimersAndUi();
+      var doneByStop = false;
+      try {
+        while (steps < maxSteps) {
+          if (stopYear != null && stopPeriod != null) {
+            if (G.year > stopYear || (G.year === stopYear && G.period > stopPeriod)) {
+              doneByStop = true;
+              break;
+            }
+          }
+          advTurn();
+          steps++;
+          var c = G.cash || 0;
+          if (c < minCash) minCash = c;
+          var fh = G.finHistory || [];
+          var last = fh.length ? fh[fh.length - 1] : null;
+          if (last) {
+            sumEbitda += last.ebitda || 0;
+            sumInterest += last.loanInterest || 0;
+            sumLma += last.lmaNet || 0;
+            sumPressure += last.pressureNet || 0;
+            var ep = last.earlyPipelineNet;
+            if (ep != null && Math.abs(ep) > Math.abs(maxAbsEarly)) maxAbsEarly = ep;
+          }
+          if (stopYear != null && stopPeriod != null) {
+            if (G.year > stopYear || (G.year === stopYear && G.period > stopPeriod)) {
+              doneByStop = true;
+              break;
+            }
+          }
+          if (G.year > 2030) break;
+        }
+      } finally {
+        ui.restore();
+      }
+
+      chainViolations = verifySoloFinHistoryChain(G.finHistory || [], startCash);
+      var endCash = G.cash || 0;
+      var st1 = (G.ps && G.ps[0]) || null;
+
+      lines.push('--- After ' + steps + ' advTurn() ---');
+      lines.push('Clock now: ' + G.year + ' period ' + G.period + (doneByStop ? ' (stopped after target period processed)' : ''));
+      lines.push('Cash: end ' + endCash + ' · min over run ' + minCash + ' · Δcash ' + (endCash - startCash));
+      lines.push(
+        'finHistory sums: ΣEBITDA ' +
+          sumEbitda +
+          ' · ΣloanInt ' +
+          sumInterest +
+          ' · ΣlmaNet ' +
+          sumLma +
+          ' · Σpressure ' +
+          sumPressure +
+          ' · max|earlyPipeline| ' +
+          maxAbsEarly
+      );
+      lines.push('finHistory chain violations: ' + chainViolations.length);
+      if (st1) {
+        lines.push(
+          'Player station now: ' +
+            st1.callLetters +
+            ' · ' +
+            st1.format +
+            ' · OQ ' +
+            (st1.oq != null ? st1.oq : '—') +
+            ' · share ' +
+            (st1.rat && st1.rat.share != null ? (st1.rat.share * 100).toFixed(2) + '%' : '—')
+        );
+        if (st1.fin) {
+          lines.push(
+            'Last card fin: rev ' +
+              (st1.fin.rev || 0) +
+              ' · cost ' +
+              (st1.fin.cost || 0) +
+              ' · ebitda ' +
+              (st1.fin.ebitda || 0)
+          );
+        }
+      }
+      if (chainViolations.length) {
+        lines.push('--- Chain violations (first 6) ---');
+        lines.push(JSON.stringify(chainViolations.slice(0, 6), null, 2));
+      }
+      lines.push('--- Design notes (this scenario) ---');
+      lines.push(
+        'wsb = BP idx 4: AM MOR 50kW dominant. Chicago MARKET_BP_PATCH: idx2 NEWS_TALK emerging, idx16 FM TOP40 emerging (Chicago does not defer idx16 in 1970).'
+      );
+      lines.push(
+        'Starting cash = SC.cash × marketStartingCashMultiplier (Chicago mega + revScale 2.8). Heritage incumbent boosts OQ and slot qualities.'
+      );
+      lines.push(
+        '1985 Fall in UI = after processing that half-year; mega fragmentation adds FM competitors from 1983 onward — expect more share pressure vs a 1970s-only dial.'
+      );
+
+      var plainEnglish = lines.join('\n');
+      if (verbose && typeof console !== 'undefined') console.log(plainEnglish);
+
+      return {
+        ok: chainViolations.length === 0,
+        plainEnglish: plainEnglish,
+        marketId: marketId,
+        scenarioId: scenarioId,
+        steps: steps,
+        startCash: startCash,
+        endCash: endCash,
+        minCash: minCash,
+        sumEbitda: sumEbitda,
+        sumInterest: sumInterest,
+        sumLmaNet: sumLma,
+        sumPressure: sumPressure,
+        maxAbsEarlyPipeline: maxAbsEarly,
+        chainViolations: chainViolations,
+        openingStation: st0
+          ? { callLetters: st0.callLetters, format: st0.format, oq: st0.oq, share: st0.rat && st0.rat.share }
+          : null,
+        endingStation: st1
+          ? { callLetters: st1.callLetters, format: st1.format, oq: st1.oq, share: st1.rat && st1.rat.share }
+          : null,
+        year: G.year,
+        period: G.period,
+      };
+    } finally {
+      Math.random = origRandom;
+      if (typeof globalThis !== 'undefined') globalThis.__WL_HEADLESS__ = savedHeadless;
+      G = savedG;
+      if (typeof ACTIVE_MARKET !== 'undefined' && savedActive != null) ACTIVE_MARKET = savedActive;
+      if (typeof _selectedMarket !== 'undefined' && savedSel != null) _selectedMarket = savedSel;
+      if (typeof MP !== 'undefined' && MP) {
+        if (savedMPMode !== undefined) MP.mode = savedMPMode;
+        MP.players = savedMPPlayers;
+        if (savedMPPid !== undefined) MP.playerId = savedMPPid;
+      }
+    }
+  }
+
   function runCashFlowIntegrityDiagnostic(opts) {
     opts = opts || {};
     var markets =
@@ -3224,7 +3461,7 @@
     var lines = [];
     lines.push('══════════════════════════════════════════════════════════════');
     lines.push('  CASH FLOW INTEGRITY (solo headless)');
-    lines.push('  Identity: Δcash === ebitda − loanInterest + lmaNet + pressureNet  (solo; see G.finHistory)');
+    lines.push('  Identity: Δcash === earlyPipeline + ebitda − loanInterest + lmaNet + pressureNet  (solo; see G.finHistory)');
     lines.push('  Markets: ' + markets.join(', '));
     lines.push('  Periods/market (cap): ' + periodsPerMarket + ' · startCash ' + startCash);
     lines.push(
@@ -3496,6 +3733,7 @@
   window.runFormatEcologyInspection = runFormatEcologyInspection;
   window.runCashFlowIntegrityDiagnostic = runCashFlowIntegrityDiagnostic;
   window.runCashBridgeAudit = runCashBridgeAudit;
+  window.runScenarioSoloCashProbe = runScenarioSoloCashProbe;
   window.runMegaMarketSnapshotsDiagnostic = runMegaMarketSnapshotsDiagnostic;
   window.runRatingsCollapseAudit = runRatingsCollapseAudit;
   window.megaSnapshotMetrics = megaSnapshotMetrics;
@@ -3517,6 +3755,7 @@
     runFormatEcologyInspection: runFormatEcologyInspection,
     runCashFlowIntegrityDiagnostic: runCashFlowIntegrityDiagnostic,
     runCashBridgeAudit: runCashBridgeAudit,
+    runScenarioSoloCashProbe: runScenarioSoloCashProbe,
     runMegaMarketSnapshotsDiagnostic: runMegaMarketSnapshotsDiagnostic,
     runRatingsCollapseAudit: runRatingsCollapseAudit,
     megaSnapshotMetrics: megaSnapshotMetrics,

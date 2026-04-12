@@ -62,6 +62,7 @@ export default defineConfig(({ command }) => ({
         copy('inspectEcologyDeepBoot.js');
         copy('inspectFormatEcologyBoot.js');
         copy('inspectCashFlowBoot.js');
+        copy('inspectScenarioProbeBoot.js');
         copy('inspectCashBridgeBoot.js');
         copy('inspectMegaSnapshotsBoot.js');
         copy('inspectRatingsCollapseBoot.js');
@@ -108,6 +109,7 @@ export default defineConfig(({ command }) => ({
         'inspect-format-ecology': resolve(__dirname, 'inspect-format-ecology.html'),
         'inspect-cash-flow': resolve(__dirname, 'inspect-cash-flow.html'),
         'inspect-cash-bridge-audit': resolve(__dirname, 'inspect-cash-bridge-audit.html'),
+        'inspect-scenario-probe': resolve(__dirname, 'inspect-scenario-probe.html'),
         'inspect-mega-snapshots': resolve(__dirname, 'inspect-mega-snapshots.html'),
         'inspect-ratings-collapse': resolve(__dirname, 'inspect-ratings-collapse.html'),
         'inspect-logo-templates': resolve(__dirname, 'inspect-logo-templates.html'),
