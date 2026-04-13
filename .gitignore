@@ -3,6 +3,8 @@ generated-logos/*
 !generated-logos/.gitkeep
 generated-remote-vans/*
 !generated-remote-vans/.gitkeep
+generated-jingles/*
+!generated-jingles/.gitkeep
 generated-portraits/*
 !generated-portraits/.gitkeep
 !generated-portraits/registry.json

@@ -18,6 +18,7 @@
 // Spectator TV (read-only rankings, same room code): open /spectate.html?room=CODE
 // Uses socket event spectate_room — updates on each host state_broadcast (every period).
 // Image API: SHORTAPI_KEY (ShortAPI z-image, default) and/or GROK_API_KEY for /api/generate-logo, /api/generate-remote-van (Grok edit + logo reference), and AI portraits.
+// Station jingles: POST /api/generate-station-jingle — same SHORTAPI_KEY; model suno/suno-v5.5/generate (override SHORTAPI_SUNO_MODEL).
 // IMAGE_GEN_PROVIDER=shortapi | grok | auto — auto prefers SHORTAPI_KEY when set.
 // Trade ratings digest: POST /api/ratings-digest — SHORTAPI_KEY, OPENROUTER_API_KEY, and/or OPENAI_API_KEY; see RATINGS_DIGEST_PROVIDER in .env.example.
 // Stock pool (random assignment before Grok): generated-portraits/library/{male|female}/{era}/
@@ -72,6 +73,9 @@ mountFeedback(app);
 
 const { mountRatingsDigestRoutes } = require('./server/ratingsDigestRoutes');
 mountRatingsDigestRoutes(app);
+
+const { mountJingleRoutes } = require('./server/jingleRoutes');
+mountJingleRoutes(app);
 
 const httpServer = http.createServer(app);
 const io         = new Server(httpServer, {
@@ -140,13 +144,34 @@ function mergeMpStationLogosFromPrior(intoG, priorG) {
       const py = Number(p.remoteVanPurchasedYear);
       if (Number.isFinite(py)) s.remoteVanPurchasedYear = py;
     }
+    if (p.cosmeticJingleUrl && !s.cosmeticJingleUrl) {
+      s.cosmeticJingleUrl = p.cosmeticJingleUrl;
+      if (p.cosmeticJingleV != null) s.cosmeticJingleV = p.cosmeticJingleV;
+    }
+    if (p.jingleMarketingLift != null && s.jingleMarketingLift == null) {
+      const jl = Number(p.jingleMarketingLift);
+      if (Number.isFinite(jl)) s.jingleMarketingLift = jl;
+    }
+    if (p.jingleCommissionedYear != null && s.jingleCommissionedYear == null) {
+      const jy = Number(p.jingleCommissionedYear);
+      if (Number.isFinite(jy)) s.jingleCommissionedYear = jy;
+    }
+    if (p.jingleVariantIndex != null && s.jingleVariantIndex == null) {
+      const ji = Number(p.jingleVariantIndex);
+      if (Number.isFinite(ji)) s.jingleVariantIndex = ji;
+    }
+    if (typeof p.jingleTagline === 'string' && p.jingleTagline && !s.jingleTagline) {
+      s.jingleTagline = p.jingleTagline.slice(0, 60);
+    }
   }
 }
 
 function isSafeGeneratedCosmeticUrl(u) {
   return (
     typeof u === 'string' &&
-    (u.startsWith('/generated-logos/') || u.startsWith('/generated-remote-vans/')) &&
+    (u.startsWith('/generated-logos/') ||
+      u.startsWith('/generated-remote-vans/') ||
+      u.startsWith('/generated-jingles/')) &&
     !u.includes('..') &&
     u.length < 500
   );
@@ -510,6 +535,13 @@ io.on('connection', socket => {
       clearCosmeticRemoteVan,
       remoteVanMarketingLift: payloadRemoteVanLift,
       remoteVanPurchasedYear: payloadRemoteVanYear,
+      cosmeticJingleUrl,
+      cosmeticJingleV,
+      clearCosmeticJingle,
+      jingleMarketingLift: payloadJingleLift,
+      jingleCommissionedYear: payloadJingleYear,
+      jingleVariantIndex: payloadJingleVariant,
+      jingleTagline: payloadJingleTagline,
     } = payload || {};
     const room = getRoom(roomId);
     if (!room || room.phase !== 'playing' || !room.G?.stations) return;
@@ -517,6 +549,21 @@ io.on('connection', socket => {
     if (!player) return;
     const st = room.G.stations.find(s => s && s.id === stationId);
     if (!st || !st.isPlayer || st._mpOwner !== player.playerId) return;
+
+    if (clearCosmeticJingle === true) {
+      delete st.cosmeticJingleUrl;
+      delete st.cosmeticJingleV;
+      delete st.jingleMarketingLift;
+      delete st.jingleCommissionedYear;
+      delete st.jingleVariantIndex;
+      delete st.jingleTagline;
+      persistRoom(room);
+      io.to(roomId).emit('mp_station_logo_sync', {
+        stationId,
+        clearCosmeticJingle: true,
+      });
+      return;
+    }
 
     if (clearCosmeticRemoteVan === true) {
       delete st.cosmeticRemoteVanUrl;
@@ -576,6 +623,30 @@ io.on('connection', socket => {
       }
       changed = true;
     }
+    if (cosmeticJingleUrl && isSafeGeneratedCosmeticUrl(cosmeticJingleUrl)) {
+      st.cosmeticJingleUrl = cosmeticJingleUrl;
+      if (cosmeticJingleV != null) {
+        const jv = Number(cosmeticJingleV);
+        if (Number.isFinite(jv)) st.cosmeticJingleV = jv;
+      }
+      if (payloadJingleLift != null) {
+        const jl = Number(payloadJingleLift);
+        if (Number.isFinite(jl) && jl >= 0 && jl <= 0.15) st.jingleMarketingLift = jl;
+      }
+      if (payloadJingleYear != null) {
+        const jy = Number(payloadJingleYear);
+        if (Number.isFinite(jy) && jy >= 1930 && jy <= 2100) st.jingleCommissionedYear = jy;
+      }
+      if (payloadJingleVariant != null) {
+        const vi = Number(payloadJingleVariant);
+        if (Number.isFinite(vi) && vi >= 0 && vi <= 3) st.jingleVariantIndex = vi;
+      }
+      if (typeof payloadJingleTagline === 'string' && payloadJingleTagline.length <= 60) {
+        if (payloadJingleTagline) st.jingleTagline = payloadJingleTagline;
+        else delete st.jingleTagline;
+      }
+      changed = true;
+    }
     if (!changed) return;
 
     persistRoom(room);
@@ -588,6 +659,12 @@ io.on('connection', socket => {
       cosmeticRemoteVanV: st.cosmeticRemoteVanV,
       remoteVanMarketingLift: st.remoteVanMarketingLift,
       remoteVanPurchasedYear: st.remoteVanPurchasedYear,
+      cosmeticJingleUrl: st.cosmeticJingleUrl,
+      cosmeticJingleV: st.cosmeticJingleV,
+      jingleMarketingLift: st.jingleMarketingLift,
+      jingleCommissionedYear: st.jingleCommissionedYear,
+      jingleVariantIndex: st.jingleVariantIndex,
+      jingleTagline: st.jingleTagline || '',
     });
   });
 

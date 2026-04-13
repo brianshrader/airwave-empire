@@ -333,6 +333,34 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .abt.scen-mkt-on:hover{border-color:var(--amb);color:var(--wht);background:rgba(245,166,35,.2)}
 .abt.b:hover{border-color:var(--blu);color:var(--blu);background:rgba(90,180,255,.08)}
 
+/* AI generation status (logo / van / jingle) — obvious “still running” affordance */
+.wl-ai-gen-status{
+  font-size:13px;
+  color:var(--mut);
+  min-height:22px;
+  margin-bottom:8px;
+  font-weight:500;
+  font-family:var(--ft);
+  line-height:1.45;
+  padding:10px 12px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(0,0,0,.15);
+  transition:border-color .2s,background .2s,box-shadow .2s,color .2s;
+}
+.wl-ai-gen-status--inline{
+  font-size:12px;
+  min-height:18px;
+  margin-bottom:10px;
+  padding:8px 10px;
+}
+.wl-ai-gen-status--busy{
+  color:var(--wht);
+  border-color:rgba(245,166,35,.65);
+  background:rgba(245,166,35,.12);
+  box-shadow:0 0 0 1px rgba(245,166,35,.22),0 0 18px rgba(245,166,35,.12);
+}
+
 /* CENTER */
 #pc{background:var(--drk)}
 .scen{background:var(--pnl);border:1px solid var(--adm);border-left:3px solid var(--amb);padding:14px 16px;margin-bottom:20px}

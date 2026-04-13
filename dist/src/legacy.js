@@ -1620,9 +1620,20 @@ function talentTrueQuality(t){
   return Math.round(t?.quality||0);
 }
 function talentTrueFormatFit(t,fmt){
-  const m=t?._trueFormatFit;
-  if(m&&typeof m[fmt]==='number'&&!Number.isNaN(m[fmt]))return clampTalentFit01(m[fmt]);
-  return clampTalentFit01(t?.formatFit?.[fmt]);
+  if(!t||!fmt)return clampTalentFit01(undefined);
+  const read=(key)=>{
+    const m=t._trueFormatFit;
+    if(m&&typeof m[key]==='number'&&!Number.isNaN(m[key]))return m[key];
+    const f=t.formatFit;
+    if(f&&typeof f[key]==='number'&&!Number.isNaN(f[key]))return f[key];
+    return undefined;
+  };
+  let v=read(fmt);
+  if(v==null&&isHitsFormatLineage(fmt)){
+    const alt=fmt==='CHR'?'TOP40':fmt==='TOP40'?'CHR':null;
+    if(alt)v=read(alt);
+  }
+  return clampTalentFit01(v);
 }
 /** Scout `formatFit` vs station format — CHR/TOP40 save drift won’t zero out fit in hire UI / doHire. */
 function talentScoutFormatFit01(t,stationFormat){
@@ -2489,6 +2500,8 @@ function remoteVanPurchaseCostDollars(G){
 }
 /** Multiplier applied in `recalc` audience share (small marketing edge once the van is owned). */
 const REMOTE_VAN_MARKETING_LIFT=0.025;
+/** Small stackable lift after the player picks a Suno jingle variant (server saves under /generated-jingles/). */
+const JINGLE_MARKETING_LIFT=0.012;
 /** Years until the remote van’s marketing boost is treated as worn out (replace to restore). */
 const REMOTE_VAN_LIFETIME_YEARS=10;
 /** Effective lift after fleet age (saved lift × age factor). Legacy saves without purchase year keep full lift. */
@@ -2543,6 +2556,16 @@ function remoteVanRepaintCostDollars(G,station){
     if(station)c*=fleetVanRepaintMultiplier(station,G);
   }
   return roundVanBrandingDollars(c);
+}
+/** One commission = two Suno variants; era-scaled creative fee (tunable). */
+function stationJinglePackageCostDollars(G){
+  const y=G&&G.year||1990;
+  if(y<1975)return 9200;
+  if(y<1985)return 13500;
+  if(y<1995)return 19800;
+  if(y<2005)return 26500;
+  if(y<2015)return 32800;
+  return 39500;
 }
 /** Half-year programming cap — same spine as promo, ~15% higher billing multiplier. */
 function progBudgetCapForPeriod(G){
@@ -3800,6 +3823,14 @@ function aiRebrandStationAfterPlayerVoluntarySale(G, s) {
   delete s.cosmeticRemoteVanUrl;
   delete s.cosmeticRemoteVanV;
   delete s.remoteVanMarketingLift;
+  delete s.remoteVanPurchasedYear;
+  delete s.cosmeticJingleUrl;
+  delete s.cosmeticJingleV;
+  delete s.jingleMarketingLift;
+  delete s.jingleCommissionedYear;
+  delete s.jingleVariantIndex;
+  delete s.jingleTagline;
+  delete s._pendingJingleVariants;
   delete s.heritageIncumbent;
   delete s._simulcastSource;
   const talentCull = nf === oldFmt ? 0.18 : 0.34;
@@ -3875,6 +3906,14 @@ function aiRebrandStationAfterDistressSale(G, s) {
   delete s.cosmeticRemoteVanUrl;
   delete s.cosmeticRemoteVanV;
   delete s.remoteVanMarketingLift;
+  delete s.remoteVanPurchasedYear;
+  delete s.cosmeticJingleUrl;
+  delete s.cosmeticJingleV;
+  delete s.jingleMarketingLift;
+  delete s.jingleCommissionedYear;
+  delete s.jingleVariantIndex;
+  delete s.jingleTagline;
+  delete s._pendingJingleVariants;
   delete s.heritageIncumbent;
   delete s._simulcastSource;
   Object.values(s.prog).forEach((sd) => {
@@ -3933,6 +3972,20 @@ function mergeCosmeticPreserve(prevG, nextG) {
     if (p.remoteVanPurchasedYear != null && s.remoteVanPurchasedYear == null) {
       s.remoteVanPurchasedYear = p.remoteVanPurchasedYear;
     }
+    if (p.cosmeticJingleUrl && !s.cosmeticJingleUrl) {
+      s.cosmeticJingleUrl = p.cosmeticJingleUrl;
+      if (p.cosmeticJingleV != null) s.cosmeticJingleV = p.cosmeticJingleV;
+    }
+    if (p.jingleMarketingLift != null && s.jingleMarketingLift == null) {
+      s.jingleMarketingLift = p.jingleMarketingLift;
+    }
+    if (p.jingleCommissionedYear != null && s.jingleCommissionedYear == null) {
+      s.jingleCommissionedYear = p.jingleCommissionedYear;
+    }
+    if (p.jingleVariantIndex != null && s.jingleVariantIndex == null) {
+      s.jingleVariantIndex = p.jingleVariantIndex;
+    }
+    if (p.jingleTagline && !s.jingleTagline) s.jingleTagline = p.jingleTagline;
     if (p.prog && s.prog && slotKeys.length) {
       for (const slot of slotKeys) {
         const pt = p.prog[slot] && p.prog[slot].talent;
@@ -4074,7 +4127,7 @@ function wlGameMediaAbsUrl(pathOrUrlWithQuery){
   const pathOnly=qIdx>=0?s.slice(0,qIdx):s;
   const qs=qIdx>=0?s.slice(qIdx):'';
   const origin=wlGameServerOrigin();
-  if(pathOnly.startsWith('/generated-logos/')||pathOnly.startsWith('/generated-portraits/')||pathOnly.startsWith('/generated-remote-vans/'))return origin+pathOnly+qs;
+  if(pathOnly.startsWith('/generated-logos/')||pathOnly.startsWith('/generated-portraits/')||pathOnly.startsWith('/generated-remote-vans/')||pathOnly.startsWith('/generated-jingles/'))return origin+pathOnly+qs;
   return pathOnly.startsWith('/')?pathOnly+qs:s;
 }
 
@@ -4531,6 +4584,17 @@ function mpSetupSocketHandlers(socket) {
     if (!G || !G.stations || !payload?.stationId) return;
     const st = G.stations.find(s => s && s.id === payload.stationId);
     if (!st) return;
+    if (payload.clearCosmeticJingle) {
+      delete st.cosmeticJingleUrl;
+      delete st.cosmeticJingleV;
+      delete st.jingleMarketingLift;
+      delete st.jingleCommissionedYear;
+      delete st.jingleVariantIndex;
+      delete st.jingleTagline;
+      delete st._pendingJingleVariants;
+      renderAll();
+      return;
+    }
     if (payload.clearCosmeticRemoteVan) {
       delete st.cosmeticRemoteVanUrl;
       delete st.cosmeticRemoteVanV;
@@ -4550,7 +4614,21 @@ function mpSetupSocketHandlers(socket) {
       renderAll();
       return;
     }
-    const { cosmeticLogoUrl, cosmeticLogoV, cosmeticLogoTone, cosmeticRemoteVanUrl, cosmeticRemoteVanV, remoteVanMarketingLift, remoteVanPurchasedYear } = payload;
+    const {
+      cosmeticLogoUrl,
+      cosmeticLogoV,
+      cosmeticLogoTone,
+      cosmeticRemoteVanUrl,
+      cosmeticRemoteVanV,
+      remoteVanMarketingLift,
+      remoteVanPurchasedYear,
+      cosmeticJingleUrl,
+      cosmeticJingleV,
+      jingleMarketingLift,
+      jingleCommissionedYear,
+      jingleVariantIndex,
+      jingleTagline,
+    } = payload;
     if (cosmeticLogoUrl) {
       st.cosmeticLogoUrl = cosmeticLogoUrl;
       if (cosmeticLogoV != null && Number.isFinite(Number(cosmeticLogoV))) st.cosmeticLogoV = Number(cosmeticLogoV);
@@ -4568,6 +4646,23 @@ function mpSetupSocketHandlers(socket) {
     }
     if (remoteVanPurchasedYear != null && Number.isFinite(Number(remoteVanPurchasedYear))) {
       st.remoteVanPurchasedYear = Number(remoteVanPurchasedYear);
+    }
+    if (cosmeticJingleUrl) {
+      st.cosmeticJingleUrl = cosmeticJingleUrl;
+      if (cosmeticJingleV != null && Number.isFinite(Number(cosmeticJingleV))) st.cosmeticJingleV = Number(cosmeticJingleV);
+    }
+    if (jingleMarketingLift != null && Number.isFinite(Number(jingleMarketingLift))) {
+      st.jingleMarketingLift = Number(jingleMarketingLift);
+    }
+    if (jingleCommissionedYear != null && Number.isFinite(Number(jingleCommissionedYear))) {
+      st.jingleCommissionedYear = Number(jingleCommissionedYear);
+    }
+    if (jingleVariantIndex != null && Number.isFinite(Number(jingleVariantIndex))) {
+      st.jingleVariantIndex = Number(jingleVariantIndex);
+    }
+    if (typeof jingleTagline === 'string') {
+      if (jingleTagline) st.jingleTagline = jingleTagline.slice(0, 60);
+      else delete st.jingleTagline;
     }
     renderAll();
   });
@@ -7603,6 +7698,8 @@ function recalc(stations,G){
       const promoBoost=1+((effPr/Math.max(1,promoCap))*0.08);
       const effVan=effectiveRemoteVanMarketingLift(s,G);
       const vanLift=effVan>0?1+Math.max(0,effVan):1;
+      const jBase=typeof s.jingleMarketingLift==='number'&&!Number.isNaN(s.jingleMarketingLift)?Math.max(0,s.jingleMarketingLift):0;
+      const jingleLift=jBase>0&&s.cosmeticJingleUrl?1+Math.max(0,jBase):1;
       const ndBlend=fmAmNonDupBlendForRecalc(s,G);
       let coreAppl;
       if(ndBlend){
@@ -7612,7 +7709,7 @@ function recalc(stations,G){
       }else{
         coreAppl=Math.max(0,appl(s,coh,G));
       }
-      const rv=Math.max(0,coreAppl*effB*promoBoost*vanLift);
+      const rv=Math.max(0,coreAppl*effB*promoBoost*vanLift*jingleLift);
       return Number.isFinite(rv)?rv:0;
     });
     // Lane crowding: superlinear pain once a lane has more than `laneStart` commercial stations.
@@ -13208,20 +13305,32 @@ function snapMarketRankBookDisplay(G){
   };
   snapStationCardShareDisplay(G);
 }
-/** Per-leg audience share shown on player station cards — frozen at each book until Next Period (live model still updates for sim/revenue). */
+/** Per-leg audience share + book trend (cp) shown on player station cards — frozen at each book until Next Period (live model still updates for sim/revenue). */
 function snapStationCardShareDisplay(G){
   if(!G?.stations?.length)return;
   const byId=Object.create(null);
+  const cpById=Object.create(null);
   G.stations.forEach(st=>{
     if(!st||st._bpSlotDeferred||st.id==null)return;
     const sh=st.rat&&typeof st.rat.share==='number'&&!Number.isNaN(st.rat.share)?st.rat.share:0;
     byId[st.id]=Math.round(sh*1e8)/1e8;
+    const cp=st.cp;
+    if(cp&&typeof cp==='object'){
+      cpById[st.id]={
+        dq:typeof cp.dq==='number'?cp.dq:0,
+        d2:typeof cp.d2==='number'?cp.d2:0,
+        under:!!cp.under,
+        col:!!cp.col,
+        sur:!!cp.sur,
+      };
+    }
   });
   G._stationCardShareSnap={
     year:G.year,
     period:G.period,
     turn:G.turn,
     byId,
+    cpById,
   };
 }
 function stationCardDisplayShare01(s){
@@ -13232,6 +13341,17 @@ function stationCardDisplayShare01(s){
     return typeof v==='number'&&!Number.isNaN(v)?v:(s.rat&&s.rat.share)||0;
   }
   return(s.rat&&s.rat.share)||0;
+}
+/** Book trend flags for station cards — same snap as share; avoids intra-period recalc rewriting `s.cp` from last tick vs last book. */
+function stationCardDisplayCp(s){
+  if(!s||s._bpSlotDeferred)return null;
+  const snap=G._stationCardShareSnap;
+  const cpBy=snap&&snap.cpById;
+  if(cpBy&&Object.prototype.hasOwnProperty.call(cpBy,s.id)){
+    const o=cpBy[s.id];
+    if(o&&typeof o==='object')return o;
+  }
+  return s.cp||null;
 }
 /** Rows for rMkt: book rank/share when snap exists; new stations append at bottom by live share. */
 function buildMarketRankRowsForDisplay(G){
@@ -13693,7 +13813,7 @@ function wlBuildRatingsDigestPayload(){
       brand,
       format:fmtLabel(s.format,G.year),
       sharePct:Math.round(sh01*1000)/10,
-      deltaPts:s.cp&&typeof s.cp.dq==='number'?Math.round(s.cp.dq*1000)/10:null,
+      deltaPts:(()=>{const dpc=stationCardDisplayCp(s);return dpc&&typeof dpc.dq==='number'?Math.round(dpc.dq*1000)/10:null;})(),
       band:(s.sig?.type==='FM'||s.fmBooster)?'FM':'AM',
     };
   });
@@ -14626,12 +14746,13 @@ function wlHash32(str){
 
 /** Fictional licensee for AI commercial stations (not post-1996 corp targets). AM/FM simulcast pairs share one parent. */
 const RIVAL_FICTIONAL_PARENTS=[
-  // Wordmark + “Media” so ownership reads as a broadcast company, not a random noun
-  'Veridex Media','Pulseline Media','Redloom Media','Kitecast Media','Bannera Media','Audentix Media','Castwell Media','Signalix Media','Nexcast Media','Voxaura Media',
-  'Tuneway Media','Streamix Media','Beamcast Media','Airlink Media','Metrocast Media','Southbeam Media','Oakwave Media','Fieldcast Media','Relaypoint Media','Crestline Media',
+  // Mix of suffixes — avoid overusing “-cast” so ownership lines don’t all read like parody streamers
+  'Veridex Media','Pulseline Media','Redloom Media','Bannera Media','Audentix Media','Signalix Media','Voxaura Media',
+  'Tuneway Media','Streamix Media','Airlink Media','Southbeam Media','Oakwave Media','Relaypoint Media','Crestline Media',
   'Blueledger Media','Presspoint Media','Inkwell Media','Ledgerline Media','Masthead Media','Typecase Media','Byline Media','Newsbeam Media','Broadsheet Media','Typeset Media',
-  'Fortis Media','Meritline Media','Surecast Media','Harborcast Media','Assurix Media','Covenant Media','Fidelis Media','Unioncast Media','Ashland Media','Whitmore Media',
-  'Eastwood Media','Northbeam Media','Vanderlyn Media','Relayco Media','Trisource Media','Toolcast Media','Fabricast Media','Pacificast Media','Railcast Media','Grocerywave Media',
+  'Fortis Media','Meritline Media','Harborlight Media','Assurix Media','Covenant Media','Fidelis Media','Ashland Media','Whitmore Media',
+  'Eastwood Media','Vanderlyn Media','Relayco Media','Trisource Media','Meridian Communications','Summit Radio Group','Prairie Radio Group','Granite Audio Partners','Redbrick Holdings',
+  'Silverline Partners','Crescent Networks','Noble Syndicate','Archway Enterprises','Riverside Radio','Midland Signal Group','Falconnest Radio','Greenvalley Communications','Sterling Radio Group','Cumberland Media Group','Ironwood Partners','Lakeshore Networks',
 ];
 
 function rivalFictionalParentName(s,G){
@@ -16215,9 +16336,10 @@ function showCompIntel(sid){
   if(!s)return;
   const op=simulcastOperationalSource(s);
   const fmd=FM[canonicalHitsFormatKey(op.format)]||{};
-  const pr=s.cp;
   const isOwn=s.isPlayer&&mpIsMe(s);
   const isHumanRival=MP.mode==='live'&&s.isPlayer&&!isOwn;
+  const bookIntel=isOwn||isHumanRival;
+  const pr=bookIntel?stationCardDisplayCp(s):s.cp;
 
   // Revenue: fuzzy for AI competitors only; exact for your stations and other humans (MP shared sim).
   const estRev=(isOwn||isHumanRival)?(s.fin?.rev||0):(s.fin?.rev||0)*(0.85+Math.random()*0.30);
@@ -16293,7 +16415,7 @@ function showCompIntel(sid){
     </div>
     <div class="ms2" style="margin-top:12px">
       <div class="msh">RATINGS & REVENUE</div>
-      <div class="sr"><span class="lb">Overall Share</span><span class="vl amb">${pct(s.rat.share)}</span></div>
+      <div class="sr"><span class="lb">Overall Share</span><span class="vl amb">${pct(bookIntel?stationCardDisplayShare01(s):s.rat.share)}</span></div>
       <div class="sr"><span class="lb">AQH Listeners</span><span class="vl">${s.rat.aqh.toLocaleString()}</span></div>
       <div class="sr"><span class="lb">Trend</span><span class="vl" style="color:${trendColor}">${trend}</span></div>
       ${intelStory?`<div class="sr"><span class="lb">Likely story</span><span class="vl" style="font-size:14px;color:var(--mut);line-height:1.45">${intelStory}</span></div>`:''}
@@ -17189,10 +17311,10 @@ function brandMarketingLogoBlockHtml(leg){
   const hasVanImg=!!s.cosmeticRemoteVanUrl;
   const vanLiftActive=effectiveRemoteVanMarketingLift(s,G)>0;
   const vanAgeYears=s.remoteVanPurchasedYear!=null&&Number.isFinite(s.remoteVanPurchasedYear)?Math.max(0,(G.year||1970)-s.remoteVanPurchasedYear):null;
-  const vanBusy=!!(s._vanGenPending||s._logoGenPending);
-  const canPurchaseVan=!hasVanImg&&!vanTurnBlocked&&!vanBusy&&myCash>=vanCost;
-  const canRepaintVan=hasVanImg&&!!s.cosmeticLogoUrl&&!vanTurnBlocked&&!vanBusy&&myCash>=repaintCost;
-  const canReplaceVan=hasVanImg&&!vanLiftActive&&!vanTurnBlocked&&!vanBusy&&myCash>=vanCost;
+  const cosBusy=!!(s._vanGenPending||s._logoGenPending||s._jingleGenPending);
+  const canPurchaseVan=!hasVanImg&&!vanTurnBlocked&&!cosBusy&&myCash>=vanCost;
+  const canRepaintVan=hasVanImg&&!!s.cosmeticLogoUrl&&!vanTurnBlocked&&!cosBusy&&myCash>=repaintCost;
+  const canReplaceVan=hasVanImg&&!vanLiftActive&&!vanTurnBlocked&&!cosBusy&&myCash>=vanCost;
   const rel=s.cosmeticLogoUrl?wlGameMediaAbsUrl(s.cosmeticLogoUrl+(s.cosmeticLogoV?'?v='+s.cosmeticLogoV:'')):'';
   const procSvg=wlProceduralLogoSvgString(s,{layoutMode:'brandHero'});
   const hero=rel
@@ -17202,13 +17324,26 @@ function brandMarketingLogoBlockHtml(leg){
       :`<p class="di" style="color:var(--mut)">Logo preview unavailable.</p>`);
   const genArg=s.cosmeticLogoUrl?'true':'false';
   const vanRel=s.cosmeticRemoteVanUrl?wlGameMediaAbsUrl(s.cosmeticRemoteVanUrl+(s.cosmeticRemoteVanV?'?v='+s.cosmeticRemoteVanV:'')):'';
-  const logoBtnDisabled=s._logoGenPending||logoTurnBlocked;
+  const logoBtnDisabled=s._logoGenPending||logoTurnBlocked||s._jingleGenPending;
   const vanPurchaseDisabled=!canPurchaseVan;
-  const vanTitle=!canPurchaseVan&&myCash<vanCost&&!hasVanImg&&!vanTurnBlocked&&!vanBusy?`Need ${f$(vanCost)} (you have ${f$(myCash)})`:'';
+  const vanTitle=!canPurchaseVan&&myCash<vanCost&&!hasVanImg&&!vanTurnBlocked&&!cosBusy?`Need ${f$(vanCost)} (you have ${f$(myCash)})`:'';
+  const jingleCost=stationJinglePackageCostDollars(G);
+  const jingleTurnBlocked=stationCosmeticGenMatchesTurn(s,turnN,'_lastJingleGenTurn');
+  const pendingJingle=Array.isArray(s._pendingJingleVariants)&&s._pendingJingleVariants.length>0;
+  const hasJingleAudio=!!s.cosmeticJingleUrl;
+  const jingleLiftOn=hasJingleAudio&&typeof s.jingleMarketingLift==='number'&&!Number.isNaN(s.jingleMarketingLift)&&s.jingleMarketingLift>0;
+  const canCommissionJingle=!jingleTurnBlocked&&!cosBusy&&myCash>=jingleCost&&!pendingJingle;
+  const jingleTitle=!canCommissionJingle&&myCash<jingleCost&&!pendingJingle&&!jingleTurnBlocked&&!cosBusy?`Need ${f$(jingleCost)} (you have ${f$(myCash)})`:'';
+  const jinglePickHtml=pendingJingle
+    ?s._pendingJingleVariants.map((v,i)=>{
+        const au=wlGameMediaAbsUrl(typeof v.audioUrl==='string'?v.audioUrl:'');
+        return`<div style="margin:10px 0;padding:12px;border:1px solid var(--bdr);border-radius:8px;background:var(--crd)"><div style="font-size:12px;color:var(--mut);margin-bottom:6px">Variant ${i+1}</div><audio controls preload="none" src="${au}" style="width:100%;max-width:420px"></audio><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center"><button type="button" class="abt g" onclick="wlPickStationJingleVariant('${s.id}',${i})">Use this cut</button><button type="button" class="abt" onclick="wlSaveStationJingleFile('${s.id}',${i})">Save file</button></div></div>`;
+      }).join('')
+    :'';
   return`<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
     <div class="msh" style="margin-bottom:8px">STATION LOGO</div>
     <p class="di" style="font-size:13px;color:var(--mut);line-height:1.45;margin:0 0 8px">AI logos are generated on the server and can take up to about a minute. <strong>Click the preview</strong> to open a larger version you can save. When you use <strong>Generate New Logo</strong>, wait for the status line — the button stays disabled until the request finishes (one new logo per period).</p>
-    <div id="bm-logo-status-${safe}" style="font-size:13px;color:var(--amb);min-height:22px;margin-bottom:8px;font-weight:500"></div>
+    <div id="bm-logo-status-${safe}" class="wl-ai-gen-status${s._logoGenPending?' wl-ai-gen-status--busy':''}" role="status" aria-live="polite"></div>
     ${hero}
     <div style="display:flex;flex-wrap:wrap;gap:8px">
       ${s.cosmeticLogoUrl?'':`<button type="button" class="abt g" onclick="wlBumpProceduralLogoVariant('${s.id}')">↻ New basic logo look</button>`}
@@ -17220,12 +17355,27 @@ function brandMarketingLogoBlockHtml(leg){
       <p class="di" style="font-size:13px;color:var(--mut);line-height:1.45;margin:0 0 8px">Buy a custom remote truck: <strong>${f$(vanCost)}</strong> outfitting, a small boost to promotional reach, and van art <strong>matched to your saved AI logo file</strong> (reload-safe). <strong>Repaint</strong> (${f$(repaintCost)}) updates the wrap when you change logos — no need to buy a new van. Fleet vehicles wear out after <strong>~${REMOTE_VAN_LIFETIME_YEARS} years</strong> of in-game time; then replace at full cost to restore the boost. One van action per period. <strong>Click the van image</strong> for full size / save.</p>
       ${hasVanImg&&vanLiftActive?`<p class="di" style="font-size:13px;color:var(--amb);margin:0 0 8px">Remote van marketing boost: <strong>+${Math.round(REMOTE_VAN_MARKETING_LIFT*100)}%</strong> promotional effectiveness.${vanAgeYears!=null?' Fleet in service <strong>'+vanAgeYears+'</strong> yr — replace after <strong>'+REMOTE_VAN_LIFETIME_YEARS+'</strong> yr when worn.':''}</p>`:''}
       ${hasVanImg&&!vanLiftActive?`<p class="di" style="font-size:13px;color:var(--red);margin:0 0 8px">Marketing boost <strong>ended</strong> — remote fleet is worn out. Use <strong>Replace fleet</strong> (${f$(vanCost)}) to restore <strong>+${Math.round(REMOTE_VAN_MARKETING_LIFT*100)}%</strong>. You can still <strong>Repaint</strong> the artwork anytime.</p>`:''}
-      <div id="bm-van-status-${safe}" style="font-size:13px;color:var(--amb);min-height:22px;margin-bottom:8px;font-weight:500"></div>
+      <div id="bm-van-status-${safe}" class="wl-ai-gen-status${s._vanGenPending?' wl-ai-gen-status--busy':''}" role="status" aria-live="polite"></div>
       ${vanRel?`<div style="text-align:center;margin:10px 0;cursor:pointer" onclick="wlOpenRemoteVanModal('${s.id}')" title="View full size"><img class="bm-van-hero" src="${vanRel}" alt="" style="max-width:100%;border-radius:8px;border:1px solid var(--bdr)" draggable="false"></div>`:''}
       ${!hasVanImg&&vanTurnBlocked?`<p class="di" style="font-size:13px;color:var(--mut);margin:0 0 8px">Remote van slot already used this period — try again next period.</p>`:''}
       <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
         ${hasVanImg?`<button type="button" class="abt" onclick="wlClearRemoteVan('${s.id}')">Sell / remove van</button>`+(s.cosmeticLogoUrl?`<button type="button" id="bm-van-repaint-btn-${safe}" class="abt g" onclick="wlRepaintRemoteVan('${s.id}')"${!canRepaintVan?' disabled':''} aria-busy="${s._vanGenPending?'true':'false'}" title="${!canRepaintVan&&myCash<repaintCost?'Need '+f$(repaintCost):''}">Repaint van — ${f$(repaintCost)}</button>`:'')+(canReplaceVan?`<button type="button" id="bm-van-replace-btn-${safe}" class="abt g" onclick="wlReplaceRemoteVan('${s.id}')" aria-busy="${s._vanGenPending?'true':'false'}">Replace fleet — ${f$(vanCost)}</button>`:''):`<button type="button" id="bm-van-gen-btn-${safe}" class="abt g" onclick="wlPurchaseRemoteVan('${s.id}')"${vanPurchaseDisabled?' disabled':''} aria-busy="${s._vanGenPending?'true':'false'}" title="${vanTitle||''}">Purchase remote van — ${f$(vanCost)}</button>`}
       </div>
+    </div>
+    <div style="margin-top:14px;border-top:1px solid var(--bdr);padding-top:12px">
+      <div class="msh" style="margin-bottom:8px">STATION JINGLE (SUNO)</div>
+      <p class="di" style="font-size:13px;color:var(--mut);line-height:1.45;margin:0 0 8px">Buy a new jingle package for your station. Select one for a marketing boost. Include an optional tagline below (a slogan, your city, etc). One new jingle package per period.</p>
+      ${jingleLiftOn?`<p class="di" style="font-size:13px;color:var(--mut);margin:0 0 8px">On-air jingle is active — a small extra edge is folded into your station’s promotional reach (same model as the remote van).</p>`:''}
+      <div id="bm-jingle-status-${safe}" class="wl-ai-gen-status${s._jingleGenPending?' wl-ai-gen-status--busy':''}" role="status" aria-live="polite"></div>
+      <label for="bm-jingle-tagline-${safe}" class="di" style="display:block;font-size:13px;color:var(--mut);margin-bottom:4px">Optional tagline (max 60 characters)</label>
+      <input type="text" id="bm-jingle-tagline-${safe}" maxlength="60" placeholder="e.g. Your city, your hits" style="width:100%;max-width:420px;background:var(--crd);border:1px solid var(--bdh);color:var(--wht);padding:8px 10px;border-radius:6px;margin-bottom:10px" ${pendingJingle||s._jingleGenPending?'disabled':''}>
+      ${hasJingleAudio?`<div style="margin:8px 0"><span class="di" style="font-size:12px;color:var(--mut)">Current jingle</span><br><audio controls preload="metadata" src="${wlGameMediaAbsUrl(s.cosmeticJingleUrl+(s.cosmeticJingleV?'?v='+s.cosmeticJingleV:''))}" style="width:100%;max-width:420px;margin-top:4px"></audio><button type="button" class="abt" style="margin-top:6px" onclick="wlSaveStationJingleFile('${s.id}',null)">Save file</button></div>`:''}
+      ${pendingJingle?`<p class="di" style="font-size:13px;color:var(--wht);margin:8px 0">Pick your favorite — marketing credit applies when you choose.</p>${jinglePickHtml}`:''}
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+        <button type="button" id="bm-jingle-commission-btn-${safe}" class="abt g" onclick="wlCommissionStationJingle('${s.id}')"${!canCommissionJingle||s._jingleGenPending?' disabled':''} aria-busy="${s._jingleGenPending?'true':'false'}" title="${jingleTitle||''}">${jingleTurnBlocked?'Jingle (this period)':pendingJingle?'Finish picking above':'Commission jingle package — '+f$(jingleCost)}</button>
+        ${hasJingleAudio?`<button type="button" class="abt" onclick="wlClearStationJingle('${s.id}')">Remove jingle</button>`:''}
+      </div>
+      ${!pendingJingle&&!jingleTurnBlocked&&!cosBusy&&myCash<jingleCost?`<p class="di" style="font-size:12px;color:var(--mut);margin:8px 0 0">${jingleTitle||''}</p>`:''}
     </div>
   </div>`;
 }
@@ -17759,7 +17909,7 @@ function swapStationProgrammingAndFacilityPair(a,b){
     const cb=deepCloneStnField(b[k]);
     a[k]=cb;b[k]=ca;
   }
-  const cos=['cosmeticLogoUrl','cosmeticLogoV','cosmeticLogoTone','cosmeticRemoteVanUrl','cosmeticRemoteVanV','remoteVanMarketingLift','remoteVanPurchasedYear'];
+  const cos=['cosmeticLogoUrl','cosmeticLogoV','cosmeticLogoTone','cosmeticRemoteVanUrl','cosmeticRemoteVanV','remoteVanMarketingLift','remoteVanPurchasedYear','cosmeticJingleUrl','cosmeticJingleV','jingleMarketingLift','jingleCommissionedYear','jingleVariantIndex','jingleTagline'];
   for(const k of cos){
     const t=a[k];a[k]=b[k];b[k]=t;
   }
@@ -19961,6 +20111,11 @@ function wlDownloadBlobToFile(blob, filename) {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(u), 250);
 }
+/** Highlight AI-in-progress status lines (logo / van / jingle) so users don’t double-submit. */
+function wlAiGenStatusBusy(el, on) {
+  if (!el || !el.classList) return;
+  el.classList.toggle('wl-ai-gen-status--busy', !!on);
+}
 
 async function wlLogoDownloadClick(ev) {
   try {
@@ -20206,21 +20361,24 @@ async function wlRemoteVanImageOp(stationId,mode){
     else showToast('Already used a remote van action this period.','warn');
     return;
   }
-  if(op._vanGenPending||op._logoGenPending){
+  if(op._vanGenPending||op._logoGenPending||op._jingleGenPending){
     const el=document.getElementById('bm-van-status-'+_bmSafe);
-    if(el)el.textContent='Wait for the other image request to finish…';
-    else showToast('Another logo or van image is still generating.','warn');
+    if(el)el.textContent='Wait for the other image or jingle request to finish…';
+    else showToast('Another logo, van, or jingle request is still generating.','warn');
     return;
   }
   op._vanGenPending=true;
   wlSetVanGenButtonUi(stationId,true);
   wlSetVanRepaintReplaceUi(stationId,true);
   const msg=mode==='repaint'
-    ?'Repainting van artwork from your current logo (often 30–90s)…'
+    ?'WORKING — Repainting van from your logo. Usually 30–90s. Do not click again; this box will update.'
     :mode==='replace'
-      ?'Replacing fleet vehicle — generating new van (often 30–90s)…'
-      :'Processing purchase — generating your remote van (often 30–90s). Do not click again.';
-  if(statusEl)statusEl.textContent=msg;
+      ?'WORKING — New fleet van image. Usually 30–90s. Do not click again; this box will update.'
+      :'WORKING — Generating van art. Usually 30–90s. Do not click again; this box will update.';
+  if(statusEl){
+    wlAiGenStatusBusy(statusEl,true);
+    statusEl.textContent=msg;
+  }
   const band=(op.fmBooster||op.sig?.type==='FM')?'FM':'AM';
   const logoRel=(typeof op.cosmeticLogoUrl==='string'&&op.cosmeticLogoUrl.trim())?op.cosmeticLogoUrl.split('?')[0]:'';
   const body={
@@ -20282,6 +20440,7 @@ async function wlRemoteVanImageOp(stationId,mode){
     showToast('Remote van request failed.','warn');
   }finally{
     op._vanGenPending=false;
+    if(statusEl)wlAiGenStatusBusy(statusEl,false);
     wlSetVanGenButtonUi(stationId,false);
     wlSetVanRepaintReplaceUi(stationId,false);
     if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&ensureOpsSourceSid(BM_ACTIVE_SID)===ensureOpsSourceSid(stationId)){
@@ -20294,6 +20453,189 @@ function wlRepaintRemoteVan(stationId){return wlRemoteVanImageOp(stationId,'repa
 function wlReplaceRemoteVan(stationId){return wlRemoteVanImageOp(stationId,'replace');}
 window.wlRepaintRemoteVan=wlRepaintRemoteVan;
 window.wlReplaceRemoteVan=wlReplaceRemoteVan;
+async function wlCommissionStationJingle(stationId){
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
+  const op=G.stations.find(st=>st.id===stationId);
+  if(!op)return;
+  const _bmSafe=bmSafeElId(stationId);
+  const statusEl=document.getElementById('bm-jingle-status-'+_bmSafe);
+  const turnN=Number(G.turn);
+  const turnOk=Number.isFinite(turnN)?turnN:0;
+  const jingleCost=stationJinglePackageCostDollars(G);
+  if(stationCosmeticGenMatchesTurn(op,turnOk,'_lastJingleGenTurn')){
+    if(statusEl)statusEl.textContent='Already commissioned a jingle package this period — try next period.';
+    else showToast('Jingle commission limited to once per period.','warn');
+    return;
+  }
+  if(op._jingleGenPending||op._logoGenPending||op._vanGenPending){
+    if(statusEl)statusEl.textContent='Wait for the other media request to finish…';
+    else showToast('Another logo, van, or jingle request is still running.','warn');
+    return;
+  }
+  if(Array.isArray(op._pendingJingleVariants)&&op._pendingJingleVariants.length){
+    if(statusEl)statusEl.textContent='Pick a variant above before commissioning again.';
+    else showToast('Choose a jingle variant first.','warn');
+    return;
+  }
+  if(mpMyCashOnHand()<jingleCost){
+    showToast(`Need ${f$(jingleCost)}.`,'warn');
+    return;
+  }
+  const tagInp=document.getElementById('bm-jingle-tagline-'+_bmSafe);
+  const tagline=tagInp&&typeof tagInp.value==='string'?tagInp.value.trim().slice(0,60):'';
+  const brandRaw=(typeof op.brand==='string'&&op.brand.trim())?op.brand.trim():callDisplay(op);
+  const band=(op.fmBooster||op.sig?.type==='FM')?'FM':'AM';
+  const body={
+    stationId:String(op.id),
+    brand:brandRaw.slice(0,120),
+    format:(fmtLabel(op.format,G.year)||'Radio').trim().slice(0,100),
+    formatId:String(op.format||'').trim().slice(0,40),
+    year:Math.floor(Number(G.year))||1970,
+    tagline,
+    frequency:String(op.freq!=null?op.freq:'').trim().slice(0,24),
+    band,
+  };
+  op._jingleGenPending=true;
+  const btn=document.getElementById('bm-jingle-commission-btn-'+_bmSafe);
+  if(btn){
+    btn.disabled=true;
+    btn.setAttribute('aria-busy','true');
+  }
+  if(statusEl){
+    wlAiGenStatusBusy(statusEl,true);
+    statusEl.textContent='WORKING — Suno is creating two takes. Often 1–4 minutes. Do not close this panel or click again; this message will clear when ready.';
+  }
+  try{
+    const res=await fetch(wlGameApiUrl('/api/generate-station-jingle'),{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(body),
+    });
+    const data=await res.json().catch(()=>({}));
+    if(!res.ok||!data.ok){
+      if(statusEl)statusEl.textContent=data.error||res.statusText||'Jingle request failed.';
+      showToast(data.error||'Jingle generation failed.','warn');
+      return;
+    }
+    wlAdjustMyCash(-jingleCost);
+    op._pendingJingleVariants=Array.isArray(data.variants)?data.variants:[];
+    op._jinglePendingTagline=tagline;
+    op._lastJingleGenTurn=turnOk;
+    logHistory(op,'LOGO',`Commissioned station jingle package (${f$(jingleCost)}).`,G);
+    autoSave();
+    if(statusEl)statusEl.textContent='Two variants ready — pick one below.';
+    showToast('Jingle package ready — pick a variant.','info');
+  }catch(_e){
+    if(statusEl)statusEl.textContent='Network error — try again.';
+    showToast('Jingle request failed.','warn');
+  }finally{
+    op._jingleGenPending=false;
+    if(statusEl)wlAiGenStatusBusy(statusEl,false);
+    if(btn){
+      btn.disabled=false;
+      btn.setAttribute('aria-busy','false');
+    }
+    if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&ensureOpsSourceSid(BM_ACTIVE_SID)===ensureOpsSourceSid(stationId)){
+      renderBrandMarketingStation(BM_ACTIVE_SID);
+    }
+  }
+}
+function wlPickStationJingleVariant(stationId,idx){
+  const op=G.stations.find(st=>st.id===stationId);
+  if(!op||!Array.isArray(op._pendingJingleVariants))return;
+  const v=op._pendingJingleVariants[idx];
+  if(!v||typeof v.audioUrl!=='string'||!v.audioUrl.startsWith('/generated-jingles/'))return;
+  op.cosmeticJingleUrl=v.audioUrl;
+  op.cosmeticJingleV=Date.now();
+  op.jingleMarketingLift=JINGLE_MARKETING_LIFT;
+  op.jingleCommissionedYear=G.year;
+  op.jingleVariantIndex=idx;
+  if(typeof op._jinglePendingTagline==='string'&&op._jinglePendingTagline)op.jingleTagline=op._jinglePendingTagline.slice(0,60);
+  else if(!op.jingleTagline)delete op.jingleTagline;
+  delete op._jinglePendingTagline;
+  delete op._pendingJingleVariants;
+  recalc(G.stations,G);
+  logHistory(op,'LOGO','Selected station jingle variant.',G);
+  autoSave();
+  if(MP.mode==='live'&&MP.socket&&MP.roomId){
+    MP.emit('mp_station_logo',{
+      roomId:MP.roomId,
+      stationId:op.id,
+      cosmeticJingleUrl:op.cosmeticJingleUrl,
+      cosmeticJingleV:op.cosmeticJingleV,
+      jingleMarketingLift:op.jingleMarketingLift,
+      jingleCommissionedYear:op.jingleCommissionedYear,
+      jingleVariantIndex:op.jingleVariantIndex,
+      jingleTagline:typeof op.jingleTagline==='string'?op.jingleTagline:'',
+    });
+  }
+  renderAll();
+  if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&ensureOpsSourceSid(BM_ACTIVE_SID)===ensureOpsSourceSid(stationId)){
+    renderBrandMarketingStation(BM_ACTIVE_SID);
+  }
+  showToast('Jingle saved — marketing reach updated.','info');
+}
+function wlClearStationJingle(stationId){
+  const op=G.stations.find(st=>st.id===stationId);
+  if(!op)return;
+  delete op.cosmeticJingleUrl;
+  delete op.cosmeticJingleV;
+  delete op.jingleMarketingLift;
+  delete op.jingleCommissionedYear;
+  delete op.jingleVariantIndex;
+  delete op.jingleTagline;
+  delete op._pendingJingleVariants;
+  delete op._jinglePendingTagline;
+  recalc(G.stations,G);
+  logHistory(op,'LOGO','Removed station jingle.',G);
+  autoSave();
+  if(MP.mode==='live'&&MP.socket&&MP.roomId){
+    MP.emit('mp_station_logo',{roomId:MP.roomId,stationId:op.id,clearCosmeticJingle:true});
+  }
+  renderAll();
+  if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&stationId===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
+  showToast('Jingle removed.','info');
+}
+async function wlSaveStationJingleFile(stationId,pendingIdx){
+  const op=G.stations.find(st=>st.id===stationId);
+  if(!op){
+    showToast('Station not found.','warn');
+    return;
+  }
+  let rel=null;
+  if(pendingIdx!=null&&pendingIdx>=0&&Array.isArray(op._pendingJingleVariants)){
+    const v=op._pendingJingleVariants[pendingIdx];
+    if(v&&typeof v.audioUrl==='string')rel=v.audioUrl.split('?')[0];
+  }else if(typeof op.cosmeticJingleUrl==='string'&&op.cosmeticJingleUrl.startsWith('/generated-jingles/')){
+    rel=op.cosmeticJingleUrl.split('?')[0];
+  }
+  if(!rel){
+    showToast('Nothing to save.','warn');
+    return;
+  }
+  const qs=pendingIdx!=null&&pendingIdx>=0?'':(op.cosmeticJingleV?'?v='+encodeURIComponent(op.cosmeticJingleV):'');
+  const abs=wlGameMediaAbsUrl(rel+qs);
+  const call=(stripCallBandSuffix(op.callLetters||callDisplay(op)||'station').replace(/[^a-z0-9]+/gi,'-').replace(/^-|-$/g,'')||'station').slice(0,40);
+  const base=rel.split('/').pop()||'jingle';
+  const extMatch=base.match(/\.(mp3|m4a|wav|ogg)$/i);
+  const ext=extMatch?extMatch[1].toLowerCase():'mp3';
+  const suffix=pendingIdx!=null&&pendingIdx>=0?`-take${pendingIdx+1}`:'';
+  const filename=`${call}-jingle${suffix}.${ext}`;
+  try{
+    const r=await fetch(abs,{mode:'cors',credentials:'omit'});
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const blob=await r.blob();
+    wlDownloadBlobToFile(blob,filename);
+    showToast('Download started.','info');
+  }catch(e){
+    console.warn('[jingle dl]',e);
+    showToast('Could not download — open the game from the same host as the API and try again.','warn');
+  }
+}
+window.wlCommissionStationJingle=wlCommissionStationJingle;
+window.wlPickStationJingleVariant=wlPickStationJingleVariant;
+window.wlClearStationJingle=wlClearStationJingle;
+window.wlSaveStationJingleFile=wlSaveStationJingleFile;
 function wlSetVanRepaintReplaceUi(stationId,busy){
   const safe=bmSafeElId(stationId);
   ['bm-van-repaint-btn-','bm-van-replace-btn-'].forEach(prefix=>{
@@ -20312,9 +20654,9 @@ async function wlGenerateLogo(stationId,regenerate,opts){
   if(!op)return;
   const _bmSafe=bmSafeElId(stationId);
   const statusEl=document.getElementById('wl-logo-status-'+stationId)||(_bmSafe?document.getElementById('bm-logo-status-'+_bmSafe):null);
-  if(op._logoGenPending){
+  if(op._logoGenPending||op._jingleGenPending){
     if(statusEl)statusEl.textContent='Already generating — please wait…';
-    else if(!silent)showToast('Logo generation already in progress for this station.','warn');
+    else if(!silent)showToast('Logo or jingle generation already in progress for this station.','warn');
     return;
   }
   if(!silent&&stationCosmeticGenMatchesTurn(op,G.turn,'_lastLogoGenTurn')){
@@ -20325,7 +20667,10 @@ async function wlGenerateLogo(stationId,regenerate,opts){
   const reg=typeof regenerate==='boolean'?regenerate:!!op.cosmeticLogoUrl;
   op._logoGenPending=true;
   wlSetLogoGenButtonUi(stationId,true);
-  if(statusEl)statusEl.textContent='Request sent — working… (often under a minute). Do not click again.';
+  if(statusEl){
+    wlAiGenStatusBusy(statusEl,true);
+    statusEl.textContent='WORKING — AI logo in progress. Usually under a minute. Do not click again; this line will update when finished.';
+  }
   const band=(op.fmBooster||op.sig?.type==='FM')?'FM':'AM';
   const yr=Math.floor(Number(G.year));
   const nameRaw=((typeof op.brand==='string'&&op.brand.trim())?op.brand.trim():callDisplay(op)).trim().slice(0,120);
@@ -20379,6 +20724,7 @@ async function wlGenerateLogo(stationId,regenerate,opts){
     }
   }finally{
     op._logoGenPending=false;
+    if(statusEl)wlAiGenStatusBusy(statusEl,false);
     wlSetLogoGenButtonUi(stationId,false);
     if(silent&&!op.cosmeticLogoUrl)op._logoAutoGenExhausted=true;
     if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&ensureOpsSourceSid(BM_ACTIVE_SID)===ensureOpsSourceSid(stationId)){
@@ -21137,7 +21483,7 @@ function migrateSave(G){
     G.pendingDecisionEvent=null;
   if(!G._mktRankBookSnap||!Array.isArray(G._mktRankBookSnap.rows)||!G._mktRankBookSnap.rows.length){
     snapMarketRankBookDisplay(G);
-  } else if(!G._stationCardShareSnap||typeof G._stationCardShareSnap.byId!=='object'){
+  } else if(!G._stationCardShareSnap||typeof G._stationCardShareSnap.byId!=='object'||typeof G._stationCardShareSnap.cpById!=='object'){
     snapStationCardShareDisplay(G);
   }
   return G;
@@ -22808,7 +23154,7 @@ function rStns(){
       junior=partner;
     }
     const op=simulcastOperationalSource(s);
-    const pr=s.cp;
+    const pr=stationCardDisplayCp(s);
     const trd=!pr?'':pr.col?'<span style="color:var(--red)">⬇⬇</span>':pr.under?'<span style="color:var(--red)">⬇</span>':pr.sur?'<span style="color:var(--grn)">⬆</span>':'<span style="color:var(--mut)">→</span>';
     const revUi=junior?s.fin.rev+junior.fin.rev:s.fin.rev;
     const costUi=junior?s.fin.cost+junior.fin.cost:s.fin.cost;
@@ -22977,10 +23323,11 @@ function rStns(){
         if(_m2&&_m2!==_m1)fmUniq.push(_m2);
         const adminBtns=[...histArr,swapBtn,...fmUniq,...sellArr,streamBtn,simBtn];
         const mkLine='<div style="font-size:13px;color:var(--mut);margin-bottom:10px;line-height:1.45">Marketing <strong style="color:var(--off)">'+f$(op.ops.promo||0)+'</strong>/p · Local Identity <strong style="color:var(--off)">'+Math.round(op.identity||0)+'</strong>'+((op.identityBudget||0)>0?' <span style="color:var(--amb)">★</span>':'')+'</div>';
+        const aiCardBusy=(op._logoGenPending||op._vanGenPending||op._jingleGenPending)?' wl-ai-gen-status--busy':'';
         return '<div class="sc-card-actions">'+
           sec('TALENT',true,'<button class="abt d" type="button" style="width:100%;box-sizing:border-box;padding:14px;font-size:15px;letter-spacing:0.5px" '+(_assignFtTutIds?'id="wl-ft-tut-talent-btn" ':'')+'onclick="openManageTalent(\''+op.id+'\')">🎙 MANAGE TALENT</button>')+
           sec('PROGRAMMING',false,'<div style="display:flex;flex-direction:column;gap:10px;width:100%">'+progBudgetLine+progHub+fmDupUi+(sportsFrHtml||'')+'</div>')+
-          sec('MARKETING',false,mkLine+'<div class="wl-logo-status" id="wl-logo-status-'+op.id+'" style="font-size:12px;color:var(--amb);margin-bottom:10px;min-height:16px"></div>'+pack2(['<button type="button" class="abt b" '+(_assignFtTutIds?'id="wl-ft-tut-brand-btn" ':'')+'onclick="openBrandMarketing(\''+op.id+'\')">📣 BRAND & MARKETING</button>','<button type="button" class="abt" '+(_assignFtTutIds?'id="wl-ft-tut-research-btn" ':'')+'onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
+          sec('MARKETING',false,mkLine+'<div class="wl-ai-gen-status wl-ai-gen-status--inline'+aiCardBusy+'" id="wl-logo-status-'+op.id+'" role="status" aria-live="polite"></div>'+pack2(['<button type="button" class="abt b" '+(_assignFtTutIds?'id="wl-ft-tut-brand-btn" ':'')+'onclick="openBrandMarketing(\''+op.id+'\')">📣 BRAND & MARKETING</button>','<button type="button" class="abt" '+(_assignFtTutIds?'id="wl-ft-tut-research-btn" ':'')+'onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
           sec('SALES',false,pack2(['<button class="abt '+(sfActive?'g':'')+'" '+(_assignFtTutIds?'id="wl-ft-tut-sales-btn" ':'')+'onclick="openSales(\''+op.id+'\')">'+salesLbl+'</button>','<button class="abt" '+(_assignFtTutIds?'id="wl-ft-tut-spots-btn" ':'')+'onclick="openSpots(\''+op.id+'\')">📻 SPOT LOAD</button>']))+
           sec('ADMINISTRATION · STRUCTURE',false,pack2(adminBtns))+
           '</div>';
