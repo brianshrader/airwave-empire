@@ -102,7 +102,28 @@ function validateBody(body) {
     if (typeof body.formatId !== 'string' || body.formatId.length > 40) errors.push('formatId must be a string (max 40) if provided.');
   }
 
+  if (body.audienceHint != null && body.audienceHint !== '') {
+    if (typeof body.audienceHint !== 'string' || body.audienceHint.length > 100) {
+      errors.push('audienceHint must be a string (max 100) if provided.');
+    }
+  }
+  if (body.positionHint != null && body.positionHint !== '') {
+    if (typeof body.positionHint !== 'string' || body.positionHint.length > 140) {
+      errors.push('positionHint must be a string (max 140) if provided.');
+    }
+  }
+
   return errors;
+}
+
+/** Strip control chars; trim and cap (defense in depth vs client). */
+function sanitizeJingleSonicHint(str, maxLen) {
+  if (str == null || str === '') return '';
+  if (typeof str !== 'string') return '';
+  return str
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '')
+    .trim()
+    .slice(0, maxLen);
 }
 
 /**
@@ -139,6 +160,8 @@ function mountJingleRoutes(app) {
     }
 
     const stationId = String(body.stationId).trim();
+    const audienceHint = sanitizeJingleSonicHint(body.audienceHint, 100);
+    const positionHint = sanitizeJingleSonicHint(body.positionHint, 140);
     const sunoArgs = buildSunoJingleArgs({
       brand: String(body.brand).trim(),
       format: String(body.format).trim(),
@@ -147,6 +170,8 @@ function mountJingleRoutes(app) {
       frequency: typeof body.frequency === 'string' ? body.frequency : '',
       band: typeof body.band === 'string' ? body.band : '',
       formatId: typeof body.formatId === 'string' ? body.formatId : '',
+      audienceHint,
+      positionHint,
     });
 
     const stamp = Date.now();

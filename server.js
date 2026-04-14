@@ -163,6 +163,13 @@ function mergeMpStationLogosFromPrior(intoG, priorG) {
     if (typeof p.jingleTagline === 'string' && p.jingleTagline && !s.jingleTagline) {
       s.jingleTagline = p.jingleTagline.slice(0, 60);
     }
+    if (p.cosmeticLogoBackupUrl && !s.cosmeticLogoBackupUrl && isSafeGeneratedCosmeticUrl(p.cosmeticLogoBackupUrl)) {
+      s.cosmeticLogoBackupUrl = p.cosmeticLogoBackupUrl;
+      if (p.cosmeticLogoBackupV != null) s.cosmeticLogoBackupV = p.cosmeticLogoBackupV;
+      if (typeof p.cosmeticLogoBackupTone === 'string' && p.cosmeticLogoBackupTone.length <= 400) {
+        if (p.cosmeticLogoBackupTone) s.cosmeticLogoBackupTone = p.cosmeticLogoBackupTone;
+      }
+    }
   }
 }
 
@@ -542,6 +549,9 @@ io.on('connection', socket => {
       jingleCommissionedYear: payloadJingleYear,
       jingleVariantIndex: payloadJingleVariant,
       jingleTagline: payloadJingleTagline,
+      cosmeticLogoBackupUrl: payloadLogoBackupUrl,
+      cosmeticLogoBackupV: payloadLogoBackupV,
+      cosmeticLogoBackupTone: payloadLogoBackupTone,
     } = payload || {};
     const room = getRoom(roomId);
     if (!room || room.phase !== 'playing' || !room.G?.stations) return;
@@ -586,10 +596,26 @@ io.on('connection', socket => {
       delete st.cosmeticRemoteVanV;
       delete st.remoteVanMarketingLift;
       delete st.remoteVanPurchasedYear;
+      delete st.cosmeticLogoBackupUrl;
+      delete st.cosmeticLogoBackupV;
+      delete st.cosmeticLogoBackupTone;
+      if (payloadLogoBackupUrl && isSafeGeneratedCosmeticUrl(payloadLogoBackupUrl)) {
+        st.cosmeticLogoBackupUrl = payloadLogoBackupUrl;
+        if (payloadLogoBackupV != null) {
+          const bv = Number(payloadLogoBackupV);
+          if (Number.isFinite(bv)) st.cosmeticLogoBackupV = bv;
+        }
+        if (typeof payloadLogoBackupTone === 'string' && payloadLogoBackupTone.length <= 400) {
+          if (payloadLogoBackupTone) st.cosmeticLogoBackupTone = payloadLogoBackupTone;
+        }
+      }
       persistRoom(room);
       io.to(roomId).emit('mp_station_logo_sync', {
         stationId,
         clearCosmeticLogo: true,
+        cosmeticLogoBackupUrl: st.cosmeticLogoBackupUrl,
+        cosmeticLogoBackupV: st.cosmeticLogoBackupV,
+        cosmeticLogoBackupTone: st.cosmeticLogoBackupTone || '',
       });
       return;
     }
@@ -605,6 +631,9 @@ io.on('connection', socket => {
         if (cosmeticLogoTone) st.cosmeticLogoTone = cosmeticLogoTone;
         else delete st.cosmeticLogoTone;
       }
+      delete st.cosmeticLogoBackupUrl;
+      delete st.cosmeticLogoBackupV;
+      delete st.cosmeticLogoBackupTone;
       changed = true;
     }
     if (cosmeticRemoteVanUrl && isSafeGeneratedCosmeticUrl(cosmeticRemoteVanUrl)) {
@@ -924,7 +953,16 @@ const DIST_INDEX = path.join(DIST_DIR, 'index.html');
 const HAS_DIST = fs.existsSync(DIST_INDEX);
 
 if (HAS_DIST) {
-  app.use(express.static(DIST_DIR));
+  app.use(
+    express.static(DIST_DIR, {
+      setHeaders(res, filePath) {
+        if (typeof filePath === 'string' && filePath.endsWith('play.html')) {
+          res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+          res.setHeader('Pragma', 'no-cache');
+        }
+      },
+    }),
+  );
 }
 app.use(express.static(path.join(__dirname)));
 

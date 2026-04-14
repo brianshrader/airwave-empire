@@ -1,7 +1,7 @@
 import { copyFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
@@ -24,6 +24,27 @@ function landingRedirectPlugin() {
   };
 }
 
+/**
+ * Injects `<meta name="wl-require-clerk" content="…">` in play.html so you do not edit the file per deploy.
+ * Defaults: `development` → 0 (no Clerk gate in Vite dev), `production` build → 1.
+ * Override: `VITE_WL_REQUIRE_CLERK_META=0|1` in `.env.*` (see .env.example).
+ */
+function playHtmlClerkMetaPlugin(mode, env) {
+  const ex = env.VITE_WL_REQUIRE_CLERK_META;
+  const content = ex === '1' || ex === '0' ? ex : mode === 'development' ? '0' : '1';
+  return {
+    name: 'play-html-clerk-meta',
+    enforce: 'pre',
+    transformIndexHtml(html) {
+      if (!html.includes('name="wl-require-clerk"')) return html;
+      return html.replace(
+        /<meta\s+name="wl-require-clerk"\s+content="[^"]*"\s*\/?>/i,
+        `<meta name="wl-require-clerk" content="${content}">`,
+      );
+    },
+  };
+}
+
 /** Dev-only: `marketSimHarness.js` is not copied to dist; script tag stripped from HTML on `vite build`. */
 function devOnlyMarketHarnessPlugin(command) {
   return {
@@ -37,11 +58,14 @@ function devOnlyMarketHarnessPlugin(command) {
   };
 }
 
-export default defineConfig(({ command }) => ({
+export default defineConfig(({ command, mode }) => {
+  const env = loadEnv(mode, process.cwd(), '');
+  return {
   root: '.',
   appType: 'mpa',
   plugins: [
     landingRedirectPlugin(),
+    playHtmlClerkMetaPlugin(mode, env),
     devOnlyMarketHarnessPlugin(command),
     {
       name: 'copy-legacy-and-logo-js',
@@ -96,7 +120,7 @@ export default defineConfig(({ command }) => ({
   build: {
     outDir: 'dist',
     emptyOutDir: true,
-    // Top-level await in src/main.js (Clerk init before legacy.js)
+    // Top-level await in src/main.js — deferred legacy.js may still run first; play.html sets __WL_REQUIRE_CLERK in a sync head script from meta.
     target: 'es2022',
     rollupOptions: {
       input: {
@@ -117,4 +141,5 @@ export default defineConfig(({ command }) => ({
       },
     },
   },
-}));
+};
+});

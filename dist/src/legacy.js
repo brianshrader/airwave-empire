@@ -176,31 +176,31 @@ function getBoosterCost(year){
 
 // ── FORMATS ───────────────────────────────────────────────────────
 const FM={
-  TOP40:          {l:'Top 40',            cpm:1.08,sp:14,fm:false,ab:0,   unlock:1970,d:'Today’s hit music for a younger audience. Fast-moving, high-energy, and highly competitive.'},
-  COUNTRY:        {l:'Country',            cpm:.92, sp:14,fm:false,ab:0,   unlock:1970,d:'Familiar hits with deep local loyalty. Strong in the South, dependable, and often built for long-term audience habit.'},
-  SOUL_RNB:       {l:'Soul / R&B',         cpm:.88, sp:14,fm:false,ab:.15, unlock:1970,d:'A community-rooted format with passionate listener loyalty. Can build a strong audience, but advertisers may value it less than the ratings suggest.'},
-  MOR:            {l:'Middle of Road',     cpm:.85, sp:18,fm:false,ab:0,   unlock:1970,d:'Familiar, broad-appeal music for adult listeners. Stable early on, but vulnerable as FM listening grows and tastes fragment.'},
-  NEWS_TALK:      {l:'News / Talk',        cpm:1.55,sp:12,fm:false,ab:0,   unlock:1970,d:'Talk, news, and information for an older, more valuable audience. Often strong on AM and can be very profitable even without huge ratings.'},
-  ALBUM_ROCK:     {l:'Album Rock',         cpm:1.22,sp:10,fm:true, ab:0,   unlock:1970,d:'FM rock built around albums, attitude, and listener loyalty. Works best with a cleaner sound and fewer commercials.'},
-  BEAUTIFUL_MUSIC:{l:'Beautiful Music',    cpm:.80, sp:20,fm:true, ab:0,   unlock:1970,d:'Soft, instrumental-heavy listening for older audiences. Stable and low-drama, but limited growth and skewed older.'},
-  GOSPEL:         {l:'Gospel',             cpm:.72, sp:12,fm:false,ab:0,   unlock:1970,d:'A niche format with deep listener loyalty and community connection. Audience can be steady, but growth and ad upside are usually limited.'},
-  CLASSIC_ROCK:   {l:'Classic Rock',       cpm:1.10,sp:12,fm:true, ab:0,   unlock:1980,d:'Familiar rock built around proven favorites and a strong attitude. Often durable, loyal, and easier to brand clearly than newer hit formats.'},
-  ADULT_CONTEMP:  {l:'Adult Contemporary', cpm:1.05,sp:16,fm:true, ab:0,   unlock:1980,d:'A softer, polished hit format aimed at adults. Profitable and advertiser-friendly, but easy to blur together with competitors.'},
-  URBAN_CONTEMP:  {l:'Urban Contemporary', cpm:.95, sp:14,fm:true, ab:.10, unlock:1983,d:'Rhythmic pop and R&B aimed at a younger, urban-leaning crowd. Can pop in the right city; expect stiff competition from Top 40 and Rhythmic neighbors.'},
-  SPORTS_TALK:    {l:'Sports Talk',        cpm:1.40,sp:10,fm:false,ab:0,   unlock:1990,d:'Talk built around teams, games, and personality. Can be sticky and profitable, but usually needs strong local relevance.'},
-  SPANISH:        {l:'Spanish / Latin',    cpm:.90, sp:14,fm:false,ab:.08, unlock:1992,d:'Spanish-language music and hosts for Hispanic listeners. Growing where the market supports it; depth of competition and sales culture still matter.'},
-  ALT_ROCK:       {l:'Alternative Rock',   cpm:1.00,sp:10,fm:true, ab:0,   unlock:1991,d:'Edgier rock for listeners who want an alternative to mainstream hits. Loyal when it connects; credibility and a restrained spot load help.'},
-  RHYTHMIC:       {l:'Rhythmic CHR',       cpm:1.02,sp:14,fm:true, ab:.08, unlock:2000,d:'Hit radio with a heavy hip-hop and R&B pulse. Can own younger demos; crowded where several stations chase the same clubs-and-hits lane.'},
-  HOT_AC:         {l:'Hot Adult Contemp',  cpm:1.06,sp:15,fm:true, ab:0,   unlock:2000,d:'Adult-friendly hits with more tempo and youth than soft AC. Sells well; easy to stack up against similar Hot AC and CHR competitors.'},
-  OLDIES:         {l:'Oldies',             cpm:.90, sp:15,fm:false,ab:0,   unlock:1983,d:'Familiar songs with broad nostalgia appeal. Easy to understand and easy to like, but age balance matters.'},
-  CLASSIC_HITS:   {l:'Classic Hits',       cpm:.92, sp:16,fm:true, ab:0,   unlock:2005,d:'Nostalgic hits with a broader library than classic oldies. Same broad nostalgia play—keep an eye on how young the market still feels.'},
-  PODCAST_TALK:   {l:'Podcast / Talk',     cpm:1.25,sp:8,  fm:false,ab:0,  unlock:2012,d:'Talk shaped for on-demand habits and digital extensions, not just the dial. Rates can be strong; building audience works differently than classic drive-time blocks.'},
-  ADULT_STANDARDS:{l:'Adult Standards',   cpm:.82, sp:14,fm:false,ab:0,  unlock:1981,d:'Timeless vocals and standards for listeners who want elegance, not current hits. Often a thin ratings line but fierce loyalty where it survives.'},
+  TOP40:          {l:'Top 40',            cpm:1.08,sp:14,fm:false,ab:0,   unlock:1970,d:'Today\'s current pop hits, geared toward a younger audience. Fast-moving, high energy, highly competitive. "Top 40" naturally evolves into a format called Contemporary Hit Radio (CHR).'},
+  COUNTRY:        {l:'Country',            cpm:.92, sp:14,fm:false,ab:0,   unlock:1970,d:'Familiar hits with a wide appeal demographically. Performs strongly in the South, but has wide acceptance across most of the country. Often drives deep loyalty with listeners.'},
+  SOUL_RNB:       {l:'Soul / R&B',         cpm:.88, sp:14,fm:false,ab:.15, unlock:1970,d:'Deep listener loyalty and often builds a strong audience — but advertisers often value it less than the ratings would suggest.'},
+  MOR:            {l:'Middle of the Road', cpm:.85, sp:18,fm:false,ab:0,   unlock:1970,d:'Abbreviated to "MOR," this is a broad-appeal format with familiar music, news, information and entertainment for adult listeners. A stable choice through the 1970s, but sounds old-fashioned as formats evolve, tastes fragment and FM listening grows.'},
+  NEWS_TALK:      {l:'News / Talk',        cpm:1.55,sp:12,fm:false,ab:0,   unlock:1970,d:'News, talk and information for an older audience that often is more valuable to advertisers. It\'s often strong on AM and can be very profitable, even with modest ratings.'},
+  ALBUM_ROCK:     {l:'Album Rock',         cpm:1.22,sp:10,fm:true, ab:0,   unlock:1970,d:'Albums, attitude and listener loyalty drive the programming that was one of the first popular formats on FM. Works best with a cleaner sound and fewer commercials.'},
+  BEAUTIFUL_MUSIC:{l:'Beautiful Music',    cpm:.80, sp:20,fm:true, ab:0,   unlock:1970,d:'Soft, instrumental-heavy music for older audiences. "Elevator music" that\'s stable, background listening, geared toward the 50+ crowd, but has limited growth in the future.'},
+  GOSPEL:         {l:'Gospel',             cpm:.72, sp:12,fm:false,ab:0,   unlock:1970,d:'A niche format with a steady, loyal audience, but growth and advertising upside could be limited.'},
+  CLASSIC_ROCK:   {l:'Classic Rock',       cpm:1.10,sp:12,fm:true, ab:0,   unlock:1980,d:'Familiar rock hits built around proven favorites and big names. Builds a durable, loyal audience that skews a bit older, but still has broad demographic appeal.'},
+  ADULT_CONTEMP:  {l:'Adult Contemporary', cpm:1.05,sp:16,fm:true, ab:0,   unlock:1980,d:'Softer pop hits aimed at adults. Profitable, advertiser-friendly and popular with 25-49 females, but lack of a strong identity can make it harder to stand out in the market.'},
+  URBAN_CONTEMP:  {l:'Urban Contemporary', cpm:.95, sp:14,fm:true, ab:.10, unlock:1983,d:'An evolution of the Soul / R&B sound of the 1970s. Rhythmic pop and R&B aimed at a younger, urban audience.'},
+  SPORTS_TALK:    {l:'Sports Talk',        cpm:1.40,sp:10,fm:false,ab:0,   unlock:1990,d:'All-sports talk, built around teams, games and personality. Great format if you want to go after sports broadcast rights.'},
+  SPANISH:        {l:'Spanish / Latin',    cpm:.90, sp:14,fm:false,ab:.08, unlock:1992,d:'Spanish-language music and programming, ranging from Regional Mexican to Tropical/Latin. Large audience and revenue potential in many markets.'},
+  ALT_ROCK:       {l:'Alternative Rock',   cpm:1.00,sp:10,fm:true, ab:0,   unlock:1991,d:'An edgier rock format for listeners who want an alternative to mainstream rock hits. Often positioned as less commercial. Credibility can help build loyalty.'},
+  RHYTHMIC:       {l:'Rhythmic CHR',       cpm:1.02,sp:14,fm:true, ab:.08, unlock:2000,d:'Current pop hits with more hip-hop and R&B feel. Big potential with younger listeners, but stiff competition with Top 40/CHR, Urban Contemporary.'},
+  HOT_AC:         {l:'Hot Adult Contemp',  cpm:1.06,sp:15,fm:true, ab:0,   unlock:2000,d:'Adult-friendly songs with a little more edge, youth and tempo than regular Adult Contemporary. Reaches valuable demos and performs well against CHR competitors.'},
+  OLDIES:         {l:'Oldies',             cpm:.90, sp:15,fm:false,ab:0,   unlock:1983,d:'Familiar pop hits from the past with a lot of nostalgic appeal. Easy to like, but it can skew too old.'},
+  CLASSIC_HITS:   {l:'Classic Hits',       cpm:.92, sp:16,fm:true, ab:0,   unlock:2005,d:'An evolved Oldies format with nostalgic hits, but a little broader feel than Oldies. Performs well, but make sure you\'re not skewing too old.'},
+  PODCAST_TALK:   {l:'Podcast / Talk',     cpm:1.25,sp:8,  fm:false,ab:0,  unlock:2012,d:'An updated take on News/Talk featuring popular podcasts. Can be inexpensive to run and attract revenue. Building audience with this format works differently from the typical focus on drive times.'},
+  ADULT_STANDARDS:{l:'Adult Standards',   cpm:.82, sp:14,fm:false,ab:0,  unlock:1981,d:'For listeners who want elegance, not current hits. Features timeless vocals and standards, often with an older, but loyal audience.'},
   ALL_NEWS:       {l:'All-News',           cpm:1.72,sp:8,  fm:false,ab:0,  unlock:1970,talk:true,
-    d:'Round-the-clock headlines, traffic, weather, and urgency. Expensive to run and best suited to larger markets with enough ad depth to support it.'},
+    d:'24/7 news, weather, traffic and sports that can be highly profitable, but is expensive to operate. Best suited to larger markets.'},
   // Public stations — rival-only, non-commercial
-  PUBLIC_NEWS:    {l:'Public News / Talk', cpm:0,   sp:0,  fm:true, ab:0,  unlock:1975,d:'Information-first talk and news with a public-service identity. Respected and distinctive, but not built for commercial ratings pressure.',public:true},
-  PUBLIC_CLASSICAL:{l:'Public Classical',  cpm:0,   sp:0,  fm:true, ab:0,  unlock:1975,d:'A specialty format built around culture, calm, and listener loyalty. Strong identity, narrow audience.',public:true},
+  PUBLIC_NEWS:    {l:'Public News / Talk', cpm:0,   sp:0,  fm:true, ab:0,  unlock:1975,d:'Non-commercial: respected, long-form news and talk from public radio. It can be a strong competitor to commercial News/Talk stations in some markets.',public:true},
+  PUBLIC_CLASSICAL:{l:'Public Classical',  cpm:0,   sp:0,  fm:true, ab:0,  unlock:1975,d:'Non-commercial: cultured, calm classical programming for a narrow, but loyal audience.',public:true},
 };
 function formatUnlockedForYear(f,G){
   const y=G?.year??1970;
@@ -806,7 +806,7 @@ function showTalentTroubleModal(){
         canAfford=ownerCash>=mandatoryFine;
       }else if(typeof opt.cost==='number'){
         const totalNeed=mandatoryFine+opt.cost;
-        costLabel=mandatoryFine>0?` — FCC fine: ${f$(mandatoryFine)} + legal`:` — $${Math.round(opt.cost/1000)}K`;
+        costLabel=mandatoryFine>0?` — FCC fine: ${f$(mandatoryFine)} + legal`:` — ${f$(opt.cost)}`;
         canAfford=ownerCash>=totalNeed;
       }
       return `<button class="to${canAfford?'':' nope'}" style="display:block;width:100%;text-align:left;padding:10px 14px;margin-bottom:6px;cursor:${canAfford?'pointer':'not-allowed'}" onclick="${canAfford?`resolveTrouble('${pending.stationId}','${pending.slot}',${i})`:''}">
@@ -869,8 +869,8 @@ function showTalentTroubleModal(){
     else if(typeof opt.cost==='number'){
       const totalNeed = mandatoryFine + opt.cost;
       costLabel= mandatoryFine>0
-        ? ` — FCC fine: ${f$(mandatoryFine)} + $${Math.round(opt.cost/1000)}K legal`
-        : ` — $${Math.round(opt.cost/1000)}K legal`;
+        ? ` — FCC fine: ${f$(mandatoryFine)} + ${f$(opt.cost)} legal`
+        : ` — ${f$(opt.cost)} legal`;
       costColor='var(--amb)';
       canAfford=ownerCash>=totalNeed;
     }
@@ -1123,6 +1123,20 @@ function nonLocalDaypartCaption(fmt,slot,isPublic,s){
 }
 /** Competitor intel + market ranker: per-daypart talent name, Q, salary, or syndication/automation/public label */
 function htmlOnAirTalentRoster(s){
+  const intelTalentStack=(t,tq,slotQ,salStr,star,ctx)=>{
+    const payLine=(typeof t.salary==='number'&&!Number.isNaN(t.salary))
+      ? `${f$(Math.round(t.salary/2))}/period <span style="color:var(--mut);font-size:13px">(${f$(t.salary)}/yr)</span>`
+      : '—';
+    return `<div style="display:flex;align-items:flex-start;gap:10px;width:100%">
+      ${talentPortraitThumbHtml(t,'tp-intel',ctx||'')}
+      <div style="flex:1;min-width:0;font-size:14px;font-family:var(--ft);line-height:1.5">
+        <div style="font-size:15px;color:var(--wht);font-weight:600">${star}${t.name||'—'}</div>
+        <div style="color:var(--mut)">Talent quality <span style="color:var(--off)">${tq}</span></div>
+        <div style="color:var(--mut)">Slot quality <span style="color:var(--off)">${slotQ}</span></div>
+        <div style="color:var(--off)">${salStr||payLine}</div>
+      </div>
+    </div>`;
+  };
   return DAYPART_SLOTS.map(sl=>{
     const sd=s.prog?.[sl];
     if(!sd)return '';
@@ -1134,7 +1148,9 @@ function htmlOnAirTalentRoster(s){
     // so stale local rows (e.g. junior simulcast leg) are not mistaken for the on-air show.
     if(fr){
       const fq=Math.round(fr.quality||0);
-      let body=`<strong style="font-weight:600;color:var(--wht)">National syndication: &quot;${fr.name}&quot;</strong> · show Q ${fq} · slot quality ${slotQ}`;
+      let body=`<div style="margin-bottom:6px"><strong style="font-weight:600;color:var(--wht)">National syndication: &quot;${fr.name}&quot;</strong></div>
+        <div style="color:var(--mut);font-size:14px">Show quality <span style="color:var(--off)">${fq}</span></div>
+        <div style="color:var(--mut);font-size:14px">Slot quality <span style="color:var(--off)">${slotQ}</span></div>`;
       if(t){
         const tq=Math.round(t.quality||0);
         const perPd=(typeof t.salary==='number'&&!Number.isNaN(t.salary))?Math.round(t.salary/2):0;
@@ -1142,7 +1158,7 @@ function htmlOnAirTalentRoster(s){
           ?`${f$(perPd)}/period <span style="color:var(--mut);font-size:13px">(${f$(t.salary)}/yr)</span>`
           :'—';
         const star=t.superstar===true?'⭐ ':'';
-        body+=`<div style="margin-top:6px;display:flex;align-items:center;gap:8px;padding-top:6px;border-top:1px solid rgba(255,255,255,.08)">${talentPortraitThumbHtml(t,'tp-intel',`${callDisplay(s)} · ${lbl}`)}<span style="font-size:14px;color:var(--mut);line-height:1.45"><span style="color:var(--off)">Local on books</span> — ${star}<strong style="color:var(--off);font-weight:600">${t.name}</strong> · talent ${tq} · ${salStr}</span></div>`;
+        body+=`<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.08)"><div style="font-size:13px;color:var(--off);margin-bottom:4px">Local on books</div>${intelTalentStack(t,tq,slotQ,salStr,star,`${callDisplay(s)} · ${lbl}`)}</div>`;
       }
       return `<div class="sr" style="align-items:flex-start;gap:8px"><span class="lb" style="font-size:13px;letter-spacing:1px;padding-top:2px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);line-height:1.45;flex:1;min-width:0">${body}</span></div>`;
     }
@@ -1153,7 +1169,7 @@ function htmlOnAirTalentRoster(s){
         ?`${f$(perPd)}/period <span style="color:var(--mut);font-size:13px">(${f$(t.salary)}/yr)</span>`
         :'—';
       const star=t.superstar===true?'⭐ ':'';
-      return `<div class="sr" style="align-items:center;gap:8px">${talentPortraitThumbHtml(t,'tp-intel',`${callDisplay(s)} · ${lbl}`)}<span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);line-height:1.45"><strong style="font-weight:600;color:var(--wht)">${star}${t.name}</strong> · talent ${tq} · slot quality ${slotQ} · ${salStr}</span></div>`;
+      return `<div class="sr" style="align-items:flex-start;gap:8px"><span class="lb" style="font-size:13px;letter-spacing:1px;padding-top:2px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);flex:1;min-width:0">${intelTalentStack(t,tq,slotQ,salStr,star,`${callDisplay(s)} · ${lbl}`)}</span></div>`;
     }
     const cap=nonLocalDaypartCaption(s.format,sl,!!s.isPublic,s);
     return `<div class="sr"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px;color:var(--mut)"><em>${cap}</em> · slot quality ${slotQ}</span></div>`;
@@ -1528,7 +1544,7 @@ const EVDATA=[
   {y:1983,p:1,t:'FM Dominates Music',d:'FM captures 70% of music listening. AM music stations face existential pressure.',e:'fp+.06'},
   {y:1975,p:1,t:'Talk Radio Emerges',d:'AM stations discover that talk can thrive on personalities and older demos FM cannot easily reach.',e:'rival-NEWS_TALK-AM-50kw-emerging'},
   {y:1981,p:1,t:'Adult Standards: Music of Your Life',d:'Gordon McLendon\'s syndicated format goes national — Sinatra, Ella, Nat King Cole on AM. A quiet audience nobody else wanted. Low shares, intensely loyal 55+ listeners. The format that never goes away.',e:'unlock-ADULT_STANDARDS|rival-ADULT_STANDARDS-AM-10kw-niche'},
-  {y:1983,p:1,t:'MOR in Terminal Decline',d:'Middle of Road is dying on AM. FM ate the music audience. Survivors pivoting to News/Talk, Adult Contemporary, or Adult Standards.',e:'fmt_sunset:MOR:NEWS_TALK|rival-NEWS_TALK-AM-10kw-niche'},
+  {y:1983,p:1,t:'MOR in Terminal Decline',d:'Middle of the road (MOR) is dying on AM. FM ate the music audience. Survivors pivoting to News/Talk, Adult Contemporary, or Adult Standards.',e:'fmt_sunset:MOR:NEWS_TALK|rival-NEWS_TALK-AM-10kw-niche'},
   {y:1983,p:2,t:'Economy Roars Back',d:'Reagan boom. Ad spending surges.',e:'ad+.15'},
   {y:1983,p:2,t:'Oldies Format Emerges',d:'\u201950s & 60s rock & roll becomes its own format. WCBS-FM pioneering. Boomer nostalgia is a business.',e:'unlock-OLDIES|rival-OLDIES-AM-50kw-emerging'},
   {y:1984,p:1,t:'Olympics Ad Boom',d:'LA Olympics drives massive advertising demand.',e:'ad+.08'},
@@ -1553,7 +1569,7 @@ const EVDATA=[
   {y:1994,p:2,t:'Economy Recovers Strong',d:'Clinton boom begins. Ad spending surges.',e:'ad+.12'},
   {y:1995,p:1,t:'Beautiful Music Extinct',d:'The last Beautiful Music stations have converted. Adult Contemporary is the successor format.',e:'fmt_purge:BEAUTIFUL_MUSIC'},
   {y:1995,p:2,t:'Telecom Act — Final Negotiations',d:'Congress is finalizing a sweeping telecom bill. Radio ownership limits could change dramatically — industry lobbyists expect consolidation-friendly rules within months.',e:'fcc-prelude-96'},
-  {y:1996,p:1,t:'MOR Extinct',d:'Middle of Road no longer viable as a commercial format. The format is dead.',e:'fmt_purge:MOR'},
+  {y:1996,p:1,t:'MOR Extinct',d:'Middle of the road (MOR) is no longer viable as a commercial format. The format is dead.',e:'fmt_purge:MOR'},
   {y:1996,p:1,t:'Telecom Act — Deregulation',d:'Ownership caps lifted. Up to 8 stations per market. Consolidation begins.',e:'fcc-1996'},
   {y:1997,p:1,t:'FM Saturation Complete',d:'97% of new cars have FM. A music AM in 1997 is a museum piece. Talk and all-news AMs with real newsrooms hold up better than music on the band — if the market can support the cost.',e:'fp+.03'},
   {y:1997,p:2,t:'Consolidation Wave',d:'ClearWave and Veridian Media buying everything. Independents pressured.',e:'consolidate'},
@@ -2233,7 +2249,7 @@ const MARKETS={
     fmFreqs:['96.1 FM','99.7 FM','102.3 FM','104.5 FM','107.1 FM','94.9 FM','95.3 FM','101.5 FM','103.3 FM'],
     blackPop:0.358,hispPop1970:0.010,hispPop2000:0.080,hispPop2020:0.115,churchGoing:0.54,countryBonus:0,urbanBonus:0.05,
     culture:{country:0.06,urban:0.06,newsTalk:0.05,religion:0.10,spanish:0.02},
-    selectBlurb:'Reference Sunbelt market: diverse formats, strong soul/R&B and Top 40 battlegrounds, heritage AMs that still matter in the 70s, then FM specialization accelerates.',
+    selectBlurb:'A growing Sunbelt market with a strong appetite for Soul/R&B and Top 40 in the 1970s. FM specialization accelerates as the market grows and matures.',
     fmPenBias:0, fmMusicFragMult:1, spokenWordAmResilience:1.02, heritageAmResilience:1.02, countryAmHoldout:1,
     /** ~1.0 = neutral public-radio / educated-listener proxy; used only for PUBLIC_NEWS / PUBLIC_CLASSICAL audience math (not commercial rev). */
     eduIndex:0.96,
@@ -2252,7 +2268,7 @@ const MARKETS={
     fmFreqs:['94.1 FM','96.3 FM','97.9 FM','100.1 FM','102.9 FM','104.5 FM','107.5 FM'],
     blackPop:0.18,hispPop1970:0.008,hispPop2000:0.045,hispPop2020:0.095,churchGoing:0.58,countryBonus:0.18,urbanBonus:0.02,
     culture:{country:0.26,urban:0.03,newsTalk:0.04,religion:0.10,spanish:0.02},
-    selectBlurb:'Country-first listening culture: format loyalty runs deep, AM country keeps its footing longer, and the FM transition still arrives — just a beat later than generic Sunbelt markets.',
+    selectBlurb:'The home of the Grand Ole Opry means the Country format can build some very deep loyalty with listeners. AM Country stations can hold on for a while longer than in other markets, but FM is coming!',
     fmPenBias:-0.058, fmMusicFragMult:0.96, spokenWordAmResilience:1, heritageAmResilience:1.06, countryAmHoldout:1.2,
     eduIndex:0.88,
     teams:[
@@ -2269,7 +2285,7 @@ const MARKETS={
     fmFreqs:['92.3 FM','94.7 FM','96.3 FM','98.7 FM','100.3 FM','101.1 FM','102.7 FM','103.5 FM','104.3 FM','106.7 FM'],
     blackPop:0.21,hispPop1970:0.12,hispPop2000:0.22,hispPop2020:0.26,churchGoing:0.42,countryBonus:0,urbanBonus:0.14,
     culture:{country:0.008,urban:0.16,newsTalk:0.12,religion:0.06,spanish:0.14},
-    selectBlurb:'Huge billing pool and ruthless competition. Spoken-word and AC/Top 40 paydays reward winners; the dial fragments early. Country is a sideline, not the main story.',
+    selectBlurb:'The #1 radio market in the country. Lots of money to be made — and ruthless competition for it. With so many stations, audiences fragment quickly.',
     fmPenBias:0.055, fmMusicFragMult:1.06, spokenWordAmResilience:1.11, heritageAmResilience:1.08, countryAmHoldout:0.76,
     eduIndex:1.22,
     teams:[
@@ -2289,7 +2305,7 @@ const MARKETS={
     fmFreqs:['93.5 FM','95.5 FM','97.1 FM','98.7 FM','100.3 FM','101.9 FM','102.7 FM','104.3 FM','105.1 FM'],
     blackPop:0.14,hispPop1970:0.14,hispPop2000:0.38,hispPop2020:0.45,churchGoing:0.38,countryBonus:0.02,urbanBonus:0.12,
     culture:{country:0.03,urban:0.12,newsTalk:0.07,religion:0.05,spanish:0.22},
-    selectBlurb:'FM-first battlefield: fast fragmentation, constant format churn, and big upside for whoever owns a lane. Spanish and rhythmic/urban-adjacent formats gain ground as the metro evolves.',
+    selectBlurb:'Ultra-competitive radio market with audiences fragmenting quickly, formats churning constantly and a ton of revenue for the leaders. Demographic changes make urban, rhythmic and Spanish-language formats lucrative as time passes.',
     fmPenBias:0.068, fmMusicFragMult:1.1, spokenWordAmResilience:1.02, heritageAmResilience:0.96, countryAmHoldout:0.78,
     eduIndex:1.14,
     teams:[
@@ -2308,7 +2324,7 @@ const MARKETS={
     fmFreqs:['93.1 FM','94.7 FM','96.3 FM','97.9 FM','99.5 FM','101.9 FM','103.5 FM','104.3 FM','105.9 FM'],
     blackPop:0.22,hispPop1970:0.06,hispPop2000:0.18,hispPop2020:0.22,churchGoing:0.48,countryBonus:0.04,urbanBonus:0.08,
     culture:{country:0.08,urban:0.08,newsTalk:0.08,religion:0.08,spanish:0.12},
-    selectBlurb:'Big-signal Midwest hub: heritage AM survivors, durable talk, and bruising FM music fights. Sports and spoken-word become natural revenue engines as the dial matures.',
+    selectBlurb:'Big heritage AM signals provide a great environment for news, talk and sports formats, but huge format battles erupt on the FM dial.',
     fmPenBias:0.034, fmMusicFragMult:1.03, spokenWordAmResilience:1.1, heritageAmResilience:1.09, countryAmHoldout:0.9,
     eduIndex:1.10,
     teams:[
@@ -3146,7 +3162,7 @@ function resolveFranchiseAuction(franchise,rights,G,acts){
         rights.fee=Math.round(franchise.baseFee*0.75/1000)*1000;
         rights.contractEnd=G.year+franchise.contractYrs;
         rights.auctionOpen=false;
-        acts.push({v:'LOW',t:`📻 "${franchise.name}" picked up by ${fallback.callLetters} — $${Math.round(rights.fee/1000)}K/yr (no auction).`,y:G.year,p:G.period});
+        acts.push({v:'LOW',t:`📻 "${franchise.name}" picked up by ${fallback.callLetters} — ${f$(rights.fee)}/yr (no auction).`,y:G.year,p:G.period});
         benchLocalHostDisplacedByFranchiseWin(fallback,franchise,G);
         return;
       }
@@ -3820,6 +3836,9 @@ function aiRebrandStationAfterPlayerVoluntarySale(G, s) {
   delete s.cosmeticLogoUrl;
   delete s.cosmeticLogoV;
   delete s.cosmeticLogoTone;
+  delete s.cosmeticLogoBackupUrl;
+  delete s.cosmeticLogoBackupV;
+  delete s.cosmeticLogoBackupTone;
   delete s.cosmeticRemoteVanUrl;
   delete s.cosmeticRemoteVanV;
   delete s.remoteVanMarketingLift;
@@ -3903,6 +3922,9 @@ function aiRebrandStationAfterDistressSale(G, s) {
   delete s.cosmeticLogoUrl;
   delete s.cosmeticLogoV;
   delete s.cosmeticLogoTone;
+  delete s.cosmeticLogoBackupUrl;
+  delete s.cosmeticLogoBackupV;
+  delete s.cosmeticLogoBackupTone;
   delete s.cosmeticRemoteVanUrl;
   delete s.cosmeticRemoteVanV;
   delete s.remoteVanMarketingLift;
@@ -3962,6 +3984,11 @@ function mergeCosmeticPreserve(prevG, nextG) {
       if (p.cosmeticLogoV != null) s.cosmeticLogoV = p.cosmeticLogoV;
     }
     if (p.cosmeticLogoTone && !s.cosmeticLogoTone) s.cosmeticLogoTone = p.cosmeticLogoTone;
+    if (p.cosmeticLogoBackupUrl && !s.cosmeticLogoBackupUrl) {
+      s.cosmeticLogoBackupUrl = p.cosmeticLogoBackupUrl;
+      if (p.cosmeticLogoBackupV != null) s.cosmeticLogoBackupV = p.cosmeticLogoBackupV;
+      if (p.cosmeticLogoBackupTone && !s.cosmeticLogoBackupTone) s.cosmeticLogoBackupTone = p.cosmeticLogoBackupTone;
+    }
     if (p.cosmeticRemoteVanUrl && !s.cosmeticRemoteVanUrl) {
       s.cosmeticRemoteVanUrl = p.cosmeticRemoteVanUrl;
       if (p.cosmeticRemoteVanV != null) s.cosmeticRemoteVanV = p.cosmeticRemoteVanV;
@@ -4611,6 +4638,18 @@ function mpSetupSocketHandlers(socket) {
       delete st.cosmeticRemoteVanV;
       delete st.remoteVanMarketingLift;
       delete st.remoteVanPurchasedYear;
+      delete st.cosmeticLogoBackupUrl;
+      delete st.cosmeticLogoBackupV;
+      delete st.cosmeticLogoBackupTone;
+      if (typeof payload.cosmeticLogoBackupUrl === 'string' && payload.cosmeticLogoBackupUrl.startsWith('/generated-logos/')) {
+        st.cosmeticLogoBackupUrl = payload.cosmeticLogoBackupUrl;
+        if (payload.cosmeticLogoBackupV != null && Number.isFinite(Number(payload.cosmeticLogoBackupV))) {
+          st.cosmeticLogoBackupV = Number(payload.cosmeticLogoBackupV);
+        }
+        if (typeof payload.cosmeticLogoBackupTone === 'string' && payload.cosmeticLogoBackupTone) {
+          st.cosmeticLogoBackupTone = payload.cosmeticLogoBackupTone.slice(0, 400);
+        }
+      }
       renderAll();
       return;
     }
@@ -4632,6 +4671,9 @@ function mpSetupSocketHandlers(socket) {
     if (cosmeticLogoUrl) {
       st.cosmeticLogoUrl = cosmeticLogoUrl;
       if (cosmeticLogoV != null && Number.isFinite(Number(cosmeticLogoV))) st.cosmeticLogoV = Number(cosmeticLogoV);
+      delete st.cosmeticLogoBackupUrl;
+      delete st.cosmeticLogoBackupV;
+      delete st.cosmeticLogoBackupTone;
     }
     if (typeof cosmeticLogoTone === 'string') {
       if (cosmeticLogoTone) st.cosmeticLogoTone = cosmeticLogoTone;
@@ -5718,16 +5760,37 @@ function megaMarketFragmentationQueueForNewGame(marketId){
   if(!isMegaMarketId(marketId))return[];
   return MEGA_MARKET_FRAGMENTATION_LAUNCHES.map(({y,p,bp})=>({y,p,bp:{...bp}}));
 }
+/**
+ * Normalize dial positions for occupancy checks — avoids assigning "980 AM" when 980 (number) is already used.
+ */
+function dialFreqDedupeKey(f){
+  if(f==null||f==='')return null;
+  const str=String(f).trim();
+  const m=str.match(/(\d+(?:\.\d+)?)/);
+  if(!m)return str.toLowerCase();
+  const n=parseFloat(m[1]);
+  if(!Number.isFinite(n))return str.toLowerCase();
+  if(String(m[1]).includes('.'))return String(Math.round(n*10)/10);
+  return String(Math.round(n));
+}
 /** Prefer an unused dial position from the market list; falls back to rotating nextFreq. */
 function nextUnusedCommercialFreq(G,type){
-  const used=new Set((G.stations||[]).map(s=>s&&(s.freq||s._deferFreq)).filter(Boolean));
+  const used=new Set();
+  (G.stations||[]).forEach(s=>{
+    if(!s)return;
+    const raw=s.freq||s._deferFreq;
+    const k=dialFreqDedupeKey(raw);
+    if(k!=null)used.add(k);
+  });
   const m=MARKETS[G.marketId||ACTIVE_MARKET]||MARKETS.atlanta;
   const list=type==='AM'
     ?(m.amFreqs&&m.amFreqs.length?m.amFreqs:AMF)
     :(m.fmFreqs&&m.fmFreqs.length?m.fmFreqs:FMF);
   for(let i=0;i<list.length;i++){
     const f=list[i];
-    if(!used.has(f))return f;
+    const k=dialFreqDedupeKey(f);
+    if(k==null)continue;
+    if(!used.has(k))return f;
   }
   return nextFreq(type);
 }
@@ -6048,32 +6111,32 @@ function mkStn(bp,freq,year=1970){
 }
 
 const SC=[
-  {id:'under',l:'The Underdog',  d:"Inherited a struggling AM station. Ratings soft, morning host just quit. Nowhere to go but up. You have enough runway to turn it around — if you move fast.",idx:[1],cash:250000},
+  {id:'under',l:'The Underdog',  d:"You are now in charge of a struggling AM station. The ratings are soft. The morning host just quit. You have some money to turn it around (if you move quickly).",idx:[1],cash:250000},
   {id:'cntry',l:'Country Roads', d:"An established country AM with solid ratings, a loyal audience, and real profit from day one. The question isn't survival — it's whether you can make the FM transition before erosion catches up.",idx:[2],cash:450000},
-  {id:'soul', l:'Soul City',     d:"Soul/R&B — deeply embedded in the community. Loyal listeners, but undervalued by advertisers and squeezed by a small signal. Build your audience and fight for every dollar.",idx:[3],cash:1750000},
-  {id:'stack',l:'The Stack',     d:"An AM/FM combo. The AM pays the bills. The FM is a blank canvas — simulcast to build an audience, then differentiate. High overhead, high ceiling.",idx:[5,8],cash:4000000},
-  {id:'fmpn', l:'FM Pioneer',   d:"One of the market's first FM licenses. Album Rock on FM — a cult following in 1970, but advertisers haven't noticed yet. FM is about to become everything. Survive the lean years and you'll dominate the decade.",idx:[9],cash:900000},
-  {id:'wsb',  l:'King of the Dial', d:"The flagship AM: big signal, Middle of the Road — a market leader out of the gate with a polished, heritage facility. You're the biggest thing on the dial in 1970 — but FM specialization is coming and your broad format is a liability. What will you become?",idx:[4],cash:2200000,diff:'MEDIUM',heritageIncumbent:true},
-  {id:'tutorial_turnaround',l:'Tutorial: Turnaround Station',d:"Guided intro (solo): take over a struggling MOR AM, use research, flip to a modern format, fix talent and dayparts, promote, and balance spots. Events and rival deals are simplified until you graduate.",idx:[4],cash:380000,diff:'EASY',oqBoost:-12,tutorial:true},
+  {id:'soul', l:'Soul City',     d:"You're in charge of a Soul/R&B station that's doing well in the ratings, is deeply embedded in the community — but the sales are not as high as they could be. Build your audience and fight for every dollar.",idx:[3],cash:1750000},
+  {id:'stack',l:'The Stack',     d:"You're running an AM/FM combo. In 1970, the AM station pays the bills, but they say FM is the future! Build an audience for your FM station — but make sure your AM station is healthy enough to subsidize your FM losses for a while.",idx:[5,8],cash:4000000},
+  {id:'fmpn', l:'FM Pioneer',   d:"You own one of the market's first FM licenses. You start out with an Album Rock format, which is attracting a cult following in 1970. The problem: Advertisers aren't interested. FM is the future, but can you survive that long?",idx:[9],cash:900000},
+  {id:'wsb',  l:'King of the Dial', d:"You own one of the nation's legendary stations — a powerful AM radio station in 1970. For decades, you have been the market leader with your everything-to-everyone programming style. However, the world is changing and new formats are emerging. Your listeners are leaving for more specialized programming. What will you become to maintain your legacy?",idx:[4],cash:2200000,diff:'MEDIUM',heritageIncumbent:true},
+  {id:'tutorial_turnaround',l:'Tutorial: Turnaround Station',d:"Guided introduction: Take over a struggling station and turn it around! Follow the on-screen steps to learn how to use research, programming choices, talent, and promotion.",idx:[4],cash:380000,diff:'EASY',oqBoost:-12,tutorial:true},
   // ── 1978 ERA ───────────────────────────────────────────────────
   {id:'fmrev', l:'FM Revolution', startYear:1978,
-   d:"It's 1978. FM just passed AM in total audience for the first time in American radio history. You've scraped together enough to buy a mid-market FM Album Rock license — decent signal, thin cash, no morning host. The format wars are just beginning and the big groups haven't arrived yet. Build a winner before they do.",
+   d:"It's 1978 and FM just passed AM in total audience for the first time in American radio history. You survived the lean years with your FM Album Rock station, but the competition is heating up! As your AM competitors falter and your FM competitors get stronger, how will you build a winner for the 1980s and beyond?",
    idx:[7], cash:620000, diff:'HARD',
    oqBoost:-5, // slightly below market average — room to grow
    hint:'Survive the lean 1978-80 period. Album Rock explodes after that.'},
   {id:'acrise', l:'The Soft Touch', startYear:1978,
-   d:"1978. Adult Contemporary is emerging as FM's most profitable format — softer hits, 25-49 women, premium CPM. You've acquired a good-signal FM still running Beautiful Music. The format pivot to AC is obvious. The challenge: it gets crowded fast, and brand loyalty is everything once the format matures.",
+   d:"As FM grows in the late 1970s, the most profitable format is Adult Contemporary. It's the sound of softer pop hits, geared toward 25-49-year-old women, and it commands premium advertising rates. You just acquired an FM station that's still running the old-school Beautiful Music format with soft instrumentals and an ancient listener base. It's time to pivot, but all of your competitors are thinking the same thing. Build your audience and brand loyalty before they do!",
    idx:[14], cash:980000, diff:'MEDIUM',
    oqBoost:5, // inherited a reasonably-run station
    hint:'AC gets crowded by 1983. Build advertiser relationships early.'},
   // ── 1985 ERA ───────────────────────────────────────────────────
   {id:'chrwar', l:'Format Wars', startYear:1985,
-   d:"1985. CHR is king, Classic Rock is rising, and every FM license worth having is spoken for. You've just closed on an FM Album Rock station with a good signal and mediocre ratings — right as the format battles peak. Three formats can realistically win from here: stay the course, pivot to CHR, or reformat to Classic Rock. Choose your lane before the window closes.",
+   d:"It's 1985 and you just bought an FM station with a good signal, but mediocre ratings with an Album Rock format. The big battle for ratings is now on FM, and your competitors are hungry. As new formats evolve and explode, how will you respond?",
    idx:[9], cash:1800000, diff:'MEDIUM',
    oqBoost:0,
    hint:'Stay Album Rock, pivot to CHR, or reformat to Classic Rock. First move matters — do it in Period 1.'},
   {id:'amtalk', l:'Talk or Die', startYear:1985,
-   d:"1985. Your AM Top 40 station is hemorrhaging listeners to FM. Revenue is still okay — for now. The writing is on the wall: music AM is finished. Do you pivot to News/Talk before the cliff hits, or squeeze the last profitable years out of a dying format? Rush Limbaugh just signed with a Sacramento station. Everything is about to change.",
+   d:"By 1985, your AM Top 40 station is bleeding listeners to FM competitors. You're still alive for now, but there's not much you can do to convince listeners to hear new music over the crackle and hiss of AM. Is it time to pivot to a News/Talk format, or do you want to squeeze what you can out of Top 40 before the cliff hits?",
    idx:[1], cash:380000, diff:'HARD',
    oqBoost:-8, // the station has been sliding
    hint:'Revenue cliff hits hard by 1988. Pivot to News/Talk — or watch your audience walk to FM.'},
@@ -6753,6 +6816,49 @@ function leanMult(coh,lean){
   const idx=COH_IDX[coh]||0; // 0=youngest..5=oldest
   const axis=(idx/5)-.5;     // -0.5 to +0.5
   return Math.max(.15, 1 + lean * axis * 2);
+}
+/** Max length must match server `jingleRoutes` / `jinglePrompt` trimming. */
+const WL_JINGLE_AUDIENCE_HINT_MAX=100;
+const WL_JINGLE_POSITION_HINT_MAX=140;
+/** Suno tags only — from demo lean slider (same bands as `leanLabel`). */
+function wlJingleAudienceHintFromLean(lean){
+  const L=Number(lean);
+  const safe=Number.isFinite(L)?Math.max(-1,Math.min(1,L)):0;
+  const label=leanLabel(safe);
+  const v=Math.round(safe*100);
+  let tone='';
+  if(v<=-60)tone='youth-skewed playful energy';
+  else if(v<=-20)tone='young-adult bright catchy';
+  else if(v<=20)tone='broad adult mainstream appeal';
+  else if(v<=60)tone='mature adult warmth';
+  else tone='older-demo clear warm VO';
+  const out=`Audience target ${label}; ${tone}`;
+  return out.slice(0,WL_JINGLE_AUDIENCE_HINT_MAX);
+}
+/** Suno tags only — from format drift slider (`getDrift` poles, year-aware for hits lineage). */
+function wlJinglePositionHintFromDrift(s){
+  const dr=getDrift(s);
+  if(!dr||!dr.cfg)return '';
+  const {cfg,val}=dr;
+  const a=String(cfg.poleA?.name||'A').trim();
+  const b=String(cfg.poleB?.name||'B').trim();
+  const t=(Number(val)||0)/100;
+  let phrase;
+  if(t<0.22)phrase=`strong ${a} side`;
+  else if(t<0.42)phrase=`leans ${a} with ${b} undertones`;
+  else if(t<=0.58)phrase=`balanced ${a} and ${b}`;
+  else if(t<0.78)phrase=`leans ${b} with ${a} undertones`;
+  else phrase=`strong ${b} side`;
+  const out=`Format positioning: ${phrase}`;
+  return out.slice(0,WL_JINGLE_POSITION_HINT_MAX);
+}
+/** Client-built lines appended to Suno `tags` on /api/generate-station-jingle (not lyrics). */
+function wlBuildJingleSonicHints(s,_G){
+  if(!s)return{audienceHint:'',positionHint:''};
+  return{
+    audienceHint:wlJingleAudienceHintFromLean(s.demoLean),
+    positionHint:wlJinglePositionHintFromDrift(s),
+  };
 }
 function appl(s,coh,G){
   // BP-slot placeholders and any malformed row must not break appeal math (e.g. seedNewEntry
@@ -8577,8 +8683,9 @@ function calcRev(s,G){
     const autoDiscount=Math.round((_vacantSlots/_totalSlots)*35)/100;
     // Format inherent automation discount: some formats were designed for tape automation
     // Beautiful Music, Adult Standards ran 24hr on reel-to-reel with minimal live staff
-    // This reflects their structurally lower labor footprint regardless of talent slots
-    const fmtAutoDiscount={'BEAUTIFUL_MUSIC':0.22,'ADULT_STANDARDS':0.18,'MOR':0.08}[s.format]||0;
+    // Podcast / Talk: syndication- and barter-heavy stack, light local newsroom vs News/Talk —
+    // cheap “keep the license warm” option on a weak stick (talent slots still add talCost).
+    const fmtAutoDiscount={'BEAUTIFUL_MUSIC':0.22,'ADULT_STANDARDS':0.18,'MOR':0.08,'PODCAST_TALK':0.22}[s.format]||0;
     efficiencyMult=Math.max(0.36,1-clusterDiscount-autoDiscount-fmtAutoDiscount);
   }
   // Era cost: early stations ran lean. 1970=20% of mature, ramps to 100% by 1985.
@@ -12759,7 +12866,7 @@ function showError(msg,detail){
 
 let _pendingScenId=null; // set during scenario selection before genMarket runs
 
-/** Solo entry waits for this when <meta name="wl-require-clerk" content="1"> or VITE_REQUIRE_CLERK (see src/main.js). */
+/** Solo entry waits for this when play.html requires Clerk (default meta wl-require-clerk=1; see src/main.js). */
 function init(){
   /** Long-run benchmark HTML: no scenario UI / autosave resume — harness owns G. */
   if (window.__WL_AI_BENCHMARK_PAGE__) return;
@@ -12858,12 +12965,12 @@ function openScenSelect(localSave){
   ];
   const eraGroupsFiltered=eraGroups.map(era=>({...era,ids:era.ids.filter(id=>allowed.has(id))})).filter(era=>era.ids.length>0);
 
-  const diffHints={under:'Survival mode. Thin cash — morning slot empty; hire fast.',soul:'Great audience, terrible CPM. Grind for every dollar.',fmpn:'Lean years 1970–72. Survive them and FM makes you wealthy.',cntry:'Profitable now. Erosion will catch up.',stack:'AM/FM combo. High ceiling, high overhead.',wsb:'Dominant now, eroding fast. Every format decision has a cost.',tutorial_turnaround:'Walkthrough — follow on-screen steps; finish anytime by playing normally after the last lesson.',fmrev:'Thin margins until 1980. Album Rock will make you rich if you survive.',acrise:'AC gets crowded fast. Brand loyalty is everything.',chrwar:'Three viable format bets. Only one will dominate.',amtalk:'Revenue cliff is coming. Move fast or move on.'};
+  const diffHints={under:'Survival mode. Thin cash — morning slot empty; hire fast.',soul:'Strong cume; under-monetized. Grind sales and CPM.',fmpn:'Lean years 1970–72. Survive them and FM makes you wealthy.',cntry:'Profitable now. Erosion will catch up.',stack:'AM/FM combo. High ceiling, high overhead.',wsb:'Dominant now, eroding fast. Every format decision has a cost.',tutorial_turnaround:'Walkthrough — follow on-screen steps; finish anytime by playing normally after the last lesson.',fmrev:'Thin margins until 1980. Album Rock will make you rich if you survive.',acrise:'AC gets crowded fast. Brand loyalty is everything.',chrwar:'Three viable format bets. Only one will dominate.',amtalk:'Revenue cliff is coming. Move fast or move on.'};
   const makeCard=sc=>{
     const diff=sc.diff||(sc.id==='under'||sc.id==='soul'||sc.id==='fmpn'||sc.id==='amtalk'||sc.id==='fmrev'?'HARD':sc.id==='cntry'||sc.id==='stack'||sc.id==='acrise'||sc.id==='chrwar'?'MEDIUM':'EASY');
     const diffCls=diff==='HARD'?'hard':diff==='MEDIUM'?'med':'easy';
     const stnInfo=sc.idx.length===2?'AM/FM Combo':'Single Station';
-    const cashFmt=`$${(scaledScenarioCash(sc.cash,_selectedMarket)/1000).toFixed(0)}K starting cash`;
+    const cashFmt=`${f$(scaledScenarioCash(sc.cash,_selectedMarket))} starting cash`;
     const hint=sc.hint||diffHints[sc.id]||'';
     const span=`${sc.startYear||1970}–2020`;
     return `<div class="scn-card" id="scn-${sc.id}" onclick="pickScen('${sc.id}')">
@@ -14772,7 +14879,14 @@ function rivalOwnershipLabel(s,G,isOwn){
   if(!s)return '—';
   if(s.corpOwner)return s.corpName||'Corporate';
   if(s.isPublic)return 'Non-commercial';
-  if(s.isPlayer&&!isOwn)return 'Independent operator';
+  if(s.isPlayer&&!isOwn){
+    if(typeof MP!=='undefined'&&MP.mode==='live'&&s._mpOwner!=null){
+      const p=(MP.players||[]).find(pl=>pl.playerId===s._mpOwner);
+      const nm=p&&typeof p.name==='string'&&p.name.trim()?p.name.trim():'';
+      if(nm)return nm;
+    }
+    return 'Independent operator';
+  }
   const fic=rivalFictionalParentName(s,G);
   if(fic)return fic;
   return 'Independent';
@@ -17285,12 +17399,16 @@ function brandMarketingIdentityBlockHtml(leg){
       <div class="sln2" id="bm-rn-note-${safe}" style="margin-top:8px"></div>
     </div>
     <button class="cfm wl-commit-btn wl-commit-btn--synced" type="button" id="bm-rn-btn-${safe}" onclick="bmDoRename('${sid}')" style="margin-bottom:16px">APPLY CALL LETTER CHANGE</button>
-    <div class="bm-station-hero-square">
-      <label for="bm-station-hero-inp-${safe}" class="bm-station-hero-lbl">Brand</label>
-      <input type="text" id="bm-station-hero-inp-${safe}" class="bm-station-hero-inp" maxlength="48" value="${rosterHtmlEsc(s.brand||'')}"
-        placeholder="${rosterHtmlEsc(defaultPlayerStationBrand(s))}"
-        onfocus="bmBrandFocus('${sid}')" onblur="bmBrandBlur('${sid}')" oninput="bmUpdBrand('${sid}')">
-      <button class="cfm wl-commit-btn wl-commit-btn--synced" type="button" id="bm-brand-btn-${safe}" onclick="bmApplyBrand('${sid}')" style="margin-top:10px">APPLY BRAND</button>
+    <div class="bm-brand-field-wrap">
+      <div class="bm-brand-field-title" id="bm-brand-field-title-${safe}">Brand</div>
+      <p class="bm-brand-field-lede">Your on-air brand. This is how you refer to your station on the air. You might want to highlight the frequency, personality and/or format.</p>
+      <div class="bm-station-hero-square">
+        <input type="text" id="bm-station-hero-inp-${safe}" class="bm-station-hero-inp" maxlength="48" value="${rosterHtmlEsc(s.brand||'')}"
+          placeholder="${rosterHtmlEsc(defaultPlayerStationBrand(s))}"
+          aria-labelledby="bm-brand-field-title-${safe}"
+          onfocus="bmBrandFocus('${sid}')" onblur="bmBrandBlur('${sid}')" oninput="bmUpdBrand('${sid}')">
+        <button class="cfm wl-commit-btn wl-commit-btn--synced" type="button" id="bm-brand-btn-${safe}" onclick="bmApplyBrand('${sid}')" style="margin-top:10px">APPLY BRAND</button>
+      </div>
     </div>
     <div style="margin-top:14px;border-top:1px solid var(--bdr);padding-top:12px">
       <div style="font-size:14px;color:var(--mut);margin-bottom:8px">Suggestions:</div>
@@ -17298,12 +17416,39 @@ function brandMarketingIdentityBlockHtml(leg){
     </div>
   </div>`;
 }
-function brandMarketingLogoBlockHtml(leg){
+function brandMarketingLogoOnlyHtml(leg){
   const s=leg;
   const safe=bmSafeElId(s.id);
-  const turn=Number(G.turn);
-  const turnN=Number.isFinite(turn)?turn:0;
+  const turnN=effectiveGameTurn();
   const logoTurnBlocked=stationCosmeticGenMatchesTurn(s,turnN,'_lastLogoGenTurn');
+  const cosBusy=!!(s._vanGenPending||s._logoGenPending||s._jingleGenPending);
+  const rel=s.cosmeticLogoUrl?wlGameMediaAbsUrl(s.cosmeticLogoUrl+(s.cosmeticLogoV?'?v='+s.cosmeticLogoV:'')):'';
+  const procSvg=wlProceduralLogoSvgString(s,{layoutMode:'brandHero'});
+  const clickHint='<p class="di bm-logo-click-hint" style="color:var(--mut);font-size:13px;margin-top:4px;font-style:normal">Click the image for a full-size view and to save a copy.</p>';
+  const hero=rel
+    ?`<div style="text-align:center;margin:10px 0"><img class="bm-logo-hero" src="${rel}" alt="" draggable="false" onclick="wlOpenLogoModal('${s.id}')" title="View full size"></div>${clickHint}`
+    :(procSvg
+      ?`<div style="text-align:center;margin:10px 0;cursor:pointer" onclick="wlOpenLogoModal('${s.id}')" title="View full size"><div id="bm-logo-svg-wrap-${safe}" class="bm-logo-hero bm-logo-hero--svg">${procSvg}</div></div>${clickHint}`
+      :`<p class="di" style="color:var(--mut)">Logo preview unavailable.</p>`);
+  const genArg=s.cosmeticLogoUrl?'true':'false';
+  const logoBtnDisabled=s._logoGenPending||logoTurnBlocked||s._jingleGenPending;
+  const hasBackup=typeof s.cosmeticLogoBackupUrl==='string'&&s.cosmeticLogoBackupUrl.startsWith('/generated-logos/');
+  return`<div class="bm-panel-card" style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
+    <p class="di" style="font-size:13px;color:var(--mut);line-height:1.45;margin:0 0 8px;font-style:normal">Logos can take up to one minute to generate. You may generate one new logo per period. You also can use the <strong>Basic Logo</strong> if you prefer.</p>
+    <div id="bm-logo-status-${safe}" class="wl-ai-gen-status${s._logoGenPending?' wl-ai-gen-status--busy':''}" role="status" aria-live="polite"></div>
+    ${hero}
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      ${s.cosmeticLogoUrl?`<button type="button" class="abt" onclick="wlClearAiStationLogo('${s.id}')">○ Use basic logo</button>`:''}
+      ${!s.cosmeticLogoUrl&&hasBackup?`<button type="button" class="abt g" onclick="wlRestoreBackupStationLogo('${s.id}')">◆ Use last generated logo</button>`:''}
+      ${s.cosmeticLogoUrl?'':`<button type="button" class="abt g" onclick="wlBumpProceduralLogoVariant('${s.id}')">↻ New basic logo look</button>`}
+      <button type="button" id="bm-logo-gen-btn-${safe}" class="abt g" onclick="wlGenerateLogo('${s.id}',${genArg})"${logoBtnDisabled?' disabled':''} aria-busy="${s._logoGenPending?'true':'false'}" title="${logoTurnBlocked?'Already generated a logo this period — try next period.':''}">${logoTurnBlocked?'Logo (this period)':'Generate New Logo'}</button>
+    </div>
+  </div>`;
+}
+function brandMarketingVanOnlyHtml(leg){
+  const s=leg;
+  const safe=bmSafeElId(s.id);
+  const turnN=effectiveGameTurn();
   const vanTurnBlocked=stationCosmeticGenMatchesTurn(s,turnN,'_lastVanGenTurn');
   const vanCost=remoteVanPurchaseCostDollars(G);
   const repaintCost=remoteVanRepaintCostDollars(G,s);
@@ -17315,18 +17460,27 @@ function brandMarketingLogoBlockHtml(leg){
   const canPurchaseVan=!hasVanImg&&!vanTurnBlocked&&!cosBusy&&myCash>=vanCost;
   const canRepaintVan=hasVanImg&&!!s.cosmeticLogoUrl&&!vanTurnBlocked&&!cosBusy&&myCash>=repaintCost;
   const canReplaceVan=hasVanImg&&!vanLiftActive&&!vanTurnBlocked&&!cosBusy&&myCash>=vanCost;
-  const rel=s.cosmeticLogoUrl?wlGameMediaAbsUrl(s.cosmeticLogoUrl+(s.cosmeticLogoV?'?v='+s.cosmeticLogoV:'')):'';
-  const procSvg=wlProceduralLogoSvgString(s,{layoutMode:'brandHero'});
-  const hero=rel
-    ?`<div style="text-align:center;margin:10px 0"><img class="bm-logo-hero" src="${rel}" alt="" draggable="false" onclick="wlOpenLogoModal('${s.id}')" title="View full size"></div><p class="di" style="color:var(--mut);font-size:13px;margin-top:4px">AI-generated image. <strong>Click the image</strong> for a full-size view and to save a copy. Use <strong>Use basic logo</strong> below to switch back to the built-in wordmark.</p>`
-    :(procSvg
-      ?`<div style="text-align:center;margin:10px 0;cursor:pointer" onclick="wlOpenLogoModal('${s.id}')" title="View full size"><div id="bm-logo-svg-wrap-${safe}" class="bm-logo-hero bm-logo-hero--svg">${procSvg}</div></div><p class="di" style="color:var(--mut);font-size:13px;margin-top:4px"><strong>Click the image</strong> for a full-size view and to save a copy. Updates when you change brand or format.</p>`
-      :`<p class="di" style="color:var(--mut)">Logo preview unavailable.</p>`);
-  const genArg=s.cosmeticLogoUrl?'true':'false';
   const vanRel=s.cosmeticRemoteVanUrl?wlGameMediaAbsUrl(s.cosmeticRemoteVanUrl+(s.cosmeticRemoteVanV?'?v='+s.cosmeticRemoteVanV:'')):'';
-  const logoBtnDisabled=s._logoGenPending||logoTurnBlocked||s._jingleGenPending;
   const vanPurchaseDisabled=!canPurchaseVan;
   const vanTitle=!canPurchaseVan&&myCash<vanCost&&!hasVanImg&&!vanTurnBlocked&&!cosBusy?`Need ${f$(vanCost)} (you have ${f$(myCash)})`:'';
+  return`<div class="bm-panel-card" style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
+    <p class="di" style="font-size:13px;color:var(--mut);line-height:1.45;margin:0 0 8px;font-style:normal">Buy a custom remote truck: <strong>${f$(vanCost)}</strong> outfitting, a small boost to promotional reach, and van art to match your newly generated logo file (reload-safe). <strong>Repaint</strong> (${f$(repaintCost)}) updates the wrap when you change logos — no need to buy a new van. Fleet vehicles wear out after <strong>~${REMOTE_VAN_LIFETIME_YEARS} years</strong> of in-game time; then replace at full cost to restore the boost. One van action per period. <strong>Click the van image</strong> for full size / save.</p>
+    ${hasVanImg&&vanLiftActive?`<p class="di" style="font-size:13px;color:var(--amb);margin:0 0 8px">Remote van marketing boost: <strong>+${Math.round(REMOTE_VAN_MARKETING_LIFT*100)}%</strong> promotional effectiveness.${vanAgeYears!=null?' Fleet in service <strong>'+vanAgeYears+'</strong> yr — replace after <strong>'+REMOTE_VAN_LIFETIME_YEARS+'</strong> yr when worn.':''}</p>`:''}
+    ${hasVanImg&&!vanLiftActive?`<p class="di" style="font-size:13px;color:var(--red);margin:0 0 8px">Marketing boost <strong>ended</strong> — remote fleet is worn out. Use <strong>Replace fleet</strong> (${f$(vanCost)}) to restore <strong>+${Math.round(REMOTE_VAN_MARKETING_LIFT*100)}%</strong>. You can still <strong>Repaint</strong> the artwork anytime.</p>`:''}
+    <div id="bm-van-status-${safe}" class="wl-ai-gen-status${s._vanGenPending?' wl-ai-gen-status--busy':''}" role="status" aria-live="polite"></div>
+    ${vanRel?`<div style="text-align:center;margin:10px 0;cursor:pointer" onclick="wlOpenRemoteVanModal('${s.id}')" title="View full size"><img class="bm-van-hero" src="${vanRel}" alt="" style="max-width:100%;border-radius:8px;border:1px solid var(--bdr)" draggable="false"></div>`:''}
+    ${!hasVanImg&&vanTurnBlocked?`<p class="di" style="font-size:13px;color:var(--mut);margin:0 0 8px">Remote van slot already used this period — try again next period.</p>`:''}
+    <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+      ${hasVanImg?`<button type="button" class="abt" onclick="wlClearRemoteVan('${s.id}')">Sell / remove van</button>`+(s.cosmeticLogoUrl?`<button type="button" id="bm-van-repaint-btn-${safe}" class="abt g" onclick="wlRepaintRemoteVan('${s.id}')"${!canRepaintVan?' disabled':''} aria-busy="${s._vanGenPending?'true':'false'}" title="${!canRepaintVan&&myCash<repaintCost?'Need '+f$(repaintCost):''}">Repaint van — ${f$(repaintCost)}</button>`:'')+(canReplaceVan?`<button type="button" id="bm-van-replace-btn-${safe}" class="abt g" onclick="wlReplaceRemoteVan('${s.id}')" aria-busy="${s._vanGenPending?'true':'false'}">Replace fleet — ${f$(vanCost)}</button>`:''):`<button type="button" id="bm-van-gen-btn-${safe}" class="abt g" onclick="wlPurchaseRemoteVan('${s.id}')"${vanPurchaseDisabled?' disabled':''} aria-busy="${s._vanGenPending?'true':'false'}" title="${vanTitle||''}">Purchase remote van — ${f$(vanCost)}</button>`}
+    </div>
+  </div>`;
+}
+function brandMarketingJingleOnlyHtml(leg){
+  const s=leg;
+  const safe=bmSafeElId(s.id);
+  const turnN=effectiveGameTurn();
+  const cosBusy=!!(s._vanGenPending||s._logoGenPending||s._jingleGenPending);
+  const myCash=mpMyCashOnHand();
   const jingleCost=stationJinglePackageCostDollars(G);
   const jingleTurnBlocked=stationCosmeticGenMatchesTurn(s,turnN,'_lastJingleGenTurn');
   const pendingJingle=Array.isArray(s._pendingJingleVariants)&&s._pendingJingleVariants.length>0;
@@ -17340,43 +17494,18 @@ function brandMarketingLogoBlockHtml(leg){
         return`<div style="margin:10px 0;padding:12px;border:1px solid var(--bdr);border-radius:8px;background:var(--crd)"><div style="font-size:12px;color:var(--mut);margin-bottom:6px">Variant ${i+1}</div><audio controls preload="none" src="${au}" style="width:100%;max-width:420px"></audio><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;align-items:center"><button type="button" class="abt g" onclick="wlPickStationJingleVariant('${s.id}',${i})">Use this cut</button><button type="button" class="abt" onclick="wlSaveStationJingleFile('${s.id}',${i})">Save file</button></div></div>`;
       }).join('')
     :'';
-  return`<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
-    <div class="msh" style="margin-bottom:8px">STATION LOGO</div>
-    <p class="di" style="font-size:13px;color:var(--mut);line-height:1.45;margin:0 0 8px">AI logos are generated on the server and can take up to about a minute. <strong>Click the preview</strong> to open a larger version you can save. When you use <strong>Generate New Logo</strong>, wait for the status line — the button stays disabled until the request finishes (one new logo per period).</p>
-    <div id="bm-logo-status-${safe}" class="wl-ai-gen-status${s._logoGenPending?' wl-ai-gen-status--busy':''}" role="status" aria-live="polite"></div>
-    ${hero}
-    <div style="display:flex;flex-wrap:wrap;gap:8px">
-      ${s.cosmeticLogoUrl?'':`<button type="button" class="abt g" onclick="wlBumpProceduralLogoVariant('${s.id}')">↻ New basic logo look</button>`}
-      ${s.cosmeticLogoUrl?`<button type="button" class="abt" onclick="wlClearAiStationLogo('${s.id}')">○ Use basic logo</button>`:''}
-      <button type="button" id="bm-logo-gen-btn-${safe}" class="abt g" onclick="wlGenerateLogo('${s.id}',${genArg})"${logoBtnDisabled?' disabled':''} aria-busy="${s._logoGenPending?'true':'false'}" title="${logoTurnBlocked?'Already generated a logo this period — try next period.':''}">${logoTurnBlocked?'Logo (this period)':'Generate New Logo'}</button>
+  return`<div class="bm-panel-card" style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
+    <p class="di" style="font-size:13px;color:var(--mut);line-height:1.45;margin:0 0 8px;font-style:normal">Buy a new jingle package for your station. Select one for a marketing boost. Optional tagline below (slogan, city, etc.). <strong>Tip for sung lines:</strong> separate letters in acronyms (e.g. <span style="white-space:nowrap">W — K — T — X</span>); spell numbers as words (e.g. ninety-four point seven). One new jingle package per period.</p>
+    ${jingleLiftOn?`<p class="di" style="font-size:13px;color:var(--mut);margin:0 0 8px;font-style:normal">Once your jingle is active, you’ll get a small boost in your station’s promotional reach.</p>`:''}
+    <div id="bm-jingle-status-${safe}" class="wl-ai-gen-status${s._jingleGenPending?' wl-ai-gen-status--busy':''}" role="status" aria-live="polite"></div>
+    <label for="bm-jingle-tagline-${safe}" class="di" style="display:block;font-size:13px;color:var(--mut);margin-bottom:4px">Optional tagline (max 60 characters)</label>
+    <input type="text" id="bm-jingle-tagline-${safe}" maxlength="60" placeholder="e.g. Atlanta’s hits / W — K — T — X" style="width:100%;max-width:420px;background:var(--crd);border:1px solid var(--bdh);color:var(--wht);padding:8px 10px;border-radius:6px;margin-bottom:10px" ${pendingJingle||s._jingleGenPending?'disabled':''}>
+    ${hasJingleAudio?`<div style="margin:8px 0"><span class="di" style="font-size:12px;color:var(--mut)">Current jingle</span><br><audio controls preload="metadata" src="${wlGameMediaAbsUrl(s.cosmeticJingleUrl+(s.cosmeticJingleV?'?v='+s.cosmeticJingleV:''))}" style="width:100%;max-width:420px;margin-top:4px"></audio><button type="button" class="abt" style="margin-top:6px" onclick="wlSaveStationJingleFile('${s.id}',null)">Save file</button></div>`:''}
+    ${pendingJingle?`<p class="di" style="font-size:13px;color:var(--wht);margin:8px 0">Pick your favorite — marketing credit applies when you choose.</p>${jinglePickHtml}`:''}
+    <div style="display:flex;flex-wrap:nowrap;gap:8px;align-items:center">
+      <button type="button" id="bm-jingle-commission-btn-${safe}" class="abt g" onclick="wlCommissionStationJingle('${s.id}')"${!canCommissionJingle||s._jingleGenPending?' disabled':''} aria-busy="${s._jingleGenPending?'true':'false'}" title="${jingleTitle||''}">${jingleTurnBlocked?'Jingle (this period)':pendingJingle?'Finish picking above':'Commission jingle package — '+f$(jingleCost)}</button>
     </div>
-    <div style="margin-top:14px;border-top:1px solid var(--bdr);padding-top:12px">
-      <div class="msh" style="margin-bottom:8px">REMOTE BROADCAST VAN</div>
-      <p class="di" style="font-size:13px;color:var(--mut);line-height:1.45;margin:0 0 8px">Buy a custom remote truck: <strong>${f$(vanCost)}</strong> outfitting, a small boost to promotional reach, and van art <strong>matched to your saved AI logo file</strong> (reload-safe). <strong>Repaint</strong> (${f$(repaintCost)}) updates the wrap when you change logos — no need to buy a new van. Fleet vehicles wear out after <strong>~${REMOTE_VAN_LIFETIME_YEARS} years</strong> of in-game time; then replace at full cost to restore the boost. One van action per period. <strong>Click the van image</strong> for full size / save.</p>
-      ${hasVanImg&&vanLiftActive?`<p class="di" style="font-size:13px;color:var(--amb);margin:0 0 8px">Remote van marketing boost: <strong>+${Math.round(REMOTE_VAN_MARKETING_LIFT*100)}%</strong> promotional effectiveness.${vanAgeYears!=null?' Fleet in service <strong>'+vanAgeYears+'</strong> yr — replace after <strong>'+REMOTE_VAN_LIFETIME_YEARS+'</strong> yr when worn.':''}</p>`:''}
-      ${hasVanImg&&!vanLiftActive?`<p class="di" style="font-size:13px;color:var(--red);margin:0 0 8px">Marketing boost <strong>ended</strong> — remote fleet is worn out. Use <strong>Replace fleet</strong> (${f$(vanCost)}) to restore <strong>+${Math.round(REMOTE_VAN_MARKETING_LIFT*100)}%</strong>. You can still <strong>Repaint</strong> the artwork anytime.</p>`:''}
-      <div id="bm-van-status-${safe}" class="wl-ai-gen-status${s._vanGenPending?' wl-ai-gen-status--busy':''}" role="status" aria-live="polite"></div>
-      ${vanRel?`<div style="text-align:center;margin:10px 0;cursor:pointer" onclick="wlOpenRemoteVanModal('${s.id}')" title="View full size"><img class="bm-van-hero" src="${vanRel}" alt="" style="max-width:100%;border-radius:8px;border:1px solid var(--bdr)" draggable="false"></div>`:''}
-      ${!hasVanImg&&vanTurnBlocked?`<p class="di" style="font-size:13px;color:var(--mut);margin:0 0 8px">Remote van slot already used this period — try again next period.</p>`:''}
-      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-        ${hasVanImg?`<button type="button" class="abt" onclick="wlClearRemoteVan('${s.id}')">Sell / remove van</button>`+(s.cosmeticLogoUrl?`<button type="button" id="bm-van-repaint-btn-${safe}" class="abt g" onclick="wlRepaintRemoteVan('${s.id}')"${!canRepaintVan?' disabled':''} aria-busy="${s._vanGenPending?'true':'false'}" title="${!canRepaintVan&&myCash<repaintCost?'Need '+f$(repaintCost):''}">Repaint van — ${f$(repaintCost)}</button>`:'')+(canReplaceVan?`<button type="button" id="bm-van-replace-btn-${safe}" class="abt g" onclick="wlReplaceRemoteVan('${s.id}')" aria-busy="${s._vanGenPending?'true':'false'}">Replace fleet — ${f$(vanCost)}</button>`:''):`<button type="button" id="bm-van-gen-btn-${safe}" class="abt g" onclick="wlPurchaseRemoteVan('${s.id}')"${vanPurchaseDisabled?' disabled':''} aria-busy="${s._vanGenPending?'true':'false'}" title="${vanTitle||''}">Purchase remote van — ${f$(vanCost)}</button>`}
-      </div>
-    </div>
-    <div style="margin-top:14px;border-top:1px solid var(--bdr);padding-top:12px">
-      <div class="msh" style="margin-bottom:8px">STATION JINGLE (SUNO)</div>
-      <p class="di" style="font-size:13px;color:var(--mut);line-height:1.45;margin:0 0 8px">Buy a new jingle package for your station. Select one for a marketing boost. Include an optional tagline below (a slogan, your city, etc). One new jingle package per period.</p>
-      ${jingleLiftOn?`<p class="di" style="font-size:13px;color:var(--mut);margin:0 0 8px">On-air jingle is active — a small extra edge is folded into your station’s promotional reach (same model as the remote van).</p>`:''}
-      <div id="bm-jingle-status-${safe}" class="wl-ai-gen-status${s._jingleGenPending?' wl-ai-gen-status--busy':''}" role="status" aria-live="polite"></div>
-      <label for="bm-jingle-tagline-${safe}" class="di" style="display:block;font-size:13px;color:var(--mut);margin-bottom:4px">Optional tagline (max 60 characters)</label>
-      <input type="text" id="bm-jingle-tagline-${safe}" maxlength="60" placeholder="e.g. Your city, your hits" style="width:100%;max-width:420px;background:var(--crd);border:1px solid var(--bdh);color:var(--wht);padding:8px 10px;border-radius:6px;margin-bottom:10px" ${pendingJingle||s._jingleGenPending?'disabled':''}>
-      ${hasJingleAudio?`<div style="margin:8px 0"><span class="di" style="font-size:12px;color:var(--mut)">Current jingle</span><br><audio controls preload="metadata" src="${wlGameMediaAbsUrl(s.cosmeticJingleUrl+(s.cosmeticJingleV?'?v='+s.cosmeticJingleV:''))}" style="width:100%;max-width:420px;margin-top:4px"></audio><button type="button" class="abt" style="margin-top:6px" onclick="wlSaveStationJingleFile('${s.id}',null)">Save file</button></div>`:''}
-      ${pendingJingle?`<p class="di" style="font-size:13px;color:var(--wht);margin:8px 0">Pick your favorite — marketing credit applies when you choose.</p>${jinglePickHtml}`:''}
-      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-        <button type="button" id="bm-jingle-commission-btn-${safe}" class="abt g" onclick="wlCommissionStationJingle('${s.id}')"${!canCommissionJingle||s._jingleGenPending?' disabled':''} aria-busy="${s._jingleGenPending?'true':'false'}" title="${jingleTitle||''}">${jingleTurnBlocked?'Jingle (this period)':pendingJingle?'Finish picking above':'Commission jingle package — '+f$(jingleCost)}</button>
-        ${hasJingleAudio?`<button type="button" class="abt" onclick="wlClearStationJingle('${s.id}')">Remove jingle</button>`:''}
-      </div>
-      ${!pendingJingle&&!jingleTurnBlocked&&!cosBusy&&myCash<jingleCost?`<p class="di" style="font-size:12px;color:var(--mut);margin:8px 0 0">${jingleTitle||''}</p>`:''}
-    </div>
+    ${!pendingJingle&&!jingleTurnBlocked&&!cosBusy&&myCash<jingleCost?`<p class="di" style="font-size:12px;color:var(--mut);margin:8px 0 0">${jingleTitle||''}</p>`:''}
   </div>`;
 }
 function brandMarketingPromoBlockHtml(leg){
@@ -17458,21 +17587,25 @@ function renderBrandMarketingStation(primarySid){
   document.getElementById('brand-title').textContent='BRAND & MARKETING';
   document.getElementById('brandb').innerHTML=`
     <p class="di" style="margin-bottom:10px;color:var(--mut)">${subHtml}</p>
-    <div style="background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.25);border-radius:8px;padding:14px 16px;margin-bottom:18px">
-      <div class="msh" style="margin-bottom:10px">MARKETING MANAGER</div>
+    <div class="bm-marketing-summary-box" style="background:rgba(245,166,35,.08);border:1px solid rgba(245,166,35,.25);border-radius:8px;padding:14px 16px;margin-bottom:18px">
+      <div class="bm-section-h bm-section-h--inset">MARKETING MANAGER</div>
       ${sumHtml}
     </div>
-    <div class="msh" style="margin-bottom:10px">STATION IDENTITY</div>
+    <div class="bm-section-h">STATION IDENTITY</div>
     ${legs.map(leg=>brandMarketingIdentityBlockHtml(leg)).join('')}
-    <div class="msh" style="margin-bottom:10px;margin-top:6px">LOGOS</div>
-    ${legs.map(leg=>brandMarketingLogoBlockHtml(leg)).join('')}
-    <div class="msh" style="margin-bottom:10px;margin-top:6px">MARKETING SPEND</div>
+    <div class="bm-section-h">STATION LOGO</div>
+    ${legs.map(leg=>brandMarketingLogoOnlyHtml(leg)).join('')}
+    <div class="bm-section-h">REMOTE BROADCAST VAN</div>
+    ${legs.map(leg=>brandMarketingVanOnlyHtml(leg)).join('')}
+    <div class="bm-section-h">STATION JINGLE PACKAGE</div>
+    ${legs.map(leg=>brandMarketingJingleOnlyHtml(leg)).join('')}
+    <div class="bm-section-h">MARKETING SPEND</div>
     ${bmW('wl-tu-tr-bm-promo')}
     ${legs.map(leg=>brandMarketingPromoBlockHtml(leg)).join('')}
     ${bmWE}
-    <div class="msh" style="margin-bottom:10px;margin-top:6px">PROGRAMMING BUDGET</div>
+    <div class="bm-section-h">PROGRAMMING BUDGET</div>
     ${brandMarketingProgrammingBlockHtml(primary)}
-    <div class="msh" style="margin-bottom:10px;margin-top:6px">COMMUNITY IDENTITY INVESTMENT</div>
+    <div class="bm-section-h">COMMUNITY IDENTITY INVESTMENT</div>
     ${legs.map(leg=>brandMarketingIdentInvestHtml(leg)).join('')}
     <button class="cnl" type="button" ${tutBm?'id="wl-tu-tr-bm-close" ':''}onclick="cm('m-brand')" style="margin-top:8px">CLOSE</button>`;
   const prCap0=promoBudgetCapForPeriod(G);
@@ -17909,7 +18042,7 @@ function swapStationProgrammingAndFacilityPair(a,b){
     const cb=deepCloneStnField(b[k]);
     a[k]=cb;b[k]=ca;
   }
-  const cos=['cosmeticLogoUrl','cosmeticLogoV','cosmeticLogoTone','cosmeticRemoteVanUrl','cosmeticRemoteVanV','remoteVanMarketingLift','remoteVanPurchasedYear','cosmeticJingleUrl','cosmeticJingleV','jingleMarketingLift','jingleCommissionedYear','jingleVariantIndex','jingleTagline'];
+  const cos=['cosmeticLogoUrl','cosmeticLogoV','cosmeticLogoTone','cosmeticLogoBackupUrl','cosmeticLogoBackupV','cosmeticLogoBackupTone','cosmeticRemoteVanUrl','cosmeticRemoteVanV','remoteVanMarketingLift','remoteVanPurchasedYear','cosmeticJingleUrl','cosmeticJingleV','jingleMarketingLift','jingleCommissionedYear','jingleVariantIndex','jingleTagline'];
   for(const k of cos){
     const t=a[k];a[k]=b[k];b[k]=t;
   }
@@ -20029,6 +20162,18 @@ function stationCosmeticGenMatchesTurn(s, turn, key){
   const n=Number(last);
   return Number.isFinite(n)&&n===t;
 }
+/**
+ * Half-year index since 1970 from calendar fields only (same formula as `migrateSave`).
+ * Used for “once per period” cosmetics so rate limits stay aligned with `G.year`/`G.period`
+ * even if `G.turn` ever drifts or loads oddly (fixes stuck grey logo/jingle buttons).
+ */
+function effectiveGameTurn(){
+  if(!G)return 0;
+  const y=Math.floor(Number(G.year));
+  const yr=Number.isFinite(y)?y:1970;
+  const p=G.period===2?2:1;
+  return (yr-1970)*2+(p===2?1:0);
+}
 function wlBuildProceduralLogoInput(op, opts){
   opts=opts||{};
   if(!op||!G)return null;
@@ -20244,6 +20389,14 @@ async function wlRemoteVanDownloadClick(ev){
 function wlClearAiStationLogo(stationId){
   const op=G.stations.find(st=>st.id===stationId);
   if(!op||!op.cosmeticLogoUrl)return;
+  const backupUrl=String(op.cosmeticLogoUrl).split('?')[0];
+  const backupV=op.cosmeticLogoV;
+  const backupTone=typeof op.cosmeticLogoTone==='string'&&op.cosmeticLogoTone.trim()?op.cosmeticLogoTone.slice(0,400):'';
+  op.cosmeticLogoBackupUrl=backupUrl;
+  if(backupV!=null&&Number.isFinite(Number(backupV)))op.cosmeticLogoBackupV=Number(backupV);
+  else delete op.cosmeticLogoBackupV;
+  if(backupTone)op.cosmeticLogoBackupTone=backupTone;
+  else delete op.cosmeticLogoBackupTone;
   delete op.cosmeticLogoUrl;
   delete op.cosmeticLogoV;
   delete op.cosmeticLogoTone;
@@ -20252,19 +20405,51 @@ function wlClearAiStationLogo(stationId){
   delete op.remoteVanMarketingLift;
   delete op.remoteVanPurchasedYear;
   recalc(G.stations,G);
-  logHistory(op,'LOGO','Switched to basic logo (AI image cleared).',G);
+  logHistory(op,'LOGO','Switched to basic logo (last generated logo saved — you can restore it below).',G);
   autoSave();
   if(MP.mode==='live'&&MP.socket&&MP.roomId){
     MP.emit('mp_station_logo',{
       roomId:MP.roomId,
       stationId:op.id,
       clearCosmeticLogo:true,
+      cosmeticLogoBackupUrl:backupUrl,
+      cosmeticLogoBackupV:backupV,
+      cosmeticLogoBackupTone:backupTone||undefined,
     });
   }
   renderAll();
   if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&stationId===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
-  showToast('Using basic logo.','info');
+  showToast('Using basic logo — use “last generated logo” to switch back.','info');
 }
+function wlRestoreBackupStationLogo(stationId){
+  const op=G.stations.find(st=>st.id===stationId);
+  if(!op||op.cosmeticLogoUrl)return;
+  const bu=typeof op.cosmeticLogoBackupUrl==='string'?op.cosmeticLogoBackupUrl.trim():'';
+  if(!bu.startsWith('/generated-logos/'))return;
+  op.cosmeticLogoUrl=bu;
+  op.cosmeticLogoV=Date.now();
+  if(typeof op.cosmeticLogoBackupTone==='string'&&op.cosmeticLogoBackupTone.trim())op.cosmeticLogoTone=op.cosmeticLogoBackupTone.slice(0,400);
+  else delete op.cosmeticLogoTone;
+  delete op.cosmeticLogoBackupUrl;
+  delete op.cosmeticLogoBackupV;
+  delete op.cosmeticLogoBackupTone;
+  recalc(G.stations,G);
+  logHistory(op,'LOGO','Restored last generated station logo.',G);
+  autoSave();
+  if(MP.mode==='live'&&MP.socket&&MP.roomId){
+    MP.emit('mp_station_logo',{
+      roomId:MP.roomId,
+      stationId:op.id,
+      cosmeticLogoUrl:op.cosmeticLogoUrl,
+      cosmeticLogoV:op.cosmeticLogoV,
+      cosmeticLogoTone:typeof op.cosmeticLogoTone==='string'?op.cosmeticLogoTone:'',
+    });
+  }
+  renderAll();
+  if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&ensureOpsSourceSid(BM_ACTIVE_SID)===ensureOpsSourceSid(stationId))renderBrandMarketingStation(BM_ACTIVE_SID);
+  showToast('Restored your last generated logo.','info');
+}
+window.wlRestoreBackupStationLogo=wlRestoreBackupStationLogo;
 /** After a failed API logo request, show procedural SVG again (no history log — not a user “clear”). */
 function wlFallbackLogoOnGenerationError(op,silent){
   if(!op)return;
@@ -20287,7 +20472,7 @@ function wlSetLogoGenButtonUi(stationId,busy){
   const btn=document.getElementById('bm-logo-gen-btn-'+safe);
   if(!btn)return;
   const op=G.stations.find(st=>st.id===stationId);
-  const turnBlocked=stationCosmeticGenMatchesTurn(op,G.turn,'_lastLogoGenTurn');
+  const turnBlocked=stationCosmeticGenMatchesTurn(op,effectiveGameTurn(),'_lastLogoGenTurn');
   btn.disabled=!!busy||!!turnBlocked;
   btn.setAttribute('aria-busy',busy?'true':'false');
 }
@@ -20322,8 +20507,7 @@ async function wlRemoteVanImageOp(stationId,mode){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   const op=G.stations.find(st=>st.id===stationId);
   if(!op)return;
-  const turn=Number(G.turn);
-  const turnN=Number.isFinite(turn)?turn:0;
+  const turnN=effectiveGameTurn();
   const _bmSafe=bmSafeElId(stationId);
   const statusEl=document.getElementById('bm-van-status-'+_bmSafe);
   if(mode==='purchase'){
@@ -20337,7 +20521,7 @@ async function wlRemoteVanImageOp(stationId,mode){
       return;
     }
     if(!op.cosmeticLogoUrl){
-      showToast('Repaint needs an AI station logo — generate one so the van can match your current art.','warn');
+      showToast('Repaint needs a generated station logo — generate one so the van can match your current art.','warn');
       return;
     }
   }else if(mode==='replace'){
@@ -20459,8 +20643,7 @@ async function wlCommissionStationJingle(stationId){
   if(!op)return;
   const _bmSafe=bmSafeElId(stationId);
   const statusEl=document.getElementById('bm-jingle-status-'+_bmSafe);
-  const turnN=Number(G.turn);
-  const turnOk=Number.isFinite(turnN)?turnN:0;
+  const turnOk=effectiveGameTurn();
   const jingleCost=stationJinglePackageCostDollars(G);
   if(stationCosmeticGenMatchesTurn(op,turnOk,'_lastJingleGenTurn')){
     if(statusEl)statusEl.textContent='Already commissioned a jingle package this period — try next period.';
@@ -20485,6 +20668,7 @@ async function wlCommissionStationJingle(stationId){
   const tagline=tagInp&&typeof tagInp.value==='string'?tagInp.value.trim().slice(0,60):'';
   const brandRaw=(typeof op.brand==='string'&&op.brand.trim())?op.brand.trim():callDisplay(op);
   const band=(op.fmBooster||op.sig?.type==='FM')?'FM':'AM';
+  const sonic=wlBuildJingleSonicHints(op,G);
   const body={
     stationId:String(op.id),
     brand:brandRaw.slice(0,120),
@@ -20494,6 +20678,8 @@ async function wlCommissionStationJingle(stationId){
     tagline,
     frequency:String(op.freq!=null?op.freq:'').trim().slice(0,24),
     band,
+    audienceHint:sonic.audienceHint.slice(0,WL_JINGLE_AUDIENCE_HINT_MAX),
+    positionHint:sonic.positionHint.slice(0,WL_JINGLE_POSITION_HINT_MAX),
   };
   op._jingleGenPending=true;
   const btn=document.getElementById('bm-jingle-commission-btn-'+_bmSafe);
@@ -20503,7 +20689,7 @@ async function wlCommissionStationJingle(stationId){
   }
   if(statusEl){
     wlAiGenStatusBusy(statusEl,true);
-    statusEl.textContent='WORKING — Suno is creating two takes. Often 1–4 minutes. Do not close this panel or click again; this message will clear when ready.';
+    statusEl.textContent='WORKING — Creating two jingle takes. Often 1–4 minutes. Do not close this panel or click again; this message will clear when ready.';
   }
   try{
     const res=await fetch(wlGameApiUrl('/api/generate-station-jingle'),{
@@ -20659,7 +20845,7 @@ async function wlGenerateLogo(stationId,regenerate,opts){
     else if(!silent)showToast('Logo or jingle generation already in progress for this station.','warn');
     return;
   }
-  if(!silent&&stationCosmeticGenMatchesTurn(op,G.turn,'_lastLogoGenTurn')){
+  if(!silent&&stationCosmeticGenMatchesTurn(op,effectiveGameTurn(),'_lastLogoGenTurn')){
     if(statusEl)statusEl.textContent='Already generated a station logo this period — try next period.';
     else showToast('Already generated a station logo this period.','warn');
     return;
@@ -20669,7 +20855,7 @@ async function wlGenerateLogo(stationId,regenerate,opts){
   wlSetLogoGenButtonUi(stationId,true);
   if(statusEl){
     wlAiGenStatusBusy(statusEl,true);
-    statusEl.textContent='WORKING — AI logo in progress. Usually under a minute. Do not click again; this line will update when finished.';
+    statusEl.textContent='WORKING — Logo in progress. Usually under a minute. Do not click again; this line will update when finished.';
   }
   const band=(op.fmBooster||op.sig?.type==='FM')?'FM':'AM';
   const yr=Math.floor(Number(G.year));
@@ -20697,10 +20883,10 @@ async function wlGenerateLogo(stationId,regenerate,opts){
     }
     op.cosmeticLogoUrl=data.imageUrl;
     op.cosmeticLogoV=Date.now();
-    if(!silent){
-      const tn=Number(G.turn);
-      op._lastLogoGenTurn=Number.isFinite(tn)?tn:0;
-    }
+    delete op.cosmeticLogoBackupUrl;
+    delete op.cosmeticLogoBackupV;
+    delete op.cosmeticLogoBackupTone;
+    if(!silent)op._lastLogoGenTurn=effectiveGameTurn();
     if(statusEl)statusEl.textContent=data.cached?'From cache':'New image saved';
     logHistory(op,'LOGO',reg?'Station logo updated (regenerated).':'Station logo generated.',G);
     autoSave();
@@ -21340,6 +21526,7 @@ function migrateSave(G){
     if(s._bpSlotDeferred)return;
     delete s._logoGenPending;
     delete s._vanGenPending;
+    delete s._jingleGenPending;
     if(s._lastLogoGenTurn!=null){
       const ln=Number(s._lastLogoGenTurn);
       if(Number.isFinite(ln))s._lastLogoGenTurn=ln; else delete s._lastLogoGenTurn;
@@ -21347,6 +21534,10 @@ function migrateSave(G){
     if(s._lastVanGenTurn!=null){
       const vn=Number(s._lastVanGenTurn);
       if(Number.isFinite(vn))s._lastVanGenTurn=vn; else delete s._lastVanGenTurn;
+    }
+    if(s._lastJingleGenTurn!=null){
+      const jn=Number(s._lastJingleGenTurn);
+      if(Number.isFinite(jn))s._lastJingleGenTurn=jn; else delete s._lastJingleGenTurn;
     }
     // Stream object
     if(!s.stream)s.stream={active:false,aqh:0,rev:0,upkeep:0,dragOffset:0,launchYear:0};

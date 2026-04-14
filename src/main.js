@@ -53,11 +53,23 @@ const fromMeta =
   document.querySelector('meta[name="wl-clerk-publishable-key"]')?.getAttribute('content')?.trim?.() ?? '';
 const publishableKey = fromEnv || fromMeta;
 
-/** When true, solo play waits for Clerk sign-in (beta testers). Set VITE_REQUIRE_CLERK=true or meta wl-require-clerk=1 */
+/**
+ * Solo gate: `<meta name="wl-require-clerk" content="1">` requires sign-in.
+ * `content="0"` turns the gate off — including over `VITE_REQUIRE_CLERK=true` in `.env.local`, so Vite dev
+ * (which injects 0 via vite.config.js) works without deleting env vars.
+ * If meta is absent or not 0/1, `VITE_REQUIRE_CLERK` can still require sign-in (alternate HTML).
+ * We do not honor `VITE_REQUIRE_CLERK=false` when meta=1 (production safety).
+ */
+const wlRequireRaw =
+  document.querySelector('meta[name="wl-require-clerk"]')?.getAttribute('content')?.trim?.() ?? '';
+const clerkRequireEnv =
+  import.meta.env?.VITE_REQUIRE_CLERK === 'true' || import.meta.env?.VITE_REQUIRE_CLERK === '1';
 const requireClerk =
-  import.meta.env?.VITE_REQUIRE_CLERK === 'true' ||
-  import.meta.env?.VITE_REQUIRE_CLERK === '1' ||
-  document.querySelector('meta[name="wl-require-clerk"]')?.getAttribute('content') === '1';
+  wlRequireRaw === '0'
+    ? false
+    : wlRequireRaw === '1'
+      ? true
+      : clerkRequireEnv;
 window.__WL_REQUIRE_CLERK = !!requireClerk;
 
 /** Clerk defaults sign-in fallback to `/` (marketing). Force completed OAuth/email sign-in to the game shell. */
@@ -90,7 +102,8 @@ function showMissingClerkKeyGate() {
   if (title) title.textContent = 'CLERK NOT CONFIGURED';
   if (msg) {
     msg.innerHTML =
-      'Beta mode requires a Clerk publishable key. Set <code style="color:var(--amb)">VITE_CLERK_PUBLISHABLE_KEY</code> in <code>.env</code> or the <code>wl-clerk-publishable-key</code> meta tag, then rebuild.';
+      'Beta mode requires a Clerk publishable key. Set <code style="color:var(--amb)">VITE_CLERK_PUBLISHABLE_KEY</code> in <code>.env</code> or the <code>wl-clerk-publishable-key</code> meta tag, then rebuild.<br><br>' +
+      '<span style="color:var(--mut);font-size:14px">If this persists with <code>npm run client:dev</code>, hard-refresh the page (cached HTML may lack Vite’s <code>wl-require-clerk=0</code> injection).</span>';
   }
   if (gate) {
     gate.style.display = 'flex';

@@ -12,10 +12,18 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Airwave Empire - BETA">
 <meta name="twitter:description" content="Radio station simulation and management from the 1970s through 2020. Build your empire in real US markets — now in beta.">
-<!-- Clerk Publishable Key (optional). Get from https://dashboard.clerk.com — enables Sign in for multiplayer. -->
+<!-- Clerk publishable key — required for play (solo + multiplayer). https://dashboard.clerk.com -->
 <meta name="wl-clerk-publishable-key" content="">
-<!-- Set content="1" (or VITE_REQUIRE_CLERK=true in .env) to require sign-in before solo / scenario select (beta testers). -->
-<meta name="wl-require-clerk" content="">
+<!-- Source value is replaced by Vite (vite.config.js): development → 0, production build → 1. Override with VITE_WL_REQUIRE_CLERK_META in .env.* -->
+<meta name="wl-require-clerk" content="1">
+<!-- Sync gate flag before deferred legacy.js: ES module main.js may run later (top-level await), so legacy must not see undefined __WL_REQUIRE_CLERK. -->
+<script>
+(function(){
+  var el=document.querySelector('meta[name="wl-require-clerk"]');
+  var v=el&&el.getAttribute('content');v=v==null?'':String(v).trim();
+  window.__WL_REQUIRE_CLERK=(v==='1');
+})();
+</script>
 <!-- Optional: FormSubmit destination for beta feedback (same as FEEDBACK_TO). Prefer VITE_FEEDBACK_FORMSUBMIT_EMAIL in .env at build. -->
 <meta name="wl-feedback-formsubmit-email" content="">
 <!-- When the game is served from a different origin than the Node API, set the API origin here (or use VITE_GAME_SERVER_URL at build). Example: content="https://api.airwaveempire.com" -->
@@ -37,7 +45,7 @@
   <button type="button" id="wl-inapp-browser-hint-close" aria-label="Dismiss" style="position:absolute;top:8px;right:10px;background:transparent;border:none;color:var(--mut);font-size:18px;line-height:1;cursor:pointer;padding:4px 8px">&times;</button>
 </div>
 
-<!-- Beta / Clerk — blocks scenario select until signed in when wl-require-clerk or VITE_REQUIRE_CLERK is set -->
+<!-- Clerk — blocks scenario select until signed in (wl-require-clerk=1 by default; see src/main.js) -->
 <div id="wl-beta-auth-gate" style="display:none;position:fixed;inset:0;z-index:10050;flex-direction:column;align-items:center;justify-content:center;background:#0a0a0a;padding:24px;box-sizing:border-box;font-family:var(--ft),system-ui,sans-serif">
   <div style="text-align:center;max-width:440px;margin-bottom:20px">
     <div style="font-family:var(--fd);font-size:26px;color:var(--amb);letter-spacing:4px;margin-bottom:8px">AIRWAVE EMPIRE</div>

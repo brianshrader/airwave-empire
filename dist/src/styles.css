@@ -54,6 +54,50 @@ body{background:var(--blk);color:var(--wht);font-family:var(--fm);min-height:100
 .bm-station-hero-lbl{font-family:var(--fm);font-size:12px;font-weight:600;letter-spacing:0.03em;color:var(--off);margin-bottom:6px;text-transform:none}
 .bm-station-hero-inp{flex:0 1 auto;width:100%;min-height:36px;box-sizing:border-box;background:transparent;border:none;color:var(--wht);font-family:var(--fm),ui-sans-serif,system-ui,sans-serif;font-size:clamp(15px,2.2vw,20px);font-weight:600;letter-spacing:0.02em;line-height:1.35;text-align:center;outline:none;text-transform:none}
 .bm-station-hero-inp::placeholder{color:var(--mut);opacity:.65;font-weight:500}
+.bm-brand-field-wrap{margin-top:2px}
+.bm-brand-field-title{
+  font-family:var(--fd);
+  font-size:18px;
+  font-weight:700;
+  letter-spacing:0.12em;
+  color:var(--amb);
+  margin:0 0 8px 0;
+  text-transform:uppercase;
+}
+.bm-brand-field-lede{
+  font-size:14px;
+  color:var(--off);
+  line-height:1.5;
+  margin:0 0 12px 0;
+  font-style:normal;
+}
+.bm-station-hero-square .bm-station-hero-inp{
+  text-align:left;
+  padding:6px 4px;
+  font-size:clamp(17px,2.4vw,22px);
+  font-weight:700;
+}
+#m-brand .bm-section-h{
+  font-family:var(--fd);
+  font-size:17px;
+  font-weight:700;
+  letter-spacing:0.12em;
+  color:var(--wht);
+  border-bottom:2px solid rgba(245,166,35,.38);
+  padding-bottom:8px;
+  margin:26px 0 14px 0;
+}
+#m-brand .bm-marketing-summary-box + .bm-section-h{margin-top:12px}
+#m-brand .bm-section-h--inset{
+  margin:0 0 10px 0;
+  font-size:15px;
+  font-weight:700;
+  letter-spacing:0.1em;
+  color:var(--amb);
+  border-bottom:1px solid rgba(245,166,35,.28);
+  padding-bottom:6px;
+}
+#m-brand .bm-panel-card{margin-bottom:0}
 /* Below modals (.ov z-index 8000) — 9999 sat above overlays and broke taps/sliders in some browsers */
 body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:100}
 
