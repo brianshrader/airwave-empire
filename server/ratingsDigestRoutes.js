@@ -1,5 +1,7 @@
 'use strict';
 
+const { posthog } = require('./posthog');
+
 /**
  * Trade-press style ratings digest via ShortAPI LLM (job/create + job/query, same transport as images).
  * POST /api/ratings-digest — body: { payload: { market, periodLabel, year, period, book: [{ rank, call, brand?, format, sharePct, deltaPts, band }], marketContext?: string[] } }
@@ -561,10 +563,22 @@ function mountRatingsDigestRoutes(app) {
         { role: 'user', content: userMsg },
       ]);
 
+      posthog.capture({
+        distinctId: ip,
+        event: 'ratings digest generated',
+        properties: {
+          market: payload.market,
+          year: payload.year,
+          period: payload.period,
+          station_count: payload.book.length,
+          provider: digestProviderMode(),
+        },
+      });
       res.json({ ok: true, article });
     } catch (e) {
       const status = e.status && e.status >= 400 && e.status < 600 ? e.status : 500;
       console.error('[ratings-digest]', e.message);
+      if (status >= 500) posthog.captureException(e, clientIp(req));
       res.status(status).json({ ok: false, error: e.message || 'Digest failed' });
     }
   });

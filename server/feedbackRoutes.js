@@ -5,6 +5,7 @@
  * First use: confirm the destination inbox once via FormSubmit’s email.
  */
 const https = require('https');
+const { posthog } = require('./posthog');
 
 const DEFAULT_TO = 'airwaveempire@gmail.com';
 const MAX_MSG = 12000;
@@ -110,7 +111,17 @@ function mountFeedback(app) {
     };
 
     postFormSubmit(to, payload)
-      .then(() => res.json({ ok: true }))
+      .then(() => {
+        posthog.capture({
+          distinctId: ip,
+          event: 'feedback submitted',
+          properties: {
+            has_reply_email: Boolean(replyEmail),
+            message_length: message.length,
+          },
+        });
+        res.json({ ok: true });
+      })
       .catch((e) => {
         console.error('[FEEDBACK]', e.message || e);
         res.status(502).json({ error: 'Could not send feedback. Try again or use the Contact page.' });

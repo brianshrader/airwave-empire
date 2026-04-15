@@ -42,6 +42,7 @@ const http     = require('http');
 const { Server } = require('socket.io');
 const { randomBytes } = require('crypto');
 const { getSharedCorsOptions, allowedOriginsList } = require('./server/corsConfig');
+const { posthog } = require('./server/posthog');
 
 const app        = express();
 const corsOpts   = getSharedCorsOptions();
@@ -70,6 +71,9 @@ mountCloudSaves(app);
 
 const { mountFeedback } = require('./server/feedbackRoutes');
 mountFeedback(app);
+
+const { mountAnalytics } = require('./server/analyticsRoutes');
+mountAnalytics(app);
 
 const { mountRatingsDigestRoutes } = require('./server/ratingsDigestRoutes');
 mountRatingsDigestRoutes(app);
@@ -338,6 +342,12 @@ io.on('connection', socket => {
     socket.emit('room_created', { roomId: room.id, playerId: 0, socketId: socket.id });
     broadcastRoomState(room);
     console.log(`[ROOM] Created ${room.id} by ${socket.id}`);
+    const hostAccountId = room.players[0]?.accountId;
+    posthog.capture({
+      distinctId: hostAccountId || socket.id,
+      event: 'room created',
+      properties: { room_id: room.id },
+    });
   });
 
   // ── JOIN ROOM ─────────────────────────────────────────────────
@@ -381,6 +391,12 @@ io.on('connection', socket => {
     socket.emit('room_joined', { roomId, playerId, socketId: socket.id });
     broadcastRoomState(room);
     console.log(`[ROOM] ${socket.id} joined ${room.id} as player ${playerId}`);
+    const joinAccountId = socket.data.clerkUserId || null;
+    posthog.capture({
+      distinctId: joinAccountId || socket.id,
+      event: 'room joined',
+      properties: { room_id: room.id, player_count: room.players.length },
+    });
   });
 
   // ── REJOIN ROOM (mid-game reconnect) ──────────────────────────
@@ -465,6 +481,16 @@ io.on('connection', socket => {
     broadcastRoomState(room);
     io.to(room.id).emit('player_reconnected', { playerId: player.playerId, name: player.name });
     console.log(`[REJOIN] ${socket.id} rejoined ${room.id} as player ${player.playerId} (${player.name})`);
+    posthog.capture({
+      distinctId: player.accountId || socket.id,
+      event: 'room rejoined',
+      properties: {
+        room_id: room.id,
+        player_id: player.playerId,
+        is_host: wasHost,
+        game_year: room.G?.year,
+      },
+    });
 
     // Re-check commits in case everyone was waiting on this player
     checkAllCommitted(room);
@@ -495,6 +521,16 @@ io.on('connection', socket => {
     io.to(roomId).emit('game_started', { G: room.G, players: room.players, scenarioId });
     broadcastRoomState(room);
     console.log(`[GAME] ${roomId} started — ${room.players.length} players, scenario: ${scenarioId}`);
+    const hostPlayer = room.players.find(p => p.socketId === socket.id);
+    posthog.capture({
+      distinctId: hostPlayer?.accountId || socket.id,
+      event: 'game started',
+      properties: {
+        room_id: roomId,
+        scenario_id: scenarioId,
+        player_count: room.players.length,
+      },
+    });
   });
 
   socket.on('player_cash_update', ({ roomId, playerId, cash }) => {
@@ -733,6 +769,17 @@ io.on('connection', socket => {
 
     io.to(roomId).emit('state_broadcast', { G: room.G, decadeYear: decadeYear || null, sumData: sumData || null });
     console.log(`[STATE] ${roomId} — year ${G?.year} ${G?.period===2?'FALL':'SPRING'} saved`);
+    const stateHostPlayer = room.players.find(p => p.socketId === socket.id);
+    posthog.capture({
+      distinctId: stateHostPlayer?.accountId || socket.id,
+      event: 'game period advanced',
+      properties: {
+        room_id: roomId,
+        year: G?.year,
+        period: G?.period === 2 ? 'fall' : 'spring',
+        player_count: room.players.length,
+      },
+    });
     if (typeof ack === 'function') ack({ ok: true });
   });
 
@@ -778,6 +825,12 @@ io.on('connection', socket => {
       era,
     });
     console.log(`[DRAFT] ${roomId} started — ${n} players, era ${era}`);
+    const draftHostPlayer = room.players.find(p => p.socketId === socket.id);
+    posthog.capture({
+      distinctId: draftHostPlayer?.accountId || socket.id,
+      event: 'draft started',
+      properties: { room_id: roomId, era, player_count: n },
+    });
   });
 
   // ── DRAFT PICK ─────────────────────────────────────────────────
@@ -843,6 +896,15 @@ io.on('connection', socket => {
 
     persistRoom(room);
     console.log(`[DRAFT] ${roomId} pick: ${player?.name} → ${stationId} (${draft.pickIdx}/${draft.order.length})`);
+    posthog.capture({
+      distinctId: player?.accountId || socket.id,
+      event: 'draft pick made',
+      properties: {
+        room_id: roomId,
+        station_id: stationId,
+        pick_number: draft.pickIdx,
+      },
+    });
   });
 
   // ── DRAFT PASS (skip 2nd station) ──────────────────────────────
@@ -885,6 +947,12 @@ io.on('connection', socket => {
     });
     broadcastRoomState(room);
     console.log(`[GAME] ${roomId} draft complete — game starting`);
+    const draftCompleteHost = room.players.find(p => p.socketId === socket.id);
+    posthog.capture({
+      distinctId: draftCompleteHost?.accountId || socket.id,
+      event: 'draft completed',
+      properties: { room_id: roomId, era: room.era, player_count: room.players.length },
+    });
   });
 
   // ── DISCONNECT ────────────────────────────────────────────────
@@ -1020,6 +1088,16 @@ app.delete('/admin/saves', (req, res) => {
 
 // ── BOOT ──────────────────────────────────────────────────────────
 loadPersistedRooms();
+
+// ── GLOBAL ERROR HANDLER ──────────────────────────────────────────
+app.use((err, req, res, next) => {
+  posthog.captureException(err, req.auth?.userId || req.ip || 'unknown');
+  if (res.headersSent) return next(err);
+  res.status(500).json({ error: 'Internal server error' });
+});
+
+process.on('SIGTERM', () => posthog.shutdown());
+process.on('SIGINT', () => posthog.shutdown());
 
 httpServer.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {

@@ -90,6 +90,37 @@ function dialVerbalForTags(frequency, band) {
   return amKhzToRadioVerbal(k);
 }
 
+/**
+ * Replace raw dial digits in singable text with the same words we use in tags.
+ * Models often misread "103.5" as "one hundred three five" if left as numerals in lyrics.
+ */
+function verbalizeDialInText(text, frequency, band) {
+  const dialWords = dialVerbalForTags(frequency, band);
+  if (!dialWords || text == null || String(text).trim() === '') return String(text);
+  const compact = String(frequency)
+    .trim()
+    .replace(/\s/g, '')
+    .replace(/(AM|FM)$/i, '');
+  if (!compact || !/\d/.test(compact)) return String(text);
+  const dot = compact.indexOf('.');
+  let pattern;
+  if (dot >= 0) {
+    const intP = compact.slice(0, dot);
+    const decP = compact.slice(dot + 1);
+    if (!intP || decP === undefined) return String(text);
+    const i = intP.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const d = String(decP).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    pattern = new RegExp(`${i}\\s*\\.\\s*${d}`, 'gi');
+  } else {
+    pattern = new RegExp(compact.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+  }
+  return String(text).replace(pattern, (match, offset, str) => {
+    const before = offset > 0 ? str[offset - 1] : '';
+    const pad = before && /[A-Za-z0-9]/.test(before) ? ' ' : '';
+    return pad + dialWords;
+  });
+}
+
 /** Internal format id → short sonic hint for Suno tags (avoid “arena/party” wording — models map it to crowd tails). */
 const FORMAT_SUNO = {
   TOP40: 'bright hit-radio, tight punchy vocals, studio imaging',
@@ -279,15 +310,13 @@ function buildSunoJingleArgs(p) {
   const { eraTag, eraAnti } = eraTagsForYearAndFormat(yr, fmtKey);
 
   // Singable lines ONLY — no brackets, no “say…”, no production notes (those go to tags).
-  // Soft formats: brand first, then tagline — model often keeps the station name clearer when it leads.
+  // Replace dial numerals in brand/tagline so TTS doesn’t garble (e.g. "103.5" → "one hundred three five").
+  const tagForLyrics = tag ? verbalizeDialInText(tag, p.frequency, band) : '';
+  const brandForLyrics = verbalizeDialInText(brand, p.frequency, band);
+  // Slogan/tagline first, then on-air brand (typical jingle: hook line, then station ID).
   const lyricLines = [];
-  if (SOFT_IMAGERY_FORMATS.has(fmtKey)) {
-    lyricLines.push(brand);
-    if (tag) lyricLines.push(tag);
-  } else {
-    if (tag) lyricLines.push(tag);
-    lyricLines.push(brand);
-  }
+  if (tagForLyrics) lyricLines.push(tagForLyrics);
+  lyricLines.push(brandForLyrics);
   const lyrics = lyricLines.join('\n').slice(0, 1200);
 
   const tagParts = [
@@ -324,4 +353,5 @@ module.exports = {
   buildSunoJingleArgs,
   amKhzToRadioVerbal,
   fmMhzToRadioVerbal,
+  verbalizeDialInText,
 };

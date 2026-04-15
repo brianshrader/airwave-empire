@@ -8,6 +8,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { verifyClerkBearer } = require('./clerkVerify');
 const { userHasActiveSubscription, subscriptionCheckEnabled } = require('./subscriptionAccess');
+const { posthog } = require('./posthog');
 
 const ROOT = path.join(__dirname, '..', 'data', 'cloud_saves');
 const MAX_SAVES = Math.min(50, parseInt(process.env.CLOUD_SAVE_MAX_SLOTS || '10', 10) || 10);
@@ -177,6 +178,11 @@ function mountCloudSaves(app) {
     const meta = metaFromPayload(id, req.body, Buffer.byteLength(raw, 'utf8'));
     man.saves.unshift(meta);
     writeManifest(uid, man);
+    posthog.capture({
+      distinctId: uid,
+      event: 'cloud save created',
+      properties: { save_id: id, year: meta.year, market_id: meta.marketId, bytes: meta.bytes },
+    });
     res.status(201).json({ id, meta });
   });
 
@@ -202,6 +208,11 @@ function mountCloudSaves(app) {
     const meta = metaFromPayload(id, req.body, Buffer.byteLength(raw, 'utf8'));
     man.saves[idx] = meta;
     writeManifest(uid, man);
+    posthog.capture({
+      distinctId: uid,
+      event: 'cloud save updated',
+      properties: { save_id: id, year: meta.year, market_id: meta.marketId, bytes: meta.bytes },
+    });
     res.json({ id, meta });
   });
 
@@ -224,6 +235,11 @@ function mountCloudSaves(app) {
     }
     man.saves = next;
     writeManifest(uid, man);
+    posthog.capture({
+      distinctId: uid,
+      event: 'cloud save deleted',
+      properties: { save_id: id },
+    });
     res.json({ ok: true });
   });
 

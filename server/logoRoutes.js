@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { buildLogoPrompt } = require('./logoPrompt');
+const { posthog } = require('./posthog');
 const {
   generateStationLogo,
   imageGenerationConfigured,
@@ -154,9 +155,21 @@ function mountLogoRoutes(app) {
 
       fs.writeFileSync(absPath, buffer);
 
+      posthog.capture({
+        distinctId: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || 'unknown',
+        event: 'station logo generated',
+        properties: {
+          format: body.format,
+          year: Math.floor(Number(body.year)),
+          band: body.band || null,
+          regenerate,
+          provider: getActiveImageProvider(),
+        },
+      });
       return res.json({ ok: true, cached: false, imageUrl: `/generated-logos/${finalName}` });
     } catch (e) {
       console.error('[logo] Image API / save failed:', e.message || e);
+      posthog.captureException(e, req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || 'unknown');
       const status = e.status && Number.isInteger(e.status) ? e.status : 500;
       const detail = String(e.message || 'Logo generation failed').slice(0, 400);
       return res.status(status).json({

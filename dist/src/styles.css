@@ -620,6 +620,29 @@ body.mp-endgame #pl,body.mp-endgame #pc{position:relative}
 body.mp-endgame #pl::after,body.mp-endgame #pc::after{content:'';position:absolute;inset:0;background:rgba(0,0,0,.22);z-index:4;pointer-events:auto}
 body.mp-endgame #mp-statusbar,body.mp-endgame #mp-chat-wrap{position:relative;z-index:6}
 
+/* Multiplayer lobby — home link (matches scenario / landing title treatment) */
+#mp-lobby .mp-lobby-home-link{
+  display:inline-block;
+  font-family:var(--fd);
+  font-size:28px;
+  letter-spacing:4px;
+  color:var(--amb);
+  text-decoration:none;
+  margin-bottom:6px;
+  line-height:1.1;
+  text-shadow:0 0 28px rgba(245,166,35,.35);
+  transition:color .15s ease,opacity .15s ease,filter .15s ease;
+}
+#mp-lobby .mp-lobby-home-link:hover{
+  color:#ffc14d;
+  filter:brightness(1.06);
+}
+#mp-lobby .mp-lobby-home-link:focus-visible{
+  outline:2px solid var(--amb);
+  outline-offset:4px;
+  border-radius:2px;
+}
+
 /* RANKER */
 #rkwrap{overflow-x:auto;overflow-y:auto;max-height:72vh;scroll-behavior:smooth}
 .rkt{border-collapse:collapse;font-family:var(--ft);font-size:14px;white-space:nowrap}

@@ -7,6 +7,7 @@
  */
 const accountStore = require('./accountStore');
 const { verifyClerkBearer } = require('./clerkVerify');
+const { posthog } = require('./posthog');
 
 function mountStripeBilling(app) {
   const secret = process.env.STRIPE_SECRET_KEY;
@@ -59,6 +60,15 @@ function mountStripeBilling(app) {
       metadata: { clerk_user_id: clerkUserId },
     });
 
+    posthog.capture({
+      distinctId: clerkUserId,
+      event: 'checkout session created',
+      properties: {
+        price_id: priceId,
+        mode: process.env.STRIPE_CHECKOUT_MODE === 'subscription' ? 'subscription' : 'payment',
+        stripe_customer_id: customerId,
+      },
+    });
     res.json({ url: session.url });
   });
 }
@@ -78,6 +88,15 @@ async function syncSubscriptionFromStripeObject(stripe, sub) {
       subscriptionId: sub.id,
     });
     console.log('[STRIPE] subscription', sub.id, sub.status, '→ user', uid, active ? 'active' : 'inactive');
+    posthog.capture({
+      distinctId: uid,
+      event: 'subscription activated',
+      properties: {
+        subscription_id: sub.id,
+        status: sub.status,
+        active,
+      },
+    });
   } catch (e) {
     console.warn('[STRIPE] syncSubscriptionFromStripeObject:', e.message);
   }

@@ -4145,6 +4145,39 @@ function wlGameApiUrl(path){
   const p=path.startsWith('/')?path:'/'+path;
   return wlGameServerOrigin()+p;
 }
+
+/** Stable anonymous id for PostHog when Clerk user id is unavailable. */
+function wlAnalyticsDistinctId(){
+  try{
+    let id=localStorage.getItem('wl_analytics_id');
+    if(!id){
+      id='wl_'+((typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():(Date.now()+'-'+Math.random().toString(36).slice(2)));
+      localStorage.setItem('wl_analytics_id',id);
+    }
+    return id;
+  }catch(_e){ return 'wl_anon_err'; }
+}
+function wlClerkUserIdForAnalytics(){
+  try{ const u=window.Clerk?.user; return u?.id?String(u.id):''; }catch(_e){ return ''; }
+}
+/** Server-side PostHog (solo new game / resume). Fire-and-forget; no UI impact if offline. */
+function wlTrackSoloSession({ source, scenarioId, marketId }){
+  try{
+    if(typeof MP!=='undefined'&&MP&&MP.mode==='live')return;
+    const sid=String(scenarioId||'').slice(0,64)||'unknown';
+    const mid=String(marketId||'').slice(0,64)||'atlanta';
+    const body={ source, scenario_id:sid, market_id:mid, client_distinct_id: wlAnalyticsDistinctId() };
+    const cuid=wlClerkUserIdForAnalytics();
+    if(cuid)body.clerk_user_id=cuid;
+    fetch(wlGameApiUrl('/api/analytics/solo-session'),{
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body:JSON.stringify(body),
+      mode:'cors',
+      credentials:'omit',
+    }).catch(()=>{});
+  }catch(_e){}
+}
 /** Absolute URL for <img> / download when stored paths are /generated-* and the API lives on another host. */
 function wlGameMediaAbsUrl(pathOrUrlWithQuery){
   if(pathOrUrlWithQuery==null||pathOrUrlWithQuery==='')return pathOrUrlWithQuery;
@@ -13211,6 +13244,11 @@ function startPlay(scenId){
       if(G?.tutorialMode&&G.sc?.id==='tutorial_turnaround')tutorialTurnaroundShowIntroModal();
       else wlFtTutorialMaybeStartAfterNewGame();
     },0);
+    wlTrackSoloSession({
+      source:'new_game',
+      scenarioId:scenId,
+      marketId:ACTIVE_MARKET||_selectedMarket||'atlanta',
+    });
   }catch(err){
     showError('Failed during genMarket: '+err.message, err.stack||String(err));
   }
@@ -13753,6 +13791,10 @@ function _listenerFeedbackHtml(lines){
   return'<ul id="listener-feedback-list" style="margin:0;padding-left:18px;line-height:1.55;font-size:14px;color:var(--off)">'+
     lines.map(l=>'<li style="margin-bottom:10px">'+wlEscapeHtml(l)+'</li>').join('')+'</ul>';
 }
+/** Book line for consultant report header (year + Arbitron-style season). */
+function consultantReportBookLabel(year,period){
+  return `${year||1970} ${PERIODS[(period||1)-1]}`;
+}
 function renderResearchModalBody(sid,listenerNonce){
   const s=G.stations.find(st=>st.id===sid);
   if(!s)return'';
@@ -13761,6 +13803,9 @@ function renderResearchModalBody(sid,listenerNonce){
   if(tutorialFree)cost=0;
   const lines=buildListenerFeedbackLines(s,G,listenerNonce);
   const canAfford=G.cash>=cost;
+  const cache=s._consultantReportCache;
+  const cacheLabel=cache&&typeof cache.year==='number'?consultantReportBookLabel(cache.year,cache.period):'';
+  const hasCache=cache&&cache.html&&cacheLabel;
   return`<div class="ibox" style="margin-bottom:16px;text-align:left;border-color:rgba(245,166,35,.25)">
     <div style="font-size:12px;color:var(--amb);letter-spacing:.12em;margin-bottom:6px">FREE — LISTENER FEEDBACK</div>
     <p class="di" style="margin:0 0 10px">Street buzz, caller blurts, and break-room gossip. Useful hints — not reliable enough to bet the company on.</p>
@@ -13769,8 +13814,13 @@ function renderResearchModalBody(sid,listenerNonce){
   <div style="border-top:1px solid var(--bdh);margin:16px 0;padding-top:14px"></div>
   <div style="font-size:12px;color:var(--grn);letter-spacing:.12em;margin-bottom:6px">PAID — CONSULTANT REPORT</div>
   <p class="di">Structured analysis for <strong>${s.callLetters}</strong> — signal, competition, quality, format health, and recommendations. Clearer than the rumor mill.</p>
-  <div class="ibox">Report fee: <strong>${f$(cost)}</strong>${tutorialFree?' <span style="color:var(--grn);font-size:13px">(waived — tutorial)</span>':' <span style="color:var(--mut);font-size:13px">(scales with market size, inflation, and how many stations you run)</span>'}<br/>Cash on hand: <strong>${f$(G.cash)}</strong>${!canAfford?' <span style="color:var(--red)">— insufficient funds</span>':''}</div>
-  <button class="cfm" onclick="doResearch('${s.id}')" ${!canAfford?'disabled':''}>COMMISSION CONSULTANT REPORT — ${f$(cost)}</button>
+  ${hasCache?`<div class="ibox" style="margin-bottom:14px;text-align:left;border-color:rgba(52,211,153,.35)">
+    <div style="font-size:12px;color:var(--grn);letter-spacing:.08em;margin-bottom:6px">SAVED REPORT</div>
+    <p class="di" style="margin:0 0 10px">Last consultant memo: <strong>${cacheLabel}</strong>. Read it again for free until you commission a new one.</p>
+    <button type="button" class="cfm" onclick="viewCachedConsultantReport('${s.id}')" style="margin-bottom:0">READ SAVED REPORT</button>
+  </div>`:''}
+  <div class="ibox">Report fee: <strong>${f$(cost)}</strong>${tutorialFree?' <span style="color:var(--grn);font-size:13px">(waived — tutorial)</span>':' <span style="color:var(--mut);font-size:13px">(scales with market size, inflation, and how many stations you run)</span>'}<br/>Cash on hand: <strong>${f$(G.cash)}</strong>${!canAfford?' <span style="color:var(--red)">— insufficient funds</span>':''}${hasCache?'<br/><span style="font-size:12px;color:var(--mut)">A new report replaces the saved memo.</span>':''}</div>
+  <button class="cfm" onclick="doResearch('${s.id}')" ${!canAfford?'disabled':''}>${hasCache?'COMMISSION NEW REPORT':'COMMISSION CONSULTANT REPORT'} — ${f$(cost)}</button>
   <button class="cnl" onclick="cm('m-research')">CANCEL</button>`;
 }
 function openResearch(sid){
@@ -13783,6 +13833,19 @@ function openResearch(sid){
   tutorialTurnaroundOnResearchOpened();
   wlFtTutorialNotifyResearchOpen();
 }
+/** Re-display last purchased consultant HTML for this station (no charge). */
+function viewCachedConsultantReport(sid){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);
+  const c=s?._consultantReportCache;
+  if(!s||!c||!c.html)return;
+  const label=typeof c.year==='number'?consultantReportBookLabel(c.year,c.period):'';
+  document.getElementById('researchb').innerHTML=
+    `<div class="ibox" style="margin-bottom:14px;font-size:13px;color:var(--mut);border-color:rgba(52,211,153,.35)">Consultant report · <strong style="color:var(--off)">${label}</strong></div>`+
+    c.html+
+    `<div style="margin-top:18px;padding-top:12px;border-top:1px solid var(--bdh)"><button type="button" class="cnl" onclick="openResearch('${s.id}')">← BACK TO RESEARCH</button></div>`+
+    `<button class="cnl" style="margin-top:12px" onclick="cm('m-research')">CLOSE</button>`;
+}
 function doResearch(sid){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
@@ -13792,7 +13855,11 @@ function doResearch(sid){
   G.cash-=cost;
   if(MP.mode==='live') MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash});
   const report=buildResearchReport(s,G);
-  document.getElementById('researchb').innerHTML=report+
+  s._consultantReportCache={html:report,year:G.year,period:G.period};
+  const bookLbl=consultantReportBookLabel(G.year,G.period);
+  document.getElementById('researchb').innerHTML=
+    `<div class="ibox" style="margin-bottom:14px;font-size:13px;color:var(--mut);border-color:rgba(245,166,35,.25)">Consultant report · <strong style="color:var(--off)">${bookLbl}</strong></div>`+
+    report+
     `<div style="margin-top:18px;padding-top:12px;border-top:1px solid var(--bdh)"><button type="button" class="cnl" onclick="openResearch('${s.id}')">← BACK TO RESEARCH</button></div>`+
     `<button class="cnl" style="margin-top:12px" onclick="cm('m-research')">CLOSE</button>`;
   if(isTutorialTurnaroundScen()&&G.tutorialAct===2&&!G._tutorialConsultantDone&&MP.mode!=='live')tutorialTurnaroundOnConsultantDone();
@@ -13920,7 +13987,16 @@ function wlBuildRatingsDigestPayload(){
       brand,
       format:fmtLabel(s.format,G.year),
       sharePct:Math.round(sh01*1000)/10,
-      deltaPts:(()=>{const dpc=stationCardDisplayCp(s);return dpc&&typeof dpc.dq==='number'?Math.round(dpc.dq*1000)/10:null;})(),
+      deltaPts:(()=>{
+        const h=s.rat?.hist;
+        if(h&&h.length>=2){
+          const cur=h[h.length-1]?.share,prev=h[h.length-2]?.share;
+          if(typeof cur==='number'&&typeof prev==='number'&&!Number.isNaN(cur)&&!Number.isNaN(prev))
+            return Math.round((cur-prev)*1000)/10;
+        }
+        const dpc=stationCardDisplayCp(s);
+        return dpc&&typeof dpc.dq==='number'?Math.round(dpc.dq*1000)/10:null;
+      })(),
       band:(s.sig?.type==='FM'||s.fmBooster)?'FM':'AM',
     };
   });
@@ -18118,6 +18194,9 @@ function applySignalSwapBetweenStations(sidA,sidB){
   logHistory(b,'NOTE',`Station swap: operation exchanged with ${preLabelA}; this facility kept its dial.`,G);
   queuePlayerTalentPortraits();
   queueAutoLogosForPlayerStations();
+  // Swap exchanges `rat`/`cp` per license; frozen card snap was last period — refresh so digest & station cards
+  // show book deltas for the operation now on each dial (stale snap looked like the old facility’s trend).
+  snapMarketRankBookDisplay(G);
   return true;
 }
 function openSwap(sid){
@@ -21702,6 +21781,11 @@ function loadLocalSave(){
   cm('m-save');renderAll();
   queuePlayerTalentPortraits();
   queueAutoLogosForPlayerStations();
+  wlTrackSoloSession({
+    source:'resume_autosave',
+    scenarioId:(G.sc&&G.sc.id)||'unknown',
+    marketId:G.marketId||'atlanta',
+  });
 }
 
 // ── LOAN UI (capacity-based line of credit; see bank lending helpers near scoring) ──

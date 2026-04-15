@@ -11,6 +11,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { buildSunoJingleArgs } = require('./jinglePrompt');
+const { posthog } = require('./posthog');
 const {
   sunoConfigured,
   sunoModelSlug,
@@ -199,9 +200,22 @@ function mountJingleRoutes(app) {
         return res.status(502).json({ ok: false, error: 'No audio variants were saved.' });
       }
 
+      posthog.capture({
+        distinctId: ip,
+        event: 'station jingle generated',
+        properties: {
+          station_id: stationId,
+          format: String(body.format).trim(),
+          year: Math.floor(Number(body.year)),
+          band: body.band || null,
+          variant_count: variants.length,
+          model: sunoModelSlug(),
+        },
+      });
       return res.json({ ok: true, variants });
     } catch (e) {
       console.error('[jingle]', e.message || e);
+      posthog.captureException(e, ip);
       const status = e.status && Number.isInteger(e.status) ? e.status : 500;
       const detail = String(e.message || 'Jingle generation failed').slice(0, 400);
       return res.status(status).json({ ok: false, error: detail });
