@@ -13891,6 +13891,35 @@ function wlRatingsDigestContextSig(lines){
   for(let i=0;i<s.length;i++)h=Math.imul(31,h)+s.charCodeAt(i)|0;
   return String(h);
 }
+/**
+ * Explicit sports broadcast-rights facts for the ratings digest (OpenRouter payload `marketContext`).
+ * Ensures the model can tie share moves to rights + season standing, not only incidental news lines.
+ */
+function wlCollectRatingsDigestSportsContext(G){
+  if(!G?.sportsRights||!G.teamRecords)return[];
+  const mkt=MARKETS[G.marketId||ACTIVE_MARKET]||MARKETS.atlanta;
+  const teams=mkt.teams||[];
+  const out=[];
+  for(let ti=0;ti<teams.length;ti++){
+    const team=teams[ti];
+    if(G.year<team.introduced)continue;
+    const rights=G.sportsRights[team.id];
+    if(!rights||!rights.holderId)continue;
+    const holder=G.stations.find(st=>st.id===rights.holderId);
+    const call=holder?callDisplay(holder):String(rights.holderName||'').trim();
+    if(!call)continue;
+    const rec=G.teamRecords[team.id];
+    const tier=rec?sportsTierFromRecord(rec.record):'competitive';
+    const recStr=rec&&Number.isFinite(rec.record)?`${rec.record}/100`:'—';
+    const sportLab=SPORT_LABEL[team.sport]||String(team.sport||'');
+    let line=`📋 ${team.name} (${sportLab}): broadcast rights — ${call}. Season standing ${recStr} (${tier}) — ratings model applies a sports broadcast bonus to the holder by format fit.`;
+    const p=holder&&holder.simulcastWith?G.stations.find(st=>st.id===holder.simulcastWith):null;
+    if(p&&!p._bpSlotDeferred)line+=` Simulcast ${callDisplay(p)} shares the halo.`;
+    out.push(line.length>400?line.slice(0,397)+'…':line);
+    if(out.length>=16)break;
+  }
+  return out;
+}
 /** Headlines from this period's in-game news for the OpenRouter trade digest (not the ticker). */
 function wlCollectRatingsDigestMarketContext(G, maxLines, maxChars){
   maxLines=maxLines!=null?maxLines:20;
@@ -14000,7 +14029,9 @@ function wlBuildRatingsDigestPayload(){
       band:(s.sig?.type==='FM'||s.fmBooster)?'FM':'AM',
     };
   });
-  const marketContext=wlCollectRatingsDigestMarketContext(G);
+  const sportsCtx=wlCollectRatingsDigestSportsContext(G);
+  const newsCtx=wlCollectRatingsDigestMarketContext(G);
+  const marketContext=[...sportsCtx,...newsCtx].slice(0,24);
   return {market:mkt,periodLabel,year:G.year,period:G.period,book,marketContext};
 }
 async function openRatingsDigestTradeSheet(opts){

@@ -104,6 +104,28 @@ function buildLogoPrompt(meta) {
 }
 
 /**
+ * Vehicle body style by game year so remote vans look like contemporary fleet trucks when the sim is modern,
+ * not always a vintage 1970s wood-paneled van.
+ * @param {number} year
+ */
+function remoteVanVehicleNotes(year) {
+  const y = Math.floor(Number(year) || 1970);
+  if (y < 1980) {
+    return 'Use a period-accurate 1970s American step van or full-size van (e.g. Ford Econoline era) with ladder rack — believable for the decade.';
+  }
+  if (y < 1995) {
+    return 'Use a 1980s–early-90s white fleet van or box truck typical of radio remotes — not wood-paneled consumer vans unless clearly era-specific.';
+  }
+  if (y < 2005) {
+    return 'Use a late-90s / early-2000s broadcast remote van: white fleet full-size van or small box truck with mast — professional news-radio look.';
+  }
+  if (y < 2015) {
+    return 'Use a 2000s–early-2010s remote vehicle: Mercedes Sprinter, Ford E-Series, or similar white fleet van with roof mast — NOT a 1970s wood-grain consumer van.';
+  }
+  return 'Use a current-era professional remote broadcast vehicle: Mercedes-Benz Sprinter, Ford Transit, Ram ProMaster, or Chevrolet Express–class white fleet van with roof mast and cables — modern news-radio fleet look. Do NOT depict a vintage 1970s–80s wood-paneled personal van unless the game year is in that decade.';
+}
+
+/**
  * Prompt for Grok image *edit*: reference must be the station logo; output is a remote van scene.
  * @param {{
  *   stationName: string,
@@ -121,13 +143,16 @@ function buildRemoteVanPrompt(meta) {
   const band = String(meta.band || '').trim().toUpperCase();
   const { label: eraLabel } = eraBucket(year);
   const bandNote = band === 'AM' ? 'AM heritage' : band === 'FM' ? 'FM broadcast' : 'radio';
+  const vehicleNotes = remoteVanVehicleNotes(year);
 
   return [
-    'The attached reference image is the official station logo artwork. Preserve it faithfully: use this exact graphic on the side of the van as printed vinyl or a magnetic panel — same colors, shapes, and lettering. Do not invent different call letters or a new logo.',
-    `Station identity (for scene context only — do not add extra readable text beyond the logo): "${stationName}", ${format} format, ${year}, ${bandNote}.`,
+    'The attached reference image is the official station logo artwork. Treat the van as if it were painted and designed as a cohesive custom livery: the logo lockup (same colors, shapes, and lettering as the reference) is the centerpiece of a full-body paint scheme — not a rectangle slapped on the door. Extend the logo palette into accent stripes, color blocks, or subtle two-tone panels that wrap naturally around corners and wheel wells so branding feels intentional and factory-custom. Do not invent different call letters or a new logo.',
+    'Logo integration (critical): the artwork must read as automotive paint and clearcoat — same lighting, specular highlights, and panel curvature as the rest of the van; perspective-correct across doors and seams; no magnetic panel edge, no obvious sticker outline, no vinyl wrap seam cutting across the graphic. The logo must NOT look like a flat UI overlay, a pasted decal with a thick white halo, or a layer separate from the metal. No duplicate logos on every surface unless it fits the livery design.',
+    `Station identity (scene context only — do not add extra readable text beyond the logo): "${stationName}", ${format} format, calendar year ${year}, ${bandNote}.`,
     tone ? `Mood for the scene (not as on-image text): ${tone}.` : '',
-    `Photorealistic wide shot of a ${eraLabel} American radio remote broadcast van at a live street fair, concert gate, or county fair parking lot. Include mast antenna, coiled cables, sandbags or folding chairs, engineer silhouette optional. The van body must show the reference logo prominently on one side panel.`,
-    'Natural light, documentary news photography style, shallow depth of field, no CGI sheen, no futuristic holograms, no duplicate logos on every surface.',
+    vehicleNotes,
+    `Photorealistic wide 3/4 view (${eraLabel} American setting) of one radio remote broadcast van parked at a live event: street fair, concert gate, stadium lot, or county fair — pick one. Include extendable mast antenna, coiled cables, sandbags or folding chairs; optional engineer silhouette. Show the integrated paint livery prominently on the side — logo and supporting colors flowing together.`,
+    'Lighting: natural daylight, documentary news photography, shallow depth of field, mild film grain OK. No CGI sheen, no holograms, no neon cyberpunk, no futuristic HUD.',
   ]
     .filter(Boolean)
     .join(' ');

@@ -38,7 +38,9 @@
     "gen:portraits:batch": "node scripts/batch-generate-portrait-library.mjs",
     "analyze:snowball-ops": "npm run build && node scripts/analyze-snowball-operating-periods.mjs",
     "analyze:early-single-station": "npm run build && node scripts/analyze-early-single-station-economics.mjs",
-    "check:benchmark-determinism": "npm run build && node scripts/check-benchmark-determinism.mjs"
+    "check:benchmark-determinism": "npm run build && node scripts/check-benchmark-determinism.mjs",
+    "gc:generated-assets": "node scripts/gc-generated-assets.js",
+    "demo:rival-brands": "node scripts/demo-rival-station-brands.mjs"
   },
   "devDependencies": {
     "playwright": "^1.59.1",

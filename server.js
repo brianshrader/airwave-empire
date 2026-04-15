@@ -8,6 +8,7 @@
 //   - Server enforces: action ordering, period commit gating, room state
 //
 // Persistence:
+//   - Generated asset TTL GC: npm run gc:generated-assets (pins paths from saves/, data/cloud_saves/, multiplayer/saves/)
 //   - G is saved to ./saves/<roomId>.json after every state_update
 //   - Players can rejoin by room code at any time while server is running
 //   - Saves survive server restarts — rooms are restored from disk on boot

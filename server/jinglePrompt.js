@@ -52,7 +52,8 @@ function amKhzToRadioVerbal(khz) {
 function fmMhzToRadioVerbal(freqStr) {
   const s = String(freqStr || '')
     .trim()
-    .replace(/\s/g, '');
+    .replace(/\s/g, '')
+    .replace(/FM$/i, '');
   const m = /^(\d+)(?:\.(\d+))?$/.exec(s);
   if (!m) return '';
   const intPart = m[1];

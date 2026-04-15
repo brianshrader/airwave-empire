@@ -7475,7 +7475,8 @@ function publicNewsCompetitionInsulationFactor(s,G){
   const era2=_smoothstep(2000,2020,y);
   let f=1-0.44*Math.max(0,edu-0.88)*era;
   f-=0.24*Math.max(0,edu-0.92)*era2;
-  return Math.max(0.38,Math.min(1,f));
+  // Slightly stronger insulation vs commercial talk pile-on (still capped — avoids zero bleed)
+  return Math.max(0.32,Math.min(1,f));
 }
 /**
  * AQH / habit listening intensity vs commercial music (PUBLIC_NEWS only). ≥1. Scaled by eduIndex; ramps after 2000.
@@ -7554,7 +7555,7 @@ function publicEduAudienceMultiplier(s,G,yearOverride){
   if(Math.abs(dev)<1e-8)return 1;
   if(fmt==='PUBLIC_NEWS'){
     const era=publicNewsEraLift(y);
-    let m=Math.pow(edu,1.25);
+    let m=Math.pow(edu,1.22);
     m*=0.94+0.06*era;
     m+=publicNewsHabitStick(y,edu)*1.25;
     const eraModern=_smoothstep(1990,2008,y);
@@ -7563,11 +7564,21 @@ function publicEduAudienceMultiplier(s,G,yearOverride){
       const topEduMod=_smoothstep(2010,2025,y);
       m*=1+0.048*topEduMod;
     }
-    return Math.max(0.78,Math.min(1.85,m));
+    // Large / mega markets: NPR-style news listening matches real PPM books (often mid-single digits).
+    const tier=(MARKETS[G?.marketId||ACTIVE_MARKET]||MARKETS.atlanta).rankTier||'medium';
+    if((tier==='mega'||tier==='large')&&y>=2000){
+      const bigMkt=1+0.055*_smoothstep(2000,2012,y)+0.045*_smoothstep(2012,2026,y);
+      m*=tier==='mega'?Math.min(1.14,bigMkt):Math.min(1.10,bigMkt);
+    }
+    return Math.max(0.84,Math.min(1.92,m));
   }
   const eraC=publicClassicalEraLift(y);
-  const m=1+dev*eraC*0.82;
-  return Math.max(0.88,Math.min(1.34,m));
+  let m=1+dev*eraC*0.90;
+  const tier=(MARKETS[G?.marketId||ACTIVE_MARKET]||MARKETS.atlanta).rankTier||'medium';
+  if((tier==='mega'||tier==='large')&&y>=2000){
+    m*=1+0.042*_smoothstep(2000,2012,y)+0.035*_smoothstep(2012,2026,y);
+  }
+  return Math.max(0.90,Math.min(1.45,m));
 }
 /** Console: eduIndex + sample multipliers by era for current market (public formats only). */
 function reportPublicEduDiagnostics(){
@@ -7822,8 +7833,10 @@ function recalc(stations,G){
       if(s.isPublic){
         const pubAge=s._pubLaunchYear?Math.max(0,G.year-s._pubLaunchYear)*2:age;
         const pubT=Math.min(1,pubAge/20);
-        const pubPeak=s.format==='PUBLIC_NEWS'?0.80:0.55;
-        let rawPub=Math.max(0,appl(s,coh,G)*(0.15+pubPeak*pubT)*pubEduM(s));
+        // Mature public outlets in major markets routinely post ~3–6 share (news) / ~2–4 (classical) in PPM-era books.
+        const pubBase=s.format==='PUBLIC_NEWS'?0.22:0.20;
+        const pubPeak=s.format==='PUBLIC_NEWS'?1.02:0.74;
+        let rawPub=Math.max(0,appl(s,coh,G)*(pubBase+pubPeak*pubT)*pubEduM(s));
       if(s.format==='PUBLIC_NEWS'){
         rawPub*=publicNewsBreakoutMult(s,G);
         rawPub*=publicNewsHighEduBreakoutMult(s,G);
@@ -7911,7 +7924,7 @@ function recalc(stations,G){
       let bleedPenalty=Math.min(0.22,COMPETITION_BLEED*(count/5));
       if(s.format==='PUBLIC_NEWS'){
         bleedPenalty*=publicNewsCompetitionInsulationFactor(s,G);
-        bleedPenalty*=0.75;
+        bleedPenalty*=0.62;
       }
       const bleed=1-bleedPenalty;
       return r*bleed;
@@ -13891,6 +13904,35 @@ function wlRatingsDigestContextSig(lines){
   for(let i=0;i<s.length;i++)h=Math.imul(31,h)+s.charCodeAt(i)|0;
   return String(h);
 }
+/**
+ * Explicit sports broadcast-rights facts for the ratings digest (OpenRouter payload `marketContext`).
+ * Ensures the model can tie share moves to rights + season standing, not only incidental news lines.
+ */
+function wlCollectRatingsDigestSportsContext(G){
+  if(!G?.sportsRights||!G.teamRecords)return[];
+  const mkt=MARKETS[G.marketId||ACTIVE_MARKET]||MARKETS.atlanta;
+  const teams=mkt.teams||[];
+  const out=[];
+  for(let ti=0;ti<teams.length;ti++){
+    const team=teams[ti];
+    if(G.year<team.introduced)continue;
+    const rights=G.sportsRights[team.id];
+    if(!rights||!rights.holderId)continue;
+    const holder=G.stations.find(st=>st.id===rights.holderId);
+    const call=holder?callDisplay(holder):String(rights.holderName||'').trim();
+    if(!call)continue;
+    const rec=G.teamRecords[team.id];
+    const tier=rec?sportsTierFromRecord(rec.record):'competitive';
+    const recStr=rec&&Number.isFinite(rec.record)?`${rec.record}/100`:'—';
+    const sportLab=SPORT_LABEL[team.sport]||String(team.sport||'');
+    let line=`📋 ${team.name} (${sportLab}): broadcast rights — ${call}. Season standing ${recStr} (${tier}) — ratings model applies a sports broadcast bonus to the holder by format fit.`;
+    const p=holder&&holder.simulcastWith?G.stations.find(st=>st.id===holder.simulcastWith):null;
+    if(p&&!p._bpSlotDeferred)line+=` Simulcast ${callDisplay(p)} shares the halo.`;
+    out.push(line.length>400?line.slice(0,397)+'…':line);
+    if(out.length>=16)break;
+  }
+  return out;
+}
 /** Headlines from this period's in-game news for the OpenRouter trade digest (not the ticker). */
 function wlCollectRatingsDigestMarketContext(G, maxLines, maxChars){
   maxLines=maxLines!=null?maxLines:20;
@@ -14000,7 +14042,9 @@ function wlBuildRatingsDigestPayload(){
       band:(s.sig?.type==='FM'||s.fmBooster)?'FM':'AM',
     };
   });
-  const marketContext=wlCollectRatingsDigestMarketContext(G);
+  const sportsCtx=wlCollectRatingsDigestSportsContext(G);
+  const newsCtx=wlCollectRatingsDigestMarketContext(G);
+  const marketContext=[...sportsCtx,...newsCtx].slice(0,24);
   return {market:mkt,periodLabel,year:G.year,period:G.period,book,marketContext};
 }
 async function openRatingsDigestTradeSheet(opts){
