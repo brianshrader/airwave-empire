@@ -37,6 +37,18 @@
 
   var TALK_FMTS = ['NEWS_TALK', 'SPORTS_TALK', 'PODCAST_TALK', 'ALL_NEWS'];
 
+  /** Defaults mirror ALL_PLAYABLE_MARKET_IDS / DEV_BENCHMARK_MEGA_MARKET_IDS in legacy.js (fallback if harness loads first). */
+  function getPlayableMarketIds() {
+    return typeof ALL_PLAYABLE_MARKET_IDS !== 'undefined'
+      ? ALL_PLAYABLE_MARKET_IDS
+      : ['newyork', 'losangeles', 'chicago', 'atlanta', 'nashville', 'seattle'];
+  }
+  function getMegaBenchmarkMarketIds() {
+    return typeof DEV_BENCHMARK_MEGA_MARKET_IDS !== 'undefined'
+      ? DEV_BENCHMARK_MEGA_MARKET_IDS
+      : ['newyork', 'losangeles', 'chicago'];
+  }
+
   /** Broad format buckets for inspect-format-ecology (reporting only). */
   var FORMAT_ECOLOGY_COMMERCIAL_BUCKETS = [
     'top40_pop',
@@ -584,7 +596,7 @@
       console.warn('otherAudioDilutionTable: load legacy.js first (otherAudioShareFraction).');
       return null;
     }
-    var markets = ['newyork', 'losangeles', 'chicago', 'atlanta', 'nashville'];
+    var markets = getPlayableMarketIds();
     var years = [1975, 1985, 1995, 2000, 2010, 2020, 2025];
     var rows = [];
     years.forEach(function (y) {
@@ -737,7 +749,7 @@
   /**
    * Batch-run advTurn across markets and aggregate rating shares (post–other-audio dilution).
    * @param {object} [opts]
-   * @param {string[]} [opts.markets] — default five: Nashville, Atlanta, NY, LA, Chicago
+   * @param {string[]} [opts.markets] — default six: Nashville, Atlanta, NY, LA, Chicago, Seattle
    * @param {boolean} [opts.quick] — fewer markets and runs (faster smoke test)
    * @param {number} [opts.numRunsPerMarket] — default 4 (or 2 when quick)
    * @param {number} [opts.startYear] — scenario era for genMarketMP (1985 = fewer steps to 2000s)
@@ -749,7 +761,7 @@
     opts = opts || {};
     var markets = opts.markets;
     if (!markets || !markets.length) {
-      markets = opts.quick ? ['nashville', 'atlanta', 'newyork'] : ['nashville', 'atlanta', 'newyork', 'losangeles', 'chicago'];
+      markets = opts.quick ? ['nashville', 'atlanta', 'newyork'] : ['nashville', 'atlanta', 'newyork', 'losangeles', 'chicago', 'seattle'];
     }
     var numRunsPerMarket = opts.numRunsPerMarket != null ? opts.numRunsPerMarket : opts.quick ? 2 : 4;
     var endYear = opts.endYear != null ? opts.endYear : 2025;
@@ -1038,7 +1050,7 @@
     var ids =
       marketIds && marketIds.length
         ? marketIds
-        : ['newyork', 'losangeles', 'chicago', 'atlanta', 'nashville'];
+        : getPlayableMarketIds();
     var rows = ids.map(function (mid) {
       return marketEcologyInputSnapshot(mid);
     });
@@ -1080,8 +1092,8 @@
       opts.markets && opts.markets.length
         ? opts.markets
         : opts.quick
-          ? ['newyork', 'losangeles', 'chicago']
-          : ['newyork', 'losangeles', 'chicago', 'atlanta', 'nashville'];
+          ? getMegaBenchmarkMarketIds()
+          : getPlayableMarketIds();
     var numRunsPerMarket = opts.numRunsPerMarket != null ? opts.numRunsPerMarket : opts.quick ? 2 : 4;
     var endYear = opts.endYear != null ? opts.endYear : 2025;
     var endPeriod = opts.endPeriod != null ? opts.endPeriod : 2;
@@ -1542,7 +1554,7 @@
         ? opts.markets
         : opts.quick
           ? ['nashville', 'atlanta', 'newyork']
-          : ['nashville', 'atlanta', 'newyork', 'losangeles', 'chicago'];
+          : ['nashville', 'atlanta', 'newyork', 'losangeles', 'chicago', 'seattle'];
     var numRunsPerMarket = opts.numRunsPerMarket != null ? opts.numRunsPerMarket : opts.quick ? 2 : 4;
     var endYear = opts.endYear != null ? opts.endYear : 2025;
     var endPeriod = opts.endPeriod != null ? opts.endPeriod : 2;
@@ -1876,12 +1888,12 @@
   }
 
   /**
-   * Headless / inspect page: LA, NYC, Chicago at configured years (default 2000 & 2019, fall).
+   * Headless / inspect page: mega markets (NYC, LA, Chicago — DEV_BENCHMARK_MEGA_MARKET_IDS) at configured years (default 2000 & 2019, fall).
    * Uses genMarketMP + advTurn with UI/timer patches (same pattern as runMarketSimulationBatch).
    */
   function runMegaMarketSnapshotsDiagnostic(opts) {
     opts = opts || {};
-    var markets = opts.markets || ['losangeles', 'newyork', 'chicago'];
+    var markets = opts.markets || getMegaBenchmarkMarketIds();
     var years = opts.years || [2000, 2019];
     var endPeriod = opts.endPeriod != null ? opts.endPeriod : 2;
     var seed = opts.seed != null ? opts.seed : 20260407;
@@ -2007,7 +2019,7 @@
         ? opts.markets
         : opts.quick
           ? ['nashville', 'atlanta', 'newyork']
-          : ['nashville', 'atlanta', 'newyork', 'losangeles', 'chicago'];
+          : ['nashville', 'atlanta', 'newyork', 'losangeles', 'chicago', 'seattle'];
     var numRunsPerMarket = opts.numRunsPerMarket != null ? opts.numRunsPerMarket : opts.quick ? 2 : 4;
     var endYear = opts.endYear != null ? opts.endYear : 2025;
     var endPeriod = opts.endPeriod != null ? opts.endPeriod : 2;
@@ -2368,7 +2380,7 @@
         ? opts.markets
         : opts.quick
           ? ['nashville', 'atlanta', 'newyork']
-          : ['nashville', 'atlanta', 'newyork', 'losangeles', 'chicago'];
+          : ['nashville', 'atlanta', 'newyork', 'losangeles', 'chicago', 'seattle'];
     var numRunsPerMarket = opts.numRunsPerMarket != null ? opts.numRunsPerMarket : opts.quick ? 2 : 4;
     var endYear = opts.endYear != null ? opts.endYear : 2025;
     var endPeriod = opts.endPeriod != null ? opts.endPeriod : 2;
@@ -3341,7 +3353,7 @@
         ? opts.markets
         : opts.quick
           ? ['atlanta']
-          : ['atlanta', 'nashville', 'chicago'];
+          : ['atlanta', 'nashville', 'chicago', 'seattle'];
     var periodsPerMarket = opts.periodsPerMarket != null ? opts.periodsPerMarket : opts.quick ? 36 : 56;
     var maxStepsPerRun = opts.maxStepsPerRun != null ? opts.maxStepsPerRun : 200;
     var injectLesseeAfter = opts.injectLesseeAfter != null ? opts.injectLesseeAfter : 18;
@@ -3521,7 +3533,8 @@
    */
   function runRatingsCollapseAudit(opts) {
     opts = opts || {};
-    var markets = opts.markets || ['losangeles', 'newyork', 'chicago', 'atlanta'];
+    /* Fixed order for RNG reproducibility — mega + Atlanta + Seattle (excludes Nashville). Not the full playable list. */
+    var markets = opts.markets || ['losangeles', 'newyork', 'chicago', 'atlanta', 'seattle'];
     var eraKey = opts.eraKey != null ? opts.eraKey : '1970';
     var endYear = opts.endYear != null ? opts.endYear : 2015;
     var endPeriod = opts.endPeriod != null ? opts.endPeriod : 2;

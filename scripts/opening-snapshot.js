@@ -118,6 +118,7 @@ const runs = [
   ['Nashville 1970', 'nashville', 'wsb'],
   ['Los Angeles 1970', 'losangeles', 'wsb'],
   ['Chicago 1970', 'chicago', 'wsb'],
+  ['Seattle 1970', 'seattle', 'wsb'],
 ];
 
 console.log(JSON.stringify(runs.map(([label, mid, scen]) => {

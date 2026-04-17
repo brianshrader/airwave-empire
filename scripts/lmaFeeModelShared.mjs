@@ -13,6 +13,7 @@ const MARKET_BILLING_CURVE = {
 export const MINI_MARKETS = {
   nashville: { revScale: 0.5, rankTier: 'medium' },
   atlanta: { revScale: 1.0, rankTier: 'large' },
+  seattle: { revScale: 1.55, rankTier: 'large' },
   chicago: { revScale: 2.8, rankTier: 'mega' },
   newyork: { revScale: 6.8, rankTier: 'mega' },
 };

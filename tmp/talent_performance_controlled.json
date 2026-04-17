@@ -1,0 +1,3809 @@
+{
+  "generatedAt": "2026-04-16T23:56:54.955Z",
+  "mode": "talent_performance_controlled",
+  "startYear": 2005,
+  "seed": 424242,
+  "markets": [
+    "chicago",
+    "newyork",
+    "seattle"
+  ],
+  "formats": [
+    "top40_chr",
+    "news_talk"
+  ],
+  "deterministicForward": true,
+  "layerScope": "single_station_when_layer_on",
+  "interpretation": {
+    "deterministicForward": "After the shared advance to startYear P2, G._wlHarnessDeterministic=true so advTurn skips rival AI, random events, rival reformats, talent events, etc. (legacy simQuiet path).",
+    "scopedLayer": "When layer is ON, window.__WL_TALENT_PERF_VALIDATION_STATION_ID__ limits talent-performance multipliers to the tracked station; competitors behave as if the layer were off for them.",
+    "paths": "on_no_cut = layer ON scoped, no cut; on_cut = layer ON scoped + salary cut; off_cut = layer OFF globally + same cut. Compare whether erosion is layer-attributable (on_cut vs off_cut) vs baseline drift (off_cut vs on_no).",
+    "successCriteriaHint": "Look for on_cut worse than on_no on share/rank/rev by +5y, on_cut worse than off_cut (layer amplifies cut pain), and widening gap vs +1y (gradual). Personality-heavy formats should show larger layer deltas than weak-personality formats in aggregate."
+  },
+  "cases": [
+    {
+      "marketId": "chicago",
+      "cutFormatKey": "top40_chr",
+      "formatLabel": "Top 40 / CHR",
+      "ok": true,
+      "focusStationId": "2x177777",
+      "focusCallLetters": "WDKZ",
+      "runs": {
+        "on_no_cut": {
+          "ok": true,
+          "marketId": "chicago",
+          "seed": 424242,
+          "layerMode": "on_no_cut",
+          "talentLayerFlag": "on(scoped to focus station)",
+          "cutFormatKey": "top40_chr",
+          "focusStationId": "2x177777",
+          "focusCallLetters": "WDKZ",
+          "applyCut": false,
+          "salariesSlashed": 0,
+          "deterministicForward": true,
+          "scopedLayerStationId": "2x177777",
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "WDKZ",
+                "format": "TOP40",
+                "share": 0.08124039518108857,
+                "sharePct": 8.12,
+                "rev": 12113793,
+                "ebitda": 5946729,
+                "margin": 0.49090561478143135,
+                "marginPct": 49.09,
+                "talent": 184750,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "WDKZ",
+                "format": "TOP40",
+                "share": 0.07856397264952544,
+                "sharePct": 7.86,
+                "rev": 11545003,
+                "ebitda": 5626438,
+                "margin": 0.4873483358990898,
+                "marginPct": 48.73,
+                "talent": 181000,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "WDKZ",
+                "format": "TOP40",
+                "share": 0.07724257342366136,
+                "sharePct": 7.72,
+                "rev": 11192532,
+                "ebitda": 5436165,
+                "margin": 0.4856957299742364,
+                "marginPct": 48.57,
+                "talent": 184250,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "WDKZ",
+                "format": "TOP40",
+                "share": 0.07692560465734052,
+                "sharePct": 7.69,
+                "rev": 10889439,
+                "ebitda": 5264882,
+                "margin": 0.48348514556167677,
+                "marginPct": 48.35,
+                "talent": 187750,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        },
+        "on_cut": {
+          "ok": true,
+          "marketId": "chicago",
+          "seed": 424242,
+          "layerMode": "on_cut",
+          "talentLayerFlag": "on(scoped to focus station)",
+          "cutFormatKey": "top40_chr",
+          "focusStationId": "2x177777",
+          "focusCallLetters": "WDKZ",
+          "applyCut": true,
+          "salariesSlashed": 5,
+          "deterministicForward": true,
+          "scopedLayerStationId": "2x177777",
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "WDKZ",
+                "format": "TOP40",
+                "share": 0.0785633714110482,
+                "sharePct": 7.86,
+                "rev": 13146612,
+                "ebitda": 6476932,
+                "margin": 0.49266929000414705,
+                "marginPct": 49.27,
+                "talent": 22170,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "WDKZ",
+                "format": "TOP40",
+                "share": 0.07674194442379104,
+                "sharePct": 7.67,
+                "rev": 11351136,
+                "ebitda": 5684510,
+                "margin": 0.5007877625640288,
+                "marginPct": 50.08,
+                "talent": 34750,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "WDKZ",
+                "format": "TOP40",
+                "share": 0.07283636944973008,
+                "sharePct": 7.28,
+                "rev": 10094691,
+                "ebitda": 4956831,
+                "margin": 0.49103345511021584,
+                "marginPct": 49.1,
+                "talent": 35250,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "WDKZ",
+                "format": "TOP40",
+                "share": 0.07048491253177264,
+                "sharePct": 7.05,
+                "rev": 9498674,
+                "ebitda": 4618654,
+                "margin": 0.48624197440611183,
+                "marginPct": 48.62,
+                "talent": 36000,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        },
+        "off_cut": {
+          "ok": true,
+          "marketId": "chicago",
+          "seed": 424242,
+          "layerMode": "off_cut",
+          "talentLayerFlag": "off(false)",
+          "cutFormatKey": "top40_chr",
+          "focusStationId": "2x177777",
+          "focusCallLetters": "WDKZ",
+          "applyCut": true,
+          "salariesSlashed": 5,
+          "deterministicForward": true,
+          "scopedLayerStationId": null,
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "WDKZ",
+                "format": "TOP40",
+                "share": 0.08038369392817381,
+                "sharePct": 8.04,
+                "rev": 13146612,
+                "ebitda": 6476932,
+                "margin": 0.49266929000414705,
+                "marginPct": 49.27,
+                "talent": 22170,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "WDKZ",
+                "format": "TOP40",
+                "share": 0.08028223005910556,
+                "sharePct": 8.03,
+                "rev": 11954505,
+                "ebitda": 6004807,
+                "margin": 0.5023049469635087,
+                "marginPct": 50.23,
+                "talent": 34750,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "WDKZ",
+                "format": "TOP40",
+                "share": 0.07979731733448686,
+                "sharePct": 7.98,
+                "rev": 11558430,
+                "ebitda": 5772812,
+                "margin": 0.4994460320303017,
+                "marginPct": 49.94,
+                "talent": 35250,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "WDKZ",
+                "format": "TOP40",
+                "share": 0.07994185498025189,
+                "sharePct": 7.99,
+                "rev": 11334989,
+                "ebitda": 5647208,
+                "margin": 0.4982102761634793,
+                "marginPct": 49.82,
+                "talent": 36000,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        }
+      },
+      "checkpointComparison": [
+        {
+          "checkpoint": "start",
+          "marketId": "chicago",
+          "cutFormatKey": "top40_chr",
+          "onNoCut": {
+            "callLetters": "WDKZ",
+            "format": "TOP40",
+            "share": 0.08124039518108857,
+            "sharePct": 8.12,
+            "rev": 12113793,
+            "ebitda": 5946729,
+            "margin": 0.49090561478143135,
+            "marginPct": 49.09,
+            "talent": 184750,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2005,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "WDKZ",
+            "format": "TOP40",
+            "share": 0.0785633714110482,
+            "sharePct": 7.86,
+            "rev": 13146612,
+            "ebitda": 6476932,
+            "margin": 0.49266929000414705,
+            "marginPct": 49.27,
+            "talent": 22170,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2005,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "WDKZ",
+            "format": "TOP40",
+            "share": 0.08038369392817381,
+            "sharePct": 8.04,
+            "rev": 13146612,
+            "ebitda": 6476932,
+            "margin": 0.49266929000414705,
+            "marginPct": 49.27,
+            "talent": 22170,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2005,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.2599999999999989,
+            "rev": -1032819,
+            "marginPct": -0.17999999999999972,
+            "rank": 0,
+            "talent": 162580
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": 0.08000000000000007,
+            "rev": -1032819,
+            "marginPct": -0.17999999999999972,
+            "rank": 0,
+            "talent": 162580
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.17999999999999883,
+            "rev": 0,
+            "marginPct": 0,
+            "rank": 0,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_1y",
+          "marketId": "chicago",
+          "cutFormatKey": "top40_chr",
+          "onNoCut": {
+            "callLetters": "WDKZ",
+            "format": "TOP40",
+            "share": 0.07856397264952544,
+            "sharePct": 7.86,
+            "rev": 11545003,
+            "ebitda": 5626438,
+            "margin": 0.4873483358990898,
+            "marginPct": 48.73,
+            "talent": 181000,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2006,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "WDKZ",
+            "format": "TOP40",
+            "share": 0.07674194442379104,
+            "sharePct": 7.67,
+            "rev": 11351136,
+            "ebitda": 5684510,
+            "margin": 0.5007877625640288,
+            "marginPct": 50.08,
+            "talent": 34750,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2006,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "WDKZ",
+            "format": "TOP40",
+            "share": 0.08028223005910556,
+            "sharePct": 8.03,
+            "rev": 11954505,
+            "ebitda": 6004807,
+            "margin": 0.5023049469635087,
+            "marginPct": 50.23,
+            "talent": 34750,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2006,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.1900000000000004,
+            "rev": 193867,
+            "marginPct": -1.3500000000000014,
+            "rank": 0,
+            "talent": 146250
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": -0.16999999999999904,
+            "rev": -409502,
+            "marginPct": -1.5,
+            "rank": 0,
+            "talent": 146250
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.35999999999999943,
+            "rev": 603369,
+            "marginPct": 0.14999999999999858,
+            "rank": 0,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_3y",
+          "marketId": "chicago",
+          "cutFormatKey": "top40_chr",
+          "onNoCut": {
+            "callLetters": "WDKZ",
+            "format": "TOP40",
+            "share": 0.07724257342366136,
+            "sharePct": 7.72,
+            "rev": 11192532,
+            "ebitda": 5436165,
+            "margin": 0.4856957299742364,
+            "marginPct": 48.57,
+            "talent": 184250,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2008,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "WDKZ",
+            "format": "TOP40",
+            "share": 0.07283636944973008,
+            "sharePct": 7.28,
+            "rev": 10094691,
+            "ebitda": 4956831,
+            "margin": 0.49103345511021584,
+            "marginPct": 49.1,
+            "talent": 35250,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2008,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "WDKZ",
+            "format": "TOP40",
+            "share": 0.07979731733448686,
+            "sharePct": 7.98,
+            "rev": 11558430,
+            "ebitda": 5772812,
+            "margin": 0.4994460320303017,
+            "marginPct": 49.94,
+            "talent": 35250,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2008,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.4399999999999995,
+            "rev": 1097841,
+            "marginPct": -0.5300000000000011,
+            "rank": -1,
+            "talent": 149000
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": -0.2600000000000007,
+            "rev": -365898,
+            "marginPct": -1.3699999999999974,
+            "rank": 0,
+            "talent": 149000
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.7000000000000002,
+            "rev": 1463739,
+            "marginPct": 0.8399999999999963,
+            "rank": -1,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_5y",
+          "marketId": "chicago",
+          "cutFormatKey": "top40_chr",
+          "onNoCut": {
+            "callLetters": "WDKZ",
+            "format": "TOP40",
+            "share": 0.07692560465734052,
+            "sharePct": 7.69,
+            "rev": 10889439,
+            "ebitda": 5264882,
+            "margin": 0.48348514556167677,
+            "marginPct": 48.35,
+            "talent": 187750,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2010,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "WDKZ",
+            "format": "TOP40",
+            "share": 0.07048491253177264,
+            "sharePct": 7.05,
+            "rev": 9498674,
+            "ebitda": 4618654,
+            "margin": 0.48624197440611183,
+            "marginPct": 48.62,
+            "talent": 36000,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2010,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "WDKZ",
+            "format": "TOP40",
+            "share": 0.07994185498025189,
+            "sharePct": 7.99,
+            "rev": 11334989,
+            "ebitda": 5647208,
+            "margin": 0.4982102761634793,
+            "marginPct": 49.82,
+            "talent": 36000,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2010,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.6400000000000006,
+            "rev": 1390765,
+            "marginPct": -0.269999999999996,
+            "rank": -1,
+            "talent": 151750
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": -0.2999999999999998,
+            "rev": -445550,
+            "marginPct": -1.4699999999999989,
+            "rank": 0,
+            "talent": 151750
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.9400000000000004,
+            "rev": 1836315,
+            "marginPct": 1.2000000000000028,
+            "rank": -1,
+            "talent": 0
+          }
+        }
+      ],
+      "successSignals": {
+        "at_plus_5y": {
+          "onCut_vs_onNo_shareAdvantageToNoCut": 0.6400000000000006,
+          "onCut_vs_onNo_rankStepsWorseForCut": -1,
+          "onCut_vs_onNo_revAdvantageToNoCut": 1390765,
+          "onCutWorseThanOnNo_byShare": true,
+          "onCutWorseThanOnNo_byRank": true,
+          "onCutWorseThanOnNo_byRev": true,
+          "onCut_vs_offCut_share": 0.9400000000000004,
+          "onCutWorseThanOffCut_byShare": true,
+          "onCutWorseThanOffCut_byRank": true
+        },
+        "gradual": {
+          "shareDisadvantageCut_vs_noCut_abs_at_plus_1y": 0.1900000000000004,
+          "shareDisadvantageCut_vs_noCut_abs_at_plus_5y": 0.6400000000000006,
+          "gradualShareWidening": true
+        }
+      }
+    },
+    {
+      "marketId": "chicago",
+      "cutFormatKey": "news_talk",
+      "formatLabel": "News / Talk",
+      "ok": true,
+      "focusStationId": "7q2eeeee",
+      "focusCallLetters": "WON",
+      "runs": {
+        "on_no_cut": {
+          "ok": true,
+          "marketId": "chicago",
+          "seed": 424242,
+          "layerMode": "on_no_cut",
+          "talentLayerFlag": "on(scoped to focus station)",
+          "cutFormatKey": "news_talk",
+          "focusStationId": "7q2eeeee",
+          "focusCallLetters": "WON",
+          "applyCut": false,
+          "salariesSlashed": 0,
+          "deterministicForward": true,
+          "scopedLayerStationId": "7q2eeeee",
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "WON",
+                "format": "NEWS_TALK",
+                "share": 0.07653369758915016,
+                "sharePct": 7.65,
+                "rev": 37117397,
+                "ebitda": 20696152,
+                "margin": 0.557586298414191,
+                "marginPct": 55.76,
+                "talent": 46750,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "WON",
+                "format": "NEWS_TALK",
+                "share": 0.07599295234313494,
+                "sharePct": 7.6,
+                "rev": 35900603,
+                "ebitda": 19916775,
+                "margin": 0.5547755005674975,
+                "marginPct": 55.48,
+                "talent": 47500,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "WON",
+                "format": "NEWS_TALK",
+                "share": 0.07304941463169992,
+                "sharePct": 7.3,
+                "rev": 33315783,
+                "ebitda": 18262200,
+                "margin": 0.5481546088831231,
+                "marginPct": 54.82,
+                "talent": 49000,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "WON",
+                "format": "NEWS_TALK",
+                "share": 0.06872779825235323,
+                "sharePct": 6.87,
+                "rev": 30350567,
+                "ebitda": 16373410,
+                "margin": 0.5394762476760319,
+                "marginPct": 53.95,
+                "talent": 50500,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        },
+        "on_cut": {
+          "ok": true,
+          "marketId": "chicago",
+          "seed": 424242,
+          "layerMode": "on_cut",
+          "talentLayerFlag": "on(scoped to focus station)",
+          "cutFormatKey": "news_talk",
+          "focusStationId": "7q2eeeee",
+          "focusCallLetters": "WON",
+          "applyCut": true,
+          "salariesSlashed": 3,
+          "deterministicForward": true,
+          "scopedLayerStationId": "7q2eeeee",
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "WON",
+                "format": "NEWS_TALK",
+                "share": 0.0754479376364352,
+                "sharePct": 7.54,
+                "rev": 40077397,
+                "ebitda": 22611860,
+                "margin": 0.56420480601572,
+                "marginPct": 56.42,
+                "talent": 5610,
+                "health": "healthy",
+                "rank": 3,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "WON",
+                "format": "NEWS_TALK",
+                "share": 0.07393247887677791,
+                "sharePct": 7.39,
+                "rev": 34815293,
+                "ebitda": 19260198,
+                "margin": 0.5532108547815467,
+                "marginPct": 55.32,
+                "talent": 16750,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "WON",
+                "format": "NEWS_TALK",
+                "share": 0.07229705916272587,
+                "sharePct": 7.23,
+                "rev": 32994747,
+                "ebitda": 18090888,
+                "margin": 0.5482960060278687,
+                "marginPct": 54.83,
+                "talent": 17000,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "WON",
+                "format": "NEWS_TALK",
+                "share": 0.06816035809243619,
+                "sharePct": 6.82,
+                "rev": 30130487,
+                "ebitda": 16267283,
+                "margin": 0.5398944597211456,
+                "marginPct": 53.99,
+                "talent": 17250,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        },
+        "off_cut": {
+          "ok": true,
+          "marketId": "chicago",
+          "seed": 424242,
+          "layerMode": "off_cut",
+          "talentLayerFlag": "off(false)",
+          "cutFormatKey": "news_talk",
+          "focusStationId": "7q2eeeee",
+          "focusCallLetters": "WON",
+          "applyCut": true,
+          "salariesSlashed": 3,
+          "deterministicForward": true,
+          "scopedLayerStationId": null,
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "WON",
+                "format": "NEWS_TALK",
+                "share": 0.0760598517364428,
+                "sharePct": 7.61,
+                "rev": 40077397,
+                "ebitda": 22611860,
+                "margin": 0.56420480601572,
+                "marginPct": 56.42,
+                "talent": 5610,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "WON",
+                "format": "NEWS_TALK",
+                "share": 0.07513067572350278,
+                "sharePct": 7.51,
+                "rev": 35517256,
+                "ebitda": 19704751,
+                "margin": 0.5547937318130658,
+                "marginPct": 55.48,
+                "talent": 16750,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "WON",
+                "format": "NEWS_TALK",
+                "share": 0.07517498108093133,
+                "sharePct": 7.52,
+                "rev": 34037744,
+                "ebitda": 18751418,
+                "margin": 0.550900729496056,
+                "marginPct": 55.09,
+                "talent": 17000,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "WON",
+                "format": "NEWS_TALK",
+                "share": 0.07180871722323139,
+                "sharePct": 7.18,
+                "rev": 31416765,
+                "ebitda": 17081883,
+                "margin": 0.5437187119679572,
+                "marginPct": 54.37,
+                "talent": 17250,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        }
+      },
+      "checkpointComparison": [
+        {
+          "checkpoint": "start",
+          "marketId": "chicago",
+          "cutFormatKey": "news_talk",
+          "onNoCut": {
+            "callLetters": "WON",
+            "format": "NEWS_TALK",
+            "share": 0.07653369758915016,
+            "sharePct": 7.65,
+            "rev": 37117397,
+            "ebitda": 20696152,
+            "margin": 0.557586298414191,
+            "marginPct": 55.76,
+            "talent": 46750,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2005,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "WON",
+            "format": "NEWS_TALK",
+            "share": 0.0754479376364352,
+            "sharePct": 7.54,
+            "rev": 40077397,
+            "ebitda": 22611860,
+            "margin": 0.56420480601572,
+            "marginPct": 56.42,
+            "talent": 5610,
+            "health": "healthy",
+            "rank": 3,
+            "year": 2005,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "WON",
+            "format": "NEWS_TALK",
+            "share": 0.0760598517364428,
+            "sharePct": 7.61,
+            "rev": 40077397,
+            "ebitda": 22611860,
+            "margin": 0.56420480601572,
+            "marginPct": 56.42,
+            "talent": 5610,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2005,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.11000000000000032,
+            "rev": -2960000,
+            "marginPct": -0.6600000000000037,
+            "rank": -1,
+            "talent": 41140
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": 0.040000000000000036,
+            "rev": -2960000,
+            "marginPct": -0.6600000000000037,
+            "rank": 0,
+            "talent": 41140
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.07000000000000028,
+            "rev": 0,
+            "marginPct": 0,
+            "rank": -1,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_1y",
+          "marketId": "chicago",
+          "cutFormatKey": "news_talk",
+          "onNoCut": {
+            "callLetters": "WON",
+            "format": "NEWS_TALK",
+            "share": 0.07599295234313494,
+            "sharePct": 7.6,
+            "rev": 35900603,
+            "ebitda": 19916775,
+            "margin": 0.5547755005674975,
+            "marginPct": 55.48,
+            "talent": 47500,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2006,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "WON",
+            "format": "NEWS_TALK",
+            "share": 0.07393247887677791,
+            "sharePct": 7.39,
+            "rev": 34815293,
+            "ebitda": 19260198,
+            "margin": 0.5532108547815467,
+            "marginPct": 55.32,
+            "talent": 16750,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2006,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "WON",
+            "format": "NEWS_TALK",
+            "share": 0.07513067572350278,
+            "sharePct": 7.51,
+            "rev": 35517256,
+            "ebitda": 19704751,
+            "margin": 0.5547937318130658,
+            "marginPct": 55.48,
+            "talent": 16750,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2006,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.20999999999999996,
+            "rev": 1085310,
+            "marginPct": 0.1599999999999966,
+            "rank": 0,
+            "talent": 30750
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": 0.08999999999999986,
+            "rev": 383347,
+            "marginPct": 0,
+            "rank": 0,
+            "talent": 30750
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.1200000000000001,
+            "rev": 701963,
+            "marginPct": 0.1599999999999966,
+            "rank": 0,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_3y",
+          "marketId": "chicago",
+          "cutFormatKey": "news_talk",
+          "onNoCut": {
+            "callLetters": "WON",
+            "format": "NEWS_TALK",
+            "share": 0.07304941463169992,
+            "sharePct": 7.3,
+            "rev": 33315783,
+            "ebitda": 18262200,
+            "margin": 0.5481546088831231,
+            "marginPct": 54.82,
+            "talent": 49000,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2008,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "WON",
+            "format": "NEWS_TALK",
+            "share": 0.07229705916272587,
+            "sharePct": 7.23,
+            "rev": 32994747,
+            "ebitda": 18090888,
+            "margin": 0.5482960060278687,
+            "marginPct": 54.83,
+            "talent": 17000,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2008,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "WON",
+            "format": "NEWS_TALK",
+            "share": 0.07517498108093133,
+            "sharePct": 7.52,
+            "rev": 34037744,
+            "ebitda": 18751418,
+            "margin": 0.550900729496056,
+            "marginPct": 55.09,
+            "talent": 17000,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2008,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.0699999999999994,
+            "rev": 321036,
+            "marginPct": -0.00999999999999801,
+            "rank": 0,
+            "talent": 32000
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": -0.21999999999999975,
+            "rev": -721961,
+            "marginPct": -0.2700000000000031,
+            "rank": 0,
+            "talent": 32000
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.28999999999999915,
+            "rev": 1042997,
+            "marginPct": 0.2600000000000051,
+            "rank": 0,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_5y",
+          "marketId": "chicago",
+          "cutFormatKey": "news_talk",
+          "onNoCut": {
+            "callLetters": "WON",
+            "format": "NEWS_TALK",
+            "share": 0.06872779825235323,
+            "sharePct": 6.87,
+            "rev": 30350567,
+            "ebitda": 16373410,
+            "margin": 0.5394762476760319,
+            "marginPct": 53.95,
+            "talent": 50500,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2010,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "WON",
+            "format": "NEWS_TALK",
+            "share": 0.06816035809243619,
+            "sharePct": 6.82,
+            "rev": 30130487,
+            "ebitda": 16267283,
+            "margin": 0.5398944597211456,
+            "marginPct": 53.99,
+            "talent": 17250,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2010,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "WON",
+            "format": "NEWS_TALK",
+            "share": 0.07180871722323139,
+            "sharePct": 7.18,
+            "rev": 31416765,
+            "ebitda": 17081883,
+            "margin": 0.5437187119679572,
+            "marginPct": 54.37,
+            "talent": 17250,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2010,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.04999999999999982,
+            "rev": 220080,
+            "marginPct": -0.03999999999999915,
+            "rank": 0,
+            "talent": 33250
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": -0.3099999999999996,
+            "rev": -1066198,
+            "marginPct": -0.4199999999999946,
+            "rank": 0,
+            "talent": 33250
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.35999999999999943,
+            "rev": 1286278,
+            "marginPct": 0.37999999999999545,
+            "rank": 0,
+            "talent": 0
+          }
+        }
+      ],
+      "successSignals": {
+        "at_plus_5y": {
+          "onCut_vs_onNo_shareAdvantageToNoCut": 0.04999999999999982,
+          "onCut_vs_onNo_rankStepsWorseForCut": 0,
+          "onCut_vs_onNo_revAdvantageToNoCut": 220080,
+          "onCutWorseThanOnNo_byShare": true,
+          "onCutWorseThanOnNo_byRank": false,
+          "onCutWorseThanOnNo_byRev": true,
+          "onCut_vs_offCut_share": 0.35999999999999943,
+          "onCutWorseThanOffCut_byShare": true,
+          "onCutWorseThanOffCut_byRank": false
+        },
+        "gradual": {
+          "shareDisadvantageCut_vs_noCut_abs_at_plus_1y": 0.20999999999999996,
+          "shareDisadvantageCut_vs_noCut_abs_at_plus_5y": 0.04999999999999982,
+          "gradualShareWidening": false
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "cutFormatKey": "top40_chr",
+      "formatLabel": "Top 40 / CHR",
+      "ok": true,
+      "focusStationId": "04wlllll",
+      "focusCallLetters": "WKZD",
+      "runs": {
+        "on_no_cut": {
+          "ok": true,
+          "marketId": "newyork",
+          "seed": 424242,
+          "layerMode": "on_no_cut",
+          "talentLayerFlag": "on(scoped to focus station)",
+          "cutFormatKey": "top40_chr",
+          "focusStationId": "04wlllll",
+          "focusCallLetters": "WKZD",
+          "applyCut": false,
+          "salariesSlashed": 0,
+          "deterministicForward": true,
+          "scopedLayerStationId": "04wlllll",
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "WKZD",
+                "format": "TOP40",
+                "share": 0.0741177586433254,
+                "sharePct": 7.41,
+                "rev": 13823126,
+                "ebitda": 7365075,
+                "margin": 0.5328082085050806,
+                "marginPct": 53.28,
+                "talent": 203250,
+                "health": "healthy",
+                "rank": 3,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "WKZD",
+                "format": "TOP40",
+                "share": 0.07900518948998338,
+                "sharePct": 7.9,
+                "rev": 16018622,
+                "ebitda": 8740791,
+                "margin": 0.5456643524018483,
+                "marginPct": 54.57,
+                "talent": 194750,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "WKZD",
+                "format": "TOP40",
+                "share": 0.07944294820804834,
+                "sharePct": 7.94,
+                "rev": 16369556,
+                "ebitda": 8909104,
+                "margin": 0.5442483595767655,
+                "marginPct": 54.42,
+                "talent": 200250,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "WKZD",
+                "format": "TOP40",
+                "share": 0.07871375469989399,
+                "sharePct": 7.87,
+                "rev": 16300297,
+                "ebitda": 8823380,
+                "margin": 0.5413017934581192,
+                "marginPct": 54.13,
+                "talent": 205750,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        },
+        "on_cut": {
+          "ok": true,
+          "marketId": "newyork",
+          "seed": 424242,
+          "layerMode": "on_cut",
+          "talentLayerFlag": "on(scoped to focus station)",
+          "cutFormatKey": "top40_chr",
+          "focusStationId": "04wlllll",
+          "focusCallLetters": "WKZD",
+          "applyCut": true,
+          "salariesSlashed": 5,
+          "deterministicForward": true,
+          "scopedLayerStationId": "04wlllll",
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "WKZD",
+                "format": "TOP40",
+                "share": 0.07604356116937973,
+                "sharePct": 7.6,
+                "rev": 15301665,
+                "ebitda": 8475946,
+                "margin": 0.5539231188239973,
+                "marginPct": 55.39,
+                "talent": 24390,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "WKZD",
+                "format": "TOP40",
+                "share": 0.07834963265862506,
+                "sharePct": 7.83,
+                "rev": 16046704,
+                "ebitda": 8915641,
+                "margin": 0.5556057493177415,
+                "marginPct": 55.56,
+                "talent": 37750,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "WKZD",
+                "format": "TOP40",
+                "share": 0.07564790380419524,
+                "sharePct": 7.56,
+                "rev": 15406581,
+                "ebitda": 8459729,
+                "margin": 0.5490984015207527,
+                "marginPct": 54.91,
+                "talent": 38500,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "WKZD",
+                "format": "TOP40",
+                "share": 0.07267856944474466,
+                "sharePct": 7.27,
+                "rev": 14713255,
+                "ebitda": 7983599,
+                "margin": 0.5426126985497091,
+                "marginPct": 54.26,
+                "talent": 39250,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        },
+        "off_cut": {
+          "ok": true,
+          "marketId": "newyork",
+          "seed": 424242,
+          "layerMode": "off_cut",
+          "talentLayerFlag": "off(false)",
+          "cutFormatKey": "top40_chr",
+          "focusStationId": "04wlllll",
+          "focusCallLetters": "WKZD",
+          "applyCut": true,
+          "salariesSlashed": 5,
+          "deterministicForward": true,
+          "scopedLayerStationId": null,
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "WKZD",
+                "format": "TOP40",
+                "share": 0.0784978704430109,
+                "sharePct": 7.85,
+                "rev": 15301665,
+                "ebitda": 8475946,
+                "margin": 0.5539231188239973,
+                "marginPct": 55.39,
+                "talent": 24390,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "WKZD",
+                "format": "TOP40",
+                "share": 0.08295686282661921,
+                "sharePct": 8.3,
+                "rev": 17308395,
+                "ebitda": 9717572,
+                "margin": 0.5614369212165542,
+                "marginPct": 56.14,
+                "talent": 37750,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "WKZD",
+                "format": "TOP40",
+                "share": 0.08310909986515884,
+                "sharePct": 8.31,
+                "rev": 17588814,
+                "ebitda": 9844623,
+                "margin": 0.5597093129758494,
+                "marginPct": 55.97,
+                "talent": 38500,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "WKZD",
+                "format": "TOP40",
+                "share": 0.08185821554508174,
+                "sharePct": 8.19,
+                "rev": 17846324,
+                "ebitda": 9970155,
+                "margin": 0.5586671518459487,
+                "marginPct": 55.87,
+                "talent": 39250,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        }
+      },
+      "checkpointComparison": [
+        {
+          "checkpoint": "start",
+          "marketId": "newyork",
+          "cutFormatKey": "top40_chr",
+          "onNoCut": {
+            "callLetters": "WKZD",
+            "format": "TOP40",
+            "share": 0.0741177586433254,
+            "sharePct": 7.41,
+            "rev": 13823126,
+            "ebitda": 7365075,
+            "margin": 0.5328082085050806,
+            "marginPct": 53.28,
+            "talent": 203250,
+            "health": "healthy",
+            "rank": 3,
+            "year": 2005,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "WKZD",
+            "format": "TOP40",
+            "share": 0.07604356116937973,
+            "sharePct": 7.6,
+            "rev": 15301665,
+            "ebitda": 8475946,
+            "margin": 0.5539231188239973,
+            "marginPct": 55.39,
+            "talent": 24390,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2005,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "WKZD",
+            "format": "TOP40",
+            "share": 0.0784978704430109,
+            "sharePct": 7.85,
+            "rev": 15301665,
+            "ebitda": 8475946,
+            "margin": 0.5539231188239973,
+            "marginPct": 55.39,
+            "talent": 24390,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2005,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": -0.1899999999999995,
+            "rev": -1478539,
+            "marginPct": -2.1099999999999994,
+            "rank": 1,
+            "talent": 178860
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": -0.4399999999999995,
+            "rev": -1478539,
+            "marginPct": -2.1099999999999994,
+            "rank": 1,
+            "talent": 178860
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.25,
+            "rev": 0,
+            "marginPct": 0,
+            "rank": 0,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_1y",
+          "marketId": "newyork",
+          "cutFormatKey": "top40_chr",
+          "onNoCut": {
+            "callLetters": "WKZD",
+            "format": "TOP40",
+            "share": 0.07900518948998338,
+            "sharePct": 7.9,
+            "rev": 16018622,
+            "ebitda": 8740791,
+            "margin": 0.5456643524018483,
+            "marginPct": 54.57,
+            "talent": 194750,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2006,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "WKZD",
+            "format": "TOP40",
+            "share": 0.07834963265862506,
+            "sharePct": 7.83,
+            "rev": 16046704,
+            "ebitda": 8915641,
+            "margin": 0.5556057493177415,
+            "marginPct": 55.56,
+            "talent": 37750,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2006,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "WKZD",
+            "format": "TOP40",
+            "share": 0.08295686282661921,
+            "sharePct": 8.3,
+            "rev": 17308395,
+            "ebitda": 9717572,
+            "margin": 0.5614369212165542,
+            "marginPct": 56.14,
+            "talent": 37750,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2006,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.07000000000000028,
+            "rev": -28082,
+            "marginPct": -0.990000000000002,
+            "rank": 0,
+            "talent": 157000
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": -0.40000000000000036,
+            "rev": -1289773,
+            "marginPct": -1.5700000000000003,
+            "rank": 0,
+            "talent": 157000
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.47000000000000064,
+            "rev": 1261691,
+            "marginPct": 0.5799999999999983,
+            "rank": 0,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_3y",
+          "marketId": "newyork",
+          "cutFormatKey": "top40_chr",
+          "onNoCut": {
+            "callLetters": "WKZD",
+            "format": "TOP40",
+            "share": 0.07944294820804834,
+            "sharePct": 7.94,
+            "rev": 16369556,
+            "ebitda": 8909104,
+            "margin": 0.5442483595767655,
+            "marginPct": 54.42,
+            "talent": 200250,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2008,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "WKZD",
+            "format": "TOP40",
+            "share": 0.07564790380419524,
+            "sharePct": 7.56,
+            "rev": 15406581,
+            "ebitda": 8459729,
+            "margin": 0.5490984015207527,
+            "marginPct": 54.91,
+            "talent": 38500,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2008,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "WKZD",
+            "format": "TOP40",
+            "share": 0.08310909986515884,
+            "sharePct": 8.31,
+            "rev": 17588814,
+            "ebitda": 9844623,
+            "margin": 0.5597093129758494,
+            "marginPct": 55.97,
+            "talent": 38500,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2008,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.3800000000000008,
+            "rev": 962975,
+            "marginPct": -0.4899999999999949,
+            "rank": 0,
+            "talent": 161750
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": -0.3700000000000001,
+            "rev": -1219258,
+            "marginPct": -1.5499999999999972,
+            "rank": 0,
+            "talent": 161750
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.7500000000000009,
+            "rev": 2182233,
+            "marginPct": 1.0600000000000023,
+            "rank": 0,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_5y",
+          "marketId": "newyork",
+          "cutFormatKey": "top40_chr",
+          "onNoCut": {
+            "callLetters": "WKZD",
+            "format": "TOP40",
+            "share": 0.07871375469989399,
+            "sharePct": 7.87,
+            "rev": 16300297,
+            "ebitda": 8823380,
+            "margin": 0.5413017934581192,
+            "marginPct": 54.13,
+            "talent": 205750,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2010,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "WKZD",
+            "format": "TOP40",
+            "share": 0.07267856944474466,
+            "sharePct": 7.27,
+            "rev": 14713255,
+            "ebitda": 7983599,
+            "margin": 0.5426126985497091,
+            "marginPct": 54.26,
+            "talent": 39250,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2010,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "WKZD",
+            "format": "TOP40",
+            "share": 0.08185821554508174,
+            "sharePct": 8.19,
+            "rev": 17846324,
+            "ebitda": 9970155,
+            "margin": 0.5586671518459487,
+            "marginPct": 55.87,
+            "talent": 39250,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2010,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.6000000000000005,
+            "rev": 1587042,
+            "marginPct": -0.12999999999999545,
+            "rank": 0,
+            "talent": 166500
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": -0.3199999999999994,
+            "rev": -1546027,
+            "marginPct": -1.7399999999999949,
+            "rank": 0,
+            "talent": 166500
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.9199999999999999,
+            "rev": 3133069,
+            "marginPct": 1.6099999999999994,
+            "rank": 0,
+            "talent": 0
+          }
+        }
+      ],
+      "successSignals": {
+        "at_plus_5y": {
+          "onCut_vs_onNo_shareAdvantageToNoCut": 0.6000000000000005,
+          "onCut_vs_onNo_rankStepsWorseForCut": 0,
+          "onCut_vs_onNo_revAdvantageToNoCut": 1587042,
+          "onCutWorseThanOnNo_byShare": true,
+          "onCutWorseThanOnNo_byRank": false,
+          "onCutWorseThanOnNo_byRev": true,
+          "onCut_vs_offCut_share": 0.9199999999999999,
+          "onCutWorseThanOffCut_byShare": true,
+          "onCutWorseThanOffCut_byRank": false
+        },
+        "gradual": {
+          "shareDisadvantageCut_vs_noCut_abs_at_plus_1y": 0.07000000000000028,
+          "shareDisadvantageCut_vs_noCut_abs_at_plus_5y": 0.6000000000000005,
+          "gradualShareWidening": true
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "cutFormatKey": "news_talk",
+      "formatLabel": "News / Talk",
+      "ok": true,
+      "focusStationId": "7q2eeeee",
+      "focusCallLetters": "WCK",
+      "runs": {
+        "on_no_cut": {
+          "ok": true,
+          "marketId": "newyork",
+          "seed": 424242,
+          "layerMode": "on_no_cut",
+          "talentLayerFlag": "on(scoped to focus station)",
+          "cutFormatKey": "news_talk",
+          "focusStationId": "7q2eeeee",
+          "focusCallLetters": "WCK",
+          "applyCut": false,
+          "salariesSlashed": 0,
+          "deterministicForward": true,
+          "scopedLayerStationId": "7q2eeeee",
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "WCK",
+                "format": "NEWS_TALK",
+                "share": 0.11219411137486493,
+                "sharePct": 11.22,
+                "rev": 87883060,
+                "ebitda": 52276245,
+                "margin": 0.5948386981518395,
+                "marginPct": 59.48,
+                "talent": 120750,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "WCK",
+                "format": "NEWS_TALK",
+                "share": 0.10829745126859754,
+                "sharePct": 10.83,
+                "rev": 83779768,
+                "ebitda": 49557890,
+                "margin": 0.591525748794148,
+                "marginPct": 59.15,
+                "talent": 122500,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "WCK",
+                "format": "NEWS_TALK",
+                "share": 0.10077317313187886,
+                "sharePct": 10.08,
+                "rev": 76626228,
+                "ebitda": 44871133,
+                "margin": 0.5855845207466039,
+                "marginPct": 58.56,
+                "talent": 126500,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "WCK",
+                "format": "NEWS_TALK",
+                "share": 0.09579694494041698,
+                "sharePct": 9.58,
+                "rev": 68401667,
+                "ebitda": 39574829,
+                "margin": 0.5785652709311895,
+                "marginPct": 57.86,
+                "talent": 130500,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        },
+        "on_cut": {
+          "ok": true,
+          "marketId": "newyork",
+          "seed": 424242,
+          "layerMode": "on_cut",
+          "talentLayerFlag": "on(scoped to focus station)",
+          "cutFormatKey": "news_talk",
+          "focusStationId": "7q2eeeee",
+          "focusCallLetters": "WCK",
+          "applyCut": true,
+          "salariesSlashed": 5,
+          "deterministicForward": true,
+          "scopedLayerStationId": "7q2eeeee",
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "WCK",
+                "format": "NEWS_TALK",
+                "share": 0.11533765561683518,
+                "sharePct": 11.53,
+                "rev": 95405865,
+                "ebitda": 57119427,
+                "margin": 0.5986993252458851,
+                "marginPct": 59.87,
+                "talent": 14490,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "WCK",
+                "format": "NEWS_TALK",
+                "share": 0.10698707447549734,
+                "sharePct": 10.7,
+                "rev": 83102955,
+                "ebitda": 49222237,
+                "margin": 0.5923042929099211,
+                "marginPct": 59.23,
+                "talent": 27500,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "WCK",
+                "format": "NEWS_TALK",
+                "share": 0.09929661201121501,
+                "sharePct": 9.93,
+                "rev": 72034446,
+                "ebitda": 42054002,
+                "margin": 0.5838040595189696,
+                "marginPct": 58.38,
+                "talent": 27750,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "WCK",
+                "format": "NEWS_TALK",
+                "share": 0.09395399972679655,
+                "sharePct": 9.4,
+                "rev": 67449818,
+                "ebitda": 39073081,
+                "margin": 0.5792911257373593,
+                "marginPct": 57.93,
+                "talent": 28500,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        },
+        "off_cut": {
+          "ok": true,
+          "marketId": "newyork",
+          "seed": 424242,
+          "layerMode": "off_cut",
+          "talentLayerFlag": "off(false)",
+          "cutFormatKey": "news_talk",
+          "focusStationId": "7q2eeeee",
+          "focusCallLetters": "WCK",
+          "applyCut": true,
+          "salariesSlashed": 5,
+          "deterministicForward": true,
+          "scopedLayerStationId": null,
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "WCK",
+                "format": "NEWS_TALK",
+                "share": 0.11559370922005646,
+                "sharePct": 11.56,
+                "rev": 95405865,
+                "ebitda": 57119427,
+                "margin": 0.5986993252458851,
+                "marginPct": 59.87,
+                "talent": 14490,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "WCK",
+                "format": "NEWS_TALK",
+                "share": 0.10791569054400263,
+                "sharePct": 10.79,
+                "rev": 83627533,
+                "ebitda": 49556024,
+                "margin": 0.5925802450731149,
+                "marginPct": 59.26,
+                "talent": 27500,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "WCK",
+                "format": "NEWS_TALK",
+                "share": 0.10067343069817379,
+                "sharePct": 10.07,
+                "rev": 76557045,
+                "ebitda": 44925951,
+                "margin": 0.5868297424489151,
+                "marginPct": 58.68,
+                "talent": 27750,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "WCK",
+                "format": "NEWS_TALK",
+                "share": 0.09591835179418959,
+                "sharePct": 9.59,
+                "rev": 68454793,
+                "ebitda": 39710526,
+                "margin": 0.5800985476648801,
+                "marginPct": 58.01,
+                "talent": 28500,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        }
+      },
+      "checkpointComparison": [
+        {
+          "checkpoint": "start",
+          "marketId": "newyork",
+          "cutFormatKey": "news_talk",
+          "onNoCut": {
+            "callLetters": "WCK",
+            "format": "NEWS_TALK",
+            "share": 0.11219411137486493,
+            "sharePct": 11.22,
+            "rev": 87883060,
+            "ebitda": 52276245,
+            "margin": 0.5948386981518395,
+            "marginPct": 59.48,
+            "talent": 120750,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2005,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "WCK",
+            "format": "NEWS_TALK",
+            "share": 0.11533765561683518,
+            "sharePct": 11.53,
+            "rev": 95405865,
+            "ebitda": 57119427,
+            "margin": 0.5986993252458851,
+            "marginPct": 59.87,
+            "talent": 14490,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2005,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "WCK",
+            "format": "NEWS_TALK",
+            "share": 0.11559370922005646,
+            "sharePct": 11.56,
+            "rev": 95405865,
+            "ebitda": 57119427,
+            "margin": 0.5986993252458851,
+            "marginPct": 59.87,
+            "talent": 14490,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2005,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": -0.3099999999999987,
+            "rev": -7522805,
+            "marginPct": -0.39000000000000057,
+            "rank": 0,
+            "talent": 106260
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": -0.33999999999999986,
+            "rev": -7522805,
+            "marginPct": -0.39000000000000057,
+            "rank": 0,
+            "talent": 106260
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.030000000000001137,
+            "rev": 0,
+            "marginPct": 0,
+            "rank": 0,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_1y",
+          "marketId": "newyork",
+          "cutFormatKey": "news_talk",
+          "onNoCut": {
+            "callLetters": "WCK",
+            "format": "NEWS_TALK",
+            "share": 0.10829745126859754,
+            "sharePct": 10.83,
+            "rev": 83779768,
+            "ebitda": 49557890,
+            "margin": 0.591525748794148,
+            "marginPct": 59.15,
+            "talent": 122500,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2006,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "WCK",
+            "format": "NEWS_TALK",
+            "share": 0.10698707447549734,
+            "sharePct": 10.7,
+            "rev": 83102955,
+            "ebitda": 49222237,
+            "margin": 0.5923042929099211,
+            "marginPct": 59.23,
+            "talent": 27500,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2006,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "WCK",
+            "format": "NEWS_TALK",
+            "share": 0.10791569054400263,
+            "sharePct": 10.79,
+            "rev": 83627533,
+            "ebitda": 49556024,
+            "margin": 0.5925802450731149,
+            "marginPct": 59.26,
+            "talent": 27500,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2006,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.13000000000000078,
+            "rev": 676813,
+            "marginPct": -0.0799999999999983,
+            "rank": 0,
+            "talent": 95000
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": 0.040000000000000924,
+            "rev": 152235,
+            "marginPct": -0.10999999999999943,
+            "rank": 0,
+            "talent": 95000
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.08999999999999986,
+            "rev": 524578,
+            "marginPct": 0.030000000000001137,
+            "rank": 0,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_3y",
+          "marketId": "newyork",
+          "cutFormatKey": "news_talk",
+          "onNoCut": {
+            "callLetters": "WCK",
+            "format": "NEWS_TALK",
+            "share": 0.10077317313187886,
+            "sharePct": 10.08,
+            "rev": 76626228,
+            "ebitda": 44871133,
+            "margin": 0.5855845207466039,
+            "marginPct": 58.56,
+            "talent": 126500,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2008,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "WCK",
+            "format": "NEWS_TALK",
+            "share": 0.09929661201121501,
+            "sharePct": 9.93,
+            "rev": 72034446,
+            "ebitda": 42054002,
+            "margin": 0.5838040595189696,
+            "marginPct": 58.38,
+            "talent": 27750,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2008,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "WCK",
+            "format": "NEWS_TALK",
+            "share": 0.10067343069817379,
+            "sharePct": 10.07,
+            "rev": 76557045,
+            "ebitda": 44925951,
+            "margin": 0.5868297424489151,
+            "marginPct": 58.68,
+            "talent": 27750,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2008,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.15000000000000036,
+            "rev": 4591782,
+            "marginPct": 0.17999999999999972,
+            "rank": 0,
+            "talent": 98750
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": 0.009999999999999787,
+            "rev": 69183,
+            "marginPct": -0.11999999999999744,
+            "rank": 0,
+            "talent": 98750
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.14000000000000057,
+            "rev": 4522599,
+            "marginPct": 0.29999999999999716,
+            "rank": 0,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_5y",
+          "marketId": "newyork",
+          "cutFormatKey": "news_talk",
+          "onNoCut": {
+            "callLetters": "WCK",
+            "format": "NEWS_TALK",
+            "share": 0.09579694494041698,
+            "sharePct": 9.58,
+            "rev": 68401667,
+            "ebitda": 39574829,
+            "margin": 0.5785652709311895,
+            "marginPct": 57.86,
+            "talent": 130500,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2010,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "WCK",
+            "format": "NEWS_TALK",
+            "share": 0.09395399972679655,
+            "sharePct": 9.4,
+            "rev": 67449818,
+            "ebitda": 39073081,
+            "margin": 0.5792911257373593,
+            "marginPct": 57.93,
+            "talent": 28500,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2010,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "WCK",
+            "format": "NEWS_TALK",
+            "share": 0.09591835179418959,
+            "sharePct": 9.59,
+            "rev": 68454793,
+            "ebitda": 39710526,
+            "margin": 0.5800985476648801,
+            "marginPct": 58.01,
+            "talent": 28500,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2010,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.17999999999999972,
+            "rev": 951849,
+            "marginPct": -0.07000000000000028,
+            "rank": 0,
+            "talent": 102000
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": -0.009999999999999787,
+            "rev": -53126,
+            "marginPct": -0.14999999999999858,
+            "rank": 0,
+            "talent": 102000
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.1899999999999995,
+            "rev": 1004975,
+            "marginPct": 0.0799999999999983,
+            "rank": 0,
+            "talent": 0
+          }
+        }
+      ],
+      "successSignals": {
+        "at_plus_5y": {
+          "onCut_vs_onNo_shareAdvantageToNoCut": 0.17999999999999972,
+          "onCut_vs_onNo_rankStepsWorseForCut": 0,
+          "onCut_vs_onNo_revAdvantageToNoCut": 951849,
+          "onCutWorseThanOnNo_byShare": true,
+          "onCutWorseThanOnNo_byRank": false,
+          "onCutWorseThanOnNo_byRev": true,
+          "onCut_vs_offCut_share": 0.1899999999999995,
+          "onCutWorseThanOffCut_byShare": true,
+          "onCutWorseThanOffCut_byRank": false
+        },
+        "gradual": {
+          "shareDisadvantageCut_vs_noCut_abs_at_plus_1y": 0.13000000000000078,
+          "shareDisadvantageCut_vs_noCut_abs_at_plus_5y": 0.17999999999999972,
+          "gradualShareWidening": true
+        }
+      }
+    },
+    {
+      "marketId": "seattle",
+      "cutFormatKey": "top40_chr",
+      "formatLabel": "Top 40 / CHR",
+      "ok": true,
+      "focusStationId": "millllll",
+      "focusCallLetters": "KDIE",
+      "runs": {
+        "on_no_cut": {
+          "ok": true,
+          "marketId": "seattle",
+          "seed": 424242,
+          "layerMode": "on_no_cut",
+          "talentLayerFlag": "on(scoped to focus station)",
+          "cutFormatKey": "top40_chr",
+          "focusStationId": "millllll",
+          "focusCallLetters": "KDIE",
+          "applyCut": false,
+          "salariesSlashed": 0,
+          "deterministicForward": true,
+          "scopedLayerStationId": "millllll",
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "KDIE",
+                "format": "TOP40",
+                "share": 0.115815290222468,
+                "sharePct": 11.58,
+                "rev": 13862090,
+                "ebitda": 6898942,
+                "margin": 0.4976841154544517,
+                "marginPct": 49.77,
+                "talent": 99750,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "KDIE",
+                "format": "TOP40",
+                "share": 0.11498336111368,
+                "sharePct": 11.5,
+                "rev": 13385312,
+                "ebitda": 6587623,
+                "margin": 0.4921531152953327,
+                "marginPct": 49.22,
+                "talent": 101000,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "KDIE",
+                "format": "TOP40",
+                "share": 0.11521749910808246,
+                "sharePct": 11.52,
+                "rev": 12946882,
+                "ebitda": 6294511,
+                "margin": 0.48617968403512135,
+                "marginPct": 48.62,
+                "talent": 103500,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "KDIE",
+                "format": "TOP40",
+                "share": 0.11691231853686765,
+                "sharePct": 11.69,
+                "rev": 13021052,
+                "ebitda": 6326000,
+                "margin": 0.48582864118813135,
+                "marginPct": 48.58,
+                "talent": 106000,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        },
+        "on_cut": {
+          "ok": true,
+          "marketId": "seattle",
+          "seed": 424242,
+          "layerMode": "on_cut",
+          "talentLayerFlag": "on(scoped to focus station)",
+          "cutFormatKey": "top40_chr",
+          "focusStationId": "millllll",
+          "focusCallLetters": "KDIE",
+          "applyCut": true,
+          "salariesSlashed": 5,
+          "deterministicForward": true,
+          "scopedLayerStationId": "millllll",
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "KDIE",
+                "format": "TOP40",
+                "share": 0.11219412220524368,
+                "sharePct": 11.22,
+                "rev": 14977961,
+                "ebitda": 7692542,
+                "margin": 0.5135907350806962,
+                "marginPct": 51.36,
+                "talent": 11970,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "KDIE",
+                "format": "TOP40",
+                "share": 0.11132401114880675,
+                "sharePct": 11.13,
+                "rev": 13027848,
+                "ebitda": 6452868,
+                "margin": 0.4953134239822264,
+                "marginPct": 49.53,
+                "talent": 25500,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "KDIE",
+                "format": "TOP40",
+                "share": 0.10848342898418506,
+                "sharePct": 10.85,
+                "rev": 12129482,
+                "ebitda": 5906413,
+                "margin": 0.48694684571031144,
+                "marginPct": 48.69,
+                "talent": 25750,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "KDIE",
+                "format": "TOP40",
+                "share": 0.10598395643490469,
+                "sharePct": 10.6,
+                "rev": 11866582,
+                "ebitda": 5781375,
+                "margin": 0.4871979985475177,
+                "marginPct": 48.72,
+                "talent": 26250,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        },
+        "off_cut": {
+          "ok": true,
+          "marketId": "seattle",
+          "seed": 424242,
+          "layerMode": "off_cut",
+          "talentLayerFlag": "off(false)",
+          "cutFormatKey": "top40_chr",
+          "focusStationId": "millllll",
+          "focusCallLetters": "KDIE",
+          "applyCut": true,
+          "salariesSlashed": 5,
+          "deterministicForward": true,
+          "scopedLayerStationId": null,
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "KDIE",
+                "format": "TOP40",
+                "share": 0.11468590705635205,
+                "sharePct": 11.47,
+                "rev": 14977961,
+                "ebitda": 7692542,
+                "margin": 0.5135907350806962,
+                "marginPct": 51.36,
+                "talent": 11970,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "KDIE",
+                "format": "TOP40",
+                "share": 0.11693977920734504,
+                "sharePct": 11.69,
+                "rev": 13761815,
+                "ebitda": 6898635,
+                "margin": 0.5012881658414969,
+                "marginPct": 50.13,
+                "talent": 25500,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "KDIE",
+                "format": "TOP40",
+                "share": 0.11998515620936391,
+                "sharePct": 12,
+                "rev": 13572264,
+                "ebitda": 6757698,
+                "margin": 0.49790499212216915,
+                "marginPct": 49.79,
+                "talent": 25750,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "KDIE",
+                "format": "TOP40",
+                "share": 0.12122460503767206,
+                "sharePct": 12.12,
+                "rev": 13551752,
+                "ebitda": 6726717,
+                "margin": 0.4963724985522167,
+                "marginPct": 49.64,
+                "talent": 26250,
+                "health": "healthy",
+                "rank": 1,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        }
+      },
+      "checkpointComparison": [
+        {
+          "checkpoint": "start",
+          "marketId": "seattle",
+          "cutFormatKey": "top40_chr",
+          "onNoCut": {
+            "callLetters": "KDIE",
+            "format": "TOP40",
+            "share": 0.115815290222468,
+            "sharePct": 11.58,
+            "rev": 13862090,
+            "ebitda": 6898942,
+            "margin": 0.4976841154544517,
+            "marginPct": 49.77,
+            "talent": 99750,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2005,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "KDIE",
+            "format": "TOP40",
+            "share": 0.11219412220524368,
+            "sharePct": 11.22,
+            "rev": 14977961,
+            "ebitda": 7692542,
+            "margin": 0.5135907350806962,
+            "marginPct": 51.36,
+            "talent": 11970,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2005,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "KDIE",
+            "format": "TOP40",
+            "share": 0.11468590705635205,
+            "sharePct": 11.47,
+            "rev": 14977961,
+            "ebitda": 7692542,
+            "margin": 0.5135907350806962,
+            "marginPct": 51.36,
+            "talent": 11970,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2005,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.35999999999999943,
+            "rev": -1115871,
+            "marginPct": -1.5899999999999963,
+            "rank": 0,
+            "talent": 87780
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": 0.10999999999999943,
+            "rev": -1115871,
+            "marginPct": -1.5899999999999963,
+            "rank": 0,
+            "talent": 87780
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.25,
+            "rev": 0,
+            "marginPct": 0,
+            "rank": 0,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_1y",
+          "marketId": "seattle",
+          "cutFormatKey": "top40_chr",
+          "onNoCut": {
+            "callLetters": "KDIE",
+            "format": "TOP40",
+            "share": 0.11498336111368,
+            "sharePct": 11.5,
+            "rev": 13385312,
+            "ebitda": 6587623,
+            "margin": 0.4921531152953327,
+            "marginPct": 49.22,
+            "talent": 101000,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2006,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "KDIE",
+            "format": "TOP40",
+            "share": 0.11132401114880675,
+            "sharePct": 11.13,
+            "rev": 13027848,
+            "ebitda": 6452868,
+            "margin": 0.4953134239822264,
+            "marginPct": 49.53,
+            "talent": 25500,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2006,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "KDIE",
+            "format": "TOP40",
+            "share": 0.11693977920734504,
+            "sharePct": 11.69,
+            "rev": 13761815,
+            "ebitda": 6898635,
+            "margin": 0.5012881658414969,
+            "marginPct": 50.13,
+            "talent": 25500,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2006,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.3699999999999992,
+            "rev": 357464,
+            "marginPct": -0.3100000000000023,
+            "rank": 0,
+            "talent": 75500
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": -0.1899999999999995,
+            "rev": -376503,
+            "marginPct": -0.9100000000000037,
+            "rank": 0,
+            "talent": 75500
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.5599999999999987,
+            "rev": 733967,
+            "marginPct": 0.6000000000000014,
+            "rank": 0,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_3y",
+          "marketId": "seattle",
+          "cutFormatKey": "top40_chr",
+          "onNoCut": {
+            "callLetters": "KDIE",
+            "format": "TOP40",
+            "share": 0.11521749910808246,
+            "sharePct": 11.52,
+            "rev": 12946882,
+            "ebitda": 6294511,
+            "margin": 0.48617968403512135,
+            "marginPct": 48.62,
+            "talent": 103500,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2008,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "KDIE",
+            "format": "TOP40",
+            "share": 0.10848342898418506,
+            "sharePct": 10.85,
+            "rev": 12129482,
+            "ebitda": 5906413,
+            "margin": 0.48694684571031144,
+            "marginPct": 48.69,
+            "talent": 25750,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2008,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "KDIE",
+            "format": "TOP40",
+            "share": 0.11998515620936391,
+            "sharePct": 12,
+            "rev": 13572264,
+            "ebitda": 6757698,
+            "margin": 0.49790499212216915,
+            "marginPct": 49.79,
+            "talent": 25750,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2008,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.6699999999999999,
+            "rev": 817400,
+            "marginPct": -0.07000000000000028,
+            "rank": 0,
+            "talent": 77750
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": -0.4800000000000004,
+            "rev": -625382,
+            "marginPct": -1.1700000000000017,
+            "rank": 0,
+            "talent": 77750
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 1.1500000000000004,
+            "rev": 1442782,
+            "marginPct": 1.1000000000000014,
+            "rank": 0,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_5y",
+          "marketId": "seattle",
+          "cutFormatKey": "top40_chr",
+          "onNoCut": {
+            "callLetters": "KDIE",
+            "format": "TOP40",
+            "share": 0.11691231853686765,
+            "sharePct": 11.69,
+            "rev": 13021052,
+            "ebitda": 6326000,
+            "margin": 0.48582864118813135,
+            "marginPct": 48.58,
+            "talent": 106000,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2010,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "KDIE",
+            "format": "TOP40",
+            "share": 0.10598395643490469,
+            "sharePct": 10.6,
+            "rev": 11866582,
+            "ebitda": 5781375,
+            "margin": 0.4871979985475177,
+            "marginPct": 48.72,
+            "talent": 26250,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2010,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "KDIE",
+            "format": "TOP40",
+            "share": 0.12122460503767206,
+            "sharePct": 12.12,
+            "rev": 13551752,
+            "ebitda": 6726717,
+            "margin": 0.4963724985522167,
+            "marginPct": 49.64,
+            "talent": 26250,
+            "health": "healthy",
+            "rank": 1,
+            "year": 2010,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 1.0899999999999999,
+            "rev": 1154470,
+            "marginPct": -0.14000000000000057,
+            "rank": 0,
+            "talent": 79750
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": -0.4299999999999997,
+            "rev": -530700,
+            "marginPct": -1.0600000000000023,
+            "rank": 0,
+            "talent": 79750
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 1.5199999999999996,
+            "rev": 1685170,
+            "marginPct": 0.9200000000000017,
+            "rank": 0,
+            "talent": 0
+          }
+        }
+      ],
+      "successSignals": {
+        "at_plus_5y": {
+          "onCut_vs_onNo_shareAdvantageToNoCut": 1.0899999999999999,
+          "onCut_vs_onNo_rankStepsWorseForCut": 0,
+          "onCut_vs_onNo_revAdvantageToNoCut": 1154470,
+          "onCutWorseThanOnNo_byShare": true,
+          "onCutWorseThanOnNo_byRank": false,
+          "onCutWorseThanOnNo_byRev": true,
+          "onCut_vs_offCut_share": 1.5199999999999996,
+          "onCutWorseThanOffCut_byShare": true,
+          "onCutWorseThanOffCut_byRank": false
+        },
+        "gradual": {
+          "shareDisadvantageCut_vs_noCut_abs_at_plus_1y": 0.3699999999999992,
+          "shareDisadvantageCut_vs_noCut_abs_at_plus_5y": 1.0899999999999999,
+          "gradualShareWidening": true
+        }
+      }
+    },
+    {
+      "marketId": "seattle",
+      "cutFormatKey": "news_talk",
+      "formatLabel": "News / Talk",
+      "ok": true,
+      "focusStationId": "acbsssss",
+      "focusCallLetters": "KKU",
+      "runs": {
+        "on_no_cut": {
+          "ok": true,
+          "marketId": "seattle",
+          "seed": 424242,
+          "layerMode": "on_no_cut",
+          "talentLayerFlag": "on(scoped to focus station)",
+          "cutFormatKey": "news_talk",
+          "focusStationId": "acbsssss",
+          "focusCallLetters": "KKU",
+          "applyCut": false,
+          "salariesSlashed": 0,
+          "deterministicForward": true,
+          "scopedLayerStationId": "acbsssss",
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "KKU",
+                "format": "NEWS_TALK",
+                "share": 0.07952603384030955,
+                "sharePct": 7.95,
+                "rev": 22738657,
+                "ebitda": 12719010,
+                "margin": 0.5593562539775326,
+                "marginPct": 55.94,
+                "talent": 43500,
+                "health": "healthy",
+                "rank": 3,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "KKU",
+                "format": "NEWS_TALK",
+                "share": 0.07937131454969207,
+                "sharePct": 7.94,
+                "rev": 22507260,
+                "ebitda": 12566927,
+                "margin": 0.5583499279787943,
+                "marginPct": 55.83,
+                "talent": 44000,
+                "health": "healthy",
+                "rank": 3,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "KKU",
+                "format": "NEWS_TALK",
+                "share": 0.07569318682520922,
+                "sharePct": 7.57,
+                "rev": 20979499,
+                "ebitda": 11588277,
+                "margin": 0.5523619510647036,
+                "marginPct": 55.24,
+                "talent": 45000,
+                "health": "healthy",
+                "rank": 3,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "KKU",
+                "format": "NEWS_TALK",
+                "share": 0.07059715314492158,
+                "sharePct": 7.06,
+                "rev": 18494149,
+                "ebitda": 10007387,
+                "margin": 0.5411109751521954,
+                "marginPct": 54.11,
+                "talent": 46000,
+                "health": "healthy",
+                "rank": 4,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        },
+        "on_cut": {
+          "ok": true,
+          "marketId": "seattle",
+          "seed": 424242,
+          "layerMode": "on_cut",
+          "talentLayerFlag": "on(scoped to focus station)",
+          "cutFormatKey": "news_talk",
+          "focusStationId": "acbsssss",
+          "focusCallLetters": "KKU",
+          "applyCut": true,
+          "salariesSlashed": 4,
+          "deterministicForward": true,
+          "scopedLayerStationId": "acbsssss",
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "KKU",
+                "format": "NEWS_TALK",
+                "share": 0.07853369501744516,
+                "sharePct": 7.85,
+                "rev": 24899974,
+                "ebitda": 14126053,
+                "margin": 0.5673119578357793,
+                "marginPct": 56.73,
+                "talent": 5220,
+                "health": "healthy",
+                "rank": 4,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "KKU",
+                "format": "NEWS_TALK",
+                "share": 0.07765748569047311,
+                "sharePct": 7.77,
+                "rev": 21606344,
+                "ebitda": 12019627,
+                "margin": 0.5563008253501842,
+                "marginPct": 55.63,
+                "talent": 20750,
+                "health": "healthy",
+                "rank": 4,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "KKU",
+                "format": "NEWS_TALK",
+                "share": 0.07486204828337455,
+                "sharePct": 7.49,
+                "rev": 20768126,
+                "ebitda": 11478414,
+                "margin": 0.5526937769926858,
+                "marginPct": 55.27,
+                "talent": 21000,
+                "health": "healthy",
+                "rank": 3,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "KKU",
+                "format": "NEWS_TALK",
+                "share": 0.06950398743516392,
+                "sharePct": 6.95,
+                "rev": 18216843,
+                "ebitda": 9856519,
+                "margin": 0.5410662539057948,
+                "marginPct": 54.11,
+                "talent": 21250,
+                "health": "healthy",
+                "rank": 4,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        },
+        "off_cut": {
+          "ok": true,
+          "marketId": "seattle",
+          "seed": 424242,
+          "layerMode": "off_cut",
+          "talentLayerFlag": "off(false)",
+          "cutFormatKey": "news_talk",
+          "focusStationId": "acbsssss",
+          "focusCallLetters": "KKU",
+          "applyCut": true,
+          "salariesSlashed": 4,
+          "deterministicForward": true,
+          "scopedLayerStationId": null,
+          "advanceStepsToStart": 41,
+          "checkpoints": [
+            {
+              "checkpoint": "start",
+              "labelHuman": "Start (deterministic forward; layer per scenario; cut+seedRev/recalc if cut)",
+              "year": 2005,
+              "period": 2,
+              "advTurnsFromBaseline": 0,
+              "snapshot": {
+                "callLetters": "KKU",
+                "format": "NEWS_TALK",
+                "share": 0.07942969651454386,
+                "sharePct": 7.94,
+                "rev": 24899974,
+                "ebitda": 14126053,
+                "margin": 0.5673119578357793,
+                "marginPct": 56.73,
+                "talent": 5220,
+                "health": "healthy",
+                "rank": 4,
+                "year": 2005,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_1y",
+              "labelHuman": "+1 year (2 half-periods)",
+              "year": 2006,
+              "period": 2,
+              "advTurnsFromBaseline": 2,
+              "snapshot": {
+                "callLetters": "KKU",
+                "format": "NEWS_TALK",
+                "share": 0.0795107579094437,
+                "sharePct": 7.95,
+                "rev": 22677506,
+                "ebitda": 12697994,
+                "margin": 0.5599378520724457,
+                "marginPct": 55.99,
+                "talent": 20750,
+                "health": "healthy",
+                "rank": 3,
+                "year": 2006,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_3y",
+              "labelHuman": "+3 years (6 half-periods from start)",
+              "year": 2008,
+              "period": 2,
+              "advTurnsFromBaseline": 6,
+              "snapshot": {
+                "callLetters": "KKU",
+                "format": "NEWS_TALK",
+                "share": 0.07962008132296419,
+                "sharePct": 7.96,
+                "rev": 22974290,
+                "ebitda": 12875578,
+                "margin": 0.560434207107162,
+                "marginPct": 56.04,
+                "talent": 21000,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2008,
+                "period": 2
+              }
+            },
+            {
+              "checkpoint": "plus_5y",
+              "labelHuman": "+5 years (10 half-periods from start)",
+              "year": 2010,
+              "period": 2,
+              "advTurnsFromBaseline": 10,
+              "snapshot": {
+                "callLetters": "KKU",
+                "format": "NEWS_TALK",
+                "share": 0.07612161522103691,
+                "sharePct": 7.61,
+                "rev": 21313229,
+                "ebitda": 11817460,
+                "margin": 0.5544659610235502,
+                "marginPct": 55.45,
+                "talent": 21250,
+                "health": "healthy",
+                "rank": 2,
+                "year": 2010,
+                "period": 2
+              }
+            }
+          ]
+        }
+      },
+      "checkpointComparison": [
+        {
+          "checkpoint": "start",
+          "marketId": "seattle",
+          "cutFormatKey": "news_talk",
+          "onNoCut": {
+            "callLetters": "KKU",
+            "format": "NEWS_TALK",
+            "share": 0.07952603384030955,
+            "sharePct": 7.95,
+            "rev": 22738657,
+            "ebitda": 12719010,
+            "margin": 0.5593562539775326,
+            "marginPct": 55.94,
+            "talent": 43500,
+            "health": "healthy",
+            "rank": 3,
+            "year": 2005,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "KKU",
+            "format": "NEWS_TALK",
+            "share": 0.07853369501744516,
+            "sharePct": 7.85,
+            "rev": 24899974,
+            "ebitda": 14126053,
+            "margin": 0.5673119578357793,
+            "marginPct": 56.73,
+            "talent": 5220,
+            "health": "healthy",
+            "rank": 4,
+            "year": 2005,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "KKU",
+            "format": "NEWS_TALK",
+            "share": 0.07942969651454386,
+            "sharePct": 7.94,
+            "rev": 24899974,
+            "ebitda": 14126053,
+            "margin": 0.5673119578357793,
+            "marginPct": 56.73,
+            "talent": 5220,
+            "health": "healthy",
+            "rank": 4,
+            "year": 2005,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.10000000000000053,
+            "rev": -2161317,
+            "marginPct": -0.7899999999999991,
+            "rank": -1,
+            "talent": 38280
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": 0.009999999999999787,
+            "rev": -2161317,
+            "marginPct": -0.7899999999999991,
+            "rank": -1,
+            "talent": 38280
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.09000000000000075,
+            "rev": 0,
+            "marginPct": 0,
+            "rank": 0,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_1y",
+          "marketId": "seattle",
+          "cutFormatKey": "news_talk",
+          "onNoCut": {
+            "callLetters": "KKU",
+            "format": "NEWS_TALK",
+            "share": 0.07937131454969207,
+            "sharePct": 7.94,
+            "rev": 22507260,
+            "ebitda": 12566927,
+            "margin": 0.5583499279787943,
+            "marginPct": 55.83,
+            "talent": 44000,
+            "health": "healthy",
+            "rank": 3,
+            "year": 2006,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "KKU",
+            "format": "NEWS_TALK",
+            "share": 0.07765748569047311,
+            "sharePct": 7.77,
+            "rev": 21606344,
+            "ebitda": 12019627,
+            "margin": 0.5563008253501842,
+            "marginPct": 55.63,
+            "talent": 20750,
+            "health": "healthy",
+            "rank": 4,
+            "year": 2006,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "KKU",
+            "format": "NEWS_TALK",
+            "share": 0.0795107579094437,
+            "sharePct": 7.95,
+            "rev": 22677506,
+            "ebitda": 12697994,
+            "margin": 0.5599378520724457,
+            "marginPct": 55.99,
+            "talent": 20750,
+            "health": "healthy",
+            "rank": 3,
+            "year": 2006,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.17000000000000082,
+            "rev": 900916,
+            "marginPct": 0.19999999999999574,
+            "rank": -1,
+            "talent": 23250
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": -0.009999999999999787,
+            "rev": -170246,
+            "marginPct": -0.1600000000000037,
+            "rank": 0,
+            "talent": 23250
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.1800000000000006,
+            "rev": 1071162,
+            "marginPct": 0.35999999999999943,
+            "rank": -1,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_3y",
+          "marketId": "seattle",
+          "cutFormatKey": "news_talk",
+          "onNoCut": {
+            "callLetters": "KKU",
+            "format": "NEWS_TALK",
+            "share": 0.07569318682520922,
+            "sharePct": 7.57,
+            "rev": 20979499,
+            "ebitda": 11588277,
+            "margin": 0.5523619510647036,
+            "marginPct": 55.24,
+            "talent": 45000,
+            "health": "healthy",
+            "rank": 3,
+            "year": 2008,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "KKU",
+            "format": "NEWS_TALK",
+            "share": 0.07486204828337455,
+            "sharePct": 7.49,
+            "rev": 20768126,
+            "ebitda": 11478414,
+            "margin": 0.5526937769926858,
+            "marginPct": 55.27,
+            "talent": 21000,
+            "health": "healthy",
+            "rank": 3,
+            "year": 2008,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "KKU",
+            "format": "NEWS_TALK",
+            "share": 0.07962008132296419,
+            "sharePct": 7.96,
+            "rev": 22974290,
+            "ebitda": 12875578,
+            "margin": 0.560434207107162,
+            "marginPct": 56.04,
+            "talent": 21000,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2008,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.08000000000000007,
+            "rev": 211373,
+            "marginPct": -0.030000000000001137,
+            "rank": 0,
+            "talent": 24000
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": -0.3899999999999997,
+            "rev": -1994791,
+            "marginPct": -0.7999999999999972,
+            "rank": 1,
+            "talent": 24000
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.46999999999999975,
+            "rev": 2206164,
+            "marginPct": 0.769999999999996,
+            "rank": -1,
+            "talent": 0
+          }
+        },
+        {
+          "checkpoint": "plus_5y",
+          "marketId": "seattle",
+          "cutFormatKey": "news_talk",
+          "onNoCut": {
+            "callLetters": "KKU",
+            "format": "NEWS_TALK",
+            "share": 0.07059715314492158,
+            "sharePct": 7.06,
+            "rev": 18494149,
+            "ebitda": 10007387,
+            "margin": 0.5411109751521954,
+            "marginPct": 54.11,
+            "talent": 46000,
+            "health": "healthy",
+            "rank": 4,
+            "year": 2010,
+            "period": 2
+          },
+          "onCut": {
+            "callLetters": "KKU",
+            "format": "NEWS_TALK",
+            "share": 0.06950398743516392,
+            "sharePct": 6.95,
+            "rev": 18216843,
+            "ebitda": 9856519,
+            "margin": 0.5410662539057948,
+            "marginPct": 54.11,
+            "talent": 21250,
+            "health": "healthy",
+            "rank": 4,
+            "year": 2010,
+            "period": 2
+          },
+          "offCut": {
+            "callLetters": "KKU",
+            "format": "NEWS_TALK",
+            "share": 0.07612161522103691,
+            "sharePct": 7.61,
+            "rev": 21313229,
+            "ebitda": 11817460,
+            "margin": 0.5544659610235502,
+            "marginPct": 55.45,
+            "talent": 21250,
+            "health": "healthy",
+            "rank": 2,
+            "year": 2010,
+            "period": 2
+          },
+          "delta_onCut_vs_onNo": {
+            "sharePct": 0.10999999999999943,
+            "rev": 277306,
+            "marginPct": 0,
+            "rank": 0,
+            "talent": 24750
+          },
+          "delta_offCut_vs_onNo": {
+            "sharePct": -0.5500000000000007,
+            "rev": -2819080,
+            "marginPct": -1.3400000000000034,
+            "rank": 2,
+            "talent": 24750
+          },
+          "delta_onCut_vs_offCut": {
+            "sharePct": 0.6600000000000001,
+            "rev": 3096386,
+            "marginPct": 1.3400000000000034,
+            "rank": -2,
+            "talent": 0
+          }
+        }
+      ],
+      "successSignals": {
+        "at_plus_5y": {
+          "onCut_vs_onNo_shareAdvantageToNoCut": 0.10999999999999943,
+          "onCut_vs_onNo_rankStepsWorseForCut": 0,
+          "onCut_vs_onNo_revAdvantageToNoCut": 277306,
+          "onCutWorseThanOnNo_byShare": true,
+          "onCutWorseThanOnNo_byRank": false,
+          "onCutWorseThanOnNo_byRev": true,
+          "onCut_vs_offCut_share": 0.6600000000000001,
+          "onCutWorseThanOffCut_byShare": true,
+          "onCutWorseThanOffCut_byRank": true
+        },
+        "gradual": {
+          "shareDisadvantageCut_vs_noCut_abs_at_plus_1y": 0.17000000000000082,
+          "shareDisadvantageCut_vs_noCut_abs_at_plus_5y": 0.10999999999999943,
+          "gradualShareWidening": false
+        }
+      }
+    }
+  ],
+  "personalitySensitivityBatch": {
+    "top40_chr": {
+      "meanAbsShareDelta_onNo_minus_onCut_pp_at_plus_5y": 0.776666666666667,
+      "n": 3
+    },
+    "news_talk": {
+      "meanAbsShareDelta_onNo_minus_onCut_pp_at_plus_5y": 0.113333333333333,
+      "n": 3
+    }
+  }
+}

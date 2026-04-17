@@ -16,6 +16,7 @@ const MARKETS = [
   { id: 'newyork', label: 'NEW YORK' },
   { id: 'chicago', label: 'CHICAGO' },
   { id: 'losangeles', label: 'LOS ANGELES' },
+  { id: 'seattle', label: 'SEATTLE' },
 ];
 
 const SEED = 424242;

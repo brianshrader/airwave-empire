@@ -5,7 +5,7 @@
  *   npm run sim:format-ecology:batch
  *
  * Env:
- *   FORMAT_ECOLOGY_PATH  — base path+query (default: quick + newyork,chicago,atlanta)
+ *   FORMAT_ECOLOGY_PATH  — base path+query (default: quick + newyork,chicago,atlanta,seattle)
  *   FORMAT_ECOLOGY_SEEDS — comma-separated integers (default: 1–10)
  *
  * Requires: npm run build, playwright, Chromium.
@@ -23,7 +23,7 @@ const PORT = 4175;
 
 const DEFAULT_BASE =
   process.env.FORMAT_ECOLOGY_PATH ||
-  '/inspect-format-ecology.html?quick=1&markets=newyork,chicago,atlanta';
+  '/inspect-format-ecology.html?quick=1&markets=newyork,chicago,atlanta,seattle';
 
 const DEFAULT_SEEDS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 

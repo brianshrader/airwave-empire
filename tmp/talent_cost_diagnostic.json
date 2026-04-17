@@ -1,0 +1,1146 @@
+{
+  "generatedAt": "2026-04-16T16:33:55.811Z",
+  "mode": "full",
+  "markets": [
+    "newyork"
+  ],
+  "years": [
+    2015
+  ],
+  "formats": [
+    "top40_chr",
+    "album_rock",
+    "news_talk",
+    "country",
+    "ac_easy",
+    "oldies_mor",
+    "public_news"
+  ],
+  "thresholds": {
+    "verdictHalvingMarginSwingPP": {
+      "negligible": "<1",
+      "modest": "1–3",
+      "meaningful": "3–8",
+      "dominant": "≥8"
+    },
+    "note": "Verdict uses absolute margin change (percentage points) when talent cost is multiplied by 0.5, holding revenue and non-talent costs fixed."
+  },
+  "cells": [
+    {
+      "marketId": "newyork",
+      "targetYear": 2015,
+      "seed": 771000,
+      "ok": true,
+      "advSteps": 61,
+      "marketTier": "mega"
+    }
+  ],
+  "samples": [
+    {
+      "marketId": "newyork",
+      "targetYear": 2015,
+      "seed": 771000,
+      "marketTier": "mega",
+      "advSteps": 61,
+      "formatKey": "top40_chr",
+      "stationFound": true,
+      "callLetters": "WBVS",
+      "internalFormat": "TOP40",
+      "year": 2015,
+      "period": 2,
+      "band": "FM",
+      "commercialRankByShare": 1,
+      "rev": 29962072,
+      "cost": 13426817,
+      "ebitda": 16535255,
+      "margin": 0.5518728811545477,
+      "marginPct": 55.18728811545477,
+      "talent": 166750,
+      "talentPctOfExpense": 1.2419175743588373,
+      "talentPctOfRevenue": 0.5565369444409585,
+      "expenseBuckets": {
+        "fix": 721342,
+        "talent": 166750,
+        "salesAdmin": 10987092,
+        "opsFloor": 318847,
+        "promo": 947786,
+        "prog": 0,
+        "streamUpkeep": 0,
+        "syndicationRights": 285000,
+        "simulcastProgFee": 0,
+        "amHitsContestOpex": 0,
+        "identityBudget": 0,
+        "aiLoanInterest": 0,
+        "otherUnallocated": 0
+      },
+      "health": "healthy",
+      "sensitivity": {
+        "baseline": {
+          "talentMultiplier": 1,
+          "halfPeriodProfit": 16535255,
+          "margin": 0.5518728811545477,
+          "marginPct": 55.18728811545477,
+          "profitDeltaVsBaseline": 0,
+          "marginDeltaVsBaselinePct": 0,
+          "health": "healthy",
+          "healthVsBaseline": "same"
+        },
+        "scenarios": {
+          "talentMult_1": {
+            "talentMultiplier": 1,
+            "halfPeriodProfit": 16535255,
+            "margin": 0.5518728811545477,
+            "marginPct": 55.18728811545477,
+            "profitDeltaVsBaseline": 0,
+            "marginDeltaVsBaselinePct": 0,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_0_75": {
+            "talentMultiplier": 0.75,
+            "halfPeriodProfit": 16576942.5,
+            "margin": 0.5532642235156501,
+            "marginPct": 55.32642235156501,
+            "profitDeltaVsBaseline": 41687.5,
+            "marginDeltaVsBaselinePct": 0.13913423611023878,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_0_5": {
+            "talentMultiplier": 0.5,
+            "halfPeriodProfit": 16618630,
+            "margin": 0.5546555658767525,
+            "marginPct": 55.465556587675245,
+            "profitDeltaVsBaseline": 83375,
+            "marginDeltaVsBaselinePct": 0.27826847222047757,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_1_25": {
+            "talentMultiplier": 1.25,
+            "halfPeriodProfit": 16493567.5,
+            "margin": 0.5504815387934453,
+            "marginPct": 55.04815387934453,
+            "profitDeltaVsBaseline": -41687.5,
+            "marginDeltaVsBaselinePct": -0.13913423611023878,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_1_5": {
+            "talentMultiplier": 1.5,
+            "halfPeriodProfit": 16451880,
+            "margin": 0.5490901964323429,
+            "marginPct": 54.90901964323429,
+            "profitDeltaVsBaseline": -83375,
+            "marginDeltaVsBaselinePct": -0.27826847222047757,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_2": {
+            "talentMultiplier": 2,
+            "halfPeriodProfit": 16368505,
+            "margin": 0.546307511710138,
+            "marginPct": 54.630751171013806,
+            "profitDeltaVsBaseline": -166750,
+            "marginDeltaVsBaselinePct": -0.5565369444409662,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_3": {
+            "talentMultiplier": 3,
+            "halfPeriodProfit": 16201755,
+            "margin": 0.5407421422657285,
+            "marginPct": 54.07421422657285,
+            "profitDeltaVsBaseline": -333500,
+            "marginDeltaVsBaselinePct": -1.1130738888819214,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          }
+        }
+      },
+      "bundle": {
+        "bundle_1": {
+          "effectiveTalentMultiplierVsSalaryLine": 1,
+          "halfPeriodProfit": 16535255,
+          "marginPct": 55.18728811545477,
+          "profitDeltaVsBaseline": 0,
+          "health": "healthy"
+        },
+        "bundle_1_5": {
+          "effectiveTalentMultiplierVsSalaryLine": 1.5,
+          "halfPeriodProfit": 16451880,
+          "marginPct": 54.90901964323429,
+          "profitDeltaVsBaseline": -83375,
+          "health": "healthy"
+        },
+        "bundle_2": {
+          "effectiveTalentMultiplierVsSalaryLine": 2,
+          "halfPeriodProfit": 16368505,
+          "marginPct": 54.630751171013806,
+          "profitDeltaVsBaseline": -166750,
+          "health": "healthy"
+        },
+        "bundle_3": {
+          "effectiveTalentMultiplierVsSalaryLine": 3,
+          "halfPeriodProfit": 16201755,
+          "marginPct": 54.07421422657285,
+          "profitDeltaVsBaseline": -333500,
+          "health": "healthy"
+        }
+      },
+      "verdict": {
+        "halvingMarginDeltaPctPoints": 0.27826847222047757,
+        "halvingVerdict": "negligible",
+        "note": "Ratings and revenue are held fixed; only station cost line responds. Syndication/simulcast fees tied to source talent in live code are not re-modeled here."
+      }
+    },
+    {
+      "marketId": "newyork",
+      "targetYear": 2015,
+      "seed": 771000,
+      "marketTier": "mega",
+      "advSteps": 61,
+      "formatKey": "album_rock",
+      "stationFound": true,
+      "callLetters": "WXGS",
+      "internalFormat": "ALBUM_ROCK",
+      "year": 2015,
+      "period": 2,
+      "band": "FM",
+      "commercialRankByShare": 10,
+      "rev": 4849572,
+      "cost": 2720861,
+      "ebitda": 2128711,
+      "margin": 0.4389482205852393,
+      "marginPct": 43.89482205852393,
+      "talent": 219750,
+      "talentPctOfExpense": 8.0764875530209,
+      "talentPctOfRevenue": 4.5313277130435425,
+      "expenseBuckets": {
+        "fix": 721342,
+        "talent": 219750,
+        "salesAdmin": 1286325,
+        "opsFloor": 271505,
+        "promo": 221939,
+        "prog": 0,
+        "streamUpkeep": 0,
+        "syndicationRights": 0,
+        "simulcastProgFee": 0,
+        "amHitsContestOpex": 0,
+        "identityBudget": 0,
+        "aiLoanInterest": 0,
+        "otherUnallocated": 0
+      },
+      "health": "viable",
+      "sensitivity": {
+        "baseline": {
+          "talentMultiplier": 1,
+          "halfPeriodProfit": 2128711,
+          "margin": 0.4389482205852393,
+          "marginPct": 43.89482205852393,
+          "profitDeltaVsBaseline": 0,
+          "marginDeltaVsBaselinePct": 0,
+          "health": "viable",
+          "healthVsBaseline": "same"
+        },
+        "scenarios": {
+          "talentMult_1": {
+            "talentMultiplier": 1,
+            "halfPeriodProfit": 2128711,
+            "margin": 0.4389482205852393,
+            "marginPct": 43.89482205852393,
+            "profitDeltaVsBaseline": 0,
+            "marginDeltaVsBaselinePct": 0,
+            "health": "viable",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_0_75": {
+            "talentMultiplier": 0.75,
+            "halfPeriodProfit": 2183648.5,
+            "margin": 0.45027653986784816,
+            "marginPct": 45.02765398678481,
+            "profitDeltaVsBaseline": 54937.5,
+            "marginDeltaVsBaselinePct": 1.1328319282608856,
+            "health": "viable",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_0_5": {
+            "talentMultiplier": 0.5,
+            "halfPeriodProfit": 2238586,
+            "margin": 0.461604859150457,
+            "marginPct": 46.160485915045705,
+            "profitDeltaVsBaseline": 109875,
+            "marginDeltaVsBaselinePct": 2.2656638565217713,
+            "health": "viable",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_1_25": {
+            "talentMultiplier": 1.25,
+            "halfPeriodProfit": 2073773.5,
+            "margin": 0.42761990130263045,
+            "marginPct": 42.761990130263044,
+            "profitDeltaVsBaseline": -54937.5,
+            "marginDeltaVsBaselinePct": -1.1328319282608856,
+            "health": "viable",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_1_5": {
+            "talentMultiplier": 1.5,
+            "halfPeriodProfit": 2018836,
+            "margin": 0.41629158202002153,
+            "marginPct": 41.62915820200215,
+            "profitDeltaVsBaseline": -109875,
+            "marginDeltaVsBaselinePct": -2.265663856521777,
+            "health": "viable",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_2": {
+            "talentMultiplier": 2,
+            "halfPeriodProfit": 1908961,
+            "margin": 0.3936349434548038,
+            "marginPct": 39.36349434548038,
+            "profitDeltaVsBaseline": -219750,
+            "marginDeltaVsBaselinePct": -4.531327713043548,
+            "health": "viable",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_3": {
+            "talentMultiplier": 3,
+            "halfPeriodProfit": 1689211,
+            "margin": 0.3483216663243684,
+            "marginPct": 34.83216663243684,
+            "profitDeltaVsBaseline": -439500,
+            "marginDeltaVsBaselinePct": -9.06265542608709,
+            "health": "viable",
+            "healthVsBaseline": "same"
+          }
+        }
+      },
+      "bundle": {
+        "bundle_1": {
+          "effectiveTalentMultiplierVsSalaryLine": 1,
+          "halfPeriodProfit": 2128711,
+          "marginPct": 43.89482205852393,
+          "profitDeltaVsBaseline": 0,
+          "health": "viable"
+        },
+        "bundle_1_5": {
+          "effectiveTalentMultiplierVsSalaryLine": 1.5,
+          "halfPeriodProfit": 2018836,
+          "marginPct": 41.62915820200215,
+          "profitDeltaVsBaseline": -109875,
+          "health": "viable"
+        },
+        "bundle_2": {
+          "effectiveTalentMultiplierVsSalaryLine": 2,
+          "halfPeriodProfit": 1908961,
+          "marginPct": 39.36349434548038,
+          "profitDeltaVsBaseline": -219750,
+          "health": "viable"
+        },
+        "bundle_3": {
+          "effectiveTalentMultiplierVsSalaryLine": 3,
+          "halfPeriodProfit": 1689211,
+          "marginPct": 34.83216663243684,
+          "profitDeltaVsBaseline": -439500,
+          "health": "viable"
+        }
+      },
+      "verdict": {
+        "halvingMarginDeltaPctPoints": 2.2656638565217713,
+        "halvingVerdict": "modest",
+        "note": "Ratings and revenue are held fixed; only station cost line responds. Syndication/simulcast fees tied to source talent in live code are not re-modeled here."
+      }
+    },
+    {
+      "marketId": "newyork",
+      "targetYear": 2015,
+      "seed": 771000,
+      "marketTier": "mega",
+      "advSteps": 61,
+      "formatKey": "news_talk",
+      "stationFound": true,
+      "callLetters": "WWU",
+      "internalFormat": "NEWS_TALK",
+      "year": 2015,
+      "period": 2,
+      "band": "AM",
+      "commercialRankByShare": 6,
+      "rev": 27903016,
+      "cost": 13624072,
+      "ebitda": 14278944,
+      "margin": 0.5117347888127936,
+      "marginPct": 51.17347888127936,
+      "talent": 81250,
+      "talentPctOfExpense": 0.5963708941056683,
+      "talentPctOfRevenue": 0.29118716055640725,
+      "expenseBuckets": {
+        "fix": 1220441,
+        "talent": 81250,
+        "salesAdmin": 10232036,
+        "opsFloor": 446385,
+        "promo": 1480960,
+        "prog": 0,
+        "streamUpkeep": 0,
+        "syndicationRights": 163000,
+        "simulcastProgFee": 0,
+        "amHitsContestOpex": 0,
+        "identityBudget": 0,
+        "aiLoanInterest": 0,
+        "otherUnallocated": 0
+      },
+      "health": "healthy",
+      "sensitivity": {
+        "baseline": {
+          "talentMultiplier": 1,
+          "halfPeriodProfit": 14278944,
+          "margin": 0.5117347888127936,
+          "marginPct": 51.17347888127936,
+          "profitDeltaVsBaseline": 0,
+          "marginDeltaVsBaselinePct": 0,
+          "health": "healthy",
+          "healthVsBaseline": "same"
+        },
+        "scenarios": {
+          "talentMult_1": {
+            "talentMultiplier": 1,
+            "halfPeriodProfit": 14278944,
+            "margin": 0.5117347888127936,
+            "marginPct": 51.17347888127936,
+            "profitDeltaVsBaseline": 0,
+            "marginDeltaVsBaselinePct": 0,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_0_75": {
+            "talentMultiplier": 0.75,
+            "halfPeriodProfit": 14299256.5,
+            "margin": 0.5124627567141846,
+            "marginPct": 51.24627567141846,
+            "profitDeltaVsBaseline": 20312.5,
+            "marginDeltaVsBaselinePct": 0.07279679013910689,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_0_5": {
+            "talentMultiplier": 0.5,
+            "halfPeriodProfit": 14319569,
+            "margin": 0.5131907246155756,
+            "marginPct": 51.31907246155756,
+            "profitDeltaVsBaseline": 40625,
+            "marginDeltaVsBaselinePct": 0.14559358027820268,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_1_25": {
+            "talentMultiplier": 1.25,
+            "halfPeriodProfit": 14258631.5,
+            "margin": 0.5110068209114026,
+            "marginPct": 51.10068209114026,
+            "profitDeltaVsBaseline": -20312.5,
+            "marginDeltaVsBaselinePct": -0.07279679013909579,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_1_5": {
+            "talentMultiplier": 1.5,
+            "halfPeriodProfit": 14238319,
+            "margin": 0.5102788530100115,
+            "marginPct": 51.02788530100115,
+            "profitDeltaVsBaseline": -40625,
+            "marginDeltaVsBaselinePct": -0.14559358027820268,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_2": {
+            "talentMultiplier": 2,
+            "halfPeriodProfit": 14197694,
+            "margin": 0.5088229172072295,
+            "marginPct": 50.88229172072295,
+            "profitDeltaVsBaseline": -81250,
+            "marginDeltaVsBaselinePct": -0.29118716055640537,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_3": {
+            "talentMultiplier": 3,
+            "halfPeriodProfit": 14116444,
+            "margin": 0.5059110456016654,
+            "marginPct": 50.59110456016654,
+            "profitDeltaVsBaseline": -162500,
+            "marginDeltaVsBaselinePct": -0.5823743211128107,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          }
+        }
+      },
+      "bundle": {
+        "bundle_1": {
+          "effectiveTalentMultiplierVsSalaryLine": 1,
+          "halfPeriodProfit": 14278944,
+          "marginPct": 51.17347888127936,
+          "profitDeltaVsBaseline": 0,
+          "health": "healthy"
+        },
+        "bundle_1_5": {
+          "effectiveTalentMultiplierVsSalaryLine": 1.5,
+          "halfPeriodProfit": 14238319,
+          "marginPct": 51.02788530100115,
+          "profitDeltaVsBaseline": -40625,
+          "health": "healthy"
+        },
+        "bundle_2": {
+          "effectiveTalentMultiplierVsSalaryLine": 2,
+          "halfPeriodProfit": 14197694,
+          "marginPct": 50.88229172072295,
+          "profitDeltaVsBaseline": -81250,
+          "health": "healthy"
+        },
+        "bundle_3": {
+          "effectiveTalentMultiplierVsSalaryLine": 3,
+          "halfPeriodProfit": 14116444,
+          "marginPct": 50.59110456016654,
+          "profitDeltaVsBaseline": -162500,
+          "health": "healthy"
+        }
+      },
+      "verdict": {
+        "halvingMarginDeltaPctPoints": 0.14559358027820268,
+        "halvingVerdict": "negligible",
+        "note": "Ratings and revenue are held fixed; only station cost line responds. Syndication/simulcast fees tied to source talent in live code are not re-modeled here."
+      }
+    },
+    {
+      "marketId": "newyork",
+      "targetYear": 2015,
+      "seed": 771000,
+      "marketTier": "mega",
+      "advSteps": 61,
+      "formatKey": "country",
+      "stationFound": true,
+      "callLetters": "WGTP",
+      "internalFormat": "COUNTRY",
+      "year": 2015,
+      "period": 2,
+      "band": "AM",
+      "commercialRankByShare": 26,
+      "rev": 39543,
+      "cost": 1014158,
+      "ebitda": -974615,
+      "margin": -24.64696659332878,
+      "marginPct": -2464.696659332878,
+      "talent": 47750,
+      "talentPctOfExpense": 4.7083393317412074,
+      "talentPctOfRevenue": 120.75462155122271,
+      "expenseBuckets": {
+        "fix": 585939,
+        "talent": 47750,
+        "salesAdmin": 9834,
+        "opsFloor": 369776,
+        "promo": 859,
+        "prog": 0,
+        "streamUpkeep": 0,
+        "syndicationRights": 0,
+        "simulcastProgFee": 0,
+        "amHitsContestOpex": 0,
+        "identityBudget": 0,
+        "aiLoanInterest": 0,
+        "otherUnallocated": 0
+      },
+      "health": "niche_survivor",
+      "sensitivity": {
+        "baseline": {
+          "talentMultiplier": 1,
+          "halfPeriodProfit": -974615,
+          "margin": -24.64696659332878,
+          "marginPct": -2464.696659332878,
+          "profitDeltaVsBaseline": 0,
+          "marginDeltaVsBaselinePct": 0,
+          "health": "niche_survivor",
+          "healthVsBaseline": "same"
+        },
+        "scenarios": {
+          "talentMult_1": {
+            "talentMultiplier": 1,
+            "halfPeriodProfit": -974615,
+            "margin": -24.64696659332878,
+            "marginPct": -2464.696659332878,
+            "profitDeltaVsBaseline": 0,
+            "marginDeltaVsBaselinePct": 0,
+            "health": "niche_survivor",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_0_75": {
+            "talentMultiplier": 0.75,
+            "halfPeriodProfit": -962677.5,
+            "margin": -24.345080039450725,
+            "marginPct": -2434.5080039450727,
+            "profitDeltaVsBaseline": 11937.5,
+            "marginDeltaVsBaselinePct": 30.188655387805596,
+            "health": "niche_survivor",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_0_5": {
+            "talentMultiplier": 0.5,
+            "halfPeriodProfit": -950740,
+            "margin": -24.04319348557267,
+            "marginPct": -2404.319348557267,
+            "profitDeltaVsBaseline": 23875,
+            "marginDeltaVsBaselinePct": 60.37731077561119,
+            "health": "niche_survivor",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_1_25": {
+            "talentMultiplier": 1.25,
+            "halfPeriodProfit": -986552.5,
+            "margin": -24.948853147206837,
+            "marginPct": -2494.8853147206837,
+            "profitDeltaVsBaseline": -11937.5,
+            "marginDeltaVsBaselinePct": -30.188655387805596,
+            "health": "niche_survivor",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_1_5": {
+            "talentMultiplier": 1.5,
+            "halfPeriodProfit": -998490,
+            "margin": -25.250739701084896,
+            "marginPct": -2525.0739701084894,
+            "profitDeltaVsBaseline": -23875,
+            "marginDeltaVsBaselinePct": -60.37731077561155,
+            "health": "niche_survivor",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_2": {
+            "talentMultiplier": 2,
+            "halfPeriodProfit": -1022365,
+            "margin": -25.854512808841008,
+            "marginPct": -2585.451280884101,
+            "profitDeltaVsBaseline": -47750,
+            "marginDeltaVsBaselinePct": -120.75462155122274,
+            "health": "niche_survivor",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_3": {
+            "talentMultiplier": 3,
+            "halfPeriodProfit": -1070115,
+            "margin": -27.062059024353236,
+            "marginPct": -2706.2059024353234,
+            "profitDeltaVsBaseline": -95500,
+            "marginDeltaVsBaselinePct": -241.50924310244548,
+            "health": "niche_survivor",
+            "healthVsBaseline": "same"
+          }
+        }
+      },
+      "bundle": {
+        "bundle_1": {
+          "effectiveTalentMultiplierVsSalaryLine": 1,
+          "halfPeriodProfit": -974615,
+          "marginPct": -2464.696659332878,
+          "profitDeltaVsBaseline": 0,
+          "health": "niche_survivor"
+        },
+        "bundle_1_5": {
+          "effectiveTalentMultiplierVsSalaryLine": 1.5,
+          "halfPeriodProfit": -998490,
+          "marginPct": -2525.0739701084894,
+          "profitDeltaVsBaseline": -23875,
+          "health": "niche_survivor"
+        },
+        "bundle_2": {
+          "effectiveTalentMultiplierVsSalaryLine": 2,
+          "halfPeriodProfit": -1022365,
+          "marginPct": -2585.451280884101,
+          "profitDeltaVsBaseline": -47750,
+          "health": "niche_survivor"
+        },
+        "bundle_3": {
+          "effectiveTalentMultiplierVsSalaryLine": 3,
+          "halfPeriodProfit": -1070115,
+          "marginPct": -2706.2059024353234,
+          "profitDeltaVsBaseline": -95500,
+          "health": "niche_survivor"
+        }
+      },
+      "verdict": {
+        "halvingMarginDeltaPctPoints": 60.37731077561119,
+        "halvingVerdict": "dominant",
+        "note": "Ratings and revenue are held fixed; only station cost line responds. Syndication/simulcast fees tied to source talent in live code are not re-modeled here."
+      }
+    },
+    {
+      "marketId": "newyork",
+      "targetYear": 2015,
+      "seed": 771000,
+      "marketTier": "mega",
+      "advSteps": 61,
+      "formatKey": "ac_easy",
+      "stationFound": true,
+      "callLetters": "WRVA",
+      "internalFormat": "ADULT_CONTEMP",
+      "year": 2015,
+      "period": 2,
+      "band": "FM",
+      "commercialRankByShare": 3,
+      "rev": 28739786,
+      "cost": 13112641,
+      "ebitda": 15627145,
+      "margin": 0.5437460459865637,
+      "marginPct": 54.374604598656376,
+      "talent": 94000,
+      "talentPctOfExpense": 0.7168655040582594,
+      "talentPctOfRevenue": 0.32707272072241594,
+      "expenseBuckets": {
+        "fix": 679954,
+        "talent": 94000,
+        "salesAdmin": 10538880,
+        "opsFloor": 318847,
+        "promo": 1480960,
+        "prog": 0,
+        "streamUpkeep": 0,
+        "syndicationRights": 0,
+        "simulcastProgFee": 0,
+        "amHitsContestOpex": 0,
+        "identityBudget": 0,
+        "aiLoanInterest": 0,
+        "otherUnallocated": 0
+      },
+      "health": "healthy",
+      "sensitivity": {
+        "baseline": {
+          "talentMultiplier": 1,
+          "halfPeriodProfit": 15627145,
+          "margin": 0.5437460459865637,
+          "marginPct": 54.374604598656376,
+          "profitDeltaVsBaseline": 0,
+          "marginDeltaVsBaselinePct": 0,
+          "health": "healthy",
+          "healthVsBaseline": "same"
+        },
+        "scenarios": {
+          "talentMult_1": {
+            "talentMultiplier": 1,
+            "halfPeriodProfit": 15627145,
+            "margin": 0.5437460459865637,
+            "marginPct": 54.374604598656376,
+            "profitDeltaVsBaseline": 0,
+            "marginDeltaVsBaselinePct": 0,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_0_75": {
+            "talentMultiplier": 0.75,
+            "halfPeriodProfit": 15650645,
+            "margin": 0.5445637277883697,
+            "marginPct": 54.45637277883697,
+            "profitDeltaVsBaseline": 23500,
+            "marginDeltaVsBaselinePct": 0.08176818018059695,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_0_5": {
+            "talentMultiplier": 0.5,
+            "halfPeriodProfit": 15674145,
+            "margin": 0.5453814095901758,
+            "marginPct": 54.538140959017575,
+            "profitDeltaVsBaseline": 47000,
+            "marginDeltaVsBaselinePct": 0.163536360361205,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_1_25": {
+            "talentMultiplier": 1.25,
+            "halfPeriodProfit": 15603645,
+            "margin": 0.5429283641847577,
+            "marginPct": 54.292836418475765,
+            "profitDeltaVsBaseline": -23500,
+            "marginDeltaVsBaselinePct": -0.08176818018060805,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_1_5": {
+            "talentMultiplier": 1.5,
+            "halfPeriodProfit": 15580145,
+            "margin": 0.5421106823829517,
+            "marginPct": 54.21106823829517,
+            "profitDeltaVsBaseline": -47000,
+            "marginDeltaVsBaselinePct": -0.163536360361205,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_2": {
+            "talentMultiplier": 2,
+            "halfPeriodProfit": 15533145,
+            "margin": 0.5404753187793395,
+            "marginPct": 54.04753187793395,
+            "profitDeltaVsBaseline": -94000,
+            "marginDeltaVsBaselinePct": -0.3270727207224211,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_3": {
+            "talentMultiplier": 3,
+            "halfPeriodProfit": 15439145,
+            "margin": 0.5372045915721154,
+            "marginPct": 53.72045915721154,
+            "profitDeltaVsBaseline": -188000,
+            "marginDeltaVsBaselinePct": -0.6541454414448311,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          }
+        }
+      },
+      "bundle": {
+        "bundle_1": {
+          "effectiveTalentMultiplierVsSalaryLine": 1,
+          "halfPeriodProfit": 15627145,
+          "marginPct": 54.374604598656376,
+          "profitDeltaVsBaseline": 0,
+          "health": "healthy"
+        },
+        "bundle_1_5": {
+          "effectiveTalentMultiplierVsSalaryLine": 1.5,
+          "halfPeriodProfit": 15580145,
+          "marginPct": 54.21106823829517,
+          "profitDeltaVsBaseline": -47000,
+          "health": "healthy"
+        },
+        "bundle_2": {
+          "effectiveTalentMultiplierVsSalaryLine": 2,
+          "halfPeriodProfit": 15533145,
+          "marginPct": 54.04753187793395,
+          "profitDeltaVsBaseline": -94000,
+          "health": "healthy"
+        },
+        "bundle_3": {
+          "effectiveTalentMultiplierVsSalaryLine": 3,
+          "halfPeriodProfit": 15439145,
+          "marginPct": 53.72045915721154,
+          "profitDeltaVsBaseline": -188000,
+          "health": "healthy"
+        }
+      },
+      "verdict": {
+        "halvingMarginDeltaPctPoints": 0.163536360361205,
+        "halvingVerdict": "negligible",
+        "note": "Ratings and revenue are held fixed; only station cost line responds. Syndication/simulcast fees tied to source talent in live code are not re-modeled here."
+      }
+    },
+    {
+      "marketId": "newyork",
+      "targetYear": 2015,
+      "seed": 771000,
+      "marketTier": "mega",
+      "advSteps": 61,
+      "formatKey": "oldies_mor",
+      "stationFound": true,
+      "callLetters": "WMUD",
+      "internalFormat": "ADULT_STANDARDS",
+      "year": 2015,
+      "period": 2,
+      "band": "FM",
+      "commercialRankByShare": 19,
+      "rev": 487504,
+      "cost": 935060,
+      "ebitda": -447556,
+      "margin": -0.9180560569759427,
+      "marginPct": -91.80560569759427,
+      "talent": 51500,
+      "talentPctOfExpense": 5.50766795713644,
+      "talentPctOfRevenue": 10.564015884997866,
+      "expenseBuckets": {
+        "fix": 490755,
+        "talent": 51500,
+        "salesAdmin": 121242,
+        "opsFloor": 264127,
+        "promo": 7436,
+        "prog": 0,
+        "streamUpkeep": 0,
+        "syndicationRights": 0,
+        "simulcastProgFee": 0,
+        "amHitsContestOpex": 0,
+        "identityBudget": 0,
+        "aiLoanInterest": 0,
+        "otherUnallocated": 0
+      },
+      "health": "weak",
+      "sensitivity": {
+        "baseline": {
+          "talentMultiplier": 1,
+          "halfPeriodProfit": -447556,
+          "margin": -0.9180560569759427,
+          "marginPct": -91.80560569759427,
+          "profitDeltaVsBaseline": 0,
+          "marginDeltaVsBaselinePct": 0,
+          "health": "weak",
+          "healthVsBaseline": "same"
+        },
+        "scenarios": {
+          "talentMult_1": {
+            "talentMultiplier": 1,
+            "halfPeriodProfit": -447556,
+            "margin": -0.9180560569759427,
+            "marginPct": -91.80560569759427,
+            "profitDeltaVsBaseline": 0,
+            "marginDeltaVsBaselinePct": 0,
+            "health": "weak",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_0_75": {
+            "talentMultiplier": 0.75,
+            "halfPeriodProfit": -434681,
+            "margin": -0.891646017263448,
+            "marginPct": -89.1646017263448,
+            "profitDeltaVsBaseline": 12875,
+            "marginDeltaVsBaselinePct": 2.641003971249467,
+            "health": "weak",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_0_5": {
+            "talentMultiplier": 0.5,
+            "halfPeriodProfit": -421806,
+            "margin": -0.8652359775509534,
+            "marginPct": -86.52359775509534,
+            "profitDeltaVsBaseline": 25750,
+            "marginDeltaVsBaselinePct": 5.282007942498934,
+            "health": "weak",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_1_25": {
+            "talentMultiplier": 1.25,
+            "halfPeriodProfit": -460431,
+            "margin": -0.9444660966884374,
+            "marginPct": -94.44660966884373,
+            "profitDeltaVsBaseline": -12875,
+            "marginDeltaVsBaselinePct": -2.641003971249467,
+            "health": "weak",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_1_5": {
+            "talentMultiplier": 1.5,
+            "halfPeriodProfit": -473306,
+            "margin": -0.9708761364009321,
+            "marginPct": -97.08761364009321,
+            "profitDeltaVsBaseline": -25750,
+            "marginDeltaVsBaselinePct": -5.282007942498934,
+            "health": "weak",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_2": {
+            "talentMultiplier": 2,
+            "halfPeriodProfit": -499056,
+            "margin": -1.0236962158259215,
+            "marginPct": -102.36962158259215,
+            "profitDeltaVsBaseline": -51500,
+            "marginDeltaVsBaselinePct": -10.564015884997879,
+            "health": "weak",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_3": {
+            "talentMultiplier": 3,
+            "halfPeriodProfit": -550556,
+            "margin": -1.1293363746759002,
+            "marginPct": -112.93363746759002,
+            "profitDeltaVsBaseline": -103000,
+            "marginDeltaVsBaselinePct": -21.128031769995747,
+            "health": "weak",
+            "healthVsBaseline": "same"
+          }
+        }
+      },
+      "bundle": {
+        "bundle_1": {
+          "effectiveTalentMultiplierVsSalaryLine": 1,
+          "halfPeriodProfit": -447556,
+          "marginPct": -91.80560569759427,
+          "profitDeltaVsBaseline": 0,
+          "health": "weak"
+        },
+        "bundle_1_5": {
+          "effectiveTalentMultiplierVsSalaryLine": 1.5,
+          "halfPeriodProfit": -473306,
+          "marginPct": -97.08761364009321,
+          "profitDeltaVsBaseline": -25750,
+          "health": "weak"
+        },
+        "bundle_2": {
+          "effectiveTalentMultiplierVsSalaryLine": 2,
+          "halfPeriodProfit": -499056,
+          "marginPct": -102.36962158259215,
+          "profitDeltaVsBaseline": -51500,
+          "health": "weak"
+        },
+        "bundle_3": {
+          "effectiveTalentMultiplierVsSalaryLine": 3,
+          "halfPeriodProfit": -550556,
+          "marginPct": -112.93363746759002,
+          "profitDeltaVsBaseline": -103000,
+          "health": "weak"
+        }
+      },
+      "verdict": {
+        "halvingMarginDeltaPctPoints": 5.282007942498934,
+        "halvingVerdict": "meaningful",
+        "note": "Ratings and revenue are held fixed; only station cost line responds. Syndication/simulcast fees tied to source talent in live code are not re-modeled here."
+      }
+    },
+    {
+      "marketId": "newyork",
+      "targetYear": 2015,
+      "seed": 771000,
+      "marketTier": "mega",
+      "advSteps": 61,
+      "formatKey": "public_news",
+      "stationFound": true,
+      "callLetters": "WCYN",
+      "internalFormat": "PUBLIC_NEWS",
+      "year": 2015,
+      "period": 2,
+      "band": "FM",
+      "commercialRankByShare": null,
+      "rev": 0,
+      "cost": 0,
+      "ebitda": 0,
+      "margin": null,
+      "marginPct": null,
+      "talent": 0,
+      "talentPctOfExpense": null,
+      "talentPctOfRevenue": null,
+      "expenseBuckets": {
+        "fix": 0,
+        "talent": 0,
+        "salesAdmin": 0,
+        "opsFloor": 0,
+        "promo": 0,
+        "prog": 0,
+        "streamUpkeep": 0,
+        "syndicationRights": 0,
+        "simulcastProgFee": 0,
+        "amHitsContestOpex": 0,
+        "identityBudget": 0,
+        "aiLoanInterest": 0,
+        "otherUnallocated": 0
+      },
+      "health": "healthy",
+      "sensitivity": {
+        "baseline": {
+          "talentMultiplier": 1,
+          "halfPeriodProfit": 0,
+          "margin": null,
+          "marginPct": null,
+          "profitDeltaVsBaseline": 0,
+          "marginDeltaVsBaselinePct": null,
+          "health": "healthy",
+          "healthVsBaseline": "same"
+        },
+        "scenarios": {
+          "talentMult_1": {
+            "talentMultiplier": 1,
+            "halfPeriodProfit": 0,
+            "margin": null,
+            "marginPct": null,
+            "profitDeltaVsBaseline": 0,
+            "marginDeltaVsBaselinePct": null,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_0_75": {
+            "talentMultiplier": 0.75,
+            "halfPeriodProfit": 0,
+            "margin": null,
+            "marginPct": null,
+            "profitDeltaVsBaseline": 0,
+            "marginDeltaVsBaselinePct": null,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_0_5": {
+            "talentMultiplier": 0.5,
+            "halfPeriodProfit": 0,
+            "margin": null,
+            "marginPct": null,
+            "profitDeltaVsBaseline": 0,
+            "marginDeltaVsBaselinePct": null,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_1_25": {
+            "talentMultiplier": 1.25,
+            "halfPeriodProfit": 0,
+            "margin": null,
+            "marginPct": null,
+            "profitDeltaVsBaseline": 0,
+            "marginDeltaVsBaselinePct": null,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_1_5": {
+            "talentMultiplier": 1.5,
+            "halfPeriodProfit": 0,
+            "margin": null,
+            "marginPct": null,
+            "profitDeltaVsBaseline": 0,
+            "marginDeltaVsBaselinePct": null,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_2": {
+            "talentMultiplier": 2,
+            "halfPeriodProfit": 0,
+            "margin": null,
+            "marginPct": null,
+            "profitDeltaVsBaseline": 0,
+            "marginDeltaVsBaselinePct": null,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          },
+          "talentMult_3": {
+            "talentMultiplier": 3,
+            "halfPeriodProfit": 0,
+            "margin": null,
+            "marginPct": null,
+            "profitDeltaVsBaseline": 0,
+            "marginDeltaVsBaselinePct": null,
+            "health": "healthy",
+            "healthVsBaseline": "same"
+          }
+        }
+      },
+      "bundle": {
+        "bundle_1": {
+          "effectiveTalentMultiplierVsSalaryLine": 1,
+          "halfPeriodProfit": 0,
+          "marginPct": null,
+          "profitDeltaVsBaseline": 0,
+          "health": "healthy"
+        },
+        "bundle_1_5": {
+          "effectiveTalentMultiplierVsSalaryLine": 1.5,
+          "halfPeriodProfit": 0,
+          "marginPct": null,
+          "profitDeltaVsBaseline": 0,
+          "health": "healthy"
+        },
+        "bundle_2": {
+          "effectiveTalentMultiplierVsSalaryLine": 2,
+          "halfPeriodProfit": 0,
+          "marginPct": null,
+          "profitDeltaVsBaseline": 0,
+          "health": "healthy"
+        },
+        "bundle_3": {
+          "effectiveTalentMultiplierVsSalaryLine": 3,
+          "halfPeriodProfit": 0,
+          "marginPct": null,
+          "profitDeltaVsBaseline": 0,
+          "health": "healthy"
+        }
+      },
+      "verdict": {
+        "halvingMarginDeltaPctPoints": null,
+        "halvingVerdict": "unknown",
+        "note": "Ratings and revenue are held fixed; only station cost line responds. Syndication/simulcast fees tied to source talent in live code are not re-modeled here."
+      }
+    }
+  ]
+}

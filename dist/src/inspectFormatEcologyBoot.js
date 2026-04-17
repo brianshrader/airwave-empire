@@ -1,6 +1,6 @@
 /**
  * Dev-only: format mix / ecology by decade (inspect-format-ecology.html).
- * Query: ?quick=1 — fewer markets/runs. Omit for five markets × 4 runs.
+ * Query: ?quick=1 — fewer markets/runs. Omit for six markets × 4 runs.
  * Query: ?markets=chicago,newyork — comma-separated market ids (overrides default market list).
  * Query: ?seed=20260407 — PRNG seed for runFormatEcologyInspection (batch / regression compares).
  */

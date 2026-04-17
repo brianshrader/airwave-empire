@@ -390,6 +390,9 @@ const MARKET_FMT_ADJ={
   chicago:{
     NEWS_TALK:1.08,SPORTS_TALK:1.06,URBAN_CONTEMP:0.95,RHYTHMIC:0.96,
   },
+  seattle:{
+    ALT_ROCK:1.07,ALBUM_ROCK:1.04,NEWS_TALK:1.04,SPANISH:0.88,SPORTS_TALK:1.03,
+  },
 };
 function marketFormatMonMult(marketId,format){
   const v=MARKET_FMT_ADJ[marketId]?.[format];
@@ -1357,7 +1360,7 @@ function crowdedLaneAlsoRanPressure(s,G){
 
 /** Short on-air market tags for "{ABBREV} {FREQ}" patterns (NY 94.7, LA 100.3, …) */
 const MARKET_BRAND_ABBREV={
-  newyork:'NY',losangeles:'LA',chicago:'Chicago',atlanta:'Atlanta',nashville:'Nashville',
+  newyork:'NY',losangeles:'LA',chicago:'Chicago',atlanta:'Atlanta',nashville:'Nashville',seattle:'Seattle',
 };
 /**
  * Token for `{AMCHOP}`: AM stations mix full kHz ("680") vs decade chop ("68") like the real dial.
@@ -2335,6 +2338,23 @@ const MARKETS={
       {id:'blackhawks',name:'Chicago Goose Islands',sport:'PRO_HOCKEY',introduced:1970,baseFee:140000,baseBonus:0.012,contractYrs:3},
     ],
   },
+  seattle:{
+    id:'seattle', callPrefix:'K', label:'Seattle', region:'West Coast', rankTier:'large', archetypeId:'west_fm_fragmented',
+    pop:{'12-17':320,'18-24':340,'25-34':380,'35-49':480,'50-64':400,'65+':240},
+    revScale:1.55, adxBonus:0.025,
+    amFreqs:['570 AM','710 AM','770 AM','1000 AM','1090 AM','1150 AM','1250 AM','1300 AM','1420 AM','1540 AM'],
+    fmFreqs:['92.5 FM','94.1 FM','96.5 FM','98.9 FM','100.3 FM','102.5 FM','104.5 FM','106.1 FM','107.7 FM'],
+    blackPop:0.09,hispPop1970:0.03,hispPop2000:0.09,hispPop2020:0.14,churchGoing:0.38,countryBonus:0.10,urbanBonus:0.06,
+    culture:{country:0.12,urban:0.07,newsTalk:0.09,religion:0.05,spanish:0.08},
+    selectBlurb:'Pacific Northwest hub: educated listeners, strong FM rock and alternative heritage, competitive news/talk, and a country lane that isn’t “Sunbelt country.” Rainy commutes reward sticky formats — but the dial still fragments like any major city.',
+    fmPenBias:0.042, fmMusicFragMult:1.04, spokenWordAmResilience:1.05, heritageAmResilience:1.0, countryAmHoldout:0.95,
+    eduIndex:1.12,
+    teams:[
+      {id:'mariners',name:'Seattle Salmon Ladders',sport:'PRO_BASEBALL',introduced:1977,baseFee:200000,baseBonus:0.018,contractYrs:3},
+      {id:'seahawks',name:'Seattle Fog Horns',sport:'PRO_FOOTBALL',introduced:1976,baseFee:380000,baseBonus:0.027,contractYrs:4},
+      {id:'kraken',name:'Seattle Kraken Quakes',sport:'PRO_HOCKEY',introduced:2021,baseFee:130000,baseBonus:0.013,contractYrs:3},
+    ],
+  },
 };
 
 // ── AM/FM non-duplication (game-design caps; not literal FCC text) ────────────
@@ -2379,8 +2399,16 @@ function getCallPrefixForMarket(marketId){
   const m=MARKETS[marketId||'atlanta']||MARKETS.atlanta;
   return m.callPrefix==='K'?'K':'W';
 }
-/** Phase 1 pilot markets — same engine, data-driven params; more cities follow this schema */
-const PHASE1_MARKET_IDS=['newyork','losangeles','chicago','atlanta','nashville'];
+/** Phase 1 pilot markets — single registry (Node: scripts/market-ids.cjs). */
+const ALL_PLAYABLE_MARKET_IDS=Object.freeze(['newyork','losangeles','chicago','atlanta','nashville','seattle']);
+const PHASE1_MARKET_IDS=ALL_PLAYABLE_MARKET_IDS;
+/** Mega markets only — benchmarks, ecology quick mode, mega-scoped FM rules. */
+const DEV_BENCHMARK_MEGA_MARKET_IDS=Object.freeze(['newyork','losangeles','chicago']);
+if(typeof window!=='undefined'){
+  window.ALL_PLAYABLE_MARKET_IDS=ALL_PLAYABLE_MARKET_IDS;
+  window.PHASE1_MARKET_IDS=PHASE1_MARKET_IDS;
+  window.DEV_BENCHMARK_MEGA_MARKET_IDS=DEV_BENCHMARK_MEGA_MARKET_IDS;
+}
 let ACTIVE_MARKET='atlanta';
 let _selectedMarket='atlanta';
 let _lastScenSelectLocal=null;
@@ -2466,7 +2494,7 @@ function marketAnnualBilling(year,marketId){
 /** Dev: annual + half-period billing snapshot for calibration (console.table). */
 function billingBenchmarkReport(){
   const years=[1975,1980,1985,1990,2000,2010];
-  const markets=['newyork','losangeles','chicago','atlanta','nashville'];
+  const markets=Array.from(PHASE1_MARKET_IDS);
   const rows=[];
   years.forEach(y=>{
     markets.forEach(mid=>{
@@ -5755,7 +5783,7 @@ function effectiveBpForMarket(bpIndex,marketId){
 /** Atlanta-style 1970 deferred slots; mega non-Sunbelt excludes idx 16 so remapped FM isn't replaced by late FM-country sign-on. */
 function isBpSlotDeferred1970(bpIndex,marketId){
   if(!ATLANTA_1970_DEFER_IDX.has(bpIndex))return false;
-  if(['newyork','losangeles','chicago'].includes(marketId)&&bpIndex===16)return false;
+  if(DEV_BENCHMARK_MEGA_MARKET_IDS.includes(marketId)&&bpIndex===16)return false;
   return true;
 }
 // Early-1970 Atlanta should start less fragmented: fewer weak FMs and tail AMs on day one.
@@ -7072,7 +7100,7 @@ function appl(s,coh,G){
   }
   if((marketId==='newyork'||marketId==='chicago')&&s.sig?.type==='AM'&&['NEWS_TALK','MOR'].includes(s.format))
     mktFmt+=0.028;
-  if(s.format==='ALL_NEWS'&&['newyork','losangeles','chicago'].includes(marketId)){
+  if(s.format==='ALL_NEWS'&&DEV_BENCHMARK_MEGA_MARKET_IDS.includes(marketId)){
     mktFmt+=0.04;
     if(s.sig?.type==='FM'&&(s.sig?.pw==='100kw'||s.sig?.pw==='50kw'))mktFmt+=0.022;
   }
@@ -7445,6 +7473,18 @@ function marketEduIndex(marketId){
   if(e==null||Number.isNaN(Number(e)))return 1;
   return Math.max(0.82,Math.min(1.32,Number(e)));
 }
+/**
+ * Headless / CLI validation (`scripts/validate-seattle-and-public.mjs`):
+ * `window.__PUBLIC_RADIO_TUNING__ === 'baseline'` turns off recent public audience boosts
+ * (edu/habit/insulation/breakouts + weaker pubBase/pubPeak in recalc). Omit or `'tuned'` = current game behavior.
+ */
+function publicRadioTuningBlend(){
+  if(typeof window==='undefined')return 1;
+  const m=window.__PUBLIC_RADIO_TUNING__;
+  if(m==='baseline')return 0;
+  return 1;
+}
+window.publicRadioTuningBlend=publicRadioTuningBlend;
 /** Era weight 0–1: NPR-style public News/Talk strength ramps mostly after 1980, full by ~2015+. */
 function publicNewsEraLift(year){
   const y=year||1970;
@@ -7469,19 +7509,22 @@ function publicNewsHabitStick(year,eduIndex){
  */
 function publicNewsCompetitionInsulationFactor(s,G){
   if(!s?.isPublic||s.format!=='PUBLIC_NEWS')return 1;
+  if(publicRadioTuningBlend()===0)return 1;
   const y=G?.year||1970;
   const edu=marketEduIndex(G?.marketId||ACTIVE_MARKET);
   const era=_smoothstep(1990,2010,y);
   const era2=_smoothstep(2000,2020,y);
   let f=1-0.44*Math.max(0,edu-0.88)*era;
   f-=0.24*Math.max(0,edu-0.92)*era2;
-  return Math.max(0.38,Math.min(1,f));
+  // Slightly stronger insulation vs commercial talk pile-on (still capped — avoids zero bleed)
+  return Math.max(0.32,Math.min(1,f));
 }
 /**
  * AQH / habit listening intensity vs commercial music (PUBLIC_NEWS only). ≥1. Scaled by eduIndex; ramps after 2000.
  */
 function publicNewsHabitEngageMult(s,G){
   if(!s?.isPublic||s.format!=='PUBLIC_NEWS')return 1;
+  if(publicRadioTuningBlend()===0)return 1;
   const y=G?.year||1970;
   const edu=marketEduIndex(G?.marketId||ACTIVE_MARKET);
   const post2000=_smoothstep(2000,2015,y);
@@ -7502,6 +7545,7 @@ function publicNewsHabitEngageMult(s,G){
 /** Extra pre-normalization appeal for standout public News/Talk markets (signal + edu + era). Capped. */
 function publicNewsBreakoutMult(s,G){
   if(!s?.isPublic||s.format!=='PUBLIC_NEWS')return 1;
+  if(publicRadioTuningBlend()===0)return 1;
   const y=G?.year||1970;
   if(y<1990)return 1;
   const edu=marketEduIndex(G?.marketId||ACTIVE_MARKET);
@@ -7518,6 +7562,7 @@ function publicNewsBreakoutMult(s,G){
 /** Rare strong-book run in educated markets (revert this first if public news dominates). */
 function publicNewsHighEduBreakoutMult(s,G){
   if(!s?.isPublic||s.format!=='PUBLIC_NEWS')return 1;
+  if(publicRadioTuningBlend()===0)return 1;
   const y=G?.year||1970;
   if(y<2005)return 1;
   const edu=marketEduIndex(G?.marketId||ACTIVE_MARKET);
@@ -7548,13 +7593,14 @@ function publicEduAudienceMultiplier(s,G,yearOverride){
   if(!s?.isPublic)return 1;
   const fmt=s.format;
   if(fmt!=='PUBLIC_NEWS'&&fmt!=='PUBLIC_CLASSICAL')return 1;
+  if(publicRadioTuningBlend()===0)return 1;
   const y=yearOverride!=null?yearOverride:(G?.year||1970);
   const edu=marketEduIndex(G?.marketId||ACTIVE_MARKET);
   const dev=edu-1;
   if(Math.abs(dev)<1e-8)return 1;
   if(fmt==='PUBLIC_NEWS'){
     const era=publicNewsEraLift(y);
-    let m=Math.pow(edu,1.25);
+    let m=Math.pow(edu,1.22);
     m*=0.94+0.06*era;
     m+=publicNewsHabitStick(y,edu)*1.25;
     const eraModern=_smoothstep(1990,2008,y);
@@ -7563,11 +7609,21 @@ function publicEduAudienceMultiplier(s,G,yearOverride){
       const topEduMod=_smoothstep(2010,2025,y);
       m*=1+0.048*topEduMod;
     }
-    return Math.max(0.78,Math.min(1.85,m));
+    // Large / mega markets: NPR-style news listening matches real PPM books (often mid-single digits).
+    const tier=(MARKETS[G?.marketId||ACTIVE_MARKET]||MARKETS.atlanta).rankTier||'medium';
+    if((tier==='mega'||tier==='large')&&y>=2000){
+      const bigMkt=1+0.055*_smoothstep(2000,2012,y)+0.045*_smoothstep(2012,2026,y);
+      m*=tier==='mega'?Math.min(1.14,bigMkt):Math.min(1.10,bigMkt);
+    }
+    return Math.max(0.84,Math.min(1.92,m));
   }
   const eraC=publicClassicalEraLift(y);
-  const m=1+dev*eraC*0.82;
-  return Math.max(0.88,Math.min(1.34,m));
+  let m=1+dev*eraC*0.90;
+  const tier=(MARKETS[G?.marketId||ACTIVE_MARKET]||MARKETS.atlanta).rankTier||'medium';
+  if((tier==='mega'||tier==='large')&&y>=2000){
+    m*=1+0.042*_smoothstep(2000,2012,y)+0.035*_smoothstep(2012,2026,y);
+  }
+  return Math.max(0.90,Math.min(1.45,m));
 }
 /** Console: eduIndex + sample multipliers by era for current market (public formats only). */
 function reportPublicEduDiagnostics(){
@@ -7822,8 +7878,11 @@ function recalc(stations,G){
       if(s.isPublic){
         const pubAge=s._pubLaunchYear?Math.max(0,G.year-s._pubLaunchYear)*2:age;
         const pubT=Math.min(1,pubAge/20);
-        const pubPeak=s.format==='PUBLIC_NEWS'?0.80:0.55;
-        let rawPub=Math.max(0,appl(s,coh,G)*(0.15+pubPeak*pubT)*pubEduM(s));
+        // Mature public outlets in major markets routinely post ~3–6 share (news) / ~2–4 (classical) in PPM-era books.
+        const _prb=publicRadioTuningBlend();
+        const pubBase=s.format==='PUBLIC_NEWS'?0.12+0.10*_prb:0.10+0.10*_prb;
+        const pubPeak=s.format==='PUBLIC_NEWS'?0.55+0.47*_prb:0.45+0.29*_prb;
+        let rawPub=Math.max(0,appl(s,coh,G)*(pubBase+pubPeak*pubT)*pubEduM(s));
       if(s.format==='PUBLIC_NEWS'){
         rawPub*=publicNewsBreakoutMult(s,G);
         rawPub*=publicNewsHighEduBreakoutMult(s,G);
@@ -7911,7 +7970,7 @@ function recalc(stations,G){
       let bleedPenalty=Math.min(0.22,COMPETITION_BLEED*(count/5));
       if(s.format==='PUBLIC_NEWS'){
         bleedPenalty*=publicNewsCompetitionInsulationFactor(s,G);
-        bleedPenalty*=0.75;
+        bleedPenalty*=0.62;
       }
       const bleed=1-bleedPenalty;
       return r*bleed;

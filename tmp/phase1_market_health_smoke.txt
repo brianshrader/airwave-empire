@@ -1,0 +1,1705 @@
+══════════════════════════════════════════════════════════════
+  MARKET HEALTH BY DECADE (station counts; dev diagnostic)
+  Markets: newyork, losangeles, chicago, atlanta, nashville, seattle
+  Runs/market: 2 · Record year ≥ 1985 · End 2025
+  simulcast = stations with a simulcast partner (each leg counted; pair → 2)
+  deferred = _bpSlotDeferred (off-air / blueprint slots)
+  zombie / nicheSurvival = AM survival ecology (legacy runMarketAttrition)
+  removedCumulative = G._attritionRemovedCumulative (true station removals)
+══════════════════════════════════════════════════════════════
+
+--- newyork ---
+1980s: n=18 periods sampled | total mean=27.89 (min 27 max 28) | active mean=27.89 (27–28) | commercial mean=25.89 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.00 | niche mean=0.00 | removedCum mean=0.0
+1990s: n=40 periods sampled | total mean=32.23 (min 28 max 34) | active mean=32.23 (28–34) | commercial mean=30.23 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=2.45 | niche mean=0.45 | removedCum mean=0.9
+2000s: n=40 periods sampled | total mean=29.20 (min 27 max 32) | active mean=29.20 (27–32) | commercial mean=27.20 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.95 | niche mean=1.55 | removedCum mean=8.8
+2010s: n=40 periods sampled | total mean=30.05 (min 28 max 32) | active mean=30.05 (28–32) | commercial mean=28.05 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.50 | niche mean=1.55 | removedCum mean=11.8
+2020s: n=24 periods sampled | total mean=29.50 (min 29 max 30) | active mean=29.50 (29–30) | commercial mean=27.50 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.08 | niche mean=2.67 | removedCum mean=13.0
+
+--- losangeles ---
+1980s: n=18 periods sampled | total mean=27.89 (min 27 max 28) | active mean=27.89 (27–28) | commercial mean=25.89 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.00 | niche mean=0.00 | removedCum mean=0.0
+1990s: n=40 periods sampled | total mean=32.75 (min 28 max 34) | active mean=32.75 (28–34) | commercial mean=30.75 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=3.10 | niche mean=0.55 | removedCum mean=0.3
+2000s: n=40 periods sampled | total mean=30.95 (min 29 max 35) | active mean=30.95 (29–35) | commercial mean=28.95 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=2.70 | niche mean=2.75 | removedCum mean=6.2
+2010s: n=40 periods sampled | total mean=31.02 (min 29 max 32) | active mean=31.02 (29–32) | commercial mean=29.02 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.90 | niche mean=3.15 | removedCum mean=9.5
+2020s: n=24 periods sampled | total mean=29.92 (min 29 max 32) | active mean=29.92 (29–32) | commercial mean=27.92 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.58 | niche mean=3.50 | removedCum mean=11.1
+
+--- chicago ---
+1980s: n=18 periods sampled | total mean=27.89 (min 27 max 28) | active mean=27.89 (27–28) | commercial mean=25.89 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.00 | niche mean=0.00 | removedCum mean=0.0
+1990s: n=40 periods sampled | total mean=32.38 (min 28 max 34) | active mean=32.38 (28–34) | commercial mean=30.38 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=2.45 | niche mean=0.40 | removedCum mean=0.8
+2000s: n=40 periods sampled | total mean=29.10 (min 27 max 34) | active mean=29.10 (27–34) | commercial mean=27.10 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=2.80 | niche mean=1.40 | removedCum mean=8.9
+2010s: n=40 periods sampled | total mean=28.80 (min 27 max 30) | active mean=28.80 (27–30) | commercial mean=26.80 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=1.05 | niche mean=2.75 | removedCum mean=13.0
+2020s: n=24 periods sampled | total mean=28.33 (min 27 max 30) | active mean=28.33 (27–30) | commercial mean=26.33 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.58 | niche mean=2.42 | removedCum mean=14.2
+
+--- atlanta ---
+1980s: n=18 periods sampled | total mean=25.00 (min 25 max 25) | active mean=25.00 (25–25) | commercial mean=23.00 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.00 | niche mean=0.00 | removedCum mean=0.0
+1990s: n=40 periods sampled | total mean=27.80 (min 25 max 29) | active mean=27.80 (25–29) | commercial mean=25.80 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.90 | niche mean=0.55 | removedCum mean=0.5
+2000s: n=40 periods sampled | total mean=27.45 (min 25 max 30) | active mean=27.45 (25–30) | commercial mean=25.45 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=2.20 | niche mean=2.65 | removedCum mean=3.9
+2010s: n=40 periods sampled | total mean=24.35 (min 23 max 26) | active mean=24.35 (23–26) | commercial mean=22.35 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=1.05 | niche mean=2.00 | removedCum mean=8.4
+2020s: n=24 periods sampled | total mean=23.08 (min 22 max 24) | active mean=23.08 (22–24) | commercial mean=21.08 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.75 | niche mean=1.50 | removedCum mean=9.9
+
+--- nashville ---
+1980s: n=18 periods sampled | total mean=25.00 (min 25 max 25) | active mean=25.00 (25–25) | commercial mean=23.00 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.00 | niche mean=0.00 | removedCum mean=0.0
+1990s: n=40 periods sampled | total mean=27.75 (min 25 max 29) | active mean=27.75 (25–29) | commercial mean=25.75 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=1.60 | niche mean=0.20 | removedCum mean=0.5
+2000s: n=40 periods sampled | total mean=27.25 (min 25 max 29) | active mean=27.25 (25–29) | commercial mean=25.25 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=2.00 | niche mean=0.90 | removedCum mean=4.1
+2010s: n=40 periods sampled | total mean=24.30 (min 23 max 26) | active mean=24.30 (23–26) | commercial mean=22.30 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=1.50 | niche mean=1.05 | removedCum mean=8.4
+2020s: n=24 periods sampled | total mean=23.00 (min 23 max 23) | active mean=23.00 (23–23) | commercial mean=21.00 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.00 | niche mean=1.08 | removedCum mean=10.0
+
+--- seattle ---
+1980s: n=18 periods sampled | total mean=25.00 (min 25 max 25) | active mean=25.00 (25–25) | commercial mean=23.00 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.00 | niche mean=0.00 | removedCum mean=0.0
+1990s: n=40 periods sampled | total mean=27.95 (min 25 max 29) | active mean=27.95 (25–29) | commercial mean=25.95 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.55 | niche mean=0.20 | removedCum mean=0.3
+2000s: n=40 periods sampled | total mean=28.45 (min 26 max 30) | active mean=28.45 (26–30) | commercial mean=26.45 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=3.70 | niche mean=1.85 | removedCum mean=2.9
+2010s: n=40 periods sampled | total mean=24.30 (min 23 max 26) | active mean=24.30 (23–26) | commercial mean=22.30 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.90 | niche mean=2.40 | removedCum mean=8.4
+2020s: n=24 periods sampled | total mean=23.00 (min 23 max 23) | active mean=23.00 (23–23) | commercial mean=21.00 | public mean=2.00 | simulcast mean=0.00 | deferred mean=0.00 | zombie mean=0.00 | niche mean=2.00 | removedCum mean=10.0
+
+--- JSON (by decade bucket) ---
+{
+  "newyork|1980s": {
+    "marketId": "newyork",
+    "decade": "1980s",
+    "n": 18,
+    "total": {
+      "mean": 27.88888888888889,
+      "min": 27,
+      "max": 28
+    },
+    "active": {
+      "mean": 27.88888888888889,
+      "min": 27,
+      "max": 28
+    },
+    "commercial": {
+      "mean": 25.88888888888889,
+      "min": 25,
+      "max": 26
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "nicheSurvival": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "removedCumulative": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    }
+  },
+  "newyork|1990s": {
+    "marketId": "newyork",
+    "decade": "1990s",
+    "n": 40,
+    "total": {
+      "mean": 32.225,
+      "min": 28,
+      "max": 34
+    },
+    "active": {
+      "mean": 32.225,
+      "min": 28,
+      "max": 34
+    },
+    "commercial": {
+      "mean": 30.225,
+      "min": 26,
+      "max": 32
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 2.45,
+      "min": 0,
+      "max": 8
+    },
+    "nicheSurvival": {
+      "mean": 0.45,
+      "min": 0,
+      "max": 3
+    },
+    "removedCumulative": {
+      "mean": 0.95,
+      "min": 0,
+      "max": 6
+    }
+  },
+  "newyork|2000s": {
+    "marketId": "newyork",
+    "decade": "2000s",
+    "n": 40,
+    "total": {
+      "mean": 29.2,
+      "min": 27,
+      "max": 32
+    },
+    "active": {
+      "mean": 29.2,
+      "min": 27,
+      "max": 32
+    },
+    "commercial": {
+      "mean": 27.2,
+      "min": 25,
+      "max": 30
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0.95,
+      "min": 0,
+      "max": 4
+    },
+    "nicheSurvival": {
+      "mean": 1.55,
+      "min": 0,
+      "max": 3
+    },
+    "removedCumulative": {
+      "mean": 8.8,
+      "min": 5,
+      "max": 13
+    }
+  },
+  "newyork|2010s": {
+    "marketId": "newyork",
+    "decade": "2010s",
+    "n": 40,
+    "total": {
+      "mean": 30.05,
+      "min": 28,
+      "max": 32
+    },
+    "active": {
+      "mean": 30.05,
+      "min": 28,
+      "max": 32
+    },
+    "commercial": {
+      "mean": 28.05,
+      "min": 26,
+      "max": 30
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0.5,
+      "min": 0,
+      "max": 2
+    },
+    "nicheSurvival": {
+      "mean": 1.55,
+      "min": 1,
+      "max": 3
+    },
+    "removedCumulative": {
+      "mean": 11.75,
+      "min": 9,
+      "max": 14
+    }
+  },
+  "newyork|2020s": {
+    "marketId": "newyork",
+    "decade": "2020s",
+    "n": 24,
+    "total": {
+      "mean": 29.5,
+      "min": 29,
+      "max": 30
+    },
+    "active": {
+      "mean": 29.5,
+      "min": 29,
+      "max": 30
+    },
+    "commercial": {
+      "mean": 27.5,
+      "min": 27,
+      "max": 28
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0.08333333333333333,
+      "min": 0,
+      "max": 1
+    },
+    "nicheSurvival": {
+      "mean": 2.6666666666666665,
+      "min": 1,
+      "max": 4
+    },
+    "removedCumulative": {
+      "mean": 13,
+      "min": 12,
+      "max": 14
+    }
+  },
+  "losangeles|1980s": {
+    "marketId": "losangeles",
+    "decade": "1980s",
+    "n": 18,
+    "total": {
+      "mean": 27.88888888888889,
+      "min": 27,
+      "max": 28
+    },
+    "active": {
+      "mean": 27.88888888888889,
+      "min": 27,
+      "max": 28
+    },
+    "commercial": {
+      "mean": 25.88888888888889,
+      "min": 25,
+      "max": 26
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "nicheSurvival": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "removedCumulative": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    }
+  },
+  "losangeles|1990s": {
+    "marketId": "losangeles",
+    "decade": "1990s",
+    "n": 40,
+    "total": {
+      "mean": 32.75,
+      "min": 28,
+      "max": 34
+    },
+    "active": {
+      "mean": 32.75,
+      "min": 28,
+      "max": 34
+    },
+    "commercial": {
+      "mean": 30.75,
+      "min": 26,
+      "max": 32
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 3.1,
+      "min": 0,
+      "max": 8
+    },
+    "nicheSurvival": {
+      "mean": 0.55,
+      "min": 0,
+      "max": 2
+    },
+    "removedCumulative": {
+      "mean": 0.35,
+      "min": 0,
+      "max": 5
+    }
+  },
+  "losangeles|2000s": {
+    "marketId": "losangeles",
+    "decade": "2000s",
+    "n": 40,
+    "total": {
+      "mean": 30.95,
+      "min": 29,
+      "max": 35
+    },
+    "active": {
+      "mean": 30.95,
+      "min": 29,
+      "max": 35
+    },
+    "commercial": {
+      "mean": 28.95,
+      "min": 27,
+      "max": 33
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 2.7,
+      "min": 1,
+      "max": 6
+    },
+    "nicheSurvival": {
+      "mean": 2.75,
+      "min": 1,
+      "max": 6
+    },
+    "removedCumulative": {
+      "mean": 6.15,
+      "min": 1,
+      "max": 9
+    }
+  },
+  "losangeles|2010s": {
+    "marketId": "losangeles",
+    "decade": "2010s",
+    "n": 40,
+    "total": {
+      "mean": 31.025,
+      "min": 29,
+      "max": 32
+    },
+    "active": {
+      "mean": 31.025,
+      "min": 29,
+      "max": 32
+    },
+    "commercial": {
+      "mean": 29.025,
+      "min": 27,
+      "max": 30
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0.9,
+      "min": 0,
+      "max": 2
+    },
+    "nicheSurvival": {
+      "mean": 3.15,
+      "min": 1,
+      "max": 6
+    },
+    "removedCumulative": {
+      "mean": 9.5,
+      "min": 9,
+      "max": 11
+    }
+  },
+  "losangeles|2020s": {
+    "marketId": "losangeles",
+    "decade": "2020s",
+    "n": 24,
+    "total": {
+      "mean": 29.916666666666668,
+      "min": 29,
+      "max": 32
+    },
+    "active": {
+      "mean": 29.916666666666668,
+      "min": 29,
+      "max": 32
+    },
+    "commercial": {
+      "mean": 27.916666666666668,
+      "min": 27,
+      "max": 30
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0.5833333333333334,
+      "min": 0,
+      "max": 2
+    },
+    "nicheSurvival": {
+      "mean": 3.5,
+      "min": 2,
+      "max": 5
+    },
+    "removedCumulative": {
+      "mean": 11.083333333333334,
+      "min": 9,
+      "max": 12
+    }
+  },
+  "chicago|1980s": {
+    "marketId": "chicago",
+    "decade": "1980s",
+    "n": 18,
+    "total": {
+      "mean": 27.88888888888889,
+      "min": 27,
+      "max": 28
+    },
+    "active": {
+      "mean": 27.88888888888889,
+      "min": 27,
+      "max": 28
+    },
+    "commercial": {
+      "mean": 25.88888888888889,
+      "min": 25,
+      "max": 26
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "nicheSurvival": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "removedCumulative": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    }
+  },
+  "chicago|1990s": {
+    "marketId": "chicago",
+    "decade": "1990s",
+    "n": 40,
+    "total": {
+      "mean": 32.375,
+      "min": 28,
+      "max": 34
+    },
+    "active": {
+      "mean": 32.375,
+      "min": 28,
+      "max": 34
+    },
+    "commercial": {
+      "mean": 30.375,
+      "min": 26,
+      "max": 32
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 2.45,
+      "min": 0,
+      "max": 7
+    },
+    "nicheSurvival": {
+      "mean": 0.4,
+      "min": 0,
+      "max": 1
+    },
+    "removedCumulative": {
+      "mean": 0.8,
+      "min": 0,
+      "max": 4
+    }
+  },
+  "chicago|2000s": {
+    "marketId": "chicago",
+    "decade": "2000s",
+    "n": 40,
+    "total": {
+      "mean": 29.1,
+      "min": 27,
+      "max": 34
+    },
+    "active": {
+      "mean": 29.1,
+      "min": 27,
+      "max": 34
+    },
+    "commercial": {
+      "mean": 27.1,
+      "min": 25,
+      "max": 32
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 2.8,
+      "min": 0,
+      "max": 8
+    },
+    "nicheSurvival": {
+      "mean": 1.4,
+      "min": 0,
+      "max": 3
+    },
+    "removedCumulative": {
+      "mean": 8.9,
+      "min": 2,
+      "max": 12
+    }
+  },
+  "chicago|2010s": {
+    "marketId": "chicago",
+    "decade": "2010s",
+    "n": 40,
+    "total": {
+      "mean": 28.8,
+      "min": 27,
+      "max": 30
+    },
+    "active": {
+      "mean": 28.8,
+      "min": 27,
+      "max": 30
+    },
+    "commercial": {
+      "mean": 26.8,
+      "min": 25,
+      "max": 28
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 1.05,
+      "min": 0,
+      "max": 3
+    },
+    "nicheSurvival": {
+      "mean": 2.75,
+      "min": 2,
+      "max": 3
+    },
+    "removedCumulative": {
+      "mean": 13,
+      "min": 11,
+      "max": 15
+    }
+  },
+  "chicago|2020s": {
+    "marketId": "chicago",
+    "decade": "2020s",
+    "n": 24,
+    "total": {
+      "mean": 28.333333333333332,
+      "min": 27,
+      "max": 30
+    },
+    "active": {
+      "mean": 28.333333333333332,
+      "min": 27,
+      "max": 30
+    },
+    "commercial": {
+      "mean": 26.333333333333332,
+      "min": 25,
+      "max": 28
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0.5833333333333334,
+      "min": 0,
+      "max": 1
+    },
+    "nicheSurvival": {
+      "mean": 2.4166666666666665,
+      "min": 0,
+      "max": 4
+    },
+    "removedCumulative": {
+      "mean": 14.166666666666666,
+      "min": 13,
+      "max": 15
+    }
+  },
+  "atlanta|1980s": {
+    "marketId": "atlanta",
+    "decade": "1980s",
+    "n": 18,
+    "total": {
+      "mean": 25,
+      "min": 25,
+      "max": 25
+    },
+    "active": {
+      "mean": 25,
+      "min": 25,
+      "max": 25
+    },
+    "commercial": {
+      "mean": 23,
+      "min": 23,
+      "max": 23
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "nicheSurvival": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "removedCumulative": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    }
+  },
+  "atlanta|1990s": {
+    "marketId": "atlanta",
+    "decade": "1990s",
+    "n": 40,
+    "total": {
+      "mean": 27.8,
+      "min": 25,
+      "max": 29
+    },
+    "active": {
+      "mean": 27.8,
+      "min": 25,
+      "max": 29
+    },
+    "commercial": {
+      "mean": 25.8,
+      "min": 23,
+      "max": 27
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0.9,
+      "min": 0,
+      "max": 2
+    },
+    "nicheSurvival": {
+      "mean": 0.55,
+      "min": 0,
+      "max": 2
+    },
+    "removedCumulative": {
+      "mean": 0.45,
+      "min": 0,
+      "max": 2
+    }
+  },
+  "atlanta|2000s": {
+    "marketId": "atlanta",
+    "decade": "2000s",
+    "n": 40,
+    "total": {
+      "mean": 27.45,
+      "min": 25,
+      "max": 30
+    },
+    "active": {
+      "mean": 27.45,
+      "min": 25,
+      "max": 30
+    },
+    "commercial": {
+      "mean": 25.45,
+      "min": 23,
+      "max": 28
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 2.2,
+      "min": 0,
+      "max": 6
+    },
+    "nicheSurvival": {
+      "mean": 2.65,
+      "min": 1,
+      "max": 4
+    },
+    "removedCumulative": {
+      "mean": 3.9,
+      "min": 1,
+      "max": 7
+    }
+  },
+  "atlanta|2010s": {
+    "marketId": "atlanta",
+    "decade": "2010s",
+    "n": 40,
+    "total": {
+      "mean": 24.35,
+      "min": 23,
+      "max": 26
+    },
+    "active": {
+      "mean": 24.35,
+      "min": 23,
+      "max": 26
+    },
+    "commercial": {
+      "mean": 22.35,
+      "min": 21,
+      "max": 24
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 1.05,
+      "min": 0,
+      "max": 3
+    },
+    "nicheSurvival": {
+      "mean": 2,
+      "min": 1,
+      "max": 4
+    },
+    "removedCumulative": {
+      "mean": 8.4,
+      "min": 7,
+      "max": 10
+    }
+  },
+  "atlanta|2020s": {
+    "marketId": "atlanta",
+    "decade": "2020s",
+    "n": 24,
+    "total": {
+      "mean": 23.083333333333332,
+      "min": 22,
+      "max": 24
+    },
+    "active": {
+      "mean": 23.083333333333332,
+      "min": 22,
+      "max": 24
+    },
+    "commercial": {
+      "mean": 21.083333333333332,
+      "min": 20,
+      "max": 22
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0.75,
+      "min": 0,
+      "max": 2
+    },
+    "nicheSurvival": {
+      "mean": 1.5,
+      "min": 0,
+      "max": 4
+    },
+    "removedCumulative": {
+      "mean": 9.916666666666666,
+      "min": 9,
+      "max": 11
+    }
+  },
+  "nashville|1980s": {
+    "marketId": "nashville",
+    "decade": "1980s",
+    "n": 18,
+    "total": {
+      "mean": 25,
+      "min": 25,
+      "max": 25
+    },
+    "active": {
+      "mean": 25,
+      "min": 25,
+      "max": 25
+    },
+    "commercial": {
+      "mean": 23,
+      "min": 23,
+      "max": 23
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "nicheSurvival": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "removedCumulative": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    }
+  },
+  "nashville|1990s": {
+    "marketId": "nashville",
+    "decade": "1990s",
+    "n": 40,
+    "total": {
+      "mean": 27.75,
+      "min": 25,
+      "max": 29
+    },
+    "active": {
+      "mean": 27.75,
+      "min": 25,
+      "max": 29
+    },
+    "commercial": {
+      "mean": 25.75,
+      "min": 23,
+      "max": 27
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 1.6,
+      "min": 0,
+      "max": 6
+    },
+    "nicheSurvival": {
+      "mean": 0.2,
+      "min": 0,
+      "max": 1
+    },
+    "removedCumulative": {
+      "mean": 0.5,
+      "min": 0,
+      "max": 3
+    }
+  },
+  "nashville|2000s": {
+    "marketId": "nashville",
+    "decade": "2000s",
+    "n": 40,
+    "total": {
+      "mean": 27.25,
+      "min": 25,
+      "max": 29
+    },
+    "active": {
+      "mean": 27.25,
+      "min": 25,
+      "max": 29
+    },
+    "commercial": {
+      "mean": 25.25,
+      "min": 23,
+      "max": 27
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 2,
+      "min": 0,
+      "max": 7
+    },
+    "nicheSurvival": {
+      "mean": 0.9,
+      "min": 0,
+      "max": 2
+    },
+    "removedCumulative": {
+      "mean": 4.1,
+      "min": 3,
+      "max": 7
+    }
+  },
+  "nashville|2010s": {
+    "marketId": "nashville",
+    "decade": "2010s",
+    "n": 40,
+    "total": {
+      "mean": 24.3,
+      "min": 23,
+      "max": 26
+    },
+    "active": {
+      "mean": 24.3,
+      "min": 23,
+      "max": 26
+    },
+    "commercial": {
+      "mean": 22.3,
+      "min": 21,
+      "max": 24
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 1.5,
+      "min": 0,
+      "max": 5
+    },
+    "nicheSurvival": {
+      "mean": 1.05,
+      "min": 0,
+      "max": 2
+    },
+    "removedCumulative": {
+      "mean": 8.45,
+      "min": 6,
+      "max": 10
+    }
+  },
+  "nashville|2020s": {
+    "marketId": "nashville",
+    "decade": "2020s",
+    "n": 24,
+    "total": {
+      "mean": 23,
+      "min": 23,
+      "max": 23
+    },
+    "active": {
+      "mean": 23,
+      "min": 23,
+      "max": 23
+    },
+    "commercial": {
+      "mean": 21,
+      "min": 21,
+      "max": 21
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "nicheSurvival": {
+      "mean": 1.0833333333333333,
+      "min": 0,
+      "max": 2
+    },
+    "removedCumulative": {
+      "mean": 10,
+      "min": 10,
+      "max": 10
+    }
+  },
+  "seattle|1980s": {
+    "marketId": "seattle",
+    "decade": "1980s",
+    "n": 18,
+    "total": {
+      "mean": 25,
+      "min": 25,
+      "max": 25
+    },
+    "active": {
+      "mean": 25,
+      "min": 25,
+      "max": 25
+    },
+    "commercial": {
+      "mean": 23,
+      "min": 23,
+      "max": 23
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "nicheSurvival": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "removedCumulative": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    }
+  },
+  "seattle|1990s": {
+    "marketId": "seattle",
+    "decade": "1990s",
+    "n": 40,
+    "total": {
+      "mean": 27.95,
+      "min": 25,
+      "max": 29
+    },
+    "active": {
+      "mean": 27.95,
+      "min": 25,
+      "max": 29
+    },
+    "commercial": {
+      "mean": 25.95,
+      "min": 23,
+      "max": 27
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0.55,
+      "min": 0,
+      "max": 2
+    },
+    "nicheSurvival": {
+      "mean": 0.2,
+      "min": 0,
+      "max": 1
+    },
+    "removedCumulative": {
+      "mean": 0.3,
+      "min": 0,
+      "max": 1
+    }
+  },
+  "seattle|2000s": {
+    "marketId": "seattle",
+    "decade": "2000s",
+    "n": 40,
+    "total": {
+      "mean": 28.45,
+      "min": 26,
+      "max": 30
+    },
+    "active": {
+      "mean": 28.45,
+      "min": 26,
+      "max": 30
+    },
+    "commercial": {
+      "mean": 26.45,
+      "min": 24,
+      "max": 28
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 3.7,
+      "min": 0,
+      "max": 7
+    },
+    "nicheSurvival": {
+      "mean": 1.85,
+      "min": 0,
+      "max": 3
+    },
+    "removedCumulative": {
+      "mean": 2.9,
+      "min": 1,
+      "max": 6
+    }
+  },
+  "seattle|2010s": {
+    "marketId": "seattle",
+    "decade": "2010s",
+    "n": 40,
+    "total": {
+      "mean": 24.3,
+      "min": 23,
+      "max": 26
+    },
+    "active": {
+      "mean": 24.3,
+      "min": 23,
+      "max": 26
+    },
+    "commercial": {
+      "mean": 22.3,
+      "min": 21,
+      "max": 24
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0.9,
+      "min": 0,
+      "max": 4
+    },
+    "nicheSurvival": {
+      "mean": 2.4,
+      "min": 1,
+      "max": 3
+    },
+    "removedCumulative": {
+      "mean": 8.45,
+      "min": 6,
+      "max": 10
+    }
+  },
+  "seattle|2020s": {
+    "marketId": "seattle",
+    "decade": "2020s",
+    "n": 24,
+    "total": {
+      "mean": 23,
+      "min": 23,
+      "max": 23
+    },
+    "active": {
+      "mean": 23,
+      "min": 23,
+      "max": 23
+    },
+    "commercial": {
+      "mean": 21,
+      "min": 21,
+      "max": 21
+    },
+    "public": {
+      "mean": 2,
+      "min": 2,
+      "max": 2
+    },
+    "simulcast": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "deferred": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "emptySlots": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "zombie": {
+      "mean": 0,
+      "min": 0,
+      "max": 0
+    },
+    "nicheSurvival": {
+      "mean": 2,
+      "min": 1,
+      "max": 3
+    },
+    "removedCumulative": {
+      "mean": 10,
+      "min": 10,
+      "max": 10
+    }
+  }
+}

@@ -6,8 +6,14 @@
 const fs = require('fs');
 const path = require('path');
 const vm = require('vm');
+const { ALL_PLAYABLE_MARKET_IDS } = require('./market-ids.cjs');
 
-const MARKETS = ['atlanta', 'nashville', 'newyork', 'losangeles', 'chicago'];
+/** Snapshot iteration order (not registry order). */
+const MARKETS = ['atlanta', 'nashville', 'newyork', 'losangeles', 'chicago', 'seattle'];
+if (MARKETS.length !== ALL_PLAYABLE_MARKET_IDS.length || !MARKETS.every((id) => ALL_PLAYABLE_MARKET_IDS.includes(id))) {
+  console.error('personality-snapshot: MARKETS must match ALL_PLAYABLE_MARKET_IDS');
+  process.exit(1);
+}
 const legacyPath = path.join(__dirname, '..', 'src', 'legacy.js');
 let legacySrc = fs.readFileSync(legacyPath, 'utf8');
 if (!legacySrc.includes("let ACTIVE_MARKET='atlanta'")) {

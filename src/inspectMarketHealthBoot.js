@@ -1,6 +1,6 @@
 /**
  * Dev-only: batch market health by decade (inspect-market-health.html).
- * Query: ?quick=1 — fewer markets/runs. Omit for full five markets × 4 runs.
+ * Query: ?quick=1 — fewer markets/runs. Omit for full six markets × 4 runs.
  */
 (function () {
   function run() {

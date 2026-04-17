@@ -153,7 +153,7 @@ function main() {
   }
 
   console.log('=== Patch 1 — default remainder diversity (1970 pool, 12 synthetic FM ids per cell) ===\n');
-  const mkts = ['newyork', 'atlanta', 'nashville'];
+  const mkts = ['newyork', 'atlanta', 'nashville', 'seattle'];
   const ams = ['MOR', 'TOP40', 'COUNTRY', 'NEWS_TALK'];
   for (const mkt of mkts) {
     console.log(`Market ${mkt}:`);

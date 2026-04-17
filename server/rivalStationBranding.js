@@ -12,6 +12,9 @@
  * @module server/rivalStationBranding
  */
 
+const path = require('path');
+const { ALL_PLAYABLE_MARKET_IDS } = require(path.join(__dirname, '../scripts/market-ids.cjs'));
+
 /** @typedef {'top40_chr'|'rock'|'ac_easy'|'country'|'news_talk'|'oldies_mor'} RivalFormatKey */
 
 /** @typedef {'1970s'|'1980s'|'1990s'|'2000s'} BrandEra */
@@ -63,7 +66,58 @@ const MARKETS = {
       'listeners coast to inland',
     ],
   },
+  seattle: {
+    displayName: 'Seattle',
+    cityLabel: 'Seattle',
+    side: 'west',
+    localHooks: [
+      'Seattle',
+      'Puget Sound',
+      'the Sound',
+      'Seattle-Tacoma',
+      'the city and suburbs',
+      'around western Washington',
+      'across the I-5 corridor',
+    ],
+  },
 };
+
+/** Extra positioning lines for Seattle — stronger rock/alt voice; country reads Pacific Northwest, not Southern. */
+const SEATTLE_POSITIONING_EXTRAS = {
+  rock: [
+    "{city}'s album-rock home",
+    'FM rock built for the Northwest',
+    'the rock sound of Puget Sound',
+    'album rock for western Washington',
+    'progressive stereo FM {city}',
+  ],
+  country: [
+    'Pacific Northwest country',
+    'country radio for Puget Sound',
+    'Northwest country favorites',
+    'local country from Seattle to the foothills',
+    'country hits for western Washington',
+  ],
+};
+
+/**
+ * @param {string} marketId
+ * @param {RivalFormatKey} formatKey
+ * @param {'fm'|'am'} band
+ * @param {{ legalStyle: string[], shortBrand: string[], positioning: string[] }} templates
+ */
+function mergeSeattleBrandTemplateExtras(marketId, formatKey, band, templates) {
+  if (marketId !== 'seattle') return templates;
+  const extra = SEATTLE_POSITIONING_EXTRAS[formatKey];
+  if (!extra || !extra.length) return templates;
+  const extraPos = band === 'am' ? extra.filter((t) => !isAmIncompatibleTemplate(t)) : extra;
+  if (!extraPos.length) return templates;
+  return {
+    legalStyle: templates.legalStyle,
+    shortBrand: templates.shortBrand,
+    positioning: templates.positioning.concat(extraPos),
+  };
+}
 
 /** Generic fallbacks — short, speakable. */
 const DEFAULT_LOCAL_HOOKS = ['the metro area', 'the city and suburbs', 'countywide', 'listeners countywide'];
@@ -727,7 +781,7 @@ function speakabilityHardReject(s, band, _formatKey) {
 }
 
 /** Major markets: stronger “heritage authority” weight for AM Radio [freq] patterns. */
-const MAJOR_HERITAGE_MARKET_IDS = new Set(['newyork', 'chicago', 'losangeles', 'atlanta', 'nashville']);
+const MAJOR_HERITAGE_MARKET_IDS = new Set(ALL_PLAYABLE_MARKET_IDS);
 
 function isHeritageAmFormat(formatKey) {
   return (
@@ -1390,7 +1444,8 @@ function generateRivalStationBrand(opts) {
 
   const band =
     opts.band === 'am' || opts.band === 'fm' ? opts.band : resolveBandForEra(formatKey, rand, era);
-  const templates = bandAwareTemplates(formatKey, band);
+  let templates = bandAwareTemplates(formatKey, band);
+  templates = mergeSeattleBrandTemplateExtras(marketId, formatKey, band, templates);
 
   const side = market.side;
   const call = generateCallLetters(rand, side);
@@ -1547,6 +1602,7 @@ function generateMultiMarketSamples() {
     atlanta: ['top40_chr', 'country', 'news_talk'],
     nashville: ['country', 'oldies_mor', 'ac_easy'],
     losangeles: ['rock', 'top40_chr', 'ac_easy'],
+    seattle: ['rock', 'news_talk', 'ac_easy'],
   };
   let seed = 70001;
   const out = {};

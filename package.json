@@ -40,7 +40,13 @@
     "analyze:early-single-station": "npm run build && node scripts/analyze-early-single-station-economics.mjs",
     "check:benchmark-determinism": "npm run build && node scripts/check-benchmark-determinism.mjs",
     "gc:generated-assets": "node scripts/gc-generated-assets.js",
-    "demo:rival-brands": "node scripts/demo-rival-station-brands.mjs"
+    "demo:rival-brands": "node scripts/demo-rival-station-brands.mjs",
+    "validate:seattle-public": "node scripts/validate-seattle-and-public.mjs",
+    "sim:phase1-health-smoke": "node scripts/run-phase1-market-health-smoke.mjs",
+    "diag:talent-costs": "node scripts/diagnose-talent-costs.mjs",
+    "diag:talent-sensitivity": "node scripts/compare-talent-sensitivity.mjs",
+    "validate:talent-performance": "node scripts/validate-talent-performance.mjs",
+    "validate:talent-performance:controlled": "node scripts/validate-talent-performance-controlled.mjs"
   },
   "devDependencies": {
     "playwright": "^1.59.1",
