@@ -311,6 +311,8 @@
   <button id="abtn">▶ NEXT PERIOD</button>
 </header>
 <div id="alertbar"></div>
+<!-- GM Mode (solo): status panel — populated by gmMode.js -->
+<div id="wl-gm-panel" aria-label="General Manager status"></div>
 <div id="tkr"><div id="ti"></div></div>
 <main id="main">
   <!-- LEFT COLUMN: score strip, market standings, news feed -->
@@ -382,6 +384,9 @@
 <div class="ov" id="m-milestone"><div class="mo" style="max-width:520px"><div id="milestoneb"></div></div></div>
 <div class="ov" id="m-period-news"><div class="mo" style="max-width:560px"><div class="mh"><span>📰 NEWS — LAST PERIOD</span><button type="button" class="mc" onclick="cm('m-period-news')">OK</button></div><div id="periodnewsb" style="padding:16px 20px 20px"></div></div></div>
 
+<div class="ov" id="m-gm-onboard"><div class="mo" style="max-width:560px"><div class="mh"><span>GENERAL MANAGER CAREER</span><button type="button" class="mc" onclick="wlGmDismissOnboarding()">OK</button></div><div id="gm-onboardb" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.55;color:var(--off)"></div></div></div>
+<div class="ov" id="m-gm-review"><div class="mo wide" style="max-width:560px"><div class="mh"><span id="gm-review-mh-title">GENERAL MANAGER PERFORMANCE REVIEW</span><button type="button" class="mc" onclick="cm('m-gm-review')">CLOSE ×</button></div><div id="gm-reviewb" style="padding:16px 20px 20px"></div></div></div>
+
 <div class="ov" id="m-feedback"><div class="mo" style="max-width:520px"><div class="mh"><span>BETA FEEDBACK</span><button type="button" class="mc" onclick="cm('m-feedback')">CLOSE ×</button></div><div id="feedbackb" style="padding:16px 20px 22px;position:relative">
   <p class="di" style="margin-top:0">What should we improve? Bugs, balance, clarity — everything helps.</p>
   <label for="wl-feedback-email" style="display:block;font-size:13px;color:var(--mut);margin-bottom:6px">Your email <span style="opacity:.85">(optional — if we may follow up)</span></label>
@@ -441,6 +446,7 @@
   <script type="module" src="/src/main.js"></script>
   <script defer src="/src/stationLogoConfig.js"></script>
   <script defer src="/src/stationLogoSvg.js"></script>
+  <script defer src="/src/gmMode.js"></script>
   <script defer src="/src/legacy.js"></script>
   <!-- Dev-only: stripped from production HTML by vite.config.js (file is not copied to dist). -->
   <script defer src="/src/marketSimHarness.js"></script>

@@ -43,5 +43,61 @@ assert(
 );
 assert(!noHints.tags.includes('Audience target'), 'no hint when omitted');
 
+const countrySung = buildSunoJingleArgs({
+  brand: '96.5 KD Country',
+  format: 'Country',
+  year: 1995,
+  formatId: 'COUNTRY',
+  tagline: "Seattle's Number One Country",
+  frequency: '96.5',
+  band: 'FM',
+});
+assert(!countrySung.lyrics.includes('[Spoken word]'), 'music formats use flat lyrics, not spoken block');
+assert(countrySung.tags.includes('sung jingle'), 'country should ask for sung tagline + brand');
+assert(countrySung.lyrics.includes('Seattle'), 'tagline should appear in lyrics');
+
+const callsNotInBrand = buildSunoJingleArgs({
+  brand: '96.5 The River',
+  format: 'Country',
+  year: 1995,
+  formatId: 'COUNTRY',
+  tagline: 'Number one for country',
+  frequency: '96.5',
+  band: 'FM',
+  callLetters: 'KRVR',
+});
+assert(
+  !callsNotInBrand.tags.includes('melodic vocal syllables'),
+  'do not add call-letter tags when brand omits those letters',
+);
+assert(!callsNotInBrand.lyrics.includes('K R V R'), 'do not append spaced calls to lyrics');
+
+const callsInBrand = buildSunoJingleArgs({
+  brand: 'KRVR 96.5 The River',
+  format: 'Country',
+  year: 1995,
+  formatId: 'COUNTRY',
+  tagline: 'Country',
+  frequency: '96.5',
+  band: 'FM',
+  callLetters: 'KRVR',
+});
+assert(callsInBrand.tags.includes('melodic vocal syllables'), 'call-letter tag when brand contains calls');
+
+const q96Brand = buildSunoJingleArgs({
+  brand: 'Q96',
+  format: 'CHR',
+  year: 1995,
+  formatId: 'TOP40',
+  tagline: '',
+  frequency: '96.1',
+  band: 'FM',
+});
+assert(
+  /\bQ\s+ninety\s+six\b/i.test(q96Brand.lyrics),
+  'Q96 + FM 96.1 should become Q ninety six in lyrics',
+);
+assert(!/\bQ96\b/.test(q96Brand.lyrics), 'lyrics should not leave raw Q96');
+
 console.log('OK — jingle prompt hints');
 console.log('Sample tags (truncated):', withHints.tags.slice(0, 320) + (withHints.tags.length > 320 ? '…' : ''));

@@ -156,6 +156,36 @@ function fccCanAcquire(entity, sigType, G){
   return serviceCount<lim.perService;
 }
 
+/** Stable indie “licensee” key for AI commercial stations (groups simulcast pairs via `rivalFictionalParentName`). */
+function indieLicenseeKey(s,G){
+  if(!s||s.isPlayer||s.isPublic||s.corpOwner||s._bpSlotDeferred)return '';
+  if(s.aiLicenseeKey)return s.aiLicenseeKey;
+  return rivalFictionalParentName(s,G)||('indie_'+s.id);
+}
+function fccOwnedIndie(licenseeKey, G){
+  const mine=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic&&!s.corpOwner&&indieLicenseeKey(s,G)===licenseeKey);
+  const am=mine.filter(s=>s.sig.type==='AM').length;
+  const fm=mine.filter(s=>s.sig.type==='FM'||s.fmBooster).length;
+  return {total:mine.length, am, fm};
+}
+function fccCanIndieAcquire(licenseeKey, sigType, G){
+  const lim=fccLimits(G.year, G.stations.length);
+  const owned=fccOwnedIndie(licenseeKey, G);
+  if(lim.mode==='pre96'){
+    if(sigType==='AM')return owned.am<lim.am;
+    return owned.fm<lim.fm;
+  }
+  if(owned.total>=lim.total)return false;
+  const serviceCount=sigType==='AM'?owned.am:owned.fm;
+  return serviceCount<lim.perService;
+}
+function initIndieLicenseeKeysFromStations(stations, G){
+  (stations||[]).forEach(s=>{
+    if(!s||s._bpSlotDeferred||s.isPlayer||s.isPublic||s.corpOwner)return;
+    if(!s.aiLicenseeKey)s.aiLicenseeKey=rivalFictionalParentName(s,G)||('indie_'+s.id);
+  });
+}
+
 // ── FM BOOSTER COSTS ─────────────────────────────────────────────
 // FM Translator for AM stations — NOT available until 2009 (FCC AM Revitalization).
 // The FCC's AM Revitalization proceeding + 2010 rule change allowed AM stations
@@ -310,6 +340,32 @@ function hitsDriftPolesForYear(year){
   return {
     poleA:{name:'Bubblegum Pop',desc:'Pure hits, youngest demos; broad, personality-heavy Top 40.'},
     poleB:{name:'Rock Edge',desc:'Credibility with 18–34; holds better when rock surges.'},
+  };
+}
+/** Soul/R&B drift poles by era (see `getDrift`). Pre-1990: disco-era axis; 1990+: heritage vs adult-leaning current R&B (not Urban CHR). */
+function soulRnbDriftPolesForYear(year){
+  const y=year||1970;
+  if(y>=1990){
+    return {
+      poleA:{
+        name:'Classic Soul',
+        desc:'Motown, Stax, deep catalog soul. Older, loyal Black listeners; community credibility; slower churn. Stable billing but a lower growth ceiling than current-heavy lanes.',
+      },
+      poleB:{
+        name:'Contemporary R&B',
+        desc:'Current and recurrent adult R&B — ballads and mid-tempo groove; skews younger-adult than heritage with more ratings upside and advertiser demand. Faster churn and sharper competition — still melodic and adult-oriented, not Urban CHR or hip-hop–heavy.',
+      },
+    };
+  }
+  return {
+    poleA:{
+      name:'Classic Soul',
+      desc:'Deep gospel roots, Motown and Stax. Loyal older Black listeners. Community anchor identity.',
+    },
+    poleB:{
+      name:'Funk & Disco',
+      desc:'Groove-forward and dance-oriented. Pulls 18–34 hard in the disco era; explosive when hot, brutal when trends flipped.',
+    },
   };
 }
 function hitsTop40DemoEffect(drift,coh,year){
@@ -620,7 +676,9 @@ function setStationProgrammingFocus(sid,value){
   if(!s||!mpIsMe(s))return;
   const v=normalizeProgrammingFocus(value);
   s.programmingFocus=v;
-  if(s.simulcastWith){
+  if(s._simulcastSource===true){
+    simulcastGroupReceivers(s.id,G).forEach(p=>{if(p&&mpIsMe(p))p.programmingFocus=v;});
+  }else if(s.simulcastWith){
     const p=G.stations.find(st=>st.id===s.simulcastWith);
     if(p&&mpIsMe(p))p.programmingFocus=v;
   }
@@ -1410,6 +1468,13 @@ const EARLY_AM_DIAL_BRAND_PATTERNS=[
 const EARLY_AM_DIAL_BRAND_FORMATS=new Set([
   'TOP40','COUNTRY','SOUL_RNB','MOR','ADULT_STANDARDS','BEAUTIFUL_MUSIC','ALBUM_ROCK','GOSPEL','NEWS_TALK','ALL_NEWS','SPORTS_TALK',
 ]);
+/** Extra on-air nicknames for FM music signals in the 1970s (merged in gb() only when not AM). */
+const BRANDS_1970S_FM_EXTRA=[
+  'Stereo {FREQ}','Super Hits {FREQ}','Solid Gold {FREQ}','FM {FREQ}','The Sound of {FREQ}','{CITY} FM {FREQ}','{ABBREV} {FREQ}',
+];
+const BRANDS_1970S_FM_FORMATS=new Set([
+  'TOP40','COUNTRY','SOUL_RNB','MOR','ALBUM_ROCK','BEAUTIFUL_MUSIC','CLASSIC_ROCK','OLDIES','ADULT_CONTEMP','URBAN_CONTEMP',
+]);
 const BRANDS={
   TOP40:['{FREQ} Hits','Hit {FREQ}','Power {FREQ}','Party {FREQ}','Flash {FREQ}','Rocket {FREQ}','{FREQ} Jamz','The Pulse {FREQ}','{FREQ} the Beat','Kiss {FREQ}','Hot {FREQ}','Pop {FREQ}','{CITY} {FREQ}','{ABBREV} {FREQ}'],
   COUNTRY:['Big Country {FREQ}','The Bull {FREQ}','Ranch {FREQ}','Dixie {FREQ}','Country {FREQ}','Heartland {FREQ}','{CITY} Country {FREQ}','{ABBREV} {FREQ}'],
@@ -1486,7 +1551,12 @@ function collectMarketBrandIdentityKeys(excludeSid){
 }
 // Get format-aware brand suggestions for a station (with resolved tokens; no duplicate slogans vs rivals)
 function getBrandSuggestions(s){
-  const raw=BRANDS[canonicalHitsFormatKey(s.format)]||['{FREQ} Radio'];
+  const fmtKey=canonicalHitsFormatKey(s.format);
+  let raw=BRANDS[fmtKey]||['{FREQ} Radio'];
+  const y=G?.year??1970;
+  const isAmSt=s&&(s.sig?.type==='AM'&&!s.fmBooster);
+  if(y>=1970&&y<=1979&&isAmSt&&EARLY_AM_DIAL_BRAND_FORMATS.has(fmtKey))raw=[...EARLY_AM_DIAL_BRAND_PATTERNS,...raw];
+  if(y>=1970&&y<=1979&&!isAmSt&&BRANDS_1970S_FM_FORMATS.has(fmtKey))raw=[...BRANDS_1970S_FM_EXTRA,...raw];
   const city=G?.city||'Atlanta';
   const mktId=G?.marketId||ACTIVE_MARKET||'atlanta';
   const freqShort=stationFreqDial(s);
@@ -1966,6 +2036,7 @@ function gb(f,freq,city,marketId,identityTaken,callLetters){
   const taken=identityTaken instanceof Set?identityTaken:(_gbBrandIdTaken instanceof Set?_gbBrandIdTaken:collectMarketBrandIdentityKeys());
   const isAm=/\bAM\s*$/i.test(String(freq||''));
   if(yr<=1979&&isAm&&EARLY_AM_DIAL_BRAND_FORMATS.has(f))p=[...EARLY_AM_DIAL_BRAND_PATTERNS,...p];
+  if(yr>=1970&&yr<=1979&&!isAm&&BRANDS_1970S_FM_FORMATS.has(f))p=[...BRANDS_1970S_FM_EXTRA,...p];
   if(f==='NEWS_TALK'&&yr>=1990)p=[...p,...BRANDS_NEWS_TALK_POLITICAL_MODERN];
   if(f==='SPORTS_TALK'&&yr>=1990)p=[...p,...BRANDS_SPORTS_TALK_FAN_MODERN];
   const pool=[...p];
@@ -2250,6 +2321,11 @@ const MARKETS={
     revScale:1.0, adxBonus:0.02,
     amFreqs:['590 AM','640 AM','750 AM','860 AM','920 AM','1010 AM','1090 AM','1160 AM','1230 AM','1340 AM'],
     fmFreqs:['96.1 FM','99.7 FM','102.3 FM','104.5 FM','107.1 FM','94.9 FM','95.3 FM','101.5 FM','103.3 FM'],
+    /** FM dial → ERP tier (game tokens). AM uses `AMFCC.normalizeAmPw` + tier caps; optional `amFacilityByFreq` overrides. */
+    fmFacilityByFreq:{
+      '96.1 FM':'100kw','99.7 FM':'100kw','102.3 FM':'100kw','104.5 FM':'100kw','107.1 FM':'50kw',
+      '94.9 FM':'50kw','95.3 FM':'50kw','101.5 FM':'100kw','103.3 FM':'100kw',
+    },
     blackPop:0.358,hispPop1970:0.010,hispPop2000:0.080,hispPop2020:0.115,churchGoing:0.54,countryBonus:0,urbanBonus:0.05,
     culture:{country:0.06,urban:0.06,newsTalk:0.05,religion:0.10,spanish:0.02},
     selectBlurb:'A growing Sunbelt market with a strong appetite for Soul/R&B and Top 40 in the 1970s. FM specialization accelerates as the market grows and matures.',
@@ -2269,6 +2345,9 @@ const MARKETS={
     revScale:0.5, adxBonus:0.03,
     amFreqs:['650 AM','760 AM','1040 AM','1160 AM','1240 AM','1300 AM','1400 AM','1470 AM','1510 AM','1560 AM'],
     fmFreqs:['94.1 FM','96.3 FM','97.9 FM','100.1 FM','102.9 FM','104.5 FM','107.5 FM'],
+    fmFacilityByFreq:{
+      '94.1 FM':'100kw','96.3 FM':'50kw','97.9 FM':'100kw','100.1 FM':'50kw','102.9 FM':'100kw','104.5 FM':'50kw','107.5 FM':'50kw',
+    },
     blackPop:0.18,hispPop1970:0.008,hispPop2000:0.045,hispPop2020:0.095,churchGoing:0.58,countryBonus:0.18,urbanBonus:0.02,
     culture:{country:0.26,urban:0.03,newsTalk:0.04,religion:0.10,spanish:0.02},
     selectBlurb:'The home of the Grand Ole Opry means the Country format can build some very deep loyalty with listeners. AM Country stations can hold on for a while longer than in other markets, but FM is coming!',
@@ -2286,6 +2365,10 @@ const MARKETS={
     revScale:6.8, adxBonus:0.05,
     amFreqs:['660 AM','770 AM','880 AM','1010 AM','1050 AM','1130 AM','1280 AM','1380 AM','1560 AM','1600 AM'],
     fmFreqs:['92.3 FM','94.7 FM','96.3 FM','98.7 FM','100.3 FM','101.1 FM','102.7 FM','103.5 FM','104.3 FM','106.7 FM'],
+    fmFacilityByFreq:{
+      '92.3 FM':'50kw','94.7 FM':'50kw','96.3 FM':'100kw','98.7 FM':'100kw','100.3 FM':'100kw',
+      '101.1 FM':'100kw','102.7 FM':'100kw','103.5 FM':'100kw','104.3 FM':'100kw','106.7 FM':'100kw',
+    },
     blackPop:0.21,hispPop1970:0.12,hispPop2000:0.22,hispPop2020:0.26,churchGoing:0.42,countryBonus:0,urbanBonus:0.14,
     culture:{country:0.008,urban:0.16,newsTalk:0.12,religion:0.06,spanish:0.14},
     selectBlurb:'The #1 radio market in the country. Lots of money to be made — and ruthless competition for it. With so many stations, audiences fragment quickly.',
@@ -2306,6 +2389,10 @@ const MARKETS={
     revScale:5.2, adxBonus:0.04,
     amFreqs:['570 AM','640 AM','710 AM','790 AM','980 AM','1070 AM','1150 AM','1230 AM','1430 AM','1580 AM'],
     fmFreqs:['93.5 FM','95.5 FM','97.1 FM','98.7 FM','100.3 FM','101.9 FM','102.7 FM','104.3 FM','105.1 FM'],
+    fmFacilityByFreq:{
+      '93.5 FM':'100kw','95.5 FM':'100kw','97.1 FM':'100kw','98.7 FM':'100kw','100.3 FM':'100kw',
+      '101.9 FM':'100kw','102.7 FM':'100kw','104.3 FM':'100kw','105.1 FM':'100kw',
+    },
     blackPop:0.14,hispPop1970:0.14,hispPop2000:0.38,hispPop2020:0.45,churchGoing:0.38,countryBonus:0.02,urbanBonus:0.12,
     culture:{country:0.03,urban:0.12,newsTalk:0.07,religion:0.05,spanish:0.22},
     selectBlurb:'Ultra-competitive radio market with audiences fragmenting quickly, formats churning constantly and a ton of revenue for the leaders. Demographic changes make urban, rhythmic and Spanish-language formats lucrative as time passes.',
@@ -2325,6 +2412,10 @@ const MARKETS={
     revScale:2.8, adxBonus:0.01,
     amFreqs:['720 AM','780 AM','890 AM','1000 AM','1160 AM','1200 AM','1390 AM','1490 AM','1590 AM','1690 AM'],
     fmFreqs:['93.1 FM','94.7 FM','96.3 FM','97.9 FM','99.5 FM','101.9 FM','103.5 FM','104.3 FM','105.9 FM'],
+    fmFacilityByFreq:{
+      '93.1 FM':'100kw','94.7 FM':'100kw','96.3 FM':'100kw','97.9 FM':'100kw','99.5 FM':'100kw',
+      '101.9 FM':'100kw','103.5 FM':'100kw','104.3 FM':'100kw','105.9 FM':'100kw',
+    },
     blackPop:0.22,hispPop1970:0.06,hispPop2000:0.18,hispPop2020:0.22,churchGoing:0.48,countryBonus:0.04,urbanBonus:0.08,
     culture:{country:0.08,urban:0.08,newsTalk:0.08,religion:0.08,spanish:0.12},
     selectBlurb:'Big heritage AM signals provide a great environment for news, talk and sports formats, but huge format battles erupt on the FM dial.',
@@ -2344,6 +2435,10 @@ const MARKETS={
     revScale:1.55, adxBonus:0.025,
     amFreqs:['570 AM','710 AM','770 AM','1000 AM','1090 AM','1150 AM','1250 AM','1300 AM','1420 AM','1540 AM'],
     fmFreqs:['92.5 FM','94.1 FM','96.5 FM','98.9 FM','100.3 FM','102.5 FM','104.5 FM','106.1 FM','107.7 FM'],
+    fmFacilityByFreq:{
+      '92.5 FM':'100kw','94.1 FM':'100kw','96.5 FM':'100kw','98.9 FM':'100kw','100.3 FM':'100kw',
+      '102.5 FM':'50kw','104.5 FM':'100kw','106.1 FM':'100kw','107.7 FM':'50kw',
+    },
     blackPop:0.09,hispPop1970:0.03,hispPop2000:0.09,hispPop2020:0.14,churchGoing:0.38,countryBonus:0.10,urbanBonus:0.06,
     culture:{country:0.12,urban:0.07,newsTalk:0.09,religion:0.05,spanish:0.08},
     selectBlurb:'Pacific Northwest hub: educated listeners, strong FM rock and alternative heritage, competitive news/talk, and a country lane that isn’t “Sunbelt country.” Rainy commutes reward sticky formats — but the dial still fragments like any major city.',
@@ -2749,14 +2844,16 @@ function sportsTierFromRecord(record){
 function syndicationHaloAppliesToStation(s,holderId,G){
   if(!s||!holderId)return false;
   if(s.id===holderId)return true;
-  if(!s.simulcastWith)return false;
-  const p=(G.stations||[]).find(st=>st.id===s.simulcastWith);
-  if(!p)return false;
-  let src=null;
-  if(s._simulcastSource===true)src=s;
-  else if(p._simulcastSource===true)src=p;
-  if(!src)return false;
-  return holderId===src.id||holderId===p.id||holderId===s.id;
+  const src=simulcastProgrammingSourceStation(s,G);
+  if(src){
+    if(holderId===src.id)return true;
+    if(simulcastGroupReceivers(src.id,G).some(r=>r.id===holderId))return true;
+  }
+  if(s.simulcastWith){
+    const p=(G.stations||[]).find(st=>st.id===s.simulcastWith);
+    if(p&&p.simulcastWith===s.id&&(holderId===p.id||holderId===s.id))return true;
+  }
+  return false;
 }
 /** Weighted pick for initial rights holder — favors SPORTS/NEWS/PODCAST_TALK via SPORTS_FORMAT_FIT. */
 function pickInitialSportsRightsHolder(G){
@@ -5307,6 +5404,7 @@ window._mpApply_rename = function({ sid, callLetters, brand }) {
   const prevDisp = callDisplay(s);
   const prevBrand = s.brand;
   s.callLetters = stripCallBandSuffix(callLetters);
+  syncCallLettersToSimulcastPartner(s);
   s.brand = brand;
   const nextDisp = callDisplay(s);
   if (prevDisp !== nextDisp) logHistory(s, 'CALLSIGN', `Call letters changed: ${prevDisp} → ${nextDisp}`, G);
@@ -5608,14 +5706,24 @@ window._mpApply_letexpire = function({ sid, slot }) {
 window._mpApply_lean = function({ sid, val }) {
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
   s.demoLean = val;
-  if(s.simulcastWith){ const p=G.stations.find(st=>st.id===s.simulcastWith); if(p) p.demoLean=val; }
+  if(s._simulcastSource===true){
+    simulcastGroupReceivers(s.id,G).forEach(p=>{p.demoLean=val;});
+  }else if(s.simulcastSourceStationId){
+    const lead=G.stations.find(st=>st.id===s.simulcastSourceStationId);
+    if(lead){
+      lead.demoLean=val;
+      simulcastGroupReceivers(lead.id,G).forEach(p=>{p.demoLean=val;});
+    }
+  }else if(s.simulcastWith){ const p=G.stations.find(st=>st.id===s.simulcastWith); if(p) p.demoLean=val; }
   renderAll();
 };
 window._mpApply_progFocus = function({ sid, focus }) {
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
   const v = normalizeProgrammingFocus(focus);
   s.programmingFocus = v;
-  if(s.simulcastWith){
+  if(s._simulcastSource===true){
+    simulcastGroupReceivers(s.id,G).forEach(p=>{p.programmingFocus=v;});
+  }else if(s.simulcastWith){
     const p = G.stations.find(st=>st.id===s.simulcastWith);
     if(p) p.programmingFocus = v;
   }
@@ -6009,6 +6117,13 @@ function applyAmPwToStation(s,pw){
   s.sig.universe=UNIVERSE[`AM_${pw}`]||0.65;
   if(pw==='DA') applyAmDaytimerNightSlotsToStation(s, typeof G!=='undefined'?G:null);
 }
+/** Apply FM ERP tier to reach/universe (translators excluded). */
+function applyFmFacilityToStation(s,pw){
+  if(!s||s.sig?.type!=='FM'||s.fmBooster)return;
+  s.sig.pw=pw;
+  s.sig.reach=RF[pw]||0.70;
+  s.sig.universe=UNIVERSE['FM_'+pw]||0.58;
+}
 /** AM night-limited pattern (internal pw 'DA'): reduced night power; sim bars local evening/overnight hosts (not FCC “daytimer” hours). */
 function stationIsAmDaytimer(s){
   return !!(s&&s.sig&&s.sig.type==='AM'&&s.sig.pw==='DA'&&!s.fmBooster);
@@ -6066,6 +6181,36 @@ function applyMarketTierAmPowerCaps(stations, marketId){
   // Local/regional frequencies cannot keep inflated power after tier trim (e.g. 10 kW on a local channel).
   applyAmFccPowerNormalization(stations, null);
   reassignAmClearChannelFlags(stations);
+}
+
+/**
+ * Optional per-market FM dial → ERP tier (game tokens). Keys must match `s.freq` strings.
+ * AM uses `window.AMFCC.normalizeAmPw` + optional `amFacilityByFreq` on MARKETS.
+ */
+function applyMarketDialFacilityOverrides(stations, marketId){
+  const m=MARKETS[marketId];
+  if(!m)return;
+  if(m.amFacilityByFreq){
+    const amap=m.amFacilityByFreq;
+    const AMFCC=typeof window!=='undefined'?window.AMFCC:null;
+    stations.forEach(s=>{
+      if(!s||s._bpSlotDeferred||s.fmBooster||s.sig?.type!=='AM')return;
+      const pw=amap[s.freq];
+      if(pw){
+        let use=pw;
+        if(AMFCC&&typeof AMFCC.normalizeAmPw==='function')use=AMFCC.normalizeAmPw(s.freq,pw);
+        applyAmPwToStation(s,use);
+      }
+    });
+  }
+  if(m.fmFacilityByFreq){
+    const fmap=m.fmFacilityByFreq;
+    stations.forEach(s=>{
+      if(!s||s._bpSlotDeferred||s.fmBooster||s.sig?.type!=='FM')return;
+      const pw=fmap[s.freq];
+      if(pw) applyFmFacilityToStation(s,pw);
+    });
+  }
 }
 
 /** Lower-48 AM frequency ↔ power normalization (loads/saves + post–BP build). */
@@ -6151,7 +6296,8 @@ function mkStn(bp,freq,year=1970){
     stream:{active:false,aqh:0,rev:0,upkeep:0,dragOffset:0,launchYear:0},
     fin:{rev:0,cost:0,ebitda:0},
     cp:null,mom:{},pers:ap(str),isPlayer:false,color:'#888',flog:[],
-    simulcastWith:null, // id of paired station, or null
+    simulcastWith:null, // legacy pair link (migrated to simulcastSourceStationId); kept for save compatibility
+    simulcastSourceStationId:null, // programming source id when this leg is a simulcast receiver (star model)
     fmSimulcastDupPct:100, // % of FM clock duplicating co-owned AM (non-dup era); 100 = full simulcast
     fmRemainderFormat:null, // FM-only: format for (100−dup)% when AM/FM non-dup applies
     demoLean:0,         // -1.0 younger .. +1.0 older
@@ -6173,6 +6319,8 @@ function mkStn(bp,freq,year=1970){
 
 const SC=[
   {id:'under',l:'The Underdog',  d:"You are now in charge of a struggling AM station. The ratings are soft. The morning host just quit. You have some money to turn it around (if you move quickly).",idx:[1],cash:250000},
+  /** GM Mode: same starting position as Underdog — hired GM; job security from board reviews (see gmMode.js). */
+  {id:'gm_under',l:'GENERAL MANAGER: THE UNDERDOG',d:"You were hired to run a struggling AM station: soft ratings and no morning host. Same challenge as The Underdog — but ownership expects sustainable results. Profit, revenue trend, and talent/franchise health are reviewed every two years. Underperform and you are out.",idx:[1],cash:250000,gmMode:true,gmOwnerArchetype:'turnaround'},
   {id:'cntry',l:'Country Roads', d:"An established country AM with solid ratings, a loyal audience, and real profit from day one. The question isn't survival — it's whether you can make the FM transition before erosion catches up.",idx:[2],cash:450000},
   {id:'soul', l:'Soul City',     d:"You're in charge of a Soul/R&B station that's doing well in the ratings, is deeply embedded in the community — but the sales are not as high as they could be. Build your audience and fight for every dollar.",idx:[3],cash:1750000},
   {id:'stack',l:'The Stack',     d:"You're running an AM/FM combo. In 1970, the AM station pays the bills, but they say FM is the future! Build an audience for your FM station — but make sure your AM station is healthy enough to subsidize your FM losses for a while.",idx:[5,8],cash:4000000},
@@ -6271,29 +6419,6 @@ const DRIFT={
       {y:2016,p:2,id:'election16',name:'Election Supercycle',
        desc:'Record political engagement. Opinion stations spike — then advertiser pressure hits the most extreme positions.',
        effect:(s,drift)=>{return drift>65?0.04:0.01;}},
-    ]
-  },
-  // SOUL/R&B: Classic Soul vs Funk/Disco
-  SOUL_RNB:{
-    label:'Sound Direction',
-    poleA:{name:'Classic Soul',desc:'Older Black audience, loyal and stable. Motown, gospel-influenced.'},
-    poleB:{name:'Funk / Disco',desc:'Young and explosive 1974-79. The crash when it comes is brutal.'},
-    default:35,
-    demoEffect:(drift,coh)=>{
-      const funk=drift/100;
-      const shift={'12-17':funk*.20,'18-24':funk*.15,'35-49':(1-funk)*.12,'50-64':(1-funk)*.10};
-      return 1+(shift[coh]||0);
-    },
-    inflections:[
-      {y:1974,p:1,id:'disco_rise',name:'Disco Rises',
-       desc:'Disco explodes across Black radio. Funk/Disco positioning captures the wave.',
-       effect:(s,drift)=>{return drift>50?0.04:0;}},
-      {y:1979,p:2,id:'disco_death',name:'Disco is Dead',
-       desc:'The backlash is total. Stations deep in Funk/Disco lose 25-40% of younger listeners over two periods.',
-       effect:(s,drift)=>{return drift>60?-0.05*(drift/100)*1.5:-0.005;}},
-      {y:1982,p:1,id:'quiet_storm',name:'The Quiet Storm',
-       desc:'Smooth, sophisticated R&B emerges. Stations near Classic Soul reclaim listeners who fled during Disco.',
-       effect:(s,drift)=>{return drift<40?0.025:0;}},
     ]
   },
   // COUNTRY: Traditional vs Crossover Pop
@@ -6408,32 +6533,38 @@ const DRIFT={
        }},
     ]
   },
-  // SOUL / R&B: Classic Soul vs Funk & Disco
+  // SOUL / R&B: pole labels are era-swapped in `getDrift` (Classic/Funk & Disco pre-1990; Classic/Contemporary R&B from 1990 on).
   SOUL_RNB:{
     label:'Sound Direction',
     poleA:{name:'Classic Soul',desc:'Deep gospel roots, Motown and Stax. Loyal older Black listeners. Community anchor identity.'},
     poleB:{name:'Funk & Disco',desc:'Groove-forward and dance-oriented. Pulls 18-34, crossover pop appeal. Vulnerable to backlash.'},
     default:35,
     demoEffect:(drift,coh)=>{
-      const funk=drift/100; // 0=classic soul, 1=funk/disco
+      const lean=drift/100; // 0=classic soul, 1=right pole (disco-era or contemporary R&B by year — same lean idea)
       const shift={
-        '18-24':funk*.18,
-        '25-34':funk*.12,
-        '35-49':(1-funk)*.10,
-        '50-64':(1-funk)*.08,
+        '18-24':lean*.18,
+        '25-34':lean*.12,
+        '35-49':(1-lean)*.10,
+        '50-64':(1-lean)*.08,
       };
       return 1+(shift[coh]||0);
     },
     inflections:[
       {y:1975,p:2,id:'disco_rise',name:'Disco Goes Mainstream',
-       desc:'Disco is everywhere. Funk & Disco-leaning Soul stations surge with the youth wave.',
+       desc:'Disco is everywhere. Funk & Disco–leaning Soul stations surge with the youth wave.',
        effect:(s,drift)=>{return drift>55?0.025:0;}},
       {y:1979,p:2,id:'disco_backlash',name:'Disco Demolition Night',
        desc:'Anti-disco backlash hits hard. Stations that chased the trend lose credibility. Classic Soul stations emerge as the authentic alternative.',
        effect:(s,drift)=>{return drift>60?-0.045:drift<35?0.020:0;}},
+      {y:1982,p:1,id:'quiet_storm',name:'The Quiet Storm',
+       desc:'Smooth, sophisticated R&B emerges. Stations near Classic Soul reclaim listeners who cooled on the dance floor.',
+       effect:(s,drift)=>{return drift<40?0.025:0;}},
       {y:1983,p:1,id:'rb_split',name:'Urban Contemporary Emerges',
        desc:'R&B is fracturing. Young listeners want hip-hop-adjacent sounds. Classic Soul holds its loyal base while Funk fades.',
        effect:(s,drift)=>{return drift>60?-0.020:drift<30?0.010:0;}},
+      {y:1996,p:1,id:'adult_rb_lane',name:'Adult R&B Lane Heats Up',
+       desc:'Current and recurrent R&B competes for 25–44 without becoming Urban CHR. Contemporary R&B–lean stations chase upside; heritage stations defend loyalty.',
+       effect:(s,drift)=>{return drift>55?0.015:drift<35?0.008:0.005;}},
     ]
   },
   // ADULT_CONTEMP: Soft AC vs Hot AC crossover
@@ -6718,8 +6849,8 @@ const DRIFT_POLE_GUIDANCE={
     B:{audience:'Passionate 35–64 (often male); ideology-aligned',strengths:'Intense loyalty; election and crisis spikes; network-ready talent',weaknesses:'Advertiser sensitivity; demo can age and narrow',monetization:'Direct response; issue advertisers; high rates in peak cycles',risks:'Host dependency; controversy; brand boycotts'}
   },
   SOUL_RNB:{
-    A:{audience:'35–64 Black adults; church-adjacent; tradition-minded',strengths:'Deep community loyalty; stable dayparts; lower churn when authentic',weaknesses:'Younger demos drift to funk/R&B crossover; ceiling in mass-market billing',monetization:'Local services, faith, community; steady mid CPMs',risks:'Sounds "old" to teens; competition from crossover and FM'},
-    B:{audience:'18–34 dance/club skew; younger Black and crossover listeners',strengths:'Explosive ratings when the sound is hot; youth advertiser demand',weaknesses:'Brutal when trends flip; loyalty thinner',monetization:'Club, fashion, beverages; burst revenue in peak years',risks:'Disco-style backlash; one-hit dependency; format whiplash'}
+    A:{audience:'35–64 Black adults; church-adjacent; tradition-minded',strengths:'Deep community loyalty; stable dayparts; lower churn when authentic',weaknesses:'Younger demos drift to funk/disco crossover; ceiling in mass-market billing',monetization:'Local services, faith, community; steady mid CPMs',risks:'Sounds "old" to teens; competition from crossover and FM'},
+    B:{audience:'18–34 dance/club skew; younger Black and crossover listeners',strengths:'Explosive ratings when disco/funk is hot; youth advertiser demand',weaknesses:'Brutal when trends flip; loyalty thinner',monetization:'Club, fashion, beverages; burst revenue in peak years',risks:'Disco backlash; one-hit dependency; format whiplash'}
   },
   COUNTRY:{
     A:{audience:'Rural and small-town skew; strong 45+; core country purists',strengths:'Deep loyalty; low churn; strong AM retention in heritage markets',weaknesses:'Lower revenue ceiling; slower youth growth; narrower ad categories',monetization:'Local retail, auto, agriculture-adjacent; steady but modest CPMs',risks:'Core audience aging; suburban listeners skimmed by crossover stations'},
@@ -6791,8 +6922,34 @@ const DRIFT_POLE_GUIDANCE={
   }
 };
 
-function htmlDriftStrategicGuidance(cfg, fmtKey){
-  const g=DRIFT_POLE_GUIDANCE[fmtKey];
+/** Pre-1990: disco-era strategic copy. 1990+: heritage vs adult current R&B (paired with `soulRnbDriftPolesForYear`). */
+function soulRnbStrategicGuidanceForYear(year){
+  const y=year||1970;
+  if(y>=1990){
+    return {
+      A:{
+        audience:'45+ Black adults; heritage-first; church- and community-adjacent',
+        strengths:'Motown/Stax credibility; deep loyalty; slower churn; stable community anchor',
+        weaknesses:'Younger adults sample newer R&B; slower revenue growth than current-heavy stations',
+        monetization:'Local services, faith, community; steady mid CPMs',
+        risks:'Sounds dated to teens; must hold identity vs softer Urban AC drift',
+      },
+      B:{
+        audience:'25–44 Black adults and crossover adults; younger than pure heritage',
+        strengths:'Current and recurrent adult R&B lifts; higher ratings upside; stronger advertiser interest when hot',
+        weaknesses:'Thinner loyalty than catalog soul; sharper competitive pressure',
+        monetization:'Retail, automotive, lifestyle; national R&B-friendly schedules',
+        risks:'Faster churn; must stay distinct from Urban CHR and hip-hop–heavy stations',
+      },
+    };
+  }
+  return DRIFT_POLE_GUIDANCE.SOUL_RNB;
+}
+
+function htmlDriftStrategicGuidance(cfg, fmtKey, yearOpt){
+  const yr=yearOpt!==undefined&&yearOpt!==null?yearOpt:(typeof G!=='undefined'&&G?G.year:1970);
+  let g=DRIFT_POLE_GUIDANCE[fmtKey];
+  if(fmtKey==='SOUL_RNB')g=soulRnbStrategicGuidanceForYear(yr);
   const row=(label,text)=>`<div style="margin-top:8px"><span style="font-size:11px;letter-spacing:.1em;color:var(--mut);text-transform:uppercase;display:block;margin-bottom:3px">${label}</span><span style="font-size:14px;color:var(--off);line-height:1.45;display:block">${text}</span></div>`;
   const poleCard=(poleKey, poleCfg, borderCol)=>{
     const gu=g?.[poleKey];
@@ -6828,10 +6985,13 @@ function getDrift(s){
     s.drift[store]=val;
   }
   const yr=(typeof G!=='undefined'&&G)?(G.year||1970):1970;
-  // Only CHR / Top 40 lineage uses era-based hit-radio pole labels; other formats keep DRIFT.* poles.
+  // CHR / Top 40 lineage: era-based hit-radio poles. Soul/R&B: heritage vs disco pre-1990, vs contemporary adult R&B from 1990 on.
   let cfg={...d};
   if(isHitsFormatLineage(s.format)){
     const poles=hitsDriftPolesForYear(yr);
+    cfg={...d,poleA:poles.poleA,poleB:poles.poleB};
+  } else if(s.format==='SOUL_RNB'){
+    const poles=soulRnbDriftPolesForYear(yr);
     cfg={...d,poleA:poles.poleA,poleB:poles.poleB};
   }
   return {cfg,val};
@@ -6969,7 +7129,7 @@ function appl(s,coh,G){
   const isAMMusic=s.sig.type==='AM'&&!s.fmBooster&&amMusicFormats.includes(s.format);
   // Booster with music format: partial immunity — only _tFrac fraction is protected
   const isAMBoosterMusic=s.fmBooster&&amMusicFormats.includes(s.format)&&s._boosterOrigSig;
-  const isAMTalk=s.sig.type==='AM'&&!s.fmBooster&&!s.simulcastWith&&['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format);
+  const isAMTalk=s.sig.type==='AM'&&!s.fmBooster&&!stationHasSimulcastLeg(s,G)&&['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format);
   const amViab=amViabForYear(year);
   // Full AM music penalty (no booster)
   const _rawAMPenalty = Math.max(.10,(1.0-0.60*fmp)*amViab);
@@ -7012,7 +7172,7 @@ function appl(s,coh,G){
   const strm=cohIdx<=1?1-effectiveDrag*.8:cohIdx<=3?1-effectiveDrag*.4:1-effectiveDrag*.1;
 
   // Simulcast bonus
-  const simBonus=s.simulcastWith?1.15:1;
+  const simBonus=stationHasSimulcastLeg(s,G)?1.15:1;
 
   // Format drift modifier
   const dr=getDrift(s);
@@ -7729,10 +7889,20 @@ function stationsSameOwnershipCluster(a,b,G){
 }
 /** FM full-service + co-owned AM full-service simulcast pair; null if rule does not apply. */
 function fmAmNonDupQualifiedPair(fm,G){
-  if(!fm||fm._bpSlotDeferred||fm.sig?.type!=='FM'||fm.fmBooster||!fm.simulcastWith)return null;
-  const am=G.stations.find(st=>st.id===fm.simulcastWith);
-  if(!am||am.simulcastWith!==fm.id||am._bpSlotDeferred)return null;
-  if(am.sig?.type!=='AM'||am.fmBooster)return null;
+  if(!fm||fm._bpSlotDeferred||fm.sig?.type!=='FM'||fm.fmBooster)return null;
+  let am=null;
+  if(fm.simulcastWith){
+    const cand=G.stations.find(st=>st.id===fm.simulcastWith);
+    if(cand&&cand.simulcastWith===fm.id&&!cand._bpSlotDeferred&&cand.sig?.type==='AM'&&!cand.fmBooster)am=cand;
+  }
+  if(!am&&fm.simulcastSourceStationId){
+    const src=G.stations.find(st=>st.id===fm.simulcastSourceStationId);
+    if(src&&!src._bpSlotDeferred&&src._simulcastSource===true&&src.sig?.type==='AM'&&!src.fmBooster)am=src;
+  }
+  if(!am&&fm._simulcastSource===true){
+    am=simulcastGroupReceivers(fm.id,G).find(r=>r&&r.sig?.type==='AM'&&!r.fmBooster&&!r._bpSlotDeferred)||null;
+  }
+  if(!am)return null;
   if(!stationsSameOwnershipCluster(fm,am,G))return null;
   return {fm,am};
 }
@@ -7860,6 +8030,152 @@ function initFmNonDupAfterPair(src,dst,G){
   fm.fmRemainderFormat=maxPct>=100?am.format:defaultFmRemainderFormat(am.format,G,fm.id);
 }
 
+/**
+ * Baseline-relative talent adequacy (performance layer only — not economics).
+ * expected ≈ f(format, market tier, AM/FM, audience share) so high-rev billers are not
+ * treated as "undertalented" merely because tal/rev is small.
+ */
+const TALENT_EXPECT_BASE_BY_FORMAT={
+  NEWS_TALK:118000,ALL_NEWS:124000,SPORTS_TALK:116000,PODCAST_TALK:106000,
+  TOP40:92000,CHR:92000,HOT_AC:88000,
+  ADULT_CONTEMP:86000,BEAUTIFUL_MUSIC:72000,MOR:68000,
+  COUNTRY:84000,ALBUM_ROCK:82000,ALT_ROCK:86000,CLASSIC_ROCK:80000,
+  OLDIES:65000,ADULT_STANDARDS:62000,CLASSIC_HITS:78000,
+  RHYTHMIC:90000,URBAN_CONTEMP:88000,SOUL_RNB:90000,
+  SPANISH:78000,GOSPEL:70000,
+};
+function formatTalentExpectationBase(s){
+  const f=s?.format;
+  if(f&&TALENT_EXPECT_BASE_BY_FORMAT[f]!=null)return TALENT_EXPECT_BASE_BY_FORMAT[f];
+  return 82000;
+}
+function marketTierTalentExpectationMult(marketId){
+  const tier=(MARKETS[marketId||ACTIVE_MARKET]||MARKETS.atlanta).rankTier||'medium';
+  if(tier==='mega')return 1.14;
+  if(tier==='large')return 1.06;
+  if(tier==='medium')return 1.0;
+  return 0.94;
+}
+/** AM talk vs FM music — expectations differ; not revenue-linked. */
+function bandTalentExpectationMult(s){
+  const am=s.sig?.type==='AM';
+  const talk=TALK_FMTS.includes(s?.format)||s?.format==='ALL_NEWS';
+  if(am&&talk)return 1.08;
+  if(!am&&talk)return 1.04;
+  if(am&&!talk)return 0.93;
+  return 1.0;
+}
+/** Larger-audience stations expected to carry more on-air cost; scales on share only. */
+function shareTalentExpectationMult(s){
+  const sh=Math.max(0,s?.rat?.share||0);
+  const t=Math.max(0,Math.min(1,(sh-0.012)/0.11));
+  return 0.86+0.22*t;
+}
+function expectedTalentSpendForStation(s,G){
+  const mkt=G?.marketId||ACTIVE_MARKET||'atlanta';
+  const base=formatTalentExpectationBase(s);
+  const tierK=marketTierTalentExpectationMult(mkt);
+  const bandK=bandTalentExpectationMult(s);
+  const shareK=shareTalentExpectationMult(s);
+  return Math.max(8000,Math.round(base*tierK*bandK*shareK));
+}
+/** actual fin.tal vs baseline for station type (prior book — same lag as before). */
+function getTalentAdequacy(s,G){
+  const actual=Math.max(0,s.fin?.tal||0);
+  const exp=expectedTalentSpendForStation(s,G);
+  if(!(exp>0))return 1;
+  let r=actual/exp;
+  return Math.max(0.35,Math.min(2.8,r));
+}
+/** Format weights — personality-heavy formats feel franchise / talent more (drift + ratings side-effects). */
+const TALENT_FORMAT_WEIGHT={
+  TOP40:0.6, CHR:0.6,
+  HOT_AC:0.5,
+  ADULT_CONTEMP:0.4, BEAUTIFUL_MUSIC:0.4, MOR:0.3,
+  COUNTRY:0.5,
+  ALBUM_ROCK:0.5, ALT_ROCK:0.6, CLASSIC_ROCK:0.4,
+  NEWS_TALK:0.8, ALL_NEWS:0.85, SPORTS_TALK:0.75, PODCAST_TALK:0.7,
+  OLDIES:0.3,
+  ADULT_STANDARDS:0.2,
+  CLASSIC_HITS:0.35, RHYTHMIC:0.55, URBAN_CONTEMP:0.55, SOUL_RNB:0.55,
+  SPANISH:0.45, GOSPEL:0.4,
+};
+function talentFormatWeightForStation(s){
+  const f=s?.format;
+  if(!f)return 0.5;
+  if(TALENT_FORMAT_WEIGHT[f]!=null)return TALENT_FORMAT_WEIGHT[f];
+  return 0.5;
+}
+/** Maps spend ratio (actual/expected) to a slow-moving franchise target; not applied directly to ratings. */
+function talentFranchiseTargetFromSpendRatio(ratio){
+  const r=Math.max(0,Math.min(2.8,ratio));
+  return Math.max(0.1,Math.min(1,0.12+0.88*_smoothstep(0.18,1.06,r)));
+}
+/** Persistent hidden score 0.1–1; initialized on first updateTalentFranchiseScores pass. */
+function getTalentFranchiseScore(s){
+  const v=s?.talentFranchise;
+  if(v==null||!Number.isFinite(v))return 0.88;
+  return Math.max(0.1,Math.min(1,v));
+}
+/**
+ * After seedRev: drift franchise toward spend-implied target (inertia + caps).
+ * Skipped when talent-performance layer is off (A/B). Validation scope updates only the focused station.
+ */
+function updateTalentFranchiseScores(stations,G){
+  if(typeof window!=='undefined'&&window.__WL_TALENT_PERFORMANCE_LAYER__===false)return;
+  if(!stations||!G)return;
+  const vScope=typeof window!=='undefined'?window.__WL_TALENT_PERF_VALIDATION_STATION_ID__:undefined;
+  for(let i=0;i<stations.length;i++){
+    const s=stations[i];
+    if(!s||s._bpSlotDeferred||s.isPublic||s.lmaLessorId)continue;
+    if(String(s.format||'').startsWith('PUBLIC_'))continue;
+    if(vScope!=null&&vScope!==''&&String(s.id)!==String(vScope))continue;
+    const expected=expectedTalentSpendForStation(s,G);
+    const actual=Math.max(0,s.fin?.tal||0);
+    const ratio=expected>0?Math.min(2.8,actual/expected):1;
+    const w=talentFormatWeightForStation(s);
+    const target=talentFranchiseTargetFromSpendRatio(ratio);
+    let fr=s.talentFranchise;
+    if(fr==null||!Number.isFinite(fr))fr=0.88;
+    const alpha=0.052+0.12*w;
+    fr=fr*(1-alpha)+target*alpha;
+    s.talentFranchise=Math.max(0.1,Math.min(1,fr));
+  }
+}
+/**
+ * Talent franchise → ratings: small ceiling on appeal only; stickiness/resilience via momentum multipliers.
+ * Not adequacy-direct. Toggle off: window.__WL_TALENT_PERFORMANCE_LAYER__ === false.
+ * Scoped validation: __WL_TALENT_PERF_VALIDATION_STATION_ID__.
+ */
+function talentFranchiseRatingsEffect(s,G){
+  if(typeof window!=='undefined'&&window.__WL_TALENT_PERFORMANCE_LAYER__===false){
+    return{combined:1,ceilingMult:1,spdLossMult:1,spdGainMult:1,w:0.5,franchise:1,expectedTalent:0,actualTalent:0,stabilityPenalty:0,talentBoost:1};
+  }
+  if(!s||s.isPublic||!s.format||String(s.format).startsWith('PUBLIC_')){
+    return{combined:1,ceilingMult:1,spdLossMult:1,spdGainMult:1,w:0.5,franchise:1,expectedTalent:0,actualTalent:0,stabilityPenalty:0,talentBoost:1};
+  }
+  const vScope=typeof window!=='undefined'?window.__WL_TALENT_PERF_VALIDATION_STATION_ID__:undefined;
+  if(vScope!=null&&vScope!==''){
+    if(String(s.id)!==String(vScope)){
+      return{combined:1,ceilingMult:1,spdLossMult:1,spdGainMult:1,w:0.5,franchise:1,expectedTalent:0,actualTalent:0,stabilityPenalty:0,talentBoost:1};
+    }
+  }
+  const w=talentFormatWeightForStation(s);
+  const gCtx=G||{marketId:ACTIVE_MARKET,year:1970};
+  const actualTalent=Math.max(0,s.fin?.tal||0);
+  const expectedTalent=expectedTalentSpendForStation(s,gCtx);
+  const fr=getTalentFranchiseScore(s);
+  const ceilingMult=Math.max(0.972,Math.min(1.024,0.978+0.032*fr*w));
+  const combined=ceilingMult;
+  const stick=fr*w;
+  const spdLossMult=Math.min(1.42,Math.max(0.72,1.06+0.38*(1-fr)*w));
+  const spdGainMult=Math.min(1.08,Math.max(0.62,0.74+0.34*stick));
+  const stabilityPenalty=Math.max(0,Math.min(0.22,(1-fr)*0.55*w));
+  return{combined,ceilingMult,spdLossMult,spdGainMult,w,franchise:fr,expectedTalent,actualTalent,stabilityPenalty,talentBoost:1};
+}
+/** @deprecated name — use talentFranchiseRatingsEffect; kept for grep/debug parity */
+function talentRatingsPerformanceMultipliers(s,G){return talentFranchiseRatingsEffect(s,G);}
+
 function recalc(stations,G){
   const _pubEduMultCache=new Map();
   const pubEduM=s=>{
@@ -7870,6 +8186,17 @@ function recalc(stations,G){
     return m;
   };
   const activeIx=stations.map((s,i)=>s&&!s._bpSlotDeferred?i:-1).filter(i=>i>=0);
+  const talentPmById=new Map();
+  const talentPmFor=s=>{
+    if(!s?.id)return talentFranchiseRatingsEffect(s,G);
+    if(talentPmById.has(s.id))return talentPmById.get(s.id);
+    const tpm=talentFranchiseRatingsEffect(s,G);
+    talentPmById.set(s.id,tpm);
+    if(typeof window!=='undefined'&&window.DEBUG_TALENT){
+      console.log('Talent franchise',{call:s.callLetters,franchise:tpm.franchise,expectedTalent:tpm.expectedTalent,actualTalent:tpm.actualTalent,weight:tpm.w,ceilingMult:tpm.ceilingMult,spdLossMult:tpm.spdLossMult,spdGainMult:tpm.spdGainMult});
+    }
+    return tpm;
+  };
   COH.forEach(coh=>{
     const sc=activeIx.map(i=>{
       const s=stations[i];
@@ -7907,7 +8234,9 @@ function recalc(stations,G){
       }else{
         coreAppl=Math.max(0,appl(s,coh,G));
       }
-      const rv=Math.max(0,coreAppl*effB*promoBoost*vanLift*jingleLift);
+      let rv=Math.max(0,coreAppl*effB*promoBoost*vanLift*jingleLift);
+      const tpm=talentPmFor(s);
+      rv*=tpm.ceilingMult;
       return Number.isFinite(rv)?rv:0;
     });
     // Lane crowding: superlinear pain once a lane has more than `laneStart` commercial stations.
@@ -8004,6 +8333,12 @@ function recalc(stations,G){
           spd=Math.min(0.76,spd+0.065+0.055*_smoothstep(1972,1982,gy));
         if(d>0&&shStation>0.088)
           spd=Math.max(0.29,spd-0.045);
+      }
+      const tpmMom=talentPmFor(s);
+      if(!s.isPublic&&!String(s.format||'').startsWith('PUBLIC_')){
+        if(d<0)spd*=tpmMom.spdLossMult;
+        else spd*=tpmMom.spdGainMult;
+        spd=Math.min(0.95,spd);
       }
       const ns=Math.max(0,cur+d*spd);
       const pop=(POP.cohorts[coh]?.t||0)*effUniverse(s);
@@ -8299,9 +8634,16 @@ function seedRat(stations,fmpOrYear){
   });
 }
 
-// Simulcast economics: use _simulcastSource + simulcastWith only (no AM/FM “lead” inference).
+// Simulcast economics: star model (`_simulcastSource` + `simulcastSourceStationId`) + legacy mutual `simulcastWith` pairs.
 function simulcastProgrammingSourceStation(s,G){
-  if(!s?.simulcastWith)return null;
+  if(!s)return null;
+  if(s._simulcastSource===true)return s;
+  if(s.simulcastSourceStationId){
+    const lead=(G.stations||[]).find(st=>st.id===s.simulcastSourceStationId);
+    if(lead&&lead._simulcastSource===true)return lead;
+    return null;
+  }
+  if(!s.simulcastWith)return null;
   const p=(G.stations||[]).find(st=>st.id===s.simulcastWith);
   if(!p||p.simulcastWith!==s.id)return null;
   if(s._simulcastSource===true)return s;
@@ -8316,6 +8658,17 @@ function isSimulcastProgrammingReceiver(s,G){
 function rivalPortfolioDebtKey(s){
   if(!s||s.isPlayer)return null;
   if(s.corpOwner)return 'corp:'+s.corpOwner;
+  if(s._simulcastSource===true){
+    const ids=[s.id,...simulcastGroupReceivers(s.id,G).map(r=>r.id)].sort((a,b)=>a-b);
+    return 'sim:'+ids.join(':');
+  }
+  if(s.simulcastSourceStationId){
+    const lead=(G.stations||[]).find(st=>st.id===s.simulcastSourceStationId);
+    if(lead&&lead._simulcastSource===true){
+      const ids=[lead.id,...simulcastGroupReceivers(lead.id,G).map(r=>r.id)].sort((a,b)=>a-b);
+      return 'sim:'+ids.join(':');
+    }
+  }
   if(s.simulcastWith){
     const a=String(s.id),b=String(s.simulcastWith);
     return 'sim:'+(a<b?a+':'+b:b+':'+a);
@@ -8327,6 +8680,13 @@ function getRivalPortfolioStations(s,G){
   if(!s||s.isPlayer||s.isPublic||s._bpSlotDeferred)return [];
   if(s.corpOwner){
     return (G.stations||[]).filter(st=>st&&!st._bpSlotDeferred&&!st.isPlayer&&!st.isPublic&&st.corpOwner===s.corpOwner);
+  }
+  if(s._simulcastSource===true){
+    return[s,...simulcastGroupReceivers(s.id,G)].filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic);
+  }
+  if(s.simulcastSourceStationId){
+    const lead=(G.stations||[]).find(st=>st.id===s.simulcastSourceStationId);
+    if(lead&&lead._simulcastSource===true)return[lead,...simulcastGroupReceivers(lead.id,G)].filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic);
   }
   if(s.simulcastWith){
     const p=(G.stations||[]).find(st=>st.id===s.simulcastWith);
@@ -8441,7 +8801,16 @@ function syncSimulcastBudgetStressPairs(G){
   const stations=G.stations||[];
   const seen=new Set();
   stations.forEach(s=>{
-    if(!s||s._bpSlotDeferred||s.isPublic||!s.simulcastWith)return;
+    if(!s||s._bpSlotDeferred||s.isPublic)return;
+    if(s._simulcastSource===true){
+      if(seen.has(s.id))return;
+      const group=[s,...simulcastGroupReceivers(s.id,G)];
+      group.forEach(x=>seen.add(x.id));
+      const mx=Math.max(...group.map(x=>x.budgetStress||0));
+      group.forEach(x=>{x.budgetStress=mx;});
+      return;
+    }
+    if(!s.simulcastWith)return;
     if(seen.has(s.id))return;
     const p=stations.find(st=>st.id===s.simulcastWith);
     if(!p||p.simulcastWith!==s.id)return;
@@ -9127,6 +9496,7 @@ function seedRev(stations,G){
     s.fin.cost=0;
     s.fin.ebitda=fee;
   });
+  updateTalentFranchiseScores(stations,G);
 }
 
 /**
@@ -10314,7 +10684,7 @@ function openDrift(sid){
   const cfg=dr.cfg;
   const val=dr.val;
 
-  const strategicGuidanceHtml=htmlDriftStrategicGuidance(cfg, driftDefKey(s.format));
+  const strategicGuidanceHtml=htmlDriftStrategicGuidance(cfg, driftDefKey(s.format), G.year);
 
   document.getElementById('drift-title').textContent=`${s.callLetters} — ${cfg.label.toUpperCase()}`;
   document.getElementById('driftb').innerHTML=`
@@ -10366,8 +10736,15 @@ function doDrift(sid){
   if(!s.driftHistory)s.driftHistory={};
   const histKey=dStore;
   if(!s.driftHistory[histKey])s.driftHistory[histKey]={commitYear:G.year};
-  // Sync to simulcast partner — same station, same strategy
-  if(s.simulcastWith){
+  // Sync to simulcast receivers — same station, same strategy
+  if(s._simulcastSource===true){
+    simulcastGroupReceivers(s.id,G).forEach(partner=>{
+      if(!partner.drift)partner.drift={};
+      partner.drift[dStore]=newVal;
+      if(!partner.driftHistory)partner.driftHistory={};
+      if(!partner.driftHistory[histKey])partner.driftHistory[histKey]={commitYear:G.year};
+    });
+  }else if(s.simulcastWith){
     const partner=G.stations.find(st=>st.id===s.simulcastWith);
     if(partner){
       if(!partner.drift)partner.drift={};
@@ -10382,7 +10759,11 @@ function doDrift(sid){
   const dir=newVal>oldVal?'→ '+poleBname:'← '+poleAname;
   const histNote=`Positioning ${oldVal}→${newVal} ${dir}`;
   logHistory(s,'NOTE',histNote,G);
-  if(s.simulcastWith){
+  if(s._simulcastSource===true){
+    simulcastGroupReceivers(s.id,G).forEach(partner=>{
+      logHistory(partner,'NOTE',`Positioning (simulcast) ${oldVal}→${newVal} ${dir}`,G);
+    });
+  }else if(s.simulcastWith){
     const partner=G.stations.find(st=>st.id===s.simulcastWith);
     if(partner) logHistory(partner,'NOTE',`Positioning (simulcast) ${oldVal}→${newVal} ${dir}`,G);
   }
@@ -10722,7 +11103,7 @@ function applyEv(G,ev){
     else if(e==='stream+')G.streamDrag=Math.min(.60,G.streamDrag+.06);
     else if(e==='amtalk_warn'||e==='amtalk_warn2'){
       // If player has an AM Talk/Sports station without FM, make it personal
-      const amTalkStns=G.ps.filter(s=>['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format)&&s.sig.type==='AM'&&!s.fmBooster&&!s.simulcastWith);
+      const amTalkStns=G.ps.filter(s=>['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format)&&s.sig.type==='AM'&&!s.fmBooster&&!stationHasSimulcastLeg(s,G));
       if(amTalkStns.length){
         const names=amTalkStns.map(s=>s.callLetters).join(', ');
         G.news.unshift({v:'HIGH',t:`📻 ${names}: Your AM Talk ${amTalkStns.length>1?'stations are':'station is'} now facing audience erosion from streaming and podcasts. Add an FM simulcast or translator to stop the bleed.`,y:G.year,p:G.period,iy:true});
@@ -11422,6 +11803,7 @@ function genMarket(scenId){
 
   // AM 50kW count by market tier (mega vs large vs medium); excess → 10/5/1kW/DA. Clear-channel on top two survivors.
   applyMarketTierAmPowerCaps(stations,ACTIVE_MARKET);
+  applyMarketDialFacilityOverrides(stations,ACTIVE_MARKET);
 
   applyMarketOpeningShape(stations,ACTIVE_MARKET);
 
@@ -11488,7 +11870,7 @@ function genMarket(scenId){
       cp:null,mom:m,prog:p,pers:PD.PUBLIC,
       isPlayer:false,isPublic:true,
       _pubLaunchYear:launchYear,
-      simulcastWith:null,demoLean:0,progInvestment:0,entryTurn:null,_history:[],
+      simulcastWith:null,simulcastSourceStationId:null,demoLean:0,progInvestment:0,entryTurn:null,_history:[],
       drift:{},flog:[],
     };
   }
@@ -11553,6 +11935,8 @@ function genMarket(scenId){
       });
     });
 
+    applyMarketDialFacilityOverrides(stations,ACTIVE_MARKET);
+
     // Pre-apply FCC expansion
     const fccEvs=EVDATA.filter(ev=>ev.y<=startYear&&ev.e&&ev.e.startsWith('fcc-'));
     let fccAM=1,fccFM=1;
@@ -11605,6 +11989,7 @@ function genMarket(scenId){
     };
     const fragNewsTail=
       fragShell.news && fragShell.news.length ? fragShell.news.slice().reverse() : [];
+    initIndieLicenseeKeysFromStations(stations,{marketId:ACTIVE_MARKET});
     return{
       city:activeMkt2.label,marketId:ACTIVE_MARKET,year:startYear,period:1,
       turn:(startYear-1970)*2,
@@ -11635,6 +12020,7 @@ function genMarket(scenId){
   const mockG={adx:1.0,streamDrag:0,year:1970};
   seedRev(stations,mockG);
   const activeMkt=MARKETS[ACTIVE_MARKET]||MARKETS.atlanta;
+  initIndieLicenseeKeysFromStations(stations,{marketId:ACTIVE_MARKET});
   return{
     city:activeMkt.label,marketId:ACTIVE_MARKET,year:1970,period:1,turn:0,
     stations,ps:stations.filter(s=>s&&s.isPlayer),
@@ -11689,6 +12075,8 @@ function processAtlanta1970DeferredLaunches(G){
     s.entryTurn={year:G.year,period:G.period};
     s.launchPeriod=G.turn||0;
     G.stations[i]=s;
+    applyMarketDialFacilityOverrides([s],G.marketId||ACTIVE_MARKET);
+    if(!s.aiLicenseeKey)s.aiLicenseeKey=rivalFictionalParentName(s,G)||('indie_'+s.id);
     if(bp.type==='FM'){
       const entYr=G.year||1970;
       const isLate70sMusicEnt=[7,15,16,18].includes(i)&&entYr>=1974;
@@ -13051,15 +13439,15 @@ function openScenSelect(localSave){
   const mktLabel=(MARKETS[_selectedMarket]||MARKETS.atlanta).label;
 
   const eraGroups=[
-    {label:'1970 — THE BEGINNING', ids:['under','cntry','soul','stack','fmpn','wsb']},
+    {label:'1970 — THE BEGINNING', ids:['under','gm_under','cntry','soul','stack','fmpn','wsb']},
     {label:'1978 — FM REVOLUTION', ids:['fmrev','acrise']},
     {label:'1985 — FORMAT WARS',   ids:['chrwar','amtalk']},
   ];
   const eraGroupsFiltered=eraGroups.map(era=>({...era,ids:era.ids.filter(id=>allowed.has(id))})).filter(era=>era.ids.length>0);
 
-  const diffHints={under:'Survival mode. Thin cash — morning slot empty; hire fast.',soul:'Strong cume; under-monetized. Grind sales and CPM.',fmpn:'Lean years 1970–72. Survive them and FM makes you wealthy.',cntry:'Profitable now. Erosion will catch up.',stack:'AM/FM combo. High ceiling, high overhead.',wsb:'Dominant now, eroding fast. Every format decision has a cost.',tutorial_turnaround:'Walkthrough — follow on-screen steps; finish anytime by playing normally after the last lesson.',fmrev:'Thin margins until 1980. Album Rock will make you rich if you survive.',acrise:'AC gets crowded fast. Brand loyalty is everything.',chrwar:'Three viable format bets. Only one will dominate.',amtalk:'Revenue cliff is coming. Move fast or move on.'};
+  const diffHints={under:'Survival mode. Thin cash — morning slot empty; hire fast.',gm_under:'Same start as Underdog — plus GM job reviews on margin, revenue trend, and talent/franchise. Miss expectations too often and you are dismissed.',soul:'Strong cume; under-monetized. Grind sales and CPM.',fmpn:'Lean years 1970–72. Survive them and FM makes you wealthy.',cntry:'Profitable now. Erosion will catch up.',stack:'AM/FM combo. High ceiling, high overhead.',wsb:'Dominant now, eroding fast. Every format decision has a cost.',tutorial_turnaround:'Walkthrough — follow on-screen steps; finish anytime by playing normally after the last lesson.',fmrev:'Thin margins until 1980. Album Rock will make you rich if you survive.',acrise:'AC gets crowded fast. Brand loyalty is everything.',chrwar:'Three viable format bets. Only one will dominate.',amtalk:'Revenue cliff is coming. Move fast or move on.'};
   const makeCard=sc=>{
-    const diff=sc.diff||(sc.id==='under'||sc.id==='soul'||sc.id==='fmpn'||sc.id==='amtalk'||sc.id==='fmrev'?'HARD':sc.id==='cntry'||sc.id==='stack'||sc.id==='acrise'||sc.id==='chrwar'?'MEDIUM':'EASY');
+    const diff=sc.diff||(sc.id==='under'||sc.id==='gm_under'||sc.id==='soul'||sc.id==='fmpn'||sc.id==='amtalk'||sc.id==='fmrev'?'HARD':sc.id==='cntry'||sc.id==='stack'||sc.id==='acrise'||sc.id==='chrwar'?'MEDIUM':'EASY');
     const diffCls=diff==='HARD'?'hard':diff==='MEDIUM'?'med':'easy';
     const stnInfo=sc.idx.length===2?'AM/FM Combo':'Single Station';
     const cashFmt=`${f$(scaledScenarioCash(sc.cash,_selectedMarket))} starting cash`;
@@ -13165,7 +13553,9 @@ function openOnboarding(scenId){
   const yr=sc.startYear||1970;
   const span=2020-yr;
   const mktGoal=(MARKETS[_selectedMarket]||MARKETS.atlanta).label;
-  const goalText=`Dominate the ${mktGoal} market over ${span} years — ${yr} to 2020. Score is based on average ratings share, revenue growth, and surviving the industry's upheavals. Decade checkpoints grade your performance.`;
+  const goalText=sc.gmMode
+    ?`As General Manager, keep your job through ${span} years (${yr}–2020). Ownership reviews profit margin, revenue trend, and talent/franchise health on a rolling schedule — miss expectations too often and you are dismissed. (Cash bankruptcy is separate.)`
+    :`Dominate the ${mktGoal} market over ${span} years — ${yr} to 2020. Score is based on average ratings share, revenue growth, and surviving the industry's upheavals. Decade checkpoints grade your performance.`;
 
   // Era-specific strategic tips shown as the KEY WATCH section
   const eraTips={
@@ -13218,6 +13608,11 @@ function openOnboarding(scenId){
       {k:'THE CLIFF',v:`Your AM music revenue will fall roughly 35-40% between now and 1990. The question is whether you pivot before or after it hurts.`},
       {k:'NEWS/TALK',v:`Rush Limbaugh launches nationally in 1988. The Talk format explodes. Get there early or pay a premium to follow.`},
       {k:'CASH',v:`Thin runway. Every period without a pivot is a period of compounding damage. Move fast.`},
+    ],
+    gm_under:[
+      {k:'BOARD REVIEWS',v:`Every two years (four periods), ownership scores your margin, revenue trend, and talent/franchise health. Job security drops on sustained misses — recovery is possible if you fix fundamentals.`},
+      {k:'NO CUTS TO WIN',v:`Slashing talent may lift margin short term but erodes franchise; the board notices revenue and franchise decay, not just this quarter.`},
+      {k:'CASH VS CAREER',v:`Negative cash can still bankrupt you; GM job security is separate — you can be fired while solvent or survive a soft quarter if the trend is right.`},
     ],
   };
 
@@ -13308,6 +13703,7 @@ function startPlay(scenId){
       scenarioId:scenId,
       marketId:ACTIVE_MARKET||_selectedMarket||'atlanta',
     });
+    if(typeof wlGmMode!=='undefined'&&wlGmMode.initGmStateForGame)wlGmMode.initGmStateForGame(G);
   }catch(err){
     showError('Failed during genMarket: '+err.message, err.stack||String(err));
   }
@@ -13323,12 +13719,118 @@ function loadLocalSaveAndClose(el){
 }
 
 // ── SIMULCAST HELPERS ─────────────────────────────────────────────
-// Model: each station has at most one simulcastWith partner + boolean _simulcastSource.
-// Future expansion (translator chains, multi-FM repeaters, clusters) may need a dedicated
-// simulcast group / graph instead of a single pair link — not implemented in this build.
+// Star model: one programming source (`_simulcastSource`) + N receivers (`simulcastSourceStationId` → source).
+// Legacy bidirectional `simulcastWith` pairs are migrated on load via `migrateSimulcastLegacyPairsToStar`.
+function simulcastGroupReceivers(sourceId,G){
+  return(G.stations||[]).filter(t=>t&&!t._bpSlotDeferred&&t.simulcastSourceStationId===sourceId);
+}
+/** True if this station is part of any simulcast group (legacy pair or star). */
+function stationHasSimulcastLeg(s,G){
+  if(!s)return false;
+  if(s.simulcastWith)return true;
+  if(s.simulcastSourceStationId)return true;
+  if(s._simulcastSource===true&&simulcastGroupReceivers(s.id,G).length>0)return true;
+  return false;
+}
+/** All station ids in the same simulcast cluster as `s` (including `s`). */
+function simulcastGroupStationIds(s,G){
+  if(!s)return new Set();
+  const out=new Set([s.id]);
+  if(s._simulcastSource===true){
+    simulcastGroupReceivers(s.id,G).forEach(r=>{if(r)out.add(r.id);});
+    return out;
+  }
+  if(s.simulcastSourceStationId){
+    out.add(s.simulcastSourceStationId);
+    const lead=(G.stations||[]).find(t=>t.id===s.simulcastSourceStationId);
+    if(lead)simulcastGroupReceivers(lead.id,G).forEach(r=>{if(r)out.add(r.id);});
+    return out;
+  }
+  if(s.simulcastWith)out.add(s.simulcastWith);
+  return out;
+}
+function clearSimulcastReceiverFields(st){
+  if(!st)return;
+  st.simulcastSourceStationId=null;
+  st.simulcastWith=null;
+  delete st._simulcastSource;
+  delete st._prevRank;
+  if(st.sig?.type==='FM'&&!st.fmBooster){
+    delete st.fmSimulcastDupPct;
+    delete st.fmRemainderFormat;
+    delete st._aiFmDupTuned;
+  }
+}
+function clearSimulcastSourceFields(st){
+  if(!st)return;
+  st.simulcastWith=null;
+  delete st._simulcastSource;
+  delete st._prevRank;
+}
+/**
+ * Before linking a new simulcast receiver: any station still pointing at `src` via mutual `simulcastWith`
+ * (legacy AM/FM pair) must become a star receiver. Otherwise clearing `src.simulcastWith` orphans the FM —
+ * it never gets `simulcastSourceStationId`, so "break this leg" / economics do not run correctly.
+ */
+function migrateLegacyPartnersToStarReceiversForSource(G, src){
+  if(!src)return;
+  (G.stations||[]).forEach(st=>{
+    if(!st||st._bpSlotDeferred||st.id===src.id)return;
+    if(st.simulcastWith===src.id){
+      st.simulcastSourceStationId=src.id;
+      st._simulcastSource=false;
+      st.simulcastWith=null;
+    }
+  });
+  src._simulcastSource=true;
+  delete src.simulcastSourceStationId;
+  src.simulcastWith=null;
+}
+/** Repair saves broken by older "add Nth receiver" logic: one-way `simulcastWith` to source with no back-pointer. */
+function repairOrphanSimulcastLegPointers(G){
+  (G.stations||[]).forEach(st=>{
+    if(!st||st._bpSlotDeferred||!st.simulcastWith||st.simulcastSourceStationId)return;
+    const p=G.stations.find(t=>t.id===st.simulcastWith);
+    if(!p||p.simulcastWith===st.id)return;
+    if(p._simulcastSource===true){
+      st.simulcastSourceStationId=p.id;
+      st._simulcastSource=false;
+      st.simulcastWith=null;
+    }
+  });
+}
+/** Convert legacy `simulcastWith` pairs to star model (source + simulcastSourceStationId receivers). */
+function migrateSimulcastLegacyPairsToStar(G){
+  if(!G||!G.stations)return;
+  const done=new Set();
+  G.stations.forEach(s=>{
+    if(!s||s._bpSlotDeferred||!s.simulcastWith||done.has(s.id))return;
+    const p=G.stations.find(t=>t.id===s.simulcastWith);
+    if(!p||p.simulcastWith!==s.id){s.simulcastWith=null;return;}
+    if(s.simulcastSourceStationId||p.simulcastSourceStationId)return;
+    done.add(s.id);done.add(p.id);
+    const {lead,rcv}=simulcastPairLeadReceiver(s,p);
+    lead._simulcastSource=true;
+    rcv._simulcastSource=false;
+    rcv.simulcastSourceStationId=lead.id;
+    lead.simulcastWith=null;
+    rcv.simulcastWith=null;
+    delete lead.simulcastSourceStationId;
+  });
+}
 function breakSimulcast(G,stnId){
   const s=G.stations.find(st=>st.id===stnId);
-  const partner=s?.simulcastWith?G.stations.find(st=>st.id===s.simulcastWith):null;
+  if(!s)return;
+  if(s._simulcastSource===true){
+    simulcastGroupReceivers(s.id,G).forEach(r=>clearSimulcastReceiverFields(r));
+    clearSimulcastSourceFields(s);
+    return;
+  }
+  if(s.simulcastSourceStationId){
+    clearSimulcastReceiverFields(s);
+    return;
+  }
+  const partner=s.simulcastWith?G.stations.find(st=>st.id===s.simulcastWith):null;
   if(s){
     s.simulcastWith=null;
     delete s._simulcastSource;
@@ -13370,6 +13872,16 @@ function normalizeSimulcastLinksInPlace(G){
     changed=false;
     pass++;
     (G.stations||[]).forEach(s=>{
+      if(!s||s._bpSlotDeferred)return;
+      if(s.simulcastSourceStationId){
+        const src=G.stations.find(st=>st.id===s.simulcastSourceStationId);
+        if(!src||src._simulcastSource!==true||src._bpSlotDeferred){
+          clearSimulcastReceiverFields(s);
+          changed=true;
+        }
+      }
+    });
+    (G.stations||[]).forEach(s=>{
       if(!s||s._bpSlotDeferred||!s.simulcastWith)return;
       const p=G.stations.find(st=>st.id===s.simulcastWith);
       if(!p||p.simulcastWith!==s.id){
@@ -13381,20 +13893,22 @@ function normalizeSimulcastLinksInPlace(G){
     });
   }
 }
-function canSimulcast(G,s1,s2){
-  // Must be player-owned, same format, neither already paired
-  // Same-band simulcasts allowed (FM-FM for coverage, AM-AM to keep license alive)
-  return s1.isPlayer&&s2.isPlayer&&s1.id!==s2.id&&
-    s1.format===s2.format&&
-    !s1.simulcastWith&&!s2.simulcastWith;
+function stationEligibleSimulcastReceiver(s){
+  return s&&!s._bpSlotDeferred&&!s.simulcastWith&&!s.simulcastSourceStationId&&s._simulcastSource!==true;
 }
-/** Programming source station for a simulcast receiver (repeater); null if not applicable. */
+function canSimulcast(G,s1,s2){
+  // Source leg must not be someone else's receiver; target must be a free leg (formats may diverge — receiver adopts source).
+  if(!s1||!s2||!s1.isPlayer||!s2.isPlayer||s1.id===s2.id)return false;
+  if(!stationEligibleSimulcastReceiver(s2))return false;
+  const src1=simulcastProgrammingSourceStation(s1,G);
+  if(src1&&src1.id!==s1.id)return false;
+  return true;
+}
+/** Upstream programming leg when `s` is a simulcast receiver; null when `s` is the source or not in a simulcast. */
 function simulcastProgrammingSource(s){
-  if(!s?.simulcastWith)return null;
-  if(s._simulcastSource===true)return null;
-  const p=G.stations.find(st=>st.id===s.simulcastWith);
-  if(!p||p.simulcastWith!==s.id)return null;
-  return p;
+  const src=simulcastProgrammingSourceStation(s,G);
+  if(!src||src.id===s.id)return null;
+  return src;
 }
 /** Receiver echoes partner's on-air content for this slot (no local talent object on receiver). */
 function slotCoveredBySimulcast(s,slot){
@@ -13423,28 +13937,56 @@ function simLead(a,b){
   if(pa!==pb) return pa>pb?a:b;
   return (a.fin?.rev||0)>=(b.fin?.rev||0)?a:b;
 }
+/** One “other” leg for pair UIs: legacy partner, programming source if `s` is a receiver, or first receiver if `s` is the source. */
 function simulcastPartnerStation(s){
-  if(!s?.simulcastWith)return null;
+  if(!s)return null;
+  if(s.simulcastSourceStationId){
+    return G.stations.find(st=>st.id===s.simulcastSourceStationId)||null;
+  }
+  if(s._simulcastSource===true){
+    const rec=simulcastGroupReceivers(s.id,G);
+    return rec[0]||null;
+  }
+  if(!s.simulcastWith)return null;
   const p=G.stations.find(st=>st.id===s.simulcastWith);
   if(!p||p.simulcastWith!==s.id)return null;
   return p;
 }
-/** Mirror promo / prog budget / community identity budget to the other leg of an owned simulcast pair (one UI surface). */
+/** Mirror promo / prog budget / community identity budget to every simulcast receiver (one UI surface). */
 function syncOwnedSimulcastSpendFromSource(src){
-  if(!src||!src.simulcastWith)return;
-  const partner=simulcastPartnerStation(src);
-  if(!partner||!src.isPlayer||!partner.isPlayer)return;
-  if(MP.mode==='live'&&(src._mpOwner!==partner._mpOwner))return;
-  if(!partner.ops)partner.ops={spots:14,sell:0.65,promo:0,progBudget:0};
-  if(!src.ops)src.ops={spots:14,sell:0.65,promo:0,progBudget:0};
-  partner.ops.promo=src.ops.promo;
-  partner.ops.progBudget=src.ops.progBudget;
-  partner.identityBudget=src.identityBudget||0;
-  calcRev(partner,G);
-  if(MP.mode==='live'){
-    MP.action('promo',{sid:partner.id,promo:partner.ops.promo});
-    MP.action('prog',{sid:partner.id,progBudget:partner.ops.progBudget});
-    MP.action('ident',{sid:partner.id,budget:partner.identityBudget});
+  if(!src||!src._simulcastSource)return;
+  const receivers=simulcastGroupReceivers(src.id,G);
+  receivers.forEach(partner=>{
+    if(!partner||!src.isPlayer||!partner.isPlayer)return;
+    if(MP.mode==='live'&&(src._mpOwner!==partner._mpOwner))return;
+    if(!partner.ops)partner.ops={spots:14,sell:0.65,promo:0,progBudget:0};
+    if(!src.ops)src.ops={spots:14,sell:0.65,promo:0,progBudget:0};
+    partner.ops.promo=src.ops.promo;
+    partner.ops.progBudget=src.ops.progBudget;
+    partner.identityBudget=src.identityBudget||0;
+    calcRev(partner,G);
+    if(MP.mode==='live'){
+      MP.action('promo',{sid:partner.id,promo:partner.ops.promo});
+      MP.action('prog',{sid:partner.id,progBudget:partner.ops.progBudget});
+      MP.action('ident',{sid:partner.id,budget:partner.identityBudget});
+    }
+  });
+  if(src.simulcastWith){
+    const partner=G.stations.find(st=>st.id===src.simulcastWith);
+    if(partner&&partner.simulcastWith===src.id&&src.isPlayer&&partner.isPlayer){
+      if(MP.mode==='live'&&(src._mpOwner!==partner._mpOwner))return;
+      if(!partner.ops)partner.ops={spots:14,sell:0.65,promo:0,progBudget:0};
+      if(!src.ops)src.ops={spots:14,sell:0.65,promo:0,progBudget:0};
+      partner.ops.promo=src.ops.promo;
+      partner.ops.progBudget=src.ops.progBudget;
+      partner.identityBudget=src.identityBudget||0;
+      calcRev(partner,G);
+      if(MP.mode==='live'){
+        MP.action('promo',{sid:partner.id,promo:partner.ops.promo});
+        MP.action('prog',{sid:partner.id,progBudget:partner.ops.progBudget});
+        MP.action('ident',{sid:partner.id,budget:partner.identityBudget});
+      }
+    }
   }
 }
 /** Programming source (lead) and receiver for a simulcast pair. */
@@ -13461,7 +14003,7 @@ function simulcastPairStationCardAnchor(a,b){
   if(bt&&!at)return b;
   return simulcastPairLeadReceiver(a,b).lead;
 }
-/** One row per station or combined simulcast pair, sorted by total share (desc). */
+/** One row per station or combined simulcast group, sorted by total share (desc). */
 function buildSimulcastCombinedRankRows(allStations){
   const seen=new Set();
   const rows=[];
@@ -13469,11 +14011,35 @@ function buildSimulcastCombinedRankRows(allStations){
   const sorted=[...active].sort((a,b)=>b.rat.share-a.rat.share);
   sorted.forEach(s=>{
     if(seen.has(s.id))return;
-    const p=simulcastPartnerStation(s);
-    if(p&&allStations.some(st=>st.id===p.id)){
+    if(s.simulcastSourceStationId)return;
+    if(s._simulcastSource===true){
+      const recv=simulcastGroupReceivers(s.id,G).filter(r=>allStations.some(st=>st.id===r.id));
+      if(recv.length){
+        recv.forEach(r=>seen.add(r.id));
+        seen.add(s.id);
+        const share=s.rat.share+recv.reduce((sum,r)=>sum+r.rat.share,0);
+        const rev=s.fin.rev+recv.reduce((sum,r)=>sum+r.fin.rev,0);
+        rows.push({pair:true,lead:s,rcv:recv[0],receivers:recv,share,rev});
+        return;
+      }
+      if(s.simulcastWith){
+        const p=allStations.find(st=>st.id===s.simulcastWith);
+        if(p&&p.simulcastWith===s.id){
+          seen.add(s.id);seen.add(p.id);
+          const {lead,rcv}=simulcastPairLeadReceiver(s,p);
+          rows.push({pair:true,lead,rcv,receivers:[rcv],share:lead.rat.share+rcv.rat.share,rev:lead.fin.rev+rcv.fin.rev});
+          return;
+        }
+      }
+      seen.add(s.id);
+      rows.push({pair:false,st:s,share:s.rat.share,rev:s.fin.rev});
+      return;
+    }
+    const p=s.simulcastWith?G.stations.find(st=>st.id===s.simulcastWith):null;
+    if(p&&allStations.some(st=>st.id===p.id)&&p.simulcastWith===s.id){
       seen.add(s.id);seen.add(p.id);
       const {lead,rcv}=simulcastPairLeadReceiver(s,p);
-      rows.push({pair:true,lead,rcv,share:lead.rat.share+rcv.rat.share,rev:lead.fin.rev+rcv.fin.rev});
+      rows.push({pair:true,lead,rcv,receivers:[rcv],share:lead.rat.share+rcv.rat.share,rev:lead.fin.rev+rcv.fin.rev});
     }else{
       seen.add(s.id);
       rows.push({pair:false,st:s,share:s.rat.share,rev:s.fin.rev});
@@ -13489,8 +14055,9 @@ function buildCommercialCombinedRankRows(G){
 /** Stable key for book / display row matching (simulcast pair or solo). */
 function marketRankRowKey(row){
   if(row.pair){
-    const a=String(row.lead.id),b=String(row.rcv.id);
-    return a<b?`p:${a}:${b}`:`p:${b}:${a}`;
+    const rec=row.receivers||[row.rcv];
+    const ids=[row.lead.id,...rec.map(r=>r.id)].map(String).sort();
+    return 'p:'+ids.join(':');
   }
   return `s:${row.st.id}`;
 }
@@ -13583,19 +14150,31 @@ function buildMarketRankRowsForDisplay(G){
   out.sort((a,b)=>a.displayRank-b.displayRank);
   return out;
 }
-/** Market rank (1-based) using combined simulcast rows; one rank per AM/FM pair. */
+/** Market rank (1-based) using combined simulcast rows; one rank per simulcast group. */
 function combinedMarketRankForStation(s, combinedRows){
-  const partner=simulcastPartnerStation(s);
-  if(partner){
-    const {lead,rcv}=simulcastPairLeadReceiver(s,partner);
-    const idx=combinedRows.findIndex(r=>r.pair&&r.lead.id===lead.id&&r.rcv.id===rcv.id);
-    return idx>=0?idx+1:0;
-  }
-  const idx=combinedRows.findIndex(r=>!r.pair&&r.st.id===s.id);
+  const idx=combinedRows.findIndex(r=>{
+    if(!r.pair)return r.st&&r.st.id===s.id;
+    if(r.lead.id===s.id)return true;
+    const rec=r.receivers||[r.rcv];
+    return rec.some(t=>t&&t.id===s.id);
+  });
   return idx>=0?idx+1:0;
 }
-/** Milestone / ticker label: one simulcast pair reads as a single unit. */
+/** Milestone / ticker label: one simulcast group reads as a single unit. */
 function milestoneRankLabelHtml(s){
+  if(s._simulcastSource===true){
+    const rec=simulcastGroupReceivers(s.id,G);
+    if(rec.length){
+      return[s,...rec].map(l=>'<strong>'+callDisplay(l)+'</strong>').join(' & ');
+    }
+  }
+  if(s.simulcastSourceStationId){
+    const lead=G.stations.find(t=>t.id===s.simulcastSourceStationId);
+    if(lead){
+      const rec=simulcastGroupReceivers(lead.id,G);
+      return[lead,...rec].map(l=>'<strong>'+callDisplay(l)+'</strong>').join(' & ');
+    }
+  }
   const p=simulcastPartnerStation(s);
   if(!p)return '<strong>'+s.callLetters+'</strong>';
   const {lead,rcv}=simulcastPairLeadReceiver(s,p);
@@ -13603,6 +14182,19 @@ function milestoneRankLabelHtml(s){
 }
 /** Combined share for messaging when simulcast; else this leg’s share. */
 function milestoneRankSharePct(s){
+  if(s._simulcastSource===true){
+    const rec=simulcastGroupReceivers(s.id,G);
+    if(rec.length){
+      return pct(s.rat.share+rec.reduce((sum,r)=>sum+r.rat.share,0));
+    }
+  }
+  if(s.simulcastSourceStationId){
+    const lead=G.stations.find(t=>t.id===s.simulcastSourceStationId);
+    if(lead){
+      const rec=simulcastGroupReceivers(lead.id,G);
+      return pct(lead.rat.share+rec.reduce((sum,r)=>sum+r.rat.share,0));
+    }
+  }
   const p=simulcastPartnerStation(s);
   if(!p)return pct(s.rat.share);
   const {lead,rcv}=simulcastPairLeadReceiver(s,p);
@@ -13979,6 +14571,50 @@ function wlCollectRatingsDigestSportsContext(G){
   }
   return out;
 }
+/** Player simulcast groups so the digest mentions AM+FM or LMA legs, not just the book row. */
+function wlCollectRatingsDigestSimulcastContext(G){
+  if(!G?.stations)return[];
+  const seen=new Set();
+  const out=[];
+  const starSrc=G.stations.filter(s=>s&&!s._bpSlotDeferred&&s.isPlayer&&s.rat&&s._simulcastSource===true);
+  for(let i=0;i<starSrc.length;i++){
+    const s=starSrc[i];
+    if(seen.has(s.id))continue;
+    const recv=simulcastGroupReceivers(s.id,G).filter(r=>r.isPlayer&&!r._bpSlotDeferred);
+    if(!recv.length)continue;
+    seen.add(s.id);
+    recv.forEach(r=>seen.add(r.id));
+    const op=simulcastOperationalSource(s);
+    const comb=(s.rat.share||0)+recv.reduce((sum,r)=>sum+(r.rat.share||0),0);
+    const legs=[s,...recv].map(x=>callDisplay(x)).join(' + ');
+    const lmaStation=s._lmaStation?s:recv.find(r=>r._lmaStation);
+    const lma=!!lmaStation;
+    const feeNote=lma?` LMA fee on leased leg ~${f$(lmaFeeForStation(lmaStation,G))}/period.`:'';
+    let line=`◈ Simulcast: ${legs} — combined ~${(comb*100).toFixed(1)}% share${lma?' (includes LMA-operated leg)':''}. Programming hub: ${callDisplay(op)}.${feeNote}`;
+    if(line.length>400)line=line.slice(0,397)+'…';
+    out.push(line);
+    if(out.length>=10)break;
+  }
+  const playerStns=G.stations.filter(s=>s&&!s._bpSlotDeferred&&s.isPlayer&&s.rat&&s.simulcastWith);
+  for(let i=0;i<playerStns.length;i++){
+    const s=playerStns[i];
+    const a=s.id,b=s.simulcastWith;
+    const key=a<b?a+'|'+b:b+'|'+a;
+    if(seen.has(key))continue;
+    const p=G.stations.find(st=>st.id===s.simulcastWith);
+    if(!p||p.simulcastWith!==s.id||p._bpSlotDeferred)continue;
+    seen.add(key);
+    const op=simulcastOperationalSource(s);
+    const comb=(s.rat.share||0)+(p.rat.share||0);
+    const lma=s._lmaStation||p._lmaStation;
+    const feeNote=lma?` LMA fee on leased leg ~${f$(lmaFeeForStation(s._lmaStation?s:p,G))}/period.`:'';
+    let line=`◈ Simulcast: ${callDisplay(s)} + ${callDisplay(p)} — combined ~${(comb*100).toFixed(1)}% share${lma?' (includes LMA-operated leg)':''}. Programming hub: ${callDisplay(op)}.${feeNote}`;
+    if(line.length>400)line=line.slice(0,397)+'…';
+    out.push(line);
+    if(out.length>=10)break;
+  }
+  return out;
+}
 /** Headlines from this period's in-game news for the OpenRouter trade digest (not the ticker). */
 function wlCollectRatingsDigestMarketContext(G, maxLines, maxChars){
   maxLines=maxLines!=null?maxLines:20;
@@ -14090,7 +14726,8 @@ function wlBuildRatingsDigestPayload(){
   });
   const sportsCtx=wlCollectRatingsDigestSportsContext(G);
   const newsCtx=wlCollectRatingsDigestMarketContext(G);
-  const marketContext=[...sportsCtx,...newsCtx].slice(0,24);
+  const simCtx=wlCollectRatingsDigestSimulcastContext(G);
+  const marketContext=[...sportsCtx,...newsCtx,...simCtx].slice(0,24);
   return {market:mkt,periodLabel,year:G.year,period:G.period,book,marketContext};
 }
 async function openRatingsDigestTradeSheet(opts){
@@ -14423,6 +15060,19 @@ function buildResearchReport(s,G){
   if(compObsPick.length)compLandBody+='<p style="margin:10px 0 6px;font-size:12px;color:var(--mut)">Watch</p>'+consultantBulletList(compObsPick);
   const competitiveLandscapeHtml=consultantMemoSection('COMPETITIVE LANDSCAPE',compLandBody);
 
+  const simPartnerR=s.simulcastWith?G.stations.find(st=>st.id===s.simulcastWith):null;
+  const simPairOk=!!(simPartnerR&&simPartnerR.simulcastWith===s.id&&!simPartnerR._bpSlotDeferred);
+  const simPlayerPair=simPairOk&&mpIsMe(s)&&mpIsMe(simPartnerR);
+  let simulcastOverviewHtml='';
+  if(simPlayerPair){
+    const combinedShareOv=(s.rat.share+simPartnerR.rat.share);
+    const combinedRevOv=(s.fin.rev||0)+(simPartnerR.fin.rev||0);
+    const srcOv=simulcastProgrammingSource(s)||s;
+    const lmaLeg=s._lmaStation?s:simPartnerR._lmaStation?simPartnerR:null;
+    const lmaNote=lmaLeg?`<p style="margin:8px 0 0;font-size:12px;color:var(--mut)">LMA fee on the leased leg is <strong>${f$(lmaFeeForStation(lmaLeg,G))}</strong>/period. The follower facility can still show a large cost line — that reflects facility and fixed ops for that license, not a mis-print of the LMA fee.</p>`:'';
+    simulcastOverviewHtml=consultantMemoSection('SIMULCAST PAIR',`<p style="margin:0 0 8px">Combined audience across both signals: <strong>${(combinedShareOv*100).toFixed(1)}%</strong> share · combined revenue (both licenses): <strong>${f$(combinedRevOv)}</strong>/period.</p><p style="margin:0;font-size:13px;color:var(--off)">Sections below focus on <strong>${callDisplay(s)}</strong> (this leg’s book). Programming hub: <strong>${callDisplay(srcOv)}</strong>. See the technical appendix for AM/FM split.</p>${lmaNote}`);
+  }
+
   const swHtml=consultantMemoSection('STRENGTHS / WEAKNESSES',
     '<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:4px">'+
     '<div><div style="font-size:12px;color:var(--grn);letter-spacing:.08em;margin-bottom:6px">STRENGTHS</div>'+(strBul.length?consultantBulletList(strBul):'<p style="margin:0;color:var(--mut)">No standout positives — roughly average.</p>')+'</div>'+
@@ -14444,7 +15094,7 @@ function buildResearchReport(s,G){
     if(pw==='translator')sigSection+=row('Power','FM Translator','Low-power signal. Limited reach compared to full-power FM.','var(--amb)');
     else sigSection+=row('Power',pw.toUpperCase(),'','var(--off)');
   } else if(isTalkAM){
-    const amTalkPenalty = (G.year>=2007&&['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format)&&!s.simulcastWith)
+    const amTalkPenalty = (G.year>=2007&&['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format)&&!stationHasSimulcastLeg(s,G))
       ? Math.round((1-Math.max(0.55, 1.0-_smoothstep(2007,2015,G.year)*0.20-_smoothstep(2015,2022,G.year)*0.20))*100)
       : 0;
     const amTalkColor = amTalkPenalty>=20?'var(--red)':amTalkPenalty>=8?'var(--ylw)':'var(--grn)';
@@ -14489,13 +15139,13 @@ function buildResearchReport(s,G){
 
   // SIMULCAST BREAKDOWN (if this station is in a simulcast)
   let simSection='';
-  const simPartnerR=s.simulcastWith?G.stations.find(st=>st.id===s.simulcastWith):null;
-  if(simPartnerR&&simPartnerR.isPlayer){
+  if(simPlayerPair){
     const amStR=s.sig.type==='AM'?s:simPartnerR;
     const fmStR=s.sig.type==='FM'||s.fmBooster?s:simPartnerR;
     const combinedShare=(s.rat.share+simPartnerR.rat.share);
-    const amPct=(amStR.rat.share/combinedShare*100).toFixed(0);
-    const fmPct=(fmStR.rat.share/combinedShare*100).toFixed(0);
+    const _cs=Math.max(combinedShare,1e-9);
+    const amPct=(amStR.rat.share/_cs*100).toFixed(0);
+    const fmPct=(fmStR.rat.share/_cs*100).toFixed(0);
     const amAqh=Object.values(amStR.rat.cur||{}).reduce((sum,c)=>sum+(c?.aqh||0),0);
     const fmAqh=Object.values(fmStR.rat.cur||{}).reduce((sum,c)=>sum+(c?.aqh||0),0);
     simSection=hdr('SIMULCAST BREAKDOWN');
@@ -14607,7 +15257,7 @@ function buildResearchReport(s,G){
       </div>`
     :'';
 
-  return `${tutorialMemo}
+  return `${tutorialMemo}${simulcastOverviewHtml}
     <div class="ms2">
       <div class="msh" style="display:flex;justify-content:space-between;align-items:center">
         <span>CONSULTANT REPORT — OVERVIEW</span>
@@ -15031,7 +15681,7 @@ const RIVAL_FICTIONAL_PARENTS=[
 function rivalFictionalParentName(s,G){
   if(!s||s.isPlayer||s.isPublic||s._bpSlotDeferred)return '';
   if(s.corpOwner)return '';
-  const mkt=String(G&&G.marketId||'');
+  const mkt=String((G&&G.marketId)||ACTIVE_MARKET||'');
   if(s.simulcastWith){
     const a=s.id,b=s.simulcastWith;
     const lo=a<b?a:b,hi=a<b?b:a;
@@ -15151,6 +15801,118 @@ function runConsolidation(G){
       const shortName=corp.name.split(' ')[0];
       acts.push({v:'HIGH',
         t:`🏢 ${shortName} acquires ${acquired.callLetters} (${fmtLabel(acquired.format)}) for ~${f$(price)} — consolidation accelerates.`,
+        iy:false});
+    }
+  });
+  return acts;
+}
+
+/** Accumulate retained cash for independent operator groups (Fall-only caller). */
+function accumulateIndieWarChests(G){
+  if(!G)return;
+  if(!G._indieWarChest)G._indieWarChest={};
+  const keys=new Set();
+  (G.stations||[]).forEach(s=>{
+    if(!s||s._bpSlotDeferred||s.isPlayer||s.isPublic||s.corpOwner)return;
+    keys.add(indieLicenseeKey(s,G));
+  });
+  keys.forEach(k=>{
+    const sts=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic&&!s.corpOwner&&indieLicenseeKey(s,G)===k);
+    const flow=sts.reduce((sum,s)=>sum+Math.max(0,s.fin?.ebitda||0),0);
+    const revFlow=sts.reduce((sum,s)=>sum+Math.max(0,s.fin?.rev||0),0);
+    G._indieWarChest[k]=(G._indieWarChest[k]||0)+flow*3.2+revFlow*0.14;
+    G._indieWarChest[k]=Math.min(85000000,G._indieWarChest[k]);
+  });
+}
+
+/**
+ * Independent AI operators buy rival independents when FCC caps allow (1992+; much more aggressive after 1996).
+ * Uses `aiLicenseeKey` / fictional parent grouping; spends from `G._indieWarChest`.
+ */
+function runIndependentAcquisitions(G){
+  if(!G||G.year<1992)return[];
+  if(G.period!==2)return[];
+  const y=G.year||1970;
+  const post96=y>=1996;
+  accumulateIndieWarChests(G);
+  const MIN_TGT_SHARE=0.008;
+  const MAX_SPEND_FRAC=0.48;
+  const acts=[];
+  const mkt=MARKETS[G.marketId||ACTIVE_MARKET]||MARKETS.atlanta;
+  const city=mkt.label||'market';
+
+  const licenseeKeys=[...new Set((G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic&&!s.corpOwner).map(s=>indieLicenseeKey(s,G)))].filter(Boolean);
+  if(!licenseeKeys.length)return[];
+
+  const tryN=post96?2:1;
+  const baseProb=post96?0.52:0.14;
+
+  licenseeKeys.forEach(k=>{
+    const buyers=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic&&!s.corpOwner&&indieLicenseeKey(s,G)===k);
+    if(!buyers.length)return;
+    const lead=buyers.slice().sort((a,b)=>(b.rat?.share||0)-(a.rat?.share||0))[0];
+    if(!lead)return;
+    const leadShare=lead.rat?.share||0;
+    const tryProb=Math.min(0.88,baseProb+(post96?0.22:0.06)*Math.min(1,leadShare/0.12)+(lead.pers?.ag||0)*0.12);
+    if(Math.random()>tryProb)return;
+
+    for(let attempt=0;attempt<tryN;attempt++){
+      const owned=fccOwnedIndie(k,G);
+      const lim=fccLimits(G.year,G.stations.length);
+      if(lim.mode==='96'&&owned.total>=lim.total)break;
+      if(lim.mode==='pre96'&&owned.am>=lim.am&&owned.fm>=lim.fm)break;
+
+      const targets=(G.stations||[]).filter(s=>
+        s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic&&!s.corpOwner&&
+        indieLicenseeKey(s,G)!==k&&
+        (s.rat?.share||0)>MIN_TGT_SHARE
+      );
+      if(!targets.length)break;
+
+      const scored=targets.map(s=>{
+        let score=(s.rat?.share||0)*100;
+        if(s.sig?.type==='FM'&&!s.fmBooster)score*=1.35;
+        if(['NEWS_TALK','TOP40','COUNTRY','ADULT_CONTEMP'].includes(s.format))score*=1.15;
+        const ownedFormats=buyers.map(b=>b.format);
+        if(!ownedFormats.includes(s.format))score*=1.25;
+        score*=1+(s.pers?.ag||0)*0.08;
+        return {s, score};
+      }).sort((a,b)=>b.score-a.score);
+
+      let acquired=null,price=0;
+      const chest=G._indieWarChest?.[k]||0;
+      for(const {s:target} of scored){
+        const sigType=target.sig?.type==='AM'||target.fmBooster?'AM':'FM';
+        if(!fccCanIndieAcquire(k,sigType,G))continue;
+        const annualRev=(target.fin?.rev||0)*2;
+        const multiple=6.5+Math.random()*4.5;
+        let p=Math.round(annualRev*multiple/100000)*100000;
+        if(!Number.isFinite(p)||p<=0)continue;
+        p=Math.max(380000,p);
+        if(p>chest*MAX_SPEND_FRAC)continue;
+        acquired=target;
+        price=p;
+        break;
+      }
+      if(!acquired)break;
+
+      const parentName=rivalFictionalParentName(lead,G)||k.slice(0,24);
+      acquired.aiLicenseeKey=k;
+      if(acquired.simulcastWith){
+        const p=G.stations.find(st=>st.id===acquired.simulcastWith);
+        if(p)p.aiLicenseeKey=k;
+      }
+      G._indieWarChest[k]=Math.max(0,(G._indieWarChest[k]||0)-price);
+      const churnFrac=0.18;
+      Object.keys(acquired.mom||{}).forEach(coh=>{
+        const m=acquired.mom[coh];
+        if(m){
+          m.tgt=Math.max(0.002,m.tgt*(1-churnFrac));
+          m.cur=Math.max(0.002,m.cur*(1-churnFrac*0.5));
+        }
+      });
+      acts.push({v:'MEDIUM',
+        t:`📻 ${parentName} acquires ${acquired.callLetters} (${fmtLabel(acquired.format)}) in ${city} — independent group grows (${f$(price)}).`,
         iy:false});
     }
   });
@@ -15404,6 +16166,13 @@ function rLMA() {
   if (activeLesseeStns.length || activeLessorStns.length) {
     const lesseeRows = activeLesseeStns.map(s => {
       const fee = lmaFeeForStation(s, G);
+      const sigType = s.sig.type==='FM'&&!s.fmBooster?'FM':'AM';
+      const canBuyLic = s._lmaStation && fccCanAcquire('player', sigType, G);
+      const buyPrice = acqPrice(s, G);
+      const buyOk = canBuyLic && G.cash >= buyPrice;
+      const buyBtn = canBuyLic
+        ? `<button type="button" class="abt g" style="font-size:14px;white-space:nowrap" onclick="purchaseLmaLicense('${s.id}')" ${buyOk?'':'disabled title="Insufficient cash"'}>🏢 BUY LICENSE ${f$(buyPrice)}</button>`
+        : `<span style="font-size:13px;color:var(--mut);max-width:160px;text-align:right">Buy license when FCC caps allow an acquisition.</span>`;
       return `<div class="lma-row active-lma">
         <div>
           <div class="lma-badge lessee">YOU OPERATE</div>
@@ -15412,7 +16181,10 @@ function rLMA() {
           <div class="lma-terms">Fee to licensor: ${f$(fee)}/period · You keep the rest</div>
           <div class="lma-meta" style="margin-top:4px;color:var(--mut)">Licensor: ${s.lmaLicensorName||'Independent Owner'}</div>
         </div>
-        <button class="abt" style="font-size:15px;color:var(--red);border-color:var(--red)" onclick="terminateLMA('${s.id}','lessee')">END LMA</button>
+        <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0">
+          ${buyBtn}
+          <button type="button" class="abt" style="font-size:15px;color:var(--red);border-color:var(--red)" onclick="terminateLMA('${s.id}','lessee')">END LMA</button>
+        </div>
       </div>`;
     }).join('');
 
@@ -15591,6 +16363,52 @@ function doLMALessor(sid) {
   logHistory(s,'FORMAT',`LMA: leased to ${s.lmaOperatorName} — reformatted to ${fmtLabel(_chosenFmt)}`,G);
   MP.action('lma_lessor', {sid});
   cm('m-lma'); renderAll();
+}
+
+/** Buy out the license for a station you currently operate under LMA (same caps / pricing as open market acquisition). */
+function purchaseLmaLicense(sid){
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||!s._lmaStation||s.lmaLesseeId!=='player')return;
+  const sigType=s.sig.type==='FM'&&!s.fmBooster?'FM':'AM';
+  if(!fccCanAcquire('player',sigType,G)){
+    showToast('FCC ownership limits block buying this license right now.','warn');
+    return;
+  }
+  const price=acqPrice(s,G);
+  if(!Number.isFinite(price)||price<=0){
+    showToast('Could not price this license purchase.','warn');
+    return;
+  }
+  if(G.cash<price){
+    showToast(`Need ${f$(price)} to buy the license (you have ${f$(G.cash)}).`,'warn');
+    return;
+  }
+  openGameConfirm({
+    title:'Buy license (end LMA)',
+    message:`Buy ${callDisplay(s)} outright for ${f$(price)}? Your LMA ends and you own the facility — same as acquiring it from the open market, without breaking simulcasts first.`,
+    confirmLabel:'Buy license',
+  },ok=>{
+    if(!ok)return;
+    const st=G.stations.find(t=>t.id===sid);
+    if(!st||!st._lmaStation||st.lmaLesseeId!=='player')return;
+    const stSig=st.sig.type==='FM'&&!st.fmBooster?'FM':'AM';
+    if(!fccCanAcquire('player',stSig,G)){showToast('FCC limits block this purchase.','warn');return;}
+    const p2=acqPrice(st,G);
+    if(G.cash<p2){showToast(`Need ${f$(p2)}.`,'warn');return;}
+    G.cash-=p2;
+    if(MP.mode==='live'){if(!G._playerCash)G._playerCash={};G._playerCash[MP.playerId]=G.cash;MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash});}
+    clearPlayerLmaLesseeFields(st);
+    st.isPlayer=true;
+    if(MP.mode==='live')st._mpOwner=MP.playerId;
+    G.ps=G.stations.filter(x=>x.isPlayer);
+    G.news.unshift({v:'HIGH',t:`You acquired the license for ${st.callLetters} — LMA concluded, you now own the facility.`,y:G.year,p:G.period,iy:true});
+    logHistory(st,'LOGO',`Purchased license (ended LMA) — ${f$(p2)}`,G);
+    if(MP.mode==='live')MP.action('lma_buy_license',{sid:st.id});
+    autoSave();
+    cm('m-lma');
+    renderAll();
+    showToast('License purchased — LMA ended.','info');
+  });
 }
 
 function terminateLMA(sid, role) {
@@ -16020,6 +16838,7 @@ function advTurn(mpCoalesceSeq){
     updateAiRivalNegEbitdaStreaks(G);
     // Post-revenue consolidation uses current-period fin.rev for deal pricing; news merged below like runAI acts.
     const consolidationActs=simQuiet?[]:runConsolidation(G);
+    const indieAcqActs=simQuiet?[]:runIndependentAcquisitions(G);
     if(wlCashBridgeAuditActive())wlCashBridgeAuditPush('AFTER_REV_AND_AI_BEFORE_LMA',{});
     if(MP.mode!=='live'){
       G._advTurnEarlyPipelineCashDelta=(G.cash||0)-(G._advTurnCashStartOfTurn||0);
@@ -16080,6 +16899,7 @@ function advTurn(mpCoalesceSeq){
     G.rankerHistory.push(snap);
     acts.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     consolidationActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
+    indieAcqActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     ev.forEach(e=>{
       const body=e.d!=null&&String(e.d).trim()!==''?String(e.d):'';
       G.news.unshift({v:'HIGH',t:body?`📡 ${e.t}: ${body}`:`📡 ${e.t}`,y:e.y,p:e.p});
@@ -16126,6 +16946,8 @@ function advTurn(mpCoalesceSeq){
     const wasYear=G.year,wasPeriod=G.period;
     recordCompanyFinHistory(G, wasYear, wasPeriod, profit);
     recordStationFinHistory(G, wasYear, wasPeriod);
+    /* GM Mode: evaluation layer only — reads finHistory + franchise snapshots; does not alter sim math. */
+    if(typeof wlGmMode!=='undefined'&&wlGmMode.onPeriodClose)wlGmMode.onPeriodClose(G,wasYear,wasPeriod);
     G._lastTurnHeadlines=(G.news||[]).filter(n=>n&&n.y===wasYear&&n.p===wasPeriod);
     if(wlCashBridgeAuditActive()){
       const _ps=myPS();
@@ -16529,7 +17351,7 @@ function openRanker(){
     const pubBadge=s.isPublic?'<span style="font-size:13px;background:#1e3a5f;color:#7dd3fc;padding:1px 5px;border-radius:2px;margin-left:4px;font-family:var(--ft)">NPR</span>':'';
     const corpBadge=s.corpOwner&&!s.isPlayer?`<span style="font-size:13px;background:${s.corpColor||'#374151'};color:#fff;padding:1px 5px;border-radius:2px;font-family:var(--ft)">${(s.corpName||'CORP').split(' ')[0]}</span>`:'';
     const intelAttr=!s.isPublic?` onclick="showCompIntel('${s.id}')" style="cursor:pointer" title="${isP?'Open station intel':'View competitor intel'}"`:'';
-    const simB=row.pair?'<span style="color:var(--blu);font-size:14px"> ◈</span>':(s.simulcastWith?'<span style="color:var(--blu);font-size:14px"> ◈</span>':'');
+    const simB=row.pair?'<span style="color:var(--blu);font-size:14px"> ◈</span>':(stationHasSimulcastLeg(s,G)?'<span style="color:var(--blu);font-size:14px"> ◈</span>':'');
     const op=simulcastOperationalSource(s);
     const fmtLbl=fmtLabel(op.format);
     const callLine=row.pair?`${callDisplay(row.lead)} + ${callDisplay(row.rcv)}`:callDisplay(s);
@@ -17466,6 +18288,7 @@ function bmDoRename(sid){
   if(nameTaken)return;
   const old=callDisplay(s);
   s.callLetters=val;
+  syncCallLettersToSimulcastPartner(s);
   logHistory(s,'CALLSIGN',`Call letters changed: ${old} → ${callDisplay(s)}`,G);
   G.news.unshift({v:'LOW',t:`${old} officially renamed ${callDisplay(s)} (${s.freq}) — brand: "${s.brand}"`,y:G.year,p:G.period});
   MP.action('rename', {sid:s.id, callLetters:s.callLetters, brand:s.brand});
@@ -17548,8 +18371,7 @@ function brandMarketingIdentityBlockHtml(leg){
   const requiredPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
   const prefix=requiredPref;
   const suffix=(cur[0]==='W'||cur[0]==='K')?cur.slice(1):cur;
-  const partner=G.stations.find(st=>st.id!==s.id&&(st.simulcastWith===s.id||s.simulcastWith===st.id));
-  const partnerNote=partner?`<div class="ibox" style="margin-bottom:10px">Simulcast with <strong>${stripCallBandSuffix(partner.callLetters||'')}</strong> — matching calls on both can show as <strong>-AM</strong> / <strong>-FM</strong>.</div>`:'';
+  const partnerNote=stationHasSimulcastLeg(s,G)?`<div class="ibox" style="margin-bottom:10px">Simulcast group — each facility keeps its own <strong>-AM</strong> / <strong>-FM</strong> call. Same-band repeaters are <strong>not</strong> forced to identical base letters; rename here if you want distinct IDs.</div>`:'';
   const pills=getBrandSuggestions(s).map(b=>'<span class="bp bm-bp-'+safe+(s.brand===b?' bpsel':'')+'" onclick="bmPickBrand(\''+sid+'\',\''+b.replace(/'/g,"\\'")+'\')">'+rosterHtmlEsc(b)+'</span>').join('');
   return`<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
     ${partnerNote}
@@ -17732,6 +18554,26 @@ function brandMarketingProgrammingBlockHtml(leg){
     <button class="cfm wl-commit-btn wl-commit-btn--synced" type="button" id="pgu-commit-btn" onclick="doProg()">SET PROGRAMMING BUDGET</button>
   </div>`;
 }
+/** After rebuilding Brand & Marketing HTML, restore jingle status text (variants ready / working). */
+function wlRefreshBmJingleStatusAfterRender(){
+  if(!G||typeof BM_ACTIVE_SID==='undefined'||!BM_ACTIVE_SID)return;
+  const legs=brandMarketingStationLegs(BM_ACTIVE_SID);
+  legs.forEach(leg=>{
+    const safe=bmSafeElId(leg.id);
+    const el=document.getElementById('bm-jingle-status-'+safe);
+    if(!el)return;
+    if(leg._jingleGenPending){
+      wlAiGenStatusBusy(el,true);
+      el.textContent='WORKING — Creating two jingle takes. Often 1–4 minutes. Do not close this panel or click again; this message will clear when ready.';
+    }else if(Array.isArray(leg._pendingJingleVariants)&&leg._pendingJingleVariants.length){
+      wlAiGenStatusBusy(el,false);
+      el.textContent='Two variants ready — pick one below.';
+    }else{
+      wlAiGenStatusBusy(el,false);
+      el.textContent='';
+    }
+  });
+}
 function renderBrandMarketingStation(primarySid){
   primarySid=ensureOpsSourceSid(primarySid);
   BM_ACTIVE_SID=primarySid;
@@ -17797,6 +18639,7 @@ function renderBrandMarketingStation(primarySid){
   if(document.getElementById('m-brand')?.classList.contains('on')){
     requestAnimationFrame(()=>{ syncModalBodyScrollLock(); });
   }
+  wlRefreshBmJingleStatusAfterRender();
 }
 function openBrandMarketing(sid){
   sid=ensureOpsSourceSid(sid);
@@ -18293,8 +19136,8 @@ function openSwap(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   if(s.lmaLessorId||s.lmaLesseeId){showToast('End the LMA on this station before swapping facilities.','warn');return;}
   const _srcStn=s;
-  const _srcSimIds=new Set([_srcStn?.simulcastWith,...G.ps.filter(p=>p.simulcastWith===sid).map(p=>p.id)].filter(Boolean));
-  const elig=st=>!st.lmaLessorId&&!st.lmaLesseeId&&!st.simulcastWith;
+  const _srcSimIds=simulcastGroupStationIds(_srcStn,G);
+  const elig=st=>!st.lmaLessorId&&!st.lmaLesseeId&&!stationHasSimulcastLeg(st,G);
   const myStns=(MP.mode==='live'?G.ps.filter(st=>st._mpOwner===MP.playerId):G.ps)
     .filter(p=>p.id!==sid&&!_srcSimIds.has(p.id)&&elig(p));
   const swapb=document.getElementById('swapb');
@@ -19197,6 +20040,14 @@ function stripCallBandSuffix(cl){
   while(/-(AM|FM)$/i.test(b)) b=b.replace(/-(AM|FM)$/i,'').trim();
   return b;
 }
+/** Legacy mutual pairs: sync base call to partner. Star same-band simulcasts keep distinct base calls per facility. */
+function syncCallLettersToSimulcastPartner(st){
+  if(!st?.simulcastWith)return;
+  const base=stripCallBandSuffix(st.callLetters);
+  const p=G.stations.find(x=>x.id===st.simulcastWith);
+  if(!p||p.simulcastWith!==st.id)return;
+  p.callLetters=base;
+}
 function callDisplay(s){
   if(!s)return '';
   const isFm=s.fmBooster||s.sig?.type==='FM';
@@ -19252,8 +20103,7 @@ function openRename(sid){
   const requiredPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
   const prefix=requiredPref;
   const suffix=(cur[0]==='W'||cur[0]==='K')?cur.slice(1):cur;
-  const partner=G.stations.find(st=>st.id!==s.id&&(st.simulcastWith===s.id||s.simulcastWith===st.id));
-  const partnerNote=partner?`<div class="ibox">This station is simulcast with <strong>${partner.callLetters}</strong>. If you give both stations the same call letters, they'll display as <strong>${cur}-AM</strong> / <strong>${cur}-FM</strong> automatically.</div>`:'';
+  const partnerNote=stationHasSimulcastLeg(s,G)?`<div class="ibox">This station is in a simulcast group. Each facility can keep its own base call; <strong>${cur}-AM</strong> / <strong>${cur}-FM</strong> suffixes still apply by band.</div>`:'';
 
   document.getElementById('renameb').innerHTML=`
     <p class="di">Rename <strong>${callDisplay(s)}</strong> — ${s.freq} · ${fmtLabel(s.format)}.</p>
@@ -19356,6 +20206,7 @@ function doRename(sid){
   if(nameTaken) return;
   const old=callDisplay(s);
   s.callLetters=val;
+  syncCallLettersToSimulcastPartner(s);
   logHistory(s,'CALLSIGN',`Call letters changed: ${old} → ${callDisplay(s)}`,G);
   // Brand may have been updated live via updBrand — already stored in s.brand
   const nb=(s.brand||'').trim(), ob=(_renameBrandAtOpen??'').trim();
@@ -19531,7 +20382,7 @@ function openFmBooster(sid){
   const cost=getBoosterCost(G.year);
   const canAfford=G.cash>=cost;
   const isMusFmt=!['NEWS_TALK','ALL_NEWS','SPORTS_TALK','PODCAST_TALK','GOSPEL','SPANISH'].includes(s.format);
-  const erosionRisk=(isMusFmt&&s.sig.type==='AM')||(['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format)&&s.sig.type==='AM'&&!s.fmBooster&&!s.simulcastWith&&(G?.year||0)>=2007);
+  const erosionRisk=(isMusFmt&&s.sig.type==='AM')||(['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format)&&s.sig.type==='AM'&&!s.fmBooster&&!stationHasSimulcastLeg(s,G)&&(G?.year||0)>=2007);
   document.getElementById('boostb').innerHTML=`
     <p class="di">An FM translator rebroadcasts your AM signal on a low-power FM frequency. Made available to AM stations by the FCC's AM Revitalization proceeding starting 2009 — typically by placing the AM on an HD Radio subchannel and qualifying a translator for that feed. It covers the city core (~99 watts) and picks up FM-only listeners in that footprint. <strong>It does not stop AM erosion entirely</strong> — listeners in your AM fringe beyond the translator's reach still can't receive the FM signal and keep drifting away. The bigger your AM signal, the more fringe audience remains exposed. A full FM license is the only complete solution. The translator also partially shields Talk and Sports from streaming-era AM signal quality penalties.</p>
     <div class="ms2">
@@ -19973,7 +20824,28 @@ function openSim(sid){
 function rSim(){
   const s=G.stations.find(st=>st.id===SimS.a);
   if(!s){document.getElementById('simb').innerHTML='<p class="di">Error.</p>';return;}
-  // If already in simulcast, offer to break it
+  const myStations = MP.mode==='live' ? G.ps.filter(st=>st._mpOwner===MP.playerId) : G.ps;
+
+  // Star-model receiver: break this leg only (add more legs from the programming source)
+  if(s.simulcastSourceStationId){
+    const lead=G.stations.find(st=>st.id===s.simulcastSourceStationId);
+    const _progSrc=lead||s;
+    const _talentSlots=_progSrc?Object.values(_progSrc.prog).filter(sd=>sd?.talent).map(sd=>sd.talent.name):[];
+    const _simulcastFmt=_progSrc?fmtLabel(_progSrc.format):fmtLabel(s.format);
+    const addHint=lead?`<div class="ibox" style="margin-top:8px">To add another simulcast signal, open <strong>${callDisplay(lead)}</strong> (the programming source) and pick another station.</div>`:'';
+    document.getElementById('simb').innerHTML=`
+      <p class="di"><strong>${s.callLetters}</strong> is simulcasting <strong>${lead?callDisplay(lead):'unknown'}</strong> on <em>${_simulcastFmt}</em>.</p>
+      ${addHint}
+      <div class="bbox"><strong>Simulcast benefits:</strong> Shared talent pool, shared brand. AM↔FM pairs: AM gets +15% audience reach bonus. All legs count as one format for upkeep.</div>
+      <div class="wbox"><strong>If you break this leg only:</strong><br>
+        <strong>${callDisplay(_progSrc)}</strong> (programming source) keeps the format, talent${_talentSlots.length?' ('+_talentSlots.join(', ')+'​)':''}, brand, and on-air programming strategy.<br>
+        <strong>${s.callLetters}</strong> (this receiver) loses simulcast echo — reformat it next turn.</div>
+      <button class="cfm" onclick="doBreakSim('${s.id}')" style="background:var(--red);color:var(--wht)">BREAK THIS SIMULCAST LEG</button>
+      <button class="cnl" onclick="cm('m-sim')">CANCEL</button>`;
+    return;
+  }
+
+  // Legacy mutual pair (or mid-migration): break or describe
   if(s.simulcastWith){
     const partner=G.stations.find(st=>st.id===s.simulcastWith);
     let _progSrc=s, _rcv=partner;
@@ -19994,11 +20866,16 @@ function rSim(){
       <button class="cnl" onclick="cm('m-sim')">CANCEL</button>`;
     return;
   }
-  // Only own stations, not already paired
-  const myStations = MP.mode==='live' ? G.ps.filter(st=>st._mpOwner===MP.playerId) : G.ps;
-  const partners=myStations.filter(p=>p.id!==s.id&&!p.simulcastWith);
+
+  const srcLeg=simulcastProgrammingSourceStation(s,G);
+  if(srcLeg&&srcLeg.id!==s.id){
+    document.getElementById('simb').innerHTML=`<p class="di">This station is a simulcast receiver. Open <strong>${callDisplay(srcLeg)}</strong> (the programming source) to add another simulcast leg or manage the group.</p><button class="cnl" onclick="cm('m-sim')">CLOSE</button>`;
+    return;
+  }
+
+  const partners=myStations.filter(p=>p.id!==s.id&&stationEligibleSimulcastReceiver(p));
   if(!partners.length){
-    document.getElementById('simb').innerHTML=`<p class="di">No eligible partner stations. You need at least two stations you own that are not already simulcast pairs.</p><button class="cnl" onclick="cm('m-sim')">CLOSE</button>`;
+    document.getElementById('simb').innerHTML=`<p class="di">No eligible partner stations. You need another owned station that is not already in a simulcast.</p><button class="cnl" onclick="cm('m-sim')">CLOSE</button>`;
     return;
   }
   // Source = station this modal was opened from (s). Target = selected partner.
@@ -20016,6 +20893,10 @@ function rSim(){
       </div>
     </div>`;
   }).join('');
+  const existingRec=s._simulcastSource===true?simulcastGroupReceivers(s.id,G):[];
+  const existingNote=existingRec.length
+    ?`<div class="ibox" style="margin-bottom:8px"><strong>Current simulcast receiver${existingRec.length>1?'s':''}:</strong> ${existingRec.map(r=>callDisplay(r)).join(', ')}. You can add another weak signal or translator on the same format.</div>`
+    :'';
   const partnerPreview = SimS.b ? (()=>{
     const partner=G.stations.find(st=>st.id===SimS.b);
     if(!partner) return '';
@@ -20033,28 +20914,47 @@ function rSim(){
     fmtDirectionNote = `<span style="color:var(--mut);font-size:15px"><strong>${s.callLetters}</strong> is the <strong>programming source</strong>. Choose a partner below — it becomes the <strong>receiver / repeater</strong>, adopting this station's format and identity. Local talent on the partner no longer applies.</span>`;
   }
   document.getElementById('simb').innerHTML=`
-    <p class="di"><strong>Simulcast this station:</strong> <strong>${callDisplay(s)}</strong> (${fmtLabel(s.format)} · ${s.fmBooster?'FM BOOSTER':s.sig.type}) → select a partner to receive this signal.</p>
-    <div class="bbox"><strong>How it works:</strong> The station you opened stays the programming source. The partner you pick becomes the simulcast receiver — it takes this format/brand and echoes the source's on-air programming; your local management (sales, budgets, demo target, format strategy) stays on the receiver. AM↔FM pairs still get +15% AM reach bonus where applicable.<br><br>${fmtDirectionNote}</div>
+    <p class="di"><strong>Add simulcast / repeater:</strong> <strong>${callDisplay(s)}</strong> (${fmtLabel(s.format)} · ${s.fmBooster?'FM BOOSTER':s.sig.type}) — pick another owned station to carry the same programming.</p>
+    ${existingNote}
+    ${existingRec.length?`<button type="button" class="cfm" onclick="doBreakSim('${s.id}')" style="background:var(--red);color:var(--wht);margin-bottom:10px">END ALL SIMULCASTS (${callDisplay(s)} + ${existingRec.length} receiver${existingRec.length>1?'s':''})</button>`:''}
+    <div class="bbox"><strong>How it works:</strong> The station you opened stays the programming source. Each partner you add becomes an additional simulcast receiver — same format/brand and echoed on-air programming; local management (sales, budgets, demo target, format strategy) stays on each receiver. AM↔FM pairs still get +15% AM reach bonus where applicable.<br><br>${fmtDirectionNote}</div>
     <div class="acg">${opts}</div>
     ${partnerPreview}
     <button class="cfm" onclick="doSim()" ${!SimS.b?'disabled':''}>SIMULCAST THIS STATION</button>
     <button class="cnl" onclick="cm('m-sim')">CANCEL</button>`;
 }
 function pickSim(id){SimS.b=id;rSim();}
-/** sourceId = station whose modal was opened; targetId = selected partner (repeater). */
+function stripSimulcastReceiverProgrammingState(junior, lead){
+  DAYPART_SLOTS.forEach(sl=>{
+    if(junior.prog[sl]?.talent) junior.prog[sl].talent=null;
+  });
+  junior.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(junior.prog[sl])*w,0));
+  if(junior.drift && lead.format && junior.drift[lead.format]!==undefined){
+    delete junior.drift[lead.format];
+  }
+  if(junior.driftHistory && lead.format){
+    delete junior.driftHistory[lead.format];
+  }
+  junior.identity=0; junior._identityPeak=0; junior._formatAge=0; junior.identityBudget=0;
+}
+/** sourceId = programming source; targetId = new receiver (repeater). Star model: source may already have other receivers. */
 function applySimulcastPair(sourceId,targetId,opts){
   const suppressNews=opts&&opts.suppressNews;
   const src=G.stations.find(st=>st.id===sourceId), dst=G.stations.find(st=>st.id===targetId);
   if(!src||!dst)return false;
+  migrateLegacyPartnersToStarReceiversForSource(G, src);
+  if(!canSimulcast(G,src,dst))return false;
+  const sameBand=(src.sig?.type||'')===(dst.sig?.type||'')&&!!src.fmBooster===!!dst.fmBooster;
   if(dst.format!==src.format){
     dst.format=src.format;
     dst.brand=src.brand;
-    if(!suppressNews) G.news.unshift({v:'LOW',t:`${dst.callLetters} (${dst.sig.type}) reformatted to ${fmtLabel(src.format)} to simulcast ${src.callLetters}'s programming.`,y:G.year,p:G.period});
+    if(!sameBand)dst.callLetters=stripCallBandSuffix(src.callLetters);
+    else dst.callLetters=stripCallBandSuffix(dst.callLetters);
+    if(!suppressNews) G.news.unshift({v:'LOW',t:`${callDisplay(dst)} (${dst.sig.type}) reformatted to ${fmtLabel(src.format)} to simulcast ${callDisplay(src)}'s programming.`,y:G.year,p:G.period});
   }
-  src.simulcastWith=dst.id;
-  dst.simulcastWith=src.id;
-  src._simulcastSource=true;
+  dst.simulcastSourceStationId=src.id;
   dst._simulcastSource=false;
+  dst.simulcastWith=null;
   DAYPART_SLOTS.forEach(sl=>{
     const ssd=src.prog[sl];
     if(!ssd){
@@ -20068,6 +20968,8 @@ function applySimulcastPair(sourceId,targetId,opts){
   // On-air brand matches programming source; receiver keeps local management (drift, demo lean, sales, ops budgets,
   // marketing, salesForce, identity scores, _history, etc.) — do not assign or clear those here.
   dst.brand=src.brand;
+  if(!sameBand)dst.callLetters=stripCallBandSuffix(src.callLetters);
+  else dst.callLetters=stripCallBandSuffix(dst.callLetters);
   initFmNonDupAfterPair(src,dst,G);
   return true;
 }
@@ -20077,36 +20979,43 @@ function doSim(){
   const src=G.stations.find(st=>st.id===SimS.a), dst=G.stations.find(st=>st.id===SimS.b);
   logSimulcastPairHistory(src,dst,G);
   const talentNote=DAYPART_SLOTS.some(sl=>src.prog[sl]?.talent)?` On-air talent remains on ${src.callLetters}.`:'';
-  G.news.unshift({v:'MEDIUM',t:`${dst.callLetters} now simulcasts ${src.callLetters} (${fmtLabel(src.format)}).${talentNote}`,y:G.year,p:G.period});
+  G.news.unshift({v:'MEDIUM',t:`${callDisplay(dst)} now simulcasts ${callDisplay(src)} (${fmtLabel(src.format)}).${talentNote}`,y:G.year,p:G.period});
   MP.action('sim', {sid:SimS.a, partnerId:SimS.b});
   cm('m-sim');renderAll();
 }
 function doBreakSim(id){
-  const s=G.stations.find(st=>st.id===id); if(!s||!s.simulcastWith) return;
+  const s=G.stations.find(st=>st.id===id); if(!s)return;
+
+  if(s._simulcastSource===true){
+    const receivers=simulcastGroupReceivers(s.id,G);
+    receivers.forEach(junior=>stripSimulcastReceiverProgrammingState(junior,s));
+    breakSimulcast(G,id);
+    const rTxt=receivers.length?receivers.map(r=>r.callLetters).join(', '):'';
+    G.news.unshift({v:'LOW',t:`Simulcast ended. ${s.callLetters} keeps the format and talent.${rTxt?` These receivers are unformatted: ${rTxt}.`:''}`,y:G.year,p:G.period});
+    cm('m-sim');renderAll();
+    MP.action('breaksim', {sid:id});
+    return;
+  }
+
+  if(s.simulcastSourceStationId){
+    const lead=G.stations.find(st=>st.id===s.simulcastSourceStationId);
+    if(lead)stripSimulcastReceiverProgrammingState(s,lead);
+    breakSimulcast(G,id);
+    G.news.unshift({v:'LOW',t:`Simulcast broken. ${lead?lead.callLetters:s.callLetters} keeps the format, talent, and brand. ${s.callLetters} is now unformatted.`,y:G.year,p:G.period});
+    cm('m-sim');renderAll();
+    MP.action('breaksim', {sid:id});
+    return;
+  }
+
+  if(!s.simulcastWith)return;
   const partner=G.stations.find(st=>st.id===s.simulcastWith); if(!partner) { breakSimulcast(G,id); cm('m-sim'); renderAll(); return; }
 
-  // Programming source (keeps talent) = station marked when simulcast was created; else FM lead heuristic.
   let lead, junior;
   if(s._simulcastSource && !partner._simulcastSource){ lead=s; junior=partner; }
   else if(!s._simulcastSource && partner._simulcastSource){ lead=partner; junior=s; }
   else { lead=simLead(s,partner); junior=lead.id===s.id?partner:s; }
 
-  // ── TALENT: junior loses all talent (it lives on the lead card) ──
-  DAYPART_SLOTS.forEach(sl=>{
-    if(junior.prog[sl]?.talent) junior.prog[sl].talent=null;
-  });
-  junior.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(junior.prog[sl])*w,0));
-
-  // ── DRIFT / FORMAT STRATEGY: stays with lead only ────────────────
-  if(junior.drift && lead.format && junior.drift[lead.format]!==undefined){
-    delete junior.drift[lead.format];
-  }
-  if(junior.driftHistory && lead.format){
-    delete junior.driftHistory[lead.format];
-  }
-
-  // ── IDENTITY: junior resets (community roots stay with lead brand) ─
-  junior.identity=0; junior._identityPeak=0; junior._formatAge=0; junior.identityBudget=0;
+  stripSimulcastReceiverProgrammingState(junior, lead);
 
   breakSimulcast(G,id);
   G.news.unshift({v:'LOW',t:`Simulcast broken. ${lead.callLetters} keeps the format, talent, and brand. ${junior.callLetters} is now unformatted.`,y:G.year,p:G.period});
@@ -20142,7 +21051,7 @@ function openSell(sid){
       <div class="sr"><span class="lb">Asking Price</span><span class="vl amb">${f$(price)}</span></div>
       <div class="sr"><span class="lb">Your Cash After Sale</span><span class="vl pos">${f$(G.cash+price)}</span></div>
     </div>
-    ${s.simulcastWith?'<div class="wbox"><strong>Note:</strong> This station is in a simulcast. Selling will break the pair.</div>':''}
+    ${stationHasSimulcastLeg(s,G)?'<div class="wbox"><strong>Note:</strong> This station is in a simulcast. Selling will break those links.</div>':''}
     <button class="cfm" onclick="doSell('${s.id}','${price}')">CONFIRM SALE</button>
     <button class="cnl" onclick="cm('m-sell')">CANCEL</button>`;
   om('m-sell');
@@ -20847,6 +21756,7 @@ async function wlCommissionStationJingle(stationId){
     tagline,
     frequency:String(op.freq!=null?op.freq:'').trim().slice(0,24),
     band,
+    callLetters:String(brandCallBaseForToken(op.callLetters||'')||'').replace(/[^A-Za-z]/g,'').slice(0,12),
     audienceHint:sonic.audienceHint.slice(0,WL_JINGLE_AUDIENCE_HINT_MAX),
     positionHint:sonic.positionHint.slice(0,WL_JINGLE_POSITION_HINT_MAX),
   };
@@ -21570,6 +22480,7 @@ function migrateSave(G){
   if(G._attritionNicheFlipsCumulative==null)G._attritionNicheFlipsCumulative=0;
   migrateLoansV2(G);
   if(G.corps)rehydrateCorps(G); // re-link corp ownership after save/load
+  initIndieLicenseeKeysFromStations(G.stations,G);
   if(G.corps){
     G.corps.forEach(c=>{
       const tmpl=CORPS.find(t=>t.id===c.id);
@@ -21830,6 +22741,11 @@ function migrateSave(G){
     });
   }
 
+  (G.stations||[]).forEach(s=>{
+    if(s&&s.simulcastSourceStationId===undefined)s.simulcastSourceStationId=null;
+  });
+  migrateSimulcastLegacyPairsToStar(G);
+  repairOrphanSimulcastLegPointers(G);
   normalizeSimulcastLinksInPlace(G);
 
   applyAmFccPowerNormalization(G.stations, G);
@@ -22219,11 +23135,7 @@ function syncModalBodyScrollLock(){
   }
 }
 window.addEventListener('pageshow',()=>{ syncModalBodyScrollLock(); });
-/** Modals where backdrop click must not dismiss — player must use OK / Close in the panel (Windows-style ack). */
-const OV_REQUIRE_ACK_CLOSE=new Set([
-  'm-sum','m-grade','m-milestone','m-tal','m-programming','m-pg','m-fire',
-  'm-talent-trouble','m-poach-alert','m-period-news','m-contract','m-trade','m-swap','m-frmove','m-sta-offer','m-game-confirm',
-]);
+/** All `.ov` modals: close only via header/footer buttons — backdrop click does not dismiss (avoids accidental closes). */
 function om(id){
   if(id==='m-rk'){
     if(MP.mode!=='live'){
@@ -22294,37 +23206,7 @@ function cm(id,opts){
 }
 document.querySelectorAll('.ov').forEach(el=>el.addEventListener('click',e=>{
   if(e.target===el){
-    if(OV_REQUIRE_ACK_CLOSE.has(el.id))return;
-    if(el.id==='m-mp-endgame'&&typeof mpEndgameFrozen==='function'&&mpEndgameFrozen())return;
-    if(el.id==='m-brand')BM_ACTIVE_SID=null;
-    el.classList.remove('on');
-    syncModalBodyScrollLock();
-    if(el.id==='m-programming'){
-      wlFtTutorialNotifyProgrammingClose();
-      if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===4&&(G._tutorialProgExtraStep|0)>0)G._tutorialProgExtraStep=0;
-      if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live')requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
-    }
-    if(el.id==='m-fire'){
-      wlFtTutorialNotifyTalentClose();
-      if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live')requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
-    }
-    if(el.id==='m-brand'){
-      wlFtTutorialNotifyBrandClose();
-      if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live')requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
-    }
-    if(el.id==='m-research'){
-      wlFtTutorialNotifyResearchClose();
-      if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live')requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
-    }
-    if(el.id==='m-sales')wlFtTutorialNotifySalesClose();
-    if(el.id==='m-sp')wlFtTutorialNotifySpotsClose();
-    if((el.id==='m-drift'||el.id==='m-lean'||el.id==='m-fm')&&isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===4){
-      if(el.id==='m-drift'&&(G._tutorialProgExtraStep|0)===1)G._tutorialProgExtraStep=2;
-      if(el.id==='m-lean'&&(G._tutorialProgExtraStep|0)===2)G._tutorialProgExtraStep=3;
-      requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
-    }
-    if(el.id==='m-sum')wlFtTutorialOnPeriodSummaryDismissed();
-    if(el.id==='m-tutorial-turnaround')tutorialTurnaroundOnTutorialModalClosed();
+    return;
   }
 }));
 
@@ -22494,11 +23376,16 @@ function playerRelevantRightsActs(sportsActs,franchiseActs){
 }
 
 // ── Performance explanation (qualitative drivers — no raw engine numbers) ──
-/** Programming source vs follower in a linked pair (_simulcastSource), or null. */
+/** Programming source vs follower in a linked pair (legacy mutual link or star source + receiver). */
 function simulcastPairProgrammingLegs(a,b){
-  if(!a||!b||a.simulcastWith!==b.id||b.simulcastWith!==a.id)return null;
-  if(a._simulcastSource===true)return{src:a,flw:b};
-  if(b._simulcastSource===true)return{src:b,flw:a};
+  if(!a||!b)return null;
+  if(a.simulcastWith===b.id&&b.simulcastWith===a.id){
+    if(a._simulcastSource===true)return{src:a,flw:b};
+    if(b._simulcastSource===true)return{src:b,flw:a};
+    return null;
+  }
+  if(a._simulcastSource===true&&b.simulcastSourceStationId===a.id)return{src:a,flw:b};
+  if(b._simulcastSource===true&&a.simulcastSourceStationId===b.id)return{src:b,flw:a};
   return null;
 }
 // cat: 'audience' = ratings/revenue-from-audience, 'cost' = costs/profit/financing, 'cross' = both
@@ -23312,6 +24199,7 @@ function renderAll(){
     if (w !== undefined && w !== null) G.cash = w;
   }
   rHdr();rTick();rScore();rStns();rMkt();rIntel();rNews();
+  if(typeof wlGmMode!=='undefined'&&wlGmMode.renderGmHeader)wlGmMode.renderGmHeader(G);
   if(document.body) document.body.classList.toggle('mp-endgame', typeof mpEndgameFrozen==='function'&&mpEndgameFrozen());
   maybeShowPendingTroubleModal();
   bmRefreshOpenBrandModalLogos();
@@ -23373,6 +24261,12 @@ function rHdr(){
     ab.style.borderColor='var(--mut)';
     ab.style.color='var(--mut)';
     ab.textContent='Bankruptcy: You are out of active play. Keep advancing to watch the market.';
+  }else if(MP.mode!=='live'&&G._gmCareerEnded){
+    ab.className='on';
+    ab.style.background='rgba(240,88,88,.1)';
+    ab.style.borderColor='var(--mut)';
+    ab.style.color='var(--mut)';
+    ab.textContent='General Manager: You have been dismissed. Keep advancing to watch the market.';
   }else if(MP.mode!=='live'&&!G._soloBankrupt&&(!G.ps||!G.ps.length)&&_myDisplayCash>0){
     ab.className='on';
     ab.style.background='rgba(245,166,35,.1)';
@@ -23571,7 +24465,9 @@ function rStns(){
     const _simLegs=junior?simulcastPairProgrammingLegs(s,junior):null;
     const _simRoleStrip=_simLegs?'<div class="sim-role-strip"><span class="sim-role-pill sim-role-pill--src">'+callDisplay(_simLegs.src)+' · SIMULCAST SOURCE ('+_simLegs.src.sig.type+')</span><span class="sim-role-pill sim-role-pill--flw">'+callDisplay(_simLegs.flw)+' · SIMULCAST FOLLOWER ('+_simLegs.flw.sig.type+')</span></div>':'';
     const _soloSimRole=!_simLegs&&partner&&!isPlayerPair?'<div class="sim-role-strip sim-role-strip--solo"><span class="sim-role-pill sim-role-pill--solo">'+(s._simulcastSource===true?'SIMULCAST SOURCE':'SIMULCAST FOLLOWER')+' ('+s.sig.type+') · paired with '+callDisplay(partner)+'</span></div>':'';
-    const _simEconHint=_simLegs?'<div class="sim-econ-hint"><div><span class="sim-econ-hint-lbl">'+callDisplay(_simLegs.src)+'</span> · Higher programming cost center</div><div><span class="sim-econ-hint-lbl">'+callDisplay(_simLegs.flw)+'</span> · Lower programming cost (simulcast)</div></div>':'';
+    const _lmaLegForPair=s._lmaStation?s:(junior&&junior._lmaStation?junior:null);
+    const _simLmaNote=_simLegs&&_lmaLegForPair?'<div style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.45">LMA fee (<strong>'+f$(lmaFeeForStation(_lmaLegForPair,G))+'</strong>/period) is only the payment to the licensor. Facility “costs” on the follower leg still include fixed site and operations — they are not the same as that fee.</div>':'';
+    const _simEconHint=_simLegs?'<div class="sim-econ-hint"><div><span class="sim-econ-hint-lbl">'+callDisplay(_simLegs.src)+'</span> · Higher programming cost center</div><div><span class="sim-econ-hint-lbl">'+callDisplay(_simLegs.flw)+'</span> · Lower programming cost (simulcast)</div>'+_simLmaNote+'</div>':'';
     div.innerHTML=`
       <div class="sctop"><div class="sctop-inner">`+_logoThumb+`<div>
         <div class="sccall">${junior?callDisplay(s)+' + '+callDisplay(junior):callDisplay(s)}</div>
@@ -23579,7 +24475,7 @@ function rStns(){
         <div class="scbrand">${callDisplay(s)} — "${op.brand}" · ${fmtLabel(op.format)} <span style="color:var(--mut);font-size:15px;font-style:normal">· ${genderLabel(op.format)}</span></div>
         ${junior?(()=>{const bL=s.sig.type,bJ=junior.sig.type;const lbl=bL===bJ?(bL+'/'+bL+' SIMULCAST'):'AM/FM SIMULCAST';return '<div class="sim-tag" style="color:var(--grn)">◈ '+lbl+' · '+callDisplay(s)+' + '+callDisplay(junior)+'</div>';})():partner&&!isPlayerPair?'<div class="sim-tag">◈ SIMULCAST WITH '+callDisplay(partner)+'</div>':''}
         ${_simRoleStrip}${_soloSimRole}
-        ${s._lmaStation?'<div class="sim-tag" style="color:var(--blu);border-color:rgba(90,180,255,.4)" title="Operational control without owning the license — you program and sell; era rules apply in LMA screen.">📝 LMA — LEASED OPERATION · fee: '+f$(lmaFeeForStation(s,G))+'/period</div>':''}
+        ${(()=>{const lm=s._lmaStation?s:(junior&&junior._lmaStation?junior:null);return lm?'<div class="sim-tag" style="color:var(--blu);border-color:rgba(90,180,255,.4)" title="Operational control without owning the license — you program and sell; era rules apply in LMA screen.">📝 LMA — LEASED OPERATION · fee: '+f$(lmaFeeForStation(lm,G))+'/period</div>':'';})()}
         ${s.lmaLessorId?'<div class="sim-tag" style="color:var(--grn);border-color:rgba(82,227,110,.4)" title="You keep the license; an operator runs the station under LMA.">📝 LMA — LEASED OUT · receiving: '+f$(lmaFeeForStation(s,G))+'/period</div>':''}
       </div></div><div><div class="scshv">${pct(shareUi)}</div><div class="scshl">SHARE ${trd}</div></div></div>
       <div class="qr"><span class="ql">QUALITY</span><div class="qb"><div class="qf ${qc2}" style="width:${op.oq}%"></div></div><span class="qn">${op.oq}</span></div>
@@ -23683,9 +24579,9 @@ function rStns(){
         const salesLbl=sfActive?'💼 '+sfLblText+' · '+Math.round(op.ops.sell*100)+'%':'💼 SALES';
         const swapBtn='<button class="abt" onclick="openSwapSignal(\''+op.id+'\')">⇄ SWAP SIGNAL</button>';
         const fmUniq=[];
-        const _m1=fmBtn(s),_m2=junior?fmBtn(junior):'';
+        const fmMigrateAnchor=junior?simulcastOperationalSource(s):s;
+        const _m1=fmBtn(fmMigrateAnchor);
         if(_m1)fmUniq.push(_m1);
-        if(_m2&&_m2!==_m1)fmUniq.push(_m2);
         const adminBtns=[...histArr,swapBtn,...fmUniq,...sellArr,streamBtn,simBtn];
         const mkLine='<div style="font-size:13px;color:var(--mut);margin-bottom:10px;line-height:1.45">Marketing <strong style="color:var(--off)">'+f$(op.ops.promo||0)+'</strong>/p · Local Identity <strong style="color:var(--off)">'+Math.round(op.identity||0)+'</strong>'+((op.identityBudget||0)>0?' <span style="color:var(--amb)">★</span>':'')+'</div>';
         const aiCardBusy=(op._logoGenPending||op._vanGenPending||op._jingleGenPending)?' wl-ai-gen-status--busy':'';

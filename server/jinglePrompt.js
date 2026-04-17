@@ -2,10 +2,16 @@
 
 /**
  * ShortAPI Suno v5.5 custom mode:
- * - `lyrics` = only words that should be sung/spoken on-air (Suno often vocalizes all of `lyrics`).
- * - `tags` = era, format, length, mix, anti-crowd, VO-read hints — never put production notes into `lyrics`.
+ * - `lyrics` = on-air words only (tagline, then brand/dial; short taglines repeated once for a stronger hook).
+ * - **Music formats:** prompts ask for **sung tagline and sung brand** (melodic vocal for all lyric lines).
+ * - **News/talk-style formats:** VO / announcer delivery (not sung).
+ * - `tags` = era, format, length, mix — avoid stuffing contradictory delivery cues into one giant string.
  *
- * Identity is the player's **brand** (on-air name), not legal call letters.
+ * **Call letters** from the station record are **not** merged in as an extra lyric line. Only `tagline` + `brand`
+ * text go to `lyrics`. Spaced-letter *tags* are added only when that call sign’s letters appear as a run in `brand`.
+ *
+ * **Brand is the source of truth:** lyrics follow the player’s `brand` string. Numerals are verbalized for singing:
+ * full dial in text (e.g. `96.1` → words), and letter+dial forms like `Q96` → `Q ninety six` using the station frequency’s MHz/kHz integer.
  */
 
 const DIGIT_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'];
@@ -48,6 +54,26 @@ function amKhzToRadioVerbal(khz) {
   return `${spellUnder100(hi)} ${spellUnder100(lo)}`;
 }
 
+/** FM MHz integer part only, as spoken words (e.g. 96 → ninety six; 101 → one oh one). */
+function fmMhzIntPartStringToWords(intPart) {
+  if (!intPart) return '';
+  if (intPart.length === 3 && intPart[0] === '1') {
+    return intPart
+      .split('')
+      .map((d) => DIGIT_WORDS[parseInt(d, 10)])
+      .join(' ')
+      .replace(/\bzero\b/g, 'oh');
+  }
+  if (intPart.length <= 2) {
+    return spellUnder100(parseInt(intPart, 10));
+  }
+  return intPart
+    .split('')
+    .map((d) => DIGIT_WORDS[parseInt(d, 10)])
+    .join(' ')
+    .replace(/\bzero\b/g, 'oh');
+}
+
 /** FM MHz as announcer would say it (tags only). */
 function fmMhzToRadioVerbal(freqStr) {
   const s = String(freqStr || '')
@@ -58,22 +84,7 @@ function fmMhzToRadioVerbal(freqStr) {
   if (!m) return '';
   const intPart = m[1];
   const decPart = m[2] || '';
-  let intWords;
-  if (intPart.length === 3 && intPart[0] === '1') {
-    intWords = intPart
-      .split('')
-      .map((d) => DIGIT_WORDS[parseInt(d, 10)])
-      .join(' ')
-      .replace(/\bzero\b/g, 'oh');
-  } else if (intPart.length <= 2) {
-    intWords = spellUnder100(parseInt(intPart, 10));
-  } else {
-    intWords = intPart
-      .split('')
-      .map((d) => DIGIT_WORDS[parseInt(d, 10)])
-      .join(' ')
-      .replace(/\bzero\b/g, 'oh');
-  }
+  const intWords = fmMhzIntPartStringToWords(intPart);
   if (!decPart) return intWords;
   const decWords = decPart
     .split('')
@@ -95,6 +106,27 @@ function dialVerbalForTags(frequency, band) {
  * Replace raw dial digits in singable text with the same words we use in tags.
  * Models often misread "103.5" as "one hundred three five" if left as numerals in lyrics.
  */
+/** e.g. KNWN → "K N W N" for tags / lyrics hints (Suno reads letter clusters poorly). */
+function spacedCallLettersForSuno(callLetters) {
+  const base = String(callLetters || '')
+    .replace(/-?(AM|FM)$/i, '')
+    .replace(/[^A-Za-z]/g, '')
+    .toUpperCase();
+  if (base.length < 3 || base.length > 6) return '';
+  return base.split('').join(' ');
+}
+
+/** Letters-only call base appears in brand — only then add call-letter cues (lyrics are brand + tagline only). */
+function callLettersAppearInBrand(brand, callLetters) {
+  const base = String(callLetters || '')
+    .replace(/-?(AM|FM)$/i, '')
+    .replace(/[^A-Za-z]/g, '')
+    .toUpperCase();
+  if (base.length < 3) return false;
+  const b = String(brand || '').replace(/[^A-Za-z]/g, '').toUpperCase();
+  return b.includes(base);
+}
+
 function verbalizeDialInText(text, frequency, band) {
   const dialWords = dialVerbalForTags(frequency, band);
   if (!dialWords || text == null || String(text).trim() === '') return String(text);
@@ -120,6 +152,46 @@ function verbalizeDialInText(text, frequency, band) {
     const pad = before && /[A-Za-z0-9]/.test(before) ? ' ' : '';
     return pad + dialWords;
   });
+}
+
+/**
+ * `{digits}` + `{words}` from station frequency for embedding in brand (e.g. Q96 → ninety six on FM 96.1).
+ */
+function dialIntegerDigitsAndWordsForBrand(frequency, band) {
+  const b = String(band || '').toUpperCase();
+  const f = String(frequency || '').trim();
+  if (!f || !/\d/.test(f)) return null;
+  const compact = f.replace(/\s/g, '').replace(/(AM|FM)$/i, '');
+  if (!compact) return null;
+  if (b === 'FM' || f.includes('.')) {
+    const m = /^(\d+)(?:\.(\d+))?$/.exec(compact);
+    if (!m) return null;
+    const intPart = m[1];
+    return { digits: intPart, words: fmMhzIntPartStringToWords(intPart) };
+  }
+  const k = parseInt(compact.replace(/\D/g, ''), 10);
+  if (!Number.isFinite(k) || k <= 0) return null;
+  return { digits: String(k), words: amKhzToRadioVerbal(k) };
+}
+
+/**
+ * After full-dial replacement: `Q96` / `Z100` style (letter + dial integer) → `Q ninety six` using station frequency.
+ */
+function verbalizeLetterPlusDialDigits(text, frequency, band) {
+  const info = dialIntegerDigitsAndWordsForBrand(frequency, band);
+  if (!info || !info.digits || !info.words) return String(text);
+  const { digits, words } = info;
+  if (digits.length < 1) return String(text);
+  const escaped = digits.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const re = new RegExp(`([A-Za-z])(${escaped})(?![0-9])`, 'g');
+  return String(text).replace(re, (_m, letter) => `${letter} ${words}`);
+}
+
+/** Brand string for jingle lyrics: player text only, with dial numerals verbalized for singing. */
+function brandTextForJingleLyrics(brand, frequency, band) {
+  let t = verbalizeDialInText(brand, frequency, band);
+  t = verbalizeLetterPlusDialDigits(t, frequency, band);
+  return t;
 }
 
 /** Internal format id → short sonic hint for Suno tags (avoid “arena/party” wording — models map it to crowd tails). */
@@ -158,7 +230,7 @@ const SOFT_IMAGERY_FORMATS = new Set(['BEAUTIFUL_MUSIC', 'MOR', 'ADULT_STANDARDS
 const ROCK_IMAGERY_FORMATS = new Set(['ALBUM_ROCK', 'CLASSIC_ROCK', 'ALT_ROCK']);
 /** Rhythmic pop / R&B — short ID can use groove; different from soft AC or news VO. */
 const RHYTHMIC_POP_FORMATS = new Set(['URBAN_CONTEMP', 'RHYTHMIC', 'SOUL_RNB', 'HOT_AC']);
-/** Formats that should sound like a sung hook / melodic ID, not a spoken announcer read. */
+/** Formats that should sound like a spoken / VO-forward ID (no sung/spoken split). */
 const SPOKEN_FORWARD_FORMATS = new Set([
   'NEWS_TALK',
   'SPORTS_TALK',
@@ -167,42 +239,46 @@ const SPOKEN_FORWARD_FORMATS = new Set([
   'PUBLIC_NEWS',
 ]);
 
+/** Core ask for every music-format jingle: melodic singing for slogan and brand, not VO. */
+const SUNG_TAGLINE_AND_BRAND =
+  'sung jingle: melodic lead vocal — sing tagline and station brand lines; sing dial and frequency as sung phrases (not dry spoken announcer); clear pitch; no monotone narration';
+
 /**
- * Vocal / delivery hint for tags — default was VO-style for all formats, which Suno often read as spoken word.
+ * Vocal / delivery hint for tags.
  * @param {boolean} [hasTagline] when true on soft formats, do not ask for “wordless pad” (conflicts with sung tagline → gibberish).
  */
 function vocalDeliveryTag(fmtKey, hasTagline) {
   if (SPOKEN_FORWARD_FORMATS.has(fmtKey)) {
-    return 'VO delivery: spaced letters for call letters; numbers spoken as words not digits';
+    return 'VO delivery: speak call letters as separate letters only (not as a word); use the exact dial wording from tags; numbers as spoken words not digit strings; do not invent a different frequency';
   }
   if (SOFT_IMAGERY_FORMATS.has(fmtKey)) {
     if (hasTagline) {
-      return 'soft sung vocal; sing the lyrics field exactly as standard English words; clear consonants; no wordless pad; no humming; no scat; no invented syllables or gibberish; gentle melodic line; minimal percussion';
+      return `soft sung vocal; ${SUNG_TAGLINE_AND_BRAND}; clear consonants; no wordless pad; no humming; no scat; no invented syllables or gibberish; gentle melodic line; minimal percussion`;
     }
-    return 'soft melodic sung line or light wordless pad; gentle floating vocal; not spoken-word announcer; minimal percussion';
+    return 'soft melodic sung line or light wordless pad; gentle floating vocal; minimal percussion';
   }
   if (fmtKey === 'GOSPEL') {
-    return 'gospel uplift: choir stab or solo; reverent sung line; not news-talk dry read';
+    return `gospel uplift; choir or solo; ${SUNG_TAGLINE_AND_BRAND}; reverent tone`;
   }
   if (ROCK_IMAGERY_FORMATS.has(fmtKey)) {
-    return 'sung hook or guitar-led sting; rock energy; not spoken-word announcer; keep ID short';
+    return `rock radio sting; guitar-forward; ${SUNG_TAGLINE_AND_BRAND}`;
   }
   if (fmtKey === 'COUNTRY') {
-    return 'country melodic sung ID; warm twang ok; not spoken-word dry VO only';
+    return `country melodic vocal; warm twang ok; ${SUNG_TAGLINE_AND_BRAND}`;
   }
   if (fmtKey === 'SPANISH') {
-    return 'Latin pop melodic hook; Spanish-language sung line ok; not monotone spoken English VO';
+    return `Latin melodic hook; ${SUNG_TAGLINE_AND_BRAND}; Spanish-language sung line ok`;
   }
   if (fmtKey === 'TOP40') {
     if (hasTagline) {
-      return 'CHR sung jingle: melodic lead with clear pitch; sing tagline and station name as pop vocal lines; no spoken-word announcer; no DJ talkover; no monotone narration';
+      return `CHR pop vocal; ${SUNG_TAGLINE_AND_BRAND}; no DJ talkover`;
     }
-    return 'CHR sung station ID: punchy melodic lead vocal; fully sung not spoken; not dry VO; short sting keep drums controlled';
+    return `CHR sung station ID; punchy melodic lead; ${SUNG_TAGLINE_AND_BRAND}; short sting keep drums controlled`;
   }
   if (RHYTHMIC_POP_FORMATS.has(fmtKey)) {
-    return 'sung melodic hook; contemporary rhythmic pop groove ok for a short sting; not monotone spoken word';
+    return `contemporary R&B-pop melodic hook; ${SUNG_TAGLINE_AND_BRAND}`;
   }
-  return 'sung melodic station-ID hook; not spoken-word dry read; keep drums light for IDs';
+  return SUNG_TAGLINE_AND_BRAND;
 }
 
 /**
@@ -302,6 +378,8 @@ function buildSunoJingleArgs(p) {
   const tag = typeof p.tagline === 'string' ? p.tagline.trim().slice(0, 60) : '';
   const band = String(p.band || '').toUpperCase() === 'FM' ? 'FM' : String(p.band || '').toUpperCase() === 'AM' ? 'AM' : '';
   const dialHint = dialVerbalForTags(p.frequency, band);
+  const callSpaced = spacedCallLettersForSuno(typeof p.callLetters === 'string' ? p.callLetters : '');
+  const callsInBrand = callLettersAppearInBrand(brand, typeof p.callLetters === 'string' ? p.callLetters : '');
 
   const formatHint = FORMAT_SUNO[fmtKey] || 'mainstream music radio';
 
@@ -310,14 +388,23 @@ function buildSunoJingleArgs(p) {
 
   const { eraTag, eraAnti } = eraTagsForYearAndFormat(yr, fmtKey);
 
-  // Singable lines ONLY — no brackets, no “say…”, no production notes (those go to tags).
-  // Replace dial numerals in brand/tagline so TTS doesn’t garble (e.g. "103.5" → "one hundred three five").
-  const tagForLyrics = tag ? verbalizeDialInText(tag, p.frequency, band) : '';
-  const brandForLyrics = verbalizeDialInText(brand, p.frequency, band);
-  // Slogan/tagline first, then on-air brand (typical jingle: hook line, then station ID).
+  // On-air words only — tagline + brand as the player wrote them; verbalize digits for singability.
+  const tagForLyrics = tag ? brandTextForJingleLyrics(tag, p.frequency, band) : '';
+  const brandForLyrics = brandTextForJingleLyrics(brand, p.frequency, band);
+  // Suno often mangles very short hooks; repeating the line in lyrics helps (threshold ~one short sentence).
+  const tagIsShort = tagForLyrics.length > 0 && tagForLyrics.length <= 36;
+
+  const spoken = SPOKEN_FORWARD_FORMATS.has(fmtKey);
+  // Slogan/tagline first, then on-air brand (typical jingle: hook line, then station ID) — all sung for music formats.
   const lyricLines = [];
   if (tagForLyrics) lyricLines.push(tagForLyrics);
+  if (tagIsShort) lyricLines.push(tagForLyrics);
   lyricLines.push(brandForLyrics);
+  // Spoken formats: dedicated lines for dial + spaced calls reduce Suno inventing wrong frequencies or misreading letter clusters.
+  if (spoken) {
+    if (callSpaced) lyricLines.push(callSpaced);
+    if (dialHint) lyricLines.push(`You're listening at ${dialHint}`);
+  }
   const lyrics = lyricLines.join('\n').slice(0, 1200);
 
   const tagParts = [
@@ -325,6 +412,17 @@ function buildSunoJingleArgs(p) {
     // Anti-crowd early — `tags` sliced to 1000 chars; `dial` placed soon so it survives long hints.
     'studio ID sting; hard-stop end; dry silence after last note; no tail swell; broadcast booth or production room only; no large-venue room tone or event-hall wash',
     dialHint ? `dial ${dialHint}` : '',
+    callSpaced && callsInBrand
+      ? spoken
+        ? `station call letters: speak as separate letters ${callSpaced}`
+        : `call letters: sing as melodic vocal syllables ${callSpaced}`
+      : '',
+    callSpaced && !callsInBrand && spoken
+      ? `station call letters: speak as separate letters ${callSpaced}; do not read call letters as one invented word`
+      : '',
+    tagIsShort
+      ? 'short slogan line: pronounce every word clearly in standard English; do not invent syllables or scat; no gibberish'
+      : '',
     eraTag,
     eraAnti,
     vocalDeliveryTag(fmtKey, !!tag),
@@ -355,4 +453,8 @@ module.exports = {
   amKhzToRadioVerbal,
   fmMhzToRadioVerbal,
   verbalizeDialInText,
+  brandTextForJingleLyrics,
+  verbalizeLetterPlusDialDigits,
+  spacedCallLettersForSuno,
+  callLettersAppearInBrand,
 };

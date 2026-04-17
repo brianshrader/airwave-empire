@@ -46,7 +46,8 @@
     "diag:talent-costs": "node scripts/diagnose-talent-costs.mjs",
     "diag:talent-sensitivity": "node scripts/compare-talent-sensitivity.mjs",
     "validate:talent-performance": "node scripts/validate-talent-performance.mjs",
-    "validate:talent-performance:controlled": "node scripts/validate-talent-performance-controlled.mjs"
+    "validate:talent-performance:controlled": "node scripts/validate-talent-performance-controlled.mjs",
+    "validate:gm": "node scripts/validate-gm-mode.mjs"
   },
   "devDependencies": {
     "playwright": "^1.59.1",

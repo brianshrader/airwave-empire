@@ -113,6 +113,11 @@ function validateBody(body) {
       errors.push('positionHint must be a string (max 140) if provided.');
     }
   }
+  if (body.callLetters != null && body.callLetters !== '') {
+    if (typeof body.callLetters !== 'string' || body.callLetters.length > 12) {
+      errors.push('callLetters must be a string (max 12) if provided.');
+    }
+  }
 
   return errors;
 }
@@ -171,6 +176,7 @@ function mountJingleRoutes(app) {
       frequency: typeof body.frequency === 'string' ? body.frequency : '',
       band: typeof body.band === 'string' ? body.band : '',
       formatId: typeof body.formatId === 'string' ? body.formatId : '',
+      callLetters: typeof body.callLetters === 'string' ? body.callLetters : '',
       audienceHint,
       positionHint,
     });
