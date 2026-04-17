@@ -335,6 +335,7 @@
         <button type="button" class="phbtn" onclick="openPeriodNews()" title="Headlines from the period you just finished">📰 NEWS</button>
         <button type="button" class="phbtn" onclick="openFinancials()">📈 FINANCIALS</button>
         <button type="button" class="phbtn" onclick="openLoan()">💳 LOANS</button>
+        <button type="button" class="phbtn" onclick="wlCampaignOpenBriefing()" title="GM career ladder">📋 GM CAREER</button>
         <button type="button" class="phbtn" onclick="openSaveLoad()">💾 SAVE / LOAD</button>
         <button type="button" class="phbtn" onclick="wlFtTutorialRestartFromMenu()" title="Replay the short solo first-turn walkthrough">📘 TIPS</button>
       </div>
@@ -386,6 +387,9 @@
 
 <div class="ov" id="m-gm-onboard"><div class="mo" style="max-width:560px"><div class="mh"><span>GENERAL MANAGER CAREER</span><button type="button" class="mc" onclick="wlGmDismissOnboarding()">OK</button></div><div id="gm-onboardb" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.55;color:var(--off)"></div></div></div>
 <div class="ov" id="m-gm-review"><div class="mo wide" style="max-width:560px"><div class="mh"><span id="gm-review-mh-title">GENERAL MANAGER PERFORMANCE REVIEW</span><button type="button" class="mc" onclick="cm('m-gm-review')">CLOSE ×</button></div><div id="gm-reviewb" style="padding:16px 20px 20px"></div></div></div>
+
+<div class="ov" id="m-campaign-brief"><div class="mo" style="max-width:520px"><div class="mh"><span>GM CAREER</span><button type="button" class="mc" onclick="cm('m-campaign-brief')">CLOSE ×</button></div><div id="campaign-careerb" style="padding:16px 20px 20px"></div></div></div>
+<div class="ov" id="m-campaign-end"><div class="mo" style="max-width:520px"><div class="mh"><span>ASSIGNMENT COMPLETE</span><button type="button" class="mc" onclick="cm('m-campaign-end')">CLOSE ×</button></div><div id="campaign-endb" style="padding:16px 20px 20px"></div><div style="padding:0 20px 20px"><button type="button" class="cfm" id="campaign-end-continue" style="width:100%">CONTINUE →</button></div></div></div>
 
 <div class="ov" id="m-feedback"><div class="mo" style="max-width:520px"><div class="mh"><span>BETA FEEDBACK</span><button type="button" class="mc" onclick="cm('m-feedback')">CLOSE ×</button></div><div id="feedbackb" style="padding:16px 20px 22px;position:relative">
   <p class="di" style="margin-top:0">What should we improve? Bugs, balance, clarity — everything helps.</p>
@@ -446,6 +450,7 @@
   <script type="module" src="/src/main.js"></script>
   <script defer src="/src/stationLogoConfig.js"></script>
   <script defer src="/src/stationLogoSvg.js"></script>
+  <script defer src="/src/campaignMode.js"></script>
   <script defer src="/src/gmMode.js"></script>
   <script defer src="/src/legacy.js"></script>
   <!-- Dev-only: stripped from production HTML by vite.config.js (file is not copied to dist). -->

@@ -4578,6 +4578,10 @@ async function wlCloudSaveLoadById(saveId) {
   if (!G) G = {};
   Object.assign(G, payload.G);
   migrateSave(G);
+  try{
+    if(typeof wlCampaignLoadFromSave==='function')wlCampaignLoadFromSave(payload.campaign);
+    if(typeof wlCampaignSyncFromGame==='function')wlCampaignSyncFromGame(G);
+  }catch(_e){}
   applyLoadedGameMarket();
   G.news.unshift({
     v: 'HIGH',
@@ -11819,7 +11823,7 @@ function genMarket(scenId){
     Object.values(stations[i].prog).forEach(sd=>{if(sd)sd.quality=Math.max(12,Math.min(90,(sd.quality||30)+oqAdj*0.6+hqBonus));});
     stations[i].color='#f5a623';}});
   // Underdog: morning drive is empty — the scenario says the host just quit
-  if(sc.id==='under'){
+  if(sc.id==='under'||sc.id==='gm_under'){
     sc.idx.forEach(i=>{
       const st=stations[i];
       if(!st||st._bpSlotDeferred||!st.isPlayer)return;
@@ -13494,12 +13498,24 @@ function openScenSelect(localSave){
 
   const wlSiteFooterEmbed=`<div class="site-footer site-footer--embed" role="contentinfo"><div class="site-footer-inner"><span class="site-footer-copy">© 2026 Airwave Empire. All rights reserved.</span><nav class="site-footer-links" aria-label="Legal and social"><a href="/legal/terms.html" target="_blank" rel="noopener">Terms</a><span class="site-footer-dot" aria-hidden="true">·</span><a href="/legal/privacy.html" target="_blank" rel="noopener">Privacy</a><span class="site-footer-dot" aria-hidden="true">·</span><a href="/legal/contact.html" target="_blank" rel="noopener">Contact</a><span class="site-footer-dot" aria-hidden="true">·</span><span class="site-footer-social"><a href="https://www.facebook.com/profile.php?id=61575347974985" target="_blank" rel="noopener noreferrer">Facebook</a><span class="site-footer-dot" aria-hidden="true">·</span><a href="https://x.com/airwaveempire" target="_blank" rel="noopener noreferrer">X</a><span class="site-footer-dot" aria-hidden="true">·</span><a href="https://www.instagram.com/airwaveempire" target="_blank" rel="noopener noreferrer">Instagram</a></span></nav><p class="site-footer-sim">Fictional simulation — not affiliated with real stations or broadcasters.</p></div></div>`;
 
+  const _camp=localSave?.campaign;
+  const _hasCampMeta=!!(_camp&&(_camp.active||(_camp.completedAssignments|0)>0||_camp.campaignWon));
+  const campaignBlock=`<div style="margin-bottom:22px;padding:14px 16px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.28);border-radius:4px">
+    <div style="font-family:var(--ft);font-size:14px;color:var(--amb);letter-spacing:3px;margin-bottom:8px">GM CAREER — CAMPAIGN MODE</div>
+    <p style="margin:0 0 12px;font-size:15px;color:var(--off);line-height:1.55">Same GM reviews and stations as solo play, but your <strong>career</strong> continues across markets. Each contract is a fresh station — only reputation and history carry over.</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <button type="button" class="cfm" style="padding:10px 18px;font-size:14px;letter-spacing:1px" onclick="wlCampaignStartFromMenu()">▶ START GM CAREER</button>
+      ${_hasCampMeta?`<button type="button" class="abt" style="padding:10px 18px;font-size:14px;letter-spacing:1px" onclick="wlCampaignOpenBriefing()">📋 CAREER BRIEFING</button>`:''}
+    </div>
+  </div>`;
+
   document.getElementById('scenb').innerHTML=`
     <div style="padding:18px 20px 20px;max-width:760px;margin:0 auto">
     <div class="scn-hero">
       <div class="scn-logo">AIRWAVE EMPIRE</div>
       <div class="scn-tagline" id="scn-tagline">${mktLabel.toUpperCase()} RADIO · 1970 TO 2020</div>
     </div>
+    ${campaignBlock}
     ${tutorialTop}
     <div style="text-align:center;margin-bottom:18px">
       <button type="button" class="cfm" style="padding:10px 22px;font-size:14px;letter-spacing:2px" onclick="cm('m-scen');openSaveLoad()" title="Cloud saves, download/upload file, or browser autosave">📂 LOAD GAME</button>
@@ -13669,6 +13685,7 @@ function openOnboarding(scenId){
 function startPlay(scenId){
   try{
     _pendingScenId=null;
+    if(!globalThis._wlCampaignStarting&&typeof wlCampaignDeactivate==='function')wlCampaignDeactivate();
     ACTIVE_MARKET=_selectedMarket;
     syncMarketPopToMarket(ACTIVE_MARKET);
     let companyName=(document.getElementById('company-name-input')?.value||'').trim();
@@ -13712,6 +13729,35 @@ function startPlay(scenId){
 function startNewGame(){
   // Legacy path — called from some places, routes to scenario select
   openScenSelect(null);
+}
+
+/** Campaign Mode — solo GM career ladder (see campaignMode.js). */
+function wlCampaignStartFromMenu(){
+  openGameConfirm({
+    title:'START GM CAREER',
+    message:'Begins a new GM career with a small-market contract. Progress is saved with your game. Your current unsaved session is autosaved first.',
+    confirmLabel:'START CAREER',
+  },ok=>{
+    if(!ok)return;
+    try{if(typeof autoSave==='function')autoSave();}catch(_e){}
+    if(typeof wlCampaign==='undefined'||!wlCampaign.startNewCareer){
+      showToast('Campaign mode is not loaded. Refresh the page.','warn');
+      return;
+    }
+    wlCampaign.startNewCareer();
+  });
+}
+
+function wlCampaignOpenBriefing(){
+  try{
+    const local=getLocalSave();
+    if(typeof wlCampaignLoadFromSave==='function')wlCampaignLoadFromSave(local?.campaign);
+    if(typeof G!=='undefined'&&G&&typeof wlCampaignSyncFromGame==='function')wlCampaignSyncFromGame(G);
+    if(typeof wlCampaign.renderCampaignModal==='function')wlCampaign.renderCampaignModal();
+    if(typeof om==='function')om('m-campaign-brief');
+  }catch(e){
+    showToast('Could not open career briefing.','warn');
+  }
 }
 function loadLocalSaveAndClose(el){
   el?.remove();
@@ -16948,6 +16994,9 @@ function advTurn(mpCoalesceSeq){
     recordStationFinHistory(G, wasYear, wasPeriod);
     /* GM Mode: evaluation layer only — reads finHistory + franchise snapshots; does not alter sim math. */
     if(typeof wlGmMode!=='undefined'&&wlGmMode.onPeriodClose)wlGmMode.onPeriodClose(G,wasYear,wasPeriod);
+    try{
+      if(typeof wlCampaignOnPeriodClose==='function')wlCampaignOnPeriodClose(G,wasYear,wasPeriod);
+    }catch(_e){}
     G._lastTurnHeadlines=(G.news||[]).filter(n=>n&&n.y===wasYear&&n.p===wasPeriod);
     if(wlCashBridgeAuditActive()){
       const _ps=myPS();
@@ -17035,6 +17084,9 @@ function advTurn(mpCoalesceSeq){
     }
     autoSave();
     renderAll();
+    try{
+      if(MP.mode!=='live'&&typeof wlCampaignAfterRenderAll==='function')wlCampaignAfterRenderAll(G);
+    }catch(_e){}
     queuePlayerTalentPortraits();
     queueAutoLogosForPlayerStations();
     // MP: if host, broadcast new state to all clients
@@ -21216,6 +21268,12 @@ function acceptStationListingOffer(){
 // ── SAVE / LOAD ────────────────────────────────────────────────────
 function saveGame(label){
   const payload={v:SAVE_VERSION,saved:new Date().toISOString(),label:label||'Manual Save',G};
+  try{
+    if(typeof wlCampaignGetPayloadForSave==='function'){
+      const c=wlCampaignGetPayloadForSave();
+      if(c)payload.campaign=c;
+    }
+  }catch(_e){}
   // localStorage autosave
   try{localStorage.setItem(SAVE_KEY,JSON.stringify(payload));localStorage.removeItem(LEGACY_SAVE_KEY);}catch(e){}
   return payload;
@@ -21225,6 +21283,12 @@ function autoSave(){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   try{
     const payload={v:SAVE_VERSION,saved:new Date().toISOString(),label:'Autosave',G};
+    try{
+      if(typeof wlCampaignGetPayloadForSave==='function'){
+        const c=wlCampaignGetPayloadForSave();
+        if(c)payload.campaign=c;
+      }
+    }catch(_e){}
     localStorage.setItem(SAVE_KEY,JSON.stringify(payload));
     try{localStorage.removeItem(LEGACY_SAVE_KEY);}catch(e){}
   }catch(e){}
@@ -22235,6 +22299,10 @@ function importSave(file){
       if(!G)G={};
       Object.assign(G,payload.G);
       migrateSave(G); // handles all field migrations and public station injection
+      try{
+        if(typeof wlCampaignLoadFromSave==='function')wlCampaignLoadFromSave(payload.campaign);
+        if(typeof wlCampaignSyncFromGame==='function')wlCampaignSyncFromGame(G);
+      }catch(_e){}
       applyLoadedGameMarket();
       G.news.unshift({v:'HIGH',t:`📂 Save loaded: ${payload.label||'Unknown'} (${payload.saved?.slice(0,10)||'?'})`,y:G.year,p:G.period});
       cm('m-save');renderAll();
@@ -22778,6 +22846,10 @@ function loadLocalSave(){
   if(!G)G={};
   Object.assign(G,local.G);
   migrateSave(G);
+  try{
+    if(typeof wlCampaignLoadFromSave==='function')wlCampaignLoadFromSave(local.campaign);
+    if(typeof wlCampaignSyncFromGame==='function')wlCampaignSyncFromGame(G);
+  }catch(_e){}
   applyLoadedGameMarket();
   normalizeSimulcastLinksInPlace(G);
   enforceFmNonDupConstraints(G);
@@ -24234,7 +24306,8 @@ function rHdr(){
   const totalT=(2020-startYrP)*2,elapsed=(G.year-startYrP)*2+(G.period-1);
   document.getElementById('progfill').style.width=Math.min(100,Math.round((elapsed/Math.max(totalT,1))*100))+'%';
   const isSandbox=G.score.isSandbox||G.year>2020;
-  document.getElementById('hmode').textContent=isSandbox?'SANDBOX':'CAMPAIGN';
+  const modeLabel=isSandbox?'SANDBOX':(G.careerCampaign?'GM CAREER':'CAMPAIGN');
+  document.getElementById('hmode').textContent=modeLabel;
   document.getElementById('hmode').style.color=isSandbox?'var(--blu)':'var(--amb)';
   document.getElementById('proglbl').textContent=isSandbox?`SANDBOX — ${G.year}`:`${G.year} · ${startYrP}→2020`;
   const ab=document.getElementById('alertbar');
