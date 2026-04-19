@@ -35,7 +35,8 @@
 
 <!-- Socket.io — loaded dynamically only in multiplayer mode -->
 <!-- <script src="/socket.io/socket.io.js"></script> -->
-  <link rel="stylesheet" href="src/styles.css" />
+  <script type="module" crossorigin src="/assets/play-CXHGkrxc.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/play-BmUrxQ6A.css">
 </head>
 <body>
 
@@ -462,13 +463,11 @@
 </footer>
 
   <!-- Vite: env in src/main.js (VITE_CLERK_PUBLISHABLE_KEY). Plain server: set meta above or use .env only after vite build. -->
-  <script type="module" src="/src/main.js"></script>
   <script defer src="/src/stationLogoConfig.js"></script>
   <script defer src="/src/stationLogoSvg.js"></script>
   <script defer src="/src/campaignMode.js"></script>
   <script defer src="/src/gmMode.js"></script>
   <script defer src="/src/legacy.js"></script>
   <!-- Dev-only: stripped from production HTML by vite.config.js (file is not copied to dist). -->
-  <script defer src="/src/marketSimHarness.js"></script>
 </body>
 </html>

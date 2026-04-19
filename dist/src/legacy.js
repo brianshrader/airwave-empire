@@ -2569,6 +2569,18 @@ function pickMarketPhase1(id){
   syncMarketPopToMarket(id);
   openScenSelect(_lastScenSelectLocal);
 }
+/**
+ * campaignMode.js must call this before genMarket — `ACTIVE_MARKET` is a lexical binding here, not `window.ACTIVE_MARKET`,
+ * so assigning only `window.ACTIVE_MARKET` leaves genMarket() using whatever city the player last picked on the scenario screen.
+ */
+function wlSetActiveMarket(id){
+  if(!id||!PHASE1_MARKET_IDS.includes(id))return;
+  _pendingScenId=null;
+  _selectedMarket=id;
+  ACTIVE_MARKET=id;
+  syncMarketPopToMarket(id);
+}
+if(typeof window!=='undefined')window.wlSetActiveMarket=wlSetActiveMarket;
 const MARKET_BILLING_CURVE={1970:14000000,1975:24000000,1980:42000000,1985:68000000,1987:82000000,1990:100000000,1995:130000000,2000:160000000,2005:148000000,2010:130000000,2015:116000000,2020:110000000};
 /** When revScale<1, nudge total billing up slightly so seedRev targets stay playable (vs over-penal secondary metros). */
 function marketRevScaleSecondaryLift(rs){

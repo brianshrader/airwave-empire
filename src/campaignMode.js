@@ -42,7 +42,11 @@
       successThreshold: 53,
       survivalThreshold: 38,
       failureThreshold: 31,
-      cashMult: 0.82,
+      /** Scenario cash already scales down for small markets — do not stack an extra mult; grant adds starter runway only on the campaign layer. */
+      cashMult: 1.0,
+      corporateCashGrant: 120000,
+      corporateCommitmentNote:
+        'Corporate front-loaded a small working-capital line for your first GM posting — enough to absorb early losses while you stabilize the cluster.',
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 84 },
       flavor:
         'Your first real GM chair: a modest Plains market with real P&L and real competition — lower stakes than a major, but not a sandbox.',
@@ -776,9 +780,12 @@
   function hydrateCampaignWorldForAssignment(asg, st, opts) {
     opts = opts || {};
     var mid = asg.marketId;
-    global.ACTIVE_MARKET = mid;
-    global._selectedMarket = mid;
-    if (typeof global.syncMarketPopToMarket === 'function') global.syncMarketPopToMarket(mid);
+    if (typeof global.wlSetActiveMarket === 'function') global.wlSetActiveMarket(mid);
+    else {
+      global.ACTIVE_MARKET = mid;
+      global._selectedMarket = mid;
+      if (typeof global.syncMarketPopToMarket === 'function') global.syncMarketPopToMarket(mid);
+    }
     var mktLbl =
       global.MARKETS && global.MARKETS[mid] ? global.MARKETS[mid].label : mid;
     var companyName =
@@ -935,9 +942,12 @@
     state.awaitingLaunch = null;
     global._wlCampaignStarting = true;
     try {
-      global.ACTIVE_MARKET = asg.marketId;
-      global._selectedMarket = asg.marketId;
-      if (typeof global.syncMarketPopToMarket === 'function') global.syncMarketPopToMarket(asg.marketId);
+      if (typeof global.wlSetActiveMarket === 'function') global.wlSetActiveMarket(asg.marketId);
+      else {
+        global.ACTIVE_MARKET = asg.marketId;
+        global._selectedMarket = asg.marketId;
+        if (typeof global.syncMarketPopToMarket === 'function') global.syncMarketPopToMarket(asg.marketId);
+      }
       var mktLbl =
         global.MARKETS && global.MARKETS[asg.marketId]
           ? global.MARKETS[asg.marketId].label
