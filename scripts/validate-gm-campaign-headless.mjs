@@ -18,7 +18,7 @@
  *   --market=ID                playable market id (default: atlanta)
  *   --max-periods-gm=N         GM mode advTurn cap (default: 48)
  *   --max-periods-campaign=N   campaign advTurn cap per career attempt (default: 160)
- *   --max-assignments=N        campaign: stop after N assignment results (default: 8)
+ *   --max-assignments=N        campaign: stop after N assignment results (default: 9)
  *   --json=path                write full report JSON
  *
  * npm: npm run validate:gm-campaign
@@ -28,10 +28,10 @@
  *        job-security countdown jumps oddly; confidence outside 0–100.
  *   Campaign: no assignment-end payloads (stuck career); missing outcome kind; reputation out of bounds;
  *        hard end without payload details.
- *   --revisit-test             (batch) after tallies, run Nashville→tier2→forced return to Nashville persistence check
- *   --compare-profiles         (batch) run campaign with profiles default(8) + extended(10) [+ long(12) with --compare-include-long]
- *   --compare-include-long     with --compare-profiles, also run max-assignments=12 (long profile)
- *   --profile=default|extended|long|short  (batch) named cap: 8 / 10 / 12 / 6 instead of --max-assignments
+ *   --revisit-test             (batch) after tallies, run Wichita (T0)→Nashville→forced return to Wichita persistence check
+ *   --compare-profiles         (batch) run campaign with profiles default(9) + extended(11) [+ long(13) with --compare-include-long]
+ *   --compare-include-long     with --compare-profiles, also run max-assignments=13 (long profile)
+ *   --profile=default|extended|long|short  (batch) named cap: 9 / 11 / 13 / 6 instead of --max-assignments
  *   --tier5-diagnostic       (batch) extended (10) + long (12) only: Tier 5 entrant quality, confidence shelf trace, KPI/composite convergence (reviewHistory + evaluateGmReview; no engine edits)
  *   --tier3-diagnostic       (batch) Tier 3 (c3_seattle) entry conditions, grace-period reviews, outcomes & softness heuristic
  * Exit code: 0 by default; use --strict for non-zero exit when warnings exist.
@@ -52,9 +52,9 @@ const campaignModePath = path.join(root, 'src', 'campaignMode.js');
 /** Standard campaign-length profiles for ladder vs window diagnostics (assignment-end count cap per career). */
 const CAMPAIGN_PROFILE_MAX = {
   /** Normal playable arc — matches campaignMode CAMPAIGN_FULL_ARC_ASSIGNMENTS. */
-  default: 8,
-  extended: 10,
-  long: 12,
+  default: 9,
+  extended: 11,
+  long: 13,
   /** Optional short window for stress / old-baseline comparison (previous default was 6). */
   short: 6,
 };
@@ -232,7 +232,7 @@ function parseArgs(argv) {
     json: null,
     maxPeriodsGm: 48,
     maxPeriodsCampaign: 160,
-    maxAssignments: 8,
+    maxAssignments: 9,
     quiet: false,
     strict: false,
     revisitTest: false,
@@ -252,7 +252,7 @@ function parseArgs(argv) {
     else if (a.startsWith('--max-periods-campaign='))
       out.maxPeriodsCampaign = Math.max(8, parseInt(a.slice(23), 10) || 160);
     else if (a.startsWith('--max-assignments='))
-      out.maxAssignments = Math.max(1, parseInt(a.slice(18), 10) || 8);
+      out.maxAssignments = Math.max(1, parseInt(a.slice(18), 10) || 9);
     else if (a === '--quiet') out.quiet = true;
     else if (a === '--strict') out.strict = true;
     else if (a === '--revisit-test') out.revisitTest = true;
@@ -526,8 +526,8 @@ function runCampaignOnce(ctx, opts) {
           ? wlCampaign.getCampaignPersistenceDiagnostics()
           : null;
       var tier5LadderRow = null;
-      if (wlCampaign && wlCampaign.LADDER && wlCampaign.LADDER[4]) {
-        var r5 = wlCampaign.LADDER[4];
+      if (wlCampaign && wlCampaign.LADDER && wlCampaign.LADDER[5]) {
+        var r5 = wlCampaign.LADDER[5];
         tier5LadderRow = {
           id: r5.id,
           tier: r5.tier,
@@ -727,8 +727,8 @@ function runCampaignTier3DiagnosticOnce(ctx, opts) {
             var graceN = 2;
             if (G.campaignAssignment && G.campaignAssignment.evaluationGraceReviews != null) {
               graceN = G.campaignAssignment.evaluationGraceReviews | 0;
-            } else if (wlCampaign && wlCampaign.LADDER && wlCampaign.LADDER[2] && wlCampaign.LADDER[2].evaluationGraceReviews != null) {
-              graceN = wlCampaign.LADDER[2].evaluationGraceReviews | 0;
+            } else if (wlCampaign && wlCampaign.LADDER && wlCampaign.LADDER[3] && wlCampaign.LADDER[3].evaluationGraceReviews != null) {
+              graceN = wlCampaign.LADDER[3].evaluationGraceReviews | 0;
             }
             var minC = minConfInReviews(rhClone);
             tier3Assignments.push({
@@ -769,8 +769,8 @@ function runCampaignTier3DiagnosticOnce(ctx, opts) {
           : null;
 
       var tier3LadderRow = null;
-      if (wlCampaign && wlCampaign.LADDER && wlCampaign.LADDER[2]) {
-        var r3 = wlCampaign.LADDER[2];
+      if (wlCampaign && wlCampaign.LADDER && wlCampaign.LADDER[3]) {
+        var r3 = wlCampaign.LADDER[3];
         tier3LadderRow = {
           id: r3.id,
           tier: r3.tier,
@@ -807,6 +807,12 @@ function runCampaignTier3DiagnosticOnce(ctx, opts) {
 function analyzeCampaign(result) {
   const warnings = [];
   const ar = result.assignmentResults || [];
+  const first = ar[0];
+  if (first && !first.error && (first.tierBefore | 0) === 0 && first.marketId && first.marketId !== 'wichita') {
+    warnings.push(
+      'Campaign starter rung expected Wichita (tier 0) but first assignment ended as ' + first.marketId + '.'
+    );
+  }
   if (result.turns >= 8 && ar.length === 0) {
     warnings.push('No assignment-end payload captured — career may not be progressing (evaluateAssignmentEnd never fired).');
   }
@@ -850,7 +856,7 @@ function buildTier3Assessment(o) {
     return {
       code: 'NO_DATA',
       summary:
-        'No Tier 3 assignment completed in this batch — increase --max-assignments (need ≥3 completed assignments to finish a Tier 3 contract) or run more seeds.',
+        'No Tier 3 assignment completed in this batch — increase --max-assignments (from tier 0, several promotions are needed before a Seattle/Tier 3 contract completes) or run more seeds.',
       signals: ['zero Tier 3 rows'],
     };
   }
@@ -1016,7 +1022,7 @@ function countTwoTierOscillationEvents(hist) {
 function aggregateCampaignBatchDeep(campaignRuns) {
   const byTier = {};
   const byAssignmentId = {};
-  for (let tier = 1; tier <= 5; tier++) {
+  for (let tier = 0; tier <= 5; tier++) {
     byTier[tier] = {
       n: 0,
       promoted: 0,
@@ -1038,7 +1044,7 @@ function aggregateCampaignBatchDeep(campaignRuns) {
   let maxCareerLenWin = 0;
   let maxCareerLenHard = 0;
   let runsReachedT5 = 0;
-  const trapTierScores = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+  const trapTierScores = { 0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
 
   for (const run of campaignRuns) {
     const ar = run.assignmentResults || [];
@@ -1058,7 +1064,7 @@ function aggregateCampaignBatchDeep(campaignRuns) {
     for (const a of ar) {
       if (a.error) continue;
       const tier = a.tierBefore | 0;
-      if (tier < 1 || tier > 5) continue;
+      if (tier < 0 || tier > 5) continue;
       const bucket = byTier[tier];
       bucket.n++;
       const k = a.campaignWin ? 'won' : a.kind;
@@ -1086,7 +1092,7 @@ function aggregateCampaignBatchDeep(campaignRuns) {
       if (k && ab[k] != null) ab[k]++;
     }
 
-    for (let t = 1; t <= 5; t++) {
+    for (let t = 0; t <= 5; t++) {
       const sub = hist.filter((h) => (h.tier | 0) === t);
       if (sub.length < 2) continue;
       let bad = 0;
@@ -1101,7 +1107,7 @@ function aggregateCampaignBatchDeep(campaignRuns) {
   }
 
   const tierSummary = {};
-  for (let tier = 1; tier <= 5; tier++) {
+  for (let tier = 0; tier <= 5; tier++) {
     const b = byTier[tier];
     tierSummary[tier] = {
       ...b,
@@ -1916,15 +1922,15 @@ function runCampaignRevisitTest(ctx, seed) {
         if (endPayload) {
           ends++;
           if (ends === 1) {
-            fpNash = wlCampaign.getMarketArchiveFingerprint('nashville');
+            fpNash = wlCampaign.getMarketArchiveFingerprint('wichita');
             if (fpNash == null || fpNash === '') warnings.push('missing_archive_after_first_assignment');
             if (typeof wlCampaignStartNextAssignment === 'function') wlCampaignStartNextAssignment();
             if (globalThis.G) G = globalThis.G;
           } else if (ends === 2) {
-            fpExpectedAtReturn = wlCampaign.getMarketArchiveFingerprint('nashville');
+            fpExpectedAtReturn = wlCampaign.getMarketArchiveFingerprint('wichita');
             if (fpExpectedAtReturn == null || fpExpectedAtReturn === '')
-              warnings.push('missing_nashville_archive_before_forced_return');
-            var ok = wlCampaign.headlessReplaceAwaitingLaunchWithMarket('nashville');
+              warnings.push('missing_wichita_archive_before_forced_return');
+            var ok = wlCampaign.headlessReplaceAwaitingLaunchWithMarket('wichita');
             if (!ok) warnings.push('could_not_replace_awaiting_launch');
             if (typeof wlCampaignStartNextAssignment === 'function') wlCampaignStartNextAssignment();
             if (globalThis.G) G = globalThis.G;
@@ -1943,19 +1949,19 @@ function runCampaignRevisitTest(ctx, seed) {
       var st = wlCampaign.ensureState();
       var archStations =
         st.marketArchives &&
-        st.marketArchives.nashville &&
-        st.marketArchives.nashville.g &&
-        st.marketArchives.nashville.g.stations
-          ? st.marketArchives.nashville.g.stations.length
+        st.marketArchives.wichita &&
+        st.marketArchives.wichita.g &&
+        st.marketArchives.wichita.g.stations
+          ? st.marketArchives.wichita.g.stations.length
           : -1;
       var liveStationCount = G.stations ? G.stations.length : -1;
-      var nashVisits = 0;
+      var wichitaVisits = 0;
       if (st.history) {
         for (var hi = 0; hi < st.history.length; hi++) {
-          if (st.history[hi].marketId === 'nashville') nashVisits++;
+          if (st.history[hi].marketId === 'wichita') wichitaVisits++;
         }
       }
-      if (nashVisits >= 2 && !restored) warnings.push('duplicate_market_visit_without_restore');
+      if (wichitaVisits >= 2 && !restored) warnings.push('duplicate_market_visit_without_restore');
       if (ends < 2) warnings.push('incomplete_two_assignment_ends');
       var persist = wlCampaign.getCampaignPersistenceDiagnostics ? wlCampaign.getCampaignPersistenceDiagnostics() : null;
       return {
@@ -1971,7 +1977,7 @@ function runCampaignRevisitTest(ctx, seed) {
         restoredFromArchive: restored,
         warnings: warnings,
         persistence: persist,
-        archivedNashvilleStationCount: archStations,
+        archivedWichitaStationCount: archStations,
         liveStationCount: liveStationCount
       };
     })()
@@ -1990,13 +1996,14 @@ function main() {
       runs: args.runs,
       market: args.market,
       note:
-        'GM mode uses genMarket(gm_under) with ACTIVE_MARKET patched to --market. Campaign career start uses ladder tier-1 market from campaignMode.js (typically Nashville), overriding the patched constant when beginCareer runs.',
+        'GM mode uses genMarket(gm_under) with ACTIVE_MARKET patched to --market. Campaign career start uses CAREER_ENTRY_MARKET_ID / ladder tier 0 from campaignMode.js (Wichita), overriding the patched constant when beginCareer runs.',
       maxPeriodsGm: args.maxPeriodsGm,
       maxPeriodsCampaign: args.maxPeriodsCampaign,
       maxAssignments: args.maxAssignments,
       revisitTest: args.revisitTest,
       compareProfiles: !!args.compareProfiles,
       compareIncludeLong: !!args.compareIncludeLong,
+      careerEntryMarketId: null,
       campaignProfiles: args.compareProfiles
         ? [
             { key: 'default', maxAssignments: CAMPAIGN_PROFILE_MAX.default },
@@ -2351,6 +2358,9 @@ function main() {
       const seed = (args.seed + i) >>> 0;
       const ctxG = createHeadlessContext(true);
       loadEngine(ctxG, args.market);
+      if (i === 0 && ctxG.wlCampaign && ctxG.wlCampaign.CAREER_ENTRY_MARKET_ID) {
+        report.meta.careerEntryMarketId = ctxG.wlCampaign.CAREER_ENTRY_MARKET_ID;
+      }
       const gmr = runGmOnce(ctxG, { seed, marketId: args.market, maxPeriods: args.maxPeriodsGm });
       const an = analyzeGmTimeline(gmr.timeline, gmr.initialConf);
       agg.gmReviewCounts.push(an.reviewEvents);
@@ -2474,6 +2484,9 @@ function main() {
       const seed = (args.seed + i) >>> 0;
       const ctxG = createHeadlessContext(true);
       loadEngine(ctxG, args.market);
+      if (i === 0 && ctxG.wlCampaign && ctxG.wlCampaign.CAREER_ENTRY_MARKET_ID) {
+        report.meta.careerEntryMarketId = ctxG.wlCampaign.CAREER_ENTRY_MARKET_ID;
+      }
       const gmr = runGmOnce(ctxG, { seed, marketId: args.market, maxPeriods: args.maxPeriodsGm });
       const an = analyzeGmTimeline(gmr.timeline, gmr.initialConf);
       agg.gmReviewCounts.push(an.reviewEvents);
@@ -2536,7 +2549,7 @@ function main() {
       const d = agg.campaignDeep;
       if (d) {
         console.log('\n--- Campaign deep (by tier) ---');
-        for (let t = 1; t <= 5; t++) {
+        for (let t = 0; t <= 5; t++) {
           const row = d.byTier[t];
           if (!row || !row.n) continue;
           console.log(

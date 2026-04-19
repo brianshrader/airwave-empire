@@ -1,0 +1,553 @@
+{
+  "meta": {
+    "mode": "batch",
+    "seed": 100,
+    "runs": 3,
+    "market": "atlanta",
+    "note": "GM mode uses genMarket(gm_under) with ACTIVE_MARKET patched to --market. Campaign career start uses CAREER_ENTRY_MARKET_ID / ladder tier 0 from campaignMode.js (Wichita), overriding the patched constant when beginCareer runs.",
+    "maxPeriodsGm": 48,
+    "maxPeriodsCampaign": 160,
+    "maxAssignments": 9,
+    "revisitTest": true,
+    "compareProfiles": true,
+    "compareIncludeLong": false,
+    "careerEntryMarketId": "wichita",
+    "campaignProfiles": [
+      {
+        "key": "default",
+        "maxAssignments": 9
+      },
+      {
+        "key": "extended",
+        "maxAssignments": 11
+      }
+    ]
+  },
+  "gm": null,
+  "campaign": null,
+  "batch": {
+    "compareProfiles": true,
+    "profileList": [
+      {
+        "key": "default",
+        "maxAssignments": 9
+      },
+      {
+        "key": "extended",
+        "maxAssignments": 11
+      }
+    ],
+    "gmReviewCounts": [
+      12,
+      12,
+      12
+    ],
+    "gmFired": 0,
+    "gmConfidenceDeltas": [
+      -3,
+      -3,
+      22
+    ],
+    "batchWarnings": [],
+    "revisitTest": {
+      "seed": 100,
+      "turns": 24,
+      "assignmentEndsSeen": 2,
+      "fpArchiveAfterFirstAssignment": "WABK|WAGT|WBN|WCSC|WECN|WHBX|WHFY|WHSN|WKWY|WLUY|WMQT|WQRG|WRRA|WSHU|WTGJ|WUUO|WXDG|WZCE|WZDR|WZKK",
+      "fpArchiveImmediatelyBeforeReturn": "WABK|WAGT|WBN|WCSC|WDPQ|WDWC|WECN|WHBX|WHFY|WHSN|WJYL|WKWY|WLUY|WMQT|WOLY|WQRG|WRRA|WSHU|WTGJ|WUUO|WWKV|WXDG|WZCE|WZDR|WZKK",
+      "fpLiveStations": "WABK|WAGT|WBN|WCSC|WDPQ|WDWC|WECN|WHBX|WHFY|WHSN|WJYL|WKWY|WLUY|WMQT|WOLY|WQRG|WRRA|WSHU|WTGJ|WUUO|WWKV|WXDG|WZCE|WZDR|WZKK",
+      "fpLenArchive": 98,
+      "fpLenLive": 123,
+      "fingerprintMatch": true,
+      "restoredFromArchive": true,
+      "warnings": [],
+      "persistence": {
+        "archiveKeys": [
+          "wichita"
+        ],
+        "archiveRestoreCount": 2,
+        "careerAssignmentTick": 2
+      },
+      "archivedWichitaStationCount": 25,
+      "liveStationCount": 25
+    }
+  },
+  "profiles": {
+    "default": {
+      "profileKey": "default",
+      "maxAssignments": 9,
+      "kindTallies": {
+        "promoted": 15,
+        "lateral": 11,
+        "demoted": 1,
+        "fired": 0,
+        "won": 0
+      },
+      "winCount": 0,
+      "winRate": 0,
+      "topTierReachRate": 1,
+      "longestCareerAssignments": 9,
+      "avgAssignmentsCompleted": 9,
+      "avgEndingReputation": 100,
+      "avgEndingGmConfidence": 43,
+      "tier4": {
+        "n": 6,
+        "promoted": 3,
+        "lateral": 3,
+        "demoted": 0,
+        "fired": 0,
+        "won": 0,
+        "avgEndingConfidence": 58.5,
+        "firingRateAmongTier4Outcomes": 0
+      },
+      "tier5": {
+        "n": 6,
+        "promoted": 0,
+        "lateral": 6,
+        "demoted": 0,
+        "fired": 0,
+        "won": 0,
+        "avgEndingConfidence": 43,
+        "firingRateAmongTier5Outcomes": 0
+      },
+      "tierRevisitEvents": 0,
+      "twoTierOscillationEvents": 0,
+      "runsWithOscillationAtLeast2": 0,
+      "campaignDeep": {
+        "byTier": {
+          "0": {
+            "n": 6,
+            "promoted": 3,
+            "lateral": 2,
+            "demoted": 1,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 405,
+            "sumRepDelta": 44,
+            "sumPeriods": 72,
+            "periodsN": 6,
+            "avgEndingConfidence": 67.5,
+            "avgRepDelta": 7.333333333333333,
+            "avgPeriodsClosed": 12
+          },
+          "1": {
+            "n": 3,
+            "promoted": 3,
+            "lateral": 0,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 246,
+            "sumRepDelta": 36,
+            "sumPeriods": 42,
+            "periodsN": 3,
+            "avgEndingConfidence": 82,
+            "avgRepDelta": 12,
+            "avgPeriodsClosed": 14
+          },
+          "2": {
+            "n": 3,
+            "promoted": 3,
+            "lateral": 0,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 240,
+            "sumRepDelta": 36,
+            "sumPeriods": 42,
+            "periodsN": 3,
+            "avgEndingConfidence": 80,
+            "avgRepDelta": 12,
+            "avgPeriodsClosed": 14
+          },
+          "3": {
+            "n": 3,
+            "promoted": 3,
+            "lateral": 0,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 300,
+            "sumRepDelta": 36,
+            "sumPeriods": 54,
+            "periodsN": 3,
+            "avgEndingConfidence": 100,
+            "avgRepDelta": 12,
+            "avgPeriodsClosed": 18
+          },
+          "4": {
+            "n": 6,
+            "promoted": 3,
+            "lateral": 3,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 351,
+            "sumRepDelta": 54,
+            "sumPeriods": 132,
+            "periodsN": 6,
+            "avgEndingConfidence": 58.5,
+            "avgRepDelta": 9,
+            "avgPeriodsClosed": 22
+          },
+          "5": {
+            "n": 6,
+            "promoted": 0,
+            "lateral": 6,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 258,
+            "sumRepDelta": 36,
+            "sumPeriods": 132,
+            "periodsN": 6,
+            "avgEndingConfidence": 43,
+            "avgRepDelta": 6,
+            "avgPeriodsClosed": 22
+          }
+        },
+        "byAssignmentId": {
+          "c0_wichita": {
+            "n": 6,
+            "promoted": 3,
+            "lateral": 2,
+            "demoted": 1,
+            "fired": 0,
+            "won": 0
+          },
+          "c1_nashville": {
+            "n": 3,
+            "promoted": 3,
+            "lateral": 0,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0
+          },
+          "c2_atlanta": {
+            "n": 3,
+            "promoted": 3,
+            "lateral": 0,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0
+          },
+          "c3_seattle": {
+            "n": 3,
+            "promoted": 3,
+            "lateral": 0,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0
+          },
+          "c4_chicago": {
+            "n": 6,
+            "promoted": 3,
+            "lateral": 3,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0
+          },
+          "c5_la": {
+            "n": 3,
+            "promoted": 0,
+            "lateral": 3,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0
+          },
+          "c5_ny": {
+            "n": 3,
+            "promoted": 0,
+            "lateral": 3,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0
+          }
+        },
+        "tierRevisitEvents": 0,
+        "twoTierOscillationEvents": 0,
+        "runsWithOscillationAtLeast2": 0,
+        "longestCareerAssignments": 9,
+        "longestCareerBeforeWin": null,
+        "longestCareerBeforeHardEnd": null,
+        "runsThatReachedTier5": 3,
+        "totalRuns": 3,
+        "trapTierHeuristic": [],
+        "topTierReachRate": 1
+      },
+      "campaignRunsSummary": [
+        {
+          "seed": 100,
+          "assignmentCount": 9,
+          "campaignWon": false,
+          "reputationEnd": 100
+        },
+        {
+          "seed": 101,
+          "assignmentCount": 9,
+          "campaignWon": false,
+          "reputationEnd": 100
+        },
+        {
+          "seed": 102,
+          "assignmentCount": 9,
+          "campaignWon": false,
+          "reputationEnd": 100
+        }
+      ]
+    },
+    "extended": {
+      "profileKey": "extended",
+      "maxAssignments": 11,
+      "kindTallies": {
+        "promoted": 15,
+        "lateral": 11,
+        "demoted": 1,
+        "fired": 0,
+        "won": 0
+      },
+      "winCount": 0,
+      "winRate": 0,
+      "topTierReachRate": 1,
+      "longestCareerAssignments": 9,
+      "avgAssignmentsCompleted": 9,
+      "avgEndingReputation": 100,
+      "avgEndingGmConfidence": 43,
+      "tier4": {
+        "n": 6,
+        "promoted": 3,
+        "lateral": 3,
+        "demoted": 0,
+        "fired": 0,
+        "won": 0,
+        "avgEndingConfidence": 58.5,
+        "firingRateAmongTier4Outcomes": 0
+      },
+      "tier5": {
+        "n": 6,
+        "promoted": 0,
+        "lateral": 6,
+        "demoted": 0,
+        "fired": 0,
+        "won": 0,
+        "avgEndingConfidence": 43,
+        "firingRateAmongTier5Outcomes": 0
+      },
+      "tierRevisitEvents": 0,
+      "twoTierOscillationEvents": 0,
+      "runsWithOscillationAtLeast2": 0,
+      "campaignDeep": {
+        "byTier": {
+          "0": {
+            "n": 6,
+            "promoted": 3,
+            "lateral": 2,
+            "demoted": 1,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 405,
+            "sumRepDelta": 44,
+            "sumPeriods": 72,
+            "periodsN": 6,
+            "avgEndingConfidence": 67.5,
+            "avgRepDelta": 7.333333333333333,
+            "avgPeriodsClosed": 12
+          },
+          "1": {
+            "n": 3,
+            "promoted": 3,
+            "lateral": 0,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 246,
+            "sumRepDelta": 36,
+            "sumPeriods": 42,
+            "periodsN": 3,
+            "avgEndingConfidence": 82,
+            "avgRepDelta": 12,
+            "avgPeriodsClosed": 14
+          },
+          "2": {
+            "n": 3,
+            "promoted": 3,
+            "lateral": 0,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 240,
+            "sumRepDelta": 36,
+            "sumPeriods": 42,
+            "periodsN": 3,
+            "avgEndingConfidence": 80,
+            "avgRepDelta": 12,
+            "avgPeriodsClosed": 14
+          },
+          "3": {
+            "n": 3,
+            "promoted": 3,
+            "lateral": 0,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 300,
+            "sumRepDelta": 36,
+            "sumPeriods": 54,
+            "periodsN": 3,
+            "avgEndingConfidence": 100,
+            "avgRepDelta": 12,
+            "avgPeriodsClosed": 18
+          },
+          "4": {
+            "n": 6,
+            "promoted": 3,
+            "lateral": 3,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 351,
+            "sumRepDelta": 54,
+            "sumPeriods": 132,
+            "periodsN": 6,
+            "avgEndingConfidence": 58.5,
+            "avgRepDelta": 9,
+            "avgPeriodsClosed": 22
+          },
+          "5": {
+            "n": 6,
+            "promoted": 0,
+            "lateral": 6,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 258,
+            "sumRepDelta": 36,
+            "sumPeriods": 132,
+            "periodsN": 6,
+            "avgEndingConfidence": 43,
+            "avgRepDelta": 6,
+            "avgPeriodsClosed": 22
+          }
+        },
+        "byAssignmentId": {
+          "c0_wichita": {
+            "n": 6,
+            "promoted": 3,
+            "lateral": 2,
+            "demoted": 1,
+            "fired": 0,
+            "won": 0
+          },
+          "c1_nashville": {
+            "n": 3,
+            "promoted": 3,
+            "lateral": 0,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0
+          },
+          "c2_atlanta": {
+            "n": 3,
+            "promoted": 3,
+            "lateral": 0,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0
+          },
+          "c3_seattle": {
+            "n": 3,
+            "promoted": 3,
+            "lateral": 0,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0
+          },
+          "c4_chicago": {
+            "n": 6,
+            "promoted": 3,
+            "lateral": 3,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0
+          },
+          "c5_la": {
+            "n": 3,
+            "promoted": 0,
+            "lateral": 3,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0
+          },
+          "c5_ny": {
+            "n": 3,
+            "promoted": 0,
+            "lateral": 3,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0
+          }
+        },
+        "tierRevisitEvents": 0,
+        "twoTierOscillationEvents": 0,
+        "runsWithOscillationAtLeast2": 0,
+        "longestCareerAssignments": 9,
+        "longestCareerBeforeWin": null,
+        "longestCareerBeforeHardEnd": null,
+        "runsThatReachedTier5": 3,
+        "totalRuns": 3,
+        "trapTierHeuristic": [],
+        "topTierReachRate": 1
+      },
+      "campaignRunsSummary": [
+        {
+          "seed": 100,
+          "assignmentCount": 9,
+          "campaignWon": false,
+          "reputationEnd": 100
+        },
+        {
+          "seed": 101,
+          "assignmentCount": 9,
+          "campaignWon": false,
+          "reputationEnd": 100
+        },
+        {
+          "seed": 102,
+          "assignmentCount": 9,
+          "campaignWon": false,
+          "reputationEnd": 100
+        }
+      ]
+    }
+  },
+  "profileComparison": {
+    "winsDeltaExtendedVsDefault": 0,
+    "topTierReachDeltaExtendedVsDefault": 0,
+    "avgAssignmentsDeltaExtendedVsDefault": 0,
+    "tier4": {
+      "nDelta": 0,
+      "promotedDelta": 0,
+      "lateralDelta": 0,
+      "demotedDelta": 0,
+      "firedDelta": 0,
+      "firingRateExtended": 0,
+      "firingRateDefault": 0
+    },
+    "interpretation": {
+      "code": "INSUFFICIENT_DATA",
+      "summary": "Compare default vs extended reach and wins above; pattern is ambiguous — use tier breakdowns and rerun with more seeds if needed.",
+      "bullets": [
+        "Compare default vs extended reach and wins above; pattern is ambiguous — use tier breakdowns and rerun with more seeds if needed."
+      ]
+    }
+  },
+  "interpretation": {
+    "code": "INSUFFICIENT_DATA",
+    "summary": "Compare default vs extended reach and wins above; pattern is ambiguous — use tier breakdowns and rerun with more seeds if needed.",
+    "bullets": [
+      "Compare default vs extended reach and wins above; pattern is ambiguous — use tier breakdowns and rerun with more seeds if needed."
+    ]
+  },
+  "tier5EntrantAnalysis": null,
+  "tier3Diagnostic": null
+}

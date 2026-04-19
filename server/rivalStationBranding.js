@@ -80,6 +80,18 @@ const MARKETS = {
       'across the I-5 corridor',
     ],
   },
+  wichita: {
+    displayName: 'Wichita',
+    cityLabel: 'Wichita',
+    side: 'west',
+    localHooks: [
+      'south-central Kansas',
+      'the city and suburbs',
+      'Sedgwick County',
+      'listeners across the Plains',
+      'the Air Capital',
+    ],
+  },
 };
 
 /** Extra positioning lines for Seattle — stronger rock/alt voice; country reads Pacific Northwest, not Southern. */

@@ -1418,7 +1418,7 @@ function crowdedLaneAlsoRanPressure(s,G){
 
 /** Short on-air market tags for "{ABBREV} {FREQ}" patterns (NY 94.7, LA 100.3, …) */
 const MARKET_BRAND_ABBREV={
-  newyork:'NY',losangeles:'LA',chicago:'Chicago',atlanta:'Atlanta',nashville:'Nashville',seattle:'Seattle',
+  newyork:'NY',losangeles:'LA',chicago:'Chicago',atlanta:'Atlanta',nashville:'Nashville',seattle:'Seattle',wichita:'Wichita',
 };
 /**
  * Token for `{AMCHOP}`: AM stations mix full kHz ("680") vs decade chop ("68") like the real dial.
@@ -2339,6 +2339,24 @@ const MARKETS={
       {id:'thrashers',name:'Atlanta Ice Weasels',sport:'PRO_HOCKEY',introduced:2000,baseFee:80000,baseBonus:0.009,contractYrs:3},
     ],
   },
+  wichita:{
+    id:'wichita', callPrefix:'K', label:'Wichita', region:'Midwest', rankTier:'small', archetypeId:'midwest_legacy',
+    pop:{'12-17':52,'18-24':60,'25-34':66,'35-49':82,'50-64':68,'65+':42},
+    revScale:0.32, adxBonus:0.025,
+    amFreqs:['1240 AM','1320 AM','1480 AM','1550 AM','1590 AM'],
+    fmFreqs:['92.3 FM','95.1 FM','97.3 FM','99.9 FM','102.7 FM','105.3 FM'],
+    fmFacilityByFreq:{
+      '92.3 FM':'50kw','95.1 FM':'100kw','97.3 FM':'50kw','99.9 FM':'100kw','102.7 FM':'50kw','105.3 FM':'50kw',
+    },
+    blackPop:0.11,hispPop1970:0.02,hispPop2000:0.08,hispPop2020:0.16,churchGoing:0.52,countryBonus:0.10,urbanBonus:0.03,
+    culture:{country:0.14,urban:0.04,newsTalk:0.05,religion:0.09,spanish:0.04},
+    selectBlurb:'A Plains market with a real commercial dial — country and classic rock matter, news/talk holds AM, and FM competition is serious but not coastal.',
+    fmPenBias:-0.04, fmMusicFragMult:0.98, spokenWordAmResilience:1.02, heritageAmResilience:1.04, countryAmHoldout:1.05,
+    eduIndex:0.90,
+    teams:[
+      {id:'wingnuts',name:'Wichita Wind Socks',sport:'PRO_BASEBALL',introduced:1970,baseFee:12000,baseBonus:0.004,contractYrs:3},
+    ],
+  },
   nashville:{
     id:'nashville', callPrefix:'W', label:'Nashville', region:'South', rankTier:'medium', archetypeId:'southern_country',
     pop:{'12-17':95,'18-24':110,'25-34':120,'35-49':150,'50-64':125,'65+':75},
@@ -2498,7 +2516,7 @@ function getCallPrefixForMarket(marketId){
   return m.callPrefix==='K'?'K':'W';
 }
 /** Phase 1 pilot markets — single registry (Node: scripts/market-ids.cjs). */
-const ALL_PLAYABLE_MARKET_IDS=Object.freeze(['newyork','losangeles','chicago','atlanta','nashville','seattle']);
+const ALL_PLAYABLE_MARKET_IDS=Object.freeze(['newyork','losangeles','chicago','atlanta','nashville','seattle','wichita']);
 const PHASE1_MARKET_IDS=ALL_PLAYABLE_MARKET_IDS;
 /** Mega markets only — benchmarks, ecology quick mode, mega-scoped FM rules. */
 const DEV_BENCHMARK_MEGA_MARKET_IDS=Object.freeze(['newyork','losangeles','chicago']);
@@ -2519,7 +2537,7 @@ function scenarioIdsForMarket(marketId){
   const mid=marketId||'atlanta';
   return SC.map(s=>s.id).filter(scid=>{
     // Country Roads: classic Southern country-incumbent story only
-    if(scid==='cntry')return['atlanta','nashville'].includes(mid);
+    if(scid==='cntry')return['atlanta','nashville','wichita'].includes(mid);
     return true;
   });
 }

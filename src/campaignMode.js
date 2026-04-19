@@ -14,13 +14,13 @@
   var _diagLastAssignmentEndPayload = null;
 
   /** First assignment market — used for generated employer name at career start. */
-  var CAREER_ENTRY_MARKET_ID = 'nashville';
+  var CAREER_ENTRY_MARKET_ID = 'wichita';
 
   /**
    * Design: full ladder arc is meant to be playable in roughly this many completed assignments
    * (not a hard engine cap — documentation / expectations). Validator default profile matches.
    */
-  var CAMPAIGN_FULL_ARC_ASSIGNMENTS = 8;
+  var CAMPAIGN_FULL_ARC_ASSIGNMENTS = 9;
   /** Optional shorter arc label for tooling (e.g. headless --profile=short); not a separate game mode. */
   var CAMPAIGN_SHORT_ARC_ASSIGNMENTS = 6;
 
@@ -31,6 +31,22 @@
    * T5: slightly softer than pre-pass (see git history) so flagship wins are possible but uncommon; batch still shows laterals + occasional demotions.
    */
   var LADDER = [
+    {
+      id: 'c0_wichita',
+      tier: 0,
+      marketId: 'wichita',
+      scenarioId: 'gm_under',
+      ownerArchetype: 'turnaround',
+      title: 'GM — Small-market starter',
+      contractLengthPeriods: 12,
+      successThreshold: 53,
+      survivalThreshold: 38,
+      failureThreshold: 31,
+      cashMult: 0.82,
+      gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 84 },
+      flavor:
+        'Your first real GM chair: a modest Plains market with real P&L and real competition — lower stakes than a major, but not a sandbox.',
+    },
     {
       id: 'c1_nashville',
       tier: 1,
@@ -130,7 +146,7 @@
       /** Owning company — employer; also `G.companyName` during campaign. */
       ownerCompanyName: '',
       reputation: 50,
-      currentTier: 1,
+      currentTier: 0,
       promotionCount: 0,
       firingCount: 0,
       lateralCount: 0,
@@ -154,16 +170,15 @@
 
   /**
    * Generates a plausible broadcast-group name for the market (employer / license holder).
+   * No city prefix — keeps names like "Summit Broadcasting" instead of "Nashville Summit Broadcasting".
    */
   function generateOwnerCompanyName(marketId) {
-    var markets = global.MARKETS || (typeof window !== 'undefined' ? window.MARKETS : null);
-    var m = markets && markets[marketId] ? markets[marketId] : null;
-    var city = m && m.label ? String(m.label).split(',')[0].trim() : 'Local';
+    void marketId;
     var a = ['Heritage', 'Summit', 'Riverbend', 'Civic', 'Piedmont', 'Signal', 'Crown', 'Union'];
     var s = ['Media', 'Radio', 'Broadcasting', 'Communications'];
     var ai = Math.floor(Math.random() * a.length);
     var si = Math.floor(Math.random() * s.length);
-    return city + ' ' + a[ai] + ' ' + s[si];
+    return a[ai] + ' ' + s[si];
   }
 
   function displayPlayerName(st) {
@@ -209,8 +224,8 @@
   }
 
   function ladderRowForTier(tier) {
-    var t = Math.max(1, Math.min(5, tier | 0));
-    return LADDER[t - 1] || LADDER[0];
+    var t = Math.max(0, Math.min(5, tier | 0));
+    return LADDER[t] || LADDER[0];
   }
 
   /** Alternate NY / LA for tier-5 replays for variety */
@@ -236,10 +251,11 @@
     var t = tierBefore;
     if (kind === 'promoted') return Math.min(5, t + 1);
     if (kind === 'lateral') return t;
-    if (kind === 'demoted') return Math.max(1, t - 1);
+    if (kind === 'demoted') return Math.max(0, t - 1);
     if (kind === 'fired') {
+      if (t <= 0) return 0;
       if (t <= 1) return 1;
-      if (rep < 38) return Math.max(1, t - 1);
+      if (rep < 38) return Math.max(0, t - 1);
       return t;
     }
     return t;
@@ -323,7 +339,7 @@
    */
   function applyCampaignReturnStateJitter(G, assignmentTier, halfYearsAway) {
     if (!G) return;
-    var tier = Math.max(1, Math.min(5, assignmentTier | 0));
+    var tier = Math.max(0, Math.min(5, assignmentTier | 0));
     var tierScale = 1.12 - tier * 0.06;
     var away = Math.max(1, Math.min(48, halfYearsAway | 0));
     var basePct = 0.022 + Math.min(0.045, away * 0.0012);
@@ -462,7 +478,7 @@
 
     var nextAsg = campaignWin ? null : pickAssignmentForTier(nextTier, st);
 
-    if (kind === 'fired' && tierBefore <= 1 && st.firingCount >= 2 && st.reputation < 28) {
+    if (kind === 'fired' && tierBefore <= 0 && st.firingCount >= 2 && st.reputation < 28) {
       st.active = false;
     }
 
@@ -915,7 +931,7 @@
     state.active = true;
     state.playerName = playerName || 'Manager';
     state.ownerCompanyName = ownerCompanyName || generateOwnerCompanyName(CAREER_ENTRY_MARKET_ID);
-    var asg = pickAssignmentForTier(1, state);
+    var asg = pickAssignmentForTier(0, state);
     state.awaitingLaunch = null;
     global._wlCampaignStarting = true;
     try {
@@ -1043,7 +1059,7 @@
       return;
     }
     var asg =
-      (global.G && global.G.campaignAssignment) || pickAssignmentForTier(st.currentTier || 1, st);
+      (global.G && global.G.campaignAssignment) || pickAssignmentForTier(st.currentTier != null ? st.currentTier : 0, st);
     var gm = global.G && global.G._gm;
     var conf = gm && gm.confidence != null ? Math.round(gm.confidence) : '—';
     var periods = gm && gm.closedPeriods != null ? gm.closedPeriods : '—';
@@ -1170,6 +1186,7 @@
 
   global.wlCampaign = {
     LADDER: LADDER,
+    CAREER_ENTRY_MARKET_ID: CAREER_ENTRY_MARKET_ID,
     CAMPAIGN_FULL_ARC_ASSIGNMENTS: CAMPAIGN_FULL_ARC_ASSIGNMENTS,
     CAMPAIGN_SHORT_ARC_ASSIGNMENTS: CAMPAIGN_SHORT_ARC_ASSIGNMENTS,
     ensureState: ensureState,

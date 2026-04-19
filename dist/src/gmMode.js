@@ -152,9 +152,9 @@
       G && G.campaignAssignment && G.campaignAssignment.tier != null
         ? G.campaignAssignment.tier | 0
         : 2;
-    var tier = Math.max(1, Math.min(5, raw));
-    /** T1–3: modest steps; T4–5: flagship scrutiny — flat trends and efficiency hurt more. */
-    var pressure = tier <= 2 ? 1.0 : tier === 3 ? 1.06 : tier === 4 ? 1.2 : 1.3;
+    var tier = Math.max(0, Math.min(5, raw));
+    /** T0: entry scrutiny; T1–2: modest; T3–5: step-ups — flat trends and efficiency hurt more. */
+    var pressure = tier <= 0 ? 0.94 : tier <= 2 ? 1.0 : tier === 3 ? 1.06 : tier === 4 ? 1.2 : 1.3;
     return { tier: tier, pressure: pressure };
   }
 
