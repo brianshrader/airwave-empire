@@ -411,7 +411,38 @@
     }
   }
 
-  function summarizeWhy(G, asg, outcome, playerName, ownerCompanyName) {
+  function campaignPlayerBrokeredEconomicsActive(G) {
+    var ps =
+      typeof global !== 'undefined' && typeof global.myPS === 'function'
+        ? global.myPS()
+        : (G.ps || []).filter(function (s) {
+            return s && s.isPlayer;
+          });
+    var fn =
+      typeof global !== 'undefined' && typeof global.stationBrokeredEconomicsActive === 'function'
+        ? global.stationBrokeredEconomicsActive
+        : null;
+    for (var i = 0; i < ps.length; i++) {
+      var st = ps[i];
+      if (!st) continue;
+      if (fn) {
+        if (fn(st, G)) return true;
+      } else if (st.operatingMode === 'brokered') return true;
+    }
+    return false;
+  }
+
+  /** Assignment-end promotion bar lift when brokered is active (deterministic; tier-scaled). */
+  function campaignBrokeredSuccessThresholdBump(tier, G) {
+    if (!campaignPlayerBrokeredEconomicsActive(G)) return 0;
+    var t = tier | 0;
+    if (t <= 0) return 2;
+    if (t <= 2) return 3;
+    if (t <= 4) return 4;
+    return 6;
+  }
+
+  function summarizeWhy(G, asg, outcome, playerName, ownerCompanyName, effSuccessThr) {
     var gm = G && G._gm;
     var who = playerName ? playerName + ', ' : '';
     var own = ownerCompanyName || 'ownership';
@@ -419,13 +450,14 @@
     if (outcome.kind === 'fired' || gm.fired)
       return who + own + ' dismissed you — job security hit zero or probation ended badly.';
     var conf = gm.confidence != null ? Math.round(gm.confidence) : 0;
+    var promoBar = effSuccessThr != null ? effSuccessThr | 0 : asg.successThreshold | 0;
     if (outcome.kind === 'promoted')
       return (
         who +
         'you finished the contract at ' +
         conf +
         '% confidence — above the promotion bar (' +
-        asg.successThreshold +
+        promoBar +
         ') with a sustainable review pattern. ' +
         own +
         ' is ready to move you up.'
@@ -462,10 +494,14 @@
 
     if (!fired && !contractDone) return null;
 
+    var tierBefore = asg.tier | 0;
+    var brokeredBarBump = campaignBrokeredSuccessThresholdBump(tierBefore, G);
+    var succThr = (asg.successThreshold | 0) + brokeredBarBump;
+
     var kind;
     if (fired) {
       kind = 'fired';
-    } else if (conf >= asg.successThreshold) {
+    } else if (conf >= succThr) {
       kind = 'promoted';
     } else if (conf >= asg.survivalThreshold) {
       kind = 'lateral';
@@ -492,8 +528,7 @@
     st.reputation = Math.max(0, Math.min(100, repBefore + repDelta));
     st.completedAssignments++;
 
-    var tierBefore = asg.tier | 0;
-    var campaignWin = tierBefore === 5 && !fired && contractDone && conf >= asg.successThreshold;
+    var campaignWin = tierBefore === 5 && !fired && contractDone && conf >= succThr;
 
     if (campaignWin) {
       st.campaignWon = true;
@@ -551,7 +586,7 @@
         '% confidence — ' +
         (oc || 'Ownership') +
         ' recognizes you as a major-market GM. Career ladder complete.'
-      : summarizeWhy(G, asg, { kind: kind }, pn, oc);
+      : summarizeWhy(G, asg, { kind: kind }, pn, oc, succThr);
 
     return {
       kind: kind,
@@ -571,6 +606,8 @@
       periodsClosed: periodsClosed,
       tier5ConfidenceShelfDiag: tier5ShelfDiag,
       successThreshold: asg.successThreshold,
+      successThresholdEffective: succThr,
+      brokeredPromotionBarBump: brokeredBarBump,
       survivalThreshold: asg.survivalThreshold,
       finalConfidenceBeforeClassification: conf,
     };

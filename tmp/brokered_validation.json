@@ -1,0 +1,292 @@
+{
+  "ok": true,
+  "meta": {
+    "year": 1985,
+    "period": 1,
+    "forcedShare": 0.028,
+    "markets": [
+      "wichita",
+      "nashville",
+      "atlanta"
+    ]
+  },
+  "markets": [
+    {
+      "ok": true,
+      "market": "wichita",
+      "year": 1985,
+      "period": 1,
+      "forcedHeadlineShareTarget": 0.028,
+      "headlineShareMusic": 0.028,
+      "formats": {
+        "amMusic": "TOP40"
+      },
+      "normal": {
+        "callLetters": "KAAA",
+        "format": "TOP40",
+        "rev": 31017,
+        "cost": 339670,
+        "ebitda": -308653,
+        "sell": 0.4246245336875503,
+        "share": 0.028
+      },
+      "lean": {
+        "callLetters": "KAAA",
+        "format": "TOP40",
+        "rev": 35643,
+        "cost": 131618,
+        "ebitda": -95975,
+        "sell": 0.4246245336875503,
+        "share": 0.028
+      },
+      "brokered": {
+        "callLetters": "KAAA",
+        "format": "TOP40",
+        "rev": 69444,
+        "cost": 307722,
+        "ebitda": -238278,
+        "sell": 0.405,
+        "share": 0.028
+      },
+      "talkNear": {
+        "callLetters": "KAAE",
+        "format": "NEWS_TALK",
+        "rev": 174847,
+        "cost": 447519,
+        "ebitda": -272672,
+        "sell": 0.47471193533714706,
+        "share": 0.02937359
+      },
+      "talkStrong": {
+        "callLetters": "KDU",
+        "format": "NEWS_TALK",
+        "rev": 3909624,
+        "cost": 1701642,
+        "ebitda": 2207982,
+        "sell": 0.7872311907472404,
+        "share": 0.09529615
+      },
+      "appeal": {
+        "cohort": "25-34",
+        "applNormal": 0.07961840979549965,
+        "applBrokered": 0.05216598209801137,
+        "ratioBrokeredToNormal": 0.6552
+      },
+      "franchiseDemoMult": {
+        "cohort": "25-34",
+        "normal": 1,
+        "brokered": 0.84,
+        "ratioBrokeredToNormal": 0.84
+      }
+    },
+    {
+      "ok": true,
+      "market": "nashville",
+      "year": 1985,
+      "period": 1,
+      "forcedHeadlineShareTarget": 0.028,
+      "headlineShareMusic": 0.028,
+      "formats": {
+        "amMusic": "TOP40"
+      },
+      "normal": {
+        "callLetters": "WAAA",
+        "format": "TOP40",
+        "rev": 160274,
+        "cost": 522649,
+        "ebitda": -362375,
+        "sell": 0.422347099508997,
+        "share": 0.028
+      },
+      "lean": {
+        "callLetters": "WAAA",
+        "format": "TOP40",
+        "rev": 164790,
+        "cost": 310016,
+        "ebitda": -145226,
+        "sell": 0.422347099508997,
+        "share": 0.028
+      },
+      "brokered": {
+        "callLetters": "WAAA",
+        "format": "TOP40",
+        "rev": 97506,
+        "cost": 438368,
+        "ebitda": -340862,
+        "sell": 0.405,
+        "share": 0.028
+      },
+      "talkNear": {
+        "callLetters": "WAAE",
+        "format": "NEWS_TALK",
+        "rev": 330461,
+        "cost": 591442,
+        "ebitda": -260981,
+        "sell": 0.42622670928531936,
+        "share": 0.0286398
+      },
+      "talkStrong": {
+        "callLetters": "WDU",
+        "format": "NEWS_TALK",
+        "rev": 5355621,
+        "cost": 2325340,
+        "ebitda": 3030281,
+        "sell": 0.7976372341734657,
+        "share": 0.08796905
+      },
+      "appeal": {
+        "cohort": "25-34",
+        "applNormal": 0.10325783732719508,
+        "applBrokered": 0.06765453501677822,
+        "ratioBrokeredToNormal": 0.6552
+      },
+      "franchiseDemoMult": {
+        "cohort": "25-34",
+        "normal": 1,
+        "brokered": 0.84,
+        "ratioBrokeredToNormal": 0.84
+      }
+    },
+    {
+      "ok": true,
+      "market": "atlanta",
+      "year": 1985,
+      "period": 1,
+      "forcedHeadlineShareTarget": 0.028,
+      "headlineShareMusic": 0.028,
+      "formats": {
+        "amMusic": "TOP40"
+      },
+      "normal": {
+        "callLetters": "WAAA",
+        "format": "TOP40",
+        "rev": 124634,
+        "cost": 404399,
+        "ebitda": -279765,
+        "sell": 0.42607794419582395,
+        "share": 0.028
+      },
+      "lean": {
+        "callLetters": "WAAA",
+        "format": "TOP40",
+        "rev": 128155,
+        "cost": 258649,
+        "ebitda": -130494,
+        "sell": 0.42607794419582395,
+        "share": 0.028
+      },
+      "brokered": {
+        "callLetters": "WAAA",
+        "format": "TOP40",
+        "rev": 91025,
+        "cost": 350031,
+        "ebitda": -259006,
+        "sell": 0.405,
+        "share": 0.028
+      },
+      "talkNear": {
+        "callLetters": "WAAE",
+        "format": "NEWS_TALK",
+        "rev": 500706,
+        "cost": 638361,
+        "ebitda": -137655,
+        "sell": 0.47716839341936,
+        "share": 0.03047448
+      },
+      "talkStrong": {
+        "callLetters": "WDU",
+        "format": "NEWS_TALK",
+        "rev": 12529467,
+        "cost": 5746516,
+        "ebitda": 6782951,
+        "sell": 0.7987178276973407,
+        "share": 0.0974853
+      },
+      "appeal": {
+        "cohort": "25-34",
+        "applNormal": 0.08897355337179204,
+        "applBrokered": 0.05829547216919814,
+        "ratioBrokeredToNormal": 0.6552
+      },
+      "franchiseDemoMult": {
+        "cohort": "25-34",
+        "normal": 1,
+        "brokered": 0.84,
+        "ratioBrokeredToNormal": 0.84
+      }
+    }
+  ],
+  "gmPenaltyProbe": {
+    "ok": true,
+    "tier": 3,
+    "baseSuccessThreshold": 54,
+    "promotionBarBumpIfBrokeredAtAssignmentEnd_tier3": 4,
+    "normal": {
+      "brokered": false,
+      "composite": 0.36714160000000007,
+      "good": false,
+      "bad": false,
+      "sm": 0,
+      "sr": 0.70924,
+      "sf": 0.45,
+      "kpiReasonsSample": [
+        "Revenue has been declining",
+        "Long-term station strength is declining"
+      ]
+    },
+    "brokered": {
+      "brokered": true,
+      "composite": 0.40514160000000005,
+      "good": false,
+      "bad": false,
+      "sm": 0,
+      "sr": 0.70924,
+      "sf": 0.45,
+      "kpiReasonsSample": [
+        "Revenue has been declining",
+        "Long-term station strength is declining",
+        "Brokered / paid programming is active — ownership reads that as stabilizing cash while surrendering competitive audience and long-term station strength."
+      ]
+    },
+    "compositeDeltaBrokeredMinusNormal": 0.038,
+    "mediocreReviewConfidenceDelta": {
+      "normal": {
+        "confidenceBefore": 58,
+        "confidenceAfter": 57,
+        "delta": -1,
+        "brokeredLinePresent": false
+      },
+      "brokered": {
+        "confidenceBefore": 58,
+        "confidenceAfter": 54,
+        "delta": -4,
+        "brokeredLinePresent": true
+      }
+    },
+    "confidenceExtraLossFromBrokered": -3
+  },
+  "answers": {
+    "q1_brokeredImprovesEbitdaVsDyingNormal": "yes (3/3 markets)",
+    "q2_brokeredUnderperformsStrongTalkRev": "yes (0/3 brokered rev >= strongest AM talk rev)",
+    "q3_appealFranchiseSuppressed": "yes (appl ratio <0.92 in 3/3)",
+    "q4_gmCompositeWorsensWhenBrokered": "yes (Δcomposite +0.038)",
+    "q5_surviveButDisappoint": "yes pattern (EBITDA up in weak-share test + GM composite worsens)"
+  },
+  "promotionBarNote": {
+    "syncTo": "src/campaignMode.js campaignBrokeredSuccessThresholdBump",
+    "examples": [
+      {
+        "tier": 0,
+        "bumpWhenBrokeredAtAssignmentEnd": 2
+      },
+      {
+        "tier": 3,
+        "bumpWhenBrokeredAtAssignmentEnd": 4
+      },
+      {
+        "tier": 5,
+        "bumpWhenBrokeredAtAssignmentEnd": 6
+      }
+    ]
+  }
+}

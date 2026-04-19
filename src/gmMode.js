@@ -131,6 +131,43 @@
     });
   }
 
+  /** Player has at least one station in brokered economics (paid programming) — GM / campaign layer only. */
+  function gmPlayerBrokeredOperatingPresent(G) {
+    var ps = playerStationsForGm(G);
+    var fn =
+      typeof global !== 'undefined' && typeof global.stationBrokeredEconomicsActive === 'function'
+        ? global.stationBrokeredEconomicsActive
+        : null;
+    for (var i = 0; i < ps.length; i++) {
+      var st = ps[i];
+      if (!st) continue;
+      if (fn) {
+        if (fn(st, G)) return true;
+      } else if (st.operatingMode === 'brokered') return true;
+    }
+    return false;
+  }
+
+  /** Worsens review composite (higher = worse outcome bands) — tier-scaled; mild at Tier 0. */
+  function gmBrokeredCompositePenaltyAdd(tier) {
+    var t = tier | 0;
+    if (t <= 0) return 0.018;
+    if (t === 1) return 0.024;
+    if (t === 2) return 0.03;
+    if (t === 3) return 0.038;
+    if (t === 4) return 0.05;
+    return 0.064;
+  }
+
+  /** Extra confidence loss per formal review while brokered is active — integers for stable UI deltas. */
+  function gmBrokeredReviewConfidencePenalty(tier) {
+    var t = tier | 0;
+    if (t <= 0) return -1;
+    if (t <= 2) return -2;
+    if (t <= 4) return -3;
+    return -4;
+  }
+
   /** Promo + programming spend as a share of player revenue — efficiency / ROI signal (read-only). */
   function computeDiscretionarySpendRatio(G) {
     var ps = playerStationsForGm(G);
@@ -357,6 +394,12 @@
       );
     }
 
+    if (gmScenarioActive(G) && gmPlayerBrokeredOperatingPresent(G)) {
+      reasons.push(
+        'Brokered / paid programming is active — ownership reads that as stabilizing cash while surrendering competitive audience and long-term station strength.'
+      );
+    }
+
     return {
       marginAvg: Math.round(marginAvg * 10) / 10,
       revenueTrend: revenueTrend,
@@ -542,6 +585,9 @@
     var seComp = tier >= 5 ? se * 0.87 : se;
     var composite = Math.min(1, core * (1 + eAmp * seComp) + ew * seComp);
     composite = applyTier0StarterCompositeNudge(G, tier, composite);
+    if (gmScenarioActive(G) && gmPlayerBrokeredOperatingPresent(G)) {
+      composite = Math.min(1, composite + gmBrokeredCompositePenaltyAdd(tier));
+    }
     /**
      * Tier 5: tiny calibration vs other tiers — slightly easier “good” (rare wins), slightly sharper “bad” (demotion lane).
      * Tier 0 starter posting: wider mediocre band than T1–2 so small-market weak books are not all scored `bad` every review
@@ -741,6 +787,14 @@
           comp.t5MediocreFine = -1;
         }
       }
+    }
+    if (gmScenarioActive(G) && gmPlayerBrokeredOperatingPresent(G)) {
+      var brkPen = gmBrokeredReviewConfidencePenalty(tierAny);
+      comp.brokeredReviewPenalty = brkPen;
+      delta += brkPen;
+      reasonsOut.push(
+        'Brokered / paid programming is on the air: corporate sees the asset as preserved, but not the mission — that costs confidence this cycle.'
+      );
     }
     var t0FinalNudge = tier0FinalFormalMarginalSuccessNudge(G, gm, cfg, evalRes, kpis, confidenceBeforeReview, delta);
     if (t0FinalNudge !== 0) {
@@ -1637,6 +1691,8 @@
     renderGmHeader: renderGmHeader,
     computeGmKpis: computeGmKpis,
     evaluateGmReview: evaluateGmReview,
+    /** Headless / tooling: same review confidence path as onPeriodClose (mutates G._gm). */
+    applyGmConfidenceUpdate: applyGmConfidenceUpdate,
     resolveGmConfig: resolveGmConfig,
     getGmStatusLabel: getGmStatusLabel,
     runSelfTest: runSelfTest,

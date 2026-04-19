@@ -456,12 +456,45 @@ function stationQualifiesLeanAmMusicOperating(s,G){
 function stationLeanAmMusicEconomicsActive(s,G){
   return stationQualifiesLeanAmMusicOperating(s,G)&&s.operatingMode==='lean_music';
 }
+/** AM commercial (no translator), non-talk — paid programming / brokered blocks as last-resort survival (any year). */
+function stationQualifiesBrokeredOperating(s,G){
+  if(!s||s._bpSlotDeferred||s.isPublic||s.fmBooster||s.sig?.type!=='AM')return false;
+  if(TALK_FMTS.includes(s.format)||s.format==='ALL_NEWS')return false;
+  return true;
+}
+function stationBrokeredEconomicsActive(s,G){
+  return stationQualifiesBrokeredOperating(s,G)&&s.operatingMode==='brokered';
+}
 function normalizeStationOperatingMode(s,G){
   if(!s)return;
   if(s.operatingMode==='lean_music'&&!stationQualifiesLeanAmMusicOperating(s,G))s.operatingMode='normal';
+  if(s.operatingMode==='brokered'&&!stationQualifiesBrokeredOperating(s,G))s.operatingMode='normal';
 }
 function leanAmMusicAppealTradeoffMult(s,G){
   return stationLeanAmMusicEconomicsActive(s,G)?0.965:1;
+}
+/** appl() only — brokered stations bleed competitiveness (stronger than lean_music). */
+function brokeredAppealTradeoffMult(s,G){
+  return stationBrokeredEconomicsActive(s,G)?0.78:1;
+}
+/**
+ * Brokered AM: semi-stable spot/adjacency cash vs competitive music/talk CPM stack.
+ * Weak share hook, hard cap vs same-station competitive rev so it cannot outperform real formats.
+ */
+function brokeredProgrammingTerrestrialRev(s,G,competitiveRevHalf){
+  const mktId=G.marketId||ACTIVE_MARKET;
+  const y=G.year||1970;
+  const p=G.period||1;
+  const adx=Math.max(0.75,G.adx||1);
+  const halfPool=Math.round(marketAnnualBilling(y,mktId)*0.5*marketHalfSeasonFactor(y,p)*adx);
+  const mkm=marketFixedCostScaleMultiplier(mktId);
+  const anchor=halfPool*0.00122*mkm;
+  const sh=s.rat?.share||0;
+  const shareK=0.55+0.45*_smoothstep(0.01,0.085,sh);
+  const brokered=Math.round(anchor*shareK);
+  const floorR=Math.round(anchor*0.48);
+  const capR=Math.max(floorR,Math.round((competitiveRevHalf||0)*0.54+anchor*0.085));
+  return Math.min(capR,Math.max(floorR,brokered));
 }
 /**
  * Lean AM music only: very modest sell-through lift for weak billers (2–4% share band).
@@ -2906,6 +2939,7 @@ function playerCompetitiveBaselinePromoProg(s,G,totalRev,promoCap,progCap){
   if(year>=1996)eraK*=1+0.08*Math.min(1,(year-1996)/12);
   let baselineTotal=Math.round(totalRev*tierCorePct*shareK*eraK);
   if(stationLeanAmMusicEconomicsActive(s,G))baselineTotal=Math.round(baselineTotal*0.82);
+  if(stationBrokeredEconomicsActive(s,G))baselineTotal=Math.round(baselineTotal*0.22);
   const rawPromo=Math.round(baselineTotal*PLAYER_BASELINE_PROMO_SHARE);
   const rawProg=Math.max(0,baselineTotal-rawPromo);
   return{
@@ -3393,6 +3427,7 @@ function franchiseDemoMult(s,coh,G){
     const b=f.demoBoost?.[coh];
     if(b)m*=1+b;
   });
+  if(stationBrokeredEconomicsActive(s,G))m*=0.84;
   return m;
 }
 function syndicationFeesForStation(s,G){
@@ -5899,8 +5934,11 @@ window._mpApply_progFocus = function({ sid, focus }) {
 };
 window._mpApply_operating_mode = function({ sid, mode }) {
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
-  const m = mode === 'lean_music' ? 'lean_music' : 'normal';
+  let m='normal';
+  if(mode==='lean_music')m='lean_music';
+  else if(mode==='brokered')m='brokered';
   if(m === 'lean_music' && !stationQualifiesLeanAmMusicOperating(s, G)) return;
+  if(m === 'brokered' && !stationQualifiesBrokeredOperating(s, G)) return;
   s.operatingMode = m;
   (G.stations||[]).forEach(st=>{if(st&&!st._bpSlotDeferred&&!st.isPublic)calcRev(st,G);});
   if(typeof seedRev === 'function') seedRev(G.stations, G);
@@ -7446,7 +7484,7 @@ function appl(s,coh,G){
     allNewsSig=0.58+0.42*_smoothstep(0.28,0.78,sigStrength);
   }
   mktFmt=Math.max(0.86,Math.min(1.24,mktFmt));
-  const out=Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * morHeritageHybridMult * hitsLineageEraMult * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G) * mktFmt * allNewsSig * zombieNicheMult * leanAmMusicAppealTradeoffMult(s,G));
+  const out=Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * morHeritageHybridMult * hitsLineageEraMult * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G) * mktFmt * allNewsSig * zombieNicheMult * leanAmMusicAppealTradeoffMult(s,G)*brokeredAppealTradeoffMult(s,G));
   return Number.isFinite(out)?out:0;
 }
 
@@ -8316,6 +8354,10 @@ function updateTalentFranchiseScores(stations,G){
     const alpha=0.052+0.12*w;
     fr=fr*(1-alpha)+target*alpha;
     s.talentFranchise=Math.max(0.1,Math.min(1,fr));
+    if(stationBrokeredEconomicsActive(s,G)){
+      const cap=0.58+0.06*_smoothstep(1985,2005,G.year||1970);
+      s.talentFranchise=Math.max(0.1,Math.min(cap,(s.talentFranchise||0.88)*0.94-0.018));
+    }
   }
 }
 /**
@@ -8352,6 +8394,12 @@ function talentFranchiseRatingsEffect(s,G){
     ceilingMult*=0.982;
     spdGainMult*=0.90;
     spdLossMult*=1.045;
+  }
+  if(stationBrokeredEconomicsActive(s,gCtx)){
+    combined*=0.91;
+    ceilingMult*=0.84;
+    spdGainMult*=0.68;
+    spdLossMult*=1.14;
   }
   return{combined,ceilingMult,spdLossMult,spdGainMult,w,franchise:fr,expectedTalent,actualTalent,stabilityPenalty,talentBoost:1};
 }
@@ -9099,6 +9147,9 @@ function calcRev(s,G){
   // Sellout rate drifts toward market-position-appropriate level each period
   // Only runs during live gameplay (G.stations exists), not during initial seeding
   if(G.stations){
+    if(stationBrokeredEconomicsActive(s,G)){
+      s.ops.sell=0.405;
+    }else{
     // sort a copy — never mutate G.stations order mid-calcRev loop
     const allComm=[...G.stations].filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic).sort((a,b)=>b.rat.share-a.rat.share);
     const rank=allComm.findIndex(st=>st.id===s.id)+1;
@@ -9194,6 +9245,7 @@ function calcRev(s,G){
               :0.65;
     const sellEmaN=1-sellEmaK;
     s.ops.sell=s.ops.sell*sellEmaK+targetSell*sellEmaN;
+    }
   }
   const aqh=COH.reduce((sum,c)=>sum+(s.rat.cur[c]?.aqh||0),0);
   if(!aqh){s.fin.rev=0;s.fin.cost=s.fin.fix||0;s.fin.ebitda=-(s.fin.fix||0);s.fin.simulcastProgFee=0;s.fin.syndicationRights=0;return;}
@@ -9269,9 +9321,11 @@ function calcRev(s,G){
   rev=Math.round(rev*dominantEarlyEraMult);
   const amTalkSmMult=earlyEraAmTalkSmallMarketSupport(s.format,year,G.marketId||ACTIVE_MARKET,s.sig?.type||'');
   rev=Math.round(rev*amTalkSmMult);
+  if(stationBrokeredEconomicsActive(s,G))rev=brokeredProgrammingTerrestrialRev(s,G,rev);
   // ── COSTS ────────────────────────────────────────────────────────
   // On-air talent (annual salary / 2 for half-year period)
-  const talCost=Object.values(s.prog).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
+  let talCost=Object.values(s.prog).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
+  if(stationBrokeredEconomicsActive(s,G))talCost=Math.round(talCost*0.24);
   // Inflation: 3.5%/yr through 1985 (high inflation era), then 2.5%/yr after
   // (automation, digital tools, and consolidation efficiencies slow cost growth)
   // Fixed cost inflation: broadcast operational costs did rise, but automation,
@@ -9389,6 +9443,13 @@ function calcRev(s,G){
     groupOverheadHalf=Math.round(groupOverheadHalf*LEAN_AM_GROUP_OVERHEAD_MULT);
     regCostScaled=Math.round(regCostScaled*0.92);
     sfCostScaled=Math.round(sfCostScaled*0.88);
+  }
+  if(stationBrokeredEconomicsActive(s,G)){
+    staffCost=Math.round(staffCost*0.82);
+    facCost=Math.round(facCost*0.88);
+    groupOverheadHalf=Math.round(groupOverheadHalf*0.86);
+    regCostScaled=Math.round(regCostScaled*0.92);
+    sfCostScaled=Math.round(sfCostScaled*0.78);
   }
   let fixedCost=staffCost+facCost+regCostScaled+sfCostScaled+groupOverheadHalf;
   // ── STREAMING REVENUE ───────────────────────────────────────────
@@ -12364,6 +12425,8 @@ if(typeof window!=='undefined'){
   window.resolveAiDifficultyTier=resolveAiDifficultyTier;
   window.stationQualifiesLeanAmMusicOperating=stationQualifiesLeanAmMusicOperating;
   window.stationLeanAmMusicEconomicsActive=stationLeanAmMusicEconomicsActive;
+  window.stationQualifiesBrokeredOperating=stationQualifiesBrokeredOperating;
+  window.stationBrokeredEconomicsActive=stationBrokeredEconomicsActive;
 }
 
 // Scheduled Atlanta 1970 BP slots: same entry economics as event-driven `rival-` (seedNewEntry).
@@ -20389,14 +20452,21 @@ function updLean(sid,v){
 function setStationOperatingMode(sid,mode){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  const m=mode==='lean_music'?'lean_music':'normal';
+  let m='normal';
+  if(mode==='lean_music')m='lean_music';
+  else if(mode==='brokered')m='brokered';
   if(m==='lean_music'&&!stationQualifiesLeanAmMusicOperating(s,G)){
     showToast('Lean/automated mode applies to AM music (non-talk) from 1980 onward.','warn');
     return;
   }
+  if(m==='brokered'&&!stationQualifiesBrokeredOperating(s,G)){
+    showToast('Brokered / paid programming applies to commercial AM (not translators, talk, or news).','warn');
+    return;
+  }
   s.operatingMode=m;
   MP.action('operating_mode',{sid,mode:m});
-  G.news.unshift({v:'LOW',t:`${s.callLetters} operating model: ${m==='lean_music'?'Lean / automated (lower cost, weaker upside)':'Full-service music'}.`,y:G.year,p:G.period});
+  const modeNews=m==='lean_music'?'Lean / automated (lower cost, weaker upside)':m==='brokered'?'Brokered / paid programming (stable cash, weak audience, poor long-term value)':'Full-service';
+  G.news.unshift({v:'LOW',t:`${s.callLetters} operating model: ${modeNews}.`,y:G.year,p:G.period});
   (G.stations||[]).forEach(st=>{if(st&&!st._bpSlotDeferred&&!st.isPublic)calcRev(st,G);});
   seedRev(G.stations,G);
   updateAllStationsBudgetStress(G);
@@ -25005,6 +25075,13 @@ function rStns(){
     const _lmaLegForPair=s._lmaStation?s:(junior&&junior._lmaStation?junior:null);
     const _simLmaNote=_simLegs&&_lmaLegForPair?'<div style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.45">LMA fee (<strong>'+f$(lmaFeeForStation(_lmaLegForPair,G))+'</strong>/period) is only the payment to the licensor. Facility “costs” on the follower leg still include fixed site and operations — they are not the same as that fee.</div>':'';
     const _simEconHint=_simLegs?'<div class="sim-econ-hint"><div><span class="sim-econ-hint-lbl">'+callDisplay(_simLegs.src)+'</span> · Higher programming cost center</div><div><span class="sim-econ-hint-lbl">'+callDisplay(_simLegs.flw)+'</span> · Lower programming cost (simulcast)</div>'+_simLmaNote+'</div>':'';
+    const brokeredStationTagHtml=(()=>{
+      const legs=junior?[s,junior]:[s];
+      const any=legs.some(st=>st&&stationBrokeredEconomicsActive(st,G));
+      if(!any)return '';
+      const gmNote=G.sc&&G.sc.gmMode?' In GM mode, corporate treats this as a last-resort survival move — it can count against reviews and promotion odds.':'';
+      return '<div class="sim-tag" style="color:var(--amb);border-color:rgba(255,200,120,.45)" title="Brokered / paid programming: stable cash, weak audience, poor long-term value.'+gmNote+'">📼 BROKERED / PAID PROGRAMMING</div>';
+    })();
     div.innerHTML=`
       <div class="sctop"><div class="sctop-inner">`+_logoThumb+`<div>
         <div class="sccall">${junior?callDisplay(s)+' + '+callDisplay(junior):callDisplay(s)}</div>
@@ -25014,6 +25091,7 @@ function rStns(){
         ${_simRoleStrip}${_soloSimRole}
         ${(()=>{const lm=s._lmaStation?s:(junior&&junior._lmaStation?junior:null);return lm?'<div class="sim-tag" style="color:var(--blu);border-color:rgba(90,180,255,.4)" title="Operational control without owning the license — you program and sell; era rules apply in LMA screen.">📝 LMA — LEASED OPERATION · fee: '+f$(lmaFeeForStation(lm,G))+'/period</div>':'';})()}
         ${s.lmaLessorId?'<div class="sim-tag" style="color:var(--grn);border-color:rgba(82,227,110,.4)" title="You keep the license; an operator runs the station under LMA.">📝 LMA — LEASED OUT · receiving: '+f$(lmaFeeForStation(s,G))+'/period</div>':''}
+        ${brokeredStationTagHtml}
       </div></div><div><div class="scshv">${pct(shareUi)}</div><div class="scshl">SHARE ${trd}</div></div></div>
       <div class="qr"><span class="ql">QUALITY</span><div class="qb"><div class="qf ${qc2}" style="width:${op.oq}%"></div></div><span class="qn">${op.oq}</span></div>
       <div class="fg">
@@ -25078,15 +25156,22 @@ function rStns(){
         };
         const sec=(title,first,inner)=>'<div class="sc-card-sec'+(first?' sc-card-sec--first':'')+'"><div class="sc-card-sec-h">'+title+'</div>'+inner+'</div>';
         const progBudgetLine='<div style="font-size:13px;color:var(--mut);line-height:1.45">Programming <strong style="color:var(--off)">'+f$(op.ops?.progBudget||0)+'</strong>/p</div>';
-        const leanOpUi=stationQualifiesLeanAmMusicOperating(op,G)
+        const leanQual=stationQualifiesLeanAmMusicOperating(op,G);
+        const brokQual=stationQualifiesBrokeredOperating(op,G);
+        const leanOpUi=(leanQual||brokQual)
           ?'<div class="ibox" style="margin-top:4px;text-align:left;line-height:1.45">'+
             '<label style="display:block;font-size:13px;color:var(--off);margin-bottom:4px">Operating model</label>'+
             '<select style="width:100%;padding:8px;background:var(--crd);color:var(--off);border:1px solid var(--bdh);border-radius:2px;box-sizing:border-box" '+
             'onchange="setStationOperatingMode(\''+op.id+'\',this.value)">'+
-            '<option value="normal"'+(op.operatingMode!=='lean_music'?' selected':'')+'>Full-service music</option>'+
-            '<option value="lean_music"'+(op.operatingMode==='lean_music'?' selected':'')+'>Lean / automated (lower cost, weaker upside)</option>'+
+            '<option value="normal"'+(op.operatingMode!=='lean_music'&&op.operatingMode!=='brokered'?' selected':'')+'>'+(leanQual?'Full-service music':'Full-service')+'</option>'+
+            (leanQual?'<option value="lean_music"'+(op.operatingMode==='lean_music'?' selected':'')+'>Lean / automated (lower cost, weaker upside)</option>':'')+
+            (brokQual?'<option value="brokered"'+(op.operatingMode==='brokered'?' selected':'')+'>Brokered / paid programming</option>':'')+
             '</select>'+
-            '<div style="margin-top:6px;font-size:12px;color:var(--mut)">Survival lane for 1980s+ AM music: trims core fixed costs and sales overhead — trades audience ceiling and growth vs full staffing.</div>'+
+            '<div style="margin-top:6px;font-size:12px;color:var(--mut)">'+
+            (leanQual?'Survival lane for 1980s+ AM music: lean trims core fixed costs and sales overhead — trades audience ceiling vs full staffing. ':'')+
+            (brokQual?'<strong>Brokered</strong> favors AM (especially full-market AM): stable cash, weak audience, poor long-term value — not a competitive growth path. ':'')+
+            '</div>'+
+            (brokQual&&(G.sc&&G.sc.gmMode)?'<div style="margin-top:6px;font-size:12px;color:var(--amb);line-height:1.45">GM: Corporate considers brokered a last-resort strategy — it can weigh on reviews and reduce promotion odds (stronger at higher tiers).</div>':'')+
             '</div>'
           :'';
         const progHub='<button class="abt '+progAct+'" '+(_assignFtTutIds?'id="wl-ft-tut-programming-btn" ':'')+'style="width:100%;box-sizing:border-box;padding:14px;font-size:15px;letter-spacing:0.5px" onclick="openProgramming(\''+op.id+'\')">📻 PROGRAMMING</button>';
