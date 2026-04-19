@@ -1,0 +1,2447 @@
+{
+  "meta": {
+    "mode": "batch",
+    "seed": 100,
+    "runs": 30,
+    "market": "wichita",
+    "note": "GM mode uses genMarket(gm_under) with ACTIVE_MARKET patched to --market. Campaign career start uses CAREER_ENTRY_MARKET_ID / ladder tier 0 from campaignMode.js (Wichita), overriding the patched constant when beginCareer runs.",
+    "maxPeriodsGm": 48,
+    "maxPeriodsCampaign": 160,
+    "maxAssignments": 9,
+    "revisitTest": false,
+    "compareProfiles": false,
+    "compareIncludeLong": false,
+    "careerEntryMarketId": null,
+    "campaignProfiles": null,
+    "wichitaEconTest": true
+  },
+  "gm": null,
+  "campaign": null,
+  "batch": null,
+  "profiles": null,
+  "profileComparison": null,
+  "interpretation": null,
+  "tier5EntrantAnalysis": null,
+  "tier3Diagnostic": null,
+  "wichitaEconTest": {
+    "description": "Headless Tier 0 (Wichita) campaign only: each period applies a fixed spending profile to player station(s), then advTurn(). Stops after first assignment end for tier 0 or cash bankruptcy / GM fire.",
+    "profiles": {
+      "conservative": {
+        "id": "conservative",
+        "label": "Conservative",
+        "intent": "Cost control first: lower programming + marketing as a fraction of trailing revenue, stabilize before growing.",
+        "behavior": "Each period sets ops.progBudget / ops.promo from ~2.6% / ~1.3% of station revenue (capped by era caps), then calcRev."
+      },
+      "balanced": {
+        "id": "balanced",
+        "label": "Balanced",
+        "intent": "Competent default GM: moderate discretionary spend — some growth, some discipline.",
+        "behavior": "Targets ~6.2% / ~3.7% of trailing revenue for programming / promo (capped), then calcRev — no austerity cliff, no all-in gamble."
+      },
+      "aggressive": {
+        "id": "aggressive",
+        "label": "Aggressive",
+        "intent": "Push share/revenue harder: higher programming and marketing commitment; accepts more short-term risk.",
+        "behavior": "Targets ~10.5% / ~6.2% of trailing revenue for programming / promo (capped), then calcRev — still bounded by caps, not random."
+      }
+    },
+    "seeds": {
+      "start": 100,
+      "count": 30,
+      "stride": 1
+    },
+    "maxPeriodsPerRun": 160,
+    "distressDefinition": "Serious distress if any of: period cash ≤ -$35k; portfolio EBITDA ≤ -$130k; cash ≤ -$12k while EBITDA ≤ -$90k; ≥6 consecutive negative-EBITDA periods.",
+    "byProfile": {
+      "conservative": {
+        "n": 30,
+        "profitability": {
+          "pctProfitableAtFirstReview": 0,
+          "nWithFormalReviewBeforeEnd": 30,
+          "pctProfitableAtContractEnd": 0
+        },
+        "health": {
+          "avgEbitdaAtContractEnd": 0,
+          "avgRevAtContractEnd": 0,
+          "avgShareAtContractEnd": 0,
+          "pctSeriousDistress": 0.5666666666666667,
+          "pctBankrupt": 1,
+          "pctStalled": 0,
+          "avgMinCash": -37709.166666666664
+        },
+        "trends": {
+          "avgDeltaShare": -0.07176353375356932,
+          "avgDeltaRev": -49228.63333333333,
+          "avgDeltaEbitda": 73760.3
+        },
+        "outcomes": {
+          "promoted": 0,
+          "lateral": 0,
+          "demoted": 0,
+          "fired": 0,
+          "noPayload": 30,
+          "rates": {
+            "promoted": 0,
+            "lateral": 0,
+            "demoted": 0,
+            "fired": 0,
+            "noPayload": 1
+          }
+        },
+        "gm": {
+          "avgEndingConfidence": 68
+        }
+      },
+      "balanced": {
+        "n": 30,
+        "profitability": {
+          "pctProfitableAtFirstReview": 0,
+          "nWithFormalReviewBeforeEnd": 30,
+          "pctProfitableAtContractEnd": 0
+        },
+        "health": {
+          "avgEbitdaAtContractEnd": 0,
+          "avgRevAtContractEnd": 0,
+          "avgShareAtContractEnd": 0,
+          "pctSeriousDistress": 0.9666666666666667,
+          "pctBankrupt": 1,
+          "pctStalled": 0,
+          "avgMinCash": -45031.666666666664
+        },
+        "trends": {
+          "avgDeltaShare": -0.07176353375356932,
+          "avgDeltaRev": -49228.63333333333,
+          "avgDeltaEbitda": 73760.3
+        },
+        "outcomes": {
+          "promoted": 0,
+          "lateral": 0,
+          "demoted": 0,
+          "fired": 0,
+          "noPayload": 30,
+          "rates": {
+            "promoted": 0,
+            "lateral": 0,
+            "demoted": 0,
+            "fired": 0,
+            "noPayload": 1
+          }
+        },
+        "gm": {
+          "avgEndingConfidence": 68
+        }
+      },
+      "aggressive": {
+        "n": 30,
+        "profitability": {
+          "pctProfitableAtFirstReview": 0,
+          "nWithFormalReviewBeforeEnd": 30,
+          "pctProfitableAtContractEnd": 0
+        },
+        "health": {
+          "avgEbitdaAtContractEnd": 0,
+          "avgRevAtContractEnd": 0,
+          "avgShareAtContractEnd": 0,
+          "pctSeriousDistress": 1,
+          "pctBankrupt": 1,
+          "pctStalled": 0,
+          "avgMinCash": -53528.23333333333
+        },
+        "trends": {
+          "avgDeltaShare": -0.07176353375356932,
+          "avgDeltaRev": -49228.63333333333,
+          "avgDeltaEbitda": 73760.3
+        },
+        "outcomes": {
+          "promoted": 0,
+          "lateral": 0,
+          "demoted": 0,
+          "fired": 0,
+          "noPayload": 30,
+          "rates": {
+            "promoted": 0,
+            "lateral": 0,
+            "demoted": 0,
+            "fired": 0,
+            "noPayload": 1
+          }
+        },
+        "gm": {
+          "avgEndingConfidence": 68
+        }
+      }
+    },
+    "interpretation": {
+      "judgment": "WICHITA_TOO_BRUTAL",
+      "plainEnglish": [
+        "Balanced profile: promotion 0.0%, profitable at contract end 0.0%, serious distress 96.7%, bankruptcy 100.0%.",
+        "Balanced runs show frequent bankruptcy or extreme distress — the starter rung may be too cash-punishing for these scripted profiles.",
+        "Few balanced runs finish the Tier 0 contract with positive EBITDA — margin recovery may be too rare without stronger play than these heuristics.",
+        "Promotion rates look low even for balanced play — advancement may feel luck-heavy relative to “competent default GM.”",
+        "Outcomes are broadly similar across profiles — Wichita is not a one-strategy puzzle in this harness.",
+        "Overall: Wichita looks structurally too punishing for a Tier 0 fantasy — balanced play struggles to finish solvent or promoted."
+      ],
+      "codes": [
+        "PROFILE_ROBUST"
+      ],
+      "checks": {
+        "solvent": false,
+        "lowDistress": false,
+        "profitReasonable": false,
+        "promoteReasonable": false
+      }
+    },
+    "runs": [
+      {
+        "profile": "conservative",
+        "seed": 100,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 68530,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -43231,
+          "ebitda": 75103,
+          "share": -0.0674817843866171
+        },
+        "endingConfidence": 68,
+        "minCash": -35417
+      },
+      {
+        "profile": "conservative",
+        "seed": 101,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 56510,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -48401,
+          "ebitda": 72017,
+          "share": -0.06685248100856636
+        },
+        "endingConfidence": 68,
+        "minCash": -37666
+      },
+      {
+        "profile": "conservative",
+        "seed": 102,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": false,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 64545,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -46602,
+          "ebitda": 72730,
+          "share": -0.06743919508647163
+        },
+        "endingConfidence": 68,
+        "minCash": -32005
+      },
+      {
+        "profile": "conservative",
+        "seed": 103,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 82939,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -54049,
+          "ebitda": 72694,
+          "share": -0.07809964441571036
+        },
+        "endingConfidence": 68,
+        "minCash": -36239
+      },
+      {
+        "profile": "conservative",
+        "seed": 104,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 71331,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -49088,
+          "ebitda": 73979,
+          "share": -0.06980712784871505
+        },
+        "endingConfidence": 68,
+        "minCash": -38579
+      },
+      {
+        "profile": "conservative",
+        "seed": 105,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 47591,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -41822,
+          "ebitda": 77404,
+          "share": -0.06694237918215613
+        },
+        "endingConfidence": 68,
+        "minCash": -44362
+      },
+      {
+        "profile": "conservative",
+        "seed": 106,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 61595,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -52373,
+          "ebitda": 74347,
+          "share": -0.074638209148214
+        },
+        "endingConfidence": 68,
+        "minCash": -47628
+      },
+      {
+        "profile": "conservative",
+        "seed": 107,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 68572,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -49613,
+          "ebitda": 75674,
+          "share": -0.07505792791336674
+        },
+        "endingConfidence": 68,
+        "minCash": -43677
+      },
+      {
+        "profile": "conservative",
+        "seed": 108,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": false,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 73856,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -43506,
+          "ebitda": 73937,
+          "share": -0.06538372393728788
+        },
+        "endingConfidence": 68,
+        "minCash": -30064
+      },
+      {
+        "profile": "conservative",
+        "seed": 109,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": false,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 90835,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -50295,
+          "ebitda": 72587,
+          "share": -0.07307027638597058
+        },
+        "endingConfidence": 68,
+        "minCash": -26731
+      },
+      {
+        "profile": "conservative",
+        "seed": 110,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 48253,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -41699,
+          "ebitda": 78784,
+          "share": -0.06656416680135768
+        },
+        "endingConfidence": 68,
+        "minCash": -43582
+      },
+      {
+        "profile": "conservative",
+        "seed": 111,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": false,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 68182,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -49245,
+          "ebitda": 72727,
+          "share": -0.07206890253757879
+        },
+        "endingConfidence": 68,
+        "minCash": -34427
+      },
+      {
+        "profile": "conservative",
+        "seed": 112,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": false,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 82274,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -57095,
+          "ebitda": 72038,
+          "share": -0.07825025052529498
+        },
+        "endingConfidence": 68,
+        "minCash": -33835
+      },
+      {
+        "profile": "conservative",
+        "seed": 113,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": false,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 79381,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -46173,
+          "ebitda": 73903,
+          "share": -0.07214417326652658
+        },
+        "endingConfidence": 68,
+        "minCash": -29271
+      },
+      {
+        "profile": "conservative",
+        "seed": 114,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": false,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 80812,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -53667,
+          "ebitda": 68863,
+          "share": -0.07201839340552772
+        },
+        "endingConfidence": 68,
+        "minCash": -27829
+      },
+      {
+        "profile": "conservative",
+        "seed": 115,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 63293,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -47402,
+          "ebitda": 74903,
+          "share": -0.07173951834491675
+        },
+        "endingConfidence": 68,
+        "minCash": -41376
+      },
+      {
+        "profile": "conservative",
+        "seed": 116,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 61798,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -57538,
+          "ebitda": 71504,
+          "share": -0.07470320025860674
+        },
+        "endingConfidence": 68,
+        "minCash": -46448
+      },
+      {
+        "profile": "conservative",
+        "seed": 117,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 61172,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -53224,
+          "ebitda": 74421,
+          "share": -0.07658074995959269
+        },
+        "endingConfidence": 68,
+        "minCash": -41829
+      },
+      {
+        "profile": "conservative",
+        "seed": 118,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": false,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 79961,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -53699,
+          "ebitda": 70391,
+          "share": -0.07506095037982867
+        },
+        "endingConfidence": 68,
+        "minCash": -31672
+      },
+      {
+        "profile": "conservative",
+        "seed": 119,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": false,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 76350,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -44229,
+          "ebitda": 76167,
+          "share": -0.07113979311459513
+        },
+        "endingConfidence": 68,
+        "minCash": -34594
+      },
+      {
+        "profile": "conservative",
+        "seed": 120,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": false,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 79572,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -58604,
+          "ebitda": 68069,
+          "share": -0.07683403911427186
+        },
+        "endingConfidence": 68,
+        "minCash": -32662
+      },
+      {
+        "profile": "conservative",
+        "seed": 121,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 49673,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -45359,
+          "ebitda": 76245,
+          "share": -0.06880659447228059
+        },
+        "endingConfidence": 68,
+        "minCash": -43312
+      },
+      {
+        "profile": "conservative",
+        "seed": 122,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 64698,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -50538,
+          "ebitda": 76327,
+          "share": -0.07738020042023598
+        },
+        "endingConfidence": 68,
+        "minCash": -44671
+      },
+      {
+        "profile": "conservative",
+        "seed": 123,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": false,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 98406,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -56810,
+          "ebitda": 68846,
+          "share": -0.0768965572975594
+        },
+        "endingConfidence": 68,
+        "minCash": -22620
+      },
+      {
+        "profile": "conservative",
+        "seed": 124,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 24418,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -47827,
+          "ebitda": 76259,
+          "share": -0.06878146112817196
+        },
+        "endingConfidence": 68,
+        "minCash": -55020
+      },
+      {
+        "profile": "conservative",
+        "seed": 125,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 48919,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -45806,
+          "ebitda": 75890,
+          "share": -0.06723578470987554
+        },
+        "endingConfidence": 68,
+        "minCash": -45059
+      },
+      {
+        "profile": "conservative",
+        "seed": 126,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": false,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 76767,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -51217,
+          "ebitda": 71777,
+          "share": -0.07404470664296105
+        },
+        "endingConfidence": 68,
+        "minCash": -29888
+      },
+      {
+        "profile": "conservative",
+        "seed": 127,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 49620,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -48631,
+          "ebitda": 75685,
+          "share": -0.07237310489736543
+        },
+        "endingConfidence": 68,
+        "minCash": -47131
+      },
+      {
+        "profile": "conservative",
+        "seed": 128,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": false,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 69082,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -47596,
+          "ebitda": 72401,
+          "share": -0.0670549862615161
+        },
+        "endingConfidence": 68,
+        "minCash": -33985
+      },
+      {
+        "profile": "conservative",
+        "seed": 129,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 51544,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -41520,
+          "ebitda": 77137,
+          "share": -0.06845572975593986
+        },
+        "endingConfidence": 68,
+        "minCash": -39696
+      },
+      {
+        "profile": "balanced",
+        "seed": 100,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 63746,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -43231,
+          "ebitda": 75103,
+          "share": -0.0674817843866171
+        },
+        "endingConfidence": 68,
+        "minCash": -42918
+      },
+      {
+        "profile": "balanced",
+        "seed": 101,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 51792,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -48401,
+          "ebitda": 72017,
+          "share": -0.06685248100856636
+        },
+        "endingConfidence": 68,
+        "minCash": -43174
+      },
+      {
+        "profile": "balanced",
+        "seed": 102,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 58944,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -46602,
+          "ebitda": 72730,
+          "share": -0.06743919508647163
+        },
+        "endingConfidence": 68,
+        "minCash": -39627
+      },
+      {
+        "profile": "balanced",
+        "seed": 103,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 79562,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -54049,
+          "ebitda": 72694,
+          "share": -0.07809964441571036
+        },
+        "endingConfidence": 68,
+        "minCash": -42336
+      },
+      {
+        "profile": "balanced",
+        "seed": 104,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 65455,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -49088,
+          "ebitda": 73979,
+          "share": -0.06980712784871505
+        },
+        "endingConfidence": 68,
+        "minCash": -46887
+      },
+      {
+        "profile": "balanced",
+        "seed": 105,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 44417,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -41822,
+          "ebitda": 77404,
+          "share": -0.06694237918215613
+        },
+        "endingConfidence": 68,
+        "minCash": -51172
+      },
+      {
+        "profile": "balanced",
+        "seed": 106,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 54364,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -52373,
+          "ebitda": 74347,
+          "share": -0.074638209148214
+        },
+        "endingConfidence": 68,
+        "minCash": -56580
+      },
+      {
+        "profile": "balanced",
+        "seed": 107,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 65897,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -49613,
+          "ebitda": 75674,
+          "share": -0.07505792791336674
+        },
+        "endingConfidence": 68,
+        "minCash": -49596
+      },
+      {
+        "profile": "balanced",
+        "seed": 108,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 67208,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -43506,
+          "ebitda": 73937,
+          "share": -0.06538372393728788
+        },
+        "endingConfidence": 68,
+        "minCash": -37560
+      },
+      {
+        "profile": "balanced",
+        "seed": 109,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 85299,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -50295,
+          "ebitda": 72587,
+          "share": -0.07307027638597058
+        },
+        "endingConfidence": 68,
+        "minCash": -35459
+      },
+      {
+        "profile": "balanced",
+        "seed": 110,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 42783,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -41699,
+          "ebitda": 78784,
+          "share": -0.06656416680135768
+        },
+        "endingConfidence": 68,
+        "minCash": -50884
+      },
+      {
+        "profile": "balanced",
+        "seed": 111,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 64329,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -49245,
+          "ebitda": 72727,
+          "share": -0.07206890253757879
+        },
+        "endingConfidence": 68,
+        "minCash": -42947
+      },
+      {
+        "profile": "balanced",
+        "seed": 112,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 77623,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -57095,
+          "ebitda": 72038,
+          "share": -0.07825025052529498
+        },
+        "endingConfidence": 68,
+        "minCash": -43285
+      },
+      {
+        "profile": "balanced",
+        "seed": 113,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 73986,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -46173,
+          "ebitda": 73903,
+          "share": -0.07214417326652658
+        },
+        "endingConfidence": 68,
+        "minCash": -36896
+      },
+      {
+        "profile": "balanced",
+        "seed": 114,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 75941,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -53667,
+          "ebitda": 68863,
+          "share": -0.07201839340552772
+        },
+        "endingConfidence": 68,
+        "minCash": -36048
+      },
+      {
+        "profile": "balanced",
+        "seed": 115,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 57653,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -47402,
+          "ebitda": 74903,
+          "share": -0.07173951834491675
+        },
+        "endingConfidence": 68,
+        "minCash": -49221
+      },
+      {
+        "profile": "balanced",
+        "seed": 116,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 60872,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -57538,
+          "ebitda": 71504,
+          "share": -0.07470320025860674
+        },
+        "endingConfidence": 68,
+        "minCash": -52706
+      },
+      {
+        "profile": "balanced",
+        "seed": 117,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 62214,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -53224,
+          "ebitda": 74421,
+          "share": -0.07658074995959269
+        },
+        "endingConfidence": 68,
+        "minCash": -47967
+      },
+      {
+        "profile": "balanced",
+        "seed": 118,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 78061,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -53699,
+          "ebitda": 70391,
+          "share": -0.07506095037982867
+        },
+        "endingConfidence": 68,
+        "minCash": -38171
+      },
+      {
+        "profile": "balanced",
+        "seed": 119,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 70509,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -44229,
+          "ebitda": 76167,
+          "share": -0.07113979311459513
+        },
+        "endingConfidence": 68,
+        "minCash": -42414
+      },
+      {
+        "profile": "balanced",
+        "seed": 120,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 75236,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -58604,
+          "ebitda": 68069,
+          "share": -0.07683403911427186
+        },
+        "endingConfidence": 68,
+        "minCash": -41899
+      },
+      {
+        "profile": "balanced",
+        "seed": 121,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 47861,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -45359,
+          "ebitda": 76245,
+          "share": -0.06880659447228059
+        },
+        "endingConfidence": 68,
+        "minCash": -50966
+      },
+      {
+        "profile": "balanced",
+        "seed": 122,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 60952,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -50538,
+          "ebitda": 76327,
+          "share": -0.07738020042023598
+        },
+        "endingConfidence": 68,
+        "minCash": -53220
+      },
+      {
+        "profile": "balanced",
+        "seed": 123,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": false,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 97320,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -56810,
+          "ebitda": 68846,
+          "share": -0.0768965572975594
+        },
+        "endingConfidence": 68,
+        "minCash": -28965
+      },
+      {
+        "profile": "balanced",
+        "seed": 124,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 21173,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -47827,
+          "ebitda": 76259,
+          "share": -0.06878146112817196
+        },
+        "endingConfidence": 68,
+        "minCash": -60398
+      },
+      {
+        "profile": "balanced",
+        "seed": 125,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 43904,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -45806,
+          "ebitda": 75890,
+          "share": -0.06723578470987554
+        },
+        "endingConfidence": 68,
+        "minCash": -52126
+      },
+      {
+        "profile": "balanced",
+        "seed": 126,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 73830,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -51217,
+          "ebitda": 71777,
+          "share": -0.07404470664296105
+        },
+        "endingConfidence": 68,
+        "minCash": -36041
+      },
+      {
+        "profile": "balanced",
+        "seed": 127,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 46683,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -48631,
+          "ebitda": 75685,
+          "share": -0.07237310489736543
+        },
+        "endingConfidence": 68,
+        "minCash": -52370
+      },
+      {
+        "profile": "balanced",
+        "seed": 128,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 63856,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -47596,
+          "ebitda": 72401,
+          "share": -0.0670549862615161
+        },
+        "endingConfidence": 68,
+        "minCash": -42193
+      },
+      {
+        "profile": "balanced",
+        "seed": 129,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 49084,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -41520,
+          "ebitda": 77137,
+          "share": -0.06845572975593986
+        },
+        "endingConfidence": 68,
+        "minCash": -46924
+      },
+      {
+        "profile": "aggressive",
+        "seed": 100,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 58154,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -43231,
+          "ebitda": 75103,
+          "share": -0.0674817843866171
+        },
+        "endingConfidence": 68,
+        "minCash": -51050
+      },
+      {
+        "profile": "aggressive",
+        "seed": 101,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 47695,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -48401,
+          "ebitda": 72017,
+          "share": -0.06685248100856636
+        },
+        "endingConfidence": 68,
+        "minCash": -52280
+      },
+      {
+        "profile": "aggressive",
+        "seed": 102,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 55976,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -46602,
+          "ebitda": 72730,
+          "share": -0.06743919508647163
+        },
+        "endingConfidence": 68,
+        "minCash": -46155
+      },
+      {
+        "profile": "aggressive",
+        "seed": 103,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 74409,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -54049,
+          "ebitda": 72694,
+          "share": -0.07809964441571036
+        },
+        "endingConfidence": 68,
+        "minCash": -53200
+      },
+      {
+        "profile": "aggressive",
+        "seed": 104,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 90190,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -49088,
+          "ebitda": 73979,
+          "share": -0.06980712784871505
+        },
+        "endingConfidence": 68,
+        "minCash": -52010
+      },
+      {
+        "profile": "aggressive",
+        "seed": 105,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 38803,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -41822,
+          "ebitda": 77404,
+          "share": -0.06694237918215613
+        },
+        "endingConfidence": 68,
+        "minCash": -59109
+      },
+      {
+        "profile": "aggressive",
+        "seed": 106,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 52793,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -52373,
+          "ebitda": 74347,
+          "share": -0.074638209148214
+        },
+        "endingConfidence": 68,
+        "minCash": -63531
+      },
+      {
+        "profile": "aggressive",
+        "seed": 107,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 65543,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -49613,
+          "ebitda": 75674,
+          "share": -0.07505792791336674
+        },
+        "endingConfidence": 68,
+        "minCash": -56271
+      },
+      {
+        "profile": "aggressive",
+        "seed": 108,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 62888,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -43506,
+          "ebitda": 73937,
+          "share": -0.06538372393728788
+        },
+        "endingConfidence": 68,
+        "minCash": -45506
+      },
+      {
+        "profile": "aggressive",
+        "seed": 109,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 81305,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -50295,
+          "ebitda": 72587,
+          "share": -0.07307027638597058
+        },
+        "endingConfidence": 68,
+        "minCash": -45156
+      },
+      {
+        "profile": "aggressive",
+        "seed": 110,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 38226,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -41699,
+          "ebitda": 78784,
+          "share": -0.06656416680135768
+        },
+        "endingConfidence": 68,
+        "minCash": -59011
+      },
+      {
+        "profile": "aggressive",
+        "seed": 111,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 59539,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -49245,
+          "ebitda": 72727,
+          "share": -0.07206890253757879
+        },
+        "endingConfidence": 68,
+        "minCash": -50211
+      },
+      {
+        "profile": "aggressive",
+        "seed": 112,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 101694,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -57095,
+          "ebitda": 72038,
+          "share": -0.07825025052529498
+        },
+        "endingConfidence": 68,
+        "minCash": -54131
+      },
+      {
+        "profile": "aggressive",
+        "seed": 113,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 70677,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -46173,
+          "ebitda": 73903,
+          "share": -0.07214417326652658
+        },
+        "endingConfidence": 68,
+        "minCash": -43690
+      },
+      {
+        "profile": "aggressive",
+        "seed": 114,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 71614,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -53667,
+          "ebitda": 68863,
+          "share": -0.07201839340552772
+        },
+        "endingConfidence": 68,
+        "minCash": -45942
+      },
+      {
+        "profile": "aggressive",
+        "seed": 115,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 51241,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -47402,
+          "ebitda": 74903,
+          "share": -0.07173951834491675
+        },
+        "endingConfidence": 68,
+        "minCash": -58577
+      },
+      {
+        "profile": "aggressive",
+        "seed": 116,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 57746,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -57538,
+          "ebitda": 71504,
+          "share": -0.07470320025860674
+        },
+        "endingConfidence": 68,
+        "minCash": -63321
+      },
+      {
+        "profile": "aggressive",
+        "seed": 117,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 61647,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -53224,
+          "ebitda": 74421,
+          "share": -0.07658074995959269
+        },
+        "endingConfidence": 68,
+        "minCash": -55816
+      },
+      {
+        "profile": "aggressive",
+        "seed": 118,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 73798,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -53699,
+          "ebitda": 70391,
+          "share": -0.07506095037982867
+        },
+        "endingConfidence": 68,
+        "minCash": -48172
+      },
+      {
+        "profile": "aggressive",
+        "seed": 119,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 67035,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -44229,
+          "ebitda": 76167,
+          "share": -0.07113979311459513
+        },
+        "endingConfidence": 68,
+        "minCash": -48917
+      },
+      {
+        "profile": "aggressive",
+        "seed": 120,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 69378,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -58604,
+          "ebitda": 68069,
+          "share": -0.07683403911427186
+        },
+        "endingConfidence": 68,
+        "minCash": -49864
+      },
+      {
+        "profile": "aggressive",
+        "seed": 121,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 42600,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -45359,
+          "ebitda": 76245,
+          "share": -0.06880659447228059
+        },
+        "endingConfidence": 68,
+        "minCash": -57746
+      },
+      {
+        "profile": "aggressive",
+        "seed": 122,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 53093,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -50538,
+          "ebitda": 76327,
+          "share": -0.07738020042023598
+        },
+        "endingConfidence": 68,
+        "minCash": -62862
+      },
+      {
+        "profile": "aggressive",
+        "seed": 123,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 93236,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -56810,
+          "ebitda": 68846,
+          "share": -0.0768965572975594
+        },
+        "endingConfidence": 68,
+        "minCash": -39514
+      },
+      {
+        "profile": "aggressive",
+        "seed": 124,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 31650,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -47827,
+          "ebitda": 76259,
+          "share": -0.06878146112817196
+        },
+        "endingConfidence": 68,
+        "minCash": -69726
+      },
+      {
+        "profile": "aggressive",
+        "seed": 125,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 39798,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -45806,
+          "ebitda": 75890,
+          "share": -0.06723578470987554
+        },
+        "endingConfidence": 68,
+        "minCash": -60706
+      },
+      {
+        "profile": "aggressive",
+        "seed": 126,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 70139,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -51217,
+          "ebitda": 71777,
+          "share": -0.07404470664296105
+        },
+        "endingConfidence": 68,
+        "minCash": -45818
+      },
+      {
+        "profile": "aggressive",
+        "seed": 127,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 41199,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -48631,
+          "ebitda": 75685,
+          "share": -0.07237310489736543
+        },
+        "endingConfidence": 68,
+        "minCash": -61617
+      },
+      {
+        "profile": "aggressive",
+        "seed": 128,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 59146,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -47596,
+          "ebitda": 72401,
+          "share": -0.0670549862615161
+        },
+        "endingConfidence": 68,
+        "minCash": -51081
+      },
+      {
+        "profile": "aggressive",
+        "seed": 129,
+        "turns": 5,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 41699,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -41520,
+          "ebitda": 77137,
+          "share": -0.06845572975593986
+        },
+        "endingConfidence": 68,
+        "minCash": -54857
+      }
+    ]
+  }
+}

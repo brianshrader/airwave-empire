@@ -9,6 +9,7 @@
  *   node scripts/validate-gm-campaign-headless.mjs --mode=gm
  *   node scripts/validate-gm-campaign-headless.mjs --mode=campaign
  *   node scripts/validate-gm-campaign-headless.mjs --mode=batch --runs=8 --seed=424242
+ *   node scripts/validate-gm-campaign-headless.mjs --mode=batch --runs=30 --seed=100 --wichita-econ-test --json=tmp/wichita_econ_test.json
  *   node scripts/validate-gm-campaign-headless.mjs --market=atlanta --seed=1 --json=tmp/gm-campaign-diag.json
  *
  * Options:
@@ -34,6 +35,7 @@
  *   --profile=default|extended|long|short  (batch) named cap: 9 / 11 / 13 / 6 instead of --max-assignments
  *   --tier5-diagnostic       (batch) extended (10) + long (12) only: Tier 5 entrant quality, confidence shelf trace, KPI/composite convergence (reviewHistory + evaluateGmReview; no engine edits)
  *   --tier3-diagnostic       (batch) Tier 3 (c3_seattle) entry conditions, grace-period reviews, outcomes & softness heuristic
+ *   --wichita-econ-test      (batch) Tier 0 Wichita-only economics diagnostic: 3 management profiles × --runs seeds (default runs=30 if --runs omitted). Includes _soloBankrupt timing, at-flip finances, last-period trajectoryTail, heuristic bankruptcyCause (see wichitaEconTest.bankruptcyCauses in JSON). Also emits wichitaEconTest.outcomeDiagnostics (assignment-end confidence vs ladder thresholds, formal review trail, heuristic “why not promoted” label) — observation only.
  * Exit code: 0 by default; use --strict for non-zero exit when warnings exist.
  */
 /* eslint-disable no-console */
@@ -57,6 +59,33 @@ const CAMPAIGN_PROFILE_MAX = {
   long: 13,
   /** Optional short window for stress / old-baseline comparison (previous default was 6). */
   short: 6,
+};
+
+/** Headless Wichita Tier 0 economics test — spending heuristics only (validator script; no engine changes). */
+const WICHITA_ECON_PROFILES = ['conservative', 'balanced', 'aggressive'];
+const WICHITA_ECON_PROFILE_META = {
+  conservative: {
+    id: 'conservative',
+    label: 'Conservative',
+    intent:
+      'Cost control first: lower programming + marketing as a fraction of trailing revenue, stabilize before growing.',
+    behavior:
+      'Each period sets ops.progBudget / ops.promo from ~2.6% / ~1.3% of station revenue (capped by era caps), then calcRev.',
+  },
+  balanced: {
+    id: 'balanced',
+    label: 'Balanced',
+    intent: 'Competent default GM: moderate discretionary spend — some growth, some discipline.',
+    behavior:
+      'Targets ~6.2% / ~3.7% of trailing revenue for programming / promo (capped), then calcRev — no austerity cliff, no all-in gamble.',
+  },
+  aggressive: {
+    id: 'aggressive',
+    label: 'Aggressive',
+    intent: 'Push share/revenue harder: higher programming and marketing commitment; accepts more short-term risk.',
+    behavior:
+      'Targets ~10.5% / ~6.2% of trailing revenue for programming / promo (capped), then calcRev — still bounded by caps, not random.',
+  },
 };
 
 function injectHeadlessMegaFragNewsGuard(src) {
@@ -241,11 +270,16 @@ function parseArgs(argv) {
     profile: null,
     tier5Diagnostic: false,
     tier3Diagnostic: false,
+    wichitaEconTest: false,
+    runsExplicit: false,
   };
   for (const a of argv) {
     if (a.startsWith('--mode=')) out.mode = a.slice(7);
     else if (a.startsWith('--seed=')) out.seed = parseInt(a.slice(7), 10) || 0;
-    else if (a.startsWith('--runs=')) out.runs = Math.max(1, parseInt(a.slice(7), 10) || 1);
+    else if (a.startsWith('--runs=')) {
+      out.runsExplicit = true;
+      out.runs = Math.max(1, parseInt(a.slice(7), 10) || 1);
+    }
     else if (a.startsWith('--market=')) out.market = a.slice(9).trim() || 'atlanta';
     else if (a.startsWith('--json=')) out.json = a.slice(7).trim() || null;
     else if (a.startsWith('--max-periods-gm=')) out.maxPeriodsGm = Math.max(4, parseInt(a.slice(17), 10) || 48);
@@ -261,8 +295,10 @@ function parseArgs(argv) {
     else if (a.startsWith('--profile=')) out.profile = a.slice(10).trim().toLowerCase() || null;
     else if (a === '--tier5-diagnostic') out.tier5Diagnostic = true;
     else if (a === '--tier3-diagnostic') out.tier3Diagnostic = true;
+    else if (a === '--wichita-econ-test') out.wichitaEconTest = true;
   }
   if (!['gm', 'campaign', 'batch'].includes(out.mode)) out.mode = 'batch';
+  if (out.wichitaEconTest && !out.runsExplicit) out.runs = 30;
   if (out.profile && CAMPAIGN_PROFILE_MAX[out.profile] != null) {
     out.maxAssignments = CAMPAIGN_PROFILE_MAX[out.profile];
   }
@@ -559,6 +595,907 @@ function runCampaignOnce(ctx, opts) {
     `,
     ctx
   );
+}
+
+/**
+ * Wichita Tier 0 campaign economics — applies a fixed spending profile each period before advTurn().
+ * Does not modify legacy/campaign rules; only ops.progBudget / ops.promo heuristics.
+ */
+function runWichitaEconCampaignOnce(ctx, opts) {
+  const { seed, profile, maxPeriods } = opts;
+  const profJson = JSON.stringify(profile);
+  const maxP = Math.max(24, maxPeriods | 0 || 72);
+  return vm.runInContext(
+    `
+    (function(){
+      var PROFILE = ${profJson};
+      var rng = (${mulberry32.toString()})(${seed >>> 0});
+      Math.random = function(){ return rng(); };
+      if (typeof wlCampaignDeactivate === 'function') wlCampaignDeactivate();
+      ACTIVE_MARKET = 'wichita';
+      _selectedMarket = 'wichita';
+      if (typeof syncMarketPopToMarket === 'function') syncMarketPopToMarket('wichita');
+
+      wlCampaign.beginCareerWithIdentity('Headless GM', 'Wichita Econ Validator Group');
+      if (globalThis.G) G = globalThis.G;
+
+      var tier0Row =
+        typeof wlCampaign !== 'undefined' && wlCampaign.LADDER && wlCampaign.LADDER[0]
+          ? wlCampaign.LADDER[0]
+          : {};
+      var tier0LadderSnapshot = {
+        successThreshold: tier0Row.successThreshold,
+        survivalThreshold: tier0Row.survivalThreshold,
+        failureThreshold: tier0Row.failureThreshold,
+        contractLengthPeriods: tier0Row.contractLengthPeriods,
+        startConfidence: G._gm && G._gm.confidence != null ? Math.round(G._gm.confidence) : null,
+      };
+
+      function playerFinAggregate(G) {
+        var ps = G.ps || [];
+        var rev = 0, ebitda = 0, sh = 0;
+        for (var i = 0; i < ps.length; i++) {
+          var s = ps[i];
+          if (!s || !s.isPlayer) continue;
+          if (s.fin) {
+            rev += (s.fin.rev || 0);
+            ebitda += (s.fin.ebitda || 0);
+          }
+          if (s.rat && typeof s.rat.share === 'number') sh += s.rat.share;
+        }
+        return { rev: rev, ebitda: ebitda, share: sh };
+      }
+
+      function playerCostAggregate(G) {
+        var ps = G.ps || [];
+        var totalCost = 0, promo = 0, prog = 0;
+        for (var i = 0; i < ps.length; i++) {
+          var s = ps[i];
+          if (!s || !s.isPlayer) continue;
+          if (s.fin) {
+            totalCost += s.fin.cost || 0;
+            promo += s.fin.effPromo || 0;
+            prog += s.fin.effProg || 0;
+          }
+        }
+        return { totalCost: totalCost, effPromo: promo, effProg: prog };
+      }
+
+      function applyWichitaSpendingProfile(G, profileName) {
+        var progCap = typeof progBudgetCapForPeriod === 'function' ? progBudgetCapForPeriod(G) : 80000;
+        var promoCap = typeof promoBudgetCapForPeriod === 'function' ? promoBudgetCapForPeriod(G) : 50000;
+        var piFrac, pmFrac;
+        if (profileName === 'conservative') {
+          piFrac = 0.026;
+          pmFrac = 0.013;
+        } else if (profileName === 'aggressive') {
+          piFrac = 0.105;
+          pmFrac = 0.062;
+        } else {
+          piFrac = 0.062;
+          pmFrac = 0.037;
+        }
+        var ps = G.ps || [];
+        for (var j = 0; j < ps.length; j++) {
+          var st = ps[j];
+          if (!st || !st.isPlayer) continue;
+          if (!st.ops) st.ops = { spots: 14, sell: 0.55, promo: 0, progBudget: 0 };
+          var r = st.fin && st.fin.rev ? st.fin.rev : 0;
+          if (r < 500) r = 500;
+          st.ops.progBudget = Math.round(Math.min(progCap, Math.max(150, r * piFrac)));
+          st.ops.promo = Math.round(Math.min(promoCap, Math.max(80, r * pmFrac)));
+          if (typeof calcRev === 'function') calcRev(st, G);
+        }
+      }
+
+      var baseFin = playerFinAggregate(G);
+      var baseCash = typeof G.cash === 'number' ? G.cash : 0;
+      var prevReviewCount = (G._gm && G._gm.reviewHistory) ? G._gm.reviewHistory.length : 0;
+      var profitableAtFirstReview = null;
+      var turns = 0;
+      var maxTurns = ${maxP};
+      var assignmentEnd = null;
+      var negEbitdaStreak = 0;
+      var maxNegStreak = 0;
+      var minCash = baseCash;
+      var seriousDistress = false;
+      var trail = [];
+      var bankruptcyDiag = null;
+      var maxDebtWarningQ = 0;
+
+      function pushTrailSnapshot() {
+        var fin = playerFinAggregate(G);
+        var cost = playerCostAggregate(G);
+        var gm = G._gm || {};
+        var asg = G.campaignAssignment || {};
+        var closed = gm.closedPeriods != null ? gm.closedPeriods : 0;
+        var totalP = asg.contractLengthPeriods || 16;
+        var row = {
+          turn: turns,
+          year: G.year,
+          period: G.period,
+          cash: typeof G.cash === 'number' ? G.cash : 0,
+          rev: fin.rev,
+          ebitda: fin.ebitda,
+          share: fin.share,
+          totalCost: cost.totalCost,
+          effPromo: cost.effPromo,
+          effProg: cost.effProg,
+          debtWarningQ: G.debtWarningQ || 0,
+          playerStationCount: (G.ps || []).filter(function (s) { return s && s.isPlayer; }).length,
+          assignmentPeriodsRemaining: Math.max(0, totalP - closed),
+          formalReviewCount: gm.reviewHistory ? gm.reviewHistory.length : 0
+        };
+        row.discretionarySpendRatio = fin.rev > 0 ? (cost.effPromo + cost.effProg) / fin.rev : null;
+        trail.push(row);
+        if (trail.length > 14) trail.shift();
+      }
+
+      while (turns < maxTurns) {
+        if (!G || !G.campaignAssignment) break;
+        if ((G.campaignAssignment.tier | 0) !== 0) break;
+
+        applyWichitaSpendingProfile(G, PROFILE);
+
+        advTurn();
+        turns++;
+
+        var cash = typeof G.cash === 'number' ? G.cash : 0;
+        minCash = Math.min(minCash, cash);
+        var fin = playerFinAggregate(G);
+        if (cash <= -35000) seriousDistress = true;
+        if (fin.ebitda <= -130000) seriousDistress = true;
+        if (fin.ebitda < 0) {
+          negEbitdaStreak++;
+          maxNegStreak = Math.max(maxNegStreak, negEbitdaStreak);
+        } else {
+          negEbitdaStreak = 0;
+        }
+        if (cash <= -12000 && fin.ebitda <= -90000) seriousDistress = true;
+        if (maxNegStreak >= 6) seriousDistress = true;
+
+        var rh = G._gm && G._gm.reviewHistory ? G._gm.reviewHistory.length : 0;
+        if (rh > prevReviewCount) {
+          if (profitableAtFirstReview === null) {
+            profitableAtFirstReview = playerFinAggregate(G).ebitda >= 0;
+          }
+          prevReviewCount = rh;
+        }
+
+        pushTrailSnapshot();
+        var _dwq = G.debtWarningQ | 0;
+        if (_dwq > maxDebtWarningQ) maxDebtWarningQ = _dwq;
+
+        if (G._soloBankrupt) {
+          if (!bankruptcyDiag) {
+            var finB = playerFinAggregate(G);
+            var costB = playerCostAggregate(G);
+            var gmB = G._gm || {};
+            var asgB = G.campaignAssignment || {};
+            var closedB = gmB.closedPeriods != null ? gmB.closedPeriods : 0;
+            var totalPB = asgB.contractLengthPeriods || 16;
+            var rhB = gmB.reviewHistory ? gmB.reviewHistory.length : 0;
+            var bucket =
+              rhB === 0 ? 'before_first_formal_review' : rhB === 1 ? 'after_first_review' : 'late_assignment';
+            bankruptcyDiag = {
+              turn: turns,
+              year: G.year,
+              period: G.period,
+              assignmentPeriodsRemaining: Math.max(0, totalPB - closedB),
+              contractLengthPeriods: totalPB,
+              closedPeriods: closedB,
+              formalReviewCountAtBankruptcy: rhB,
+              reviewTimingBucket: bucket,
+              atFlip: {
+                cash: typeof G.cash === 'number' ? G.cash : 0,
+                rev: finB.rev,
+                ebitda: finB.ebitda,
+                share: finB.share,
+                totalCost: costB.totalCost,
+                effPromo: costB.effPromo,
+                effProg: costB.effProg,
+                discretionarySpendRatio: finB.rev > 0 ? (costB.effPromo + costB.effProg) / finB.rev : null
+              },
+              preExitSnapshot: trail.length >= 2 ? trail[trail.length - 2] : null
+            };
+          }
+          break;
+        }
+        if (G._gm && G._gm.fired) break;
+
+        var endPayload = typeof wlCampaignGetLastAssignmentEndPayload === 'function'
+          ? wlCampaignGetLastAssignmentEndPayload()
+          : (typeof wlCampaign !== 'undefined' && wlCampaign.getLastAssignmentEndPayload
+              ? wlCampaign.getLastAssignmentEndPayload()
+              : null);
+        if (endPayload && (endPayload.tierBefore | 0) === 0) {
+          var fcEnd =
+            endPayload.finalConfidenceBeforeClassification != null
+              ? Math.round(endPayload.finalConfidenceBeforeClassification)
+              : G._gm && G._gm.confidence != null
+                ? Math.round(G._gm.confidence)
+                : null;
+          assignmentEnd = {
+            kind: endPayload.kind,
+            campaignWin: !!endPayload.campaignWin,
+            careerEndedHard: !!endPayload.careerEndedHard,
+            gmConfidence: G._gm ? Math.round(G._gm.confidence) : null,
+            reputation: endPayload.reputation,
+            assignmentId: endPayload.assignmentId,
+            marketId: endPayload.marketId,
+            periodsClosed: endPayload.periodsClosed,
+            successThreshold: endPayload.successThreshold,
+            survivalThreshold: endPayload.survivalThreshold,
+            finalConfidence: fcEnd,
+          };
+          break;
+        }
+      }
+
+      function compactFormalReview(h, idx) {
+        var ev = h.eval || {};
+        var kp = h.kpis || {};
+        var cat = ev.good ? 'good' : ev.bad ? 'bad' : 'mediocre';
+        var reasons = (kp.reasons && kp.reasons.slice) ? kp.reasons.slice(0, 8) : [];
+        return {
+          index: idx,
+          year: h.year,
+          period: h.period,
+          category: cat,
+          confidenceBefore: h.confidenceBefore,
+          confidenceAfter: h.confidenceAfter,
+          confidenceDelta:
+            h.confidenceAfter != null && h.confidenceBefore != null
+              ? Math.round(h.confidenceAfter - h.confidenceBefore)
+              : null,
+          composite: ev.composite != null ? Math.round(ev.composite * 1000) / 1000 : null,
+          core: ev.core != null ? Math.round(ev.core * 1000) / 1000 : null,
+          se: ev.se != null ? Math.round(ev.se * 1000) / 1000 : null,
+          marginAvg: kp.marginAvg,
+          revenueTrend: kp.revenueTrend,
+          franchiseTrend: kp.franchiseTrend,
+          franchiseAvg: kp.franchiseAvg,
+          discretionaryRatio: kp.discretionaryRatio,
+          reasons: reasons,
+          turnaroundPatienceApplied: !!ev.turnaroundPatienceApplied,
+        };
+      }
+
+      var histRaw = G._gm && G._gm.reviewHistory ? G._gm.reviewHistory : [];
+      var formalReviews = [];
+      for (var ri = 0; ri < histRaw.length; ri++) {
+        formalReviews.push(compactFormalReview(histRaw[ri], ri));
+      }
+
+      var endFin = playerFinAggregate(G);
+      var lastCash = typeof G.cash === 'number' ? G.cash : 0;
+      var stalled = !assignmentEnd && !G._soloBankrupt && !(G._gm && G._gm.fired) && turns >= maxTurns;
+      var careerCutShort = !!G._soloBankrupt || !!(G._gm && G._gm.fired);
+
+      var narrowlyAvoidedBankruptcy =
+        !G._soloBankrupt && !(G._gm && G._gm.fired) && (maxDebtWarningQ >= 3 || minCash <= -120000);
+
+      var outcomeKind = 'no_payload';
+      if (G._soloBankrupt) outcomeKind = 'bankrupt';
+      else if (G._gm && G._gm.fired) outcomeKind = 'fired';
+      else if (assignmentEnd && assignmentEnd.kind) outcomeKind = assignmentEnd.kind;
+      else if (stalled) outcomeKind = 'stalled';
+
+      var ar = assignmentEnd || {};
+      var assignmentResolution = {
+        outcomeKind: outcomeKind,
+        finalConfidence:
+          ar.finalConfidence != null
+            ? ar.finalConfidence
+            : G._gm && G._gm.confidence != null
+              ? Math.round(G._gm.confidence)
+              : null,
+        successThreshold: ar.successThreshold != null ? ar.successThreshold : tier0LadderSnapshot.successThreshold,
+        survivalThreshold: ar.survivalThreshold != null ? ar.survivalThreshold : tier0LadderSnapshot.survivalThreshold,
+        failureThreshold: tier0LadderSnapshot.failureThreshold,
+        contractLengthPeriods: tier0LadderSnapshot.contractLengthPeriods,
+        periodsClosed: ar.periodsClosed != null ? ar.periodsClosed : G._gm && G._gm.closedPeriods,
+        narrowlyAvoidedBankruptcy: narrowlyAvoidedBankruptcy,
+        maxDebtWarningQ: maxDebtWarningQ,
+        startConfidence: tier0LadderSnapshot.startConfidence,
+      };
+
+      return {
+        seed: ${seed >>> 0},
+        profile: PROFILE,
+        turns: turns,
+        stalled: stalled,
+        baseline: { cash: baseCash, rev: baseFin.rev, ebitda: baseFin.ebitda, share: baseFin.share },
+        ending: { cash: lastCash, rev: endFin.rev, ebitda: endFin.ebitda, share: endFin.share },
+        deltas: {
+          rev: endFin.rev - baseFin.rev,
+          ebitda: endFin.ebitda - baseFin.ebitda,
+          share: endFin.share - baseFin.share
+        },
+        assignmentEnd: assignmentEnd,
+        profitableAtFirstReview: profitableAtFirstReview,
+        profitableAtContractEnd: !careerCutShort && endFin.ebitda >= 0,
+        seriousDistress: seriousDistress,
+        minCash: minCash,
+        maxNegEbitdaStreak: maxNegStreak,
+        bankrupt: !!G._soloBankrupt,
+        gmFired: !!(G._gm && G._gm.fired),
+        endingConfidence: G._gm && G._gm.confidence != null ? Math.round(G._gm.confidence) : null,
+        trajectoryTail: trail.slice(-5),
+        bankruptcy: bankruptcyDiag,
+        tier0LadderSnapshot: tier0LadderSnapshot,
+        formalReviews: formalReviews,
+        assignmentResolution: assignmentResolution,
+        maxDebtWarningQ: maxDebtWarningQ,
+        narrowlyAvoidedBankruptcy: narrowlyAvoidedBankruptcy,
+      };
+    })()
+    `,
+    ctx
+  );
+}
+
+/** Formal review category chain for frequency tables (Wichita Tier 0 outcome diagnostic). */
+function wichitaFormalReviewSequenceKey(formalReviews) {
+  if (!formalReviews || !formalReviews.length) return '(none)';
+  return formalReviews.map((r) => r.category || '?').join('→');
+}
+
+/**
+ * Heuristic “why did this run fail to promote?” — validator-side only; does not affect gameplay.
+ * @param {object} run — output of runWichitaEconCampaignOnce
+ */
+function classifyWichitaWhyNotPromoted(run) {
+  const ok = run?.assignmentResolution?.outcomeKind || '';
+  if (ok === 'promoted') return { label: 'PROMOTED', hints: [] };
+  if (run?.bankrupt) return { label: 'BANKRUPT_BEFORE_END', hints: [] };
+  if (run?.gmFired) return { label: 'FIRED_BEFORE_END', hints: [] };
+  if (run?.stalled) return { label: 'STALLED_RUN', hints: [] };
+  if (ok === 'lateral') {
+    return {
+      label: 'SURVIVED_BUT_NOT_COMPETITIVE',
+      hints: ['Ended in lateral band: confidence ≥ survivalThreshold and < successThreshold.'],
+    };
+  }
+
+  const ar = run.assignmentResolution || {};
+  const surv = ar.survivalThreshold;
+  const succ = ar.successThreshold;
+  const fc = ar.finalConfidence != null ? ar.finalConfidence : run.endingConfidence;
+  const reviews = run.formalReviews || [];
+
+  if (!run.assignmentEnd && ok === 'no_payload') {
+    return {
+      label: 'NO_ASSIGNMENT_END_PAYLOAD',
+      hints: ['No Tier 0 assignment-end payload observed before loop exit.'],
+    };
+  }
+
+  if (ok !== 'demoted' && ok !== 'fired') {
+    return { label: 'UNKNOWN', hints: ['Unexpected outcomeKind: ' + String(ok)] };
+  }
+
+  let badN = 0;
+  let goodN = 0;
+  let medN = 0;
+  for (const r of reviews) {
+    if (r.category === 'bad') badN++;
+    else if (r.category === 'good') goodN++;
+    else medN++;
+  }
+
+  const first = reviews[0];
+  if (first && first.category === 'bad' && first.confidenceAfter != null && first.confidenceAfter <= 42) {
+    return {
+      label: 'EARLY_CONFIDENCE_COLLAPSE',
+      hints: ['First formal review was bad with confidenceAfter ≤ 42.'],
+    };
+  }
+
+  if (reviews.length >= 2 && badN >= Math.ceil(reviews.length * 0.5)) {
+    return {
+      label: 'BAD_REVIEW_DOMINATED',
+      hints: [`${badN}/${reviews.length} formal reviews classified bad (evaluateGmReview composite bands).`],
+    };
+  }
+
+  if (reviews.length >= 2 && goodN === 0 && medN === reviews.length) {
+    return {
+      label: 'MEDIOCRE_PLATEAU',
+      hints: ['All formal reviews were mediocre — lukewarm composite erodes confidence each cycle.'],
+    };
+  }
+
+  const last = reviews[reviews.length - 1];
+  if (last && typeof last.marginAvg === 'number' && last.marginAvg < -8) {
+    return {
+      label: 'LOW_PROFITABILITY_DRAG',
+      hints: [`Last-review trailing marginAvg ${last.marginAvg}% (deeply negative vs ownership margin targets).`],
+    };
+  }
+
+  if (
+    run.profile === 'conservative' &&
+    last &&
+    typeof last.discretionaryRatio === 'number' &&
+    last.discretionaryRatio < 0.055 &&
+    (last.marginAvg == null || last.marginAvg < 0)
+  ) {
+    return {
+      label: 'PROFILE_SPEND_TOO_WEAK',
+      hints: [
+        'Conservative harness: low discretionary spend vs revenue but margins still negative — economics dominate.',
+      ],
+    };
+  }
+
+  if (fc != null && surv != null && fc < surv) {
+    return {
+      label: 'BELOW_SURVIVAL_THRESHOLD',
+      hints: [`Final confidence ${fc} below survivalThreshold ${surv} (promotion requires ≥ ${succ}).`],
+    };
+  }
+
+  return { label: 'UNKNOWN', hints: [] };
+}
+
+function wichitaConfidenceBand(fc, survival, success) {
+  if (fc == null || survival == null || success == null) return 'unknown';
+  if (fc < survival) return 'below_survival';
+  if (fc < success) return 'survival_to_success';
+  return 'at_or_above_success';
+}
+
+function buildWichitaOutcomeDiagnosticsForProfile(profile, runs) {
+  const n = runs.length;
+  const seqCounts = {};
+  const labelCounts = {};
+  for (const r of runs) {
+    const { label } = classifyWichitaWhyNotPromoted(r);
+    labelCounts[label] = (labelCounts[label] || 0) + 1;
+    const seqKey = wichitaFormalReviewSequenceKey(r.formalReviews);
+    seqCounts[seqKey] = (seqCounts[seqKey] || 0) + 1;
+  }
+
+  const bandCounts = { below_survival: 0, survival_to_success: 0, at_or_above_success: 0, unknown: 0 };
+  const narrowCount = runs.filter((r) => r.assignmentResolution?.narrowlyAvoidedBankruptcy).length;
+  const outcomeKindCounts = {};
+  for (const r of runs) {
+    const k = r.assignmentResolution?.outcomeKind || 'unknown';
+    outcomeKindCounts[k] = (outcomeKindCounts[k] || 0) + 1;
+  }
+
+  const perRun = runs.map((r) => {
+    const ar = r.assignmentResolution || {};
+    const { label, hints } = classifyWichitaWhyNotPromoted(r);
+    const seqKey = wichitaFormalReviewSequenceKey(r.formalReviews);
+    const band = wichitaConfidenceBand(ar.finalConfidence, ar.survivalThreshold, ar.successThreshold);
+    bandCounts[band] = (bandCounts[band] || 0) + 1;
+    return {
+      seed: r.seed,
+      profile,
+      outcomeKind: ar.outcomeKind,
+      finalConfidence: ar.finalConfidence,
+      successThreshold: ar.successThreshold,
+      survivalThreshold: ar.survivalThreshold,
+      failureThreshold: ar.failureThreshold,
+      periodsClosed: ar.periodsClosed,
+      contractLengthPeriods: ar.contractLengthPeriods,
+      startConfidence: ar.startConfidence,
+      narrowlyAvoidedBankruptcy: !!ar.narrowlyAvoidedBankruptcy,
+      maxDebtWarningQ: r.maxDebtWarningQ,
+      formalReviewCount: (r.formalReviews || []).length,
+      formalReviews: r.formalReviews,
+      reviewSequenceKey: seqKey,
+      confidenceBand: band,
+      whyNotPromoted: label,
+      whyNotPromotedHints: hints,
+      endingEbitda: r.ending?.ebitda,
+      profitableAtContractEnd: r.profitableAtContractEnd,
+    };
+  });
+
+  const finals = runs
+    .map((r) => r.assignmentResolution?.finalConfidence)
+    .filter((x) => typeof x === 'number' && !Number.isNaN(x));
+  const gaps = runs
+    .map((r) => {
+      const a = r.assignmentResolution || {};
+      if (a.successThreshold == null || a.finalConfidence == null) return null;
+      return a.successThreshold - a.finalConfidence;
+    })
+    .filter((x) => x != null && !Number.isNaN(x));
+
+  const topSeq = Object.keys(seqCounts).length
+    ? Object.entries(seqCounts).sort((a, b) => b[1] - a[1])[0]
+    : null;
+  const topLabel = Object.keys(labelCounts).length
+    ? Object.entries(labelCounts).sort((a, b) => b[1] - a[1])[0]
+    : null;
+
+  return {
+    n,
+    aggregate: {
+      avgFinalConfidence: finals.length ? meanFinite(finals) : null,
+      avgGapPointsToSuccess: gaps.length ? meanFinite(gaps) : null,
+      bandCounts,
+      bandRates: Object.fromEntries(Object.entries(bandCounts).map(([k, v]) => [k, n ? v / n : 0])),
+      narrowlyAvoidedBankruptcyCount: narrowCount,
+      narrowlyAvoidedBankruptcyRate: n ? narrowCount / n : 0,
+      outcomeKindCounts,
+      mostCommonReviewSequence: topSeq ? { sequence: topSeq[0], count: topSeq[1] } : null,
+      mostCommonWhyNotPromoted: topLabel ? { label: topLabel[0], count: topLabel[1] } : null,
+      whyNotPromotedCounts: labelCounts,
+    },
+    runs: perRun,
+  };
+}
+
+function printWichitaOutcomeDiagnosticSummary(byProfileOutcome) {
+  console.log('\n=== WICHITA TIER 0 OUTCOME DIAGNOSTICS (confidence vs ladder + review trail) ===');
+  for (const p of WICHITA_ECON_PROFILES) {
+    const block = byProfileOutcome[p];
+    if (!block || !block.n) continue;
+    const meta = WICHITA_ECON_PROFILE_META[p];
+    const ag = block.aggregate;
+    console.log('\n--- ' + meta.label + ' ---');
+    console.log(
+      'Avg final confidence:',
+      ag.avgFinalConfidence != null ? ag.avgFinalConfidence.toFixed(1) : 'n/a',
+      '| avg points below success threshold:',
+      ag.avgGapPointsToSuccess != null ? ag.avgGapPointsToSuccess.toFixed(1) : 'n/a'
+    );
+    console.log(
+      'Confidence bands (vs survival/success): below_survival',
+      ((ag.bandRates.below_survival || 0) * 100).toFixed(0) + '%',
+      '| survival→success',
+      ((ag.bandRates.survival_to_success || 0) * 100).toFixed(0) + '%',
+      '| at/above success',
+      ((ag.bandRates.at_or_above_success || 0) * 100).toFixed(0) + '%',
+      '| unknown',
+      ((ag.bandRates.unknown || 0) * 100).toFixed(0) + '%'
+    );
+    console.log(
+      'Narrowly avoided solo bankruptcy (heuristic):',
+      ag.narrowlyAvoidedBankruptcyCount + '/' + block.n,
+      '(' + ((ag.narrowlyAvoidedBankruptcyRate || 0) * 100).toFixed(0) + '%)'
+    );
+    if (ag.mostCommonReviewSequence) {
+      console.log(
+        'Most common review sequence:',
+        ag.mostCommonReviewSequence.sequence,
+        '(' + ag.mostCommonReviewSequence.count + '/' + block.n + ')'
+      );
+    }
+    if (ag.mostCommonWhyNotPromoted) {
+      console.log(
+        'Most common “why not promoted” label:',
+        ag.mostCommonWhyNotPromoted.label,
+        '(' + ag.mostCommonWhyNotPromoted.count + '/' + block.n + ')'
+      );
+    }
+    console.log('Outcome kind counts:', JSON.stringify(ag.outcomeKindCounts));
+    console.log('Why-not-promoted counts:', JSON.stringify(ag.whyNotPromotedCounts));
+  }
+}
+
+function meanFinite(arr) {
+  const a = (arr || []).filter((x) => typeof x === 'number' && !Number.isNaN(x));
+  if (!a.length) return null;
+  return a.reduce((x, y) => x + y, 0) / a.length;
+}
+
+/** Deterministic Tier-0 bankruptcy “cause of death” from harness snapshots (diagnostic only). */
+function medianFinite(arr) {
+  const a = (arr || []).filter((x) => typeof x === 'number' && !Number.isNaN(x)).sort((x, y) => x - y);
+  if (!a.length) return null;
+  const m = Math.floor(a.length / 2);
+  return a.length % 2 ? a[m] : (a[m - 1] + a[m]) / 2;
+}
+
+function classifyWichitaBankruptcyCause(run) {
+  if (!run || !run.bankrupt) return { primaryCause: 'NOT_BANKRUPT', secondary: null };
+  const t = run.trajectoryTail || [];
+  const b = run.bankruptcy;
+  if (!b || !b.atFlip) return { primaryCause: 'UNKNOWN', secondary: 'missing_atFlip' };
+
+  const disc = (s) => {
+    if (!s || typeof s.rev !== 'number' || s.rev <= 0) return null;
+    const p = (s.effPromo || 0) + (s.effProg || 0);
+    return p / s.rev;
+  };
+
+  if (t.length >= 2) {
+    const prev = t[t.length - 2];
+    const last = t[t.length - 1];
+    const dCash = (last.cash || 0) - (prev.cash || 0);
+    if (dCash < -60000 && (prev.cash || 0) > -25000) {
+      return { primaryCause: 'SHARP_DROP_NEAR_ZERO_CASH', secondary: { dCash, prevCash: prev.cash } };
+    }
+  }
+
+  if (t.length >= 5) {
+    const early = t.slice(0, Math.min(4, t.length - 2));
+    const late = t.slice(-2);
+    const earlyDisc = early.map(disc).filter((x) => x != null);
+    const medEarly = medianFinite(earlyDisc);
+    const dLast = disc(late[late.length - 1]);
+    const ebLast = late[late.length - 1] && late[late.length - 1].ebitda;
+    if (medEarly != null && medEarly > 0.02 && dLast != null && dLast > medEarly * 1.38 && ebLast != null && ebLast < -45000) {
+      return { primaryCause: 'SPEND_DRIVEN_COLLAPSE', secondary: { medEarly, dLast } };
+    }
+  }
+
+  const bTurn = b.turn;
+  const baseCash = run.baseline && typeof run.baseline.cash === 'number' ? run.baseline.cash : null;
+  if (bTurn != null && bTurn <= 6 && baseCash != null && baseCash < 220000) {
+    const earlyEb = t.slice(0, Math.min(3, t.length)).map((x) => x && x.ebitda);
+    if (earlyEb.length >= 2 && earlyEb.every((e) => typeof e === 'number' && e < -15000)) {
+      return { primaryCause: 'LOW_STARTING_RUNWAY', secondary: { baseCash, bTurn } };
+    }
+  }
+
+  const last4 = t.slice(-4);
+  const negCt = last4.filter((x) => x && typeof x.ebitda === 'number' && x.ebitda < 0).length;
+  if (last4.length >= 3 && negCt >= 3) {
+    const ebVals = last4
+      .map((x) => (x && typeof x.ebitda === 'number' ? x.ebitda : null))
+      .filter((x) => x != null);
+    const medEb = medianFinite(ebVals);
+    if (medEb != null && medEb < -25000) {
+      return { primaryCause: 'STEADY_OPERATING_BURN', secondary: { negCt, medianEbitdaLast4: medEb } };
+    }
+  }
+
+  const dw = t.filter((x) => x && (x.debtWarningQ || 0) >= 2).length;
+  if (dw >= 2) {
+    return { primaryCause: 'FORCED_DISTRESS_SEQUENCE', secondary: { periodsWithDebtWarning2Plus: dw } };
+  }
+
+  return { primaryCause: 'UNKNOWN', secondary: null };
+}
+
+function aggregateWichitaBankruptcyDiagnostics(runs) {
+  const n = runs.length;
+  const bankruptRuns = runs.filter((r) => r && r.bankrupt);
+  const nb = bankruptRuns.length;
+  const pct = n ? nb / n : 0;
+  const causeCounts = {};
+  for (const r of bankruptRuns) {
+    const c = classifyWichitaBankruptcyCause(r).primaryCause;
+    causeCounts[c] = (causeCounts[c] || 0) + 1;
+  }
+  const timingCounts = {};
+  for (const r of bankruptRuns) {
+    const k = r.bankruptcy && r.bankruptcy.reviewTimingBucket ? r.bankruptcy.reviewTimingBucket : 'unknown';
+    timingCounts[k] = (timingCounts[k] || 0) + 1;
+  }
+  return {
+    nRuns: n,
+    nBankrupt: nb,
+    pctBankrupt: pct,
+    avgBankruptcyTurn: meanFinite(bankruptRuns.map((r) => r.bankruptcy && r.bankruptcy.turn)),
+    avgCashAtBankruptcy: meanFinite(bankruptRuns.map((r) => r.bankruptcy && r.bankruptcy.atFlip && r.bankruptcy.atFlip.cash)),
+    /** Post-liquidation portfolio EBITDA (often 0 once no player stations). */
+    avgEbitdaAtBankruptcy: meanFinite(bankruptRuns.map((r) => r.bankruptcy && r.bankruptcy.atFlip && r.bankruptcy.atFlip.ebitda)),
+    avgRevAtBankruptcy: meanFinite(bankruptRuns.map((r) => r.bankruptcy && r.bankruptcy.atFlip && r.bankruptcy.atFlip.rev)),
+    /** Last full period before forced exit (use for operating economics). */
+    avgEbitdaPreExit: meanFinite(
+      bankruptRuns.map((r) => {
+        const pre = r.bankruptcy && r.bankruptcy.preExitSnapshot;
+        return pre && typeof pre.ebitda === 'number' ? pre.ebitda : null;
+      })
+    ),
+    avgRevPreExit: meanFinite(
+      bankruptRuns.map((r) => {
+        const pre = r.bankruptcy && r.bankruptcy.preExitSnapshot;
+        return pre && typeof pre.rev === 'number' ? pre.rev : null;
+      })
+    ),
+    avgCashPreExit: meanFinite(
+      bankruptRuns.map((r) => {
+        const pre = r.bankruptcy && r.bankruptcy.preExitSnapshot;
+        return pre && typeof pre.cash === 'number' ? pre.cash : null;
+      })
+    ),
+    avgAssignmentPeriodsRemaining: meanFinite(
+      bankruptRuns.map((r) => r.bankruptcy && r.bankruptcy.assignmentPeriodsRemaining)
+    ),
+    causeCounts,
+    reviewTimingCounts: timingCounts,
+    dominantCause:
+      Object.keys(causeCounts).sort((a, b) => (causeCounts[b] || 0) - (causeCounts[a] || 0))[0] || null,
+  };
+}
+
+function buildWichitaBankruptcyInterpretation(byProfileDiag) {
+  const lines = [];
+  const order = ['conservative', 'balanced', 'aggressive'];
+  const dom = order.map((p) => ({ p, d: byProfileDiag[p] })).filter((x) => x.d);
+  const allDom = {};
+  for (const { d } of dom) {
+    const k = d.dominantCause;
+    if (k) allDom[k] = (allDom[k] || 0) + 1;
+  }
+  const overall =
+    Object.keys(allDom).sort((a, b) => allDom[b] - allDom[a])[0] || 'UNKNOWN';
+
+  if (overall === 'LOW_STARTING_RUNWAY') {
+    lines.push('Across profiles, bankruptcies cluster as LOW_STARTING_RUNWAY — very early negative EBITDA with tight opening cash suggests Tier 0 runway (starting capital vs opening burn) before operating “steady state.”');
+  } else if (overall === 'STEADY_OPERATING_BURN' || overall === 'FORCED_DISTRESS_SEQUENCE') {
+    lines.push('Across profiles, the dominant pattern is sustained negative economics / distress sequencing — recurring operating burn or the solo distress→forced-exit path dominates over one-off spikes.');
+  } else if (overall === 'SPEND_DRIVEN_COLLAPSE') {
+    lines.push('Across profiles, discretionary spend (promo+prog) vs revenue spikes near failure — scripted aggressive-style spend may be the main killer relative to billings.');
+  } else if (overall === 'SHARP_DROP_NEAR_ZERO_CASH') {
+    lines.push('Across profiles, sharp one-period cash drops near failure — look for one-time charges, sale mechanics, or threshold crossings rather than gradual bleed.');
+  } else {
+    lines.push('Cause labels are mixed or UNKNOWN — inspect per-run trajectoryTail in JSON for outliers.');
+  }
+
+  let suggestedNextLever = 'economics_or_runway_review';
+  if (overall === 'LOW_STARTING_RUNWAY') suggestedNextLever = 'live_Tier_0_starting_runway';
+  else if (overall === 'SHARP_DROP_NEAR_ZERO_CASH') suggestedNextLever = 'bankruptcy_threshold_or_distress_sale_math';
+  else if (overall === 'SPEND_DRIVEN_COLLAPSE') suggestedNextLever = 'profile_heuristics_or_economics';
+  else if (overall === 'STEADY_OPERATING_BURN' || overall === 'FORCED_DISTRESS_SEQUENCE')
+    suggestedNextLever = 'bankruptcy_threshold_and_operating_economics';
+
+  return { lines, overallDominantCause: overall, suggestedNextLever };
+}
+
+function aggregateWichitaProfileRuns(runs) {
+  const n = runs.length;
+  const pct = (k) => (n ? runs.filter(k).length / n : 0);
+  const withReview = runs.filter((r) => r.profitableAtFirstReview !== null);
+  const outcomes = {
+    promoted: runs.filter((r) => r.assignmentEnd && r.assignmentEnd.kind === 'promoted').length,
+    lateral: runs.filter((r) => r.assignmentEnd && r.assignmentEnd.kind === 'lateral').length,
+    demoted: runs.filter((r) => r.assignmentEnd && r.assignmentEnd.kind === 'demoted').length,
+    fired: runs.filter((r) => r.assignmentEnd && r.assignmentEnd.kind === 'fired').length,
+    noPayload: runs.filter((r) => !r.assignmentEnd).length,
+  };
+  const endingConf = runs.map((r) => r.endingConfidence).filter((c) => c != null);
+  return {
+    n,
+    profitability: {
+      pctProfitableAtFirstReview: withReview.length
+        ? withReview.filter((r) => r.profitableAtFirstReview === true).length / withReview.length
+        : null,
+      nWithFormalReviewBeforeEnd: withReview.length,
+      pctProfitableAtContractEnd: pct((r) => r.profitableAtContractEnd),
+    },
+    health: {
+      avgEbitdaAtContractEnd: meanFinite(runs.map((r) => r.ending && r.ending.ebitda)),
+      avgRevAtContractEnd: meanFinite(runs.map((r) => r.ending && r.ending.rev)),
+      avgShareAtContractEnd: meanFinite(runs.map((r) => r.ending && r.ending.share)),
+      pctSeriousDistress: pct((r) => r.seriousDistress),
+      pctBankrupt: pct((r) => r.bankrupt),
+      pctStalled: pct((r) => r.stalled),
+      avgMinCash: meanFinite(runs.map((r) => r.minCash)),
+    },
+    trends: {
+      avgDeltaShare: meanFinite(runs.map((r) => r.deltas && r.deltas.share)),
+      avgDeltaRev: meanFinite(runs.map((r) => r.deltas && r.deltas.rev)),
+      avgDeltaEbitda: meanFinite(runs.map((r) => r.deltas && r.deltas.ebitda)),
+    },
+    outcomes: {
+      ...outcomes,
+      rates: {
+        promoted: n ? outcomes.promoted / n : 0,
+        lateral: n ? outcomes.lateral / n : 0,
+        demoted: n ? outcomes.demoted / n : 0,
+        fired: n ? outcomes.fired / n : 0,
+        noPayload: n ? outcomes.noPayload / n : 0,
+      },
+    },
+    gm: {
+      avgEndingConfidence: endingConf.length ? meanFinite(endingConf) : null,
+    },
+  };
+}
+
+function buildWichitaInterpretation(byProfileAgg) {
+  const b = byProfileAgg.balanced;
+  const c = byProfileAgg.conservative;
+  const a = byProfileAgg.aggressive;
+  const lines = [];
+  let judgment = 'WICHITA_VIABLE';
+  const codes = [];
+
+  if (!b || !b.n) {
+    return {
+      judgment: 'NO_DATA',
+      plainEnglish: ['No balanced-profile runs were aggregated — check engine load.'],
+      codes: ['NO_DATA'],
+    };
+  }
+
+  const br = b.outcomes.rates;
+  const balProm = br.promoted;
+  const balProfit = b.profitability.pctProfitableAtContractEnd || 0;
+  const balDist = b.health.pctSeriousDistress;
+  const balBank = b.health.pctBankrupt;
+
+  lines.push(
+    `Balanced profile: promotion ${(balProm * 100).toFixed(1)}%, profitable at contract end ${(balProfit * 100).toFixed(1)}%, serious distress ${(balDist * 100).toFixed(1)}%, bankruptcy ${(balBank * 100).toFixed(1)}%.`
+  );
+
+  const solvent = balBank < 0.08;
+  const lowDistress = balDist < 0.45;
+  const profitReasonable = balProfit >= 0.22;
+  const promoteReasonable = balProm >= 0.12;
+
+  if (solvent && lowDistress) {
+    lines.push(
+      'Balanced runs usually stay solvent with modest “serious distress” hits — Wichita looks survivable for a default management style.'
+    );
+  } else if (solvent && !lowDistress) {
+    lines.push(
+      'Balanced runs usually avoid bankruptcy, but many still trip the distress heuristic (tight cash or deep loss periods) — stressful, not necessarily unwinnable.'
+    );
+  } else {
+    lines.push(
+      'Balanced runs show frequent bankruptcy or extreme distress — the starter rung may be too cash-punishing for these scripted profiles.'
+    );
+  }
+  lines.push(
+    profitReasonable
+      ? 'Positive EBITDA at contract end is achievable for a meaningful share of balanced runs — profitability is not a miracle outcome.'
+      : 'Few balanced runs finish the Tier 0 contract with positive EBITDA — margin recovery may be too rare without stronger play than these heuristics.'
+  );
+  lines.push(
+    promoteReasonable
+      ? 'Promotion from Wichita appears within reach for balanced play at non-trivial rates — not a pure gamble profile.'
+      : 'Promotion rates look low even for balanced play — advancement may feel luck-heavy relative to “competent default GM.”'
+  );
+
+  if (a && c && b.n) {
+    const ar = a.outcomes.rates.promoted;
+    const cr = c.outcomes.rates.promoted;
+    if (ar > br.promoted + 0.18 && br.promoted < 0.1) {
+      codes.push('AGGRESSION_HEAVILY_FAVORED');
+      lines.push(
+        'Aggressive profile promotes much more often than balanced while balanced stalls — Wichita may reward spend-heavy play disproportionately.'
+      );
+    } else if (cr > ar + 0.12 && br.promoted < 0.15) {
+      codes.push('CONSERVATIVE_OUTPERFORMS');
+      lines.push('Conservative profile outperforms aggressive on promotion in this sample — overspending may be punished.');
+    } else if (Math.abs(ar - cr) < 0.08 && Math.abs(br.promoted - ar) < 0.08) {
+      codes.push('PROFILE_ROBUST');
+      lines.push('Outcomes are broadly similar across profiles — Wichita is not a one-strategy puzzle in this harness.');
+    }
+  }
+
+  if (balBank > 0.2 || (balProfit < 0.15 && balProm < 0.08)) {
+    judgment = 'WICHITA_TOO_BRUTAL';
+  } else if (balBank > 0.08 || balDist > 0.55 || balProm < 0.12 || balProfit < 0.18) {
+    judgment = 'WICHITA_SLIGHTLY_TOO_PUNISHING';
+  } else if (balProm > 0.45 && balBank < 0.02 && balDist < 0.35) {
+    judgment = 'WICHITA_TOO_EASY';
+  }
+
+  if (judgment === 'WICHITA_VIABLE') {
+    lines.push('Overall: Wichita Tier 0 looks like a credible first GM job under these heuristics — challenging but not structurally hopeless.');
+  } else if (judgment === 'WICHITA_SLIGHTLY_TOO_PUNISHING') {
+    lines.push('Overall: Wichita reads as harsh for a starter — consider whether onboarding runway matches player expectations (measurement only; no rebalance in this script).');
+  } else if (judgment === 'WICHITA_TOO_BRUTAL') {
+    lines.push('Overall: Wichita looks structurally too punishing for a Tier 0 fantasy — balanced play struggles to finish solvent or promoted.');
+  } else if (judgment === 'WICHITA_TOO_EASY') {
+    lines.push('Overall: Wichita may be too forgiving for a “underdog” starter — promotion and solvency are very likely under these profiles.');
+  }
+
+  if (c && a && b.n) {
+    const cp = c.outcomes.rates.promoted;
+    const ap = a.outcomes.rates.promoted;
+    if (ap > 0.75 && cp < 0.2 && ap - cp > 0.45) {
+      codes.push('SPEND_HEAVY_PROFILE_DOMINATES');
+      lines.push(
+        'Contrast: aggressive promotion rate is much higher than conservative — Wichita economics in this harness are highly sensitive to discretionary spend; interpret “too easy” as “spend-heavy profiles clear the bar easily,” not that every style does.'
+      );
+      if (judgment === 'WICHITA_TOO_EASY') judgment = 'WICHITA_VIABLE_WITH_SPEND_SKEW';
+    }
+  }
+
+  return { judgment, plainEnglish: lines, codes, checks: { solvent, lowDistress, profitReasonable, promoteReasonable } };
 }
 
 /**
@@ -2020,6 +2957,7 @@ function main() {
     interpretation: null,
     tier5EntrantAnalysis: null,
     tier3Diagnostic: null,
+    wichitaEconTest: null,
   };
 
   if (args.mode === 'gm') {
@@ -2066,6 +3004,207 @@ function main() {
       console.log('Turns:', campRes.turns, 'assignments:', (campRes.assignmentResults || []).length);
       console.log('Rep', campRes.reputationStart, '→', campRes.reputationEnd, 'campaignWon:', campRes.campaignWon);
       console.log('Warnings:', cw.length ? cw : '(none)');
+    }
+  } else if (args.mode === 'batch' && args.wichitaEconTest) {
+    const byProfileRaw = { conservative: [], balanced: [], aggressive: [] };
+    const maxP = Math.max(args.maxPeriodsCampaign, 72);
+    for (const profile of WICHITA_ECON_PROFILES) {
+      for (let i = 0; i < args.runs; i++) {
+        const seed = (args.seed + i) >>> 0;
+        const ctxW = createHeadlessContext(true);
+        loadEngine(ctxW, 'wichita');
+        const row = runWichitaEconCampaignOnce(ctxW, {
+          seed,
+          profile,
+          maxPeriods: maxP,
+        });
+        byProfileRaw[profile].push(row);
+      }
+    }
+    const byProfileAgg = {};
+    for (const profile of WICHITA_ECON_PROFILES) {
+      byProfileAgg[profile] = aggregateWichitaProfileRuns(byProfileRaw[profile]);
+    }
+    const interpretation = buildWichitaInterpretation(byProfileAgg);
+    const bankruptcyByProfile = {};
+    for (const profile of WICHITA_ECON_PROFILES) {
+      bankruptcyByProfile[profile] = aggregateWichitaBankruptcyDiagnostics(byProfileRaw[profile]);
+    }
+    const bankruptcyCross = buildWichitaBankruptcyInterpretation(bankruptcyByProfile);
+    const outcomeDiagnosticsByProfile = {};
+    for (const profile of WICHITA_ECON_PROFILES) {
+      outcomeDiagnosticsByProfile[profile] = buildWichitaOutcomeDiagnosticsForProfile(
+        profile,
+        byProfileRaw[profile]
+      );
+    }
+    report.meta.wichitaEconTest = true;
+    report.meta.market = 'wichita';
+    report.wichitaEconTest = {
+      description:
+        'Headless Tier 0 (Wichita) campaign only: each period applies a fixed spending profile to player station(s), then advTurn(). Stops after first assignment end for tier 0 or cash bankruptcy / GM fire.',
+      profiles: WICHITA_ECON_PROFILE_META,
+      seeds: { start: args.seed, count: args.runs, stride: 1 },
+      maxPeriodsPerRun: maxP,
+      distressDefinition:
+        'Serious distress if any of: period cash ≤ -$35k; portfolio EBITDA ≤ -$130k; cash ≤ -$12k while EBITDA ≤ -$90k; ≥6 consecutive negative-EBITDA periods.',
+      byProfile: byProfileAgg,
+      interpretation,
+      bankruptcyCauses: {
+        definitions: {
+          SHARP_DROP_NEAR_ZERO_CASH:
+            'Single-period cash fell sharply (e.g. large negative delta) while prior cash was not deeply negative.',
+          SPEND_DRIVEN_COLLAPSE:
+            'Discretionary spend ratio (promo+prog)/revenue jumped in the last periods vs earlier baseline, with deep negative EBITDA.',
+          LOW_STARTING_RUNWAY:
+            'Bankruptcy very early (≤6 advTurns) with low opening cash and multiple early periods of materially negative EBITDA.',
+          STEADY_OPERATING_BURN:
+            'Most of the last several periods show negative EBITDA (median EBITDA in the red) without a spend spike pattern.',
+          FORCED_DISTRESS_SEQUENCE:
+            'Multiple snapshots show debtWarningQ ≥ 2 (solo distress countdown before forced sale / bankruptcy exit).',
+          UNKNOWN: 'Heuristic did not match; inspect trajectoryTail and bankruptcy.atFlip in JSON.',
+          NOT_BANKRUPT: 'Run did not end in _soloBankrupt.',
+        },
+        byProfile: bankruptcyByProfile,
+        interpretation: bankruptcyCross.lines,
+        overallDominantCauseAcrossProfiles: bankruptcyCross.overallDominantCause,
+        suggestedNextLever: bankruptcyCross.suggestedNextLever,
+      },
+      outcomeDiagnostics: {
+        definitions: {
+          PROMOTED: 'Assignment-end classification was promoted (final confidence ≥ successThreshold).',
+          BANKRUPT_BEFORE_END: 'Run ended in _soloBankrupt before Tier 0 assignment resolution.',
+          FIRED_BEFORE_END: 'GM fired before Tier 0 assignment resolution.',
+          STALLED_RUN: 'Hit advTurn cap without assignment end, bankruptcy, or fire.',
+          NO_ASSIGNMENT_END_PAYLOAD: 'Loop exited without observing a Tier 0 assignment-end payload.',
+          SURVIVED_BUT_NOT_COMPETITIVE: 'Lateral: confidence ≥ survivalThreshold but < successThreshold.',
+          EARLY_CONFIDENCE_COLLAPSE: 'Heuristic: first formal review was bad and confidenceAfter ≤ 42.',
+          BAD_REVIEW_DOMINATED: 'Heuristic: ≥ half of formal reviews in the bad composite band.',
+          MEDIOCRE_PLATEAU: 'Heuristic: every formal review was mediocre (no good / no bad).',
+          LOW_PROFITABILITY_DRAG: 'Heuristic: last-review trailing marginAvg < -8 (deep loss vs targets).',
+          PROFILE_SPEND_TOO_WEAK:
+            'Heuristic (conservative profile only): very low discretionary ratio at last review yet margin still negative.',
+          BELOW_SURVIVAL_THRESHOLD:
+            'Default bucket for demotion: final confidence below survivalThreshold (see assignmentResolution vs ladder).',
+          UNKNOWN: 'Did not match simple heuristics — inspect formalReviews in outcomeDiagnostics.byProfile.',
+        },
+        tier0ThresholdsNote:
+          'successThreshold / survivalThreshold on each run come from the assignment-end payload when present; failureThreshold and contractLengthPeriods come from wlCampaign.LADDER[0] at career start.',
+        byProfile: outcomeDiagnosticsByProfile,
+      },
+      /** One row per seed × profile (compact; no full-period timeline — use trajectoryTail for last periods). */
+      runs: WICHITA_ECON_PROFILES.flatMap((p) =>
+        byProfileRaw[p].map((r) => {
+          const cc = classifyWichitaBankruptcyCause(r);
+          const wnp = classifyWichitaWhyNotPromoted(r);
+          const ar = r.assignmentResolution || {};
+          const band = wichitaConfidenceBand(ar.finalConfidence, ar.survivalThreshold, ar.successThreshold);
+          return {
+            profile: p,
+            seed: r.seed,
+            turns: r.turns,
+            stalled: r.stalled,
+            assignmentEnd: r.assignmentEnd,
+            profitableAtFirstReview: r.profitableAtFirstReview,
+            profitableAtContractEnd: r.profitableAtContractEnd,
+            seriousDistress: r.seriousDistress,
+            bankrupt: r.bankrupt,
+            gmFired: r.gmFired,
+            ending: r.ending,
+            deltas: r.deltas,
+            endingConfidence: r.endingConfidence,
+            minCash: r.minCash,
+            trajectoryTail: r.trajectoryTail,
+            bankruptcy: r.bankruptcy,
+            bankruptcyCause: cc.primaryCause,
+            bankruptcyCauseDetail: cc.secondary,
+            assignmentResolution: {
+              outcomeKind: ar.outcomeKind,
+              finalConfidence: ar.finalConfidence,
+              successThreshold: ar.successThreshold,
+              survivalThreshold: ar.survivalThreshold,
+              failureThreshold: ar.failureThreshold,
+              contractLengthPeriods: ar.contractLengthPeriods,
+              periodsClosed: ar.periodsClosed,
+              startConfidence: ar.startConfidence,
+              narrowlyAvoidedBankruptcy: ar.narrowlyAvoidedBankruptcy,
+              maxDebtWarningQ: r.maxDebtWarningQ,
+            },
+            confidenceBand: band,
+            whyNotPromoted: wnp.label,
+            reviewSequenceKey: wichitaFormalReviewSequenceKey(r.formalReviews),
+            formalReviewCount: (r.formalReviews || []).length,
+          };
+        })
+      ),
+    };
+
+    if (!quiet) {
+      console.log('\n=== WICHITA TIER 0 ECONOMICS TEST (' + args.runs + ' seeds × 3 profiles; seed base ' + args.seed + ') ===');
+      console.log('Market: wichita | maxPeriods/run:', maxP);
+      for (const p of WICHITA_ECON_PROFILES) {
+        const meta = WICHITA_ECON_PROFILE_META[p];
+        const ag = byProfileAgg[p];
+        console.log('\n--- ' + meta.label + ' ---');
+        console.log(meta.intent);
+        console.log('Avg ending share:', ag.health.avgShareAtContractEnd != null ? ag.health.avgShareAtContractEnd.toFixed(4) : 'n/a');
+        console.log('Avg ending EBITDA:', ag.health.avgEbitdaAtContractEnd != null ? Math.round(ag.health.avgEbitdaAtContractEnd) : 'n/a');
+        console.log('Avg ending revenue:', ag.health.avgRevAtContractEnd != null ? Math.round(ag.health.avgRevAtContractEnd) : 'n/a');
+        console.log(
+          '% profitable @ first formal review (of runs with a review):',
+          ag.profitability.pctProfitableAtFirstReview != null
+            ? (ag.profitability.pctProfitableAtFirstReview * 100).toFixed(1) + '%'
+            : 'n/a'
+        );
+        console.log('% profitable @ contract end (last period):', ((ag.profitability.pctProfitableAtContractEnd || 0) * 100).toFixed(1) + '%');
+        console.log('% serious distress:', ((ag.health.pctSeriousDistress || 0) * 100).toFixed(1) + '%');
+        console.log(
+          'Outcomes — promoted / lateral / demoted / fired / noPayload:',
+          ag.outcomes.promoted,
+          '/',
+          ag.outcomes.lateral,
+          '/',
+          ag.outcomes.demoted,
+          '/',
+          ag.outcomes.fired,
+          '/',
+          ag.outcomes.noPayload
+        );
+        console.log('Avg ending GM confidence:', ag.gm.avgEndingConfidence != null ? ag.gm.avgEndingConfidence.toFixed(1) : 'n/a');
+        console.log('Avg Δ share / rev / EBITDA:', [
+          ag.trends.avgDeltaShare != null ? ag.trends.avgDeltaShare.toFixed(4) : 'n/a',
+          ag.trends.avgDeltaRev != null ? Math.round(ag.trends.avgDeltaRev) : 'n/a',
+          ag.trends.avgDeltaEbitda != null ? Math.round(ag.trends.avgDeltaEbitda) : 'n/a',
+        ].join(' | '));
+        const bd = bankruptcyByProfile[p];
+        if (bd) {
+          console.log(
+            'Bankruptcy diagnostic — bankrupt:',
+            ((bd.pctBankrupt || 0) * 100).toFixed(1) + '%',
+            '| avg bankruptcy turn:',
+            bd.avgBankruptcyTurn != null ? bd.avgBankruptcyTurn.toFixed(1) : 'n/a',
+            '| avg cash @ _soloBankrupt:',
+            bd.avgCashAtBankruptcy != null ? Math.round(bd.avgCashAtBankruptcy) : 'n/a',
+            '| avg EBITDA @ _soloBankrupt (post-exit):',
+            bd.avgEbitdaAtBankruptcy != null ? Math.round(bd.avgEbitdaAtBankruptcy) : 'n/a',
+            '| avg EBITDA last operating period (pre-exit):',
+            bd.avgEbitdaPreExit != null ? Math.round(bd.avgEbitdaPreExit) : 'n/a',
+            '| avg periods remaining on assignment:',
+            bd.avgAssignmentPeriodsRemaining != null ? bd.avgAssignmentPeriodsRemaining.toFixed(1) : 'n/a'
+          );
+          console.log('  Cause counts:', JSON.stringify(bd.causeCounts || {}));
+          console.log('  Dominant cause (this profile):', bd.dominantCause || 'n/a');
+          console.log('  Review timing @ bankruptcy:', JSON.stringify(bd.reviewTimingCounts || {}));
+        }
+      }
+      printWichitaOutcomeDiagnosticSummary(outcomeDiagnosticsByProfile);
+      console.log('\n--- _soloBankrupt interpretation (diagnostic) ---');
+      for (const line of bankruptcyCross.lines) console.log(line);
+      console.log('Suggested next lever (heuristic):', bankruptcyCross.suggestedNextLever);
+      console.log('\n--- Interpretation (plain English) ---');
+      for (const line of interpretation.plainEnglish) console.log(line);
+      console.log('\nJudgment code:', interpretation.judgment);
+      if (interpretation.codes && interpretation.codes.length) console.log('Signals:', interpretation.codes.join(', '));
     }
   } else if (args.mode === 'batch' && args.tier3Diagnostic) {
     const agg = {

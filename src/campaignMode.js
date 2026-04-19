@@ -27,6 +27,8 @@
   /**
    * Ladder tuning (campaign layer only): early tiers more forgiving / upwardly mobile; high tiers tougher.
    * T1: wide survival–success band → real lateral lane (not pure promote/demote).
+   * Promotions (T1+): each step includes a one-time corporate purse + at least one formal review of “turnaround patience”
+   * so a trusted GM is not dropped into gm_under with no cash runway (see corporateCashGrant / evaluationGraceReviews).
    * T4: softer margin + lower survival bar + modest promotion bar — elite pressure without firing cliff.
    * T5: slightly softer than pre-pass (see git history) so flagship wins are possible but uncommon; batch still shows laterals + occasional demotions.
    */
@@ -42,12 +44,14 @@
       successThreshold: 53,
       survivalThreshold: 38,
       failureThreshold: 31,
-      /** Scenario cash already scales down for small markets — do not stack an extra mult; grant adds starter runway only on the campaign layer. */
-      cashMult: 1.0,
-      corporateCashGrant: 120000,
+      /** Scenario cash × mult + grant: starter runway so Tier 0 can reach assignment-end reviews (still far leaner than T1+ packages). */
+      cashMult: 1.15,
+      corporateCashGrant: 420000,
       corporateCommitmentNote:
-        'Corporate front-loaded a small working-capital line for your first GM posting — enough to absorb early losses while you stabilize the cluster.',
+        'Corporate front-loaded working capital for your first chair — enough to survive a bad opening book in a small market, not a major-market war chest.',
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 84 },
+      /** AM dial; merged onto BP idx 1 instead of default AM Top 40 — variety for GM career only. */
+      starterPlayerBpPatch: { type: 'AM', fmt: 'COUNTRY', pw: 'DA', str: 'moderate' },
       flavor:
         'Your first real GM chair: a modest Plains market with real P&L and real competition — lower stakes than a major, but not a sandbox.',
     },
@@ -62,9 +66,15 @@
       successThreshold: 56,
       survivalThreshold: 40,
       failureThreshold: 33,
-      cashMult: 0.88,
+      /** Promotion tier: scenario cash + grant + modest mult — corporate backs a proven GM with real runway. */
+      cashMult: 0.95,
+      corporateCashGrant: 100000,
+      evaluationGraceReviews: 1,
+      corporateCommitmentNote:
+        'Corporate approved a one-time rebuild purse for this posting — you were promoted because they trust you, not to starve the cluster of cash on day one.',
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 82 },
-      flavor: 'Ownership needs a steady hand in a medium-sized southern market. Prove you can run lean and still grow.',
+      flavor:
+        'Ownership needs a steady hand in a medium-sized southern market. They funded bridge capital so you can run lean and still have room to fix what is broken.',
     },
     {
       id: 'c2_atlanta',
@@ -77,9 +87,15 @@
       successThreshold: 54,
       survivalThreshold: 44,
       failureThreshold: 32,
-      cashMult: 0.95,
+      cashMult: 1.0,
+      corporateCashGrant: 200000,
+      evaluationGraceReviews: 1,
+      corporateCommitmentNote:
+        'Ownership backed this promotion with a one-time operating budget — large-market salvage needs more than good intentions; you get enough cash to survive early losses while you execute.',
+      starterPlayerBpPatch: { type: 'AM', fmt: 'SOUL_RNB', pw: '10kw', str: 'strong' },
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 80 },
-      flavor: 'A Sunbelt major market: more revenue on the table — and more scrutiny.',
+      flavor:
+        'A Sunbelt major market: more revenue on the table — and more scrutiny — but corporate put money behind the seat so a turnaround is playable, not a few rounds to bankruptcy.',
     },
     {
       id: 'c3_seattle',
@@ -106,6 +122,7 @@
       corporateCommitmentNote:
         'Corporate approved a limited rebuild budget for this assignment. Your first formal review emphasizes measurable progress over instant profit — after that, expectations match a normal major-market GM scorecard.',
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 78, minFranchiseAvg: 0.5 },
+      starterPlayerBpPatch: { type: 'AM', fmt: 'NEWS_TALK', pw: '50kw', str: 'emerging' },
       flavor:
         'A competitive major market where brand and ratings momentum matter as much as margin. Corporate funded modest runway — enough to maneuver, not a comfort cushion — and one early review cycle where they judge direction before holding you to steady-state standards.',
     },
@@ -121,8 +138,14 @@
       survivalThreshold: 40,
       failureThreshold: 35,
       cashMult: 1.05,
+      corporateCashGrant: 110000,
+      evaluationGraceReviews: 1,
+      corporateCommitmentNote:
+        'Promotion to a major-market chair included limited bridge funding — corporate expects discipline, but they will not pretend an underfunded GM can fix a broken cluster overnight.',
+      starterPlayerBpPatch: { type: 'AM', fmt: 'NEWS_TALK', pw: '50kw', str: 'emerging' },
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 79, minMarginPct: 8 },
-      flavor: 'Big payroll, big expectations — cash discipline matters as much as ratings.',
+      flavor:
+        'Big payroll, big expectations — cash discipline matters as much as ratings — with enough corporate runway that the opening quarters reward direction, not only the bottom line.',
     },
     {
       id: 'c5_top',
@@ -136,8 +159,13 @@
       survivalThreshold: 43,
       failureThreshold: 37,
       cashMult: 1.08,
+      corporateCashGrant: 125000,
+      evaluationGraceReviews: 1,
+      corporateCommitmentNote:
+        'Even at the flagship, the group funded transition support — you are here to win, not to run out of cash before the first books settle.',
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 74, minFranchiseAvg: 0.52 },
-      flavor: 'The flagship job: maximum revenue, maximum pressure.',
+      flavor:
+        'The flagship job: maximum revenue, maximum pressure — with enough opening support that the assignment is a credible shot, not a kamikaze posting.',
     },
   ];
 
@@ -773,6 +801,18 @@
     if (g && typeof global.wlBindGameState === 'function') global.wlBindGameState(g);
   }
 
+  /** Partial blueprint merge for Underdog player slot (BP idx 1); see legacy `effectiveBpForMarket`. Only set around genMarket. */
+  function applyCampaignStarterBpPatch(asg) {
+    if (typeof globalThis === 'undefined') return;
+    var p = asg && asg.starterPlayerBpPatch;
+    if (p && typeof p === 'object') globalThis.__WL_GM_UNDER_PLAYER_BP_PATCH__ = p;
+    else delete globalThis.__WL_GM_UNDER_PLAYER_BP_PATCH__;
+  }
+
+  function clearCampaignStarterBpPatch() {
+    if (typeof globalThis !== 'undefined') delete globalThis.__WL_GM_UNDER_PLAYER_BP_PATCH__;
+  }
+
   /**
    * Build/regenerate `global.G` for a campaign assignment. Call `syncLegacyGameRef` immediately
    * after assigning `global.G` so legacy’s lexical `G` matches before any init (autoSave serializes lexical `G`).
@@ -819,14 +859,19 @@
     } else {
       var cy = st.careerSimYear;
       var cp = st.careerSimPeriod;
-      if (
-        cy != null &&
-        cp != null &&
-        typeof global.wlGenMarketGmUnderAtCareerTime === 'function'
-      ) {
-        global.G = global.wlGenMarketGmUnderAtCareerTime(cy, cp);
-      } else {
-        global.G = global.genMarket('gm_under');
+      applyCampaignStarterBpPatch(asg);
+      try {
+        if (
+          cy != null &&
+          cp != null &&
+          typeof global.wlGenMarketGmUnderAtCareerTime === 'function'
+        ) {
+          global.G = global.wlGenMarketGmUnderAtCareerTime(cy, cp);
+        } else {
+          global.G = global.genMarket('gm_under');
+        }
+      } finally {
+        clearCampaignStarterBpPatch();
       }
       syncLegacyGameRef(global.G);
       global.G._campaignRestoredFromArchive = false;
@@ -954,7 +999,12 @@
           : asg.marketId;
       var companyName = state.ownerCompanyName;
       if (typeof global.genMarket === 'function') {
-        global.G = global.genMarket('gm_under');
+        applyCampaignStarterBpPatch(asg);
+        try {
+          global.G = global.genMarket('gm_under');
+        } finally {
+          clearCampaignStarterBpPatch();
+        }
         syncLegacyGameRef(global.G);
         global.G._campaignRestoredFromArchive = false;
         global.G.companyName = companyName;

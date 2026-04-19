@@ -23,7 +23,6 @@ const { PORTRAIT_DIR, getRegistryEntry, setRegistryEntry, ensureDir } = require(
 const {
   pickLibraryImageExclusive,
   libraryRelativePortraitsPath,
-  installLibraryFileToPortrait,
   libraryInventory,
   grokInventory,
   libraryFirstEnabled,
@@ -267,12 +266,12 @@ function mountPortraitRoutes(app) {
       if (gender) {
         const libSrc = pickLibraryImageExclusive(gender, eraBucket, claimedSet);
         if (libSrc) {
-          const { finalName } = installLibraryFileToPortrait(libSrc, fileBase, PORTRAIT_DIR);
-          const imageUrl = `/generated-portraits/${finalName}`;
-          const libraryRel = libraryRelativePortraitsPath(libSrc);
+          // Point at the library file directly — no per-talent copy under generated-portraits/ root (saves disk).
+          const libraryRel = libraryRelativePortraitsPath(libSrc).replace(/\\/g, '/');
+          const imageUrl = `/generated-portraits/${libraryRel}`;
           setRegistryEntry(fileBase, {
             imageUrl,
-            fileName: finalName,
+            fileName: libraryRel,
             ...profile,
             source: 'library',
             libraryAsset: libraryRel,

@@ -141,5 +141,47 @@ assert(
   'oldies should get gold/classic imaging not generic brass default',
 );
 
+const rock76 = buildSunoJingleArgs({
+  brand: 'Rock Radio 76',
+  format: 'Album Rock',
+  year: 1975,
+  formatId: 'ALBUM_ROCK',
+  tagline: '',
+  frequency: '760',
+  band: 'AM',
+});
+assert(/\bseventy[\s-]*six\b/i.test(rock76.lyrics), 'isolated 76 in brand should be seventy six for singing');
+
+const dial104 = buildSunoJingleArgs({
+  brand: 'The Buzz',
+  format: 'Top 40',
+  year: 2000,
+  formatId: 'TOP40',
+  frequency: '104.7',
+  band: 'FM',
+});
+assert(dial104.tags.includes('one oh four'), '104.7 FM dial uses one oh four');
+assert(/point/.test(dial104.tags) && /seven/.test(dial104.tags), '104.7 includes point seven in dial tag');
+
+const dial995 = buildSunoJingleArgs({
+  brand: 'Mix',
+  format: 'Top 40',
+  year: 1999,
+  formatId: 'TOP40',
+  frequency: '99.5',
+  band: 'FM',
+});
+assert(/ninety[\s-]*nine/i.test(dial995.tags), '99.5 FM dial uses ninety nine');
+
+const top40name = buildSunoJingleArgs({
+  brand: 'Hot Hits Top 40',
+  format: 'Top 40',
+  year: 1985,
+  formatId: 'TOP40',
+  frequency: '98.5',
+  band: 'FM',
+});
+assert(/\btop\s+40\b/i.test(top40name.lyrics), 'Top 40 format name should stay as words, not split forty');
+
 console.log('OK — jingle prompt hints');
 console.log('Sample tags (truncated):', withHints.tags.slice(0, 320) + (withHints.tags.length > 320 ? '…' : ''));

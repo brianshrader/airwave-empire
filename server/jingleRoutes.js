@@ -1,7 +1,8 @@
 'use strict';
 
 /**
- * POST /api/generate-station-jingle — ShortAPI Suno v5.5, poll, save under /generated-jingles/
+ * POST /api/generate-station-jingle — queues ShortAPI Suno job, returns `{ jobId }` immediately (avoids reverse-proxy
+ * timeouts while the server polls Suno for 1–5+ minutes). Client polls GET /api/station-jingle/job/:jobId until `complete`.
  * GET  /api/station-jingle/status — { configured, model }
  *
  * Env: SHORTAPI_KEY (shared with images). Optional: SHORTAPI_SUNO_MODEL, SHORTAPI_SUNO_POLL_MAX_MS, JINGLE_MAX_PER_HOUR
@@ -10,6 +11,7 @@
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const { randomUUID } = crypto;
 const { buildSunoJingleArgs } = require('./jinglePrompt');
 const { posthog } = require('./posthog');
 const {
@@ -23,6 +25,65 @@ const GENERATED_DIR = path.join(__dirname, '..', 'generated-jingles');
 
 const RATE_WINDOW_MS = 60 * 60 * 1000;
 const jingleRateMap = new Map();
+
+/** @type {Map<string, { status: 'pending'|'complete'|'failed', created: number, ip: string, sunoArgs: object, base: string, stationId: string, trace: object, variants?: object[], error?: string, completedAt?: number }>} */
+const jingleJobs = new Map();
+const JINGLE_JOB_TTL_MS = 2 * 60 * 60 * 1000;
+
+function pruneJingleJobs() {
+  const now = Date.now();
+  for (const [id, j] of jingleJobs) {
+    if (now - j.created > JINGLE_JOB_TTL_MS) jingleJobs.delete(id);
+  }
+}
+
+async function runJingleJob(jobId) {
+  const j = jingleJobs.get(jobId);
+  if (!j || j.status !== 'pending') return;
+  try {
+    const { musics } = await createAndPollSunoJingle(j.sunoArgs);
+    const variants = [];
+    for (let i = 0; i < musics.length; i++) {
+      const m = musics[i];
+      const { buffer, ext } = await downloadAudioUrl(m.url);
+      const fname = `${j.base}-v${i + 1}.${ext}`;
+      const abs = path.join(GENERATED_DIR, fname);
+      fs.writeFileSync(abs, buffer);
+      variants.push({
+        audioUrl: `/generated-jingles/${fname}`,
+        remoteTitle: m.title || null,
+      });
+      await sleep(80);
+    }
+    if (!variants.length) {
+      j.status = 'failed';
+      j.error = 'No audio variants were saved.';
+      j.completedAt = Date.now();
+      return;
+    }
+    j.status = 'complete';
+    j.variants = variants;
+    j.completedAt = Date.now();
+    posthog.capture({
+      distinctId: j.ip,
+      event: 'station jingle generated',
+      properties: {
+        station_id: j.stationId,
+        format: j.trace.format,
+        year: j.trace.year,
+        band: j.trace.band,
+        variant_count: variants.length,
+        model: sunoModelSlug(),
+      },
+    });
+  } catch (e) {
+    console.error('[jingle job]', jobId, e.message || e);
+    posthog.captureException(e, j.ip);
+    j.status = 'failed';
+    j.error = String(e.message || 'Jingle generation failed').slice(0, 400);
+    j.completedAt = Date.now();
+  }
+}
 
 function jingleRateLimitPerHour() {
   const raw = process.env.JINGLE_MAX_PER_HOUR;
@@ -137,6 +198,8 @@ function sanitizeJingleSonicHint(str, maxLen) {
  */
 function mountJingleRoutes(app) {
   ensureDir();
+  const iv = setInterval(pruneJingleJobs, 10 * 60 * 1000);
+  if (typeof iv.unref === 'function') iv.unref();
 
   app.get('/api/station-jingle/status', (_req, res) => {
     res.json({
@@ -146,7 +209,37 @@ function mountJingleRoutes(app) {
     });
   });
 
-  app.post('/api/generate-station-jingle', async (req, res) => {
+  /** Browsers paste GET here and see "Cannot GET" — jingle creation is POST from the game only. */
+  app.get('/api/generate-station-jingle', (_req, res) => {
+    res
+      .status(405)
+      .set('Allow', 'POST')
+      .json({
+        ok: false,
+        error:
+          'Use POST from the game (Brand & Marketing → Commission jingle). Opening this URL in a tab does not generate audio.',
+      });
+  });
+
+  app.get('/api/station-jingle/job/:jobId', (req, res) => {
+    const jobId = String(req.params.jobId || '').trim();
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(jobId)) {
+      return res.status(400).json({ ok: false, error: 'Invalid job id.' });
+    }
+    const j = jingleJobs.get(jobId);
+    if (!j) {
+      return res.status(404).json({ ok: false, error: 'Job not found or expired. Commission again if needed.' });
+    }
+    if (j.status === 'pending') {
+      return res.json({ ok: true, status: 'pending' });
+    }
+    if (j.status === 'failed') {
+      return res.json({ ok: false, status: 'failed', error: j.error || 'Jingle generation failed.' });
+    }
+    return res.json({ ok: true, status: 'complete', variants: j.variants || [] });
+  });
+
+  app.post('/api/generate-station-jingle', (req, res) => {
     if (!sunoConfigured()) {
       return res.status(503).json({
         ok: false,
@@ -184,48 +277,33 @@ function mountJingleRoutes(app) {
     const stamp = Date.now();
     const h = crypto.createHash('sha256').update(JSON.stringify(sunoArgs) + stamp).digest('hex').slice(0, 10);
     const base = `${slugPart(stationId, 32)}-${stamp}-${h}`;
+    const jobId = randomUUID();
 
-    try {
-      const { musics } = await createAndPollSunoJingle(sunoArgs);
-      const variants = [];
+    jingleJobs.set(jobId, {
+      status: 'pending',
+      created: Date.now(),
+      ip,
+      sunoArgs,
+      base,
+      stationId,
+      trace: {
+        format: String(body.format).trim(),
+        year: Math.floor(Number(body.year)),
+        band: body.band || null,
+      },
+    });
 
-      for (let i = 0; i < musics.length; i++) {
-        const m = musics[i];
-        const { buffer, ext } = await downloadAudioUrl(m.url);
-        const fname = `${base}-v${i + 1}.${ext}`;
-        const abs = path.join(GENERATED_DIR, fname);
-        fs.writeFileSync(abs, buffer);
-        variants.push({
-          audioUrl: `/generated-jingles/${fname}`,
-          remoteTitle: m.title || null,
-        });
-        await sleep(80);
+    runJingleJob(jobId).catch((e) => {
+      console.error('[jingle job unhandled]', jobId, e);
+      const j = jingleJobs.get(jobId);
+      if (j && j.status === 'pending') {
+        j.status = 'failed';
+        j.error = String(e.message || 'Jingle job crashed').slice(0, 400);
+        j.completedAt = Date.now();
       }
+    });
 
-      if (!variants.length) {
-        return res.status(502).json({ ok: false, error: 'No audio variants were saved.' });
-      }
-
-      posthog.capture({
-        distinctId: ip,
-        event: 'station jingle generated',
-        properties: {
-          station_id: stationId,
-          format: String(body.format).trim(),
-          year: Math.floor(Number(body.year)),
-          band: body.band || null,
-          variant_count: variants.length,
-          model: sunoModelSlug(),
-        },
-      });
-      return res.json({ ok: true, variants });
-    } catch (e) {
-      console.error('[jingle]', e.message || e);
-      posthog.captureException(e, ip);
-      const status = e.status && Number.isInteger(e.status) ? e.status : 500;
-      const detail = String(e.message || 'Jingle generation failed').slice(0, 400);
-      return res.status(status).json({ ok: false, error: detail });
-    }
+    return res.json({ ok: true, jobId });
   });
 }
 

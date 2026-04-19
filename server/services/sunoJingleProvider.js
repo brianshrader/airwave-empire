@@ -60,12 +60,34 @@ function extractMusicsFromPayload(root) {
   const out = [];
   const seen = new Set();
 
+  function pickAudioUrl(obj) {
+    if (!obj || typeof obj !== 'object') return '';
+    const keys = [
+      'url',
+      'audio_url',
+      'audioUrl',
+      'source_audio_url',
+      'sourceAudioUrl',
+      'download_url',
+      'downloadUrl',
+      'stream_url',
+      'streamUrl',
+      'mp3_url',
+      'mp3Url',
+    ];
+    for (const k of keys) {
+      const u = typeof obj[k] === 'string' ? obj[k].trim() : '';
+      if (u && /^https?:\/\//i.test(u)) return u;
+    }
+    return '';
+  }
+
   function pushFromArray(arr) {
     if (!Array.isArray(arr)) return;
     for (const m of arr) {
       if (!m || typeof m !== 'object') continue;
-      const u = typeof m.url === 'string' ? m.url.trim() : '';
-      if (!u || !/^https?:\/\//i.test(u) || seen.has(u)) continue;
+      const u = pickAudioUrl(m);
+      if (!u || seen.has(u)) continue;
       seen.add(u);
       out.push({
         url: u,

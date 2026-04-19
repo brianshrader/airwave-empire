@@ -1,0 +1,1609 @@
+{
+  "ok": true,
+  "meta": {
+    "year": 1985,
+    "period": 1,
+    "nearBreakevenEbitda": -25000
+  },
+  "markets": [
+    {
+      "ok": true,
+      "market": "wichita",
+      "year": 1985,
+      "period": 1,
+      "formats": [
+        {
+          "format": "TOP40",
+          "ok": true,
+          "callLetters": "KAHT",
+          "rows": [
+            {
+              "share": 0.015,
+              "headlineShareAfter": 0.015,
+              "normal": {
+                "rev": 10713,
+                "cost": 321229,
+                "ebitda": -310516,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 10713,
+                "cost": 179697,
+                "ebitda": -168984,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 141532,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02529699,
+                "rev": 119600,
+                "ebitda": -296960,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.02,
+              "headlineShareAfter": 0.02,
+              "normal": {
+                "rev": 19804,
+                "cost": 323879,
+                "ebitda": -304075,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 20243,
+                "cost": 181747,
+                "ebitda": -161504,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 142571,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02516858,
+                "rev": 119552,
+                "ebitda": -296995,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.025,
+              "headlineShareAfter": 0.025,
+              "normal": {
+                "rev": 24502,
+                "cost": 325274,
+                "ebitda": -300772,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 25139,
+                "cost": 182821,
+                "ebitda": -157682,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 143090,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02504017,
+                "rev": 120296,
+                "ebitda": -296459,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.03,
+              "headlineShareAfter": 0.03,
+              "normal": {
+                "rev": 34572,
+                "cost": 328227,
+                "ebitda": -293655,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 35604,
+                "cost": 185089,
+                "ebitda": -149485,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 144170,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02491176,
+                "rev": 113649,
+                "ebitda": -301245,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.035,
+              "headlineShareAfter": 0.035,
+              "normal": {
+                "rev": 44552,
+                "cost": 331177,
+                "ebitda": -286625,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 46060,
+                "cost": 177021,
+                "ebitda": -130961,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 155664,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02478335,
+                "rev": 113700,
+                "ebitda": -301208,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.04,
+              "headlineShareAfter": 0.04,
+              "normal": {
+                "rev": 59162,
+                "cost": 280770,
+                "ebitda": -221608,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 61395,
+                "cost": 169793,
+                "ebitda": -108398,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 113210,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02465494,
+                "rev": 113576,
+                "ebitda": -301297,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.05,
+              "headlineShareAfter": 0.05,
+              "normal": {
+                "rev": 98138,
+                "cost": 275442,
+                "ebitda": -177304,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 98138,
+                "cost": 185693,
+                "ebitda": -87555,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 89749,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02439811,
+                "rev": 114366,
+                "ebitda": -300728,
+                "profitable": false
+              }
+            }
+          ]
+        },
+        {
+          "format": "COUNTRY",
+          "ok": true,
+          "callLetters": "KAHT",
+          "rows": [
+            {
+              "share": 0.015,
+              "headlineShareAfter": 0.015,
+              "normal": {
+                "rev": 9534,
+                "cost": 246885,
+                "ebitda": -237351,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 9534,
+                "cost": 143537,
+                "ebitda": -134003,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 103348,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02529699,
+                "rev": 113160,
+                "ebitda": -301597,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.02,
+              "headlineShareAfter": 0.02,
+              "normal": {
+                "rev": 17676,
+                "cost": 264706,
+                "ebitda": -247030,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 18068,
+                "cost": 153402,
+                "ebitda": -135334,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 111696,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02516858,
+                "rev": 113121,
+                "ebitda": -301625,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.025,
+              "headlineShareAfter": 0.025,
+              "normal": {
+                "rev": 21868,
+                "cost": 281581,
+                "ebitda": -259713,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 22438,
+                "cost": 162522,
+                "ebitda": -140084,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 119629,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02504017,
+                "rev": 113820,
+                "ebitda": -301122,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.03,
+              "headlineShareAfter": 0.03,
+              "normal": {
+                "rev": 31110,
+                "cost": 299918,
+                "ebitda": -268808,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 32039,
+                "cost": 172770,
+                "ebitda": -140731,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 128077,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02491176,
+                "rev": 107387,
+                "ebitda": -305753,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.035,
+              "headlineShareAfter": 0.035,
+              "normal": {
+                "rev": 40298,
+                "cost": 318384,
+                "ebitda": -278086,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 41664,
+                "cost": 172003,
+                "ebitda": -130339,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 147747,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02478335,
+                "rev": 107444,
+                "ebitda": -305712,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.04,
+              "headlineShareAfter": 0.04,
+              "normal": {
+                "rev": 53527,
+                "cost": 275913,
+                "ebitda": -222386,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 55552,
+                "cost": 167307,
+                "ebitda": -111755,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 110631,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02465494,
+                "rev": 107338,
+                "ebitda": -305789,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.05,
+              "headlineShareAfter": 0.05,
+              "normal": {
+                "rev": 89938,
+                "cost": 272301,
+                "ebitda": -182363,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 89938,
+                "cost": 183472,
+                "ebitda": -93534,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 88829,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02439811,
+                "rev": 108092,
+                "ebitda": -305246,
+                "profitable": false
+              }
+            }
+          ]
+        },
+        {
+          "format": "ADULT_STANDARDS",
+          "ok": true,
+          "callLetters": "KAHT",
+          "rows": [
+            {
+              "share": 0.015,
+              "headlineShareAfter": 0.015,
+              "normal": {
+                "rev": 6494,
+                "cost": 231046,
+                "ebitda": -224552,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 6494,
+                "cost": 136205,
+                "ebitda": -129711,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 94841,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02529699,
+                "rev": 112553,
+                "ebitda": -302034,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.02,
+              "headlineShareAfter": 0.02,
+              "normal": {
+                "rev": 12148,
+                "cost": 247129,
+                "ebitda": -234981,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 12416,
+                "cost": 145076,
+                "ebitda": -132660,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 102321,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02516858,
+                "rev": 112536,
+                "ebitda": -302046,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.025,
+              "headlineShareAfter": 0.025,
+              "normal": {
+                "rev": 15030,
+                "cost": 262546,
+                "ebitda": -247516,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 15417,
+                "cost": 153423,
+                "ebitda": -138006,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 109510,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02504017,
+                "rev": 113244,
+                "ebitda": -301536,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.03,
+              "headlineShareAfter": 0.03,
+              "normal": {
+                "rev": 21838,
+                "cost": 279096,
+                "ebitda": -257258,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 22487,
+                "cost": 162645,
+                "ebitda": -140158,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 117100,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02491176,
+                "rev": 106836,
+                "ebitda": -306150,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.035,
+              "headlineShareAfter": 0.035,
+              "normal": {
+                "rev": 28632,
+                "cost": 295749,
+                "ebitda": -267117,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 29608,
+                "cost": 161598,
+                "ebitda": -131990,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 135127,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02478335,
+                "rev": 106911,
+                "ebitda": -306096,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.04,
+              "headlineShareAfter": 0.04,
+              "normal": {
+                "rev": 38050,
+                "cost": 255655,
+                "ebitda": -217605,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 39487,
+                "cost": 156696,
+                "ebitda": -117209,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 100396,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02465494,
+                "rev": 106837,
+                "ebitda": -306149,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.05,
+              "headlineShareAfter": 0.05,
+              "normal": {
+                "rev": 65939,
+                "cost": 250769,
+                "ebitda": -184830,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 65939,
+                "cost": 170711,
+                "ebitda": -104772,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 80058,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02439811,
+                "rev": 107658,
+                "ebitda": -305558,
+                "profitable": false
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ok": true,
+      "market": "nashville",
+      "year": 1985,
+      "period": 1,
+      "formats": [
+        {
+          "format": "TOP40",
+          "ok": true,
+          "callLetters": "WYKF",
+          "rows": [
+            {
+              "share": 0.015,
+              "headlineShareAfter": 0.015,
+              "normal": {
+                "rev": 32122,
+                "cost": 384327,
+                "ebitda": -352205,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 32122,
+                "cost": 229292,
+                "ebitda": -197170,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 155035,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03348012,
+                "rev": 397083,
+                "ebitda": -186751,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.02,
+              "headlineShareAfter": 0.02,
+              "normal": {
+                "rev": 56007,
+                "cost": 391312,
+                "ebitda": -335305,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 57240,
+                "cost": 235100,
+                "ebitda": -177860,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 157445,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03331017,
+                "rev": 396600,
+                "ebitda": -187099,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.025,
+              "headlineShareAfter": 0.025,
+              "normal": {
+                "rev": 73877,
+                "cost": 396573,
+                "ebitda": -322696,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 75791,
+                "cost": 240557,
+                "ebitda": -164766,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 157930,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03314022,
+                "rev": 396324,
+                "ebitda": -187298,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.03,
+              "headlineShareAfter": 0.03,
+              "normal": {
+                "rev": 93278,
+                "cost": 402308,
+                "ebitda": -309030,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 96061,
+                "cost": 248293,
+                "ebitda": -152232,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 156798,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03297027,
+                "rev": 395972,
+                "ebitda": -187551,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.035,
+              "headlineShareAfter": 0.035,
+              "normal": {
+                "rev": 126991,
+                "cost": 412237,
+                "ebitda": -285246,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 131279,
+                "cost": 242143,
+                "ebitda": -110864,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 174382,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03280032,
+                "rev": 376882,
+                "ebitda": -201296,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.04,
+              "headlineShareAfter": 0.04,
+              "normal": {
+                "rev": 192749,
+                "cost": 364070,
+                "ebitda": -171321,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 199998,
+                "cost": 235215,
+                "ebitda": -35217,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 136104,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03263037,
+                "rev": 376452,
+                "ebitda": -201606,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.05,
+              "headlineShareAfter": 0.05,
+              "normal": {
+                "rev": 278684,
+                "cost": 370400,
+                "ebitda": -91716,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 278684,
+                "cost": 252284,
+                "ebitda": 26400,
+                "profitable": true
+              },
+              "ebitdaDeltaLeanVsNormal": 118116,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03229047,
+                "rev": 378218,
+                "ebitda": -200334,
+                "profitable": false
+              }
+            }
+          ]
+        },
+        {
+          "format": "COUNTRY",
+          "ok": true,
+          "callLetters": "WYKF",
+          "rows": [
+            {
+              "share": 0.015,
+              "headlineShareAfter": 0.015,
+              "normal": {
+                "rev": 28360,
+                "cost": 301352,
+                "ebitda": -272992,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 28360,
+                "cost": 185937,
+                "ebitda": -157577,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 115415,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03348012,
+                "rev": 382136,
+                "ebitda": -197513,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.02,
+              "headlineShareAfter": 0.02,
+              "normal": {
+                "rev": 49451,
+                "cost": 325651,
+                "ebitda": -276200,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 50540,
+                "cost": 201157,
+                "ebitda": -150617,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 125583,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03331017,
+                "rev": 381728,
+                "ebitda": -197807,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.025,
+              "headlineShareAfter": 0.025,
+              "normal": {
+                "rev": 65449,
+                "cost": 348855,
+                "ebitda": -283406,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 67145,
+                "cost": 216420,
+                "ebitda": -149275,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 134131,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03314022,
+                "rev": 381495,
+                "ebitda": -197975,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.03,
+              "headlineShareAfter": 0.03,
+              "normal": {
+                "rev": 82901,
+                "cost": 372708,
+                "ebitda": -289807,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 85381,
+                "cost": 234104,
+                "ebitda": -148723,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 141084,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03297027,
+                "rev": 381199,
+                "ebitda": -198188,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.035,
+              "headlineShareAfter": 0.035,
+              "normal": {
+                "rev": 113874,
+                "cost": 399122,
+                "ebitda": -285248,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 117728,
+                "cost": 235426,
+                "ebitda": -117698,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 167550,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03280032,
+                "rev": 362569,
+                "ebitda": -211601,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.04,
+              "headlineShareAfter": 0.04,
+              "normal": {
+                "rev": 174220,
+                "cost": 356356,
+                "ebitda": -182136,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 180775,
+                "cost": 229896,
+                "ebitda": -49121,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 133015,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03263037,
+                "rev": 362257,
+                "ebitda": -211826,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.05,
+              "headlineShareAfter": 0.05,
+              "normal": {
+                "rev": 253710,
+                "cost": 360312,
+                "ebitda": -106602,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 253710,
+                "cost": 245266,
+                "ebitda": 8444,
+                "profitable": true
+              },
+              "ebitdaDeltaLeanVsNormal": 115046,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03229047,
+                "rev": 364090,
+                "ebitda": -210506,
+                "profitable": false
+              }
+            }
+          ]
+        },
+        {
+          "format": "ADULT_STANDARDS",
+          "ok": true,
+          "callLetters": "WYKF",
+          "rows": [
+            {
+              "share": 0.015,
+              "headlineShareAfter": 0.015,
+              "normal": {
+                "rev": 19439,
+                "cost": 271132,
+                "ebitda": -251693,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 19439,
+                "cost": 170458,
+                "ebitda": -151019,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 100674,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03348012,
+                "rev": 381311,
+                "ebitda": -198107,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.02,
+              "headlineShareAfter": 0.02,
+              "normal": {
+                "rev": 33902,
+                "cost": 291867,
+                "ebitda": -257965,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 34647,
+                "cost": 183324,
+                "ebitda": -148677,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 109288,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03331017,
+                "rev": 381036,
+                "ebitda": -198305,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.025,
+              "headlineShareAfter": 0.025,
+              "normal": {
+                "rev": 45221,
+                "cost": 311947,
+                "ebitda": -266726,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 46390,
+                "cost": 196535,
+                "ebitda": -150145,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 116581,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03314022,
+                "rev": 380897,
+                "ebitda": -198405,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.03,
+              "headlineShareAfter": 0.03,
+              "normal": {
+                "rev": 57702,
+                "cost": 332524,
+                "ebitda": -274822,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 59430,
+                "cost": 211876,
+                "ebitda": -152446,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 122376,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03297027,
+                "rev": 380699,
+                "ebitda": -198548,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.035,
+              "headlineShareAfter": 0.035,
+              "normal": {
+                "rev": 80813,
+                "cost": 356065,
+                "ebitda": -275252,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 83553,
+                "cost": 212981,
+                "ebitda": -129428,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 145824,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03280032,
+                "rev": 362166,
+                "ebitda": -211891,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.04,
+              "headlineShareAfter": 0.04,
+              "normal": {
+                "rev": 125780,
+                "cost": 316659,
+                "ebitda": -190879,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 130524,
+                "cost": 206276,
+                "ebitda": -75752,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 115127,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03263037,
+                "rev": 362144,
+                "ebitda": -211907,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.05,
+              "headlineShareAfter": 0.05,
+              "normal": {
+                "rev": 185993,
+                "cost": 317703,
+                "ebitda": -131710,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 185993,
+                "cost": 217999,
+                "ebitda": -32006,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 99704,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03229047,
+                "rev": 364364,
+                "ebitda": -210309,
+                "profitable": false
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "ok": true,
+      "market": "atlanta",
+      "year": 1985,
+      "period": 1,
+      "formats": [
+        {
+          "format": "TOP40",
+          "ok": true,
+          "callLetters": "WNOK",
+          "rows": [
+            {
+              "share": 0.015,
+              "headlineShareAfter": 0.015,
+              "normal": {
+                "rev": 45342,
+                "cost": 404768,
+                "ebitda": -359426,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 45342,
+                "cost": 254852,
+                "ebitda": -209510,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 149916,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03027387,
+                "rev": 494392,
+                "ebitda": -149701,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.02,
+              "headlineShareAfter": 0.02,
+              "normal": {
+                "rev": 82793,
+                "cost": 416044,
+                "ebitda": -333251,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 84611,
+                "cost": 264607,
+                "ebitda": -179996,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 153255,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.0301202,
+                "rev": 493896,
+                "ebitda": -150058,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.025,
+              "headlineShareAfter": 0.025,
+              "normal": {
+                "rev": 114539,
+                "cost": 425689,
+                "ebitda": -311150,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 117501,
+                "cost": 273321,
+                "ebitda": -155820,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 155330,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02996652,
+                "rev": 493623,
+                "ebitda": -150254,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.03,
+              "headlineShareAfter": 0.03,
+              "normal": {
+                "rev": 152535,
+                "cost": 437304,
+                "ebitda": -284769,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 157084,
+                "cost": 284554,
+                "ebitda": -127470,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 157299,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02981285,
+                "rev": 467299,
+                "ebitda": -169208,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.035,
+              "headlineShareAfter": 0.035,
+              "normal": {
+                "rev": 187282,
+                "cost": 448087,
+                "ebitda": -260805,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 193613,
+                "cost": 275192,
+                "ebitda": -81579,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 179226,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02965917,
+                "rev": 467080,
+                "ebitda": -169365,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.04,
+              "headlineShareAfter": 0.04,
+              "normal": {
+                "rev": 260068,
+                "cost": 398820,
+                "ebitda": -138752,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 269861,
+                "cost": 266223,
+                "ebitda": 3638,
+                "profitable": true
+              },
+              "ebitdaDeltaLeanVsNormal": 142390,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.0295055,
+                "rev": 466278,
+                "ebitda": -169943,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.05,
+              "headlineShareAfter": 0.05,
+              "normal": {
+                "rev": 394692,
+                "cost": 434267,
+                "ebitda": -39575,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 394692,
+                "cost": 299441,
+                "ebitda": 95251,
+                "profitable": true
+              },
+              "ebitdaDeltaLeanVsNormal": 134826,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02919815,
+                "rev": 466725,
+                "ebitda": -169621,
+                "profitable": false
+              }
+            }
+          ]
+        },
+        {
+          "format": "COUNTRY",
+          "ok": true,
+          "callLetters": "WNOK",
+          "rows": [
+            {
+              "share": 0.015,
+              "headlineShareAfter": 0.015,
+              "normal": {
+                "rev": 39004,
+                "cost": 323654,
+                "ebitda": -284650,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 39004,
+                "cost": 210176,
+                "ebitda": -171172,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 113478,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03027387,
+                "rev": 476831,
+                "ebitda": -162345,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.02,
+              "headlineShareAfter": 0.02,
+              "normal": {
+                "rev": 71513,
+                "cost": 352075,
+                "ebitda": -280562,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 73083,
+                "cost": 229561,
+                "ebitda": -156478,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 124084,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.0301202,
+                "rev": 476426,
+                "ebitda": -162636,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.025,
+              "headlineShareAfter": 0.025,
+              "normal": {
+                "rev": 99693,
+                "cost": 379780,
+                "ebitda": -280087,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 102276,
+                "cost": 248654,
+                "ebitda": -146378,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 133709,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02996652,
+                "rev": 476204,
+                "ebitda": -162796,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.03,
+              "headlineShareAfter": 0.03,
+              "normal": {
+                "rev": 133705,
+                "cost": 409670,
+                "ebitda": -275965,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 137695,
+                "cost": 270460,
+                "ebitda": -132765,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 143200,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02981285,
+                "rev": 450567,
+                "ebitda": -181255,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.035,
+              "headlineShareAfter": 0.035,
+              "normal": {
+                "rev": 164712,
+                "cost": 434561,
+                "ebitda": -269849,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 170284,
+                "cost": 266844,
+                "ebitda": -96560,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 173289,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02965917,
+                "rev": 450401,
+                "ebitda": -181374,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.04,
+              "headlineShareAfter": 0.04,
+              "normal": {
+                "rev": 229491,
+                "cost": 388349,
+                "ebitda": -158858,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 238140,
+                "cost": 258105,
+                "ebitda": -19965,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 138893,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.0295055,
+                "rev": 449727,
+                "ebitda": -181860,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.05,
+              "headlineShareAfter": 0.05,
+              "normal": {
+                "rev": 352358,
+                "cost": 411648,
+                "ebitda": -59290,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 352358,
+                "cost": 283025,
+                "ebitda": 69333,
+                "profitable": true
+              },
+              "ebitdaDeltaLeanVsNormal": 128623,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02919815,
+                "rev": 450334,
+                "ebitda": -181423,
+                "profitable": false
+              }
+            }
+          ]
+        },
+        {
+          "format": "ADULT_STANDARDS",
+          "ok": true,
+          "callLetters": "WNOK",
+          "rows": [
+            {
+              "share": 0.015,
+              "headlineShareAfter": 0.015,
+              "normal": {
+                "rev": 26211,
+                "cost": 290917,
+                "ebitda": -264706,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 26211,
+                "cost": 192317,
+                "ebitda": -166106,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 98600,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.03027387,
+                "rev": 475971,
+                "ebitda": -162964,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.02,
+              "headlineShareAfter": 0.02,
+              "normal": {
+                "rev": 48474,
+                "cost": 314651,
+                "ebitda": -266177,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 49542,
+                "cost": 208270,
+                "ebitda": -158728,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 107449,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.0301202,
+                "rev": 475726,
+                "ebitda": -163140,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.025,
+              "headlineShareAfter": 0.025,
+              "normal": {
+                "rev": 68642,
+                "cost": 338142,
+                "ebitda": -269500,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 70425,
+                "cost": 224332,
+                "ebitda": -153907,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 115593,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02996652,
+                "rev": 475628,
+                "ebitda": -163211,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.03,
+              "headlineShareAfter": 0.03,
+              "normal": {
+                "rev": 93361,
+                "cost": 363300,
+                "ebitda": -269939,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 96154,
+                "cost": 242569,
+                "ebitda": -146415,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 123524,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02981285,
+                "rev": 450104,
+                "ebitda": -181588,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.035,
+              "headlineShareAfter": 0.035,
+              "normal": {
+                "rev": 115786,
+                "cost": 386383,
+                "ebitda": -270597,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 119703,
+                "cost": 239633,
+                "ebitda": -119930,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 150667,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02965917,
+                "rev": 450066,
+                "ebitda": -181615,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.04,
+              "headlineShareAfter": 0.04,
+              "normal": {
+                "rev": 162385,
+                "cost": 343045,
+                "ebitda": -180660,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 168521,
+                "cost": 229297,
+                "ebitda": -60776,
+                "profitable": false
+              },
+              "ebitdaDeltaLeanVsNormal": 119884,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.0295055,
+                "rev": 449660,
+                "ebitda": -181908,
+                "profitable": false
+              }
+            },
+            {
+              "share": 0.05,
+              "headlineShareAfter": 0.05,
+              "normal": {
+                "rev": 254970,
+                "cost": 352371,
+                "ebitda": -97401,
+                "profitable": false
+              },
+              "lean": {
+                "rev": 254970,
+                "cost": 244996,
+                "ebitda": 9974,
+                "profitable": true
+              },
+              "ebitdaDeltaLeanVsNormal": 107375,
+              "talkComparable": {
+                "format": "NEWS_TALK",
+                "share": 0.02919815,
+                "rev": 450717,
+                "ebitda": -181147,
+                "profitable": false
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

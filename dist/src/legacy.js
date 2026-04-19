@@ -159,7 +159,6 @@ function fccCanAcquire(entity, sigType, G){
 /** Stable indie “licensee” key for AI commercial stations (groups simulcast pairs via `rivalFictionalParentName`). */
 function indieLicenseeKey(s,G){
   if(!s||s.isPlayer||s.isPublic||s.corpOwner||s._bpSlotDeferred)return '';
-  if(s.fictionalParentLabel)return s.fictionalParentLabel;
   if(s.aiLicenseeKey)return s.aiLicenseeKey;
   return rivalFictionalParentName(s,G)||('indie_'+s.id);
 }
@@ -180,127 +179,10 @@ function fccCanIndieAcquire(licenseeKey, sigType, G){
   const serviceCount=sigType==='AM'?owned.am:owned.fm;
   return serviceCount<lim.perService;
 }
-
-/** Service bucket for FCC-style caps (matches fccOwned / fccOwnedIndie). */
-function _rivalSigServiceBucket(s){
-  if(!s||!s.sig)return 'FM';
-  if(s.fmBooster||s.sig.type==='FM')return 'FM';
-  return 'AM';
-}
-
-/**
- * Assign stable fictional parent names so the same label never implies illegal pre-Telecom Act
- * duplicate AM/AM or FM/FM in one market (hash-per-station could collide and look like one owner).
- * Simulcast pairs share one label (typically 1 AM + 1 FM — legal). Real corpOwner uses runConsolidation (1996+).
- */
-function assignFictionalParentLabels(stations, G, opts){
-  const o=opts||{};
-  const year=G&&G.year!=null?G.year:1970;
-  const mkt=String((G&&G.marketId)||ACTIVE_MARKET||'atlanta');
-  const nComm=(stations||[]).filter(s=>s&&!s._bpSlotDeferred).length;
-  const lim=fccLimits(year,nComm);
-  const L=lim.mode==='pre96'
-    ?{maxAm:lim.am,maxFm:lim.fm,maxTotal:lim.am+lim.fm}
-    :{maxAm:lim.perService,maxFm:lim.perService,maxTotal:lim.total};
-  const pool=[...RIVAL_FICTIONAL_PARENTS];
-  for(let i=pool.length-1;i>0;i--){
-    const j=(wlHash32(mkt+'::fpar::'+i))%(i+1);
-    [pool[i],pool[j]]=[pool[j],pool[i]];
-  }
-  const usage={};
-  function canPlace(name,amAdd,fmAdd){
-    const u=usage[name]||(usage[name]={am:0,fm:0,total:0});
-    if(u.total+amAdd+fmAdd>L.maxTotal)return false;
-    if(u.am+amAdd>L.maxAm)return false;
-    if(u.fm+fmAdd>L.maxFm)return false;
-    return true;
-  }
-  function doPlace(name,amAdd,fmAdd){
-    const u=usage[name]||(usage[name]={am:0,fm:0,total:0});
-    u.am+=amAdd; u.fm+=fmAdd; u.total+=amAdd+fmAdd;
-  }
-  let _ovfSeq=0;
-  function takeName(amNeed,fmNeed){
-    for(let k=0;k<pool.length;k++){
-      const name=pool[k];
-      if(canPlace(name,amNeed,fmNeed)){
-        doPlace(name,amNeed,fmNeed);
-        return name;
-      }
-    }
-    const tag=String((wlHash32(mkt+'::ovf::'+(_ovfSeq++)+'::'+amNeed+'::'+fmNeed)%8999)+1000);
-    const name=`${pool[0]} (${tag})`;
-    usage[name]={am:amNeed,fm:fmNeed,total:amNeed+fmNeed};
-    return name;
-  }
-
-  const commercial=(stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic);
-  if(o.force)commercial.forEach(s=>{delete s.fictionalParentLabel;});
-  // Existing labels (saves, prior turns) must occupy usage so new stations cannot violate AM/FM caps.
-  commercial.forEach(s=>{
-    if(!s.fictionalParentLabel)return;
-    const b=_rivalSigServiceBucket(s);
-    const amN=b==='AM'?1:0, fmN=b==='FM'?1:0;
-    doPlace(s.fictionalParentLabel,amN,fmN);
-  });
-  const need=commercial.filter(s=>!s.fictionalParentLabel);
-  if(!need.length)return;
-
-  const seenPair=new Set();
-  commercial.forEach(s=>{
-    if(!s.simulcastWith)return;
-    const oth=stations.find(t=>t&&t.id===s.simulcastWith);
-    if(!oth)return;
-    const lo=s.id<oth.id?s:oth, hi=s.id<oth.id?oth:s;
-    const key=lo.id+'|'+hi.id;
-    if(seenPair.has(key))return;
-    seenPair.add(key);
-    if(lo.fictionalParentLabel){
-      const name=lo.fictionalParentLabel;
-      const bb=_rivalSigServiceBucket(hi);
-      const amN=bb==='AM'?1:0, fmN=bb==='FM'?1:0;
-      if(canPlace(name,amN,fmN)){
-        doPlace(name,amN,fmN);
-        hi.fictionalParentLabel=name;
-      }else{
-        hi.fictionalParentLabel=takeName(amN,fmN);
-      }
-      return;
-    }
-    if(hi.fictionalParentLabel){
-      const name=hi.fictionalParentLabel;
-      const ba=_rivalSigServiceBucket(lo);
-      const amN=ba==='AM'?1:0, fmN=ba==='FM'?1:0;
-      if(canPlace(name,amN,fmN)){
-        doPlace(name,amN,fmN);
-        lo.fictionalParentLabel=name;
-      }else{
-        lo.fictionalParentLabel=takeName(amN,fmN);
-      }
-      return;
-    }
-    const ba=_rivalSigServiceBucket(lo), bb=_rivalSigServiceBucket(hi);
-    const amN=(ba==='AM'?1:0)+(bb==='AM'?1:0);
-    const fmN=(ba==='FM'?1:0)+(bb==='FM'?1:0);
-    const name=takeName(amN,fmN);
-    lo.fictionalParentLabel=name;
-    hi.fictionalParentLabel=name;
-  });
-
-  commercial.forEach(s=>{
-    if(s.fictionalParentLabel)return;
-    const b=_rivalSigServiceBucket(s);
-    const amN=b==='AM'?1:0, fmN=b==='FM'?1:0;
-    s.fictionalParentLabel=takeName(amN,fmN);
-  });
-}
-
 function initIndieLicenseeKeysFromStations(stations, G){
-  assignFictionalParentLabels(stations, G, {force:false});
   (stations||[]).forEach(s=>{
     if(!s||s._bpSlotDeferred||s.isPlayer||s.isPublic||s.corpOwner)return;
-    if(s.fictionalParentLabel)s.aiLicenseeKey=s.fictionalParentLabel;
-    else if(!s.aiLicenseeKey)s.aiLicenseeKey=rivalFictionalParentName(s,G)||('indie_'+s.id);
+    if(!s.aiLicenseeKey)s.aiLicenseeKey=rivalFictionalParentName(s,G)||('indie_'+s.id);
   });
 }
 
@@ -333,7 +215,7 @@ const FM={
   BEAUTIFUL_MUSIC:{l:'Beautiful Music',    cpm:.80, sp:20,fm:true, ab:0,   unlock:1970,d:'Soft, instrumental-heavy music for older audiences. "Elevator music" that\'s stable, background listening, geared toward the 50+ crowd, but has limited growth in the future.'},
   GOSPEL:         {l:'Gospel',             cpm:.72, sp:12,fm:false,ab:0,   unlock:1970,d:'A niche format with a steady, loyal audience, but growth and advertising upside could be limited.'},
   CLASSIC_ROCK:   {l:'Classic Rock',       cpm:1.10,sp:12,fm:true, ab:0,   unlock:1980,d:'Familiar rock hits built around proven favorites and big names. Builds a durable, loyal audience that skews a bit older, but still has broad demographic appeal.'},
-  ADULT_CONTEMP:  {l:'Adult Contemporary', cpm:1.05,sp:16,fm:false,ab:0,   unlock:1970,d:'Softer pop hits aimed at adults — the soft-AC lineage builds out of easy listening and MOR through the 1970s, peaks on FM in the 1980s, but plenty of AMs ran soft pop / AC as well (especially daytimers and smaller markets). Profitable and advertiser-friendly; on AM you still fight FM fidelity for younger ears.'},
+  ADULT_CONTEMP:  {l:'Adult Contemporary', cpm:1.05,sp:16,fm:true, ab:0,   unlock:1980,d:'Softer pop hits aimed at adults. Profitable, advertiser-friendly and popular with 25-49 females, but lack of a strong identity can make it harder to stand out in the market.'},
   URBAN_CONTEMP:  {l:'Urban Contemporary', cpm:.95, sp:14,fm:true, ab:.10, unlock:1983,d:'An evolution of the Soul / R&B sound of the 1970s. Rhythmic pop and R&B aimed at a younger, urban audience.'},
   SPORTS_TALK:    {l:'Sports Talk',        cpm:1.40,sp:10,fm:false,ab:0,   unlock:1990,d:'All-sports talk, built around teams, games and personality. Great format if you want to go after sports broadcast rights.'},
   SPANISH:        {l:'Spanish / Latin',    cpm:.90, sp:14,fm:false,ab:.08, unlock:1992,d:'Spanish-language music and programming, ranging from Regional Mexican to Tropical/Latin. Large audience and revenue potential in many markets.'},
@@ -679,6 +561,7 @@ function earlyEraSmallMarketOpsRelief(year,marketId){
   if(tier==='mega')return 1.0;
   if(tier==='large')return 0.92;
   if(tier==='medium')return 0.82;
+  if(tier==='small')return 0.766;
   return 0.78;
 }
 /** FCC/regulatory + corporate overhead floor — leaner in 1970s secondary markets than mega (pre-1980 only). */
@@ -688,6 +571,7 @@ function earlyEraSmallMarketRegRelief(year,marketId){
   if(tier==='mega')return 1.0;
   if(tier==='large')return 0.94;
   if(tier==='medium')return 0.88;
+  if(tier==='small')return 0.818;
   return 0.84;
 }
 function earlyEraAmTalkSmallMarketSupport(format,year,marketId,sigType){
@@ -862,18 +746,18 @@ const TROUBLE_SCENARIOS=[
    desc:'{name} dropped an expletive live on air. The FCC is investigating.',
    flavor:'It was a slip during an emotional sports argument. Or maybe not.',
    options:[
-     {label:'Pay FCC assessment + public apology',cost:'fine',effect:{morale:-8,fine:15000},outcome:'Fine paid. {name} is embarrassed but grateful. Audience mostly forgets within a period.'},
-     {label:'Suspend for one period (assessment still due)',cost:'none',effect:{morale:-18,quality:-3,suspendPeriods:1},outcome:'{name} suspended. Listeners notice the absence. Some respect the accountability.'},
-     {label:'Fire host (assessment + severance)',cost:'buyout',effect:{stationShare:-0.003},outcome:'Clean break. {name} exits with some bitterness. Rival stations are already calling them.'},
+     {label:'Pay fine + public apology',cost:'fine',effect:{morale:-8,fine:15000},outcome:'Fine paid. {name} is embarrassed but grateful. Audience mostly forgets within a period.'},
+     {label:'Suspend for one period',cost:'none',effect:{morale:-18,quality:-3,suspendPeriods:1},outcome:'{name} suspended. Listeners notice the absence. Some respect the accountability.'},
+     {label:'Fire immediately',cost:'buyout',effect:{stationShare:-0.003},outcome:'Clean break. {name} exits with some bitterness. Rival stations are already calling them.'},
    ]},
   {id:'fcc_indecency',tier:'major',
    title:'FCC Indecency Complaint',
    desc:'{name} crossed the line on a morning segment. Three listener complaints filed. The FCC is reviewing.',
    flavor:'A joke that went too far. Or satire that nobody understood. Either way, the phones are ringing.',
    options:[
-     {label:'Appeal ($25K legal; assessment paid first)',cost:25000,effect:{morale:+5},outcome:'Legal team files response. 60% chance the fine is reduced or dismissed.'},
-     {label:'Settle: pay assessment only (host stays)',cost:'fine',effect:{morale:-10,fine:50000},outcome:'Quick resolution. {name} survives but is on thin ice. One more incident and the FCC flags the station.'},
-     {label:'Fire host + public statement (assessment + severance)',cost:'buyout',effect:{stationShare:-0.005,identity:+5},outcome:'Bold accountability move. Community responds positively. Rivals notice your standards.'},
+     {label:'Fight the complaint ($25K legal)',cost:25000,effect:{morale:+5},outcome:'Legal team files response. 60% chance the fine is reduced or dismissed.'},
+     {label:'Settle: pay max fine',cost:'fine',effect:{morale:-10,fine:50000},outcome:'Quick resolution. {name} survives but is on thin ice. One more incident and the FCC flags the station.'},
+     {label:'Fire + issue statement',cost:'buyout',effect:{stationShare:-0.005,identity:+5},outcome:'Bold accountability move. Community responds positively. Rivals notice your standards.'},
    ]},
   {id:'sponsor_boycott',tier:'major',
    title:'Sponsor Boycott',
@@ -956,30 +840,6 @@ function clearPendingTroubleIfStale(){
   if(!sd?.talent)G.pendingDecisionEvent=null;
 }
 
-/** Callout copy for FCC trouble modals — mechanics: base assessment on every branch; fight adds legal + appeal refund on assessment only; buyout is severance + release. */
-function fccTalentTroubleExplainerHtml(scenarioId,fineAmt){
-  const fl=f$(fineAmt);
-  if(scenarioId==='fcc_language'){
-    return `<div class="fcc-trouble-explainer" style="font-size:13px;color:var(--mut);line-height:1.45;margin-bottom:12px;padding:10px 12px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.2);border-radius:6px">
-      <strong style="color:var(--off)">How FCC costs work:</strong>
-      The <strong>${fl}</strong> assessment applies to <em>every</em> option — you cannot avoid it by suspending or firing the host.
-      <span style="display:block;margin-top:6px"><strong>Pay + apologize</strong> — assessment only; host stays on air.</span>
-      <span style="display:block;margin-top:4px"><strong>Suspend</strong> — same assessment still due; talent sits out a period.</span>
-      <span style="display:block;margin-top:4px"><strong>Fire</strong> — assessment plus <strong>contract severance</strong> (the “buyout” line below) to terminate the deal and clear the slot.</span>
-    </div>`;
-  }
-  if(scenarioId==='fcc_indecency'){
-    return `<div class="fcc-trouble-explainer" style="font-size:13px;color:var(--mut);line-height:1.45;margin-bottom:12px;padding:10px 12px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.2);border-radius:6px">
-      <strong style="color:var(--off)">How FCC costs work:</strong>
-      The <strong>${fl}</strong> assessment applies to <em>every</em> option first.
-      <span style="display:block;margin-top:6px"><strong>Fight</strong> — pay the assessment <em>and</em> separate legal fees; an appeal may refund <em>part or all of the assessment</em> (legal fees are not refunded).</span>
-      <span style="display:block;margin-top:4px"><strong>Settle</strong> — pay the assessment; host stays (on thin ice).</span>
-      <span style="display:block;margin-top:4px"><strong>Fire + statement</strong> — assessment plus <strong>contract severance</strong> (buyout) to release the host; you still issue the public statement in the outcome.</span>
-    </div>`;
-  }
-  return '';
-}
-
 function showTalentTroubleModal(){
   clearPendingTroubleIfStale();
   const pending=G.pendingDecisionEvent;
@@ -993,24 +853,23 @@ function showTalentTroubleModal(){
     const ownerPid=pending.ownerId!=null?pending.ownerId:MP.playerId;
     const ownerCash=MP.mode==='live'?(G._playerCash?.[ownerPid]??G.cash):G.cash;
     const fineAmt=scenario.id==='fcc_language'?15000:scenario.id==='fcc_indecency'?50000:0;
-    const isFccScenario=scenario.id==='fcc_language'||scenario.id==='fcc_indecency';
     const optRows=scenario.options.map((opt,i)=>{
       let costLabel='',costColor='var(--off)',canAfford=true;
       const isFcc=scenario.id==='fcc_language'||scenario.id==='fcc_indecency';
       const mandatoryFine=isFcc?fineAmt:0;
       if(opt.cost==='fine'){
-        costLabel=` — FCC assessment: ${f$(mandatoryFine)} (host / slot unchanged)`;
+        costLabel=` — Mandatory FCC fine: ${f$(mandatoryFine)}`;
         costColor='var(--red)';
         canAfford=ownerCash>=mandatoryFine;
       }else if(opt.cost==='buyout'){
-        costLabel=mandatoryFine>0?` — FCC assessment ${f$(mandatoryFine)} + severance (release slot)`:' — Drop / replace franchise';
+        costLabel=mandatoryFine>0?` — FCC fine: ${f$(mandatoryFine)}`:' — Drop / replace franchise';
         canAfford=ownerCash>=mandatoryFine;
       }else if(opt.cost==='none'||opt.cost==='leave'){
-        costLabel=mandatoryFine>0?` — FCC assessment: ${f$(mandatoryFine)} still due`:(opt.cost==='leave'?' — 1 period suspension (syndicated slot dark)':'No cash cost');
+        costLabel=mandatoryFine>0?` — Mandatory FCC fine: ${f$(mandatoryFine)}`:(opt.cost==='leave'?' — 1 period suspension (syndicated slot dark)':'No cash cost');
         canAfford=ownerCash>=mandatoryFine;
       }else if(typeof opt.cost==='number'){
         const totalNeed=mandatoryFine+opt.cost;
-        costLabel=mandatoryFine>0?` — FCC assessment ${f$(mandatoryFine)} + ${f$(opt.cost)} legal (appeal may reduce assessment)`:` — ${f$(opt.cost)} legal`;
+        costLabel=mandatoryFine>0?` — FCC fine: ${f$(mandatoryFine)} + legal`:` — ${f$(opt.cost)}`;
         canAfford=ownerCash>=totalNeed;
       }
       return `<button class="to${canAfford?'':' nope'}" style="display:block;width:100%;text-align:left;padding:10px 14px;margin-bottom:6px;cursor:${canAfford?'pointer':'not-allowed'}" onclick="${canAfford?`resolveTrouble('${pending.stationId}','${pending.slot}',${i})`:''}">
@@ -1029,7 +888,6 @@ function showTalentTroubleModal(){
       <div style="font-size:14px;color:var(--mut);font-style:italic">${scenario.flavor}</div>
     </div>
     <div style="font-size:14px;color:var(--mut);margin-bottom:10px">How do you respond?</div>
-    ${isFccScenario?fccTalentTroubleExplainerHtml(scenario.id,fineAmt):''}
     ${optRows}`;
     om('m-talent-trouble');
     return;
@@ -1044,44 +902,37 @@ function showTalentTroubleModal(){
   const fineAmt=scenario.id==='fcc_language'?15000:scenario.id==='fcc_indecency'?50000:0;
   const raiseAmt=Math.round(t.salary*0.15/500)*500;
   const desc=scenario.desc.replace(/{name}/g,t.name).replace(/{rivalStation}/g,pending.rivalStation);
-  const isFccScenario=scenario.id==='fcc_language'||scenario.id==='fcc_indecency';
   const optRows=scenario.options.map((opt,i)=>{
     let costLabel='',costColor='var(--off)',canAfford=true;
     const isFcc = scenario.id==='fcc_language' || scenario.id==='fcc_indecency';
     const mandatoryFine = isFcc ? fineAmt : 0;
     if(opt.cost==='fine'){
-      costLabel=` — FCC assessment: ${f$(mandatoryFine)} (pay only; host stays)`;
+      costLabel=` — Mandatory FCC fine: ${f$(mandatoryFine)}`;
       costColor='var(--red)';
       canAfford=ownerCash>=mandatoryFine;
     }
     else if(opt.cost==='buyout'){
       const totalNeed = mandatoryFine + (buyout||0);
-      if(mandatoryFine>0){
-        costLabel=buyout>0
-          ?` — FCC assessment ${f$(mandatoryFine)} + severance ${f$(buyout)} (host released)`
-          :` — FCC assessment: ${f$(mandatoryFine)}`;
-      }else{
-        costLabel=buyout>0?` — Contract severance ${f$(buyout)} (host released)`:' — Release talent';
-      }
+      costLabel=buyout>0
+        ?` — FCC fine: ${f$(mandatoryFine)} + Buyout: ${f$(buyout)}`
+        :` — FCC fine: ${f$(mandatoryFine)}`;
       costColor='var(--amb)';
       canAfford=ownerCash>=totalNeed;
     }
     else if(opt.cost==='raise'){
-      costLabel=mandatoryFine>0
-        ?` — FCC assessment ${f$(mandatoryFine)} + salary +${f$(raiseAmt)}/yr`
-        :` — Salary +${f$(raiseAmt)}/yr`;
+      costLabel=` — FCC fine: ${f$(mandatoryFine)} + Salary +${f$(raiseAmt)}/yr`;
       costColor='var(--amb)';
       canAfford=ownerCash>=mandatoryFine;
     }
     else if(opt.cost==='leave' || opt.cost==='none'){
-      costLabel=mandatoryFine>0 ? ` — FCC assessment: ${f$(mandatoryFine)} still due` : (opt.cost==='leave' ? ' — 1 period paid leave' : 'No cash cost');
+      costLabel=mandatoryFine>0 ? ` — Mandatory FCC fine: ${f$(mandatoryFine)}` : (opt.cost==='leave' ? ' — 1 period paid leave' : 'No cash cost');
       costColor=mandatoryFine>0 ? 'var(--red)' : 'var(--mut)';
       canAfford=ownerCash>=mandatoryFine;
     }
     else if(typeof opt.cost==='number'){
       const totalNeed = mandatoryFine + opt.cost;
       costLabel= mandatoryFine>0
-        ? ` — FCC assessment ${f$(mandatoryFine)} + ${f$(opt.cost)} legal (appeal may reduce assessment)`
+        ? ` — FCC fine: ${f$(mandatoryFine)} + ${f$(opt.cost)} legal`
         : ` — ${f$(opt.cost)} legal`;
       costColor='var(--amb)';
       canAfford=ownerCash>=totalNeed;
@@ -1102,7 +953,6 @@ function showTalentTroubleModal(){
       <div style="font-size:14px;color:var(--mut);font-style:italic">${scenario.flavor}</div>
     </div>
     <div style="font-size:14px;color:var(--mut);margin-bottom:10px">How do you respond?</div>
-    ${isFccScenario?fccTalentTroubleExplainerHtml(scenario.id,fineAmt):''}
     ${optRows}`;
   om('m-talent-trouble');
 }
@@ -6076,17 +5926,7 @@ function effectiveBpForMarket(bpIndex,marketId){
   const base=BP[bpIndex];
   if(!base)return base;
   const p=(MARKET_BP_PATCH[marketId]||{})[bpIndex];
-  let merged=p?{...base,...p}:base;
-  /** GM career: campaignMode sets `__WL_GM_UNDER_PLAYER_BP_PATCH__` before genMarket — varies Underdog slot (idx 1) format. */
-  if(
-    bpIndex===1&&
-    typeof globalThis!=='undefined'&&
-    globalThis.__WL_GM_UNDER_PLAYER_BP_PATCH__&&
-    typeof globalThis.__WL_GM_UNDER_PLAYER_BP_PATCH__==='object'
-  ){
-    merged={...merged,...globalThis.__WL_GM_UNDER_PLAYER_BP_PATCH__};
-  }
-  return merged;
+  return p?{...base,...p}:base;
 }
 /** Atlanta-style 1970 deferred slots; mega non-Sunbelt excludes idx 16 so remapped FM isn't replaced by late FM-country sign-on. */
 function isBpSlotDeferred1970(bpIndex,marketId){
@@ -9272,6 +9112,14 @@ function calcRev(s,G){
   const _sellTier=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
   if(year<1980&&_sellTier!=='mega')shareSelloutMult=Math.min(0.98,shareSelloutMult*1.1);
   if(year<1980&&_sellTier!=='mega'&&s.sig.type==='FM'&&!TALK_FMTS.includes(s.format)&&shareSelloutMult<0.76)shareSelloutMult=0.76;
+  // rankTier small: modest sell-through lift ~5–9.2% share (pre-1980); caps keep high-share billers unchanged.
+  if(year<1980&&_sellTier==='small'){
+    const shLo=s.rat?.share||0;
+    if(shLo>=0.05&&shLo<=0.092){
+      const u=Math.min(1,Math.max(0,(shLo-0.05)/0.042));
+      shareSelloutMult=Math.min(0.99,shareSelloutMult*(1+0.024*u));
+    }
+  }
   rev=Math.round(rev*shareSelloutMult);
   const dominantEarlyEraMult=earlyEraDominantAudienceMonMult(s,G,year);
   rev=Math.round(rev*dominantEarlyEraMult);
@@ -9371,6 +9219,15 @@ function calcRev(s,G){
   }
   staffCost=Math.round(staffCost*talkEarlyFixedMult);
   facCost=Math.round(facCost*talkEarlyFixedMult);
+  // Very small markets: core fixed footprint (staff+fac) slightly below metro-modeled scale pre-1980.
+  if(year<1980){
+    const _rtFixCore=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
+    if(_rtFixCore==='small'){
+      const kSmallFixCore=0.962;
+      staffCost=Math.round(staffCost*kSmallFixCore);
+      facCost=Math.round(facCost*kSmallFixCore);
+    }
+  }
   if(year<1980&&s.sig.type==='FM'&&!TALK_FMTS.includes(s.format)){
     const _ftr=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
     if(_ftr==='medium'){staffCost=Math.round(staffCost*0.87);facCost=Math.round(facCost*0.87);}
@@ -11840,12 +11697,26 @@ function checkPressure(G){
 
   const _pressCash=G.cash;
   const _pressMyStns=G.ps;
-  if(_pressCash<0){
+  const _tier0StarterCampaign=MP.mode!=='live'&&G.campaignAssignment&&((G.campaignAssignment.tier|0)===0);
+  const _soloDistressExitQ=_tier0StarterCampaign?5:2;
+  /** Tier 0 only: shallow negative cash does not advance solo distress — avoids two half-period dips ending the rung before operating math stabilizes. */
+  const _soloDistressCashTrip=_tier0StarterCampaign?-20000:0;
+  const _cashCountsSoloDistress=_pressCash<_soloDistressCashTrip;
+  if(_cashCountsSoloDistress){
     G.debtWarningQ=(G.debtWarningQ||0)+1;
     if(G.debtWarningQ===1){
       alerts.push(`⚠ Distress: cash ${f$(_pressCash)}. Restore positive cash by next period or face a forced sale.`);
       showToast('You are in distress. Restore positive cash by next period or face a forced sale.','warn');
-    }else if(G.debtWarningQ>=2){
+    }else if(_tier0StarterCampaign&&G.debtWarningQ===2){
+      alerts.push(`⚠ Still negative: cash ${f$(_pressCash)}. Corporate gives one more period on your starter posting — restore cash next turn or face a forced exit.`);
+      showToast('Still in distress — one more period to restore cash before corporate forces an exit.','warn');
+    }else if(_tier0StarterCampaign&&G.debtWarningQ===3){
+      alerts.push(`⚠ Deep negative: cash ${f$(_pressCash)}. Starter posting: show a credible path — restore cash or corporate will force an exit.`);
+      showToast('Deep cash distress — limited periods remain before forced exit.','warn');
+    }else if(_tier0StarterCampaign&&G.debtWarningQ===4){
+      alerts.push(`⚠ Sustained deep negative: cash ${f$(_pressCash)}. Last chance on your starter posting — restore cash next period or corporate forces an exit.`);
+      showToast('Sustained distress — one more period before forced exit.','warn');
+    }else if(G.debtWarningQ>=_soloDistressExitQ){
       const weakest=_pressMyStns.length?[..._pressMyStns].sort((a,b)=>(a.fin?.ebitda||0)-(b.fin?.ebitda||0))[0]:null;
       if(weakest&&_pressMyStns.length>1){
         const lmaOp=stationIsPlayerLmaLesseeOperation(weakest);
@@ -13326,7 +13197,7 @@ function tutorialTurnaroundToastForAct(){
   else if(a===4)showToast('In Programming: open Positioning, then Demo Target, then review the budget block — Next moves you to Programming Focus (set Midday). Then close and open Manage Talent.','info',9200);
   else if(a===5)showToast('Run two full periods with Next Period while Programming Focus stays on Midday.','info',7200);
   else if(a===6)showToast('Open Brand & Marketing — Next for a short overview, then the marketing budget step (coach stays in the margin). Raise spend and advance one period.','info',8200);
-  /* Act 7: spot-load copy is in the coach modal (announce + spotlight); avoid duplicating in the toast strip while m-sum is open. */
+  else if(a===7)showToast('Adjust Spot Load slightly — more spots help revenue but can cost audience. Then advance one period.','info',7000);
   else if(a===8)showToast('You’re on your own for a beat — tweak anything you like, then advance when ready.','info',7000);
 }
 function tutorialTurnaroundOnAdvTurnComplete(){
@@ -13355,7 +13226,7 @@ function tutorialTurnaroundOnAdvTurnComplete(){
     G.tutorialAct=7;
     if(ps)G._tutorialOpeningSpots=ps.ops?.spots||(FM[ps.format]?.sp||14);
     G._tutorialSpotsAdjusted=false;
-    /* Coach announce runs after period summary closes (m-sum blocks coach in wlTuTurnaroundLayoutStep). */
+    showToast('More spots can mean more revenue — too many can cost audience. Adjust spot load, then advance again.','info');
     tutorialTurnaroundToastForAct();
   }else if(a===7&&G._tutorialSpotsAdjusted){
     G.tutorialAct=8;
@@ -15962,7 +15833,6 @@ const RIVAL_FICTIONAL_PARENTS=[
 function rivalFictionalParentName(s,G){
   if(!s||s.isPlayer||s.isPublic||s._bpSlotDeferred)return '';
   if(s.corpOwner)return '';
-  if(s.fictionalParentLabel)return s.fictionalParentLabel;
   const mkt=String((G&&G.marketId)||ACTIVE_MARKET||'');
   if(s.simulcastWith){
     const a=s.id,b=s.simulcastWith;
@@ -16629,7 +16499,7 @@ function doLMALessor(sid) {
     !FM[f]?.public && !['FULL_SERVICE','PUBLIC_RADIO'].includes(f)
   );
   // Prefer formats with decent CPM that suit the signal type
-  const _amFriendly=['NEWS_TALK','ALL_NEWS','SPORTS_TALK','COUNTRY','GOSPEL','ADULT_STANDARDS','OLDIES','CLASSIC_HITS','ADULT_CONTEMP'];
+  const _amFriendly=['NEWS_TALK','ALL_NEWS','SPORTS_TALK','COUNTRY','GOSPEL','ADULT_STANDARDS','OLDIES','CLASSIC_HITS'];
   const _fmtPool = s.sig.type==='AM'
     ? _availFmts.filter(f=>_amFriendly.includes(f)).concat(_availFmts.filter(f=>!_amFriendly.includes(f)))
     : _availFmts;
@@ -17100,8 +16970,7 @@ function advTurn(mpCoalesceSeq){
     const sportsActs=simQuiet?[]:(runSportsEvents(G)||[]);
     const franchiseActs=simQuiet?[]:(runFranchiseEvents(G)||[]);
     sportsActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
-      franchiseActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
-    initIndieLicenseeKeysFromStations(G.stations,G);
+    franchiseActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     recalc(G.stations,G);
     snapMarketRankBookDisplay(G);
     unshiftRatingsDigest(G);
@@ -22209,24 +22078,8 @@ async function wlCommissionStationJingle(stationId){
   }
   if(statusEl){
     wlAiGenStatusBusy(statusEl,true);
-    statusEl.textContent='WORKING — Creating two jingle takes. Often 1–4 minutes. You can leave this open; we poll the server so proxies don’t drop the connection. Do not click Commission again.';
+    statusEl.textContent='WORKING — Creating two jingle takes. Often 1–4 minutes. Do not close this panel or click again; this message will clear when ready.';
   }
-  const pollJingleJob=async jobId=>{
-    const deadline=Date.now()+16*60*1000;
-    const id=encodeURIComponent(jobId);
-    while(Date.now()<deadline){
-      const pr=await fetch(wlGameApiUrl(`/api/station-jingle/job/${id}`),{method:'GET',credentials:'omit'});
-      const pd=await pr.json().catch(()=>({}));
-      if(!pr.ok){
-        if(pr.status===404)return{ok:false,error:pd.error||'Job expired — commission again.'};
-        return{ok:false,error:pd.error||`Job status HTTP ${pr.status}`};
-      }
-      if(pd.status==='complete'&&pd.ok&&Array.isArray(pd.variants)&&pd.variants.length)return{ok:true,variants:pd.variants};
-      if(pd.status==='failed'||pd.ok===false)return{ok:false,error:pd.error||'Jingle generation failed.'};
-      await new Promise(r=>setTimeout(r,2500));
-    }
-    return{ok:false,error:'Timed out waiting for jingles — try again or check server logs.'};
-  };
   try{
     const res=await fetch(wlGameApiUrl('/api/generate-station-jingle'),{
       method:'POST',
@@ -22239,23 +22092,8 @@ async function wlCommissionStationJingle(stationId){
       showToast(data.error||'Jingle generation failed.','warn');
       return;
     }
-    let final=data;
-    if(typeof data.jobId==='string'&&data.jobId.trim()){
-      if(statusEl)statusEl.textContent='WORKING — Suno is rendering. This step usually takes 1–4 minutes…';
-      final=await pollJingleJob(data.jobId.trim());
-      if(!final.ok){
-        if(statusEl)statusEl.textContent=final.error||'Jingle job failed.';
-        showToast(final.error||'Jingle generation failed.','warn');
-        return;
-      }
-    }
-    if(!Array.isArray(final.variants)||!final.variants.length){
-      if(statusEl)statusEl.textContent=final.error||data.error||'No jingle variants returned.';
-      showToast(final.error||data.error||'Jingle generation failed.','warn');
-      return;
-    }
     wlAdjustMyCash(-jingleCost);
-    op._pendingJingleVariants=Array.isArray(final.variants)?final.variants:[];
+    op._pendingJingleVariants=Array.isArray(data.variants)?data.variants:[];
     op._jinglePendingTagline=tagline;
     op._lastJingleGenTurn=turnOk;
     logHistory(op,'LOGO',`Commissioned station jingle package (${f$(jingleCost)}).`,G);
@@ -23673,11 +23511,7 @@ function cm(id,opts){
       requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
     }
   }
-  if(id==='m-sum'){
-    wlFtTutorialOnPeriodSummaryDismissed();
-    if(isTutorialTurnaroundScen()&&typeof G!=='undefined'&&G&&G.tutorialMode&&MP.mode!=='live')
-      requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
-  }
+  if(id==='m-sum')wlFtTutorialOnPeriodSummaryDismissed();
   if(id==='m-tutorial-turnaround')tutorialTurnaroundOnTutorialModalClosed();
   if(id==='m-sum'&&typeof G!=='undefined'&&G&&G._mpShowEndgameAfterSumClose){
     G._mpShowEndgameAfterSumClose=false;

@@ -1,0 +1,3248 @@
+{
+  "meta": {
+    "mode": "batch",
+    "seed": 100,
+    "runs": 30,
+    "market": "wichita",
+    "note": "GM mode uses genMarket(gm_under) with ACTIVE_MARKET patched to --market. Campaign career start uses CAREER_ENTRY_MARKET_ID / ladder tier 0 from campaignMode.js (Wichita), overriding the patched constant when beginCareer runs.",
+    "maxPeriodsGm": 48,
+    "maxPeriodsCampaign": 160,
+    "maxAssignments": 9,
+    "revisitTest": false,
+    "compareProfiles": false,
+    "compareIncludeLong": false,
+    "careerEntryMarketId": null,
+    "campaignProfiles": null,
+    "wichitaEconTest": true
+  },
+  "gm": null,
+  "campaign": null,
+  "batch": null,
+  "profiles": null,
+  "profileComparison": null,
+  "interpretation": null,
+  "tier5EntrantAnalysis": null,
+  "tier3Diagnostic": null,
+  "wichitaEconTest": {
+    "description": "Headless Tier 0 (Wichita) campaign only: each period applies a fixed spending profile to player station(s), then advTurn(). Stops after first assignment end for tier 0 or cash bankruptcy / GM fire.",
+    "profiles": {
+      "conservative": {
+        "id": "conservative",
+        "label": "Conservative",
+        "intent": "Cost control first: lower programming + marketing as a fraction of trailing revenue, stabilize before growing.",
+        "behavior": "Each period sets ops.progBudget / ops.promo from ~2.6% / ~1.3% of station revenue (capped by era caps), then calcRev."
+      },
+      "balanced": {
+        "id": "balanced",
+        "label": "Balanced",
+        "intent": "Competent default GM: moderate discretionary spend — some growth, some discipline.",
+        "behavior": "Targets ~6.2% / ~3.7% of trailing revenue for programming / promo (capped), then calcRev — no austerity cliff, no all-in gamble."
+      },
+      "aggressive": {
+        "id": "aggressive",
+        "label": "Aggressive",
+        "intent": "Push share/revenue harder: higher programming and marketing commitment; accepts more short-term risk.",
+        "behavior": "Targets ~10.5% / ~6.2% of trailing revenue for programming / promo (capped), then calcRev — still bounded by caps, not random."
+      }
+    },
+    "seeds": {
+      "start": 100,
+      "count": 30,
+      "stride": 1
+    },
+    "maxPeriodsPerRun": 160,
+    "distressDefinition": "Serious distress if any of: period cash ≤ -$35k; portfolio EBITDA ≤ -$130k; cash ≤ -$12k while EBITDA ≤ -$90k; ≥6 consecutive negative-EBITDA periods.",
+    "byProfile": {
+      "conservative": {
+        "n": 30,
+        "profitability": {
+          "pctProfitableAtFirstReview": 0,
+          "nWithFormalReviewBeforeEnd": 30,
+          "pctProfitableAtContractEnd": 0.7333333333333333
+        },
+        "health": {
+          "avgEbitdaAtContractEnd": 5672.766666666666,
+          "avgRevAtContractEnd": 164035.1,
+          "avgShareAtContractEnd": 0.04416094572740058,
+          "pctSeriousDistress": 0.8333333333333334,
+          "pctBankrupt": 0.03333333333333333,
+          "pctStalled": 0,
+          "avgMinCash": 96018.63333333333
+        },
+        "trends": {
+          "avgDeltaShare": -0.02225114090586272,
+          "avgDeltaRev": 24695.9,
+          "avgDeltaEbitda": 11538.066666666668
+        },
+        "outcomes": {
+          "promoted": 4,
+          "lateral": 9,
+          "demoted": 16,
+          "fired": 0,
+          "noPayload": 1,
+          "rates": {
+            "promoted": 0.13333333333333333,
+            "lateral": 0.3,
+            "demoted": 0.5333333333333333,
+            "fired": 0,
+            "noPayload": 0.03333333333333333
+          }
+        },
+        "gm": {
+          "avgEndingConfidence": 25.466666666666665
+        }
+      },
+      "balanced": {
+        "n": 30,
+        "profitability": {
+          "pctProfitableAtFirstReview": 0.1,
+          "nWithFormalReviewBeforeEnd": 30,
+          "pctProfitableAtContractEnd": 1
+        },
+        "health": {
+          "avgEbitdaAtContractEnd": 65586.1,
+          "avgRevAtContractEnd": 301292.6,
+          "avgShareAtContractEnd": 0.06516668458494501,
+          "pctSeriousDistress": 0.13333333333333333,
+          "pctBankrupt": 0,
+          "pctStalled": 0,
+          "avgMinCash": 182211.13333333333
+        },
+        "trends": {
+          "avgDeltaShare": -0.0012454020483182856,
+          "avgDeltaRev": 161953.4,
+          "avgDeltaEbitda": 71451.4
+        },
+        "outcomes": {
+          "promoted": 26,
+          "lateral": 4,
+          "demoted": 0,
+          "fired": 0,
+          "noPayload": 0,
+          "rates": {
+            "promoted": 0.8666666666666667,
+            "lateral": 0.13333333333333333,
+            "demoted": 0,
+            "fired": 0,
+            "noPayload": 0
+          }
+        },
+        "gm": {
+          "avgEndingConfidence": 70.66666666666667
+        }
+      },
+      "aggressive": {
+        "n": 30,
+        "profitability": {
+          "pctProfitableAtFirstReview": 0.26666666666666666,
+          "nWithFormalReviewBeforeEnd": 30,
+          "pctProfitableAtContractEnd": 1
+        },
+        "health": {
+          "avgEbitdaAtContractEnd": 157748.23333333334,
+          "avgRevAtContractEnd": 466168.9666666667,
+          "avgShareAtContractEnd": 0.08740137292311141,
+          "pctSeriousDistress": 0,
+          "pctBankrupt": 0,
+          "pctStalled": 0,
+          "avgMinCash": 188986.4
+        },
+        "trends": {
+          "avgDeltaShare": 0.02098928628984812,
+          "avgDeltaRev": 326829.76666666666,
+          "avgDeltaEbitda": 163613.53333333333
+        },
+        "outcomes": {
+          "promoted": 30,
+          "lateral": 0,
+          "demoted": 0,
+          "fired": 0,
+          "noPayload": 0,
+          "rates": {
+            "promoted": 1,
+            "lateral": 0,
+            "demoted": 0,
+            "fired": 0,
+            "noPayload": 0
+          }
+        },
+        "gm": {
+          "avgEndingConfidence": 65.6
+        }
+      }
+    },
+    "interpretation": {
+      "judgment": "WICHITA_VIABLE_WITH_SPEND_SKEW",
+      "plainEnglish": [
+        "Balanced profile: promotion 86.7%, profitable at contract end 100.0%, serious distress 13.3%, bankruptcy 0.0%.",
+        "Balanced runs usually stay solvent with modest “serious distress” hits — Wichita looks survivable for a default management style.",
+        "Positive EBITDA at contract end is achievable for a meaningful share of balanced runs — profitability is not a miracle outcome.",
+        "Promotion from Wichita appears within reach for balanced play at non-trivial rates — not a pure gamble profile.",
+        "Overall: Wichita may be too forgiving for a “underdog” starter — promotion and solvency are very likely under these profiles.",
+        "Contrast: aggressive promotion rate is much higher than conservative — Wichita economics in this harness are highly sensitive to discretionary spend; interpret “too easy” as “spend-heavy profiles clear the bar easily,” not that every style does."
+      ],
+      "codes": [
+        "SPEND_HEAVY_PROFILE_DOMINATES"
+      ],
+      "checks": {
+        "solvent": true,
+        "lowDistress": true,
+        "profitReasonable": true,
+        "promoteReasonable": true
+      }
+    },
+    "runs": [
+      {
+        "profile": "conservative",
+        "seed": 100,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "lateral",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 39,
+          "reputation": 56,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 125064,
+          "rev": 181020,
+          "ebitda": 7003,
+          "share": 0.049335152864970436
+        },
+        "deltas": {
+          "rev": 43693,
+          "ebitda": 13885,
+          "share": -0.01254653454411312
+        },
+        "endingConfidence": 39,
+        "minCash": 118061
+      },
+      {
+        "profile": "conservative",
+        "seed": 101,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "demoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 9,
+          "reputation": 46,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 8377,
+          "rev": 156229,
+          "ebitda": -4435,
+          "share": 0.046626554370777326
+        },
+        "deltas": {
+          "rev": 26157,
+          "ebitda": 8276,
+          "share": -0.014035074851786115
+        },
+        "endingConfidence": 9,
+        "minCash": 8377
+      },
+      {
+        "profile": "conservative",
+        "seed": 102,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "demoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 9,
+          "reputation": 46,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 15805,
+          "rev": 154753,
+          "ebitda": -2833,
+          "share": 0.04399069320083449
+        },
+        "deltas": {
+          "rev": 30653,
+          "ebitda": 13308,
+          "share": -0.015780957033527887
+        },
+        "endingConfidence": 9,
+        "minCash": 15805
+      },
+      {
+        "profile": "conservative",
+        "seed": 103,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "lateral",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 39,
+          "reputation": 56,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 147366,
+          "rev": 184062,
+          "ebitda": 9531,
+          "share": 0.04940952536345766
+        },
+        "deltas": {
+          "rev": 40179,
+          "ebitda": 13324,
+          "share": -0.021705910227297134
+        },
+        "endingConfidence": 39,
+        "minCash": 137835
+      },
+      {
+        "profile": "conservative",
+        "seed": 104,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "demoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 9,
+          "reputation": 46,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 122247,
+          "rev": 168152,
+          "ebitda": 3323,
+          "share": 0.04727610924536228
+        },
+        "deltas": {
+          "rev": 31517,
+          "ebitda": 10940,
+          "share": -0.021873737206876284
+        },
+        "endingConfidence": 9,
+        "minCash": 118924
+      },
+      {
+        "profile": "conservative",
+        "seed": 105,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "lateral",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 39,
+          "reputation": 56,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 961517,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -105402,
+          "ebitda": 30730,
+          "share": -0.05744627444641991
+        },
+        "endingConfidence": 39,
+        "minCash": -8225
+      },
+      {
+        "profile": "conservative",
+        "seed": 106,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "lateral",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 39,
+          "reputation": 56,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 178263,
+          "rev": 195719,
+          "ebitda": 15328,
+          "share": 0.04899959202638374
+        },
+        "deltas": {
+          "rev": 36807,
+          "ebitda": 7851,
+          "share": -0.020107713614476122
+        },
+        "endingConfidence": 39,
+        "minCash": 161387
+      },
+      {
+        "profile": "conservative",
+        "seed": 107,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 65,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 246538,
+          "rev": 215636,
+          "ebitda": 22303,
+          "share": 0.051368153012740045
+        },
+        "deltas": {
+          "rev": 75160,
+          "ebitda": 27481,
+          "share": -0.019279592259605197
+        },
+        "endingConfidence": 65,
+        "minCash": 209632
+      },
+      {
+        "profile": "conservative",
+        "seed": 108,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "demoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 9,
+          "reputation": 46,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 2170,
+          "rev": 150028,
+          "ebitda": -6071,
+          "share": 0.041862170554381836
+        },
+        "deltas": {
+          "rev": 30866,
+          "ebitda": 13277,
+          "share": -0.016610142359793044
+        },
+        "endingConfidence": 9,
+        "minCash": 2170
+      },
+      {
+        "profile": "conservative",
+        "seed": 109,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "demoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 9,
+          "reputation": 46,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 95151,
+          "rev": 166186,
+          "ebitda": 2475,
+          "share": 0.047229310283225585
+        },
+        "deltas": {
+          "rev": 25312,
+          "ebitda": 7374,
+          "share": -0.019426387146869777
+        },
+        "endingConfidence": 9,
+        "minCash": 92676
+      },
+      {
+        "profile": "conservative",
+        "seed": 110,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "demoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 9,
+          "reputation": 46,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 36825,
+          "rev": 169430,
+          "ebitda": 5039,
+          "share": 0.04458658928301215
+        },
+        "deltas": {
+          "rev": 52141,
+          "ebitda": 26698,
+          "share": -0.017307042525618842
+        },
+        "endingConfidence": 9,
+        "minCash": 31786
+      },
+      {
+        "profile": "conservative",
+        "seed": 111,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "demoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 9,
+          "reputation": 46,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 73324,
+          "rev": 176231,
+          "ebitda": 7857,
+          "share": 0.04485840286615049
+        },
+        "deltas": {
+          "rev": 49825,
+          "ebitda": 22634,
+          "share": -0.021470221669165485
+        },
+        "endingConfidence": 9,
+        "minCash": 65467
+      },
+      {
+        "profile": "conservative",
+        "seed": 112,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "lateral",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 39,
+          "reputation": 56,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 162358,
+          "rev": 187183,
+          "ebitda": 12527,
+          "share": 0.047730688462039456
+        },
+        "deltas": {
+          "rev": 40346,
+          "ebitda": 13002,
+          "share": -0.02267692427434327
+        },
+        "endingConfidence": 39,
+        "minCash": 149831
+      },
+      {
+        "profile": "conservative",
+        "seed": 113,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "demoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 9,
+          "reputation": 46,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 87896,
+          "rev": 165314,
+          "ebitda": 3431,
+          "share": 0.04528772752036674
+        },
+        "deltas": {
+          "rev": 30537,
+          "ebitda": 11348,
+          "share": -0.020608086282768882
+        },
+        "endingConfidence": 9,
+        "minCash": 84465
+      },
+      {
+        "profile": "conservative",
+        "seed": 114,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 65,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 226455,
+          "rev": 192238,
+          "ebitda": 14080,
+          "share": 0.049433737882009735
+        },
+        "deltas": {
+          "rev": 33273,
+          "ebitda": 5316,
+          "share": -0.022252976195895557
+        },
+        "endingConfidence": 65,
+        "minCash": 212375
+      },
+      {
+        "profile": "conservative",
+        "seed": 115,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "demoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 9,
+          "reputation": 46,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 67366,
+          "rev": 167072,
+          "ebitda": 463,
+          "share": 0.0456098822454724
+        },
+        "deltas": {
+          "rev": 25758,
+          "ebitda": 5804,
+          "share": -0.0241699464275517
+        },
+        "endingConfidence": 9,
+        "minCash": 66903
+      },
+      {
+        "profile": "conservative",
+        "seed": 116,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "lateral",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 39,
+          "reputation": 56,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 161098,
+          "rev": 194986,
+          "ebitda": 16369,
+          "share": 0.05069020567447663
+        },
+        "deltas": {
+          "rev": 43649,
+          "ebitda": 14444,
+          "share": -0.022969532486182817
+        },
+        "endingConfidence": 39,
+        "minCash": 144729
+      },
+      {
+        "profile": "conservative",
+        "seed": 117,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 65,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 280179,
+          "rev": 215940,
+          "ebitda": 29570,
+          "share": 0.055173282288849615
+        },
+        "deltas": {
+          "rev": 51729,
+          "ebitda": 18133,
+          "share": -0.013952982459816951
+        },
+        "endingConfidence": 65,
+        "minCash": 230182
+      },
+      {
+        "profile": "conservative",
+        "seed": 118,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "demoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 9,
+          "reputation": 46,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 65894,
+          "rev": 159546,
+          "ebitda": -702,
+          "share": 0.04511597361506656
+        },
+        "deltas": {
+          "rev": 12847,
+          "ebitda": -380,
+          "share": -0.02139243110450674
+        },
+        "endingConfidence": 9,
+        "minCash": 65894
+      },
+      {
+        "profile": "conservative",
+        "seed": 119,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "demoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 9,
+          "reputation": 46,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 89272,
+          "rev": 168859,
+          "ebitda": 2548,
+          "share": 0.04610859486373519
+        },
+        "deltas": {
+          "rev": 30886,
+          "ebitda": 9478,
+          "share": -0.019364639337008306
+        },
+        "endingConfidence": 9,
+        "minCash": 86724
+      },
+      {
+        "profile": "conservative",
+        "seed": 120,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "lateral",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 39,
+          "reputation": 56,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 180158,
+          "rev": 187650,
+          "ebitda": 11183,
+          "share": 0.05097450846149483
+        },
+        "deltas": {
+          "rev": 48934,
+          "ebitda": 17593,
+          "share": -0.022052241174839407
+        },
+        "endingConfidence": 39,
+        "minCash": 168975
+      },
+      {
+        "profile": "conservative",
+        "seed": 121,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "lateral",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 39,
+          "reputation": 56,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 100945,
+          "rev": 174765,
+          "ebitda": 6889,
+          "share": 0.04826824714621737
+        },
+        "deltas": {
+          "rev": 48047,
+          "ebitda": 20447,
+          "share": -0.013180774996986125
+        },
+        "endingConfidence": 39,
+        "minCash": 94056
+      },
+      {
+        "profile": "conservative",
+        "seed": 122,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 65,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 325796,
+          "rev": 219012,
+          "ebitda": 22163,
+          "share": 0.05657068690808892
+        },
+        "deltas": {
+          "rev": 46735,
+          "ebitda": 5330,
+          "share": -0.01953579442373589
+        },
+        "endingConfidence": 65,
+        "minCash": 254065
+      },
+      {
+        "profile": "conservative",
+        "seed": 123,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "lateral",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 39,
+          "reputation": 56,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 161135,
+          "rev": 178479,
+          "ebitda": 8974,
+          "share": 0.047786582081000145
+        },
+        "deltas": {
+          "rev": 25408,
+          "ebitda": 4835,
+          "share": -0.024766157534322306
+        },
+        "endingConfidence": 39,
+        "minCash": 152161
+      },
+      {
+        "profile": "conservative",
+        "seed": 124,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "demoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 9,
+          "reputation": 46,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": -2355,
+          "rev": 145052,
+          "ebitda": -12889,
+          "share": 0.04130969105393942
+        },
+        "deltas": {
+          "rev": -5971,
+          "ebitda": -14594,
+          "share": -0.023813179481053298
+        },
+        "endingConfidence": 9,
+        "minCash": -2355
+      },
+      {
+        "profile": "conservative",
+        "seed": 125,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": null,
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": true,
+        "gmFired": false,
+        "ending": {
+          "cash": 633719,
+          "rev": 0,
+          "ebitda": 0,
+          "share": 0
+        },
+        "deltas": {
+          "rev": -114262,
+          "ebitda": 23028,
+          "share": -0.060211895910780674
+        },
+        "endingConfidence": 9,
+        "minCash": -30885
+      },
+      {
+        "profile": "conservative",
+        "seed": 126,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "demoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 9,
+          "reputation": 46,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 134815,
+          "rev": 185853,
+          "ebitda": 15376,
+          "share": 0.04878670298100957
+        },
+        "deltas": {
+          "rev": 37259,
+          "ebitda": 14371,
+          "share": -0.0202421155093735
+        },
+        "endingConfidence": 9,
+        "minCash": 119439
+      },
+      {
+        "profile": "conservative",
+        "seed": 127,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "demoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 9,
+          "reputation": 46,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 55780,
+          "rev": 160871,
+          "ebitda": -2659,
+          "share": 0.04469414664406951
+        },
+        "deltas": {
+          "rev": 17220,
+          "ebitda": 296,
+          "share": -0.019672493084393394
+        },
+        "endingConfidence": 9,
+        "minCash": 55780
+      },
+      {
+        "profile": "conservative",
+        "seed": 128,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "demoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 9,
+          "reputation": 46,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 54614,
+          "rev": 156277,
+          "ebitda": -3900,
+          "share": 0.043032547034341596
+        },
+        "deltas": {
+          "rev": 17361,
+          "ebitda": 2370,
+          "share": -0.01778112679788727
+        },
+        "endingConfidence": 9,
+        "minCash": 54614
+      },
+      {
+        "profile": "conservative",
+        "seed": 129,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "demoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 9,
+          "reputation": 46,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": false,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 19711,
+          "rev": 144510,
+          "ebitda": -12760,
+          "share": 0.0427129138885433
+        },
+        "deltas": {
+          "rev": 14213,
+          "ebitda": -457,
+          "share": -0.021301341808886792
+        },
+        "endingConfidence": 9,
+        "minCash": 19711
+      },
+      {
+        "profile": "balanced",
+        "seed": 100,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 502028,
+          "rev": 386476,
+          "ebitda": 110881,
+          "share": 0.07411007860576507
+        },
+        "deltas": {
+          "rev": 249149,
+          "ebitda": 117763,
+          "share": 0.012228391196681516
+        },
+        "endingConfidence": 78,
+        "minCash": 196195
+      },
+      {
+        "profile": "balanced",
+        "seed": 101,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 292628,
+          "rev": 299053,
+          "ebitda": 65824,
+          "share": 0.0616759526398076
+        },
+        "deltas": {
+          "rev": 168981,
+          "ebitda": 78535,
+          "share": 0.0010143234172441604
+        },
+        "endingConfidence": 78,
+        "minCash": 167582
+      },
+      {
+        "profile": "balanced",
+        "seed": 102,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "lateral",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 39,
+          "reputation": 56,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 117520,
+          "rev": 215508,
+          "ebitda": 21010,
+          "share": 0.0569997269516905
+        },
+        "deltas": {
+          "rev": 91408,
+          "ebitda": 37151,
+          "share": -0.0027719232826718815
+        },
+        "endingConfidence": 39,
+        "minCash": 88691
+      },
+      {
+        "profile": "balanced",
+        "seed": 103,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 432900,
+          "rev": 341351,
+          "ebitda": 86245,
+          "share": 0.0690090323846543
+        },
+        "deltas": {
+          "rev": 197468,
+          "ebitda": 90038,
+          "share": -0.0021064032061004906
+        },
+        "endingConfidence": 78,
+        "minCash": 201859
+      },
+      {
+        "profile": "balanced",
+        "seed": 104,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 392466,
+          "rev": 317529,
+          "ebitda": 76900,
+          "share": 0.0662940016814219
+        },
+        "deltas": {
+          "rev": 180894,
+          "ebitda": 84517,
+          "share": -0.0028558447708166707
+        },
+        "endingConfidence": 78,
+        "minCash": 209899
+      },
+      {
+        "profile": "balanced",
+        "seed": 105,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 66,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 98556,
+          "rev": 230539,
+          "ebitda": 25225,
+          "share": 0.05780028985660698
+        },
+        "deltas": {
+          "rev": 125137,
+          "ebitda": 55955,
+          "share": 0.000354015410187071
+        },
+        "endingConfidence": 66,
+        "minCash": 61036
+      },
+      {
+        "profile": "balanced",
+        "seed": 106,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 65,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 403876,
+          "rev": 331757,
+          "ebitda": 77752,
+          "share": 0.0673177144971816
+        },
+        "deltas": {
+          "rev": 172845,
+          "ebitda": 70275,
+          "share": -0.0017895911436782569
+        },
+        "endingConfidence": 65,
+        "minCash": 211025
+      },
+      {
+        "profile": "balanced",
+        "seed": 107,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": true,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 496442,
+          "rev": 367244,
+          "ebitda": 94998,
+          "share": 0.07545260981681065
+        },
+        "deltas": {
+          "rev": 226768,
+          "ebitda": 100176,
+          "share": 0.004804864544465409
+        },
+        "endingConfidence": 78,
+        "minCash": 222947
+      },
+      {
+        "profile": "balanced",
+        "seed": 108,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "lateral",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 39,
+          "reputation": 56,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 102265,
+          "rev": 213772,
+          "ebitda": 20697,
+          "share": 0.05470569500269683
+        },
+        "deltas": {
+          "rev": 94610,
+          "ebitda": 40045,
+          "share": -0.0037666179114780526
+        },
+        "endingConfidence": 39,
+        "minCash": 81568
+      },
+      {
+        "profile": "balanced",
+        "seed": 109,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 344331,
+          "rev": 300312,
+          "ebitda": 69877,
+          "share": 0.06372487982467337
+        },
+        "deltas": {
+          "rev": 159438,
+          "ebitda": 74776,
+          "share": -0.0029308176054219925
+        },
+        "endingConfidence": 78,
+        "minCash": 197548
+      },
+      {
+        "profile": "balanced",
+        "seed": 110,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 248368,
+          "rev": 262939,
+          "ebitda": 51072,
+          "share": 0.06079039984761617
+        },
+        "deltas": {
+          "rev": 145650,
+          "ebitda": 72731,
+          "share": -0.0011032319610148264
+        },
+        "endingConfidence": 78,
+        "minCash": 164325
+      },
+      {
+        "profile": "balanced",
+        "seed": 111,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 271167,
+          "rev": 280680,
+          "ebitda": 52770,
+          "share": 0.06193251117561277
+        },
+        "deltas": {
+          "rev": 154274,
+          "ebitda": 67547,
+          "share": -0.004396113359703205
+        },
+        "endingConfidence": 78,
+        "minCash": 181980
+      },
+      {
+        "profile": "balanced",
+        "seed": 112,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": true,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 426561,
+          "rev": 337018,
+          "ebitda": 80599,
+          "share": 0.07134313846670226
+        },
+        "deltas": {
+          "rev": 190181,
+          "ebitda": 81074,
+          "share": 0.0009355257303195336
+        },
+        "endingConfidence": 78,
+        "minCash": 218700
+      },
+      {
+        "profile": "balanced",
+        "seed": 113,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 295563,
+          "rev": 276666,
+          "ebitda": 54843,
+          "share": 0.06191368100534653
+        },
+        "deltas": {
+          "rev": 141889,
+          "ebitda": 62760,
+          "share": -0.003982132797789098
+        },
+        "endingConfidence": 78,
+        "minCash": 194568
+      },
+      {
+        "profile": "balanced",
+        "seed": 114,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 494402,
+          "rev": 342826,
+          "ebitda": 86201,
+          "share": 0.07098435869410848
+        },
+        "deltas": {
+          "rev": 183861,
+          "ebitda": 77437,
+          "share": -0.0007023553837968155
+        },
+        "endingConfidence": 78,
+        "minCash": 228295
+      },
+      {
+        "profile": "balanced",
+        "seed": 115,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 65,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 285254,
+          "rev": 281861,
+          "ebitda": 56733,
+          "share": 0.06228935580613631
+        },
+        "deltas": {
+          "rev": 140547,
+          "ebitda": 62074,
+          "share": -0.007490472866887789
+        },
+        "endingConfidence": 65,
+        "minCash": 187487
+      },
+      {
+        "profile": "balanced",
+        "seed": 116,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 359344,
+          "rev": 300623,
+          "ebitda": 62990,
+          "share": 0.06603230587889469
+        },
+        "deltas": {
+          "rev": 149286,
+          "ebitda": 61065,
+          "share": -0.007627432281764754
+        },
+        "endingConfidence": 78,
+        "minCash": 216798
+      },
+      {
+        "profile": "balanced",
+        "seed": 117,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 614216,
+          "rev": 401559,
+          "ebitda": 123897,
+          "share": 0.07737150031777476
+        },
+        "deltas": {
+          "rev": 237348,
+          "ebitda": 112460,
+          "share": 0.008245235569108195
+        },
+        "endingConfidence": 78,
+        "minCash": 220826
+      },
+      {
+        "profile": "balanced",
+        "seed": 118,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 65,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 328680,
+          "rev": 298563,
+          "ebitda": 62146,
+          "share": 0.06266017034673124
+        },
+        "deltas": {
+          "rev": 151864,
+          "ebitda": 62468,
+          "share": -0.003848234372842055
+        },
+        "endingConfidence": 65,
+        "minCash": 191261
+      },
+      {
+        "profile": "balanced",
+        "seed": 119,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 370292,
+          "rev": 315461,
+          "ebitda": 70731,
+          "share": 0.06864050957231943
+        },
+        "deltas": {
+          "rev": 177488,
+          "ebitda": 77661,
+          "share": 0.003167275371575934
+        },
+        "endingConfidence": 78,
+        "minCash": 197038
+      },
+      {
+        "profile": "balanced",
+        "seed": 120,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 440142,
+          "rev": 339925,
+          "ebitda": 86837,
+          "share": 0.06902951893392248
+        },
+        "deltas": {
+          "rev": 201209,
+          "ebitda": 93247,
+          "share": -0.003997230702411758
+        },
+        "endingConfidence": 78,
+        "minCash": 209524
+      },
+      {
+        "profile": "balanced",
+        "seed": 121,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 324674,
+          "rev": 309661,
+          "ebitda": 71923,
+          "share": 0.06533102542250221
+        },
+        "deltas": {
+          "rev": 182943,
+          "ebitda": 85481,
+          "share": 0.003882003279298718
+        },
+        "endingConfidence": 78,
+        "minCash": 189173
+      },
+      {
+        "profile": "balanced",
+        "seed": 122,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 65,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 585434,
+          "rev": 395575,
+          "ebitda": 114552,
+          "share": 0.08044660043761263
+        },
+        "deltas": {
+          "rev": 223298,
+          "ebitda": 97719,
+          "share": 0.004340119105787826
+        },
+        "endingConfidence": 65,
+        "minCash": 250835
+      },
+      {
+        "profile": "balanced",
+        "seed": 123,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": true,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 504728,
+          "rev": 350695,
+          "ebitda": 89700,
+          "share": 0.07041605047888463
+        },
+        "deltas": {
+          "rev": 197624,
+          "ebitda": 85561,
+          "share": -0.0021366891364378165
+        },
+        "endingConfidence": 78,
+        "minCash": 245450
+      },
+      {
+        "profile": "balanced",
+        "seed": 124,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "lateral",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 39,
+          "reputation": 56,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 176743,
+          "rev": 228570,
+          "ebitda": 25268,
+          "share": 0.055985289764526644
+        },
+        "deltas": {
+          "rev": 77547,
+          "ebitda": 23563,
+          "share": -0.009137580770466072
+        },
+        "endingConfidence": 39,
+        "minCash": 137983
+      },
+      {
+        "profile": "balanced",
+        "seed": 125,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "lateral",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 39,
+          "reputation": 56,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": true,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 63309,
+          "rev": 192032,
+          "ebitda": 9867,
+          "share": 0.05231945859369377
+        },
+        "deltas": {
+          "rev": 77770,
+          "ebitda": 32895,
+          "share": -0.007892437317086907
+        },
+        "endingConfidence": 39,
+        "minCash": 53442
+      },
+      {
+        "profile": "balanced",
+        "seed": 126,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 389882,
+          "rev": 317695,
+          "ebitda": 73009,
+          "share": 0.0674439410834897
+        },
+        "deltas": {
+          "rev": 169101,
+          "ebitda": 72004,
+          "share": -0.0015848774068933785
+        },
+        "endingConfidence": 78,
+        "minCash": 205629
+      },
+      {
+        "profile": "balanced",
+        "seed": 127,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 285195,
+          "rev": 277103,
+          "ebitda": 52491,
+          "share": 0.06122380612127038
+        },
+        "deltas": {
+          "rev": 133452,
+          "ebitda": 55446,
+          "share": -0.003142833607192523
+        },
+        "endingConfidence": 78,
+        "minCash": 189875
+      },
+      {
+        "profile": "balanced",
+        "seed": 128,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 306590,
+          "rev": 299222,
+          "ebitda": 63193,
+          "share": 0.06290775014119164
+        },
+        "deltas": {
+          "rev": 160306,
+          "ebitda": 69463,
+          "share": 0.0020940763089627723
+        },
+        "endingConfidence": 78,
+        "minCash": 187820
+      },
+      {
+        "profile": "balanced",
+        "seed": 129,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 78,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 191408,
+          "rev": 226563,
+          "ebitda": 29352,
+          "share": 0.05884918419870473
+        },
+        "deltas": {
+          "rev": 96266,
+          "ebitda": 41655,
+          "share": -0.00516507149872536
+        },
+        "endingConfidence": 78,
+        "minCash": 156975
+      },
+      {
+        "profile": "aggressive",
+        "seed": 100,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 65,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 845737,
+          "rev": 526310,
+          "ebitda": 201561,
+          "share": 0.09350114303673414
+        },
+        "deltas": {
+          "rev": 388983,
+          "ebitda": 208443,
+          "share": 0.03161945562765058
+        },
+        "endingConfidence": 65,
+        "minCash": 174372
+      },
+      {
+        "profile": "aggressive",
+        "seed": 101,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 64,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 562538,
+          "rev": 460243,
+          "ebitda": 152574,
+          "share": 0.08519864194507959
+        },
+        "deltas": {
+          "rev": 330171,
+          "ebitda": 165285,
+          "share": 0.024537012722516148
+        },
+        "endingConfidence": 64,
+        "minCash": 160808
+      },
+      {
+        "profile": "aggressive",
+        "seed": 102,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 63,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 374182,
+          "rev": 354900,
+          "ebitda": 91091,
+          "share": 0.07921668281086049
+        },
+        "deltas": {
+          "rev": 230800,
+          "ebitda": 107232,
+          "share": 0.019445032576498107
+        },
+        "endingConfidence": 63,
+        "minCash": 165256
+      },
+      {
+        "profile": "aggressive",
+        "seed": 103,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 65,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 776651,
+          "rev": 503401,
+          "ebitda": 183194,
+          "share": 0.08925272006992524
+        },
+        "deltas": {
+          "rev": 359518,
+          "ebitda": 186987,
+          "share": 0.018137284479170443
+        },
+        "endingConfidence": 65,
+        "minCash": 189312
+      },
+      {
+        "profile": "aggressive",
+        "seed": 104,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 64,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": true,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 713651,
+          "rev": 505076,
+          "ebitda": 180591,
+          "share": 0.08964756142937674
+        },
+        "deltas": {
+          "rev": 368441,
+          "ebitda": 188208,
+          "share": 0.020497714977138176
+        },
+        "endingConfidence": 64,
+        "minCash": 204320
+      },
+      {
+        "profile": "aggressive",
+        "seed": 105,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 64,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 462718,
+          "rev": 436055,
+          "ebitda": 141900,
+          "share": 0.08109325816581331
+        },
+        "deltas": {
+          "rev": 330653,
+          "ebitda": 172630,
+          "share": 0.023646983719393402
+        },
+        "endingConfidence": 64,
+        "minCash": 132017
+      },
+      {
+        "profile": "aggressive",
+        "seed": 106,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 64,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 657319,
+          "rev": 463499,
+          "ebitda": 152031,
+          "share": 0.08756007442126137
+        },
+        "deltas": {
+          "rev": 304587,
+          "ebitda": 144554,
+          "share": 0.018452768780401516
+        },
+        "endingConfidence": 64,
+        "minCash": 196183
+      },
+      {
+        "profile": "aggressive",
+        "seed": 107,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 77,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": true,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 1001477,
+          "rev": 558575,
+          "ebitda": 218899,
+          "share": 0.0964208043557844
+        },
+        "deltas": {
+          "rev": 418099,
+          "ebitda": 224077,
+          "share": 0.02577305908343916
+        },
+        "endingConfidence": 77,
+        "minCash": 217391
+      },
+      {
+        "profile": "aggressive",
+        "seed": 108,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 63,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 397148,
+          "rev": 390966,
+          "ebitda": 111350,
+          "share": 0.07919516914161909
+        },
+        "deltas": {
+          "rev": 271804,
+          "ebitda": 130698,
+          "share": 0.020722856227444207
+        },
+        "endingConfidence": 63,
+        "minCash": 167505
+      },
+      {
+        "profile": "aggressive",
+        "seed": 109,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 64,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 627419,
+          "rev": 447666,
+          "ebitda": 146913,
+          "share": 0.0856487385067475
+        },
+        "deltas": {
+          "rev": 306792,
+          "ebitda": 151812,
+          "share": 0.01899304107665213
+        },
+        "endingConfidence": 64,
+        "minCash": 194938
+      },
+      {
+        "profile": "aggressive",
+        "seed": 110,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 64,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 494387,
+          "rev": 432093,
+          "ebitda": 136654,
+          "share": 0.08619661804622843
+        },
+        "deltas": {
+          "rev": 314804,
+          "ebitda": 158313,
+          "share": 0.024302986237597433
+        },
+        "endingConfidence": 64,
+        "minCash": 165443
+      },
+      {
+        "profile": "aggressive",
+        "seed": 111,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 63,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 478222,
+          "rev": 418260,
+          "ebitda": 130246,
+          "share": 0.08301373410354684
+        },
+        "deltas": {
+          "rev": 291854,
+          "ebitda": 145023,
+          "share": 0.01668510956823087
+        },
+        "endingConfidence": 63,
+        "minCash": 171600
+      },
+      {
+        "profile": "aggressive",
+        "seed": 112,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 64,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": true,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 719268,
+          "rev": 472220,
+          "ebitda": 158399,
+          "share": 0.09123852358018383
+        },
+        "deltas": {
+          "rev": 325383,
+          "ebitda": 158874,
+          "share": 0.020830910843801106
+        },
+        "endingConfidence": 64,
+        "minCash": 210587
+      },
+      {
+        "profile": "aggressive",
+        "seed": 113,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 64,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 572372,
+          "rev": 429138,
+          "ebitda": 135190,
+          "share": 0.08476642221688754
+        },
+        "deltas": {
+          "rev": 294361,
+          "ebitda": 143107,
+          "share": 0.01887060841375192
+        },
+        "endingConfidence": 64,
+        "minCash": 186195
+      },
+      {
+        "profile": "aggressive",
+        "seed": 114,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 76,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": true,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 773944,
+          "rev": 471486,
+          "ebitda": 155261,
+          "share": 0.09419409697916573
+        },
+        "deltas": {
+          "rev": 312521,
+          "ebitda": 146497,
+          "share": 0.022507382901260434
+        },
+        "endingConfidence": 76,
+        "minCash": 226260
+      },
+      {
+        "profile": "aggressive",
+        "seed": 115,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 64,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 584234,
+          "rev": 462666,
+          "ebitda": 150950,
+          "share": 0.08982183843639399
+        },
+        "deltas": {
+          "rev": 321352,
+          "ebitda": 156291,
+          "share": 0.020042009763369895
+        },
+        "endingConfidence": 64,
+        "minCash": 187762
+      },
+      {
+        "profile": "aggressive",
+        "seed": 116,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 64,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 718427,
+          "rev": 464010,
+          "ebitda": 155183,
+          "share": 0.08996923621374099
+        },
+        "deltas": {
+          "rev": 312673,
+          "ebitda": 153258,
+          "share": 0.016309498053081545
+        },
+        "endingConfidence": 64,
+        "minCash": 204555
+      },
+      {
+        "profile": "aggressive",
+        "seed": 117,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 65,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": true,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 1019843,
+          "rev": 573549,
+          "ebitda": 229346,
+          "share": 0.09761084891940278
+        },
+        "deltas": {
+          "rev": 409338,
+          "ebitda": 217909,
+          "share": 0.02848458417073621
+        },
+        "endingConfidence": 65,
+        "minCash": 211832
+      },
+      {
+        "profile": "aggressive",
+        "seed": 118,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 64,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 596416,
+          "rev": 434140,
+          "ebitda": 135933,
+          "share": 0.0844847538046716
+        },
+        "deltas": {
+          "rev": 287441,
+          "ebitda": 136255,
+          "share": 0.017976349085098306
+        },
+        "endingConfidence": 64,
+        "minCash": 189933
+      },
+      {
+        "profile": "aggressive",
+        "seed": 119,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 64,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 623626,
+          "rev": 449419,
+          "ebitda": 142383,
+          "share": 0.08768428405018804
+        },
+        "deltas": {
+          "rev": 311446,
+          "ebitda": 149313,
+          "share": 0.02221104984944454
+        },
+        "endingConfidence": 64,
+        "minCash": 198507
+      },
+      {
+        "profile": "aggressive",
+        "seed": 120,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 65,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 834891,
+          "rev": 508174,
+          "ebitda": 186484,
+          "share": 0.09062411767816296
+        },
+        "deltas": {
+          "rev": 369458,
+          "ebitda": 192894,
+          "share": 0.017597368041828723
+        },
+        "endingConfidence": 65,
+        "minCash": 196617
+      },
+      {
+        "profile": "aggressive",
+        "seed": 121,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 64,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 738610,
+          "rev": 539929,
+          "ebitda": 208372,
+          "share": 0.09195239122571494
+        },
+        "deltas": {
+          "rev": 413211,
+          "ebitda": 221930,
+          "share": 0.030503369082511445
+        },
+        "endingConfidence": 64,
+        "minCash": 179747
+      },
+      {
+        "profile": "aggressive",
+        "seed": 122,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 77,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": true,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 1395929,
+          "rev": 695470,
+          "ebitda": 310553,
+          "share": 0.10095145973336712
+        },
+        "deltas": {
+          "rev": 523193,
+          "ebitda": 293720,
+          "share": 0.024844978401542317
+        },
+        "endingConfidence": 77,
+        "minCash": 248649
+      },
+      {
+        "profile": "aggressive",
+        "seed": 123,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 76,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": true,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 763376,
+          "rev": 464199,
+          "ebitda": 150974,
+          "share": 0.08826166334639692
+        },
+        "deltas": {
+          "rev": 311128,
+          "ebitda": 146835,
+          "share": 0.015708923731074464
+        },
+        "endingConfidence": 76,
+        "minCash": 231030
+      },
+      {
+        "profile": "aggressive",
+        "seed": 124,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 63,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 460697,
+          "rev": 412366,
+          "ebitda": 126772,
+          "share": 0.08035175887139986
+        },
+        "deltas": {
+          "rev": 261343,
+          "ebitda": 125067,
+          "share": 0.015228888336407148
+        },
+        "endingConfidence": 63,
+        "minCash": 173142
+      },
+      {
+        "profile": "aggressive",
+        "seed": 125,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 63,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 320163,
+          "rev": 363726,
+          "ebitda": 91253,
+          "share": 0.07429546438079584
+        },
+        "deltas": {
+          "rev": 249464,
+          "ebitda": 114281,
+          "share": 0.01408356847001517
+        },
+        "endingConfidence": 63,
+        "minCash": 143808
+      },
+      {
+        "profile": "aggressive",
+        "seed": 126,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 64,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": true,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 698083,
+          "rev": 462157,
+          "ebitda": 151860,
+          "share": 0.08864422957340118
+        },
+        "deltas": {
+          "rev": 313563,
+          "ebitda": 150855,
+          "share": 0.019615411083018106
+        },
+        "endingConfidence": 64,
+        "minCash": 206133
+      },
+      {
+        "profile": "aggressive",
+        "seed": 127,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 64,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 568113,
+          "rev": 437203,
+          "ebitda": 138389,
+          "share": 0.08430797659917236
+        },
+        "deltas": {
+          "rev": 293552,
+          "ebitda": 141344,
+          "share": 0.019941336870709453
+        },
+        "endingConfidence": 64,
+        "minCash": 178245
+      },
+      {
+        "profile": "aggressive",
+        "seed": 128,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 64,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 581425,
+          "rev": 451066,
+          "ebitda": 143685,
+          "share": 0.08691248601078583
+        },
+        "deltas": {
+          "rev": 312150,
+          "ebitda": 149955,
+          "share": 0.02609881217855696
+        },
+        "endingConfidence": 64,
+        "minCash": 184974
+      },
+      {
+        "profile": "aggressive",
+        "seed": 129,
+        "turns": 12,
+        "stalled": false,
+        "assignmentEnd": {
+          "kind": "promoted",
+          "campaignWin": false,
+          "careerEndedHard": false,
+          "gmConfidence": 63,
+          "reputation": 62,
+          "assignmentId": "c0_wichita",
+          "marketId": "wichita",
+          "periodsClosed": 12
+        },
+        "profitableAtFirstReview": false,
+        "profitableAtContractEnd": true,
+        "seriousDistress": false,
+        "bankrupt": false,
+        "gmFired": false,
+        "ending": {
+          "cash": 449862,
+          "rev": 397107,
+          "ebitda": 114456,
+          "share": 0.08002449004053383
+        },
+        "deltas": {
+          "rev": 266810,
+          "ebitda": 126759,
+          "share": 0.016010234343103738
+        },
+        "endingConfidence": 63,
+        "minCash": 172471
+      }
+    ]
+  }
+}

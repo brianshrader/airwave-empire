@@ -59,9 +59,28 @@ function allowedOriginsList() {
   return _cache;
 }
 
+/**
+ * True if the request Origin is allowed to call the API (SPA may be on www or another subdomain
+ * while API lives on api.* — still cross-origin, so each page origin must be allowed).
+ */
+function isAirwaveEmpirePageOrigin(origin) {
+  if (!origin || typeof origin !== 'string') return false;
+  try {
+    const u = new URL(origin);
+    if (u.protocol !== 'https:') return false;
+    const h = u.hostname;
+    return h === 'airwaveempire.com' || h.endsWith('.airwaveempire.com');
+  } catch (_e) {
+    return false;
+  }
+}
+
 function isAllowedOrigin(origin) {
   if (origin == null || origin === '') return true;
-  return allowedOriginsList().includes(origin);
+  if (allowedOriginsList().includes(origin)) return true;
+  // Production: allow any https host under airwaveempire.com (previews, staging, app, etc.)
+  if (process.env.CORS_STRICT_AIRWAVE !== '1' && isAirwaveEmpirePageOrigin(origin)) return true;
+  return false;
 }
 
 /**

@@ -433,6 +433,133 @@ function migrateHitsLineage(G){
 const SW={morningDrive:.38,afternoonDrive:.26,midday:.18,evening:.11,overnight:.07};
 const SL={morningDrive:'MORNING',afternoonDrive:'AFTERNOON',midday:'MIDDAY',evening:'EVENING',overnight:'OVERNIGHT'};
 const TALK_FMTS=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'];
+/** AM “music” formats for structural AM-music penalties — aligned with `appl()` (talk / ALL_NEWS excluded). */
+const AM_MUSIC_FORMAT_KEYS=[
+  'TOP40','COUNTRY','SOUL_RNB','MOR','ALBUM_ROCK','BEAUTIFUL_MUSIC',
+  'CLASSIC_ROCK','ADULT_CONTEMP','URBAN_CONTEMP','ALT_ROCK','RHYTHMIC','HOT_AC','CLASSIC_HITS',
+  'OLDIES','SPANISH','GOSPEL','ADULT_STANDARDS',
+];
+const AM_LEAN_OPERATING_MODE_START_YEAR=1980;
+/** Economics-only multipliers for `operatingMode==='lean_music'` — minimal staff + automation (1980+ AM music). */
+const LEAN_AM_STAFF_FACILITY_MULT=0.50;
+const LEAN_AM_GROUP_OVERHEAD_MULT=0.70;
+const LEAN_AM_OPS_FLOOR_MULT=0.60;
+const LEAN_AM_SALES_ADMIN_MULT=0.85;
+/** 1980+ AM music only — lean/automated survival lane (explicit player mode). */
+function stationQualifiesLeanAmMusicOperating(s,G){
+  if(!s||s._bpSlotDeferred||s.isPublic||s.fmBooster||s.sig?.type!=='AM')return false;
+  const y=G?.year||1970;
+  if(y<AM_LEAN_OPERATING_MODE_START_YEAR)return false;
+  if(TALK_FMTS.includes(s.format)||s.format==='ALL_NEWS')return false;
+  return AM_MUSIC_FORMAT_KEYS.includes(s.format);
+}
+function stationLeanAmMusicEconomicsActive(s,G){
+  return stationQualifiesLeanAmMusicOperating(s,G)&&s.operatingMode==='lean_music';
+}
+function normalizeStationOperatingMode(s,G){
+  if(!s)return;
+  if(s.operatingMode==='lean_music'&&!stationQualifiesLeanAmMusicOperating(s,G))s.operatingMode='normal';
+}
+function leanAmMusicAppealTradeoffMult(s,G){
+  return stationLeanAmMusicEconomicsActive(s,G)?0.965:1;
+}
+/**
+ * Lean AM music only: very modest sell-through lift for weak billers (2–4% share band).
+ * Revenue-side only; does not touch ratings/appeal. Caps so high-share stations gain nothing.
+ */
+function leanAmMusicLowShareSelloutMult(s,shareSelloutMult,G){
+  if(!stationLeanAmMusicEconomicsActive(s,G))return shareSelloutMult;
+  const y=G?.year||1970;
+  if(y<AM_LEAN_OPERATING_MODE_START_YEAR)return shareSelloutMult;
+  const tier=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
+  const sh=s.rat?.share||0;
+  const lo=tier==='small'?0.018:0.02;
+  const hi=tier==='small'?0.042:0.04;
+  if(sh<lo||sh>hi)return shareSelloutMult;
+  const u=Math.min(1,Math.max(0,(sh-lo)/(hi-lo)));
+  let lift=0.022+0.016*u;
+  /** Small markets: a touch more sell-through in the 2–3.5% pocket (still capped < full sellout). */
+  if(tier==='small')lift+=0.006*Math.max(0,1-_smoothstep(0.022,0.036,sh));
+  return Math.min(0.99,shareSelloutMult*(1+lift));
+}
+/**
+ * Lean AM music only: extra ops / G&A relief when billing is weak and share is modest — survival lane for small markets.
+ * Economics-only; fades out as share or revenue rises (no ratings / appeal / seedRev changes).
+ * @returns {{ staffFac: number, ops: number, sales: number, strength: number }}
+ */
+function leanAmMusicSurvivalOperatingRelief(s,G,halfPeriodRev){
+  if(!stationLeanAmMusicEconomicsActive(s,G))return { staffFac: 1, ops: 1, sales: 1, strength: 0 };
+  const y=G?.year||1970;
+  if(y<AM_LEAN_OPERATING_MODE_START_YEAR)return { staffFac: 1, ops: 1, sales: 1, strength: 0 };
+  const tier=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
+  const sh=s.rat?.share||0;
+  /** Strongest near ~2–3% share. Small markets keep relief into ~4% (cheap sticks); large metros fade earlier — no help for dominant billers. */
+  const shareFadeHi=tier==='small'?0.068:0.055;
+  const shareBand=Math.min(1,Math.max(0,1-_smoothstep(0.02,shareFadeHi,sh)));
+  if(shareBand<=0)return { staffFac: 1, ops: 1, sales: 1, strength: 0 };
+  /** Bottom of realistic half-period billing — relief fades as billings rise. Small markets use a wider “weak” band: modest billers can still be survival cases. */
+  const revWeakHi=tier==='small'?520000:400000;
+  const revWeak=1-_smoothstep(82000,revWeakHi,Math.max(0,halfPeriodRev||0));
+  /** Small markets need more stack than medium/large so lean can be a survival lane, not only “less bad.” */
+  const tierW=tier==='small'?1.88:tier==='medium'?0.52:0.2;
+  const strength=Math.min(1,shareBand*revWeak*tierW);
+  if(strength<=0)return { staffFac: 1, ops: 1, sales: 1, strength: 0 };
+  /** Capped incremental trims on top of existing lean multipliers — “one shift + automation” vs full-service modeling. */
+  const sm=tier==='small';
+  const staffMax=sm?0.152:0.125;
+  const opsMax=sm?0.44:0.32;
+  const salesMax=sm?0.155:0.135;
+  const staffFac=1-Math.min(staffMax,staffMax*strength);
+  const ops=1-Math.min(opsMax,opsMax*strength);
+  const sales=1-Math.min(salesMax,salesMax*strength);
+  return { staffFac, ops, sales, strength };
+}
+/**
+ * Small-market lean AM only: extra plant / engineering / landlord floor vs full-service model (automation + minimal site).
+ * Economics-only; does not apply to large metros. Fades by headline share so 6%+ small-market billers get little help.
+ * @returns {{ fixedMult: number, opsMult: number, salesStack: number }}
+ */
+function leanAmMusicSmallMarketSurvivalScale(s,G){
+  if(!stationLeanAmMusicEconomicsActive(s,G))return { fixedMult: 1, opsMult: 1, salesStack: 1 };
+  const y=G?.year||1970;
+  if(y<AM_LEAN_OPERATING_MODE_START_YEAR)return { fixedMult: 1, opsMult: 1, salesStack: 1 };
+  if((MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier!=='small')return { fixedMult: 1, opsMult: 1, salesStack: 1 };
+  const sh=s.rat?.share||0;
+  /** Still a money pit under ~2% headline; strongest ~3–5%. */
+  const lowRamp=_smoothstep(0.012,0.024,sh);
+  /** Plateau through ~5% share, then fade — dominant small-market billers (~6.5%+) get little. */
+  const highFade=1-_smoothstep(0.052,0.068,sh);
+  const pocket=Math.max(0,Math.min(lowRamp,highFade));
+  if(pocket<=0)return { fixedMult: 1, opsMult: 1, salesStack: 1 };
+  /** Capped: plant + ops + a sliver of sales G&A (remnant/broker desk) — small-market lean only. */
+  const fixedMult=Math.max(0.655,1-0.358*pocket);
+  const opsMult=Math.max(0.825,1-0.248*pocket);
+  const salesStack=Math.max(0.872,1-0.135*pocket);
+  return { fixedMult, opsMult, salesStack };
+}
+/**
+ * Small-market lean AM only: bottom-of-envelope cost compression when share and billing are both thin —
+ * “automation + shed” vs scaled-down full-service (deterministic; no seedRev).
+ * Fades ~5–6% headline share and as half-period billings approach healthy levels.
+ * @param {number} halfPeriodRev pre-remnant-boost billings (same anchor as survival relief weak test)
+ * @returns {{ fixedMult: number, opsMult: number }}
+ */
+function leanAmMusicSmallMarketUltraLeanFloor(s,G,halfPeriodRev){
+  if(!stationLeanAmMusicEconomicsActive(s,G))return { fixedMult: 1, opsMult: 1 };
+  const y=G?.year||1970;
+  if(y<AM_LEAN_OPERATING_MODE_START_YEAR)return { fixedMult: 1, opsMult: 1 };
+  if((MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier!=='small')return { fixedMult: 1, opsMult: 1 };
+  const sh=s.rat?.share||0;
+  /** Ramp in above ~1.5% so 1–2% stays clearly underwater; fades to ~0 by ~5.7% headline. */
+  const sharePin=(1-_smoothstep(0.027,0.054,sh))*_smoothstep(0.014,0.026,sh);
+  const revWeak=1-_smoothstep(78000,360000,Math.max(0,halfPeriodRev||0));
+  /** Weak billing deepens compression; mid-share survival band still gets meaningful env without cliffs. */
+  const env=Math.min(1,sharePin*(0.5+0.5*revWeak));
+  if(env<=0)return { fixedMult: 1, opsMult: 1 };
+  const fixedMult=Math.max(0.918,1-0.074*env);
+  const opsMult=Math.max(0.912,1-0.084*env);
+  return { fixedMult, opsMult };
+}
 // Light market × format monetization (Duncan-style calibration). Revenue only; ±~10% max.
 // Keys = G.marketId for top-3 metros; omit format → 1. Does not affect shares.
 const MARKET_FMT_ADJ={
@@ -561,6 +688,7 @@ function earlyEraSmallMarketOpsRelief(year,marketId){
   if(tier==='mega')return 1.0;
   if(tier==='large')return 0.92;
   if(tier==='medium')return 0.82;
+  if(tier==='small')return 0.766;
   return 0.78;
 }
 /** FCC/regulatory + corporate overhead floor — leaner in 1970s secondary markets than mega (pre-1980 only). */
@@ -570,6 +698,7 @@ function earlyEraSmallMarketRegRelief(year,marketId){
   if(tier==='mega')return 1.0;
   if(tier==='large')return 0.94;
   if(tier==='medium')return 0.88;
+  if(tier==='small')return 0.818;
   return 0.84;
 }
 function earlyEraAmTalkSmallMarketSupport(format,year,marketId,sigType){
@@ -2775,7 +2904,8 @@ function playerCompetitiveBaselinePromoProg(s,G,totalRev,promoCap,progCap){
   let eraK=0.22+0.78*_smoothstep(1978,1985,year);
   eraK*=1+0.12*_smoothstep(1988,1998,year);
   if(year>=1996)eraK*=1+0.08*Math.min(1,(year-1996)/12);
-  const baselineTotal=Math.round(totalRev*tierCorePct*shareK*eraK);
+  let baselineTotal=Math.round(totalRev*tierCorePct*shareK*eraK);
+  if(stationLeanAmMusicEconomicsActive(s,G))baselineTotal=Math.round(baselineTotal*0.82);
   const rawPromo=Math.round(baselineTotal*PLAYER_BASELINE_PROMO_SHARE);
   const rawProg=Math.max(0,baselineTotal-rawPromo);
   return{
@@ -5767,6 +5897,16 @@ window._mpApply_progFocus = function({ sid, focus }) {
   }
   renderAll();
 };
+window._mpApply_operating_mode = function({ sid, mode }) {
+  const s = G.stations.find(st=>st.id===sid); if(!s) return;
+  const m = mode === 'lean_music' ? 'lean_music' : 'normal';
+  if(m === 'lean_music' && !stationQualifiesLeanAmMusicOperating(s, G)) return;
+  s.operatingMode = m;
+  (G.stations||[]).forEach(st=>{if(st&&!st._bpSlotDeferred&&!st.isPublic)calcRev(st,G);});
+  if(typeof seedRev === 'function') seedRev(G.stations, G);
+  if(typeof updateAllStationsBudgetStress === 'function') updateAllStationsBudgetStress(G);
+  renderAll();
+};
 window._mpApply_fmbooster = function({ sid }) {
   // Apply the same station mutations that doFmBooster does on the host
   const s = G.stations.find(st=>st.id===sid);
@@ -7154,9 +7294,7 @@ function appl(s,coh,G){
   // AM signal quality (interference, static) becomes a liability vs pristine FM/digital.
   // Real-world: major heritage AMs scrambled for FM simulcasts 2010-2020.
   // Modeled as a soft penalty starting 2007, accelerating 2015+.
-  const amMusicFormats=['TOP40','COUNTRY','SOUL_RNB','MOR','ALBUM_ROCK','BEAUTIFUL_MUSIC',
-    'CLASSIC_ROCK','ADULT_CONTEMP','URBAN_CONTEMP','ALT_ROCK','RHYTHMIC','HOT_AC','CLASSIC_HITS',
-    'OLDIES','SPANISH','GOSPEL','ADULT_STANDARDS'];
+  const amMusicFormats=AM_MUSIC_FORMAT_KEYS;
   // FM translator coverage fraction: how much of the AM footprint gets FM protection
   // A translator covers city core only — fringe listeners beyond the FM signal still erode.
   // tFrac=1.0 means full coverage (same as owning FM); tFrac~0.35-0.55 is typical translator.
@@ -7308,7 +7446,7 @@ function appl(s,coh,G){
     allNewsSig=0.58+0.42*_smoothstep(0.28,0.78,sigStrength);
   }
   mktFmt=Math.max(0.86,Math.min(1.24,mktFmt));
-  const out=Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * morHeritageHybridMult * hitsLineageEraMult * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G) * mktFmt * allNewsSig * zombieNicheMult);
+  const out=Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * morHeritageHybridMult * hitsLineageEraMult * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G) * mktFmt * allNewsSig * zombieNicheMult * leanAmMusicAppealTradeoffMult(s,G));
   return Number.isFinite(out)?out:0;
 }
 
@@ -8203,12 +8341,18 @@ function talentFranchiseRatingsEffect(s,G){
   const actualTalent=Math.max(0,s.fin?.tal||0);
   const expectedTalent=expectedTalentSpendForStation(s,gCtx);
   const fr=getTalentFranchiseScore(s);
-  const ceilingMult=Math.max(0.972,Math.min(1.024,0.978+0.032*fr*w));
-  const combined=ceilingMult;
+  let ceilingMult=Math.max(0.972,Math.min(1.024,0.978+0.032*fr*w));
+  let combined=ceilingMult;
   const stick=fr*w;
-  const spdLossMult=Math.min(1.42,Math.max(0.72,1.06+0.38*(1-fr)*w));
-  const spdGainMult=Math.min(1.08,Math.max(0.62,0.74+0.34*stick));
+  let spdLossMult=Math.min(1.42,Math.max(0.72,1.06+0.38*(1-fr)*w));
+  let spdGainMult=Math.min(1.08,Math.max(0.62,0.74+0.34*stick));
   const stabilityPenalty=Math.max(0,Math.min(0.22,(1-fr)*0.55*w));
+  if(stationLeanAmMusicEconomicsActive(s,gCtx)){
+    combined*=0.982;
+    ceilingMult*=0.982;
+    spdGainMult*=0.90;
+    spdLossMult*=1.045;
+  }
   return{combined,ceilingMult,spdLossMult,spdGainMult,w,franchise:fr,expectedTalent,actualTalent,stabilityPenalty,talentBoost:1};
 }
 /** @deprecated name — use talentFranchiseRatingsEffect; kept for grep/debug parity */
@@ -8949,6 +9093,7 @@ function calcRev(s,G){
   if(s._bpSlotDeferred)return;
   // Non-commercial public stations earn no ad revenue — pledge-funded
   if(s.isPublic){s.fin={rev:0,fix:0,tal:0,cost:0,ebitda:0};return;}
+  if(!s.isPublic)normalizeStationOperatingMode(s,G);
   const adx=G.adx,streamDrag=G.streamDrag,year=G.year;
   const clusterPeers=clusterOwnershipPeersForStation(s,G);
   // Sellout rate drifts toward market-position-appropriate level each period
@@ -9110,6 +9255,15 @@ function calcRev(s,G){
   const _sellTier=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
   if(year<1980&&_sellTier!=='mega')shareSelloutMult=Math.min(0.98,shareSelloutMult*1.1);
   if(year<1980&&_sellTier!=='mega'&&s.sig.type==='FM'&&!TALK_FMTS.includes(s.format)&&shareSelloutMult<0.76)shareSelloutMult=0.76;
+  // rankTier small: modest sell-through lift ~5–9.2% share (pre-1980); caps keep high-share billers unchanged.
+  if(year<1980&&_sellTier==='small'){
+    const shLo=s.rat?.share||0;
+    if(shLo>=0.05&&shLo<=0.092){
+      const u=Math.min(1,Math.max(0,(shLo-0.05)/0.042));
+      shareSelloutMult=Math.min(0.99,shareSelloutMult*(1+0.024*u));
+    }
+  }
+  shareSelloutMult=leanAmMusicLowShareSelloutMult(s,shareSelloutMult,G);
   rev=Math.round(rev*shareSelloutMult);
   const dominantEarlyEraMult=earlyEraDominantAudienceMonMult(s,G,year);
   rev=Math.round(rev*dominantEarlyEraMult);
@@ -9209,6 +9363,15 @@ function calcRev(s,G){
   }
   staffCost=Math.round(staffCost*talkEarlyFixedMult);
   facCost=Math.round(facCost*talkEarlyFixedMult);
+  // Very small markets: core fixed footprint (staff+fac) slightly below metro-modeled scale pre-1980.
+  if(year<1980){
+    const _rtFixCore=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
+    if(_rtFixCore==='small'){
+      const kSmallFixCore=0.962;
+      staffCost=Math.round(staffCost*kSmallFixCore);
+      facCost=Math.round(facCost*kSmallFixCore);
+    }
+  }
   if(year<1980&&s.sig.type==='FM'&&!TALK_FMTS.includes(s.format)){
     const _ftr=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
     if(_ftr==='medium'){staffCost=Math.round(staffCost*0.87);facCost=Math.round(facCost*0.87);}
@@ -9217,11 +9380,17 @@ function calcRev(s,G){
   const sfCost=Math.round((SF_LEVELS[s.salesForce?.level||0]?.cost||0)/2);
   staffCost=Math.round(staffCost*mktFixMult);
   facCost=Math.round(facCost*mktFixMult);
-  const regCostScaled=Math.round(regCost*mktFixMult);
-  const sfCostScaled=Math.round(sfCost*mktFixMult);
-  let fixedCost=staffCost+facCost+regCostScaled+sfCostScaled;
-  const groupOverheadHalf=clusterGroupOverheadPerStationHalfPeriod(year,clusterPeers.length,mktFixMult,mktIdForFix,inflFactor);
-  fixedCost+=groupOverheadHalf;
+  let regCostScaled=Math.round(regCost*mktFixMult);
+  let sfCostScaled=Math.round(sfCost*mktFixMult);
+  let groupOverheadHalf=clusterGroupOverheadPerStationHalfPeriod(year,clusterPeers.length,mktFixMult,mktIdForFix,inflFactor);
+  if(stationLeanAmMusicEconomicsActive(s,G)){
+    staffCost=Math.round(staffCost*LEAN_AM_STAFF_FACILITY_MULT);
+    facCost=Math.round(facCost*LEAN_AM_STAFF_FACILITY_MULT);
+    groupOverheadHalf=Math.round(groupOverheadHalf*LEAN_AM_GROUP_OVERHEAD_MULT);
+    regCostScaled=Math.round(regCostScaled*0.92);
+    sfCostScaled=Math.round(sfCostScaled*0.88);
+  }
+  let fixedCost=staffCost+facCost+regCostScaled+sfCostScaled+groupOverheadHalf;
   // ── STREAMING REVENUE ───────────────────────────────────────────
   let streamRev=0,streamUpkeep=0;
   if(s.stream?.active && year>=2005){
@@ -9312,6 +9481,31 @@ function calcRev(s,G){
   if(typeof G._wlHarnessPlayerRevMult==='number'&&G._wlHarnessPlayerRevMult>0&&G._wlHarnessPlayerRevMult<=1&&s.isPlayer&&!s.isPublic&&!s._bpSlotDeferred){
     totalRev=Math.round(totalRev*G._wlHarnessPlayerRevMult);
   }
+  /** Pre-boost billings for survival relief weak-revenue test (below). */
+  const revForLeanSurvivalRelief=totalRev;
+  if(stationLeanAmMusicEconomicsActive(s,G)){
+    const _rtLm=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
+    if(_rtLm==='small'){
+      const shLm=s.rat?.share||0;
+      /** Brokered/remnant fill — fades through ~5.5% so 4–5% share still gets a sliver (weak-revenue test uses pre-boost `revForLeanSurvivalRelief`). */
+      const _pocketRm=Math.max(0,1-_smoothstep(0.013,0.056,shLm));
+      if(_pocketRm>0)totalRev=Math.round(totalRev*(1+0.158*_pocketRm));
+    }
+  }
+  const _leanSurv=leanAmMusicSurvivalOperatingRelief(s,G,revForLeanSurvivalRelief);
+  const _smSurvScale=leanAmMusicSmallMarketSurvivalScale(s,G);
+  if(stationLeanAmMusicEconomicsActive(s,G)&&_leanSurv.strength>0.01){
+    if(_leanSurv.staffFac<1){
+      staffCost=Math.round(staffCost*_leanSurv.staffFac);
+      facCost=Math.round(facCost*_leanSurv.staffFac);
+    }
+    groupOverheadHalf=Math.round(groupOverheadHalf*(1-Math.min(0.085,0.085*_leanSurv.strength)));
+    fixedCost=staffCost+facCost+regCostScaled+sfCostScaled+groupOverheadHalf;
+  }
+  if(stationLeanAmMusicEconomicsActive(s,G)&&_smSurvScale.fixedMult<1){
+    fixedCost=Math.round(fixedCost*_smSurvScale.fixedMult);
+  }
+  s._leanAmSurvivalReliefSales=stationLeanAmMusicEconomicsActive(s,G)?_leanSurv.sales:1;
   const rightsHalfPeriod=syndicationFeesForStation(s,G);
   const salesRate=year<1980?0.18:year<1990?0.17:year<2005?0.16:0.15;
   const adminRate=year<1980?0.12:year<1990?0.11:year<2005?0.10:0.09;
@@ -9328,6 +9522,12 @@ function calcRev(s,G){
   if(talkEarlySaBump>0&&year<1980&&_tierMkt!=='mega')talkEarlySaBump*=0.58;
   const salesAdminRate=salesRate+adminRate+lateMarginTrim+progressiveSaRate+talkEarlySaBump;
   let salesAdminCost=Math.round(totalRev*salesAdminRate);
+  if(stationLeanAmMusicEconomicsActive(s,G)&&_leanSurv.sales<1){
+    salesAdminCost=Math.round(salesAdminCost*_leanSurv.sales);
+  }
+  if(stationLeanAmMusicEconomicsActive(s,G)&&_smSurvScale.salesStack<1){
+    salesAdminCost=Math.round(salesAdminCost*_smSurvScale.salesStack);
+  }
   const mktBill=marketAnnualBilling(year,G.marketId||ACTIVE_MARKET);
   const mktScale=Math.min(1.24,Math.max(0.88,mktBill/14000000));
   // Major markets + strong stations: slightly higher fixed ops intensity (sales office, engineering, promotions).
@@ -9349,6 +9549,16 @@ function calcRev(s,G){
       const rampOp=Math.min(1,(G.turn||0)/11)*Math.max(0.4,_smoothstep(1970,1974,year)*(1-0.32*_smoothstep(1976,1978,year)));
       opsFloor+=Math.round((4800+8200*Math.min(1,Math.max(0,(shOp-0.089)/0.012)))*mktFixMult*rampOp);
     }
+  }
+  if(stationLeanAmMusicEconomicsActive(s,G)){
+    opsFloor=Math.round(opsFloor*LEAN_AM_OPS_FLOOR_MULT);
+    if(_leanSurv.ops<1)opsFloor=Math.round(opsFloor*_leanSurv.ops);
+    if(_smSurvScale.opsMult<1)opsFloor=Math.round(opsFloor*_smSurvScale.opsMult);
+  }
+  const _ultraLean=leanAmMusicSmallMarketUltraLeanFloor(s,G,revForLeanSurvivalRelief);
+  if(stationLeanAmMusicEconomicsActive(s,G)&&(_ultraLean.fixedMult<1||_ultraLean.opsMult<1)){
+    if(_ultraLean.fixedMult<1)fixedCost=Math.round(fixedCost*_ultraLean.fixedMult);
+    if(_ultraLean.opsMult<1)opsFloor=Math.round(opsFloor*_ultraLean.opsMult);
   }
   // Very low realized billing (pre–seedRev): taper fixed footprint for early FM music so weak sticks aren’t crushed by market-scaled overhead alone.
   if(year<1980&&s.sig.type==='FM'&&!TALK_FMTS.includes(s.format)&&totalRev<120000){
@@ -9414,6 +9624,8 @@ function calcRev(s,G){
       amHitsContestOpex+=Math.round((1100+3100*posN)*mktFixMult*rampN);
     }
   }
+  if(stationLeanAmMusicEconomicsActive(s,G)&&amHitsContestOpex>0)
+    amHitsContestOpex=Math.round(amHitsContestOpex*0.42);
   s.fin.amHitsContestOpex=amHitsContestOpex;
   const _aust=applyBudgetAusterityOperatingTrim(s,fixedCost,opsFloor,salesAdminCost,amHitsContestOpex,effPromo,effProg,streamUpkeep);
   fixedCost=_aust.fixedCost;
@@ -9505,6 +9717,11 @@ function seedRev(stations,G){
       if(s.fin.streamRev!=null)s.fin.streamRev=Math.round(s.fin.streamRev*eff*scale);
       if(s.fin.salesAdminRate!=null){
         s.fin.salesAdmin=Math.round(s.fin.rev*s.fin.salesAdminRate);
+        if(stationLeanAmMusicEconomicsActive(s,G)){
+          s.fin.salesAdmin=Math.round(s.fin.salesAdmin*LEAN_AM_SALES_ADMIN_MULT);
+          const _ls=s._leanAmSurvivalReliefSales;
+          if(typeof _ls==='number'&&_ls>0&&_ls<1)s.fin.salesAdmin=Math.round(s.fin.salesAdmin*_ls);
+        }
         const pc=promoBudgetCapForPeriod(G),pgc=progBudgetCapForPeriod(G);
         let ep=Math.min(s.ops?.promo||0,pc),epg=Math.min(s.ops?.progBudget||0,pgc);
         let cbp=0,cbg=0;
@@ -11678,12 +11895,26 @@ function checkPressure(G){
 
   const _pressCash=G.cash;
   const _pressMyStns=G.ps;
-  if(_pressCash<0){
+  const _tier0StarterCampaign=MP.mode!=='live'&&G.campaignAssignment&&((G.campaignAssignment.tier|0)===0);
+  const _soloDistressExitQ=_tier0StarterCampaign?5:2;
+  /** Tier 0 only: shallow negative cash does not advance solo distress — avoids two half-period dips ending the rung before operating math stabilizes. */
+  const _soloDistressCashTrip=_tier0StarterCampaign?-20000:0;
+  const _cashCountsSoloDistress=_pressCash<_soloDistressCashTrip;
+  if(_cashCountsSoloDistress){
     G.debtWarningQ=(G.debtWarningQ||0)+1;
     if(G.debtWarningQ===1){
       alerts.push(`⚠ Distress: cash ${f$(_pressCash)}. Restore positive cash by next period or face a forced sale.`);
       showToast('You are in distress. Restore positive cash by next period or face a forced sale.','warn');
-    }else if(G.debtWarningQ>=2){
+    }else if(_tier0StarterCampaign&&G.debtWarningQ===2){
+      alerts.push(`⚠ Still negative: cash ${f$(_pressCash)}. Corporate gives one more period on your starter posting — restore cash next turn or face a forced exit.`);
+      showToast('Still in distress — one more period to restore cash before corporate forces an exit.','warn');
+    }else if(_tier0StarterCampaign&&G.debtWarningQ===3){
+      alerts.push(`⚠ Deep negative: cash ${f$(_pressCash)}. Starter posting: show a credible path — restore cash or corporate will force an exit.`);
+      showToast('Deep cash distress — limited periods remain before forced exit.','warn');
+    }else if(_tier0StarterCampaign&&G.debtWarningQ===4){
+      alerts.push(`⚠ Sustained deep negative: cash ${f$(_pressCash)}. Last chance on your starter posting — restore cash next period or corporate forces an exit.`);
+      showToast('Sustained distress — one more period before forced exit.','warn');
+    }else if(G.debtWarningQ>=_soloDistressExitQ){
       const weakest=_pressMyStns.length?[..._pressMyStns].sort((a,b)=>(a.fin?.ebitda||0)-(b.fin?.ebitda||0))[0]:null;
       if(weakest&&_pressMyStns.length>1){
         const lmaOp=stationIsPlayerLmaLesseeOperation(weakest);
@@ -12131,6 +12362,8 @@ if(typeof window!=='undefined'){
   window.wlGenMarketGmUnderAtCareerTime=wlGenMarketGmUnderAtCareerTime;
   window.computeAiPlayerMarketPressure=computeAiPlayerMarketPressure;
   window.resolveAiDifficultyTier=resolveAiDifficultyTier;
+  window.stationQualifiesLeanAmMusicOperating=stationQualifiesLeanAmMusicOperating;
+  window.stationLeanAmMusicEconomicsActive=stationLeanAmMusicEconomicsActive;
 }
 
 // Scheduled Atlanta 1970 BP slots: same entry economics as event-driven `rival-` (seedNewEntry).
@@ -20153,6 +20386,22 @@ function updLean(sid,v){
     }
   }
 }
+function setStationOperatingMode(sid,mode){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  const m=mode==='lean_music'?'lean_music':'normal';
+  if(m==='lean_music'&&!stationQualifiesLeanAmMusicOperating(s,G)){
+    showToast('Lean/automated mode applies to AM music (non-talk) from 1980 onward.','warn');
+    return;
+  }
+  s.operatingMode=m;
+  MP.action('operating_mode',{sid,mode:m});
+  G.news.unshift({v:'LOW',t:`${s.callLetters} operating model: ${m==='lean_music'?'Lean / automated (lower cost, weaker upside)':'Full-service music'}.`,y:G.year,p:G.period});
+  (G.stations||[]).forEach(st=>{if(st&&!st._bpSlotDeferred&&!st.isPublic)calcRev(st,G);});
+  seedRev(G.stations,G);
+  updateAllStationsBudgetStress(G);
+  renderAll();
+}
 function doLean(){
   const sid=ensureOpsSourceSid(DL.sid);DL.sid=sid;
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
@@ -24829,6 +25078,17 @@ function rStns(){
         };
         const sec=(title,first,inner)=>'<div class="sc-card-sec'+(first?' sc-card-sec--first':'')+'"><div class="sc-card-sec-h">'+title+'</div>'+inner+'</div>';
         const progBudgetLine='<div style="font-size:13px;color:var(--mut);line-height:1.45">Programming <strong style="color:var(--off)">'+f$(op.ops?.progBudget||0)+'</strong>/p</div>';
+        const leanOpUi=stationQualifiesLeanAmMusicOperating(op,G)
+          ?'<div class="ibox" style="margin-top:4px;text-align:left;line-height:1.45">'+
+            '<label style="display:block;font-size:13px;color:var(--off);margin-bottom:4px">Operating model</label>'+
+            '<select style="width:100%;padding:8px;background:var(--crd);color:var(--off);border:1px solid var(--bdh);border-radius:2px;box-sizing:border-box" '+
+            'onchange="setStationOperatingMode(\''+op.id+'\',this.value)">'+
+            '<option value="normal"'+(op.operatingMode!=='lean_music'?' selected':'')+'>Full-service music</option>'+
+            '<option value="lean_music"'+(op.operatingMode==='lean_music'?' selected':'')+'>Lean / automated (lower cost, weaker upside)</option>'+
+            '</select>'+
+            '<div style="margin-top:6px;font-size:12px;color:var(--mut)">Survival lane for 1980s+ AM music: trims core fixed costs and sales overhead — trades audience ceiling and growth vs full staffing.</div>'+
+            '</div>'
+          :'';
         const progHub='<button class="abt '+progAct+'" '+(_assignFtTutIds?'id="wl-ft-tut-programming-btn" ':'')+'style="width:100%;box-sizing:border-box;padding:14px;font-size:15px;letter-spacing:0.5px" onclick="openProgramming(\''+op.id+'\')">📻 PROGRAMMING</button>';
         const fmLegForDup=junior
           ?(junior.sig.type==='FM'&&!junior.fmBooster?junior:(s.sig.type==='FM'&&!s.fmBooster?s:null))
@@ -24875,7 +25135,7 @@ function rStns(){
         const aiCardBusy=(op._logoGenPending||op._vanGenPending||op._jingleGenPending)?' wl-ai-gen-status--busy':'';
         return '<div class="sc-card-actions">'+
           sec('TALENT',true,'<button class="abt d" type="button" style="width:100%;box-sizing:border-box;padding:14px;font-size:15px;letter-spacing:0.5px" '+(_assignFtTutIds?'id="wl-ft-tut-talent-btn" ':'')+'onclick="openManageTalent(\''+op.id+'\')">🎙 MANAGE TALENT</button>')+
-          sec('PROGRAMMING',false,'<div style="display:flex;flex-direction:column;gap:10px;width:100%">'+progBudgetLine+progHub+fmDupUi+(sportsFrHtml||'')+'</div>')+
+          sec('PROGRAMMING',false,'<div style="display:flex;flex-direction:column;gap:10px;width:100%">'+progBudgetLine+leanOpUi+progHub+fmDupUi+(sportsFrHtml||'')+'</div>')+
           sec('MARKETING',false,mkLine+'<div class="wl-ai-gen-status wl-ai-gen-status--inline'+aiCardBusy+'" id="wl-logo-status-'+op.id+'" role="status" aria-live="polite"></div>'+pack2(['<button type="button" class="abt b" '+(_assignFtTutIds?'id="wl-ft-tut-brand-btn" ':'')+'onclick="openBrandMarketing(\''+op.id+'\')">📣 BRAND & MARKETING</button>','<button type="button" class="abt" '+(_assignFtTutIds?'id="wl-ft-tut-research-btn" ':'')+'onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
           sec('SALES',false,pack2(['<button class="abt '+(sfActive?'g':'')+'" '+(_assignFtTutIds?'id="wl-ft-tut-sales-btn" ':'')+'onclick="openSales(\''+op.id+'\')">'+salesLbl+'</button>','<button class="abt" '+(_assignFtTutIds?'id="wl-ft-tut-spots-btn" ':'')+'onclick="openSpots(\''+op.id+'\')">📻 SPOT LOAD</button>']))+
           sec('ADMINISTRATION · STRUCTURE',false,pack2(adminBtns))+

@@ -44,11 +44,11 @@
       successThreshold: 53,
       survivalThreshold: 38,
       failureThreshold: 31,
-      /** Scenario cash already scales down for small markets — do not stack an extra mult; grant adds starter runway only on the campaign layer. */
-      cashMult: 1.0,
-      corporateCashGrant: 120000,
+      /** Scenario cash × mult + grant: starter runway so Tier 0 can reach assignment-end reviews (still far leaner than T1+ packages). */
+      cashMult: 1.15,
+      corporateCashGrant: 420000,
       corporateCommitmentNote:
-        'Corporate front-loaded a small working-capital line for your first GM posting — enough to absorb early losses while you stabilize the cluster.',
+        'Corporate front-loaded working capital for your first chair — enough to survive a bad opening book in a small market, not a major-market war chest.',
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 84 },
       /** AM dial; merged onto BP idx 1 instead of default AM Top 40 — variety for GM career only. */
       starterPlayerBpPatch: { type: 'AM', fmt: 'COUNTRY', pw: 'DA', str: 'moderate' },

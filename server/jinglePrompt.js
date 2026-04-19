@@ -54,10 +54,14 @@ function amKhzToRadioVerbal(khz) {
   return `${spellUnder100(hi)} ${spellUnder100(lo)}`;
 }
 
-/** FM MHz integer part only, as spoken words (e.g. 96 → ninety six; 101 → one oh one). */
+/** FM MHz integer part only, as spoken words (e.g. 96 → ninety six; 101+ → one oh one). */
 function fmMhzIntPartStringToWords(intPart) {
   if (!intPart) return '';
-  if (intPart.length === 3 && intPart[0] === '1') {
+  const intNum = parseInt(intPart, 10);
+  if (!Number.isFinite(intNum)) return intPart;
+  if (intNum === 100) return 'one hundred';
+  // 101 MHz and up: US FM “one oh four” digit style. Below that: ninety eight, ninety nine, one hundred.
+  if (intPart.length === 3 && intPart[0] === '1' && intNum >= 101) {
     return intPart
       .split('')
       .map((d) => DIGIT_WORDS[parseInt(d, 10)])
@@ -65,7 +69,7 @@ function fmMhzIntPartStringToWords(intPart) {
       .replace(/\bzero\b/g, 'oh');
   }
   if (intPart.length <= 2) {
-    return spellUnder100(parseInt(intPart, 10));
+    return spellUnder100(intNum);
   }
   return intPart
     .split('')
@@ -197,10 +201,26 @@ function verbalizeLetterPlusDialDigits(text, frequency, band) {
   return String(text).replace(re, (_m, letter) => `${letter} ${words}`);
 }
 
+/**
+ * Isolated 10–99 in brand lines → tens words (“seventy six”) so singers don’t read digit-by-digit.
+ * Skips “40” in “Top 40” (format name, not a dial).
+ */
+function verbalizeIsolatedTwoDigitBrandNumbers(text) {
+  if (text == null || String(text).trim() === '') return String(text);
+  const str = String(text);
+  return str.replace(/\b([1-9][0-9])\b/g, (m) => {
+    if (m === '40' && /\btop\s*40\b/i.test(str)) return m;
+    const n = parseInt(m, 10);
+    if (n < 10 || n > 99) return m;
+    return spellUnder100(n);
+  });
+}
+
 /** Brand string for jingle lyrics: player text only, with dial numerals verbalized for singing. */
 function brandTextForJingleLyrics(brand, frequency, band) {
   let t = verbalizeDialInText(brand, frequency, band);
   t = verbalizeLetterPlusDialDigits(t, frequency, band);
+  t = verbalizeIsolatedTwoDigitBrandNumbers(t);
   return t;
 }
 
@@ -628,6 +648,7 @@ module.exports = {
   verbalizeDialInText,
   brandTextForJingleLyrics,
   verbalizeLetterPlusDialDigits,
+  verbalizeIsolatedTwoDigitBrandNumbers,
   spacedCallLettersForSuno,
   callLettersAppearInBrand,
 };
