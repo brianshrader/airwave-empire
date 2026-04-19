@@ -35,8 +35,8 @@
 
 <!-- Socket.io — loaded dynamically only in multiplayer mode -->
 <!-- <script src="/socket.io/socket.io.js"></script> -->
-  <script type="module" crossorigin src="/assets/play-C_PtalWG.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/play-DPQ48cnG.css">
+  <script type="module" crossorigin src="/assets/play-CXHGkrxc.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/play-BmUrxQ6A.css">
 </head>
 <body>
 
@@ -312,6 +312,8 @@
   <button id="abtn">▶ NEXT PERIOD</button>
 </header>
 <div id="alertbar"></div>
+<!-- GM Mode (solo): status panel — populated by gmMode.js -->
+<div id="wl-gm-panel" aria-label="General Manager status"></div>
 <div id="tkr"><div id="ti"></div></div>
 <main id="main">
   <!-- LEFT COLUMN: score strip, market standings, news feed -->
@@ -334,6 +336,7 @@
         <button type="button" class="phbtn" onclick="openPeriodNews()" title="Headlines from the period you just finished">📰 NEWS</button>
         <button type="button" class="phbtn" onclick="openFinancials()">📈 FINANCIALS</button>
         <button type="button" class="phbtn" onclick="openLoan()">💳 LOANS</button>
+        <button type="button" class="phbtn" onclick="wlCampaignOpenBriefing()" title="GM career ladder">📋 GM CAREER</button>
         <button type="button" class="phbtn" onclick="openSaveLoad()">💾 SAVE / LOAD</button>
         <button type="button" class="phbtn" onclick="wlFtTutorialRestartFromMenu()" title="Replay the short solo first-turn walkthrough">📘 TIPS</button>
       </div>
@@ -382,6 +385,26 @@
 <div class="ov" id="m-ratings-digest"><div class="mo wide" style="max-width:720px"><div class="mh"><span id="ratings-digest-title">📰 TRADE PRESS — RATINGS DIGEST</span><button class="mc" onclick="cm('m-ratings-digest')">CLOSE ×</button></div><div id="ratings-digestb" style="padding:16px 20px 20px"></div></div></div>
 <div class="ov" id="m-milestone"><div class="mo" style="max-width:520px"><div id="milestoneb"></div></div></div>
 <div class="ov" id="m-period-news"><div class="mo" style="max-width:560px"><div class="mh"><span>📰 NEWS — LAST PERIOD</span><button type="button" class="mc" onclick="cm('m-period-news')">OK</button></div><div id="periodnewsb" style="padding:16px 20px 20px"></div></div></div>
+
+<div class="ov" id="m-gm-onboard"><div class="mo" style="max-width:560px"><div class="mh"><span>GENERAL MANAGER CAREER</span><button type="button" class="mc" onclick="wlGmDismissOnboarding()">OK</button></div><div id="gm-onboardb" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.55;color:var(--off)"></div></div></div>
+<div class="ov" id="m-gm-explain"><div class="mo wide" style="max-width:620px"><div class="mh"><span>CORPORATE EXPECTATIONS</span><button type="button" class="mc" onclick="cm('m-gm-explain')">CLOSE ×</button></div><div id="gm-explainb" style="padding:16px 20px 22px;font-family:var(--ft);font-size:15px;line-height:1.6;color:var(--off)"></div></div></div>
+<div class="ov" id="m-gm-review"><div class="mo wide" style="max-width:580px"><div class="mh"><span id="gm-review-mh-title">CURRENT STANDING</span><button type="button" class="mc" onclick="cm('m-gm-review')">CLOSE ×</button></div><div id="gm-reviewb" style="padding:16px 20px 20px"></div></div></div>
+
+<div class="ov" id="m-campaign-start"><div class="mo" style="max-width:520px"><div class="mh"><span>START GM CAREER</span><button type="button" class="mc" onclick="cm('m-campaign-start')">CLOSE ×</button></div><div style="padding:8px 20px 20px;font-family:var(--ft);font-size:15px;color:var(--off);line-height:1.55">
+  <p class="di" style="margin-top:0">Enter your name as <strong>General Manager</strong>. Your employer is the broadcast group that owns the station license — edit the generated name or roll a new one.</p>
+  <label for="campaign-start-player" style="display:block;font-size:13px;color:var(--mut);margin-bottom:6px">Your name</label>
+  <input type="text" id="campaign-start-player" maxlength="48" autocomplete="name" placeholder="e.g. Jordan Ellis"
+    style="width:100%;box-sizing:border-box;background:var(--crd);border:1px solid var(--bdr);color:var(--wht);font-family:var(--ft);font-size:15px;padding:10px 12px;margin-bottom:14px;border-radius:2px;outline:none"/>
+  <label for="campaign-start-owner" style="display:block;font-size:13px;color:var(--mut);margin-bottom:6px">Owning company (employer)</label>
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <input type="text" id="campaign-start-owner" maxlength="56" placeholder="Generated broadcast group name"
+      style="flex:1;min-width:200px;box-sizing:border-box;background:var(--crd);border:1px solid var(--bdr);color:var(--wht);font-family:var(--ft);font-size:15px;padding:10px 12px;border-radius:2px;outline:none"/>
+    <button type="button" class="abt" onclick="wlCampaignRegenerateOwnerName()" style="padding:10px 14px;font-size:13px;white-space:nowrap">New name</button>
+  </div>
+  <button type="button" class="cfm" style="width:100%" onclick="wlCampaignCommitStart()">ON AIR — START CAREER →</button>
+</div></div></div>
+<div class="ov" id="m-campaign-brief"><div class="mo" style="max-width:520px"><div class="mh"><span>GM CAREER</span><button type="button" class="mc" onclick="cm('m-campaign-brief')">CLOSE ×</button></div><div id="campaign-careerb" style="padding:16px 20px 20px"></div></div></div>
+<div class="ov" id="m-campaign-end"><div class="mo" style="max-width:520px"><div class="mh"><span>ASSIGNMENT COMPLETE</span><button type="button" class="mc" onclick="cm('m-campaign-end')">CLOSE ×</button></div><div id="campaign-endb" style="padding:16px 20px 20px"></div><div style="padding:0 20px 20px"><button type="button" class="cfm" id="campaign-end-continue" style="width:100%">CONTINUE →</button></div></div></div>
 
 <div class="ov" id="m-feedback"><div class="mo" style="max-width:520px"><div class="mh"><span>BETA FEEDBACK</span><button type="button" class="mc" onclick="cm('m-feedback')">CLOSE ×</button></div><div id="feedbackb" style="padding:16px 20px 22px;position:relative">
   <p class="di" style="margin-top:0">What should we improve? Bugs, balance, clarity — everything helps.</p>
@@ -441,6 +464,8 @@
   <!-- Vite: env in src/main.js (VITE_CLERK_PUBLISHABLE_KEY). Plain server: set meta above or use .env only after vite build. -->
   <script defer src="/src/stationLogoConfig.js"></script>
   <script defer src="/src/stationLogoSvg.js"></script>
+  <script defer src="/src/campaignMode.js"></script>
+  <script defer src="/src/gmMode.js"></script>
   <script defer src="/src/legacy.js"></script>
   <!-- Dev-only: stripped from production HTML by vite.config.js (file is not copied to dist). -->
 </body>

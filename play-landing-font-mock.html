@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Play UI mock — landing fonts (preview only)</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=Archivo+Narrow:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Oswald:wght@400;500;600;700&family=Pacifico&family=Playfair+Display:wght@400;600;700&family=Roboto+Slab:wght@400;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: #0a0a0a;
+      color: #f3efe6;
+    }
+    .gold {
+      color: #d89b2b;
+    }
+    .gold-bg {
+      background: #d89b2b;
+      color: #111;
+    }
+    .panel {
+      background: linear-gradient(180deg, rgba(35, 35, 35, 0.95), rgba(15, 15, 15, 0.95));
+      border: 1px solid rgba(216, 155, 43, 0.28);
+      box-shadow: 0 0 0 1px rgba(216, 155, 43, 0.06) inset;
+    }
+    .gridline {
+      border-color: rgba(216, 155, 43, 0.18);
+    }
+    .mock-play {
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    }
+    .btn-outline {
+      border: 1px solid rgba(120, 113, 108, 0.85);
+      color: #e7e5e4;
+    }
+    .btn-outline:hover {
+      border-color: rgba(216, 155, 43, 0.55);
+      color: #fafaf9;
+    }
+    .btn-ghost {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid transparent;
+    }
+    .btn-warn {
+      border-color: rgba(248, 113, 113, 0.55);
+      color: #fecaca;
+    }
+    .btn-disabled {
+      opacity: 0.45;
+      pointer-events: none;
+    }
+    .tabular {
+      font-variant-numeric: tabular-nums;
+    }
+    /* Game-adjacent semantic colors (profit / loss / caution) */
+    .text-profit {
+      color: #52e36e;
+    }
+    .text-loss {
+      color: #f05858;
+    }
+    .text-cash-warn {
+      color: #f5a623;
+    }
+    .text-morale-hi {
+      color: #86efac;
+    }
+    .text-morale-mid {
+      color: #fcd34d;
+    }
+    .text-morale-lo {
+      color: #fb923c;
+    }
+    .text-morale-bad {
+      color: #f87171;
+    }
+    .mock-logo {
+      width: 2rem;
+      height: 2rem;
+      border-radius: 0.35rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      border: 1px solid rgba(216, 155, 43, 0.45);
+      flex-shrink: 0;
+    }
+    .mock-logo--yours {
+      box-shadow: 0 0 0 1px rgba(216, 155, 43, 0.35), 0 0 20px rgba(216, 155, 43, 0.12);
+    }
+    #mock-station-logo .mock-logo {
+      width: 2.75rem;
+      height: 2.75rem;
+      font-size: 0.8rem;
+    }
+    .mock-logo-svg-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      height: 2rem;
+      border-radius: 0.35rem;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: #141210;
+      border: 1px solid rgba(216, 155, 43, 0.38);
+    }
+    .mock-logo-svg-wrap--yours {
+      box-shadow: 0 0 0 1px rgba(216, 155, 43, 0.35), 0 0 20px rgba(216, 155, 43, 0.12);
+    }
+    .mock-logo-svg-wrap svg {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+    #mock-station-logo .mock-logo-svg-wrap {
+      width: 3.25rem;
+      height: 3.25rem;
+      border-radius: 0.45rem;
+    }
+    .mock-portrait {
+      width: 2.25rem;
+      height: 2.25rem;
+      border-radius: 9999px;
+      object-fit: cover;
+      border: 2px solid rgba(120, 113, 108, 0.85);
+      background: #1c1917;
+    }
+    .mock-portrait--vacant {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #9a9a96;
+      border-style: dashed;
+    }
+  </style>
+</head>
+<body class="antialiased mock-play">
+  <p class="text-center text-xs uppercase tracking-widest text-stone-500 py-2 border-b border-stone-800">
+    Preview only — refresh for new random names &amp; numbers. Talent portraits use
+    <code class="text-stone-400">generated-portraits/library</code>; station marks use the same procedural SVG logos as the game
+    (<code class="text-stone-400">src/stationLogoSvg.js</code>). Open this file from the repo root so those paths resolve.
+  </p>
+
+  <header class="border-b gridline flex flex-wrap items-center justify-between gap-4 px-4 py-3 md:px-6">
+    <div class="text-xl md:text-2xl font-black tracking-[0.18em] uppercase gold shrink-0">
+      Airwave Empire
+    </div>
+    <div class="flex-1 min-w-[200px] text-sm text-stone-300">
+      <div id="mock-hmeta" class="flex flex-wrap items-baseline gap-x-2 gap-y-1"></div>
+      <div class="mt-2 h-1.5 w-full max-w-md rounded-full bg-stone-800 overflow-hidden">
+        <div id="mock-prog" class="h-full rounded-full gold-bg opacity-90" style="width: 0%"></div>
+      </div>
+      <div class="text-xs text-stone-500 mt-1 tracking-wide"><span id="mock-prog-lbl">1970 → 2020</span></div>
+    </div>
+    <div class="text-right">
+      <div id="mock-cash" class="text-lg font-semibold tabular">$0</div>
+      <button type="button" class="mt-2 gold-bg px-4 py-2 text-sm font-bold uppercase tracking-wider rounded">
+        ▶ Next period
+      </button>
+    </div>
+  </header>
+
+  <div id="mock-alert" class="hidden mx-4 mt-2 rounded border px-3 py-2 text-sm"></div>
+
+  <div class="panel mx-4 mt-3 rounded-lg px-4 py-3 text-sm text-stone-300 border border-amber-900/30">
+    <div class="text-xs uppercase tracking-[0.2em] gold mb-2">GM status</div>
+    <div id="mock-gm-grid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-2 text-stone-200 text-sm"></div>
+  </div>
+
+  <main class="max-w-7xl mx-auto px-4 py-4 grid lg:grid-cols-2 gap-4">
+    <!-- Left -->
+    <div class="panel rounded-xl p-4 space-y-4">
+      <div id="mock-scorebar" class="rounded-lg border border-stone-700/80 bg-black/25 px-3 py-2 text-sm"></div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2 border-b border-stone-700/50 pb-2">
+        <span class="text-sm font-semibold uppercase tracking-wide text-stone-200">
+          Market <span id="mock-mkt-label" class="text-stone-400 font-normal normal-case">Atlanta</span>
+        </span>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="btn-outline text-xs uppercase tracking-wide px-3 py-1.5 rounded">📊 Ranker</button>
+          <button type="button" class="btn-outline text-xs uppercase tracking-wide px-3 py-1.5 rounded">📰 Digest</button>
+        </div>
+      </div>
+
+      <table class="w-full text-sm text-left text-stone-300">
+        <thead>
+          <tr class="text-xs uppercase tracking-wider text-stone-500 border-b border-stone-700">
+            <th class="pb-2 pr-1 w-8">#</th>
+            <th class="pb-2 pr-2 w-10" title="Brand mark">◆</th>
+            <th class="pb-2 pr-2">Station</th>
+            <th class="pb-2 pr-2">Format</th>
+            <th class="pb-2 text-right tabular">Share</th>
+            <th class="pb-2 text-right tabular">△</th>
+            <th class="pb-2 text-right tabular">Rev/pd</th>
+            <th class="pb-2 text-right tabular">EBITDA</th>
+          </tr>
+        </thead>
+        <tbody id="mock-rank-body" class="text-stone-200"></tbody>
+      </table>
+
+      <div>
+        <div class="text-xs uppercase tracking-widest text-stone-500 mb-2">Demo breakdown — your lead station</div>
+        <div id="mock-demo" class="space-y-2 text-sm"></div>
+      </div>
+
+      <div>
+        <div class="text-xs uppercase tracking-widest text-stone-500 mb-2">News feed</div>
+        <ul id="mock-news" class="text-sm text-stone-400 space-y-2 leading-relaxed"></ul>
+      </div>
+    </div>
+
+    <!-- Right -->
+    <div class="panel rounded-xl p-4 space-y-4">
+      <div class="border border-amber-900/25 rounded-lg p-3 bg-black/20">
+        <div class="text-xs uppercase tracking-[0.2em] gold mb-1">Scenario</div>
+        <div class="text-base font-semibold text-stone-100">General Manager: The Underdog</div>
+        <p class="text-sm text-stone-400 mt-2 leading-relaxed">
+          Hired to run a struggling AM station — ownership expects sustainable results and periodic reviews.
+        </p>
+      </div>
+
+      <div>
+        <div class="text-xs uppercase tracking-widest text-stone-500 mb-2">Corporate actions</div>
+        <div class="flex flex-wrap gap-2">
+          <button type="button" class="btn-outline text-xs px-3 py-2 rounded">📰 News</button>
+          <button type="button" class="btn-outline text-xs px-3 py-2 rounded">📈 Financials</button>
+          <button type="button" class="btn-outline text-xs px-3 py-2 rounded">💳 Loans</button>
+          <button type="button" class="btn-outline text-xs px-3 py-2 rounded">📋 GM career</button>
+          <button type="button" class="btn-outline text-xs px-3 py-2 rounded">💾 Save / load</button>
+          <button type="button" class="btn-ghost text-xs px-3 py-2 rounded text-stone-400">📘 Tips</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="text-xs uppercase tracking-widest text-stone-500 mb-2"><span id="mock-own-lbl">Your stations</span></div>
+        <div class="border border-stone-700 rounded-lg overflow-hidden bg-stone-900/40">
+          <div class="px-4 py-3 border-b border-stone-700/80 flex flex-wrap justify-between gap-3 items-start">
+            <div class="flex gap-3 min-w-0">
+              <div id="mock-station-logo" class="mt-0.5"></div>
+              <div class="min-w-0">
+                <div id="mock-calls" class="text-lg font-bold text-stone-100 tracking-tight"></div>
+                <div id="mock-brand" class="text-sm text-stone-400"></div>
+              </div>
+            </div>
+            <div class="text-right text-sm tabular space-y-0.5">
+              <div id="mock-share-big" class="text-stone-200 font-semibold"></div>
+              <div id="mock-rev-big" class="text-stone-500"></div>
+              <div id="mock-ebitda-row" class="text-xs font-medium"></div>
+              <div id="mock-margin-row" class="text-xs text-stone-500"></div>
+            </div>
+          </div>
+
+          <div class="px-4 py-3 border-b border-stone-800/90">
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs uppercase tracking-wider text-stone-500">Programming quality</span>
+              <span id="mock-pq-val" class="text-sm font-semibold text-stone-200 tabular"></span>
+            </div>
+            <div class="h-2 rounded-full bg-stone-800 overflow-hidden">
+              <div id="mock-pq-bar" class="h-full rounded-full bg-amber-600/90" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <div class="px-2 py-2 flex flex-wrap gap-1.5 border-b border-stone-800/90 bg-black/20">
+            <button type="button" class="btn-outline text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Programming</button>
+            <button type="button" class="btn-outline text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Manage talent</button>
+            <button type="button" class="btn-outline text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Spot load</button>
+            <button type="button" class="btn-outline text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Promotion</button>
+            <button type="button" class="btn-outline text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Brand</button>
+            <button type="button" class="btn-outline text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Research</button>
+            <button type="button" class="btn-warn text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide" id="mock-contract-btn">Contract</button>
+            <button type="button" class="btn-outline btn-disabled text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Acquire</button>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left min-w-[420px]">
+              <thead>
+                <tr class="text-stone-500 uppercase tracking-wider border-b border-stone-800">
+                  <th class="py-2 pl-3 pr-2 font-medium">Daypart</th>
+                  <th class="py-2 px-1 font-medium w-12">Photo</th>
+                  <th class="py-2 px-2 font-medium">On-air</th>
+                  <th class="py-2 px-2 font-medium text-right tabular">Talent</th>
+                  <th class="py-2 px-2 font-medium text-right tabular">Morale</th>
+                  <th class="py-2 pr-3 pl-2 font-medium text-right tabular">Pay / pd</th>
+                </tr>
+              </thead>
+              <tbody id="mock-talent-body" class="text-stone-300"></tbody>
+            </table>
+          </div>
+
+          <div class="px-3 py-2 text-[11px] text-stone-500 border-t border-stone-800/90 flex flex-wrap gap-3 justify-between">
+            <span id="mock-talent-foot"></span>
+            <span class="tabular" id="mock-talent-cost"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-stone-600 border-t border-stone-800 mt-6">
+    <code class="text-stone-500">play-landing-font-mock.html</code> — static preview; refresh to re-roll values.
+  </footer>
+
+  <script src="src/stationLogoConfig.js"></script>
+  <script src="src/stationLogoSvg.js"></script>
+  <script>
+(function () {
+  var rnd = function (a, b) {
+    return a + Math.floor(Math.random() * (b - a + 1));
+  };
+  var pick = function (arr) {
+    return arr[Math.floor(Math.random() * arr.length)];
+  };
+  var shuffle = function (arr) {
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = a[i];
+      a[i] = a[j];
+      a[j] = t;
+    }
+    return a;
+  };
+  /** Curated paths under repo root — same stock as portrait library in server. */
+  var MOCK_PORTRAIT_PATHS = [
+    'generated-portraits/library/male/1970s/bobby-jacobs-1970.png',
+    'generated-portraits/library/male/1970s/chris-ellis-1970.png',
+    'generated-portraits/library/male/1970s/dean-zavala-1978.png',
+    'generated-portraits/library/male/1970s/marlon-larson-1970.png',
+    'generated-portraits/library/male/1970s/nick-reynolds-1976.png',
+    'generated-portraits/library/male/1980s/malcolm-hamilton-1985.png',
+    'generated-portraits/library/male/1980s/tex-carr-1985.png',
+    'generated-portraits/library/female/1970s/faye-diaz-1970.png',
+    'generated-portraits/library/female/1970s/melanie-goldman-1978.png',
+    'generated-portraits/library/female/1970s/tammy-coleman-1970.png',
+    'generated-portraits/library/female/1980s/cheryl-rose-1987.png',
+    'generated-portraits/library/female/1980s/sandy-griswold-1985.png',
+    'generated-portraits/library/male/1990s/rashad-franklin-1994.png',
+    'generated-portraits/library/female/1990s/stock-female-1990s-15-1990.png',
+    'generated-portraits/library/male/2000s+/stock-male-2000s-8-2008.png',
+    'generated-portraits/library/female/2000s+/stock-female-2000s-19-2012.png',
+  ];
+  var FORMAT_TO_KEY = {
+    'Top 40': 'TOP40',
+    Country: 'COUNTRY',
+    'Album Rock': 'ALBUM_ROCK',
+    CHR: 'TOP40',
+    'News/Talk': 'NEWS_TALK',
+    'Soul/R&B': 'SOUL_RNB',
+  };
+  var fmtMoney = function (n) {
+    return '$' + n.toLocaleString('en-US');
+  };
+  var fmtPct = function (x) {
+    return x.toFixed(1) + '%';
+  };
+  var logoLetters = function (call) {
+    var m = String(call).replace(/[^A-Za-z0-9]/g, '');
+    return (m.slice(0, 2) || 'WX').toUpperCase();
+  };
+  /** Fallback tile when procedural SVG isn’t available (script blocked / wrong path). */
+  var logoFallbackHtml = function (call, mine) {
+    var L = logoLetters(call);
+    var g = mine
+      ? 'linear-gradient(145deg,#5c3d14,#1a1208)'
+      : 'linear-gradient(145deg,#2d2824,#141210)';
+    var cls = 'mock-logo' + (mine ? ' mock-logo--yours' : '');
+    return (
+      '<span class="' +
+      cls +
+      '" style="background:' +
+      g +
+      '">' +
+      L +
+      '</span>'
+    );
+  };
+  var parseStationCall = function (call) {
+    var s = String(call);
+    var floatM = s.match(/(\d+\.\d+)/);
+    var intM = s.match(/\b(\d{3,4})\b/);
+    var dial;
+    var band;
+    if (floatM) {
+      band = 'FM';
+      dial = floatM[1] + ' FM';
+    } else if (intM) {
+      band = 'AM';
+      dial = intM[1] + ' AM';
+    } else {
+      band = 'AM';
+      dial = '1280 AM';
+    }
+    var letters = s.replace(/[^A-Za-z]/g, '').slice(0, 4) || 'WXYZ';
+    var callDisplay = letters + '-' + band;
+    return { dial: dial, band: band, callDisplay: callDisplay };
+  };
+  var formatKeyFromLabel = function (lab) {
+    return FORMAT_TO_KEY[lab] || 'ADULT_CONTEMP';
+  };
+  /**
+   * Procedural station mark — same pipeline as in-game Brand & Marketing (template SVG).
+   * AI-generated PNGs cache under generated-logos/ (usually empty in git); templates always work offline.
+   */
+  var logoMarkHtml = function (r, year, city) {
+    var parsed = parseStationCall(r.call);
+    var fk = formatKeyFromLabel(r.fmt);
+    var id = 'mock-' + String(r.rank) + '-' + logoLetters(r.call);
+    var vb =
+      r.variantBump != null
+        ? Math.max(0, Math.floor(Number(r.variantBump)))
+        : Math.abs((typeof r.rank === 'number' ? r.rank : 0) % 3);
+    var input = {
+      id: id,
+      callDisplay: parsed.callDisplay,
+      brand: String(r.brand || parsed.callDisplay).trim(),
+      formatKey: fk,
+      formatLabel: r.fmt,
+      dial: parsed.dial,
+      band: parsed.band,
+      year: year,
+      variantBump: vb,
+      layoutMode: 'brandHero',
+      licenseCity: city || '',
+      defaultBrand: '',
+    };
+    try {
+      if (typeof wlStationLogoSvg !== 'undefined' && wlStationLogoSvg.build) {
+        var svg = wlStationLogoSvg.build(input);
+        if (svg) {
+          var cls = 'mock-logo-svg-wrap' + (r.mine ? ' mock-logo-svg-wrap--yours' : '');
+          return '<span class="' + cls + '" role="img" aria-label="">' + svg + '</span>';
+        }
+      }
+    } catch (_e) {}
+    return logoFallbackHtml(r.call, r.mine);
+  };
+  var nameFromPortraitPath = function (rel) {
+    var base = String(rel)
+      .replace(/^.*\//, '')
+      .replace(/\.(png|webp|jpg|jpeg)$/i, '');
+    var parts = base.split('-').filter(function (p) {
+      if (!p || p.length < 2) return false;
+      if (/^\d{4}$/.test(p)) return false;
+      if (/^[a-f0-9-]{10,}$/i.test(p)) return false;
+      return true;
+    });
+    var name = parts
+      .map(function (w) {
+        return w.charAt(0).toUpperCase() + w.slice(1);
+      })
+      .join(' ')
+      .trim();
+    return name || 'On-air talent';
+  };
+  var portraitUrlFallback = function (name) {
+    return (
+      'https://ui-avatars.com/api/?name=' +
+      encodeURIComponent(name.replace(/\s+/g, ' ').trim()) +
+      '&size=72&background=292524&color=d89b2b&bold=true'
+    );
+  };
+  var moraleCls = function (m) {
+    if (m >= 72) return 'text-morale-hi';
+    if (m >= 55) return 'text-morale-mid';
+    if (m >= 40) return 'text-morale-lo';
+    return 'text-morale-bad';
+  };
+  var talentCls = function (t) {
+    if (t >= 72) return 'text-profit';
+    if (t >= 52) return 'text-stone-200';
+    return 'text-cash-warn';
+  };
+
+  var cities = ['Atlanta', 'Nashville', 'Chicago', 'Seattle', 'Los Angeles', 'New York'];
+  var years = [1970, 1974, 1978, 1982, 1985, 1990];
+  var seasons = ['SPRING', 'FALL'];
+  var scenarios = ['The Underdog', 'Country Roads', 'FM Pioneer', 'Format Wars'];
+  var modes = ['CAMPAIGN', 'GM CAREER', 'SANDBOX'];
+  var first = ['Jordan', 'Alex', 'Sam', 'Riley', 'Morgan', 'Casey', 'Jamie', 'Taylor', 'Chris', 'Dana'];
+  var last = ['Ellis', 'Nguyen', 'Patel', 'Reyes', 'Okafor', 'Hart', 'Vega', 'Brooks', 'Chen', 'Walsh'];
+  var talentFirst = ['Marcus', 'Dana', 'Lee', 'Pat', 'Chris', 'Sam', 'Jordan', 'R.J.', 'Maria', 'Steve', '—'];
+  var talentLast = ['Keller', 'Ruiz', 'Park', 'Morales', 'Stone', 'Avery', 'Dunn', 'Holt', 'Vega', 'Ives', ''];
+  var dayparts = ['Morning', 'Midday', 'Afternoon', 'Evening', 'Overnight'];
+  var formats = ['Top 40', 'Country', 'Album Rock', 'CHR', 'News/Talk', 'Soul/R&B'];
+
+  var city = pick(cities);
+  var year = pick(years);
+  var season = pick(seasons);
+  var scenario = pick(scenarios);
+  var mode = pick(modes);
+  var cash = rnd(42000, 890000);
+  var progPct = rnd(6, 78);
+
+  document.getElementById('mock-hmeta').innerHTML =
+    '<span class="font-semibold text-stone-200 tracking-wide">' +
+    city +
+    '</span> <span class="text-stone-500">·</span> <strong class="text-stone-100">' +
+    year +
+    '</strong> <strong class="text-stone-100">' +
+    season +
+    '</strong> <span class="text-stone-500">·</span> <span class="border-b border-dotted border-amber-600/50 gold cursor-default">' +
+    scenario +
+    '</span> <span class="text-stone-500">·</span> <span class="gold font-medium">' +
+    mode +
+    '</span>';
+  document.getElementById('mock-prog').style.width = progPct + '%';
+  document.getElementById('mock-prog-lbl').textContent = year + ' → 2020';
+  var cashEl = document.getElementById('mock-cash');
+  cashEl.textContent = fmtMoney(cash);
+  cashEl.className =
+    'text-lg font-semibold tabular ' +
+    (cash < 0 ? 'text-loss' : cash < 120000 ? 'text-cash-warn' : 'text-profit');
+  document.getElementById('mock-mkt-label').textContent = city;
+
+  var gmConf = rnd(38, 91);
+  var gmStatus = gmConf >= 62 ? 'Secure' : gmConf >= 48 ? 'Concern' : gmConf >= 32 ? 'Warning' : 'Probation';
+  var gmStatusCls =
+    gmConf >= 62 ? 'text-profit' : gmConf >= 48 ? 'text-cash-warn' : gmConf >= 32 ? 'text-cash-warn' : 'text-loss';
+  var nextRev = rnd(1, 8);
+  var owners = ['Turnaround', 'Cash-first', 'Prestige', 'Heritage'];
+  document.getElementById('mock-gm-grid').innerHTML =
+    '<div><span class="text-stone-500">Job security</span> · <span class="' +
+    gmStatusCls +
+    ' font-medium">' +
+    gmStatus +
+    '</span> · ' +
+    gmConf +
+    '%</div>' +
+    '<div><span class="text-stone-500">Next review</span> · in ' +
+    nextRev +
+    ' periods</div>' +
+    '<div><span class="text-stone-500">Owner type</span> · ' +
+    pick(owners) +
+    '</div>' +
+    '<div><span class="text-stone-500">Primary focus</span> · ' +
+    pick(['Profit', 'Revenue', 'Long-term strength']) +
+    '</div>';
+
+  if (Math.random() > 0.55) {
+    var al = document.getElementById('mock-alert');
+    al.classList.remove('hidden');
+    var negCash = Math.random() > 0.5;
+    if (negCash) {
+      al.className =
+        'mx-4 mt-2 rounded border px-3 py-2 text-sm border-rose-700/55 bg-rose-950/35 text-rose-100/95';
+      al.textContent =
+        '⚠ Negative cash — ' + fmtMoney(-rnd(12000, 95000)) + ' — recover within ' + rnd(1, 2) + ' periods or face forced sale.';
+    } else {
+      al.className =
+        'mx-4 mt-2 rounded border px-3 py-2 text-sm border-amber-700/50 bg-amber-950/30 text-amber-100/95';
+      al.textContent =
+        '📋 Contract ending: WXYZ Morning Drive (' + pick(talentFirst) + ' ' + pick(talentLast) + ') — open contract from the station card.';
+    }
+  }
+
+  var vp = rnd(12, 240);
+  var decade = Math.floor(year / 10) * 10;
+  var rollupEbitda = rnd(-42000, 180000);
+  var rollupMargin = rnd(-15, 24);
+  var ebitdaCls = rollupEbitda >= 0 ? 'text-profit' : 'text-loss';
+  var rollupMarginCls = rollupMargin >= 0 ? 'text-profit' : 'text-loss';
+  document.getElementById('mock-scorebar').innerHTML =
+    '<div class="flex flex-wrap justify-between gap-2 items-baseline">' +
+    '<span class="text-stone-400 uppercase tracking-wide text-xs">Score · ' +
+    decade +
+    's</span>' +
+    '<span class="font-semibold text-stone-100 tabular">' +
+    vp +
+    ' VP</span></div>' +
+    '<div class="text-xs text-stone-500 mt-1">Best share ' +
+    fmtPct(rnd(32, 142) / 10) +
+    ' · Peak rev ' +
+    fmtMoney(rnd(180000, 2400000)) +
+    '</div>' +
+    '<div class="text-xs mt-1.5 flex flex-wrap gap-x-3 gap-y-1">' +
+    '<span><span class="text-stone-500">Company EBITDA (last)</span> <span class="tabular font-medium ' +
+    ebitdaCls +
+    '">' +
+    (rollupEbitda >= 0 ? '+' : '') +
+    fmtMoney(rollupEbitda) +
+    '</span></span>' +
+    '<span><span class="text-stone-500">Margin</span> <span class="tabular ' +
+    rollupMarginCls +
+    '">' +
+    (rollupMargin >= 0 ? '+' : '') +
+    rollupMargin +
+    '%</span></span>' +
+    '</div>';
+
+  var ranks = [];
+  var nRows = rnd(5, 9);
+  var myRank = rnd(1, nRows);
+  var myShare = rnd(35, 120) / 10;
+  var myRev = rnd(14000, 62000);
+  var myStationFmt = pick(formats);
+  var myBrandSlogan = pick(['Metro Hits', 'Power 1280', 'The Hot Clock', 'City Sound']);
+  var rivalBrandPool = [
+    'Solid Gold',
+    'The Drive',
+    'Live Wire',
+    'NewsTalk Now',
+    'The Bull',
+    'Power Hits',
+    'Groove City',
+    'Heritage AM',
+  ];
+  var calls = ['WZZZ', 'WAAA', 'WKRP', 'WATL', 'WZGC', 'WRAS'];
+  for (var i = 0; i < nRows; i++) {
+    var rank = i + 1;
+    var isMine = rank === myRank;
+    var share = isMine ? myShare : rnd(25, 150) / 10;
+    var rev = isMine ? myRev : rnd(8000, 72000);
+    var call = isMine ? 'WXYZ 1280' : pick(calls) + ' ' + pick(['590', '640', '96.1', '99.7', '104.5']);
+    var fmt = isMine ? myStationFmt : pick(formats);
+    var brand = isMine ? myBrandSlogan : pick(rivalBrandPool);
+    var delta = rnd(-14, 22) / 10;
+    var ebitda = rnd(-8000, 22000);
+    var margin = rev > 0 ? Math.round((ebitda / rev) * 1000) / 10 : 0;
+    ranks.push({
+      rank: rank,
+      call: call,
+      fmt: fmt,
+      brand: brand,
+      share: share,
+      delta: delta,
+      rev: rev,
+      mine: isMine,
+      ebitda: ebitda,
+      margin: margin,
+    });
+  }
+  ranks.sort(function (a, b) {
+    return b.share - a.share;
+  });
+  ranks.forEach(function (r, idx) {
+    r.rank = idx + 1;
+  });
+
+  var tbody = document.getElementById('mock-rank-body');
+  tbody.innerHTML = ranks
+    .map(function (r) {
+      var rowCls = r.mine ? ' bg-amber-950/25' : '';
+      var dCls = r.delta >= 0 ? ' text-profit' : ' text-loss';
+      var dStr = (r.delta >= 0 ? '+' : '') + r.delta.toFixed(1);
+      var ebCls = r.ebitda >= 0 ? 'text-profit' : 'text-loss';
+      var ebStr = (r.ebitda >= 0 ? '+' : '') + fmtMoney(r.ebitda);
+      return (
+        '<tr class="border-b border-stone-800/80' +
+        rowCls +
+        '">' +
+        '<td class="py-2 pr-1 tabular align-middle">' +
+        r.rank +
+        '</td>' +
+        '<td class="py-2 pr-2 align-middle">' +
+        logoMarkHtml(r, year, city) +
+        '</td>' +
+        '<td class="py-2 pr-2 font-medium align-middle ' +
+        (r.mine ? 'gold' : '') +
+        '">' +
+        (r.mine ? '<span class="text-amber-500/90 text-[10px] uppercase tracking-wider mr-1">You</span>' : '') +
+        r.call +
+        '</td>' +
+        '<td class="py-2 pr-2 text-stone-400 align-middle">' +
+        r.fmt +
+        '</td>' +
+        '<td class="py-2 text-right tabular align-middle">' +
+        fmtPct(r.share) +
+        '</td>' +
+        '<td class="py-2 text-right tabular align-middle ' +
+        dCls +
+        '">' +
+        dStr +
+        '</td>' +
+        '<td class="py-2 text-right tabular align-middle text-stone-300">' +
+        fmtMoney(Math.round(r.rev / 1000)) +
+        'k</td>' +
+        '<td class="py-2 text-right tabular align-middle text-xs ' +
+        ebCls +
+        '">' +
+        ebStr +
+        '</td>' +
+        '</tr>'
+      );
+    })
+    .join('');
+
+  var demos = [
+    { label: '12–17', w: rnd(8, 22) },
+    { label: '18–24', w: rnd(12, 28) },
+    { label: '25–34', w: rnd(15, 32) },
+    { label: '35–49', w: rnd(18, 35) },
+    { label: '50–64', w: rnd(10, 28) },
+    { label: '65+', w: rnd(5, 18) },
+  ];
+  var dSum = demos.reduce(function (s, d) {
+    return s + d.w;
+  }, 0);
+  document.getElementById('mock-demo').innerHTML = demos
+    .map(function (d) {
+      var pct = Math.round((d.w / dSum) * 100);
+      return (
+        '<div class="flex items-center gap-2">' +
+        '<span class="w-14 text-stone-500 shrink-0">' +
+        d.label +
+        '</span>' +
+        '<div class="flex-1 h-2 rounded bg-stone-800 overflow-hidden">' +
+        '<div class="h-full rounded bg-stone-500/80" style="width:' +
+        pct +
+        '%"></div>' +
+        '</div>' +
+        '<span class="w-10 text-right tabular text-stone-400">' +
+        pct +
+        '%</span>' +
+        '</div>'
+      );
+    })
+    .join('');
+
+  var news = [
+    '📡 Fall ad market: peak season. Revenue runs ~12% above annual average.',
+    '📋 Corporate review: results met expectations — job security improved.',
+    '📻 ' + city + ': rival ' + pick(calls) + ' flipped to ' + pick(formats) + ' — watch the book next period.',
+    '💵 Loan interest charged: ' + fmtMoney(rnd(800, 12000)) + '.',
+  ];
+  if (mode === 'GM CAREER') {
+    news.push(
+      '📋 ' +
+        pick(first) +
+        ' ' +
+        pick(last) +
+        ' — ' +
+        pick(['Nashville Heritage Peak', 'Metro Signal', 'Riverbend Media']) +
+        ' Broadcasting has assigned you as GM in ' +
+        city +
+        '.'
+    );
+  }
+  document.getElementById('mock-news').innerHTML = news
+    .map(function (line) {
+      return '<li>' + line + '</li>';
+    })
+    .join('');
+
+  var pq = rnd(42, 91);
+  document.getElementById('mock-own-lbl').textContent =
+    'Your stations · ' + rnd(1, 2) + ' AM · ' + rnd(0, 2) + ' FM';
+  document.getElementById('mock-calls').textContent = 'WXYZ 1280 AM';
+  document.getElementById('mock-brand').textContent =
+    myStationFmt + ' · “' + myBrandSlogan + '”';
+  var myRow = ranks.filter(function (r) {
+    return r.mine;
+  })[0];
+  var stEbitda = myRow ? myRow.ebitda : rnd(-8000, 22000);
+  var stMargin = myRow ? myRow.margin : rnd(-12, 28);
+  var stEbCls = stEbitda >= 0 ? 'text-profit' : 'text-loss';
+  var stMgCls = stMargin >= 0 ? 'text-profit' : 'text-loss';
+
+  document.getElementById('mock-station-logo').innerHTML = logoMarkHtml(
+    {
+      rank: 'hq',
+      call: 'WXYZ 1280',
+      fmt: myStationFmt,
+      brand: myBrandSlogan,
+      mine: true,
+      variantBump: 0,
+    },
+    year,
+    city
+  );
+  document.getElementById('mock-share-big').textContent = fmtPct(myShare) + ' share';
+  document.getElementById('mock-rev-big').textContent = fmtMoney(myRev) + ' / period';
+  document.getElementById('mock-ebitda-row').innerHTML =
+    '<span class="text-stone-500">EBITDA</span> <span class="' +
+    stEbCls +
+    ' tabular">' +
+    (stEbitda >= 0 ? '+' : '') +
+    fmtMoney(stEbitda) +
+    '</span>';
+  document.getElementById('mock-margin-row').innerHTML =
+    '<span class="text-stone-500">Operating margin</span> <span class="' +
+    stMgCls +
+    ' tabular">' +
+    (stMargin >= 0 ? '+' : '') +
+    stMargin +
+    '%</span>';
+  document.getElementById('mock-pq-val').textContent = pq + '/100';
+  document.getElementById('mock-pq-val').className =
+    'text-sm font-semibold tabular ' +
+    (pq >= 72 ? 'text-profit' : pq >= 52 ? 'text-cash-warn' : 'text-loss');
+  var pqBar = document.getElementById('mock-pq-bar');
+  pqBar.style.width = pq + '%';
+  pqBar.className =
+    'h-full rounded-full ' +
+    (pq >= 72 ? 'bg-emerald-500/90' : pq >= 52 ? 'bg-amber-600/90' : 'bg-rose-600/85');
+
+  var vacant = Math.random() > 0.65;
+  var contractAlert = Math.random() > 0.5;
+  var btn = document.getElementById('mock-contract-btn');
+  if (!contractAlert) {
+    btn.classList.remove('btn-warn');
+    btn.classList.add('btn-outline');
+  }
+
+  var portraitOrder = shuffle(MOCK_PORTRAIT_PATHS);
+  var portraitIx = 0;
+  var totalTalent = 0;
+  var rows = dayparts.map(function (dp, i) {
+    var isVac = vacant && i === 0;
+    var tq = rnd(38, 88);
+    var mor = rnd(45, 96);
+    var pay = rnd(1800, 14500);
+    if (!isVac) totalTalent += pay;
+    var rel = !isVac ? portraitOrder[portraitIx++ % portraitOrder.length] : '';
+    var fullName = !isVac ? nameFromPortraitPath(rel) : '';
+    var nameHtml = isVac
+      ? '<span class="text-rose-400/90">Vacant</span>'
+      : fullName;
+    var photoHtml = isVac
+      ? '<span class="mock-portrait mock-portrait--vacant" title="Open slot">?</span>'
+      : '<img class="mock-portrait" src="' +
+        rel +
+        '" alt="" width="36" height="36" loading="lazy" onerror=\'this.onerror=null;this.src=' +
+        JSON.stringify(portraitUrlFallback(fullName)) +
+        '\' />';
+    return (
+      '<tr class="border-b border-stone-800/70">' +
+      '<td class="py-2 pl-3 pr-2 text-stone-400 align-middle">' +
+      dp +
+      '</td>' +
+      '<td class="py-2 px-1 align-middle">' +
+      photoHtml +
+      '</td>' +
+      '<td class="py-2 px-2 align-middle">' +
+      nameHtml +
+      '</td>' +
+      '<td class="py-2 px-2 text-right tabular align-middle ' +
+      (isVac ? '' : talentCls(tq)) +
+      '">' +
+      (isVac ? '—' : tq) +
+      '</td>' +
+      '<td class="py-2 px-2 text-right tabular align-middle ' +
+      (isVac ? '' : moraleCls(mor)) +
+      '">' +
+      (isVac ? '—' : mor) +
+      '</td>' +
+      '<td class="py-2 pr-3 pl-2 text-right tabular align-middle">' +
+      (isVac ? '—' : fmtMoney(pay)) +
+      '</td>' +
+      '</tr>'
+    );
+  });
+  document.getElementById('mock-talent-body').innerHTML = rows.join('');
+  document.getElementById('mock-talent-foot').textContent =
+    'Slot quality (weighted) · ' + (vacant ? rnd(38, 58) : rnd(58, 86)) + '/100';
+  document.getElementById('mock-talent-cost').textContent =
+    'Talent cost / period · ' + fmtMoney(totalTalent);
+})();
+  </script>
+</body>
+</html>

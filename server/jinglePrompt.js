@@ -2,7 +2,7 @@
 
 /**
  * ShortAPI Suno v5.5 custom mode:
- * - `lyrics` = on-air words only (tagline, then brand/dial; short taglines repeated once for a stronger hook).
+ * - `lyrics` = on-air words only (tagline once, then brand; spoken formats add calls/dial only when not redundant).
  * - **Music formats:** prompts ask for **sung tagline and sung brand** (melodic vocal for all lyric lines).
  * - **News/talk-style formats:** VO / announcer delivery (not sung).
  * - `tags` = era, format, length, mix — avoid stuffing contradictory delivery cues into one giant string.
@@ -127,6 +127,16 @@ function callLettersAppearInBrand(brand, callLetters) {
   return b.includes(base);
 }
 
+/** True if dial is already spoken in brand line (skip extra “You’re listening at …” line). */
+function dialHintRedundantWithBrand(brandLyrics, dialHint) {
+  const b = String(brandLyrics || '').toLowerCase();
+  const d = String(dialHint || '').trim().toLowerCase();
+  if (!b || !d) return false;
+  if (b.includes(d)) return true;
+  const parts = d.split(/\s+/).filter(Boolean);
+  return parts.length >= 2 && parts.every((w) => b.includes(w));
+}
+
 function verbalizeDialInText(text, frequency, band) {
   const dialWords = dialVerbalForTags(frequency, band);
   if (!dialWords || text == null || String(text).trim() === '') return String(text);
@@ -222,6 +232,7 @@ const FORMAT_SUNO = {
   PUBLIC_ECLECTIC: 'eclectic noncomm warmth',
   RELIGIOUS_TEACHING: 'faith teaching tone, respectful',
   INDIETRONICA: 'indie electronic texture',
+  JAZZ: 'smooth jazz warmth, brushed rhythm, melodic instrument hook',
 };
 
 /** Formats where the global “radio jingle era” defaults (brass, punchy VO) fight the intended sound. */
@@ -230,6 +241,8 @@ const SOFT_IMAGERY_FORMATS = new Set(['BEAUTIFUL_MUSIC', 'MOR', 'ADULT_STANDARDS
 const ROCK_IMAGERY_FORMATS = new Set(['ALBUM_ROCK', 'CLASSIC_ROCK', 'ALT_ROCK']);
 /** Rhythmic pop / R&B — short ID can use groove; different from soft AC or news VO. */
 const RHYTHMIC_POP_FORMATS = new Set(['URBAN_CONTEMP', 'RHYTHMIC', 'SOUL_RNB', 'HOT_AC']);
+/** Oldies / classic hits — avoid generic decade “top-40 brass” ladder. */
+const OLDIES_IMAGERY_FORMATS = new Set(['OLDIES', 'CLASSIC_HITS']);
 /** Formats that should sound like a spoken / VO-forward ID (no sung/spoken split). */
 const SPOKEN_FORWARD_FORMATS = new Set([
   'NEWS_TALK',
@@ -264,7 +277,7 @@ function vocalDeliveryTag(fmtKey, hasTagline) {
     return `rock radio sting; guitar-forward; ${SUNG_TAGLINE_AND_BRAND}`;
   }
   if (fmtKey === 'COUNTRY') {
-    return `country melodic vocal; warm twang ok; ${SUNG_TAGLINE_AND_BRAND}`;
+    return `country melodic vocal; warm twang ok; ${SUNG_TAGLINE_AND_BRAND}; country radio bed only — not disco funk or pop brass`;
   }
   if (fmtKey === 'SPANISH') {
     return `Latin melodic hook; ${SUNG_TAGLINE_AND_BRAND}; Spanish-language sung line ok`;
@@ -278,6 +291,24 @@ function vocalDeliveryTag(fmtKey, hasTagline) {
   if (RHYTHMIC_POP_FORMATS.has(fmtKey)) {
     return `contemporary R&B-pop melodic hook; ${SUNG_TAGLINE_AND_BRAND}`;
   }
+  if (fmtKey === 'ADULT_CONTEMP') {
+    return `warm adult-contemporary melodic vocal; ${SUNG_TAGLINE_AND_BRAND}; smooth not shouty`;
+  }
+  if (OLDIES_IMAGERY_FORMATS.has(fmtKey)) {
+    return `retro gold / classic hits vocal; clear enunciation; ${SUNG_TAGLINE_AND_BRAND}; nostalgic not brass parade`;
+  }
+  if (fmtKey === 'JAZZ') {
+    return `smooth jazz station vocal; light melodic line; ${SUNG_TAGLINE_AND_BRAND}; no CHR shout`;
+  }
+  if (fmtKey === 'RELIGIOUS_TEACHING') {
+    return `respectful teaching delivery; ${SUNG_TAGLINE_AND_BRAND}; calm clarity`;
+  }
+  if (fmtKey === 'PUBLIC_ECLECTIC') {
+    return `warm noncommercial melodic vocal; intimate; ${SUNG_TAGLINE_AND_BRAND}`;
+  }
+  if (fmtKey === 'INDIETRONICA') {
+    return `indie electronic vocal texture; ${SUNG_TAGLINE_AND_BRAND}; intimate not arena`;
+  }
   return SUNG_TAGLINE_AND_BRAND;
 }
 
@@ -285,6 +316,23 @@ function vocalDeliveryTag(fmtKey, hasTagline) {
  * Year-based imaging defaults; for soft formats use a dedicated bed so era does not override format.
  */
 function eraTagsForYearAndFormat(yr, fmtKey) {
+  if (fmtKey === 'COUNTRY') {
+    let eraTag =
+      'country radio station imaging: acoustic guitar or pedal steel intro, fiddle hook, warm twang, tight dry studio';
+    let eraAnti =
+      'not disco not funk not 1970s urban pop brass not R&B groove not CHR synthpop not four-on-the-floor dance drums';
+    if (yr < 1980) {
+      eraTag += ', analog tape, countrypolitan or outlaw-era energy';
+      eraAnti += ' not top-40 brass fanfare not ARP synth brass sting';
+    } else if (yr < 2000) {
+      eraTag += ', 1980s–1990s country radio polish';
+      eraAnti += ' not boy-band pop or new jack swing drums';
+    } else {
+      eraTag += ', modern country radio without hip-hop trap drums';
+    }
+    return { eraTag, eraAnti };
+  }
+
   if (fmtKey === 'GOSPEL') {
     let eraTag = 'gospel radio imaging: uplifting pad, organ or piano, optional choir swell on the hook';
     let eraAnti = 'not trap 808 not club EDM not spoken-word news tone';
@@ -326,6 +374,132 @@ function eraTagsForYearAndFormat(yr, fmtKey) {
       eraTag += ', clean wide polish without aggression';
       eraAnti += ' not EDM drops';
     }
+    return { eraTag, eraAnti };
+  }
+
+  if (SPOKEN_FORWARD_FORMATS.has(fmtKey)) {
+    let eraTag =
+      fmtKey === 'SPORTS_TALK'
+        ? 'sports talk radio imaging: bold transient punch, dry studio energy; stadium crowd samples not dominant'
+        : fmtKey === 'ALL_NEWS'
+          ? 'all-news radio imaging: urgent credible sting; network tone without music-video sheen'
+          : fmtKey === 'PODCAST_TALK'
+            ? 'podcast-forward radio imaging: intimate close-mic room; minimal neutral underscore only'
+            : fmtKey === 'PUBLIC_NEWS'
+              ? 'public radio news imaging: measured, credible; understated bed optional'
+              : 'news / talk radio imaging: authoritative booth sting; tight broadcast dynamics; subtle low pad ok';
+    let eraAnti =
+      'not sung CHR pop jingle not brass fanfare sting not country fiddle not four-on-the-floor dance';
+    if (yr < 1990) {
+      eraTag += ', analog-console era chain';
+      eraAnti += ' not glossy 2000s brickwall';
+    } else if (yr < 2010) {
+      eraTag += ', digital broadcast clarity';
+    } else {
+      eraTag += ', loudness-normalized talk production';
+      eraAnti += ' not hyperpop not EDM festival';
+    }
+    return { eraTag, eraAnti };
+  }
+
+  if (fmtKey === 'TOP40') {
+    let eraTag =
+      'CHR / hit-radio imaging: bright synth or guitar hook, punchy controlled drums, mainstream pop energy';
+    let eraAnti =
+      'not 1970s brass station-ID fanfare not ARP analog brass sting not news talk dry VO not orchestral film trailer';
+    if (yr < 1980) {
+      eraTag += ', late-70s FM CHR brightness without big-band brass';
+      eraAnti += ' not disco orchestra hit as sole bed';
+    } else if (yr < 2000) {
+      eraTag += ', 1980s–1990s CHR polish';
+      eraAnti += ' not grunge rock slab';
+    } else {
+      eraTag += ', modern CHR imaging sheen';
+      eraAnti += ' not dubstep';
+    }
+    return { eraTag, eraAnti };
+  }
+
+  if (RHYTHMIC_POP_FORMATS.has(fmtKey)) {
+    let eraTag =
+      'rhythmic pop / urban radio imaging: groove-led sting, warm bass, snappy drums; melodic hooks';
+    let eraAnti = 'not brass top-40 fanfare not country twang not spoken news VO';
+    if (yr < 1990) {
+      eraTag += ', late-80s swing and new-jack flavor ok if tight';
+    } else if (yr < 2010) {
+      eraTag += ', Y2K rhythmic polish';
+    } else {
+      eraTag += ', contemporary urban-pop production';
+      eraAnti += ' not trap 808 as only texture';
+    }
+    return { eraTag, eraAnti };
+  }
+
+  if (fmtKey === 'SPANISH') {
+    let eraTag =
+      'Latin / Spanish-language radio imaging: percussive bounce, bright hooks, regional heat without cliché mariachi parody';
+    let eraAnti = 'not US English news brass sting not Nashville country not dry NPR read';
+    if (yr < 2000) {
+      eraTag += ', analog warmth ok';
+    } else {
+      eraTag += ', modern Latin-pop radio polish';
+    }
+    return { eraTag, eraAnti };
+  }
+
+  if (OLDIES_IMAGERY_FORMATS.has(fmtKey)) {
+    let eraTag =
+      'gold / classic hits radio imaging: retro guitar or electric piano hook, nostalgic bounce, tight dry close';
+    let eraAnti = 'not modern CHR supersaws not news VO not big-band brass parade';
+    if (yr < 1980) {
+      eraTag += ', 50s–60s rock-n-roll or soul flavor ok';
+    } else if (yr < 2000) {
+      eraTag += ', 70s–90s gold-era radio energy';
+    } else {
+      eraTag += ', recall-based classic hits without EDM drops';
+    }
+    return { eraTag, eraAnti };
+  }
+
+  if (fmtKey === 'ADULT_CONTEMP') {
+    let eraTag =
+      'adult contemporary radio imaging: warm pad, soft drums, melodic sheen, romantic lift without shout';
+    let eraAnti = 'not brass fanfare not sports talk punch not trap bounce';
+    if (yr < 1990) {
+      eraTag += ', soft-rock AC warmth';
+    } else if (yr < 2010) {
+      eraTag += ', polished AC radio sheen';
+    } else {
+      eraTag += ', wide modern AC without EDM aggression';
+    }
+    return { eraTag, eraAnti };
+  }
+
+  if (fmtKey === 'JAZZ') {
+    let eraTag =
+      'smooth jazz radio imaging: brushed rhythm, warm electric piano or sax hook, late-night polish';
+    let eraAnti = 'not CHR brass sting not rock distortion not news VO';
+    return { eraTag, eraAnti };
+  }
+
+  if (fmtKey === 'RELIGIOUS_TEACHING') {
+    let eraTag =
+      'faith teaching radio imaging: gentle organ or acoustic pad, reverent, calm dynamics';
+    let eraAnti = 'not club EDM not CHR pop brass not sports hype';
+    return { eraTag, eraAnti };
+  }
+
+  if (fmtKey === 'PUBLIC_ECLECTIC') {
+    let eraTag =
+      'noncommercial eclectic imaging: warm acoustic or light electronic texture; intimate not flashy';
+    let eraAnti = 'not commercial CHR hype not brass fanfare';
+    return { eraTag, eraAnti };
+  }
+
+  if (fmtKey === 'INDIETRONICA') {
+    let eraTag =
+      'indie electronic radio imaging: synth texture, dry punchy drums, quirky hook not arena';
+    let eraAnti = 'not 1970s brass jingle not dubstep drop not orchestral trailer';
     return { eraTag, eraAnti };
   }
 
@@ -391,19 +565,18 @@ function buildSunoJingleArgs(p) {
   // On-air words only — tagline + brand as the player wrote them; verbalize digits for singability.
   const tagForLyrics = tag ? brandTextForJingleLyrics(tag, p.frequency, band) : '';
   const brandForLyrics = brandTextForJingleLyrics(brand, p.frequency, band);
-  // Suno often mangles very short hooks; repeating the line in lyrics helps (threshold ~one short sentence).
   const tagIsShort = tagForLyrics.length > 0 && tagForLyrics.length <= 36;
 
   const spoken = SPOKEN_FORWARD_FORMATS.has(fmtKey);
-  // Slogan/tagline first, then on-air brand (typical jingle: hook line, then station ID) — all sung for music formats.
+  // One line per idea — repeating short taglines caused “Depend on it. Depend on it.” and model babble.
   const lyricLines = [];
   if (tagForLyrics) lyricLines.push(tagForLyrics);
-  if (tagIsShort) lyricLines.push(tagForLyrics);
   lyricLines.push(brandForLyrics);
-  // Spoken formats: dedicated lines for dial + spaced calls reduce Suno inventing wrong frequencies or misreading letter clusters.
   if (spoken) {
-    if (callSpaced) lyricLines.push(callSpaced);
-    if (dialHint) lyricLines.push(`You're listening at ${dialHint}`);
+    if (callSpaced && !callsInBrand) lyricLines.push(callSpaced);
+    if (dialHint && !dialHintRedundantWithBrand(brandForLyrics, dialHint)) {
+      lyricLines.push(`You're listening at ${dialHint}`);
+    }
   }
   const lyrics = lyricLines.join('\n').slice(0, 1200);
 

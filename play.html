@@ -386,8 +386,22 @@
 <div class="ov" id="m-period-news"><div class="mo" style="max-width:560px"><div class="mh"><span>📰 NEWS — LAST PERIOD</span><button type="button" class="mc" onclick="cm('m-period-news')">OK</button></div><div id="periodnewsb" style="padding:16px 20px 20px"></div></div></div>
 
 <div class="ov" id="m-gm-onboard"><div class="mo" style="max-width:560px"><div class="mh"><span>GENERAL MANAGER CAREER</span><button type="button" class="mc" onclick="wlGmDismissOnboarding()">OK</button></div><div id="gm-onboardb" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.55;color:var(--off)"></div></div></div>
-<div class="ov" id="m-gm-review"><div class="mo wide" style="max-width:560px"><div class="mh"><span id="gm-review-mh-title">GENERAL MANAGER PERFORMANCE REVIEW</span><button type="button" class="mc" onclick="cm('m-gm-review')">CLOSE ×</button></div><div id="gm-reviewb" style="padding:16px 20px 20px"></div></div></div>
+<div class="ov" id="m-gm-explain"><div class="mo wide" style="max-width:620px"><div class="mh"><span>CORPORATE EXPECTATIONS</span><button type="button" class="mc" onclick="cm('m-gm-explain')">CLOSE ×</button></div><div id="gm-explainb" style="padding:16px 20px 22px;font-family:var(--ft);font-size:15px;line-height:1.6;color:var(--off)"></div></div></div>
+<div class="ov" id="m-gm-review"><div class="mo wide" style="max-width:580px"><div class="mh"><span id="gm-review-mh-title">CURRENT STANDING</span><button type="button" class="mc" onclick="cm('m-gm-review')">CLOSE ×</button></div><div id="gm-reviewb" style="padding:16px 20px 20px"></div></div></div>
 
+<div class="ov" id="m-campaign-start"><div class="mo" style="max-width:520px"><div class="mh"><span>START GM CAREER</span><button type="button" class="mc" onclick="cm('m-campaign-start')">CLOSE ×</button></div><div style="padding:8px 20px 20px;font-family:var(--ft);font-size:15px;color:var(--off);line-height:1.55">
+  <p class="di" style="margin-top:0">Enter your name as <strong>General Manager</strong>. Your employer is the broadcast group that owns the station license — edit the generated name or roll a new one.</p>
+  <label for="campaign-start-player" style="display:block;font-size:13px;color:var(--mut);margin-bottom:6px">Your name</label>
+  <input type="text" id="campaign-start-player" maxlength="48" autocomplete="name" placeholder="e.g. Jordan Ellis"
+    style="width:100%;box-sizing:border-box;background:var(--crd);border:1px solid var(--bdr);color:var(--wht);font-family:var(--ft);font-size:15px;padding:10px 12px;margin-bottom:14px;border-radius:2px;outline:none"/>
+  <label for="campaign-start-owner" style="display:block;font-size:13px;color:var(--mut);margin-bottom:6px">Owning company (employer)</label>
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <input type="text" id="campaign-start-owner" maxlength="56" placeholder="Generated broadcast group name"
+      style="flex:1;min-width:200px;box-sizing:border-box;background:var(--crd);border:1px solid var(--bdr);color:var(--wht);font-family:var(--ft);font-size:15px;padding:10px 12px;border-radius:2px;outline:none"/>
+    <button type="button" class="abt" onclick="wlCampaignRegenerateOwnerName()" style="padding:10px 14px;font-size:13px;white-space:nowrap">New name</button>
+  </div>
+  <button type="button" class="cfm" style="width:100%" onclick="wlCampaignCommitStart()">ON AIR — START CAREER →</button>
+</div></div></div>
 <div class="ov" id="m-campaign-brief"><div class="mo" style="max-width:520px"><div class="mh"><span>GM CAREER</span><button type="button" class="mc" onclick="cm('m-campaign-brief')">CLOSE ×</button></div><div id="campaign-careerb" style="padding:16px 20px 20px"></div></div></div>
 <div class="ov" id="m-campaign-end"><div class="mo" style="max-width:520px"><div class="mh"><span>ASSIGNMENT COMPLETE</span><button type="button" class="mc" onclick="cm('m-campaign-end')">CLOSE ×</button></div><div id="campaign-endb" style="padding:16px 20px 20px"></div><div style="padding:0 20px 20px"><button type="button" class="cfm" id="campaign-end-continue" style="width:100%">CONTINUE →</button></div></div></div>
 

@@ -43,7 +43,13 @@ function mountAnalytics(app) {
 
     const body = req.body && typeof req.body === 'object' ? req.body : {};
     const source = safeStr(body.source, 32);
-    if (source !== 'new_game' && source !== 'resume_autosave') {
+    const allowedSources = new Set([
+      'new_game',
+      'resume_autosave',
+      'campaign_new',
+      'campaign_next',
+    ]);
+    if (!allowedSources.has(source)) {
       return res.status(400).json({ error: 'Invalid source.' });
     }
 
@@ -57,7 +63,10 @@ function mountAnalytics(app) {
     const clientDistinctId = safeStr(body.client_distinct_id, 128);
     const distinctId = clerkUserId || clientDistinctId || ip;
 
-    const eventName = source === 'new_game' ? 'solo game started' : 'solo game resumed';
+    let eventName = 'solo game started';
+    if (source === 'resume_autosave') eventName = 'solo game resumed';
+    else if (source === 'campaign_next') eventName = 'solo campaign continued';
+    else if (source === 'campaign_new') eventName = 'solo campaign started';
 
     posthog.capture({
       distinctId,
@@ -66,6 +75,7 @@ function mountAnalytics(app) {
         scenario_id: scenarioId,
         market_id: marketId,
         source,
+        session_source: source,
         mode: 'solo',
       },
     });

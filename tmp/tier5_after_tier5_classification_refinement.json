@@ -1,0 +1,2377 @@
+{
+  "meta": {
+    "mode": "batch",
+    "seed": 100,
+    "runs": 30,
+    "market": "atlanta",
+    "note": "GM mode uses genMarket(gm_under) with ACTIVE_MARKET patched to --market. Campaign career start uses ladder tier-1 market from campaignMode.js (typically Nashville), overriding the patched constant when beginCareer runs.",
+    "maxPeriodsGm": 48,
+    "maxPeriodsCampaign": 160,
+    "maxAssignments": 8,
+    "revisitTest": false,
+    "compareProfiles": false,
+    "compareIncludeLong": false,
+    "campaignProfiles": null,
+    "tier5Diagnostic": true
+  },
+  "gm": null,
+  "campaign": null,
+  "batch": {
+    "tier5Diagnostic": true,
+    "gmReviewCounts": [
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12
+    ],
+    "gmFired": 0,
+    "gmConfidenceDeltas": [
+      -3,
+      -3,
+      22,
+      -3,
+      -3,
+      -3,
+      22,
+      -3,
+      -3,
+      22,
+      -3,
+      -3,
+      -3,
+      -3,
+      -3,
+      22,
+      -3,
+      -3,
+      -3,
+      -3,
+      -3,
+      -3,
+      -3,
+      -3,
+      -3,
+      -3,
+      -3,
+      -3,
+      -3,
+      -3
+    ],
+    "batchWarnings": []
+  },
+  "profiles": null,
+  "profileComparison": null,
+  "interpretation": null,
+  "tier5EntrantAnalysis": {
+    "extended": {
+      "profileKey": "extended",
+      "maxAssignments": 10,
+      "ladderTier5": {
+        "id": "c5_top",
+        "tier": 5,
+        "successThreshold": 57,
+        "survivalThreshold": 43,
+        "contractLengthPeriods": 22,
+        "gmConfig": {
+          "startConfidence": 74,
+          "minFranchiseAvg": 0.52
+        }
+      },
+      "totalRuns": 30,
+      "runsReachingTier5": 30,
+      "tier5ReachRate": 1,
+      "entrantAverages": {
+        "avgConfidenceEndOfPriorAssignment": 64,
+        "avgReputationAtT5Entry": 100,
+        "avgSlotsRemainingAtT5Entry": 4,
+        "avgPriorDemotions": 0.5,
+        "avgPriorFirings": 0
+      },
+      "slotsRemainingDistribution": {
+        "exactlyOneAssignmentLeft": 0,
+        "twoOrMoreAssignmentsLeft": 30,
+        "amongTier5Reachers": 30
+      },
+      "priorOutcomeTotalsAcrossEntrants": {
+        "promotions": 120,
+        "laterals": 45,
+        "demotions": 15,
+        "firings": 0
+      },
+      "pathLabelCounts": {
+        "mixed": 15,
+        "promotion_streak": 15
+      },
+      "entrants": [
+        {
+          "seed": 100,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 101,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 102,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 103,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 104,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 105,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 106,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 107,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 108,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 109,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 110,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 111,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 112,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 113,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 114,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 115,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 116,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 117,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 118,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 119,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 120,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 121,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 122,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 123,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 124,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 125,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 126,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 127,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 128,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 129,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 4,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        }
+      ],
+      "tier5OutcomeDistribution": {
+        "won": 0,
+        "promoted": 0,
+        "lateral": 42,
+        "demoted": 9,
+        "fired": 0
+      },
+      "tier5AssignmentCount": 51,
+      "avgEndingConfidenceTier5": 42.470588235294116,
+      "avgConfidenceDeltaDuringTier5": -31.529411764705884,
+      "avgReputationDeltaDuringTier5": 4.235294117647059,
+      "winCount": 0,
+      "winRateAmongTier5Assignments": 0,
+      "runsReachingT5WhoWonCampaign": 0,
+      "winRateAmongTier5ReachingRuns": 0
+    },
+    "long": {
+      "profileKey": "long",
+      "maxAssignments": 12,
+      "ladderTier5": {
+        "id": "c5_top",
+        "tier": 5,
+        "successThreshold": 57,
+        "survivalThreshold": 43,
+        "contractLengthPeriods": 22,
+        "gmConfig": {
+          "startConfidence": 74,
+          "minFranchiseAvg": 0.52
+        }
+      },
+      "totalRuns": 30,
+      "runsReachingTier5": 30,
+      "tier5ReachRate": 1,
+      "entrantAverages": {
+        "avgConfidenceEndOfPriorAssignment": 64,
+        "avgReputationAtT5Entry": 100,
+        "avgSlotsRemainingAtT5Entry": 6,
+        "avgPriorDemotions": 0.5,
+        "avgPriorFirings": 0
+      },
+      "slotsRemainingDistribution": {
+        "exactlyOneAssignmentLeft": 0,
+        "twoOrMoreAssignmentsLeft": 30,
+        "amongTier5Reachers": 30
+      },
+      "priorOutcomeTotalsAcrossEntrants": {
+        "promotions": 120,
+        "laterals": 45,
+        "demotions": 15,
+        "firings": 0
+      },
+      "pathLabelCounts": {
+        "mixed": 15,
+        "promotion_streak": 15
+      },
+      "entrants": [
+        {
+          "seed": 100,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 101,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 102,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 103,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 104,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 105,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 106,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 107,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 108,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 109,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 110,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 111,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 112,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 113,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 114,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 115,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 116,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 117,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 118,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 119,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 120,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 121,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 122,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 123,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 124,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 125,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 126,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 127,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 128,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 1,
+          "priorDemotions": 1,
+          "priorFirings": 0,
+          "pathLabel": "mixed",
+          "campaignWonThisRun": false
+        },
+        {
+          "seed": 129,
+          "assignmentIndexFirstT5": 6,
+          "assignmentsCompletedBeforeT5": 6,
+          "slotsRemainingAtT5Entry": 6,
+          "reputationAtT5Entry": 100,
+          "confidenceEndOfPriorAssignment": 64,
+          "priorPromotions": 4,
+          "priorLaterals": 2,
+          "priorDemotions": 0,
+          "priorFirings": 0,
+          "pathLabel": "promotion_streak",
+          "campaignWonThisRun": false
+        }
+      ],
+      "tier5OutcomeDistribution": {
+        "won": 0,
+        "promoted": 0,
+        "lateral": 42,
+        "demoted": 9,
+        "fired": 0
+      },
+      "tier5AssignmentCount": 51,
+      "avgEndingConfidenceTier5": 42.470588235294116,
+      "avgConfidenceDeltaDuringTier5": -31.529411764705884,
+      "avgReputationDeltaDuringTier5": 4.235294117647059,
+      "winCount": 0,
+      "winRateAmongTier5Assignments": 0,
+      "runsReachingT5WhoWonCampaign": 0,
+      "winRateAmongTier5ReachingRuns": 0
+    },
+    "extendedVsLong": {
+      "winCountDelta": 0,
+      "tier5ReachRateDelta": 0,
+      "runsReachingTier5Delta": 0,
+      "campaignWinDelta": 0
+    },
+    "interpretation": {
+      "code": "T5_STRICT",
+      "summary": "Reaching Tier 5 is not enough in this sample; players still fail to convert — investigate Tier 5 bar and earlier-tier damage.",
+      "bullets": [
+        "Mean ending confidence on Tier 5 assignments is meaningfully below the promotion (win) threshold — the bar may still be the binding constraint.",
+        "Entrants show non-trivial prior demotions or firings — momentum lost before Tier 5 may matter as much as the Tier 5 bar.",
+        "Wins remain zero in both extended and long profiles among runs that reach Tier 5 — threshold strictness and/or Tier 4 carryover remain suspects."
+      ]
+    },
+    "shelfConvergence": {
+      "extended": {
+        "profileKey": "extended",
+        "tier5RunsWithTrace": 30,
+        "uniqueFormalReviewFingerprintCount": 2,
+        "allFormalReviewSequencesIdentical": false,
+        "uniqueFinalConfidenceValues": [
+          40,
+          43
+        ],
+        "totalFormalReviewsAcrossTier5Runs": 150,
+        "outcomeTallyAcrossReviewSteps": {
+          "good": 0,
+          "mediocre": 0,
+          "bad": 0
+        },
+        "clampHitLowAcrossSteps": 0,
+        "clampHitHighAcrossSteps": 0,
+        "closingStretchStepsWithBracket44to52": 30,
+        "closingStretchStepsWithBracketBelow44": 0,
+        "runsWhereFinalGmRoundDiffersFromRoundOfRaw": 0,
+        "narrative": {
+          "roundingVsAssignmentEnd": "Final GM confidence matches Math.round(final raw) — assignment-end classification is not introducing a separate floor.",
+          "fingerprintRepeat": "Formal review sequences differ across seeds — not a single identical replay.",
+          "shelfAt44": "Final confidence varies across runs — not a single shelf at 44 in this sample."
+        },
+        "sampleSeed": 100,
+        "sampleStepsSimplified": [
+          {
+            "outcome": "marginal_bad",
+            "deltaRaw": -13,
+            "confidenceAfter": 61,
+            "closingBracket": null,
+            "closingStretchPenalty": 0,
+            "closingEligible": false,
+            "clampHitLow": false,
+            "clampHitHigh": false
+          },
+          {
+            "outcome": "mediocre_lower",
+            "deltaRaw": -2,
+            "confidenceAfter": 59,
+            "closingBracket": null,
+            "closingStretchPenalty": 0,
+            "closingEligible": false,
+            "clampHitLow": false,
+            "clampHitHigh": false
+          },
+          {
+            "outcome": "mediocre_lower",
+            "deltaRaw": -3,
+            "confidenceAfter": 56,
+            "closingBracket": null,
+            "closingStretchPenalty": 0,
+            "closingEligible": false,
+            "clampHitLow": false,
+            "clampHitHigh": false
+          },
+          {
+            "outcome": "mediocre_lower",
+            "deltaRaw": -5,
+            "confidenceAfter": 51,
+            "closingBracket": null,
+            "closingStretchPenalty": 0,
+            "closingEligible": false,
+            "clampHitLow": false,
+            "clampHitHigh": false
+          },
+          {
+            "outcome": "mediocre_lower",
+            "deltaRaw": -8,
+            "confidenceAfter": 43,
+            "closingBracket": "44to52",
+            "closingStretchPenalty": -2,
+            "closingEligible": true,
+            "clampHitLow": false,
+            "clampHitHigh": false
+          }
+        ]
+      },
+      "long": {
+        "profileKey": "long",
+        "tier5RunsWithTrace": 30,
+        "uniqueFormalReviewFingerprintCount": 2,
+        "allFormalReviewSequencesIdentical": false,
+        "uniqueFinalConfidenceValues": [
+          40,
+          43
+        ],
+        "totalFormalReviewsAcrossTier5Runs": 150,
+        "outcomeTallyAcrossReviewSteps": {
+          "good": 0,
+          "mediocre": 0,
+          "bad": 0
+        },
+        "clampHitLowAcrossSteps": 0,
+        "clampHitHighAcrossSteps": 0,
+        "closingStretchStepsWithBracket44to52": 30,
+        "closingStretchStepsWithBracketBelow44": 0,
+        "runsWhereFinalGmRoundDiffersFromRoundOfRaw": 0,
+        "narrative": {
+          "roundingVsAssignmentEnd": "Final GM confidence matches Math.round(final raw) — assignment-end classification is not introducing a separate floor.",
+          "fingerprintRepeat": "Formal review sequences differ across seeds — not a single identical replay.",
+          "shelfAt44": "Final confidence varies across runs — not a single shelf at 44 in this sample."
+        },
+        "sampleSeed": 100,
+        "sampleStepsSimplified": [
+          {
+            "outcome": "marginal_bad",
+            "deltaRaw": -13,
+            "confidenceAfter": 61,
+            "closingBracket": null,
+            "closingStretchPenalty": 0,
+            "closingEligible": false,
+            "clampHitLow": false,
+            "clampHitHigh": false
+          },
+          {
+            "outcome": "mediocre_lower",
+            "deltaRaw": -2,
+            "confidenceAfter": 59,
+            "closingBracket": null,
+            "closingStretchPenalty": 0,
+            "closingEligible": false,
+            "clampHitLow": false,
+            "clampHitHigh": false
+          },
+          {
+            "outcome": "mediocre_lower",
+            "deltaRaw": -3,
+            "confidenceAfter": 56,
+            "closingBracket": null,
+            "closingStretchPenalty": 0,
+            "closingEligible": false,
+            "clampHitLow": false,
+            "clampHitHigh": false
+          },
+          {
+            "outcome": "mediocre_lower",
+            "deltaRaw": -5,
+            "confidenceAfter": 51,
+            "closingBracket": null,
+            "closingStretchPenalty": 0,
+            "closingEligible": false,
+            "clampHitLow": false,
+            "clampHitHigh": false
+          },
+          {
+            "outcome": "mediocre_lower",
+            "deltaRaw": -8,
+            "confidenceAfter": 43,
+            "closingBracket": "44to52",
+            "closingStretchPenalty": -2,
+            "closingEligible": true,
+            "clampHitLow": false,
+            "clampHitHigh": false
+          }
+        ]
+      }
+    },
+    "kpiConvergence": {
+      "extended": {
+        "profileKey": "extended",
+        "tier5RunsWithKpiTrace": 30,
+        "totalFormalReviewSteps": 150,
+        "uniqueKpiFingerprints": 2,
+        "uniqueCompositeSequences": 2,
+        "uniqueCategorySequences": 2,
+        "uniqueCompositeToCategoryMappings": 3,
+        "allKpiSequencesIdenticalAcrossSeeds": false,
+        "allCategorySequencesIdenticalAcrossSeeds": false,
+        "allCompositeSequencesIdenticalAcrossSeeds": false,
+        "componentStats": {
+          "allFormalReviewStepsPooled": {
+            "stressMargin": {
+              "min": 0.3888888888888889,
+              "max": 1,
+              "mean": 0.5111111111111097,
+              "count": 150,
+              "spread": 0.6111111111111112,
+              "literallyIdenticalAcrossAllSteps": false
+            },
+            "stressRevenue": {
+              "min": 0.2151,
+              "max": 0.8528000000000001,
+              "mean": 0.34263999999999983,
+              "count": 150,
+              "spread": 0.6377000000000002,
+              "literallyIdenticalAcrossAllSteps": false
+            },
+            "stressFranchise": {
+              "min": 0,
+              "max": 0.45,
+              "mean": 0.027000000000000003,
+              "count": 150,
+              "spread": 0.45,
+              "literallyIdenticalAcrossAllSteps": false
+            },
+            "stressEfficiency": {
+              "min": 0,
+              "max": 0,
+              "mean": 0,
+              "count": 150,
+              "spread": 0,
+              "literallyIdenticalAcrossAllSteps": true
+            },
+            "composite": {
+              "min": 0.17565533333333336,
+              "max": 0.7201160000000001,
+              "mean": 0.25619746666666693,
+              "count": 150,
+              "spread": 0.5444606666666667,
+              "literallyIdenticalAcrossAllSteps": false
+            },
+            "core": {
+              "min": 0.17565533333333336,
+              "max": 0.7201160000000001,
+              "mean": 0.25619746666666693,
+              "count": 150,
+              "spread": 0.5444606666666667,
+              "literallyIdenticalAcrossAllSteps": false
+            },
+            "discretionaryEval": {
+              "min": 0,
+              "max": 0,
+              "mean": 0,
+              "count": 150,
+              "spread": 0,
+              "literallyIdenticalAcrossAllSteps": true
+            }
+          },
+          "byReviewIndexAcrossSeeds": {
+            "1": {
+              "n": 30,
+              "stressMargin": {
+                "min": 1,
+                "max": 1,
+                "mean": 1,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressRevenue": {
+                "min": 0.8528000000000001,
+                "max": 0.8528000000000001,
+                "mean": 0.8527999999999996,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressFranchise": {
+                "min": 0,
+                "max": 0.45,
+                "mean": 0.13500000000000004,
+                "spreadAcrossSeeds": 0.45,
+                "uniqueRoundedValues": 2,
+                "literallyIdenticalAcrossSeeds": false
+              },
+              "stressEfficiency": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "composite": {
+                "min": 0.5176160000000001,
+                "max": 0.7201160000000001,
+                "mean": 0.5783660000000004,
+                "spreadAcrossSeeds": 0.2025,
+                "uniqueRoundedValues": 2,
+                "literallyIdenticalAcrossSeeds": false
+              },
+              "core": {
+                "min": 0.5176160000000001,
+                "max": 0.7201160000000001,
+                "mean": 0.5783660000000004,
+                "spreadAcrossSeeds": 0.2025,
+                "uniqueRoundedValues": 2,
+                "literallyIdenticalAcrossSeeds": false
+              },
+              "discretionaryEval": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "category": {
+                "unique": [
+                  "marginal_bad",
+                  "severe_bad"
+                ],
+                "allSameAcrossSeeds": false
+              },
+              "note": "Per review #, one row per seed; spreadAcrossSeeds 0 ⇒ identical composite/stress at that slot across runs."
+            },
+            "2": {
+              "n": 30,
+              "stressMargin": {
+                "min": 0.3888888888888889,
+                "max": 0.3888888888888889,
+                "mean": 0.3888888888888891,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressRevenue": {
+                "min": 0.2151,
+                "max": 0.2151,
+                "mean": 0.2150999999999999,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressFranchise": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressEfficiency": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "composite": {
+                "min": 0.17565533333333336,
+                "max": 0.17565533333333336,
+                "mean": 0.1756553333333333,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "core": {
+                "min": 0.17565533333333336,
+                "max": 0.17565533333333336,
+                "mean": 0.1756553333333333,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "discretionaryEval": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "category": {
+                "unique": [
+                  "mediocre_lower"
+                ],
+                "allSameAcrossSeeds": true
+              },
+              "note": "Per review #, one row per seed; spreadAcrossSeeds 0 ⇒ identical composite/stress at that slot across runs."
+            },
+            "3": {
+              "n": 30,
+              "stressMargin": {
+                "min": 0.3888888888888889,
+                "max": 0.3888888888888889,
+                "mean": 0.3888888888888891,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressRevenue": {
+                "min": 0.2151,
+                "max": 0.2151,
+                "mean": 0.2150999999999999,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressFranchise": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressEfficiency": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "composite": {
+                "min": 0.17565533333333336,
+                "max": 0.17565533333333336,
+                "mean": 0.1756553333333333,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "core": {
+                "min": 0.17565533333333336,
+                "max": 0.17565533333333336,
+                "mean": 0.1756553333333333,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "discretionaryEval": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "category": {
+                "unique": [
+                  "mediocre_lower"
+                ],
+                "allSameAcrossSeeds": true
+              },
+              "note": "Per review #, one row per seed; spreadAcrossSeeds 0 ⇒ identical composite/stress at that slot across runs."
+            },
+            "4": {
+              "n": 30,
+              "stressMargin": {
+                "min": 0.3888888888888889,
+                "max": 0.3888888888888889,
+                "mean": 0.3888888888888891,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressRevenue": {
+                "min": 0.2151,
+                "max": 0.2151,
+                "mean": 0.2150999999999999,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressFranchise": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressEfficiency": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "composite": {
+                "min": 0.17565533333333336,
+                "max": 0.17565533333333336,
+                "mean": 0.1756553333333333,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "core": {
+                "min": 0.17565533333333336,
+                "max": 0.17565533333333336,
+                "mean": 0.1756553333333333,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "discretionaryEval": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "category": {
+                "unique": [
+                  "mediocre_lower"
+                ],
+                "allSameAcrossSeeds": true
+              },
+              "note": "Per review #, one row per seed; spreadAcrossSeeds 0 ⇒ identical composite/stress at that slot across runs."
+            },
+            "5": {
+              "n": 30,
+              "stressMargin": {
+                "min": 0.3888888888888889,
+                "max": 0.3888888888888889,
+                "mean": 0.3888888888888891,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressRevenue": {
+                "min": 0.2151,
+                "max": 0.2151,
+                "mean": 0.2150999999999999,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressFranchise": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressEfficiency": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "composite": {
+                "min": 0.17565533333333336,
+                "max": 0.17565533333333336,
+                "mean": 0.1756553333333333,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "core": {
+                "min": 0.17565533333333336,
+                "max": 0.17565533333333336,
+                "mean": 0.1756553333333333,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "discretionaryEval": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "category": {
+                "unique": [
+                  "mediocre_lower"
+                ],
+                "allSameAcrossSeeds": true
+              },
+              "note": "Per review #, one row per seed; spreadAcrossSeeds 0 ⇒ identical composite/stress at that slot across runs."
+            }
+          }
+        },
+        "maxCompositeSpreadAcrossSeeds": 0.2025,
+        "allReviewSlotsCompositeIdenticalAcrossSeeds": false,
+        "compositeReevalMismatchSteps": 0,
+        "firstPointOfConvergence": "divergent_or_sparse",
+        "interpretation": "KPI and/or category sequences differ materially across seeds — no single convergence fingerprint in this sample.",
+        "terminalLine": "Tier 5 KPI or category sequences differ across seeds.",
+        "sequencesByRunSample": {
+          "seed": 100,
+          "steps": [
+            {
+              "reviewIndex": 1,
+              "year": 2020,
+              "period": 2,
+              "confidenceBefore": 74,
+              "confidenceAfter": 61,
+              "confidenceDelta": -13,
+              "tierPressure": 1.3,
+              "campaignTier": 5,
+              "discretionaryRatio": 0,
+              "revenueTrend": "declining",
+              "franchiseTrend": "flat",
+              "marginAvg": -548,
+              "franchiseAvg": 0.881,
+              "turnaroundPatienceKpis": false,
+              "turnaroundPatienceEval": false,
+              "noProgressTrends": true,
+              "stressMargin": 1,
+              "stressRevenue": 0.8528000000000001,
+              "stressFranchise": 0,
+              "stressEfficiency": 0,
+              "core": 0.5176160000000001,
+              "composite": 0.5176160000000001,
+              "discretionaryEval": 0,
+              "goodCut": 0.161,
+              "badCut": 0.496,
+              "good": false,
+              "bad": true,
+              "category": "marginal_bad",
+              "storedEvalComposite": 0.5176160000000001,
+              "compositeReevalMinusStored": 0
+            },
+            {
+              "reviewIndex": 2,
+              "year": 2022,
+              "period": 2,
+              "confidenceBefore": 61,
+              "confidenceAfter": 59,
+              "confidenceDelta": -2,
+              "tierPressure": 1.3,
+              "campaignTier": 5,
+              "discretionaryRatio": 0,
+              "revenueTrend": "flat",
+              "franchiseTrend": "flat",
+              "marginAvg": 0,
+              "franchiseAvg": 0.88,
+              "turnaroundPatienceKpis": false,
+              "turnaroundPatienceEval": false,
+              "noProgressTrends": true,
+              "stressMargin": 0.3888888888888889,
+              "stressRevenue": 0.2151,
+              "stressFranchise": 0,
+              "stressEfficiency": 0,
+              "core": 0.17565533333333336,
+              "composite": 0.17565533333333336,
+              "discretionaryEval": 0,
+              "goodCut": 0.161,
+              "badCut": 0.496,
+              "good": false,
+              "bad": false,
+              "category": "mediocre_lower",
+              "storedEvalComposite": 0.17565533333333336,
+              "compositeReevalMinusStored": 0
+            },
+            {
+              "reviewIndex": 3,
+              "year": 2024,
+              "period": 2,
+              "confidenceBefore": 59,
+              "confidenceAfter": 56,
+              "confidenceDelta": -3,
+              "tierPressure": 1.3,
+              "campaignTier": 5,
+              "discretionaryRatio": 0,
+              "revenueTrend": "flat",
+              "franchiseTrend": "flat",
+              "marginAvg": 0,
+              "franchiseAvg": 0.88,
+              "turnaroundPatienceKpis": false,
+              "turnaroundPatienceEval": false,
+              "noProgressTrends": true,
+              "stressMargin": 0.3888888888888889,
+              "stressRevenue": 0.2151,
+              "stressFranchise": 0,
+              "stressEfficiency": 0,
+              "core": 0.17565533333333336,
+              "composite": 0.17565533333333336,
+              "discretionaryEval": 0,
+              "goodCut": 0.161,
+              "badCut": 0.496,
+              "good": false,
+              "bad": false,
+              "category": "mediocre_lower",
+              "storedEvalComposite": 0.17565533333333336,
+              "compositeReevalMinusStored": 0
+            },
+            {
+              "reviewIndex": 4,
+              "year": 2026,
+              "period": 2,
+              "confidenceBefore": 56,
+              "confidenceAfter": 51,
+              "confidenceDelta": -5,
+              "tierPressure": 1.3,
+              "campaignTier": 5,
+              "discretionaryRatio": 0,
+              "revenueTrend": "flat",
+              "franchiseTrend": "flat",
+              "marginAvg": 0,
+              "franchiseAvg": 0.88,
+              "turnaroundPatienceKpis": false,
+              "turnaroundPatienceEval": false,
+              "noProgressTrends": true,
+              "stressMargin": 0.3888888888888889,
+              "stressRevenue": 0.2151,
+              "stressFranchise": 0,
+              "stressEfficiency": 0,
+              "core": 0.17565533333333336,
+              "composite": 0.17565533333333336,
+              "discretionaryEval": 0,
+              "goodCut": 0.161,
+              "badCut": 0.496,
+              "good": false,
+              "bad": false,
+              "category": "mediocre_lower",
+              "storedEvalComposite": 0.17565533333333336,
+              "compositeReevalMinusStored": 0
+            },
+            {
+              "reviewIndex": 5,
+              "year": 2028,
+              "period": 2,
+              "confidenceBefore": 51,
+              "confidenceAfter": 43,
+              "confidenceDelta": -8,
+              "tierPressure": 1.3,
+              "campaignTier": 5,
+              "discretionaryRatio": 0,
+              "revenueTrend": "flat",
+              "franchiseTrend": "flat",
+              "marginAvg": 0,
+              "franchiseAvg": 0.88,
+              "turnaroundPatienceKpis": false,
+              "turnaroundPatienceEval": false,
+              "noProgressTrends": true,
+              "stressMargin": 0.3888888888888889,
+              "stressRevenue": 0.2151,
+              "stressFranchise": 0,
+              "stressEfficiency": 0,
+              "core": 0.17565533333333336,
+              "composite": 0.17565533333333336,
+              "discretionaryEval": 0,
+              "goodCut": 0.161,
+              "badCut": 0.496,
+              "good": false,
+              "bad": false,
+              "category": "mediocre_lower",
+              "storedEvalComposite": 0.17565533333333336,
+              "compositeReevalMinusStored": 0
+            }
+          ]
+        }
+      },
+      "long": {
+        "profileKey": "long",
+        "tier5RunsWithKpiTrace": 30,
+        "totalFormalReviewSteps": 150,
+        "uniqueKpiFingerprints": 2,
+        "uniqueCompositeSequences": 2,
+        "uniqueCategorySequences": 2,
+        "uniqueCompositeToCategoryMappings": 3,
+        "allKpiSequencesIdenticalAcrossSeeds": false,
+        "allCategorySequencesIdenticalAcrossSeeds": false,
+        "allCompositeSequencesIdenticalAcrossSeeds": false,
+        "componentStats": {
+          "allFormalReviewStepsPooled": {
+            "stressMargin": {
+              "min": 0.3888888888888889,
+              "max": 1,
+              "mean": 0.5111111111111097,
+              "count": 150,
+              "spread": 0.6111111111111112,
+              "literallyIdenticalAcrossAllSteps": false
+            },
+            "stressRevenue": {
+              "min": 0.2151,
+              "max": 0.8528000000000001,
+              "mean": 0.34263999999999983,
+              "count": 150,
+              "spread": 0.6377000000000002,
+              "literallyIdenticalAcrossAllSteps": false
+            },
+            "stressFranchise": {
+              "min": 0,
+              "max": 0.45,
+              "mean": 0.027000000000000003,
+              "count": 150,
+              "spread": 0.45,
+              "literallyIdenticalAcrossAllSteps": false
+            },
+            "stressEfficiency": {
+              "min": 0,
+              "max": 0,
+              "mean": 0,
+              "count": 150,
+              "spread": 0,
+              "literallyIdenticalAcrossAllSteps": true
+            },
+            "composite": {
+              "min": 0.17565533333333336,
+              "max": 0.7201160000000001,
+              "mean": 0.25619746666666693,
+              "count": 150,
+              "spread": 0.5444606666666667,
+              "literallyIdenticalAcrossAllSteps": false
+            },
+            "core": {
+              "min": 0.17565533333333336,
+              "max": 0.7201160000000001,
+              "mean": 0.25619746666666693,
+              "count": 150,
+              "spread": 0.5444606666666667,
+              "literallyIdenticalAcrossAllSteps": false
+            },
+            "discretionaryEval": {
+              "min": 0,
+              "max": 0,
+              "mean": 0,
+              "count": 150,
+              "spread": 0,
+              "literallyIdenticalAcrossAllSteps": true
+            }
+          },
+          "byReviewIndexAcrossSeeds": {
+            "1": {
+              "n": 30,
+              "stressMargin": {
+                "min": 1,
+                "max": 1,
+                "mean": 1,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressRevenue": {
+                "min": 0.8528000000000001,
+                "max": 0.8528000000000001,
+                "mean": 0.8527999999999996,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressFranchise": {
+                "min": 0,
+                "max": 0.45,
+                "mean": 0.13500000000000004,
+                "spreadAcrossSeeds": 0.45,
+                "uniqueRoundedValues": 2,
+                "literallyIdenticalAcrossSeeds": false
+              },
+              "stressEfficiency": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "composite": {
+                "min": 0.5176160000000001,
+                "max": 0.7201160000000001,
+                "mean": 0.5783660000000004,
+                "spreadAcrossSeeds": 0.2025,
+                "uniqueRoundedValues": 2,
+                "literallyIdenticalAcrossSeeds": false
+              },
+              "core": {
+                "min": 0.5176160000000001,
+                "max": 0.7201160000000001,
+                "mean": 0.5783660000000004,
+                "spreadAcrossSeeds": 0.2025,
+                "uniqueRoundedValues": 2,
+                "literallyIdenticalAcrossSeeds": false
+              },
+              "discretionaryEval": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "category": {
+                "unique": [
+                  "marginal_bad",
+                  "severe_bad"
+                ],
+                "allSameAcrossSeeds": false
+              },
+              "note": "Per review #, one row per seed; spreadAcrossSeeds 0 ⇒ identical composite/stress at that slot across runs."
+            },
+            "2": {
+              "n": 30,
+              "stressMargin": {
+                "min": 0.3888888888888889,
+                "max": 0.3888888888888889,
+                "mean": 0.3888888888888891,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressRevenue": {
+                "min": 0.2151,
+                "max": 0.2151,
+                "mean": 0.2150999999999999,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressFranchise": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressEfficiency": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "composite": {
+                "min": 0.17565533333333336,
+                "max": 0.17565533333333336,
+                "mean": 0.1756553333333333,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "core": {
+                "min": 0.17565533333333336,
+                "max": 0.17565533333333336,
+                "mean": 0.1756553333333333,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "discretionaryEval": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "category": {
+                "unique": [
+                  "mediocre_lower"
+                ],
+                "allSameAcrossSeeds": true
+              },
+              "note": "Per review #, one row per seed; spreadAcrossSeeds 0 ⇒ identical composite/stress at that slot across runs."
+            },
+            "3": {
+              "n": 30,
+              "stressMargin": {
+                "min": 0.3888888888888889,
+                "max": 0.3888888888888889,
+                "mean": 0.3888888888888891,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressRevenue": {
+                "min": 0.2151,
+                "max": 0.2151,
+                "mean": 0.2150999999999999,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressFranchise": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressEfficiency": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "composite": {
+                "min": 0.17565533333333336,
+                "max": 0.17565533333333336,
+                "mean": 0.1756553333333333,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "core": {
+                "min": 0.17565533333333336,
+                "max": 0.17565533333333336,
+                "mean": 0.1756553333333333,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "discretionaryEval": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "category": {
+                "unique": [
+                  "mediocre_lower"
+                ],
+                "allSameAcrossSeeds": true
+              },
+              "note": "Per review #, one row per seed; spreadAcrossSeeds 0 ⇒ identical composite/stress at that slot across runs."
+            },
+            "4": {
+              "n": 30,
+              "stressMargin": {
+                "min": 0.3888888888888889,
+                "max": 0.3888888888888889,
+                "mean": 0.3888888888888891,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressRevenue": {
+                "min": 0.2151,
+                "max": 0.2151,
+                "mean": 0.2150999999999999,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressFranchise": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressEfficiency": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "composite": {
+                "min": 0.17565533333333336,
+                "max": 0.17565533333333336,
+                "mean": 0.1756553333333333,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "core": {
+                "min": 0.17565533333333336,
+                "max": 0.17565533333333336,
+                "mean": 0.1756553333333333,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "discretionaryEval": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "category": {
+                "unique": [
+                  "mediocre_lower"
+                ],
+                "allSameAcrossSeeds": true
+              },
+              "note": "Per review #, one row per seed; spreadAcrossSeeds 0 ⇒ identical composite/stress at that slot across runs."
+            },
+            "5": {
+              "n": 30,
+              "stressMargin": {
+                "min": 0.3888888888888889,
+                "max": 0.3888888888888889,
+                "mean": 0.3888888888888891,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressRevenue": {
+                "min": 0.2151,
+                "max": 0.2151,
+                "mean": 0.2150999999999999,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressFranchise": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "stressEfficiency": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "composite": {
+                "min": 0.17565533333333336,
+                "max": 0.17565533333333336,
+                "mean": 0.1756553333333333,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "core": {
+                "min": 0.17565533333333336,
+                "max": 0.17565533333333336,
+                "mean": 0.1756553333333333,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "discretionaryEval": {
+                "min": 0,
+                "max": 0,
+                "mean": 0,
+                "spreadAcrossSeeds": 0,
+                "uniqueRoundedValues": 1,
+                "literallyIdenticalAcrossSeeds": true
+              },
+              "category": {
+                "unique": [
+                  "mediocre_lower"
+                ],
+                "allSameAcrossSeeds": true
+              },
+              "note": "Per review #, one row per seed; spreadAcrossSeeds 0 ⇒ identical composite/stress at that slot across runs."
+            }
+          }
+        },
+        "maxCompositeSpreadAcrossSeeds": 0.2025,
+        "allReviewSlotsCompositeIdenticalAcrossSeeds": false,
+        "compositeReevalMismatchSteps": 0,
+        "firstPointOfConvergence": "divergent_or_sparse",
+        "interpretation": "KPI and/or category sequences differ materially across seeds — no single convergence fingerprint in this sample.",
+        "terminalLine": "Tier 5 KPI or category sequences differ across seeds.",
+        "sequencesByRunSample": {
+          "seed": 100,
+          "steps": [
+            {
+              "reviewIndex": 1,
+              "year": 2020,
+              "period": 2,
+              "confidenceBefore": 74,
+              "confidenceAfter": 61,
+              "confidenceDelta": -13,
+              "tierPressure": 1.3,
+              "campaignTier": 5,
+              "discretionaryRatio": 0,
+              "revenueTrend": "declining",
+              "franchiseTrend": "flat",
+              "marginAvg": -548,
+              "franchiseAvg": 0.881,
+              "turnaroundPatienceKpis": false,
+              "turnaroundPatienceEval": false,
+              "noProgressTrends": true,
+              "stressMargin": 1,
+              "stressRevenue": 0.8528000000000001,
+              "stressFranchise": 0,
+              "stressEfficiency": 0,
+              "core": 0.5176160000000001,
+              "composite": 0.5176160000000001,
+              "discretionaryEval": 0,
+              "goodCut": 0.161,
+              "badCut": 0.496,
+              "good": false,
+              "bad": true,
+              "category": "marginal_bad",
+              "storedEvalComposite": 0.5176160000000001,
+              "compositeReevalMinusStored": 0
+            },
+            {
+              "reviewIndex": 2,
+              "year": 2022,
+              "period": 2,
+              "confidenceBefore": 61,
+              "confidenceAfter": 59,
+              "confidenceDelta": -2,
+              "tierPressure": 1.3,
+              "campaignTier": 5,
+              "discretionaryRatio": 0,
+              "revenueTrend": "flat",
+              "franchiseTrend": "flat",
+              "marginAvg": 0,
+              "franchiseAvg": 0.88,
+              "turnaroundPatienceKpis": false,
+              "turnaroundPatienceEval": false,
+              "noProgressTrends": true,
+              "stressMargin": 0.3888888888888889,
+              "stressRevenue": 0.2151,
+              "stressFranchise": 0,
+              "stressEfficiency": 0,
+              "core": 0.17565533333333336,
+              "composite": 0.17565533333333336,
+              "discretionaryEval": 0,
+              "goodCut": 0.161,
+              "badCut": 0.496,
+              "good": false,
+              "bad": false,
+              "category": "mediocre_lower",
+              "storedEvalComposite": 0.17565533333333336,
+              "compositeReevalMinusStored": 0
+            },
+            {
+              "reviewIndex": 3,
+              "year": 2024,
+              "period": 2,
+              "confidenceBefore": 59,
+              "confidenceAfter": 56,
+              "confidenceDelta": -3,
+              "tierPressure": 1.3,
+              "campaignTier": 5,
+              "discretionaryRatio": 0,
+              "revenueTrend": "flat",
+              "franchiseTrend": "flat",
+              "marginAvg": 0,
+              "franchiseAvg": 0.88,
+              "turnaroundPatienceKpis": false,
+              "turnaroundPatienceEval": false,
+              "noProgressTrends": true,
+              "stressMargin": 0.3888888888888889,
+              "stressRevenue": 0.2151,
+              "stressFranchise": 0,
+              "stressEfficiency": 0,
+              "core": 0.17565533333333336,
+              "composite": 0.17565533333333336,
+              "discretionaryEval": 0,
+              "goodCut": 0.161,
+              "badCut": 0.496,
+              "good": false,
+              "bad": false,
+              "category": "mediocre_lower",
+              "storedEvalComposite": 0.17565533333333336,
+              "compositeReevalMinusStored": 0
+            },
+            {
+              "reviewIndex": 4,
+              "year": 2026,
+              "period": 2,
+              "confidenceBefore": 56,
+              "confidenceAfter": 51,
+              "confidenceDelta": -5,
+              "tierPressure": 1.3,
+              "campaignTier": 5,
+              "discretionaryRatio": 0,
+              "revenueTrend": "flat",
+              "franchiseTrend": "flat",
+              "marginAvg": 0,
+              "franchiseAvg": 0.88,
+              "turnaroundPatienceKpis": false,
+              "turnaroundPatienceEval": false,
+              "noProgressTrends": true,
+              "stressMargin": 0.3888888888888889,
+              "stressRevenue": 0.2151,
+              "stressFranchise": 0,
+              "stressEfficiency": 0,
+              "core": 0.17565533333333336,
+              "composite": 0.17565533333333336,
+              "discretionaryEval": 0,
+              "goodCut": 0.161,
+              "badCut": 0.496,
+              "good": false,
+              "bad": false,
+              "category": "mediocre_lower",
+              "storedEvalComposite": 0.17565533333333336,
+              "compositeReevalMinusStored": 0
+            },
+            {
+              "reviewIndex": 5,
+              "year": 2028,
+              "period": 2,
+              "confidenceBefore": 51,
+              "confidenceAfter": 43,
+              "confidenceDelta": -8,
+              "tierPressure": 1.3,
+              "campaignTier": 5,
+              "discretionaryRatio": 0,
+              "revenueTrend": "flat",
+              "franchiseTrend": "flat",
+              "marginAvg": 0,
+              "franchiseAvg": 0.88,
+              "turnaroundPatienceKpis": false,
+              "turnaroundPatienceEval": false,
+              "noProgressTrends": true,
+              "stressMargin": 0.3888888888888889,
+              "stressRevenue": 0.2151,
+              "stressFranchise": 0,
+              "stressEfficiency": 0,
+              "core": 0.17565533333333336,
+              "composite": 0.17565533333333336,
+              "discretionaryEval": 0,
+              "goodCut": 0.161,
+              "badCut": 0.496,
+              "good": false,
+              "bad": false,
+              "category": "mediocre_lower",
+              "storedEvalComposite": 0.17565533333333336,
+              "compositeReevalMinusStored": 0
+            }
+          ]
+        }
+      }
+    }
+  },
+  "tier3Diagnostic": null
+}

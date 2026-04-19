@@ -99,5 +99,47 @@ assert(
 );
 assert(!/\bQ96\b/.test(q96Brand.lyrics), 'lyrics should not leave raw Q96');
 
+const top4075 = buildSunoJingleArgs({
+  ...base,
+  year: 1975,
+  formatId: 'TOP40',
+});
+assert(
+  !top4075.tags.includes('ARP-style analog synth brass'),
+  'TOP40 should not use default 70s ARP brass ladder',
+);
+assert(
+  /CHR|hit-radio/i.test(top4075.tags),
+  'TOP40 should get CHR-specific era bed',
+);
+
+const news75 = buildSunoJingleArgs({
+  brand: 'NewsRadio 9',
+  format: 'News/Talk',
+  year: 1975,
+  formatId: 'NEWS_TALK',
+  tagline: 'Where the valley gets its news',
+  frequency: '600',
+  band: 'AM',
+});
+assert(
+  !news75.tags.includes('ARP-style analog synth brass'),
+  'spoken news should not inherit music-format brass ladder',
+);
+assert(/talk|news|booth/i.test(news75.tags), 'news/talk gets VO-forward bed wording');
+
+const oldies90 = buildSunoJingleArgs({
+  brand: 'Oldies 105',
+  format: 'Oldies',
+  year: 1990,
+  formatId: 'OLDIES',
+  frequency: '105.3',
+  band: 'FM',
+});
+assert(
+  /gold|classic hits|retro/i.test(oldies90.tags),
+  'oldies should get gold/classic imaging not generic brass default',
+);
+
 console.log('OK — jingle prompt hints');
 console.log('Sample tags (truncated):', withHints.tags.slice(0, 320) + (withHints.tags.length > 320 ? '…' : ''));

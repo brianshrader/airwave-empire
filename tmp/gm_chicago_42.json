@@ -1,0 +1,1207 @@
+{
+  "meta": {
+    "mode": "gm",
+    "seed": 42,
+    "runs": 3,
+    "market": "chicago",
+    "note": "GM mode uses genMarket(gm_under) with ACTIVE_MARKET patched to --market. Campaign career start uses ladder tier-1 market from campaignMode.js (typically Nashville), overriding the patched constant when beginCareer runs.",
+    "maxPeriodsGm": 48,
+    "maxPeriodsCampaign": 160,
+    "maxAssignments": 6
+  },
+  "gm": {
+    "seed": 42,
+    "market": "chicago",
+    "initialConfidence": 78,
+    "timeline": [
+      {
+        "turn": 1,
+        "year": 1970,
+        "period": 2,
+        "snap": {
+          "confidence": 78,
+          "status": "secure",
+          "closedPeriods": 1,
+          "nextReviewAt": 4,
+          "periodsUntilReview": 3,
+          "reviewCount": 0,
+          "fired": false,
+          "lastReview": null,
+          "biggestIssue": "Revenue has been sliding — ownership will want to see billing stabilize or grow.",
+          "glanceSummary": "You are secure (78% job security), but revenue has been sliding — ownership will want to see billing stabilize or grow."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 2,
+        "year": 1971,
+        "period": 1,
+        "snap": {
+          "confidence": 78,
+          "status": "secure",
+          "closedPeriods": 2,
+          "nextReviewAt": 4,
+          "periodsUntilReview": 2,
+          "reviewCount": 0,
+          "fired": false,
+          "lastReview": null,
+          "biggestIssue": "Revenue has been sliding — ownership will want to see billing stabilize or grow.",
+          "glanceSummary": "You are secure (78% job security), but revenue has been sliding — ownership will want to see billing stabilize or grow."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 3,
+        "year": 1971,
+        "period": 2,
+        "snap": {
+          "confidence": 78,
+          "status": "secure",
+          "closedPeriods": 3,
+          "nextReviewAt": 4,
+          "periodsUntilReview": 1,
+          "reviewCount": 0,
+          "fired": false,
+          "lastReview": null,
+          "biggestIssue": "Revenue has been sliding — ownership will want to see billing stabilize or grow.",
+          "glanceSummary": "You are secure (78% job security), but revenue has been sliding — ownership will want to see billing stabilize or grow."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 4,
+        "year": 1972,
+        "period": 1,
+        "snap": {
+          "confidence": 82,
+          "status": "secure",
+          "closedPeriods": 4,
+          "nextReviewAt": 8,
+          "periodsUntilReview": 4,
+          "reviewCount": 1,
+          "fired": false,
+          "lastReview": {
+            "year": 1971,
+            "period": 2,
+            "good": false,
+            "bad": false,
+            "confidenceBefore": 78,
+            "confidenceAfter": 82
+          },
+          "biggestIssue": "Revenue has been sliding — ownership will want to see billing stabilize or grow.",
+          "glanceSummary": "You are secure (82% job security), but revenue has been sliding — ownership will want to see billing stabilize or grow."
+        },
+        "formalReview": true
+      },
+      {
+        "turn": 5,
+        "year": 1972,
+        "period": 2,
+        "snap": {
+          "confidence": 82,
+          "status": "secure",
+          "closedPeriods": 5,
+          "nextReviewAt": 8,
+          "periodsUntilReview": 3,
+          "reviewCount": 1,
+          "fired": false,
+          "lastReview": {
+            "year": 1971,
+            "period": 2,
+            "good": false,
+            "bad": false,
+            "confidenceBefore": 78,
+            "confidenceAfter": 82
+          },
+          "biggestIssue": "Revenue has been sliding — ownership will want to see billing stabilize or grow.",
+          "glanceSummary": "You are secure (82% job security), but revenue has been sliding — ownership will want to see billing stabilize or grow."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 6,
+        "year": 1973,
+        "period": 1,
+        "snap": {
+          "confidence": 82,
+          "status": "secure",
+          "closedPeriods": 6,
+          "nextReviewAt": 8,
+          "periodsUntilReview": 2,
+          "reviewCount": 1,
+          "fired": false,
+          "lastReview": {
+            "year": 1971,
+            "period": 2,
+            "good": false,
+            "bad": false,
+            "confidenceBefore": 78,
+            "confidenceAfter": 82
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (82% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 7,
+        "year": 1973,
+        "period": 2,
+        "snap": {
+          "confidence": 82,
+          "status": "secure",
+          "closedPeriods": 7,
+          "nextReviewAt": 8,
+          "periodsUntilReview": 1,
+          "reviewCount": 1,
+          "fired": false,
+          "lastReview": {
+            "year": 1971,
+            "period": 2,
+            "good": false,
+            "bad": false,
+            "confidenceBefore": 78,
+            "confidenceAfter": 82
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (82% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 8,
+        "year": 1974,
+        "period": 1,
+        "snap": {
+          "confidence": 68,
+          "status": "secure",
+          "closedPeriods": 8,
+          "nextReviewAt": 12,
+          "periodsUntilReview": 4,
+          "reviewCount": 2,
+          "fired": false,
+          "lastReview": {
+            "year": 1973,
+            "period": 2,
+            "good": false,
+            "bad": true,
+            "confidenceBefore": 82,
+            "confidenceAfter": 68
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (68% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": true
+      },
+      {
+        "turn": 9,
+        "year": 1974,
+        "period": 2,
+        "snap": {
+          "confidence": 68,
+          "status": "secure",
+          "closedPeriods": 9,
+          "nextReviewAt": 12,
+          "periodsUntilReview": 3,
+          "reviewCount": 2,
+          "fired": false,
+          "lastReview": {
+            "year": 1973,
+            "period": 2,
+            "good": false,
+            "bad": true,
+            "confidenceBefore": 82,
+            "confidenceAfter": 68
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (68% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 10,
+        "year": 1975,
+        "period": 1,
+        "snap": {
+          "confidence": 68,
+          "status": "secure",
+          "closedPeriods": 10,
+          "nextReviewAt": 12,
+          "periodsUntilReview": 2,
+          "reviewCount": 2,
+          "fired": false,
+          "lastReview": {
+            "year": 1973,
+            "period": 2,
+            "good": false,
+            "bad": true,
+            "confidenceBefore": 82,
+            "confidenceAfter": 68
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (68% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 11,
+        "year": 1975,
+        "period": 2,
+        "snap": {
+          "confidence": 68,
+          "status": "secure",
+          "closedPeriods": 11,
+          "nextReviewAt": 12,
+          "periodsUntilReview": 1,
+          "reviewCount": 2,
+          "fired": false,
+          "lastReview": {
+            "year": 1973,
+            "period": 2,
+            "good": false,
+            "bad": true,
+            "confidenceBefore": 82,
+            "confidenceAfter": 68
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (68% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 12,
+        "year": 1976,
+        "period": 1,
+        "snap": {
+          "confidence": 42,
+          "status": "warning",
+          "closedPeriods": 12,
+          "nextReviewAt": 16,
+          "periodsUntilReview": 4,
+          "reviewCount": 3,
+          "fired": false,
+          "lastReview": {
+            "year": 1975,
+            "period": 2,
+            "good": false,
+            "bad": true,
+            "confidenceBefore": 68,
+            "confidenceAfter": 42
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are on warning (42% job security). Another weak review could escalate this — address: Margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": true
+      },
+      {
+        "turn": 13,
+        "year": 1976,
+        "period": 2,
+        "snap": {
+          "confidence": 42,
+          "status": "warning",
+          "closedPeriods": 13,
+          "nextReviewAt": 16,
+          "periodsUntilReview": 3,
+          "reviewCount": 3,
+          "fired": false,
+          "lastReview": {
+            "year": 1975,
+            "period": 2,
+            "good": false,
+            "bad": true,
+            "confidenceBefore": 68,
+            "confidenceAfter": 42
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are on warning (42% job security). Another weak review could escalate this — address: Margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 14,
+        "year": 1977,
+        "period": 1,
+        "snap": {
+          "confidence": 42,
+          "status": "warning",
+          "closedPeriods": 14,
+          "nextReviewAt": 16,
+          "periodsUntilReview": 2,
+          "reviewCount": 3,
+          "fired": false,
+          "lastReview": {
+            "year": 1975,
+            "period": 2,
+            "good": false,
+            "bad": true,
+            "confidenceBefore": 68,
+            "confidenceAfter": 42
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are on warning (42% job security). Another weak review could escalate this — address: Margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 15,
+        "year": 1977,
+        "period": 2,
+        "snap": {
+          "confidence": 42,
+          "status": "warning",
+          "closedPeriods": 15,
+          "nextReviewAt": 16,
+          "periodsUntilReview": 1,
+          "reviewCount": 3,
+          "fired": false,
+          "lastReview": {
+            "year": 1975,
+            "period": 2,
+            "good": false,
+            "bad": true,
+            "confidenceBefore": 68,
+            "confidenceAfter": 42
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are on warning (42% job security). Another weak review could escalate this — address: Margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 16,
+        "year": 1978,
+        "period": 1,
+        "snap": {
+          "confidence": 53,
+          "status": "concern",
+          "closedPeriods": 16,
+          "nextReviewAt": 20,
+          "periodsUntilReview": 4,
+          "reviewCount": 4,
+          "fired": false,
+          "lastReview": {
+            "year": 1977,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 42,
+            "confidenceAfter": 53
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "Ownership is concerned (53% job security). Priority: Margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": true
+      },
+      {
+        "turn": 17,
+        "year": 1978,
+        "period": 2,
+        "snap": {
+          "confidence": 53,
+          "status": "concern",
+          "closedPeriods": 17,
+          "nextReviewAt": 20,
+          "periodsUntilReview": 3,
+          "reviewCount": 4,
+          "fired": false,
+          "lastReview": {
+            "year": 1977,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 42,
+            "confidenceAfter": 53
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "Ownership is concerned (53% job security). Priority: Margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 18,
+        "year": 1979,
+        "period": 1,
+        "snap": {
+          "confidence": 53,
+          "status": "concern",
+          "closedPeriods": 18,
+          "nextReviewAt": 20,
+          "periodsUntilReview": 2,
+          "reviewCount": 4,
+          "fired": false,
+          "lastReview": {
+            "year": 1977,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 42,
+            "confidenceAfter": 53
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "Ownership is concerned (53% job security). Priority: Margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 19,
+        "year": 1979,
+        "period": 2,
+        "snap": {
+          "confidence": 53,
+          "status": "concern",
+          "closedPeriods": 19,
+          "nextReviewAt": 20,
+          "periodsUntilReview": 1,
+          "reviewCount": 4,
+          "fired": false,
+          "lastReview": {
+            "year": 1977,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 42,
+            "confidenceAfter": 53
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "Ownership is concerned (53% job security). Priority: Margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 20,
+        "year": 1980,
+        "period": 1,
+        "snap": {
+          "confidence": 64,
+          "status": "secure",
+          "closedPeriods": 20,
+          "nextReviewAt": 24,
+          "periodsUntilReview": 4,
+          "reviewCount": 5,
+          "fired": false,
+          "lastReview": {
+            "year": 1979,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 53,
+            "confidenceAfter": 64
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (64% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": true
+      },
+      {
+        "turn": 21,
+        "year": 1980,
+        "period": 2,
+        "snap": {
+          "confidence": 64,
+          "status": "secure",
+          "closedPeriods": 21,
+          "nextReviewAt": 24,
+          "periodsUntilReview": 3,
+          "reviewCount": 5,
+          "fired": false,
+          "lastReview": {
+            "year": 1979,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 53,
+            "confidenceAfter": 64
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (64% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 22,
+        "year": 1981,
+        "period": 1,
+        "snap": {
+          "confidence": 64,
+          "status": "secure",
+          "closedPeriods": 22,
+          "nextReviewAt": 24,
+          "periodsUntilReview": 2,
+          "reviewCount": 5,
+          "fired": false,
+          "lastReview": {
+            "year": 1979,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 53,
+            "confidenceAfter": 64
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (64% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 23,
+        "year": 1981,
+        "period": 2,
+        "snap": {
+          "confidence": 64,
+          "status": "secure",
+          "closedPeriods": 23,
+          "nextReviewAt": 24,
+          "periodsUntilReview": 1,
+          "reviewCount": 5,
+          "fired": false,
+          "lastReview": {
+            "year": 1979,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 53,
+            "confidenceAfter": 64
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (64% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 24,
+        "year": 1982,
+        "period": 1,
+        "snap": {
+          "confidence": 75,
+          "status": "secure",
+          "closedPeriods": 24,
+          "nextReviewAt": 28,
+          "periodsUntilReview": 4,
+          "reviewCount": 6,
+          "fired": false,
+          "lastReview": {
+            "year": 1981,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 64,
+            "confidenceAfter": 75
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (75% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": true
+      },
+      {
+        "turn": 25,
+        "year": 1982,
+        "period": 2,
+        "snap": {
+          "confidence": 75,
+          "status": "secure",
+          "closedPeriods": 25,
+          "nextReviewAt": 28,
+          "periodsUntilReview": 3,
+          "reviewCount": 6,
+          "fired": false,
+          "lastReview": {
+            "year": 1981,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 64,
+            "confidenceAfter": 75
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (75% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 26,
+        "year": 1983,
+        "period": 1,
+        "snap": {
+          "confidence": 75,
+          "status": "secure",
+          "closedPeriods": 26,
+          "nextReviewAt": 28,
+          "periodsUntilReview": 2,
+          "reviewCount": 6,
+          "fired": false,
+          "lastReview": {
+            "year": 1981,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 64,
+            "confidenceAfter": 75
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (75% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 27,
+        "year": 1983,
+        "period": 2,
+        "snap": {
+          "confidence": 75,
+          "status": "secure",
+          "closedPeriods": 27,
+          "nextReviewAt": 28,
+          "periodsUntilReview": 1,
+          "reviewCount": 6,
+          "fired": false,
+          "lastReview": {
+            "year": 1981,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 64,
+            "confidenceAfter": 75
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (75% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 28,
+        "year": 1984,
+        "period": 1,
+        "snap": {
+          "confidence": 86,
+          "status": "secure",
+          "closedPeriods": 28,
+          "nextReviewAt": 32,
+          "periodsUntilReview": 4,
+          "reviewCount": 7,
+          "fired": false,
+          "lastReview": {
+            "year": 1983,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 75,
+            "confidenceAfter": 86
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (86% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": true
+      },
+      {
+        "turn": 29,
+        "year": 1984,
+        "period": 2,
+        "snap": {
+          "confidence": 86,
+          "status": "secure",
+          "closedPeriods": 29,
+          "nextReviewAt": 32,
+          "periodsUntilReview": 3,
+          "reviewCount": 7,
+          "fired": false,
+          "lastReview": {
+            "year": 1983,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 75,
+            "confidenceAfter": 86
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (86% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 30,
+        "year": 1985,
+        "period": 1,
+        "snap": {
+          "confidence": 86,
+          "status": "secure",
+          "closedPeriods": 30,
+          "nextReviewAt": 32,
+          "periodsUntilReview": 2,
+          "reviewCount": 7,
+          "fired": false,
+          "lastReview": {
+            "year": 1983,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 75,
+            "confidenceAfter": 86
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (86% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 31,
+        "year": 1985,
+        "period": 2,
+        "snap": {
+          "confidence": 86,
+          "status": "secure",
+          "closedPeriods": 31,
+          "nextReviewAt": 32,
+          "periodsUntilReview": 1,
+          "reviewCount": 7,
+          "fired": false,
+          "lastReview": {
+            "year": 1983,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 75,
+            "confidenceAfter": 86
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (86% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 32,
+        "year": 1986,
+        "period": 1,
+        "snap": {
+          "confidence": 97,
+          "status": "secure",
+          "closedPeriods": 32,
+          "nextReviewAt": 36,
+          "periodsUntilReview": 4,
+          "reviewCount": 8,
+          "fired": false,
+          "lastReview": {
+            "year": 1985,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 86,
+            "confidenceAfter": 97
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (97% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": true
+      },
+      {
+        "turn": 33,
+        "year": 1986,
+        "period": 2,
+        "snap": {
+          "confidence": 97,
+          "status": "secure",
+          "closedPeriods": 33,
+          "nextReviewAt": 36,
+          "periodsUntilReview": 3,
+          "reviewCount": 8,
+          "fired": false,
+          "lastReview": {
+            "year": 1985,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 86,
+            "confidenceAfter": 97
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (97% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 34,
+        "year": 1987,
+        "period": 1,
+        "snap": {
+          "confidence": 97,
+          "status": "secure",
+          "closedPeriods": 34,
+          "nextReviewAt": 36,
+          "periodsUntilReview": 2,
+          "reviewCount": 8,
+          "fired": false,
+          "lastReview": {
+            "year": 1985,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 86,
+            "confidenceAfter": 97
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (97% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 35,
+        "year": 1987,
+        "period": 2,
+        "snap": {
+          "confidence": 97,
+          "status": "secure",
+          "closedPeriods": 35,
+          "nextReviewAt": 36,
+          "periodsUntilReview": 1,
+          "reviewCount": 8,
+          "fired": false,
+          "lastReview": {
+            "year": 1985,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 86,
+            "confidenceAfter": 97
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (97% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 36,
+        "year": 1988,
+        "period": 1,
+        "snap": {
+          "confidence": 100,
+          "status": "secure",
+          "closedPeriods": 36,
+          "nextReviewAt": 40,
+          "periodsUntilReview": 4,
+          "reviewCount": 9,
+          "fired": false,
+          "lastReview": {
+            "year": 1987,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 97,
+            "confidenceAfter": 100
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (100% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": true
+      },
+      {
+        "turn": 37,
+        "year": 1988,
+        "period": 2,
+        "snap": {
+          "confidence": 100,
+          "status": "secure",
+          "closedPeriods": 37,
+          "nextReviewAt": 40,
+          "periodsUntilReview": 3,
+          "reviewCount": 9,
+          "fired": false,
+          "lastReview": {
+            "year": 1987,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 97,
+            "confidenceAfter": 100
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (100% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 38,
+        "year": 1989,
+        "period": 1,
+        "snap": {
+          "confidence": 100,
+          "status": "secure",
+          "closedPeriods": 38,
+          "nextReviewAt": 40,
+          "periodsUntilReview": 2,
+          "reviewCount": 9,
+          "fired": false,
+          "lastReview": {
+            "year": 1987,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 97,
+            "confidenceAfter": 100
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (100% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 39,
+        "year": 1989,
+        "period": 2,
+        "snap": {
+          "confidence": 100,
+          "status": "secure",
+          "closedPeriods": 39,
+          "nextReviewAt": 40,
+          "periodsUntilReview": 1,
+          "reviewCount": 9,
+          "fired": false,
+          "lastReview": {
+            "year": 1987,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 97,
+            "confidenceAfter": 100
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (100% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 40,
+        "year": 1990,
+        "period": 1,
+        "snap": {
+          "confidence": 100,
+          "status": "secure",
+          "closedPeriods": 40,
+          "nextReviewAt": 44,
+          "periodsUntilReview": 4,
+          "reviewCount": 10,
+          "fired": false,
+          "lastReview": {
+            "year": 1989,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 100,
+            "confidenceAfter": 100
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (100% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": true
+      },
+      {
+        "turn": 41,
+        "year": 1990,
+        "period": 2,
+        "snap": {
+          "confidence": 100,
+          "status": "secure",
+          "closedPeriods": 41,
+          "nextReviewAt": 44,
+          "periodsUntilReview": 3,
+          "reviewCount": 10,
+          "fired": false,
+          "lastReview": {
+            "year": 1989,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 100,
+            "confidenceAfter": 100
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (100% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 42,
+        "year": 1991,
+        "period": 1,
+        "snap": {
+          "confidence": 100,
+          "status": "secure",
+          "closedPeriods": 42,
+          "nextReviewAt": 44,
+          "periodsUntilReview": 2,
+          "reviewCount": 10,
+          "fired": false,
+          "lastReview": {
+            "year": 1989,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 100,
+            "confidenceAfter": 100
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (100% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 43,
+        "year": 1991,
+        "period": 2,
+        "snap": {
+          "confidence": 100,
+          "status": "secure",
+          "closedPeriods": 43,
+          "nextReviewAt": 44,
+          "periodsUntilReview": 1,
+          "reviewCount": 10,
+          "fired": false,
+          "lastReview": {
+            "year": 1989,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 100,
+            "confidenceAfter": 100
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (100% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 44,
+        "year": 1992,
+        "period": 1,
+        "snap": {
+          "confidence": 100,
+          "status": "secure",
+          "closedPeriods": 44,
+          "nextReviewAt": 48,
+          "periodsUntilReview": 4,
+          "reviewCount": 11,
+          "fired": false,
+          "lastReview": {
+            "year": 1991,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 100,
+            "confidenceAfter": 100
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (100% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": true
+      },
+      {
+        "turn": 45,
+        "year": 1992,
+        "period": 2,
+        "snap": {
+          "confidence": 100,
+          "status": "secure",
+          "closedPeriods": 45,
+          "nextReviewAt": 48,
+          "periodsUntilReview": 3,
+          "reviewCount": 11,
+          "fired": false,
+          "lastReview": {
+            "year": 1991,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 100,
+            "confidenceAfter": 100
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (100% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 46,
+        "year": 1993,
+        "period": 1,
+        "snap": {
+          "confidence": 100,
+          "status": "secure",
+          "closedPeriods": 46,
+          "nextReviewAt": 48,
+          "periodsUntilReview": 2,
+          "reviewCount": 11,
+          "fired": false,
+          "lastReview": {
+            "year": 1991,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 100,
+            "confidenceAfter": 100
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (100% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 47,
+        "year": 1993,
+        "period": 2,
+        "snap": {
+          "confidence": 100,
+          "status": "secure",
+          "closedPeriods": 47,
+          "nextReviewAt": 48,
+          "periodsUntilReview": 1,
+          "reviewCount": 11,
+          "fired": false,
+          "lastReview": {
+            "year": 1991,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 100,
+            "confidenceAfter": 100
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (100% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": false
+      },
+      {
+        "turn": 48,
+        "year": 1994,
+        "period": 1,
+        "snap": {
+          "confidence": 100,
+          "status": "secure",
+          "closedPeriods": 48,
+          "nextReviewAt": 52,
+          "periodsUntilReview": 4,
+          "reviewCount": 12,
+          "fired": false,
+          "lastReview": {
+            "year": 1993,
+            "period": 2,
+            "good": true,
+            "bad": false,
+            "confidenceBefore": 100,
+            "confidenceAfter": 100
+          },
+          "biggestIssue": "Margins are below what ownership expects — profitability needs attention.",
+          "glanceSummary": "You are secure (100% job security), but margins are below what ownership expects — profitability needs attention."
+        },
+        "formalReview": true
+      }
+    ],
+    "analysis": {
+      "warnings": [],
+      "reviewEvents": 12,
+      "confChanged": true,
+      "statusChanged": true,
+      "firedNoReviews": false
+    }
+  },
+  "campaign": null,
+  "batch": null
+}

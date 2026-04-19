@@ -1,0 +1,487 @@
+{
+  "meta": {
+    "mode": "batch",
+    "seed": 100,
+    "runs": 5,
+    "market": "atlanta",
+    "note": "GM mode uses genMarket(gm_under) with ACTIVE_MARKET patched to --market. Campaign career start uses ladder tier-1 market from campaignMode.js (typically Nashville), overriding the patched constant when beginCareer runs.",
+    "maxPeriodsGm": 48,
+    "maxPeriodsCampaign": 160,
+    "maxAssignments": 6,
+    "revisitTest": false,
+    "compareProfiles": true,
+    "compareIncludeLong": false,
+    "campaignProfiles": [
+      {
+        "key": "default",
+        "maxAssignments": 6
+      },
+      {
+        "key": "extended",
+        "maxAssignments": 8
+      }
+    ]
+  },
+  "gm": null,
+  "campaign": null,
+  "batch": {
+    "compareProfiles": true,
+    "profileList": [
+      {
+        "key": "default",
+        "maxAssignments": 6
+      },
+      {
+        "key": "extended",
+        "maxAssignments": 8
+      }
+    ],
+    "gmReviewCounts": [
+      12,
+      12,
+      12,
+      12,
+      12
+    ],
+    "gmFired": 0,
+    "gmConfidenceDeltas": [
+      22,
+      22,
+      22,
+      22,
+      22
+    ],
+    "batchWarnings": [],
+    "revisitTest": null
+  },
+  "profiles": {
+    "default": {
+      "profileKey": "default",
+      "maxAssignments": 6,
+      "kindTallies": {
+        "promoted": 17,
+        "lateral": 9,
+        "demoted": 4,
+        "fired": 0,
+        "won": 0
+      },
+      "winCount": 0,
+      "winRate": 0,
+      "topTierReachRate": 0,
+      "longestCareerAssignments": 6,
+      "avgAssignmentsCompleted": 6,
+      "avgEndingReputation": 96,
+      "avgEndingGmConfidence": 89.4,
+      "tier4": {
+        "n": 3,
+        "promoted": 0,
+        "lateral": 1,
+        "demoted": 2,
+        "fired": 0,
+        "won": 0,
+        "avgEndingConfidence": 25,
+        "firingRateAmongTier4Outcomes": 0
+      },
+      "tier5": {
+        "n": 0,
+        "promoted": 0,
+        "lateral": 0,
+        "demoted": 0,
+        "fired": 0,
+        "won": 0,
+        "avgEndingConfidence": null,
+        "firingRateAmongTier5Outcomes": null
+      },
+      "tierRevisitEvents": 2,
+      "twoTierOscillationEvents": 2,
+      "runsWithOscillationAtLeast2": 0,
+      "campaignDeep": {
+        "byTier": {
+          "1": {
+            "n": 10,
+            "promoted": 5,
+            "lateral": 3,
+            "demoted": 2,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 685,
+            "sumRepDelta": 70,
+            "sumPeriods": 140,
+            "periodsN": 10,
+            "avgEndingConfidence": 68.5,
+            "avgRepDelta": 7,
+            "avgPeriodsClosed": 14
+          },
+          "2": {
+            "n": 7,
+            "promoted": 5,
+            "lateral": 2,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 462,
+            "sumRepDelta": 72,
+            "sumPeriods": 98,
+            "periodsN": 7,
+            "avgEndingConfidence": 66,
+            "avgRepDelta": 10.285714285714286,
+            "avgPeriodsClosed": 14
+          },
+          "3": {
+            "n": 10,
+            "promoted": 7,
+            "lateral": 3,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 777,
+            "sumRepDelta": 102,
+            "sumPeriods": 180,
+            "periodsN": 10,
+            "avgEndingConfidence": 77.7,
+            "avgRepDelta": 10.2,
+            "avgPeriodsClosed": 18
+          },
+          "4": {
+            "n": 3,
+            "promoted": 0,
+            "lateral": 1,
+            "demoted": 2,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 75,
+            "sumRepDelta": -2,
+            "sumPeriods": 66,
+            "periodsN": 3,
+            "avgEndingConfidence": 25,
+            "avgRepDelta": -0.6666666666666666,
+            "avgPeriodsClosed": 22
+          },
+          "5": {
+            "n": 0,
+            "promoted": 0,
+            "lateral": 0,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 0,
+            "sumRepDelta": 0,
+            "sumPeriods": 0,
+            "periodsN": 0,
+            "avgEndingConfidence": null,
+            "avgRepDelta": null,
+            "avgPeriodsClosed": null
+          }
+        },
+        "byAssignmentId": {
+          "c1_nashville": {
+            "n": 10,
+            "promoted": 5,
+            "lateral": 3,
+            "demoted": 2,
+            "fired": 0,
+            "won": 0
+          },
+          "c2_atlanta": {
+            "n": 7,
+            "promoted": 5,
+            "lateral": 2,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0
+          },
+          "c3_seattle": {
+            "n": 10,
+            "promoted": 7,
+            "lateral": 3,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0
+          },
+          "c4_chicago": {
+            "n": 3,
+            "promoted": 0,
+            "lateral": 1,
+            "demoted": 2,
+            "fired": 0,
+            "won": 0
+          }
+        },
+        "tierRevisitEvents": 2,
+        "twoTierOscillationEvents": 2,
+        "runsWithOscillationAtLeast2": 0,
+        "longestCareerAssignments": 6,
+        "longestCareerBeforeWin": null,
+        "longestCareerBeforeHardEnd": null,
+        "runsThatReachedTier5": 0,
+        "totalRuns": 5,
+        "trapTierHeuristic": [],
+        "topTierReachRate": 0
+      },
+      "campaignRunsSummary": [
+        {
+          "seed": 100,
+          "assignmentCount": 6,
+          "campaignWon": false,
+          "reputationEnd": 90
+        },
+        {
+          "seed": 101,
+          "assignmentCount": 6,
+          "campaignWon": false,
+          "reputationEnd": 100
+        },
+        {
+          "seed": 102,
+          "assignmentCount": 6,
+          "campaignWon": false,
+          "reputationEnd": 100
+        },
+        {
+          "seed": 103,
+          "assignmentCount": 6,
+          "campaignWon": false,
+          "reputationEnd": 90
+        },
+        {
+          "seed": 104,
+          "assignmentCount": 6,
+          "campaignWon": false,
+          "reputationEnd": 100
+        }
+      ]
+    },
+    "extended": {
+      "profileKey": "extended",
+      "maxAssignments": 8,
+      "kindTallies": {
+        "promoted": 22,
+        "lateral": 11,
+        "demoted": 5,
+        "fired": 2,
+        "won": 0
+      },
+      "winCount": 0,
+      "winRate": 0,
+      "topTierReachRate": 0.6,
+      "longestCareerAssignments": 8,
+      "avgAssignmentsCompleted": 8,
+      "avgEndingReputation": 99.2,
+      "avgEndingGmConfidence": 67,
+      "tier4": {
+        "n": 10,
+        "promoted": 5,
+        "lateral": 1,
+        "demoted": 2,
+        "fired": 2,
+        "won": 0,
+        "avgEndingConfidence": 57,
+        "firingRateAmongTier4Outcomes": 0.2
+      },
+      "tier5": {
+        "n": 3,
+        "promoted": 0,
+        "lateral": 2,
+        "demoted": 1,
+        "fired": 0,
+        "won": 0,
+        "avgEndingConfidence": 45.666666666666664,
+        "firingRateAmongTier5Outcomes": 0
+      },
+      "tierRevisitEvents": 4,
+      "twoTierOscillationEvents": 4,
+      "runsWithOscillationAtLeast2": 2,
+      "campaignDeep": {
+        "byTier": {
+          "1": {
+            "n": 10,
+            "promoted": 5,
+            "lateral": 3,
+            "demoted": 2,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 685,
+            "sumRepDelta": 70,
+            "sumPeriods": 140,
+            "periodsN": 10,
+            "avgEndingConfidence": 68.5,
+            "avgRepDelta": 7,
+            "avgPeriodsClosed": 14
+          },
+          "2": {
+            "n": 7,
+            "promoted": 5,
+            "lateral": 2,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 462,
+            "sumRepDelta": 72,
+            "sumPeriods": 98,
+            "periodsN": 7,
+            "avgEndingConfidence": 66,
+            "avgRepDelta": 10.285714285714286,
+            "avgPeriodsClosed": 14
+          },
+          "3": {
+            "n": 10,
+            "promoted": 7,
+            "lateral": 3,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 777,
+            "sumRepDelta": 102,
+            "sumPeriods": 180,
+            "periodsN": 10,
+            "avgEndingConfidence": 77.7,
+            "avgRepDelta": 10.2,
+            "avgPeriodsClosed": 18
+          },
+          "4": {
+            "n": 10,
+            "promoted": 5,
+            "lateral": 1,
+            "demoted": 2,
+            "fired": 2,
+            "won": 0,
+            "sumConfidence": 570,
+            "sumRepDelta": 34,
+            "sumPeriods": 216,
+            "periodsN": 10,
+            "avgEndingConfidence": 57,
+            "avgRepDelta": 3.4,
+            "avgPeriodsClosed": 21.6
+          },
+          "5": {
+            "n": 3,
+            "promoted": 0,
+            "lateral": 2,
+            "demoted": 1,
+            "fired": 0,
+            "won": 0,
+            "sumConfidence": 137,
+            "sumRepDelta": 8,
+            "sumPeriods": 66,
+            "periodsN": 3,
+            "avgEndingConfidence": 45.666666666666664,
+            "avgRepDelta": 2.6666666666666665,
+            "avgPeriodsClosed": 22
+          }
+        },
+        "byAssignmentId": {
+          "c1_nashville": {
+            "n": 10,
+            "promoted": 5,
+            "lateral": 3,
+            "demoted": 2,
+            "fired": 0,
+            "won": 0
+          },
+          "c2_atlanta": {
+            "n": 7,
+            "promoted": 5,
+            "lateral": 2,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0
+          },
+          "c3_seattle": {
+            "n": 10,
+            "promoted": 7,
+            "lateral": 3,
+            "demoted": 0,
+            "fired": 0,
+            "won": 0
+          },
+          "c4_chicago": {
+            "n": 10,
+            "promoted": 5,
+            "lateral": 1,
+            "demoted": 2,
+            "fired": 2,
+            "won": 0
+          },
+          "c5_la": {
+            "n": 3,
+            "promoted": 0,
+            "lateral": 2,
+            "demoted": 1,
+            "fired": 0,
+            "won": 0
+          }
+        },
+        "tierRevisitEvents": 4,
+        "twoTierOscillationEvents": 4,
+        "runsWithOscillationAtLeast2": 2,
+        "longestCareerAssignments": 8,
+        "longestCareerBeforeWin": null,
+        "longestCareerBeforeHardEnd": null,
+        "runsThatReachedTier5": 3,
+        "totalRuns": 5,
+        "trapTierHeuristic": [],
+        "topTierReachRate": 0.6
+      },
+      "campaignRunsSummary": [
+        {
+          "seed": 100,
+          "assignmentCount": 8,
+          "campaignWon": false,
+          "reputationEnd": 100
+        },
+        {
+          "seed": 101,
+          "assignmentCount": 8,
+          "campaignWon": false,
+          "reputationEnd": 96
+        },
+        {
+          "seed": 102,
+          "assignmentCount": 8,
+          "campaignWon": false,
+          "reputationEnd": 100
+        },
+        {
+          "seed": 103,
+          "assignmentCount": 8,
+          "campaignWon": false,
+          "reputationEnd": 100
+        },
+        {
+          "seed": 104,
+          "assignmentCount": 8,
+          "campaignWon": false,
+          "reputationEnd": 100
+        }
+      ]
+    }
+  },
+  "profileComparison": {
+    "winsDeltaExtendedVsDefault": 0,
+    "topTierReachDeltaExtendedVsDefault": 0.6,
+    "avgAssignmentsDeltaExtendedVsDefault": 2,
+    "tier4": {
+      "nDelta": 7,
+      "promotedDelta": 5,
+      "lateralDelta": 0,
+      "demotedDelta": 0,
+      "firedDelta": 2,
+      "firingRateExtended": 0.2,
+      "firingRateDefault": 0
+    },
+    "interpretation": {
+      "code": "CAP_WINDOW_REACH",
+      "summary": "The current ladder may be win-capable, but the default six-assignment window is often too short to surface wins and Tier 5 in batch.",
+      "bullets": [
+        "Top-tier reach rises materially with a longer career window — many runs never reach Tier 5 within six assignment results."
+      ]
+    }
+  },
+  "interpretation": {
+    "code": "CAP_WINDOW_REACH",
+    "summary": "The current ladder may be win-capable, but the default six-assignment window is often too short to surface wins and Tier 5 in batch.",
+    "bullets": [
+      "Top-tier reach rises materially with a longer career window — many runs never reach Tier 5 within six assignment results."
+    ]
+  }
+}

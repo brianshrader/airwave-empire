@@ -1,0 +1,50 @@
+{
+  "meta": {
+    "mode": "batch",
+    "seed": 100,
+    "runs": 10,
+    "market": "atlanta",
+    "note": "GM mode uses genMarket(gm_under) with ACTIVE_MARKET patched to --market. Campaign career start uses ladder tier-1 market from campaignMode.js (typically Nashville), overriding the patched constant when beginCareer runs.",
+    "maxPeriodsGm": 48,
+    "maxPeriodsCampaign": 160,
+    "maxAssignments": 6
+  },
+  "gm": null,
+  "campaign": null,
+  "batch": {
+    "gmReviewCounts": [
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12
+    ],
+    "gmFired": 0,
+    "gmConfidenceDeltas": [
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22
+    ],
+    "campaignKinds": {
+      "promoted": 15,
+      "lateral": 6,
+      "demoted": 39,
+      "fired": 0,
+      "won": 0
+    },
+    "hardEnds": 0,
+    "batchWarnings": []
+  }
+}

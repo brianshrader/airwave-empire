@@ -2452,6 +2452,9 @@ const MARKETS={
   },
 };
 
+/** campaignMode.js and other early scripts read market labels via `window.MARKETS` (const MARKETS is not a global var). */
+if (typeof window !== 'undefined') window.MARKETS = MARKETS;
+
 // ── AM/FM non-duplication (game-design caps; not literal FCC text) ────────────
 /** Map pilot market rankTier → FCC simulcast policy tier (1 = largest / strictest). */
 function marketRankTierToFccSimulcastTier(marketId){
@@ -4578,6 +4581,11 @@ async function wlCloudSaveLoadById(saveId) {
   if (!G) G = {};
   Object.assign(G, payload.G);
   migrateSave(G);
+  try{
+    if(typeof wlCampaignLoadFromSave==='function')wlCampaignLoadFromSave(payload.campaign);
+    if(typeof wlCampaignSyncFromGame==='function')wlCampaignSyncFromGame(G);
+    if(typeof wlCampaignRepairLoadedGameIfMarketMismatch==='function')wlCampaignRepairLoadedGameIfMarketMismatch(G);
+  }catch(_e){}
   applyLoadedGameMarket();
   G.news.unshift({
     v: 'HIGH',
@@ -11819,7 +11827,7 @@ function genMarket(scenId){
     Object.values(stations[i].prog).forEach(sd=>{if(sd)sd.quality=Math.max(12,Math.min(90,(sd.quality||30)+oqAdj*0.6+hqBonus));});
     stations[i].color='#f5a623';}});
   // Underdog: morning drive is empty — the scenario says the host just quit
-  if(sc.id==='under'){
+  if(sc.id==='under'||sc.id==='gm_under'){
     sc.idx.forEach(i=>{
       const st=stations[i];
       if(!st||st._bpSlotDeferred||!st.isPlayer)return;
@@ -12052,8 +12060,45 @@ function genMarket(scenId){
     sportsRights:{},franchiseRights:{},teamRecords:{},
   };
 }
+
+/** Events not yet reached at (year, period) — same idea as genMarket’s `remainingEvq` for mid-era starts. */
+function wlEvqRemainingAfterPeriod(year, period) {
+  const p = period === 2 ? 2 : 1;
+  return EVDATA.filter((ev) => {
+    if (!ev || ev.y == null || ev.p == null) return false;
+    if (ev.y > year) return true;
+    if (ev.y < year) return false;
+    return ev.p > p;
+  });
+}
+
+/**
+ * Campaign promotion into a fresh market: keep career sim time instead of resetting to 1970.
+ * Temporarily sets `gm_under`’s scenario start year so genMarket uses the non-1970 path (rivals, FCC, evq).
+ */
+function wlGenMarketGmUnderAtCareerTime(simYear, simPeriod) {
+  const y = Math.max(1970, Math.min(2025, simYear | 0));
+  const p = simPeriod === 2 ? 2 : 1;
+  const sc = SC.find((s) => s.id === 'gm_under');
+  if (!sc) return genMarket('gm_under');
+  const prevStart = sc.startYear;
+  try {
+    if (y > 1970) sc.startYear = y;
+    const g = genMarket('gm_under');
+    if (p === 2) {
+      g.period = 2;
+      g.turn = (y - 1970) * 2 + 1;
+      g.evq = wlEvqRemainingAfterPeriod(y, 1);
+    }
+    return g;
+  } finally {
+    sc.startYear = prevStart;
+  }
+}
+
 if(typeof window!=='undefined'){
   window.genMarket=genMarket;
+  window.wlGenMarketGmUnderAtCareerTime=wlGenMarketGmUnderAtCareerTime;
   window.computeAiPlayerMarketPressure=computeAiPlayerMarketPressure;
   window.resolveAiDifficultyTier=resolveAiDifficultyTier;
 }
@@ -12096,6 +12141,11 @@ function processAtlanta1970DeferredLaunches(G){
 
 // ── STATE ─────────────────────────────────────────────────────────
 let G=null;
+
+/** campaignMode sets `global.G` / `window.G`; the sim reads this script's `G` (lexical). Keep them one reference. */
+function wlBindGameState(g) {
+  G = g;
+}
 
 const LEGACY_SAVE_KEY='wavelength_autosave';
 const SAVE_KEY='airwave_empire_autosave';
@@ -13494,12 +13544,24 @@ function openScenSelect(localSave){
 
   const wlSiteFooterEmbed=`<div class="site-footer site-footer--embed" role="contentinfo"><div class="site-footer-inner"><span class="site-footer-copy">© 2026 Airwave Empire. All rights reserved.</span><nav class="site-footer-links" aria-label="Legal and social"><a href="/legal/terms.html" target="_blank" rel="noopener">Terms</a><span class="site-footer-dot" aria-hidden="true">·</span><a href="/legal/privacy.html" target="_blank" rel="noopener">Privacy</a><span class="site-footer-dot" aria-hidden="true">·</span><a href="/legal/contact.html" target="_blank" rel="noopener">Contact</a><span class="site-footer-dot" aria-hidden="true">·</span><span class="site-footer-social"><a href="https://www.facebook.com/profile.php?id=61575347974985" target="_blank" rel="noopener noreferrer">Facebook</a><span class="site-footer-dot" aria-hidden="true">·</span><a href="https://x.com/airwaveempire" target="_blank" rel="noopener noreferrer">X</a><span class="site-footer-dot" aria-hidden="true">·</span><a href="https://www.instagram.com/airwaveempire" target="_blank" rel="noopener noreferrer">Instagram</a></span></nav><p class="site-footer-sim">Fictional simulation — not affiliated with real stations or broadcasters.</p></div></div>`;
 
+  const _camp=localSave?.campaign;
+  const _hasCampMeta=!!(_camp&&(_camp.active||(_camp.completedAssignments|0)>0||_camp.campaignWon));
+  const campaignBlock=`<div style="margin-bottom:22px;padding:14px 16px;background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.28);border-radius:4px">
+    <div style="font-family:var(--ft);font-size:14px;color:var(--amb);letter-spacing:2px;margin-bottom:8px">General Manager: Campaign Mode</div>
+    <p style="margin:0 0 12px;font-size:15px;color:var(--off);line-height:1.55">A large radio company has put you in charge of a struggling station in one of their smaller markets. Can you turn the station into a winner and get a promotion to a bigger market? A full GM career arc typically spans about eight completed station assignments — see how far up the ladder you go!</p>
+    <div style="display:flex;flex-wrap:wrap;gap:8px">
+      <button type="button" class="cfm" style="padding:10px 18px;font-size:14px;letter-spacing:1px" onclick="wlCampaignStartFromMenu()">▶ START GM CAREER</button>
+      ${_hasCampMeta?`<button type="button" class="abt" style="padding:10px 18px;font-size:14px;letter-spacing:1px" onclick="wlCampaignOpenBriefing()">📋 CAREER BRIEFING</button>`:''}
+    </div>
+  </div>`;
+
   document.getElementById('scenb').innerHTML=`
     <div style="padding:18px 20px 20px;max-width:760px;margin:0 auto">
     <div class="scn-hero">
       <div class="scn-logo">AIRWAVE EMPIRE</div>
       <div class="scn-tagline" id="scn-tagline">${mktLabel.toUpperCase()} RADIO · 1970 TO 2020</div>
     </div>
+    ${campaignBlock}
     ${tutorialTop}
     <div style="text-align:center;margin-bottom:18px">
       <button type="button" class="cfm" style="padding:10px 22px;font-size:14px;letter-spacing:2px" onclick="cm('m-scen');openSaveLoad()" title="Cloud saves, download/upload file, or browser autosave">📂 LOAD GAME</button>
@@ -13669,6 +13731,7 @@ function openOnboarding(scenId){
 function startPlay(scenId){
   try{
     _pendingScenId=null;
+    if(!globalThis._wlCampaignStarting&&typeof wlCampaignDeactivate==='function')wlCampaignDeactivate();
     ACTIVE_MARKET=_selectedMarket;
     syncMarketPopToMarket(ACTIVE_MARKET);
     let companyName=(document.getElementById('company-name-input')?.value||'').trim();
@@ -13712,6 +13775,32 @@ function startPlay(scenId){
 function startNewGame(){
   // Legacy path — called from some places, routes to scenario select
   openScenSelect(null);
+}
+
+/** Campaign Mode — solo GM career ladder (see campaignMode.js). */
+function wlCampaignStartFromMenu(){
+  try{if(typeof autoSave==='function')autoSave();}catch(_e){}
+  if(typeof wlCampaignOpenStartModal==='function'){
+    wlCampaignOpenStartModal();
+    return;
+  }
+  if(typeof wlCampaign==='undefined'||!wlCampaign.openStartModal){
+    showToast('Campaign mode is not loaded. Refresh the page.','warn');
+    return;
+  }
+  wlCampaign.openStartModal();
+}
+
+function wlCampaignOpenBriefing(){
+  try{
+    const local=getLocalSave();
+    if(typeof wlCampaignLoadFromSave==='function')wlCampaignLoadFromSave(local?.campaign);
+    if(typeof G!=='undefined'&&G&&typeof wlCampaignSyncFromGame==='function')wlCampaignSyncFromGame(G);
+    if(typeof wlCampaign.renderCampaignModal==='function')wlCampaign.renderCampaignModal();
+    if(typeof om==='function')om('m-campaign-brief');
+  }catch(e){
+    showToast('Could not open career briefing.','warn');
+  }
 }
 function loadLocalSaveAndClose(el){
   el?.remove();
@@ -16948,6 +17037,9 @@ function advTurn(mpCoalesceSeq){
     recordStationFinHistory(G, wasYear, wasPeriod);
     /* GM Mode: evaluation layer only — reads finHistory + franchise snapshots; does not alter sim math. */
     if(typeof wlGmMode!=='undefined'&&wlGmMode.onPeriodClose)wlGmMode.onPeriodClose(G,wasYear,wasPeriod);
+    try{
+      if(typeof wlCampaignOnPeriodClose==='function')wlCampaignOnPeriodClose(G,wasYear,wasPeriod);
+    }catch(_e){}
     G._lastTurnHeadlines=(G.news||[]).filter(n=>n&&n.y===wasYear&&n.p===wasPeriod);
     if(wlCashBridgeAuditActive()){
       const _ps=myPS();
@@ -17035,6 +17127,9 @@ function advTurn(mpCoalesceSeq){
     }
     autoSave();
     renderAll();
+    try{
+      if(MP.mode!=='live'&&typeof wlCampaignAfterRenderAll==='function')wlCampaignAfterRenderAll(G);
+    }catch(_e){}
     queuePlayerTalentPortraits();
     queueAutoLogosForPlayerStations();
     // MP: if host, broadcast new state to all clients
@@ -17411,6 +17506,15 @@ function signalLineForIntel(s){
   if(pw)parts.push(pw);
   parts.push(freq);
   return parts.join(' · ');
+}
+/** Compact dial + band for Brand & Marketing (simulcast legs). */
+function stationDialAndBandForMarketing(s){
+  if(!s)return'';
+  const sig=s.sig||{};
+  const raw=(s.freq!=null&&s.freq!=='')?String(s.freq).trim():((sig.freq!=null&&sig.freq!=='')?String(sig.freq).trim():'');
+  const band=sig.type==='FM'||s.fmBooster?'FM':sig.type==='AM'?'AM':inferBandFromDialStr(raw)||'';
+  if(raw&&band)return `${raw} ${band}`;
+  return raw||'—';
 }
 /** Station logo thumb — AI raster if present, else deterministic SVG. */
 function cosmeticLogoThumbHtmlForStation(s, opts){
@@ -18057,7 +18161,29 @@ function bmSafeElId(sid){return String(sid==null?'':sid).replace(/[^a-zA-Z0-9]/g
 function brandMarketingStationLegs(primarySid){
   const s=G.stations.find(st=>st.id===primarySid);
   if(!s)return[];
-  return [simulcastOperationalSource(s)];
+  const op=simulcastOperationalSource(s);
+  const ids=simulcastGroupStationIds(op,G);
+  const legs=(G.stations||[]).filter(st=>st&&ids.has(st.id)&&mpIsMe(st));
+  const progSrc=simulcastProgrammingSourceStation(op,G);
+  const sourceId=progSrc?progSrc.id:(op._simulcastSource===true?op.id:null);
+  const rank=st=>{
+    if(sourceId&&st.id===sourceId)return 0;
+    if(st._simulcastSource===true)return 1;
+    return 2;
+  };
+  const freqKey=st=>{
+    const isAm=st.sig?.type==='AM'&&!st.fmBooster;
+    const raw=String(st.freq!=null&&st.freq!==''?st.freq:(st.sig?.freq??'')).replace(/[^\d.]/g,'');
+    const f=parseFloat(raw)||0;
+    return (isAm?0:1)*1e9+f;
+  };
+  legs.sort((a,b)=>{
+    const d=rank(a)-rank(b);
+    if(d!==0)return d;
+    return freqKey(a)-freqKey(b);
+  });
+  if(legs.length)return legs;
+  return mpIsMe(op)?[op]:[];
 }
 const BRAND_KEYWORD_BUCKETS={
   country:['country','wolf','wolves','bear','outlaw','bull','legend','honky','nashville','rodeo','cotton','wrangler','hank'],
@@ -18155,7 +18281,6 @@ function bmPickBrand(sid,b){
   renderAll();
 }
 function bmRefreshBrandCommitState(sid){
-  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const safe=bmSafeElId(sid);
   const inp=document.getElementById('bm-station-hero-inp-'+safe);
@@ -18165,7 +18290,6 @@ function bmRefreshBrandCommitState(sid){
   wlSetCommitButtonState('bm-brand-btn-'+safe, ui!==committed);
 }
 function bmApplyBrand(sid){
-  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const safe=bmSafeElId(sid);
   const inp=document.getElementById('bm-station-hero-inp-'+safe);
@@ -18190,6 +18314,12 @@ function bmUpdBrand(sid){
   bmRefreshBrandMarketingLogoPreview(sid);
   bmRefreshBrandCommitState(sid);
 }
+function callLettersPreviewForBmUi(baseVal,s){
+  const b=String(baseVal||'').trim();
+  if(!b)return'—';
+  const isFm=s&&(s.fmBooster||s.sig?.type==='FM');
+  return `${b}-${isFm?'FM':'AM'}`;
+}
 function bmUpdRenamePreview(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const safe=bmSafeElId(sid);
@@ -18203,20 +18333,17 @@ function bmUpdRenamePreview(sid){
   const preview=document.getElementById('bm-rn-preview-'+safe);
   const note=document.getElementById('bm-rn-note-'+safe);
   const btn=document.getElementById('bm-rn-btn-'+safe);
-  const partnerId=s?.simulcastWith;
-  const myStationIds=new Set((MP.mode==='live'?G.ps.filter(st=>st._mpOwner===MP.playerId):G.ps).map(st=>st.id));
   const taken=G.stations.some(st=>{
     if(st.callLetters!==val)return false;
-    if(st.id===sid||st.id===partnerId)return false;
+    if(st.id===sid)return false;
     const stIsAM=st.sig.type==='AM'&&!st.fmBooster;
-    const sIsAM2=s?(s.sig.type==='AM'&&!s.fmBooster):false;
-    if(myStationIds.has(st.id)&&stIsAM!==sIsAM2)return false;
+    const sIsAM=s&&(s.sig.type==='AM'&&!s.fmBooster);
+    if(stIsAM!==sIsAM)return false;
     return true;
   });
   const prefixOk=(pfxEl.value||reqPref)===reqPref;
   const valid=sfx.length>=2&&prefixOk;
-  const partnerHasSame=s&&partnerId&&G.stations.find(st=>st.id===partnerId)?.callLetters===val;
-  const dispVal=s?.simulcastWith&&!partnerHasSame?val:(s?.simulcastWith?val+(s.sig.type==='AM'?'-AM':'-FM'):val);
+  const dispVal=callLettersPreviewForBmUi(val,s);
   if(preview)preview.textContent=valid?dispVal:'—';
   if(note){
     if(!prefixOk)note.innerHTML=`<span style="color:var(--red)">This market requires ${reqPref} call letters only.</span>`;
@@ -18229,7 +18356,6 @@ function bmUpdRenamePreview(sid){
   bmRefreshRenameCommitState(sid);
 }
 function bmRefreshRenameCommitState(sid){
-  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const safe=bmSafeElId(sid);
   const btn=document.getElementById('bm-rn-btn-'+safe);
@@ -18264,7 +18390,6 @@ function bmRefreshIdentCommitState(sid){
   wlSetCommitButtonState('bm-ci-commit-'+safe,ui!==(s.identityBudget||0));
 }
 function bmDoRename(sid){
-  sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const safe=bmSafeElId(sid);
   const pfxEl=document.getElementById('bm-rn-prefix-'+safe);
@@ -18275,20 +18400,17 @@ function bmDoRename(sid){
   const val=(pfxEl.value||reqPref)+sfx;
   if(sfx.length<2)return;
   if(val[0]!==reqPref){showToast(`Call letters in this market must start with ${reqPref}.`,'warn');return;}
-  const partnerId=s.simulcastWith;
-  const myIds=new Set((MP.mode==='live'?G.ps.filter(st=>st._mpOwner===MP.playerId):G.ps).map(st=>st.id));
   const sIsAMr=s.sig.type==='AM'&&!s.fmBooster;
   const nameTaken=G.stations.some(st=>{
     if(st.callLetters!==val)return false;
-    if(st.id===sid||st.id===partnerId)return false;
+    if(st.id===sid)return false;
     const stIsAMr=st.sig.type==='AM'&&!st.fmBooster;
-    if(myIds.has(st.id)&&stIsAMr!==sIsAMr)return false;
+    if(stIsAMr!==sIsAMr)return false;
     return true;
   });
   if(nameTaken)return;
   const old=callDisplay(s);
   s.callLetters=val;
-  syncCallLettersToSimulcastPartner(s);
   logHistory(s,'CALLSIGN',`Call letters changed: ${old} → ${callDisplay(s)}`,G);
   G.news.unshift({v:'LOW',t:`${old} officially renamed ${callDisplay(s)} (${s.freq}) — brand: "${s.brand}"`,y:G.year,p:G.period});
   MP.action('rename', {sid:s.id, callLetters:s.callLetters, brand:s.brand});
@@ -18363,7 +18485,11 @@ function bmDoIdent(sid){
   renderAll();
   if(BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
 }
-function brandMarketingIdentityBlockHtml(leg){
+/** Call letters + FCC rename only — used per simulcast leg when group shares one brand surface. */
+function brandMarketingCallLettersOnlyHtml(leg, opts){
+  opts=opts||{};
+  const isFirstLeg=!!opts.isFirstLeg;
+  const dialLabel=opts.dialLabel||'';
   const s=leg;
   const sid=s.id;
   const safe=bmSafeElId(sid);
@@ -18371,10 +18497,70 @@ function brandMarketingIdentityBlockHtml(leg){
   const requiredPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
   const prefix=requiredPref;
   const suffix=(cur[0]==='W'||cur[0]==='K')?cur.slice(1):cur;
-  const partnerNote=stationHasSimulcastLeg(s,G)?`<div class="ibox" style="margin-bottom:10px">Simulcast group — each facility keeps its own <strong>-AM</strong> / <strong>-FM</strong> call. Same-band repeaters are <strong>not</strong> forced to identical base letters; rename here if you want distinct IDs.</div>`:'';
+  const groupNote=isFirstLeg?`<div class="ibox" style="margin-bottom:10px">Each license has its own call letters. On-air brand, logo, marketing, and programming budget are shared — set them in the sections below once.</div>`:'';
+  const showDialHeader=!!dialLabel;
+  const dialHeader=showDialHeader?`<div style="margin-bottom:12px;font-size:15px;color:var(--off);font-family:var(--fd)"><strong>${rosterHtmlEsc(dialLabel)}</strong></div>`:'';
+  return`<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
+    ${groupNote}
+    ${dialHeader}
+    <div class="slsec" style="margin-bottom:14px">
+      <div class="sll"><span>CALL LETTERS</span><strong id="bm-rn-preview-${safe}">${rosterHtmlEsc(callDisplay(s))}</strong></div>
+      <div style="display:flex;align-items:center;gap:0;margin-top:10px">
+        <input type="hidden" id="bm-rn-prefix-${safe}" value="${prefix}">
+        <span style="background:var(--crd);border:1px solid var(--bdh);border-right:none;color:var(--amb);font-family:var(--fd);font-size:22px;letter-spacing:3px;padding:10px 12px;min-width:40px;text-align:center">${prefix}</span>
+        <input type="text" id="bm-rn-suffix-${safe}" maxlength="3" value="${suffix}"
+          style="width:100%;background:var(--crd);border:1px solid var(--bdh);color:var(--wht);font-family:var(--fd);font-size:22px;letter-spacing:4px;padding:10px 14px;outline:none;text-transform:uppercase"
+          oninput="bmUpdRenamePreview('${sid}')" onkeydown="if(event.key==='Enter')bmDoRename('${sid}')">
+      </div>
+      <div class="sln2" id="bm-rn-note-${safe}" style="margin-top:8px"></div>
+    </div>
+    <button class="cfm wl-commit-btn wl-commit-btn--synced" type="button" id="bm-rn-btn-${safe}" onclick="bmDoRename('${sid}')">APPLY CALL LETTER CHANGE</button>
+  </div>`;
+}
+/** Shared on-air brand (programming source) — one block per simulcast group. */
+function brandMarketingSharedBrandBlockHtml(src){
+  const s=src;
+  const sid=s.id;
+  const safe=bmSafeElId(sid);
   const pills=getBrandSuggestions(s).map(b=>'<span class="bp bm-bp-'+safe+(s.brand===b?' bpsel':'')+'" onclick="bmPickBrand(\''+sid+'\',\''+b.replace(/'/g,"\\'")+'\')">'+rosterHtmlEsc(b)+'</span>').join('');
   return`<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
-    ${partnerNote}
+    <div class="bm-brand-field-wrap">
+      <div class="bm-brand-field-title" id="bm-brand-field-title-${safe}">Brand (simulcast group)</div>
+      <p class="bm-brand-field-lede">One on-air brand for the whole simulcast — how you refer to the station on the air.</p>
+      <div class="bm-station-hero-square">
+        <input type="text" id="bm-station-hero-inp-${safe}" class="bm-station-hero-inp" maxlength="48" value="${rosterHtmlEsc(s.brand||'')}"
+          placeholder="${rosterHtmlEsc(defaultPlayerStationBrand(s))}"
+          aria-labelledby="bm-brand-field-title-${safe}"
+          onfocus="bmBrandFocus('${sid}')" onblur="bmBrandBlur('${sid}')" oninput="bmUpdBrand('${sid}')">
+        <button class="cfm wl-commit-btn wl-commit-btn--synced" type="button" id="bm-brand-btn-${safe}" onclick="bmApplyBrand('${sid}')" style="margin-top:10px">APPLY BRAND</button>
+      </div>
+    </div>
+    <div style="margin-top:14px;border-top:1px solid var(--bdr);padding-top:12px">
+      <div style="font-size:14px;color:var(--mut);margin-bottom:8px">Suggestions:</div>
+      <div style="display:flex;flex-wrap:wrap;gap:6px">${pills}</div>
+    </div>
+  </div>`;
+}
+function brandMarketingIdentityBlockHtml(leg, opts){
+  opts=opts||{};
+  const multiLeg=!!opts.multiLeg;
+  const isFirstLeg=!!opts.isFirstLeg;
+  const dialLabel=opts.dialLabel||'';
+  const s=leg;
+  const sid=s.id;
+  const safe=bmSafeElId(sid);
+  const cur=stripCallBandSuffix(s.callLetters||'');
+  const requiredPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
+  const prefix=requiredPref;
+  const suffix=(cur[0]==='W'||cur[0]==='K')?cur.slice(1):cur;
+  const groupNote=multiLeg&&isFirstLeg?`<div class="ibox" style="margin-bottom:10px">Simulcast group — each facility has its own dial and call letters. Use the blocks below to rename each leg.</div>`:'';
+  const partnerNote=!multiLeg&&stationHasSimulcastLeg(s,G)?`<div class="ibox" style="margin-bottom:10px">Simulcast group — each facility keeps its own <strong>-AM</strong> / <strong>-FM</strong> call. Same-band repeaters are <strong>not</strong> forced to identical base letters; rename here if you want distinct IDs.</div>`:'';
+  const showDialHeader=!!dialLabel&&(multiLeg||stationHasSimulcastLeg(s,G));
+  const dialHeader=showDialHeader?`<div style="margin-bottom:12px;font-size:15px;color:var(--off);font-family:var(--fd)"><strong>${rosterHtmlEsc(dialLabel)}</strong></div>`:'';
+  const pills=getBrandSuggestions(s).map(b=>'<span class="bp bm-bp-'+safe+(s.brand===b?' bpsel':'')+'" onclick="bmPickBrand(\''+sid+'\',\''+b.replace(/'/g,"\\'")+'\')">'+rosterHtmlEsc(b)+'</span>').join('');
+  return`<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:14px">
+    ${groupNote}${partnerNote}
+    ${dialHeader}
     <div class="slsec" style="margin-bottom:14px">
       <div class="sll"><span>CALL LETTERS</span><strong id="bm-rn-preview-${safe}">${rosterHtmlEsc(callDisplay(s))}</strong></div>
       <div style="display:flex;align-items:center;gap:0;margin-top:10px">
@@ -18558,21 +18744,21 @@ function brandMarketingProgrammingBlockHtml(leg){
 function wlRefreshBmJingleStatusAfterRender(){
   if(!G||typeof BM_ACTIVE_SID==='undefined'||!BM_ACTIVE_SID)return;
   const legs=brandMarketingStationLegs(BM_ACTIVE_SID);
-  legs.forEach(leg=>{
-    const safe=bmSafeElId(leg.id);
-    const el=document.getElementById('bm-jingle-status-'+safe);
-    if(!el)return;
-    if(leg._jingleGenPending){
-      wlAiGenStatusBusy(el,true);
-      el.textContent='WORKING — Creating two jingle takes. Often 1–4 minutes. Do not close this panel or click again; this message will clear when ready.';
-    }else if(Array.isArray(leg._pendingJingleVariants)&&leg._pendingJingleVariants.length){
-      wlAiGenStatusBusy(el,false);
-      el.textContent='Two variants ready — pick one below.';
-    }else{
-      wlAiGenStatusBusy(el,false);
-      el.textContent='';
-    }
-  });
+  const src=legs.length?simulcastOperationalSource(legs[0]):null;
+  if(!src)return;
+  const safe=bmSafeElId(src.id);
+  const el=document.getElementById('bm-jingle-status-'+safe);
+  if(!el)return;
+  if(src._jingleGenPending){
+    wlAiGenStatusBusy(el,true);
+    el.textContent='WORKING — Creating two jingle takes. Often 1–4 minutes. Do not close this panel or click again; this message will clear when ready.';
+  }else if(Array.isArray(src._pendingJingleVariants)&&src._pendingJingleVariants.length){
+    wlAiGenStatusBusy(el,false);
+    el.textContent='Two variants ready — pick one below.';
+  }else{
+    wlAiGenStatusBusy(el,false);
+    el.textContent='';
+  }
 }
 function renderBrandMarketingStation(primarySid){
   primarySid=ensureOpsSourceSid(primarySid);
@@ -18586,12 +18772,18 @@ function renderBrandMarketingStation(primarySid){
   const opLeg=simulcastOperationalSource(primary);
   const ptn=simulcastPartnerStation(opLeg);
   const dual=ptn&&ptn.id!==opLeg.id&&mpIsMe(opLeg)&&mpIsMe(ptn);
-  const callsignLine=dual?`${callDisplay(opLeg)} + ${callDisplay(ptn)}`:callDisplay(primary);
+  const callsignLine=legs.length>1
+    ? legs.map(leg=>callDisplay(leg)).join(' · ')
+    :(dual?`${callDisplay(opLeg)} + ${callDisplay(ptn)}`:callDisplay(primary));
   const alignCol=align.bucket==='strong'?'var(--grn)':align.bucket==='moderate'?'var(--amb)':'var(--red)';
   const subHtml=`${rosterHtmlEsc(callsignLine)} · ${rosterHtmlEsc(fmtLabel(primary.format))} · Alignment: <span style="color:${alignCol}">${rosterHtmlEsc(align.bucket.toUpperCase())}</span> (${align.score})`;
   const tutBm=isTutorialTurnaroundScen()&&MP.mode!=='live'&&(G.tutorialAct|0)===6;
   const bmW=(id)=>tutBm?`<div id="${id}">`:'';
   const bmWE=tutBm?'</div>':'';
+  const multiSim=legs.length>1;
+  const identitySection=multiSim
+    ?`${legs.map((leg,i)=>brandMarketingCallLettersOnlyHtml(leg,{isFirstLeg:i===0,dialLabel:stationDialAndBandForMarketing(leg)})).join('')}${brandMarketingSharedBrandBlockHtml(primary)}`
+    :brandMarketingIdentityBlockHtml(primary,{multiLeg:false,isFirstLeg:true,dialLabel:stationDialAndBandForMarketing(primary)});
   document.getElementById('brand-title').textContent='BRAND & MARKETING';
   document.getElementById('brandb').innerHTML=`
     <p class="di" style="margin-bottom:10px;color:var(--mut)">${subHtml}</p>
@@ -18600,32 +18792,31 @@ function renderBrandMarketingStation(primarySid){
       ${sumHtml}
     </div>
     <div class="bm-section-h">STATION IDENTITY</div>
-    ${legs.map(leg=>brandMarketingIdentityBlockHtml(leg)).join('')}
+    ${identitySection}
     <div class="bm-section-h">STATION LOGO</div>
-    ${legs.map(leg=>brandMarketingLogoOnlyHtml(leg)).join('')}
+    ${brandMarketingLogoOnlyHtml(primary)}
     <div class="bm-section-h">REMOTE BROADCAST VAN</div>
-    ${legs.map(leg=>brandMarketingVanOnlyHtml(leg)).join('')}
+    ${brandMarketingVanOnlyHtml(primary)}
     <div class="bm-section-h">STATION JINGLE PACKAGE</div>
-    ${legs.map(leg=>brandMarketingJingleOnlyHtml(leg)).join('')}
+    ${brandMarketingJingleOnlyHtml(primary)}
     <div class="bm-section-h">MARKETING SPEND</div>
     ${bmW('wl-tu-tr-bm-promo')}
-    ${legs.map(leg=>brandMarketingPromoBlockHtml(leg)).join('')}
+    ${brandMarketingPromoBlockHtml(primary)}
     ${bmWE}
     <div class="bm-section-h">PROGRAMMING BUDGET</div>
     ${brandMarketingProgrammingBlockHtml(primary)}
     <div class="bm-section-h">COMMUNITY IDENTITY INVESTMENT</div>
-    ${legs.map(leg=>brandMarketingIdentInvestHtml(leg)).join('')}
+    ${brandMarketingIdentInvestHtml(primary)}
     <button class="cnl" type="button" ${tutBm?'id="wl-tu-tr-bm-close" ':''}onclick="cm('m-brand')" style="margin-top:8px">CLOSE</button>`;
   const prCap0=promoBudgetCapForPeriod(G);
   legs.forEach(leg=>{
     bmUpdRenamePreview(leg.id);
-    const safe=bmSafeElId(leg.id);
-    const prEl=document.getElementById('bm-pr-range-'+safe);
-    bmUpdPromo(leg.id, prEl?prEl.value:String(Math.min(leg.ops?.promo||0,prCap0)));
-    const ciEl=document.getElementById('bm-ci-range-'+safe);
-    bmUpdIdent(leg.id, ciEl?ciEl.value:String(leg.identityBudget||0));
-    bmRefreshBrandCommitState(leg.id);
   });
+  bmRefreshBrandCommitState(primary.id);
+  const prEl=document.getElementById('bm-pr-range-'+bmSafeElId(primary.id));
+  bmUpdPromo(primary.id, prEl?prEl.value:String(Math.min(primary.ops?.promo||0,prCap0)));
+  const ciEl=document.getElementById('bm-ci-range-'+bmSafeElId(primary.id));
+  bmUpdIdent(primary.id, ciEl?ciEl.value:String(primary.identityBudget||0));
   const opSid=ensureOpsSourceSid(primarySid);
   const sProg=G.stations.find(st=>st.id===opSid);
   if(sProg){
@@ -20867,6 +21058,53 @@ function rSim(){
     return;
   }
 
+  /** Star-model source with ≥1 receiver: always show END ALL / add-another — do not fall through to “no eligible partners”. */
+  if(s._simulcastSource===true){
+    const existingRec=simulcastGroupReceivers(s.id,G);
+    if(existingRec.length){
+      const partners=myStations.filter(p=>p.id!==s.id&&stationEligibleSimulcastReceiver(p));
+      const opts=partners.map(p=>{
+        const sameFmt=p.format===s.format;
+        const fmtNote=sameFmt
+          ?`<span style="color:var(--mut);font-size:14px">${fmtLabel(p.format)} — formats match ✓</span>`
+          :`<span style="color:var(--amb);font-size:14px">⚡ <strong>${callDisplay(p)}</strong> will adopt <strong>${s.callLetters}</strong>'s <em>${fmtLabel(s.format)}</em> (repeater)</span>`;
+        const talentNote=`<span style="color:var(--mut);font-size:14px">Partner drops separate local staffing; ${s.callLetters} keeps the on-air roster.</span>`;
+        return `<div class="aco${SimS.b===p.id?' sel':''}" onclick="pickSim('${p.id}')">
+      <div>
+        <div class="acn" style="color:${p.color||'var(--amb)'}">${callDisplay(p)}</div>
+        <div class="aci">${p.freq} · ${p.fmBooster?'FM BOOSTER':p.sig.type}</div>
+        ${fmtNote}<br>${talentNote}
+      </div>
+    </div>`;
+      }).join('');
+      const partnerPreview = SimS.b ? (()=>{
+        const partner=G.stations.find(st=>st.id===SimS.b);
+        if(!partner) return '';
+        return `<div class="ibox" style="margin-top:8px"><strong>Programming source:</strong> ${callDisplay(s)} — keeps all on-air talent.<br><strong>Simulcast receiver:</strong> ${callDisplay(partner)} — carries ${s.callLetters}'s programming on-air; local sales, budgets, demo target, and format strategy stay under your control (no separate local daypart hosts).</div>`;
+      })() : '';
+      const _previewPartner = SimS.b ? G.stations.find(st=>st.id===SimS.b) : null;
+      let fmtDirectionNote = '';
+      if(_previewPartner){
+        const fmtMatch = s.format===_previewPartner.format;
+        fmtDirectionNote = fmtMatch
+          ? `<div class="ibox" style="margin-top:6px;border-color:var(--grn)">✓ Both stations already play <strong>${fmtLabel(s.format)}</strong> — no format change needed.</div>`
+          : `<div class="ibox" style="margin-top:6px;border-color:var(--amb)">⚡ <strong>${callDisplay(_previewPartner)}</strong> will reformat to <strong>${fmtLabel(s.format)}</strong> and carry ${s.callLetters}'s programming (repeater).</div>`;
+      } else {
+        fmtDirectionNote = `<span style="color:var(--mut);font-size:15px"><strong>${s.callLetters}</strong> is the <strong>programming source</strong>. Choose a partner below to add a <strong>receiver / repeater</strong>, or end the simulcast.</span>`;
+      }
+      document.getElementById('simb').innerHTML=`
+    <p class="di"><strong>Simulcast programming source:</strong> <strong>${callDisplay(s)}</strong> (${fmtLabel(s.format)} · ${s.fmBooster?'FM BOOSTER':s.sig.type}) — ${existingRec.length} simulcast receiver${existingRec.length>1?'s':''} on-air.</p>
+    <div class="ibox" style="margin-bottom:8px"><strong>Current receiver${existingRec.length>1?'s':''}:</strong> ${existingRec.map(r=>callDisplay(r)).join(', ')}.</div>
+    <button type="button" class="cfm" onclick="doBreakSim('${s.id}')" style="background:var(--red);color:var(--wht);margin-bottom:10px">END ALL SIMULCASTS (${callDisplay(s)} + ${existingRec.length} receiver${existingRec.length>1?'s':''})</button>
+    <div class="bbox"><strong>How it works:</strong> The programming source keeps on-air talent and format. Receivers carry the same programming. You can add another owned facility below, or end all simulcasts. AM↔FM pairs get +15% AM reach bonus where applicable.<br><br>${fmtDirectionNote}</div>
+    ${partners.length?`<p class="di" style="margin-top:12px;margin-bottom:6px"><strong>Add another receiver</strong> (optional)</p><div class="acg">${opts}</div>`:`<p class="di" style="color:var(--mut);margin-top:12px;margin-bottom:6px">No additional owned stations are available to add. Use <strong>End all simulcasts</strong> above to separate this group.</p>`}
+    ${partnerPreview}
+    <button class="cfm" onclick="doSim()" ${!SimS.b?'disabled':''}>SIMULCAST THIS STATION</button>
+    <button class="cnl" onclick="cm('m-sim')">CANCEL</button>`;
+      return;
+    }
+  }
+
   const srcLeg=simulcastProgrammingSourceStation(s,G);
   if(srcLeg&&srcLeg.id!==s.id){
     document.getElementById('simb').innerHTML=`<p class="di">This station is a simulcast receiver. Open <strong>${callDisplay(srcLeg)}</strong> (the programming source) to add another simulcast leg or manage the group.</p><button class="cnl" onclick="cm('m-sim')">CLOSE</button>`;
@@ -20917,7 +21155,7 @@ function rSim(){
     <p class="di"><strong>Add simulcast / repeater:</strong> <strong>${callDisplay(s)}</strong> (${fmtLabel(s.format)} · ${s.fmBooster?'FM BOOSTER':s.sig.type}) — pick another owned station to carry the same programming.</p>
     ${existingNote}
     ${existingRec.length?`<button type="button" class="cfm" onclick="doBreakSim('${s.id}')" style="background:var(--red);color:var(--wht);margin-bottom:10px">END ALL SIMULCASTS (${callDisplay(s)} + ${existingRec.length} receiver${existingRec.length>1?'s':''})</button>`:''}
-    <div class="bbox"><strong>How it works:</strong> The station you opened stays the programming source. Each partner you add becomes an additional simulcast receiver — same format/brand and echoed on-air programming; local management (sales, budgets, demo target, format strategy) stays on each receiver. AM↔FM pairs still get +15% AM reach bonus where applicable.<br><br>${fmtDirectionNote}</div>
+    <div class="bbox"><strong>How it works:</strong> The station you opened stays the programming source. Each partner you add becomes an additional simulcast receiver — same format/brand and echoed on-air programming; local management (sales, budgets, demo target, format strategy) stays on each receiver. Each facility keeps its own <strong>licensed call letters</strong> (AM/FM may differ). AM↔FM pairs still get +15% AM reach bonus where applicable.<br><br>${fmtDirectionNote}</div>
     <div class="acg">${opts}</div>
     ${partnerPreview}
     <button class="cfm" onclick="doSim()" ${!SimS.b?'disabled':''}>SIMULCAST THIS STATION</button>
@@ -20948,8 +21186,6 @@ function applySimulcastPair(sourceId,targetId,opts){
   if(dst.format!==src.format){
     dst.format=src.format;
     dst.brand=src.brand;
-    if(!sameBand)dst.callLetters=stripCallBandSuffix(src.callLetters);
-    else dst.callLetters=stripCallBandSuffix(dst.callLetters);
     if(!suppressNews) G.news.unshift({v:'LOW',t:`${callDisplay(dst)} (${dst.sig.type}) reformatted to ${fmtLabel(src.format)} to simulcast ${callDisplay(src)}'s programming.`,y:G.year,p:G.period});
   }
   dst.simulcastSourceStationId=src.id;
@@ -20968,8 +21204,7 @@ function applySimulcastPair(sourceId,targetId,opts){
   // On-air brand matches programming source; receiver keeps local management (drift, demo lean, sales, ops budgets,
   // marketing, salesForce, identity scores, _history, etc.) — do not assign or clear those here.
   dst.brand=src.brand;
-  if(!sameBand)dst.callLetters=stripCallBandSuffix(src.callLetters);
-  else dst.callLetters=stripCallBandSuffix(dst.callLetters);
+  // Keep each facility’s licensed call letters — do not copy the source’s calls onto the receiver.
   initFmNonDupAfterPair(src,dst,G);
   return true;
 }
@@ -21216,6 +21451,12 @@ function acceptStationListingOffer(){
 // ── SAVE / LOAD ────────────────────────────────────────────────────
 function saveGame(label){
   const payload={v:SAVE_VERSION,saved:new Date().toISOString(),label:label||'Manual Save',G};
+  try{
+    if(typeof wlCampaignGetPayloadForSave==='function'){
+      const c=wlCampaignGetPayloadForSave();
+      if(c)payload.campaign=c;
+    }
+  }catch(_e){}
   // localStorage autosave
   try{localStorage.setItem(SAVE_KEY,JSON.stringify(payload));localStorage.removeItem(LEGACY_SAVE_KEY);}catch(e){}
   return payload;
@@ -21225,6 +21466,12 @@ function autoSave(){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   try{
     const payload={v:SAVE_VERSION,saved:new Date().toISOString(),label:'Autosave',G};
+    try{
+      if(typeof wlCampaignGetPayloadForSave==='function'){
+        const c=wlCampaignGetPayloadForSave();
+        if(c)payload.campaign=c;
+      }
+    }catch(_e){}
     localStorage.setItem(SAVE_KEY,JSON.stringify(payload));
     try{localStorage.removeItem(LEGACY_SAVE_KEY);}catch(e){}
   }catch(e){}
@@ -22235,6 +22482,11 @@ function importSave(file){
       if(!G)G={};
       Object.assign(G,payload.G);
       migrateSave(G); // handles all field migrations and public station injection
+      try{
+        if(typeof wlCampaignLoadFromSave==='function')wlCampaignLoadFromSave(payload.campaign);
+        if(typeof wlCampaignSyncFromGame==='function')wlCampaignSyncFromGame(G);
+        if(typeof wlCampaignRepairLoadedGameIfMarketMismatch==='function')wlCampaignRepairLoadedGameIfMarketMismatch(G);
+      }catch(_e){}
       applyLoadedGameMarket();
       G.news.unshift({v:'HIGH',t:`📂 Save loaded: ${payload.label||'Unknown'} (${payload.saved?.slice(0,10)||'?'})`,y:G.year,p:G.period});
       cm('m-save');renderAll();
@@ -22778,6 +23030,11 @@ function loadLocalSave(){
   if(!G)G={};
   Object.assign(G,local.G);
   migrateSave(G);
+  try{
+    if(typeof wlCampaignLoadFromSave==='function')wlCampaignLoadFromSave(local.campaign);
+    if(typeof wlCampaignSyncFromGame==='function')wlCampaignSyncFromGame(G);
+    if(typeof wlCampaignRepairLoadedGameIfMarketMismatch==='function')wlCampaignRepairLoadedGameIfMarketMismatch(G);
+  }catch(_e){}
   applyLoadedGameMarket();
   normalizeSimulcastLinksInPlace(G);
   enforceFmNonDupConstraints(G);
@@ -24234,7 +24491,8 @@ function rHdr(){
   const totalT=(2020-startYrP)*2,elapsed=(G.year-startYrP)*2+(G.period-1);
   document.getElementById('progfill').style.width=Math.min(100,Math.round((elapsed/Math.max(totalT,1))*100))+'%';
   const isSandbox=G.score.isSandbox||G.year>2020;
-  document.getElementById('hmode').textContent=isSandbox?'SANDBOX':'CAMPAIGN';
+  const modeLabel=isSandbox?'SANDBOX':(G.careerCampaign?'GM CAREER':'CAMPAIGN');
+  document.getElementById('hmode').textContent=modeLabel;
   document.getElementById('hmode').style.color=isSandbox?'var(--blu)':'var(--amb)';
   document.getElementById('proglbl').textContent=isSandbox?`SANDBOX — ${G.year}`:`${G.year} · ${startYrP}→2020`;
   const ab=document.getElementById('alertbar');

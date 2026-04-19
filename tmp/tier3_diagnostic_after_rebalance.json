@@ -1,0 +1,1350 @@
+{
+  "meta": {
+    "mode": "batch",
+    "seed": 200,
+    "runs": 20,
+    "market": "atlanta",
+    "note": "GM mode uses genMarket(gm_under) with ACTIVE_MARKET patched to --market. Campaign career start uses ladder tier-1 market from campaignMode.js (typically Nashville), overriding the patched constant when beginCareer runs.",
+    "maxPeriodsGm": 48,
+    "maxPeriodsCampaign": 160,
+    "maxAssignments": 8,
+    "revisitTest": false,
+    "compareProfiles": false,
+    "compareIncludeLong": false,
+    "campaignProfiles": null,
+    "tier3Diagnostic": true
+  },
+  "gm": null,
+  "campaign": null,
+  "batch": {
+    "tier3Diagnostic": true,
+    "gmReviewCounts": [
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12,
+      12
+    ],
+    "gmFired": 0,
+    "gmConfidenceDeltas": [
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22,
+      22
+    ],
+    "batchWarnings": []
+  },
+  "profiles": null,
+  "profileComparison": null,
+  "interpretation": null,
+  "tier5EntrantAnalysis": null,
+  "tier3Diagnostic": {
+    "aggregated": {
+      "tier3AssignmentCount": 20,
+      "runsWithTier3Completion": 20,
+      "totalRuns": 20,
+      "startingConditions": {
+        "meanCash": 355000,
+        "medianCash": 355000,
+        "minCash": 355000,
+        "maxCash": 355000,
+        "pctStartsUnderDangerHeuristic": 0
+      },
+      "gracePeriod": {
+        "graceReviewCount": 20,
+        "outcomeShares": {
+          "good": 0,
+          "mediocre": 1,
+          "bad": 0
+        },
+        "avgConfidenceDeltaDuringGrace": -4,
+        "pctEfficiencySuppressedInGrace": 1
+      },
+      "outcomes": {
+        "promoted": 20,
+        "lateral": 0,
+        "demoted": 0,
+        "fired": 0,
+        "promotionRate": 1,
+        "lateralRate": 0,
+        "demotionRate": 0,
+        "firingRate": 0,
+        "avgEndingConfidence": 100,
+        "pctDippedBelow50": 0,
+        "pctDippedBelow40": 0
+      },
+      "tier3Assessment": {
+        "code": "BALANCED",
+        "summary": "Tier 3 shows a plausible turnaround arc: early grace helps, but outcomes and confidence swings still vary.",
+        "signals": [
+          "mixed outcomes; grace window does not fully immunize reviews"
+        ]
+      },
+      "ladderRow": {
+        "id": "c3_seattle",
+        "tier": 3,
+        "marketId": "seattle",
+        "cashMult": 1,
+        "corporateCashGrant": 100000,
+        "evaluationGraceReviews": 1,
+        "successThreshold": 58,
+        "survivalThreshold": 42,
+        "failureThreshold": 33,
+        "contractLengthPeriods": 18
+      }
+    },
+    "runs": [
+      {
+        "seed": 200,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 113080,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.761,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 201,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 121000,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.745,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 202,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 116390,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.731,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 203,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 169491,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.791,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 204,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 112608,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.769,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 205,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 116417,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.743,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 206,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 133046,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.74,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 207,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 112457,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.778,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 208,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 131225,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.719,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 209,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 174993,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.728,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 210,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 110970,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.76,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 211,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 126667,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.749,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 212,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 172252,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.737,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 213,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 104510,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.761,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 214,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 169931,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.719,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 215,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 121315,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.806,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 216,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 125584,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.714,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 217,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 133403,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.722,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 218,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 111681,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.751,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      },
+      {
+        "seed": 219,
+        "turns": 104,
+        "campaignWon": true,
+        "reputationEnd": 100,
+        "tier3LadderRow": {
+          "id": "c3_seattle",
+          "tier": 3,
+          "marketId": "seattle",
+          "cashMult": 1,
+          "corporateCashGrant": 100000,
+          "evaluationGraceReviews": 1,
+          "successThreshold": 58,
+          "survivalThreshold": 42,
+          "failureThreshold": 33,
+          "contractLengthPeriods": 18
+        },
+        "tier3Assignments": [
+          {
+            "entry": {
+              "cash": 355000,
+              "startingRevenue": 125245,
+              "marginAvg": null,
+              "discretionaryRatio": 0,
+              "weightedFranchise": 0.722,
+              "stationCount": 1,
+              "nearBankruptcyHeuristic": false,
+              "nearBankruptcyFlags": {
+                "cashUnder150k": false,
+                "negativeMargin": false,
+                "cashNegative": false,
+                "pressureAlertCount": 0
+              },
+              "assignmentId": "c3_seattle",
+              "evaluationGraceReviews": 1
+            },
+            "exit": {
+              "kind": "promoted",
+              "gmConfidence": 100,
+              "periodsClosed": 18,
+              "gmFired": false,
+              "reviewCount": 4,
+              "graceReviewsDetail": [
+                {
+                  "index": 0,
+                  "outcome": "mediocre",
+                  "confidenceDelta": -4,
+                  "turnaroundPatienceApplied": true,
+                  "efficiencySuppressed": true,
+                  "revenueTrend": "declining",
+                  "efficiencyStress": 0
+                }
+              ],
+              "minConfidenceInReviews": 74,
+              "dippedBelow50": false,
+              "dippedBelow40": false
+            }
+          }
+        ],
+        "assignmentResultCount": 6
+      }
+    ]
+  }
+}

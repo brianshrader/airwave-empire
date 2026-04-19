@@ -1775,7 +1775,7 @@
    * - deferred: _bpSlotDeferred (blueprint / not yet on-air for ratings)
    * - active: on-air for sim purposes (!deferred)
    * - commercial / public: active subsets
-   * - simulcast: stations with simulcastWith set (each leg counts — a pair → 2)
+   * - simulcast: stations in any simulcast group (legacy pair or star source/receiver legs)
    */
   function marketHealthSnapshot(G) {
     var arr = G.stations || [];
@@ -1803,7 +1803,7 @@
       if (s.isNicheSurvival) nicheSurvival++;
       if (s.isPublic) publicC++;
       else commercial++;
-      if (s.simulcastWith) simulcast++;
+      if (s.simulcastWith || s.simulcastSourceStationId || s._simulcastSource === true) simulcast++;
     }
     return {
       total: total,
@@ -2161,7 +2161,7 @@
     lines.push('  MARKET HEALTH BY DECADE (station counts; dev diagnostic)');
     lines.push('  Markets: ' + markets.join(', '));
     lines.push('  Runs/market: ' + numRunsPerMarket + ' · Record year ≥ ' + minRecordYear + ' · End ' + endYear);
-    lines.push('  simulcast = stations with a simulcast partner (each leg counted; pair → 2)');
+    lines.push('  simulcast = stations in any simulcast group (each leg counted)');
     lines.push('  deferred = _bpSlotDeferred (off-air / blueprint slots)');
     lines.push('  zombie / nicheSurvival = AM survival ecology (legacy runMarketAttrition)');
     lines.push('  removedCumulative = G._attritionRemovedCumulative (true station removals)');
