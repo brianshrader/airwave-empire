@@ -8,6 +8,7 @@ import {
   lmaComputeFeeRounded,
   legacyFlatFeeRounded,
   lmaEraFactor,
+  lmaFmMinimumFeeHalfPeriod,
   marketAnnualBillingAudit,
   MINI_MARKETS,
 } from './lmaFeeModelShared.mjs';
@@ -69,4 +70,31 @@ console.table(rows);
   console.log('\nStress (Atlanta 1993, illustrative): gross $13.0M / EBITDA $7.0M half-year');
   console.log('  Old flat 65% fee:', oldF.toLocaleString(), `(${Math.round((oldF / seedEbitda) * 100)}% of EBITDA)`);
   console.log('  New lease-style fee:', newF.toLocaleString(), `(${Math.round((newF / seedEbitda) * 100)}% of EBITDA)`);
+}
+
+// Weak station: tiny gross/EBITDA so post-cap fee sits on FM structural floor (×2 ≈ annualized headline).
+{
+  const year = 1998;
+  console.log('\nWeak-FM vs weak-AM floor probe (1998, spring, adx=1 — low gross forces FM onto tier floor):');
+  console.log('  FM floor by tier (half-period, pre–$1k round in kernel):', {
+    small: lmaFmMinimumFeeHalfPeriod('small'),
+    medium: lmaFmMinimumFeeHalfPeriod('medium'),
+    large: lmaFmMinimumFeeHalfPeriod('large'),
+    mega: lmaFmMinimumFeeHalfPeriod('mega'),
+  });
+  const grossRev = 12_000;
+  const seedEbitda = 3000;
+  for (const { id: mid, tier, label } of [
+    { id: 'nashville', tier: 'medium', label: 'nashville (medium)' },
+    { id: 'atlanta', tier: 'large', label: 'atlanta (large)' },
+    { id: 'chicago', tier: 'mega', label: 'chicago (mega)' },
+  ]) {
+    const pool = auditHalfPool(year, mid, 1, 1);
+    const fm = lmaComputeFeeRounded(pool, grossRev, seedEbitda, tier, year, true);
+    const am = lmaComputeFeeRounded(pool, grossRev, seedEbitda, tier, year, false);
+    const annK = Math.round((fm * 2) / 1000);
+    console.log(
+      `  ${label}: FM ${fm.toLocaleString()}/half (~$${annK}k/yr) · AM ${am.toLocaleString()}/half · pool≈$${Math.round(pool / 1000)}k`,
+    );
+  }
 }

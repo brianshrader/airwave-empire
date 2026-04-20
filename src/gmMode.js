@@ -143,7 +143,7 @@
       if (!st) continue;
       if (fn) {
         if (fn(st, G)) return true;
-      } else if (st.operatingMode === 'brokered') return true;
+      } else if (st.format === 'BROKERED_PROGRAMMING') return true;
     }
     return false;
   }
@@ -1292,6 +1292,53 @@
         (graceN - doneRv === 1 ? '' : 's') +
         ' left where corporate emphasizes progress over instant profit.</p>';
     }
+    var mandateBlock = '';
+    var cm = ca.corporateMandate;
+    if (cm && cm.type === 'make_format_work') {
+      var stM = null;
+      var stations = G.stations || [];
+      for (var mi = 0; mi < stations.length; mi++) {
+        if (stations[mi] && stations[mi].id === cm.stationId) {
+          stM = stations[mi];
+          break;
+        }
+      }
+      var callM = (stM && (stM.callLetters || stM.brand || stM.name)) || 'target station';
+      var fmtHuman =
+        typeof global !== 'undefined' && typeof global.fmtLabel === 'function'
+          ? global.fmtLabel(cm.targetFormat, G.year)
+          : cm.targetFormat;
+      var pct = Math.round((cm.minShare || 0) * 1000) / 10;
+      var prog = ca.corporateMandateProgress || {};
+      var brkLine = cm.noBrokered
+        ? '<br/><span style="color:var(--amb)">Brokered economics on this run count as declining this mandate.</span>'
+        : '';
+      var trend = prog.shareTrend ? String(prog.shareTrend) : 'flat';
+      mandateBlock =
+        '<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1)">' +
+        '<div style="font-size:11px;letter-spacing:2px;color:var(--amb);margin-bottom:6px">CORPORATE MANDATE</div>' +
+        '<p style="margin:0;font-size:14px;line-height:1.55">' +
+        'Flip <strong style="color:var(--wht)">' +
+        escapeHtml(String(callM)) +
+        '</strong> to <strong style="color:var(--wht)">' +
+        escapeHtml(String(fmtHuman)) +
+        '</strong> and reach at least <strong style="color:var(--wht)">' +
+        pct +
+        '%</strong> total-market share within <strong style="color:var(--wht)">' +
+        (cm.deadlinePeriods | 0) +
+        '</strong> operating periods (from assignment start).' +
+        brkLine +
+        '</p>' +
+        '<p style="margin:8px 0 0;font-size:12px;color:var(--mut)">Tracking: format ' +
+        (stM && stM.format === cm.targetFormat ? 'on target' : 'not yet on target') +
+        ' · share trend ' +
+        escapeHtml(trend) +
+        (typeof prog.bestShareWhileTarget === 'number'
+          ? ' · best share while on target ' + (Math.round(prog.bestShareWhileTarget * 1000) / 10) + '%'
+          : '') +
+        '</p>' +
+        '</div>';
+    }
     var noteBlock = note
       ? '<p style="margin:10px 0 0;font-size:13px;color:var(--off);line-height:1.5">' + escapeHtml(note) + '</p>'
       : '';
@@ -1308,6 +1355,7 @@
       '</p>' +
       noteBlock +
       graceLine +
+      mandateBlock +
       '</div>'
     );
   }
@@ -1461,6 +1509,9 @@
     if (!G._gm) initGmStateForGame(G);
     snapshotFranchisePeriod(G, wasYear, wasPeriod);
     maybeRunGmReview(G);
+    if (typeof global !== 'undefined' && global.wlCampaign && typeof global.wlCampaign.tickCorporateMandateProgress === 'function') {
+      global.wlCampaign.tickCorporateMandateProgress(G);
+    }
   }
 
   function migrateGmOnboardingFlags(G) {

@@ -1,0 +1,27 @@
+# Example: schedule generated-asset GC on Lightsail (or any VPS).
+# (This file is documentation; not executed by the app.)
+#
+# Prereqs:
+#   - App root is the cwd for Node (same directory as server.js, package.json, saves/, data/).
+#   - Set on the SERVER (not in git): GENERATED_ASSET_TTL_DAYS=30 in .env or WL_ENV_FILE.
+#   - scripts/gc-generated-assets.js loads ../.env and WL_ENV_FILE automatically.
+#
+# First run (dry-run, inspect log):
+#   cd /path/to/airwave-empire && GENERATED_ASSET_GC_DRY_RUN=1 npm run gc:generated-assets
+#
+# Then install cron (weekly Sunday 04:00 server local time). Replace APP_ROOT and node path if needed:
+#
+#   crontab -e
+#
+# Add one line (uncommented):
+#
+# 0 4 * * 0 cd /home/admin/airwave-empire && /usr/bin/npm run gc:generated-assets >> /home/admin/logs/wl-gc-generated-assets.log 2>&1
+#
+# Or call node directly (no npm):
+#
+# 0 4 * * 0 cd /home/admin/airwave-empire && /usr/bin/node scripts/gc-generated-assets.js >> /home/admin/logs/wl-gc-generated-assets.log 2>&1
+#
+# mkdir -p ~/logs  if the log path does not exist.
+#
+# Env overrides for one-off tests:
+#   GENERATED_ASSET_TTL_DAYS=30 GENERATED_ASSET_MIN_AGE_DAYS=7 npm run gc:generated-assets

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Headless validation: operatingMode brokered vs normal / lean / AM talk.
+ * Headless validation: format BROKERED_PROGRAMMING vs normal / lean / AM talk.
  * Loads src/legacy.js + src/gmMode.js in a VM (real calcRev / appl / GM review math).
  *
  * Usage:
@@ -203,11 +203,11 @@ function runMarketEconomics(ctx, opts, marketId) {
         };
       }
 
-      function findPlayerAmBrokerable(stations) {
+      function findPlayerAmBench(stations) {
         for (var i = 0; i < stations.length; i++) {
           var s = stations[i];
           if (!s || !s.isPlayer) continue;
-          if (s.sig && s.sig.type === 'AM' && !s.fmBooster && stationQualifiesBrokeredOperating(s, G)) return s;
+          if (s.sig && s.sig.type === 'AM' && !s.fmBooster) return s;
         }
         return null;
       }
@@ -328,7 +328,7 @@ function runMarketEconomics(ctx, opts, marketId) {
       wlBindGameState(wlGenMarketGmUnderAtCareerTime(y0, p0));
       G.marketId = marketId;
 
-      var am = findPlayerAmBrokerable(G.stations);
+      var am = findPlayerAmBench(G.stations);
       if (!am) {
         var cand = G.ps && G.ps[0];
         if (cand && cand.sig && cand.sig.type === 'AM' && !cand.fmBooster) {
@@ -336,12 +336,17 @@ function runMarketEconomics(ctx, opts, marketId) {
           am = cand;
         }
       }
-      if (!am || !stationQualifiesBrokeredOperating(am, G)) {
-        return { ok: false, market: marketId, error: 'No qualifying AM brokerable player station.' };
+      if (!am || am.sig.type !== 'AM' || am.fmBooster) {
+        return { ok: false, market: marketId, error: 'No player AM station for brokered format bench.' };
       }
-      if (!stationQualifiesLeanAmMusicOperating(am, G)) {
+      am.operatingMode = 'normal';
+      var _talkBench = ['NEWS_TALK', 'ALL_NEWS', 'SPORTS_TALK', 'PODCAST_TALK', 'BROKERED_PROGRAMMING'];
+      if (_talkBench.indexOf(am.format) >= 0) {
         am.format = 'OLDIES';
+      } else {
+        am.format = 'TOP40';
       }
+      var baseFmt = am.format;
 
       refreshAll();
       var ratBase = JSON.parse(JSON.stringify(am.rat));
@@ -354,33 +359,54 @@ function runMarketEconomics(ctx, opts, marketId) {
       var talkNear = findAmTalkComparable(G.stations, am.rat && am.rat.share != null ? am.rat.share : 0.03);
       var talkStrong = findStrongestAmTalk(G.stations);
 
-      function modeSnap(mode) {
-        am.operatingMode = mode;
+      function applyBench(mode) {
+        am.operatingMode = 'normal';
+        am.format = mode === 'brokered' ? 'BROKERED_PROGRAMMING' : baseFmt;
         restoreOpsState(G.stations, opsFrozen);
         refreshAll();
         return snapStation(am);
       }
 
-      var normalSnap = modeSnap('normal');
-      var leanSnap = stationQualifiesLeanAmMusicOperating(am, G) ? modeSnap('lean_music') : null;
-      var brokeredSnap = modeSnap('brokered');
+      var normalSnap = applyBench('normal');
+      var leanSnap = (function () {
+        var progBk = JSON.stringify(am.prog);
+        if (am.prog) {
+          ['morningDrive', 'afternoonDrive', 'midday', 'evening', 'overnight'].forEach(function (sl) {
+            if (am.prog[sl]) am.prog[sl].talent = null;
+          });
+        }
+        am.format = baseFmt;
+        am.operatingMode = 'normal';
+        restoreOpsState(G.stations, opsFrozen);
+        refreshAll();
+        var sn = snapStation(am);
+        am.prog = JSON.parse(progBk);
+        am.format = baseFmt;
+        am.operatingMode = 'normal';
+        restoreOpsState(G.stations, opsFrozen);
+        refreshAll();
+        return sn;
+      })();
+      var brokeredSnap = applyBench('brokered');
 
+      am.format = baseFmt;
       am.operatingMode = 'normal';
       restoreOpsState(G.stations, opsFrozen);
       refreshAll();
 
       var coh = '25-34';
       var applNormal = appl(am, coh, G);
-      am.operatingMode = 'brokered';
-      var applBrokered = appl(am, coh, G);
+      am.format = 'BROKERED_PROGRAMMING';
       am.operatingMode = 'normal';
+      var applBrokered = appl(am, coh, G);
+      am.format = baseFmt;
       restoreOpsState(G.stations, opsFrozen);
       refreshAll();
 
       var frN = franchiseDemoMult(am, coh, G);
-      am.operatingMode = 'brokered';
+      am.format = 'BROKERED_PROGRAMMING';
       var frB = franchiseDemoMult(am, coh, G);
-      am.operatingMode = 'normal';
+      am.format = baseFmt;
       restoreOpsState(G.stations, opsFrozen);
       refreshAll();
 
@@ -440,13 +466,17 @@ function runGmBrokeredPenalty(ctx) {
       var am = null;
       for (var i = 0; i < G.stations.length; i++) {
         var s = G.stations[i];
-        if (s && s.isPlayer && s.sig && s.sig.type === 'AM' && !s.fmBooster && stationQualifiesBrokeredOperating(s, G)) {
+        if (s && s.isPlayer && s.sig && s.sig.type === 'AM' && !s.fmBooster) {
           am = s;
           break;
         }
       }
       if (!am) return { ok: false, error: 'No player AM for GM probe' };
-      if (!stationQualifiesLeanAmMusicOperating(am, G)) am.format = 'OLDIES';
+      am.operatingMode = 'normal';
+      var _talkBench2 = ['NEWS_TALK', 'ALL_NEWS', 'SPORTS_TALK', 'PODCAST_TALK', 'BROKERED_PROGRAMMING'];
+      if (_talkBench2.indexOf(am.format) >= 0) am.format = 'OLDIES';
+      else am.format = 'TOP40';
+      var baseFmtProbe = am.format;
 
       (G.stations || []).forEach(function (st) {
         if (st && !st._bpSlotDeferred && !st.isPublic) calcRev(st, G);
@@ -472,7 +502,8 @@ function runGmBrokeredPenalty(ctx) {
       var cfg = wlGmMode.resolveGmConfig(G);
 
       function runOnce(brokered) {
-        am.operatingMode = brokered ? 'brokered' : 'normal';
+        am.format = brokered ? 'BROKERED_PROGRAMMING' : baseFmtProbe;
+        am.operatingMode = 'normal';
         var kpis = wlGmMode.computeGmKpis(G, cfg);
         var ev = wlGmMode.evaluateGmReview(G, kpis, cfg);
         return {
@@ -488,7 +519,8 @@ function runGmBrokeredPenalty(ctx) {
       }
 
       function confidenceAfterMediocreReview(brokered) {
-        am.operatingMode = brokered ? 'brokered' : 'normal';
+        am.format = brokered ? 'BROKERED_PROGRAMMING' : baseFmtProbe;
+        am.operatingMode = 'normal';
         wlGmMode.initGmStateForGame(G);
         G._gm.pendingGmOnboarding = false;
         G._gm.gmOnboardingSeen = true;

@@ -7,7 +7,7 @@
  *   node scripts/validate-am-lean-music-econ.mjs
  *   node scripts/validate-am-lean-music-econ.mjs --market=wichita --year=1985
  *
- * Diagnostic sweep (share × market × format; normal vs lean_music):
+ * Diagnostic sweep (share × market × format; fully staffed vs high daypart automation):
  *   node scripts/validate-am-lean-music-econ.mjs --sweep
  *   node scripts/validate-am-lean-music-econ.mjs --sweep --markets=wichita,nashville,atlanta --year=1985
  *   node scripts/validate-am-lean-music-econ.mjs --sweep --json=tmp/am_lean_viability.json
@@ -246,11 +246,19 @@ function runSingleShot(ctx, opts) {
         };
       }
 
+      function isPlayerAmMusicStation(s, G) {
+        if (!s || !s.isPlayer || !s.sig || s.sig.type !== 'AM' || s.fmBooster) return false;
+        var fmt = s.format;
+        if (fmt === 'ALL_NEWS' || fmt === 'BROKERED_PROGRAMMING') return false;
+        if (['NEWS_TALK', 'SPORTS_TALK', 'PODCAST_TALK'].indexOf(fmt) >= 0) return false;
+        return true;
+      }
+
       function findPlayerAmMusic(stations) {
         for (var i = 0; i < stations.length; i++) {
           var s = stations[i];
           if (!s || !s.isPlayer) continue;
-          if (s.sig && s.sig.type === 'AM' && !s.fmBooster && stationQualifiesLeanAmMusicOperating(s, G)) return s;
+          if (s.sig && s.sig.type === 'AM' && !s.fmBooster && isPlayerAmMusicStation(s, G)) return s;
         }
         return null;
       }
@@ -277,7 +285,7 @@ function runSingleShot(ctx, opts) {
           am = cand;
         }
       }
-      if (!am || !stationQualifiesLeanAmMusicOperating(am, G)) {
+      if (!am || !isPlayerAmMusicStation(am, G)) {
         return { ok: false, error: 'No qualifying AM music player station in this market/year.' };
       }
 
@@ -323,10 +331,16 @@ function runSingleShot(ctx, opts) {
       refreshAll();
       var normalSnap = snapStation(am);
 
-      am.operatingMode = 'lean_music';
+      var progBkLean = JSON.stringify(am.prog);
+      if (am.prog) {
+        ['morningDrive', 'midday', 'afternoonDrive', 'evening', 'overnight'].forEach(function (sl) {
+          if (am.prog[sl]) am.prog[sl].talent = null;
+        });
+      }
       restoreOpsState(G.stations, opsFrozen);
       refreshAll();
       var leanSnap = snapStation(am);
+      am.prog = JSON.parse(progBkLean);
 
       am.operatingMode = 'normal';
       restoreOpsState(G.stations, opsFrozen);
@@ -397,11 +411,19 @@ function runSweep(ctx, opts, marketId) {
         };
       }
 
+      function isPlayerAmMusicStation(s, G) {
+        if (!s || !s.isPlayer || !s.sig || s.sig.type !== 'AM' || s.fmBooster) return false;
+        var fmt = s.format;
+        if (fmt === 'ALL_NEWS' || fmt === 'BROKERED_PROGRAMMING') return false;
+        if (['NEWS_TALK', 'SPORTS_TALK', 'PODCAST_TALK'].indexOf(fmt) >= 0) return false;
+        return true;
+      }
+
       function findPlayerAmMusic(stations) {
         for (var i = 0; i < stations.length; i++) {
           var s = stations[i];
           if (!s || !s.isPlayer) continue;
-          if (s.sig && s.sig.type === 'AM' && !s.fmBooster && stationQualifiesLeanAmMusicOperating(s, G)) return s;
+          if (s.sig && s.sig.type === 'AM' && !s.fmBooster && isPlayerAmMusicStation(s, G)) return s;
         }
         return null;
       }
@@ -527,7 +549,7 @@ function runSweep(ctx, opts, marketId) {
         } else {
           am.format = fmt;
         }
-        if (!am || !stationQualifiesLeanAmMusicOperating(am, G)) {
+        if (!am || !isPlayerAmMusicStation(am, G)) {
           formatResults.push({
             format: fmt,
             ok: false,
@@ -556,9 +578,15 @@ function runSweep(ctx, opts, marketId) {
           var talkSnap = talkRef ? snapStation(talkRef) : null;
 
           restoreOpsState(G.stations, opsFrozen);
-          am.operatingMode = 'lean_music';
+          var progBkL = JSON.stringify(am.prog);
+          if (am.prog) {
+            ['morningDrive', 'midday', 'afternoonDrive', 'evening', 'overnight'].forEach(function (sl) {
+              if (am.prog[sl]) am.prog[sl].talent = null;
+            });
+          }
           refreshAll();
           var l = snapStation(am);
+          am.prog = JSON.parse(progBkL);
 
           am.operatingMode = 'normal';
           restoreOpsState(G.stations, opsFrozen);

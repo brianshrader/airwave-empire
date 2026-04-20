@@ -411,7 +411,247 @@
     }
   }
 
-  function summarizeWhy(G, asg, outcome, playerName, ownerCompanyName) {
+  function campaignPlayerBrokeredEconomicsActive(G) {
+    var ps =
+      typeof global !== 'undefined' && typeof global.myPS === 'function'
+        ? global.myPS()
+        : (G.ps || []).filter(function (s) {
+            return s && s.isPlayer;
+          });
+    var fn =
+      typeof global !== 'undefined' && typeof global.stationBrokeredEconomicsActive === 'function'
+        ? global.stationBrokeredEconomicsActive
+        : null;
+    for (var i = 0; i < ps.length; i++) {
+      var st = ps[i];
+      if (!st) continue;
+      if (fn) {
+        if (fn(st, G)) return true;
+      } else if (st.format === 'BROKERED_PROGRAMMING') return true;
+    }
+    return false;
+  }
+
+  /** FNV-1a 32-bit — deterministic mandate rolls (no runtime RNG after assignment start). */
+  function campaignMandateHash32(str) {
+    var h = 2166136261 >>> 0;
+    var s = String(str || '');
+    for (var i = 0; i < s.length; i++) {
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  function campaignPlayerStationsForMandate(G) {
+    if (typeof global !== 'undefined' && typeof global.myPS === 'function') return global.myPS();
+    return (G.ps || []).filter(function (s) {
+      return s && s.isPlayer;
+    });
+  }
+
+  function campaignFindStationById(G, stationId) {
+    var stations = G.stations || [];
+    for (var i = 0; i < stations.length; i++) {
+      if (stations[i] && stations[i].id === stationId) return stations[i];
+    }
+    return null;
+  }
+
+  function formatAllowedInMarketSafe(fmt, marketId, year) {
+    if (typeof global !== 'undefined' && typeof global.formatAllowedInMarket === 'function') {
+      return !!global.formatAllowedInMarket(fmt, marketId, year);
+    }
+    return false;
+  }
+
+  function formatUnlockedForYearSafe(fmt, G) {
+    if (typeof global !== 'undefined' && typeof global.formatUnlockedForYear === 'function') {
+      return !!global.formatUnlockedForYear(fmt, G);
+    }
+    return true;
+  }
+
+  function campaignMandateMinShareHint(marketId, hash) {
+    var m =
+      typeof global !== 'undefined' && global.MARKETS && global.MARKETS[marketId || '']
+        ? global.MARKETS[marketId || '']
+        : null;
+    var tier = m && m.rankTier === 'small' ? 0 : m && m.rankTier === 'large' ? 2 : 1;
+    var lo = tier === 0 ? 0.026 : tier === 2 ? 0.042 : 0.032;
+    var hi = tier === 0 ? 0.048 : tier === 2 ? 0.072 : 0.058;
+    var span = hi - lo;
+    var t = (hash % 1000) / 1000;
+    return Math.round((lo + span * t) * 10000) / 10000;
+  }
+
+  function campaignCreateMandateProgress() {
+    return {
+      everAtTargetFormat: false,
+      brokeredForbiddenObserved: false,
+      firstGoodClosedPeriod: null,
+      bestShareWhileTarget: 0,
+      lastShare: null,
+      shareTrend: 'flat',
+    };
+  }
+
+  /**
+   * V1 corporate mandate (GM / campaign only): one optional `make_format_work` directive per assignment.
+   * Roll uses assignment + world fingerprint only — deterministic.
+   */
+  function tryAttachCorporateMandate(G, asg) {
+    if (!G || !asg || !G.campaignAssignment) return;
+    var tier = asg.tier | 0;
+    var rollPct = tier <= 0 ? 35 : tier <= 2 ? 50 : tier === 3 ? 66 : 68;
+    var ps = campaignPlayerStationsForMandate(G);
+    if (!ps.length) return;
+    var sidParts = ps
+      .map(function (s) {
+        return String(s.id || '') + ':' + String(s.format || '');
+      })
+      .sort();
+    var seedRoll =
+      String(asg.id || '') +
+      '|' +
+      String(asg.marketId || '') +
+      '|' +
+      String(tier) +
+      '|' +
+      String(G.year | 0) +
+      '|' +
+      String(G.period | 0) +
+      '|' +
+      String(G.marketId || '') +
+      '|' +
+      sidParts.join(';');
+    var hRoll = campaignMandateHash32(seedRoll + '|roll');
+    if (hRoll % 100 >= rollPct) return;
+
+    var hPick = campaignMandateHash32(seedRoll + '|pick');
+    var sorted = ps.slice().sort(function (a, b) {
+      var sa = a && a.rat && typeof a.rat.share === 'number' ? a.rat.share : 0;
+      var sb = b && b.rat && typeof b.rat.share === 'number' ? b.rat.share : 0;
+      if (sa !== sb) return sa - sb;
+      return String(a.id || '').localeCompare(String(b.id || ''));
+    });
+    var preferN = Math.max(1, Math.ceil(sorted.length * 0.58));
+    var st = sorted[hPick % preferN];
+    if (!st || !st.id) return;
+
+    var curFmt = st.format || '';
+    var mkt = asg.marketId || G.marketId || '';
+    var y = G.year != null ? G.year | 0 : 1970;
+    var FMg = typeof global !== 'undefined' && global.FM ? global.FM : null;
+    var fmKeys = FMg ? Object.keys(FMg) : [];
+    var candidates = [];
+    for (var fi = 0; fi < fmKeys.length; fi++) {
+      var f = fmKeys[fi];
+      if (!f || f === curFmt) continue;
+      if (!formatAllowedInMarketSafe(f, mkt, y)) continue;
+      if (!formatUnlockedForYearSafe(f, G)) continue;
+      var fd = FMg[f];
+      if (!fd || fd.public) continue;
+      candidates.push(f);
+    }
+    candidates.sort();
+    if (!candidates.length) return;
+    var targetFormat = candidates[hPick % candidates.length];
+    var deadlinePeriods = 4 + ((hPick >>> 3) % 5);
+    var minShare = campaignMandateMinShareHint(mkt, hPick ^ (hRoll << 1));
+    var noBrokered = ((hPick >>> 7) % 3) === 0;
+
+    G.campaignAssignment.corporateMandate = {
+      type: 'make_format_work',
+      stationId: st.id,
+      targetFormat: targetFormat,
+      minShare: minShare,
+      deadlinePeriods: deadlinePeriods,
+      noBrokered: noBrokered,
+    };
+    G.campaignAssignment.corporateMandateProgress = campaignCreateMandateProgress();
+  }
+
+  /** Each sim period after GM bookkeeping — updates mandate progress (read-only on sim). */
+  function tickCorporateMandateProgress(G) {
+    if (!G || !G.careerCampaign || !G.campaignAssignment) return;
+    var man = G.campaignAssignment.corporateMandate;
+    if (!man || man.type !== 'make_format_work') return;
+    var prog = G.campaignAssignment.corporateMandateProgress;
+    if (!prog) prog = G.campaignAssignment.corporateMandateProgress = campaignCreateMandateProgress();
+    if (man.noBrokered && campaignPlayerBrokeredEconomicsActive(G)) prog.brokeredForbiddenObserved = true;
+    var gm = G._gm;
+    var closed = gm && gm.closedPeriods != null ? gm.closedPeriods | 0 : 0;
+    var st = campaignFindStationById(G, man.stationId);
+    if (!st) return;
+    var share = st.rat && typeof st.rat.share === 'number' ? st.rat.share : 0;
+    if (st.format === man.targetFormat) {
+      prog.everAtTargetFormat = true;
+      if (share > prog.bestShareWhileTarget) prog.bestShareWhileTarget = share;
+      if (share >= man.minShare && prog.firstGoodClosedPeriod == null) prog.firstGoodClosedPeriod = closed;
+    }
+    if (prog.lastShare != null && typeof prog.lastShare === 'number') {
+      if (share > prog.lastShare + 0.0005) prog.shareTrend = 'rising';
+      else if (share < prog.lastShare - 0.0005) prog.shareTrend = 'declining';
+      else prog.shareTrend = 'flat';
+    } else {
+      prog.shareTrend = 'flat';
+    }
+    prog.lastShare = share;
+  }
+
+  /**
+   * Assignment-end modifier only — does not replace ladder / brokered bar logic.
+   * Returns { delta, outcome, detail } for diagnostics and UI.
+   */
+  function evaluateCorporateMandateAtAssignmentEnd(G, asg) {
+    var out = { delta: 0, outcome: null, detail: null };
+    if (!G || !asg || !asg.corporateMandate || asg.corporateMandate.type !== 'make_format_work') return out;
+    tickCorporateMandateProgress(G);
+    var man = asg.corporateMandate;
+    var prog = asg.corporateMandateProgress;
+    if (!prog) return out;
+    var st = campaignFindStationById(G, man.stationId);
+    var share = st && st.rat && typeof st.rat.share === 'number' ? st.rat.share : 0;
+    var endOk = !!(st && st.format === man.targetFormat && share >= man.minShare);
+    var metByDeadline =
+      prog.firstGoodClosedPeriod != null && (prog.firstGoodClosedPeriod | 0) <= (man.deadlinePeriods | 0);
+
+    if (man.noBrokered && prog.brokeredForbiddenObserved) {
+      out.delta = -6;
+      out.outcome = 'ignored';
+      out.detail = 'brokered_forbidden';
+      return out;
+    }
+    if (!prog.everAtTargetFormat) {
+      out.delta = -5;
+      out.outcome = 'ignored';
+      out.detail = 'never_switched';
+      return out;
+    }
+    if (endOk && metByDeadline) {
+      out.delta = 3;
+      out.outcome = 'success';
+      out.detail = 'met_target_on_time';
+      return out;
+    }
+    out.delta = -2;
+    out.outcome = 'failure';
+    out.detail = endOk && !metByDeadline ? 'late_or_slipped' : 'missed_share_or_format';
+    return out;
+  }
+
+  /** Assignment-end promotion bar lift when brokered is active (deterministic; tier-scaled). */
+  function campaignBrokeredSuccessThresholdBump(tier, G) {
+    if (!campaignPlayerBrokeredEconomicsActive(G)) return 0;
+    var t = tier | 0;
+    if (t <= 0) return 2;
+    if (t <= 2) return 3;
+    if (t <= 4) return 4;
+    return 6;
+  }
+
+  function summarizeWhy(G, asg, outcome, playerName, ownerCompanyName, effSuccessThr) {
     var gm = G && G._gm;
     var who = playerName ? playerName + ', ' : '';
     var own = ownerCompanyName || 'ownership';
@@ -419,13 +659,14 @@
     if (outcome.kind === 'fired' || gm.fired)
       return who + own + ' dismissed you — job security hit zero or probation ended badly.';
     var conf = gm.confidence != null ? Math.round(gm.confidence) : 0;
+    var promoBar = effSuccessThr != null ? effSuccessThr | 0 : asg.successThreshold | 0;
     if (outcome.kind === 'promoted')
       return (
         who +
         'you finished the contract at ' +
         conf +
         '% confidence — above the promotion bar (' +
-        asg.successThreshold +
+        promoBar +
         ') with a sustainable review pattern. ' +
         own +
         ' is ready to move you up.'
@@ -457,15 +698,25 @@
     if (!G || G._campaignOutcomeRecorded) return null;
     var gm = G && G._gm;
     var fired = !!(gm && gm.fired);
-    var conf = gm && gm.confidence != null ? gm.confidence : 0;
     var contractDone = gm && gm.closedPeriods != null && gm.closedPeriods >= (asg.contractLengthPeriods || 16);
 
     if (!fired && !contractDone) return null;
 
+    var mandateEval = evaluateCorporateMandateAtAssignmentEnd(G, asg);
+    if (gm && mandateEval && mandateEval.delta && contractDone && !fired) {
+      var nc = (gm.confidence || 0) + mandateEval.delta;
+      gm.confidence = Math.max(0, Math.min(100, Math.round(nc)));
+    }
+    var conf = gm && gm.confidence != null ? gm.confidence : 0;
+
+    var tierBefore = asg.tier | 0;
+    var brokeredBarBump = campaignBrokeredSuccessThresholdBump(tierBefore, G);
+    var succThr = (asg.successThreshold | 0) + brokeredBarBump;
+
     var kind;
     if (fired) {
       kind = 'fired';
-    } else if (conf >= asg.successThreshold) {
+    } else if (conf >= succThr) {
       kind = 'promoted';
     } else if (conf >= asg.survivalThreshold) {
       kind = 'lateral';
@@ -492,8 +743,7 @@
     st.reputation = Math.max(0, Math.min(100, repBefore + repDelta));
     st.completedAssignments++;
 
-    var tierBefore = asg.tier | 0;
-    var campaignWin = tierBefore === 5 && !fired && contractDone && conf >= asg.successThreshold;
+    var campaignWin = tierBefore === 5 && !fired && contractDone && conf >= succThr;
 
     if (campaignWin) {
       st.campaignWon = true;
@@ -551,7 +801,16 @@
         '% confidence — ' +
         (oc || 'Ownership') +
         ' recognizes you as a major-market GM. Career ladder complete.'
-      : summarizeWhy(G, asg, { kind: kind }, pn, oc);
+      : summarizeWhy(G, asg, { kind: kind }, pn, oc, succThr);
+    if (mandateEval && mandateEval.outcome && contractDone && !fired) {
+      if (mandateEval.outcome === 'success') {
+        whyText += ' Corporate format mandate: hit the brief on time — that helped the close-out read.';
+      } else if (mandateEval.outcome === 'failure') {
+        whyText += ' Corporate format mandate: missed the agreed target — that hurt the close-out read.';
+      } else if (mandateEval.outcome === 'ignored') {
+        whyText += ' Corporate format mandate: treated as ignored or declined — that weighed heavily on the close-out read.';
+      }
+    }
 
     return {
       kind: kind,
@@ -571,8 +830,11 @@
       periodsClosed: periodsClosed,
       tier5ConfidenceShelfDiag: tier5ShelfDiag,
       successThreshold: asg.successThreshold,
+      successThresholdEffective: succThr,
+      brokeredPromotionBarBump: brokeredBarBump,
       survivalThreshold: asg.survivalThreshold,
       finalConfidenceBeforeClassification: conf,
+      corporateMandateEvaluation: mandateEval && mandateEval.outcome ? mandateEval : null,
     };
   }
 
@@ -611,6 +873,35 @@
       (asg.tier | 0) >= 5
     );
     if (typeof wlGmMode !== 'undefined' && wlGmMode.initGmStateForGame) wlGmMode.initGmStateForGame(G);
+    tryAttachCorporateMandate(G, asg);
+    if (G.campaignAssignment.corporateMandate && G.news) {
+      var cm = G.campaignAssignment.corporateMandate;
+      var stM = campaignFindStationById(G, cm.stationId);
+      var callM = (stM && (stM.callLetters || stM.brand || stM.name)) || 'the station';
+      var fmtHuman =
+        typeof global !== 'undefined' && typeof global.fmtLabel === 'function'
+          ? global.fmtLabel(cm.targetFormat, G.year)
+          : cm.targetFormat;
+      var pct = Math.round((cm.minShare || 0) * 1000) / 10;
+      var brk = cm.noBrokered ? ' Paid-programming (brokered) economics will be read as declining the mandate.' : '';
+      G.news.unshift({
+        v: 'HIGH',
+        t:
+          '📋 Corporate mandate: flip ' +
+          callM +
+          ' to ' +
+          fmtHuman +
+          ' and reach at least ' +
+          pct +
+          '% share within ' +
+          (cm.deadlinePeriods | 0) +
+          ' operating periods.' +
+          brk,
+        y: G.year,
+        p: G.period,
+        iy: true,
+      });
+    }
     var st = ensureState();
     if (st.active) st.currentTier = asg.tier | 0;
     if (st.playerName) G.campaignPlayerName = String(st.playerName).trim();
@@ -741,6 +1032,14 @@
           ? 'Damaged'
           : 'Stable';
 
+    var mandLine = '';
+    var me = payload.corporateMandateEvaluation;
+    if (me && me.outcome) {
+      if (me.outcome === 'success') mandLine = 'Corporate mandate: success (+' + (me.delta | 0) + ' confidence at close-out).';
+      else if (me.outcome === 'failure') mandLine = 'Corporate mandate: missed (' + (me.delta | 0) + ' confidence at close-out).';
+      else mandLine = 'Corporate mandate: ignored / declined (' + (me.delta | 0) + ' confidence at close-out).';
+    }
+
     b.innerHTML =
       '<div class="ms2">' +
       '<div class="msh">ASSIGNMENT RESULT</div>' +
@@ -756,6 +1055,11 @@
       '<div class="sr"><span class="lb">Why</span><span class="vl" style="font-size:15px;line-height:1.45">' +
       esc(payload.why) +
       '</span></div>' +
+      (mandLine
+        ? '<div class="sr"><span class="lb">Mandate</span><span class="vl" style="font-size:14px;line-height:1.45">' +
+          esc(mandLine) +
+          '</span></div>'
+        : '') +
       '<div class="sr"><span class="lb">Career standing</span><span class="vl">' +
       esc(standing) +
       ' · Rep ' +
@@ -1252,6 +1556,7 @@
     ensureState: ensureState,
     pickAssignmentForTier: pickAssignmentForTier,
     applyAssignmentToGame: applyAssignmentToGame,
+    tickCorporateMandateProgress: tickCorporateMandateProgress,
     deactivateCampaign: deactivateCampaign,
     getPayloadForSave: getPayloadForSave,
     loadPayloadFromSave: loadPayloadFromSave,

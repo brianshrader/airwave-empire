@@ -564,6 +564,15 @@ function normalizeJingleFormatId(raw) {
   return k;
 }
 
+/**
+ * Previously a one-line “Suno prompt confidence” note for the player UI; no longer shown or returned from the API.
+ * @param {{ brand?: string, tagline?: string, frequency?: string, band?: string, formatId?: string }} _p
+ * @returns {string}
+ */
+function sunoJinglePromptConfidenceMessage(_p) {
+  return '';
+}
+
 function buildSunoJingleArgs(p) {
   const brand = String(p.brand || 'Station').trim().slice(0, 100) || 'Station';
   const yr = Math.floor(Number(p.year) || 1970);
@@ -643,6 +652,7 @@ function buildSunoJingleArgs(p) {
 
 module.exports = {
   buildSunoJingleArgs,
+  sunoJinglePromptConfidenceMessage,
   amKhzToRadioVerbal,
   fmMhzToRadioVerbal,
   verbalizeDialInText,

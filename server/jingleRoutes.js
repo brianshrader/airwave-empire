@@ -236,7 +236,12 @@ function mountJingleRoutes(app) {
     if (j.status === 'failed') {
       return res.json({ ok: false, status: 'failed', error: j.error || 'Jingle generation failed.' });
     }
-    return res.json({ ok: true, status: 'complete', variants: j.variants || [] });
+    return res.json({
+      ok: true,
+      status: 'complete',
+      variants: j.variants || [],
+      ...(j.sunoPromptConfidence ? { sunoPromptConfidence: j.sunoPromptConfidence } : {}),
+    });
   });
 
   app.post('/api/generate-station-jingle', (req, res) => {
@@ -261,7 +266,7 @@ function mountJingleRoutes(app) {
     const stationId = String(body.stationId).trim();
     const audienceHint = sanitizeJingleSonicHint(body.audienceHint, 100);
     const positionHint = sanitizeJingleSonicHint(body.positionHint, 140);
-    const sunoArgs = buildSunoJingleArgs({
+    const sunoArgPayload = {
       brand: String(body.brand).trim(),
       format: String(body.format).trim(),
       year: Math.floor(Number(body.year)),
@@ -272,7 +277,8 @@ function mountJingleRoutes(app) {
       callLetters: typeof body.callLetters === 'string' ? body.callLetters : '',
       audienceHint,
       positionHint,
-    });
+    };
+    const sunoArgs = buildSunoJingleArgs(sunoArgPayload);
 
     const stamp = Date.now();
     const h = crypto.createHash('sha256').update(JSON.stringify(sunoArgs) + stamp).digest('hex').slice(0, 10);

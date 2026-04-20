@@ -438,6 +438,15 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   background:rgba(0,0,0,.15);
   transition:border-color .2s,background .2s,box-shadow .2s,color .2s;
 }
+/* Station card + Brand modal: hide the reserved status strip until there is text or a busy state (avoids an empty “gold pill”). */
+.wl-ai-gen-status:empty:not(.wl-ai-gen-status--busy){
+  display:none;
+  min-height:0;
+  margin:0;
+  padding:0;
+  border:none;
+  background:transparent;
+}
 .wl-ai-gen-status--inline{
   font-size:13px;
   min-height:18px;

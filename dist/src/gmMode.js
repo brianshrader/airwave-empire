@@ -131,6 +131,43 @@
     });
   }
 
+  /** Player has at least one station in brokered economics (paid programming) — GM / campaign layer only. */
+  function gmPlayerBrokeredOperatingPresent(G) {
+    var ps = playerStationsForGm(G);
+    var fn =
+      typeof global !== 'undefined' && typeof global.stationBrokeredEconomicsActive === 'function'
+        ? global.stationBrokeredEconomicsActive
+        : null;
+    for (var i = 0; i < ps.length; i++) {
+      var st = ps[i];
+      if (!st) continue;
+      if (fn) {
+        if (fn(st, G)) return true;
+      } else if (st.format === 'BROKERED_PROGRAMMING') return true;
+    }
+    return false;
+  }
+
+  /** Worsens review composite (higher = worse outcome bands) — tier-scaled; mild at Tier 0. */
+  function gmBrokeredCompositePenaltyAdd(tier) {
+    var t = tier | 0;
+    if (t <= 0) return 0.018;
+    if (t === 1) return 0.024;
+    if (t === 2) return 0.03;
+    if (t === 3) return 0.038;
+    if (t === 4) return 0.05;
+    return 0.064;
+  }
+
+  /** Extra confidence loss per formal review while brokered is active — integers for stable UI deltas. */
+  function gmBrokeredReviewConfidencePenalty(tier) {
+    var t = tier | 0;
+    if (t <= 0) return -1;
+    if (t <= 2) return -2;
+    if (t <= 4) return -3;
+    return -4;
+  }
+
   /** Promo + programming spend as a share of player revenue — efficiency / ROI signal (read-only). */
   function computeDiscretionarySpendRatio(G) {
     var ps = playerStationsForGm(G);
@@ -153,9 +190,21 @@
         ? G.campaignAssignment.tier | 0
         : 2;
     var tier = Math.max(0, Math.min(5, raw));
-    /** T0: entry scrutiny; T1–2: modest; T3–5: step-ups — flat trends and efficiency hurt more. */
-    var pressure = tier <= 0 ? 0.94 : tier <= 2 ? 1.0 : tier === 3 ? 1.06 : tier === 4 ? 1.2 : 1.3;
+    /** T0: starter posting — slightly lighter revenue/franchise stress vs T1–2; T3–5 step up. */
+    var pressure = tier <= 0 ? 0.865 : tier <= 2 ? 1.0 : tier === 3 ? 1.06 : tier === 4 ? 1.2 : 1.3;
     return { tier: tier, pressure: pressure };
+  }
+
+  /**
+   * Tier 0 only: first two formal reviews on the starter posting get a small composite nudge downward
+   * (lower composite → more likely mediocre/good vs bad). Bounded; uses reviews already completed *before* this review.
+   */
+  function applyTier0StarterCompositeNudge(G, tier, composite) {
+    if ((tier | 0) !== 0 || !G || !G._gm) return composite;
+    var idx = G._gm.formalReviewsCompletedThisAssignment != null ? G._gm.formalReviewsCompletedThisAssignment | 0 : 0;
+    if (idx >= 2) return composite;
+    var factor = idx === 0 ? 0.956 : 0.973;
+    return Math.min(1, composite * factor);
   }
 
   /**
@@ -345,6 +394,12 @@
       );
     }
 
+    if (gmScenarioActive(G) && gmPlayerBrokeredOperatingPresent(G)) {
+      reasons.push(
+        'Brokered / paid programming is active — ownership reads that as stabilizing cash while surrendering competitive audience and long-term station strength.'
+      );
+    }
+
     return {
       marginAvg: Math.round(marginAvg * 10) / 10,
       revenueTrend: revenueTrend,
@@ -379,10 +434,79 @@
     return revStalled && frStalled;
   }
 
-  /** Mediocre base drift: -1 at all tiers (Tier 5 uses softer streak/no-progress/spend + review bands, not a harsher base). */
+  /** Tier 0 campaign: last formal review before contract end (no further scheduled review window). */
+  function isTier0CampaignFinalFormalReview(G, gm, cfg) {
+    var ca = G && G.campaignAssignment;
+    if (!ca || (ca.tier | 0) !== 0 || !gm || !cfg) return false;
+    var cap = ca.contractLengthPeriods | 0;
+    var iv = cfg.reviewIntervalPeriods != null ? cfg.reviewIntervalPeriods | 0 : 0;
+    if (cap <= 0 || iv <= 0) return false;
+    return (gm.closedPeriods | 0) + iv > cap;
+  }
+
+  /**
+   * Tier 0 only, last formal review: deterministic “how you closed” differentiation — not a global scalar.
+   * Targets runs that would land just above `successThreshold` with weak late momentum (flat/declining trends),
+   * especially the common Wichita harness line (bad → mediocre → bad) where the final `bad` is only modestly
+   * past the Tier 0 `badCut` (see evaluateGmReview). Strong finishes (wide margin) and clear early spirals are skipped.
+   */
+  function tier0FinalFormalMarginalSuccessNudge(G, gm, cfg, evalRes, kpis, confBefore, deltaSoFar) {
+    if (!isTier0CampaignFinalFormalReview(G, gm, cfg)) return 0;
+    if (!G.campaignAssignment || (G.campaignAssignment.tier | 0) !== 0) return 0;
+    if (evalRes.good) return 0;
+
+    var succ =
+      G.campaignAssignment.successThreshold != null ? G.campaignAssignment.successThreshold | 0 : 53;
+    if (confBefore < succ) return 0;
+
+    var projected = confBefore + deltaSoFar;
+    if (projected <= succ) return 0;
+
+    var marginAfter = projected - succ;
+    if (marginAfter > 7.25) return 0;
+
+    var stalled = gmNoProgressTrends(kpis);
+    var weak =
+      stalled || (kpis.revenueTrend !== 'rising' && kpis.franchiseTrend !== 'rising');
+    if (!weak) return 0;
+
+    var goodCutT0 = 0.292;
+    var badCutT0 = 0.604;
+    var comp = evalRes.composite != null ? evalRes.composite : (goodCutT0 + badCutT0) / 2;
+    var nudge = 0;
+
+    if (evalRes.bad) {
+      /** Same spend signal as `evaluateGmReview` / KPIs — spares tight “cost control” books the late shave when results trail anyway. */
+      var disc = evalRes.disc != null ? evalRes.disc : 0;
+      if (disc < 0.055) return 0;
+      var overBad = comp - badCutT0;
+      if (overBad <= 0 || overBad > 0.22) return 0;
+      if (marginAfter <= 0) return 0;
+      nudge = -Math.min(8.25, (0.9 * marginAfter + 1.55) * 0.9);
+    } else {
+      if (marginAfter <= 0 || marginAfter > 7.25) return 0;
+      var midMediocre = (goodCutT0 + badCutT0) * 0.5;
+      var discM = evalRes.disc != null ? evalRes.disc : 0;
+      if (stalled) {
+        if (discM >= 0.05) nudge -= Math.min(3.35, 0.52 * marginAfter + 0.62);
+      } else if (comp >= midMediocre && discM >= 0.05) {
+        nudge -= Math.min(2.15, 0.36 * marginAfter + 0.42);
+      }
+      var streak = gm.consecutiveMediocreReviews | 0;
+      if (streak >= 2 && marginAfter <= 6.25) {
+        nudge -= Math.min(0.85, 0.1 * marginAfter + 0.28);
+      }
+    }
+
+    if (nudge >= 0) return 0;
+    if (nudge < -8.5) nudge = -8.5;
+    return Math.round(nudge * 1000) / 1000;
+  }
+
+  /** Mediocre base drift (Tier 0 starter posting slightly gentler than larger-market expectations). */
   function gmMediocreBaseDelta(tier, patienceApplied) {
-    var d = -1;
-    if (patienceApplied) d = Math.round(d * 0.92);
+    var d = (tier | 0) === 0 ? -0.88 : -1;
+    if (patienceApplied) d = Math.round(d * ((tier | 0) === 0 ? 0.94 : 0.92));
     return d;
   }
 
@@ -391,9 +515,10 @@
     var n = consecutiveMediocreCount | 0;
     if (n < 2) return 0;
     var t = tier | 0;
-    var cap = t >= 5 ? 3 : 5;
+    var cap = t >= 5 ? 3 : t === 0 ? 4 : 5;
     var extra = -Math.min(cap, n - 1);
     if (patienceApplied) extra = Math.round(extra * 0.72);
+    if (t === 0) extra = Math.round(extra * 0.88);
     if (t >= 5) extra = Math.round(extra * 0.88);
     return extra;
   }
@@ -415,10 +540,12 @@
   function gmSpendMediocreDrift(evalRes, kpis, cfg, tier) {
     var disc = evalRes.disc != null ? evalRes.disc : 0;
     var se = evalRes.se != null ? evalRes.se : 0;
-    if (disc < 0.13) return 0;
+    var discGate = (tier | 0) === 0 ? 0.138 : 0.13;
+    if (disc < discGate) return 0;
     var drift = -1;
     if (disc >= 0.15 && se >= 0.18) drift -= 1;
     drift = Math.max(-2, drift);
+    if ((tier | 0) === 0) drift = Math.round(drift * 0.85);
     if ((tier | 0) >= 5) drift = Math.round(drift * 0.82);
     return drift;
   }
@@ -444,15 +571,37 @@
       if (pat.crisisMode) se *= 0.88;
       else se *= 0.58;
     }
+    /** Tier 0 starter posting: damp stress inputs so small-market weak books are not scored like flagship failures. */
+    if ((tier | 0) === 0) {
+      sm *= 0.898;
+      sr *= 0.908;
+      sf *= 0.908;
+      se *= 0.838;
+    }
     var ew = DEFAULT_GM.efficiencyWeight != null ? DEFAULT_GM.efficiencyWeight : 0.2;
     var eAmp = DEFAULT_GM.efficiencyCoreAmplify != null ? DEFAULT_GM.efficiencyCoreAmplify : 0.2;
     var core = cfg.wProfit * sm + cfg.wRevenue * sr + cfg.wFranchise * sf;
     /** Tier 5 only: slightly damp efficiency amplification so strong ops can register “good” without a global bonus change. */
     var seComp = tier >= 5 ? se * 0.87 : se;
     var composite = Math.min(1, core * (1 + eAmp * seComp) + ew * seComp);
-    /** Tier 5: tiny calibration vs other tiers — slightly easier “good” (rare wins), slightly sharper “bad” (demotion lane). */
-    var goodCut = tier >= 5 ? 0.161 : tier >= 4 ? 0.185 : tier === 3 ? 0.21 : 0.22;
-    var badCut = tier >= 5 ? 0.496 : tier >= 4 ? 0.52 : tier === 3 ? 0.53 : 0.52;
+    composite = applyTier0StarterCompositeNudge(G, tier, composite);
+    if (gmScenarioActive(G) && gmPlayerBrokeredOperatingPresent(G)) {
+      composite = Math.min(1, composite + gmBrokeredCompositePenaltyAdd(tier));
+    }
+    /**
+     * Tier 5: tiny calibration vs other tiers — slightly easier “good” (rare wins), slightly sharper “bad” (demotion lane).
+     * Tier 0 starter posting: wider mediocre band than T1–2 so small-market weak books are not all scored `bad` every review
+     * (must stay in sync with `tier0FinalFormalMarginalSuccessNudge` composite bands).
+     */
+    var goodCut;
+    var badCut;
+    if ((tier | 0) === 0) {
+      goodCut = 0.292;
+      badCut = 0.604;
+    } else {
+      goodCut = tier >= 5 ? 0.161 : tier >= 4 ? 0.185 : tier === 3 ? 0.21 : 0.22;
+      badCut = tier >= 5 ? 0.496 : tier >= 4 ? 0.52 : tier === 3 ? 0.53 : 0.52;
+    }
     var good = composite < goodCut;
     var bad = composite > badCut;
     /**
@@ -534,6 +683,11 @@
     } else if (evalRes.bad) {
       var prevBad = gm.consecutiveBadReviews || 0;
       var badPenaltyPts = DEFAULT_GM.badReviewPenalty;
+      var badStreakMult = 3;
+      if ((tierAny | 0) === 0) {
+        badPenaltyPts = 12;
+        badStreakMult = 2;
+      }
       if (
         tierAny >= 5 &&
         evalRes.t5Classification &&
@@ -542,12 +696,14 @@
         badPenaltyPts = 13;
       }
       comp.badReviewPenalty = -badPenaltyPts;
-      comp.badStreakPenalty = -prevBad * 3;
-      delta = -badPenaltyPts - prevBad * 3;
+      comp.badStreakPenalty = -prevBad * badStreakMult;
+      delta = -badPenaltyPts - prevBad * badStreakMult;
       gm.consecutiveBadReviews = prevBad + 1;
       if ((gm.consecutiveBadReviews || 0) >= 2) {
-        delta -= DEFAULT_GM.repeatBadExtra;
-        comp.repeatBadExtra = -DEFAULT_GM.repeatBadExtra;
+        var rpt = DEFAULT_GM.repeatBadExtra;
+        if ((tierAny | 0) === 0) rpt = Math.round(rpt * 0.78);
+        delta -= rpt;
+        comp.repeatBadExtra = -rpt;
       }
       gm.consecutiveMediocreReviews = 0;
     } else {
@@ -631,6 +787,22 @@
           comp.t5MediocreFine = -1;
         }
       }
+    }
+    if (gmScenarioActive(G) && gmPlayerBrokeredOperatingPresent(G)) {
+      var brkPen = gmBrokeredReviewConfidencePenalty(tierAny);
+      comp.brokeredReviewPenalty = brkPen;
+      delta += brkPen;
+      reasonsOut.push(
+        'Brokered / paid programming is on the air: corporate sees the asset as preserved, but not the mission — that costs confidence this cycle.'
+      );
+    }
+    var t0FinalNudge = tier0FinalFormalMarginalSuccessNudge(G, gm, cfg, evalRes, kpis, confidenceBeforeReview, delta);
+    if (t0FinalNudge !== 0) {
+      comp.tier0FinalReviewNudge = t0FinalNudge;
+      delta += t0FinalNudge;
+      reasonsOut.push(
+        'Closing this starter assignment, ownership tightens the read slightly when the trail sits right on the promotion line without clear late momentum.'
+      );
     }
     var deltaBeforeClamp = delta;
     var rawUnclamped = (gm.confidence || 0) + deltaBeforeClamp;
@@ -1120,6 +1292,53 @@
         (graceN - doneRv === 1 ? '' : 's') +
         ' left where corporate emphasizes progress over instant profit.</p>';
     }
+    var mandateBlock = '';
+    var cm = ca.corporateMandate;
+    if (cm && cm.type === 'make_format_work') {
+      var stM = null;
+      var stations = G.stations || [];
+      for (var mi = 0; mi < stations.length; mi++) {
+        if (stations[mi] && stations[mi].id === cm.stationId) {
+          stM = stations[mi];
+          break;
+        }
+      }
+      var callM = (stM && (stM.callLetters || stM.brand || stM.name)) || 'target station';
+      var fmtHuman =
+        typeof global !== 'undefined' && typeof global.fmtLabel === 'function'
+          ? global.fmtLabel(cm.targetFormat, G.year)
+          : cm.targetFormat;
+      var pct = Math.round((cm.minShare || 0) * 1000) / 10;
+      var prog = ca.corporateMandateProgress || {};
+      var brkLine = cm.noBrokered
+        ? '<br/><span style="color:var(--amb)">Brokered economics on this run count as declining this mandate.</span>'
+        : '';
+      var trend = prog.shareTrend ? String(prog.shareTrend) : 'flat';
+      mandateBlock =
+        '<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1)">' +
+        '<div style="font-size:11px;letter-spacing:2px;color:var(--amb);margin-bottom:6px">CORPORATE MANDATE</div>' +
+        '<p style="margin:0;font-size:14px;line-height:1.55">' +
+        'Flip <strong style="color:var(--wht)">' +
+        escapeHtml(String(callM)) +
+        '</strong> to <strong style="color:var(--wht)">' +
+        escapeHtml(String(fmtHuman)) +
+        '</strong> and reach at least <strong style="color:var(--wht)">' +
+        pct +
+        '%</strong> total-market share within <strong style="color:var(--wht)">' +
+        (cm.deadlinePeriods | 0) +
+        '</strong> operating periods (from assignment start).' +
+        brkLine +
+        '</p>' +
+        '<p style="margin:8px 0 0;font-size:12px;color:var(--mut)">Tracking: format ' +
+        (stM && stM.format === cm.targetFormat ? 'on target' : 'not yet on target') +
+        ' · share trend ' +
+        escapeHtml(trend) +
+        (typeof prog.bestShareWhileTarget === 'number'
+          ? ' · best share while on target ' + (Math.round(prog.bestShareWhileTarget * 1000) / 10) + '%'
+          : '') +
+        '</p>' +
+        '</div>';
+    }
     var noteBlock = note
       ? '<p style="margin:10px 0 0;font-size:13px;color:var(--off);line-height:1.5">' + escapeHtml(note) + '</p>'
       : '';
@@ -1136,6 +1355,7 @@
       '</p>' +
       noteBlock +
       graceLine +
+      mandateBlock +
       '</div>'
     );
   }
@@ -1289,6 +1509,9 @@
     if (!G._gm) initGmStateForGame(G);
     snapshotFranchisePeriod(G, wasYear, wasPeriod);
     maybeRunGmReview(G);
+    if (typeof global !== 'undefined' && global.wlCampaign && typeof global.wlCampaign.tickCorporateMandateProgress === 'function') {
+      global.wlCampaign.tickCorporateMandateProgress(G);
+    }
   }
 
   function migrateGmOnboardingFlags(G) {
@@ -1519,6 +1742,8 @@
     renderGmHeader: renderGmHeader,
     computeGmKpis: computeGmKpis,
     evaluateGmReview: evaluateGmReview,
+    /** Headless / tooling: same review confidence path as onPeriodClose (mutates G._gm). */
+    applyGmConfidenceUpdate: applyGmConfidenceUpdate,
     resolveGmConfig: resolveGmConfig,
     getGmStatusLabel: getGmStatusLabel,
     runSelfTest: runSelfTest,

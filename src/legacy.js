@@ -38,6 +38,7 @@ const STRAF={
   ADULT_CONTEMP:.72,CLASSIC_ROCK:.68,CLASSIC_HITS:.65,OLDIES:.55,COUNTRY:.58,SOUL_RNB:.75,
   ALBUM_ROCK:.70,NEWS_TALK:.62,ALL_NEWS:.60,SPORTS_TALK:.60,PODCAST_TALK:1.0,
   MOR:.35,GOSPEL:.30,BEAUTIFUL_MUSIC:.28,
+  BROKERED_PROGRAMMING:.22,
 };
 
 // Streaming infrastructure cost — flat regardless of wattage.
@@ -55,7 +56,7 @@ const FGS={
   RHYTHMIC:.51, CLASSIC_HITS:.51, SPANISH:.50, OLDIES:.48,
   PUBLIC_CLASSICAL:.52, PUBLIC_NEWS:.48,
   PODCAST_TALK:.43, NEWS_TALK:.40, ALL_NEWS:.41, ALT_ROCK:.38, CLASSIC_ROCK:.32,
-  ALBUM_ROCK:.30, SPORTS_TALK:.24,
+  ALBUM_ROCK:.30, SPORTS_TALK:.24, BROKERED_PROGRAMMING:.38,
 };
 // Gender CPM multiplier: concentrated female or male audiences command advertiser premiums
 function genderCPM(fmt){
@@ -206,7 +207,7 @@ function getBoosterCost(year){
 
 // ── FORMATS ───────────────────────────────────────────────────────
 const FM={
-  TOP40:          {l:'Top 40',            cpm:1.08,sp:14,fm:false,ab:0,   unlock:1970,d:'Today\'s current pop hits, geared toward a younger audience. Fast-moving, high energy, highly competitive. "Top 40" naturally evolves into a format called Contemporary Hit Radio (CHR).'},
+  TOP40:          {l:'TOP 40/CHR',        cpm:1.08,sp:14,fm:false,ab:0,   unlock:1970,d:'Today\'s current pop hits, geared toward a younger audience. Fast-moving, high energy, highly competitive. "Top 40" naturally evolves into a format called Contemporary Hit Radio (CHR).'},
   COUNTRY:        {l:'Country',            cpm:.92, sp:14,fm:false,ab:0,   unlock:1970,d:'Familiar hits with a wide appeal demographically. Performs strongly in the South, but has wide acceptance across most of the country. Often drives deep loyalty with listeners.'},
   SOUL_RNB:       {l:'Soul / R&B',         cpm:.88, sp:14,fm:false,ab:.15, unlock:1970,d:'Deep listener loyalty and often builds a strong audience — but advertisers often value it less than the ratings would suggest.'},
   MOR:            {l:'Middle of the Road', cpm:.85, sp:18,fm:false,ab:0,   unlock:1970,d:'Abbreviated to "MOR," this is a broad-appeal format with familiar music, news, information and entertainment for adult listeners. A stable choice through the 1970s, but sounds old-fashioned as formats evolve, tastes fragment and FM listening grows.'},
@@ -228,6 +229,8 @@ const FM={
   ADULT_STANDARDS:{l:'Adult Standards',   cpm:.82, sp:14,fm:false,ab:0,  unlock:1981,d:'For listeners who want elegance, not current hits. Features timeless vocals and standards, often with an older, but loyal audience.'},
   ALL_NEWS:       {l:'All-News',           cpm:1.72,sp:8,  fm:false,ab:0,  unlock:1970,talk:true,
     d:'24/7 news, weather, traffic and sports that can be highly profitable, but is expensive to operate. Best suited to larger markets.'},
+  BROKERED_PROGRAMMING:{l:'Brokered / Paid Programming',cpm:.52,sp:18,fm:false,ab:0,unlock:1970,
+    d:'Paid blocks, religious long-form, and remnant inventory — stabilizes cash on a struggling signal but trades audience, ratings upside, and corporate goodwill. Not a growth format.'},
   // Public stations — rival-only, non-commercial
   PUBLIC_NEWS:    {l:'Public News / Talk', cpm:0,   sp:0,  fm:true, ab:0,  unlock:1975,d:'Non-commercial: respected, long-form news and talk from public radio. It can be a strong competitor to commercial News/Talk stations in some markets.',public:true},
   PUBLIC_CLASSICAL:{l:'Public Classical',  cpm:0,   sp:0,  fm:true, ab:0,  unlock:1975,d:'Non-commercial: cultured, calm classical programming for a narrow, but loyal audience.',public:true},
@@ -248,15 +251,16 @@ function formatAllowedInMarket(fmt,marketId,year){
 const FADJ={
   TOP40:['SOUL_RNB','ALBUM_ROCK','URBAN_CONTEMP','RHYTHMIC'],SOUL_RNB:['TOP40','GOSPEL','URBAN_CONTEMP'],
   ALBUM_ROCK:['TOP40','CLASSIC_ROCK','ALT_ROCK'],COUNTRY:['MOR','GOSPEL','CLASSIC_HITS'],
-  MOR:['COUNTRY','BEAUTIFUL_MUSIC','NEWS_TALK','ADULT_CONTEMP'],NEWS_TALK:['MOR','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'],
+  MOR:['COUNTRY','BEAUTIFUL_MUSIC','NEWS_TALK','ADULT_CONTEMP','BROKERED_PROGRAMMING'],NEWS_TALK:['MOR','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'],
   BEAUTIFUL_MUSIC:['MOR','ADULT_CONTEMP'],GOSPEL:['SOUL_RNB','COUNTRY'],
   CLASSIC_ROCK:['ALBUM_ROCK','CLASSIC_HITS'],
   ADULT_CONTEMP:['MOR','BEAUTIFUL_MUSIC','HOT_AC'],URBAN_CONTEMP:['SOUL_RNB','TOP40','RHYTHMIC'],
   SPORTS_TALK:['NEWS_TALK'],ALT_ROCK:['ALBUM_ROCK'],SPANISH:['URBAN_CONTEMP'],
   RHYTHMIC:['TOP40','URBAN_CONTEMP'],HOT_AC:['ADULT_CONTEMP','TOP40'],
-  OLDIES:['MOR','CLASSIC_HITS','COUNTRY'],CLASSIC_HITS:['OLDIES','CLASSIC_ROCK','MOR'],  PODCAST_TALK:['NEWS_TALK','SPORTS_TALK'],
-  ADULT_STANDARDS:['MOR','BEAUTIFUL_MUSIC','OLDIES','NEWS_TALK'],
+  OLDIES:['MOR','CLASSIC_HITS','COUNTRY','BROKERED_PROGRAMMING'],CLASSIC_HITS:['OLDIES','CLASSIC_ROCK','MOR'],  PODCAST_TALK:['NEWS_TALK','SPORTS_TALK'],
+  ADULT_STANDARDS:['MOR','BEAUTIFUL_MUSIC','OLDIES','NEWS_TALK','BROKERED_PROGRAMMING'],
   ALL_NEWS:['NEWS_TALK','SPORTS_TALK','PODCAST_TALK'],
+  BROKERED_PROGRAMMING:['MOR','OLDIES','ADULT_STANDARDS','NEWS_TALK'],
 };
 const FA={
   TOP40:          {'12-17':.90,'18-24':.80,'25-34':.45,'35-49':.18,'50-64':.06,'65+':.03},
@@ -280,6 +284,7 @@ const FA={
   CLASSIC_HITS:   {'12-17':.08,'18-24':.20,'25-34':.42,'35-49':.58,'50-64':.50,'65+':.25},
   PODCAST_TALK:   {'12-17':.08,'18-24':.20,'25-34':.32,'35-49':.38,'50-64':.30,'65+':.20},
   ALL_NEWS:       {'12-17':.03,'18-24':.07,'25-34':.22,'35-49':.38,'50-64':.52,'65+':.35},
+  BROKERED_PROGRAMMING:{'12-17':.04,'18-24':.06,'25-34':.12,'35-49':.22,'50-64':.38,'65+':.48},
   // Public radio: skews educated, older — strong 35-64 concentration
   PUBLIC_NEWS:    {'12-17':.02,'18-24':.06,'25-34':.20,'35-49':.52,'50-64':.60,'65+':.48},
   PUBLIC_CLASSICAL:{'12-17':.01,'18-24':.04,'25-34':.12,'35-49':.38,'50-64':.62,'65+':.58},
@@ -296,15 +301,18 @@ function canonicalHitsFormatKey(fmt){
 function hitsLineageAxisBlendT(year){
   return _smoothstep(1978,1992,year||1970);
 }
-function hitsFormatSurfaceLabel(year){
-  const t=hitsLineageAxisBlendT(year||1970);
-  if(t<0.28)return 'Top 40';
-  return 'CHR';
+/** Era split for news / save migration — same threshold the old Top 40 vs CHR labels used. */
+function hitsLineageUsesEarlyTop40Branding(year){
+  return hitsLineageAxisBlendT(year||1970)<0.28;
 }
-/** First calendar year where the hits lineage surface label is CHR (was Top 40 the year before). */
+/** Player-facing label for the unified hits lineage (internal ids TOP40 / legacy CHR). */
+function hitsFormatSurfaceLabel(_year){
+  return 'TOP 40/CHR';
+}
+/** First calendar year where late-era CHR-style billing dominates the hits lineage axis. */
 function hitsLineageFirstChrCalendarYear(){
   for(let y=1971;y<=2030;y++){
-    if(hitsFormatSurfaceLabel(y)==='CHR'&&hitsFormatSurfaceLabel(y-1)==='Top 40')return y;
+    if(!hitsLineageUsesEarlyTop40Branding(y)&&hitsLineageUsesEarlyTop40Branding(y-1))return y;
   }
   return null;
 }
@@ -439,41 +447,22 @@ const AM_MUSIC_FORMAT_KEYS=[
   'CLASSIC_ROCK','ADULT_CONTEMP','URBAN_CONTEMP','ALT_ROCK','RHYTHMIC','HOT_AC','CLASSIC_HITS',
   'OLDIES','SPANISH','GOSPEL','ADULT_STANDARDS',
 ];
-const AM_LEAN_OPERATING_MODE_START_YEAR=1980;
-/** Economics-only multipliers for `operatingMode==='lean_music'` — minimal staff + automation (1980+ AM music). */
-const LEAN_AM_STAFF_FACILITY_MULT=0.50;
-const LEAN_AM_GROUP_OVERHEAD_MULT=0.70;
-const LEAN_AM_OPS_FLOOR_MULT=0.60;
-const LEAN_AM_SALES_ADMIN_MULT=0.85;
-/** 1980+ AM music only — lean/automated survival lane (explicit player mode). */
-function stationQualifiesLeanAmMusicOperating(s,G){
-  if(!s||s._bpSlotDeferred||s.isPublic||s.fmBooster||s.sig?.type!=='AM')return false;
-  const y=G?.year||1970;
-  if(y<AM_LEAN_OPERATING_MODE_START_YEAR)return false;
-  if(TALK_FMTS.includes(s.format)||s.format==='ALL_NEWS')return false;
-  return AM_MUSIC_FORMAT_KEYS.includes(s.format);
-}
-function stationLeanAmMusicEconomicsActive(s,G){
-  return stationQualifiesLeanAmMusicOperating(s,G)&&s.operatingMode==='lean_music';
-}
-/** AM commercial (no translator), non-talk — paid programming / brokered blocks as last-resort survival (any year). */
-function stationQualifiesBrokeredOperating(s,G){
-  if(!s||s._bpSlotDeferred||s.isPublic||s.fmBooster||s.sig?.type!=='AM')return false;
-  if(TALK_FMTS.includes(s.format)||s.format==='ALL_NEWS')return false;
-  return true;
-}
+/** Paid programming / brokered blocks — format `BROKERED_PROGRAMMING` on commercial AM or FM (see `FM.BROKERED_PROGRAMMING`). */
 function stationBrokeredEconomicsActive(s,G){
-  return stationQualifiesBrokeredOperating(s,G)&&s.operatingMode==='brokered';
+  return !!(s&&!s._bpSlotDeferred&&!s.isPublic&&s.format==='BROKERED_PROGRAMMING'&&(s.sig?.type==='AM'||s.sig?.type==='FM'));
 }
 function normalizeStationOperatingMode(s,G){
   if(!s)return;
-  if(s.operatingMode==='lean_music'&&!stationQualifiesLeanAmMusicOperating(s,G))s.operatingMode='normal';
-  if(s.operatingMode==='brokered'&&!stationQualifiesBrokeredOperating(s,G))s.operatingMode='normal';
+  if(s.operatingMode==='brokered'){
+    if(!s.isPublic&&!s._bpSlotDeferred&&(s.sig?.type==='AM'||s.sig?.type==='FM')&&formatAllowedInMarket('BROKERED_PROGRAMMING',G?.marketId||ACTIVE_MARKET,G?.year||1970)){
+      s.format='BROKERED_PROGRAMMING';
+    }
+    s.operatingMode='normal';
+  }
+  /** Legacy `lean_music` was a selectable AM mode — automation is now staffing-derived only. */
+  if(s.operatingMode==='lean_music')s.operatingMode='normal';
 }
-function leanAmMusicAppealTradeoffMult(s,G){
-  return stationLeanAmMusicEconomicsActive(s,G)?0.965:1;
-}
-/** appl() only — brokered stations bleed competitiveness (stronger than lean_music). */
+/** appl() only — brokered stations bleed competitiveness. */
 function brokeredAppealTradeoffMult(s,G){
   return stationBrokeredEconomicsActive(s,G)?0.78:1;
 }
@@ -495,103 +484,6 @@ function brokeredProgrammingTerrestrialRev(s,G,competitiveRevHalf){
   const floorR=Math.round(anchor*0.48);
   const capR=Math.max(floorR,Math.round((competitiveRevHalf||0)*0.54+anchor*0.085));
   return Math.min(capR,Math.max(floorR,brokered));
-}
-/**
- * Lean AM music only: very modest sell-through lift for weak billers (2–4% share band).
- * Revenue-side only; does not touch ratings/appeal. Caps so high-share stations gain nothing.
- */
-function leanAmMusicLowShareSelloutMult(s,shareSelloutMult,G){
-  if(!stationLeanAmMusicEconomicsActive(s,G))return shareSelloutMult;
-  const y=G?.year||1970;
-  if(y<AM_LEAN_OPERATING_MODE_START_YEAR)return shareSelloutMult;
-  const tier=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
-  const sh=s.rat?.share||0;
-  const lo=tier==='small'?0.018:0.02;
-  const hi=tier==='small'?0.042:0.04;
-  if(sh<lo||sh>hi)return shareSelloutMult;
-  const u=Math.min(1,Math.max(0,(sh-lo)/(hi-lo)));
-  let lift=0.022+0.016*u;
-  /** Small markets: a touch more sell-through in the 2–3.5% pocket (still capped < full sellout). */
-  if(tier==='small')lift+=0.006*Math.max(0,1-_smoothstep(0.022,0.036,sh));
-  return Math.min(0.99,shareSelloutMult*(1+lift));
-}
-/**
- * Lean AM music only: extra ops / G&A relief when billing is weak and share is modest — survival lane for small markets.
- * Economics-only; fades out as share or revenue rises (no ratings / appeal / seedRev changes).
- * @returns {{ staffFac: number, ops: number, sales: number, strength: number }}
- */
-function leanAmMusicSurvivalOperatingRelief(s,G,halfPeriodRev){
-  if(!stationLeanAmMusicEconomicsActive(s,G))return { staffFac: 1, ops: 1, sales: 1, strength: 0 };
-  const y=G?.year||1970;
-  if(y<AM_LEAN_OPERATING_MODE_START_YEAR)return { staffFac: 1, ops: 1, sales: 1, strength: 0 };
-  const tier=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
-  const sh=s.rat?.share||0;
-  /** Strongest near ~2–3% share. Small markets keep relief into ~4% (cheap sticks); large metros fade earlier — no help for dominant billers. */
-  const shareFadeHi=tier==='small'?0.068:0.055;
-  const shareBand=Math.min(1,Math.max(0,1-_smoothstep(0.02,shareFadeHi,sh)));
-  if(shareBand<=0)return { staffFac: 1, ops: 1, sales: 1, strength: 0 };
-  /** Bottom of realistic half-period billing — relief fades as billings rise. Small markets use a wider “weak” band: modest billers can still be survival cases. */
-  const revWeakHi=tier==='small'?520000:400000;
-  const revWeak=1-_smoothstep(82000,revWeakHi,Math.max(0,halfPeriodRev||0));
-  /** Small markets need more stack than medium/large so lean can be a survival lane, not only “less bad.” */
-  const tierW=tier==='small'?1.88:tier==='medium'?0.52:0.2;
-  const strength=Math.min(1,shareBand*revWeak*tierW);
-  if(strength<=0)return { staffFac: 1, ops: 1, sales: 1, strength: 0 };
-  /** Capped incremental trims on top of existing lean multipliers — “one shift + automation” vs full-service modeling. */
-  const sm=tier==='small';
-  const staffMax=sm?0.152:0.125;
-  const opsMax=sm?0.44:0.32;
-  const salesMax=sm?0.155:0.135;
-  const staffFac=1-Math.min(staffMax,staffMax*strength);
-  const ops=1-Math.min(opsMax,opsMax*strength);
-  const sales=1-Math.min(salesMax,salesMax*strength);
-  return { staffFac, ops, sales, strength };
-}
-/**
- * Small-market lean AM only: extra plant / engineering / landlord floor vs full-service model (automation + minimal site).
- * Economics-only; does not apply to large metros. Fades by headline share so 6%+ small-market billers get little help.
- * @returns {{ fixedMult: number, opsMult: number, salesStack: number }}
- */
-function leanAmMusicSmallMarketSurvivalScale(s,G){
-  if(!stationLeanAmMusicEconomicsActive(s,G))return { fixedMult: 1, opsMult: 1, salesStack: 1 };
-  const y=G?.year||1970;
-  if(y<AM_LEAN_OPERATING_MODE_START_YEAR)return { fixedMult: 1, opsMult: 1, salesStack: 1 };
-  if((MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier!=='small')return { fixedMult: 1, opsMult: 1, salesStack: 1 };
-  const sh=s.rat?.share||0;
-  /** Still a money pit under ~2% headline; strongest ~3–5%. */
-  const lowRamp=_smoothstep(0.012,0.024,sh);
-  /** Plateau through ~5% share, then fade — dominant small-market billers (~6.5%+) get little. */
-  const highFade=1-_smoothstep(0.052,0.068,sh);
-  const pocket=Math.max(0,Math.min(lowRamp,highFade));
-  if(pocket<=0)return { fixedMult: 1, opsMult: 1, salesStack: 1 };
-  /** Capped: plant + ops + a sliver of sales G&A (remnant/broker desk) — small-market lean only. */
-  const fixedMult=Math.max(0.655,1-0.358*pocket);
-  const opsMult=Math.max(0.825,1-0.248*pocket);
-  const salesStack=Math.max(0.872,1-0.135*pocket);
-  return { fixedMult, opsMult, salesStack };
-}
-/**
- * Small-market lean AM only: bottom-of-envelope cost compression when share and billing are both thin —
- * “automation + shed” vs scaled-down full-service (deterministic; no seedRev).
- * Fades ~5–6% headline share and as half-period billings approach healthy levels.
- * @param {number} halfPeriodRev pre-remnant-boost billings (same anchor as survival relief weak test)
- * @returns {{ fixedMult: number, opsMult: number }}
- */
-function leanAmMusicSmallMarketUltraLeanFloor(s,G,halfPeriodRev){
-  if(!stationLeanAmMusicEconomicsActive(s,G))return { fixedMult: 1, opsMult: 1 };
-  const y=G?.year||1970;
-  if(y<AM_LEAN_OPERATING_MODE_START_YEAR)return { fixedMult: 1, opsMult: 1 };
-  if((MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier!=='small')return { fixedMult: 1, opsMult: 1 };
-  const sh=s.rat?.share||0;
-  /** Ramp in above ~1.5% so 1–2% stays clearly underwater; fades to ~0 by ~5.7% headline. */
-  const sharePin=(1-_smoothstep(0.027,0.054,sh))*_smoothstep(0.014,0.026,sh);
-  const revWeak=1-_smoothstep(78000,360000,Math.max(0,halfPeriodRev||0));
-  /** Weak billing deepens compression; mid-share survival band still gets meaningful env without cliffs. */
-  const env=Math.min(1,sharePin*(0.5+0.5*revWeak));
-  if(env<=0)return { fixedMult: 1, opsMult: 1 };
-  const fixedMult=Math.max(0.918,1-0.074*env);
-  const opsMult=Math.max(0.912,1-0.084*env);
-  return { fixedMult, opsMult };
 }
 // Light market × format monetization (Duncan-style calibration). Revenue only; ±~10% max.
 // Keys = G.marketId for top-3 metros; omit format → 1. Does not affect shares.
@@ -767,6 +659,7 @@ const COMMUNITY_IDENTITY={
   OLDIES:0.60,       // "This is the station my dad listened to"
   CLASSIC_HITS:0.55,
   PODCAST_TALK:0.35,
+  BROKERED_PROGRAMMING:0.22,
 };
 
 const MUSIC_FMTS=['TOP40','COUNTRY','SOUL_RNB','MOR','ADULT_STANDARDS','ALBUM_ROCK','BEAUTIFUL_MUSIC',
@@ -786,6 +679,198 @@ function vacantLabel(fmt,slot,s){
 }
 /** Chronological display order: Morning → Midday → Afternoon → Evening → Overnight (do not use object iteration for UI). */
 const DAYPART_SLOTS=['morningDrive','midday','afternoonDrive','evening','overnight'];
+/**
+ * Daypart weights for staffing-derived automation (morning & afternoon heaviest; overnight lightest).
+ * Unstaffed slot contributes `weight` / `sum(weights)` toward station automation score (0–1).
+ */
+const DAYPART_STAFFING_AUTOMATION_WEIGHTS={
+  morningDrive:1.00,
+  afternoonDrive:0.88,
+  midday:0.55,
+  evening:0.55,
+  overnight:0.28,
+};
+const _DAYPART_STAFF_WSUM=DAYPART_SLOTS.reduce((a,sl)=>a+(DAYPART_STAFFING_AUTOMATION_WEIGHTS[sl]||0.3),0);
+/**
+ * Voice-track / syndicated / bartered dayparts (no local host): counts as this fraction of a fully vacant slot
+ * toward the staffing score and cost curves — between live local and dead automation.
+ */
+const DAYPART_STAFFING_LIGHT_AUTOMATION_FRACTION=0.40;
+function normalizeDaypartStaffingMode(mode){
+  const m=String(mode||'').toLowerCase();
+  if(m==='light'||m==='voice_tracked'||m==='voicetracked'||m==='syndicated')return'light';
+  return'vacant';
+}
+/** Per-daypart weight toward automation score (0 if live local talent). */
+function daypartStaffingAutomationWeight(sl,s){
+  if(!s?.prog?.[sl])return 0;
+  if(s.prog[sl].talent)return 0;
+  const w=DAYPART_STAFFING_AUTOMATION_WEIGHTS[sl]||0.3;
+  if(s.prog[sl].staffingMode==='light')return w*DAYPART_STAFFING_LIGHT_AUTOMATION_FRACTION;
+  return w;
+}
+/** @returns {number} 0–1 weighted share of schedule running without full local staffing. */
+function stationAutomationScore(s){
+  if(!s||s._bpSlotDeferred||s.isPublic||String(s.format||'').startsWith('PUBLIC_'))return 0;
+  if(!s.prog)return 0;
+  let num=0;
+  DAYPART_SLOTS.forEach(sl=>{num+=daypartStaffingAutomationWeight(sl,s);});
+  return _DAYPART_STAFF_WSUM>0?num/_DAYPART_STAFF_WSUM:0;
+}
+/** How harsh automation penalties are by format (talk/news > music; brokered/religious/satellite-style lighter). */
+const STAFFING_AUTOMATION_FMT_PENALTY={
+  ALL_NEWS:1.72,
+  NEWS_TALK:1.64,
+  SPORTS_TALK:1.44,
+  PODCAST_TALK:1.26,
+  BROKERED_PROGRAMMING:0.50,
+  GOSPEL:0.70,
+  __music__:1.0,
+  __default__:1.06,
+};
+function staffingAutomationFormatPenaltyMult(fmt){
+  if(!fmt)return STAFFING_AUTOMATION_FMT_PENALTY.__default__;
+  if(STAFFING_AUTOMATION_FMT_PENALTY[fmt]!=null)return STAFFING_AUTOMATION_FMT_PENALTY[fmt];
+  if(TALK_FMTS.includes(fmt))return 1.38;
+  if(AM_MUSIC_FORMAT_KEYS.includes(fmt)||['TOP40','CHR','MOR','OLDIES','CLASSIC_HITS','SPANISH','GOSPEL'].includes(fmt))return STAFFING_AUTOMATION_FMT_PENALTY.__music__;
+  return STAFFING_AUTOMATION_FMT_PENALTY.__default__;
+}
+/** Baseline era curve: 0 = harsh on automation, ~1 = more listener tolerance (never full “free pass” on FM music — see effective tolerance). */
+function staffingAutomationEraListenerTolerance(year){
+  const y=year||1970;
+  return Math.min(0.92,_smoothstep(1976,1994,y)*0.44+_smoothstep(1992,2010,y)*0.28+_smoothstep(2004,2024,y)*0.20);
+}
+/** FM music keeps a floor on how much era relief trims automation penalties (local still matters on competitive FMs). */
+function staffingAutomationIsFmMusicStation(s){
+  if(!s||s.fmBooster)return false;
+  if(s.sig?.type!=='FM')return false;
+  const f=s.format;
+  if(!f||TALK_FMTS.includes(f))return false;
+  return AM_MUSIC_FORMAT_KEYS.includes(f)||['TOP40','CHR','MOR','OLDIES','CLASSIC_HITS','SPANISH','GOSPEL'].includes(f);
+}
+function staffingAutomationEffectiveEraTolerance(s,G){
+  let tol=staffingAutomationEraListenerTolerance(G?.year||1970);
+  if(staffingAutomationIsFmMusicStation(s)){
+    const y=G?.year||1970;
+    tol*=0.62+0.38*_smoothstep(1988,2022,y);
+  }
+  return Math.min(0.95,tol);
+}
+function setDaypartStaffingMode(sid,slot,mode){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||!s.prog||!s.prog[slot]||!DAYPART_SLOTS.includes(slot)||!mpIsMe(s))return;
+  if(s.prog[slot].talent){
+    showToast('Remove the local host first to change how this daypart runs when unstaffed.','warn');
+    return;
+  }
+  const m=normalizeDaypartStaffingMode(mode);
+  if(m==='light')s.prog[slot].staffingMode='light';
+  else delete s.prog[slot].staffingMode;
+  MP.action('daypart_staff',{sid,slot,mode:m});
+  if(typeof autoSave==='function')autoSave();
+  if(document.getElementById('m-programming')?.classList.contains('on'))openProgramming(sid);
+  renderAll();
+}
+window.setDaypartStaffingMode=setDaypartStaffingMode;
+/** Human-readable staffing / automation posture (not player-selected). */
+function stationStaffingAutomationLabel(s){
+  const t=stationAutomationScore(s);
+  if(t<0.09)return'Fully staffed';
+  if(t<0.34)return'Lean';
+  if(t<0.58)return'Voice-tracked';
+  return'Mostly automated';
+}
+function staffingAutomationEconomicsActive(s,G){
+  return stationAutomationScore(s)>=0.035;
+}
+/** appl() — modest appeal trim when key dayparts run without live talent. */
+function staffingAutomationAppealTradeoffMult(s,G){
+  const t=stationAutomationScore(s);
+  if(t<0.04)return 1;
+  const fmt=staffingAutomationFormatPenaltyMult(s.format);
+  const tol=staffingAutomationEffectiveEraTolerance(s,G);
+  const pen=t*fmt*(1.12-tol*0.52);
+  return Math.max(0.865,1-Math.min(0.12,pen*0.11));
+}
+/** Revenue-side weak-biller sell-through nudge when automation is material (replaces old lean-only lift). */
+function staffingAutomationLowShareSelloutMult(s,shareSelloutMult,G){
+  if(stationAutomationScore(s)<0.18)return shareSelloutMult;
+  const tier=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
+  const sh=s.rat?.share||0;
+  const lo=tier==='small'?0.018:0.02;
+  const hi=tier==='small'?0.042:0.04;
+  if(sh<lo||sh>hi)return shareSelloutMult;
+  const u=Math.min(1,Math.max(0,(sh-lo)/(hi-lo)));
+  let lift=0.018+0.014*u;
+  if(tier==='small')lift+=0.005*Math.max(0,1-_smoothstep(0.022,0.036,sh));
+  return Math.min(0.99,shareSelloutMult*(1+lift));
+}
+/**
+ * Weak-billing / weak-share incremental fixed-cost relief when automation is high — any commercial AM/FM.
+ * @returns {{ staffFac: number, ops: number, sales: number, strength: number }}
+ */
+function staffingAutomationSurvivalOperatingRelief(s,G,halfPeriodRev){
+  if(!staffingAutomationEconomicsActive(s,G))return{staffFac:1,ops:1,sales:1,strength:0};
+  const auto=stationAutomationScore(s);
+  if(auto<0.12)return{staffFac:1,ops:1,sales:1,strength:0};
+  const tier=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
+  const sh=s.rat?.share||0;
+  const shareFadeHi=tier==='small'?0.068:0.055;
+  const shareBand=Math.min(1,Math.max(0,1-_smoothstep(0.02,shareFadeHi,sh)));
+  if(shareBand<=0)return{staffFac:1,ops:1,sales:1,strength:0};
+  const revWeakHi=tier==='small'?520000:400000;
+  const revWeak=1-_smoothstep(82000,revWeakHi,Math.max(0,halfPeriodRev||0));
+  const tierW=tier==='small'?1.55:tier==='medium'?0.48:0.18;
+  const strength=Math.min(1,shareBand*revWeak*tierW*auto*1.25);
+  if(strength<=0)return{staffFac:1,ops:1,sales:1,strength:0};
+  const sm=tier==='small';
+  const staffMax=sm?0.14:0.115;
+  const opsMax=sm?0.38:0.28;
+  const salesMax=sm?0.14:0.12;
+  const staffFac=1-Math.min(staffMax,staffMax*strength);
+  const ops=1-Math.min(opsMax,opsMax*strength);
+  const sales=1-Math.min(salesMax,salesMax*strength);
+  return{staffFac,ops,sales,strength};
+}
+/** Small-market only: extra compression on thin billers when automation is meaningful. */
+function staffingAutomationSmallMarketSurvivalScale(s,G){
+  if(!staffingAutomationEconomicsActive(s,G))return{fixedMult:1,opsMult:1,salesStack:1};
+  if((MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier!=='small')return{fixedMult:1,opsMult:1,salesStack:1};
+  const auto=stationAutomationScore(s);
+  if(auto<0.14)return{fixedMult:1,opsMult:1,salesStack:1};
+  const sh=s.rat?.share||0;
+  const lowRamp=_smoothstep(0.012,0.024,sh);
+  const highFade=1-_smoothstep(0.052,0.068,sh);
+  const pocket=Math.max(0,Math.min(lowRamp,highFade))*auto;
+  if(pocket<=0)return{fixedMult:1,opsMult:1,salesStack:1};
+  const fixedMult=Math.max(0.67,1-0.32*pocket);
+  const opsMult=Math.max(0.82,1-0.22*pocket);
+  const salesStack=Math.max(0.88,1-0.12*pocket);
+  return{fixedMult,opsMult,salesStack};
+}
+function staffingAutomationSmallMarketUltraLeanFloor(s,G,halfPeriodRev){
+  if(!staffingAutomationEconomicsActive(s,G))return{fixedMult:1,opsMult:1};
+  if((MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier!=='small')return{fixedMult:1,opsMult:1};
+  const auto=stationAutomationScore(s);
+  if(auto<0.16)return{fixedMult:1,opsMult:1};
+  const sh=s.rat?.share||0;
+  const sharePin=(1-_smoothstep(0.027,0.054,sh))*_smoothstep(0.014,0.026,sh);
+  const revWeak=1-_smoothstep(78000,360000,Math.max(0,halfPeriodRev||0));
+  const env=Math.min(1,sharePin*(0.5+0.5*revWeak)*auto);
+  if(env<=0)return{fixedMult:1,opsMult:1};
+  const fixedMult=Math.max(0.92,1-0.065*env);
+  const opsMult=Math.max(0.91,1-0.075*env);
+  return{fixedMult,opsMult};
+}
+/** Local identity growth dampener + format “credibility” drag from visible automation. */
+function staffingAutomationIdentityGrowthMult(s,G){
+  const t=stationAutomationScore(s);
+  if(t<0.05)return 1;
+  const fmt=staffingAutomationFormatPenaltyMult(s.format);
+  const tol=staffingAutomationEffectiveEraTolerance(s,G);
+  return Math.max(0.58,1-t*0.48*fmt*(1.06-tol*0.48));
+}
 /** One station-level lever: PD/coaching attention on one daypart vs balanced (see `programmingFocusSlotDecayMult` in decay). */
 const PROGRAMMING_FOCUS_BALANCED='balanced';
 function normalizeProgrammingFocus(v){
@@ -2938,7 +3023,7 @@ function playerCompetitiveBaselinePromoProg(s,G,totalRev,promoCap,progCap){
   eraK*=1+0.12*_smoothstep(1988,1998,year);
   if(year>=1996)eraK*=1+0.08*Math.min(1,(year-1996)/12);
   let baselineTotal=Math.round(totalRev*tierCorePct*shareK*eraK);
-  if(stationLeanAmMusicEconomicsActive(s,G))baselineTotal=Math.round(baselineTotal*0.82);
+  if(staffingAutomationEconomicsActive(s,G))baselineTotal=Math.round(baselineTotal*(1-0.18*stationAutomationScore(s)));
   if(stationBrokeredEconomicsActive(s,G))baselineTotal=Math.round(baselineTotal*0.22);
   const rawPromo=Math.round(baselineTotal*PLAYER_BASELINE_PROMO_SHARE);
   const rawProg=Math.max(0,baselineTotal-rawPromo);
@@ -4173,6 +4258,7 @@ function aiRebrandStationAfterPlayerVoluntarySale(G, s) {
   delete s.jingleVariantIndex;
   delete s.jingleTagline;
   delete s._pendingJingleVariants;
+  delete s._jingleSunoPromptNote;
   delete s.heritageIncumbent;
   delete s._simulcastSource;
   const talentCull = nf === oldFmt ? 0.18 : 0.34;
@@ -4259,6 +4345,7 @@ function aiRebrandStationAfterDistressSale(G, s) {
   delete s.jingleVariantIndex;
   delete s.jingleTagline;
   delete s._pendingJingleVariants;
+  delete s._jingleSunoPromptNote;
   delete s.heritageIncumbent;
   delete s._simulcastSource;
   Object.values(s.prog).forEach((sd) => {
@@ -4980,6 +5067,7 @@ function mpSetupSocketHandlers(socket) {
       delete st.jingleVariantIndex;
       delete st.jingleTagline;
       delete st._pendingJingleVariants;
+      delete st._jingleSunoPromptNote;
       renderAll();
       return;
     }
@@ -5542,6 +5630,7 @@ window._mpApply_hire = function({ sid, slot, talent }) {
   if (!s || !s.prog[slot] || daytimerRestrictedSlot(s, slot)) return;
   if(franchiseSlotBlocksNewLocalTalent(s,slot,G))return;
   s.prog[slot].talent = talent;
+  delete s.prog[slot].staffingMode;
   s.oq = Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w, 0));
   if (talent?.name) logHistory(s, 'TALENT', `Hired ${talent.name} — ${SL[slot]}`, G);
 };
@@ -5577,7 +5666,10 @@ window._mpApply_poach = function({ sid, slot, rivalId, talentId }) {
   if (!t) return;
   const nm = t.name;
   rival.prog[slot].talent = null;
-  if (s.prog[slot]) s.prog[slot].talent = t;
+  if (s.prog[slot]){
+    s.prog[slot].talent = t;
+    delete s.prog[slot].staffingMode;
+  }
   rival.oq = Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(rival.prog[sl])*w, 0));
   s.oq = Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w, 0));
   logHistory(s, 'TALENT', `Poached ${nm} from ${callDisplay(rival)} — ${SL[slot]}`, G);
@@ -5673,6 +5765,15 @@ window._mpApply_prog = function({ sid, progBudget }) {
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
   if(!s.ops) s.ops={}; s.ops.progBudget = progBudget; renderAll();
 };
+window._mpApply_daypart_staff=function({sid,slot,mode,_fromPlayerId}){
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||!s.prog||!s.prog[slot])return;
+  if(MP.mode==='live'&&_fromPlayerId!==undefined&&s._mpOwner!==_fromPlayerId)return;
+  if(s.prog[slot].talent)return;
+  const m=normalizeDaypartStaffingMode(mode);
+  if(m==='light')s.prog[slot].staffingMode='light';
+  else delete s.prog[slot].staffingMode;
+};
 function ensureTalentBench(G){ if(!G.talentBench)G.talentBench=[]; }
 /** Move host from slot to player talent bench (internal — no news). */
 function removeTalentToBenchInternal(sid, slot){
@@ -5716,6 +5817,7 @@ function applyTalentCrossStationXferFull(fromSid, fromSlot, toSid, toSlot) {
   const fit = t => t.formatFit[dst.format] || 0.3;
   const boost = t => Math.round((t.quality / 100) * fit(t) * 0.35 * 18);
   toSd.talent = talA;
+  delete toSd.staffingMode;
   toSd.quality = Math.min(100, Math.max(10, Math.round((toSd.quality || 30) * (1 - adjDip))) + boost(talA));
   initTalentPerformanceReveal(toSd, talA, dst.format, 'xfer');
   applyDaypartPromotionEconomics(talA, fromSlot, toSlot);
@@ -5881,6 +5983,7 @@ window._mpApply_placement_from_bench = function({ benchId, toSid, toSlot, _fromP
   const fitFn = t0 => t0.formatFit[dst.format] || 0.3;
   const boost = t0 => Math.round((t0.quality / 100) * fitFn(t0) * 0.35 * 18);
   toSd.talent = t;
+  delete toSd.staffingMode;
   toSd.quality = Math.min(100, Math.max(10, Math.round((toSd.quality || 30) * (1 - adjDip))) + boost(t));
   applyDaypartPromotionEconomics(t, prevSlot, toSlot);
   G.talentBench = G.talentBench.filter(e => e.id !== benchId);
@@ -5934,12 +6037,7 @@ window._mpApply_progFocus = function({ sid, focus }) {
 };
 window._mpApply_operating_mode = function({ sid, mode }) {
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
-  let m='normal';
-  if(mode==='lean_music')m='lean_music';
-  else if(mode==='brokered')m='brokered';
-  if(m === 'lean_music' && !stationQualifiesLeanAmMusicOperating(s, G)) return;
-  if(m === 'brokered' && !stationQualifiesBrokeredOperating(s, G)) return;
-  s.operatingMode = m;
+  s.operatingMode = mode === 'lean_music' ? 'normal' : (mode || 'normal');
   (G.stations||[]).forEach(st=>{if(st&&!st._bpSlotDeferred&&!st.isPublic)calcRev(st,G);});
   if(typeof seedRev === 'function') seedRev(G.stations, G);
   if(typeof updateAllStationsBudgetStress === 'function') updateAllStationsBudgetStress(G);
@@ -6158,16 +6256,19 @@ function dialFreqDedupeKey(f){
   if(String(m[1]).includes('.'))return String(Math.round(n*10)/10);
   return String(Math.round(n));
 }
-/** Prefer an unused dial position from the market list; falls back to rotating nextFreq. */
+/**
+ * Prefer an unused dial from the market list. `G` may be a full game state or a minimal `{stations, marketId}` used while `genMarket` is building `stations`.
+ * When the list is exhausted, probes `nextFreq` then synthetic dials so two commercial FMs never share the same MHz key.
+ */
 function nextUnusedCommercialFreq(G,type){
   const used=new Set();
-  (G.stations||[]).forEach(s=>{
+  ((G&&G.stations)||[]).forEach(s=>{
     if(!s)return;
     const raw=s.freq||s._deferFreq;
     const k=dialFreqDedupeKey(raw);
     if(k!=null)used.add(k);
   });
-  const m=MARKETS[G.marketId||ACTIVE_MARKET]||MARKETS.atlanta;
+  const m=MARKETS[(G&&G.marketId)||ACTIVE_MARKET]||MARKETS.atlanta;
   const list=type==='AM'
     ?(m.amFreqs&&m.amFreqs.length?m.amFreqs:AMF)
     :(m.fmFreqs&&m.fmFreqs.length?m.fmFreqs:FMF);
@@ -6176,6 +6277,29 @@ function nextUnusedCommercialFreq(G,type){
     const k=dialFreqDedupeKey(f);
     if(k==null)continue;
     if(!used.has(k))return f;
+  }
+  const listLen=Math.max(1,list.length);
+  for(let tries=0;tries<listLen*4;tries++){
+    const f=nextFreq(type);
+    const k=dialFreqDedupeKey(f);
+    if(k!=null&&!used.has(k))return f;
+  }
+  if(type==='FM'){
+    for(let step=0;step<100;step++){
+      const mhz=107.9-step*0.2;
+      if(mhz<87.9)break;
+      const cand=`${(Math.round(mhz*10)/10).toFixed(1)} FM`;
+      const k=dialFreqDedupeKey(cand);
+      if(k!=null&&!used.has(k))return cand;
+    }
+  }else{
+    for(let step=0;step<280;step++){
+      const khz=1700-step*10;
+      if(khz<530)break;
+      const cand=`${khz} AM`;
+      const k=dialFreqDedupeKey(cand);
+      if(k!=null&&!used.has(k))return cand;
+    }
   }
   return nextFreq(type);
 }
@@ -7257,6 +7381,22 @@ function leanMult(coh,lean){
 /** Max length must match server `jingleRoutes` / `jinglePrompt` trimming. */
 const WL_JINGLE_AUDIENCE_HINT_MAX=100;
 const WL_JINGLE_POSITION_HINT_MAX=140;
+const WL_JINGLE_JOB_POLL_MS=2500;
+const WL_JINGLE_JOB_POLL_MAX_MS=420000;
+/** Poll server jingle job until complete (POST returns `jobId` immediately). */
+async function wlPollStationJingleJob(jobId){
+  const id=encodeURIComponent(String(jobId||'').trim());
+  if(!id)return{ok:false,error:'Missing jingle job id.'};
+  const t0=Date.now();
+  while(Date.now()-t0<WL_JINGLE_JOB_POLL_MAX_MS){
+    await new Promise(r=>setTimeout(r,WL_JINGLE_JOB_POLL_MS));
+    const r=await fetch(wlGameApiUrl('/api/station-jingle/job/'+id));
+    const d=await r.json().catch(()=>({}));
+    if(d.status==='complete'&&d.ok)return d;
+    if(d.status==='failed'||d.ok===false)return{ok:false,status:d.status,error:d.error||'Jingle generation failed.'};
+  }
+  return{ok:false,error:'Jingle generation timed out — try again in a moment.'};
+}
 /** Suno tags only — from demo lean slider (same bands as `leanLabel`). */
 function wlJingleAudienceHintFromLean(lean){
   const L=Number(lean);
@@ -7484,7 +7624,7 @@ function appl(s,coh,G){
     allNewsSig=0.58+0.42*_smoothstep(0.28,0.78,sigStrength);
   }
   mktFmt=Math.max(0.86,Math.min(1.24,mktFmt));
-  const out=Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * morHeritageHybridMult * hitsLineageEraMult * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G) * mktFmt * allNewsSig * zombieNicheMult * leanAmMusicAppealTradeoffMult(s,G)*brokeredAppealTradeoffMult(s,G));
+  const out=Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * morHeritageHybridMult * hitsLineageEraMult * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G) * mktFmt * allNewsSig * zombieNicheMult * staffingAutomationAppealTradeoffMult(s,G)*brokeredAppealTradeoffMult(s,G));
   return Number.isFinite(out)?out:0;
 }
 
@@ -8148,7 +8288,7 @@ function defaultFmRemainderFormat(amFmt,G,fmStationId){
   const y=G?.year||1970;
   const mkt=G?.marketId||ACTIVE_MARKET||'atlanta';
   const pool=(typeof FM!=='undefined'&&FM?Object.keys(FM):[]).filter(f=>{
-    if(f===amFmt)return false;
+    if(f===amFmt||FM[f]?.amOnly)return false;
     if(typeof formatAllowedInMarket==='function')return formatAllowedInMarket(f,mkt,y);
     return true;
   });
@@ -8164,7 +8304,7 @@ function defaultFmRemainderFormat(amFmt,G,fmStationId){
 function pickAlternateAiRemainder(amFmt,G){
   const mkt=G?.marketId||ACTIVE_MARKET||'atlanta';
   const y=G?.year||1970;
-  const pool=(typeof FM!=='undefined'&&FM?Object.keys(FM):[]).filter(f=>f!==amFmt&&formatAllowedInMarket(f,mkt,y));
+  const pool=(typeof FM!=='undefined'&&FM?Object.keys(FM):[]).filter(f=>f!==amFmt&&!FM[f]?.amOnly&&formatAllowedInMarket(f,mkt,y));
   if(!pool.length)return defaultFmRemainderFormat(amFmt,G,'');
   return pool[Math.floor(Math.random()*pool.length)];
 }
@@ -8389,11 +8529,15 @@ function talentFranchiseRatingsEffect(s,G){
   let spdLossMult=Math.min(1.42,Math.max(0.72,1.06+0.38*(1-fr)*w));
   let spdGainMult=Math.min(1.08,Math.max(0.62,0.74+0.34*stick));
   const stabilityPenalty=Math.max(0,Math.min(0.22,(1-fr)*0.55*w));
-  if(stationLeanAmMusicEconomicsActive(s,gCtx)){
-    combined*=0.982;
-    ceilingMult*=0.982;
-    spdGainMult*=0.90;
-    spdLossMult*=1.045;
+  if(staffingAutomationEconomicsActive(s,gCtx)){
+    const au=stationAutomationScore(s);
+    const fmt=staffingAutomationFormatPenaltyMult(s.format);
+    const tol=staffingAutomationEffectiveEraTolerance(s,gCtx);
+    const pen=Math.min(1,au*fmt*(1.05-tol*0.42));
+    combined*=1-0.018*pen;
+    ceilingMult*=1-0.022*pen;
+    spdGainMult*=1-0.10*pen;
+    spdLossMult*=1+0.05*pen;
   }
   if(stationBrokeredEconomicsActive(s,gCtx)){
     combined*=0.91;
@@ -9315,7 +9459,7 @@ function calcRev(s,G){
       shareSelloutMult=Math.min(0.99,shareSelloutMult*(1+0.024*u));
     }
   }
-  shareSelloutMult=leanAmMusicLowShareSelloutMult(s,shareSelloutMult,G);
+  shareSelloutMult=staffingAutomationLowShareSelloutMult(s,shareSelloutMult,G);
   rev=Math.round(rev*shareSelloutMult);
   const dominantEarlyEraMult=earlyEraDominantAudienceMonMult(s,G,year);
   rev=Math.round(rev*dominantEarlyEraMult);
@@ -9381,18 +9525,14 @@ function calcRev(s,G){
     // so mega-clusters stay efficient but not frictionless money fountains.
     const clusterEra=year>=1996?1.0:year>=1990?0.70:year>=1980?0.52:0.38;
     const clusterDiscount=stationRank<=0?0:stationRank===1?0.26*clusterEra:(0.34+Math.min(0.12,(stationRank-2)*0.04))*clusterEra;
-    // Automation discount: scales with fraction of slots running on automation.
-    // Fully staffed = 0 discount. Fully automated = 0.35 discount. Partial = proportional.
-    // e.g. WBRB with 2 talent + 3 automation: 3/5 = 0.21 discount (saves on ops staff).
-    const _progSlots=Object.values(s.prog||{});
-    const _totalSlots=_progSlots.length||1;
-    const _vacantSlots=_progSlots.filter(sd=>!sd?.talent).length;
-    const autoDiscount=Math.round((_vacantSlots/_totalSlots)*35)/100;
+    // Automation discount: weighted by daypart (morning/afternoon matter more than overnight).
+    const _autoScore=stationAutomationScore(s);
+    const autoDiscount=Math.round(Math.min(1,_autoScore)*35)/100;
     // Format inherent automation discount: some formats were designed for tape automation
     // Beautiful Music, Adult Standards ran 24hr on reel-to-reel with minimal live staff
     // Podcast / Talk: syndication- and barter-heavy stack, light local newsroom vs News/Talk —
     // cheap “keep the license warm” option on a weak stick (talent slots still add talCost).
-    const fmtAutoDiscount={'BEAUTIFUL_MUSIC':0.22,'ADULT_STANDARDS':0.18,'MOR':0.08,'PODCAST_TALK':0.22}[s.format]||0;
+    const fmtAutoDiscount={'BEAUTIFUL_MUSIC':0.22,'ADULT_STANDARDS':0.18,'MOR':0.08,'PODCAST_TALK':0.22,'BROKERED_PROGRAMMING':0.26}[s.format]||0;
     efficiencyMult=Math.max(0.36,1-clusterDiscount-autoDiscount-fmtAutoDiscount);
   }
   // Era cost: early stations ran lean. 1970=20% of mature, ramps to 100% by 1985.
@@ -9437,12 +9577,15 @@ function calcRev(s,G){
   let regCostScaled=Math.round(regCost*mktFixMult);
   let sfCostScaled=Math.round(sfCost*mktFixMult);
   let groupOverheadHalf=clusterGroupOverheadPerStationHalfPeriod(year,clusterPeers.length,mktFixMult,mktIdForFix,inflFactor);
-  if(stationLeanAmMusicEconomicsActive(s,G)){
-    staffCost=Math.round(staffCost*LEAN_AM_STAFF_FACILITY_MULT);
-    facCost=Math.round(facCost*LEAN_AM_STAFF_FACILITY_MULT);
-    groupOverheadHalf=Math.round(groupOverheadHalf*LEAN_AM_GROUP_OVERHEAD_MULT);
-    regCostScaled=Math.round(regCostScaled*0.92);
-    sfCostScaled=Math.round(sfCostScaled*0.88);
+  if(staffingAutomationEconomicsActive(s,G)){
+    const t=stationAutomationScore(s);
+    const staffM=1-0.48*t;
+    const grpM=1-0.30*t;
+    staffCost=Math.round(staffCost*staffM);
+    facCost=Math.round(facCost*staffM);
+    groupOverheadHalf=Math.round(groupOverheadHalf*grpM);
+    regCostScaled=Math.round(regCostScaled*(1-0.08*t));
+    sfCostScaled=Math.round(sfCostScaled*(1-0.12*t));
   }
   if(stationBrokeredEconomicsActive(s,G)){
     staffCost=Math.round(staffCost*0.82);
@@ -9544,7 +9687,7 @@ function calcRev(s,G){
   }
   /** Pre-boost billings for survival relief weak-revenue test (below). */
   const revForLeanSurvivalRelief=totalRev;
-  if(stationLeanAmMusicEconomicsActive(s,G)){
+  if(staffingAutomationEconomicsActive(s,G)){
     const _rtLm=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
     if(_rtLm==='small'){
       const shLm=s.rat?.share||0;
@@ -9553,20 +9696,20 @@ function calcRev(s,G){
       if(_pocketRm>0)totalRev=Math.round(totalRev*(1+0.158*_pocketRm));
     }
   }
-  const _leanSurv=leanAmMusicSurvivalOperatingRelief(s,G,revForLeanSurvivalRelief);
-  const _smSurvScale=leanAmMusicSmallMarketSurvivalScale(s,G);
-  if(stationLeanAmMusicEconomicsActive(s,G)&&_leanSurv.strength>0.01){
-    if(_leanSurv.staffFac<1){
-      staffCost=Math.round(staffCost*_leanSurv.staffFac);
-      facCost=Math.round(facCost*_leanSurv.staffFac);
+  const _autoSurv=staffingAutomationSurvivalOperatingRelief(s,G,revForLeanSurvivalRelief);
+  const _smSurvScale=staffingAutomationSmallMarketSurvivalScale(s,G);
+  if(staffingAutomationEconomicsActive(s,G)&&_autoSurv.strength>0.01){
+    if(_autoSurv.staffFac<1){
+      staffCost=Math.round(staffCost*_autoSurv.staffFac);
+      facCost=Math.round(facCost*_autoSurv.staffFac);
     }
-    groupOverheadHalf=Math.round(groupOverheadHalf*(1-Math.min(0.085,0.085*_leanSurv.strength)));
+    groupOverheadHalf=Math.round(groupOverheadHalf*(1-Math.min(0.085,0.085*_autoSurv.strength)));
     fixedCost=staffCost+facCost+regCostScaled+sfCostScaled+groupOverheadHalf;
   }
-  if(stationLeanAmMusicEconomicsActive(s,G)&&_smSurvScale.fixedMult<1){
+  if(staffingAutomationEconomicsActive(s,G)&&_smSurvScale.fixedMult<1){
     fixedCost=Math.round(fixedCost*_smSurvScale.fixedMult);
   }
-  s._leanAmSurvivalReliefSales=stationLeanAmMusicEconomicsActive(s,G)?_leanSurv.sales:1;
+  s._leanAmSurvivalReliefSales=staffingAutomationEconomicsActive(s,G)?_autoSurv.sales:1;
   const rightsHalfPeriod=syndicationFeesForStation(s,G);
   const salesRate=year<1980?0.18:year<1990?0.17:year<2005?0.16:0.15;
   const adminRate=year<1980?0.12:year<1990?0.11:year<2005?0.10:0.09;
@@ -9583,10 +9726,10 @@ function calcRev(s,G){
   if(talkEarlySaBump>0&&year<1980&&_tierMkt!=='mega')talkEarlySaBump*=0.58;
   const salesAdminRate=salesRate+adminRate+lateMarginTrim+progressiveSaRate+talkEarlySaBump;
   let salesAdminCost=Math.round(totalRev*salesAdminRate);
-  if(stationLeanAmMusicEconomicsActive(s,G)&&_leanSurv.sales<1){
-    salesAdminCost=Math.round(salesAdminCost*_leanSurv.sales);
+  if(staffingAutomationEconomicsActive(s,G)&&_autoSurv.sales<1){
+    salesAdminCost=Math.round(salesAdminCost*_autoSurv.sales);
   }
-  if(stationLeanAmMusicEconomicsActive(s,G)&&_smSurvScale.salesStack<1){
+  if(staffingAutomationEconomicsActive(s,G)&&_smSurvScale.salesStack<1){
     salesAdminCost=Math.round(salesAdminCost*_smSurvScale.salesStack);
   }
   const mktBill=marketAnnualBilling(year,G.marketId||ACTIVE_MARKET);
@@ -9611,13 +9754,14 @@ function calcRev(s,G){
       opsFloor+=Math.round((4800+8200*Math.min(1,Math.max(0,(shOp-0.089)/0.012)))*mktFixMult*rampOp);
     }
   }
-  if(stationLeanAmMusicEconomicsActive(s,G)){
-    opsFloor=Math.round(opsFloor*LEAN_AM_OPS_FLOOR_MULT);
-    if(_leanSurv.ops<1)opsFloor=Math.round(opsFloor*_leanSurv.ops);
+  if(staffingAutomationEconomicsActive(s,G)){
+    const t=stationAutomationScore(s);
+    opsFloor=Math.round(opsFloor*(1-0.40*t));
+    if(_autoSurv.ops<1)opsFloor=Math.round(opsFloor*_autoSurv.ops);
     if(_smSurvScale.opsMult<1)opsFloor=Math.round(opsFloor*_smSurvScale.opsMult);
   }
-  const _ultraLean=leanAmMusicSmallMarketUltraLeanFloor(s,G,revForLeanSurvivalRelief);
-  if(stationLeanAmMusicEconomicsActive(s,G)&&(_ultraLean.fixedMult<1||_ultraLean.opsMult<1)){
+  const _ultraLean=staffingAutomationSmallMarketUltraLeanFloor(s,G,revForLeanSurvivalRelief);
+  if(staffingAutomationEconomicsActive(s,G)&&(_ultraLean.fixedMult<1||_ultraLean.opsMult<1)){
     if(_ultraLean.fixedMult<1)fixedCost=Math.round(fixedCost*_ultraLean.fixedMult);
     if(_ultraLean.opsMult<1)opsFloor=Math.round(opsFloor*_ultraLean.opsMult);
   }
@@ -9685,8 +9829,8 @@ function calcRev(s,G){
       amHitsContestOpex+=Math.round((1100+3100*posN)*mktFixMult*rampN);
     }
   }
-  if(stationLeanAmMusicEconomicsActive(s,G)&&amHitsContestOpex>0)
-    amHitsContestOpex=Math.round(amHitsContestOpex*0.42);
+  if(staffingAutomationEconomicsActive(s,G)&&amHitsContestOpex>0)
+    amHitsContestOpex=Math.round(amHitsContestOpex*(1-0.58*stationAutomationScore(s)));
   s.fin.amHitsContestOpex=amHitsContestOpex;
   const _aust=applyBudgetAusterityOperatingTrim(s,fixedCost,opsFloor,salesAdminCost,amHitsContestOpex,effPromo,effProg,streamUpkeep);
   fixedCost=_aust.fixedCost;
@@ -9778,8 +9922,9 @@ function seedRev(stations,G){
       if(s.fin.streamRev!=null)s.fin.streamRev=Math.round(s.fin.streamRev*eff*scale);
       if(s.fin.salesAdminRate!=null){
         s.fin.salesAdmin=Math.round(s.fin.rev*s.fin.salesAdminRate);
-        if(stationLeanAmMusicEconomicsActive(s,G)){
-          s.fin.salesAdmin=Math.round(s.fin.salesAdmin*LEAN_AM_SALES_ADMIN_MULT);
+        if(staffingAutomationEconomicsActive(s,G)){
+          const t=stationAutomationScore(s);
+          s.fin.salesAdmin=Math.round(s.fin.salesAdmin*(1-0.15*t));
           const _ls=s._leanAmSurvivalReliefSales;
           if(typeof _ls==='number'&&_ls>0&&_ls<1)s.fin.salesAdmin=Math.round(s.fin.salesAdmin*_ls);
         }
@@ -10024,7 +10169,7 @@ function decay(s,year,period){
     const ceiling=Math.round(effectiveCeiling2*100);
     const cur=s.identity||0;
     const headroom=Math.max(0,ceiling-cur);
-    const growthRate=fmtPotential*tenureBonus*talentBonus*investBoost*localismGrowthBoost*(1-_bsAust*0.13);
+    const growthRate=fmtPotential*tenureBonus*talentBonus*investBoost*localismGrowthBoost*(1-_bsAust*0.13)*staffingAutomationIdentityGrowthMult(s,G);
     // Grow toward ceiling, slower as you approach it
     const gain=Math.min(headroom, growthRate*(1-(cur/Math.max(ceiling,1)))*2.5);
     const newIdentity=Math.min(100,Math.round((cur+gain)*10)/10);
@@ -10086,6 +10231,7 @@ function runMarketAttrition(G){
     if(year>=1988)pool.push('GOSPEL');
     if(year>=1992)pool.push('SPANISH');
     if(year>=1970)pool.push('NEWS_TALK');
+    if(year>=1970)pool.push('BROKERED_PROGRAMMING');
     if(year>=1990)pool.push('SPORTS_TALK');
     if(year>=2012)pool.push('PODCAST_TALK');
     return pool;
@@ -10114,7 +10260,7 @@ function runMarketAttrition(G){
     const isAMMusic = s.sig.type==='AM'&&!s.fmBooster&&
       ['TOP40','COUNTRY','SOUL_RNB','MOR','ALBUM_ROCK','BEAUTIFUL_MUSIC',
        'CLASSIC_ROCK','ADULT_CONTEMP','URBAN_CONTEMP','ALT_ROCK',
-       'RHYTHMIC','HOT_AC','CLASSIC_HITS','OLDIES'].includes(s.format);
+       'RHYTHMIC','HOT_AC','CLASSIC_HITS','OLDIES','BROKERED_PROGRAMMING'].includes(s.format);
     const isAMTalk = s.sig.type==='AM'&&!s.fmBooster&&
       ['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format);
     const isImplausible = s.sig.type==='AM'&&!s.fmBooster&&
@@ -10169,7 +10315,7 @@ function runMarketAttrition(G){
       continue;
     }
 
-    const alreadyNicheFmt = ['GOSPEL','SPANISH','ADULT_STANDARDS','PODCAST_TALK'].includes(s.format);
+    const alreadyNicheFmt = ['GOSPEL','SPANISH','ADULT_STANDARDS','PODCAST_TALK','BROKERED_PROGRAMMING'].includes(s.format);
     const densityRatio=MKTCAP>0?allComm.length/MKTCAP:1;
 
     // ── Long-run zombies: resolve niche / removal / stay — prevents indefinite undead pile-up
@@ -10995,6 +11141,7 @@ function runAI(G){
 function openDrift(sid){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  if(s.format==='BROKERED_PROGRAMMING'){showToast('Paid programming does not use format positioning.','info');return;}
   const dr=getDrift(s);
   if(!dr){alert('No format positioning available for '+fmtLabel(s.format));return;}
   const cfg=dr.cfg;
@@ -11043,6 +11190,7 @@ function updDrift(sid, v){
 function doDrift(sid){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  if(s.format==='BROKERED_PROGRAMMING')return;
   const slider=document.getElementById('drift-slider');if(!slider)return;
   if(!s.drift)s.drift={};
   const dStore=hitsDriftStoreKey(s.format);
@@ -11489,7 +11637,7 @@ function applyEv(G,ev){
       const[,fmt,type,pw,str]=e.split('-');
       const mechFmt=canonicalHitsFormatKey(fmt);
       if(!mechFmt||!FM[mechFmt])return;
-      const freq=nextFreq(type);
+      const freq=nextUnusedCommercialFreq(G,type);
       const s=mkStn({type,fmt:mechFmt,pw,str},freq,G.year);
       s.color=CLR[G.stations.length%CLR.length];
       s.entryTurn={year:G.year,period:G.period};
@@ -12119,13 +12267,16 @@ function genMarket(scenId){
   const bpYear=sc.startYear||1970;
   const startCash=scaledScenarioCash(sc.cash,ACTIVE_MARKET);
   const scForGame={...sc,cash:startCash};
-  const stations=BP.map((bp,i)=>{
+  const stations=[];
+  const dialCtx={stations,marketId:ACTIVE_MARKET};
+  for(let i=0;i<BP.length;i++){
     const eff=effectiveBpForMarket(i,ACTIVE_MARKET);
-    const freq=nextFreq(eff.type);
+    const freq=nextUnusedCommercialFreq(dialCtx,eff.type);
     if(bpYear===1970&&isBpSlotDeferred1970(i,ACTIVE_MARKET))
-      return{_bpSlotDeferred:true,_bpIdx:i,_deferFreq:freq};
-    return mkStn(eff,freq,bpYear);
-  });
+      stations.push({_bpSlotDeferred:true,_bpIdx:i,_deferFreq:freq});
+    else
+      stations.push(mkStn(eff,freq,bpYear));
+  }
   stations.forEach((s,i)=>{ if(s&&!s._bpSlotDeferred) s.color=CLR[i%CLR.length]; });
   // BP stations are established — mark them mature so recalc
   // uses their full tier b-value, not launchB (which is for new entrants)
@@ -12227,7 +12378,7 @@ function genMarket(scenId){
         // Don't add if this format is already represented in market
         const already=stations.some(s=>s&&!s._bpSlotDeferred&&s.format===fmt&&!s.isPlayer);
         if(already)return;
-        const freq=nextFreq(type);
+        const freq=nextUnusedCommercialFreq({stations,marketId:ACTIVE_MARKET},type);
         const ns=mkStn({type,fmt,pw,str},freq,startYear);
         ns.color=CLR[stations.length%CLR.length];
         ns.launchPeriod=-999; // treat as established
@@ -12418,14 +12569,35 @@ function wlGenMarketGmUnderAtCareerTime(simYear, simPeriod) {
   }
 }
 
+/** Headless / console: snapshot appeal, identity, and score for a station + year (e.g. staffing sweep scripts). */
+function staffingAutomationDiagnosticBundle(s,G){
+  const g=G&&G.year!=null?G:{year:1970,marketId:ACTIVE_MARKET};
+  const t=stationAutomationScore(s);
+  return{
+    score:+t.toFixed(4),
+    label:stationStaffingAutomationLabel(s),
+    appeal:+staffingAutomationAppealTradeoffMult(s,g).toFixed(4),
+    identity:+staffingAutomationIdentityGrowthMult(s,g).toFixed(4),
+    staffCostMult:+((staffingAutomationEconomicsActive(s,g)?1-0.48*t:1)).toFixed(3),
+    opsFloorMult:+((staffingAutomationEconomicsActive(s,g)?1-0.4*t:1)).toFixed(3),
+    fmtPen:+staffingAutomationFormatPenaltyMult(s.format).toFixed(2),
+    eraTol:+staffingAutomationEraListenerTolerance(g.year).toFixed(3),
+    eraTolEff:+staffingAutomationEffectiveEraTolerance(s,g).toFixed(3),
+  };
+}
+
 if(typeof window!=='undefined'){
   window.genMarket=genMarket;
   window.wlGenMarketGmUnderAtCareerTime=wlGenMarketGmUnderAtCareerTime;
   window.computeAiPlayerMarketPressure=computeAiPlayerMarketPressure;
   window.resolveAiDifficultyTier=resolveAiDifficultyTier;
-  window.stationQualifiesLeanAmMusicOperating=stationQualifiesLeanAmMusicOperating;
-  window.stationLeanAmMusicEconomicsActive=stationLeanAmMusicEconomicsActive;
-  window.stationQualifiesBrokeredOperating=stationQualifiesBrokeredOperating;
+  window.stationAutomationScore=stationAutomationScore;
+  window.stationStaffingAutomationLabel=stationStaffingAutomationLabel;
+  window.staffingAutomationEconomicsActive=staffingAutomationEconomicsActive;
+  window.staffingAutomationDiagnosticBundle=staffingAutomationDiagnosticBundle;
+  /** @deprecated Legacy lean toggle — automation is staffing-derived; exports map to helpers for old scripts. */
+  window.stationQualifiesLeanAmMusicOperating=function(){return false;};
+  window.stationLeanAmMusicEconomicsActive=staffingAutomationEconomicsActive;
   window.stationBrokeredEconomicsActive=stationBrokeredEconomicsActive;
 }
 
@@ -15308,7 +15480,7 @@ function buildResearchReport(s,G){
     const top=scored.slice(0,2).map(x=>x.o);
     if(top.length){
       const dest=top.map(o=>callDisplay(o)+' ('+fmtLabel(o.format,year)+')').join(', ');
-      flowParas.push('<p style="margin:0 0 8px"><strong>Soft book:</strong> Share is down; the cleanest parallel gainers look like <strong>'+dest+'</strong> (model inference from overlap + deltas — not diary-level).</p>');
+      flowParas.push('<p style="margin:0 0 8px"><strong>Soft book:</strong> Share is down; the best-fitting alternate homes for some of that listening look like <strong>'+dest+'</strong> — a game estimate from format overlap and who gained this book, not a measured switch path.</p>');
     }else{
       flowParas.push('<p style="margin:0 0 8px"><strong>Soft book:</strong> No single rival mirrors your loss — listening likely splitting across several stations.</p>');
     }
@@ -15333,7 +15505,7 @@ function buildResearchReport(s,G){
   if(!flowParas.length){
     flowParas.push('<p style="margin:0">No strong flow signal — moves are incremental this book.</p>');
   }
-  flowParas.push('<p style="margin:8px 0 0;font-size:12px;color:var(--mut)">Flow lines are modeled estimates, not measured tune-in paths.</p>');
+  flowParas.push('<p style="margin:8px 0 0;font-size:12px;color:var(--mut)">Flow lines are consultant-style reads of in-game ratings — useful directionally, not Arbitron/Nielsen-style diaries.</p>');
   const audienceFlowHtml=consultantMemoSection('AUDIENCE FLOW / DEFECTION ANALYSIS',flowParas.join(''));
 
   let positioningHtml='';
@@ -15982,7 +16154,8 @@ function rivalReformat(G){
       flipProb=Math.min(0.88,Math.max(0.035,flipProb));
       if(Math.random()>=flipProb)return;
       const candidates=eligibleFormats.filter(f=>
-        f!==s.format&&(FM[f]?.unlock||1900)<=G.year
+        f!==s.format&&(FM[f]?.unlock||1900)<=G.year&&
+        !(FM[f]?.amOnly&&s.sig?.type!=='AM')
       );
       if(!candidates.length)return;
       // Weighted format selection: favor growing formats, penalize oversaturated ones
@@ -16375,6 +16548,19 @@ function acqPrice(s,G){
 // Tuned so raw fees usually clear EBITDA cap (~10–24% of seed EBITDA typical); caps remain safety rails.
 const LMA_K_BASE = { mega: 0.0022, large: 0.00165, medium: 0.00072, small: 0.00055 };
 const LMA_K_PERF = 0.0185;
+/** Applied to FM lease fee after cap-min (full-fee bump; re-clamped to caps). AM unchanged. */
+const LMA_FM_FEE_SIGNAL_MULT = 1.22;
+/**
+ * Minimum half-period LMA fee for FM (rounded later to $1k) — weak FMs must not read “nearly free”.
+ * Tier table: aggressive market-size scaling (major-market dial value); AM has no floor.
+ */
+function lmaFmMinimumFeeHalfPeriod(rankTier) {
+  const t = rankTier || 'large';
+  if (t === 'mega') return 48000;
+  if (t === 'large') return 18000;
+  if (t === 'medium') return 9000;
+  return 4000;
+}
 
 /** Era weight: pre-1990 weak → 1990s ramp → 1996–2003 peak → fade post-mid-2000s. */
 function lmaEraFactor(year) {
@@ -16410,6 +16596,11 @@ function lmaComputeFeeRounded(halfPeriodMarketPool, grossRev, seedEbitda, rankTi
   const absCap = lmaAbsoluteCapHalfYear(year, tier);
   let fee = Math.min(raw, capRev, capEbitda, absCap);
   if (fee < 0) fee = 0;
+  if (isFm) {
+    fee *= LMA_FM_FEE_SIGNAL_MULT;
+    fee = Math.min(fee, capRev, capEbitda, absCap);
+    fee = Math.max(fee, lmaFmMinimumFeeHalfPeriod(tier));
+  }
   return Math.round(fee / 1000) * 1000;
 }
 
@@ -16455,6 +16646,26 @@ function lmaFeeForStation(s, Gopt) {
     fee = Math.round((fee * 1.1) / 1000) * 1000;
   }
   return fee;
+}
+
+/** Subtle LMA modal copy when fee is structurally low vs signal class (no economics effect). */
+function lmaUiFeeDescriptor(s, Gg) {
+  if (!Gg || !s) return '';
+  const gross = s._lmaGrossRev != null && s._lmaGrossRev !== undefined ? s._lmaGrossRev : s.fin?.rev || 0;
+  const sh = s.rat?.share != null ? s.rat.share : 0;
+  const isFm = s.sig?.type === 'FM' || !!s.fmBooster;
+  const mkt = MARKETS[Gg.marketId || ACTIVE_MARKET] || MARKETS.atlanta;
+  const tier = mkt.rankTier || 'large';
+  const fee = lmaFeeForStation(s, Gg);
+  const fmFloor = lmaFmMinimumFeeHalfPeriod(tier);
+  if (isFm && sh < 0.055 && fee <= fmFloor + 1500) {
+    return '<div class="lma-meta" style="margin-top:4px;font-size:12px;color:var(--mut);font-style:italic">Soft book — fee sits on the FM dial-value floor (coverage still rents even when ratings are weak).</div>';
+  } else if (isFm && sh < 0.045 && gross > 0 && fee < gross * 0.14) {
+    return '<div class="lma-meta" style="margin-top:4px;font-size:12px;color:var(--mut);font-style:italic">Undervalued on billing vs signal — lease fee stays realistic for FM; upside if you lift revenue.</div>';
+  } else if (!isFm && sh < 0.028 && gross > 0 && fee < gross * 0.06) {
+    return '<div class="lma-meta" style="margin-top:4px;font-size:12px;color:var(--mut);font-style:italic">Low fee vs revenue — typical when AM share and billing are both soft.</div>';
+  }
+  return '';
 }
 
 function lmaCountsAgainstLimit(year) {
@@ -16594,6 +16805,7 @@ function rLMA() {
           <div class="lma-call" style="color:${s.color||'var(--wht)'}">${s.callLetters}</div>
           <div class="lma-meta">${s.freq} · ${fmtLabel(s.format)} · Share: ${pct(s.rat.share)}</div>
           <div class="lma-terms">Fee to licensor: ${f$(fee)}/period · You keep the rest</div>
+          ${lmaUiFeeDescriptor(s, G)}
           <div class="lma-meta" style="margin-top:4px;color:var(--mut)">Licensor: ${s.lmaLicensorName||'Independent Owner'}</div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px;align-items:flex-end;flex-shrink:0">
@@ -16611,6 +16823,7 @@ function rLMA() {
           <div class="lma-call" style="color:var(--wht)">${s.callLetters}</div>
           <div class="lma-meta">${s.freq} · ${fmtLabel(s.format)} · Share: ${pct(s.rat.share)}</div>
           <div class="lma-terms" style="color:var(--grn)">You receive: ${f$(fee)}/period guaranteed income</div>
+          ${lmaUiFeeDescriptor(s, G)}
           <div class="lma-meta" style="margin-top:4px;color:var(--mut)">Operator: ${s.lmaOperatorName||'Third Party'} · You retain the license</div>
         </div>
         <button class="abt" style="font-size:15px;color:var(--red);border-color:var(--red)" onclick="terminateLMA('${s.id}','lessor')">RECLAIM</button>
@@ -16642,6 +16855,7 @@ function rLMA() {
           <div class="lma-meta">${s.freq} · ${signalPowerDisplayLabel(s.sig.pw)} · ${fmtLabel(s.format)} · Quality: ${Math.round(s.oq)}</div>
           <div class="lma-meta">Share: ${pct(s.rat.share)} · Revenue: ${f$(s.fin?.rev||0)}/period</div>
           <div class="lma-terms">Fee: ${f$(fee)}/period → Est. net to you: ${f$(netEst)}/period</div>
+          ${lmaUiFeeDescriptor(s, G)}
         </div>
         <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end">
           <span style="font-family:var(--ft);font-size:15px;color:var(--mut)">First fee upfront</span>
@@ -16673,6 +16887,7 @@ function rLMA() {
           <div class="lma-meta">${s.freq} · ${fmtLabel(s.format)} · Share: ${pct(s.rat.share)}</div>
           <div class="lma-meta">Current rev: ${f$(s.fin?.rev||0)}/period</div>
           <div class="lma-terms" style="color:var(--grn)">You'd receive: ${f$(fee)}/period — guaranteed, no upkeep</div>
+          ${lmaUiFeeDescriptor(s, G)}
         </div>
         <button class="abt" style="font-size:15px;background:rgba(82,227,110,.12);border-color:var(--grn);color:var(--grn)" onclick="doLMALessor('${s.id}')">LEASE OUT →</button>
       </div>`;
@@ -16762,7 +16977,7 @@ function doLMALessor(sid) {
     !FM[f]?.public && !['FULL_SERVICE','PUBLIC_RADIO'].includes(f)
   );
   // Prefer formats with decent CPM that suit the signal type
-  const _amFriendly=['NEWS_TALK','ALL_NEWS','SPORTS_TALK','COUNTRY','GOSPEL','ADULT_STANDARDS','OLDIES','CLASSIC_HITS'];
+  const _amFriendly=['NEWS_TALK','ALL_NEWS','SPORTS_TALK','COUNTRY','GOSPEL','ADULT_STANDARDS','OLDIES','CLASSIC_HITS','BROKERED_PROGRAMMING'];
   const _fmtPool = s.sig.type==='AM'
     ? _availFmts.filter(f=>_amFriendly.includes(f)).concat(_availFmts.filter(f=>!_amFriendly.includes(f)))
     : _availFmts;
@@ -17398,7 +17613,7 @@ function advTurn(mpCoalesceSeq){
     }
     if(wlCashBridgeAuditActive())wlCashBridgeAuditPush('FINAL_CASH_PRE_CLOCK',{});
     if(G.period===1){G.period=2;}else{G.period=1;G.year++;}
-    if(G.year>wasYear&&!G._hitsChrTransitionNewsShown&&hitsFormatSurfaceLabel(wasYear)==='Top 40'&&hitsFormatSurfaceLabel(G.year)==='CHR'){
+    if(G.year>wasYear&&!G._hitsChrTransitionNewsShown&&hitsLineageUsesEarlyTop40Branding(wasYear)&&!hitsLineageUsesEarlyTop40Branding(G.year)){
       const mktLab=MARKETS[G.marketId||'atlanta']?.label||'The market';
       G.news.unshift({v:'MEDIUM',t:`📡 ${mktLab}: Top 40 gives way to CHR — Contemporary Hit Radio — as the hits lineage is billed for the FM era.`,y:G.year,p:G.period});
       G._hitsChrTransitionNewsShown=true;
@@ -18377,6 +18592,7 @@ function doHire(){
   if(t._portraitFirstHireYear==null||t._portraitFirstHireYear===undefined)t._portraitFirstHireYear=G.year;
   if(!t._careerStartYear)t._careerStartYear=Math.max(1970,G.year-ri(0,18));
   s.prog[sl].talent=t;
+  delete s.prog[sl].staffingMode;
   const fit=talentScoutFormatFit01(t,s.format);
   s.prog[sl].quality=Math.min(100,Math.round(s.prog[sl].quality+(t.quality/100)*fit*35));
   initTalentPerformanceReveal(s.prog[sl],t,s.format,'hire');
@@ -19124,7 +19340,7 @@ function renderBrandMarketingStation(primarySid){
     <div class="bm-section-h">REMOTE BROADCAST VAN</div>
     ${brandMarketingVanOnlyHtml(primary)}
     <div class="bm-section-h">STATION JINGLE PACKAGE</div>
-    ${brandMarketingJingleOnlyHtml(primary)}
+    ${brandMarketingJingleOnlyHtml(opLeg)}
     <div class="bm-section-h">MARKETING SPEND</div>
     ${bmW('wl-tu-tr-bm-promo')}
     ${brandMarketingPromoBlockHtml(primary)}
@@ -20212,12 +20428,23 @@ function openProgramming(sid){
     const lbl=SL[k];
     const q=Math.round(s.prog[k]?.quality||0),c=qc(q);
     const w=SW[k]||0;
-    return `<div class="sr"><span class="lb">${lbl} <span style="color:var(--mut);font-size:15px">(×${(w*100).toFixed(0)}% weight)</span></span><span class="vl" style="color:${c==='good'?'var(--grn)':c==='warn'?'var(--amb)':'var(--red)'}">${q}/100</span></div>`;
+    const vacant=!s.prog[k]?.talent;
+    const stf=vacant&&(s.prog[k]?.staffingMode==='light')?'light':'live';
+    const staffCtl=s.isPlayer&&vacant
+      ?`<select class="abt" style="margin-left:10px;padding:4px 8px;font-size:12px;max-width:220px" aria-label="${lbl} run mode when unstaffed" onchange="setDaypartStaffingMode('${s.id}','${k}',this.value)">
+          <option value="vacant"${stf==='live'?' selected':''}>Unstaffed — automation / fill</option>
+          <option value="light"${stf==='light'?' selected':''}>Voice-track / syndicated daypart</option>
+        </select>`
+      :'';
+    return `<div class="sr" style="flex-wrap:wrap;align-items:center"><span class="lb">${lbl} <span style="color:var(--mut);font-size:15px">(×${(w*100).toFixed(0)}% weight)</span></span><span class="vl" style="color:${c==='good'?'var(--grn)':c==='warn'?'var(--amb)':'var(--red)'}">${q}/100</span>${staffCtl}</div>`;
   }).join('');
   const tutProgIds=isTutorialTurnaroundScen()&&s.isPlayer&&MP.mode!=='live';
-  const driftQuick=DRIFT[driftDefKey(s.format)]
-    ?`<button type="button" class="abt" style="background:rgba(245,166,35,.12);border:1px solid var(--amb);color:var(--amb)" ${tutProgIds?'id="wl-tu-tr-prog-pos" ':''}onclick="openDriftFromProgramming('${s.id}')">🎚 POSITIONING</button>`
-    :'';
+  const brokeredFmt=s.format==='BROKERED_PROGRAMMING';
+  const driftQuick=brokeredFmt
+    ?`<button type="button" class="abt" disabled style="opacity:.48;cursor:not-allowed" title="Paid programming does not use format positioning.">🎚 POSITIONING</button>`
+    :DRIFT[driftDefKey(s.format)]
+      ?`<button type="button" class="abt" style="background:rgba(245,166,35,.12);border:1px solid var(--amb);color:var(--amb)" ${tutProgIds?'id="wl-tu-tr-prog-pos" ':''}onclick="openDriftFromProgramming('${s.id}')">🎚 POSITIONING</button>`
+      :'';
   let progFocusHtml='';
   if(s.isPlayer){
     ensureStationProgrammingFocus(s);
@@ -20246,11 +20473,13 @@ function openProgramming(sid){
       <div class="sc-act">
         <button type="button" class="abt d" ${tutProgIds?'id="wl-tu-tr-prog-fmt" ':''}onclick="openFmtFromProgramming('${s.id}')">⚡ FORMAT</button>
         ${driftQuick||'<div class="sc-act-empty" aria-hidden="true"></div>'}
-        <button type="button" class="abt b" ${tutProgIds?'id="wl-tu-tr-prog-demo" ':''}onclick="openLeanFromProgramming('${s.id}')">🎯 DEMO TARGET</button>
+        ${brokeredFmt
+    ?`<button type="button" class="abt b" disabled style="opacity:.48;cursor:not-allowed" title="Paid programming does not use demo targeting.">🎯 DEMO TARGET</button>`
+    :`<button type="button" class="abt b" ${tutProgIds?'id="wl-tu-tr-prog-demo" ':''}onclick="openLeanFromProgramming('${s.id}')">🎯 DEMO TARGET</button>`}
         <div class="sc-act-empty" aria-hidden="true"></div>
       </div>
     </div>
-    <div class="ms2"><div class="msh">CURRENT DAYPART QUALITY</div>${drows}</div>
+    <div class="ms2"><div class="msh">CURRENT DAYPART QUALITY</div>${drows}<p class="di" style="margin-top:10px;font-size:13px;color:var(--mut)">When a daypart has <strong>no local host</strong>, choose whether it runs as full automation or a lighter <strong>voice-track / syndicated</strong> footprint — the latter costs more than bare automation but keeps more of your audience and format credibility.</p></div>
     <p class="di">Set a recurring programming budget — coaching, production, content development. Charged every period automatically. Reduces quality decay and boosts daypart quality each period.</p>
     ${budgetSlWrapStart}
     <div class="slsec">
@@ -20385,6 +20614,7 @@ let DL={sid:null,val:0};
 function openLean(sid){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  if(s.format==='BROKERED_PROGRAMMING'){showToast('Paid programming does not use demo targeting.','info');return;}
   DL={sid,val:s.demoLean||0};
   const fmt=FM[canonicalHitsFormatKey(s.format)]||{};
   // Show what the current affinity profile looks like across demos
@@ -20452,21 +20682,13 @@ function updLean(sid,v){
 function setStationOperatingMode(sid,mode){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  let m='normal';
-  if(mode==='lean_music')m='lean_music';
-  else if(mode==='brokered')m='brokered';
-  if(m==='lean_music'&&!stationQualifiesLeanAmMusicOperating(s,G)){
-    showToast('Lean/automated mode applies to AM music (non-talk) from 1980 onward.','warn');
+  /** Automation is staffing-derived only; `lean_music` is no longer a player toggle. */
+  if(mode==='lean_music'){
+    showToast('Automation follows daypart staffing — use Manage Talent to add or remove live hosts.','info');
     return;
   }
-  if(m==='brokered'&&!stationQualifiesBrokeredOperating(s,G)){
-    showToast('Brokered / paid programming applies to commercial AM (not translators, talk, or news).','warn');
-    return;
-  }
-  s.operatingMode=m;
-  MP.action('operating_mode',{sid,mode:m});
-  const modeNews=m==='lean_music'?'Lean / automated (lower cost, weaker upside)':m==='brokered'?'Brokered / paid programming (stable cash, weak audience, poor long-term value)':'Full-service';
-  G.news.unshift({v:'LOW',t:`${s.callLetters} operating model: ${modeNews}.`,y:G.year,p:G.period});
+  s.operatingMode='normal';
+  MP.action('operating_mode',{sid,mode:'normal'});
   (G.stations||[]).forEach(st=>{if(st&&!st._bpSlotDeferred&&!st.isPublic)calcRev(st,G);});
   seedRev(G.stations,G);
   updateAllStationsBudgetStress(G);
@@ -20475,6 +20697,7 @@ function setStationOperatingMode(sid,mode){
 function doLean(){
   const sid=ensureOpsSourceSid(DL.sid);DL.sid=sid;
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  if(s.format==='BROKERED_PROGRAMMING')return;
   s.demoLean=DL.val;
   // Sync to simulcast partner — they share the same audience strategy
   if(s.simulcastWith){
@@ -20997,7 +21220,11 @@ function openFmt(sid){
 function rFmt(s){
   const occ=G.stations.filter(st=>st&&!st._bpSlotDeferred&&st.id!==s.id).map(st=>st.format);
   const isAM=s.sig.type==='AM';
-  const allFmts=Object.keys(FM).filter(f=>f!==s.format&&!FM[f].public&&formatAllowedInMarket(f,G.marketId,G.year));
+  const allFmts=Object.keys(FM).filter(f=>{
+    if(f===s.format||FM[f].public||!formatAllowedInMarket(f,G.marketId,G.year))return false;
+    if(FM[f].amOnly&&(s.sig.type!=='AM'||s.fmBooster))return false;
+    return true;
+  });
   const opts=allFmts.map(f=>{
     const meta=FM[f]||{};
     const yearOk=G.unlockedFormats.includes(f)||(meta.unlock||9999)<=G.year;
@@ -21079,7 +21306,7 @@ function doFmt(keepSim){
     _simPartner.format = nf;
     _simPartner.brand  = gbBrandForStationReplace(_simPartner, nf);
     _simPartner._formatAge = 0;
-    _simPartner.ops.sell = ['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'].includes(nf)?0.60:0.55;
+    _simPartner.ops.sell = ['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'].includes(nf)?0.60:nf==='BROKERED_PROGRAMMING'?0.405:0.55;
     Object.values(_simPartner.prog).forEach(sd=>{if(sd)sd.quality=Math.round(sd.quality*(1-pen));});
     _simPartner.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(_simPartner.prog[sl])*w,0));
     COH.forEach(c=>{if(_simPartner.mom[c])_simPartner.mom[c].cur*=(1-pen);});
@@ -21119,7 +21346,8 @@ function doFmt(keepSim){
   // Reset sellout rate — new format starts with a fresh advertiser relationship.
   // A News/Talk station that flips to Album Rock can't keep its talk-format sell premium.
   const _talkFmts=['NEWS_TALK','SPORTS_TALK','PODCAST_TALK','ALL_NEWS'];
-  s.ops.sell=_talkFmts.includes(nf)?0.60:0.55;
+  s.ops.sell=_talkFmts.includes(nf)?0.60:nf==='BROKERED_PROGRAMMING'?0.405:0.55;
+  if(nf==='BROKERED_PROGRAMMING'&&s.operatingMode==='lean_music')s.operatingMode='normal';
   // Identity hit: high-identity stations take a major, permanent hit on betrayal
   // 75% loss — some residual goodwill remains (the building, the callsign, the memory)
   if(preFlipIdentity>0){
@@ -21358,6 +21586,20 @@ function applyFmDupSlider(fmSid,dupStr,remFmt){
 window.applyFmDupSlider=applyFmDupSlider;
 
 let SimS={a:null,b:null};
+/** Simulcast modal: steer LMA lessees toward in-place license buy (no need to break simulcast first). */
+function simulcastModalLmaLicenseHint(st){
+  if(!st||!stationIsPlayerLmaLesseeOperation(st))return '';
+  const sigType=st.sig.type==='FM'&&!st.fmBooster?'FM':'AM';
+  const canBuyLic=st._lmaStation&&fccCanAcquire('player',sigType,G);
+  const buyPrice=acqPrice(st,G);
+  const priceOk=Number.isFinite(buyPrice)&&buyPrice>0;
+  const priceNote=priceOk?f$(buyPrice):'—';
+  let foot='';
+  if(!canBuyLic)foot=' FCC ownership limits block a license purchase right now.';
+  else if(!priceOk)foot=' License price unavailable.';
+  else if(G.cash<buyPrice)foot=` You have ${f$(G.cash)}; need ${priceNote} to buy.`;
+  return `<div class="ibox" style="margin-top:10px;border-color:rgba(245,166,35,.45)"><strong>LMA facility:</strong> ${callDisplay(st)} is under your LMA — you program and sell, but you do not own the license yet.<br>To <strong>buy this dial</strong> without breaking simulcasts first, open <strong>Local Marketing Agreements</strong> and use <em>Buy license</em>${priceOk?` (${priceNote})`:''}.${foot}<br><button type="button" class="abt g" style="margin-top:8px;font-size:14px" onclick="cm('m-sim');openLMA()">Open LMA screen</button></div>`;
+}
 function openSim(sid){
   SimS={a:sid,b:null};rSim();om('m-sim');
 }
@@ -21380,6 +21622,7 @@ function rSim(){
       <div class="wbox"><strong>If you break this leg only:</strong><br>
         <strong>${callDisplay(_progSrc)}</strong> (programming source) keeps the format, talent${_talentSlots.length?' ('+_talentSlots.join(', ')+'​)':''}, brand, and on-air programming strategy.<br>
         <strong>${s.callLetters}</strong> (this receiver) loses simulcast echo — reformat it next turn.</div>
+      ${simulcastModalLmaLicenseHint(s)}
       <button class="cfm" onclick="doBreakSim('${s.id}')" style="background:var(--red);color:var(--wht)">BREAK THIS SIMULCAST LEG</button>
       <button class="cnl" onclick="cm('m-sim')">CANCEL</button>`;
     return;
@@ -21402,6 +21645,7 @@ function rSim(){
       <div class="wbox"><strong>If you break this simulcast:</strong><br>
         <strong>${callDisplay(_progSrc)}</strong> (programming source) keeps the format, talent${_talentSlots.length?' ('+_talentSlots.join(', ')+'​)':''}, brand, and on-air programming strategy.<br>
         <strong>${_rcv?_rcv.callLetters:'—'}</strong> (receiver) loses simulcast echo — reformat it next turn.</div>
+      ${_rcv?simulcastModalLmaLicenseHint(_rcv):''}
       <button class="cfm" onclick="doBreakSim('${s.id}')" style="background:var(--red);color:var(--wht)">BREAK SIMULCAST</button>
       <button class="cnl" onclick="cm('m-sim')">CANCEL</button>`;
     return;
@@ -21444,6 +21688,7 @@ function rSim(){
       document.getElementById('simb').innerHTML=`
     <p class="di"><strong>Simulcast programming source:</strong> <strong>${callDisplay(s)}</strong> (${fmtLabel(s.format)} · ${s.fmBooster?'FM BOOSTER':s.sig.type}) — ${existingRec.length} simulcast receiver${existingRec.length>1?'s':''} on-air.</p>
     <div class="ibox" style="margin-bottom:8px"><strong>Current receiver${existingRec.length>1?'s':''}:</strong> ${existingRec.map(r=>callDisplay(r)).join(', ')}.</div>
+    ${existingRec.map(r=>simulcastModalLmaLicenseHint(r)).join('')}
     <button type="button" class="cfm" onclick="doBreakSim('${s.id}')" style="background:var(--red);color:var(--wht);margin-bottom:10px">END ALL SIMULCASTS (${callDisplay(s)} + ${existingRec.length} receiver${existingRec.length>1?'s':''})</button>
     <div class="bbox"><strong>How it works:</strong> The programming source keeps on-air talent and format. Receivers carry the same programming. You can add another owned facility below, or end all simulcasts. AM↔FM pairs get +15% AM reach bonus where applicable.<br><br>${fmtDirectionNote}</div>
     ${partners.length?`<p class="di" style="margin-top:12px;margin-bottom:6px"><strong>Add another receiver</strong> (optional)</p><div class="acg">${opts}</div>`:`<p class="di" style="color:var(--mut);margin-top:12px;margin-bottom:6px">No additional owned stations are available to add. Use <strong>End all simulcasts</strong> above to separate this group.</p>`}
@@ -21935,6 +22180,21 @@ function wlAiGenStatusBusy(el, on) {
   if (!el || !el.classList) return;
   el.classList.toggle('wl-ai-gen-status--busy', !!on);
 }
+/**
+ * Station card `#wl-logo-status-*` is rebuilt by `renderAll()` while *_GenPending may still be true,
+ * so the new node can keep `--busy` (gold bar) after `finally` clears a stale pre-render reference.
+ * Re-query the live node after flags are cleared and sync busy + text.
+ */
+function wlSyncStationCardAiStatusStrip(stationId){
+  if(!stationId)return;
+  stationId=ensureOpsSourceSid(stationId);
+  const op=typeof G!=='undefined'&&G?G.stations.find(st=>st&&st.id===stationId):null;
+  const el=document.getElementById('wl-logo-status-'+stationId);
+  if(!el||!el.classList)return;
+  const busy=!!(op&&(op._logoGenPending||op._vanGenPending||op._jingleGenPending));
+  wlAiGenStatusBusy(el,busy);
+  if(!busy)el.textContent='';
+}
 
 async function wlLogoDownloadClick(ev) {
   try {
@@ -22301,6 +22561,7 @@ async function wlRemoteVanImageOp(stationId,mode){
     if(statusEl)wlAiGenStatusBusy(statusEl,false);
     wlSetVanGenButtonUi(stationId,false);
     wlSetVanRepaintReplaceUi(stationId,false);
+    wlSyncStationCardAiStatusStrip(stationId);
     if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&ensureOpsSourceSid(BM_ACTIVE_SID)===ensureOpsSourceSid(stationId)){
       renderBrandMarketingStation(BM_ACTIVE_SID);
     }
@@ -22378,24 +22639,49 @@ async function wlCommissionStationJingle(stationId){
       showToast(data.error||'Jingle generation failed.','warn');
       return;
     }
+    let variants=Array.isArray(data.variants)?data.variants:null;
+    const jobId=typeof data.jobId==='string'?data.jobId.trim():'';
+    const workingBase='WORKING — Creating two jingle takes. Often 1–4 minutes. Do not close this panel or click again; this message will clear when ready.';
+    if(!variants||!variants.length){
+      if(!jobId){
+        if(statusEl)statusEl.textContent=data.error||'Server did not return a jingle job id.';
+        showToast(data.error||'Jingle generation failed.','warn');
+        return;
+      }
+      if(statusEl)statusEl.textContent=workingBase;
+      const done=await wlPollStationJingleJob(jobId);
+      if(done.status!=='complete'||!done.ok||!Array.isArray(done.variants)||!done.variants.length){
+        if(statusEl)statusEl.textContent=done.error||'Jingle generation failed.';
+        showToast(done.error||'Jingle generation failed.','warn');
+        return;
+      }
+      variants=done.variants;
+    }
+    if(!variants||!variants.length){
+      if(statusEl)statusEl.textContent='No jingle variants returned.';
+      showToast('Jingle generation failed.','warn');
+      return;
+    }
     wlAdjustMyCash(-jingleCost);
-    op._pendingJingleVariants=Array.isArray(data.variants)?data.variants:[];
+    op._pendingJingleVariants=variants;
     op._jinglePendingTagline=tagline;
+    delete op._jingleSunoPromptNote;
     op._lastJingleGenTurn=turnOk;
     logHistory(op,'LOGO',`Commissioned station jingle package (${f$(jingleCost)}).`,G);
     autoSave();
-    if(statusEl)statusEl.textContent='Two variants ready — pick one below.';
     showToast('Jingle package ready — pick a variant.','info');
   }catch(_e){
     if(statusEl)statusEl.textContent='Network error — try again.';
     showToast('Jingle request failed.','warn');
   }finally{
     op._jingleGenPending=false;
-    if(statusEl)wlAiGenStatusBusy(statusEl,false);
+    const jingleStatusFresh=document.getElementById('bm-jingle-status-'+_bmSafe);
+    if(jingleStatusFresh)wlAiGenStatusBusy(jingleStatusFresh,false);
     if(btn){
       btn.disabled=false;
       btn.setAttribute('aria-busy','false');
     }
+    wlSyncStationCardAiStatusStrip(stationId);
     if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&ensureOpsSourceSid(BM_ACTIVE_SID)===ensureOpsSourceSid(stationId)){
       renderBrandMarketingStation(BM_ACTIVE_SID);
     }
@@ -22415,6 +22701,7 @@ function wlPickStationJingleVariant(stationId,idx){
   else if(!op.jingleTagline)delete op.jingleTagline;
   delete op._jinglePendingTagline;
   delete op._pendingJingleVariants;
+  delete op._jingleSunoPromptNote;
   recalc(G.stations,G);
   logHistory(op,'LOGO','Selected station jingle variant.',G);
   autoSave();
@@ -22447,6 +22734,7 @@ function wlClearStationJingle(stationId){
   delete op.jingleTagline;
   delete op._pendingJingleVariants;
   delete op._jinglePendingTagline;
+  delete op._jingleSunoPromptNote;
   recalc(G.stations,G);
   logHistory(op,'LOGO','Removed station jingle.',G);
   autoSave();
@@ -22454,7 +22742,7 @@ function wlClearStationJingle(stationId){
     MP.emit('mp_station_logo',{roomId:MP.roomId,stationId:op.id,clearCosmeticJingle:true});
   }
   renderAll();
-  if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&stationId===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
+  if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&ensureOpsSourceSid(BM_ACTIVE_SID)===ensureOpsSourceSid(stationId))renderBrandMarketingStation(BM_ACTIVE_SID);
   showToast('Jingle removed.','info');
 }
 async function wlSaveStationJingleFile(stationId,pendingIdx){
@@ -22587,6 +22875,7 @@ async function wlGenerateLogo(stationId,regenerate,opts){
     op._logoGenPending=false;
     if(statusEl)wlAiGenStatusBusy(statusEl,false);
     wlSetLogoGenButtonUi(stationId,false);
+    wlSyncStationCardAiStatusStrip(stationId);
     if(silent&&!op.cosmeticLogoUrl)op._logoAutoGenExhausted=true;
     if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&ensureOpsSourceSid(BM_ACTIVE_SID)===ensureOpsSourceSid(stationId)){
       renderBrandMarketingStation(BM_ACTIVE_SID);
@@ -24756,6 +25045,7 @@ function doPoach(sid, slot, rivalId){
   if(t._careerStartYear>t._hireYear)t._careerStartYear=t._hireYear;
   t._letExpire=false;
   s.prog[slot].talent=t;
+  delete s.prog[slot].staffingMode;
   const fit=talentScoutFormatFit01(t,s.format);
   s.prog[slot].quality=Math.min(100,Math.round(s.prog[slot].quality+(t.quality/100)*fit*35));
   initTalentPerformanceReveal(s.prog[slot],t,s.format,'hire');
@@ -25080,7 +25370,7 @@ function rStns(){
       const any=legs.some(st=>st&&stationBrokeredEconomicsActive(st,G));
       if(!any)return '';
       const gmNote=G.sc&&G.sc.gmMode?' In GM mode, corporate treats this as a last-resort survival move — it can count against reviews and promotion odds.':'';
-      return '<div class="sim-tag" style="color:var(--amb);border-color:rgba(255,200,120,.45)" title="Brokered / paid programming: stable cash, weak audience, poor long-term value.'+gmNote+'">📼 BROKERED / PAID PROGRAMMING</div>';
+      return '<div class="sim-tag" style="color:var(--amb);border-color:rgba(255,200,120,.45)" title="Format: Brokered / Paid Programming — stable cash, weak audience, poor long-term value.'+gmNote+'">📼 BROKERED / PAID PROGRAMMING</div>';
     })();
     div.innerHTML=`
       <div class="sctop"><div class="sctop-inner">`+_logoThumb+`<div>
@@ -25156,23 +25446,8 @@ function rStns(){
         };
         const sec=(title,first,inner)=>'<div class="sc-card-sec'+(first?' sc-card-sec--first':'')+'"><div class="sc-card-sec-h">'+title+'</div>'+inner+'</div>';
         const progBudgetLine='<div style="font-size:13px;color:var(--mut);line-height:1.45">Programming <strong style="color:var(--off)">'+f$(op.ops?.progBudget||0)+'</strong>/p</div>';
-        const leanQual=stationQualifiesLeanAmMusicOperating(op,G);
-        const brokQual=stationQualifiesBrokeredOperating(op,G);
-        const leanOpUi=(leanQual||brokQual)
-          ?'<div class="ibox" style="margin-top:4px;text-align:left;line-height:1.45">'+
-            '<label style="display:block;font-size:13px;color:var(--off);margin-bottom:4px">Operating model</label>'+
-            '<select style="width:100%;padding:8px;background:var(--crd);color:var(--off);border:1px solid var(--bdh);border-radius:2px;box-sizing:border-box" '+
-            'onchange="setStationOperatingMode(\''+op.id+'\',this.value)">'+
-            '<option value="normal"'+(op.operatingMode!=='lean_music'&&op.operatingMode!=='brokered'?' selected':'')+'>'+(leanQual?'Full-service music':'Full-service')+'</option>'+
-            (leanQual?'<option value="lean_music"'+(op.operatingMode==='lean_music'?' selected':'')+'>Lean / automated (lower cost, weaker upside)</option>':'')+
-            (brokQual?'<option value="brokered"'+(op.operatingMode==='brokered'?' selected':'')+'>Brokered / paid programming</option>':'')+
-            '</select>'+
-            '<div style="margin-top:6px;font-size:12px;color:var(--mut)">'+
-            (leanQual?'Survival lane for 1980s+ AM music: lean trims core fixed costs and sales overhead — trades audience ceiling vs full staffing. ':'')+
-            (brokQual?'<strong>Brokered</strong> favors AM (especially full-market AM): stable cash, weak audience, poor long-term value — not a competitive growth path. ':'')+
-            '</div>'+
-            (brokQual&&(G.sc&&G.sc.gmMode)?'<div style="margin-top:6px;font-size:12px;color:var(--amb);line-height:1.45">GM: Corporate considers brokered a last-resort strategy — it can weigh on reviews and reduce promotion odds (stronger at higher tiers).</div>':'')+
-            '</div>'
+        const brokeredFmtGmNote=(op.format==='BROKERED_PROGRAMMING'&&(G.sc&&G.sc.gmMode))
+          ?'<div class="ibox" style="margin-top:6px;font-size:12px;color:var(--amb);line-height:1.45">GM: Corporate treats <strong>paid programming</strong> as a last-resort strategy — it can weigh on reviews and reduce promotion odds.</div>'
           :'';
         const progHub='<button class="abt '+progAct+'" '+(_assignFtTutIds?'id="wl-ft-tut-programming-btn" ':'')+'style="width:100%;box-sizing:border-box;padding:14px;font-size:15px;letter-spacing:0.5px" onclick="openProgramming(\''+op.id+'\')">📻 PROGRAMMING</button>';
         const fmLegForDup=junior
@@ -25189,7 +25464,7 @@ function rStns(){
             }else{
               const cur=Math.min(maxP,Number.isFinite(fmLegForDup.fmSimulcastDupPct)?fmLegForDup.fmSimulcastDupPct:maxP);
               const rem0=fmLegForDup.fmRemainderFormat||defaultFmRemainderFormat(pairNd.am.format,G,fmLegForDup.id);
-              const fmtOpts=Object.keys(FM).filter(f=>formatAllowedInMarket(f,G.marketId,G.year)).map(f=>
+              const fmtOpts=Object.keys(FM).filter(f=>formatAllowedInMarket(f,G.marketId,G.year)&&!FM[f].amOnly).map(f=>
                 '<option value="'+f+'"'+(f===rem0?' selected':'')+'>'+fmtLabel(f)+'</option>').join('');
               fmDupUi='<div class="ibox" style="margin-top:10px;text-align:left;max-width:100%;box-sizing:border-box">'+
                 '<div style="font-size:13px;color:var(--mut);margin-bottom:8px;line-height:1.45">FCC max AM duplication on this FM in <strong style="color:var(--off)">'+mktLbl+'</strong> · <strong style="color:var(--off)">'+G.year+'</strong>: <strong style="color:var(--amb)">'+maxP+'%</strong></div>'+
@@ -25220,7 +25495,7 @@ function rStns(){
         const aiCardBusy=(op._logoGenPending||op._vanGenPending||op._jingleGenPending)?' wl-ai-gen-status--busy':'';
         return '<div class="sc-card-actions">'+
           sec('TALENT',true,'<button class="abt d" type="button" style="width:100%;box-sizing:border-box;padding:14px;font-size:15px;letter-spacing:0.5px" '+(_assignFtTutIds?'id="wl-ft-tut-talent-btn" ':'')+'onclick="openManageTalent(\''+op.id+'\')">🎙 MANAGE TALENT</button>')+
-          sec('PROGRAMMING',false,'<div style="display:flex;flex-direction:column;gap:10px;width:100%">'+progBudgetLine+leanOpUi+progHub+fmDupUi+(sportsFrHtml||'')+'</div>')+
+          sec('PROGRAMMING',false,'<div style="display:flex;flex-direction:column;gap:10px;width:100%">'+progBudgetLine+brokeredFmtGmNote+progHub+fmDupUi+(sportsFrHtml||'')+'</div>')+
           sec('MARKETING',false,mkLine+'<div class="wl-ai-gen-status wl-ai-gen-status--inline'+aiCardBusy+'" id="wl-logo-status-'+op.id+'" role="status" aria-live="polite"></div>'+pack2(['<button type="button" class="abt b" '+(_assignFtTutIds?'id="wl-ft-tut-brand-btn" ':'')+'onclick="openBrandMarketing(\''+op.id+'\')">📣 BRAND & MARKETING</button>','<button type="button" class="abt" '+(_assignFtTutIds?'id="wl-ft-tut-research-btn" ':'')+'onclick="openResearch(\''+op.id+'\')">📊 RESEARCH</button>']))+
           sec('SALES',false,pack2(['<button class="abt '+(sfActive?'g':'')+'" '+(_assignFtTutIds?'id="wl-ft-tut-sales-btn" ':'')+'onclick="openSales(\''+op.id+'\')">'+salesLbl+'</button>','<button class="abt" '+(_assignFtTutIds?'id="wl-ft-tut-spots-btn" ':'')+'onclick="openSpots(\''+op.id+'\')">📻 SPOT LOAD</button>']))+
           sec('ADMINISTRATION · STRUCTURE',false,pack2(adminBtns))+

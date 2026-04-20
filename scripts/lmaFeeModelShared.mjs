@@ -69,6 +69,16 @@ export function lmaEraFactor(year) {
 
 const LMA_K_BASE = { mega: 0.0022, large: 0.00165, medium: 0.00072, small: 0.00055 };
 const LMA_K_PERF = 0.0185;
+const LMA_FM_FEE_SIGNAL_MULT = 1.22;
+
+/** Minimum half-period FM LMA fee before $1k rounding (sync with src/legacy.js). */
+export function lmaFmMinimumFeeHalfPeriod(rankTier) {
+  const t = rankTier || 'large';
+  if (t === 'mega') return 48000;
+  if (t === 'large') return 18000;
+  if (t === 'medium') return 9000;
+  return 4000;
+}
 
 function lmaAbsoluteCapHalfYear(year, rankTier) {
   const e = lmaEraFactor(year);
@@ -96,6 +106,11 @@ export function lmaComputeFeeRounded(halfPeriodMarketPool, grossRev, seedEbitda,
   const absCap = lmaAbsoluteCapHalfYear(year, tier);
   let fee = Math.min(raw, capRev, capEbitda, absCap);
   if (fee < 0) fee = 0;
+  if (isFm) {
+    fee *= LMA_FM_FEE_SIGNAL_MULT;
+    fee = Math.min(fee, capRev, capEbitda, absCap);
+    fee = Math.max(fee, lmaFmMinimumFeeHalfPeriod(tier));
+  }
   return Math.round(fee / 1000) * 1000;
 }
 

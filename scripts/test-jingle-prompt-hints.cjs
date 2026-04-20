@@ -5,7 +5,7 @@
  * Run: node scripts/test-jingle-prompt-hints.cjs
  */
 
-const { buildSunoJingleArgs } = require('../server/jinglePrompt.js');
+const { buildSunoJingleArgs, sunoJinglePromptConfidenceMessage } = require('../server/jinglePrompt.js');
 
 const base = {
   brand: 'Test Hits FM',
@@ -42,6 +42,8 @@ assert(
   'position hint should appear in tags',
 );
 assert(!noHints.tags.includes('Audience target'), 'no hint when omitted');
+
+assert(sunoJinglePromptConfidenceMessage(base) === '', 'Suno prompt confidence line removed from player UI');
 
 const countrySung = buildSunoJingleArgs({
   brand: '96.5 KD Country',
