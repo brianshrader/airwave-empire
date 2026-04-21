@@ -2,6 +2,7 @@
 /**
  * Prints staffing-automation score / appeal / identity for sample formats vs vacancy patterns.
  * Mirrors src/legacy.js (load via VM). Run: node scripts/print-staffing-samples.mjs
+ * Side-by-side economics (calcRev, payroll, EBITDA, soft mults): scripts/print-staffing-economics-table.mjs
  */
 import { readFileSync } from 'fs';
 import vm from 'vm';
@@ -93,6 +94,8 @@ function makeCtx() {
 }
 
 const SLOTS = ['morningDrive', 'midday', 'afternoonDrive', 'evening', 'overnight'];
+/** Spoken-word never uses music `staffingMode: light` (voice-track); vacant = syndicated default. */
+const TALK_FMTS_STAFF = ['NEWS_TALK', 'SPORTS_TALK', 'PODCAST_TALK', 'ALL_NEWS'];
 
 function stubStation(format, sigType) {
   const prog = {};
@@ -109,8 +112,9 @@ function stubStation(format, sigType) {
   };
 }
 
-/** vacMask: bits 0..4 = vacant slots; lightBits: subset of vacs run as voice-track / syndicated */
+/** vacMask: bits 0..4 = vacant slots; lightBits: subset of vacs as music voice-track only (ignored on talk). */
 function applyScenario(s, vacMask, lightBits) {
+  const isTalk = TALK_FMTS_STAFF.includes(s.format);
   SLOTS.forEach((sl, i) => {
     delete s.prog[sl].staffingMode;
     if ((vacMask & (1 << i)) === 0) {
@@ -124,7 +128,7 @@ function applyScenario(s, vacMask, lightBits) {
       };
     } else {
       s.prog[sl].talent = null;
-      if (lightBits & (1 << i)) s.prog[sl].staffingMode = 'light';
+      if (!isTalk && (lightBits & (1 << i))) s.prog[sl].staffingMode = 'light';
     }
   });
 }
@@ -135,7 +139,7 @@ const SCENARIOS = [
   { name: 'MD+PM drive vacant', vac: 1 | 4, light: 0 },
   { name: 'MD+mid+PM vacant (mid voice-track)', vac: 1 | 2 | 4, light: 2 },
   { name: 'All vacant automation', vac: 31, light: 0 },
-  { name: 'All vacant voice-track', vac: 31, light: 31 },
+  { name: 'All vacant voice-track (music only; talk = syndicated default)', vac: 31, light: 31 },
 ];
 
 const CASES = [

@@ -1,0 +1,29 @@
+VITE_GAME_SERVER_URL=https://api.airwaveempire.com npm run build
+
+cd dist
+zip -r ../deploy.zip .
+
+
+rsync -avz \
+  --exclude 'node_modules' \
+  --exclude '.git' \
+  --exclude 'generated-logos' \
+  --exclude 'generated-portraits' \
+  --exclude 'saves' \
+  --exclude '.DS_Store' \
+  -e "ssh -i /Users/brianshrader/Documents/Games/Cursor/Frequencies/keys/airwaveempirekey.pem" \
+  ./ admin@3.18.148.115:~/airwave-empire/
+
+
+
+
+ssh -i /Users/brianshrader/Documents/Games/Cursor/Frequencies/keys/airwaveempirekey.pem  admin@3.18.148.115
+
+
+
+cd ~/airwave-empire
+npm install
+
+
+
+pm2 restart airwave-empire --update-env

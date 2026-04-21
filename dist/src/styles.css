@@ -555,9 +555,67 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .scn-diff.easy{background:rgba(82,227,110,.12);color:var(--grn);border:1px solid rgba(82,227,110,.3)}
 .scn-diff.med{background:rgba(245,166,35,.12);color:var(--amb);border:1px solid rgba(245,166,35,.3)}
 .scn-diff.hard{background:rgba(240,88,88,.12);color:var(--red);border:1px solid rgba(240,88,88,.3)}
-.scn-hero{text-align:center;padding:28px 0 20px;border-bottom:1px solid var(--bdr);margin-bottom:24px}
+.scn-hero{text-align:center;padding:28px 0 16px;border-bottom:1px solid var(--bdr);margin-bottom:8px}
 .scn-logo{font-family:var(--fd);font-size:52px;letter-spacing:8px;color:var(--amb);text-shadow:0 0 40px rgba(245,166,35,.5);line-height:1}
 .scn-tagline{font-family:var(--ft);font-size:15px;color:var(--mut);letter-spacing:3px;margin-top:6px}
+
+/* Scenario picker (m-scen): stacked sections with clear separation */
+.scen-pick-stack{display:flex;flex-direction:column;gap:22px;margin-top:12px}
+.scen-pick-section{
+  padding:18px 18px 20px;
+  background:rgba(0,0,0,.22);
+  border:1px solid var(--bdr);
+  border-radius:8px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+}
+.scen-pick-section__label{
+  font-family:var(--ft);
+  font-size:12px;
+  color:var(--amb);
+  letter-spacing:3px;
+  margin:0 0 14px;
+  padding-bottom:10px;
+  border-bottom:1px solid rgba(245,166,35,.22);
+}
+.scen-pick-section--tutorial .scen-pick-section__label{margin-bottom:10px}
+.scen-pick-section--campaign{
+  background:rgba(212,175,55,.05);
+  border-color:rgba(212,175,55,.28);
+}
+.scen-pick-section--solo{
+  background:rgba(255,255,255,.02);
+  border-color:rgba(255,255,255,.08);
+}
+.scen-pick-solo-sub{
+  font-family:var(--ft);
+  font-size:13px;
+  color:var(--mut);
+  letter-spacing:1px;
+  margin:-6px 0 14px;
+  line-height:1.45;
+}
+.scen-save-resume{
+  margin-top:14px;
+  padding:12px 14px;
+  background:rgba(82,227,110,.08);
+  border:1px solid rgba(82,227,110,.28);
+  border-radius:6px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:10px;
+}
+.scen-pick-solo-hd{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin:18px 0 12px;
+  justify-content:space-between;
+  align-items:center;
+  padding-top:14px;
+  border-top:1px solid rgba(255,255,255,.08);
+}
 /* ONBOARDING */
 .ob-sec{margin-bottom:20px}
 .ob-hd{font-family:var(--fd);font-size:16px;letter-spacing:3px;color:var(--amb);margin-bottom:8px}
