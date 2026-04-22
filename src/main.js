@@ -169,13 +169,20 @@ function shouldMountClerkLobby(clerk) {
   return !!clerk?.isSignedIn;
 }
 
+/** Avoid remounting Clerk widgets on every `addListener` tick — remount restarts email OTP / Turnstile. */
+let __wlClerkLobbyMountKind = null;
+
 function mountClerkLobbyComponents(clerk) {
   const host = document.getElementById('wl-clerk-components');
   if (!host) return;
   if (!shouldMountClerkLobby(clerk)) {
     clearClerkHost(clerk, host);
+    __wlClerkLobbyMountKind = null;
     return;
   }
+  const wantKind = clerk.isSignedIn ? 'user' : 'signin';
+  if (host.__wlClerkMountEl && __wlClerkLobbyMountKind === wantKind) return;
+  __wlClerkLobbyMountKind = wantKind;
   mountClerkInHost(clerk, host);
 }
 
@@ -189,12 +196,15 @@ function setupBetaSoloGate(clerk) {
         gate.setAttribute('aria-hidden', 'true');
       }
       emitBetaAuthOk();
+      if (solo) clearClerkHost(clerk, solo);
       return;
     }
     if (gate) {
       gate.style.display = 'flex';
       gate.setAttribute('aria-hidden', 'false');
     }
+    // Clerk fires this listener often during "check your email" / OTP; remounting SignIn resends codes.
+    if (solo && solo.__wlClerkMountEl) return;
     mountClerkInHost(clerk, solo);
   };
   sync();

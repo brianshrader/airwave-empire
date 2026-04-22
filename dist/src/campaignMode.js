@@ -1040,6 +1040,15 @@
       else mandLine = 'Corporate mandate: ignored / declined (' + (me.delta | 0) + ' confidence at close-out).';
     }
 
+    var lateEraBlock = '';
+    try {
+      if (typeof global.buildLateEraCampaignEndHtml === 'function' && global.G) {
+        lateEraBlock = global.buildLateEraCampaignEndHtml(global.G) || '';
+      }
+    } catch (_e) {
+      lateEraBlock = '';
+    }
+
     b.innerHTML =
       '<div class="ms2">' +
       '<div class="msh">ASSIGNMENT RESULT</div>' +
@@ -1068,6 +1077,7 @@
       '<div class="sr"><span class="lb">Next role</span><span class="vl" style="font-size:15px;line-height:1.45">' +
       esc(nextLine) +
       '</span></div>' +
+      lateEraBlock +
       '</div>';
 
     var btn = document.getElementById('campaign-end-continue');
