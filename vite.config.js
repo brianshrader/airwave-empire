@@ -67,6 +67,8 @@ export default defineConfig(({ command, mode }) => {
     landingRedirectPlugin(),
     playHtmlClerkMetaPlugin(mode, env),
     devOnlyMarketHarnessPlugin(command),
+    // Non-module scripts referenced from play.html / inspect-*.html are not Rollup-bundled; copy into dist/src/
+    // so production does not 404. See docs/RUNTIME-AND-ENV.md (section “Vite writeBundle: why legacy scripts are copied”).
     {
       name: 'copy-legacy-and-logo-js',
       writeBundle() {

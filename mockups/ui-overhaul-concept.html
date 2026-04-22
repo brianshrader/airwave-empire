@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UI overhaul concept — Airwave Empire (mockup)</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --blk: #080808;
+      --base: #0c0c0c;
+      --pnl: #121212;
+      --crd: #1a1a1a;
+      --crd-hi: #222;
+      --bdr: #333;
+      --bdh: #4a4a46;
+      --amb: #f5a623;
+      --amb-dim: rgba(245, 166, 35, 0.12);
+      --grn: #52e36e;
+      --red: #e85d5d;
+      --blu: #5ab4ff;
+      --wht: #f2ede4;
+      --off: #c9c4b8;
+      --mut: #8a8a84;
+      --fd: "Bebas Neue", sans-serif;
+      --fm: "Courier Prime", monospace;
+      --ft: "Share Tech Mono", monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      min-height: 100vh;
+      background: var(--base);
+      color: var(--wht);
+      font-family: var(--fm);
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 0, 0, 0.04) 3px, rgba(0, 0, 0, 0.04) 4px);
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* —— Top chrome —— */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 20px;
+      min-height: 58px;
+      padding: 0 20px;
+      background: var(--pnl);
+      border-bottom: 2px solid var(--amb);
+      box-shadow: 0 4px 40px rgba(245, 166, 35, 0.15);
+    }
+    .brand {
+      font-family: var(--fd);
+      font-size: 28px;
+      letter-spacing: 5px;
+      color: var(--amb);
+      text-shadow: 0 0 20px rgba(245, 166, 35, 0.45);
+      cursor: default;
+    }
+    .meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+    .meta-eyebrow {
+      font-family: var(--ft);
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--mut);
+    }
+    .meta-line {
+      font-family: var(--ft);
+      font-size: 15px;
+      color: var(--off);
+      letter-spacing: 0.04em;
+    }
+    .meta-line strong {
+      color: var(--wht);
+      font-weight: 400;
+    }
+    .prog-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 4px;
+      max-width: 280px;
+    }
+    .prog-bar {
+      flex: 1;
+      height: 4px;
+      background: var(--bdr);
+      overflow: hidden;
+    }
+    .prog-fill {
+      width: 22%;
+      height: 100%;
+      background: var(--amb);
+      box-shadow: 0 0 8px rgba(245, 166, 35, 0.5);
+    }
+    .prog-lbl {
+      font-family: var(--ft);
+      font-size: 12px;
+      color: var(--mut);
+      white-space: nowrap;
+    }
+
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .cash {
+      font-family: var(--fd);
+      font-size: 24px;
+      letter-spacing: 0.06em;
+      color: var(--grn);
+      text-shadow: 0 0 14px rgba(82, 227, 110, 0.35);
+    }
+    .cash .cash-sub {
+      display: block;
+      font-family: var(--ft);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: var(--mut);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    .btn-next {
+      appearance: none;
+      border: none;
+      cursor: pointer;
+      font-family: var(--fd);
+      font-size: 18px;
+      letter-spacing: 0.18em;
+      padding: 14px 28px;
+      background: linear-gradient(180deg, #ffc14d, var(--amb));
+      color: var(--blk);
+      clip-path: polygon(10px 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.3), 0 8px 28px rgba(245, 166, 35, 0.45);
+      transition: transform 0.12s, box-shadow 0.12s;
+    }
+    .btn-next:hover {
+      transform: scale(1.03);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25), 0 0 36px rgba(245, 166, 35, 0.75);
+    }
+    .btn-next .play {
+      margin-left: 6px;
+      opacity: 0.9;
+    }
+
+    /* —— Heartbeat strip (focal story) —— */
+    .heartbeat {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 12px 20px;
+      background: linear-gradient(90deg, var(--amb-dim), rgba(245, 166, 35, 0.04));
+      border-bottom: 1px solid rgba(245, 166, 35, 0.25);
+    }
+    .heartbeat-story {
+      font-family: var(--ft);
+      font-size: 14px;
+      color: var(--off);
+      max-width: 62ch;
+    }
+    .heartbeat-story strong {
+      color: var(--wht);
+      font-weight: 600;
+    }
+    .heartbeat-pill {
+      font-family: var(--ft);
+      font-size: 12px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--amb);
+      padding: 8px 14px;
+      border: 1px solid rgba(245, 166, 35, 0.4);
+      border-radius: 3px;
+      background: rgba(0, 0, 0, 0.25);
+      white-space: nowrap;
+    }
+
+    /* —— Main grid —— */
+    .main {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.85fr);
+      align-items: start;
+      min-height: calc(100vh - 130px);
+      padding: 16px 20px 88px;
+      gap: 16px;
+    }
+    @media (max-width: 900px) {
+      .main { grid-template-columns: 1fr; }
+      .topbar { grid-template-columns: 1fr; gap: 12px; }
+      .top-actions { justify-content: flex-start; }
+    }
+
+    .panel {
+      background: var(--crd);
+      border: 1px solid var(--bdr);
+      border-radius: 4px;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45), 0 1px 0 rgba(255, 255, 255, 0.04) inset;
+    }
+    .panel--secondary {
+      background: var(--pnl);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+    .panel-h {
+      font-family: var(--fd);
+      font-size: 14px;
+      letter-spacing: 0.22em;
+      color: var(--amb);
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--bdr);
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .panel-h span.sub {
+      font-family: var(--ft);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      color: var(--mut);
+      text-transform: none;
+    }
+    .panel-body {
+      padding: 14px 16px 18px;
+    }
+
+    /* Market column */
+    .digest-line {
+      font-family: var(--ft);
+      font-size: 13px;
+      color: var(--off);
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .digest-line:last-child { border-bottom: none; }
+    .digest-line .hl { color: var(--amb); }
+
+    .news-item {
+      font-size: 14px;
+      color: var(--off);
+      margin-bottom: 12px;
+      padding-left: 12px;
+      border-left: 2px solid var(--bdr);
+    }
+    .news-item time {
+      font-family: var(--ft);
+      font-size: 11px;
+      color: var(--mut);
+      display: block;
+      margin-bottom: 4px;
+      letter-spacing: 0.06em;
+    }
+
+    /* Spotlight station — hero of right column */
+    .spotlight {
+      border: 1px solid rgba(245, 166, 35, 0.35);
+      background: linear-gradient(165deg, rgba(245, 166, 35, 0.08), var(--crd) 40%);
+    }
+    .spotlight-top {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 20px;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+    .call {
+      font-family: var(--fd);
+      font-size: 36px;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      color: var(--wht);
+      text-shadow: 0 0 20px rgba(245, 166, 35, 0.2);
+    }
+    .format-pill {
+      font-family: var(--ft);
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 2px;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid var(--bdh);
+      color: var(--off);
+      letter-spacing: 0.06em;
+    }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 14px;
+    }
+    .metric {
+      background: var(--crd-hi);
+      border: 1px solid var(--bdr);
+      border-radius: 3px;
+      padding: 10px 12px;
+    }
+    .metric-k {
+      font-family: var(--ft);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--mut);
+      margin-bottom: 6px;
+    }
+    .metric-v {
+      font-family: var(--fm);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--wht);
+    }
+    .delta-up { color: var(--grn); font-size: 14px; font-weight: 600; margin-left: 6px; }
+    .delta-down { color: var(--red); font-size: 14px; font-weight: 600; margin-left: 6px; }
+
+    .share-bar {
+      margin-top: 8px;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 2px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .share-fill {
+      height: 100%;
+      width: 62%;
+      background: linear-gradient(90deg, rgba(245, 166, 35, 0.5), var(--amb));
+      box-shadow: 0 0 12px rgba(245, 166, 35, 0.4);
+    }
+
+    .spark {
+      margin-top: 10px;
+      height: 36px;
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+    }
+    .spark i {
+      flex: 1;
+      min-width: 4px;
+      background: rgba(90, 180, 255, 0.35);
+      border-radius: 1px;
+    }
+    .spark i:nth-child(3n) { height: 55%; }
+    .spark i:nth-child(3n + 1) { height: 35%; }
+    .spark i:nth-child(3n + 2) { height: 80%; }
+    .spark i:last-child { background: var(--grn); height: 92%; }
+
+    /* Collapsible / lower emphasis */
+    .stack-gap { height: 12px; }
+    .muted-panel .panel-h {
+      font-size: 12px;
+      letter-spacing: 0.16em;
+      color: var(--mut);
+    }
+    .muted-panel .panel-body {
+      font-size: 13px;
+      color: var(--mut);
+    }
+
+    /* Bottom nav */
+    .dock {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 40;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 12px;
+      padding: 10px 20px;
+      background: linear-gradient(0deg, var(--pnl), rgba(18, 18, 18, 0.96));
+      border-top: 1px solid var(--bdr);
+      box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.5);
+    }
+    .dock-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      padding-right: 16px;
+      margin-right: 8px;
+      border-right: 1px solid var(--bdr);
+    }
+    .dock-group:last-of-type { border-right: none; }
+    .dock a {
+      font-family: var(--ft);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      color: var(--mut);
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 3px;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .dock a:hover {
+      color: var(--amb);
+      border-color: rgba(245, 166, 35, 0.35);
+      background: rgba(245, 166, 35, 0.06);
+    }
+    .dock .ic {
+      font-size: 14px;
+      opacity: 0.85;
+    }
+    .note {
+      font-family: var(--ft);
+      font-size: 11px;
+      color: var(--mut);
+      margin-left: auto;
+      max-width: 36ch;
+      text-align: right;
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand" title="Mockup">AIRWAVE EMPIRE</div>
+    <div class="meta">
+      <span class="meta-eyebrow">Broadcast group · Solo</span>
+      <div class="meta-line"><strong>Atlanta</strong> · 1970 Spring <span style="color:var(--mut)">(Turn 3)</span></div>
+      <div class="prog-wrap">
+        <div class="prog-bar" aria-hidden="true"><div class="prog-fill"></div></div>
+        <span class="prog-lbl">Era 1970s</span>
+      </div>
+    </div>
+    <div class="top-actions">
+      <div class="cash">
+        $2,847,300
+        <span class="cash-sub">Cash on hand</span>
+      </div>
+      <button type="button" class="btn-next">NEXT PERIOD <span class="play">▶</span></button>
+    </div>
+  </header>
+
+  <section class="heartbeat" aria-label="This period">
+    <p class="heartbeat-story">
+      <strong>WHTB–FM</strong> is your lead station this book.
+      Corporate expects share stability; music tests suggest a modest uptick if you hold marketing.
+    </p>
+    <span class="heartbeat-pill">Priority: defend morning show</span>
+  </section>
+
+  <div class="main">
+    <aside class="panel panel--secondary">
+      <div class="panel-h">Market <span class="sub">Atlanta metro</span></div>
+      <div class="panel-body">
+        <div class="panel-h" style="border:none;padding:0 0 10px;font-size:12px;letter-spacing:0.18em;">Ranker digest</div>
+        <div class="digest-line"><span class="hl">#2</span> WHTB-FM · Classic rock · <strong>4.2</strong> share</div>
+        <div class="digest-line"><span class="hl">#4</span> WKQX · CHR · 3.1 share</div>
+        <div class="digest-line">#7 Your WNIV · News/Talk · 2.0 share</div>
+
+        <div class="stack-gap"></div>
+        <div class="panel panel--secondary muted-panel" style="box-shadow:none;">
+          <div class="panel-h">News wire</div>
+          <div class="panel-body">
+            <article class="news-item">
+              <time>FCC · 2h ago</time>
+              Ownership cap under review — no immediate action.
+            </article>
+            <article class="news-item">
+              <time>Trade</time>
+              National spot rates firming for Q3.
+            </article>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <section class="panel spotlight">
+      <div class="panel-h">Station spotlight <span class="sub">Where you’re fighting the book</span></div>
+      <div class="panel-body">
+        <div class="spotlight-top">
+          <div>
+            <div class="call">WHTB–FM</div>
+            <span class="format-pill">Classic rock · 102.9</span>
+          </div>
+        </div>
+        <div class="metrics">
+          <div class="metric">
+            <div class="metric-k">Audience share</div>
+            <div class="metric-v">4.2<span class="delta-up">▲ 0.3</span></div>
+            <div class="share-bar"><div class="share-fill"></div></div>
+          </div>
+          <div class="metric">
+            <div class="metric-k">Revenue (est.)</div>
+            <div class="metric-v">$418k<span class="delta-up">▲ 6%</span></div>
+          </div>
+          <div class="metric">
+            <div class="metric-k">Rank (12+)</div>
+            <div class="metric-v">#2<span class="delta-down" style="color:var(--mut)">→</span></div>
+          </div>
+          <div class="metric">
+            <div class="metric-k">12-week trend</div>
+            <div class="spark" aria-hidden="true">
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <nav class="dock" aria-label="Primary">
+    <div class="dock-group">
+      <a href="#"><span class="ic">📰</span> News</a>
+      <a href="#"><span class="ic">📊</span> Financials</a>
+      <a href="#"><span class="ic">🏦</span> Loans</a>
+    </div>
+    <div class="dock-group">
+      <a href="#"><span class="ic">🎙</span> GM career</a>
+      <a href="#"><span class="ic">💾</span> Save / load</a>
+    </div>
+    <div class="dock-group">
+      <a href="#"><span class="ic">💡</span> Tips</a>
+    </div>
+    <span class="note">Mockup only — layout &amp; hierarchy preview.</span>
+  </nav>
+
+</body>
+</html>

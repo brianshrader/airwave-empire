@@ -13,7 +13,7 @@
 //   - Players can rejoin by room code at any time while server is running
 //   - Saves survive server restarts — rooms are restored from disk on boot
 //
-// Run: node server.js
+// Run: node server.js  (loads .env / WL_ENV_FILE, then server/validateEnv.js — see docs/RUNTIME-AND-ENV.md)
 // Requires: npm install express socket.io dotenv
 //
 // Spectator TV (read-only rankings, same room code): open /spectate.html?room=CODE
@@ -36,6 +36,9 @@ require('dotenv').config({ path: path.join(__dirname, '.env') });
 if (process.env.WL_ENV_FILE && fs.existsSync(process.env.WL_ENV_FILE)) {
   require('dotenv').config({ path: process.env.WL_ENV_FILE, override: true });
 }
+
+const { validateServerEnv } = require('./server/validateEnv');
+validateServerEnv();
 
 const express  = require('express');
 const cors     = require('cors');

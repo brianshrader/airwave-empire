@@ -11328,6 +11328,48 @@ function aiRivalStationBehavior(s, G){
   return { role, spendMult, hireMult, skipPoach, distress, portE };
 }
 
+/**
+ * Rival courting / poach pacing — tuned for readable drama vs spam (beta: same host targeted every other book;
+ * mid-contract courting felt arbitrary). `cyr` is contract years remaining (see decay() −0.5 per period).
+ * Mid-contract attempts above MID_CONTRACT_CYR_STRICT need a separate “serious offer” roll (rare).
+ */
+const WL_TALENT_POACH = {
+  MIN_TURNS_BETWEEN_COURTING_SAME_HOST: 6,
+  MID_CONTRACT_CYR_STRICT: 2.25,
+  MID_CONTRACT_SERIOUS_CHANCE: 0.12,
+  TALENT_EVENTS_BASE_CHANCE: 0.024,
+  AI_RIVAL_POACH_COOLDOWN_PERIODS: 6,
+};
+function wlTalentLastPoachCourtingTurn(t) {
+  if (!t || !Number.isFinite(t._poachLastCourtingTurn)) return -9999;
+  return t._poachLastCourtingTurn;
+}
+function wlTalentCanReceivePoachCourtingThisTurn(t, G) {
+  if (!t || !G) return false;
+  const turn = G.turn | 0;
+  return turn >= wlTalentLastPoachCourtingTurn(t) + WL_TALENT_POACH.MIN_TURNS_BETWEEN_COURTING_SAME_HOST;
+}
+/** If false, skip initiating a new courting / pending-poach this period (rivals may still resolve an existing pending). */
+function wlTalentMidContractPoachSeriousOfferRolls(t) {
+  const cyr = t && typeof t.cyr === 'number' && !Number.isNaN(t.cyr) ? t.cyr : 0;
+  if (cyr <= WL_TALENT_POACH.MID_CONTRACT_CYR_STRICT) return true;
+  return Math.random() < WL_TALENT_POACH.MID_CONTRACT_SERIOUS_CHANCE;
+}
+function wlMarkTalentPoachCourtingTurn(t, G) {
+  if (!t || !G) return;
+  t._poachLastCourtingTurn = G.turn | 0;
+}
+/** Periods of on-air sit-out for a host poached mid-contract (non-compete style); uses existing _suspended in decay(). */
+function wlPoachSitoutPeriodsForDepartingTalent(t) {
+  if (!t) return 1;
+  let n = 1;
+  if ((t.quality | 0) >= 70) n++;
+  if (t.superstar === true) n += 2;
+  const cyr = Math.min(4, Math.max(0, typeof t.cyr === 'number' && !Number.isNaN(t.cyr) ? t.cyr : 0));
+  n += Math.min(2, Math.round(cyr));
+  return Math.min(8, n);
+}
+
 // ── COMPETITOR AI ─────────────────────────────────────────────────
 function runAI(G){
   runAIVirtualLoanBorrow(G);
@@ -11517,13 +11559,14 @@ function runAI(G){
         if(strongMorning&&(!s._poachCooldown||s._poachCooldown<=0)){
           const pStn=playerStns.find(st=>st.id===strongMorning.id);
           const tal=pStn?.prog?.morningDrive?.talent;
-          if(pStn&&tal&&!pStn._rivalPoachPending){
+          if(pStn&&tal&&!pStn._rivalPoachPending&&wlTalentCanReceivePoachCourtingThisTurn(tal,G)&&wlTalentMidContractPoachSeriousOfferRolls(tal)){
             const newSal=Math.round(tal.salary*rnd(1.42,1.85)/500)*500;
             pStn._rivalPoachPending={
               rivalId:s.id,slot:'morningDrive',offerSalary:newSal,talentId:tal.id,
               announcedY:G.year,announcedP:G.period,matched:false
             };
-            s._poachCooldown=4;
+            wlMarkTalentPoachCourtingTurn(tal,G);
+            s._poachCooldown=WL_TALENT_POACH.AI_RIVAL_POACH_COOLDOWN_PERIODS;
             s._aiLastMajorReason='poach:player-morning-pressure';
             acts.push({v:'HIGH',
               t:`⚡ ${s.callLetters} makes a run at ${tal.name} (${f$(newSal)}/yr) — ${pStn.callLetters} is a prime target.`,
@@ -11543,7 +11586,7 @@ function runAI(G){
         // Find the actual station object — player gets one period to match salary (see resolvePendingRivalPoaches)
         const pStn=playerStns.find(st=>st.id===targetPlayerStation.id);
         const tal=pStn?.prog?.morningDrive?.talent;
-        if(pStn&&tal&&!pStn._rivalPoachPending){
+        if(pStn&&tal&&!pStn._rivalPoachPending&&wlTalentCanReceivePoachCourtingThisTurn(tal,G)&&wlTalentMidContractPoachSeriousOfferRolls(tal)){
           const nm=tal.name;
           const newSal=Math.round(tal.salary*rnd(1.35,1.70)/500)*500;
           if(!s._poachCooldown||s._poachCooldown<=0){
@@ -11551,7 +11594,8 @@ function runAI(G){
               rivalId:s.id,slot:'morningDrive',offerSalary:newSal,talentId:tal.id,
               announcedY:G.year,announcedP:G.period,matched:false
             };
-            s._poachCooldown=4;
+            wlMarkTalentPoachCourtingTurn(tal,G);
+            s._poachCooldown=WL_TALENT_POACH.AI_RIVAL_POACH_COOLDOWN_PERIODS;
             s._aiLastMajorReason='poach:player-morning';
             acts.push({v:'HIGH',
               t:`⚡ ${s.callLetters} is courting ${nm} at ${pStn.callLetters} (${f$(newSal)}/yr) — you have one period to match in contract.`,
@@ -11572,13 +11616,14 @@ function runAI(G){
         if(best&&Math.random()<0.30){
           if(best.st.isPlayer){
             const pStn=best.st,tal=pStn.prog.morningDrive.talent;
-            if(tal&&!pStn._rivalPoachPending&&(!s._poachCooldown||s._poachCooldown<=0)){
+            if(tal&&!pStn._rivalPoachPending&&(!s._poachCooldown||s._poachCooldown<=0)&&wlTalentCanReceivePoachCourtingThisTurn(tal,G)&&wlTalentMidContractPoachSeriousOfferRolls(tal)){
               const newSal=Math.round(tal.salary*rnd(1.30,1.60)/500)*500;
               pStn._rivalPoachPending={
                 rivalId:s.id,slot:'morningDrive',offerSalary:newSal,talentId:tal.id,
                 announcedY:G.year,announcedP:G.period,matched:false
               };
-              s._poachCooldown=4;
+              wlMarkTalentPoachCourtingTurn(tal,G);
+              s._poachCooldown=WL_TALENT_POACH.AI_RIVAL_POACH_COOLDOWN_PERIODS;
               s._aiLastMajorReason='poach:player-morning-open';
               acts.push({v:'HIGH',t:`⚡ ${s.callLetters} is courting ${tal.name} at ${pStn.callLetters} (${f$(newSal)}/yr).`,iy:true});
               aiBenchInc(G,'poachPlayerAttempts');
@@ -16453,14 +16498,27 @@ function resolvePendingRivalPoaches(G){
       return;
     }
     const nm=t.name;
+    const prevCyr=typeof t.cyr==='number'&&!Number.isNaN(t.cyr)?t.cyr:0;
+    const buyoutEst=prevCyr>0.1?Math.round(t.salary*prevCyr*0.60/500)*500:0;
+    const sitN=wlPoachSitoutPeriodsForDepartingTalent(t);
     sd.talent=null;
     sd.quality=Math.round((sd.quality||30)*0.70);
     if(rival&&rival.prog[slot]){
-      rival.prog[slot].talent={...t,salary:pend.offerSalary,cyr:ri(1,2),morale:Math.min(100,(t.morale||65)+5)};
+      const susp0=(t._suspended|0)>0?(t._suspended|0):0;
+      rival.prog[slot].talent={
+        ...t,
+        salary:pend.offerSalary,
+        cyr:ri(1,2),
+        morale:Math.min(100,(t.morale||65)+5),
+        _suspended:Math.max(susp0,sitN),
+      };
       rival.prog[slot].quality=Math.min(100,Math.round((rival.prog[slot].quality||30)+t.quality*0.45));
     }
-    rival&&(rival._poachCooldown=4);
-    G.news.unshift({v:'HIGH',t:`🎙 POACHED: ${nm} leaves ${pStn.callLetters} for ${rival?rival.callLetters:'a rival'} — you didn't match their offer in time.`,y:G.year,p:G.period,iy:true});
+    rival&&(rival._poachCooldown=WL_TALENT_POACH.AI_RIVAL_POACH_COOLDOWN_PERIODS);
+    if(rival&&rival.prog[slot]&&rival.prog[slot].talent)wlMarkTalentPoachCourtingTurn(rival.prog[slot].talent,G);
+    const buyoutBit=buyoutEst>0?` Rival side reportedly paid ~${f$(buyoutEst)} to unwind ${Math.round(prevCyr*10)/10} yr remaining.`:'';
+    const sitBit=sitN>0?` On-air at ${rival?rival.callLetters:'rival'} delayed ~${sitN} period${sitN!==1?'s':''} (non-compete / start date).`:'';
+    G.news.unshift({v:'HIGH',t:`🎙 POACHED: ${nm} leaves ${pStn.callLetters} for ${rival?rival.callLetters:'a rival'} — you didn't match their offer in time.${buyoutBit}${sitBit}`,y:G.year,p:G.period,iy:true});
     logHistory(pStn,'TALENT',`${nm} left for ${rival?callDisplay(rival):'rival'} — ${SL[slot]} (contract)`,G);
     if(rival) logHistory(rival,'TALENT',`Signed ${nm} from ${callDisplay(pStn)} — ${SL[slot]}`,G);
     delete pStn._rivalPoachPending;
@@ -16536,18 +16594,20 @@ function talentEvents(G){
       }
 
       // POACHING: rival AI stations try to steal star talent (morning drive only) — defer loss; player can match in contract modal
-      if(slot==='morningDrive'&&t.quality>72&&Math.random()<0.06){
+      if(slot==='morningDrive'&&t.quality>72&&Math.random()<WL_TALENT_POACH.TALENT_EVENTS_BASE_CHANCE){
         const rivals=G.stations.filter(st=>st&&!st._bpSlotDeferred&&!st.isPlayer&&st.rat?.share>0.05);
-        if(rivals.length&&!s._rivalPoachPending){
+        if(rivals.length&&!s._rivalPoachPending&&wlTalentCanReceivePoachCourtingThisTurn(t,G)&&wlTalentMidContractPoachSeriousOfferRolls(t)){
           const rival=pick(rivals);
           const name=t.name;
           const poachResist=(t.morale/100)*0.5+Math.min(1,(t.cyr||0)/2)*0.5;
           if(Math.random()<poachResist){
+            wlMarkTalentPoachCourtingTurn(t,G);
             G.news.unshift({v:'MEDIUM',t:`🎙 ${rival.callLetters} approached ${name} — they stayed loyal to ${s.callLetters}. Consider a renewal.`,y:G.year,p:G.period});
           } else {
             const newSal=Math.round(t.salary*rnd(1.22,1.48)/500)*500;
             s._rivalPoachPending={rivalId:rival.id,slot:'morningDrive',offerSalary:newSal,talentId:t.id,announcedY:G.year,announcedP:G.period,matched:false};
-            rival._poachCooldown=4;
+            rival._poachCooldown=WL_TALENT_POACH.AI_RIVAL_POACH_COOLDOWN_PERIODS;
+            wlMarkTalentPoachCourtingTurn(t,G);
             G.news.unshift({v:'HIGH',t:`⚡ ${rival.callLetters} is courting ${name} with ${f$(newSal)}/yr — open their contract to match (≥${f$(Math.round(newSal*0.95/500)*500)}/yr) or they may leave next period.`,y:G.year,p:G.period,iy:true});
           }
         }
@@ -25555,6 +25615,7 @@ function doExtend(sid, slot, years, newSalary){
     const minSal=Math.round((rp.offerSalary||0)*0.95/500)*500;
     if(newSalary>=minSal){
       delete s._rivalPoachPending;
+      wlMarkTalentPoachCourtingTurn(t,G);
       G.news.unshift({v:'LOW',t:`📋 ${t.name} stays — your contract fends off the rival bid.`,y:G.year,p:G.period});
     }
   }

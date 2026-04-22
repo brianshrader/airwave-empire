@@ -559,6 +559,19 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .scn-logo{font-family:var(--fd);font-size:52px;letter-spacing:8px;color:var(--amb);text-shadow:0 0 40px rgba(245,166,35,.5);line-height:1}
 .scn-tagline{font-family:var(--ft);font-size:15px;color:var(--mut);letter-spacing:3px;margin-top:6px}
 
+/* Scenario era groupings (1970s / 1980s / etc.) */
+.scen-era-header{
+  font-family:var(--fd);
+  font-size:16px;
+  font-weight:600;
+  color:var(--amb);
+  letter-spacing:5px;
+  margin-bottom:12px;
+  padding-bottom:8px;
+  border-bottom:2px solid rgba(245,166,35,.4);
+  text-shadow:0 0 24px rgba(245,166,35,.2);
+}
+
 /* Scenario picker (m-scen): stacked sections with clear separation */
 .scen-pick-stack{display:flex;flex-direction:column;gap:22px;margin-top:12px}
 .scen-pick-section{
@@ -583,16 +596,30 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   border-color:rgba(212,175,55,.28);
 }
 .scen-pick-section--solo{
-  background:rgba(255,255,255,.02);
-  border-color:rgba(255,255,255,.08);
+  background:rgba(245,166,35,.07);
+  border-color:rgba(245,166,35,.22);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 0 0 1px rgba(0,0,0,.2);
+}
+.scen-pick-section__label--solo-head{
+  font-family:var(--fd);
+  font-size:17px;
+  font-weight:600;
+  color:var(--wht);
+  letter-spacing:5px;
+  margin:0 0 12px;
+  padding:10px 12px 12px;
+  border-bottom:2px solid rgba(245,166,35,.45);
+  background:linear-gradient(180deg,rgba(245,166,35,.12) 0%,rgba(0,0,0,0) 100%);
+  border-radius:4px 4px 0 0;
 }
 .scen-pick-solo-sub{
   font-family:var(--ft);
-  font-size:13px;
-  color:var(--mut);
-  letter-spacing:1px;
-  margin:-6px 0 14px;
-  line-height:1.45;
+  font-size:14px;
+  color:var(--off);
+  letter-spacing:0.5px;
+  margin:-4px 0 16px;
+  line-height:1.5;
+  font-weight:500;
 }
 .scen-save-resume{
   margin-top:14px;

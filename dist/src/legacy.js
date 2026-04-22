@@ -14519,7 +14519,7 @@ function openScenSelect(localSave){
   const cards=eraGroupsFiltered.map(era=>{
     const eraCards=SC.filter(sc=>era.ids.includes(sc.id)).map(makeCard).join('');
     return `<div style="margin-bottom:24px">
-      <div style="font-family:var(--ft);font-size:14px;color:var(--amb);letter-spacing:3px;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid rgba(245,166,35,.2)">${era.label}</div>
+      <div class="scen-era-header">${era.label}</div>
       <div style="display:flex;flex-direction:column;gap:12px">${eraCards}</div>
     </div>`;
   }).join('');
@@ -14568,8 +14568,8 @@ function openScenSelect(localSave){
   </div>`;
 
   const soloSection=`<div class="scen-pick-section scen-pick-section--solo">
-    <div class="scen-pick-section__label">SOLO PLAY — MARKET &amp; SCENARIO</div>
-    <p class="scen-pick-solo-sub">Pick a market, then choose an era scenario. Buttons follow major markets first (New York through Wichita). Starting cash scales with market size.</p>
+    <div class="scen-pick-section__label scen-pick-section__label--solo-head">SOLO PLAY</div>
+    <p class="scen-pick-solo-sub">You are a radio station owner. Pick a market below, then choose a scenario.</p>
     <div style="font-family:var(--ft);font-size:12px;color:var(--mut);letter-spacing:2px;margin-bottom:8px">YOUR MARKET</div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">${marketPicker}</div>
     ${blurb?`<div style="font-size:15px;color:var(--off);line-height:1.55;margin-bottom:14px;border-left:3px solid rgba(245,166,35,.35);padding-left:12px">${blurb}</div>`:''}
@@ -14586,7 +14586,7 @@ function openScenSelect(localSave){
     <div style="padding:18px 20px 20px;max-width:760px;margin:0 auto">
     <div class="scn-hero">
       <div class="scn-logo">AIRWAVE EMPIRE</div>
-      <div class="scn-tagline" id="scn-tagline">${mktLabel.toUpperCase()} RADIO · 1970 TO 2020</div>
+      <div class="scn-tagline" id="scn-tagline">A RADIO MANAGEMENT GAME</div>
     </div>
     <div class="scen-pick-stack">
       ${tutorialSection}

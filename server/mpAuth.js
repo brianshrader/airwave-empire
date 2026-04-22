@@ -1,10 +1,13 @@
 /**
- * Optional Clerk JWT verification for Socket.io connections.
- * When CLERK_SECRET_KEY is unset, all connections are allowed (local / LAN dev).
+ * Clerk JWT verification for Socket.io (multiplayer + authenticated features).
+ *
+ * Requires CLERK_SECRET_KEY in production (see server/validateEnv.js).
+ * Development without a key: only allowed when WL_ALLOW_MP_AUTH_BYPASS=1 (explicit opt-in).
  */
 function attachSocketAuth(io) {
   io.use(async (socket, next) => {
-    if (!process.env.CLERK_SECRET_KEY) {
+    const secret = process.env.CLERK_SECRET_KEY;
+    if (!secret || typeof secret !== 'string' || !secret.trim()) {
       socket.data.clerkUserId = null;
       return next();
     }
@@ -22,7 +25,7 @@ function attachSocketAuth(io) {
     try {
       const { verifyToken } = require('@clerk/backend');
       const payload = await verifyToken(token, {
-        secretKey: process.env.CLERK_SECRET_KEY,
+        secretKey: secret.trim(),
       });
       socket.data.clerkUserId = payload.sub || null;
       next();

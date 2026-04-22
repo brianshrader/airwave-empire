@@ -31,7 +31,7 @@ const app = {
   autorestart: true,
   max_restarts: 15,
   min_uptime: '5s',
-  // Merge: default env
+  // Merge: default env (local dev). For Socket.io without Clerk, set WL_ALLOW_MP_AUTH_BYPASS=1 in ecosystem.config.local.cjs — never in production.
   env: {
     NODE_ENV: 'development',
   },
