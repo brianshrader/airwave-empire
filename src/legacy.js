@@ -9949,6 +9949,44 @@ function stationDigitalTerrestrialDrag(s,G){
   return Math.max(0.865,Math.min(0.998,drag));
 }
 
+/**
+ * Share of player commercial stations in this market with Digital on-ramp active (stream launch).
+ * Cached per half-period on G — O(1) after first calcRev in a pass; does not touch listening/scoring.
+ */
+function portfolioPlayerDigitalActiveShare01(G){
+  const key=`${G.year||0}_${G.period||0}_${G.turn||0}`;
+  if(G._portfolioDigShareKey===key&&typeof G._portfolioDigShare01==='number')return G._portfolioDigShare01;
+  const sts=(G.stations||[]).filter(st=>st&&!st._bpSlotDeferred&&!st.isPublic&&st.isPlayer);
+  let v=0;
+  if(sts.length){
+    const act=sts.filter(st=>st.stream&&st.stream.active).length;
+    v=act/sts.length;
+  }
+  G._portfolioDigShareKey=key;
+  G._portfolioDigShare01=v;
+  return v;
+}
+
+/**
+ * Late-era terrestrial pricing / inventory pressure (2018→2024), smooth and cumulative over years.
+ * Stronger without Digital (stream.active) plus a second nudge from 2020 for non-adapters — no cliffs.
+ */
+function lateEraTerrestrialCommoditizationMult(s,G){
+  const y=G?.year||1970;
+  const t=_smoothstep(2018,2024,y);
+  if(t<=0)return 1;
+  let cut=0.0125*t;
+  if(!s.stream?.active){
+    let herd=1;
+    if(s.isPlayer){
+      const ps=portfolioPlayerDigitalActiveShare01(G);
+      herd=1+t*(1-ps)*0.56;
+    }
+    cut+=(0.036*t+0.024*_smoothstep(2020,2024,y)*t)*herd;
+  }
+  return Math.max(0.855,1-cut);
+}
+
 function calcRev(s,G){
   if(s._bpSlotDeferred)return;
   // Non-commercial public stations earn no ad revenue — pledge-funded
@@ -10140,6 +10178,7 @@ function calcRev(s,G){
   if(stationBrokeredEconomicsActive(s,G))rev=brokeredProgrammingTerrestrialRev(s,G,rev);
   const terrDrag=stationDigitalTerrestrialDrag(s,G);
   rev=Math.round(rev*terrDrag);
+  rev=Math.round(rev*lateEraTerrestrialCommoditizationMult(s,G));
   // ── COSTS ────────────────────────────────────────────────────────
   // On-air talent (annual salary / 2 for half-year period)
   let talCost=Object.values(s.prog).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
@@ -10281,20 +10320,53 @@ function calcRev(s,G){
     // Stream AQH penetration (listening-side): calibrated ~10–15% combined-listening share by late 2020s at average stations.
     const streamPenetration=Math.min(0.24,sd*straf*(0.34+0.20*dStrengthInstant));
     const streamAqh=Math.round(aqh*streamPenetration);
-    const cpmScale=Math.min(2.85,1+(year-2005)/9);
+    // Digital CPM curve: keep early 2010s discipline; allow late 2010s/2020s modest extra scale (sell-side reality, not listening).
+    const cpmScale=Math.min(3.12,1+(year-2005)/9+_smoothstep(2016,2024,year)*0.14);
     const swcpm=COH.reduce((sum,c)=>{
       const w=(s.rat.cur[c]?.aqh||0)/Math.max(aqh,1);
       return sum+w*(SCPM[c]||4)*cpmScale;
     },0);
     const sSpots=Math.min(8,s.ops.spots*.4);
-    const digitalGross=Math.round((streamAqh/1000)*swcpm*sSpots*182*0.77);
+    // Packaged streaming sell-through (pre-monetization-eff): gentle late-era lift so portfolio Digital matters without touching AQH penetration.
+    const digitalPackMult=0.778+_smoothstep(2010,2024,year)*0.118;
+    const digitalGross=Math.round((streamAqh/1000)*swcpm*sSpots*182*digitalPackMult);
     const talDig=stationDigitalTalentComposite01(s,G);
-    let fillHaircut=0.58+0.28*dStrengthInstant-0.12*Math.min(1,sd*1.15);
-    fillHaircut+=Math.max(-0.028,Math.min(0.065,(talDig-0.5)*0.14));
-    const digitalMonetizationEff=Math.max(0.44,Math.min(0.94,fillHaircut));
+    let fillHaircut=0.608+0.28*dStrengthInstant-0.10*Math.min(1,sd*1.15);
+    fillHaircut+=Math.max(-0.028,Math.min(0.078,(talDig-0.5)*0.155));
+    // Mature-market fill recovery: late 2010s+ digital ad stacks improve; keep terrestrial-relative haircut believable.
+    fillHaircut+=_smoothstep(2016,2024,year)*0.038+_smoothstep(2020,2025,year)*0.024;
+    fillHaircut+=_smoothstep(2016,2024,year)*0.014;
+    let monFloor=year>=2021?0.505:year>=2018?0.475:0.44;
+    let monCap=year>=2022?0.97:0.945;
+    monFloor+=_smoothstep(2016,2024,year)*0.011;
+    monCap+=_smoothstep(2018,2024,year)*0.013;
+    const digitalMonetizationEff=Math.max(monFloor,Math.min(monCap,fillHaircut));
     const dVol=stationDigitalVolatilityMult(s,G);
     streamRev=Math.round(digitalGross*digitalMonetizationEff*dVol);
-    streamUpkeep=Math.round(STREAM_UPKEEP_BASE/2);
+    // Revenue maturity (2014+): direct/programmatic streaming yield improves vs early experimental years — does not change AQH/listening path.
+    const digRevenueMaturityLift=1+_smoothstep(2012,2022,year)*0.17+_smoothstep(2018,2025,year)*0.30;
+    streamRev=Math.round(streamRev*digRevenueMaturityLift);
+    // Late-era digital operating leverage (profit-side): modest lift after AQH path; ramps 2016→2024.
+    const digOpLeverageRev=1+_smoothstep(2016,2024,year)*0.041;
+    streamRev=Math.round(streamRev*digOpLeverageRev);
+    // Portfolio cluster: majority Digital-active player stations → bundled/cross-sell operational lift (player-owned only).
+    if(s.isPlayer){
+      const ps=portfolioPlayerDigitalActiveShare01(G);
+      const portClusterLift=1+_smoothstep(2016,2024,year)*_smoothstep(0.24,0.70,ps)*0.054;
+      streamRev=Math.round(streamRev*portClusterLift);
+      const bundleRev=1+_smoothstep(2020,2024,year)*_smoothstep(0.64,0.90,ps)*0.034;
+      streamRev=Math.round(streamRev*bundleRev);
+      const nearFullDigRev=1+_smoothstep(2021,2024,year)*_smoothstep(0.82,0.99,ps)*0.024;
+      streamRev=Math.round(streamRev*nearFullDigRev);
+    }
+    // Upkeep: still material early; scales down modestly once the streaming stack is table-stakes (reduces perpetual EBITDA drag).
+    const streamUpkeepHalf=STREAM_UPKEEP_BASE/2;
+    const upkeepScale=(1-_smoothstep(2017,2024,year)*0.28)*(1-_smoothstep(2020,2024,year)*0.092);
+    streamUpkeep=Math.round(streamUpkeepHalf*upkeepScale);
+    if(s.isPlayer){
+      const psU=portfolioPlayerDigitalActiveShare01(G);
+      streamUpkeep=Math.round(streamUpkeep*(1-_smoothstep(2018,2024,year)*0.13*psU));
+    }
     s.stream.aqh=streamAqh;
     s.stream.rev=streamRev;
     s.stream.upkeep=streamUpkeep;
@@ -10420,6 +10492,11 @@ function calcRev(s,G){
   if(talkEarlySaBump>0&&year<1980&&_tierMkt!=='mega')talkEarlySaBump*=0.58;
   const salesAdminRate=salesRate+adminRate+lateMarginTrim+progressiveSaRate+talkEarlySaBump;
   let salesAdminCost=Math.round(totalRev*salesAdminRate);
+  // Late-era adaptation drag: non-Digital stations carry higher sell-through / rep-stack friction (smooth 2020→2024).
+  if(!s.stream?.active){
+    const lateSaDrag=1+_smoothstep(2020,2024,year)*0.030;
+    salesAdminCost=Math.round(salesAdminCost*lateSaDrag);
+  }
   if(staffingAutomationEconomicsActive(s,G)&&_autoSurv.sales<1){
     salesAdminCost=Math.round(salesAdminCost*_autoSurv.sales);
   }
@@ -10458,6 +10535,15 @@ function calcRev(s,G){
   if(staffingAutomationEconomicsActive(s,G)&&(_ultraLean.fixedMult<1||_ultraLean.opsMult<1)){
     if(_ultraLean.fixedMult<1)fixedCost=Math.round(fixedCost*_ultraLean.fixedMult);
     if(_ultraLean.opsMult<1)opsFloor=Math.round(opsFloor*_ultraLean.opsMult);
+  }
+  if(s.isPlayer&&s.stream?.active&&year>=2018){
+    const psp=portfolioPlayerDigitalActiveShare01(G);
+    const portGate=_smoothstep(0.46,0.82,psp);
+    if(portGate>0.004){
+      const stackEase=Math.min(0.048,_smoothstep(2018,2024,year)*portGate*(0.014+0.034*psp));
+      opsFloor=Math.round(opsFloor*(1-stackEase));
+      salesAdminCost=Math.round(salesAdminCost*(1-stackEase*0.36));
+    }
   }
   // Very low realized billing (pre–seedRev): taper fixed footprint for early FM music so weak sticks aren’t crushed by market-scaled overhead alone.
   if(year<1980&&s.sig.type==='FM'&&!TALK_FMTS.includes(s.format)&&totalRev<120000){
@@ -18569,6 +18655,7 @@ function buildMpFall2025EndgameResults(){
 function showMpEndgameModal(){
   if(MP.mode!=='live'||!G._mpFinalResults)return;
   const r=G._mpFinalResults;
+  const lateDual=typeof buildMpLateEraFinaleHtml==='function'?buildMpLateEraFinaleHtml(G):'';
   const winNames=r.winnerPids.map(pid=>(MP.players||[]).find(p=>p.playerId===pid)?.name||`Player ${pid+1}`).join(' · ');
   const rows=r.players.map((p,i)=>{
     const isW=r.winnerPids.includes(p.pid);
@@ -18589,7 +18676,7 @@ function showMpEndgameModal(){
     ?`<div class="mp-endgame-winner" style="text-align:center;padding:16px 12px 8px;font-family:var(--fd);font-size:22px;color:var(--amb);text-shadow:0 0 24px rgba(212,175,55,.35)">🏆 CO-WINNERS: ${winNames}</div>`
     :`<div class="mp-endgame-winner" style="text-align:center;padding:16px 12px 8px;font-family:var(--fd);font-size:24px;color:var(--amb);text-shadow:0 0 28px rgba(212,175,55,.4)">🏆 WINNER: ${winNames}</div>`;
   const el=document.getElementById('mp-endgame-body');
-  if(el) el.innerHTML=`<p class="di" style="font-size:15px;color:var(--mut);margin:0 0 14px 0;line-height:1.5">Fall 2025 ends the competitive campaign. Final score weights victory points, performance index, and cash. You may continue in sandbox after this screen.</p>${winLine}<div style="margin-top:8px;border:1px solid rgba(212,175,55,.25);border-radius:6px;overflow:hidden">${rows}</div>`;
+  if(el) el.innerHTML=`<p class="di" style="font-size:15px;color:var(--mut);margin:0 0 14px 0;line-height:1.5">Fall 2025 ends the competitive campaign. Final score weights victory points, performance index, and cash. You may continue in sandbox after this screen.</p>${winLine}${lateDual}<div style="margin-top:8px;border:1px solid rgba(212,175,55,.25);border-radius:6px;overflow:hidden">${rows}</div>`;
   document.body.classList.add('mp-endgame');
   om('m-mp-endgame');
 }
@@ -25020,6 +25107,286 @@ function companyFinanceRollup(){
   const digitalSharePct=revenue>0?Math.round((digitalRev/revenue)*1000)/10:0;
   return {revenue,cost,ebitda,margin,talentCost,fixedCost,cash,shareSum,avgSellout,digitalRev,digitalSharePct};
 }
+
+// ── Late-era grading (2010+ evaluation layer — reads finHistory / scoreCalc; does not change sim economics) ──
+const LATE_ERA_GRADE_WEIGHTS={ebitda2008_2024:0.20,ebitda2016_2024:0.20,ebitda2020_2024:0.15,ebitda2024:0.10,rev2024:0.10,digShare:0.10,scoreTotal:0.15};
+function lateEraFinHistoryForCompany(G,playerId){
+  if(!G)return[];
+  if(MP.mode==='live'&&playerId!=null&&playerId!==undefined)return G._playerFinHistory?.[playerId]||[];
+  return G.finHistory||[];
+}
+function lateEraHistSumEbitda(hist,yLo,yHi){
+  let s=0;
+  for(let i=0;i<(hist||[]).length;i++){
+    const h=hist[i];
+    const y=h?.year|0;
+    if(y<yLo||y>yHi)continue;
+    s+=h.ebitda|0;
+  }
+  return s;
+}
+function lateEraHistSumRev(hist,yLo,yHi){
+  let s=0;
+  for(let i=0;i<(hist||[]).length;i++){
+    const h=hist[i];
+    const y=h?.year|0;
+    if(y<yLo||y>yHi)continue;
+    s+=h.revenue|0;
+  }
+  return s;
+}
+function playerStationsForLateEraGrade(G,playerId){
+  if(playerId==null||playerId===undefined)return myPS();
+  return(G.ps||[]).filter(s=>s&&s._mpOwner===playerId);
+}
+function rollupDigitalSharePctForCompany(G,playerId){
+  const ps=playerStationsForLateEraGrade(G,playerId);
+  const revenue=ps.reduce((a,st)=>a+(st.fin?.rev||0),0);
+  const digitalRev=ps.reduce((a,st)=>a+((st.fin?.digitalRev??st.fin?.streamRev)||0),0);
+  return revenue>0?Math.round((digitalRev/revenue)*1000)/10:0;
+}
+function scoreTotal01ForCompany(G,playerId){
+  try{
+    if(MP.mode==='live'&&playerId!=null&&playerId!==undefined){
+      const t=(playerScoreCalc(playerId)?.total);
+      return Math.max(0,Math.min(1,(Number(t)||0)/100));
+    }
+    const t=(scoreCalc(G)?.total);
+    return Math.max(0,Math.min(1,(Number(t)||0)/100));
+  }catch(_e){
+    return 0;
+  }
+}
+function extractLateEraRawSeven(G,playerId){
+  const hist=lateEraFinHistoryForCompany(G,playerId);
+  return{
+    ebitda2008_2024:lateEraHistSumEbitda(hist,2008,2024),
+    ebitda2016_2024:lateEraHistSumEbitda(hist,2016,2024),
+    ebitda2020_2024:lateEraHistSumEbitda(hist,2020,2024),
+    ebitda2024:lateEraHistSumEbitda(hist,2024,2024),
+    rev2024:lateEraHistSumRev(hist,2024,2024),
+    digShare:rollupDigitalSharePctForCompany(G,playerId)/100,
+    scoreTotal:scoreTotal01ForCompany(G,playerId),
+  };
+}
+function lateEraMinMaxNorm01Across(values){
+  const arr=(values||[]).map(v=>Number(v)||0);
+  if(!arr.length)return[];
+  let mn=Infinity,mx=-Infinity;
+  for(let i=0;i<arr.length;i++){
+    if(arr[i]<mn)mn=arr[i];
+    if(arr[i]>mx)mx=arr[i];
+  }
+  if(!Number.isFinite(mn)||!Number.isFinite(mx)||mn===mx)return arr.map(()=>0.5);
+  return arr.map(v=>Math.max(0,Math.min(1,(v-mn)/(mx-mn))));
+}
+/**
+ * Late-Era Composite (0–100): min–max each driver across companies (solo → flat 0.5 each), then weighted sum.
+ * @param {object} G
+ * @param {object} [company] `{ playerId }` for MP row; omit or null playerId for solo company rollup.
+ */
+function computeLateEraGrade(G,company){
+  company=company||{};
+  const focusPid=company.playerId!=null?company.playerId:null;
+  const pids=MP.mode==='live'
+    ?[...new Set((G.ps||[]).map(s=>s._mpOwner).filter(id=>id!==undefined&&id!==null))].sort((a,b)=>a-b)
+    :[null];
+  const keys=['ebitda2008_2024','ebitda2016_2024','ebitda2020_2024','ebitda2024','rev2024','digShare','scoreTotal'];
+  const raws=pids.map(pid=>({pid,raw:extractLateEraRawSeven(G,pid)}));
+  const normsByPid=new Map();
+  for(let ki=0;ki<keys.length;ki++){
+    const k=keys[ki];
+    const col=raws.map(r=>r.raw[k]);
+    const n=lateEraMinMaxNorm01Across(col);
+    raws.forEach((r,i)=>{
+      if(!normsByPid.has(r.pid))normsByPid.set(r.pid,{});
+      normsByPid.get(r.pid)[k]=n[i];
+    });
+  }
+  const targetPid=MP.mode==='live'?focusPid:(focusPid??null);
+  const row=raws.find(r=>r.pid===targetPid)||raws[0];
+  if(!row)return{composite:0,breakdown:{},raw:{},profileLabel:'Underperformer',singleOperator:pids.length<=1};
+  const br=normsByPid.get(row.pid)||{};
+  let comp=0;
+  comp+=LATE_ERA_GRADE_WEIGHTS.ebitda2008_2024*(br.ebitda2008_2024??0.5);
+  comp+=LATE_ERA_GRADE_WEIGHTS.ebitda2016_2024*(br.ebitda2016_2024??0.5);
+  comp+=LATE_ERA_GRADE_WEIGHTS.ebitda2020_2024*(br.ebitda2020_2024??0.5);
+  comp+=LATE_ERA_GRADE_WEIGHTS.ebitda2024*(br.ebitda2024??0.5);
+  comp+=LATE_ERA_GRADE_WEIGHTS.rev2024*(br.rev2024??0.5);
+  comp+=LATE_ERA_GRADE_WEIGHTS.digShare*(br.digShare??0.5);
+  comp+=LATE_ERA_GRADE_WEIGHTS.scoreTotal*(br.scoreTotal??0.5);
+  const composite=Math.round(comp*1000)/10;
+  const breakdown={
+    ebitda2008_2024:br.ebitda2008_2024,
+    ebitda2016_2024:br.ebitda2016_2024,
+    ebitda2020_2024:br.ebitda2020_2024,
+    ebitda2024:br.ebitda2024,
+    rev2024:br.rev2024,
+    digShare:br.digShare,
+    scoreTotal:br.scoreTotal,
+  };
+  const lateBlend=(breakdown.ebitda2016_2024+breakdown.ebitda2020_2024+breakdown.ebitda2024+breakdown.rev2024+breakdown.digShare+breakdown.scoreTotal)/6;
+  const profileLabel=classifyOperatorProfile({
+    ebitdaFullNorm:breakdown.ebitda2008_2024,
+    lateBlendNorm:lateBlend,
+    digShare01:row.raw.digShare,
+    scoreNorm:breakdown.scoreTotal,
+    cumEbitdaRaw:row.raw.ebitda2008_2024,
+    digSharePct:row.raw.digShare*100,
+    scoreTotalRaw:row.raw.scoreTotal*100,
+  });
+  return{
+    composite,
+    breakdown,
+    raw:row.raw,
+    profileLabel,
+    singleOperator:pids.length<=1,
+    playerId:row.pid,
+  };
+}
+function classifyOperatorProfile(m){
+  const nE=m.ebitdaFullNorm??0.5;
+  const nL=m.lateBlendNorm??0.5;
+  const d=m.digShare01??0;
+  const s=m.scoreNorm??0.5;
+  const weakCore=nE<0.46&&nL<0.46;
+  const weakMod=d<0.28&&s<0.46;
+  if(weakCore&&weakMod)return'Underperformer';
+  if(nE>=0.56&&d<0.34&&!(d>=0.42||s>=0.58))return'Legacy Maximizer';
+  if((d>=0.42||s>=0.58)&&nE<0.54)return'Modern Builder';
+  if(nE>=0.49&&nL>=0.48&&d>=0.28&&s>=0.46)return'Balanced Operator';
+  return'Mixed profile';
+}
+function lateEraTraditionalCumulativeEbitda(G,playerId){
+  return extractLateEraRawSeven(G,playerId).ebitda2008_2024;
+}
+function lateEraGradeBoardForGame(G){
+  if(!G)return null;
+  const pids=MP.mode==='live'
+    ?[...new Set((G.ps||[]).map(s=>s._mpOwner).filter(id=>id!==undefined&&id!==null))].sort((a,b)=>a-b)
+    :[null];
+  if(!pids.length)return null;
+  const trad={};
+  pids.forEach(pid=>{trad[pid]=lateEraTraditionalCumulativeEbitda(G,pid);});
+  let tradWin=pids[0],tv=trad[tradWin];
+  pids.forEach(pid=>{if(trad[pid]>tv){tv=trad[pid];tradWin=pid;}});
+  const grades={};
+  let lateWin=pids[0],lv=-1;
+  pids.forEach(pid=>{
+    const g=computeLateEraGrade(G,{playerId:pid});
+    grades[pid]=g;
+    if(g.composite>lv){lv=g.composite;lateWin=pid;}
+  });
+  return{trad,grades,traditionalWinnerPid:tradWin,lateLeaderPid:lateWin,pids};
+}
+function buildLateEraInterpretationLines(G,board,localPid){
+  const lines=[];
+  const name=(pid)=>(MP.players||[]).find(p=>p.playerId===pid)?.name||`Player ${(pid|0)+1}`;
+  if(!board||MP.mode!=='live'){
+    const g=computeLateEraGrade(G,{});
+    lines.push(`Operator profile: <strong>${g.profileLabel}</strong> — blends cumulative profit, late windows, 2024 mix, digital share of billings, and the strategic score index.`);
+    if(g.singleOperator){
+      lines.push('Single-operator context: peer-normalized drivers default to midpoints (0.5), so the headline composite is a <strong>benchmark-neutral 50</strong> until you compare runs or play competitively.');
+    }
+    lines.push('Neither profit nor positioning is framed as universally “correct” — the business simply rewards different bets at different times.');
+    return lines;
+  }
+  const tw=board.traditionalWinnerPid;
+  const lw=board.lateLeaderPid;
+  if(tw===lw){
+    lines.push(`${name(tw)} leads on <strong>both</strong> traditional cumulative EBITDA (2008–2024) and the Late-Era Composite — profit and forward-looking signals aligned this game.`);
+  }else{
+    lines.push(`${name(tw)} posted the strongest <strong>cumulative EBITDA</strong> across the full 2008–2024 finHistory window.`);
+    lines.push(`${name(lw)} edges the field on the <strong>Late-Era Composite</strong> (profit windows, 2024 billings, digital mix, and scoreCalc).`);
+    lines.push('That split is normal: extracting value from the legacy model and investing in adaptation often trade against each other in the short data window.');
+  }
+  if(localPid!=null&&board.grades[localPid]){
+    const mine=board.grades[localPid];
+    const trMine=board.trad[localPid];
+    const trBest=board.trad[tw];
+    const lateMine=mine.composite;
+    const lateBest=board.grades[lw].composite;
+    if(trMine<trBest-1e-6)lines.push('Your cumulative profit trailed the traditional leader — cash discipline and market share still mattered.');
+    if(lateMine+1e-6<lateBest)lines.push('Your late-era positioning composite trailed the leader — digital mix and strategic score pulled the gap.');
+    if(trMine+1e-6>=trBest&&lateMine+1e-6<lateBest)lines.push('You banked the most operating profit overall, but peers showed stronger late-era mix or strategic score — worth a look at Digital timing and 2024 revenue quality.');
+    if(trMine+1e-6<trBest&&lateMine+1e-6>=lateBest)lines.push('You did not top cumulative EBITDA, but your late-era stack (windows + 2024 + digital + score) ranked at the front — a “modern builder” read even if legacy profit lagged.');
+  }
+  lines.push('Operators who move earlier on Digital often show higher 2024 revenue mix and scoreCalc emphasis in this framework — without implying that path always wins on cash.');
+  return lines;
+}
+function buildLateEraCampaignEndHtml(G){
+  if(!G||MP.mode==='live')return'';
+  const g=computeLateEraGrade(G,{});
+  const earlyE=lateEraHistSumEbitda(lateEraFinHistoryForCompany(G,null),2008,2015);
+  const lateE=lateEraHistSumEbitda(lateEraFinHistoryForCompany(G,null),2016,2024);
+  const trad=lateEraTraditionalCumulativeEbitda(G,null);
+  const lines=buildLateEraInterpretationLines(G,null,null);
+  return`<div class="ms2" style="margin-top:16px;border-top:1px solid var(--bdr);padding-top:14px">
+    <div class="msh">DUAL READOUT (EVALUATION)</div>
+    <p class="di" style="font-size:14px;line-height:1.5;margin:0 0 10px 0">Pre-2010 play is still fundamentally profit-first. From <strong>2010 onward</strong> the model also asks how you positioned the group for the digital-era finish line (this panel does not change simulation math).</p>
+    <div class="sr"><span class="lb">Traditional — cumulative EBITDA (2008–2024)</span><span class="vl">${trad>=0?'+':''}${f$(trad)}</span></div>
+    <div class="sr"><span class="lb">Late-Era Composite (0–100)</span><span class="vl">${g.composite.toFixed(1)}${g.singleOperator?' <span style="color:var(--mut);font-size:13px">(benchmark-neutral solo)</span>':''}</span></div>
+    <div class="sr"><span class="lb">Digital share (portfolio, current)</span><span class="vl">${(g.raw.digShare*100).toFixed(1)}%</span></div>
+    <div class="sr"><span class="lb">EBITDA — early (2008–2015) vs late (2016–2024)</span><span class="vl">${f$(earlyE)} · ${f$(lateE)}</span></div>
+    <div class="sr"><span class="lb">Operator profile</span><span class="vl">${g.profileLabel}</span></div>
+    <div style="margin-top:12px;padding:10px 12px;background:rgba(0,0,0,.18);border-radius:6px;font-size:14px;line-height:1.55;color:var(--off)">
+      ${lines.map(l=>`<p style="margin:0 0 8px 0">${l}</p>`).join('')}
+    </div>
+  </div>`;
+}
+function buildLateEraFinancialsPanelHtml(G){
+  if(!G||(G.year|0)<2010)return'';
+  const pid=MP.mode==='live'?MP.playerId:null;
+  const g=computeLateEraGrade(G,{playerId:pid});
+  const earlyE=lateEraHistSumEbitda(lateEraFinHistoryForCompany(G,pid),2008,2015);
+  const lateE=lateEraHistSumEbitda(lateEraFinHistoryForCompany(G,pid),2016,2024);
+  return`<div class="ms2" style="margin-top:14px"><div class="msh">LATE-ERA POSITIONING (2010+ READ)</div>
+    <p class="di" style="font-size:14px;margin:0 0 8px 0">Evaluation-only snapshot: compares legacy profit accumulation with digital-era signals already in your books.</p>
+    <div class="sr"><span class="lb">Late-Era Composite</span><span class="vl">${g.composite.toFixed(1)}/100</span></div>
+    <div class="sr"><span class="lb">Digital share (portfolio)</span><span class="vl">${(g.raw.digShare*100).toFixed(1)}%</span></div>
+    <div class="sr"><span class="lb">EBITDA early (2008–15) vs late (2016–24)</span><span class="vl">${f$(earlyE)} · ${f$(lateE)}</span></div>
+    <div class="sr"><span class="lb">Profile</span><span class="vl">${g.profileLabel}</span></div>
+  </div>`;
+}
+
+function buildMpLateEraFinaleHtml(G){
+  const board=lateEraGradeBoardForGame(G);
+  if(!board||MP.mode!=='live')return'';
+  const name=pid=>(MP.players||[]).find(p=>p.playerId===pid)?.name||`Player ${Number(pid)+1}`;
+  const tw=board.traditionalWinnerPid;
+  const lw=board.lateLeaderPid;
+  const glw=board.grades[lw];
+  const interp=buildLateEraInterpretationLines(G,board,MP.playerId);
+  return`<div style="margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12)">
+    <div style="font-family:var(--ft);font-size:13px;letter-spacing:.14em;color:var(--mut);margin-bottom:8px">DUAL READOUT (EVALUATION)</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:10px">
+      <div style="background:rgba(0,0,0,.22);border-radius:6px;padding:10px 12px;border:1px solid rgba(212,175,55,.2)">
+        <div style="font-family:var(--ft);font-size:11px;color:var(--mut);letter-spacing:.12em">TRADITIONAL WINNER</div>
+        <div style="font-family:var(--fd);font-size:18px;color:var(--wht);margin-top:4px">${name(tw)}</div>
+        <div style="font-size:13px;color:var(--off);margin-top:4px">Cumulative EBITDA 2008–2024: <strong style="color:var(--amb)">${f$(board.trad[tw])}</strong></div>
+      </div>
+      <div style="background:rgba(0,0,0,.22);border-radius:6px;padding:10px 12px;border:1px solid rgba(120,160,255,.22)">
+        <div style="font-family:var(--ft);font-size:11px;color:var(--mut);letter-spacing:.12em">LATE-ERA LEADER</div>
+        <div style="font-family:var(--fd);font-size:18px;color:var(--wht);margin-top:4px">${name(lw)}</div>
+        <div style="font-size:13px;color:var(--off);margin-top:4px">Late-Era Composite: <strong style="color:#9ec5ff">${(glw?.composite??0).toFixed(1)}</strong>/100</div>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--mut);margin-bottom:8px">${tw===lw?'Both readouts align this session — profit and late-era signals pointed the same way.':'Readouts can diverge: cumulative cash economics vs late windows, 2024 mix, digital share, and scoreCalc.'}</div>
+    <div style="font-size:14px;line-height:1.55;color:var(--off);padding:10px 12px;background:rgba(0,0,0,.25);border-radius:6px">
+      ${interp.map(l=>`<p style="margin:0 0 6px 0">${l}</p>`).join('')}
+    </div>
+  </div>`;
+}
+
+if(typeof window!=='undefined'){
+  window.computeLateEraGrade=computeLateEraGrade;
+  window.classifyOperatorProfile=classifyOperatorProfile;
+  window.buildLateEraCampaignEndHtml=buildLateEraCampaignEndHtml;
+  window.lateEraGradeBoardForGame=lateEraGradeBoardForGame;
+  window.buildLateEraInterpretationLines=buildLateEraInterpretationLines;
+  window.buildMpLateEraFinaleHtml=buildMpLateEraFinaleHtml;
+}
+
 function recordCompanyFinHistory(G, wasYear, wasPeriod, profit){
   if(!G)return;
   const pushEntry=(pid,ps,pProfit,pCash)=>{
@@ -25134,6 +25501,7 @@ function openFinancials(){
         <div class="sr"><span class="lb">Digital share (portfolio)</span><span class="vl">${r.digitalSharePct||0}%</span></div>`:''}
       </div>
       ${buildFinancialsPerformanceDriversHtml(G)}
+      ${buildLateEraFinancialsPanelHtml(G)}
       <div class="ms2" style="margin-top:14px"><div class="msh">HISTORY (newest first)</div>
         ${hist.length?`<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:14px">
           <thead><tr style="color:var(--mut);text-align:left;font-family:var(--ft);letter-spacing:1px">
