@@ -2930,13 +2930,17 @@ function hireTalentCareerLine(t, year){
 // ══════════════════════════════════════════════════════════════════
 // MARKETS — Phase 1: five pilot markets on a shared framework (BP + params).
 // Layer A: pop, revScale, adxBonus, culture axes · Layer B: heritage, teams, selectBlurb
+// Dial lists: genMarket() assigns 12 commercial AMs + 7 FMs (BP 0–18) before public 88.5/90.1 — do not put 88.5/90.1 in `fmFreqs`
+// or a commercial can occupy that channel first. If `amFreqs`/`fmFreqs`
+// are too short, `nextUnusedCommercialFreq` falls back to a synthetic 10 kHz / 0.2 MHz ladder. Mega markets can add up to
+// +1 AM and +9 FMs (fragmentation queue) — size lists for the worst start year you support (e.g. ≥15 AM / ≥20 FM for NY/LA/CHI).
 // ══════════════════════════════════════════════════════════════════
 const MARKETS={
   atlanta:{
     id:'atlanta', callPrefix:'W', label:'Atlanta', region:'Southeast', rankTier:'large', archetypeId:'sunbelt_diversified',
     pop:{'12-17':180,'18-24':195,'25-34':210,'35-49':265,'50-64':220,'65+':130},
     revScale:1.0, adxBonus:0.02,
-    amFreqs:['590 AM','640 AM','750 AM','860 AM','920 AM','1010 AM','1090 AM','1160 AM','1230 AM','1340 AM'],
+    amFreqs:['590 AM','640 AM','750 AM','860 AM','920 AM','1010 AM','1090 AM','1160 AM','1230 AM','1340 AM','680 AM','1000 AM'],
     fmFreqs:['96.1 FM','99.7 FM','102.3 FM','104.5 FM','107.1 FM','94.9 FM','95.3 FM','101.5 FM','103.3 FM'],
     /** FM dial → ERP tier (game tokens). AM uses `AMFCC.normalizeAmPw` + tier caps; optional `amFacilityByFreq` overrides. */
     fmFacilityByFreq:{
@@ -2960,10 +2964,11 @@ const MARKETS={
     id:'wichita', callPrefix:'K', label:'Wichita', region:'Midwest', rankTier:'small', archetypeId:'midwest_legacy',
     pop:{'12-17':52,'18-24':60,'25-34':66,'35-49':82,'50-64':68,'65+':42},
     revScale:0.32, adxBonus:0.025,
-    amFreqs:['1240 AM','1320 AM','1480 AM','1550 AM','1590 AM'],
-    fmFreqs:['92.3 FM','95.1 FM','97.3 FM','99.9 FM','102.7 FM','105.3 FM'],
+    /** ≥12 entries: BP assigns 12 commercial AMs; shorter lists hit `nextUnusedCommercialFreq`’s 1700→530 kHz synthetic fallback (1630+ in a row). Leads: KSGL 900, KFTI 1070, KFH 1240, KNSS 1330, KGSO 1410, KQAM 1480 — plus open regional channels for the sim. */
+    amFreqs:['900 AM','1070 AM','1100 AM','1150 AM','1240 AM','1280 AM','1330 AM','1350 AM','1410 AM','1450 AM','1480 AM','1520 AM','1550 AM','1600 AM'],
+    fmFreqs:['92.3 FM','95.1 FM','97.3 FM','99.9 FM','102.7 FM','105.3 FM','100.1 FM'],
     fmFacilityByFreq:{
-      '92.3 FM':'50kw','95.1 FM':'100kw','97.3 FM':'50kw','99.9 FM':'100kw','102.7 FM':'50kw','105.3 FM':'50kw',
+      '92.3 FM':'50kw','95.1 FM':'100kw','97.3 FM':'50kw','99.9 FM':'100kw','102.7 FM':'50kw','105.3 FM':'50kw','100.1 FM':'50kw',
     },
     blackPop:0.11,hispPop1970:0.02,hispPop2000:0.08,hispPop2020:0.16,churchGoing:0.52,countryBonus:0.10,urbanBonus:0.03,
     culture:{country:0.14,urban:0.04,newsTalk:0.05,religion:0.09,spanish:0.04},
@@ -2978,7 +2983,7 @@ const MARKETS={
     id:'nashville', callPrefix:'W', label:'Nashville', region:'South', rankTier:'medium', archetypeId:'southern_country',
     pop:{'12-17':95,'18-24':110,'25-34':120,'35-49':150,'50-64':125,'65+':75},
     revScale:0.5, adxBonus:0.03,
-    amFreqs:['650 AM','760 AM','1040 AM','1160 AM','1240 AM','1300 AM','1400 AM','1470 AM','1510 AM','1560 AM'],
+    amFreqs:['650 AM','760 AM','800 AM','1000 AM','1040 AM','1160 AM','1240 AM','1300 AM','1400 AM','1470 AM','1510 AM','1560 AM'],
     fmFreqs:['94.1 FM','96.3 FM','97.9 FM','100.1 FM','102.9 FM','104.5 FM','107.5 FM'],
     fmFacilityByFreq:{
       '94.1 FM':'100kw','96.3 FM':'50kw','97.9 FM':'100kw','100.1 FM':'50kw','102.9 FM':'100kw','104.5 FM':'50kw','107.5 FM':'50kw',
@@ -2998,9 +3003,10 @@ const MARKETS={
     id:'newyork', callPrefix:'W', label:'New York', region:'Northeast', rankTier:'mega', archetypeId:'northeast_mega',
     pop:{'12-17':1050,'18-24':1000,'25-34':1100,'35-49':1400,'50-64':1200,'65+':750},
     revScale:6.8, adxBonus:0.05,
-    amFreqs:['660 AM','770 AM','880 AM','1010 AM','1050 AM','1130 AM','1280 AM','1380 AM','1560 AM','1600 AM'],
-    fmFreqs:['92.3 FM','94.7 FM','96.3 FM','98.7 FM','100.3 FM','101.1 FM','102.7 FM','103.5 FM','104.3 FM','106.7 FM'],
+    amFreqs:['660 AM','710 AM','770 AM','880 AM','1000 AM','1010 AM','1050 AM','1130 AM','1200 AM','1280 AM','1380 AM','1500 AM','1560 AM','1600 AM'],
+    fmFreqs:['86.1 FM','88.1 FM','89.3 FM','91.5 FM','92.3 FM','94.7 FM','96.3 FM','98.7 FM','99.1 FM','100.3 FM','101.1 FM','102.7 FM','103.5 FM','104.3 FM','105.1 FM','106.7 FM','107.1 FM','107.9 FM'],
     fmFacilityByFreq:{
+      '86.1 FM':'50kw','88.1 FM':'50kw','89.3 FM':'50kw','91.5 FM':'50kw','99.1 FM':'50kw','105.1 FM':'100kw','107.1 FM':'100kw','107.9 FM':'50kw',
       '92.3 FM':'50kw','94.7 FM':'50kw','96.3 FM':'100kw','98.7 FM':'100kw','100.3 FM':'100kw',
       '101.1 FM':'100kw','102.7 FM':'100kw','103.5 FM':'100kw','104.3 FM':'100kw','106.7 FM':'100kw',
     },
@@ -3022,9 +3028,11 @@ const MARKETS={
     id:'losangeles', callPrefix:'K', label:'Los Angeles', region:'West Coast', rankTier:'mega', archetypeId:'west_fm_fragmented',
     pop:{'12-17':820,'18-24':890,'25-34':980,'35-49':1200,'50-64':950,'65+':540},
     revScale:5.2, adxBonus:0.04,
-    amFreqs:['570 AM','640 AM','710 AM','790 AM','980 AM','1070 AM','1150 AM','1230 AM','1430 AM','1580 AM'],
-    fmFreqs:['93.5 FM','95.5 FM','97.1 FM','98.7 FM','100.3 FM','101.9 FM','102.7 FM','104.3 FM','105.1 FM'],
+    amFreqs:['570 AM','640 AM','710 AM','790 AM','800 AM','980 AM','1000 AM','1070 AM','1150 AM','1200 AM','1230 AM','1280 AM','1430 AM','1500 AM','1580 AM'],
+    fmFreqs:['86.1 FM','88.1 FM','88.3 FM','89.3 FM','91.5 FM','92.1 FM','93.5 FM','95.5 FM','96.1 FM','97.1 FM','98.1 FM','98.7 FM','100.3 FM','101.9 FM','102.7 FM','104.3 FM','105.1 FM','107.9 FM'],
     fmFacilityByFreq:{
+      '86.1 FM':'50kw','88.1 FM':'100kw','88.3 FM':'100kw','89.3 FM':'100kw','91.5 FM':'100kw','92.1 FM':'100kw',
+      '96.1 FM':'100kw','98.1 FM':'100kw','107.9 FM':'100kw',
       '93.5 FM':'100kw','95.5 FM':'100kw','97.1 FM':'100kw','98.7 FM':'100kw','100.3 FM':'100kw',
       '101.9 FM':'100kw','102.7 FM':'100kw','104.3 FM':'100kw','105.1 FM':'100kw',
     },
@@ -3045,9 +3053,10 @@ const MARKETS={
     id:'chicago', callPrefix:'W', label:'Chicago', region:'Midwest', rankTier:'mega', archetypeId:'midwest_legacy',
     pop:{'12-17':480,'18-24':510,'25-34':560,'35-49':700,'50-64':580,'65+':340},
     revScale:2.8, adxBonus:0.01,
-    amFreqs:['720 AM','780 AM','890 AM','1000 AM','1160 AM','1200 AM','1390 AM','1490 AM','1590 AM','1690 AM'],
-    fmFreqs:['93.1 FM','94.7 FM','96.3 FM','97.9 FM','99.5 FM','101.9 FM','103.5 FM','104.3 FM','105.9 FM'],
+    amFreqs:['670 AM','720 AM','780 AM','890 AM','1000 AM','1120 AM','1160 AM','1200 AM','1390 AM','1450 AM','1490 AM','1590 AM','1600 AM','1690 AM'],
+    fmFreqs:['86.1 FM','88.1 FM','89.3 FM','91.5 FM','92.1 FM','93.1 FM','94.7 FM','96.3 FM','97.9 FM','99.5 FM','100.1 FM','101.9 FM','102.1 FM','103.5 FM','104.3 FM','105.9 FM','106.1 FM','107.9 FM'],
     fmFacilityByFreq:{
+      '86.1 FM':'50kw','88.1 FM':'50kw','89.3 FM':'50kw','91.5 FM':'50kw','92.1 FM':'50kw','100.1 FM':'50kw','102.1 FM':'50kw','106.1 FM':'100kw','107.9 FM':'50kw',
       '93.1 FM':'100kw','94.7 FM':'100kw','96.3 FM':'100kw','97.9 FM':'100kw','99.5 FM':'100kw',
       '101.9 FM':'100kw','103.5 FM':'100kw','104.3 FM':'100kw','105.9 FM':'100kw',
     },
@@ -3068,9 +3077,10 @@ const MARKETS={
     id:'seattle', callPrefix:'K', label:'Seattle', region:'West Coast', rankTier:'large', archetypeId:'west_fm_fragmented',
     pop:{'12-17':320,'18-24':340,'25-34':380,'35-49':480,'50-64':400,'65+':240},
     revScale:1.55, adxBonus:0.025,
-    amFreqs:['570 AM','710 AM','770 AM','1000 AM','1090 AM','1150 AM','1250 AM','1300 AM','1420 AM','1540 AM'],
-    fmFreqs:['92.5 FM','94.1 FM','96.5 FM','98.9 FM','100.3 FM','102.5 FM','104.5 FM','106.1 FM','107.7 FM'],
+    amFreqs:['570 AM','800 AM','1000 AM','1090 AM','1150 AM','1180 AM','1250 AM','1300 AM','1420 AM','1500 AM','1520 AM','1540 AM'],
+    fmFreqs:['88.1 FM','89.3 FM','92.5 FM','94.1 FM','96.5 FM','98.9 FM','100.3 FM','102.5 FM','104.5 FM','106.1 FM','107.7 FM'],
     fmFacilityByFreq:{
+      '88.1 FM':'50kw','89.3 FM':'50kw',
       '92.5 FM':'100kw','94.1 FM':'100kw','96.5 FM':'100kw','98.9 FM':'100kw','100.3 FM':'100kw',
       '102.5 FM':'50kw','104.5 FM':'100kw','106.1 FM':'100kw','107.7 FM':'50kw',
     },
