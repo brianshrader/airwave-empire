@@ -5338,6 +5338,48 @@ function wlTrackSoloSession({ source, scenarioId, marketId }){
     }).catch(()=>{});
   }catch(_e){}
 }
+/**
+ * Production telemetry: ratings/revenue book invariant (cohort AQH vs headline share, $0 rev pool).
+ * Fire-and-forget; safe numeric + ids only. Works in solo and multiplayer.
+ */
+function wlTrackSimInvariant(payload){
+  try{
+    const phase=String(payload?.phase||'').slice(0,48);
+    if(!phase)return;
+    const body={
+      phase,
+      mp_mode:(typeof MP!=='undefined'&&MP&&MP.mode==='live')?'live':'solo',
+      year:Number(G?.year)||0,
+      period:Number(G?.period)||0,
+      turn:Number(G?.turn)||0,
+      market_id:String(G?.marketId||'').slice(0,64)||'unknown',
+      scenario_id:String(G?.sc?.id||'').slice(0,64)||'unknown',
+      n_repaired:Math.max(0,Math.min(500,Number(payload?.n_repaired)||0)),
+      n_comm:Math.max(0,Math.min(500,Number(payload?.n_comm)||0)),
+      sum_share:typeof payload?.sum_share==='number'&&Number.isFinite(payload.sum_share)?Math.round(payload.sum_share*1e6)/1e6:undefined,
+      sum_raw_rev:Math.max(-1e12,Math.min(1e12,Math.round(Number(payload?.sum_raw_rev)||0))),
+      half_target:Math.max(0,Math.min(1e12,Math.round(Number(payload?.half_target)||0))),
+      client_distinct_id:wlAnalyticsDistinctId(),
+    };
+    if(Array.isArray(payload?.stations_top5)&&payload.stations_top5.length){
+      body.stations_top5=payload.stations_top5.slice(0,5).map(r=>({
+        id:String(r?.id||'').slice(0,64),
+        share:typeof r?.share==='number'&&Number.isFinite(r.share)?Math.round(r.share*1e8)/1e8:0,
+        aqh:Math.max(0,Math.min(1e9,Math.round(Number(r?.aqh)||0))),
+        rev:Math.max(-1e12,Math.min(1e12,Math.round(Number(r?.rev)||0))),
+      }));
+    }
+    const cuid=wlClerkUserIdForAnalytics();
+    if(cuid)body.clerk_user_id=cuid;
+    fetch(wlGameApiUrl('/api/analytics/sim-invariant'),{
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body:JSON.stringify(body),
+      mode:'cors',
+      credentials:'omit',
+    }).catch(()=>{});
+  }catch(_e){}
+}
 /** Absolute URL for <img> / download when stored paths are /generated-* and the API lives on another host. */
 function wlGameMediaAbsUrl(pathOrUrlWithQuery){
   if(pathOrUrlWithQuery==null||pathOrUrlWithQuery==='')return pathOrUrlWithQuery;
@@ -5612,13 +5654,19 @@ async function wlCloudSaveLoadById(saveId) {
   }
   if (!G) G = {};
   Object.assign(G, payload.G);
+  applyLoadedGameMarket();
   migrateSave(G);
   try{
     if(typeof wlCampaignLoadFromSave==='function')wlCampaignLoadFromSave(payload.campaign);
     if(typeof wlCampaignSyncFromGame==='function')wlCampaignSyncFromGame(G);
     if(typeof wlCampaignRepairLoadedGameIfMarketMismatch==='function')wlCampaignRepairLoadedGameIfMarketMismatch(G);
   }catch(_e){}
-  applyLoadedGameMarket();
+  normalizeSimulcastLinksInPlace(G);
+  enforceFmNonDupConstraints(G);
+  recalc(G.stations,G);
+  seedRev(G.stations,G);
+  updateAllStationsBudgetStress(G);
+  snapMarketRankBookDisplay(G);
   G.news.unshift({
     v: 'HIGH',
     t: `☁ Cloud save loaded: ${payload.label || 'Save'}`,
@@ -5627,6 +5675,7 @@ async function wlCloudSaveLoadById(saveId) {
   });
   cm('m-save');
   renderAll();
+  maybeRefreshOpenRankerModal();
   queuePlayerTalentPortraits();
   queueAutoLogosForPlayerStations();
 }
@@ -6002,6 +6051,7 @@ function mpSetupSocketHandlers(socket) {
       y: G.year, p: G.period
     });
     renderAll();
+    maybeRefreshOpenRankerModal();
     queuePlayerTalentPortraits();
     queueAutoLogosForPlayerStations();
   });
@@ -6063,6 +6113,7 @@ function mpSetupSocketHandlers(socket) {
     MP.renderStatus();
     G.news.unshift({v:'HIGH', t:`🎙 Multiplayer game started — ${players.length} stations in the market.`, y:G.year, p:G.period});
     renderAll();
+    maybeRefreshOpenRankerModal();
     queuePlayerTalentPortraits();
     queueAutoLogosForPlayerStations();
   });
@@ -6117,6 +6168,7 @@ function mpSetupSocketHandlers(socket) {
     const _myLoans = G._playerLoans?.[MP.playerId];
     G.loans = Array.isArray(_myLoans) ? _myLoans : [];
     renderAll();
+    maybeRefreshOpenRankerModal();
     MP.commitLog = {};
     MP.players.forEach(p => { MP.commitLog[p.socketId] = false; });
     MP.renderStatus();
@@ -8932,9 +8984,10 @@ function stitchCollapsedMarketRatingsFromHistory(stations,G){
  * Headline `rat.share` can remain positive while every `rat.cur[*].aqh` is 0 (degenerate recalc / stale save).
  * Then `calcRev` zeros terrestrial revenue for the whole market. Rebuild cohort rows from the headline book
  * using the same per-station spread as {@link stitchCollapsedMarketRatingsFromHistory}.
+ * @param {{silent?:boolean}} [opts] Pass `{ silent: true }` on bulk load to omit per-station `console.warn`.
  * @returns {boolean} true if this station was repaired
  */
-function repairRatCurFromHeadlineShareIfAqhCollapsed(s,stations,G){
+function repairRatCurFromHeadlineShareIfAqhCollapsed(s,stations,G,opts){
   if(!s||s._bpSlotDeferred||s.isPublic||!s.rat)return false;
   const ps=Number(s.rat.share);
   if(!(ps>1e-8))return false;
@@ -8962,7 +9015,7 @@ function repairRatCurFromHeadlineShareIfAqhCollapsed(s,stations,G){
   });
   s.rat.aqh=COH.reduce((sum,coh)=>sum+(s.rat.cur[coh]?.aqh||0),0);
   s.rat.share=Math.round(ps*1e8)/1e8;
-  if(typeof console!=='undefined'&&console.warn){
+  if(!opts?.silent&&typeof console!=='undefined'&&console.warn){
     console.warn('[recalc] repaired rat.cur/aqh from headline share for',s.callLetters,'@',G.year,G.period);
   }
   if(G)G._wlRatingsCurRepairCount=(G._wlRatingsCurRepairCount||0)+1;
@@ -9901,7 +9954,17 @@ function recalc(stations,G){
 
   applyOtherAudioListeningDilution(stations,G,engageWeightedPop);
   stitchCollapsedMarketRatingsFromHistory(stations,G);
-  stations.forEach(s=>{ repairRatCurFromHeadlineShareIfAqhCollapsed(s,stations,G); });
+  let _ratCurRepairCount=0;
+  stations.forEach(s=>{ if(repairRatCurFromHeadlineShareIfAqhCollapsed(s,stations,G))_ratCurRepairCount++; });
+  if(_ratCurRepairCount>0&&G){
+    const comm=(stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPublic);
+    wlTrackSimInvariant({
+      phase:'recalc_rat_cur_repaired',
+      n_repaired:_ratCurRepairCount,
+      n_comm:comm.length,
+      sum_share:comm.reduce((a,s)=>a+(Number(s.rat?.share)||0),0),
+    });
+  }
 
   stations.forEach(s=>{
     if(!s||s._bpSlotDeferred||!s.rat)return;
@@ -11267,6 +11330,27 @@ function seedRev(stations,G){
   });
   const annualTarget=marketAnnualBilling(G.year,mktId);
   const halfTarget=Math.round(annualTarget*0.5*marketHalfSeasonFactor(G.year,G.period||1)*Math.max(0.75,G.adx||1));
+  if(sumAdj<=0&&halfTarget>0&&comm.length){
+    const sumSh=comm.reduce((a,s)=>a+(Number(s.rat?.share)||0),0);
+    if(sumSh>0.02){
+      const sumRawRev=comm.reduce((a,s)=>a+(Number(s.fin?.rev)||0),0);
+      const stations_top5=[...comm].sort((a,b)=>(b.rat?.share||0)-(a.rat?.share||0)).slice(0,5).map(s=>({
+        id:String(s.id||'').slice(0,64),
+        share:Math.round((Number(s.rat?.share)||0)*1e8)/1e8,
+        aqh:Math.round(Number(s.rat?.aqh)||0),
+        rev:Math.round(Number(s.fin?.rev)||0),
+      }));
+      wlTrackSimInvariant({
+        phase:'seedrev_zero_raw_pool',
+        n_repaired:0,
+        n_comm:comm.length,
+        sum_share:sumSh,
+        sum_raw_rev:Math.round(sumRawRev),
+        half_target:halfTarget,
+        stations_top5,
+      });
+    }
+  }
   const scale=sumAdj>0&&halfTarget>0?halfTarget/sumAdj:1;
   if(sumAdj>0&&halfTarget>0){
     pack.forEach(({s,eff})=>{
@@ -19497,19 +19581,25 @@ function openRanker(){
   }
   const h=G.rankerHistory;
   if(!h.length){document.getElementById('rkwrap').innerHTML='<p class="di" style="padding:20px">No history yet. Advance at least one period.</p>';return;}
+  const nPersist=h.length;
+  const cols=h.map(c=>({year:c.year,period:c.period,label:c.label,shares:{...c.shares}}));
+  const idxCur=h.findIndex(c=>Number(c.year)===Number(G.year)&&Number(c.period)===Number(G.period));
+  if(idxCur>=0){
+    refreshRankerSnapSharesFromStations(cols[idxCur],G.stations);
+  }else{
+    cols.push(buildLiveRankerHistorySnapColumn(G));
+  }
   const rowObjs=buildSimulcastCombinedRankRows(G.stations);
-  // Column headers — show last 20 periods max
-  const cols=h; // full history — wrapper scrolls horizontally
-  const thd=cols.map((c,i)=>`<th style="min-width:54px;text-align:center${i===cols.length-1?';color:var(--amb)':''}"><span style="font-size:15px">${c.year}</span><br><span style="font-size:15px;color:var(--mut)">${c.label.split(' ')[1]||''}</span></th>`).join('');
+  // Column headers — full history + optional live current book (rightmost, amber)
+  const thd=cols.map((c,i)=>`<th style="min-width:54px;text-align:center${i===cols.length-1?';color:var(--amb)':''}"><span style="font-size:15px">${c.year}</span><br><span style="font-size:15px;color:var(--mut)">${(c.label.split(' ')[1]||'')+(c._liveBook?' *':'')}</span></th>`).join('');
   const rows=rowObjs.map(row=>{
     const s=row.pair?row.lead:row.st;
     const isP=row.pair?(mpIsMe(row.lead)||mpIsMe(row.rcv)):mpIsMe(s);
     const entry=row.pair?row.lead.entryTurn:s.entryTurn;
-    const cells=cols.map(c=>{
+    const cells=cols.map((c,colIdx)=>{
       if(entry){
         const entryIdx=rankerHistoryColumnIndexForEntryTurn(h, entry);
-        const colIdx=h.indexOf(c);
-        if(entryIdx>=0&&colIdx<entryIdx)return '<td class="stc" style="position:static"></td>';
+        if(entryIdx>=0&&colIdx<entryIdx&&colIdx<nPersist)return '<td class="stc" style="position:static"></td>';
       }
       const v=row.pair?(c.shares[row.lead.id]||0)+(c.shares[row.rcv.id]||0):(c.shares[s.id]||0);
       if(!v)return '<td>—</td>';
@@ -25210,15 +25300,22 @@ function importSave(file){
       if(!payload.G||!payload.G.year){throw new Error('Invalid save file');}
       if(!G)G={};
       Object.assign(G,payload.G);
+      applyLoadedGameMarket();
       migrateSave(G); // handles all field migrations and public station injection
       try{
         if(typeof wlCampaignLoadFromSave==='function')wlCampaignLoadFromSave(payload.campaign);
         if(typeof wlCampaignSyncFromGame==='function')wlCampaignSyncFromGame(G);
         if(typeof wlCampaignRepairLoadedGameIfMarketMismatch==='function')wlCampaignRepairLoadedGameIfMarketMismatch(G);
       }catch(_e){}
-      applyLoadedGameMarket();
+      normalizeSimulcastLinksInPlace(G);
+      enforceFmNonDupConstraints(G);
+      recalc(G.stations,G);
+      seedRev(G.stations,G);
+      updateAllStationsBudgetStress(G);
+      snapMarketRankBookDisplay(G);
       G.news.unshift({v:'HIGH',t:`📂 Save loaded: ${payload.label||'Unknown'} (${payload.saved?.slice(0,10)||'?'})`,y:G.year,p:G.period});
       cm('m-save');renderAll();
+      maybeRefreshOpenRankerModal();
       queuePlayerTalentPortraits();
       queueAutoLogosForPlayerStations();
     }catch(err){
@@ -25434,6 +25531,86 @@ function repairCollapsedRankerHistorySnaps(G){
   if(fixed>0)G._rankerHistoryCollapsedRowsRepaired=(G._rankerHistoryCollapsedRowsRepaired||0)+fixed;
 }
 
+/**
+ * NPR/public can keep total column mass above the full-collapse threshold while every commercial
+ * cell is ~0 (bad save / desync). Rebuild commercial keys from the prior book's commercial mix.
+ */
+function repairLowCommercialMassRankerHistorySnaps(G){
+  const rh=G.rankerHistory;
+  if(!rh||!rh.length)return;
+  const commIds=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPublic&&s.id).map(s=>s.id);
+  if(commIds.length<2)return;
+  const LOW=0.012;
+  let fixed=0;
+  for(let i=0;i<rh.length;i++){
+    const snap=rh[i];
+    if(!snap||typeof snap.shares!=='object')continue;
+    let sumC=0;
+    for(let k=0;k<commIds.length;k++){
+      const v=Number(snap.shares[commIds[k]]);
+      if(Number.isFinite(v))sumC+=v;
+    }
+    if(sumC>LOW)continue;
+    let prev=null;
+    for(let j=i-1;j>=0;j--){
+      const p=rh[j];
+      if(!p||typeof p.shares!=='object')continue;
+      let ps=0;
+      for(let k=0;k<commIds.length;k++){
+        const v=Number(p.shares[commIds[k]]);
+        if(Number.isFinite(v))ps+=v;
+      }
+      if(ps>LOW){prev=p;break;}
+    }
+    if(!prev)continue;
+    const raw=[];
+    let newSum=0;
+    for(let k=0;k<commIds.length;k++){
+      const id=commIds[k];
+      const v=Math.max(0,Number(prev.shares[id])||0);
+      raw.push(v);
+      newSum+=v;
+    }
+    if(newSum<LOW)continue;
+    for(let k=0;k<commIds.length;k++){
+      snap.shares[commIds[k]]=Math.round((raw[k]/newSum)*1e8)/1e8;
+    }
+    fixed++;
+  }
+  if(fixed>0)G._rankerHistoryLowCommMassRepaired=(G._rankerHistoryLowCommMassRepaired||0)+fixed;
+}
+
+/** One ranker column: headline shares for every station (used for live “current book” overlay). */
+function buildLiveRankerHistorySnapColumn(G){
+  const sh={};
+  (G.stations||[]).forEach(s=>{
+    if(!s||s._bpSlotDeferred||!s.id)return;
+    const v=s.rat&&typeof s.rat.share==='number'&&!Number.isNaN(s.rat.share)?s.rat.share:0;
+    sh[s.id]=Math.round(v*1e8)/1e8;
+  });
+  return{
+    year:Number(G.year),
+    period:Number(G.period),
+    label:`${G.year} ${PERIODS[(G.period||1)-1]}`,
+    shares:sh,
+    _liveBook:true,
+  };
+}
+function refreshRankerSnapSharesFromStations(snap,stations){
+  if(!snap||typeof snap.shares!=='object')return;
+  (stations||[]).forEach(s=>{
+    if(!s||s._bpSlotDeferred||!s.id)return;
+    const v=s.rat&&typeof s.rat.share==='number'&&!Number.isNaN(s.rat.share)?s.rat.share:0;
+    snap.shares[s.id]=Math.round(v*1e8)/1e8;
+  });
+}
+function maybeRefreshOpenRankerModal(){
+  try{
+    const el=document.getElementById('m-rk');
+    if(el&&el.classList.contains('on')&&typeof G!=='undefined'&&G&&G.rankerHistory&&G.rankerHistory.length)openRanker();
+  }catch(_e){}
+}
+
 function migrateSave(G){
   migrateHitsLineage(G);
   const _chrCross=hitsLineageFirstChrCalendarYear();
@@ -25499,7 +25676,6 @@ function migrateSave(G){
     if(snap.year!=null)snap.year=Number(snap.year);
     if(snap.period!=null)snap.period=Number(snap.period);
   });
-  repairCollapsedRankerHistorySnaps(G);
   G.finHistory=G.finHistory||[];
   G._playerFinHistory=G._playerFinHistory||{};
   G.stationFinHistory=G.stationFinHistory||{};
@@ -25730,6 +25906,9 @@ function migrateSave(G){
   migrateSimulcastLegacyPairsToStar(G);
   repairOrphanSimulcastLegPointers(G);
   normalizeSimulcastLinksInPlace(G);
+  // Ranker history keys + station list must be final (simulcast/public) before book repairs.
+  repairCollapsedRankerHistorySnaps(G);
+  repairLowCommercialMassRankerHistorySnaps(G);
 
   applyAmFccPowerNormalization(G.stations, G);
   reassignAmClearChannelFlags(G.stations);
@@ -25744,6 +25923,46 @@ function migrateSave(G){
     snapMarketRankBookDisplay(G);
   } else if(!G._stationCardShareSnap||typeof G._stationCardShareSnap.byId!=='object'||typeof G._stationCardShareSnap.cpById!=='object'){
     snapStationCardShareDisplay(G);
+  }
+  // Saves from rare ratings desync: headline share valid but cohort AQH all zero → $0 revenue until next book.
+  // POP + ACTIVE_MARKET must match this save before repair/seedRev (load paths used to call migrateSave first).
+  if(G?.marketId&&MARKETS[G.marketId]){
+    ACTIVE_MARKET=G.marketId;
+    syncMarketPopToMarket(G.marketId);
+  }
+  const _loadRatRep=(G.stations||[]).reduce((n,st)=>n+(repairRatCurFromHeadlineShareIfAqhCollapsed(st,G.stations,G,{silent:true})?1:0),0);
+  if(_loadRatRep>0){
+    try{
+      seedRev(G.stations,G);
+      updateAllStationsBudgetStress(G);
+    }catch(_e){
+      if(typeof console!=='undefined'&&console.error)console.error('[migrateSave] seedRev after ratings repair failed',_e);
+    }
+    snapMarketRankBookDisplay(G);
+    snapStationCardShareDisplay(G);
+    repairCollapsedRankerHistorySnaps(G);
+    repairLowCommercialMassRankerHistorySnaps(G);
+    G._wlRatingsLoadRepairStations=_loadRatRep;
+    if(typeof console!=='undefined'&&console.warn){
+      console.warn('[migrateSave] repaired rat.cur/aqh for',_loadRatRep,'station(s); ran seedRev @',G.year,G.period);
+    }
+    const _commM=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPublic);
+    wlTrackSimInvariant({
+      phase:'migrate_load_rat_cur_repaired',
+      n_repaired:_loadRatRep,
+      n_comm:_commM.length,
+      sum_share:_commM.reduce((a,s)=>a+(Number(s.rat?.share)||0),0),
+    });
+    if(G.news){
+      G.news.unshift({
+        v:'LOW',
+        t:`📊 Load repair: fixed ${_loadRatRep} station(s) whose ratings cohorts were out of sync with headline share — cash/revenue display refreshed.`,
+        y:G.year,
+        p:G.period,
+      });
+      if(G.news.length>50)G.news=G.news.slice(0,50);
+    }
+    maybeRefreshOpenRankerModal();
   }
   return G;
 }
@@ -25760,19 +25979,22 @@ function loadLocalSave(){
   if(!local?.G)return;
   if(!G)G={};
   Object.assign(G,local.G);
+  applyLoadedGameMarket();
   migrateSave(G);
   try{
     if(typeof wlCampaignLoadFromSave==='function')wlCampaignLoadFromSave(local.campaign);
     if(typeof wlCampaignSyncFromGame==='function')wlCampaignSyncFromGame(G);
     if(typeof wlCampaignRepairLoadedGameIfMarketMismatch==='function')wlCampaignRepairLoadedGameIfMarketMismatch(G);
   }catch(_e){}
-  applyLoadedGameMarket();
   normalizeSimulcastLinksInPlace(G);
   enforceFmNonDupConstraints(G);
   recalc(G.stations,G);
-  snapStationCardShareDisplay(G);
+  seedRev(G.stations,G);
+  updateAllStationsBudgetStress(G);
+  snapMarketRankBookDisplay(G);
   G.news.unshift({v:'HIGH',t:`📂 Autosave resumed: ${local.label}`,y:G.year,p:G.period});
   cm('m-save');renderAll();
+  maybeRefreshOpenRankerModal();
   queuePlayerTalentPortraits();
   queueAutoLogosForPlayerStations();
   wlTrackSoloSession({
