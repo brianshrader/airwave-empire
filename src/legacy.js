@@ -888,7 +888,10 @@ function precomputeVoiceTrackingCompanyLoad(G){
   };
   (G.stations||[]).forEach(s=>{
     if(!s?.prog)return;
-    DAYPART_SLOTS.forEach(sl=>{if(s.prog[sl]?.talent)wipe(s.prog[sl].talent);});
+    DAYPART_SLOTS.forEach(sl=>{
+      if(s.prog[sl]?.talent)wipe(s.prog[sl].talent);
+      if(s.prog[sl]?.coHost)wipe(s.prog[sl].coHost);
+    });
   });
   (G.talentBench||[]).forEach(ent=>wipe(ent?.talent));
   if(!G||!musicVoiceTrackEconomicallyActive(G))return;
@@ -1851,7 +1854,18 @@ function htmlOnAirTalentRoster(s){
         ?`${f$(perPd)}/period <span style="color:var(--mut);font-size:13px">(${f$(t.salary)}/yr)</span>`
         :'—';
       const star=t.superstar===true?'⭐ ':'';
-      return `<div class="sr" style="align-items:flex-start;gap:8px"><span class="lb" style="font-size:13px;letter-spacing:1px;padding-top:2px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);flex:1;min-width:0">${intelTalentStack(t,tq,slotQ,salStr,star,`${callDisplay(s)} · ${lbl}`)}</span></div>`;
+      let coExtra='';
+      if(sd.coHost){
+        const ch=sd.coHost;
+        const chQ=Math.round(ch.quality||0);
+        const chPd=(typeof ch.salary==='number'&&!Number.isNaN(ch.salary))?Math.round(ch.salary/2):0;
+        const chSal=(typeof ch.salary==='number'&&!Number.isNaN(ch.salary))
+          ?`${f$(chPd)}/period <span style="color:var(--mut);font-size:13px">(${f$(ch.salary)}/yr)</span>`
+          :'—';
+        const chStar=ch.superstar===true?'⭐ ':'';
+        coExtra=`<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08)"><div style="font-size:12px;color:var(--mut);margin-bottom:4px">Co-host</div>${intelTalentStack(ch,chQ,slotQ,chSal,chStar,`${callDisplay(s)} · ${lbl} · co-host`)}</div>`;
+      }
+      return `<div class="sr" style="align-items:flex-start;gap:8px"><span class="lb" style="font-size:13px;letter-spacing:1px;padding-top:2px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);flex:1;min-width:0">${intelTalentStack(t,tq,slotQ,salStr,star,`${callDisplay(s)} · ${lbl}`)}${coExtra}</span></div>`;
     }
     const cap=nonLocalDaypartCaption(s.format,sl,!!s.isPublic,s);
     return `<div class="sr"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px;color:var(--mut)"><em>${cap}</em> · slot quality ${slotQ}</span></div>`;
@@ -1867,15 +1881,20 @@ function htmlMarketTalentRankerList(){
       const tal=st.prog[sl]?.talent;
       if(!tal)return;
       const q=Math.round(tal.quality||0);
-      rows.push({tal,st,sl,q});
+      rows.push({tal,st,sl,q,role:'host'});
+      const co=st.prog[sl]?.coHost;
+      if(co){
+        rows.push({tal:co,st,sl,q:Math.round(co.quality||0),role:'cohost'});
+      }
     });
   });
   rows.sort((a,b)=>b.q-a.q);
   if(!rows.length)return '<p style="color:var(--mut);font-size:14px;font-style:italic">No on-air talent in the market yet.</p>';
-  return rows.map(({tal,st,sl,q})=>{
+  return rows.map(({tal,st,sl,q,role})=>{
     const star=tal.superstar===true?'⭐ ':'';
+    const roleTag=role==='cohost'?'<span style="color:var(--mut)"> (co-host)</span>':'';
     return `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;font-family:var(--ft)">
-      <span style="color:var(--off);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${star}<strong style="color:var(--wht)">${tal.name}</strong> <span style="color:var(--mut)">· ${SL[sl]} · ${callDisplay(st)}</span></span>
+      <span style="color:var(--off);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${star}<strong style="color:var(--wht)">${tal.name}</strong>${roleTag} <span style="color:var(--mut)">· ${SL[sl]} · ${callDisplay(st)}</span></span>
       <span style="color:var(--amb);flex-shrink:0;font-family:var(--fd);font-size:14px">Q ${q}</span>
     </div>`;
   }).join('');
@@ -2398,6 +2417,195 @@ function applyTalentPerformanceRevealDecayStep(sd,vtStress){
   if(t._perfRevealStepsLeft===0)t._talentPerfRevealed=true;
   sd.quality=Math.min(100,Math.max(10,Math.round((sd.quality||20)+step)));
 }
+/** Optional co-host: chemistry-led pairing (morning + afternoon drive only). */
+const COHOST_CHEM_REVEAL_PERIODS=8;
+const COHOST_SLOT_STRENGTH={morningDrive:1,afternoonDrive:0.42,midday:0,evening:0,overnight:0};
+function daypartAllowsCoHostModel(sl){
+  return(sl==='morningDrive'||sl==='afternoonDrive');
+}
+function cohostPersonalityFormatMult(fmt){
+  if(TALK_FMTS.includes(fmt)||fmt==='ALL_NEWS')return 1.08;
+  return 0.86;
+}
+function daypartCoHostModelStrength(sl,fmt){
+  const w=COHOST_SLOT_STRENGTH[sl]||0;
+  if(w<=0)return 0;
+  return w*cohostPersonalityFormatMult(fmt);
+}
+function talentChemEff01(t,fmt){
+  if(!t||!fmt)return 0.35;
+  return Math.max(0.08,Math.min(1,(talentTrueQuality(t)/100)*talentTrueFormatFit(t,fmt)));
+}
+function rollCoHostChemistryPair(primary,cohost,fmt){
+  const ep=talentChemEff01(primary,fmt);
+  const ec=talentChemEff01(cohost,fmt);
+  const sim=1-Math.min(1,Math.abs(ep-ec)/0.82);
+  const style=(ep+ec)*0.5;
+  const noise=(Math.random()*2-1)*0.26;
+  const base=sim*0.52+style*0.26-0.20+noise;
+  const actual=Math.max(-1,Math.min(1,base));
+  const estNoise=(Math.random()*2-1)*0.19;
+  const estimate=Math.max(-1,Math.min(1,actual+estNoise));
+  return{actual,estimate};
+}
+/** Deterministic scout chemistry (stable in hire UI; actual pairing still rolled at hire). */
+function cohostChemistryScoutPreview01(primary,cohost,fmt){
+  const ep=talentChemEff01(primary,fmt);
+  const ec=talentChemEff01(cohost,fmt);
+  const sim=1-Math.min(1,Math.abs(ep-ec)/0.82);
+  const style=(ep+ec)*0.5;
+  const h=wlHash32(`${normTalentNameKey(primary.name||'')}|${normTalentNameKey(cohost.name||'')}|${cohost.id||''}|${primary.id||''}|${fmt}|chemscout`);
+  const n=(h%2001)/2000-0.5;
+  const est=sim*0.52+style*0.26-0.20+n*0.24;
+  return Math.max(-1,Math.min(1,est));
+}
+function coHostSlotQualityDeltaPts(primary,cohost,fmt,sl,chem){
+  const str=daypartCoHostModelStrength(sl,fmt);
+  if(str<=0||!primary||!cohost||typeof chem!=='number'||Number.isNaN(chem))return 0;
+  const ep=talentChemEff01(primary,fmt);
+  const ec=talentChemEff01(cohost,fmt);
+  const blend=0.86*ep+0.14*ec;
+  const anchor=(blend-0.44)*2.6*str;
+  const chemSwing=chem*7.0*str;
+  const d=anchor+chemSwing;
+  return Math.max(-13.5,Math.min(10.2,d));
+}
+function chemistryEstimateLabel01(est){
+  if(est<-0.34)return'Weak';
+  if(est<-0.07)return'Fair';
+  if(est<0.20)return'Good';
+  return'Great';
+}
+function clearCoHostPairingState(sd){
+  if(!sd)return;
+  const adj=sd._cohostSlotAdjApplied|0;
+  if(adj){
+    sd.quality=Math.min(100,Math.max(10,Math.round((sd.quality||20)-adj)));
+    delete sd._cohostSlotAdjApplied;
+  }
+  delete sd.coHost;
+  delete sd._cohostChemActual;
+  delete sd._cohostChemEstimate;
+  delete sd._cohostChemRevealStepsLeft;
+  delete sd._cohostChemRevealRem;
+  delete sd._cohostChemRevealed;
+}
+function benchCoHostIfPresentInternal(sid,slot){
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||!mpIsMe(s))return false;
+  const sd=s.prog?.[slot];
+  if(!sd?.coHost)return false;
+  ensureTalentBench(G);
+  G._benchSeq=(G._benchSeq||0)+1;
+  const benchId='b'+G._benchSeq;
+  const owner=MP.mode==='live'?(s._mpOwner!=null?s._mpOwner:MP.playerId):0;
+  G.talentBench.push({id:benchId,talent:sd.coHost,_mpOwner:owner,sid,slot});
+  clearCoHostPairingState(sd);
+  return true;
+}
+function initCoHostChemistryReveal(sd,fmt,sl,primary,cohost,chemRoll){
+  if(!sd||!primary||!cohost||!chemRoll)return;
+  sd._cohostChemActual=chemRoll.actual;
+  sd._cohostChemEstimate=chemRoll.estimate;
+  const estPts=Math.round(coHostSlotQualityDeltaPts(primary,cohost,fmt,sl,chemRoll.estimate));
+  const actPts=Math.round(coHostSlotQualityDeltaPts(primary,cohost,fmt,sl,chemRoll.actual));
+  sd.quality=Math.min(100,Math.max(10,Math.round((sd.quality||20)+estPts)));
+  sd._cohostSlotAdjApplied=estPts;
+  const d=actPts-estPts;
+  if(!d){
+    sd._cohostChemRevealStepsLeft=0;
+    sd._cohostChemRevealRem=0;
+    sd._cohostChemRevealed=true;
+  }else{
+    sd._cohostChemRevealStepsLeft=COHOST_CHEM_REVEAL_PERIODS;
+    sd._cohostChemRevealRem=d;
+    sd._cohostChemRevealed=false;
+  }
+}
+function applyCoHostChemistryRevealDecayStep(sd,vtStress){
+  if(!sd?.coHost)return;
+  const left=sd._cohostChemRevealStepsLeft|0;
+  if(left<1)return;
+  const rem=sd._cohostChemRevealRem|0;
+  if(!rem)return;
+  const vt=Math.max(0,Math.min(1,Number(vtStress)||0));
+  const vtK=1-0.065*vt;
+  let step=Math.round((rem/left)*vtK);
+  if(step===0)step=rem>0?1:(rem<0?-1:0);
+  if(step===0)return;
+  sd._cohostChemRevealRem=rem-step;
+  sd._cohostChemRevealStepsLeft=left-1;
+  if(sd._cohostChemRevealStepsLeft===0)sd._cohostChemRevealed=true;
+  sd.quality=Math.min(100,Math.max(10,Math.round((sd.quality||20)+step)));
+  sd._cohostSlotAdjApplied=(sd._cohostSlotAdjApplied|0)+step;
+}
+/** Small station-level franchise softening when a revealed co-host pairing is toxic (personality-heavy slots). */
+function stationCoHostFranchiseSoftPenalty(s){
+  if(!s?.prog)return 0;
+  let pen=0;
+  DAYPART_SLOTS.forEach(sl=>{
+    const sd=s.prog[sl];
+    if(!sd?.coHost||!sd.talent)return;
+    if(!sd._cohostChemRevealed)return;
+    const chem=sd._cohostChemActual;
+    if(typeof chem!=='number'||Number.isNaN(chem)||chem>=0)return;
+    const str=daypartCoHostModelStrength(sl,s.format);
+    if(str<=0)return;
+    pen+=-chem*0.042*str;
+  });
+  return Math.min(0.09,pen);
+}
+function payrollHalfPeriodForDaypartSlot(sd){
+  let row=0;
+  if(sd?.talent)row+=Math.round((sd.talent.salary||0)/2);
+  if(sd?.coHost)row+=Math.round((sd.coHost.salary||0)/2);
+  return row;
+}
+function adjustCohostSalaryForRole(t,sl,G){
+  if(!t)return;
+  const mult=0.74;
+  t.salary=Math.max(3500,Math.round((t.salary||0)*mult/500)*500);
+  const tier=talentTrueQuality(t)<42?'entry':talentTrueQuality(t)<68?'mid':'star';
+  const baseFl=Math.round(salInfl((SAL[sl]?.[tier]?.[0]||5000),G.year)*0.58/500)*500;
+  if(t.salary<baseFl)t.salary=baseFl;
+  const slotStarMax=({morningDrive:60000,afternoonDrive:42000,midday:28000,evening:22000,overnight:16000})[sl]||42000;
+  const cap=Math.round(salInfl(Math.round(slotStarMax*0.62),G.year)/500)*500;
+  if(t.salary>cap)t.salary=cap;
+}
+function debugCoHostDaypartDiag(s,sl){
+  const sd=s?.prog?.[sl];
+  if(!sd?.talent||!sd.coHost){
+    console.warn('debugCoHostDaypartDiag: need station id, co-hosted slot',{sid:s?.id,sl});
+    return null;
+  }
+  const fmt=s.format;
+  const p=sd.talent,c=sd.coHost;
+  const str=daypartCoHostModelStrength(sl,fmt);
+  const ep=talentChemEff01(p,fmt);
+  const ec=talentChemEff01(c,fmt);
+  const est=sd._cohostChemEstimate;
+  const act=sd._cohostChemActual;
+  const estPts=Math.round(coHostSlotQualityDeltaPts(p,c,fmt,sl,typeof est==='number'?est:0));
+  const actPts=Math.round(coHostSlotQualityDeltaPts(p,c,fmt,sl,typeof act==='number'?act:0));
+  const slotQ=Math.round(sd.quality||0);
+  const out={
+    slot:sl,call:s.callLetters,format:fmt,modelStrength:Math.round(str*1000)/1000,
+    primaryHost:{name:p.name,contrib01:Math.round(ep*1000)/1000},
+    coHost:{name:c.name,contrib01:Math.round(ec*1000)/1000},
+    expectedChemLabel:chemistryEstimateLabel01(typeof est==='number'?est:0),
+    expectedChem01:typeof est==='number'?Math.round(est*1000)/1000:null,
+    actualChem01:typeof act==='number'?Math.round(act*1000)/1000:null,
+    slotDeltaIfEstimatePts:estPts,slotDeltaIfActualPts:actPts,slotQuality:slotQ,
+    slotAdjAppliedPts:sd._cohostSlotAdjApplied|0,
+    revealStepsLeft:sd._cohostChemRevealStepsLeft|0,revealed:!!sd._cohostChemRevealed,
+  };
+  console.log('[cohostDiag]',out);
+  return out;
+}
+window.debugCoHostDaypartDiag=function(sid,sl){
+  const s=(typeof G!=='undefined'&&G?.stations&&sid)?G.stations.find(st=>st.id===sid):null;
+  return debugCoHostDaypartDiag(s,sl);
+};
 const NF_CLASSIC=[
   'Jack','Bobby','Ray','Don','Mike','Larry','Gary','Jim','Dave','Steve','Tom','Bill','Frank','Gene','Roy','Earl','Hank','Al','Jerry','Ted','Bob','Chuck','Rick','Scott','Paul','Dan','Doug','Ron','Wayne','Dale','Glen','Barry','Roger','Terry','Randy','Keith','Craig','Dean','Russ','Len','Bud','Skip','Chet','Hal','Vic','Stan','Norm','Wes','Stu','Clyde','Mel','Sal','Monty','Buck','Scotty','Marty','Benny','Lou','Ike','Duke','Johnny','Eddy','Porter','Faron','Webb','Ferlin','Sonny','Lefty','Slim','Tex','Ken','Greg','Phil','Jeff','Matt','Chris','John','Joe','Tim','Tony','Nick','Andy','Bruce','Carl','Dennis','George','Harry','Kevin','Mark','Neil','Patrick','Peter','Richard','Robert','Samuel','Stephen','Walter','Will','Hugh','Gordon','Murray','Herb','Brent','Todd','Casey','Les','Mac','Chip','Rod','Vince','Edward','Charles','Franklin','Harold','Louis','Philip','Randall','Russell','Sheldon','Stuart','Theodore','Warren','Billy','Bobby','Cliff','Curt','Danny','Darryl','Duane','Eddie','Freddy','Gerald','Glenn','Howard','Irvin','Jerome','Joey','Kent','Kurt','Lance','Lloyd','Marc','Mitch','Myron','Nolan','Orville','Ralph','Rex','Rodney','Rudy','Rusty','Sean','Sheldon','Toby','Troy','Vernon','Wade','Wiley',
 ];
@@ -2455,13 +2663,15 @@ function collectMarketTalentNameKeys(G){
   G.stations.forEach(st=>{
     if(!st.prog)return;
     Object.values(st.prog).forEach(sd=>{
-      const raw=sd?.talent?.name;
-      if(!raw)return;
-      const parts=raw.trim().split(/\s+/).filter(Boolean);
-      if(!parts.length)return;
-      usedFirst.add(parts[0]);
-      if(parts.length>=2)usedLast.add(parts[parts.length-1]);
-      usedFull.add(normTalentNameKey(raw));
+      [sd?.talent,sd?.coHost].forEach(tal=>{
+        const raw=tal?.name;
+        if(!raw)return;
+        const parts=raw.trim().split(/\s+/).filter(Boolean);
+        if(!parts.length)return;
+        usedFirst.add(parts[0]);
+        if(parts.length>=2)usedLast.add(parts[parts.length-1]);
+        usedFull.add(normTalentNameKey(raw));
+      });
     });
   });
   return {usedFirst,usedFull,usedLast};
@@ -2898,7 +3108,7 @@ function mkPool(slot,fmt,year){
 function wlFreeAgentPoolCacheKey(sid,slot,hireKind){
   return `${sid}\t${G.turn|0}\t${G.year}\t${G.period|0}\t${slot}\t${hireKind}`;
 }
-/** @param {'hire'|'replace'} hireKind */
+/** @param {'hire'|'replace'|'cohost'} hireKind */
 function getOrCreateFreeAgentPool(s,slot,hireKind){
   if(!G._wlFaPoolCache)G._wlFaPoolCache={};
   const k=wlFreeAgentPoolCacheKey(s.id,slot,hireKind);
@@ -3883,6 +4093,7 @@ function benchLocalHostDisplacedByFranchiseWin(station,franchise,G){
       logHistory(station,'TALENT',`Benched ${nm} — ${SL[slot]} (displaced by "${franchise.name}")`,G);
     }
   } else {
+    clearCoHostPairingState(sd);
     sd.talent=null;
     sd.quality=Math.max(10,Math.round((sd.quality||20)*0.72));
     refreshStationOQ(station,G);
@@ -6102,6 +6313,7 @@ window._mpApply_hire = function({ sid, slot, talent }) {
   const s = G.stations.find(st=>st.id===sid);
   if (!s || !s.prog[slot] || daytimerRestrictedSlot(s, slot)) return;
   if(franchiseSlotBlocksNewLocalTalent(s,slot,G))return;
+  clearCoHostPairingState(s.prog[slot]);
   s.prog[slot].talent = talent;
   delete s.prog[slot].staffingMode;
   s.oq = Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w, 0));
@@ -6113,9 +6325,37 @@ window._mpApply_fire = function({ sid, slot }) {
   const s = G.stations.find(st=>st.id===sid);
   if (!s) return;
   const nm = s.prog[slot]?.talent?.name;
-  if (s.prog[slot]) s.prog[slot].talent = null;
+  if (s.prog[slot]){
+    clearCoHostPairingState(s.prog[slot]);
+    s.prog[slot].talent = null;
+  }
   s.oq = Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w, 0));
   if (nm) logHistory(s, 'TALENT', `Released ${nm} — ${SL[slot]}`, G);
+};
+
+window._mpApply_cohost_hire = function({ sid, slot, talent, chemRoll }) {
+  const s = G.stations.find(st=>st.id===sid);
+  if (!s || !s.prog[slot]?.talent || s.prog[slot].coHost) return;
+  const host = s.prog[slot].talent;
+  const sd = s.prog[slot];
+  const co = talent;
+  if (!co) return;
+  co.slot = slot;
+  if (!co._careerStartYear) co._careerStartYear = Math.max(1970, (G.year||1970)-ri(0,14));
+  const cr = chemRoll && typeof chemRoll.actual === 'number' && typeof chemRoll.estimate === 'number'
+    ? chemRoll
+    : rollCoHostChemistryPair(host, co, s.format);
+  sd.coHost = co;
+  initCoHostChemistryReveal(sd, s.format, slot, host, co, cr);
+  s.oq = Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+effSlotQForOq(s.prog[sl2])*w, 0));
+  if (co.name) logHistory(s, 'TALENT', `Co-host ${co.name} — ${SL[slot]}`, G);
+};
+
+window._mpApply_cohost_fire = function({ sid, slot }) {
+  const s = G.stations.find(st=>st.id===sid);
+  if (!s || !s.prog[slot]) return;
+  clearCoHostPairingState(s.prog[slot]);
+  s.oq = Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+effSlotQForOq(s.prog[sl2])*w, 0));
 };
 
 // Sell station
@@ -6139,8 +6379,10 @@ window._mpApply_poach = function({ sid, slot, rivalId, talentId }) {
   const t = rival.prog[slot]?.talent;
   if (!t) return;
   const nm = t.name;
+  if(rival.prog[slot])clearCoHostPairingState(rival.prog[slot]);
   rival.prog[slot].talent = null;
   if (s.prog[slot]){
+    clearCoHostPairingState(s.prog[slot]);
     s.prog[slot].talent = t;
     delete s.prog[slot].staffingMode;
   }
@@ -6267,6 +6509,7 @@ function removeTalentToBenchInternal(sid, slot){
   if(!s||!mpIsMe(s))return false;
   const sd=s.prog[slot];
   if(!sd?.talent)return false;
+  benchCoHostIfPresentInternal(sid,slot);
   ensureTalentBench(G);
   G._benchSeq=(G._benchSeq||0)+1;
   const benchId='b'+G._benchSeq;
@@ -6307,6 +6550,7 @@ function applyTalentCrossStationXferFull(fromSid, fromSlot, toSid, toSlot) {
   toSd.quality = Math.min(100, Math.max(10, Math.round((toSd.quality || 30) * (1 - adjDip))) + boost(talA));
   initTalentPerformanceReveal(toSd, talA, dst.format, 'xfer');
   applyDaypartPromotionEconomics(talA, fromSlot, toSlot);
+  benchCoHostIfPresentInternal(fromSid,fromSlot);
   fromSd.talent = null;
   const pen = { morningDrive: .20, afternoonDrive: .14, midday: .09, evening: .06, overnight: .03 }[fromSlot] || .09;
   fromSd.quality = Math.max(10, Math.round(fromSd.quality * (1 - pen)));
@@ -6330,6 +6574,8 @@ function applyTalentSameStationSwapFull(sid, fromSlot, toSlot) {
   const a = s.prog[fromSlot]?.talent;
   const b = s.prog[toSlot]?.talent;
   if (!a || !b) return false;
+  benchCoHostIfPresentInternal(sid,fromSlot);
+  benchCoHostIfPresentInternal(sid,toSlot);
   const fmt = s.format;
   s.prog[fromSlot].talent = b;
   s.prog[toSlot].talent = a;
@@ -6363,6 +6609,8 @@ function applyTalentCrossStationSwapFull(fromSid, fromSlot, toSid, toSlot) {
   const a = src.prog[fromSlot]?.talent;
   const b = dst.prog[toSlot]?.talent;
   if (!a || !b) return false;
+  benchCoHostIfPresentInternal(fromSid,fromSlot);
+  benchCoHostIfPresentInternal(toSid,toSlot);
   src.prog[fromSlot].talent = b;
   dst.prog[toSlot].talent = a;
   const adj = 0.08;
@@ -6403,6 +6651,7 @@ window._mpApply_shuffle = function({ sid, fromSlot, toSlot }) {
   toSd2.quality = Math.min(100, Math.max(10, Math.round((toSd2.quality || 30) * (1 - adjDip))) + boost(talA));
   initTalentPerformanceReveal(toSd2, talA, s.format, 'xfer');
   applyDaypartPromotionEconomics(talA, fromSlot, toSlot);
+  benchCoHostIfPresentInternal(sid,fromSlot);
   fromSd.talent = null;
   const pen = {morningDrive:.20,afternoonDrive:.14,midday:.09,evening:.06,overnight:.03}[fromSlot] || .09;
   fromSd.quality = Math.max(10, Math.round(fromSd.quality * (1 - pen)));
@@ -6466,6 +6715,7 @@ window._mpApply_placement_from_bench = function({ benchId, toSid, toSlot, _fromP
   const t = ent.talent;
   const prevSlot = ent.slot || 'morningDrive';
   const toSd = dst.prog[toSlot];
+  clearCoHostPairingState(toSd);
   const adjDip = 0.08;
   const fitFn = t0 => t0.formatFit[dst.format] || 0.3;
   const boost = t0 => Math.round((t0.quality / 100) * fitFn(t0) * 0.35 * 18);
@@ -9056,6 +9306,13 @@ function talentFranchiseRatingsEffect(s,G){
   ceilingMult*=0.99+0.02*lf;
   spdGainMult*=0.975+0.065*lf;
   spdLossMult*=1.008-0.034*lf;
+  const coPen=stationCoHostFranchiseSoftPenalty(s);
+  if(coPen>0){
+    combined*=1-coPen;
+    ceilingMult*=1-coPen*0.82;
+    spdGainMult*=1-coPen*0.55;
+    spdLossMult*=1+coPen*0.62;
+  }
   return{combined,ceilingMult,spdLossMult,spdGainMult,w,franchise:fr,expectedTalent,actualTalent,stabilityPenalty,talentBoost:1};
 }
 /** @deprecated name — use talentFranchiseRatingsEffect; kept for grep/debug parity */
@@ -9078,7 +9335,21 @@ function recalc(stations,G){
     const tpm=talentFranchiseRatingsEffect(s,G);
     talentPmById.set(s.id,tpm);
     if(typeof window!=='undefined'&&window.DEBUG_TALENT){
-      console.log('Talent franchise',{call:s.callLetters,franchise:tpm.franchise,expectedTalent:tpm.expectedTalent,actualTalent:tpm.actualTalent,weight:tpm.w,ceilingMult:tpm.ceilingMult,spdLossMult:tpm.spdLossMult,spdGainMult:tpm.spdGainMult});
+      const coDiag=[];
+      DAYPART_SLOTS.forEach(sl=>{
+        const sd=s.prog?.[sl];
+        if(!sd?.coHost||!sd.talent)return;
+        coDiag.push({
+          slot:sl,
+          primary:sd.talent.name,
+          coHost:sd.coHost.name,
+          estChem:typeof sd._cohostChemEstimate==='number'?Math.round(sd._cohostChemEstimate*1000)/1000:null,
+          actChem:typeof sd._cohostChemActual==='number'?Math.round(sd._cohostChemActual*1000)/1000:null,
+          slotAdj:sd._cohostSlotAdjApplied|0,
+          slotQ:Math.round(sd.quality||0),
+        });
+      });
+      console.log('Talent franchise',{call:s.callLetters,franchise:tpm.franchise,expectedTalent:tpm.expectedTalent,actualTalent:tpm.actualTalent,weight:tpm.w,ceilingMult:tpm.ceilingMult,spdLossMult:tpm.spdLossMult,spdGainMult:tpm.spdGainMult,cohosts:coDiag.length?coDiag:undefined});
     }
     return tpm;
   };
@@ -10181,7 +10452,7 @@ function calcRev(s,G){
   rev=Math.round(rev*lateEraTerrestrialCommoditizationMult(s,G));
   // ── COSTS ────────────────────────────────────────────────────────
   // On-air talent (annual salary / 2 for half-year period)
-  let talCost=Object.values(s.prog).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
+  let talCost=Object.values(s.prog).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+payrollHalfPeriodForDaypartSlot(sl),0);
   if(stationBrokeredEconomicsActive(s,G))talCost=Math.round(talCost*0.24);
   // Inflation: 3.5%/yr through 1985 (high inflation era), then 2.5%/yr after
   // (automation, digital tools, and consolidation efficiencies slow cost growth)
@@ -10552,7 +10823,7 @@ function calcRev(s,G){
   }
   let simulcastProgFee=0;
   if(isProgReceiver&&progSrcStation){
-    const srcTal=Object.values(progSrcStation.prog||{}).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
+    const srcTal=Object.values(progSrcStation.prog||{}).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+payrollHalfPeriodForDaypartSlot(sl),0);
     simulcastProgFee=Math.round(srcTal*0.38);
   }
   const promoCap=promoBudgetCapForPeriod(G);
@@ -10871,6 +11142,34 @@ function decay(s,year,period){
       }
       sd.talent.periodsAtStation=(sd.talent.periodsAtStation||0)+1;
       applyTalentPerformanceRevealDecayStep(sd,vtLd);
+      if(sd.coHost){
+        applyCoHostChemistryRevealDecayStep(sd,vtLd);
+        sd.coHost.periodsAtStation=(sd.coHost.periodsAtStation||0)+1;
+        const mdC=sd.coHost.morale<60?dBase*1.1:dBase*0.45;
+        const mdVtC=mdC*(1+0.10*vtLd);
+        sd.coHost.quality=Math.max(15,sd.coHost.quality*(1-mdVtC));
+        if(typeof sd.coHost._trueQuality==='number'&&!Number.isNaN(sd.coHost._trueQuality))
+          sd.coHost._trueQuality=Math.max(15,Math.round(sd.coHost._trueQuality*(1-mdVtC)));
+        sd.coHost.cyr=Math.max(0,(sd.coHost.cyr||2)-0.5);
+        if(period===2){
+          const baseInfl=year<=1980?0.012:year<=1990?0.018:year<=2000?0.015:year<=2010?0.010:0.008;
+          const tqC=talentTrueQuality(sd.coHost);
+          const meritC=tqC>85?0.006:tqC>72?0.003:0.001;
+          const stShare=s.rat?.share||0;
+          const perfC=stShare>0.12?0.006:stShare>0.08?0.003:stShare>0.05?0.001:0;
+          const moraleModC=sd.coHost.morale<50?0.003:sd.coHost.morale>80?-0.0015:0;
+          sd.coHost.salary=Math.round(sd.coHost.salary*(1+baseInfl+meritC+perfC+moraleModC)/500)*500;
+          const tierC=tqC<42?'entry':tqC<68?'mid':'star';
+          const baseFlC=Math.round(salInfl((SAL[sl]?.[tierC]?.[0]||5000),G.year)*0.52/500)*500;
+          if(sd.coHost.salary<baseFlC)sd.coHost.salary=baseFlC;
+          const slotStarMaxC=Math.round(({morningDrive:60000,afternoonDrive:42000,midday:28000,evening:22000,overnight:16000})[sd.coHost.slot||sl]*0.62);
+          const mktCapC=Math.round(salInfl(slotStarMaxC,G.year)/500)*500;
+          if(sd.coHost.salary>mktCapC)sd.coHost.salary=mktCapC;
+        }
+        const moralePullC=(65-sd.coHost.morale)*0.055-vtLd*1.8;
+        sd.coHost.morale=Math.round(Math.max(20,Math.min(100,sd.coHost.morale+moralePullC)));
+        if(_bsAust>0.12)sd.coHost.morale=Math.max(20,sd.coHost.morale-Math.round(0.9*_bsAust));
+      }
       if(!sd.talent._hireYear)sd.talent._hireYear=G.year;
       if(!sd.talent._careerStartYear)sd.talent._careerStartYear=sd.talent._hireYear;
       if(sd.talent._careerStartYear>sd.talent._hireYear)sd.talent._careerStartYear=sd.talent._hireYear;
@@ -11712,7 +12011,9 @@ function runAI(G){
           sd.talent.salary=Math.round(sd.talent.salary*rnd(1.08,1.22)/500)*500;
           sd.talent.cyr=ri(1,2);
         } else {
-          const nm=sd.talent.name;sd.talent=null;sd.quality*=sl==='morningDrive'?.68:.80;
+          const nm=sd.talent.name;
+          clearCoHostPairingState(sd);
+          sd.talent=null;sd.quality*=sl==='morningDrive'?.68:.80;
           if(sl==='morningDrive')acts.push({v:'MEDIUM',t:`${nm} leaves ${s.callLetters}`});
           if(Math.random()<p.ag*.7)sd.talent=mkTal(sl,s.format,'entry',G.year);
         }
@@ -11756,6 +12057,31 @@ function runAI(G){
         }
         if(hires)refreshStationOQ(s,G);
       }
+      let cohostAdded=false;
+      DAYPART_SLOTS.forEach(sl=>{
+        if(!daypartAllowsCoHostModel(sl))return;
+        const sd=s.prog[sl];
+        if(!sd?.talent||sd.coHost)return;
+        if(franchiseSlotBlocksNewLocalTalent(s,sl,G))return;
+        if((s.fin?.ebitda||0)<-(s.fin?.rev||1)*0.30)return;
+        const sh=s.rat?.share||0;
+        if(sh<0.055&&p.ag<0.54)return;
+        const talk=TALK_FMTS.includes(s.format)||s.format==='ALL_NEWS';
+        let pTry=(talk&&sl==='morningDrive'?0.042:talk?0.028:sl==='morningDrive'?0.016:0.010)*(s.str==='A'?1.16:1);
+        if(sl==='afternoonDrive')pTry*=0.48;
+        if(Math.random()>pTry)return;
+        const tier=(sl==='morningDrive'&&p.ag>0.51)?'mid':'entry';
+        const co=mkTal(sl,s.format,tier,G.year);
+        if(!co)return;
+        const host=sd.talent;
+        if(normTalentNameKey(co.name)===normTalentNameKey(host.name))return;
+        adjustCohostSalaryForRole(co,sl,G);
+        const chemRoll=rollCoHostChemistryPair(host,co,s.format);
+        sd.coHost=co;
+        initCoHostChemistryReveal(sd,s.format,sl,host,co,chemRoll);
+        cohostAdded=true;
+      });
+      if(cohostAdded)refreshStationOQ(s,G);
     }
 
     // ── PROGRAMMING INVESTMENT ──────────────────────────────
@@ -19126,6 +19452,7 @@ function hireModalRivalPoachCandidates(sid, slot){
     .slice(0,5);
 }
 let HS={sid:null,slot:null,pool:[],sel:null,poachRivalId:null,_embed:null,_hireKind:null};
+let CHS={sid:null,slot:null,pool:[],benchOpts:[],benchSel:null,faSel:null};
 /** Active station for unified Manage Talent modal (hire / replace / move / transfer). */
 let MT_ACTIVE_SID=null;
 function openManageTalent(sid){
@@ -19277,6 +19604,34 @@ function manageTalentDaypartBlockHtml(s,sl,_simSrc,stationOQ){
   const fireBuy=talentFireBuyout(t);
   const fireLbl=fireBuy>0?`FIRE (${f$(fireBuy)})`:'FIRE';
   const restrictedHost=daytimerRestrictedSlot(s,sl);
+  const cohostEligible=daypartAllowsCoHostModel(sl)&&!restrictedHost&&!getStationFranchise(s,sl,G)&&!(_simSrc&&_simSrc.prog&&_simSrc.prog[sl]?.talent);
+  let cohostHtml='';
+  if(cohostEligible){
+    if(sd.coHost){
+      const ch=sd.coHost;
+      const chQ=Math.round(ch.quality);
+      const estL=chemistryEstimateLabel01(typeof sd._cohostChemEstimate==='number'?sd._cohostChemEstimate:0);
+      const chemLine=sd._cohostChemRevealed&&typeof sd._cohostChemActual==='number'
+        ?` · pairing reading as ${sd._cohostChemActual>=0.18?'stronger':sd._cohostChemActual<=-0.18?'weaker':'about fair'} vs the scout guess`
+        :' · <span style="color:var(--mut)">chemistry still emerging in the books</span>';
+      cohostHtml=`<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">
+        <div style="font-size:12px;color:var(--mut);letter-spacing:0.08em;margin-bottom:6px">CO-HOST</div>
+        <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
+          <div style="flex-shrink:0">${talentPortraitThumbHtml(ch,'tp-roster',`${callDisplay(s)} · ${SL[sl]} · co-host`)}</div>
+          <div style="flex:1;min-width:180px">
+            <div style="font-family:var(--fd);font-size:16px;color:var(--wht)">${rosterHtmlEsc(ch.name)}</div>
+            <div style="font-size:13px;color:var(--off);margin-top:4px;line-height:1.45">Talent ${chQ}/100 · ${f$(ch.salary)}/yr · scout chemistry with ${rosterHtmlEsc(t.name)}: <strong>${estL}</strong>${chemLine}</div>
+            <button class="abt" type="button" style="margin-top:8px;border-color:var(--amb);color:var(--amb)" onclick="removeCoHostFromSlot('${s.id}','${sl}')">REMOVE CO-HOST</button>
+          </div>
+        </div>
+      </div>`;
+    }else{
+      cohostHtml=`<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">
+        <div style="font-size:13px;color:var(--off);margin-bottom:8px;line-height:1.45"><strong>Co-host</strong> (optional) — chemistry can help or hurt the show; payroll is real. Not a second lead — pairing risk/reward.</div>
+        <button class="abt" type="button" onclick="mtOpenCohostHire('${s.id}','${sl}')">ADD CO-HOST…</button>
+      </div>`;
+    }
+  }
   const moveRow=restrictedHost
     ?`<p style="font-size:12px;color:var(--amb);margin:0 0 10px 0;line-height:1.45">Legacy host in Evening or Overnight on a night-limited AM — bench or fire to align with this signal pattern. Replace / move / transfer are disabled here.</p>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">
@@ -19307,6 +19662,7 @@ function manageTalentDaypartBlockHtml(s,sl,_simSrc,stationOQ){
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">QUALITY SHARE ~%</span><span style="color:${perfCol}" title="Approx. share of this station’s programming quality from this daypart">~${contribution}%</span> <button type="button" class="abt" style="padding:2px 8px;font-size:10px;vertical-align:middle;margin-left:4px;letter-spacing:0.04em" onclick="openTalentMetricsHelp('qualityshare')">?</button></div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">TREND</span><span style="color:${trendCol}">${trendWord}</span></div>
         </div>
+        ${cohostHtml}
         ${(()=>{const rp=s._rivalPoachPending;if(!rp||rp.slot!==sl||rp.talentId!==t.id)return'';const riv=G.stations.find(st=>st.id===rp.rivalId);const minM=Math.round(rp.offerSalary*0.95/500)*500;return`<div class="ibox" style="border-color:rgba(245,166,35,.42);margin:0 0 10px 0;padding:8px 12px;font-size:13px;line-height:1.45;color:var(--off)"><strong style="color:var(--amb)">⚡ Rival courting this host</strong> — ${riv?riv.callLetters:'A rival'} offered ${f$(rp.offerSalary)}/yr. Use <strong>Contract / Pay</strong> and sign at ≥ ${f$(minM)}/yr to keep them.</div>`;})()}
         ${moveRow}
       </div>
@@ -19342,6 +19698,132 @@ function mtOpenReplaceSlot(sid,slot){
   rHire(s,'top');
   om('m-fire');
   scrollModalContentToTop('m-fire');
+}
+function mtOpenCohostHire(sid,slot){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||!mpIsMe(s))return;
+  const sd=s.prog[slot];
+  if(!sd?.talent){showToast('Hire a primary host before adding a co-host.','warn');return;}
+  if(sd.coHost){showToast('This daypart already has a co-host.','warn');return;}
+  if(!daypartAllowsCoHostModel(slot)){showToast('Co-hosting is only modeled for morning and afternoon drive right now.','info');return;}
+  if(daytimerRestrictedSlot(s,slot)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
+  if(franchiseSlotBlocksNewLocalTalent(s,slot,G)){
+    showToast('Syndication controls this slot — co-hosts are not available there.','warn');
+    return;
+  }
+  const pool=getOrCreateFreeAgentPool(s,slot,'cohost').filter(t=>{
+    if(!t?.name)return false;
+    return normTalentNameKey(t.name)!==normTalentNameKey(sd.talent.name);
+  });
+  const owner=MP.mode==='live'?(s._mpOwner!=null?s._mpOwner:MP.playerId):0;
+  const benchOpts=(G.talentBench||[]).filter(e=>{
+    if(!e?.talent?.name)return false;
+    if((e._mpOwner|0)!==(owner|0))return false;
+    return normTalentNameKey(e.talent.name)!==normTalentNameKey(sd.talent.name);
+  });
+  CHS={sid,slot,pool:pool,benchOpts,faSel:null,benchSel:null};
+  document.getElementById('fire-title').textContent='ADD CO-HOST — '+SL[slot];
+  rCohostHireRender(s,'top');
+  om('m-fire');
+  scrollModalContentToTop('m-fire');
+}
+function rCohostHireRender(s,scrollAfter){
+  const mo=document.getElementById('m-fire')?.querySelector('.mo');
+  const preserveScroll=scrollAfter!=='top';
+  const prevScroll=preserveScroll&&mo?mo.scrollTop:0;
+  const sd=s.prog[CHS.slot];
+  const host=sd?.talent;
+  if(!host){document.getElementById('fireb').innerHTML='<p class="di">No primary host.</p>';return;}
+  const faRows=(CHS.pool||[]).map((t,i)=>{
+    const q=Math.round(t.quality);
+    const fitF=talentScoutFormatFit01(t,s.format);
+    const fit=Math.round(fitF*100);
+    const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';
+    const fc=fit>=75?'good':fit>=55?'warn':'poor';
+    const chemEst=cohostChemistryScoutPreview01(host,t,s.format);
+    const estPts=Math.round(coHostSlotQualityDeltaPts(host,t,s.format,CHS.slot,chemEst));
+    const lbl=chemistryEstimateLabel01(chemEst);
+    const sel=CHS.faSel===i&&CHS.benchSel==null;
+    return`<div class="to to-hire${sel?' sel':''}" onclick="pickCohostFa(${i})"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-hire',`${callDisplay(s)} · co-host candidate`)}</div><div style="flex:1;min-width:0"><div class="ton">${rosterHtmlEsc(t.name)}</div>${hireTalentCareerLine(t,G.year)}<div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div><div><span class="tosl">EST. CHEMISTRY</span><span class="tosv">${lbl}</span></div><div><span class="tosl">SLOT LIFT (EST.)</span><span class="tosv">${estPts>=0?'+':''}${estPts} pts</span></div></div><div style="font-size:12px;color:var(--mut);margin-top:4px;font-family:var(--ft)">Scout read — on-air pairing can land better or worse.</div></div></div><div class="to-hire-side"><span class="tocl">SALARY</span><span class="toc">${f$(t.salary)}/yr</span></div></div>`;
+  }).join('');
+  const benchRows=(CHS.benchOpts||[]).map((e)=>{
+    const t=e.talent;
+    const q=Math.round(t.quality);
+    const fitF=talentScoutFormatFit01(t,s.format);
+    const fit=Math.round(fitF*100);
+    const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';
+    const fc=fit>=75?'good':fit>=55?'warn':'poor';
+    const chemEst=cohostChemistryScoutPreview01(host,t,s.format);
+    const estPts=Math.round(coHostSlotQualityDeltaPts(host,t,s.format,CHS.slot,chemEst));
+    const lbl=chemistryEstimateLabel01(chemEst);
+    const sel=CHS.benchSel===e.id;
+    return`<div class="to to-hire${sel?' sel':''}" onclick="pickCohostBench('${e.id}')"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-hire','bench · co-host')}</div><div style="flex:1;min-width:0"><div class="ton">${rosterHtmlEsc(t.name)} <span style="font-size:12px;color:var(--amb)">BENCH</span></div><div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div><div><span class="tosl">EST. CHEMISTRY</span><span class="tosv">${lbl}</span></div><div><span class="tosl">SLOT LIFT (EST.)</span><span class="tosv">${estPts>=0?'+':''}${estPts} pts</span></div></div></div></div><div class="to-hire-side"><span class="tocl">SALARY</span><span class="toc">${f$(t.salary)}/yr</span></div></div>`;
+  }).join('');
+  const empty=!CHS.pool.length&&!(CHS.benchOpts||[]).length;
+  document.getElementById('fireb').innerHTML=`
+    <div class="ibox" style="margin-bottom:12px;line-height:1.5">Primary host: <strong>${rosterHtmlEsc(host.name)}</strong> · ${callDisplay(s)} · ${SL[CHS.slot]}</div>
+    <p class="di" style="margin-bottom:10px">Pick one co-host. <strong>Est. chemistry</strong> is a scout guess (like talent ratings) — the real pairing reveals over several books. Slot lift (est.) is the immediate slot-quality bump from that guess, before hidden chemistry finishes settling.</p>
+    ${CHS.pool.length?`<div class="msh" style="margin-bottom:8px;font-size:13px;letter-spacing:.12em;color:var(--mut)">FREE AGENTS</div><div class="tg">${faRows}</div>`:''}
+    ${(CHS.benchOpts||[]).length?`<div class="msh" style="margin-top:16px;margin-bottom:8px;font-size:13px;letter-spacing:.12em;color:var(--mut)">FROM BENCH</div><div class="tg">${benchRows}</div>`:''}
+    ${empty?'<p class="di" style="color:var(--mut)">No eligible co-host candidates this period.</p>':''}
+    <button class="cfm" type="button" style="margin-top:14px" onclick="doCohostHireConfirm()" ${CHS.faSel==null&&CHS.benchSel==null?'disabled':''}>ADD CO-HOST</button>
+    <button class="cnl" type="button" onclick="renderManageTalentStation('${s.id}')">← BACK</button>`;
+  if(scrollAfter==='top')scrollModalContentToTop('m-fire');
+  else if(mo){mo.scrollTop=prevScroll;requestAnimationFrame(()=>{mo.scrollTop=prevScroll;});}
+}
+function pickCohostFa(i){CHS.faSel=i;CHS.benchSel=null;rCohostHireRender(G.stations.find(st=>st.id===CHS.sid),'preserve');}
+function pickCohostBench(bid){CHS.benchSel=bid;CHS.faSel=null;rCohostHireRender(G.stations.find(st=>st.id===CHS.sid),'preserve');}
+function doCohostHireConfirm(){
+  const s=G.stations.find(st=>st.id===CHS.sid);
+  const sl=CHS.slot;
+  if(!s||!mpIsMe(s)||!sl||!s.prog[sl]?.talent||s.prog[sl].coHost)return;
+  let co=null;
+  if(CHS.benchSel!=null){
+    const ix=(G.talentBench||[]).findIndex(e=>e.id===CHS.benchSel);
+    if(ix<0)return;
+    co=G.talentBench[ix].talent;
+    G.talentBench.splice(ix,1);
+  }else if(CHS.faSel!=null){
+    co=CHS.pool[CHS.faSel];
+    if(!co)return;
+    CHS.pool.splice(CHS.faSel,1);
+    const k=wlFreeAgentPoolCacheKey(s.id,sl,'cohost');
+    if(G._wlFaPoolCache)G._wlFaPoolCache[k]=CHS.pool.slice();
+  }else return;
+  const host=s.prog[sl].talent;
+  const sd=s.prog[sl];
+  co.slot=sl;
+  co._hireYear=G.year;
+  if(!co._careerStartYear)co._careerStartYear=Math.max(1970,G.year-ri(0,14));
+  adjustCohostSalaryForRole(co,sl,G);
+  const chemRoll=rollCoHostChemistryPair(host,co,s.format);
+  sd.coHost=co;
+  initCoHostChemistryReveal(sd,s.format,sl,host,co,chemRoll);
+  refreshStationOQ(s,G);
+  invalidateFreeAgentPoolCachesForSlot(s.id,sl);
+  queueTalentPortrait(co);
+  G.news.unshift({v:'LOW',t:`${co.name} joins ${host.name} as co-host on ${s.callLetters} ${SL[sl]}.`,y:G.year,p:G.period});
+  logHistory(s,'TALENT',`Co-host ${co.name} — ${SL[sl]} (est. chemistry ${chemistryEstimateLabel01(chemRoll.estimate)})`,G);
+  MP.action('cohost_hire',{sid:s.id,slot:sl,talent:co,chemRoll});
+  CHS={sid:null,slot:null,pool:[],benchOpts:[],faSel:null,benchSel:null};
+  renderManageTalentStation(s.id);
+  renderAll();
+}
+function removeCoHostFromSlot(sid,slot){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||!mpIsMe(s))return;
+  const sd=s.prog[slot];
+  if(!sd?.coHost){showToast('No co-host in this slot.','warn');return;}
+  const nm=sd.coHost.name;
+  clearCoHostPairingState(sd);
+  refreshStationOQ(s,G);
+  G.news.unshift({v:'LOW',t:`${nm} steps off the ${SL[slot]} show at ${s.callLetters}.`,y:G.year,p:G.period});
+  logHistory(s,'TALENT',`Co-host removed — ${SL[slot]}`,G);
+  MP.action('cohost_fire',{sid,slot});
+  renderManageTalentStation(sid);
+  renderAll();
 }
 function mtOpenMoveSameStation(sid,fromSlot){
   sid=ensureOpsSourceSid(sid);
@@ -20584,6 +21066,7 @@ function doRosterPlace(toSid,toSlot){
       const adjDip=0.08;
       const fit=t0=>t0.formatFit[dst.format]||0.3;
       const boost=t0=>Math.round((t0.quality/100)*fit(t0)*0.35*18);
+      clearCoHostPairingState(toSd);
       toSd.talent=t;
       toSd.quality=Math.min(100,Math.max(10,Math.round((toSd.quality||30)*(1-adjDip)))+boost(t));
       initTalentPerformanceReveal(toSd,t,dst.format,'xfer');
@@ -21288,6 +21771,7 @@ function doFire(sid,slot){
   }
 
   if(buyout>0){ G.cash-=buyout; if(MP.mode==='live'){if(!G._playerCash)G._playerCash={};G._playerCash[MP.playerId]=G.cash;MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash});}}
+  clearCoHostPairingState(sd);
   sd.talent=null;
   coerceMusicVoiceTrackModesGlobally(G);
 
@@ -25098,7 +25582,7 @@ function companyFinanceRollup(){
   const cost=ps.reduce((s,st)=>s+st.fin.cost,0);
   const ebitda=ps.reduce((s,st)=>s+st.fin.ebitda,0);
   const margin=revenue>0?Math.round((ebitda/revenue)*100):0;
-  const talentCost=ps.reduce((sum,s)=>sum+Object.values(s.prog).filter(sl=>sl?.talent).reduce((a,sl)=>a+Math.round((sl.talent.salary||0)/2),0),0);
+  const talentCost=ps.reduce((sum,s)=>sum+Object.values(s.prog).filter(sl=>sl?.talent).reduce((a,sl)=>a+payrollHalfPeriodForDaypartSlot(sl),0),0);
   const fixedCost=ps.reduce((s,st)=>s+(st.fin.fix||0),0);
   const cash=MP.mode==='live'?(G._playerCash?.[MP.playerId]??G.cash):G.cash;
   const shareSum=ps.reduce((s,st)=>s+st.rat.share,0);
@@ -25393,7 +25877,7 @@ function recordCompanyFinHistory(G, wasYear, wasPeriod, profit){
     const revenue=ps.reduce((s,st)=>s+st.fin.rev,0);
     const cost=ps.reduce((s,st)=>s+st.fin.cost,0);
     const margin=revenue>0?Math.round((pProfit/revenue)*100):0;
-    const talentCost=ps.reduce((sum,s)=>sum+Object.values(s.prog).filter(sl=>sl?.talent).reduce((a,sl)=>a+Math.round((sl.talent.salary||0)/2),0),0);
+    const talentCost=ps.reduce((sum,s)=>sum+Object.values(s.prog).filter(sl=>sl?.talent).reduce((a,sl)=>a+payrollHalfPeriodForDaypartSlot(sl),0),0);
     const fixedCost=ps.reduce((s,st)=>s+(st.fin.fix||0),0);
     const shareSum=ps.reduce((s,st)=>s+st.rat.share,0);
     const avgSellout=ps.length?Math.round((ps.reduce((s,st)=>s+(st.ops?.sell||0),0)/ps.length)*1000)/1000:0;
@@ -25903,7 +26387,7 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra
       let mc='amb';
       if(s.fin.ebitda<0) mc='neg';
       else if(s.fin.ebitda>0) mc='pos';
-      const talCost=Object.values(s.prog).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
+      const talCost=Object.values(s.prog).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+payrollHalfPeriodForDaypartSlot(sl),0);
       const simSrc=s.simulcastWith&&s._simulcastSource===false?G.stations.find(st=>st.id===s.simulcastWith):null;
       const localMD=s.prog.morningDrive?.talent;
       const simMD=!localMD&&simSrc?simSrc.prog?.morningDrive?.talent:null;
