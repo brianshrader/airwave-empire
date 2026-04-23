@@ -367,6 +367,16 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .slr:last-child{border-bottom:none}
 .slr.slots-lineup-grid{display:grid;align-items:center;column-gap:8px;row-gap:0;padding:7px 0;border-bottom:1px solid rgba(51,51,51,.6)}
 .slr.slots-lineup-grid:last-child{border-bottom:none}
+.slr.slots-lineup-grid.slr--cohost{
+  padding-top:4px;
+  margin-top:2px;
+  border-top:1px dashed rgba(255,255,255,.12);
+  background:rgba(0,0,0,.12);
+}
+.slr.slots-lineup-grid.slr--cohost .sl-cell-day.sln{
+  align-self:flex-start;
+  padding-top:2px;
+}
 .slr.slots-lineup-grid.sl-lineup-poach-target{
   box-shadow:inset 3px 0 0 rgba(245,166,35,.55);
   background:rgba(245,166,35,.05);

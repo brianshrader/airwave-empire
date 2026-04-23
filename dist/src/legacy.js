@@ -888,7 +888,12 @@ function precomputeVoiceTrackingCompanyLoad(G){
   };
   (G.stations||[]).forEach(s=>{
     if(!s?.prog)return;
-    DAYPART_SLOTS.forEach(sl=>{if(s.prog[sl]?.talent)wipe(s.prog[sl].talent);});
+    DAYPART_SLOTS.forEach(sl=>{
+      if(s.prog[sl]?.talent)wipe(s.prog[sl].talent);
+      const sdVt=s.prog[sl];
+      const bVt=slotTalentB(sdVt);
+      if(bVt)wipe(bVt);
+    });
   });
   (G.talentBench||[]).forEach(ent=>wipe(ent?.talent));
   if(!G||!musicVoiceTrackEconomicallyActive(G))return;
@@ -1851,7 +1856,19 @@ function htmlOnAirTalentRoster(s){
         ?`${f$(perPd)}/period <span style="color:var(--mut);font-size:13px">(${f$(t.salary)}/yr)</span>`
         :'—';
       const star=t.superstar===true?'⭐ ':'';
-      return `<div class="sr" style="align-items:flex-start;gap:8px"><span class="lb" style="font-size:13px;letter-spacing:1px;padding-top:2px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);flex:1;min-width:0">${intelTalentStack(t,tq,slotQ,salStr,star,`${callDisplay(s)} · ${lbl}`)}</span></div>`;
+      let coExtra='';
+      const chIb=slotTalentB(sd);
+      if(chIb){
+        const ch=chIb;
+        const chQ=Math.round(ch.quality||0);
+        const chPd=(typeof ch.salary==='number'&&!Number.isNaN(ch.salary))?Math.round(ch.salary/2):0;
+        const chSal=(typeof ch.salary==='number'&&!Number.isNaN(ch.salary))
+          ?`${f$(chPd)}/period <span style="color:var(--mut);font-size:13px">(${f$(ch.salary)}/yr)</span>`
+          :'—';
+        const chStar=ch.superstar===true?'⭐ ':'';
+        coExtra=`<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,.08)"><div style="font-size:12px;color:var(--mut);margin-bottom:4px">Co-host</div>${intelTalentStack(ch,chQ,slotQ,chSal,chStar,`${callDisplay(s)} · ${lbl} · co-host`)}</div>`;
+      }
+      return `<div class="sr" style="align-items:flex-start;gap:8px"><span class="lb" style="font-size:13px;letter-spacing:1px;padding-top:2px">${lbl}</span><span class="vl" style="font-size:15px;font-family:var(--ft);flex:1;min-width:0">${intelTalentStack(t,tq,slotQ,salStr,star,`${callDisplay(s)} · ${lbl}`)}${coExtra}</span></div>`;
     }
     const cap=nonLocalDaypartCaption(s.format,sl,!!s.isPublic,s);
     return `<div class="sr"><span class="lb" style="font-size:13px;letter-spacing:1px">${lbl}</span><span class="vl" style="font-size:14px;color:var(--mut)"><em>${cap}</em> · slot quality ${slotQ}</span></div>`;
@@ -1867,15 +1884,20 @@ function htmlMarketTalentRankerList(){
       const tal=st.prog[sl]?.talent;
       if(!tal)return;
       const q=Math.round(tal.quality||0);
-      rows.push({tal,st,sl,q});
+      rows.push({tal,st,sl,q,role:'host'});
+      const co=slotTalentB(st.prog[sl]);
+      if(co){
+        rows.push({tal:co,st,sl,q:Math.round(co.quality||0),role:'cohost'});
+      }
     });
   });
   rows.sort((a,b)=>b.q-a.q);
   if(!rows.length)return '<p style="color:var(--mut);font-size:14px;font-style:italic">No on-air talent in the market yet.</p>';
-  return rows.map(({tal,st,sl,q})=>{
+  return rows.map(({tal,st,sl,q,role})=>{
     const star=tal.superstar===true?'⭐ ':'';
+    const roleTag=role==='cohost'?'<span style="color:var(--mut)"> (co-host)</span>':'';
     return `<div style="display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.07);font-size:13px;font-family:var(--ft)">
-      <span style="color:var(--off);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${star}<strong style="color:var(--wht)">${tal.name}</strong> <span style="color:var(--mut)">· ${SL[sl]} · ${callDisplay(st)}</span></span>
+      <span style="color:var(--off);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${star}<strong style="color:var(--wht)">${tal.name}</strong>${roleTag} <span style="color:var(--mut)">· ${SL[sl]} · ${callDisplay(st)}</span></span>
       <span style="color:var(--amb);flex-shrink:0;font-family:var(--fd);font-size:14px">Q ${q}</span>
     </div>`;
   }).join('');
@@ -2398,6 +2420,259 @@ function applyTalentPerformanceRevealDecayStep(sd,vtStress){
   if(t._perfRevealStepsLeft===0)t._talentPerfRevealed=true;
   sd.quality=Math.min(100,Math.max(10,Math.round((sd.quality||20)+step)));
 }
+/** Optional co-host: chemistry-led pairing (morning + afternoon drive only). */
+const COHOST_CHEM_REVEAL_PERIODS=8;
+const COHOST_SLOT_STRENGTH={morningDrive:1,afternoonDrive:0.42,midday:0,evening:0,overnight:0};
+function daypartAllowsCoHostModel(sl){
+  return(sl==='morningDrive'||sl==='afternoonDrive');
+}
+/** Second on-air talent in a dual daypart (`talentB`). Legacy saves may still use `coHost`. */
+function slotTalentB(sd){
+  if(!sd)return null;
+  return sd.talentB!=null?sd.talentB:(sd.coHost||null);
+}
+function setSlotTalentB(sd,t){
+  if(!sd)return;
+  if(t){ sd.talentB=t; delete sd.coHost; }
+  else { delete sd.talentB; delete sd.coHost; }
+}
+/** When chair A is cleared but chair B remains, promote B into `talent` so slots stay consistent. */
+function promoteSlotChairBtoAIfNeeded(sd,sl){
+  if(!sd||sd.talent)return;
+  const b=slotTalentB(sd);
+  if(!b)return;
+  if(sl&&!daypartAllowsCoHostModel(sl)){setSlotTalentB(sd,null);return;}
+  setSlotTalentB(sd,null);
+  sd.talent=b;
+  clearPairingChemistryOnly(sd);
+}
+/** Canonical order for pairing chemistry / scout hash so chair assignment does not flip the model. */
+function pairingChemTalentOrder(ta,tb){
+  if(!ta||!tb)return[ta,tb];
+  const ka=String(ta.id||'')+'\t'+normTalentNameKey(ta.name||'');
+  const kb=String(tb.id||'')+'\t'+normTalentNameKey(tb.name||'');
+  return ka<=kb?[ta,tb]:[tb,ta];
+}
+function migrateLegacyCoHostKeysToTalentB(G){
+  (G.stations||[]).forEach(s=>{
+    if(!s?.prog)return;
+    DAYPART_SLOTS.forEach(sl=>{
+      const sd=s.prog[sl];
+      if(!sd)return;
+      const leg=sd.coHost;
+      if(leg&&!sd.talentB){ sd.talentB=leg; delete sd.coHost; }
+      if(!daypartAllowsCoHostModel(sl)&&(sd.talentB||sd.coHost)){
+        setSlotTalentB(sd,null);
+        clearPairingChemistryOnly(sd);
+      }
+    });
+  });
+}
+/** Revert slot-quality estimate from pairing + delete chemistry metadata only (does not remove on-air talent). */
+function clearPairingChemistryOnly(sd){
+  if(!sd)return;
+  const adj=sd._cohostSlotAdjApplied|0;
+  if(adj){
+    sd.quality=Math.min(100,Math.max(10,Math.round((sd.quality||20)-adj)));
+    delete sd._cohostSlotAdjApplied;
+  }
+  delete sd._cohostChemActual;
+  delete sd._cohostChemEstimate;
+  delete sd._cohostChemRevealStepsLeft;
+  delete sd._cohostChemRevealRem;
+  delete sd._cohostChemRevealed;
+}
+function cohostPersonalityFormatMult(fmt){
+  if(TALK_FMTS.includes(fmt)||fmt==='ALL_NEWS')return 1.08;
+  return 0.86;
+}
+function daypartCoHostModelStrength(sl,fmt){
+  const w=COHOST_SLOT_STRENGTH[sl]||0;
+  if(w<=0)return 0;
+  return w*cohostPersonalityFormatMult(fmt);
+}
+function talentChemEff01(t,fmt){
+  if(!t||!fmt)return 0.35;
+  return Math.max(0.08,Math.min(1,(talentTrueQuality(t)/100)*talentTrueFormatFit(t,fmt)));
+}
+function rollCoHostChemistryPair(primary,cohost,fmt){
+  const [p,c]=pairingChemTalentOrder(primary,cohost);
+  const ep=talentChemEff01(p,fmt);
+  const ec=talentChemEff01(c,fmt);
+  const sim=1-Math.min(1,Math.abs(ep-ec)/0.82);
+  const style=(ep+ec)*0.5;
+  const noise=(Math.random()*2-1)*0.26;
+  const base=sim*0.52+style*0.26-0.20+noise;
+  const actual=Math.max(-1,Math.min(1,base));
+  const estNoise=(Math.random()*2-1)*0.19;
+  const estimate=Math.max(-1,Math.min(1,actual+estNoise));
+  return{actual,estimate};
+}
+/** Deterministic scout chemistry (stable in hire UI; actual pairing still rolled at hire). */
+function cohostChemistryScoutPreview01(primary,cohost,fmt){
+  const [a,b]=pairingChemTalentOrder(primary,cohost);
+  const ep=talentChemEff01(a,fmt);
+  const ec=talentChemEff01(b,fmt);
+  const sim=1-Math.min(1,Math.abs(ep-ec)/0.82);
+  const style=(ep+ec)*0.5;
+  const idLo=String(Math.min(Number(a.id)||0,Number(b.id)||0));
+  const idHi=String(Math.max(Number(a.id)||0,Number(b.id)||0));
+  const h=wlHash32(`${idLo}|${idHi}|${normTalentNameKey(a.name||'')}|${normTalentNameKey(b.name||'')}|${fmt}|chemscout`);
+  const n=(h%2001)/2000-0.5;
+  const est=sim*0.52+style*0.26-0.20+n*0.24;
+  return Math.max(-1,Math.min(1,est));
+}
+function coHostSlotQualityDeltaPts(primary,cohost,fmt,sl,chem){
+  const str=daypartCoHostModelStrength(sl,fmt);
+  if(str<=0||!primary||!cohost||typeof chem!=='number'||Number.isNaN(chem))return 0;
+  const [p,c]=pairingChemTalentOrder(primary,cohost);
+  const ep=talentChemEff01(p,fmt);
+  const ec=talentChemEff01(c,fmt);
+  const blend=0.5*ep+0.5*ec;
+  const anchor=(blend-0.44)*2.6*str;
+  const chemSwing=chem*7.0*str;
+  const d=anchor+chemSwing;
+  return Math.max(-13.5,Math.min(10.2,d));
+}
+function chemistryEstimateLabel01(est){
+  if(est<-0.34)return'Weak';
+  if(est<-0.07)return'Fair';
+  if(est<0.20)return'Good';
+  return'Great';
+}
+function clearCoHostPairingState(sd){
+  clearPairingChemistryOnly(sd);
+}
+/** Bench second-chair only (no `mpIsMe` check). Used by multiplayer apply and {@link benchCoHostIfPresentInternal}. */
+function benchSecondChairTalentCore(sid,slot,benchOwnerMpId){
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s)return false;
+  const sd=s.prog?.[slot];
+  const b=slotTalentB(sd);
+  if(!b)return false;
+  ensureTalentBench(G);
+  G._benchSeq=(G._benchSeq||0)+1;
+  const benchId='b'+G._benchSeq;
+  const owner=benchOwnerMpId|0;
+  G.talentBench.push({id:benchId,talent:b,_mpOwner:owner,sid,slot});
+  setSlotTalentB(sd,null);
+  clearPairingChemistryOnly(sd);
+  refreshStationOQ(s,G);
+  return true;
+}
+/** Bench second-chair talent only; clears pairing chemistry on the slot. */
+function benchCoHostIfPresentInternal(sid,slot){
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||!mpIsMe(s))return false;
+  const owner=MP.mode==='live'?(s._mpOwner!=null?s._mpOwner:MP.playerId):0;
+  return benchSecondChairTalentCore(sid,slot,owner);
+}
+function initCoHostChemistryReveal(sd,fmt,sl,primary,cohost,chemRoll){
+  if(!sd||!primary||!cohost||!chemRoll)return;
+  sd._cohostChemActual=chemRoll.actual;
+  sd._cohostChemEstimate=chemRoll.estimate;
+  const [p,c]=pairingChemTalentOrder(primary,cohost);
+  const estPts=Math.round(coHostSlotQualityDeltaPts(p,c,fmt,sl,chemRoll.estimate));
+  const actPts=Math.round(coHostSlotQualityDeltaPts(p,c,fmt,sl,chemRoll.actual));
+  sd.quality=Math.min(100,Math.max(10,Math.round((sd.quality||20)+estPts)));
+  sd._cohostSlotAdjApplied=estPts;
+  const d=actPts-estPts;
+  if(!d){
+    sd._cohostChemRevealStepsLeft=0;
+    sd._cohostChemRevealRem=0;
+    sd._cohostChemRevealed=true;
+  }else{
+    sd._cohostChemRevealStepsLeft=COHOST_CHEM_REVEAL_PERIODS;
+    sd._cohostChemRevealRem=d;
+    sd._cohostChemRevealed=false;
+  }
+}
+function applyCoHostChemistryRevealDecayStep(sd,vtStress){
+  if(!sd?.talent||!slotTalentB(sd))return;
+  const left=sd._cohostChemRevealStepsLeft|0;
+  if(left<1)return;
+  const rem=sd._cohostChemRevealRem|0;
+  if(!rem)return;
+  const vt=Math.max(0,Math.min(1,Number(vtStress)||0));
+  const vtK=1-0.065*vt;
+  let step=Math.round((rem/left)*vtK);
+  if(step===0)step=rem>0?1:(rem<0?-1:0);
+  if(step===0)return;
+  sd._cohostChemRevealRem=rem-step;
+  sd._cohostChemRevealStepsLeft=left-1;
+  if(sd._cohostChemRevealStepsLeft===0)sd._cohostChemRevealed=true;
+  sd.quality=Math.min(100,Math.max(10,Math.round((sd.quality||20)+step)));
+  sd._cohostSlotAdjApplied=(sd._cohostSlotAdjApplied|0)+step;
+}
+/** Small station-level franchise softening when a revealed co-host pairing is toxic (personality-heavy slots). */
+function stationCoHostFranchiseSoftPenalty(s){
+  if(!s?.prog)return 0;
+  let pen=0;
+  DAYPART_SLOTS.forEach(sl=>{
+    const sd=s.prog[sl];
+    if(!sd?.talent||!slotTalentB(sd))return;
+    if(!sd._cohostChemRevealed)return;
+    const chem=sd._cohostChemActual;
+    if(typeof chem!=='number'||Number.isNaN(chem)||chem>=0)return;
+    const str=daypartCoHostModelStrength(sl,s.format);
+    if(str<=0)return;
+    pen+=-chem*0.042*str;
+  });
+  return Math.min(0.09,pen);
+}
+function payrollHalfPeriodForDaypartSlot(sd){
+  let row=0;
+  if(sd?.talent)row+=Math.round((sd.talent.salary||0)/2);
+  const b=slotTalentB(sd);
+  if(b)row+=Math.round((b.salary||0)/2);
+  return row;
+}
+function adjustCohostSalaryForRole(t,sl,G){
+  if(!t)return;
+  const mult=0.74;
+  t.salary=Math.max(3500,Math.round((t.salary||0)*mult/500)*500);
+  const tier=talentTrueQuality(t)<42?'entry':talentTrueQuality(t)<68?'mid':'star';
+  const baseFl=Math.round(salInfl((SAL[sl]?.[tier]?.[0]||5000),G.year)*0.58/500)*500;
+  if(t.salary<baseFl)t.salary=baseFl;
+  const slotStarMax=({morningDrive:60000,afternoonDrive:42000,midday:28000,evening:22000,overnight:16000})[sl]||42000;
+  const cap=Math.round(salInfl(Math.round(slotStarMax*0.62),G.year)/500)*500;
+  if(t.salary>cap)t.salary=cap;
+}
+function debugCoHostDaypartDiag(s,sl){
+  const sd=s?.prog?.[sl];
+  const c=slotTalentB(sd);
+  if(!sd?.talent||!c){
+    console.warn('debugCoHostDaypartDiag: need station id, co-hosted slot',{sid:s?.id,sl});
+    return null;
+  }
+  const fmt=s.format;
+  const p=sd.talent;
+  const str=daypartCoHostModelStrength(sl,fmt);
+  const ep=talentChemEff01(p,fmt);
+  const ec=talentChemEff01(c,fmt);
+  const est=sd._cohostChemEstimate;
+  const act=sd._cohostChemActual;
+  const estPts=Math.round(coHostSlotQualityDeltaPts(p,c,fmt,sl,typeof est==='number'?est:0));
+  const actPts=Math.round(coHostSlotQualityDeltaPts(p,c,fmt,sl,typeof act==='number'?act:0));
+  const slotQ=Math.round(sd.quality||0);
+  const out={
+    slot:sl,call:s.callLetters,format:fmt,modelStrength:Math.round(str*1000)/1000,
+    primaryHost:{name:p.name,contrib01:Math.round(ep*1000)/1000},
+    coHost:{name:c.name,contrib01:Math.round(ec*1000)/1000},
+    expectedChemLabel:chemistryEstimateLabel01(typeof est==='number'?est:0),
+    expectedChem01:typeof est==='number'?Math.round(est*1000)/1000:null,
+    actualChem01:typeof act==='number'?Math.round(act*1000)/1000:null,
+    slotDeltaIfEstimatePts:estPts,slotDeltaIfActualPts:actPts,slotQuality:slotQ,
+    slotAdjAppliedPts:sd._cohostSlotAdjApplied|0,
+    revealStepsLeft:sd._cohostChemRevealStepsLeft|0,revealed:!!sd._cohostChemRevealed,
+  };
+  console.log('[cohostDiag]',out);
+  return out;
+}
+window.debugCoHostDaypartDiag=function(sid,sl){
+  const s=(typeof G!=='undefined'&&G?.stations&&sid)?G.stations.find(st=>st.id===sid):null;
+  return debugCoHostDaypartDiag(s,sl);
+};
 const NF_CLASSIC=[
   'Jack','Bobby','Ray','Don','Mike','Larry','Gary','Jim','Dave','Steve','Tom','Bill','Frank','Gene','Roy','Earl','Hank','Al','Jerry','Ted','Bob','Chuck','Rick','Scott','Paul','Dan','Doug','Ron','Wayne','Dale','Glen','Barry','Roger','Terry','Randy','Keith','Craig','Dean','Russ','Len','Bud','Skip','Chet','Hal','Vic','Stan','Norm','Wes','Stu','Clyde','Mel','Sal','Monty','Buck','Scotty','Marty','Benny','Lou','Ike','Duke','Johnny','Eddy','Porter','Faron','Webb','Ferlin','Sonny','Lefty','Slim','Tex','Ken','Greg','Phil','Jeff','Matt','Chris','John','Joe','Tim','Tony','Nick','Andy','Bruce','Carl','Dennis','George','Harry','Kevin','Mark','Neil','Patrick','Peter','Richard','Robert','Samuel','Stephen','Walter','Will','Hugh','Gordon','Murray','Herb','Brent','Todd','Casey','Les','Mac','Chip','Rod','Vince','Edward','Charles','Franklin','Harold','Louis','Philip','Randall','Russell','Sheldon','Stuart','Theodore','Warren','Billy','Bobby','Cliff','Curt','Danny','Darryl','Duane','Eddie','Freddy','Gerald','Glenn','Howard','Irvin','Jerome','Joey','Kent','Kurt','Lance','Lloyd','Marc','Mitch','Myron','Nolan','Orville','Ralph','Rex','Rodney','Rudy','Rusty','Sean','Sheldon','Toby','Troy','Vernon','Wade','Wiley',
 ];
@@ -2455,13 +2730,15 @@ function collectMarketTalentNameKeys(G){
   G.stations.forEach(st=>{
     if(!st.prog)return;
     Object.values(st.prog).forEach(sd=>{
-      const raw=sd?.talent?.name;
-      if(!raw)return;
-      const parts=raw.trim().split(/\s+/).filter(Boolean);
-      if(!parts.length)return;
-      usedFirst.add(parts[0]);
-      if(parts.length>=2)usedLast.add(parts[parts.length-1]);
-      usedFull.add(normTalentNameKey(raw));
+      [sd?.talent,slotTalentB(sd)].forEach(tal=>{
+        const raw=tal?.name;
+        if(!raw)return;
+        const parts=raw.trim().split(/\s+/).filter(Boolean);
+        if(!parts.length)return;
+        usedFirst.add(parts[0]);
+        if(parts.length>=2)usedLast.add(parts[parts.length-1]);
+        usedFull.add(normTalentNameKey(raw));
+      });
     });
   });
   return {usedFirst,usedFull,usedLast};
@@ -2898,7 +3175,7 @@ function mkPool(slot,fmt,year){
 function wlFreeAgentPoolCacheKey(sid,slot,hireKind){
   return `${sid}\t${G.turn|0}\t${G.year}\t${G.period|0}\t${slot}\t${hireKind}`;
 }
-/** @param {'hire'|'replace'} hireKind */
+/** @param {'hire'|'replace'|'cohost'} hireKind */
 function getOrCreateFreeAgentPool(s,slot,hireKind){
   if(!G._wlFaPoolCache)G._wlFaPoolCache={};
   const k=wlFreeAgentPoolCacheKey(s.id,slot,hireKind);
@@ -3883,6 +4160,7 @@ function benchLocalHostDisplacedByFranchiseWin(station,franchise,G){
       logHistory(station,'TALENT',`Benched ${nm} — ${SL[slot]} (displaced by "${franchise.name}")`,G);
     }
   } else {
+    clearCoHostPairingState(sd);
     sd.talent=null;
     sd.quality=Math.max(10,Math.round((sd.quality||20)*0.72));
     refreshStationOQ(station,G);
@@ -6102,6 +6380,7 @@ window._mpApply_hire = function({ sid, slot, talent }) {
   const s = G.stations.find(st=>st.id===sid);
   if (!s || !s.prog[slot] || daytimerRestrictedSlot(s, slot)) return;
   if(franchiseSlotBlocksNewLocalTalent(s,slot,G))return;
+  clearCoHostPairingState(s.prog[slot]);
   s.prog[slot].talent = talent;
   delete s.prog[slot].staffingMode;
   s.oq = Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w, 0));
@@ -6113,9 +6392,51 @@ window._mpApply_fire = function({ sid, slot }) {
   const s = G.stations.find(st=>st.id===sid);
   if (!s) return;
   const nm = s.prog[slot]?.talent?.name;
-  if (s.prog[slot]) s.prog[slot].talent = null;
+  if (s.prog[slot]){
+    const sd=s.prog[slot];
+    clearCoHostPairingState(sd);
+    sd.talent = null;
+    promoteSlotChairBtoAIfNeeded(sd,slot);
+  }
   s.oq = Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w, 0));
   if (nm) logHistory(s, 'TALENT', `Released ${nm} — ${SL[slot]}`, G);
+};
+
+window._mpApply_cohost_hire = function({ sid, slot, talent, chemRoll }) {
+  const s = G.stations.find(st=>st.id===sid);
+  const sd = s?.prog?.[slot];
+  if (!s || !sd?.talent) return;
+  const ownerMp = s._mpOwner != null ? s._mpOwner : 0;
+  if (slotTalentB(sd) && !benchSecondChairTalentCore(sid, slot, ownerMp)) return;
+  const host = sd.talent;
+  const co = talent;
+  if (!co) return;
+  co.slot = slot;
+  if (!co._careerStartYear) co._careerStartYear = Math.max(1970, (G.year||1970)-ri(0,14));
+  const cr = chemRoll && typeof chemRoll.actual === 'number' && typeof chemRoll.estimate === 'number'
+    ? chemRoll
+    : rollCoHostChemistryPair(host, co, s.format);
+  setSlotTalentB(sd,co);
+  initCoHostChemistryReveal(sd, s.format, slot, host, co, cr);
+  s.oq = Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+effSlotQForOq(s.prog[sl2])*w, 0));
+  if (co.name) logHistory(s, 'TALENT', `Co-host ${co.name} — ${SL[slot]}`, G);
+};
+
+window._mpApply_cohost_fire = function({ sid, slot }) {
+  const s = G.stations.find(st=>st.id===sid);
+  if (!s || !s.prog[slot]) return;
+  const sd=s.prog[slot];
+  clearCoHostPairingState(sd);
+  setSlotTalentB(sd,null);
+  s.oq = Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+effSlotQForOq(s.prog[sl2])*w, 0));
+};
+window._mpApply_cohost_bench = function({ sid, slot, _fromPlayerId }) {
+  const s = G.stations.find(st=>st.id===sid);
+  if (!s || !s.prog[slot]) return;
+  if (MP.mode === 'live' && s._mpOwner !== _fromPlayerId) return;
+  const ownerMp = s._mpOwner != null ? s._mpOwner : 0;
+  if (!benchSecondChairTalentCore(sid, slot, ownerMp)) return;
+  s.oq = Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+effSlotQForOq(s.prog[sl2])*w, 0));
 };
 
 // Sell station
@@ -6139,8 +6460,10 @@ window._mpApply_poach = function({ sid, slot, rivalId, talentId }) {
   const t = rival.prog[slot]?.talent;
   if (!t) return;
   const nm = t.name;
+  if(rival.prog[slot])clearCoHostPairingState(rival.prog[slot]);
   rival.prog[slot].talent = null;
   if (s.prog[slot]){
+    clearCoHostPairingState(s.prog[slot]);
     s.prog[slot].talent = t;
     delete s.prog[slot].staffingMode;
   }
@@ -6273,6 +6596,8 @@ function removeTalentToBenchInternal(sid, slot){
   const owner=MP.mode==='live'?(s._mpOwner!=null?s._mpOwner:MP.playerId):0;
   G.talentBench.push({id:benchId,talent:sd.talent,_mpOwner:owner,sid,slot});
   sd.talent=null;
+  clearPairingChemistryOnly(sd);
+  promoteSlotChairBtoAIfNeeded(sd,slot);
   const pen={morningDrive:.20,afternoonDrive:.14,midday:.09,evening:.06,overnight:.03}[slot]||.09;
   sd.quality=Math.max(10,Math.round(sd.quality*(1-pen)));
   refreshStationOQ(s,G);
@@ -6297,17 +6622,26 @@ function applyTalentCrossStationXferFull(fromSid, fromSlot, toSid, toSlot) {
   if (toSd?.talent){
     displacedName=toSd.talent.name;
     if(!removeTalentToBenchInternal(toSid,toSlot))return false;
+    if(toSd?.talent){
+      const nm2=toSd.talent.name;
+      displacedName=displacedName?`${displacedName} / ${nm2}`:nm2;
+      if(!removeTalentToBenchInternal(toSid,toSlot))return false;
+    }
   }
   const talA = fromSd.talent;
   const adjDip = 0.10;
   const fit = t => t.formatFit[dst.format] || 0.3;
   const boost = t => Math.round((t.quality / 100) * fit(t) * 0.35 * 18);
+  clearPairingChemistryOnly(toSd);
+  setSlotTalentB(toSd,null);
   toSd.talent = talA;
   delete toSd.staffingMode;
   toSd.quality = Math.min(100, Math.max(10, Math.round((toSd.quality || 30) * (1 - adjDip))) + boost(talA));
   initTalentPerformanceReveal(toSd, talA, dst.format, 'xfer');
   applyDaypartPromotionEconomics(talA, fromSlot, toSlot);
   fromSd.talent = null;
+  clearPairingChemistryOnly(fromSd);
+  promoteSlotChairBtoAIfNeeded(fromSd,fromSlot);
   const pen = { morningDrive: .20, afternoonDrive: .14, midday: .09, evening: .06, overnight: .03 }[fromSlot] || .09;
   fromSd.quality = Math.max(10, Math.round(fromSd.quality * (1 - pen)));
   src.oq = Math.round(Object.entries(SW).reduce((sum, [sl, w]) => sum + effSlotQForOq(src.prog[sl]) * w, 0));
@@ -6319,6 +6653,121 @@ function applyTalentCrossStationXferFull(fromSid, fromSlot, toSid, toSlot) {
   logHistory(dst, 'TALENT', `Received ${talA.name} from ${callDisplay(src)} ${SL[fromSlot]}`, G);
   return true;
 }
+/** Clear prior pairing estimate and roll chemistry when both `talent` and second chair are set. */
+function reinitSlotPairingChemistryIfDual(sd,fmt,sl){
+  if(!sd)return;
+  clearPairingChemistryOnly(sd);
+  const b=slotTalentB(sd);
+  if(sd.talent&&b){
+    const cr=rollCoHostChemistryPair(sd.talent,b,fmt);
+    initCoHostChemistryReveal(sd,fmt,sl,sd.talent,b,cr);
+  }
+}
+/** Swap second-chair talents between two dayparts on one station (both slots must have a primary and a second chair). */
+function applyChairBSameStationSwapFull(sid,fromSlot,toSlot){
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||fromSlot===toSlot)return false;
+  if(!daypartAllowsCoHostModel(fromSlot)||!daypartAllowsCoHostModel(toSlot)){
+    showToast('Second chair is only modeled for morning and afternoon drive.','warn');
+    return false;
+  }
+  const fsd=s.prog[fromSlot], tsd=s.prog[toSlot];
+  if(!fsd?.talent||!tsd?.talent)return false;
+  const bFrom=slotTalentB(fsd), bTo=slotTalentB(tsd);
+  if(!bFrom||!bTo)return false;
+  if(daytimerRestrictedSlot(s,fromSlot)||daytimerRestrictedSlot(s,toSlot))return false;
+  clearPairingChemistryOnly(fsd);
+  clearPairingChemistryOnly(tsd);
+  setSlotTalentB(fsd,bTo);
+  setSlotTalentB(tsd,bFrom);
+  bFrom.slot=toSlot;
+  bTo.slot=fromSlot;
+  reinitSlotPairingChemistryIfDual(fsd,s.format,fromSlot);
+  reinitSlotPairingChemistryIfDual(tsd,s.format,toSlot);
+  refreshStationOQ(s,G);
+  return true;
+}
+/** Move second chair from `fromSlot` to `toSlot` when destination has a primary but no second chair (same station). */
+function applyChairBMoveToVacantSecondChair(sid,fromSlot,toSlot){
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||fromSlot===toSlot)return false;
+  if(!daypartAllowsCoHostModel(fromSlot)||!daypartAllowsCoHostModel(toSlot)){
+    showToast('Second chair is only modeled for morning and afternoon drive.','warn');
+    return false;
+  }
+  if(daytimerRestrictedSlot(s,toSlot)||daytimerRestrictedSlot(s,fromSlot))return false;
+  if(franchiseSlotBlocksNewLocalTalent(s,toSlot,G)){
+    showToast('That daypart is reserved for syndicated programming on the destination.','warn');
+    return false;
+  }
+  const fsd=s.prog[fromSlot], tsd=s.prog[toSlot];
+  if(!fsd?.talent||!tsd?.talent)return false;
+  if(slotTalentB(tsd))return false;
+  const bMove=slotTalentB(fsd);
+  if(!bMove)return false;
+  clearPairingChemistryOnly(fsd);
+  setSlotTalentB(fsd,null);
+  clearPairingChemistryOnly(tsd);
+  setSlotTalentB(tsd,bMove);
+  bMove.slot=toSlot;
+  reinitSlotPairingChemistryIfDual(fsd,s.format,fromSlot);
+  reinitSlotPairingChemistryIfDual(tsd,s.format,toSlot);
+  refreshStationOQ(s,G);
+  return true;
+}
+/** Cross-station: move second chair; destination must already have no second chair (caller benches first if needed). */
+function applyChairBCrossStationXferFull(fromSid,fromSlot,toSid,toSlot){
+  const src=G.stations.find(st=>st.id===fromSid);
+  const dst=G.stations.find(st=>st.id===toSid);
+  if(!src||!dst||fromSid===toSid)return false;
+  if(daytimerRestrictedSlot(dst,toSlot)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return false;}
+  if(!daypartAllowsCoHostModel(fromSlot)||!daypartAllowsCoHostModel(toSlot)){
+    showToast('Second chair is only modeled for morning and afternoon drive.','warn');
+    return false;
+  }
+  if(franchiseSlotBlocksNewLocalTalent(dst,toSlot,G)){
+    showToast('That daypart is reserved for syndicated programming on the destination.','warn');
+    return false;
+  }
+  const fsd=src.prog[fromSlot], tsd=dst.prog[toSlot];
+  if(!fsd?.talent||!tsd?.talent)return false;
+  if(slotTalentB(tsd))return false;
+  const bMove=slotTalentB(fsd);
+  if(!bMove)return false;
+  clearPairingChemistryOnly(fsd);
+  setSlotTalentB(fsd,null);
+  clearPairingChemistryOnly(tsd);
+  setSlotTalentB(tsd,bMove);
+  bMove.slot=toSlot;
+  reinitSlotPairingChemistryIfDual(fsd,src.format,fromSlot);
+  reinitSlotPairingChemistryIfDual(tsd,dst.format,toSlot);
+  src.oq=Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+effSlotQForOq(src.prog[sl2])*w,0));
+  dst.oq=Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+effSlotQForOq(dst.prog[sl2])*w,0));
+  return true;
+}
+/** Cross-station: swap second chairs between two dayparts (both must have primaries and second chairs). */
+function applyChairBCrossStationSwapFull(fromSid,fromSlot,toSid,toSlot){
+  const src=G.stations.find(st=>st.id===fromSid);
+  const dst=G.stations.find(st=>st.id===toSid);
+  if(!src||!dst||fromSid===toSid)return false;
+  if(daytimerRestrictedSlot(src,fromSlot)||daytimerRestrictedSlot(dst,toSlot))return false;
+  if(!daypartAllowsCoHostModel(fromSlot)||!daypartAllowsCoHostModel(toSlot))return false;
+  const fsd=src.prog[fromSlot], tsd=dst.prog[toSlot];
+  if(!fsd?.talent||!tsd?.talent)return false;
+  const b1=slotTalentB(fsd), b2=slotTalentB(tsd);
+  if(!b1||!b2)return false;
+  clearPairingChemistryOnly(fsd);
+  clearPairingChemistryOnly(tsd);
+  setSlotTalentB(fsd,b2);
+  setSlotTalentB(tsd,b1);
+  b1.slot=toSlot;
+  b2.slot=fromSlot;
+  reinitSlotPairingChemistryIfDual(fsd,src.format,fromSlot);
+  reinitSlotPairingChemistryIfDual(tsd,dst.format,toSlot);
+  src.oq=Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+effSlotQForOq(src.prog[sl2])*w,0));
+  dst.oq=Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+effSlotQForOq(dst.prog[sl2])*w,0));
+  return true;
+}
 /** Exchange hosts between two dayparts on one station (no bench). */
 function applyTalentSameStationSwapFull(sid, fromSlot, toSlot) {
   const s = G.stations.find(st => st.id === sid);
@@ -6327,27 +6776,32 @@ function applyTalentSameStationSwapFull(sid, fromSlot, toSlot) {
     showToast(DAYTIMER_AM_NIGHT_MSG, 'warn');
     return false;
   }
-  const a = s.prog[fromSlot]?.talent;
-  const b = s.prog[toSlot]?.talent;
-  if (!a || !b) return false;
+  const fromSd=s.prog[fromSlot], toSd=s.prog[toSlot];
+  const leadFrom=fromSd?.talent, coFrom=slotTalentB(fromSd);
+  const leadTo=toSd?.talent, coTo=slotTalentB(toSd);
+  if (!leadFrom || !leadTo) return false;
+  clearPairingChemistryOnly(fromSd);
+  clearPairingChemistryOnly(toSd);
   const fmt = s.format;
-  s.prog[fromSlot].talent = b;
-  s.prog[toSlot].talent = a;
+  fromSd.talent = leadTo;
+  setSlotTalentB(fromSd, coTo);
+  toSd.talent = leadFrom;
+  setSlotTalentB(toSd, coFrom);
   const adj = 0.08;
   const rec = (sd, t0) => {
     const fit0 = t0.formatFit[fmt] || 0.3;
     const boost = Math.round((t0.quality / 100) * fit0 * 0.35 * 18);
     sd.quality = Math.min(100, Math.max(10, Math.round((sd.quality || 30) * (1 - adj))) + boost);
   };
-  rec(s.prog[fromSlot], b);
-  rec(s.prog[toSlot], a);
-  initTalentPerformanceReveal(s.prog[fromSlot], b, s.format, 'xfer');
-  initTalentPerformanceReveal(s.prog[toSlot], a, s.format, 'xfer');
-  applyDaypartPromotionEconomics(b, toSlot, fromSlot);
-  applyDaypartPromotionEconomics(a, fromSlot, toSlot);
+  rec(fromSd, leadTo);
+  rec(toSd, leadFrom);
+  initTalentPerformanceReveal(fromSd, leadTo, s.format, 'xfer');
+  initTalentPerformanceReveal(toSd, leadFrom, s.format, 'xfer');
+  applyDaypartPromotionEconomics(leadTo, toSlot, fromSlot);
+  applyDaypartPromotionEconomics(leadFrom, fromSlot, toSlot);
   refreshStationOQ(s, G);
-  G.news.unshift({ v: 'LOW', t: `Swapped ${a.name} and ${b.name} between ${SL[fromSlot]} and ${SL[toSlot]} on ${callDisplay(s)}.`, y: G.year, p: G.period });
-  logHistory(s, 'TALENT', `Swap: ${a.name} ↔ ${b.name} (${SL[fromSlot]} ↔ ${SL[toSlot]})`, G);
+  G.news.unshift({ v: 'LOW', t: `Swapped ${leadFrom.name} and ${leadTo.name} between ${SL[fromSlot]} and ${SL[toSlot]} on ${callDisplay(s)}.`, y: G.year, p: G.period });
+  logHistory(s, 'TALENT', `Swap: ${leadFrom.name} ↔ ${leadTo.name} (${SL[fromSlot]} ↔ ${SL[toSlot]})`, G);
   return true;
 }
 /** Exchange hosts between two dayparts on different owned stations (no bench). */
@@ -6360,28 +6814,33 @@ function applyTalentCrossStationSwapFull(fromSid, fromSlot, toSid, toSlot) {
     showToast(DAYTIMER_AM_NIGHT_MSG, 'warn');
     return false;
   }
-  const a = src.prog[fromSlot]?.talent;
-  const b = dst.prog[toSlot]?.talent;
-  if (!a || !b) return false;
-  src.prog[fromSlot].talent = b;
-  dst.prog[toSlot].talent = a;
+  const fromSd=src.prog[fromSlot], toSd=dst.prog[toSlot];
+  const leadFrom=fromSd?.talent, coFrom=slotTalentB(fromSd);
+  const leadTo=toSd?.talent, coTo=slotTalentB(toSd);
+  if (!leadFrom || !leadTo) return false;
+  clearPairingChemistryOnly(fromSd);
+  clearPairingChemistryOnly(toSd);
+  fromSd.talent = leadTo;
+  setSlotTalentB(fromSd, coTo);
+  toSd.talent = leadFrom;
+  setSlotTalentB(toSd, coFrom);
   const adj = 0.08;
   const rec = (sd, t0, fmt) => {
     const fit = t0.formatFit[fmt] || 0.3;
     const boost = Math.round((t0.quality / 100) * fit * 0.35 * 18);
     sd.quality = Math.min(100, Math.max(10, Math.round((sd.quality || 30) * (1 - adj))) + boost);
   };
-  rec(src.prog[fromSlot], b, src.format);
-  rec(dst.prog[toSlot], a, dst.format);
-  initTalentPerformanceReveal(src.prog[fromSlot], b, src.format, 'xfer');
-  initTalentPerformanceReveal(dst.prog[toSlot], a, dst.format, 'xfer');
-  applyDaypartPromotionEconomics(b, toSlot, fromSlot);
-  applyDaypartPromotionEconomics(a, fromSlot, toSlot);
+  rec(fromSd, leadTo, src.format);
+  rec(toSd, leadFrom, dst.format);
+  initTalentPerformanceReveal(fromSd, leadTo, src.format, 'xfer');
+  initTalentPerformanceReveal(toSd, leadFrom, dst.format, 'xfer');
+  applyDaypartPromotionEconomics(leadTo, toSlot, fromSlot);
+  applyDaypartPromotionEconomics(leadFrom, fromSlot, toSlot);
   refreshStationOQ(src, G);
   refreshStationOQ(dst, G);
-  G.news.unshift({ v: 'LOW', t: `Swapped ${a.name} and ${b.name} between ${callDisplay(src)} ${SL[fromSlot]} and ${callDisplay(dst)} ${SL[toSlot]}.`, y: G.year, p: G.period });
-  logHistory(src, 'TALENT', `Swap: ${a.name} ↔ ${b.name} with ${callDisplay(dst)}`, G);
-  logHistory(dst, 'TALENT', `Swap: ${b.name} ↔ ${a.name} with ${callDisplay(src)}`, G);
+  G.news.unshift({ v: 'LOW', t: `Swapped ${leadFrom.name} and ${leadTo.name} between ${callDisplay(src)} ${SL[fromSlot]} and ${callDisplay(dst)} ${SL[toSlot]}.`, y: G.year, p: G.period });
+  logHistory(src, 'TALENT', `Swap: ${leadFrom.name} ↔ ${leadTo.name} with ${callDisplay(dst)}`, G);
+  logHistory(dst, 'TALENT', `Swap: ${leadTo.name} ↔ ${leadFrom.name} with ${callDisplay(src)}`, G);
   return true;
 }
 window._mpApply_shuffle = function({ sid, fromSlot, toSlot }) {
@@ -6394,16 +6853,25 @@ window._mpApply_shuffle = function({ sid, fromSlot, toSlot }) {
   if (toSd?.talent) {
     displacedName = toSd.talent.name;
     if (!removeTalentToBenchInternal(sid, toSlot)) return;
+    if (toSd?.talent) {
+      const nm2 = toSd.talent.name;
+      displacedName = displacedName ? `${displacedName} / ${nm2}` : nm2;
+      if (!removeTalentToBenchInternal(sid, toSlot)) return;
+    }
   }
   const adjDip = 0.08;
   const fit = t => t.formatFit[s.format] || 0.3;
   const boost = t => Math.round((t.quality / 100) * fit(t) * 0.35 * 18);
   const toSd2 = s.prog[toSlot];
+  clearPairingChemistryOnly(toSd2);
+  setSlotTalentB(toSd2,null);
   toSd2.talent = talA;
   toSd2.quality = Math.min(100, Math.max(10, Math.round((toSd2.quality || 30) * (1 - adjDip))) + boost(talA));
   initTalentPerformanceReveal(toSd2, talA, s.format, 'xfer');
   applyDaypartPromotionEconomics(talA, fromSlot, toSlot);
   fromSd.talent = null;
+  clearPairingChemistryOnly(fromSd);
+  promoteSlotChairBtoAIfNeeded(fromSd,fromSlot);
   const pen = {morningDrive:.20,afternoonDrive:.14,midday:.09,evening:.06,overnight:.03}[fromSlot] || .09;
   fromSd.quality = Math.max(10, Math.round(fromSd.quality * (1 - pen)));
   s.oq = Math.round(Object.entries(SW).reduce((sum, [sl, w]) => sum + effSlotQForOq(s.prog[sl]) * w, 0));
@@ -6430,6 +6898,32 @@ window._mpApply_same_station_swap = function({ sid, fromSlot, toSlot, _fromPlaye
   if (!s) return;
   if (MP.mode === 'live' && (s._mpOwner !== _fromPlayerId || _fromPlayerId === undefined)) return;
   applyTalentSameStationSwapFull(sid, fromSlot, toSlot);
+};
+window._mpApply_talent_xfer_chairb = function({ fromSid, fromSlot, toSid, toSlot, _fromPlayerId }) {
+  if (MP.mode === 'live') {
+    const owns = id => G.ps.some(st => st.id === id && st._mpOwner === _fromPlayerId);
+    if (_fromPlayerId === undefined || !owns(fromSid) || !owns(toSid)) return;
+  }
+  applyChairBCrossStationXferFull(fromSid, fromSlot, toSid, toSlot);
+};
+window._mpApply_talent_swap_chairb = function({ fromSid, fromSlot, toSid, toSlot, _fromPlayerId }) {
+  if (MP.mode === 'live') {
+    const owns = id => G.ps.some(st => st.id === id && st._mpOwner === _fromPlayerId);
+    if (_fromPlayerId === undefined || !owns(fromSid) || !owns(toSid)) return;
+  }
+  applyChairBCrossStationSwapFull(fromSid, fromSlot, toSid, toSlot);
+};
+window._mpApply_same_station_swap_chairb = function({ sid, fromSlot, toSlot, _fromPlayerId }) {
+  const s = G.stations.find(st => st.id === sid);
+  if (!s) return;
+  if (MP.mode === 'live' && (s._mpOwner !== _fromPlayerId || _fromPlayerId === undefined)) return;
+  applyChairBSameStationSwapFull(sid, fromSlot, toSlot);
+};
+window._mpApply_shuffle_chairb = function({ sid, fromSlot, toSlot, _fromPlayerId }) {
+  const s = G.stations.find(st => st.id === sid);
+  if (!s) return;
+  if (MP.mode === 'live' && (s._mpOwner !== _fromPlayerId || _fromPlayerId === undefined)) return;
+  applyChairBMoveToVacantSecondChair(sid, fromSlot, toSlot);
 };
 window._mpApply_swap = function({ sidA, sidB, _fromPlayerId }) {
   if (MP.mode === 'live') {
@@ -6462,10 +6956,16 @@ window._mpApply_placement_from_bench = function({ benchId, toSid, toSlot, _fromP
   if (!dst || (MP.mode === 'live' && dst._mpOwner !== _fromPlayerId)) return;
   const ent = G.talentBench.find(e => e.id === benchId);
   if (!ent) return;
-  if (dst.prog[toSlot]?.talent) removeTalentToBenchInternal(toSid, toSlot);
+  const toSd0 = dst.prog[toSlot];
+  if (toSd0?.talent) {
+    if (!removeTalentToBenchInternal(toSid, toSlot)) return;
+    if (toSd0?.talent && !removeTalentToBenchInternal(toSid, toSlot)) return;
+  }
   const t = ent.talent;
   const prevSlot = ent.slot || 'morningDrive';
   const toSd = dst.prog[toSlot];
+  clearPairingChemistryOnly(toSd);
+  setSlotTalentB(toSd,null);
   const adjDip = 0.08;
   const fitFn = t0 => t0.formatFit[dst.format] || 0.3;
   const boost = t0 => Math.round((t0.quality / 100) * fitFn(t0) * 0.35 * 18);
@@ -6477,22 +6977,27 @@ window._mpApply_placement_from_bench = function({ benchId, toSid, toSlot, _fromP
   refreshStationOQ(dst, G);
   logHistory(dst, 'TALENT', `${t.name} placed from bench — ${SL[toSlot]}`, G);
 };
-window._mpApply_extend = function({ sid, slot, years, newSalary }) {
+window._mpApply_extend = function({ sid, slot, years, newSalary, talentRole }) {
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
-  const t = s.prog[slot]?.talent; if(!t) return;
+  const sd = s.prog[slot]; if(!sd) return;
+  const t = talentRole==='cohost' ? slotTalentB(sd) : sd.talent; if(!t) return;
   t.salary = newSalary; t.cyr = years; t.morale = Math.min(100,(t.morale||50)+10);
-  t._underpaidInRole=false; t._slotPromotionPendingRenewal=false; t._promotionFromSlot=undefined;
+  if(talentRole!=='cohost'){
+    t._underpaidInRole=false; t._slotPromotionPendingRenewal=false; t._promotionFromSlot=undefined;
+  }
   renderAll();
 };
-window._mpApply_bonus = function({ sid, slot, amount, boost }) {
+window._mpApply_bonus = function({ sid, slot, amount, boost, talentRole }) {
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
-  const t = s.prog[slot]?.talent; if(!t) return;
+  const sd = s.prog[slot]; if(!sd) return;
+  const t = talentRole==='cohost' ? slotTalentB(sd) : sd.talent; if(!t) return;
   t.morale = Math.min(100,(t.morale||50)+(boost||15));
   renderAll();
 };
-window._mpApply_letexpire = function({ sid, slot }) {
+window._mpApply_letexpire = function({ sid, slot, talentRole }) {
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
-  const t = s.prog[slot]?.talent; if(!t) return;
+  const sd = s.prog[slot]; if(!sd) return;
+  const t = talentRole==='cohost' ? slotTalentB(sd) : sd.talent; if(!t) return;
   t._letExpire = true; t.morale = Math.max(20,(t.morale||50)-15);
   renderAll();
 };
@@ -8424,6 +8929,46 @@ function stitchCollapsedMarketRatingsFromHistory(stations,G){
   if(G)G._wlRatingsStitchUsed=(G._wlRatingsStitchUsed||0)+1;
 }
 /**
+ * Headline `rat.share` can remain positive while every `rat.cur[*].aqh` is 0 (degenerate recalc / stale save).
+ * Then `calcRev` zeros terrestrial revenue for the whole market. Rebuild cohort rows from the headline book
+ * using the same per-station spread as {@link stitchCollapsedMarketRatingsFromHistory}.
+ * @returns {boolean} true if this station was repaired
+ */
+function repairRatCurFromHeadlineShareIfAqhCollapsed(s,stations,G){
+  if(!s||s._bpSlotDeferred||s.isPublic||!s.rat)return false;
+  const ps=Number(s.rat.share);
+  if(!(ps>1e-8))return false;
+  const sumAqh=COH.reduce((a,coh)=>a+(s.rat.cur[coh]?.aqh||0),0);
+  if(sumAqh>=1)return false;
+  const d=Math.max(publicRadioWeightedListeningDenominator(stations,G),1e-12);
+  const H=publicNewsHabitEngageMult(s,G);
+  const W=COH.reduce((a,coh)=>{
+    const pop=POP.cohorts[coh]?.t||0;
+    const engage=(AQH_ENGAGE[coh]||0.060)*H;
+    return a+pop*engage;
+  },0);
+  const per=ps*d/Math.max(W,1e-12);
+  COH.forEach(coh=>{
+    const pop=(POP.cohorts[coh]?.t||0)*effUniverse(s);
+    const engage=(AQH_ENGAGE[coh]||0.060)*H;
+    const sh=Math.round(per*10000)/10000;
+    if(!s.rat.cur[coh])s.rat.cur[coh]={share:0,aqh:0};
+    s.rat.cur[coh].share=sh;
+    s.rat.cur[coh].aqh=Math.round(sh*pop*engage);
+    if(s.mom[coh]){
+      s.mom[coh].cur=sh;
+      s.mom[coh].tgt=Math.max(s.mom[coh].tgt||0,sh);
+    }
+  });
+  s.rat.aqh=COH.reduce((sum,coh)=>sum+(s.rat.cur[coh]?.aqh||0),0);
+  s.rat.share=Math.round(ps*1e8)/1e8;
+  if(typeof console!=='undefined'&&console.warn){
+    console.warn('[recalc] repaired rat.cur/aqh from headline share for',s.callLetters,'@',G.year,G.period);
+  }
+  if(G)G._wlRatingsCurRepairCount=(G._wlRatingsCurRepairCount||0)+1;
+  return true;
+}
+/**
  * Sanitize `rat.share` for ranking and display (finite, non-negative).
  */
 function sanitizeStationShareForRanking(s){
@@ -9056,6 +9601,13 @@ function talentFranchiseRatingsEffect(s,G){
   ceilingMult*=0.99+0.02*lf;
   spdGainMult*=0.975+0.065*lf;
   spdLossMult*=1.008-0.034*lf;
+  const coPen=stationCoHostFranchiseSoftPenalty(s);
+  if(coPen>0){
+    combined*=1-coPen;
+    ceilingMult*=1-coPen*0.82;
+    spdGainMult*=1-coPen*0.55;
+    spdLossMult*=1+coPen*0.62;
+  }
   return{combined,ceilingMult,spdLossMult,spdGainMult,w,franchise:fr,expectedTalent,actualTalent,stabilityPenalty,talentBoost:1};
 }
 /** @deprecated name — use talentFranchiseRatingsEffect; kept for grep/debug parity */
@@ -9078,7 +9630,21 @@ function recalc(stations,G){
     const tpm=talentFranchiseRatingsEffect(s,G);
     talentPmById.set(s.id,tpm);
     if(typeof window!=='undefined'&&window.DEBUG_TALENT){
-      console.log('Talent franchise',{call:s.callLetters,franchise:tpm.franchise,expectedTalent:tpm.expectedTalent,actualTalent:tpm.actualTalent,weight:tpm.w,ceilingMult:tpm.ceilingMult,spdLossMult:tpm.spdLossMult,spdGainMult:tpm.spdGainMult});
+      const coDiag=[];
+      DAYPART_SLOTS.forEach(sl=>{
+        const sd=s.prog?.[sl];
+        if(!sd?.talent||!slotTalentB(sd))return;
+        coDiag.push({
+          slot:sl,
+          primary:sd.talent.name,
+          coHost:slotTalentB(sd).name,
+          estChem:typeof sd._cohostChemEstimate==='number'?Math.round(sd._cohostChemEstimate*1000)/1000:null,
+          actChem:typeof sd._cohostChemActual==='number'?Math.round(sd._cohostChemActual*1000)/1000:null,
+          slotAdj:sd._cohostSlotAdjApplied|0,
+          slotQ:Math.round(sd.quality||0),
+        });
+      });
+      console.log('Talent franchise',{call:s.callLetters,franchise:tpm.franchise,expectedTalent:tpm.expectedTalent,actualTalent:tpm.actualTalent,weight:tpm.w,ceilingMult:tpm.ceilingMult,spdLossMult:tpm.spdLossMult,spdGainMult:tpm.spdGainMult,cohosts:coDiag.length?coDiag:undefined});
     }
     return tpm;
   };
@@ -9335,6 +9901,7 @@ function recalc(stations,G){
 
   applyOtherAudioListeningDilution(stations,G,engageWeightedPop);
   stitchCollapsedMarketRatingsFromHistory(stations,G);
+  stations.forEach(s=>{ repairRatCurFromHeadlineShareIfAqhCollapsed(s,stations,G); });
 
   stations.forEach(s=>{
     if(!s||s._bpSlotDeferred||!s.rat)return;
@@ -10181,7 +10748,7 @@ function calcRev(s,G){
   rev=Math.round(rev*lateEraTerrestrialCommoditizationMult(s,G));
   // ── COSTS ────────────────────────────────────────────────────────
   // On-air talent (annual salary / 2 for half-year period)
-  let talCost=Object.values(s.prog).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
+  let talCost=Object.values(s.prog).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+payrollHalfPeriodForDaypartSlot(sl),0);
   if(stationBrokeredEconomicsActive(s,G))talCost=Math.round(talCost*0.24);
   // Inflation: 3.5%/yr through 1985 (high inflation era), then 2.5%/yr after
   // (automation, digital tools, and consolidation efficiencies slow cost growth)
@@ -10552,7 +11119,7 @@ function calcRev(s,G){
   }
   let simulcastProgFee=0;
   if(isProgReceiver&&progSrcStation){
-    const srcTal=Object.values(progSrcStation.prog||{}).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
+    const srcTal=Object.values(progSrcStation.prog||{}).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+payrollHalfPeriodForDaypartSlot(sl),0);
     simulcastProgFee=Math.round(srcTal*0.38);
   }
   const promoCap=promoBudgetCapForPeriod(G);
@@ -10871,6 +11438,35 @@ function decay(s,year,period){
       }
       sd.talent.periodsAtStation=(sd.talent.periodsAtStation||0)+1;
       applyTalentPerformanceRevealDecayStep(sd,vtLd);
+      const chairB=slotTalentB(sd);
+      if(chairB){
+        applyCoHostChemistryRevealDecayStep(sd,vtLd);
+        chairB.periodsAtStation=(chairB.periodsAtStation||0)+1;
+        const mdC=chairB.morale<60?dBase*1.1:dBase*0.45;
+        const mdVtC=mdC*(1+0.10*vtLd);
+        chairB.quality=Math.max(15,chairB.quality*(1-mdVtC));
+        if(typeof chairB._trueQuality==='number'&&!Number.isNaN(chairB._trueQuality))
+          chairB._trueQuality=Math.max(15,Math.round(chairB._trueQuality*(1-mdVtC)));
+        chairB.cyr=Math.max(0,(chairB.cyr||2)-0.5);
+        if(period===2){
+          const baseInfl=year<=1980?0.012:year<=1990?0.018:year<=2000?0.015:year<=2010?0.010:0.008;
+          const tqC=talentTrueQuality(chairB);
+          const meritC=tqC>85?0.006:tqC>72?0.003:0.001;
+          const stShare=s.rat?.share||0;
+          const perfC=stShare>0.12?0.006:stShare>0.08?0.003:stShare>0.05?0.001:0;
+          const moraleModC=chairB.morale<50?0.003:chairB.morale>80?-0.0015:0;
+          chairB.salary=Math.round(chairB.salary*(1+baseInfl+meritC+perfC+moraleModC)/500)*500;
+          const tierC=tqC<42?'entry':tqC<68?'mid':'star';
+          const baseFlC=Math.round(salInfl((SAL[sl]?.[tierC]?.[0]||5000),G.year)*0.52/500)*500;
+          if(chairB.salary<baseFlC)chairB.salary=baseFlC;
+          const slotStarMaxC=Math.round(({morningDrive:60000,afternoonDrive:42000,midday:28000,evening:22000,overnight:16000})[chairB.slot||sl]*0.62);
+          const mktCapC=Math.round(salInfl(slotStarMaxC,G.year)/500)*500;
+          if(chairB.salary>mktCapC)chairB.salary=mktCapC;
+        }
+        const moralePullC=(65-chairB.morale)*0.055-vtLd*1.8;
+        chairB.morale=Math.round(Math.max(20,Math.min(100,chairB.morale+moralePullC)));
+        if(_bsAust>0.12)chairB.morale=Math.max(20,chairB.morale-Math.round(0.9*_bsAust));
+      }
       if(!sd.talent._hireYear)sd.talent._hireYear=G.year;
       if(!sd.talent._careerStartYear)sd.talent._careerStartYear=sd.talent._hireYear;
       if(sd.talent._careerStartYear>sd.talent._hireYear)sd.talent._careerStartYear=sd.talent._hireYear;
@@ -11712,7 +12308,9 @@ function runAI(G){
           sd.talent.salary=Math.round(sd.talent.salary*rnd(1.08,1.22)/500)*500;
           sd.talent.cyr=ri(1,2);
         } else {
-          const nm=sd.talent.name;sd.talent=null;sd.quality*=sl==='morningDrive'?.68:.80;
+          const nm=sd.talent.name;
+          clearCoHostPairingState(sd);
+          sd.talent=null;sd.quality*=sl==='morningDrive'?.68:.80;
           if(sl==='morningDrive')acts.push({v:'MEDIUM',t:`${nm} leaves ${s.callLetters}`});
           if(Math.random()<p.ag*.7)sd.talent=mkTal(sl,s.format,'entry',G.year);
         }
@@ -11756,6 +12354,31 @@ function runAI(G){
         }
         if(hires)refreshStationOQ(s,G);
       }
+      let cohostAdded=false;
+      DAYPART_SLOTS.forEach(sl=>{
+        if(!daypartAllowsCoHostModel(sl))return;
+        const sd=s.prog[sl];
+        if(!sd?.talent||slotTalentB(sd))return;
+        if(franchiseSlotBlocksNewLocalTalent(s,sl,G))return;
+        if((s.fin?.ebitda||0)<-(s.fin?.rev||1)*0.30)return;
+        const sh=s.rat?.share||0;
+        if(sh<0.055&&p.ag<0.54)return;
+        const talk=TALK_FMTS.includes(s.format)||s.format==='ALL_NEWS';
+        let pTry=(talk&&sl==='morningDrive'?0.042:talk?0.028:sl==='morningDrive'?0.016:0.010)*(s.str==='A'?1.16:1);
+        if(sl==='afternoonDrive')pTry*=0.48;
+        if(Math.random()>pTry)return;
+        const tier=(sl==='morningDrive'&&p.ag>0.51)?'mid':'entry';
+        const co=mkTal(sl,s.format,tier,G.year);
+        if(!co)return;
+        const host=sd.talent;
+        if(normTalentNameKey(co.name)===normTalentNameKey(host.name))return;
+        adjustCohostSalaryForRole(co,sl,G);
+        const chemRoll=rollCoHostChemistryPair(host,co,s.format);
+        setSlotTalentB(sd,co);
+        initCoHostChemistryReveal(sd,s.format,sl,host,co,chemRoll);
+        cohostAdded=true;
+      });
+      if(cohostAdded)refreshStationOQ(s,G);
     }
 
     // ── PROGRAMMING INVESTMENT ──────────────────────────────
@@ -19125,7 +19748,8 @@ function hireModalRivalPoachCandidates(sid, slot){
     .sort((a,b)=>b.sd.talent.quality-a.sd.talent.quality)
     .slice(0,5);
 }
-let HS={sid:null,slot:null,pool:[],sel:null,poachRivalId:null,_embed:null,_hireKind:null};
+let HS={sid:null,slot:null,pool:[],sel:null,poachRivalId:null,_embed:null,_hireKind:null,_chair:null};
+let CHS={sid:null,slot:null,pool:[],benchOpts:[],benchSel:null,faSel:null};
 /** Active station for unified Manage Talent modal (hire / replace / move / transfer). */
 let MT_ACTIVE_SID=null;
 function openManageTalent(sid){
@@ -19255,7 +19879,7 @@ function manageTalentDaypartBlockHtml(s,sl,_simSrc,stationOQ){
     const restricted=daytimerRestrictedSlot(s,sl);
     const syndBlocks=franchiseSlotBlocksNewLocalTalent(s,sl,G);
     const hireBtn=restricted||syndBlocks?'':`<button class="cfm" type="button" ${tutMidReplace?'id="wl-tu-tr-mt-hire-midday" ':''}onclick="mtOpenHireSlot('${s.id}','${sl}')">HIRE TALENT</button>`;
-    return`<div class="mt-slot mt-slot--empty"${tutMidAttr} style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:12px">
+    return`<div class="mt-slot mt-slot--empty"${tutMidAttr} id="mt-dp-${s.id}-${sl}" style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:12px">
       <div class="msh" style="margin-bottom:8px">${SL[sl]}</div>
       <p style="font-size:14px;color:var(--off);margin:0 0 10px 0;line-height:1.45"><strong style="color:var(--wht)">No local on-air host</strong></p>
       <div style="font-size:13px;color:var(--off);line-height:1.5;margin-bottom:8px">
@@ -19277,6 +19901,41 @@ function manageTalentDaypartBlockHtml(s,sl,_simSrc,stationOQ){
   const fireBuy=talentFireBuyout(t);
   const fireLbl=fireBuy>0?`FIRE (${f$(fireBuy)})`:'FIRE';
   const restrictedHost=daytimerRestrictedSlot(s,sl);
+  const cohostEligible=daypartAllowsCoHostModel(sl)&&!restrictedHost&&!getStationFranchise(s,sl,G)&&!(_simSrc&&_simSrc.prog&&_simSrc.prog[sl]?.talent);
+  let cohostHtml='';
+  if(cohostEligible){
+    const ch=slotTalentB(sd);
+    if(ch){
+      const chQ=Math.round(ch.quality);
+      const estL=chemistryEstimateLabel01(typeof sd._cohostChemEstimate==='number'?sd._cohostChemEstimate:0);
+      const chemLine=sd._cohostChemRevealed&&typeof sd._cohostChemActual==='number'
+        ?` · pairing reading as ${sd._cohostChemActual>=0.18?'stronger':sd._cohostChemActual<=-0.18?'weaker':'about fair'} vs the scout guess`
+        :' · <span style="color:var(--mut)">chemistry still emerging in the books</span>';
+      cohostHtml=`<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">
+        <div style="font-size:12px;color:var(--mut);letter-spacing:0.08em;margin-bottom:6px">CO-HOST</div>
+        <div style="display:flex;gap:10px;align-items:flex-start;flex-wrap:wrap">
+          <div style="flex-shrink:0">${talentPortraitThumbHtml(ch,'tp-roster',`${callDisplay(s)} · ${SL[sl]} · co-host`)}</div>
+          <div style="flex:1;min-width:180px">
+            <div style="font-family:var(--fd);font-size:16px;color:var(--wht)">${rosterHtmlEsc(ch.name)}</div>
+            <div style="font-size:13px;color:var(--off);margin-top:4px;line-height:1.45">Talent ${chQ}/100 · ${f$(ch.salary)}/yr · scout chemistry with ${rosterHtmlEsc(t.name)}: <strong>${estL}</strong>${chemLine}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">
+            <button class="abt" type="button" style="border-color:var(--blu);color:var(--blu)" onclick="openContractFromManageTalentCoHost('${s.id}','${sl}')">CONTRACT / PAY</button>
+            <button class="abt" type="button" onclick="mtOpenReplaceSlotChairB('${s.id}','${sl}')">REPLACE</button>
+            <button class="abt" type="button" onclick="mtOpenMoveSameStationChairB('${s.id}','${sl}')">MOVE</button>
+            <button class="abt" type="button" onclick="mtBeginTransferChairB('${s.id}','${sl}')">TRANSFER</button>
+            <button class="abt" type="button" style="border-color:var(--amb);color:var(--amb)" onclick="rosterBenchChairBClick('${s.id}','${sl}')">BENCH (2ND CHAIR)</button>
+            <button class="abt" type="button" style="border-color:var(--amb);color:var(--amb)" onclick="removeCoHostFromSlot('${s.id}','${sl}')">REMOVE CO-HOST</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }else{
+      cohostHtml=`<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.08)">
+        <div style="font-size:13px;color:var(--off);margin-bottom:8px;line-height:1.45"><strong>Co-host</strong> (optional) — chemistry can help or hurt the show; payroll is real. Not a second lead — pairing risk/reward.</div>
+        <button class="abt" type="button" onclick="mtOpenCohostHire('${s.id}','${sl}')">ADD CO-HOST…</button>
+      </div>`;
+    }
+  }
   const moveRow=restrictedHost
     ?`<p style="font-size:12px;color:var(--amb);margin:0 0 10px 0;line-height:1.45">Legacy host in Evening or Overnight on a night-limited AM — bench or fire to align with this signal pattern. Replace / move / transfer are disabled here.</p>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:14px">
@@ -19292,7 +19951,7 @@ function manageTalentDaypartBlockHtml(s,sl,_simSrc,stationOQ){
           <button class="abt" type="button" style="border-color:var(--amb);color:var(--amb)" onclick="rosterBenchClick('${s.id}','${sl}')">BENCH</button>
           <button class="abt d" type="button" onclick="rosterFirePrompt('${s.id}','${sl}')">${fireLbl}</button>
         </div>`;
-  return`<div class="mt-slot"${tutMidAttr} style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:12px">
+  return`<div class="mt-slot"${tutMidAttr} id="mt-dp-${s.id}-${sl}" style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:12px">
     <div class="msh" style="margin-bottom:10px">${SL[sl]}</div>
     <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:flex-start">
       <div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-roster',`${callDisplay(s)} · ${SL[sl]}`)}</div>
@@ -19307,6 +19966,7 @@ function manageTalentDaypartBlockHtml(s,sl,_simSrc,stationOQ){
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">QUALITY SHARE ~%</span><span style="color:${perfCol}" title="Approx. share of this station’s programming quality from this daypart">~${contribution}%</span> <button type="button" class="abt" style="padding:2px 8px;font-size:10px;vertical-align:middle;margin-left:4px;letter-spacing:0.04em" onclick="openTalentMetricsHelp('qualityshare')">?</button></div>
           <div><span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em">TREND</span><span style="color:${trendCol}">${trendWord}</span></div>
         </div>
+        ${cohostHtml}
         ${(()=>{const rp=s._rivalPoachPending;if(!rp||rp.slot!==sl||rp.talentId!==t.id)return'';const riv=G.stations.find(st=>st.id===rp.rivalId);const minM=Math.round(rp.offerSalary*0.95/500)*500;return`<div class="ibox" style="border-color:rgba(245,166,35,.42);margin:0 0 10px 0;padding:8px 12px;font-size:13px;line-height:1.45;color:var(--off)"><strong style="color:var(--amb)">⚡ Rival courting this host</strong> — ${riv?riv.callLetters:'A rival'} offered ${f$(rp.offerSalary)}/yr. Use <strong>Contract / Pay</strong> and sign at ≥ ${f$(minM)}/yr to keep them.</div>`;})()}
         ${moveRow}
       </div>
@@ -19326,7 +19986,7 @@ function mtOpenHireSlot(sid,slot){
     showToast('This daypart already has a local host — use Replace to change hosts.','warn');
     return;
   }
-  HS={sid,slot,pool:getOrCreateFreeAgentPool(s,slot,'hire'),sel:null,poachRivalId:null,_embed:'manage',_hireKind:'hire'};
+  HS={sid,slot,pool:getOrCreateFreeAgentPool(s,slot,'hire'),sel:null,poachRivalId:null,_embed:'manage',_hireKind:'hire',_chair:null};
   document.getElementById('fire-title').textContent='HIRE — '+SL[slot];
   rHire(s,'top');
   om('m-fire');
@@ -19337,15 +19997,164 @@ function mtOpenReplaceSlot(sid,slot){
   const s=G.stations.find(st=>st.id===sid);
   if(!s||!s.prog[slot]?.talent)return;
   if(daytimerRestrictedSlot(s,slot)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
-  HS={sid,slot,pool:getOrCreateFreeAgentPool(s,slot,'replace'),sel:null,poachRivalId:null,_embed:'manage',_hireKind:'replace'};
+  HS={sid,slot,pool:getOrCreateFreeAgentPool(s,slot,'replace'),sel:null,poachRivalId:null,_embed:'manage',_hireKind:'replace',_chair:null};
   document.getElementById('fire-title').textContent='REPLACE — '+SL[slot]+' · current host → bench';
   rHire(s,'top');
   om('m-fire');
   scrollModalContentToTop('m-fire');
 }
+function mtOpenReplaceSlotChairB(sid,slot){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);
+  const sd=s?.prog[slot];
+  if(!s||!sd?.talent||!slotTalentB(sd)){showToast('No second chair to replace in this slot.','warn');return;}
+  if(daytimerRestrictedSlot(s,slot)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
+  if(franchiseSlotBlocksNewLocalTalent(s,slot,G)){
+    showToast('Syndication controls this slot — second-chair replace is not available there.','warn');
+    return;
+  }
+  if(!daypartAllowsCoHostModel(slot)){showToast('Second chair is only modeled for morning and afternoon drive.','info');return;}
+  const pool=getOrCreateFreeAgentPool(s,slot,'cohost').filter(t=>{
+    if(!t?.name)return false;
+    return normTalentNameKey(t.name)!==normTalentNameKey(sd.talent.name);
+  });
+  HS={sid,slot,pool,sel:null,poachRivalId:null,_embed:'manage',_hireKind:'replace_chairb',_chair:null};
+  document.getElementById('fire-title').textContent='REPLACE (2ND CHAIR) — '+SL[slot];
+  rHire(s,'top');
+  om('m-fire');
+  scrollModalContentToTop('m-fire');
+}
+function mtOpenCohostHire(sid,slot){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||!mpIsMe(s))return;
+  const sd=s.prog[slot];
+  if(!sd?.talent){showToast('Hire a primary host before adding a co-host.','warn');return;}
+  if(slotTalentB(sd)){showToast('This daypart already has a co-host.','warn');return;}
+  if(!daypartAllowsCoHostModel(slot)){showToast('Co-hosting is only modeled for morning and afternoon drive right now.','info');return;}
+  if(daytimerRestrictedSlot(s,slot)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
+  if(franchiseSlotBlocksNewLocalTalent(s,slot,G)){
+    showToast('Syndication controls this slot — co-hosts are not available there.','warn');
+    return;
+  }
+  const pool=getOrCreateFreeAgentPool(s,slot,'cohost').filter(t=>{
+    if(!t?.name)return false;
+    return normTalentNameKey(t.name)!==normTalentNameKey(sd.talent.name);
+  });
+  const owner=MP.mode==='live'?(s._mpOwner!=null?s._mpOwner:MP.playerId):0;
+  const benchOpts=(G.talentBench||[]).filter(e=>{
+    if(!e?.talent?.name)return false;
+    if((e._mpOwner|0)!==(owner|0))return false;
+    return normTalentNameKey(e.talent.name)!==normTalentNameKey(sd.talent.name);
+  });
+  CHS={sid,slot,pool:pool,benchOpts,faSel:null,benchSel:null};
+  document.getElementById('fire-title').textContent='ADD CO-HOST — '+SL[slot];
+  rCohostHireRender(s,'top');
+  om('m-fire');
+  scrollModalContentToTop('m-fire');
+}
+function rCohostHireRender(s,scrollAfter){
+  const mo=document.getElementById('m-fire')?.querySelector('.mo');
+  const preserveScroll=scrollAfter!=='top';
+  const prevScroll=preserveScroll&&mo?mo.scrollTop:0;
+  const sd=s.prog[CHS.slot];
+  const host=sd?.talent;
+  if(!host){document.getElementById('fireb').innerHTML='<p class="di">No primary host.</p>';return;}
+  const faRows=(CHS.pool||[]).map((t,i)=>{
+    const q=Math.round(t.quality);
+    const fitF=talentScoutFormatFit01(t,s.format);
+    const fit=Math.round(fitF*100);
+    const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';
+    const fc=fit>=75?'good':fit>=55?'warn':'poor';
+    const chemEst=cohostChemistryScoutPreview01(host,t,s.format);
+    const estPts=Math.round(coHostSlotQualityDeltaPts(host,t,s.format,CHS.slot,chemEst));
+    const lbl=chemistryEstimateLabel01(chemEst);
+    const sel=CHS.faSel===i&&CHS.benchSel==null;
+    return`<div class="to to-hire${sel?' sel':''}" onclick="pickCohostFa(${i})"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-hire',`${callDisplay(s)} · co-host candidate`)}</div><div style="flex:1;min-width:0"><div class="ton">${rosterHtmlEsc(t.name)}</div>${hireTalentCareerLine(t,G.year)}<div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div><div><span class="tosl">EST. CHEMISTRY</span><span class="tosv">${lbl}</span></div><div><span class="tosl">SLOT LIFT (EST.)</span><span class="tosv">${estPts>=0?'+':''}${estPts} pts</span></div></div><div style="font-size:12px;color:var(--mut);margin-top:4px;font-family:var(--ft)">Scout read — on-air pairing can land better or worse.</div></div></div><div class="to-hire-side"><span class="tocl">SALARY</span><span class="toc">${f$(t.salary)}/yr</span></div></div>`;
+  }).join('');
+  const benchRows=(CHS.benchOpts||[]).map((e)=>{
+    const t=e.talent;
+    const q=Math.round(t.quality);
+    const fitF=talentScoutFormatFit01(t,s.format);
+    const fit=Math.round(fitF*100);
+    const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';
+    const fc=fit>=75?'good':fit>=55?'warn':'poor';
+    const chemEst=cohostChemistryScoutPreview01(host,t,s.format);
+    const estPts=Math.round(coHostSlotQualityDeltaPts(host,t,s.format,CHS.slot,chemEst));
+    const lbl=chemistryEstimateLabel01(chemEst);
+    const sel=CHS.benchSel===e.id;
+    return`<div class="to to-hire${sel?' sel':''}" onclick="pickCohostBench('${e.id}')"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-hire','bench · co-host')}</div><div style="flex:1;min-width:0"><div class="ton">${rosterHtmlEsc(t.name)} <span style="font-size:12px;color:var(--amb)">BENCH</span></div><div class="tost"><div><span class="tosl">TALENT RATING</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">FORMAT FIT</span><span class="tosv ${fc}">${fl}</span></div><div><span class="tosl">EST. CHEMISTRY</span><span class="tosv">${lbl}</span></div><div><span class="tosl">SLOT LIFT (EST.)</span><span class="tosv">${estPts>=0?'+':''}${estPts} pts</span></div></div></div></div><div class="to-hire-side"><span class="tocl">SALARY</span><span class="toc">${f$(t.salary)}/yr</span></div></div>`;
+  }).join('');
+  const empty=!CHS.pool.length&&!(CHS.benchOpts||[]).length;
+  document.getElementById('fireb').innerHTML=`
+    <div class="ibox" style="margin-bottom:12px;line-height:1.5">Primary host: <strong>${rosterHtmlEsc(host.name)}</strong> · ${callDisplay(s)} · ${SL[CHS.slot]}</div>
+    <p class="di" style="margin-bottom:10px">Pick one co-host. <strong>Est. chemistry</strong> is a scout guess (like talent ratings) — the real pairing reveals over several books. Slot lift (est.) is the immediate slot-quality bump from that guess, before hidden chemistry finishes settling.</p>
+    ${CHS.pool.length?`<div class="msh" style="margin-bottom:8px;font-size:13px;letter-spacing:.12em;color:var(--mut)">FREE AGENTS</div><div class="tg">${faRows}</div>`:''}
+    ${(CHS.benchOpts||[]).length?`<div class="msh" style="margin-top:16px;margin-bottom:8px;font-size:13px;letter-spacing:.12em;color:var(--mut)">FROM BENCH</div><div class="tg">${benchRows}</div>`:''}
+    ${empty?'<p class="di" style="color:var(--mut)">No eligible co-host candidates this period.</p>':''}
+    <button class="cfm" type="button" style="margin-top:14px" onclick="doCohostHireConfirm()" ${CHS.faSel==null&&CHS.benchSel==null?'disabled':''}>ADD CO-HOST</button>
+    <button class="cnl" type="button" onclick="renderManageTalentStation('${s.id}')">← BACK</button>`;
+  if(scrollAfter==='top')scrollModalContentToTop('m-fire');
+  else if(mo){mo.scrollTop=prevScroll;requestAnimationFrame(()=>{mo.scrollTop=prevScroll;});}
+}
+function pickCohostFa(i){CHS.faSel=i;CHS.benchSel=null;rCohostHireRender(G.stations.find(st=>st.id===CHS.sid),'preserve');}
+function pickCohostBench(bid){CHS.benchSel=bid;CHS.faSel=null;rCohostHireRender(G.stations.find(st=>st.id===CHS.sid),'preserve');}
+function doCohostHireConfirm(){
+  const s=G.stations.find(st=>st.id===CHS.sid);
+  const sl=CHS.slot;
+  if(!s||!mpIsMe(s)||!sl||!s.prog[sl]?.talent||slotTalentB(s.prog[sl]))return;
+  let co=null;
+  if(CHS.benchSel!=null){
+    const ix=(G.talentBench||[]).findIndex(e=>e.id===CHS.benchSel);
+    if(ix<0)return;
+    co=G.talentBench[ix].talent;
+    G.talentBench.splice(ix,1);
+  }else if(CHS.faSel!=null){
+    co=CHS.pool[CHS.faSel];
+    if(!co)return;
+    CHS.pool.splice(CHS.faSel,1);
+    const k=wlFreeAgentPoolCacheKey(s.id,sl,'cohost');
+    if(G._wlFaPoolCache)G._wlFaPoolCache[k]=CHS.pool.slice();
+  }else return;
+  const host=s.prog[sl].talent;
+  const sd=s.prog[sl];
+  co.slot=sl;
+  co._hireYear=G.year;
+  if(!co._careerStartYear)co._careerStartYear=Math.max(1970,G.year-ri(0,14));
+  adjustCohostSalaryForRole(co,sl,G);
+  const chemRoll=rollCoHostChemistryPair(host,co,s.format);
+  setSlotTalentB(sd,co);
+  initCoHostChemistryReveal(sd,s.format,sl,host,co,chemRoll);
+  refreshStationOQ(s,G);
+  invalidateFreeAgentPoolCachesForSlot(s.id,sl);
+  queueTalentPortrait(co);
+  G.news.unshift({v:'LOW',t:`${co.name} joins ${host.name} as co-host on ${s.callLetters} ${SL[sl]}.`,y:G.year,p:G.period});
+  logHistory(s,'TALENT',`Co-host ${co.name} — ${SL[sl]} (est. chemistry ${chemistryEstimateLabel01(chemRoll.estimate)})`,G);
+  MP.action('cohost_hire',{sid:s.id,slot:sl,talent:co,chemRoll});
+  CHS={sid:null,slot:null,pool:[],benchOpts:[],faSel:null,benchSel:null};
+  renderManageTalentStation(s.id);
+  renderAll();
+}
+function removeCoHostFromSlot(sid,slot){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||!mpIsMe(s))return;
+  const sd=s.prog[slot];
+  const chRm=slotTalentB(sd);
+  if(!chRm){showToast('No co-host in this slot.','warn');return;}
+  const nm=chRm.name;
+  clearCoHostPairingState(sd);
+  setSlotTalentB(sd,null);
+  refreshStationOQ(s,G);
+  G.news.unshift({v:'LOW',t:`${nm} steps off the ${SL[slot]} show at ${s.callLetters}.`,y:G.year,p:G.period});
+  logHistory(s,'TALENT',`Co-host removed — ${SL[slot]}`,G);
+  MP.action('cohost_fire',{sid,slot});
+  renderManageTalentStation(sid);
+  renderAll();
+}
 function mtOpenMoveSameStation(sid,fromSlot){
   sid=ensureOpsSourceSid(sid);
-  MOVE_CTX={fromSid:sid,fromSlot,benchId:null};
+  MOVE_CTX={fromSid:sid,fromSlot,benchId:null,chair:'A'};
   const s=G.stations.find(st=>st.id===sid);
   const t=s?.prog[fromSlot]?.talent;
   if(!s||!t)return;
@@ -19353,10 +20162,30 @@ function mtOpenMoveSameStation(sid,fromSlot){
   const slots=[];
   DAYPART_SLOTS.forEach(sl=>{
     if(sl===fromSlot)return;
-    slots.push(rosterMoveDestSlotCardHtml(s,sl,t,fromSlot));
+    slots.push(rosterMoveDestSlotCardHtml(s,sl,t,fromSlot,'A'));
   });
   document.getElementById('fireb').innerHTML=`
     <p style="font-size:13px;color:var(--mut);margin:0 0 14px 0;line-height:1.45">Choose another daypart on <strong>${callDisplay(s)}</strong>. If the slot is filled, <strong style="color:var(--amb)">Swap</strong> exchanges hosts (default). Use <strong>Move — bench other</strong> only if you want the other host on the bench.</p>
+    <div class="ms2">${rosterStationSectionHeaderHtml(s)}${slots.join('')||'<p class="di" style="color:var(--mut)">No other dayparts.</p>'}</div>
+    <button class="cnl" type="button" onclick="renderManageTalentStation('${sid}')">← BACK</button>`;
+  om('m-fire');
+}
+function mtOpenMoveSameStationChairB(sid,fromSlot){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);
+  const sd=s?.prog[fromSlot];
+  const t=slotTalentB(sd);
+  if(!s||!sd?.talent||!t)return;
+  if(!daypartAllowsCoHostModel(fromSlot)){showToast('Second chair moves are only for morning and afternoon drive.','info');return;}
+  MOVE_CTX={fromSid:sid,fromSlot,benchId:null,chair:'B'};
+  document.getElementById('fire-title').textContent='MOVE (2ND CHAIR) — '+rosterHtmlEsc(t.name);
+  const slots=[];
+  DAYPART_SLOTS.forEach(sl=>{
+    if(sl===fromSlot)return;
+    slots.push(rosterMoveDestSlotCardHtml(s,sl,t,fromSlot,'B'));
+  });
+  document.getElementById('fireb').innerHTML=`
+    <p style="font-size:13px;color:var(--mut);margin:0 0 14px 0;line-height:1.45">Choose another daypart on <strong>${callDisplay(s)}</strong>. Destination must already have a primary host. If it already has a second chair, <strong style="color:var(--amb)">Swap</strong> exchanges second chairs; <strong>Move — bench other second chair</strong> benches them first.</p>
     <div class="ms2">${rosterStationSectionHeaderHtml(s)}${slots.join('')||'<p class="di" style="color:var(--mut)">No other dayparts.</p>'}</div>
     <button class="cnl" type="button" onclick="renderManageTalentStation('${sid}')">← BACK</button>`;
   om('m-fire');
@@ -19367,7 +20196,18 @@ function mtBeginTransfer(sid,slot){
   if(!s?.prog[slot]?.talent){showToast('No talent in this slot.','warn');return;}
   const mine=xferOwnedStations();
   if(mine.length<2){showToast('Need at least two owned stations to transfer.','warn');return;}
-  XFER={fromSid:sid,fromSlot:slot,toSid:null,embedMode:true};
+  XFER={fromSid:sid,fromSlot:slot,toSid:null,embedMode:true,chair:'A'};
+  xferRenderDestPick();
+  om('m-fire');
+}
+function mtBeginTransferChairB(sid,slot){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);
+  const sd=s?.prog[slot];
+  if(!sd?.talent||!slotTalentB(sd)){showToast('No second chair in this slot to transfer.','warn');return;}
+  const mine=xferOwnedStations();
+  if(mine.length<2){showToast('Need at least two owned stations to transfer.','warn');return;}
+  XFER={fromSid:sid,fromSlot:slot,toSid:null,embedMode:true,chair:'B'};
   xferRenderDestPick();
   om('m-fire');
 }
@@ -19394,7 +20234,7 @@ function rHire(s, scrollAfter){
     const talQlbl=talQ!==null?`<span style="color:var(--mut);font-size:13px"> · talent ${talQ}</span>`:'';
     return `<button class="ssb${HS.slot===sl?' sel':''}" onclick="pickSlot('${s.id}','${sl}')"><span><strong>${SL[sl]}</strong><span style="font-size:13px;color:var(--mut);margin-left:6px;display:block;line-height:1.35;margin-top:2px">Slot quality${slotQlbl}${talQlbl}</span></span><span class="cur">${tn}</span></button>`;
   }).join('');
-  const slotHeader=embed?`<div class="ibox" style="margin-bottom:14px;line-height:1.55"><strong>${SL[HS.slot]}</strong> · ${callDisplay(s)}${HS._hireKind==='replace'?'<br><span style="color:var(--amb);font-size:14px;display:inline-block;margin-top:6px">Replacing current host — they go to the <strong>talent bench</strong>, then the new host is placed on air.</span>':''}</div>`:`<div class="ssl">${sbtns}</div>`;
+  const slotHeader=embed?`<div class="ibox" style="margin-bottom:14px;line-height:1.55"><strong>${SL[HS.slot]}</strong> · ${callDisplay(s)}${HS._hireKind==='replace'?'<br><span style="color:var(--amb);font-size:14px;display:inline-block;margin-top:6px">Replacing current host — they go to the <strong>talent bench</strong>, then the new host is placed on air.</span>':''}${HS._hireKind==='replace_chairb'?'<br><span style="color:var(--amb);font-size:14px;display:inline-block;margin-top:6px">Replacing the <strong>second chair</strong> — current second chair goes to the <strong>talent bench</strong>, then the new pairing rolls chemistry.</span>':''}</div>`:`<div class="ssl">${sbtns}</div>`;
   let ph='<p class="di" style="margin-top:12px">Select a daypart to see available talent.</p>';
   if(HS.slot){
     const s2=G.stations.find(st=>st.id===HS.sid);
@@ -19434,7 +20274,7 @@ function rHire(s, scrollAfter){
   }
   const fmtHireNote=TALK_FMTS.includes(s.format)?'Local hosts beat syndication for building loyal listeners — especially morning drive.':'Morning Drive has the biggest ratings impact. Automation is cheap but bleeds share over time.';
   const hireReady=HS.poachRivalId||HS.sel!==null;
-  const hireLabel=HS.poachRivalId?'HIRE (POACH)':(HS._hireKind==='replace'?'CONFIRM REPLACE':'HIRE TALENT');
+  const hireLabel=HS.poachRivalId?'HIRE (POACH)':(HS._hireKind==='replace_chairb'?'CONFIRM REPLACE (2ND CHAIR)':HS._hireKind==='replace'?'CONFIRM REPLACE':'HIRE TALENT');
   const mo=document.getElementById(modalId)?.querySelector('.mo');
   const preserveScroll=scrollAfter!=='top';
   const prevScroll=preserveScroll&&mo?mo.scrollTop:0;
@@ -19448,19 +20288,23 @@ function rHire(s, scrollAfter){
     mo.scrollTop=prevScroll;
     requestAnimationFrame(()=>{mo.scrollTop=prevScroll;});
   }
-  if(embed&&isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===4&&HS._hireKind==='replace')
+  if(embed&&isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===4&&(HS._hireKind==='replace'||HS._hireKind==='replace_chairb'))
     requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
 }
 function pickSlot(sid,sl){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   if(daytimerRestrictedSlot(s,sl)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
-  if(HS._hireKind==='hire'&&franchiseSlotBlocksNewLocalTalent(s,sl,G)){
+  if((HS._hireKind==='hire'||HS._hireKind==='replace_chairb')&&franchiseSlotBlocksNewLocalTalent(s,sl,G)){
     showToast('That daypart is under your syndication deal — pick another slot or use National Franchises.','warn');
     return;
   }
   HS.slot=sl;HS.sel=null;HS.poachRivalId=null;
-  const poolKind=HS._hireKind==='replace'?'replace':HS._hireKind==='hire'?'hire':(s.prog[sl]?.talent?'replace':'hire');
+  const poolKind=HS._hireKind==='replace_chairb'?'cohost':HS._hireKind==='replace'?'replace':HS._hireKind==='hire'?'hire':(s.prog[sl]?.talent?'replace':'hire');
   HS.pool=getOrCreateFreeAgentPool(s,sl,poolKind);
+  if(HS._hireKind==='replace_chairb'){
+    const host=s.prog[sl]?.talent;
+    if(host) HS.pool=(HS.pool||[]).filter(tt=>tt?.name&&normTalentNameKey(tt.name)!==normTalentNameKey(host.name));
+  }
   rHire(s,'top');
 }
 function pickTal(i){HS.sel=i;HS.poachRivalId=null;rHire(G.stations.find(st=>st.id===HS.sid));}
@@ -19468,6 +20312,10 @@ function pickHirePoach(rivalId){HS.poachRivalId=rivalId;HS.sel=null;rHire(G.stat
 function doHire(){
   if(!HS.slot)return;
   if(HS.poachRivalId){
+    if(HS._hireKind==='replace_chairb'){
+      showToast('Poach is not available when replacing the second chair.','warn');
+      return;
+    }
     doPoach(HS.sid,HS.slot,HS.poachRivalId);
     return;
   }
@@ -19484,6 +20332,52 @@ function doHire(){
     }
     benchedReplaceName=incumbent.name;
     removeTalentToBenchInternal(s.id,sl);
+  }else if(hk==='replace_chairb'){
+    const sd=s.prog[sl];
+    const curB=slotTalentB(sd);
+    if(!sd?.talent||!curB){
+      showToast('No second chair to replace in this slot.','warn');
+      return;
+    }
+    if(normTalentNameKey(t.name)===normTalentNameKey(sd.talent.name)){
+      showToast('Second chair must be a different voice than the primary host.','warn');
+      return;
+    }
+    if(franchiseSlotBlocksNewLocalTalent(s,sl,G)){
+      showToast('This daypart is covered by your syndication rights — you can’t replace the second chair there.','warn');
+      return;
+    }
+    benchedReplaceName=curB.name;
+    if(!benchCoHostIfPresentInternal(s.id,sl)){
+      showToast('Could not bench the current second chair.','warn');
+      return;
+    }
+    t.periodsAtStation=0;
+    t._hireYear=G.year;
+    if(t._portraitFirstHireYear==null||t._portraitFirstHireYear===undefined)t._portraitFirstHireYear=G.year;
+    if(!t._careerStartYear)t._careerStartYear=Math.max(1970,G.year-ri(0,14));
+    t.slot=sl;
+    adjustCohostSalaryForRole(t,sl,G);
+    const host=s.prog[sl].talent;
+    const chemRoll=rollCoHostChemistryPair(host,t,s.format);
+    setSlotTalentB(s.prog[sl],t);
+    initCoHostChemistryReveal(s.prog[sl],s.format,sl,host,t,chemRoll);
+    refreshStationOQ(s,G);
+    G.news.unshift({v:'LOW',t:`${t.name} replaces ${benchedReplaceName} as second chair on ${s.callLetters} ${SL[sl]}.`,y:G.year,p:G.period});
+    logHistory(s,'TALENT',`Replaced second chair — ${SL[sl]}: ${t.name} (was ${benchedReplaceName})`,G);
+    MP.action('cohost_hire',{sid:s.id,slot:sl,talent:t,chemRoll});
+    invalidateFreeAgentPoolCachesForSlot(s.id,sl);
+    queueTalentPortrait(t);
+    if(HS._embed==='manage'){
+      HS._embed=null;
+      HS._hireKind=null;
+      HS._chair=null;
+      renderManageTalentStation(s.id);
+      renderAll();
+      return;
+    }
+    cm('m-tal');renderAll();
+    return;
   }else if(hk==='hire'){
     if(franchiseSlotBlocksNewLocalTalent(s,sl,G)){
       showToast('This daypart is covered by your syndication rights — you can’t hire a parallel local show there.','warn');
@@ -19517,6 +20411,7 @@ function doHire(){
   if(HS._embed==='manage'){
     HS._embed=null;
     HS._hireKind=null;
+    HS._chair=null;
     renderManageTalentStation(s.id);
     renderAll();
     return;
@@ -20305,7 +21200,8 @@ function openPromo(sid){
 
 // 3a. TALENT ROSTER — assigned / bench / release (no instant fire from roster)
 let SHUFFLE={sid:null,fromSlot:null};
-let MOVE_CTX={fromSid:null,fromSlot:null,benchId:null};
+/** `chair`: `'A'` = primary host (`talent`), `'B'` = second chair (`talentB`). */
+let MOVE_CTX={fromSid:null,fromSlot:null,benchId:null,chair:'A'};
 function rosterHtmlEsc(x){
   return String(x==null?'':x).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 }
@@ -20382,7 +21278,9 @@ function rosterTalentOnAirCardHtml(st,sl,t,contribution,talQ,trendWord,trendCol,
       </div>
     </div>`;
 }
-function rosterMoveDestSlotCardHtml(dst,sl,movingTalent,fromSlotKey){
+function rosterMoveDestSlotCardHtml(dst,sl,movingTalent,fromSlotKey,chair){
+  chair=chair||'A';
+  const isChairB=chair==='B';
   if(daytimerRestrictedSlot(dst,sl)){
     return`
     <div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:10px;opacity:.92">
@@ -20390,8 +21288,23 @@ function rosterMoveDestSlotCardHtml(dst,sl,movingTalent,fromSlotKey){
       <p style="margin:10px 0 0 0;font-size:14px;color:var(--off);line-height:1.45">Night-limited AM — no local host in Evening or Overnight.</p>
     </div>`;
   }
+  if(isChairB&&!daypartAllowsCoHostModel(sl)){
+    return`
+    <div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:10px;opacity:.92">
+      <div style="font-family:var(--fd);font-size:20px;letter-spacing:1px;color:var(--mut);text-transform:uppercase;line-height:1.2">${SL[sl]}</div>
+      <p style="margin:10px 0 0 0;font-size:14px;color:var(--off);line-height:1.45">Second on-air chair is only modeled for <strong>morning</strong> and <strong>afternoon</strong> drive.</p>
+    </div>`;
+  }
   const t=movingTalent;
-  const occ=dst.prog[sl]?.talent;
+  const sdDest=dst.prog[sl];
+  if(isChairB&&!sdDest?.talent){
+    return`
+    <div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:10px;opacity:.92">
+      <div style="font-family:var(--fd);font-size:20px;letter-spacing:1px;color:var(--mut);text-transform:uppercase;line-height:1.2">${SL[sl]}</div>
+      <p style="margin:10px 0 0 0;font-size:14px;color:var(--off);line-height:1.45">This daypart needs a <strong>primary host</strong> before a second chair can be placed here.</p>
+    </div>`;
+  }
+  const occ=isChairB?slotTalentB(sdDest):sdDest?.talent;
   if(franchiseSlotBlocksNewLocalTalent(dst,sl,G)){
     return`
     <div style="background:var(--crd);border:1px solid var(--bdh);border-radius:8px;padding:14px 16px;margin-bottom:10px;opacity:.92">
@@ -20405,15 +21318,22 @@ function rosterMoveDestSlotCardHtml(dst,sl,movingTalent,fromSlotKey){
   const sameStation=ctx&&!ctx.benchId&&ctx.fromSid===dst.id;
   const resultLine=occ
     ?(sameStation
-      ?`${rosterHtmlEsc(occ.name)} is on-air here — <strong style="color:var(--amb)">Swap</strong> trades hosts; <strong style="color:var(--mut)">Move</strong> sends them to the bench.`
+      ?(isChairB
+        ?`${rosterHtmlEsc(occ.name)} is in the second chair here — <strong style="color:var(--amb)">Swap</strong> trades second chairs; <strong style="color:var(--mut)">Move</strong> benches that second chair.`
+        :`${rosterHtmlEsc(occ.name)} is on-air here — <strong style="color:var(--amb)">Swap</strong> trades hosts; <strong style="color:var(--mut)">Move</strong> sends them to the bench.`)
       :`Result: ${rosterHtmlEsc(occ.name)} goes to bench`)
-    :'Result: Open slot';
+    :(isChairB?'Result: Open second chair':'Result: Open slot');
   const destBtns=sameStation
     ?(occ
-      ?`<div style="display:flex;flex-direction:column;align-items:stretch;gap:8px;width:100%;max-width:300px">
+      ?(isChairB
+        ?`<div style="display:flex;flex-direction:column;align-items:stretch;gap:8px;width:100%;max-width:300px">
+          <button type="button" class="cfm" style="margin:0;padding:11px 14px;font-size:16px;letter-spacing:2px" onclick="doRosterSameStationSwapChairB('${dst.id}','${sl}')">SWAP — exchange second chairs</button>
+          <button type="button" class="abt" style="margin:0;padding:10px 14px;font-size:14px;letter-spacing:1px;border-color:var(--bdh);color:var(--mut);background:transparent" onclick="doRosterSameStationBenchChairB('${dst.id}','${sl}')">MOVE — bench other second chair</button>
+        </div>`
+        :`<div style="display:flex;flex-direction:column;align-items:stretch;gap:8px;width:100%;max-width:300px">
           <button type="button" class="cfm" style="margin:0;padding:11px 14px;font-size:16px;letter-spacing:2px" onclick="doRosterSameStationSwap('${dst.id}','${sl}')">SWAP — exchange hosts</button>
           <button type="button" class="abt" style="margin:0;padding:10px 14px;font-size:14px;letter-spacing:1px;border-color:var(--bdh);color:var(--mut);background:transparent" onclick="doRosterSameStationBench('${dst.id}','${sl}')">MOVE — bench other</button>
-        </div>`
+        </div>`)
       :`<button type="button" class="cfm" style="margin:0;padding:11px 14px;font-size:16px;letter-spacing:2px" onclick="doRosterPlace('${dst.id}','${sl}')">MOVE HERE</button>`)
     :`<button class="abt" style="padding:8px 14px;font-size:14px;letter-spacing:1px" onclick="doRosterPlace('${dst.id}','${sl}')">MOVE HERE</button>`;
   return`
@@ -20492,6 +21412,23 @@ function rosterBenchClick(sid,slot){
   if(benchTalentFromSlot(sid,slot)) renderManageTalentStation(sid);
   renderAll();
 }
+/** Bench second-chair talent only (pairing chemistry clears; primary stays on-air). */
+function rosterBenchChairBClick(sid,slot){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||!mpIsMe(s))return;
+  if(!benchCoHostIfPresentInternal(sid,slot)){
+    showToast('No second chair to bench in this slot.','warn');
+    return;
+  }
+  const ent=G.talentBench?.[G.talentBench.length-1];
+  const nm=ent?.talent?.name||'Talent';
+  G.news.unshift({v:'LOW',t:`${nm} benched (${SL[slot]} second chair) at ${callDisplay(s)}.`,y:G.year,p:G.period});
+  logHistory(s,'TALENT',`${nm} benched (second chair) — ${SL[slot]}`,G);
+  MP.action('cohost_bench',{sid,slot});
+  renderManageTalentStation(sid);
+  renderAll();
+}
 /** Contract buyout to fire immediately (same formula as contract modal / station card). */
 function talentFireBuyout(t){
   if(!t)return 0;
@@ -20518,25 +21455,34 @@ function openFire(sid){ openManageTalent(sid); }
 function openRosterMoveFromSlot(sid,slot){
   sid=ensureOpsSourceSid(sid);
   MT_ACTIVE_SID=sid;
-  MOVE_CTX={fromSid:sid,fromSlot:slot,benchId:null};
+  MOVE_CTX={fromSid:sid,fromSlot:slot,benchId:null,chair:'A'};
+  openRosterMoveDest();
+}
+function openRosterMoveFromSlotChairB(sid,slot){
+  sid=ensureOpsSourceSid(sid);
+  MT_ACTIVE_SID=sid;
+  MOVE_CTX={fromSid:sid,fromSlot:slot,benchId:null,chair:'B'};
   openRosterMoveDest();
 }
 function openRosterMoveFromBench(benchId){
   const e=G.talentBench.find(x=>x.id===benchId);
   if(!e)return;
   MT_ACTIVE_SID=e.sid;
-  MOVE_CTX={fromSid:e.sid,fromSlot:e.slot,benchId};
+  MOVE_CTX={fromSid:e.sid,fromSlot:e.slot,benchId,chair:'A'};
   openRosterMoveDest();
 }
 function openRosterMoveDest(){
   const ctx=MOVE_CTX;
+  const ch=ctx.chair||'A';
   const t=ctx.benchId
     ? G.talentBench.find(e=>e.id===ctx.benchId)?.talent
-    : G.stations.find(st=>st.id===ctx.fromSid)?.prog[ctx.fromSlot]?.talent;
+    : ch==='B'
+      ? slotTalentB(G.stations.find(st=>st.id===ctx.fromSid)?.prog[ctx.fromSlot])
+      : G.stations.find(st=>st.id===ctx.fromSid)?.prog[ctx.fromSlot]?.talent;
   if(!t){mtBackFromSubflow();return;}
   const fromSlotKey=ctx.fromSlot||'midday';
   const srcSt=ctx.fromSid?G.stations.find(st=>st.id===ctx.fromSid):null;
-  document.getElementById('fire-title').textContent=`MOVE — ${t.name}`;
+  document.getElementById('fire-title').textContent=ch==='B'?`MOVE (2ND CHAIR) — ${t.name}`:`MOVE — ${t.name}`;
   const owned=rosterOwnedStations();
   const srcSid=ctx.fromSid;
   const sameFirst=owned.filter(s=>s.id===srcSid);
@@ -20546,7 +21492,7 @@ function openRosterMoveDest(){
     const slots=[];
     DAYPART_SLOTS.forEach(sl=>{
       if(!ctx.benchId&&srcSid===dst.id&&ctx.fromSlot===sl)return;
-      slots.push(rosterMoveDestSlotCardHtml(dst,sl,t,fromSlotKey));
+      slots.push(rosterMoveDestSlotCardHtml(dst,sl,t,fromSlotKey,ch));
     });
     if(!slots.length)return'';
     return`<div style="margin-bottom:30px">${rosterStationSectionHeaderHtml(dst)}${slots.join('')}</div>`;
@@ -20556,7 +21502,9 @@ function openRosterMoveDest(){
   otherRest.forEach(dst=>{ const h=destHtmlForStation(dst); if(h)blocks.push(h); });
   const ctxLine=ctx.benchId
     ?`Moving ${rosterHtmlEsc(t.name)} · from bench · ${srcSt?callDisplay(srcSt):'?'} ${SL[fromSlotKey]}`
-    :`Moving ${rosterHtmlEsc(t.name)} · from ${SL[fromSlotKey]} · ${srcSt?callDisplay(srcSt):'—'}`;
+    :ch==='B'
+      ?`Moving ${rosterHtmlEsc(t.name)} · <strong>second chair</strong> · from ${SL[fromSlotKey]} · ${srcSt?callDisplay(srcSt):'—'}`
+      :`Moving ${rosterHtmlEsc(t.name)} · from ${SL[fromSlotKey]} · ${srcSt?callDisplay(srcSt):'—'}`;
   document.getElementById('fireb').innerHTML=`
     <p style="font-size:13px;color:var(--mut);margin:0 0 14px 0;line-height:1.45">${ctxLine}</p>
     <div class="ms2">${blocks.join('')||'<p class="di" style="color:var(--mut)">No valid destinations.</p>'}</div>
@@ -20584,6 +21532,7 @@ function doRosterPlace(toSid,toSlot){
       const adjDip=0.08;
       const fit=t0=>t0.formatFit[dst.format]||0.3;
       const boost=t0=>Math.round((t0.quality/100)*fit(t0)*0.35*18);
+      clearCoHostPairingState(toSd);
       toSd.talent=t;
       toSd.quality=Math.min(100,Math.max(10,Math.round((toSd.quality||30)*(1-adjDip)))+boost(t));
       initTalentPerformanceReveal(toSd,t,dst.format,'xfer');
@@ -20593,7 +21542,7 @@ function doRosterPlace(toSid,toSlot){
       logHistory(dst,'TALENT',`${t.name} placed from bench — ${SL[toSlot]}`,G);
       MP.action('placement_from_bench',{benchId:ctx.benchId,toSid,toSlot});
       refreshStationOQ(dst,G);
-      MOVE_CTX={fromSid:null,fromSlot:null,benchId:null};
+      MOVE_CTX={fromSid:null,fromSlot:null,benchId:null,chair:'A'};
       mtBackFromSubflow();renderAll();
     };
     if(occ){
@@ -20607,7 +21556,52 @@ function doRosterPlace(toSid,toSlot){
     finishBenchPlace();
     return;
   }
-  const {fromSid,fromSlot}=ctx;
+  const {fromSid,fromSlot,chair}=ctx;
+  if((chair||'A')==='B'){
+    const src=G.stations.find(st=>st.id===fromSid);
+    const dst=G.stations.find(st=>st.id===toSid);
+    const fromSd=src?.prog[fromSlot];
+    const movingB=slotTalentB(fromSd);
+    if(!src||!dst||!fromSd?.talent||!movingB||!mpIsMe(src)||!mpIsMe(dst))return;
+    if(daytimerRestrictedSlot(dst,toSlot)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
+    if(franchiseSlotBlocksNewLocalTalent(dst,toSlot,G)){
+      showToast('That daypart is reserved for syndicated programming on the destination.','warn');
+      return;
+    }
+    const occB=slotTalentB(dst.prog[toSlot]);
+    if(fromSid===toSid){
+      if(occB){
+        showToast('Choose SWAP — exchange second chairs, or MOVE — bench other second chair.','info');
+        return;
+      }
+      if(!applyChairBMoveToVacantSecondChair(fromSid,fromSlot,toSlot))return;
+      G.news.unshift({v:'LOW',t:`${movingB.name} (second chair) moves on ${callDisplay(dst)}: ${SL[fromSlot]} → ${SL[toSlot]}.`,y:G.year,p:G.period});
+      logHistory(dst,'TALENT',`Second chair ${movingB.name}: ${SL[fromSlot]} → ${SL[toSlot]}`,G);
+      MP.action('shuffle_chairb',{sid:fromSid,fromSlot,toSlot});
+      MOVE_CTX={fromSid:null,fromSlot:null,benchId:null,chair:'A'};
+      mtBackFromSubflow();renderAll();
+      return;
+    }
+    const finishCrossB=()=>{
+      if(!applyChairBCrossStationXferFull(fromSid,fromSlot,toSid,toSlot))return;
+      G.news.unshift({v:'LOW',t:`${movingB.name} (second chair) moves from ${callDisplay(src)} ${SL[fromSlot]} to ${callDisplay(dst)} ${SL[toSlot]}.`,y:G.year,p:G.period});
+      logHistory(src,'TALENT',`Transferred second chair ${movingB.name} → ${callDisplay(dst)} ${SL[toSlot]}`,G);
+      logHistory(dst,'TALENT',`Received second chair ${movingB.name} from ${callDisplay(src)} ${SL[fromSlot]}`,G);
+      MP.action('talent_xfer_chairb',{fromSid,fromSlot,toSid,toSlot});
+      MOVE_CTX={fromSid:null,fromSlot:null,benchId:null,chair:'A'};
+      mtBackFromSubflow();renderAll();
+    };
+    if(occB){
+      openGameConfirm({title:'BENCH SECOND CHAIR',message:`Move ${movingB.name} (second chair) to ${SL[toSlot]} on ${callDisplay(dst)}? ${occB.name} will be sent to the talent bench.`},(ok)=>{
+        if(!ok)return;
+        if(!benchCoHostIfPresentInternal(toSid,toSlot))return;
+        finishCrossB();
+      });
+      return;
+    }
+    finishCrossB();
+    return;
+  }
   const src=G.stations.find(st=>st.id===fromSid);
   const dst=G.stations.find(st=>st.id===toSid);
   const moving=src?.prog[fromSlot]?.talent;
@@ -20619,14 +21613,14 @@ function doRosterPlace(toSid,toSlot){
       showToast('Choose SWAP — exchange hosts, or MOVE — bench other.','info');
       return;
     }
-    MOVE_CTX={fromSid:null,fromSlot:null,benchId:null};
+    MOVE_CTX={fromSid:null,fromSlot:null,benchId:null,chair:'A'};
     doShuffle(fromSid,fromSlot,toSlot);
     return;
   }
   const finishCrossXfer=()=>{
     if(!applyTalentCrossStationXferFull(fromSid,fromSlot,toSid,toSlot))return;
     MP.action('talent_xfer',{fromSid,fromSlot,toSid,toSlot});
-    MOVE_CTX={fromSid:null,fromSlot:null,benchId:null};
+    MOVE_CTX={fromSid:null,fromSlot:null,benchId:null,chair:'A'};
     mtBackFromSubflow();renderAll();
   };
   if(occ){
@@ -20641,7 +21635,7 @@ function doRosterPlace(toSid,toSlot){
 /** Same-station move: swap hosts (default when destination is occupied). */
 function doRosterSameStationSwap(toSid,toSlot){
   const ctx=MOVE_CTX;
-  if(!ctx||ctx.benchId)return;
+  if(!ctx||ctx.benchId||(ctx.chair||'A')==='B')return;
   const {fromSid,fromSlot}=ctx;
   if(fromSid!==toSid)return;
   const s=G.stations.find(st=>st.id===fromSid);
@@ -20649,13 +21643,51 @@ function doRosterSameStationSwap(toSid,toSlot){
   if(!s.prog[fromSlot]?.talent||!s.prog[toSlot]?.talent)return;
   if(!applyTalentSameStationSwapFull(fromSid,fromSlot,toSlot))return;
   MP.action('same_station_swap',{sid:fromSid,fromSlot,toSlot});
-  MOVE_CTX={fromSid:null,fromSlot:null,benchId:null};
+  MOVE_CTX={fromSid:null,fromSlot:null,benchId:null,chair:'A'};
   mtBackFromSubflow();renderAll();
+}
+/** Same-station: swap second chairs between two dayparts. */
+function doRosterSameStationSwapChairB(toSid,toSlot){
+  const ctx=MOVE_CTX;
+  if(!ctx||ctx.benchId||(ctx.chair||'A')!=='B')return;
+  const {fromSid,fromSlot}=ctx;
+  if(fromSid!==toSid)return;
+  const s=G.stations.find(st=>st.id===fromSid);
+  if(!s||!mpIsMe(s))return;
+  if(!slotTalentB(s.prog[fromSlot])||!slotTalentB(s.prog[toSlot]))return;
+  if(!applyChairBSameStationSwapFull(fromSid,fromSlot,toSlot))return;
+  G.news.unshift({v:'LOW',t:`Second chairs swapped on ${callDisplay(s)}: ${SL[fromSlot]} ↔ ${SL[toSlot]}.`,y:G.year,p:G.period});
+  logHistory(s,'TALENT',`Swap second chairs ${SL[fromSlot]} ↔ ${SL[toSlot]}`,G);
+  MP.action('same_station_swap_chairb',{sid:fromSid,fromSlot,toSlot});
+  MOVE_CTX={fromSid:null,fromSlot:null,benchId:null,chair:'A'};
+  mtBackFromSubflow();renderAll();
+}
+/** Same-station: bench destination second chair, then move source second chair into that slot. */
+function doRosterSameStationBenchChairB(toSid,toSlot){
+  const ctx=MOVE_CTX;
+  if(!ctx||ctx.benchId||(ctx.chair||'A')!=='B')return;
+  const {fromSid,fromSlot}=ctx;
+  if(fromSid!==toSid)return;
+  const s=G.stations.find(st=>st.id===fromSid);
+  if(!s||!mpIsMe(s))return;
+  const occ=slotTalentB(s.prog[toSlot]);
+  const moving=slotTalentB(s.prog[fromSlot]);
+  if(!occ||!moving)return;
+  openGameConfirm({title:'BENCH SECOND CHAIR',message:`Move ${moving.name} (second chair) to ${SL[toSlot]}? ${occ.name} will be sent to the talent bench.`,confirmLabel:'MOVE'},(ok)=>{
+    if(!ok)return;
+    MOVE_CTX={fromSid:null,fromSlot:null,benchId:null,chair:'A'};
+    if(!benchCoHostIfPresentInternal(toSid,toSlot))return;
+    if(!applyChairBMoveToVacantSecondChair(fromSid,fromSlot,toSlot))return;
+    G.news.unshift({v:'LOW',t:`${moving.name} (second chair) moves on ${callDisplay(s)}: ${SL[fromSlot]} → ${SL[toSlot]} — ${occ.name} benched.`,y:G.year,p:G.period});
+    logHistory(s,'TALENT',`Second chair move ${SL[fromSlot]} → ${SL[toSlot]} (${occ.name} benched)`,G);
+    MP.action('shuffle_chairb',{sid:fromSid,fromSlot,toSlot});
+    mtBackFromSubflow();renderAll();
+  });
 }
 /** Same-station move: bench the host currently in the destination slot. */
 function doRosterSameStationBench(toSid,toSlot){
   const ctx=MOVE_CTX;
-  if(!ctx||ctx.benchId)return;
+  if(!ctx||ctx.benchId||(ctx.chair||'A')==='B')return;
   const {fromSid,fromSlot}=ctx;
   if(fromSid!==toSid)return;
   const s=G.stations.find(st=>st.id===fromSid);
@@ -20665,7 +21697,7 @@ function doRosterSameStationBench(toSid,toSlot){
   if(!occ||!moving)return;
   openGameConfirm({title:'BENCH HOST',message:`Move ${moving.name} to ${SL[toSlot]}? ${occ.name} will be sent to the talent bench.`,confirmLabel:'MOVE'},(ok)=>{
     if(!ok)return;
-    MOVE_CTX={fromSid:null,fromSlot:null,benchId:null};
+    MOVE_CTX={fromSid:null,fromSlot:null,benchId:null,chair:'A'};
     doShuffle(fromSid,fromSlot,toSlot);
   });
 }
@@ -21126,7 +22158,7 @@ function projectedSlotQAfterCrossXfer(talent, dst, toSlot) {
   const base = Math.round((toSd?.quality || 30) * (1 - adjDip));
   return Math.min(100, Math.max(10, base + boost));
 }
-let XFER = { fromSid: null, fromSlot: null, toSid: null, embedMode: false };
+let XFER = { fromSid: null, fromSlot: null, toSid: null, embedMode: false, chair: 'A' };
 function xferOwnedStations() {
   return myPS().filter(s => mpIsMe(s));
 }
@@ -21170,10 +22202,11 @@ function xferPickSlot(fromSlot) {
   xferRenderDestPick();
 }
 function xferRenderDestPick() {
-  const { fromSid, fromSlot } = XFER;
+  const { fromSid, fromSlot, chair } = XFER;
   const src = G.stations.find(st => st.id === fromSid);
-  if (!src || !fromSlot || !src.prog[fromSlot]?.talent) return;
-  const tal = src.prog[fromSlot].talent;
+  const isB = (chair || 'A') === 'B';
+  const tal = isB ? slotTalentB(src?.prog[fromSlot]) : src?.prog[fromSlot]?.talent;
+  if (!src || !fromSlot || !tal) return;
   const dests = xferOwnedStations().filter(st => st.id !== fromSid);
   const rows = dests.map(st => {
     const fs = talentDestFormatFitSummary(tal, st.format);
@@ -21182,9 +22215,9 @@ function xferRenderDestPick() {
   const backXfer = XFER.embedMode
     ? `<button class="cnl" type="button" onclick="renderManageTalentStation('${MT_ACTIVE_SID}')">← BACK</button>`
     : `<button class="cnl" type="button" onclick="xferPickSource('${fromSid}')">← BACK</button>`;
-  document.getElementById('fire-title').textContent = 'TRANSFER — pick station';
+  document.getElementById('fire-title').textContent = isB ? 'TRANSFER (2ND CHAIR) — pick station' : 'TRANSFER — pick station';
   document.getElementById('fireb').innerHTML = `
-    <p class="di">Moving <strong>${rosterHtmlEsc(tal.name)}</strong> from <strong>${callDisplay(src)} ${SL[fromSlot]}</strong> (${fmtLabel(src.format)}). <strong>Format fit</strong> is how well their skills match each station’s format — the same percentage shown on the station card after the move (higher = better slot quality and morale).</p>
+    <p class="di">Moving <strong>${rosterHtmlEsc(tal.name)}</strong>${isB ? ' <strong>(second chair)</strong>' : ''} from <strong>${callDisplay(src)} ${SL[fromSlot]}</strong> (${fmtLabel(src.format)}). <strong>Format fit</strong> is how well their skills match each station’s format — the same percentage shown on the station card after the move (higher = better slot quality and morale).</p>
     <div class="ms2"><div class="msh">DESTINATION STATION</div>${rows}</div>
     ${backXfer}`;
 }
@@ -21196,32 +22229,47 @@ function xferPickDest(toSid) {
   xferRenderDestSlots();
 }
 function xferRenderDestSlots() {
-  const { fromSid, fromSlot, toSid } = XFER;
+  const { fromSid, fromSlot, toSid, chair } = XFER;
   const dst = G.stations.find(st => st.id === toSid);
   const src = G.stations.find(st => st.id === fromSid);
-  const tal = src?.prog[fromSlot]?.talent;
+  const isB = (chair || 'A') === 'B';
+  const tal = isB ? slotTalentB(src?.prog[fromSlot]) : src?.prog[fromSlot]?.talent;
   if (!dst || !tal) return;
   const dstFit = talentDestFormatFitSummary(tal, dst.format);
   const slots = DAYPART_SLOTS;
   const destRows = slots.map(sl => {
     const sd = dst.prog[sl];
-    const occ = sd?.talent;
+    const occ = isB ? slotTalentB(sd) : sd?.talent;
     const slotQ = Math.round(sd?.quality || 0);
     const projQ = projectedSlotQAfterCrossXfer(tal, dst, sl);
-    const occNote = occ
-      ? `<span style="color:var(--amb);font-size:15px">${rosterHtmlEsc(occ.name)} on-air</span>`
-      : `<span style="color:var(--mut);font-size:15px">vacant · slot quality ${slotQ}</span>`;
+    const occNote = isB
+      ? (occ
+        ? `<span style="color:var(--amb);font-size:15px">second chair: ${rosterHtmlEsc(occ.name)}</span>`
+        : (!sd?.talent
+          ? `<span style="color:var(--mut);font-size:15px">no primary host — second chair cannot land here</span>`
+          : (!daypartAllowsCoHostModel(sl)
+            ? `<span style="color:var(--mut);font-size:15px">second chair not modeled in this daypart</span>`
+            : `<span style="color:var(--mut);font-size:15px">open second chair · slot quality ${slotQ}</span>`)))
+      : (occ
+        ? `<span style="color:var(--amb);font-size:15px">${rosterHtmlEsc(occ.name)} on-air</span>`
+        : `<span style="color:var(--mut);font-size:15px">vacant · slot quality ${slotQ}</span>`);
     const restricted = daytimerRestrictedSlot(dst, sl);
     const actions = restricted
       ? `<span style="color:var(--mut);font-size:14px">Evening/overnight — no local host (night-limited)</span>`
-      : occ
-        ? `<div style="display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:200px"><button type="button" class="cfm" style="margin:0;padding:8px 10px;font-size:14px;letter-spacing:1px" onclick="doCrossStationSwap('${sl}')">SWAP — exchange hosts</button><button type="button" class="abt" style="margin:0;padding:8px 10px;font-size:13px;border-color:var(--bdh);color:var(--mut);background:transparent" onclick="doCrossStationXfer('${sl}')">MOVE — bench other</button></div>`
-        : `<button class="abt" style="border-color:var(--grn);color:var(--grn)" type="button" onclick="doCrossStationXfer('${sl}')">MOVE HERE</button>`;
+      : isB
+        ? (!sd?.talent || !daypartAllowsCoHostModel(sl)
+          ? `<span style="color:var(--mut);font-size:14px">Not available</span>`
+          : occ
+            ? `<div style="display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:200px"><button type="button" class="cfm" style="margin:0;padding:8px 10px;font-size:14px;letter-spacing:1px" onclick="doCrossStationSwapChairB('${sl}')">SWAP — exchange second chairs</button><button type="button" class="abt" style="margin:0;padding:8px 10px;font-size:13px;border-color:var(--bdh);color:var(--mut);background:transparent" onclick="doCrossStationXferChairB('${sl}')">MOVE — bench other second chair</button></div>`
+            : `<button class="abt" style="border-color:var(--grn);color:var(--grn)" type="button" onclick="doCrossStationXferChairB('${sl}')">MOVE HERE</button>`)
+        : occ
+          ? `<div style="display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:200px"><button type="button" class="cfm" style="margin:0;padding:8px 10px;font-size:14px;letter-spacing:1px" onclick="doCrossStationSwap('${sl}')">SWAP — exchange hosts</button><button type="button" class="abt" style="margin:0;padding:8px 10px;font-size:13px;border-color:var(--bdh);color:var(--mut);background:transparent" onclick="doCrossStationXfer('${sl}')">MOVE — bench other</button></div>`
+          : `<button class="abt" style="border-color:var(--grn);color:var(--grn)" type="button" onclick="doCrossStationXfer('${sl}')">MOVE HERE</button>`;
     return `<div class="sr" style="padding:10px 14px;align-items:flex-start"><span class="lb" style="flex:1;min-width:140px"><strong>${SL[sl]}</strong><br>${occNote}<br><span style="color:var(--mut);font-size:13px;line-height:1.4">If ${rosterHtmlEsc(tal.name)} lands here: projected slot quality <strong style="color:var(--off)">~${projQ}</strong> (<span style="color:${dstFit.col}">${dstFit.words}</span> vs ${fmtLabel(dst.format)})</span></span>${actions}</div>`;
   }).join('');
-  document.getElementById('fire-title').textContent = 'TRANSFER — pick slot';
+  document.getElementById('fire-title').textContent = isB ? 'TRANSFER (2ND CHAIR) — pick slot' : 'TRANSFER — pick slot';
   document.getElementById('fireb').innerHTML = `
-    <p class="di">Place <strong>${rosterHtmlEsc(tal.name)}</strong> on <strong>${callDisplay(dst)}</strong> (${fmtLabel(dst.format)}). <strong style="color:var(--amb)">SWAP</strong> exchanges the two hosts (no bench). <strong>MOVE — bench other</strong> sends the destination host to the bench.</p>
+    <p class="di">Place <strong>${rosterHtmlEsc(tal.name)}</strong>${isB ? ' <strong>(second chair)</strong>' : ''} on <strong>${callDisplay(dst)}</strong> (${fmtLabel(dst.format)}). <strong style="color:var(--amb)">SWAP</strong> exchanges the two ${isB ? 'second chairs' : 'hosts'} (no bench). <strong>MOVE — bench other</strong> sends the destination ${isB ? 'second chair' : 'host'} to the bench.</p>
     <div style="margin:0 0 12px 0;padding:12px 14px;background:var(--crd);border:1px solid var(--bdh);border-radius:8px;font-size:14px;line-height:1.5">
       <span style="color:var(--mut);display:block;font-size:11px;letter-spacing:0.08em;margin-bottom:6px">FORMAT FIT ON THIS STATION</span>
       <span style="color:${dstFit.col};font-family:var(--fd);font-size:18px">${dstFit.words}</span>
@@ -21242,6 +22290,7 @@ function doCrossStationSwap(toSlot) {
   MP.action('talent_swap', { fromSid, fromSlot, toSid, toSlot });
   if (XFER.embedMode) {
     XFER.embedMode = false;
+    XFER.chair = 'A';
     renderManageTalentStation(MT_ACTIVE_SID);
   } else {
     cm('m-fire',{wlTutorialSuppress:true});
@@ -21263,11 +22312,68 @@ function doCrossStationXfer(toSlot) {
   MP.action('talent_xfer', { fromSid, fromSlot, toSid, toSlot });
   if (XFER.embedMode) {
     XFER.embedMode = false;
+    XFER.chair = 'A';
     renderManageTalentStation(MT_ACTIVE_SID);
   } else {
     cm('m-fire',{wlTutorialSuppress:true});
   }
   renderAll();
+}
+function doCrossStationSwapChairB(toSlot) {
+  const { fromSid, fromSlot, toSid } = XFER;
+  if ((XFER.chair || 'A') !== 'B') return;
+  const src = G.stations.find(st => st.id === fromSid);
+  const dst = G.stations.find(st => st.id === toSid);
+  if (!src || !dst || !mpIsMe(src) || !mpIsMe(dst)) return;
+  if (!applyChairBCrossStationSwapFull(fromSid, fromSlot, toSid, toSlot)) {
+    showToast('Swap needs a second chair in both dayparts.', 'warn');
+    return;
+  }
+  MP.action('talent_swap_chairb', { fromSid, fromSlot, toSid, toSlot });
+  if (XFER.embedMode) {
+    XFER.embedMode = false;
+    XFER.chair = 'A';
+    renderManageTalentStation(MT_ACTIVE_SID);
+  } else {
+    cm('m-fire',{wlTutorialSuppress:true});
+  }
+  renderAll();
+}
+function doCrossStationXferChairB(toSlot) {
+  const { fromSid, fromSlot, toSid } = XFER;
+  if ((XFER.chair || 'A') !== 'B') return;
+  const src = G.stations.find(st => st.id === fromSid);
+  const dst = G.stations.find(st => st.id === toSid);
+  if (!src || !dst || !fromSlot || fromSid === toSid) return;
+  if (!mpIsMe(src) || !mpIsMe(dst)) { showToast('Cross-station moves only between stations you own.', 'warn'); return; }
+  const movingB = slotTalentB(src.prog[fromSlot]);
+  if (!movingB) {
+    showToast('That move is no longer valid — check dayparts again.', 'warn');
+    xferRenderDestSlots();
+    return;
+  }
+  const occB = slotTalentB(dst.prog[toSlot]);
+  const finish = () => {
+    if (!applyChairBCrossStationXferFull(fromSid, fromSlot, toSid, toSlot)) return;
+    MP.action('talent_xfer_chairb', { fromSid, fromSlot, toSid, toSlot });
+    if (XFER.embedMode) {
+      XFER.embedMode = false;
+      XFER.chair = 'A';
+      renderManageTalentStation(MT_ACTIVE_SID);
+    } else {
+      cm('m-fire',{wlTutorialSuppress:true});
+    }
+    renderAll();
+  };
+  if (occB) {
+    openGameConfirm({ title: 'BENCH SECOND CHAIR', message: `Move ${movingB.name} (second chair) to ${SL[toSlot]} on ${callDisplay(dst)}? ${occB.name} will be sent to the talent bench.` }, (ok) => {
+      if (!ok) return;
+      if (!benchCoHostIfPresentInternal(toSid, toSlot)) return;
+      finish();
+    });
+    return;
+  }
+  finish();
 }
 function doFire(sid,slot){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
@@ -21288,6 +22394,7 @@ function doFire(sid,slot){
   }
 
   if(buyout>0){ G.cash-=buyout; if(MP.mode==='live'){if(!G._playerCash)G._playerCash={};G._playerCash[MP.playerId]=G.cash;MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash});}}
+  clearCoHostPairingState(sd);
   sd.talent=null;
   coerceMusicVoiceTrackModesGlobally(G);
 
@@ -25098,7 +26205,7 @@ function companyFinanceRollup(){
   const cost=ps.reduce((s,st)=>s+st.fin.cost,0);
   const ebitda=ps.reduce((s,st)=>s+st.fin.ebitda,0);
   const margin=revenue>0?Math.round((ebitda/revenue)*100):0;
-  const talentCost=ps.reduce((sum,s)=>sum+Object.values(s.prog).filter(sl=>sl?.talent).reduce((a,sl)=>a+Math.round((sl.talent.salary||0)/2),0),0);
+  const talentCost=ps.reduce((sum,s)=>sum+Object.values(s.prog).filter(sl=>sl?.talent).reduce((a,sl)=>a+payrollHalfPeriodForDaypartSlot(sl),0),0);
   const fixedCost=ps.reduce((s,st)=>s+(st.fin.fix||0),0);
   const cash=MP.mode==='live'?(G._playerCash?.[MP.playerId]??G.cash):G.cash;
   const shareSum=ps.reduce((s,st)=>s+st.rat.share,0);
@@ -25393,7 +26500,7 @@ function recordCompanyFinHistory(G, wasYear, wasPeriod, profit){
     const revenue=ps.reduce((s,st)=>s+st.fin.rev,0);
     const cost=ps.reduce((s,st)=>s+st.fin.cost,0);
     const margin=revenue>0?Math.round((pProfit/revenue)*100):0;
-    const talentCost=ps.reduce((sum,s)=>sum+Object.values(s.prog).filter(sl=>sl?.talent).reduce((a,sl)=>a+Math.round((sl.talent.salary||0)/2),0),0);
+    const talentCost=ps.reduce((sum,s)=>sum+Object.values(s.prog).filter(sl=>sl?.talent).reduce((a,sl)=>a+payrollHalfPeriodForDaypartSlot(sl),0),0);
     const fixedCost=ps.reduce((s,st)=>s+(st.fin.fix||0),0);
     const shareSum=ps.reduce((s,st)=>s+st.rat.share,0);
     const avgSellout=ps.length?Math.round((ps.reduce((s,st)=>s+(st.ops?.sell||0),0)/ps.length)*1000)/1000:0;
@@ -25903,7 +27010,7 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra
       let mc='amb';
       if(s.fin.ebitda<0) mc='neg';
       else if(s.fin.ebitda>0) mc='pos';
-      const talCost=Object.values(s.prog).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+Math.round((sl.talent.salary||0)/2),0);
+      const talCost=Object.values(s.prog).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+payrollHalfPeriodForDaypartSlot(sl),0);
       const simSrc=s.simulcastWith&&s._simulcastSource===false?G.stations.find(st=>st.id===s.simulcastWith):null;
       const localMD=s.prog.morningDrive?.talent;
       const simMD=!localMD&&simSrc?simSrc.prog?.morningDrive?.talent:null;
@@ -26014,11 +27121,49 @@ function openContractFromManageTalent(sid,slot){
   cm('m-fire',{wlTutorialSuppress:true});
   openContract(sid,slot);
 }
+function openContractFromManageTalentCoHost(sid,slot){
+  cm('m-fire',{wlTutorialSuppress:true});
+  openContract(sid,slot,'cohost');
+}
+/** Station-card lineup: show co-host row when pairing is allowed (same rules as Manage Talent). */
+function stationCardCoHostLineupVisible(s,slot,_simSrc){
+  if(!daypartAllowsCoHostModel(slot))return false;
+  if(daytimerRestrictedSlot(s,slot))return false;
+  if(getStationFranchise(s,slot,G))return false;
+  if(_simSrc&&_simSrc.prog&&_simSrc.prog[slot]?.talent)return false;
+  return true;
+}
+function openManageTalentToDaypart(sid,slot){
+  sid=ensureOpsSourceSid(sid);
+  openManageTalent(sid);
+  const run=()=>{
+    const el=document.getElementById('mt-dp-'+sid+'-'+slot);
+    if(el) el.scrollIntoView({block:'nearest',behavior:'smooth'});
+  };
+  requestAnimationFrame(()=>requestAnimationFrame(run));
+}
+/** Remove co-host from show (station card / co-host contract). */
+function rosterFireCoHostPrompt(sid,slot,closeModalId){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s||!mpIsMe(s))return;
+  const ch=slotTalentB(s.prog?.[slot]);
+  if(!ch)return;
+  const msg=`Remove ${ch.name} as co-host on ${callDisplay(s)} ${SL[slot]}? They leave the show and pairing chemistry clears.`;
+  openGameConfirm({title:'REMOVE CO-HOST',message:msg,confirmLabel:'REMOVE',danger:true},(ok)=>{
+    if(!ok)return;
+    removeCoHostFromSlot(sid,slot);
+    if(closeModalId) cm(closeModalId);
+  });
+}
 
 // ════════════════════════════════════════════════════════════════
 // TALENT CONTRACT MANAGEMENT
 // ════════════════════════════════════════════════════════════════
-function openContract(sid, slot){
+/** @param {'host'|'cohost'} [talentRole] Default primary host; `'cohost'` = co-host pay & morale on same daypart. */
+function openContract(sid, slot, talentRole){
+  const role=(talentRole==='cohost')?'cohost':'host';
+  const isCoHost=role==='cohost';
   const s=G.stations.find(st=>st.id===sid);
   if(!s)return;
   const sd=s.prog[slot];
@@ -26037,7 +27182,12 @@ function openContract(sid, slot){
     }
     openHire(sid);return;
   }
-  const t=sd.talent;
+  if(isCoHost&&!slotTalentB(sd)){
+    showToast('No co-host in this daypart.','warn');
+    return;
+  }
+  const primaryHost=sd.talent;
+  const t=isCoHost?slotTalentB(sd):primaryHost;
   const slotQContract=Math.round(sd?.quality||0);
   const cyr=Math.round((t.cyr||0)*10)/10;
   const contractFit=talentDestFormatFitSummary(t,s.format);
@@ -26074,7 +27224,7 @@ function openContract(sid, slot){
   let ext3Annual=ext3Cost;
   // Counter-poach: extension asks can fall below the rival floor — ensure at least one option meets retention minimum.
   const rpp=s._rivalPoachPending;
-  if(rpp&&rpp.slot===slot&&rpp.talentId===t.id){
+  if(!isCoHost&&rpp&&rpp.slot===slot&&rpp.talentId===primaryHost.id){
     const requiredMin=Math.round((rpp.offerSalary*0.95)/500)*500;
     if(ext1Cost<requiredMin)ext1Cost=requiredMin;
     if(ext2Cost<requiredMin)ext2Cost=requiredMin;
@@ -26084,7 +27234,7 @@ function openContract(sid, slot){
     if(ext3Cost!=null)ext3Annual=ext3Cost;
   }
   // Daypart promotion (cheap slot → premium slot): bump toward slot-appropriate pay without exploding asks
-  if(t._underpaidInRole||t._slotPromotionPendingRenewal){
+  if(!isCoHost&&(t._underpaidInRole||t._slotPromotionPendingRenewal)){
     const slotTier=(t.quality||30)<42?'entry':(t.quality||30)<68?'mid':'star';
     const midSal=Math.round(salInfl((SAL[slot]?.[slotTier]?.[1]||SAL[slot]?.mid?.[1]||20000),G.year)/500)*500;
     const entrySal=Math.round(salInfl((SAL[slot]?.[slotTier]?.[0]||8000),G.year)/500)*500;
@@ -26106,13 +27256,13 @@ function openContract(sid, slot){
   // Bonus cost: one-time payment, boosts morale by 15-25 pts
   const bonusCost=Math.round(t.salary*rnd(0.08,0.15)/500)*500;
 
-  // Poach: find a rival's talent in same slot with higher quality
-  const poachCandidates=G.stations.filter(st=>st&&!st._bpSlotDeferred&&!st.isPlayer&&!st.isPublic&&st.rat?.share>0.01)
+  // Poach: find a rival's talent in same slot with higher quality (primary host only)
+  const poachCandidates=!isCoHost?G.stations.filter(st=>st&&!st._bpSlotDeferred&&!st.isPlayer&&!st.isPublic&&st.rat?.share>0.01)
     .filter(st=>!skipRivalPoachDuplicateSimulcastLeg(st, slot, G))
     .map(st=>({st, sd:st.prog[slot]}))
     .filter(({sd:rsd})=>rsd?.talent&&rsd.talent.quality>t.quality*0.75)
     .sort((a,b)=>b.sd.talent.quality-a.sd.talent.quality)
-    .slice(0,3);
+    .slice(0,3):[];
 
   // Morale factors explanation
   const morFactors=[];
@@ -26122,7 +27272,7 @@ function openContract(sid, slot){
   const fmtNorm=FM[canonicalHitsFormatKey(s.format)]?.sp||14;
   if(spotLoad>fmtNorm*1.2)morFactors.push('heavy spot load is wearing on staff');
 
-  const poachRows=poachCandidates.length?poachCandidates.map(({st,sd:rsd})=>{
+  const poachRows=isCoHost?'':(poachCandidates.length?poachCandidates.map(({st,sd:rsd})=>{
     const rt=rsd.talent;
     const fit=Math.round((rt.formatFit[s.format]||.3)*100);
     const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';
@@ -26145,7 +27295,7 @@ function openContract(sid, slot){
         <button class="abt b" style="margin-top:6px;font-size:15px;padding:5px 10px;${canAfford?'':'opacity:.4;pointer-events:none'}" onclick="doPoach('${sid}','${slot}','${st.id}')">MAKE OFFER</button>
       </div>
     </div>`;
-  }).join(''):`<p style="color:var(--mut);font-size:15px;font-style:italic">No viable poach targets in this daypart right now.</p>`;
+  }).join(''):`<p style="color:var(--mut);font-size:15px;font-style:italic">No viable poach targets in this daypart right now.</p>`);
 
   const contractStatus=cyr<=0
     ?`<span style="color:var(--red);font-family:var(--ft);font-size:15px">⚠ CONTRACT EXPIRED — negotiate now or risk losing them</span>`
@@ -26153,21 +27303,58 @@ function openContract(sid, slot){
     ?`<span style="color:var(--amb);font-family:var(--ft);font-size:15px">⚠ Contract expires next period — extend now to lock in this talent</span>`
     :`<span style="color:var(--mut);font-family:var(--ft);font-size:15px">${Math.ceil(cyr*2)} period${Math.ceil(cyr*2)!==1?'s':''} remaining (~${Math.ceil(cyr)} yr)</span>`;
 
-  const poach1yrMatchLabel=rpp&&rpp.slot===slot&&rpp.talentId===t.id
+  const poach1yrMatchLabel=!isCoHost&&rpp&&rpp.slot===slot&&rpp.talentId===primaryHost.id
     ?`<div style="font-size:13px;color:var(--grn);font-family:var(--ft);margin-top:2px">MATCH OFFER</div>`
     :'';
 
   const cStar=t.superstar===true?'★ ':'';
+  const trJs=isCoHost?'cohost':'host';
+  const contractTitle=isCoHost
+    ?`📋 CO-HOST CONTRACT — ${callDisplay(s)} ${SL[slot]}`
+    :`📋 TALENT CONTRACT — ${callDisplay(s)} ${SL[slot]}`;
+  const coHostPairNote=isCoHost
+    ?`<div class="ibox" style="margin-bottom:12px;line-height:1.5;font-size:14px;color:var(--off)">On-air with <strong>${rosterHtmlEsc(primaryHost.name)}</strong> in this slot — <strong>chemistry is tied to this pairing</strong> (not a permanent host–cohost link). Either chair can change independently.</div>`
+    :'';
+  let expireOrRemoveHtml='';
+  if(isCoHost){
+    expireOrRemoveHtml=
+      '<div class="to" style="flex:1;cursor:default;border-color:var(--red)">'+
+      '<div><div class="ton" style="color:var(--red)">Remove from show</div>'+
+      '<div style="font-size:14px;color:var(--mut);margin-top:4px">They leave this slot; pairing chemistry clears. The other on-air talent in this daypart stays.</div></div>'+
+      '<button class="abt d" style="font-size:15px" type="button" onclick="rosterFireCoHostPrompt(\''+sid+'\',\''+slot+'\',\'m-contract\')">REMOVE CO-HOST</button>'+
+      '</div>';
+  }else{
+    const fireBuy0=talentFireBuyout(t);
+    const canPay0=fireBuy0<=0||G.cash>=fireBuy0;
+    const cyrF0=t.cyr||0;
+    const fireBody0=fireBuy0>0
+      ?'Immediate termination. Buyout owed: <strong style="color:'+(canPay0?'var(--amb)':'var(--red)')+'">'+f$(fireBuy0)+'</strong> ('+cyrF0.toFixed(1)+' yrs × 60%).'+(canPay0?'':' <span style="color:var(--red)">Need '+f$(fireBuy0)+' — you have '+f$(G.cash)+'.</span>')
+      :'Immediate termination with <strong>no buyout</strong> — they leave now (not benched).';
+    const fireLbl0=fireBuy0>0?'FIRE ('+f$(fireBuy0)+')':'FIRE';
+    const fireHtml0=
+      '<div class="to" style="flex:1;cursor:default;border-color:var(--red)">'+
+      '<div><div class="ton" style="color:var(--red)">Fire Now</div>'+
+      '<div style="font-size:14px;color:var(--mut);margin-top:4px">'+fireBody0+'</div></div>'+
+      '<button class="abt d" style="font-size:15px" type="button" onclick="rosterFirePrompt(\''+sid+'\',\''+slot+'\',\'m-contract\')">'+fireLbl0+'</button>'+
+      '</div>';
+    expireOrRemoveHtml=
+      '<div class="to" style="flex:1;cursor:default;border-color:var(--red)">'+
+      '<div><div class="ton" style="color:var(--red)">Let Contract Expire</div>'+
+      '<div style="font-size:14px;color:var(--mut);margin-top:4px">Don\'t renew. '+rosterHtmlEsc(t.name)+' leaves when contract ends. Slot goes to '+rosterHtmlEsc(vacantLabel(s.format,slot,s).toLowerCase())+'.</div></div>'+
+      '<button class="abt d" style="font-size:15px" onclick="doLetExpire(\''+sid+'\',\''+slot+'\')">LET EXPIRE</button>'+
+      '</div>'+fireHtml0;
+  }
   document.getElementById('contractb').innerHTML=`
-    <div class="msh" style="margin-bottom:12px">📋 TALENT CONTRACT — ${callDisplay(s)} ${SL[slot]}</div>
-    ${(()=>{const rp=s._rivalPoachPending;if(!rp||rp.slot!==slot||rp.talentId!==t.id)return'';const riv=G.stations.find(st=>st.id===rp.rivalId);const minM=Math.round(rp.offerSalary*0.95/500)*500;return`<div class="ibox" style="border-color:var(--amb);margin-bottom:12px"><strong style="color:var(--amb)">⚡ RIVAL OFFER / COUNTER-POACH</strong><br><span style="font-size:14px;color:var(--off)"><strong>${riv?riv.callLetters:'Rival'}</strong> offered <strong>${f$(rp.offerSalary)}</strong>/yr. Sign at <strong>≥${f$(minM)}</strong>/yr to retain ${t.name} next period.</span></div>`;})()}
-    ${t._slotPromotionPendingRenewal?`<div class="ibox" style="border-color:var(--amb);margin-bottom:12px;line-height:1.5"><strong style="color:var(--amb)">Daypart change — not a “duplicate” renewal</strong><br><span style="font-size:14px;color:var(--off)">${t.name} is now in <strong>${SL[slot]}</strong>${t._promotionFromSlot?` (moved from <strong>${SL[t._promotionFromSlot]}</strong>)`:''}. That’s a higher-leverage role, so their old rate doesn’t carry — the sim requires a <strong>new deal priced for this daypart</strong>. Seeing another negotiation right after you extended them is normal.</span></div>`:''}
+    <div class="msh" style="margin-bottom:12px">${contractTitle}</div>
+    ${coHostPairNote}
+    ${(()=>{if(isCoHost)return'';const rp=s._rivalPoachPending;if(!rp||rp.slot!==slot||rp.talentId!==primaryHost.id)return'';const riv=G.stations.find(st=>st.id===rp.rivalId);const minM=Math.round(rp.offerSalary*0.95/500)*500;return`<div class="ibox" style="border-color:var(--amb);margin-bottom:12px"><strong style="color:var(--amb)">⚡ RIVAL OFFER / COUNTER-POACH</strong><br><span style="font-size:14px;color:var(--off)"><strong>${riv?riv.callLetters:'Rival'}</strong> offered <strong>${f$(rp.offerSalary)}</strong>/yr. Sign at <strong>≥${f$(minM)}</strong>/yr to retain ${primaryHost.name} next period.</span></div>`;})()}
+    ${!isCoHost&&primaryHost._slotPromotionPendingRenewal?`<div class="ibox" style="border-color:var(--amb);margin-bottom:12px;line-height:1.5"><strong style="color:var(--amb)">Daypart change — not a “duplicate” renewal</strong><br><span style="font-size:14px;color:var(--off)">${primaryHost.name} is now in <strong>${SL[slot]}</strong>${primaryHost._promotionFromSlot?` (moved from <strong>${SL[primaryHost._promotionFromSlot]}</strong>)`:''}. That’s a higher-leverage role, so their old rate doesn’t carry — the sim requires a <strong>new deal priced for this daypart</strong>. Seeing another negotiation right after you extended them is normal.</span></div>`:''}
     ${(()=>{const sh=s.rat?.share||0;const q=t.quality||50;if(sh>0.12&&q>75)return`<div style="background:rgba(245,166,35,.10);border:1px solid var(--amb);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--amb)">📈 Strong station + top talent — expect a premium ask. They know their worth.</div>`;if(sh>0.08&&q>65)return`<div style="background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.3);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--off)">📊 Solid ratings give this talent negotiating leverage.</div>`;if(t.morale<50)return`<div style="background:rgba(220,50,50,.10);border:1px solid var(--red);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--red)">⚠ Low morale — they're unhappy and may ask for extra just to stay.</div>`;return''})()}
 
     <div class="ms2 contract-summary" style="margin-bottom:16px">
       <div class="sr"><span class="lb">Talent</span><span class="vl contract-talent-row" style="display:flex;align-items:center;gap:10px;text-align:left">${talentPortraitThumbHtml(t,'tp-contract-sm',`${callDisplay(s)} ${SL[slot]} · contract`)}<strong style="min-width:0">${cStar}${t.name}</strong></span></div>
       <div class="sr"><span class="lb">Talent rating</span><span class="vl ${qc(Math.round(t.quality))}">${Math.round(t.quality)}/100</span></div>
-      <div class="sr"><span class="lb">Slot quality</span><span class="vl" style="font-family:var(--fd)">${slotQContract}/100 <span style="color:var(--mut);font-size:14px">(${SL[slot]} · on-air score)</span> <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:6px" onclick="openTalentMetricsHelp('slotq')">?</button></span></div>
+      <div class="sr"><span class="lb">Slot quality</span><span class="vl" style="font-family:var(--fd)">${slotQContract}/100 <span style="color:var(--mut);font-size:14px">(${SL[slot]} · on-air score${isCoHost?' · shared with '+rosterHtmlEsc(primaryHost.name):''})</span> <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:6px" onclick="openTalentMetricsHelp('slotq')">?</button></span></div>
       <div class="sr"><span class="lb">Format fit</span><span class="vl"><span style="color:${contractFit.col};font-family:var(--fd)">${contractFit.words}</span><span style="color:var(--mut);font-size:14px;font-family:var(--ft)"> · ${rosterFmtLong(s)}</span></span></div>
       <div class="sr"><span class="lb">Morale</span><span class="vl" style="color:${morCol}">${morLabel} (${mor}) ${morFactors.length?'· '+morFactors[0]:''}</span></div>
       <div class="sr"><span class="lb">Tenure</span><span class="vl">${age} periods (${ageYrs} yrs at station)</span></div>
@@ -26178,8 +27365,8 @@ function openContract(sid, slot){
     ${t.superstar===true?`<div class="ibox" style="margin-bottom:16px;font-size:13px;color:var(--off);line-height:1.5;border-color:rgba(245,166,35,.35)"><strong style="color:var(--amb)">⭐ Superstar</strong> — Among the market's top on-air draws (blended talent + slot quality, with tenure). Boosts station impact; rivals may poach harder.</div>`:''}
 
     <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:16px">
-      <button type="button" class="abt" style="border-color:var(--amb);color:var(--amb);padding:10px 16px;font-size:14px;letter-spacing:0.06em" onclick="cm('m-contract');openManageTalent('${sid}')">OPEN MANAGE TALENT</button>
-      <span style="font-size:13px;color:var(--mut);line-height:1.45;max-width:440px">Roster, hiring, moves, transfers, bench, and fire — same station. Use <strong>Contract / Pay</strong> on Manage Talent to return here.</span>
+      <button type="button" class="abt" style="border-color:var(--amb);color:var(--amb);padding:10px 16px;font-size:14px;letter-spacing:0.06em" onclick="cm('m-contract');openManageTalentToDaypart('${sid}','${slot}')">OPEN MANAGE TALENT</button>
+      <span style="font-size:13px;color:var(--mut);line-height:1.45;max-width:440px">${isCoHost?'Full roster and pairing controls for this daypart.':'Roster, hiring, moves, transfers, bench, and fire — same station. Use <strong>Contract / Pay</strong> on Manage Talent to return here.'}</span>
     </div>
 
     <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:16px">
@@ -26189,19 +27376,19 @@ function openContract(sid, slot){
           <div><div class="ton">1-Year</div>${poach1yrMatchLabel}
           <div class="tost"><div><span class="tosl">SALARY</span><span class="tosv ${qc(70)}">${f$(ext1Annual)}/yr</span></div><div><span class="tosl">RAISE</span><span class="tosv warn">${Math.round((ext1Annual/t.salary-1)*100)}%</span></div></div>
           <div style="font-size:14px;color:var(--mut);margin-top:3px">Flexibility. Higher ask.</div></div>
-          <button class="cfm" style="font-size:15px;padding:8px" onclick="doExtend('${sid}','${slot}',1,${ext1Cost})" ${G.cash<ext1Cost/2?'disabled':''}>SIGN 1 YR</button>
+          <button class="cfm" style="font-size:15px;padding:8px" onclick="doExtend('${sid}','${slot}',1,${ext1Cost},'${trJs}')" ${G.cash<ext1Cost/2?'disabled':''}>SIGN 1 YR</button>
         </div>
         <div class="to" style="flex:1;cursor:default">
           <div><div class="ton">2-Year</div>
           <div class="tost"><div><span class="tosl">SALARY</span><span class="tosv ${qc(70)}">${f$(ext2Annual)}/yr</span></div><div><span class="tosl">RAISE</span><span class="tosv warn">${Math.round((ext2Annual/t.salary-1)*100)}%</span></div></div>
           <div style="font-size:14px;color:var(--mut);margin-top:3px">Balance. Moderate discount.</div></div>
-          <button class="cfm" style="font-size:15px;padding:8px" onclick="doExtend('${sid}','${slot}',2,${ext2Cost})" ${G.cash<ext2Cost/2?'disabled':''}>SIGN 2 YR</button>
+          <button class="cfm" style="font-size:15px;padding:8px" onclick="doExtend('${sid}','${slot}',2,${ext2Cost},'${trJs}')" ${G.cash<ext2Cost/2?'disabled':''}>SIGN 2 YR</button>
         </div>
         <div class="to" style="flex:1;cursor:default;${ext3Cost?'':'opacity:.45;pointer-events:none'}">
           <div><div class="ton">3-Year</div>
           <div class="tost"><div><span class="tosl">SALARY</span><span class="tosv ${qc(70)}">${ext3Cost?f$(ext3Annual)+'/yr':'N/A'}</span></div><div><span class="tosl">RAISE</span><span class="tosv good">${ext3Cost?Math.round((ext3Annual/t.salary-1)*100)+'%':'—'}</span></div></div>
           <div style="font-size:14px;color:var(--mut);margin-top:3px">${ext3Cost?'Biggest discount. Morale required.':'Morale too low to sign long-term.'}</div></div>
-          <button class="cfm" style="font-size:15px;padding:8px" onclick="doExtend('${sid}','${slot}',3,${ext3Cost||0})" ${(!ext3Cost||G.cash<(ext3Cost||0)/2)?'disabled':''}>SIGN 3 YR</button>
+          <button class="cfm" style="font-size:15px;padding:8px" onclick="doExtend('${sid}','${slot}',3,${ext3Cost||0},'${trJs}')" ${(!ext3Cost||G.cash<(ext3Cost||0)/2)?'disabled':''}>SIGN 3 YR</button>
         </div>
       </div>
 
@@ -26212,40 +27399,28 @@ function openContract(sid, slot){
             <div style="font-size:14px;color:var(--mut);margin-top:4px">One-time cash bonus — boosts morale +15 to +20 pts. No contract change.</div>
             <div style="font-family:var(--fd);color:var(--amb);margin-top:8px">${f$(bonusCost)}</div>
           </div>
-          <button class="abt g" style="font-size:15px" onclick="doBonus('${sid}','${slot}',${bonusCost})" ${G.cash<bonusCost?'disabled':''}>PAY BONUS</button>
+          <button class="abt g" style="font-size:15px" onclick="doBonus('${sid}','${slot}',${bonusCost},'${trJs}')" ${G.cash<bonusCost?'disabled':''}>PAY BONUS</button>
         </div>
-        <div class="to" style="flex:1;cursor:default;border-color:var(--red)">
-          <div><div class="ton" style="color:var(--red)">Let Contract Expire</div>
-          <div style="font-size:14px;color:var(--mut);margin-top:4px">Don't renew. ${t.name} leaves when contract ends. Slot goes to ${vacantLabel(s.format,slot,s).toLowerCase()}.</div></div>
-          <button class="abt d" style="font-size:15px" onclick="doLetExpire('${sid}','${slot}')">LET EXPIRE</button>
-        </div>
-        ${(()=>{const fireBuy=talentFireBuyout(t);const canPay=fireBuy<=0||G.cash>=fireBuy;const cyrF=t.cyr||0;
-        const fireBody=fireBuy>0
-          ?`Immediate termination. Buyout owed: <strong style="color:${canPay?'var(--amb)':'var(--red)'}">${f$(fireBuy)}</strong> (${cyrF.toFixed(1)} yrs × 60%).${canPay?'':' <span style="color:var(--red)">Need '+f$(fireBuy)+' — you have '+f$(G.cash)+'.</span>'}`
-          :`Immediate termination with <strong>no buyout</strong> — they leave now (not benched).`;
-        const fireLbl=fireBuy>0?`FIRE (${f$(fireBuy)})`:'FIRE';
-        return`<div class="to" style="flex:1;cursor:default;border-color:var(--red)">
-          <div><div class="ton" style="color:var(--red)">Fire Now</div>
-          <div style="font-size:14px;color:var(--mut);margin-top:4px">${fireBody}</div></div>
-          <button class="abt d" style="font-size:15px" type="button" onclick="rosterFirePrompt('${sid}','${slot}','m-contract')">${fireLbl}</button>
-        </div>`;})()}
+        ${expireOrRemoveHtml}
       </div>
     </div>
 
-    <div style="margin-bottom:16px">
+    ${isCoHost?'':`<div style="margin-bottom:16px">
       <div class="msh" style="margin-bottom:8px">POACH A RIVAL</div>
       ${poachRows}
-    </div>
+    </div>`}
 
     <button class="cnl" onclick="cm('m-contract')">CLOSE</button>`;
   om('m-contract');
 }
 
-function doExtend(sid, slot, years, newSalary){
+function doExtend(sid, slot, years, newSalary, talentRole){
+  const role=talentRole==='cohost'?'cohost':'host';
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  const t=s.prog[slot]?.talent;if(!t)return;
+  const sd=s.prog[slot];if(!sd)return;
+  const t=role==='cohost'?slotTalentB(sd):sd.talent;if(!t)return;
   const rp=s._rivalPoachPending;
-  if(rp&&rp.slot===slot&&t.id===rp.talentId){
+  if(role==='host'&&rp&&rp.slot===slot&&t.id===rp.talentId){
     const minSal=Math.round((rp.offerSalary||0)*0.95/500)*500;
     if(newSalary>=minSal){
       delete s._rivalPoachPending;
@@ -26256,24 +27431,30 @@ function doExtend(sid, slot, years, newSalary){
   t.salary=newSalary;
   t.cyr=years;
   t.morale=Math.min(100,t.morale+10); // relief at being signed
-  t._underpaidInRole=false;
-  t._slotPromotionPendingRenewal=false;
-  t._promotionFromSlot=undefined;
-  G.news.unshift({v:'LOW',t:`📋 ${t.name} signs ${years}-year extension at ${s.callLetters} — ${f$(newSalary)}/yr.`,y:G.year,p:G.period});
-  MP.action('extend',{sid,slot,years,newSalary});
+  if(role==='host'){
+    t._underpaidInRole=false;
+    t._slotPromotionPendingRenewal=false;
+    t._promotionFromSlot=undefined;
+  }
+  const roleBit=role==='cohost'?' co-host':'';
+  G.news.unshift({v:'LOW',t:`📋 ${t.name} signs ${years}-year extension${roleBit} at ${s.callLetters} — ${f$(newSalary)}/yr.`,y:G.year,p:G.period});
+  MP.action('extend',{sid,slot,years,newSalary,talentRole:role==='cohost'?'cohost':undefined});
   cm('m-contract');renderAll();
 }
 
-function doBonus(sid, slot, amount){
+function doBonus(sid, slot, amount, talentRole){
+  const role=talentRole==='cohost'?'cohost':'host';
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  const t=s.prog[slot]?.talent;if(!t)return;
+  const sd=s.prog[slot];if(!sd)return;
+  const t=role==='cohost'?slotTalentB(sd):sd.talent;if(!t)return;
   if(G.cash<amount)return;
   G.cash-=amount;
   if(MP.mode==='live'){if(!G._playerCash)G._playerCash={};G._playerCash[MP.playerId]=G.cash;MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash});}
   const boost=Math.round(rnd(15,20));
   t.morale=Math.min(100,t.morale+boost);
-  G.news.unshift({v:'LOW',t:`💰 ${t.name} receives ${f$(amount)} bonus at ${s.callLetters} — morale up ${boost} pts.`,y:G.year,p:G.period});
-  MP.action('bonus',{sid,slot,amount,boost});
+  const roleBit=role==='cohost'?' (co-host)':'';
+  G.news.unshift({v:'LOW',t:`💰 ${t.name} receives ${f$(amount)} bonus${roleBit} at ${s.callLetters} — morale up ${boost} pts.`,y:G.year,p:G.period});
+  MP.action('bonus',{sid,slot,amount,boost,talentRole:role==='cohost'?'cohost':undefined});
   cm('m-contract');renderAll();
 }
 
@@ -26365,6 +27546,7 @@ function renderAll(){
     }
     return;
   }
+  try{ migrateLegacyCoHostKeysToTalentB(G); }catch(_){}
   if(MP.mode!=='live'){
     if(!G._playerLoans) G._playerLoans = {};
     if(!G._playerLoans[0]) G._playerLoans[0] = G.loans || [];
@@ -26428,9 +27610,13 @@ function rHdr(){
     ab.innerHTML=`⚠ Game state appears incomplete. <a href="#" onclick="openScenSelect(getLocalSave());return false;" style="color:var(--amb);font-weight:bold">← Back to scenario select</a> &nbsp;|&nbsp; <a href="#" onclick="wlClearAutosaveAndReload();return false;" style="color:var(--red)">🗑 Clear save &amp; restart</a>`;
     return;
   }
-  const expiring=myPS().flatMap(s=>Object.entries(s.prog)
-    .filter(([,sd])=>sd?.talent&&(sd.talent.cyr||0)<=0)
-    .map(([sl,sd])=>`${s.callLetters} ${SL[sl]} (${sd.talent.name})`));
+  const expiring=myPS().flatMap(s=>Object.entries(s.prog).flatMap(([sl,sd])=>{
+    const bits=[];
+    if(sd?.talent&&(sd.talent.cyr||0)<=0)bits.push(`${s.callLetters} ${SL[sl]} (${sd.talent.name})`);
+    const chEx=slotTalentB(sd);
+    if(chEx&&(chEx.cyr||0)<=0)bits.push(`${s.callLetters} ${SL[sl]} co-host (${chEx.name})`);
+    return bits;
+  }));
   const daypartReneg=myPS().flatMap(s=>Object.entries(s.prog)
     .filter(([,sd])=>sd?.talent&&sd.talent._slotPromotionPendingRenewal&&(sd.talent.cyr||0)>0)
     .map(([sl,sd])=>`${s.callLetters} ${SL[sl]} (${sd.talent.name})`));
@@ -26602,7 +27788,7 @@ function rStns(){
     const div=document.createElement('div');
     div.className=`sc ${stnEbitda>=0?'profit':'loss'}`;
     const _simSrc=simulcastProgrammingSource(s);
-    const slotsLegend=`<div class="slots-lineup-meta"><span class="slots-legend-title">Lineup</span><button type="button" class="abt" style="padding:4px 10px;font-size:11px;letter-spacing:0.04em" onclick="openStationLineupHelp()">What is this?</button></div><div class="slots-lineup-hdr"><div class="slots-lineup-grid slots-lineup-grid--hdr"><span>Daypart</span><span class="sl-h-pad" aria-hidden="true"></span><span>On-air host</span><span class="slots-hdr-contract" title="Contract: MOVED after a daypart change (new deal needed); EXP when expired or expiring; empty when fine. ⚡ beside a host means a rival is courting them — open Contract to match.">Contract</span><span class="slots-hdr-mor">Morale</span><span class="slots-hdr-pay">Pay / pd</span><span class="slots-hdr-tal">Talent</span><span class="slots-hdr-sq">Slot Q</span></div></div>`;
+    const slotsLegend=`<div class="slots-lineup-meta"><span class="slots-legend-title">Lineup</span><button type="button" class="abt" style="padding:4px 10px;font-size:11px;letter-spacing:0.04em" onclick="openStationLineupHelp()">What is this?</button></div><div class="slots-lineup-hdr"><div class="slots-lineup-grid slots-lineup-grid--hdr"><span>Daypart</span><span class="sl-h-pad" aria-hidden="true"></span><span>On-air talent</span><span class="slots-hdr-contract" title="Contract: MOVED after a daypart change (new deal needed); EXP when expired or expiring; empty when fine. ⚡ beside a host means a rival is courting them — open Contract to match.">Contract</span><span class="slots-hdr-mor">Morale</span><span class="slots-hdr-pay">Pay / pd</span><span class="slots-hdr-tal">Talent</span><span class="slots-hdr-sq">Slot Q</span></div></div>`;
     const slrows=slotsLegend+DAYPART_SLOTS.map(k=>{
       const lbl=SL[k];
       const sd=s.prog[k],tn=sd?.talent?.name,q=Math.round(sd?.quality||0),c2=qc(q);
@@ -26638,7 +27824,20 @@ function rStns(){
       const cyrCell=cyrLbl
         ?`<span class="sl-cell-cyr ${cyrCls}" title="${rosterHtmlEsc(cyrTitle||poachTitle)}">${cyrLbl}</span>`
         :'<span class="sl-cell-cyr" aria-hidden="true"></span>';
-      return `<div class="slr slots-lineup-grid${poachRowCls}"><span class="sl-cell-day sln">${lbl}</span><span class="sl-cell-thumb">${talentPortraitThumbHtml(t,'tp-sl',`${callDisplay(s)} · ${lbl}`)}</span><span class="sl-cell-host slt clickable" onclick="openContract('${s.id}','${k}')">${poachIcon}${starT}${tn}</span>${cyrCell}<span class="sl-cell-mor"><svg class="mor-bar" viewBox="0 0 28 4" aria-label="Morale"><rect width="28" height="4" fill="rgba(255,255,255,.1)" rx="2"/><rect width="${Math.round(mor*.28)}" height="4" fill="${morCol}" rx="2"/></svg></span><span class="sl-cell-pay slsal">${f$Pd(t.salary/2)}/p</span><span class="sl-cell-tal stal" title="Talent rating">${talR}</span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Slot quality (0–100)">${q}</span></div>`;
+      const hostRow=`<div class="slr slots-lineup-grid${poachRowCls}"><span class="sl-cell-day sln">${lbl}</span><span class="sl-cell-thumb">${talentPortraitThumbHtml(t,'tp-sl',`${callDisplay(s)} · ${lbl}`)}</span><span class="sl-cell-host slt clickable" onclick="openContract('${s.id}','${k}')">${poachIcon}${starT}${tn}</span>${cyrCell}<span class="sl-cell-mor"><svg class="mor-bar" viewBox="0 0 28 4" aria-label="Morale"><rect width="28" height="4" fill="rgba(255,255,255,.1)" rx="2"/><rect width="${Math.round(mor*.28)}" height="4" fill="${morCol}" rx="2"/></svg></span><span class="sl-cell-pay slsal">${f$Pd(t.salary/2)}/p</span><span class="sl-cell-tal stal" title="Talent rating">${talR}</span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Slot quality (0–100)">${q}</span></div>`;
+      const ch=slotTalentB(sd);
+      if(!ch||!stationCardCoHostLineupVisible(s,k,_simSrc))return hostRow;
+      const chCyr=Math.round((ch.cyr||0)*10)/10;
+      const chMor=ch.morale||65;
+      const chMorCol=chMor>=70?'var(--grn)':chMor>=45?'var(--amb)':'var(--red)';
+      const chTalR=Math.round(ch.quality||0);
+      const chStar=ch.superstar===true?'★ ':'';
+      const chCyrCls=chCyr<=0?'cyr-exp':chCyr<=0.5?'cyr-warn':'cyr-ok';
+      const chCyrLbl=chCyr<=0?'EXP':chCyr<=0.5?'EXP⬆':'';
+      const chCyrTitle=chCyr<=0?'Co-host contract expired — extend or they may leave.':chCyr<=0.5?'Co-host contract expires next period.':'';
+      const chCyrCell=chCyrLbl?`<span class="sl-cell-cyr ${chCyrCls}" title="${rosterHtmlEsc(chCyrTitle)}">${chCyrLbl}</span>`:'<span class="sl-cell-cyr" aria-hidden="true"></span>';
+      const chRow=`<div class="slr slots-lineup-grid slr--cohost"><span class="sl-cell-day sln" title="${lbl} · co-host"><span style="font-size:11px;color:var(--mut);letter-spacing:.08em">CO-HOST</span></span><span class="sl-cell-thumb">${talentPortraitThumbHtml(ch,'tp-sl',`${callDisplay(s)} · ${lbl} · co-host`)}</span><span class="sl-cell-host slt clickable" onclick="openContract('${s.id}','${k}','cohost')">${chStar}${rosterHtmlEsc(ch.name)}</span>${chCyrCell}<span class="sl-cell-mor"><svg class="mor-bar" viewBox="0 0 28 4" aria-label="Morale"><rect width="28" height="4" fill="rgba(255,255,255,.1)" rx="2"/><rect width="${Math.round(chMor*.28)}" height="4" fill="${chMorCol}" rx="2"/></svg></span><span class="sl-cell-pay slsal">${f$Pd(ch.salary/2)}/p</span><span class="sl-cell-tal stal" title="Talent rating">${chTalR}</span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}" title="Shared slot quality (0–100)">${q}</span></div>`;
+      return hostRow+chRow;
     }).join('');
     const qc2=qc(op.oq);
     const _logoThumb=cosmeticLogoThumbHtmlForStation(s,{});
