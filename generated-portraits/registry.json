@@ -17816,6 +17816,33 @@
       "variationSeed": "7775808bfc1e0489",
       "source": "library",
       "libraryAsset": "library/male/1980s/stock-male-1980s-2-1982.png"
+    },
+    "joyce-bowman-1985-48685504-bd06-4550-a3f5-": {
+      "imageUrl": "/generated-portraits/library/female/1980s/stock-female-1980s-24-1983.png",
+      "fileName": "library/female/1980s/stock-female-1980s-24-1983.png",
+      "eraBucket": "1980s",
+      "wardrobeType": "oddball",
+      "expressionType": "forcedSmile",
+      "settingType": "plainBackdrop",
+      "identityKey": "joyce bowman|1985",
+      "name": "Joyce Bowman",
+      "firstHireYear": 1985,
+      "gender": "female",
+      "talentId": "i6bgay57",
+      "heritageId": "southAsian",
+      "heritagePrompt": "South Asian American radio host — South Asian features with natural light brown to brown skin",
+      "attractivenessAnchor": "Plain looks: if this were stock art, the label would be “generic adult,” not “model.”",
+      "facialDetail": "strong bone structure without glamor — weathered or plain, not delicate or model-pretty",
+      "demeanor": "nervous polite expression",
+      "ageRange": "40s",
+      "bodyType": "slim",
+      "faceShape": "long",
+      "hairStyle": "thick curly hair",
+      "personalStyle": "conservative",
+      "gameplayNotes": "",
+      "variationSeed": "0a6c828c05bbdd24",
+      "source": "library",
+      "libraryAsset": "library/female/1980s/stock-female-1980s-24-1983.png"
     }
   }
 }
