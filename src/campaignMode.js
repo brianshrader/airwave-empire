@@ -88,10 +88,11 @@
       survivalThreshold: 44,
       failureThreshold: 32,
       cashMult: 1.0,
-      corporateCashGrant: 200000,
+      /** Atlanta large-market P&L is punishing vs Wichita/Nashville; extra grant is campaign-only runway (scenario cash unchanged). */
+      corporateCashGrant: 285000,
       evaluationGraceReviews: 1,
       corporateCommitmentNote:
-        'Ownership backed this promotion with a one-time operating budget — large-market salvage needs more than good intentions; you get enough cash to survive early losses while you execute.',
+        'Ownership backed this promotion with a one-time operating budget — large-market salvage needs more than good intentions; you get enough cash to survive early losses while you execute, with a bit more bridge than the last Atlanta posting so the chair stays playable.',
       starterPlayerBpPatch: { type: 'AM', fmt: 'SOUL_RNB', pw: '10kw', str: 'strong' },
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 80 },
       flavor:
@@ -111,8 +112,8 @@
       failureThreshold: 33,
       /** Scenario starting cash only (no mult bump); corporate grant is the main one-time runway (see applyAssignmentToGame). */
       cashMult: 1.0,
-      /** One-time corporate funding for rebuild / format work — GM layer only; does not change core station economy. */
-      corporateCashGrant: 100000,
+      /** Tier 3 + 18-period contract: larger-market burn needs more day-one cash than the old $100k grant. */
+      corporateCashGrant: 290000,
       /**
        * First N formal GM reviews use turnaround patience (see gmMode.js): trajectory and spend are judged more like a rebuild,
        * not like a mature cash cow. After N reviews, standard corporate discipline applies.
@@ -138,7 +139,8 @@
       survivalThreshold: 40,
       failureThreshold: 35,
       cashMult: 1.05,
-      corporateCashGrant: 110000,
+      /** Tier 4 + 22 periods: major-market ops scale — extra grant only (scenario cash unchanged). */
+      corporateCashGrant: 330000,
       evaluationGraceReviews: 1,
       corporateCommitmentNote:
         'Promotion to a major-market chair included limited bridge funding — corporate expects discipline, but they will not pretend an underfunded GM can fix a broken cluster overnight.',
@@ -159,7 +161,8 @@
       survivalThreshold: 43,
       failureThreshold: 37,
       cashMult: 1.08,
-      corporateCashGrant: 125000,
+      /** Tier 5 flagship: top-market economics need a credible opening bankroll (campaign-only). */
+      corporateCashGrant: 400000,
       evaluationGraceReviews: 1,
       corporateCommitmentNote:
         'Even at the flagship, the group funded transition support — you are here to win, not to run out of cash before the first books settle.',

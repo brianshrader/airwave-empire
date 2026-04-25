@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My account — Airwave Empire</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body { background: #0a0a0a; color: #f3efe6; }
+    .gold { color: #d89b2b; }
+    .gold-bg { background: #d89b2b; color: #111; }
+    .panel {
+      background: linear-gradient(180deg, rgba(35,35,35,.95), rgba(15,15,15,.95));
+      border: 1px solid rgba(216,155,43,.28);
+      box-shadow: 0 0 0 1px rgba(216,155,43,.06) inset;
+    }
+    .gridline { border-color: rgba(216,155,43,.18); }
+    /* Clerk UserProfile needs room */
+    #wl-account-clerk { min-height: 480px; }
+  </style>
+  <script type="module" crossorigin src="/assets/account-C_z74saF.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/clerk-JAgU7T-D.js">
+</head>
+<body class="antialiased">
+  <header class="border-b border-stone-700/80">
+    <div class="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between flex-wrap gap-4">
+      <a href="/" class="text-2xl md:text-3xl font-black tracking-[0.18em] uppercase gold">Airwave Empire</a>
+      <nav class="flex items-center gap-4 md:gap-6 text-sm uppercase tracking-[0.14em] text-stone-300 flex-wrap">
+        <a href="/" class="hover:text-white">Home</a>
+        <a href="/#pricing" class="hover:text-white">Pricing</a>
+        <a href="/play.html" class="hover:text-white">Play</a>
+        <a href="/account.html" class="text-amber-200/90 font-semibold">Account</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-6 py-10 md:py-14">
+    <p class="gold uppercase tracking-[0.2em] text-sm mb-2">Clerk</p>
+    <h1 class="text-3xl md:text-4xl font-black uppercase tracking-tight">My account</h1>
+    <p class="mt-3 text-stone-400 text-base max-w-2xl leading-relaxed">
+      Profile, security, and <strong class="text-stone-200">subscription &amp; billing</strong> (upgrade, downgrade, payment method) when Clerk Billing is enabled.
+    </p>
+    <div class="mt-6">
+      <button
+        type="button"
+        id="wl-account-signout"
+        class="hidden text-sm uppercase tracking-[0.14em] text-stone-300 border border-stone-600 rounded-lg px-4 py-2 hover:bg-stone-800/80 hover:text-stone-100"
+      >
+        Sign out
+      </button>
+    </div>
+
+    <div class="panel rounded-2xl p-4 sm:p-6 mt-8">
+      <div id="wl-account-clerk" class="w-full"></div>
+      <p id="wl-account-no-key" class="text-stone-500 text-sm hidden">
+        Set <code class="text-amber-200/80">VITE_CLERK_PUBLISHABLE_KEY</code> in <code class="text-amber-200/80">.env.local</code> and restart Vite.
+      </p>
+    </div>
+  </main>
+
+  <footer class="border-t border-stone-800 mt-12 py-8 text-center text-stone-500 text-xs uppercase tracking-[0.12em]">
+    <a href="/legal/terms.html" class="hover:text-stone-300">Terms</a>
+    <span class="mx-2">·</span>
+    <a href="/legal/privacy.html" class="hover:text-stone-300">Privacy</a>
+    <span class="mx-2">·</span>
+    <a href="/legal/contact.html" class="hover:text-stone-300">Contact</a>
+  </footer>
+
+</body>
+</html>

@@ -20,6 +20,8 @@ const {
   createAndPollSunoJingle,
   downloadAudioUrl,
 } = require('./services/sunoJingleProvider');
+const { tryConsume } = require('./aiUsageStore');
+const { requireClerkUserIdForAi, requirePlanSlugOr503, tryConsumeQuota } = require('./aiQuotaHttp');
 
 const GENERATED_DIR = path.join(__dirname, '..', 'generated-jingles');
 
@@ -244,7 +246,7 @@ function mountJingleRoutes(app) {
     });
   });
 
-  app.post('/api/generate-station-jingle', (req, res) => {
+  app.post('/api/generate-station-jingle', async (req, res) => {
     if (!sunoConfigured()) {
       return res.status(503).json({
         ok: false,
@@ -263,6 +265,11 @@ function mountJingleRoutes(app) {
       return res.status(400).json({ ok: false, error: verrors.join(' ') });
     }
 
+    const clerkUserId = await requireClerkUserIdForAi(req, res);
+    if (!clerkUserId) return;
+    const planSlug = await requirePlanSlugOr503(res, clerkUserId);
+    if (planSlug == null) return;
+
     const stationId = String(body.stationId).trim();
     const audienceHint = sanitizeJingleSonicHint(body.audienceHint, 100);
     const positionHint = sanitizeJingleSonicHint(body.positionHint, 140);
@@ -279,6 +286,9 @@ function mountJingleRoutes(app) {
       positionHint,
     };
     const sunoArgs = buildSunoJingleArgs(sunoArgPayload);
+
+    const allowed = await tryConsumeQuota(res, planSlug, 'jingle', tryConsume, clerkUserId);
+    if (!allowed) return;
 
     const stamp = Date.now();
     const h = crypto.createHash('sha256').update(JSON.stringify(sunoArgs) + stamp).digest('hex').slice(0, 10);

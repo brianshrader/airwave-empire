@@ -3,6 +3,7 @@
  */
 import './amFccRules.js';
 import { Clerk } from '@clerk/clerk-js';
+import { marketIdsForClerkPlanSlug, syncClerkPlanMarkets } from './billingEntitlements.js';
 
 /** Public URL of the Node game server (Socket.io + /api). Vite: .env VITE_GAME_SERVER_URL; or meta on play.html. */
 let gameServerUrl = import.meta.env?.VITE_GAME_SERVER_URL?.trim?.() ?? '';
@@ -177,7 +178,27 @@ function mountClerkLobbyComponents(clerk) {
   if (!host) return;
   if (!shouldMountClerkLobby(clerk)) {
     clearClerkHost(clerk, host);
-    __wlClerkLobbyMountKind = null;
+    // When `requireClerk` is on, we avoid mounting the full SignIn widget here (duplicate Turnstile vs #wl-solo-clerk-mount).
+    // After sign-out from the UserButton, the solo gate also shows SignIn — but the MP overlay can still look "empty."
+    // Offer a single redirect so the lobby is never a blank box.
+    if (requireClerk && clerk && !clerk.isSignedIn) {
+      const after = playAfterAuthUrl();
+      const go = () => {
+        try {
+          const u = clerk.buildSignInUrl?.({
+            forceRedirectUrl: after,
+            fallbackRedirectUrl: after,
+          });
+          if (u) window.location.assign(u);
+        } catch (e) {
+          console.warn('[Clerk] buildSignInUrl failed:', e);
+        }
+      };
+      host.innerHTML = `<button type="button" class="abt" id="wl-mp-clerk-fallback-signin" style="padding:10px 16px;letter-spacing:1px">Sign in</button>`;
+      const btn = host.querySelector('#wl-mp-clerk-fallback-signin');
+      if (btn) btn.addEventListener('click', go, { once: true });
+    }
+    __wlClerkLobbyMountKind = 'fallback';
     return;
   }
   const wantKind = clerk.isSignedIn ? 'user' : 'signin';
@@ -245,6 +266,24 @@ if (!publishableKey) {
     window.Clerk = clerk;
     window.__wlClerkLoaded = true;
 
+    try {
+      await syncClerkPlanMarkets(clerk);
+    } catch (e) {
+      console.warn('[Clerk billing] initial sync failed:', e?.message || e);
+      window.__WL_CLERK_PLAN_SLUG = 'free_user';
+      window.__WL_PLAN_MARKET_IDS = marketIdsForClerkPlanSlug('free_user');
+    }
+
+    let __wlPlanSyncTimer = null;
+    const scheduleClerkPlanSync = () => {
+      clearTimeout(__wlPlanSyncTimer);
+      __wlPlanSyncTimer = setTimeout(() => {
+        syncClerkPlanMarkets(clerk).catch((err) =>
+          console.warn('[Clerk billing] sync failed:', err?.message || err),
+        );
+      }, 250);
+    };
+
     let meta = document.querySelector('meta[name="wl-clerk-publishable-key"]');
     if (!meta) {
       meta = document.createElement('meta');
@@ -257,6 +296,7 @@ if (!publishableKey) {
     window.wlRemountClerkLobby = () => mountClerkLobbyComponents(clerk);
     clerk.addListener(() => {
       mountClerkLobbyComponents(clerk);
+      scheduleClerkPlanSync();
     });
     mountClerkLobbyComponents(clerk);
 
