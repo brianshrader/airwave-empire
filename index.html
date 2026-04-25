@@ -3,19 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Clerk OAuth / session handshake must run on /play.html (game bundle + Clerk). Root is static marketing only. -->
-  <script>
-(function () {
-  try {
-    var q = window.location.search || '';
-    var h = window.location.hash || '';
-    // Forward any Clerk OAuth / session callback to play.html (where main.js + Clerk load).
-    // Clerk uses several query keys (__clerk_status, __clerk_created_session, __clerk_handshake, …).
-    if (q.indexOf('__clerk_') === -1 && h.indexOf('__clerk_') === -1) return;
-    window.location.replace('/play.html' + q + h);
-  } catch (e) {}
-})();
-  </script>
+  <!-- Clerk OAuth / handshake may return to `/` or `/play.html`. Do NOT redirect — `indexMarketing.js`
+       completes session on the home page so Pricing → Stripe checkout can run. Add both URLs in Clerk
+       Dashboard → Paths / Redirect URLs. -->
   <title>Airwave Empire — Beta</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -51,6 +41,7 @@
         <a href="#eras" class="hover:text-white hidden sm:inline">Eras</a>
         <a href="#pricing" class="hover:text-white hidden sm:inline">Pricing</a>
         <a href="#faq" class="hover:text-white hidden sm:inline">FAQ</a>
+        <a href="/account.html" class="hover:text-white hidden sm:inline">Account</a>
         <a href="/play.html" class="gold-bg px-5 py-2.5 rounded-md font-bold uppercase tracking-[0.14em] text-stone-900 hover:opacity-95">Play now</a>
       </nav>
     </div>
@@ -168,6 +159,45 @@
             </p>
           </div>
         </div>
+
+        <div class="panel rounded-2xl p-4">
+          <img src="/landing-images/logos.png" alt="AI-generated station logos and promotional van designs" class="rounded-xl w-full h-auto object-cover" />
+          <div class="pt-4">
+            <h3 class="text-2xl font-bold uppercase tracking-wide">Logos &amp; rolling stock</h3>
+            <p class="mt-2 text-stone-300 leading-relaxed">
+              Generate your own station logos and custom promotional vans and mobile units—so the brands you
+              build on the air also look and feel alive on the street.
+            </p>
+          </div>
+        </div>
+
+        <div class="panel rounded-2xl p-4">
+          <div class="rounded-xl w-full border border-stone-700/80 bg-stone-950/60 p-4 sm:p-5">
+            <p class="text-stone-400 text-xs uppercase tracking-[0.18em] mb-3">Sample jingle (tap play)</p>
+            <audio controls preload="metadata" class="w-full h-10 accent-amber-500">
+              <source src="/landing-audio/KQ98.mp3" type="audio/mpeg" />
+              Your browser does not support audio playback.
+            </audio>
+          </div>
+          <div class="pt-4">
+            <h3 class="text-2xl font-bold uppercase tracking-wide">Jingles you can hear</h3>
+            <p class="mt-2 text-stone-300 leading-relaxed">
+              Produce your own station jingles and listen to your station&rsquo;s sound—tight, era-appropriate
+              IDs that make every format feel like a real signal on the dial.
+            </p>
+          </div>
+        </div>
+
+        <div class="panel rounded-2xl p-4">
+          <img src="/landing-images/map.png" alt="United States map — GM career markets" class="rounded-xl w-full h-auto object-cover" />
+          <div class="pt-4">
+            <h3 class="text-2xl font-bold uppercase tracking-wide">GM career mode</h3>
+            <p class="mt-2 text-stone-300 leading-relaxed">
+              Start your career in Wichita and see how high up the corporate ladder you can climb—earn moves,
+              prove yourself, and take on bigger markets as the company grows.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -221,52 +251,33 @@
 
     <section id="pricing" class="max-w-7xl mx-auto px-6 py-16 md:py-24">
       <div class="max-w-3xl mb-12">
-        <p class="gold uppercase tracking-[0.22em] text-sm mb-3">Beta access</p>
+        <p class="gold uppercase tracking-[0.22em] text-sm mb-3">Plans</p>
         <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tight">
-          Play free while we build
+          Free to play, upgrade when you want more
         </h2>
         <p class="mt-5 text-stone-300 text-lg leading-relaxed">
-          During beta, sign in with Clerk for <strong class="text-stone-200">unlimited</strong> play at no charge.
-          Paid subscriptions will arrive later for long-term perks (saves, multiplayer, AI assets, and more).
+          The free tier includes core gameplay. <strong class="text-stone-200">Starter</strong> and <strong class="text-stone-200">Pro</strong> add more markets, AI generation limits, and cloud saves — see Clerk’s table below (same checkout as in-game).
         </p>
       </div>
 
-      <div class="grid lg:grid-cols-2 gap-8">
+      <div class="grid lg:grid-cols-2 gap-8 items-start">
         <div class="panel rounded-2xl p-8 border border-amber-500/40">
-          <div class="gold text-sm uppercase tracking-[0.18em] mb-4">While in beta</div>
-          <div class="text-4xl md:text-5xl font-black uppercase leading-tight tracking-[0.12em]">Beta testing</div>
+          <div class="gold text-sm uppercase tracking-[0.18em] mb-4">Free</div>
+          <div class="text-3xl md:text-4xl font-black uppercase leading-tight tracking-[0.12em]">Play the game</div>
           <ul class="mt-6 space-y-3 text-stone-300 text-lg">
-            <li>• Full gameplay</li>
-            <li>• Unlimited access</li>
-            <li>• Please send feedback to <a href="mailto:beta@airwaveempire.com" class="gold underline decoration-amber-600/60 underline-offset-2 hover:text-amber-200">beta@airwaveempire.com</a></li>
+            <li>• Core solo play (sign in with Clerk)</li>
+            <li>• Limited market access vs paid tiers</li>
+            <li>• Feedback welcome — <a href="mailto:beta@airwaveempire.com" class="gold underline decoration-amber-600/60 underline-offset-2 hover:text-amber-200">beta@airwaveempire.com</a></li>
           </ul>
           <a href="/play.html" class="mt-8 inline-block gold-bg px-6 py-3 rounded-md font-bold uppercase tracking-[0.14em]">
-            Enter the beta
+            Play now
           </a>
         </div>
 
-        <div class="relative rounded-2xl overflow-hidden">
-          <div
-            class="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2 px-6 text-center rounded-2xl bg-black/65 backdrop-blur-[2px] border border-stone-600/50"
-            aria-live="polite"
-          >
-            <span class="text-2xl md:text-3xl font-black uppercase tracking-[0.2em] text-stone-100">Coming soon</span>
-            <span class="text-sm text-stone-400 max-w-xs leading-relaxed">Stripe subscription — unlimited saves, multiplayer, AI images &amp; sounds, and more.</span>
-          </div>
-          <div class="panel rounded-2xl p-8 border-2 border-amber-500/30 opacity-[0.38] saturate-[0.65] pointer-events-none select-none grayscale-[0.35]">
-            <div class="gold text-sm uppercase tracking-[0.18em] mb-4">Subscriber</div>
-            <div class="text-5xl font-black uppercase">$5/mo</div>
-            <ul class="mt-6 space-y-3 text-stone-300 text-lg">
-              <li>• Unlimited games</li>
-              <li>• Multiple saves</li>
-              <li>• Multiplayer</li>
-              <li>• AI-generated logos &amp; portraits</li>
-              <li>• Full access to future updates</li>
-            </ul>
-            <span class="mt-8 inline-block gold-bg px-6 py-3 rounded-md font-bold uppercase tracking-[0.14em] opacity-80">
-              Unlock Full Access
-            </span>
-          </div>
+        <div class="panel rounded-2xl p-4 sm:p-6 border border-amber-500/30 min-h-[280px]">
+          <p class="gold text-sm uppercase tracking-[0.18em] mb-2">Subscribe</p>
+          <p class="text-stone-500 text-sm mb-4">Powered by Clerk &amp; Stripe. After checkout you can continue in <a href="/play.html" class="text-amber-200/90 underline">Play</a>.</p>
+          <div id="wl-index-pricing-clerk" class="w-full cl-root"></div>
         </div>
       </div>
     </section>
@@ -304,14 +315,14 @@
           <div class="panel rounded-xl p-6">
             <h3 class="text-2xl font-bold">Is this single-player or multiplayer?</h3>
             <p class="mt-2 text-stone-300 leading-relaxed">
-              Single-player is available during beta. Multiplayer will be part of the future subscription tier when we launch paid plans.
+              Both. Solo is always available when signed in; multiplayer is available on supported plans (see <a href="#pricing" class="gold underline">Pricing</a>).
             </p>
           </div>
 
           <div class="panel rounded-xl p-6">
-            <h3 class="text-2xl font-bold">What does beta access include?</h3>
+            <h3 class="text-2xl font-bold">What’s the difference between Free, Starter, and Pro?</h3>
             <p class="mt-2 text-stone-300 leading-relaxed">
-              Sign in with Clerk for full gameplay and unlimited access while we’re in beta. We’ll add Stripe subscriptions later for saves, multiplayer, AI branding, and other premium features.
+              Free includes core play with a smaller set of markets. Starter and Pro expand markets, AI generation limits, and cloud saves — the <a href="#pricing" class="gold underline">pricing section</a> above lists current benefits from Clerk.
             </p>
           </div>
 
@@ -339,5 +350,6 @@
       </div>
     </div>
   </footer>
+  <script type="module" src="/src/indexMarketing.js"></script>
 </body>
 </html>

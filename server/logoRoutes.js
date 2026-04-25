@@ -13,6 +13,8 @@ const {
   imageGenerationConfigured,
   getActiveImageProvider,
 } = require('./services/logoProvider');
+const { tryConsume, refundOne } = require('./aiUsageStore');
+const { requireClerkUserIdForAi, requirePlanSlugOr503, tryConsumeQuota } = require('./aiQuotaHttp');
 
 const GENERATED_DIR = path.join(__dirname, '..', 'generated-logos');
 
@@ -113,6 +115,11 @@ function mountLogoRoutes(app) {
       return res.status(400).json({ ok: false, error: verrors.join(' ') });
     }
 
+    const clerkUserId = await requireClerkUserIdForAi(req, res);
+    if (!clerkUserId) return;
+    const planSlug = await requirePlanSlugOr503(res, clerkUserId);
+    if (planSlug == null) return;
+
     const regenerate = body.regenerate === true;
     const keyMaterial = cacheKeyParts(body);
     const base = logoBaseFileName(body, keyMaterial);
@@ -126,6 +133,7 @@ function mountLogoRoutes(app) {
       band: typeof body.band === 'string' ? body.band : '',
     });
 
+    let needRefund = false;
     try {
       const tryExts = ['png', 'webp', 'jpg'];
       const tryNames = tryExts.map((e) => `${base}.${e}`);
@@ -142,6 +150,10 @@ function mountLogoRoutes(app) {
         return res.json({ ok: true, cached: true, imageUrl: `/generated-logos/${existing.name}` });
       }
 
+      const allowed = await tryConsumeQuota(res, planSlug, 'logo', tryConsume, clerkUserId);
+      if (!allowed) return;
+
+      needRefund = true;
       const { buffer, ext } = await generateStationLogo({ prompt });
       const safeExt = tryExts.includes(ext) ? ext : 'png';
       const finalName = `${base}.${safeExt}`;
@@ -154,6 +166,7 @@ function mountLogoRoutes(app) {
       }
 
       fs.writeFileSync(absPath, buffer);
+      needRefund = false;
 
       posthog.capture({
         distinctId: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || 'unknown',
@@ -168,6 +181,7 @@ function mountLogoRoutes(app) {
       });
       return res.json({ ok: true, cached: false, imageUrl: `/generated-logos/${finalName}` });
     } catch (e) {
+      if (needRefund) await refundOne(clerkUserId, 'logo');
       console.error('[logo] Image API / save failed:', e.message || e);
       posthog.captureException(e, req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || 'unknown');
       const status = e.status && Number.isInteger(e.status) ? e.status : 500;

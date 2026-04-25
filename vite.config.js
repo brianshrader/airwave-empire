@@ -130,6 +130,7 @@ export default defineConfig(({ command, mode }) => {
       input: {
         main: resolve(__dirname, 'index.html'),
         play: resolve(__dirname, 'play.html'),
+        account: resolve(__dirname, 'account.html'),
         'inspect-shares': resolve(__dirname, 'inspect-shares.html'),
         'inspect-public-radio': resolve(__dirname, 'inspect-public-radio.html'),
         'inspect-market-health': resolve(__dirname, 'inspect-market-health.html'),

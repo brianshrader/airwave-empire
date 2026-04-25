@@ -102,7 +102,7 @@ body{background:var(--blk);color:var(--wht);font-family:var(--fm);min-height:100
 body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:100}
 
 /* HEADER — solid bar: capture clicks here so they don’t fall through to the game (sticky scorebar same idea) */
-#hdr{background:var(--pnl);border-bottom:2px solid var(--amb);padding:0 22px;display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:24px;height:62px;position:sticky;top:0;z-index:200;box-shadow:0 4px 48px rgba(245,166,35,.18);pointer-events:auto}
+#hdr{background:var(--pnl);border-bottom:2px solid var(--amb);padding:0 22px;display:grid;grid-template-columns:auto 1fr auto auto auto;align-items:center;gap:20px;height:62px;position:sticky;top:0;z-index:200;box-shadow:0 4px 48px rgba(245,166,35,.18);pointer-events:auto}
 #logo{font-family:var(--fd);font-size:36px;letter-spacing:6px;color:var(--amb);text-shadow:0 0 28px rgba(245,166,35,.55);cursor:pointer;user-select:none}
 #logo:hover{color:#ffc14d}
 #hmeta{display:flex;flex-direction:column;gap:3px}
@@ -114,6 +114,23 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 #proglbl{font-family:var(--ft);font-size:15px;color:var(--mut);letter-spacing:1px;white-space:nowrap}
 #cash{font-family:var(--fd);font-size:26px;letter-spacing:2px;color:var(--grn);text-shadow:0 0 18px rgba(82,227,110,.4);transition:color .4s}
 #cash.low{color:var(--amb)}#cash.broke{color:var(--red)}
+#wl-hdr-account,.wl-hdr-account{
+  font-family:var(--ft);
+  font-size:11px;
+  letter-spacing:2px;
+  color:var(--mut);
+  text-decoration:none;
+  border:1px solid var(--bdh);
+  padding:8px 12px;
+  text-align:center;
+  white-space:nowrap;
+  transition:color .15s,border-color .15s;
+  align-self:center;
+}
+#wl-hdr-account:hover,.wl-hdr-account:hover{
+  color:var(--amb);
+  border-color:rgba(245,166,35,.55);
+}
 #abtn{background:var(--amb);color:var(--blk);border:none;font-family:var(--fd);font-size:17px;letter-spacing:3px;padding:12px 28px;cursor:pointer;clip-path:polygon(8px 0%,100% 0%,calc(100% - 8px) 100%,0% 100%);transition:all .15s}
 #abtn:hover{background:#fff;box-shadow:0 0 28px rgba(245,166,35,.7);transform:scale(1.03)}
 #abtn:disabled{opacity:.35;cursor:not-allowed;transform:none}
@@ -919,9 +936,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 /* ── MOBILE RESPONSIVE ─────────────────────────────────────────── */
 @media(max-width:768px){
   /* Header */
-  #hdr{grid-template-columns:1fr auto;gap:10px;padding:0 12px;height:52px}
+  #hdr{grid-template-columns:1fr auto;gap:8px;padding:0 12px;height:52px}
   #hlogo{font-size:26px;letter-spacing:2px}
   #hmeta{display:none}
+  #wl-hdr-account,.wl-hdr-account{font-size:9px;letter-spacing:1px;padding:5px 8px}
+  #cash{font-size:20px}
   #hbtns{gap:6px}
 
   /* Kill ticker on mobile — eats vertical space */

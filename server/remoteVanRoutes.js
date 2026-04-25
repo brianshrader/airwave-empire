@@ -17,6 +17,8 @@ const {
   imageGenerationConfigured,
 } = require('./services/logoProvider');
 const { GENERATED_DIR, cacheKeyParts, logoBaseFileName, validateBody } = require('./logoRoutes');
+const { tryConsume, refundOne } = require('./aiUsageStore');
+const { requireClerkUserIdForAi, requirePlanSlugOr503, tryConsumeQuota } = require('./aiQuotaHttp');
 
 const GENERATED_VAN_DIR = path.join(__dirname, '..', 'generated-remote-vans');
 
@@ -138,6 +140,11 @@ function mountRemoteVanRoutes(app) {
       return res.status(400).json({ ok: false, error: verrors.join(' ') });
     }
 
+    const clerkUserId = await requireClerkUserIdForAi(req, res);
+    if (!clerkUserId) return;
+    const planSlug = await requirePlanSlugOr503(res, clerkUserId);
+    if (planSlug == null) return;
+
     const regenerateVan = body.regenerate === true;
     const keyMaterial = cacheKeyParts(body);
     const slug = vanFileSlugFromBody(body, keyMaterial);
@@ -148,6 +155,10 @@ function mountRemoteVanRoutes(app) {
       return res.json({ ok: true, cached: true, imageUrl: `/generated-remote-vans/${vanName}` });
     }
 
+    const allowed = await tryConsumeQuota(res, planSlug, 'van', tryConsume, clerkUserId);
+    if (!allowed) return;
+
+    let needRefund = true;
     try {
       const logoBuf = await resolveLogoBufferForVan(body, false);
       const prompt = buildRemoteVanPrompt({
@@ -168,8 +179,10 @@ function mountRemoteVanRoutes(app) {
       if (fs.existsSync(vanPath)) fs.unlinkSync(vanPath);
       fs.writeFileSync(vanPath, buffer);
 
+      needRefund = false;
       return res.json({ ok: true, cached: false, imageUrl: `/generated-remote-vans/${vanName}` });
     } catch (e) {
+      if (needRefund) await refundOne(clerkUserId, 'van');
       console.error('[remote-van] failed:', e.message || e);
       const status = e.status && Number.isInteger(e.status) ? e.status : 500;
       const detail = String(e.message || 'Remote van generation failed').slice(0, 400);

@@ -13,7 +13,7 @@
 //   - Players can rejoin by room code at any time while server is running
 //   - Saves survive server restarts — rooms are restored from disk on boot
 //
-// Run: node server.js  (loads .env / WL_ENV_FILE, then server/validateEnv.js — see docs/RUNTIME-AND-ENV.md)
+// Run: node server.js  (loads .env, then .env.local if present, then WL_ENV_FILE — see docs/RUNTIME-AND-ENV.md)
 // Requires: npm install express socket.io dotenv
 //
 // Spectator TV (read-only rankings, same room code): open /spectate.html?room=CODE
@@ -29,10 +29,13 @@
 
 const path = require('path');
 const fs = require('fs');
-// Local: copy .env.example → .env (gitignored). Deploys that rsync/git-clean the app dir often
-// wipe `.env`; set secrets on the host (systemd Environment=, Docker -e, PaaS) or put them in a
-// file outside the deploy tree and set WL_ENV_FILE=/path/to/secrets.env — loaded second with override.
+// Local: copy .env.example → .env (gitignored). Optional `.env.local` (e.g. Vite + second Clerk app)
+// overrides `.env` — same pattern as Vite. Deploys often rely on WL_ENV_FILE or host env only.
 require('dotenv').config({ path: path.join(__dirname, '.env') });
+const envLocalPath = path.join(__dirname, '.env.local');
+if (fs.existsSync(envLocalPath)) {
+  require('dotenv').config({ path: envLocalPath, override: true });
+}
 if (process.env.WL_ENV_FILE && fs.existsSync(process.env.WL_ENV_FILE)) {
   require('dotenv').config({ path: process.env.WL_ENV_FILE, override: true });
 }

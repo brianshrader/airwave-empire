@@ -3437,6 +3437,19 @@ if(typeof window!=='undefined'){
   window.PHASE1_MARKET_IDS=PHASE1_MARKET_IDS;
   window.DEV_BENCHMARK_MEGA_MARKET_IDS=DEV_BENCHMARK_MEGA_MARKET_IDS;
 }
+/**
+ * Playable market ids for the current Clerk plan (`window.__WL_PLAN_MARKET_IDS` from main.js).
+ * Before Clerk loads, all Phase-1 markets stay available (local / harness).
+ * After load, defaults to free tier (Atlanta only) until `syncClerkPlanMarkets` runs.
+ */
+function wlGetAllowedPhase1MarketIds(){
+  if(typeof window!=='undefined'&&Array.isArray(window.__WL_PLAN_MARKET_IDS)&&window.__WL_PLAN_MARKET_IDS.length)
+    return window.__WL_PLAN_MARKET_IDS;
+  if(typeof window!=='undefined'&&!window.__wlClerkLoaded)
+    return Array.from(PHASE1_MARKET_IDS);
+  return['atlanta'];
+}
+if(typeof window!=='undefined')window.wlGetAllowedPhase1MarketIds=wlGetAllowedPhase1MarketIds;
 let ACTIVE_MARKET='atlanta';
 let _selectedMarket='atlanta';
 let _lastScenSelectLocal=null;
@@ -3475,6 +3488,7 @@ function scaledScenarioCash(scBaseCash,marketId){
 }
 function pickMarketPhase1(id){
   if(!PHASE1_MARKET_IDS.includes(id))return;
+  if(!wlGetAllowedPhase1MarketIds().includes(id))return;
   _pendingScenId=null;
   _selectedMarket=id;
   ACTIVE_MARKET=id;
@@ -3487,6 +3501,7 @@ function pickMarketPhase1(id){
  */
 function wlSetActiveMarket(id){
   if(!id||!PHASE1_MARKET_IDS.includes(id))return;
+  if(!wlGetAllowedPhase1MarketIds().includes(id))return;
   _pendingScenId=null;
   _selectedMarket=id;
   ACTIVE_MARKET=id;
@@ -5441,6 +5456,15 @@ async function wlGetClerkToken(){
     console.warn('[Clerk]', e);
     return null;
   }
+}
+/** `Content-Type: application/json` plus `Authorization: Bearer` when the player is signed in (game server AI routes). */
+async function wlGameApiAuthJsonHeaders(){
+  const h={ 'Content-Type':'application/json' };
+  try{
+    const t=await wlGetClerkToken();
+    if(t)h.Authorization='Bearer '+t;
+  }catch(_e){}
+  return h;
 }
 function wlMpRefreshAuthBar(){
   const wrap = document.getElementById('wl-mp-auth');
@@ -15511,7 +15535,8 @@ function initCore(){
     console.log('[Airwave Empire] isValidSave:', isValidSave);
     if(isValidSave){
       const sm=local.G.marketId;
-      const mid=(sm&&PHASE1_MARKET_IDS.includes(sm))?sm:'atlanta';
+      let mid=(sm&&PHASE1_MARKET_IDS.includes(sm))?sm:'atlanta';
+      if(!wlGetAllowedPhase1MarketIds().includes(mid))mid='atlanta';
       _selectedMarket=mid;
       ACTIVE_MARKET=mid;
       syncMarketPopToMarket(mid);
@@ -15547,9 +15572,11 @@ function wlGoToScenarioSelectFromLogo(){
     document.querySelectorAll('.ov.on').forEach(el=>{el.classList.remove('on');});
     syncModalBodyScrollLock();
     if(G?.marketId&&PHASE1_MARKET_IDS.includes(G.marketId)){
-      _selectedMarket=G.marketId;
-      ACTIVE_MARKET=G.marketId;
-      syncMarketPopToMarket(G.marketId);
+      let mid=G.marketId;
+      if(!wlGetAllowedPhase1MarketIds().includes(mid))mid='atlanta';
+      _selectedMarket=mid;
+      ACTIVE_MARKET=mid;
+      syncMarketPopToMarket(mid);
     }
     openScenSelect(getLocalSave());
   });
@@ -15559,6 +15586,13 @@ function openScenSelect(localSave){
   _pendingScenId=null;
   _lastScenSelectLocal=localSave||null;
   if(!_selectedMarket||!PHASE1_MARKET_IDS.includes(_selectedMarket)){
+    _selectedMarket='atlanta';
+    ACTIVE_MARKET='atlanta';
+    syncMarketPopToMarket('atlanta');
+  }
+  const _allowMkt=wlGetAllowedPhase1MarketIds();
+  const _allowMktSet=new Set(_allowMkt);
+  if(_selectedMarket&&!_allowMktSet.has(_selectedMarket)){
     _selectedMarket='atlanta';
     ACTIVE_MARKET='atlanta';
     syncMarketPopToMarket('atlanta');
@@ -15617,7 +15651,10 @@ function openScenSelect(localSave){
   const marketPicker=PHASE1_MARKET_IDS.map(id=>{
     const sel=_selectedMarket===id?' scen-mkt-on':'';
     const m=MARKETS[id];
-    return `<button type="button" class="abt${sel}" style="font-size:13px;padding:6px 12px;letter-spacing:1px" onclick="pickMarketPhase1('${id}')">${m.label}</button>`;
+    if(_allowMktSet.has(id))
+      return `<button type="button" class="abt${sel}" style="font-size:13px;padding:6px 12px;letter-spacing:1px" onclick="pickMarketPhase1('${id}')">${m.label}</button>`;
+    const lockTitle=id==='seattle'?'Seattle is included with Pro.':'Upgrade to Starter or Pro to play this market.';
+    return `<button type="button" class="abt${sel} scen-mkt-locked" disabled title="${lockTitle}" style="font-size:13px;padding:6px 12px;letter-spacing:1px;opacity:0.5;cursor:not-allowed" aria-disabled="true">${m.label} <span style="font-size:11px" aria-hidden="true">🔒</span></button>`;
   }).join('');
   const blurb=(MARKETS[_selectedMarket]||MARKETS.atlanta).selectBlurb||'';
   const saveMktLbl=(MARKETS[saveMarketId]||MARKETS.atlanta).label;
@@ -15672,6 +15709,9 @@ function openScenSelect(localSave){
     <div class="scn-hero">
       <div class="scn-logo">AIRWAVE EMPIRE</div>
       <div class="scn-tagline" id="scn-tagline">A RADIO MANAGEMENT GAME</div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin:0 0 14px">
+      <a href="/account.html" target="_blank" rel="noopener noreferrer" class="wl-hdr-account" title="Account, subscription, and billing">ACCOUNT</a>
     </div>
     <div class="scen-pick-stack">
       ${tutorialSection}
@@ -24693,7 +24733,7 @@ async function wlRemoteVanImageOp(stationId,mode){
   try{
     const res=await fetch(wlGameApiUrl('/api/generate-remote-van'),{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers: await wlGameApiAuthJsonHeaders(),
       body:JSON.stringify(body),
     });
     const data=await res.json().catch(()=>({}));
@@ -24811,7 +24851,7 @@ async function wlCommissionStationJingle(stationId){
   try{
     const res=await fetch(wlGameApiUrl('/api/generate-station-jingle'),{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers: await wlGameApiAuthJsonHeaders(),
       body:JSON.stringify(body),
     });
     const data=await res.json().catch(()=>({}));
@@ -25016,7 +25056,7 @@ async function wlGenerateLogo(stationId,regenerate,opts){
   try{
     const res=await fetch(wlGameApiUrl('/api/generate-logo'),{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers: await wlGameApiAuthJsonHeaders(),
       body:JSON.stringify(body),
     });
     const data=await res.json().catch(()=>({}));
