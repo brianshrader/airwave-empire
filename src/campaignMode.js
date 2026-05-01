@@ -1316,6 +1316,11 @@
       if (typeof global.wlLockedGmCampaignToast === 'function') global.wlLockedGmCampaignToast();
       return;
     }
+    void (async function () {
+      if (typeof global.wlEnsureTrialLockBeforeCampaignStart === 'function') {
+        var ok = await global.wlEnsureTrialLockBeforeCampaignStart();
+        if (!ok) return;
+      }
     state = defaultState();
     state.active = true;
     state.playerName = playerName || 'Manager';
@@ -1398,6 +1403,7 @@
     } finally {
       delete global._wlCampaignStarting;
     }
+    })();
   }
 
   function renderCampaignModal() {

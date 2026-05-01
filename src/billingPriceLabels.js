@@ -6,8 +6,11 @@ export const BILLING_PRICE_LABELS = Object.freeze({
   starter_monthly: '$4.99/mo',
   starter_annual: '$49.99/yr',
   pro_monthly: '$9.99/mo',
-  pro_annual: '$99.99/yr',
+  pro_annual: '$79.99/yr',
 });
+
+/** Shown under Pro annual buttons — matches Launch pricing positioning. */
+export const BILLING_PRO_ANNUAL_LAUNCH_TAGLINE = 'Launch pricing — more than 2 months free vs paying monthly.';
 
 /**
  * @param {string} key — e.g. starter_monthly
@@ -21,4 +24,4 @@ export function effectivePriceLabelForKey(key, envValue) {
 
 /** In-game / marketing one-liner; also exposed on window in main.js for legacy.js */
 export const BILLING_PRICE_SUMMARY_LINE =
-  'Starter $4.99/mo or $49.99/yr · Pro $9.99/mo or $99.99/yr';
+  'Starter $4.99/mo or $49.99/yr · Pro $9.99/mo or $79.99/yr annual (Launch pricing)';

@@ -81,8 +81,23 @@ export async function fetchServerPlanSlug(clerk) {
   return CLERK_PLAN.FREE;
 }
 
+function gameApiBaseUrl() {
+  let origin =
+    (typeof window !== 'undefined' && window.__WL_GAME_SERVER_URL && String(window.__WL_GAME_SERVER_URL).trim()) ||
+    '';
+  if (origin && typeof window !== 'undefined' && window.location?.port === '5173') {
+    try {
+      const ou = new URL(origin.replace(/\/$/, ''));
+      if (ou.origin !== window.location.origin) origin = '';
+    } catch (_e) {
+      origin = '';
+    }
+  }
+  return origin ? `${origin.replace(/\/$/, '')}` : '';
+}
+
 /**
- * Sets `window.__WL_CLERK_PLAN_SLUG` and `window.__WL_PLAN_MARKET_IDS`.
+ * Sets plan globals plus `window.__WL_TRIAL_LOCK_KIND` / `window.__WL_TRIAL_LOCKED_MARKET_ID` on signup trial.
  * @param {import('@clerk/clerk-js').Clerk | null} clerk
  */
 export async function syncPlanMarkets(clerk) {
@@ -91,6 +106,31 @@ export async function syncPlanMarkets(clerk) {
   if (typeof window !== 'undefined') {
     window.__WL_CLERK_PLAN_SLUG = slug;
     window.__WL_PLAN_MARKET_IDS = marketIds;
+
+    if (slug === CLERK_PLAN.TRIAL && clerk?.isSignedIn) {
+      try {
+        const token = await clerk.session?.getToken?.();
+        if (token) {
+          const base = gameApiBaseUrl();
+          const url = base ? `${base}/api/trial/quota` : '/api/trial/quota';
+          const r = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+          const j = await r.json().catch(() => ({}));
+          const tk = typeof j.trialLockKind === 'string' ? j.trialLockKind.trim() : '';
+          const lm = typeof j.lockedMarketId === 'string' ? j.lockedMarketId.trim() : '';
+          window.__WL_TRIAL_LOCK_KIND = r.ok && j.ok && j.trial && tk ? tk : '';
+          window.__WL_TRIAL_LOCKED_MARKET_ID = r.ok && j.ok && j.trial && lm ? lm : '';
+        } else {
+          window.__WL_TRIAL_LOCK_KIND = '';
+          window.__WL_TRIAL_LOCKED_MARKET_ID = '';
+        }
+      } catch (_e) {
+        window.__WL_TRIAL_LOCK_KIND = '';
+        window.__WL_TRIAL_LOCKED_MARKET_ID = '';
+      }
+    } else {
+      window.__WL_TRIAL_LOCK_KIND = '';
+      window.__WL_TRIAL_LOCKED_MARKET_ID = '';
+    }
   }
   return { slug, marketIds };
 }

@@ -2,6 +2,7 @@
  * Home page — membership purchase after optional sign-in (same server routes as elsewhere).
  */
 import { Clerk } from '@clerk/clerk-js';
+import { BILLING_PRO_ANNUAL_LAUNCH_TAGLINE } from './billingPriceLabels.js';
 import {
   appendClerkUiScript,
   clearClerkFrontendOverrides,
@@ -73,8 +74,9 @@ function renderShell(mountEl) {
               <span class="mt-1 block text-[12px] font-bold normal-case tracking-normal text-violet-50 opacity-95">$9.99/mo</span>
             </button>
             <button type="button" data-price="pro_annual" class="w-full rounded-lg border-2 border-violet-400/55 bg-violet-950/20 px-3 py-2.5 font-black uppercase tracking-[0.14em] text-xs text-violet-100 hover:bg-violet-950/45 transition-colors">
-              <span class="block tracking-[0.12em]">ANNUAL</span>
-              <span class="mt-1 block text-[11px] font-semibold text-violet-200/95 normal-case tracking-normal">$99.99/yr</span>
+              <span class="block tracking-[0.12em]">ANNUAL · LAUNCH PRICING</span>
+              <span class="mt-1 block text-[11px] font-semibold text-violet-200/95 normal-case tracking-normal">$79.99/yr</span>
+              <span class="mt-1 block text-[10px] font-medium text-violet-300/85 normal-case tracking-normal leading-snug">${BILLING_PRO_ANNUAL_LAUNCH_TAGLINE}</span>
             </button>
           </div>
         </section>

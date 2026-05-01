@@ -129,6 +129,70 @@ function setTrialGameCompleted(clerkUserId, done) {
   writeAll(m);
 }
 
+/**
+ * Signup trial “one free game” commitment: solo (one market), tutorial (Atlanta only), or GM campaign.
+ * First write wins. Legacy rows had only `signupTrialLockedMarketId` → treated as solo.
+ * @returns {{ kind: 'solo'|'tutorial'|'campaign'|null, marketId: string|null }}
+ */
+function getSignupTrialLock(clerkUserId) {
+  const row = readAll()[clerkUserId];
+  if (!row) return { kind: null, marketId: null };
+  const legacyMid =
+    typeof row.signupTrialLockedMarketId === 'string' && row.signupTrialLockedMarketId.trim()
+      ? row.signupTrialLockedMarketId.trim().toLowerCase()
+      : null;
+  const k = row.signupTrialLockKind;
+  if (k === 'solo' && legacyMid) return { kind: 'solo', marketId: legacyMid };
+  if (k === 'tutorial') return { kind: 'tutorial', marketId: 'atlanta' };
+  if (k === 'campaign') return { kind: 'campaign', marketId: null };
+  if (!k && legacyMid) return { kind: 'solo', marketId: legacyMid };
+  return { kind: null, marketId: null };
+}
+
+function sameTrialLock(a, b) {
+  if (!a?.kind || !b?.kind) return false;
+  if (a.kind !== b.kind) return false;
+  if (a.kind === 'solo') return (a.marketId || '') === (b.marketId || '');
+  return true;
+}
+
+/**
+ * @param {{ kind: 'solo', marketId: string } | { kind: 'tutorial' } | { kind: 'campaign' }} payload
+ */
+function setSignupTrialLockOnce(clerkUserId, payload) {
+  const existing = getSignupTrialLock(clerkUserId);
+  const kind = payload.kind;
+  if (!kind || !['solo', 'tutorial', 'campaign'].includes(kind)) return null;
+
+  let normalized = { kind, marketId: null };
+  if (kind === 'solo') {
+    const id = String(payload.marketId || '')
+      .trim()
+      .toLowerCase();
+    if (!id) return null;
+    normalized.marketId = id;
+  } else if (kind === 'tutorial') {
+    normalized.marketId = 'atlanta';
+  }
+
+  if (existing.kind) {
+    if (sameTrialLock(existing, normalized)) return existing;
+    return null;
+  }
+
+  const m = readAll();
+  const row = m[clerkUserId] || {};
+  const next = {
+    ...row,
+    signupTrialLockKind: kind,
+    signupTrialLockedMarketId: kind === 'campaign' ? null : normalized.marketId,
+    updatedAt: new Date().toISOString(),
+  };
+  m[clerkUserId] = next;
+  writeAll(m);
+  return getSignupTrialLock(clerkUserId);
+}
+
 /** Set once when Stripe reports Starter/Pro — trial never applies again. */
 function getEverHadPaidSubscription(clerkUserId) {
   return !!readAll()[clerkUserId]?.everHadPaidSubscription;
@@ -159,6 +223,8 @@ module.exports = {
   repairSubscriptionActiveIfStatusSaysSo,
   getTrialGameCompleted,
   setTrialGameCompleted,
+  getSignupTrialLock,
+  setSignupTrialLockOnce,
   getEverHadPaidSubscription,
   setEverHadPaidSubscription,
   DATA_DIR,

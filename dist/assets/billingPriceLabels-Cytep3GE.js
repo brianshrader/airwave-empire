@@ -1,1 +1,0 @@
-const o=Object.freeze({starter_monthly:"$4.99/mo",starter_annual:"$49.99/yr",pro_monthly:"$9.99/mo",pro_annual:"$99.99/yr"});function e(t,r){return r!=null&&String(r).trim()?String(r).trim():o[t]||""}const _="Starter $4.99/mo or $49.99/yr · Pro $9.99/mo or $99.99/yr";export{_ as B,e};

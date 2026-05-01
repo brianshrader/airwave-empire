@@ -18,7 +18,8 @@ function stripePriceToPlanSlug(priceId) {
   if (p === 'price_1TRyFZDzppoc0lYSq0qumGzR') return CLERK_PLAN.STARTER;
   // Pro (live)
   if (p === 'price_1TRyFXDzppoc0lYSjEcp9t97') return CLERK_PLAN.PRO;
-  if (p === 'price_1TRyFUDzppoc0lYSNeXZ1gPH') return CLERK_PLAN.PRO;
+  if (p === 'price_1TRyFUDzppoc0lYSNeXZ1gPH') return CLERK_PLAN.PRO; // Pro Annual (legacy)
+  if (p === 'price_1TSKOCDzppoc0lYSTofqkSEd') return CLERK_PLAN.PRO; // Pro Annual (launch)
 
   return null;
 }

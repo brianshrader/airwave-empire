@@ -14,7 +14,7 @@ export const STRIPE_PRICES_LIVE = Object.freeze({
   starter_monthly: 'price_1TRyFcDzppoc0lYSpTb6qpdp',
   starter_annual: 'price_1TRyFZDzppoc0lYSq0qumGzR',
   pro_monthly: 'price_1TRyFXDzppoc0lYSjEcp9t97',
-  pro_annual: 'price_1TRyFUDzppoc0lYSNeXZ1gPH',
+  pro_annual: 'price_1TSKOCDzppoc0lYSTofqkSEd',
 });
 
 function stripePriceMode() {
