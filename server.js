@@ -88,6 +88,14 @@ mountRatingsDigestRoutes(app);
 const { mountJingleRoutes } = require('./server/jingleRoutes');
 mountJingleRoutes(app);
 
+const { mountEntitlementsRoutes } = require('./server/entitlementsRoutes');
+mountEntitlementsRoutes(app);
+const { mountTrialRoutes } = require('./server/trialRoutes');
+mountTrialRoutes(app);
+
+const { resolveStripePlanForUser } = require('./server/stripePlanResolve');
+const { marketIdsForPlanSlug, ALL_PLAYABLE_MARKET_IDS_ORDERED } = require('./server/planMarkets');
+
 const httpServer = http.createServer(app);
 const io         = new Server(httpServer, {
   cors: corsOpts,
@@ -102,6 +110,25 @@ const SAVE_DIR = path.join(__dirname, 'saves');
 
 // Ensure saves directory exists
 if (!fs.existsSync(SAVE_DIR)) fs.mkdirSync(SAVE_DIR);
+
+/**
+ * Multiplayer host market — enforced on start_draft only. Mirrors /api/entitlements + planMarkets.js.
+ * Guests joining via join_room / rejoin_room are not checked here: a free-tier player may join a paid host’s room in any city.
+ * No Clerk user on socket (local dev / WL_ALLOW_MP_AUTH_BYPASS): allow all Phase-1 cities so LAN still works.
+ */
+async function mpAllowedMarketIdsForHostSocket(socket) {
+  const uid = socket.data.clerkUserId || null;
+  if (!uid) {
+    return new Set([...ALL_PLAYABLE_MARKET_IDS_ORDERED]);
+  }
+  try {
+    const r = await resolveStripePlanForUser(uid);
+    return new Set(marketIdsForPlanSlug(r.planSlug));
+  } catch (e) {
+    console.warn('[MP] plan resolve for host failed:', e.message || e);
+    return new Set(['atlanta']);
+  }
+}
 
 // ── PERSISTENCE ────────────────────────────────────────────────────
 
@@ -805,10 +832,20 @@ io.on('connection', socket => {
 
 
   // ── START DRAFT ───────────────────────────────────────────────
-  socket.on('start_draft', ({ roomId, era, G: initialG }) => {
+  socket.on('start_draft', async ({ roomId, era, G: initialG }) => {
     const room = getRoom(roomId);
     if (!room || room.hostId !== socket.id) return;
     if (room.players.length < 2) { socket.emit('start_error', 'Need at least 2 players.'); return; }
+
+    const mid = initialG && initialG.marketId ? String(initialG.marketId) : 'atlanta';
+    const allowed = await mpAllowedMarketIdsForHostSocket(socket);
+    if (!allowed.has(mid)) {
+      socket.emit(
+        'start_error',
+        'Your plan only allows hosting multiplayer in certain markets. Free tier: Atlanta only. Upgrade to Starter or Pro in Account to host in more cities.',
+      );
+      return;
+    }
 
     room.phase = 'draft';
     room.era = era;
@@ -1031,7 +1068,7 @@ if (HAS_DIST) {
   app.use(
     express.static(DIST_DIR, {
       setHeaders(res, filePath) {
-        if (typeof filePath === 'string' && filePath.endsWith('play.html')) {
+        if (typeof filePath === 'string' && (filePath.endsWith('play.html') || filePath.endsWith('play-signin.html'))) {
           res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
           res.setHeader('Pragma', 'no-cache');
         }
@@ -1046,6 +1083,16 @@ if (HAS_DIST) {
     res.redirect(302, '/');
   });
 }
+
+/** Short legal URLs (canonical pages remain under /legal/*.html for existing links). */
+const LEGAL_TERMS_HTML = path.join(__dirname, 'legal', 'terms.html');
+const LEGAL_PRIVACY_HTML = path.join(__dirname, 'legal', 'privacy.html');
+app.get(['/terms', '/terms/'], (_req, res) => {
+  res.sendFile(LEGAL_TERMS_HTML);
+});
+app.get(['/privacy', '/privacy/'], (_req, res) => {
+  res.sendFile(LEGAL_PRIVACY_HTML);
+});
 
 app.get('/', (req, res) => {
   res.set('Cache-Control', 'no-store, no-cache, must-revalidate');

@@ -39,7 +39,7 @@
       marketId: 'wichita',
       scenarioId: 'gm_under',
       ownerArchetype: 'turnaround',
-      title: 'GM — Small-market starter',
+      title: 'General Manager — Small-market starter',
       contractLengthPeriods: 12,
       successThreshold: 53,
       survivalThreshold: 38,
@@ -53,7 +53,7 @@
       /** AM dial; merged onto BP idx 1 instead of default AM Top 40 — variety for GM career only. */
       starterPlayerBpPatch: { type: 'AM', fmt: 'COUNTRY', pw: 'DA', str: 'moderate' },
       flavor:
-        'Your first real GM chair: a modest Plains market with real P&L and real competition — lower stakes than a major, but not a sandbox.',
+        'Your first real General Manager chair: a modest Plains market with real P&L and real competition — lower stakes than a major, but every decision still counts.',
     },
     {
       id: 'c1_nashville',
@@ -61,7 +61,7 @@
       marketId: 'nashville',
       scenarioId: 'gm_under',
       ownerArchetype: 'turnaround',
-      title: 'GM — Regional turnaround',
+      title: 'General Manager — Regional turnaround',
       contractLengthPeriods: 14,
       successThreshold: 56,
       survivalThreshold: 40,
@@ -82,7 +82,7 @@
       marketId: 'atlanta',
       scenarioId: 'gm_under',
       ownerArchetype: 'turnaround',
-      title: 'GM — Large market rebuild',
+      title: 'General Manager — Large market rebuild',
       contractLengthPeriods: 14,
       successThreshold: 54,
       survivalThreshold: 44,
@@ -104,7 +104,7 @@
       marketId: 'seattle',
       scenarioId: 'gm_under',
       ownerArchetype: 'prestige',
-      title: 'GM — Northwest growth market',
+      title: 'General Manager — Northwest growth market',
       contractLengthPeriods: 18,
       /** Tier 3 is a step-up: promotion bar is tighter than Tier 2; survival still achievable with the turnaround package below. */
       successThreshold: 58,
@@ -121,7 +121,7 @@
       evaluationGraceReviews: 1,
       /** Short line for in-game campaign UI (gmMode campaign callout). */
       corporateCommitmentNote:
-        'Corporate approved a limited rebuild budget for this assignment. Your first formal review emphasizes measurable progress over instant profit — after that, expectations match a normal major-market GM scorecard.',
+        'Corporate approved a limited rebuild budget for this assignment. Your first formal review emphasizes measurable progress over instant profit — after that, expectations match a normal major-market General Manager scorecard.',
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 78, minFranchiseAvg: 0.5 },
       starterPlayerBpPatch: { type: 'AM', fmt: 'NEWS_TALK', pw: '50kw', str: 'emerging' },
       flavor:
@@ -133,7 +133,7 @@
       marketId: 'chicago',
       scenarioId: 'gm_under',
       ownerArchetype: 'cash_first',
-      title: 'GM — Major market operator',
+      title: 'General Manager — Major market operator',
       contractLengthPeriods: 22,
       successThreshold: 55,
       survivalThreshold: 40,
@@ -143,7 +143,7 @@
       corporateCashGrant: 330000,
       evaluationGraceReviews: 1,
       corporateCommitmentNote:
-        'Promotion to a major-market chair included limited bridge funding — corporate expects discipline, but they will not pretend an underfunded GM can fix a broken cluster overnight.',
+        'Promotion to a major-market chair included limited bridge funding — corporate expects discipline, but they will not pretend an underfunded General Manager can fix a broken cluster overnight.',
       starterPlayerBpPatch: { type: 'AM', fmt: 'NEWS_TALK', pw: '50kw', str: 'emerging' },
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 79, minMarginPct: 8 },
       flavor:
@@ -155,7 +155,7 @@
       marketId: 'newyork',
       scenarioId: 'gm_under',
       ownerArchetype: 'heritage',
-      title: 'GM — Top-market spotlight',
+      title: 'General Manager — Top-market spotlight',
       contractLengthPeriods: 22,
       successThreshold: 57,
       survivalThreshold: 43,
@@ -222,6 +222,16 @@
   }
 
   function openStartModal() {
+    if (typeof global.wlClerkPlanAllowsGmCampaign === 'function' && !global.wlClerkPlanAllowsGmCampaign()) {
+      if (typeof global.wlLockedGmCampaignToast === 'function') global.wlLockedGmCampaignToast();
+      else if (typeof global.showToast === 'function')
+        global.showToast(
+          'The full General Manager career unlocks on Pro or during your signup free trial. Open Account to subscribe.',
+          'warn',
+          8200,
+        );
+      return;
+    }
     var ownerInp = document.getElementById('campaign-start-owner');
     var playerInp = document.getElementById('campaign-start-player');
     if (ownerInp) ownerInp.value = generateOwnerCompanyName(CAREER_ENTRY_MARKET_ID);
@@ -958,6 +968,18 @@
     var ev = evaluateAssignmentEnd(G, asg);
     if (!ev) return;
     G._campaignAssignmentEnded = ev;
+    /**
+     * `legacy.js` calls `autoSave` in `advTurn` *before* `wlCampaignAfterRenderAll`, so the campaign
+     * `state` must include `awaitingLaunch` in the same turn as the assignment end — otherwise
+     * browser autosave can miss the next market / career outcome until a later `autoSave` (e.g. after
+     * closing a modal the user may never see if they leave the page).
+     */
+    var st = ensureState();
+    st.awaitingLaunch = {
+      ended: ev,
+      nextAssignment: ev.nextAssignment,
+      careerEndedHard: ev.careerEndedHard,
+    };
   }
 
   function afterRenderAll(G) {
@@ -966,13 +988,6 @@
     var payload = G._campaignAssignmentEnded;
     delete G._campaignAssignmentEnded;
     _diagLastAssignmentEndPayload = payload;
-
-    var st = ensureState();
-    st.awaitingLaunch = {
-      ended: payload,
-      nextAssignment: payload.nextAssignment,
-      careerEndedHard: payload.careerEndedHard,
-    };
 
     var showWhenClear = function () {
       var open = document.querySelectorAll('.ov.on');
@@ -1016,15 +1031,15 @@
 
     var nextLine = payload.campaignWin
       ? pName +
-        ', you have cleared the GM career ladder for ' +
+        ', you have cleared the General Manager career ladder for ' +
         oName +
         '. Start a new career anytime from scenario select.'
       : payload.careerEndedHard
-        ? pName + ', your GM career path has ended after repeated setbacks at the bottom of the ladder.'
+        ? pName + ', your General Manager career path has ended after repeated setbacks at the bottom of the ladder.'
         : 'Next: ' +
           oName +
           ' is assigning you to ' +
-          (next && next.title ? next.title : 'a GM role') +
+          (next && next.title ? next.title : 'a General Manager role') +
           (nextCity ? ' in ' + nextCity : '') +
           (next ? ' (Tier ' + next.tier + ').' : '.');
 
@@ -1055,7 +1070,7 @@
     b.innerHTML =
       '<div class="ms2">' +
       '<div class="msh">ASSIGNMENT RESULT</div>' +
-      '<div class="sr"><span class="lb">GM</span><span class="vl">' +
+      '<div class="sr"><span class="lb">General Manager</span><span class="vl">' +
       esc(pName) +
       '</span></div>' +
       '<div class="sr"><span class="lb">Employer</span><span class="vl">' +
@@ -1202,7 +1217,7 @@
             companyName +
             ' is moving you to ' +
             mktLbl +
-            ' as your next GM assignment.',
+            ' as your next General Manager assignment.',
           y: global.G.year,
           p: global.G.period,
           iy: true,
@@ -1293,7 +1308,12 @@
 
   function beginCareerWithIdentity(playerName, ownerCompanyName) {
     if (global.MP && global.MP.mode === 'live') {
-      if (typeof global.showToast === 'function') global.showToast('GM Career is available in solo play only.', 'info');
+      if (typeof global.showToast === 'function')
+        global.showToast('General Manager career is available in solo play only.', 'info');
+      return;
+    }
+    if (typeof global.wlClerkPlanAllowsGmCampaign === 'function' && !global.wlClerkPlanAllowsGmCampaign()) {
+      if (typeof global.wlLockedGmCampaignToast === 'function') global.wlLockedGmCampaignToast();
       return;
     }
     state = defaultState();
@@ -1386,12 +1406,12 @@
     var st = ensureState();
     if (st.campaignWon) {
       body.innerHTML =
-        '<p class="di" style="margin-top:0">You have completed the GM career ladder. Start a new run with <strong>START GM CAREER</strong> on the scenario screen anytime.</p>';
+        '<p class="di" style="margin-top:0">You have completed the General Manager career ladder. Start a new run with <strong>START GENERAL MANAGER CAREER</strong> on the scenario screen anytime.</p>';
       return;
     }
     if (!st.active && !(st.history && st.history.length)) {
       body.innerHTML =
-        '<p class="di" style="margin-top:0">No GM career data yet. Choose <strong>START GM CAREER</strong> on the scenario screen.</p>';
+        '<p class="di" style="margin-top:0">No General Manager career data yet. Choose <strong>START GENERAL MANAGER CAREER</strong> on the scenario screen.</p>';
       return;
     }
     var inProgress = global.G && global.G.campaignAssignment;
@@ -1416,7 +1436,7 @@
         .join('');
       body.innerHTML =
         (st.playerName
-          ? '<p class="di" style="margin-top:0">GM <strong>' +
+          ? '<p class="di" style="margin-top:0">General Manager <strong>' +
             esc(displayPlayerName(st)) +
             '</strong>' +
             (st.ownerCompanyName ? ' · ' + esc(st.ownerCompanyName) : '') +
@@ -1468,7 +1488,7 @@
     body.innerHTML =
       '<div class="ms2">' +
       '<div class="msh">CURRENT ASSIGNMENT</div>' +
-      '<div class="sr"><span class="lb">GM</span><span class="vl">' +
+      '<div class="sr"><span class="lb">General Manager</span><span class="vl">' +
       esc(displayPlayerName(st)) +
       '</span></div>' +
       '<div class="sr"><span class="lb">Owning company</span><span class="vl">' +

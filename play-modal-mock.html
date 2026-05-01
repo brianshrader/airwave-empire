@@ -1,0 +1,1949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Play UI mock — modals (preview only)</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=Archivo+Narrow:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Lora:ital,wght@0,400;0,500;1,400&family=Merriweather:wght@400;700&family=Oswald:wght@400;500;600;700&family=Pacifico&family=Playfair+Display:wght@400;600;700&family=Roboto+Slab:wght@400;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* —— Base page: same as play-landing-font-mock.html —— */
+    body {
+      background: #0a0a0a;
+      color: #f3efe6;
+    }
+    .gold {
+      color: #d89b2b;
+    }
+    .gold-bg {
+      background: #d89b2b;
+      color: #111;
+    }
+    .panel {
+      background: linear-gradient(180deg, rgba(35, 35, 35, 0.95), rgba(15, 15, 15, 0.95));
+      border: 1px solid rgba(216, 155, 43, 0.28);
+      box-shadow: 0 0 0 1px rgba(216, 155, 43, 0.06) inset;
+    }
+    .gridline {
+      border-color: rgba(216, 155, 43, 0.18);
+    }
+    .mock-play {
+      font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+    .mock-play .mock-wordmark {
+      font-family: "Oswald", "Archivo Narrow", "Inter", sans-serif;
+    }
+    .mock-play .mock-reading {
+      font-family: "Lora", "Libre Baskerville", Georgia, "Times New Roman", serif;
+    }
+    .btn-outline {
+      border: 1px solid rgba(120, 113, 108, 0.85);
+      color: #e7e5e4;
+    }
+    .btn-outline:hover {
+      border-color: rgba(216, 155, 43, 0.55);
+      color: #fafaf9;
+    }
+    .btn-cfm {
+      background: #d89b2b;
+      color: #111;
+      border: 1px solid rgba(200, 140, 32, 0.95);
+      font-weight: 700;
+    }
+    .btn-cfm:hover {
+      filter: brightness(1.06);
+    }
+    .tabular {
+      font-variant-numeric: tabular-nums;
+    }
+    .text-profit { color: #52e36e; }
+    .text-loss { color: #f05858; }
+    .text-cash-warn { color: #f5a623; }
+    .mock-stat-label {
+      color: #d6d3d1;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .mt-talent-card .mock-stat-label.block {
+      /* ~13px labels vs ~14px values (text-sm) — +~2px vs old 0.7rem */
+      font-size: 0.8125rem;
+      line-height: 1.3;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+      color: #efebe4;
+    }
+    .mock-sub-pill {
+      font-size: 0.7rem;
+      padding: 0.35rem 0.5rem;
+      border-radius: 0.25rem;
+      border: 1px solid rgba(120, 113, 108, 0.65);
+      color: #d6d3d1;
+      background: rgba(0, 0, 0, 0.25);
+    }
+    .mock-portrait {
+      width: 3.5rem;
+      height: 3.5rem;
+      border-radius: 9999px;
+      object-fit: cover;
+      border: 2px solid rgba(120, 113, 108, 0.85);
+      background: #1c1917;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: "Oswald", "Archivo Narrow", sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #9a9a96;
+      flex-shrink: 0;
+    }
+
+    /* —— Port tokens (when moving rules into src/styles.css) —— */
+    :root {
+      --mock-gold: #d89b2b;
+      --ink: #111;
+      --grn: #52e36e;
+      --red: #f05858;
+      --blu: #5ab4ff;
+    }
+
+    /* Specimen card wraps */
+    .mock-specimen h2 {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #78716c;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Modal shell: landing panel + gold top cap (play #m-fire uses wide + similar depth) */
+    .mo {
+      background: linear-gradient(180deg, rgba(35, 35, 35, 0.98), rgba(18, 18, 18, 0.98));
+      border: 1px solid rgba(216, 155, 43, 0.32);
+      border-top: 3px solid #d89b2b;
+      max-width: 640px;
+      width: 100%;
+      max-height: none;
+      min-height: 0;
+      overflow: visible;
+      box-shadow: 0 0 0 1px rgba(216, 155, 43, 0.06) inset, 0 0 80px rgba(0, 0, 0, 0.55);
+      padding: 28px;
+      margin: 0 auto;
+      border-radius: 2px;
+      transform: none;
+    }
+    .mo.wide {
+      max-width: 800px;
+    }
+    .mh {
+      font-family: "Oswald", "Archivo Narrow", "Inter", sans-serif;
+      font-size: 1.35rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #d89b2b;
+      margin-bottom: 1.25rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      line-height: 1.2;
+    }
+    .mc {
+      font-family: "Inter", sans-serif;
+      background: none;
+      border: 1px solid rgba(120, 113, 108, 0.85);
+      color: #a8a29e;
+      font-size: 0.8rem;
+      font-weight: 500;
+      padding: 0.4rem 0.85rem;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-radius: 0.2rem;
+    }
+    .mc:hover {
+      border-color: rgba(216, 155, 43, 0.55);
+      color: #fafaf9;
+    }
+    .msh {
+      font-family: "Inter", sans-serif;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #a8a29e;
+      border-bottom: 1px solid rgba(68, 64, 60, 0.85);
+      padding-bottom: 0.4rem;
+      margin-bottom: 0.75rem;
+    }
+    .ms2 {
+      margin-bottom: 1.25rem;
+    }
+    .di {
+      font-size: 0.9375rem;
+      line-height: 1.65;
+      margin-bottom: 1rem;
+      font-style: italic;
+      color: #c4bcb2;
+    }
+    .di strong {
+      font-style: normal;
+    }
+    .abt {
+      display: inline-block;
+      background: rgba(0, 0, 0, 0.2);
+      font-family: "Inter", sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.5rem 0.75rem;
+      border-radius: 0.2rem;
+      border: 1px solid rgba(120, 113, 108, 0.85);
+      color: #e7e5e4;
+      cursor: pointer;
+      text-align: center;
+    }
+    .abt:hover {
+      border-color: rgba(216, 155, 43, 0.55);
+      color: #fafaf9;
+    }
+    .abt.b {
+      border-color: rgba(90, 180, 255, 0.45);
+      color: #7dd3fc;
+    }
+    .abt.b:hover {
+      border-color: #5ab4ff;
+      color: #e0f2fe;
+    }
+    .abt.d {
+      border-color: rgba(248, 113, 113, 0.45);
+      color: #fecaca;
+    }
+    .abt.d:hover {
+      border-color: #f87171;
+      color: #fff;
+    }
+    .cfm {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      background: #d89b2b;
+      color: #111;
+      border: 1px solid rgba(200, 140, 32, 0.95);
+      font-family: "Inter", sans-serif;
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 0.85rem 1rem;
+      border-radius: 0.2rem;
+      cursor: pointer;
+      margin-top: 1.1rem;
+    }
+    .cfm:hover {
+      filter: brightness(1.06);
+    }
+    .cfm--danger {
+      background: #dc2626;
+      border-color: #b91c1c;
+      color: #fff;
+    }
+    .cfm--danger:hover {
+      filter: brightness(1.08);
+    }
+    .cnl {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      background: rgba(0, 0, 0, 0.15);
+      font-family: "Inter", sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.7rem 1rem;
+      border: 1px solid rgba(120, 113, 108, 0.85);
+      color: #d6d3d1;
+      border-radius: 0.2rem;
+      cursor: pointer;
+      margin-top: 0.5rem;
+    }
+    .cnl:hover {
+      border-color: rgba(216, 155, 43, 0.45);
+      color: #fafaf9;
+    }
+    .ibox {
+      background: rgba(216, 155, 43, 0.1);
+      border: 1px solid rgba(216, 155, 43, 0.3);
+      border-left: 3px solid #d89b2b;
+      padding: 0.75rem 0.9rem;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: #c4bcb2;
+      font-family: "Inter", sans-serif;
+      font-style: normal;
+      margin: 0 0 0.75rem 0;
+    }
+    .wbox {
+      background: rgba(220, 38, 38, 0.1);
+      border: 1px solid rgba(220, 38, 38, 0.35);
+      border-left: 3px solid #f05858;
+      padding: 0.75rem 0.9rem;
+      font-size: 0.9rem;
+      line-height: 1.55;
+      color: #c4bcb2;
+      font-family: "Inter", sans-serif;
+    }
+    .wbox strong { color: #f3efe6; }
+    .stat-mini .mock-stat-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    /* Daypart rail — landing pill language */
+    .mt-manage__row {
+      display: flex;
+      gap: 1rem;
+      align-items: stretch;
+      min-height: 0;
+      margin-top: 0.25rem;
+    }
+    .mt-manage__sel-label {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #78716c;
+      margin: 0 0 0.5rem 0;
+    }
+    .mt-dp-rail {
+      flex: 0 0 12.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      min-width: 0;
+    }
+    .mt-dp-pill {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      text-align: left;
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid rgba(120, 113, 108, 0.55);
+      border-radius: 0.35rem;
+      background: rgba(0, 0, 0, 0.3);
+      color: #c4bcb2;
+      font-family: "Inter", sans-serif;
+      font-size: 0.7rem;
+      line-height: 1.3;
+      cursor: pointer;
+      box-sizing: border-box;
+    }
+    .mt-dp-pill:hover {
+      border-color: rgba(216, 155, 43, 0.5);
+      color: #f3efe6;
+    }
+    .mt-dp-pill--active {
+      border-color: rgba(216, 155, 43, 0.6);
+      background: rgba(216, 155, 43, 0.1);
+      box-shadow: 0 0 0 1px rgba(216, 155, 43, 0.2);
+    }
+    .mt-dp-pill--active .mt-dp-pill__t {
+      color: #f3efe6;
+    }
+    .mt-dp-pill__t {
+      font-family: "Oswald", "Archivo Narrow", sans-serif;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #e7e5e4;
+      width: 100%;
+    }
+    .mt-dp-pill__s {
+      font-size: 0.7rem;
+      color: #9a9a96;
+      margin-top: 0.2rem;
+      line-height: 1.3;
+    }
+    .mt-dp-panel { flex: 1; min-width: 0; }
+    .mt-slot {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(120, 113, 108, 0.4);
+      border-radius: 0.5rem;
+      padding: 0.9rem 1rem;
+    }
+    .mt-slot .mock-reading { color: #a8a29e; }
+    .talent-name-hero {
+      font-family: "Oswald", "Archivo Narrow", sans-serif;
+      font-size: 1.31rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      color: #f3efe6;
+    }
+
+    /* —— Range slider (match landing gold; cross-browser) —— */
+    .mock-range {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 0.5rem;
+      border-radius: 9999px;
+      background: #2a2a2a;
+      cursor: pointer;
+      --mock-range-pct: 50%;
+    }
+    .mock-range:focus {
+      outline: none;
+    }
+    .mock-range:focus-visible {
+      outline: 2px solid rgba(216, 155, 43, 0.6);
+      outline-offset: 4px;
+    }
+    .mock-range::-webkit-slider-runnable-track {
+      height: 0.5rem;
+      border-radius: 9999px;
+    }
+    .mock-range::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 1.15rem;
+      height: 1.15rem;
+      margin-top: -0.325rem;
+      border-radius: 50%;
+      background: #d89b2b;
+      border: 2px solid #111;
+      box-shadow: 0 0 0 1px rgba(216, 155, 43, 0.45);
+      transition: box-shadow 0.15s ease, transform 0.12s ease;
+    }
+    .mock-range:hover::-webkit-slider-thumb {
+      box-shadow: 0 0 0 1px rgba(216, 155, 43, 0.65), 0 0 20px rgba(216, 155, 43, 0.25);
+    }
+    .mock-range:active::-webkit-slider-thumb {
+      transform: scale(1.05);
+    }
+    .mock-range--sm {
+      height: 0.3rem;
+    }
+    .mock-range--sm::-webkit-slider-runnable-track {
+      height: 0.3rem;
+    }
+    .mock-range--sm::-webkit-slider-thumb {
+      width: 0.9rem;
+      height: 0.9rem;
+      margin-top: -0.3rem;
+    }
+    .mock-range--sm::-moz-range-thumb {
+      width: 0.9rem;
+      height: 0.9rem;
+    }
+    .mock-range--sm::-moz-range-track {
+      height: 0.3rem;
+    }
+    .mock-range--sm::-moz-range-progress {
+      height: 0.3rem;
+    }
+    .mock-range::-moz-range-track {
+      height: 0.5rem;
+      background: #2a2a2a;
+      border-radius: 9999px;
+    }
+    .mock-range::-moz-range-progress {
+      height: 0.5rem;
+      background: #d89b2b;
+      border-radius: 9999px 0 0 9999px;
+    }
+    .mock-range::-moz-range-thumb {
+      width: 1.15rem;
+      height: 1.15rem;
+      border: none;
+      border-radius: 50%;
+      background: #d89b2b;
+      box-shadow: 0 0 0 2px #111, 0 0 0 3px rgba(216, 155, 43, 0.4);
+      cursor: pointer;
+    }
+    .mock-range-wrap {
+      position: relative;
+      width: 100%;
+    }
+    .mock-range-ticks {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #78716c;
+      margin-top: 0.35rem;
+    }
+
+    .ov {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      z-index: 8000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.25s;
+    }
+    .ov.on { opacity: 1; pointer-events: all; }
+    .ov .mo {
+      transform: translateY(20px);
+      transition: transform 0.25s;
+      max-height: 94vh;
+      overflow-y: auto;
+    }
+    .ov.on .mo { transform: translateY(0); }
+
+    /* Manage talent — v2: contract slab, co-host, portraits, daypart mode */
+    .mt-contract-slab {
+      border: 1px solid rgba(216, 155, 43, 0.32);
+      border-left: 3px solid #d89b2b;
+      background: rgba(216, 155, 43, 0.07);
+      border-radius: 0.4rem;
+      padding: 0.75rem 0.9rem;
+      margin-bottom: 0.9rem;
+    }
+    .mt-contract-slab__h {
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: #d6d3d1;
+      margin: 0 0 0.5rem 0;
+    }
+    .mt-contract-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 0.4rem 1rem;
+      font-family: "Inter", sans-serif;
+      font-size: 0.8rem;
+      color: #c4bcb2;
+    }
+    @media (min-width: 420px) {
+      .mt-contract-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+    .mt-contract-grid dt {
+      font-size: 0.58rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #a8a29e;
+      margin: 0;
+    }
+    .mt-contract-grid dd {
+      margin: 0.1rem 0 0 0;
+      color: #f3efe6;
+      font-weight: 600;
+      font-variant-numeric: tabular-nums;
+    }
+    .mt-portrait-btn {
+      -webkit-tap-highlight-color: transparent;
+      position: relative;
+      padding: 0;
+      border: 2px solid rgba(120, 113, 108, 0.55);
+      background: #141210;
+      border-radius: 9999px;
+      cursor: pointer;
+      line-height: 0;
+      transition: border-color 0.15s, box-shadow 0.15s, transform 0.12s;
+    }
+    .mt-portrait-btn:hover {
+      border-color: rgba(216, 155, 43, 0.65);
+      box-shadow: 0 0 0 1px rgba(216, 155, 43, 0.25);
+    }
+    .mt-portrait-btn:focus-visible {
+      outline: 2px solid rgba(216, 155, 43, 0.75);
+      outline-offset: 3px;
+    }
+    .mt-portrait-btn:active {
+      transform: scale(0.98);
+    }
+    .mt-portrait-btn--sm {
+      width: 2.75rem;
+      height: 2.75rem;
+    }
+    .mt-portrait-btn--md {
+      width: 4.25rem;
+      height: 4.25rem;
+    }
+    .mt-portrait-btn .mt-portrait-btn__img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      border-radius: 9999px;
+      border: 1px solid rgba(120, 113, 108, 0.4);
+    }
+    .mt-portrait-btn__hint {
+      position: absolute;
+      bottom: -0.1rem;
+      right: -0.1rem;
+      width: 0.9rem;
+      height: 0.9rem;
+      border-radius: 9999px;
+      background: #d89b2b;
+      color: #111;
+      font-size: 0.55rem;
+      font-weight: 800;
+      line-height: 0.9rem;
+      text-align: center;
+      font-family: "Inter", sans-serif;
+      box-shadow: 0 0 0 2px #141210;
+    }
+    .mt-talent-card {
+      border: 1px solid rgba(120, 113, 108, 0.42);
+      border-radius: 0.5rem;
+      background: rgba(0, 0, 0, 0.22);
+      padding: 0.75rem 0.9rem 0.85rem;
+      margin-bottom: 0.85rem;
+    }
+    .mt-talent-card--cohost {
+      border-color: rgba(120, 113, 108, 0.5);
+    }
+    .mt-extend-label {
+      font-family: "Inter", sans-serif;
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #c9c4bb;
+      font-weight: 600;
+      margin: 0.45rem 0 0.35rem;
+    }
+    .mt-extend-compact {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.45rem;
+    }
+    .mt-ext-btn.cfm {
+      flex: 1 1 min(100%, 5.75rem);
+      min-width: 0;
+      min-height: 3.1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: center;
+      text-align: left;
+      line-height: 1.2;
+      padding: 0.4rem 0.5rem 0.5rem;
+      font-size: 0.6rem;
+      box-sizing: border-box;
+      color: #0a0a0a;
+    }
+    .mt-ext-btn.cfm,
+    .mt-ext-btn.cfm * {
+      color: #0a0a0a;
+    }
+    .mt-ext-btn--suggested {
+      background: linear-gradient(180deg, #ebae3a 0%, #d89b2b 100%) !important;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
+    }
+    .mt-ext-l1 {
+      font-family: Oswald, "Archivo Narrow", sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .mt-stat-more {
+      margin: 0.4rem 0 0.2rem;
+      font-family: Inter, sans-serif;
+    }
+    .mt-stat-more > summary {
+      list-style: none;
+    }
+    .mt-stat-more > summary::-webkit-details-marker {
+      display: none;
+    }
+    .mt-stat-more__summary {
+      cursor: pointer;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.15rem 0.45rem;
+      max-width: 100%;
+      font-size: 0.875rem;
+      letter-spacing: 0.1em;
+      text-transform: none;
+      color: #f0ece6;
+      user-select: none;
+      border: 1px solid rgba(120, 113, 108, 0.45);
+      border-radius: 0.3rem;
+      padding: 0.45rem 0.6rem;
+      margin: 0 0 0.1rem 0;
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+    .mt-stat-more__summary:hover {
+      background: rgba(216, 155, 43, 0.08);
+      border-color: rgba(216, 155, 43, 0.35);
+    }
+    .mt-stat-more__chev {
+      display: inline-block;
+      font-weight: 800;
+      font-size: 0.85em;
+      margin-left: 0.1rem;
+      line-height: 1;
+      transition: transform 0.18s ease;
+    }
+    .mt-stat-more[open] .mt-stat-more__chev {
+      transform: rotate(180deg);
+    }
+    .mt-cta-bar {
+      width: 100%;
+      min-width: 0;
+      margin: 0.4rem 0 0.1rem 0;
+      padding-bottom: 0.1rem;
+    }
+    .mt-cta-bar__row {
+      display: flex;
+      flex-direction: row;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      align-items: stretch;
+    }
+    .mt-cta-bar__cell {
+      flex: 1 1 min(28%, 4.5rem);
+      min-width: 0;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .mt-cta-bar__row .abt {
+      flex: 1 1 auto;
+      width: 100%;
+      min-height: 3.5rem;
+      text-align: center;
+      text-transform: uppercase;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0.25rem;
+      letter-spacing: 0.1em;
+    }
+    .mt-cta-bar__row .mt-cta--bonus {
+      background: rgba(52, 120, 80, 0.4);
+      border: 1px solid rgba(100, 200, 130, 0.5) !important;
+      color: #c8f0d5;
+    }
+    .mt-cta-bar__row .mt-cta--let {
+      background: rgba(160, 100, 20, 0.2);
+      border: 1px solid rgba(200, 120, 30, 0.4) !important;
+      color: #e8c9a0;
+      line-height: 1.1;
+      padding: 0.3rem 0.2rem 0.4rem;
+    }
+    .mt-cta-let__l1 {
+      display: block;
+      width: 100%;
+      font-size: 0.52rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      line-height: 1.1;
+      text-transform: uppercase;
+      color: #e8c9a0;
+    }
+    .mt-cta-let__l2 {
+      display: block;
+      width: 100%;
+      font-size: 0.7rem;
+      font-weight: 500;
+      font-family: Inter, sans-serif;
+      line-height: 1.4;
+      margin-top: 0.2rem;
+      letter-spacing: 0.04em;
+      text-transform: none;
+      color: #b0a08f;
+    }
+    .mt-cta-bar__row .mt-cta--now {
+      background: rgba(90, 20, 20, 0.4);
+      border: 1px solid rgba(200, 60, 60, 0.5) !important;
+      color: #f5c2c2;
+    }
+    .mt-cta-bonus__l1,
+    .mt-cta-fire__l1 {
+      display: block;
+      width: 100%;
+      font-size: 0.52rem;
+      font-weight: 700;
+      line-height: 1.1;
+      text-transform: uppercase;
+    }
+    .mt-cta-bonus__l2 {
+      display: block;
+      width: 100%;
+      margin-top: 0.12rem;
+      line-height: 1.15;
+      text-align: center;
+      text-transform: none;
+    }
+    .mt-cta-bonus__l2-amount {
+      display: inline;
+      font-size: 0.86rem;
+      font-weight: 800;
+      font-family: Oswald, "Archivo Narrow", sans-serif;
+      line-height: 1.1;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #f5f1eb;
+    }
+    .mt-cta-bonus__l2-note {
+      display: inline;
+      margin-left: 0.2em;
+      font-size: 0.5rem;
+      font-weight: 500;
+      font-family: Inter, sans-serif;
+      line-height: 1.2;
+      letter-spacing: 0.04em;
+      text-transform: none;
+      color: #c4ead2;
+    }
+    .mt-cta-fire__l2 {
+      display: block;
+      width: 100%;
+      font-size: 0.86rem;
+      font-weight: 800;
+      font-family: Oswald, "Archivo Narrow", sans-serif;
+      margin-top: 0.12rem;
+      line-height: 1.1;
+      text-transform: uppercase;
+      color: #f2ece6;
+    }
+    .mt-cta-bar__row .mt-cta--bonus .mt-cta-bonus__l1 {
+      color: #c8f0d5;
+    }
+    .mt-cta-bar__row .mt-cta--now .mt-cta-fire__l1 {
+      color: #f5c2c2;
+      font-size: 0.52rem;
+    }
+    .mt-cta-bar__row .mt-cta--now .mt-cta-fire__l2 {
+      color: #fafaf9;
+    }
+    .mt-admin-block {
+      margin: 0.4rem 0 0.2rem 0;
+      padding-top: 1.35rem;
+      border-top: 1px solid rgba(100, 100, 100, 0.45);
+    }
+    .mt-admin-block__h {
+      font-family: Oswald, "Archivo Narrow", "Inter", sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #c9c4bc;
+      border-bottom: 1px solid rgba(120, 113, 108, 0.45);
+      padding: 0 0 0.35rem;
+      margin: 0 0 0.4rem 0;
+    }
+    .mt-stat-more[open] > .mt-stat-more__summary {
+      margin-bottom: 0.35rem;
+    }
+    .mt-bonus-block {
+      display: block;
+    }
+    .mt-bonus-hint {
+      font-size: 0.58rem;
+      font-family: Inter, sans-serif;
+      line-height: 1.45;
+      color: #78716c;
+      margin: 0.3rem 0 0 0.2rem;
+      padding: 0;
+    }
+    .mt-exit-stack--split {
+      gap: 0;
+    }
+    .mt-exit-block--now {
+      border-top: 1px solid rgba(87, 83, 78, 0.55);
+      padding-top: 0.5rem;
+      margin-top: 0.2rem;
+    }
+    .mt-exit-let {
+      background: rgba(0, 0, 0, 0.22);
+      color: #d6d3d1;
+      border: 1px solid rgba(87, 83, 78, 0.65) !important;
+      font-weight: 500;
+    }
+    .mt-exit-let:hover {
+      border-color: #a8a29e !important;
+      color: #fafaf9;
+    }
+    .mt-exit-sub {
+      font-size: 0.58rem;
+      font-family: Inter, sans-serif;
+      line-height: 1.45;
+      color: #78716c;
+      margin: 0.3rem 0 0 0.15rem;
+      max-width: 28rem;
+    }
+    .mt-admin-details {
+      margin: 0.45rem 0 0.15rem 0;
+    }
+    .mt-admin-details__summary {
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      gap: 0.15rem 0.4rem;
+      max-width: 100%;
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      color: #a8a29e;
+      user-select: none;
+      border: 1px solid rgba(87, 83, 78, 0.45);
+      border-radius: 0.3rem;
+      padding: 0.35rem 0.55rem;
+      transition: background 0.15s ease;
+    }
+    .mt-admin-details__summary:hover {
+      background: rgba(255, 255, 255, 0.04);
+    }
+    .mt-admin-details > summary::-webkit-details-marker {
+      display: none;
+    }
+    .mt-admin-details__sub {
+      color: #78716c;
+      font-size: 0.52rem;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+    }
+    .mt-admin-grid--quiet {
+      margin-top: 0.35rem;
+    }
+    .mt-admin-grid--quiet .abt {
+      min-height: 2.1rem;
+      font-size: 0.55rem;
+      font-weight: 500;
+      color: #c4bdb4;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(120, 113, 108, 0.55);
+      border-radius: 0.25rem;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+      transition: border-color 0.15s ease, background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .mt-admin-grid--quiet .abt:hover {
+      color: #f3efe6;
+      border-color: rgba(216, 155, 43, 0.55);
+      background: rgba(216, 155, 43, 0.1);
+      box-shadow: 0 0 0 1px rgba(216, 155, 43, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+    }
+    .mt-admin-grid--quiet .abt:focus-visible {
+      outline: 2px solid rgba(216, 155, 43, 0.7);
+      outline-offset: 2px;
+    }
+    .mt-ext-l2 {
+      font-family: Oswald, "Archivo Narrow", sans-serif;
+      font-size: 0.95rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      line-height: 1.1;
+      margin-top: 0.12rem;
+    }
+    .mt-ext-l3 {
+      font-size: 0.6rem;
+      font-family: Inter, sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      margin-top: 0.1rem;
+      color: #1a1a1a;
+      opacity: 1;
+    }
+    .mt-exit-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      margin: 0.4rem 0 0.2rem 0;
+    }
+    .mt-exit-stack .abt,
+    .mt-exit-stack .abt.g,
+    .mt-exit-stack .abt.d {
+      width: 100%;
+      box-sizing: border-box;
+      min-height: 2.1rem;
+      font-size: 0.6rem;
+      text-align: center;
+      padding: 0.45rem 0.4rem;
+    }
+    .mt-admin-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: repeat(2, minmax(2.1rem, auto));
+      gap: 0.4rem;
+      margin-top: 0.4rem;
+      align-items: stretch;
+    }
+    .mt-admin-grid .abt {
+      min-height: 2.1rem;
+      height: 100%;
+      width: 100%;
+      font-size: 0.6rem;
+      padding: 0.4rem 0.35rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+    .mt-contract-actions,
+    .mt-mgmt-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.4rem;
+    }
+    @media (max-width: 520px) {
+      .mt-extend-compact {
+        flex-direction: column;
+      }
+      .mt-ext-btn.cfm {
+        width: 100%;
+        flex: 1 1 auto;
+      }
+    }
+    .mt-talent-card .msh--tiny {
+      border: 0;
+      padding: 0;
+      margin: 0.35rem 0 0.1rem;
+      font-size: 0.55rem;
+      letter-spacing: 0.12em;
+      color: #a8a29e;
+    }
+    .mt-talent-card__meta {
+      font-size: 0.65rem;
+      line-height: 1.45;
+      color: #78716c;
+      font-family: "Inter", sans-serif;
+      margin: 0.2rem 0 0.15rem 0;
+    }
+    .mt-daypart-mode {
+      margin: 0.5rem 0 0.75rem 0;
+    }
+    .mt-daypart-mode__note {
+      font-size: 0.7rem;
+      line-height: 1.5;
+      color: #9a9a96;
+      margin: 0 0 0.4rem 0;
+      font-family: "Inter", sans-serif;
+    }
+    .mock-seg {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+    }
+    .mock-seg__btn {
+      font-family: "Inter", sans-serif;
+      font-size: 0.64rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.4rem 0.55rem;
+      border-radius: 0.25rem;
+      border: 1px solid rgba(120, 113, 108, 0.6);
+      background: rgba(0, 0, 0, 0.3);
+      color: #a8a29e;
+      cursor: pointer;
+    }
+    .mock-seg__btn:hover {
+      border-color: rgba(216, 155, 43, 0.45);
+      color: #e7e5e4;
+    }
+    .mock-seg__btn--on {
+      border-color: rgba(216, 155, 43, 0.65);
+      color: #fcd34d;
+      background: rgba(216, 155, 43, 0.1);
+    }
+    .mock-seg__btn:disabled,
+    .mock-seg__btn[aria-disabled="true"] {
+      opacity: 0.35;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .mo--portrait {
+      z-index: 1;
+    }
+
+    @media (max-width: 768px) {
+      .mt-manage__row { flex-direction: column; }
+      .mt-dp-rail {
+        flex: 0 0 auto;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        gap: 0.5rem;
+        padding-bottom: 0.4rem;
+        max-width: 100%;
+        align-self: stretch;
+      }
+      .mt-dp-pill {
+        flex: 0 0 auto;
+        min-width: min(200px, 42vw);
+        max-width: min(240px, 90vw);
+      }
+      .mh {
+        font-size: 1.05rem;
+        letter-spacing: 0.1em;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body class="antialiased mock-play">
+  <p class="text-center text-xs uppercase tracking-widest text-stone-500 py-2 border-b max-w-4xl mx-auto px-3 gridline">
+    Preview only — same <strong class="text-stone-400 font-normal">typography + palette</strong> as
+    <a class="text-amber-200/90 underline underline-offset-2 hover:text-amber-100" href="./play-landing-font-mock.html">play-landing-font-mock.html</a>
+    (Inter / Oswald / Lora, gold <span class="gold">#d89b2b</span>).
+    <span class="normal-case tracking-normal text-stone-500/95">Talent / contract card (v4) is shown here in section D only, not on the landing mock.</span>
+    Port to
+    <code class="text-stone-500">play.html</code> + <code class="text-stone-500">src/styles.css</code> when ready.
+  </p>
+
+  <div class="max-w-6xl mx-auto px-4 py-8 space-y-10">
+    <header class="panel rounded-lg px-4 py-3 max-w-3xl">
+      <h1 class="mock-wordmark text-2xl md:text-3xl font-bold tracking-[0.14em] uppercase gold">
+        Modal system
+      </h1>
+      <p class="mock-reading text-stone-400 mt-2 text-sm leading-relaxed max-w-2xl">
+        Specimens use the landing mock’s <strong class="text-stone-200 font-sans not-italic">panel</strong> language and
+        <strong class="text-stone-200 font-sans not-italic">btn-cfm / btn-outline</strong> affordances. Modals are
+        in-page (not fixed) for side-by-side review; <strong class="text-stone-200">Open sample overlay</strong> for backdrop motion.
+      </p>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div class="panel rounded-xl p-4 mock-specimen">
+        <h2>A — Default shell · max 640px</h2>
+        <div class="mo">
+          <div class="mh">
+            <span>SHORT MODAL</span>
+            <button type="button" class="mc">Close ×</button>
+          </div>
+          <p class="di mock-reading">Italic body copy placeholder — one or two lines of context before actions (Lora, same as landing body).</p>
+          <p class="text-stone-300 text-[15px] leading-relaxed not-italic font-sans">Non-italic paragraph: Inter for help text. Gold actions match <code class="text-amber-200/80">btn-cfm</code> on the landing page.</p>
+          <button type="button" class="cfm" style="margin-top: 1.1rem">Confirm</button>
+          <button type="button" class="cnl">Close</button>
+        </div>
+      </div>
+
+      <div class="panel rounded-xl p-4 mock-specimen">
+        <h2>B — Wide shell · 800px</h2>
+        <div class="mo wide">
+          <div class="mh">
+            <span>FINANCIALS (WIDE)</span>
+            <button type="button" class="mc">Close ×</button>
+          </div>
+          <p class="msh">Summary</p>
+          <p class="di mock-reading" style="margin-bottom: 0.75rem">Wide modals use <code class="text-amber-200/80">.mo.wide</code> — same padding, panel gradient, and top gold cap.</p>
+          <div class="grid grid-cols-2 gap-2 text-sm tabular">
+            <div class="p-2.5 rounded border border-amber-900/25 bg-black/30 text-stone-200">
+              Revenue <span class="float-right text-profit">$24.5K</span>
+            </div>
+            <div class="p-2.5 rounded border border-amber-900/25 bg-black/30 text-stone-200">
+              Opex <span class="float-right">$18.2K</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel rounded-xl p-4 mock-specimen">
+      <h2>C — Confirm (danger + cancel)</h2>
+      <div class="mo" style="max-width: 32rem; border-color: rgba(220, 38, 38, 0.35)">
+        <div class="mh" style="color: #f87171">
+          <span>Fire talent</span>
+          <button type="button" class="mc">×</button>
+        </div>
+        <div class="wbox mock-reading" style="font-size: 0.9rem">
+          Fire <strong>Jordan Lake</strong> from WZBQ morning drive? Contract buyout <strong class="text-amber-200/90">$4,000</strong>. They leave immediately — not benched.
+        </div>
+        <div class="flex flex-col sm:flex-row gap-2 mt-3">
+          <button type="button" class="cfm cfm--danger !mt-0 !w-auto sm:flex-1" style="margin-top: 0">Fire</button>
+          <button type="button" class="cnl !mt-0 sm:flex-1">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel rounded-xl p-4 mock-specimen" id="d-manage-talent">
+      <h2>D — Manage talent (daypart rail) · #m-fire</h2>
+      <div class="mo wide" id="mock-talent-shell">
+        <div class="mh">
+          <span id="mock-talent-title" class="leading-tight">Manage talent</span>
+          <button type="button" class="mc">Close ×</button>
+        </div>
+        <p class="di mock-reading" style="margin-bottom: 0.85rem">
+          <strong class="text-stone-100 not-italic font-sans">v4 concept (matches live <code class="text-amber-200/80">#m-contract</code>):</strong>
+          <strong class="not-italic text-stone-200">Lead and co-host</strong> share the same card: core stats →
+          <strong class="not-italic text-stone-200">View Details</strong> (chevron) → <strong class="not-italic text-stone-200">extend</strong> (1 / 2 / 3 YR) →
+          <strong class="not-italic text-stone-200">morale / expire / fire</strong> in one horizontal row (short labels; full meaning in tooltips) → one line of legend below →
+          <strong class="not-italic text-stone-200">more actions</strong> (replace / move / transfer / bench) always visible. Portraits: <code class="text-amber-200/80">#m-portrait</code>.
+          Unstaffed dayparts: controls at bottom.
+        </p>
+        <div class="ms2 p-3 rounded-md border border-amber-900/20 bg-black/20">
+          <p class="msh" style="border: none; padding: 0; margin-bottom: 0.4rem; letter-spacing: 0.14em">Programming focus</p>
+          <p class="text-stone-500 text-sm mb-2 not-italic font-sans">Where PD attention and coaching lean — one daypart gets extra support each period.</p>
+          <label class="flex flex-wrap items-center gap-2 text-sm text-stone-300 font-sans">
+            <span class="mock-stat-label text-stone-500" style="font-size: 0.65rem">Focus</span>
+            <select class="abt" style="padding: 0.4rem 0.6rem; min-width: 10rem; cursor: pointer; background: rgba(0, 0, 0, 0.35)">
+              <option>Balanced</option>
+              <option>Morning</option>
+              <option>Midday</option>
+            </select>
+          </label>
+        </div>
+        <p class="mt-manage__sel-label">Daypart</p>
+        <div class="mt-manage__row">
+          <div class="mt-dp-rail" role="tablist" aria-label="Daypart" id="mock-mock-rail">
+            <button type="button" class="mt-dp-pill mt-dp-pill--active" data-label="MANAGE TALENT" data-panel="a" aria-selected="true">
+              <span class="mt-dp-pill__t">Morning drive</span>
+              <span class="mt-dp-pill__s">Morgan James</span>
+            </button>
+            <button type="button" class="mt-dp-pill" data-label="HIRE — MIDDAY" data-panel="b">
+              <span class="mt-dp-pill__t">Midday</span>
+              <span class="mt-dp-pill__s">Open</span>
+            </button>
+            <button type="button" class="mt-dp-pill" data-label="MANAGE TALENT" data-panel="c">
+              <span class="mt-dp-pill__t">Afternoon drive</span>
+              <span class="mt-dp-pill__s">Simulcast</span>
+            </button>
+            <button type="button" class="mt-dp-pill" data-label="HIRE — EVENING" data-panel="b">
+              <span class="mt-dp-pill__t">Evening</span>
+              <span class="mt-dp-pill__s">Open</span>
+            </button>
+            <button type="button" class="mt-dp-pill" data-label="HIRE — OVERNIGHT" data-panel="b">
+              <span class="mt-dp-pill__t">Overnight</span>
+              <span class="mt-dp-pill__s">Open</span>
+            </button>
+          </div>
+          <div class="mt-dp-panel" id="mock-talent-panel">
+            <div class="mt-slot" id="mock-panel-a">
+              <p class="msh" style="border: 0; padding: 0; margin-bottom: 0.2rem; letter-spacing: 0.14em">Morning drive</p>
+              <p class="text-stone-500 text-xs font-sans mb-2" style="letter-spacing: 0.04em">WZBQ · local on-air (CHR)</p>
+
+              <section class="mt-talent-card" aria-label="Lead host">
+                <p class="msh msh--talent-rail" style="border: 0; padding: 0; margin: 0 0 0.5rem">Lead host</p>
+                <div class="flex flex-wrap gap-3 items-start">
+                  <div class="flex flex-col items-center gap-1">
+                    <button
+                      type="button"
+                      class="mt-portrait-btn mt-portrait-btn--md"
+                      id="mock-pt-host"
+                      data-pt-initials="MJ"
+                      data-pt-name="Morgan James"
+                      data-pt-ctx="WZBQ · morning drive · lead"
+                      data-pt-c1="#4a3a2a"
+                      data-pt-c2="#1a1510"
+                      data-pt-src="generated-portraits/library/male/1990s/deandre-parker-1992.png"
+                      aria-label="View large portrait, Morgan James"
+                    >
+                      <img
+                        class="mt-portrait-btn__img"
+                        src="generated-portraits/library/male/1990s/deandre-parker-1992.png"
+                        alt="Morgan James (library portrait preview)"
+                        width="68"
+                        height="68"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <span class="mt-portrait-btn__hint" title="Larger + save" aria-hidden="true">+</span>
+                    </button>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="talent-name-hero" style="margin: 0">Morgan James</p>
+                    <div
+                      class="grid gap-1.5 mt-1.5 text-sm text-stone-300 tabular"
+                      style="font-family: Inter, sans-serif; grid-template-columns: repeat(auto-fill, minmax(4.25rem, 1fr))"
+                    >
+                      <div><span class="mock-stat-label block">Talent</span>82</div>
+                      <div><span class="mock-stat-label block">Fit</span> <span class="text-profit">Great</span></div>
+                      <div><span class="mock-stat-label block">Slot</span> <span class="text-profit">78</span></div>
+                      <div><span class="mock-stat-label block">Morale</span> <span class="text-profit">78</span></div>
+                      <div><span class="mock-stat-label block">Pay</span> <span class="text-stone-200">$94K/yr</span></div>
+                    </div>
+                    <details class="mt-stat-more">
+                      <summary class="mt-stat-more__summary">
+                        View Details <span class="mt-stat-more__chev" aria-hidden="true">▾</span>
+                      </summary>
+                      <dl class="mt-contract-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0.15rem 0 0.1rem; gap: 0.35rem 0.5rem">
+                        <div>
+                          <dt>Contract remaining</dt>
+                          <dd>~1.2 yr</dd>
+                        </div>
+                        <div>
+                          <dt>Years at station</dt>
+                          <dd>3.0</dd>
+                        </div>
+                        <div>
+                          <dt>Career length (radio)</dt>
+                          <dd>11.0 yr total</dd>
+                        </div>
+                        <div>
+                          <dt>Severance (immediate)</dt>
+                          <dd class="text-stone-300">$4,200</dd>
+                        </div>
+                      </dl>
+                    </details>
+                    <p class="mt-extend-label">Extend Contract</p>
+                    <div class="mt-extend-compact" role="group" aria-label="Extend (mock)">
+                      <button type="button" class="cfm mt-ext-btn" aria-label="Sign one year, 102K, plus 8 percent">
+                        <span class="mt-ext-l1">SIGN 1 YR</span>
+                        <span class="mt-ext-l2">SALARY: $102K/YR</span>
+                        <span class="mt-ext-l3">RAISE: +8%</span>
+                      </button>
+                      <button type="button" class="cfm mt-ext-btn mt-ext-btn--suggested" aria-label="Sign two year, 99K, plus 5 percent">
+                        <span class="mt-ext-l1">SIGN 2 YR</span>
+                        <span class="mt-ext-l2">SALARY: $99K/YR</span>
+                        <span class="mt-ext-l3">RAISE: +5%</span>
+                      </button>
+                      <button type="button" class="cfm mt-ext-btn" aria-label="Sign three year, 95K, plus 2 percent">
+                        <span class="mt-ext-l1">SIGN 3 YR</span>
+                        <span class="mt-ext-l2">SALARY: $95K/YR</span>
+                        <span class="mt-ext-l3">RAISE: +2%</span>
+                      </button>
+                    </div>
+                    <div class="mt-cta-bar" aria-label="Bonus and contract exit (mock)">
+                      <div class="mt-cta-bar__row">
+                        <div class="mt-cta-bar__cell">
+                          <button type="button" class="abt mt-cta--bonus" style="cursor: default">
+                            <span class="mt-cta-bonus__l1">morale bonus</span>
+                            <span class="mt-cta-bonus__l2">
+                              <span class="mt-cta-bonus__l2-amount">+$8,500</span>
+                              <span class="mt-cta-bonus__l2-note">(optional)</span>
+                            </span>
+                          </button>
+                        </div>
+                        <div class="mt-cta-bar__cell">
+                          <button type="button" class="abt mt-cta--let" style="cursor: default">
+                            <span class="mt-cta-let__l1">let contract expire</span>
+                            <span class="mt-cta-let__l2">1.2 yrs remaining</span>
+                          </button>
+                        </div>
+                        <div class="mt-cta-bar__cell">
+                          <button type="button" class="abt mt-cta--now" style="cursor: default">
+                            <span class="mt-cta-fire__l1">fire immediately</span><span class="mt-cta-fire__l2">$4,200</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-admin-block">
+                      <p class="mt-admin-block__h">More actions</p>
+                      <div class="mt-admin-grid mt-admin-grid--quiet" role="group" aria-label="Seat actions (mock)">
+                        <button type="button" class="abt">Replace</button>
+                        <button type="button" class="abt">Move</button>
+                        <button type="button" class="abt">Transfer</button>
+                        <button type="button" class="abt">Bench</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section class="mt-talent-card mt-talent-card--cohost" aria-label="Co-host">
+                <p class="msh msh--talent-rail" style="border: 0; padding: 0; margin: 0 0 0.5rem">Co-host</p>
+                <div class="flex flex-wrap gap-3 items-start">
+                  <div class="flex flex-col items-center gap-1">
+                    <button
+                      type="button"
+                      class="mt-portrait-btn mt-portrait-btn--md"
+                      id="mock-pt-cohost"
+                      data-pt-initials="DL"
+                      data-pt-name="Dana Lewis"
+                      data-pt-ctx="WZBQ · morning drive · co-host"
+                      data-pt-c1="#2a3540"
+                      data-pt-c2="#0f1418"
+                      data-pt-src="generated-portraits/library/female/1990s/valerie-thompson-1994.png"
+                      aria-label="View large portrait, Dana Lewis"
+                    >
+                      <img
+                        class="mt-portrait-btn__img"
+                        src="generated-portraits/library/female/1990s/valerie-thompson-1994.png"
+                        alt="Dana Lewis (library portrait preview)"
+                        width="68"
+                        height="68"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                      <span class="mt-portrait-btn__hint" aria-hidden="true">+</span>
+                    </button>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <p class="talent-name-hero" style="margin: 0">Dana Lewis</p>
+                    <div
+                      class="grid gap-1.5 mt-1.5 text-sm text-stone-300 tabular"
+                      style="font-family: Inter, sans-serif; grid-template-columns: repeat(auto-fill, minmax(4.25rem, 1fr))"
+                    >
+                      <div><span class="mock-stat-label block">Talent</span>74</div>
+                      <div><span class="mock-stat-label block">Fit</span> <span class="text-profit">Good</span></div>
+                      <div><span class="mock-stat-label block">Slot</span> <span class="text-profit">78</span></div>
+                      <div><span class="mock-stat-label block">Morale</span> <span class="text-amber-200/90">72</span></div>
+                      <div><span class="mock-stat-label block">Pay</span> <span class="text-stone-200">$32K/yr</span></div>
+                      <div>
+                        <span class="mock-stat-label block">Chemistry</span> <span class="text-profit">Good</span>
+                      </div>
+                    </div>
+                    <details class="mt-stat-more">
+                      <summary class="mt-stat-more__summary">
+                        View Details <span class="mt-stat-more__chev" aria-hidden="true">▾</span>
+                      </summary>
+                      <dl class="mt-contract-grid" style="grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 0.15rem 0 0.1rem; gap: 0.35rem 0.5rem">
+                        <div>
+                          <dt>Contract remaining</dt>
+                          <dd>~0.8 yr</dd>
+                        </div>
+                        <div>
+                          <dt>Years at station</dt>
+                          <dd>1.0</dd>
+                        </div>
+                        <div>
+                          <dt>Career length (radio)</dt>
+                          <dd>6.0 yr total</dd>
+                        </div>
+                        <div>
+                          <dt>Severance (immediate)</dt>
+                          <dd class="text-stone-300">$1,200</dd>
+                        </div>
+                      </dl>
+                    </details>
+                    <p class="mt-extend-label">Extend Contract</p>
+                    <div class="mt-extend-compact" role="group" aria-label="Co-host extend (mock)">
+                      <button type="button" class="cfm mt-ext-btn">
+                        <span class="mt-ext-l1">SIGN 1 YR</span>
+                        <span class="mt-ext-l2">SALARY: $35K/YR</span>
+                        <span class="mt-ext-l3">RAISE: +7%</span>
+                      </button>
+                      <button type="button" class="cfm mt-ext-btn mt-ext-btn--suggested" aria-label="Sign two year co-host">
+                        <span class="mt-ext-l1">SIGN 2 YR</span>
+                        <span class="mt-ext-l2">SALARY: $33K/YR</span>
+                        <span class="mt-ext-l3">RAISE: +3%</span>
+                      </button>
+                      <button type="button" class="cfm mt-ext-btn">
+                        <span class="mt-ext-l1">SIGN 3 YR</span>
+                        <span class="mt-ext-l2">SALARY: $32K/YR</span>
+                        <span class="mt-ext-l3">RAISE: +0%</span>
+                      </button>
+                    </div>
+                    <div class="mt-cta-bar" aria-label="Co-host exit (mock)">
+                      <div class="mt-cta-bar__row">
+                        <div class="mt-cta-bar__cell">
+                          <button type="button" class="abt mt-cta--bonus" style="cursor: default">
+                            <span class="mt-cta-bonus__l1">morale bonus</span>
+                            <span class="mt-cta-bonus__l2">
+                              <span class="mt-cta-bonus__l2-amount">+$1,200</span>
+                              <span class="mt-cta-bonus__l2-note">(optional)</span>
+                            </span>
+                          </button>
+                        </div>
+                        <div class="mt-cta-bar__cell">
+                          <button type="button" class="abt mt-cta--let" style="cursor: default">
+                            <span class="mt-cta-let__l1">let contract expire</span>
+                            <span class="mt-cta-let__l2">0.8 yrs remaining</span>
+                          </button>
+                        </div>
+                        <div class="mt-cta-bar__cell">
+                          <button type="button" class="abt mt-cta--now" style="cursor: default">
+                            <span class="mt-cta-fire__l1">remove immediately</span><span class="mt-cta-fire__l2">$1,200</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="mt-admin-block">
+                      <p class="mt-admin-block__h">More actions</p>
+                      <div class="mt-admin-grid mt-admin-grid--quiet" role="group" aria-label="Co-host seat (mock)">
+                        <button type="button" class="abt">Replace</button>
+                        <button type="button" class="abt">Move</button>
+                        <button type="button" class="abt">Transfer</button>
+                        <button type="button" class="abt">Bench</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <div class="mt-daypart-mode" style="margin-top: 0.25rem">
+                <p class="msh" style="border: 0; padding: 0; margin: 0 0 0.2rem; font-size: 0.58rem; letter-spacing: 0.14em; color: #a8a29e">Unstaffed backfill (music dayparts only)</p>
+                <p class="mt-daypart-mode__note">
+                  When there is <strong class="text-stone-300">no local lead</strong>, the slot can run
+                  <strong>voice-tracked</strong> (light staffing cost) or <strong>full automation</strong> — not shown on syndicated
+                  / franchise blocks. In code: <code class="text-stone-500">staffingMode: "light"</code> vs default.
+                </p>
+                <div class="mock-seg" role="radiogroup" aria-label="Unstaffed music backfill" id="mock-seg-music">
+                  <button type="button" class="mock-seg__btn mock-seg__btn--on" aria-pressed="true">Voice-tracked</button>
+                  <button type="button" class="mock-seg__btn" aria-pressed="false">Full automation</button>
+                </div>
+              </div>
+            </div>
+            <div class="mt-slot hidden" id="mock-panel-b" style="margin-top: 0">
+              <p class="msh" id="mock-panel-b-h" style="border: 0; padding: 0; margin-bottom: 0.5rem; letter-spacing: 0.14em">Midday</p>
+              <p class="text-stone-500 text-xs font-sans mb-1">CHR · no local lead · slot Q 52</p>
+              <p class="text-stone-400 text-sm not-italic mb-2 font-sans leading-relaxed">
+                <strong class="text-stone-200">No on-air host</strong> — choose how the daypart airs until you hire.
+              </p>
+              <div class="mb-2">
+                <p class="msh" style="border: 0; padding: 0; margin: 0 0 0.25rem; font-size: 0.55rem; letter-spacing: 0.12em">Unstaffed music (no syndication on this block)</p>
+                <div class="mock-seg" role="radiogroup" aria-label="Unstaffed midday (music)">
+                  <button type="button" class="mock-seg__btn" aria-pressed="false">Voice-tracked</button>
+                  <button type="button" class="mock-seg__btn mock-seg__btn--on" aria-pressed="true">Full automation</button>
+                </div>
+              </div>
+              <p class="ibox text-sm" style="margin: 0 0 0.5rem 0; font-size: 0.78rem; line-height: 1.5">Voice-tracking unlocks in later eras; automation is the cheap default. Hire local talent to build listeners and improve slot quality over time.</p>
+              <button type="button" class="cfm" style="max-width: 12rem; margin-top: 0; font-size: 0.72rem; letter-spacing: 0.12em">Hire lead host</button>
+            </div>
+            <div class="mt-slot hidden" id="mock-panel-c" style="margin-top: 0">
+              <p class="msh" style="border: 0; padding: 0; margin-bottom: 0.35rem; letter-spacing: 0.14em">Afternoon drive</p>
+              <p class="text-stone-500 text-xs font-sans mb-1">News/Talk · no local lead · KLRX simulcast in air check</p>
+              <p class="text-stone-400 text-sm not-italic mb-2 font-sans">
+                <strong class="text-stone-200">Spoken word — unstaffed</strong> · default is syndicated or network barter, not
+                <span class="text-stone-500">voice-track</span>. Deliberate <strong class="text-amber-200/90">paid</strong> blocks
+                change revenue and credibility; maps to <code>staffingMode: "paid"</code>.
+              </p>
+              <p class="msh" style="border: 0; padding: 0; margin: 0.35rem 0; font-size: 0.55rem; letter-spacing: 0.12em">Unstaffed talk fill</p>
+              <div class="mock-seg" role="radiogroup" aria-label="Unstaffed talk (afternoon)">
+                <button type="button" class="mock-seg__btn mock-seg__btn--on" aria-pressed="true">Syndicated / network</button>
+                <button type="button" class="mock-seg__btn" aria-pressed="false">Paid programming</button>
+              </div>
+              <p class="ibox text-sm mt-2 mb-2" style="line-height: 1.5">A local hire replaces the simulcast. Contract + roster blocks match the v3 lead card above (full row per talent).</p>
+              <button type="button" class="cfm" style="max-width: 12rem; margin-top: 0.25rem; font-size: 0.72rem; letter-spacing: 0.12em">Hire lead host</button>
+            </div>
+          </div>
+        </div>
+        <div class="ms2" style="margin-top: 0.9rem">
+          <p class="msh" style="letter-spacing: 0.14em">Talent bench</p>
+          <p class="text-stone-500 text-sm not-italic font-sans" style="color: #78716c; margin: 0; letter-spacing: 0.02em">Bench is empty.</p>
+        </div>
+        <button type="button" class="cnl" style="max-width: 10rem; margin-top: 0.75rem">Close</button>
+      </div>
+      <p class="text-xs text-stone-500 mt-3 font-sans leading-relaxed">
+        Co-host matches lead: <code class="text-stone-500">View Details</code> stays a <code class="text-stone-500">&lt;details&gt;</code>; morale / expire / fire sit in one row under renewals; <code class="text-stone-500">More actions</code> is always expanded in-game. Live
+        <code class="text-stone-500">#m-contract</code> maps to <code class="text-stone-500">openContract</code> /
+        <code class="text-stone-500">openContract(…, 'cohost')</code> + replace / move / transfer / bench helpers. Portraits: <code class="text-stone-500">#m-portrait</code>,
+        <code class="text-stone-500">wlPortraitFromDataset</code>. Unstaffed: <code class="text-stone-500">staffingMode</code> etc.
+      </p>
+    </div>
+
+    <div class="panel rounded-xl p-4 mock-specimen">
+      <h2>E — Sliders (range)</h2>
+      <p class="text-stone-400 text-sm font-sans mb-4 max-w-2xl">
+        Native <code class="text-stone-500">type="range"</code> with a gold “filled” track, dark remainder, and circular thumb.
+        <span class="text-stone-500">WebKit</span> uses a live gradient; <span class="text-stone-500">Firefox</span> uses
+        <code class="text-stone-500">::-moz-range-progress</code> for the fill. Pair with
+        <span class="text-stone-300">.mock-stat-label</span> + tabular value readouts.
+      </p>
+      <div class="mo wide max-w-3xl">
+        <div class="mh">
+          <span>SPOT / PROMO MIX</span>
+          <span class="text-stone-500 text-xs font-sans font-normal normal-case tracking-normal" style="font-family: Inter, sans-serif">(mock)</span>
+        </div>
+        <p class="text-stone-500 text-sm not-italic font-sans leading-relaxed mb-4" style="letter-spacing: 0.02em">
+          Drag the primary slider — the gold segment grows with the value (same <span class="text-amber-200/80">#d89b2b</span> as
+          <code class="text-stone-500">btn-cfm</code>).
+        </p>
+        <div class="p-3 rounded-md border border-amber-900/20 bg-black/20 mb-5">
+          <div class="flex flex-wrap items-baseline justify-between gap-2 mb-2">
+            <span class="mock-stat-label" style="font-size: 0.7rem; letter-spacing: 0.14em">Promo share of spot load</span>
+            <span
+              class="text-lg font-bold tabular text-stone-100 font-sans"
+              id="mock-spot-pct-out"
+              style="color: #d89b2b; font-weight: 700"
+            >32%</span>
+          </div>
+          <div class="mock-range-wrap">
+            <input
+              type="range"
+              class="mock-range"
+              id="mock-spot-pct"
+              min="0"
+              max="100"
+              value="32"
+              step="1"
+              aria-label="Promo share percent"
+            />
+            <div class="mock-range-ticks font-sans">
+              <span>0%</span>
+              <span>50 / 50</span>
+              <span>100%</span>
+            </div>
+          </div>
+        </div>
+        <p class="msh" style="border: 0; padding: 0; margin-bottom: 0.5rem; letter-spacing: 0.14em">Program budget (period)</p>
+        <div class="flex flex-wrap items-baseline justify-between gap-2 mb-1">
+          <span class="text-stone-500 text-sm font-sans">Committed this period (cap $50K)</span>
+          <span class="text-stone-200 text-lg font-bold tabular font-sans" id="mock-prog-budget-out">$22,000</span>
+        </div>
+        <div class="mock-range-wrap mb-1">
+          <input
+            type="range"
+            class="mock-range"
+            id="mock-prog-budget"
+            min="0"
+            max="50000"
+            value="22000"
+            step="500"
+            aria-label="Programming budget"
+          />
+        </div>
+        <div class="mock-range-ticks font-sans">
+          <span>$0</span>
+          <span>$25K</span>
+          <span>$50K</span>
+        </div>
+        <p class="mt-6 msh" style="border: 0; padding: 0; margin-bottom: 0.5rem; letter-spacing: 0.14em; opacity: 0.85">Compact (dense rows)</p>
+        <div class="flex items-center gap-3">
+          <span class="text-stone-500 text-xs font-sans w-8 shrink-0 text-right tabular" id="mock-coh-out">62</span>
+          <div class="flex-1 min-w-0">
+            <input
+              type="range"
+              class="mock-range mock-range--sm"
+              id="mock-coh"
+              min="0"
+              max="100"
+              value="62"
+              step="1"
+              aria-label="Co-host chemistry (mock)"
+            />
+          </div>
+        </div>
+        <p class="text-stone-600 text-xs not-italic font-sans mt-1" style="font-size: 0.65rem; letter-spacing: 0.06em">
+          PAIRING CHEMISTRY · 0–100
+        </p>
+      </div>
+    </div>
+
+    <div class="panel rounded-xl p-4 mock-specimen">
+      <h2>F — Live overlay test</h2>
+      <p class="text-stone-400 text-sm font-sans mb-3">Backdrop + slide-up: same <code class="text-stone-500">.ov</code> pattern as the game (gold modal reads against black).</p>
+      <button type="button" class="btn-cfm text-xs uppercase tracking-wider px-4 py-2.5 rounded" id="mock-open-overlay">Open sample overlay</button>
+    </div>
+  </div>
+
+  <div class="ov" id="mock-ov" aria-hidden="true" style="z-index: 8000">
+    <div class="mo" role="dialog" aria-modal="true" aria-labelledby="mock-ov-title" style="max-width: 26rem">
+      <div class="mh">
+        <span id="mock-ov-title">Overlay sample</span>
+        <button type="button" class="mc" id="mock-ov-close">Close ×</button>
+      </div>
+      <p class="di mock-reading">Uses <code class="text-amber-200/80">.ov</code> / <code class="text-amber-200/80">.on</code> like <code class="text-amber-200/80">play.html</code> — Lora for this line.</p>
+      <p class="text-stone-400 text-sm not-italic leading-relaxed font-sans">Inter for secondary copy. Scrolls inside the shell on small viewports.</p>
+      <button type="button" class="cnl" id="mock-ov-close2">Close</button>
+    </div>
+  </div>
+
+  <div class="ov" id="mock-talent-portrait-ov" aria-hidden="true" style="z-index: 8020" role="presentation">
+    <div class="mo mo--portrait" role="dialog" aria-modal="true" aria-labelledby="mock-talent-portrait-title" style="max-width: min(96vw, 520px)">
+      <div class="mh">
+        <span id="mock-talent-portrait-title">Talent portrait</span>
+        <button type="button" class="mc" id="mock-talent-portrait-close" aria-label="Back">← Back</button>
+      </div>
+      <div class="px-1 pb-1" style="text-align: center">
+        <div
+          id="mock-talent-portrait-stage"
+          class="mx-auto flex items-center justify-center overflow-hidden"
+          style="max-width: min(85vw, 400px); aspect-ratio: 1; border-radius: 0.5rem; background: #0c0a09; box-shadow: inset 0 0 0 1px rgba(216, 155, 43, 0.2)"
+        ></div>
+        <p id="mock-talent-portrait-name" class="mock-wordmark text-xl text-center mt-3" style="letter-spacing: 0.08em; text-transform: none; color: #d89b2b; font-weight: 700"></p>
+        <p id="mock-talent-portrait-ctx" class="text-stone-500 text-sm text-center font-sans mt-1" style="line-height: 1.4"></p>
+        <p class="text-stone-600 text-xs text-center font-sans mt-2" style="letter-spacing: 0.04em">
+          Thumbs use <strong class="text-stone-500">generated-portraits/library/…</strong> assets. Save exports a
+          <strong class="text-stone-500">512×512 PNG</strong> (cover-cropped) from the same file.
+        </p>
+        <div class="flex flex-wrap items-center justify-center gap-2 mt-4">
+          <button type="button" class="cfm" id="mock-talent-portrait-save" style="max-width: 11rem; margin: 0; display: inline-block; width: auto; padding: 0.6rem 1.25rem; font-size: 0.72rem">Save image</button>
+          <button type="button" class="cnl" id="mock-talent-portrait-close2" style="max-width: 8rem; margin: 0; display: inline-block; width: auto; padding: 0.5rem 1rem">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var wk;
+      try {
+        var t = document.createElement("input");
+        t.type = "range";
+        wk = "webkitAppearance" in t.style;
+      } catch (e) {
+        wk = true;
+      }
+      function setMockRangeTrackFill(input) {
+        if (!input || !input.classList.contains("mock-range")) return;
+        if (!wk) {
+          input.style.removeProperty("background");
+          return;
+        }
+        var min = +input.getAttribute("min") || 0;
+        var max = +input.getAttribute("max") || 100;
+        if (Number.isNaN(max) || max === min) return;
+        var v = +input.value;
+        var pct = ((v - min) / (max - min)) * 100;
+        input.style.background =
+          "linear-gradient(90deg, #d89b2b 0%, #d89b2b " + pct + "%, #2a2a2a " + pct + "%, #2a2a2a 100%)";
+      }
+      function syncMockSliders() {
+        var p = document.getElementById("mock-spot-pct");
+        var pOut = document.getElementById("mock-spot-pct-out");
+        if (p && pOut) pOut.textContent = p.value + "%";
+        var b = document.getElementById("mock-prog-budget");
+        var bOut = document.getElementById("mock-prog-budget-out");
+        if (b && bOut) bOut.textContent = "$" + (+b.value).toLocaleString("en-US", { maximumFractionDigits: 0 });
+        var c = document.getElementById("mock-coh");
+        var cOut = document.getElementById("mock-coh-out");
+        if (c && cOut) cOut.textContent = c.value;
+      }
+      document.querySelectorAll("input.mock-range").forEach(function (el) {
+        setMockRangeTrackFill(el);
+        el.addEventListener("input", function () {
+          setMockRangeTrackFill(el);
+          syncMockSliders();
+        });
+      });
+      syncMockSliders();
+
+      var mockPtLast = { canvas: null, img: null, name: "portrait" };
+      var pOv = document.getElementById("mock-talent-portrait-ov");
+      var pStage = document.getElementById("mock-talent-portrait-stage");
+      function buildMockPortraitCanvas(btn) {
+        var initials = (btn.getAttribute("data-pt-initials") || "?").slice(0, 3);
+        var c1 = btn.getAttribute("data-pt-c1") || "#333";
+        var c2 = btn.getAttribute("data-pt-c2") || "#111";
+        var W = 512;
+        var H = 512;
+        var cv = document.createElement("canvas");
+        cv.width = W;
+        cv.height = H;
+        var g = cv.getContext("2d");
+        if (!g) return cv;
+        var grd = g.createLinearGradient(0, 0, W, H);
+        grd.addColorStop(0, c1);
+        grd.addColorStop(1, c2);
+        g.fillStyle = grd;
+        g.fillRect(0, 0, W, H);
+        g.fillStyle = "rgba(242,237,228,0.92)";
+        g.font = "bold 160px Oswald, Archivo Narrow, sans-serif";
+        g.textAlign = "center";
+        g.textBaseline = "middle";
+        g.fillText(initials, W / 2, H / 2 - 8);
+        g.fillStyle = "rgba(255,255,255,0.22)";
+        g.font = "24px Inter, system-ui, sans-serif";
+        g.fillText("Mock preview", W / 2, H / 2 + 124);
+        return cv;
+      }
+      function drawPortraitCoverToCanvas(g, image, w, h) {
+        if (!g || !image) return;
+        var iw = image.naturalWidth || 0;
+        var ih = image.naturalHeight || 0;
+        if (!iw || !ih) return;
+        var scale = Math.max(w / iw, h / ih);
+        var tw = iw * scale;
+        var th = ih * scale;
+        g.drawImage(image, (w - tw) / 2, (h - th) / 2, tw, th);
+      }
+      function openMockPortraitFromBtn(btn) {
+        if (!pStage || !pOv) return;
+        var name = btn.getAttribute("data-pt-name") || "";
+        var ctx = btn.getAttribute("data-pt-ctx") || "";
+        mockPtLast.name =
+          (name || "talent")
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "") + "-portrait";
+        mockPtLast.canvas = null;
+        mockPtLast.img = null;
+        pStage.innerHTML = "";
+        var thumb = btn.querySelector("img");
+        if (thumb && thumb.getAttribute("src")) {
+          var view = /** @type {HTMLImageElement} */ (thumb.cloneNode(true));
+          view.removeAttribute("width");
+          view.removeAttribute("height");
+          view.style.maxWidth = "100%";
+          view.style.height = "auto";
+          view.style.display = "block";
+          view.style.borderRadius = "0.5rem";
+          view.className = "mx-auto";
+          pStage.appendChild(view);
+          mockPtLast.img = view;
+        } else {
+          var cv = buildMockPortraitCanvas(btn);
+          mockPtLast.canvas = cv;
+          pStage.appendChild(cv);
+          cv.style.maxWidth = "100%";
+          cv.style.height = "auto";
+          cv.style.display = "block";
+        }
+        var nEl = document.getElementById("mock-talent-portrait-name");
+        var cEl = document.getElementById("mock-talent-portrait-ctx");
+        if (nEl) nEl.textContent = name;
+        if (cEl) cEl.textContent = ctx;
+        pOv.classList.add("on");
+        pOv.setAttribute("aria-hidden", "false");
+        document.documentElement.classList.add("overflow-hidden");
+      }
+      function closeMockPortrait() {
+        if (!pOv) return;
+        pOv.classList.remove("on");
+        pOv.setAttribute("aria-hidden", "true");
+        var o = document.getElementById("mock-ov");
+        if (!o || !o.classList.contains("on")) {
+          document.documentElement.classList.remove("overflow-hidden");
+        }
+      }
+      function saveMockPortraitPng() {
+        var W = 512;
+        var H = 512;
+        var c = null;
+        if (mockPtLast.img && (mockPtLast.img.complete || mockPtLast.img.naturalWidth) && mockPtLast.img.naturalWidth) {
+          c = document.createElement("canvas");
+          c.width = W;
+          c.height = H;
+          var g = c.getContext("2d");
+          if (g) {
+            g.fillStyle = "#0c0a09";
+            g.fillRect(0, 0, W, H);
+            drawPortraitCoverToCanvas(g, mockPtLast.img, W, H);
+          }
+        } else if (mockPtLast.canvas) {
+          c = mockPtLast.canvas;
+        }
+        if (!c || !c.toBlob) return;
+        c.toBlob(function (blob) {
+          if (!blob) return;
+          var a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = (mockPtLast.name || "portrait") + ".png";
+          a.click();
+          setTimeout(function () {
+            URL.revokeObjectURL(a.href);
+          }, 2500);
+        }, "image/png");
+      }
+      var shell = document.getElementById("mock-talent-shell");
+      if (shell) {
+        shell.addEventListener("click", function (e) {
+          var seg = e.target.closest(".mock-seg__btn");
+          if (!seg) return;
+          var g = seg.closest(".mock-seg");
+          if (!g || !shell.contains(g)) return;
+          g.querySelectorAll(".mock-seg__btn").forEach(function (x) {
+            x.classList.remove("mock-seg__btn--on");
+            x.setAttribute("aria-pressed", "false");
+          });
+          seg.classList.add("mock-seg__btn--on");
+          seg.setAttribute("aria-pressed", "true");
+        });
+      }
+      ["mock-pt-host", "mock-pt-cohost"].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) {
+          el.addEventListener("click", function (ev) {
+            ev.stopPropagation();
+            openMockPortraitFromBtn(el);
+          });
+        }
+      });
+      var pClose = document.getElementById("mock-talent-portrait-close");
+      var pClose2 = document.getElementById("mock-talent-portrait-close2");
+      var pSave = document.getElementById("mock-talent-portrait-save");
+      if (pClose) pClose.addEventListener("click", closeMockPortrait);
+      if (pClose2) pClose2.addEventListener("click", closeMockPortrait);
+      if (pSave) pSave.addEventListener("click", saveMockPortraitPng);
+      if (pOv) {
+        pOv.addEventListener("click", function (e) {
+          if (e.target === pOv) closeMockPortrait();
+        });
+      }
+
+      var rail = document.getElementById("mock-mock-rail");
+      var title = document.getElementById("mock-talent-title");
+      var a = document.getElementById("mock-panel-a");
+      var b = document.getElementById("mock-panel-b");
+      var c = document.getElementById("mock-panel-c");
+      var bH = document.getElementById("mock-panel-b-h");
+      if (rail) {
+        rail.addEventListener("click", function (e) {
+          var btn = e.target.closest("button");
+          if (!btn || !rail.contains(btn)) return;
+          rail.querySelectorAll(".mt-dp-pill").forEach(function (p) {
+            p.classList.remove("mt-dp-pill--active");
+            p.removeAttribute("aria-selected");
+          });
+          btn.classList.add("mt-dp-pill--active");
+          btn.setAttribute("aria-selected", "true");
+          if (title) title.textContent = btn.getAttribute("data-label") || "MANAGE TALENT";
+          var p = btn.getAttribute("data-panel");
+          [a, b, c].forEach(function (el) {
+            if (el) el.classList.add("hidden");
+          });
+          if (p === "a" && a) a.classList.remove("hidden");
+          if (p === "b" && b) {
+            b.classList.remove("hidden");
+            if (bH) {
+              var t = btn.querySelector(".mt-dp-pill__t");
+              bH.textContent = t ? t.textContent : "Open slot";
+            }
+          }
+          if (p === "c" && c) c.classList.remove("hidden");
+        });
+      }
+      var ov = document.getElementById("mock-ov");
+      function openOv() {
+        if (!ov) return;
+        ov.classList.add("on");
+        ov.setAttribute("aria-hidden", "false");
+        document.documentElement.classList.add("overflow-hidden");
+      }
+      function closeOv() {
+        if (!ov) return;
+        ov.classList.remove("on");
+        ov.setAttribute("aria-hidden", "true");
+        document.documentElement.classList.remove("overflow-hidden");
+      }
+      var openB = document.getElementById("mock-open-overlay");
+      if (openB) openB.addEventListener("click", openOv);
+      var c1 = document.getElementById("mock-ov-close");
+      var c2 = document.getElementById("mock-ov-close2");
+      if (c1) c1.addEventListener("click", closeOv);
+      if (c2) c2.addEventListener("click", closeOv);
+      if (ov) {
+        ov.addEventListener("click", function (e) {
+          if (e.target === ov) closeOv();
+        });
+      }
+      document.addEventListener("keydown", function (e) {
+        if (e.key !== "Escape") return;
+        if (pOv && pOv.classList.contains("on")) {
+          closeMockPortrait();
+          e.preventDefault();
+          return;
+        }
+        if (ov && ov.classList.contains("on")) closeOv();
+      });
+    })();
+  </script>
+  <!-- After Tailwind JIT: ensure section D type reads as intended (labels > faint 0.7rem) -->
+  <style>
+    #d-manage-talent .mt-talent-card .mock-stat-label.block {
+      font-size: 0.8125rem !important;
+      line-height: 1.3 !important;
+      color: #efebe4 !important;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+    #d-manage-talent .msh--talent-rail {
+      font-size: 0.72rem !important;
+      letter-spacing: 0.14em !important;
+      color: #b8b3ac !important;
+    }
+  </style>
+</body>
+</html>

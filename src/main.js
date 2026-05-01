@@ -3,7 +3,17 @@
  */
 import './amFccRules.js';
 import { Clerk } from '@clerk/clerk-js';
-import { marketIdsForClerkPlanSlug, syncClerkPlanMarkets } from './billingEntitlements.js';
+import {
+  appendClerkUiScript,
+  clearClerkFrontendOverrides,
+  clerkConstructorOptionsFromEnv,
+} from './clerkClientInit.js';
+import { marketIdsForClerkPlanSlug, syncPlanMarkets } from './billingEntitlements.js';
+import { BILLING_PRICE_SUMMARY_LINE } from './billingPriceLabels.js';
+
+if (typeof window !== 'undefined') {
+  window.__WL_BILLING_PRICE_SUMMARY_LINE = BILLING_PRICE_SUMMARY_LINE;
+}
 
 /** Public URL of the Node game server (Socket.io + /api). Vite: .env VITE_GAME_SERVER_URL; or meta on play.html. */
 let gameServerUrl = import.meta.env?.VITE_GAME_SERVER_URL?.trim?.() ?? '';
@@ -133,6 +143,10 @@ function mountClerkInHost(clerk, host) {
   mountEl.style.cssText = 'width:100%;max-width:100%;';
   host.appendChild(mountEl);
   host.__wlClerkMountEl = mountEl;
+  let termsEl = null;
+  if (host.id === 'wl-solo-clerk-mount') termsEl = document.getElementById('wl-solo-auth-terms');
+  else if (host.id === 'wl-clerk-components') termsEl = document.getElementById('wl-mp-auth-terms');
+  if (termsEl) termsEl.style.display = clerk.isSignedIn ? 'none' : '';
   if (clerk.isSignedIn) {
     clerk.mountUserButton(mountEl);
   } else {
@@ -240,20 +254,18 @@ if (!publishableKey) {
     queueMicrotask(() => showMissingClerkKeyGate());
   }
 } else {
+  // `legacy.js` (deferred) can run while this module is still awaiting Clerk. Without a preset,
+  // `wlGetAllowedPhase1MarketIds` treats "Clerk not loaded" as "unlock every market" and the
+  // scenario screen briefly shows the wrong lock state. Seed conservative defaults until
+  // `syncPlanMarkets` replaces them with the real plan.
+  if (typeof window !== 'undefined') {
+    window.__WL_PLAN_MARKET_IDS = marketIdsForClerkPlanSlug('free_user');
+  }
   try {
-    const clerkDomain = atob(publishableKey.split('_')[2]).slice(0, -1);
+    clearClerkFrontendOverrides();
+    await appendClerkUiScript(publishableKey, 'Failed to load @clerk/ui bundle');
 
-    await new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = `https://${clerkDomain}/npm/@clerk/ui@1/dist/ui.browser.js`;
-      script.async = true;
-      script.crossOrigin = 'anonymous';
-      script.onload = resolve;
-      script.onerror = () => reject(new Error('Failed to load @clerk/ui bundle'));
-      document.head.appendChild(script);
-    });
-
-    const clerk = new Clerk(publishableKey);
+    const clerk = new Clerk(publishableKey, clerkConstructorOptionsFromEnv());
     const afterAuth = playAfterAuthUrl();
     await clerk.load({
       ui: { ClerkUI: window.__internal_ClerkUICtor },
@@ -267,20 +279,29 @@ if (!publishableKey) {
     window.__wlClerkLoaded = true;
 
     try {
-      await syncClerkPlanMarkets(clerk);
+      await syncPlanMarkets(clerk);
     } catch (e) {
-      console.warn('[Clerk billing] initial sync failed:', e?.message || e);
+      console.warn('[entitlements] initial sync failed:', e?.message || e);
       window.__WL_CLERK_PLAN_SLUG = 'free_user';
       window.__WL_PLAN_MARKET_IDS = marketIdsForClerkPlanSlug('free_user');
     }
+    if (typeof window.wlRefreshOpenScenIfPlanChanged === 'function') {
+      window.wlRefreshOpenScenIfPlanChanged();
+    }
+
+    window.__wlSyncPlanMarkets = () => syncPlanMarkets(clerk);
 
     let __wlPlanSyncTimer = null;
-    const scheduleClerkPlanSync = () => {
+    const schedulePlanSync = () => {
       clearTimeout(__wlPlanSyncTimer);
       __wlPlanSyncTimer = setTimeout(() => {
-        syncClerkPlanMarkets(clerk).catch((err) =>
-          console.warn('[Clerk billing] sync failed:', err?.message || err),
-        );
+        syncPlanMarkets(clerk)
+          .then(() => {
+            if (typeof window.wlRefreshOpenScenIfPlanChanged === 'function') {
+              window.wlRefreshOpenScenIfPlanChanged();
+            }
+          })
+          .catch((err) => console.warn('[entitlements] sync failed:', err?.message || err));
       }, 250);
     };
 
@@ -296,7 +317,7 @@ if (!publishableKey) {
     window.wlRemountClerkLobby = () => mountClerkLobbyComponents(clerk);
     clerk.addListener(() => {
       mountClerkLobbyComponents(clerk);
-      scheduleClerkPlanSync();
+      schedulePlanSync();
     });
     mountClerkLobbyComponents(clerk);
 

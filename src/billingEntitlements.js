@@ -1,11 +1,11 @@
 /**
- * Clerk Billing (B2C) — plan → playable market ids.
- * Source of truth for *who paid*: Clerk (`clerk.billing.getSubscription()`).
- * This module only maps plan slugs to entitlements; server enforcement comes later.
+ * Billing entitlements — plan → playable market ids.
+ * Source of truth for *who paid*: server-side Stripe subscription (resolved via /api/entitlements).
  */
 
 export const CLERK_PLAN = {
   FREE: 'free_user',
+  TRIAL: 'trial_user',
   STARTER: 'starter',
   PRO: 'pro',
 };
@@ -21,7 +21,8 @@ export const ALL_PLAYABLE_MARKET_IDS_ORDERED = Object.freeze([
   'wichita',
 ]);
 
-const STARTER_EXCLUDED = 'seattle';
+/** Starter: NYC, LA, Chicago, Atlanta, Nashville — matches server/planMarkets.js */
+const STARTER_MARKET_IDS = Object.freeze(['newyork', 'losangeles', 'chicago', 'atlanta', 'nashville']);
 
 /** Free / default: one market (Atlanta). */
 const FREE_USER_MARKET_IDS = Object.freeze(['atlanta']);
@@ -32,9 +33,9 @@ const FREE_USER_MARKET_IDS = Object.freeze(['atlanta']);
  */
 export function marketIdsForClerkPlanSlug(slug) {
   const s = String(slug || '').trim();
-  if (s === CLERK_PLAN.PRO) return [...ALL_PLAYABLE_MARKET_IDS_ORDERED];
+  if (s === CLERK_PLAN.PRO || s === CLERK_PLAN.TRIAL) return [...ALL_PLAYABLE_MARKET_IDS_ORDERED];
   if (s === CLERK_PLAN.STARTER) {
-    return ALL_PLAYABLE_MARKET_IDS_ORDERED.filter((id) => id !== STARTER_EXCLUDED);
+    return [...STARTER_MARKET_IDS];
   }
   return [...FREE_USER_MARKET_IDS];
 }
@@ -43,27 +44,39 @@ export function marketIdsForClerkPlanSlug(slug) {
  * @param {import('@clerk/clerk-js').Clerk | null} clerk
  * @returns {Promise<string>}
  */
-export async function fetchClerkPlanSlug(clerk) {
+export async function fetchServerPlanSlug(clerk) {
   if (!clerk?.isSignedIn) return CLERK_PLAN.FREE;
-  const billing = clerk.billing;
-  if (!billing || typeof billing.getSubscription !== 'function') return CLERK_PLAN.FREE;
   try {
-    const sub = await billing.getSubscription({});
-    if (!sub?.subscriptionItems?.length) return CLERK_PLAN.FREE;
-    const active = sub.subscriptionItems.filter((i) => i.status === 'active');
-    const item = active[0] || sub.subscriptionItems[0];
-    const plan = item?.plan;
-    const slug = (plan?.slug && String(plan.slug).trim()) || '';
-    if (slug === CLERK_PLAN.STARTER || slug === CLERK_PLAN.PRO || slug === CLERK_PLAN.FREE) return slug;
-    if (slug) return slug;
-  } catch (e) {
-    const msg = String(e?.message || e || '');
-    console.warn('[Clerk billing] getSubscription failed:', msg);
-    if (/payee is not active/i.test(msg)) {
-      console.warn(
-        '[Clerk billing] "Payee is not active" means Stripe (via Clerk Billing) is not fully connected or the Connect account cannot charge yet. In Clerk Dashboard open Billing / Stripe, finish Connect onboarding and use Test mode until payouts are set up. Until then, the app falls back to the free plan for markets.',
-      );
+    const token = await clerk.session?.getToken?.();
+    if (!token) return CLERK_PLAN.FREE;
+    let origin =
+      (typeof window !== 'undefined' && window.__WL_GAME_SERVER_URL && String(window.__WL_GAME_SERVER_URL).trim()) ||
+      '';
+    if (origin && typeof window !== 'undefined' && window.location?.port === '5173') {
+      try {
+        const ou = new URL(origin.replace(/\/$/, ''));
+        if (ou.origin !== window.location.origin) origin = '';
+      } catch (_e) {
+        origin = '';
+      }
     }
+    const url = origin ? `${origin.replace(/\/$/, '')}/api/entitlements` : '/api/entitlements';
+    const r = await fetch(url, {
+      method: 'GET',
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const j = await r.json().catch(() => ({}));
+    const slug = typeof j.plan === 'string' ? j.plan.trim() : '';
+    if (!r.ok || !j.ok) return CLERK_PLAN.FREE;
+    if (
+      slug === CLERK_PLAN.STARTER ||
+      slug === CLERK_PLAN.PRO ||
+      slug === CLERK_PLAN.FREE ||
+      slug === CLERK_PLAN.TRIAL
+    )
+      return slug;
+  } catch (e) {
+    console.warn('[entitlements] plan fetch failed:', String(e?.message || e || ''));
   }
   return CLERK_PLAN.FREE;
 }
@@ -72,8 +85,8 @@ export async function fetchClerkPlanSlug(clerk) {
  * Sets `window.__WL_CLERK_PLAN_SLUG` and `window.__WL_PLAN_MARKET_IDS`.
  * @param {import('@clerk/clerk-js').Clerk | null} clerk
  */
-export async function syncClerkPlanMarkets(clerk) {
-  const slug = await fetchClerkPlanSlug(clerk);
+export async function syncPlanMarkets(clerk) {
+  const slug = await fetchServerPlanSlug(clerk);
   const marketIds = marketIdsForClerkPlanSlug(slug);
   if (typeof window !== 'undefined') {
     window.__WL_CLERK_PLAN_SLUG = slug;

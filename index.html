@@ -3,15 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- Clerk OAuth / handshake may return to `/` or `/play.html`. Do NOT redirect — `indexMarketing.js`
-       completes session on the home page so Pricing → Stripe checkout can run. Add both URLs in Clerk
-       Dashboard → Paths / Redirect URLs. -->
-  <title>Airwave Empire — Beta</title>
+  <!-- OAuth / handshake may return to `/` or `/play.html`. Do NOT redirect — `indexMarketing.js`
+       completes session on the home page so Pricing → Stripe checkout can run. -->
+  <meta name="description" content="Airwave Empire — a radio station simulation spanning decades of the dial. Build formats, hire talent, and compete in major US markets." />
+  <meta property="og:title" content="Airwave Empire" />
+  <meta property="og:description" content="Run stations from the 1970s through the streaming era. Formats, talent, promotions, and major US markets — build your dial empire." />
+  <meta property="og:type" content="website" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Airwave Empire" />
+  <meta name="twitter:description" content="Run stations from the 1970s through the streaming era. Formats, talent, promotions, and major US markets." />
+  <title>Airwave Empire</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
     body {
       background: #0a0a0a;
       color: #f3efe6;
+    }
+    .wordmark {
+      font-family: "Bebas Neue", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
+        "Segoe UI Emoji";
     }
     .gold {
       color: #d89b2b;
@@ -28,13 +39,50 @@
     .gridline {
       border-color: rgba(216,155,43,.18);
     }
+    /* Match account.html plan bullets */
+    .wl-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      line-height: 1.45;
+      color: rgba(214, 211, 209, 0.95);
+    }
+    .wl-check span.mark {
+      flex-shrink: 0;
+      width: 1.1rem;
+      text-align: center;
+      font-weight: 800;
+    }
+    /* Injected plan rows from indexMarketing.js (Tailwind-in-JS) */
+    .wl-check-index {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      font-size: 0.875rem;
+      line-height: 1.45;
+      color: rgba(214, 211, 209, 0.95);
+    }
+    .wl-check-index .mark {
+      flex-shrink: 0;
+      width: 1.1rem;
+      text-align: center;
+      font-weight: 800;
+    }
+    /* Trial spotlight — visible but lighter than membership cards */
+    .wl-pricing-hero-cta {
+      box-shadow:
+        0 0 0 1px rgba(216, 155, 43, 0.22),
+        0 16px 40px -12px rgba(0, 0, 0, 0.55),
+        0 0 28px rgba(216, 155, 43, 0.06);
+    }
   </style>
 </head>
 <body class="antialiased">
   <header class="border-b gridline">
     <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between flex-wrap gap-4">
-      <div class="text-3xl md:text-4xl font-black tracking-[0.22em] uppercase gold">
-        Airwave Empire
+      <div class="wordmark text-4xl md:text-5xl font-normal tracking-[0.22em] uppercase gold">
+        AIRWAVE EMPIRE
       </div>
       <nav class="flex items-center gap-6 md:gap-8 text-sm uppercase tracking-[0.16em] text-stone-300 flex-wrap">
         <a href="#gameplay" class="hover:text-white hidden sm:inline">Gameplay</a>
@@ -42,43 +90,39 @@
         <a href="#pricing" class="hover:text-white hidden sm:inline">Pricing</a>
         <a href="#faq" class="hover:text-white hidden sm:inline">FAQ</a>
         <a href="/account.html" class="hover:text-white hidden sm:inline">Account</a>
-        <a href="/play.html" class="gold-bg px-5 py-2.5 rounded-md font-bold uppercase tracking-[0.14em] text-stone-900 hover:opacity-95">Play now</a>
+        <a href="#pricing" class="gold-bg px-5 py-2.5 rounded-md font-bold uppercase tracking-[0.14em] text-stone-900 hover:opacity-95">Free game</a>
       </nav>
     </div>
   </header>
 
   <main>
-    <section class="max-w-7xl mx-auto px-6 py-16 md:py-24">
-      <div class="grid lg:grid-cols-2 gap-12 items-center">
+    <!-- Section 1 — Hero -->
+    <section class="max-w-7xl mx-auto px-6 py-14 md:py-16">
+      <div class="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
         <div>
-          <p class="gold uppercase tracking-[0.22em] text-sm mb-4">
-            Radio strategy across the decades · Beta
-          </p>
-          <h1 class="text-5xl md:text-7xl font-black uppercase leading-[0.95] tracking-tight">
-            Build a <span class="gold">Radio Empire</span>
+          <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase leading-[1.02] tracking-tight">
+            Run a Radio Station.
           </h1>
-          <p class="mt-6 text-lg md:text-xl text-stone-300 max-w-2xl leading-relaxed">
-            Start in 1970. Launch stations. Hire talent. Chase ratings. Survive format wars,
-            FM disruption, consolidation, and the changing economics of broadcasting.
+          <p class="mt-8 text-xl md:text-2xl text-stone-300 max-w-xl leading-relaxed font-medium">
+            Build your station. Chase ratings. Survive the industry.
           </p>
-          <p class="mt-4 text-stone-400 text-base leading-relaxed max-w-2xl">
-            <strong class="text-stone-300">Beta:</strong> create a free account with Clerk to play with
-            <strong class="text-stone-200">unlimited access</strong> while we test and tune the game.
-          </p>
-          <div class="mt-8 flex flex-col sm:flex-row gap-4">
-            <a href="/play.html" class="gold-bg px-8 py-4 rounded-md text-lg font-bold uppercase tracking-[0.14em] text-center">
-              Play now — sign in
+          <div class="mt-10 flex flex-col sm:flex-row gap-6 sm:items-center">
+            <a
+              href="#pricing"
+              class="text-center text-sm uppercase tracking-[0.22em] text-amber-200/90 hover:text-amber-100 border border-amber-800/40 rounded-md px-6 py-3 transition-colors"
+            >
+              Jump to full-access first game →
             </a>
-            <a href="#gameplay" class="border border-stone-600 px-8 py-4 rounded-md text-lg font-bold uppercase tracking-[0.14em] text-center hover:border-stone-300">
-              See How It Works
+            <a
+              href="#gameplay"
+              class="text-center text-sm uppercase tracking-[0.18em] text-stone-500 hover:text-stone-300 transition-colors"
+            >
+              How it works
             </a>
-          </div>
-          <div class="mt-6 text-sm uppercase tracking-[0.16em] text-stone-400">
-            No download • You’ll sign in with Clerk on the next screen
           </div>
         </div>
 
-        <div class="panel rounded-2xl p-4">
+        <div class="panel rounded-2xl p-4 lg:p-5">
           <img
             src="/landing-images/overview.png"
             alt="Airwave Empire gameplay screenshot"
@@ -89,7 +133,7 @@
     </section>
 
     <section class="border-t gridline border-b">
-      <div class="max-w-7xl mx-auto px-6 py-12 grid md:grid-cols-4 gap-6">
+      <div class="max-w-7xl mx-auto px-6 py-12 md:py-14 grid md:grid-cols-4 gap-6">
         <div class="panel rounded-xl p-6">
           <div class="gold text-sm uppercase tracking-[0.18em] mb-3">Launch Stations</div>
           <p class="text-stone-300 leading-relaxed">
@@ -117,8 +161,8 @@
       </div>
     </section>
 
-    <section id="gameplay" class="max-w-7xl mx-auto px-6 py-16 md:py-24">
-      <div class="max-w-3xl mb-12">
+    <section id="gameplay" class="max-w-7xl mx-auto px-6 py-14 md:py-16">
+      <div class="max-w-3xl mb-8 md:mb-10">
         <p class="gold uppercase tracking-[0.22em] text-sm mb-3">Gameplay</p>
         <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tight">
           Run the Dial. Own the Market.
@@ -129,7 +173,7 @@
         </p>
       </div>
 
-      <div class="grid lg:grid-cols-3 gap-8">
+      <div class="grid lg:grid-cols-3 gap-6 md:gap-8">
         <div class="panel rounded-2xl p-4">
           <img src="/landing-images/market.png" alt="Market overview" class="rounded-xl w-full h-auto object-cover" />
           <div class="pt-4">
@@ -161,9 +205,9 @@
         </div>
 
         <div class="panel rounded-2xl p-4">
-          <img src="/landing-images/logos.png" alt="AI-generated station logos and promotional van designs" class="rounded-xl w-full h-auto object-cover" />
+          <img src="/landing-images/logos.png" alt="Custom station logos and promotional van designs" class="rounded-xl w-full h-auto object-cover" />
           <div class="pt-4">
-            <h3 class="text-2xl font-bold uppercase tracking-wide">Logos &amp; rolling stock</h3>
+            <h3 class="text-2xl font-bold uppercase tracking-wide">BRING YOUR STATION TO LIFE</h3>
             <p class="mt-2 text-stone-300 leading-relaxed">
               Generate your own station logos and custom promotional vans and mobile units—so the brands you
               build on the air also look and feel alive on the street.
@@ -189,9 +233,9 @@
         </div>
 
         <div class="panel rounded-2xl p-4">
-          <img src="/landing-images/map.png" alt="United States map — GM career markets" class="rounded-xl w-full h-auto object-cover" />
+          <img src="/landing-images/map.png" alt="United States map — General Manager career markets" class="rounded-xl w-full h-auto object-cover" />
           <div class="pt-4">
-            <h3 class="text-2xl font-bold uppercase tracking-wide">GM career mode</h3>
+            <h3 class="text-2xl font-bold uppercase tracking-wide">HOW FAR CAN YOU GO?</h3>
             <p class="mt-2 text-stone-300 leading-relaxed">
               Start your career in Wichita and see how high up the corporate ladder you can climb—earn moves,
               prove yourself, and take on bigger markets as the company grows.
@@ -202,14 +246,15 @@
     </section>
 
     <section id="eras" class="border-t gridline border-b">
-      <div class="max-w-7xl mx-auto px-6 py-16 md:py-20">
-        <div class="max-w-3xl mb-10">
+      <div class="max-w-7xl mx-auto px-6 py-14 md:py-16">
+        <div class="max-w-3xl mb-8 md:mb-10">
           <p class="gold uppercase tracking-[0.22em] text-sm mb-3">The Twist</p>
           <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tight">
             Radio Changes. You Adapt.
           </h2>
           <p class="mt-5 text-stone-300 text-lg leading-relaxed">
-            This is not one static board. What works in 1973 may fail by 1993. The business changes underneath you.
+            No two games are the same. These are living, breathing markets. What works in 1973 may fail by 1983.
+            The audience and business are changing all the time.
           </p>
         </div>
 
@@ -218,23 +263,23 @@
             <div class="gold text-sm uppercase tracking-[0.16em] mb-3">1970s</div>
             <h3 class="text-2xl font-bold uppercase">AM still matters</h3>
             <p class="mt-3 text-stone-300 leading-relaxed">
-              Full-service giants, Top 40 battles, and the old rules of local radio still shape the market.
+              Top 40 stations battle each other for young ears, old-line AM stations still get big audiences.
             </p>
           </div>
 
           <div class="panel rounded-xl p-6">
             <div class="gold text-sm uppercase tracking-[0.16em] mb-3">1980s</div>
-            <h3 class="text-2xl font-bold uppercase">FM takes over</h3>
+            <h3 class="text-2xl font-bold uppercase">FM Takes Over</h3>
             <p class="mt-3 text-stone-300 leading-relaxed">
-              Music moves up the dial. AM stations face pressure to reinvent or decline.
+              Cars get FM radios and that&rsquo;s where people want to hear music. How will AM stay relevant?
             </p>
           </div>
 
           <div class="panel rounded-xl p-6">
             <div class="gold text-sm uppercase tracking-[0.16em] mb-3">1990s</div>
-            <h3 class="text-2xl font-bold uppercase">Consolidation hits</h3>
+            <h3 class="text-2xl font-bold uppercase">Radio Consolidates</h3>
             <p class="mt-3 text-stone-300 leading-relaxed">
-              Ownership rules change, clusters rise, and strategy becomes more corporate and more ruthless.
+              Ownership rules change, clusters rise, strategy becomes more ruthless.
             </p>
           </div>
 
@@ -242,62 +287,68 @@
             <div class="gold text-sm uppercase tracking-[0.16em] mb-3">2000s+</div>
             <h3 class="text-2xl font-bold uppercase">New pressures</h3>
             <p class="mt-3 text-stone-300 leading-relaxed">
-              Fragmentation, changing ad markets, and shifting audience habits force hard choices.
+              More stations, streaming audio, changing ad markets and shifting audience habits force hard choices.
             </p>
           </div>
         </div>
       </div>
     </section>
 
-    <section id="pricing" class="max-w-7xl mx-auto px-6 py-16 md:py-24">
-      <div class="max-w-3xl mb-12">
-        <p class="gold uppercase tracking-[0.22em] text-sm mb-3">Plans</p>
-        <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tight">
-          Free to play, upgrade when you want more
+    <!-- Pricing: trial CTA flows into membership (tight vertical rhythm) -->
+    <section id="pricing" class="scroll-mt-24 max-w-6xl mx-auto px-6 py-14 md:py-16 border-t border-stone-800/40">
+      <div class="rounded-2xl border border-amber-600/28 bg-gradient-to-b from-stone-900/95 via-stone-950 to-[#0a0a0a] wl-pricing-hero-cta px-6 py-12 md:px-10 md:py-14 text-center mb-12 md:mb-14">
+        <p class="gold uppercase tracking-[0.2em] text-xs md:text-sm mb-3 md:mb-4">Try it free</p>
+        <h2 class="text-4xl sm:text-5xl md:text-6xl lg:text-[3.35rem] font-black uppercase tracking-[0.04em] leading-[1.08] gold px-2">
+          Play your first game &mdash; free!
         </h2>
-        <p class="mt-5 text-stone-300 text-lg leading-relaxed">
-          The free tier includes core gameplay. <strong class="text-stone-200">Starter</strong> and <strong class="text-stone-200">Pro</strong> add more markets, AI generation limits, and cloud saves — see Clerk’s table below (same checkout as in-game).
+        <p class="mt-5 md:mt-6 text-lg md:text-xl text-stone-300 max-w-lg mx-auto leading-relaxed font-medium">
+          Your first game is on us. Get full access to everything. No credit card required!
         </p>
-      </div>
-
-      <div class="grid lg:grid-cols-2 gap-8 items-start">
-        <div class="panel rounded-2xl p-8 border border-amber-500/40">
-          <div class="gold text-sm uppercase tracking-[0.18em] mb-4">Free</div>
-          <div class="text-3xl md:text-4xl font-black uppercase leading-tight tracking-[0.12em]">Play the game</div>
-          <ul class="mt-6 space-y-3 text-stone-300 text-lg">
-            <li>• Core solo play (sign in with Clerk)</li>
-            <li>• Limited market access vs paid tiers</li>
-            <li>• Feedback welcome — <a href="mailto:beta@airwaveempire.com" class="gold underline decoration-amber-600/60 underline-offset-2 hover:text-amber-200">beta@airwaveempire.com</a></li>
-          </ul>
-          <a href="/play.html" class="mt-8 inline-block gold-bg px-6 py-3 rounded-md font-bold uppercase tracking-[0.14em]">
-            Play now
-          </a>
-        </div>
-
-        <div class="panel rounded-2xl p-4 sm:p-6 border border-amber-500/30 min-h-[280px]">
-          <p class="gold text-sm uppercase tracking-[0.18em] mb-2">Subscribe</p>
-          <p class="text-stone-500 text-sm mb-4">Powered by Clerk &amp; Stripe. After checkout you can continue in <a href="/play.html" class="text-amber-200/90 underline">Play</a>.</p>
-          <div id="wl-index-pricing-clerk" class="w-full cl-root"></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="border-t gridline border-b">
-      <div class="max-w-7xl mx-auto px-6 py-16 text-center">
-        <p class="gold uppercase tracking-[0.22em] text-sm mb-3">Start Now</p>
-        <h2 class="text-4xl md:text-6xl font-black uppercase tracking-tight">
-          Start Your First Station
-        </h2>
-        <p class="mt-5 text-stone-300 text-lg max-w-2xl mx-auto leading-relaxed">
-          Build your lineup. Pick your format. Chase the ratings. See if you can survive long enough to build a broadcasting empire.
+        <p class="mt-6 md:mt-7 text-xs md:text-sm uppercase tracking-[0.2em] text-stone-500">
+          Your first game includes:
         </p>
-        <a href="/play.html" class="mt-8 inline-block gold-bg px-10 py-4 rounded-md text-lg font-bold uppercase tracking-[0.16em]">
+        <ul class="mt-4 md:mt-5 text-left max-w-sm mx-auto text-stone-200 text-base md:text-lg space-y-3">
+          <li class="flex gap-3 items-start">
+            <span class="gold font-black shrink-0 mt-0.5 select-none">•</span>
+            <span>All markets unlocked</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <span class="gold font-black shrink-0 mt-0.5 select-none">•</span>
+            <span>Full gameplay systems</span>
+          </li>
+          <li class="flex gap-3 items-start">
+            <span class="gold font-black shrink-0 mt-0.5 select-none">•</span>
+            <span>No credit card required</span>
+          </li>
+        </ul>
+        <a
+          href="/play-signin.html"
+          class="mt-6 md:mt-8 inline-flex items-center justify-center gold-bg wl-pricing-play-btn rounded-xl px-10 py-4 md:px-16 md:py-6 text-xl md:text-2xl font-black uppercase tracking-[0.14em] text-stone-900 hover:brightness-110 transition-[filter,transform] active:translate-y-[1px]"
+        >
           Play now
         </a>
+        <p class="mt-5 max-w-lg mx-auto text-[13px] md:text-sm text-stone-500 leading-relaxed px-2">
+          No credit card required. By creating an account, you agree to the
+          <a href="/terms" class="gold underline underline-offset-2 hover:text-amber-200">Terms of Service</a>
+          and
+          <a href="/privacy" class="gold underline underline-offset-2 hover:text-amber-200">Privacy Policy</a>.
+        </p>
+      </div>
+
+      <div class="max-w-5xl mx-auto pt-0 pb-14 md:pb-16 border-t border-stone-800/25">
+        <h2 class="text-center text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] font-black uppercase tracking-[0.04em] leading-[1.1] mb-6">
+          <span class="gold">Keep building your empire</span>
+        </h2>
+        <p class="text-center text-stone-400 text-sm md:text-base max-w-2xl mx-auto leading-relaxed mb-8 px-2">
+          You can cancel anytime, and your subscription will remain active through the end of your billing period.
+          If something goes wrong—like an accidental charge or a technical issue—reach out within 48 hours and we&rsquo;ll make it right. In some cases, we may offer account credit or complimentary time instead of a refund.
+          <a href="/legal/subscription-policy.html" class="gold underline underline-offset-2 hover:text-amber-200 whitespace-nowrap">Full subscription policy</a>
+        </p>
+        <div id="wl-index-pricing-clerk" class="w-full cl-root"></div>
       </div>
     </section>
 
-    <section id="faq" class="max-w-7xl mx-auto px-6 py-16 md:py-24">
+    <section id="faq" class="max-w-7xl mx-auto px-6 py-14 md:py-16 border-t border-stone-800/40">
       <div class="max-w-4xl">
         <p class="gold uppercase tracking-[0.22em] text-sm mb-3">FAQ</p>
         <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tight">
@@ -315,14 +366,14 @@
           <div class="panel rounded-xl p-6">
             <h3 class="text-2xl font-bold">Is this single-player or multiplayer?</h3>
             <p class="mt-2 text-stone-300 leading-relaxed">
-              Both. Solo is always available when signed in; multiplayer is available on supported plans (see <a href="#pricing" class="gold underline">Pricing</a>).
+              Both. Solo is always available. Multiplayer works on supported plans (see <a href="#pricing" class="gold underline">Pricing</a>). On the free tier you can <strong class="text-stone-200">host</strong> multiplayer only in Atlanta, but you can still <strong class="text-stone-200">join</strong> a subscriber’s room in other cities with a room code.
             </p>
           </div>
 
           <div class="panel rounded-xl p-6">
-            <h3 class="text-2xl font-bold">What’s the difference between Free, Starter, and Pro?</h3>
+            <h3 class="text-2xl font-bold">What’s the difference between the free trial, Starter, and Pro?</h3>
             <p class="mt-2 text-stone-300 leading-relaxed">
-              Free includes core play with a smaller set of markets. Starter and Pro expand markets, AI generation limits, and cloud saves — the <a href="#pricing" class="gold underline">pricing section</a> above lists current benefits from Clerk.
+              Your first solo game unlocks everything. After that you can stay on limited free play or move up to Starter or Pro for more markets and perks &mdash; see <a href="#pricing" class="gold underline">above</a>.
             </p>
           </div>
 
@@ -339,10 +390,11 @@
 
   <footer class="border-t gridline">
     <div class="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row gap-4 items-center justify-between text-sm text-stone-400 uppercase tracking-[0.14em]">
-      <div>Airwave Empire</div>
+      <div class="normal-case tracking-normal text-stone-300">© 2026 Airwave Empire</div>
       <div class="flex flex-wrap gap-6 justify-center">
-        <a href="/legal/terms.html" class="hover:text-white">Terms</a>
-        <a href="/legal/privacy.html" class="hover:text-white">Privacy</a>
+        <a href="/terms" class="hover:text-white">Terms</a>
+        <a href="/legal/subscription-policy.html" class="hover:text-white">Subscription</a>
+        <a href="/privacy" class="hover:text-white">Privacy</a>
         <a href="/legal/contact.html" class="hover:text-white">Contact</a>
         <a href="https://www.facebook.com/profile.php?id=61575347974985" class="hover:text-white" target="_blank" rel="noopener noreferrer">Facebook</a>
         <a href="https://x.com/airwaveempire" class="hover:text-white" target="_blank" rel="noopener noreferrer">X</a>

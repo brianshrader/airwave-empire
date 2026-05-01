@@ -8,6 +8,7 @@
 const accountStore = require('./accountStore');
 const { verifyClerkBearer } = require('./clerkVerify');
 const { posthog } = require('./posthog');
+const { planFromStripeSubscription } = require('./stripePlan');
 
 function mountStripeBilling(app) {
   const secret = process.env.STRIPE_SECRET_KEY;
@@ -52,11 +53,13 @@ function mountStripeBilling(app) {
       process.env.PUBLIC_APP_URL || `${req.protocol}://${req.get('host')}`;
 
     const session = await stripe.checkout.sessions.create({
-      mode: process.env.STRIPE_CHECKOUT_MODE === 'subscription' ? 'subscription' : 'payment',
+      mode: 'subscription',
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
-      success_url: `${baseUrl}/?billing=success&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/?billing=cancel`,
+      // Shows “Add promotion code” on Checkout; create coupons + promotion codes in Stripe Dashboard.
+      allow_promotion_codes: true,
+      success_url: `${baseUrl}/play.html?billing=success&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${baseUrl}/#pricing`,
       metadata: { clerk_user_id: clerkUserId },
     });
 
@@ -65,9 +68,53 @@ function mountStripeBilling(app) {
       event: 'checkout session created',
       properties: {
         price_id: priceId,
-        mode: process.env.STRIPE_CHECKOUT_MODE === 'subscription' ? 'subscription' : 'payment',
+        mode: 'subscription',
         stripe_customer_id: customerId,
       },
+    });
+    res.json({ url: session.url });
+  });
+
+  // Stripe Customer Portal (self-serve manage subscription).
+  app.post('/api/billing/create-portal-session', async (req, res) => {
+    if (!secret) return res.status(503).json({ error: 'Billing not configured' });
+    let stripe;
+    try {
+      stripe = require('stripe')(secret);
+    } catch (e) {
+      return res.status(503).json({ error: 'stripe package missing — run npm install' });
+    }
+
+    const auth = req.headers.authorization || '';
+    const m = auth.match(/^Bearer\s+(.+)$/i);
+    if (!m) return res.status(401).json({ error: 'Authorization Bearer token required' });
+
+    let clerkUserId;
+    try {
+      clerkUserId = await verifyClerkBearer(m[1]);
+    } catch (e) {
+      return res.status(401).json({ error: 'Invalid session' });
+    }
+
+    const baseUrl = process.env.PUBLIC_APP_URL || `${req.protocol}://${req.get('host')}`;
+    const returnUrl = `${baseUrl}/account.html`;
+
+    let customerId = accountStore.getStripeCustomerId(clerkUserId);
+    if (!customerId) {
+      const found = await stripe.customers.search({
+        query: `metadata['clerk_user_id']:'${clerkUserId}'`,
+        limit: 1,
+      });
+      if (found.data.length) {
+        customerId = found.data[0].id;
+        accountStore.setStripeCustomerId(clerkUserId, customerId);
+      }
+    }
+    if (!customerId) return res.status(400).json({ error: 'No Stripe customer for this account yet' });
+
+    const session = await stripe.billingPortal.sessions.create({
+      customer: customerId,
+      return_url: returnUrl,
     });
     res.json({ url: session.url });
   });
@@ -82,12 +129,29 @@ async function syncSubscriptionFromStripeObject(stripe, sub) {
     const uid = customer.metadata?.clerk_user_id;
     if (!uid) return;
     const active = ['active', 'trialing'].includes(sub.status);
+    const { planSlug, priceId } = planFromStripeSubscription(sub);
     accountStore.setSubscriptionState(uid, {
       active,
       status: sub.status,
       subscriptionId: sub.id,
+      priceId,
+      planSlug,
+      currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000).toISOString() : null,
+      cancelAtPeriodEnd: !!sub.cancel_at_period_end,
     });
-    console.log('[STRIPE] subscription', sub.id, sub.status, '→ user', uid, active ? 'active' : 'inactive');
+    const { CLERK_PLAN } = require('./aiEntitlements');
+    if (planSlug === CLERK_PLAN.STARTER || planSlug === CLERK_PLAN.PRO) {
+      accountStore.setEverHadPaidSubscription(uid, true);
+    }
+    console.log(
+      '[STRIPE] subscription',
+      sub.id,
+      sub.status,
+      `(${planSlug})`,
+      '→ user',
+      uid,
+      active ? 'active' : 'inactive',
+    );
     posthog.capture({
       distinctId: uid,
       event: 'subscription activated',
@@ -95,6 +159,8 @@ async function syncSubscriptionFromStripeObject(stripe, sub) {
         subscription_id: sub.id,
         status: sub.status,
         active,
+        plan: planSlug,
+        price_id: priceId,
       },
     });
   } catch (e) {

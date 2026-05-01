@@ -6,6 +6,8 @@
  */
 const CLERK_PLAN = {
   FREE: 'free_user',
+  /** One-time signup trial — full markets; AI caps enforced in trialQuotaStore + aiQuotaHttp (not monthly LIMITS). */
+  TRIAL: 'trial_user',
   STARTER: 'starter',
   PRO: 'pro',
 };
@@ -20,6 +22,7 @@ const LIMITS = {
 function defaultLimitsForUnknownSlug(slug) {
   const s = String(slug || '').trim();
   if (s === CLERK_PLAN.STARTER || s === CLERK_PLAN.PRO) return { ...LIMITS[s] };
+  if (s === CLERK_PLAN.TRIAL) return { ...LIMITS[CLERK_PLAN.FREE] }; /* not used — trial uses lifetime caps */
   if (s === CLERK_PLAN.FREE) return { ...LIMITS[CLERK_PLAN.FREE] };
   if (!s) return { ...LIMITS[CLERK_PLAN.FREE] };
   return { ...LIMITS[CLERK_PLAN.FREE] };

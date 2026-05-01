@@ -22,13 +22,15 @@ const {
 } = require('./services/sunoJingleProvider');
 const { tryConsume } = require('./aiUsageStore');
 const { requireClerkUserIdForAi, requirePlanSlugOr503, tryConsumeQuota } = require('./aiQuotaHttp');
+const { getTrialQuotaSnapshot } = require('./trialQuotaStore');
+const { CLERK_PLAN } = require('./aiEntitlements');
 
 const GENERATED_DIR = path.join(__dirname, '..', 'generated-jingles');
 
 const RATE_WINDOW_MS = 60 * 60 * 1000;
 const jingleRateMap = new Map();
 
-/** @type {Map<string, { status: 'pending'|'complete'|'failed', created: number, ip: string, sunoArgs: object, base: string, stationId: string, trace: object, variants?: object[], error?: string, completedAt?: number }>} */
+/** @type {Map<string, { status: 'pending'|'complete'|'failed', created: number, ip: string, sunoArgs: object, base: string, stationId: string, trace: object, variants?: object[], error?: string, completedAt?: number, clerkUserId?: string, planSlug?: string }>} */
 const jingleJobs = new Map();
 const JINGLE_JOB_TTL_MS = 2 * 60 * 60 * 1000;
 
@@ -219,7 +221,7 @@ function mountJingleRoutes(app) {
       .json({
         ok: false,
         error:
-          'Use POST from the game (Brand & Marketing → Commission jingle). Opening this URL in a tab does not generate audio.',
+          'Use POST from the game (Brand & Promotion → Commission jingle). Opening this URL in a tab does not generate audio.',
       });
   });
 
@@ -238,12 +240,16 @@ function mountJingleRoutes(app) {
     if (j.status === 'failed') {
       return res.json({ ok: false, status: 'failed', error: j.error || 'Jingle generation failed.' });
     }
-    return res.json({
+    const out = {
       ok: true,
       status: 'complete',
       variants: j.variants || [],
       ...(j.sunoPromptConfidence ? { sunoPromptConfidence: j.sunoPromptConfidence } : {}),
-    });
+    };
+    if (j.planSlug === CLERK_PLAN.TRIAL && j.clerkUserId) {
+      out.trialQuota = getTrialQuotaSnapshot(j.clerkUserId);
+    }
+    return res.json(out);
   });
 
   app.post('/api/generate-station-jingle', async (req, res) => {
@@ -302,6 +308,8 @@ function mountJingleRoutes(app) {
       sunoArgs,
       base,
       stationId,
+      clerkUserId,
+      planSlug,
       trace: {
         format: String(body.format).trim(),
         year: Math.floor(Number(body.year)),
@@ -319,7 +327,9 @@ function mountJingleRoutes(app) {
       }
     });
 
-    return res.json({ ok: true, jobId });
+    const out = { ok: true, jobId };
+    if (planSlug === CLERK_PLAN.TRIAL) out.trialQuota = getTrialQuotaSnapshot(clerkUserId);
+    return res.json(out);
   });
 }
 

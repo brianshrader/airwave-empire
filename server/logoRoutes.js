@@ -15,6 +15,8 @@ const {
 } = require('./services/logoProvider');
 const { tryConsume, refundOne } = require('./aiUsageStore');
 const { requireClerkUserIdForAi, requirePlanSlugOr503, tryConsumeQuota } = require('./aiQuotaHttp');
+const { refundTrialImage, getTrialQuotaSnapshot } = require('./trialQuotaStore');
+const { CLERK_PLAN } = require('./aiEntitlements');
 
 const GENERATED_DIR = path.join(__dirname, '..', 'generated-logos');
 
@@ -147,7 +149,9 @@ function mountLogoRoutes(app) {
       }
 
       if (!regenerate && existing) {
-        return res.json({ ok: true, cached: true, imageUrl: `/generated-logos/${existing.name}` });
+        const payload = { ok: true, cached: true, imageUrl: `/generated-logos/${existing.name}` };
+        if (planSlug === CLERK_PLAN.TRIAL) payload.trialQuota = getTrialQuotaSnapshot(clerkUserId);
+        return res.json(payload);
       }
 
       const allowed = await tryConsumeQuota(res, planSlug, 'logo', tryConsume, clerkUserId);
@@ -179,9 +183,14 @@ function mountLogoRoutes(app) {
           provider: getActiveImageProvider(),
         },
       });
-      return res.json({ ok: true, cached: false, imageUrl: `/generated-logos/${finalName}` });
+      const payload = { ok: true, cached: false, imageUrl: `/generated-logos/${finalName}` };
+      if (planSlug === CLERK_PLAN.TRIAL) payload.trialQuota = getTrialQuotaSnapshot(clerkUserId);
+      return res.json(payload);
     } catch (e) {
-      if (needRefund) await refundOne(clerkUserId, 'logo');
+      if (needRefund) {
+        if (planSlug === CLERK_PLAN.TRIAL) await refundTrialImage(clerkUserId);
+        else await refundOne(clerkUserId, 'logo');
+      }
       console.error('[logo] Image API / save failed:', e.message || e);
       posthog.captureException(e, req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || 'unknown');
       const status = e.status && Number.isInteger(e.status) ? e.status : 500;

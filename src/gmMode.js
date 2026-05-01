@@ -89,9 +89,9 @@
 
   /** Long-form explainer — corporate memo tone (modal: m-gm-explain). */
   var GM_EXPLAIN_MEMO_HTML =
-    '<p style="margin-top:0;font-style:italic;color:var(--mut);font-size:14px">Internal — General Manager performance standards</p>' +
+    '<p style="margin-top:0;font-style:italic;color:var(--mut);font-size:14px">Corporate expectations — General Manager performance standards</p>' +
     '<h4 style="font-family:var(--fd);font-size:13px;letter-spacing:2px;color:var(--amb);margin:16px 0 8px">What this mode is</h4>' +
-    '<p>GM oversight is a <strong>read-only evaluation</strong> on top of the simulation. It does not change ratings, formats, or economy math — it only measures how your company is doing against ownership’s expectations.</p>' +
+    '<p><strong>General Manager career mode</strong> adds formal ownership reviews alongside your station run. Ratings, formats, and market economics play out as usual — ownership judges how your results line up with their expectations.</p>' +
     '<h4 style="font-family:var(--fd);font-size:13px;letter-spacing:2px;color:var(--amb);margin:16px 0 8px">What ownership evaluates</h4>' +
     '<p>Each formal review looks at recent company results, weighted by your owner’s style:</p>' +
     '<ul style="margin:8px 0;padding-left:20px;line-height:1.6">' +
@@ -108,12 +108,12 @@
     '<li><strong>Concern</strong> — results are acceptable but trending the wrong way</li>' +
     '<li><strong>Warning</strong> — you need a visible turnaround</li>' +
     '<li><strong>Probation</strong> — one more weak review can end your tenure</li>' +
-    '<li><strong>Dismissed</strong> — ownership has replaced you as GM</li>' +
+    '<li><strong>Dismissed</strong> — ownership has replaced you as General Manager</li>' +
     '</ul>' +
     '<h4 style="font-family:var(--fd);font-size:13px;letter-spacing:2px;color:var(--amb);margin:16px 0 8px">Termination</h4>' +
     '<p>You can be dismissed if job security falls to zero, or if you are already on probation and deliver another clearly failed review. That is <strong>separate from bankruptcy</strong>: you can be fired while the company still has cash, or keep your job through a tight cash quarter if ownership likes the trend.</p>' +
     '<h4 style="font-family:var(--fd);font-size:13px;letter-spacing:2px;color:var(--amb);margin:16px 0 8px">Cash and credit vs. reviews</h4>' +
-    '<p><strong>Financial distress</strong> (low cash, loans, bankruptcy warnings) is a balance-sheet problem. <strong>GM reviews</strong> are a leadership scorecard. Fix cash with financing and costs; fix reviews with margins, revenue growth, and building the station for the long run.</p>';
+    '<p><strong>Financial distress</strong> (low cash, loans, bankruptcy warnings) is a balance-sheet problem. <strong>General Manager reviews</strong> are a leadership scorecard. Fix cash with financing and costs; fix reviews with margins, revenue growth, and building the station for the long run.</p>';
 
   function gmScenarioActive(G) {
     var mp = typeof MP !== 'undefined' ? MP : null;
@@ -897,12 +897,19 @@
     return 'In ~' + yPart + ' (' + nextN + ' periods)';
   }
 
+  /** Compact: “in N periods” (header strip / glance row). */
+  function nextReviewCompact(gm) {
+    var nextN = periodsUntilNextReview(gm);
+    if (nextN <= 0) return 'when this period closes';
+    if (nextN === 1) return 'in 1 period';
+    return 'in ' + nextN + ' periods';
+  }
+
   function ownerTypeLabel(arch) {
     return OWNER_TYPE_LABEL[arch] || arch || '—';
   }
 
-  /** Plain-English ownership priority — one sentence. */
-  function ownershipPrioritySentence(cfg) {
+  function getOwnershipTopPriorityKey(cfg) {
     var a = [
       { k: 'profit', w: cfg.wProfit },
       { k: 'revenue', w: cfg.wRevenue },
@@ -910,7 +917,19 @@
     ].sort(function (x, y) {
       return y.w - x.w;
     });
-    var top = a[0].k;
+    return a[0] ? a[0].k : 'strength';
+  }
+
+  function ownershipPriorityShort(cfg) {
+    var top = getOwnershipTopPriorityKey(cfg);
+    if (top === 'profit') return 'Profit';
+    if (top === 'revenue') return 'Revenue';
+    return 'Franchise';
+  }
+
+  /** Plain-English ownership priority — one sentence. */
+  function ownershipPrioritySentence(cfg) {
+    var top = getOwnershipTopPriorityKey(cfg);
     if (top === 'profit') {
       return 'Ownership weighs sustainable profits and margins most heavily.';
     }
@@ -1182,7 +1201,7 @@
 
     if (gm.fired) {
       body.innerHTML =
-        '<p style="margin:0 0 12px;font-size:14px;color:var(--off)">Ownership has ended your tenure as General Manager. Financial trouble and GM job security are separate — you can be dismissed even when the company is solvent.</p>' +
+        '<p style="margin:0 0 12px;font-size:14px;color:var(--off)">Ownership has ended your tenure as General Manager. Financial trouble and General Manager job security are separate — you can be dismissed even when the company is solvent.</p>' +
         '<div class="wl-gm-sec"><h3>Last formal review</h3><p style="margin:0">See the news feed for the dismissal notice.</p></div>';
       return;
     }
@@ -1202,7 +1221,7 @@
         '<div class="wl-gm-sec"><h3>Snapshot right now</h3><p style="margin:0">' +
         escapeHtml(biggestIssueSentence(kpisNow, cfg)) +
         '</p></div>' +
-        '<div class="wl-gm-sec"><h3>Reminder</h3><p style="margin:0;font-size:14px;color:var(--mut)">Cash crunch and bankruptcy warnings are financial problems. GM reviews measure leadership results — both can pressure you, but they are not the same system.</p></div>';
+        '<div class="wl-gm-sec"><h3>Reminder</h3><p style="margin:0;font-size:14px;color:var(--mut)">Cash crunch and bankruptcy warnings are financial problems. General Manager reviews measure leadership results — both can pressure you, but they are not the same system.</p></div>';
       return;
     }
 
@@ -1541,62 +1560,41 @@
     var gm = G._gm;
     var cfg = gm.config || resolveGmConfig(G);
     var st = gm.fired ? 'fired' : gm.status;
-    var kpis = computeGmKpis(G, cfg);
-    var issue = biggestIssueSentence(kpis, cfg);
     var label = statusDisplayLabel(st);
-    var nextShort = nextReviewShortLine(gm);
-    var nextFull = nextReviewPhrase(G, gm);
-    var priority = ownershipPrioritySentence(cfg);
+    var nextC = nextReviewCompact(gm);
     var owner = ownerTypeLabel(cfg.archetype);
-    var glance = gmAtGlanceSummary(G);
+    var focusShort = ownershipPriorityShort(cfg);
     var pct = Math.max(0, Math.min(100, Math.round(gm.confidence)));
 
-    el.className = 'wl-gm-panel--on wl-gm-panel--corp ' + securityClass(st);
+    el.className = 'wl-gm-panel--on wl-gm-panel--corp wl-gm-strip ' + securityClass(st);
     el.innerHTML =
-      '<div class="wl-gm-panel-inner">' +
-      '<div class="wl-gm-panel-hero">' +
-      '<div class="wl-gm-panel-hero-main">' +
-      '<div class="wl-gm-panel-eyebrow">Corporate oversight — General Manager</div>' +
-      '<div class="wl-gm-panel-headline">' +
-      '<span class="wl-gm-panel-pct">' +
-      pct +
-      '%</span>' +
-      '<span class="wl-gm-panel-statuspill">' +
-      escapeHtml(label.toUpperCase()) +
-      '</span>' +
-      '</div>' +
-      '<div class="wl-gm-panel-meter" role="progressbar" aria-valuenow="' +
-      pct +
-      '" aria-valuemin="0" aria-valuemax="100" aria-label="Job security">' +
-      '<div class="wl-gm-panel-meter-fill" style="width:' +
-      pct +
-      '%"></div>' +
-      '</div>' +
-      '<p class="wl-gm-panel-glance">' +
-      escapeHtml(glance) +
-      '</p>' +
-      '</div>' +
-      '<div class="wl-gm-panel-hero-side">' +
-      '<div class="wl-gm-panel-grid wl-gm-panel-grid--compact">' +
-      '<div><div class="wl-gm-panel-k">Next formal review</div><div class="wl-gm-panel-v wl-gm-panel-v--sm">' +
-      escapeHtml(nextShort) +
+      '<div class="wl-gm-strip-inner">' +
+      '<div class="wl-gm-strip-headrow">' +
+      '<div class="wl-gm-strip-title" role="heading" aria-level="2">GENERAL MANAGER STATUS</div>' +
+      '<div class="wl-gm-strip-actions" role="toolbar" aria-label="General Manager resources">' +
+      '<button type="button" class="wl-gm-strip-link" onclick="wlGmExplainReviews()">Expectations</button>' +
+      '<button type="button" class="wl-gm-strip-link" onclick="wlGmOpenCurrentStanding()">Standing</button>' +
       '</div></div>' +
-      '<div><div class="wl-gm-panel-k">Owner type</div><div class="wl-gm-panel-v wl-gm-panel-v--sm">' +
+      '<div class="wl-gm-strip-metricrow" role="group" aria-label="General manager at a glance">' +
+      '<div class="wl-gm-strip-item"><span class="wl-gm-strip-k">Job security</span> ' +
+      '<span class="wl-gm-strip-pill" aria-label="Status label">' +
+      escapeHtml(String(label).toUpperCase()) +
+      '</span> ' +
+      '<span class="wl-gm-strip-pct" aria-label="Confidence">' +
+      pct +
+      '%</span></div>' +
+      '<div class="wl-gm-strip-item"><span class="wl-gm-strip-k">Next review</span> ' +
+      '<span class="wl-gm-strip-v">' +
+      escapeHtml(nextC) +
+      '</span></div>' +
+      '<div class="wl-gm-strip-item"><span class="wl-gm-strip-k">Owner type</span> ' +
+      '<span class="wl-gm-strip-v">' +
       escapeHtml(owner) +
-      '</div></div>' +
-      '<div class="wl-gm-panel-grid-span2"><div class="wl-gm-panel-k">Ownership priority</div><p class="wl-gm-panel-priority">' +
-      escapeHtml(priority) +
-      '</p></div>' +
-      '<div class="wl-gm-panel-grid-span2"><div class="wl-gm-panel-k">Biggest risk right now</div><p class="wl-gm-panel-issue wl-gm-panel-issue--tight">' +
-      escapeHtml(issue) +
-      '</p></div>' +
-      '</div></div></div>' +
-      '<div class="wl-gm-panel-reviewline">' +
-      escapeHtml(nextFull) +
-      '</div>' +
-      '<div class="wl-gm-panel-actions">' +
-      '<button type="button" class="wl-gm-panel-btn-primary" onclick="wlGmExplainReviews()">Corporate expectations</button>' +
-      '<button type="button" onclick="wlGmOpenCurrentStanding()">Current standing</button>' +
+      '</span></div>' +
+      '<div class="wl-gm-strip-item"><span class="wl-gm-strip-k">Primary focus</span> ' +
+      '<span class="wl-gm-strip-v">' +
+      escapeHtml(focusShort) +
+      '</span></div>' +
       '</div></div>';
 
     if (gm.pendingReviewModal) {

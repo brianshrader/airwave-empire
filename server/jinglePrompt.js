@@ -609,6 +609,17 @@ function buildSunoJingleArgs(p) {
   }
   const lyrics = lyricLines.join('\n').slice(0, 1200);
 
+  // Numbers + enunciation guardrails:
+  // When brand contains spelled numbers and the dial hint also contains number words, models may merge them into
+  // nonsense or invent extra words. Keep this general to avoid overfitting to one phrase.
+  const _brandNums = (brandForLyrics.toLowerCase().match(/\b(?:ten|eleven|twelve|thirteen|fourteen|fifteen|sixteen|seventeen|eighteen|nineteen|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)\b/g) || []).slice(0, 4);
+  const _dialTokens = dialHint ? dialHint.toLowerCase().split(/\s+/).filter(Boolean).slice(0, 6) : [];
+  const _dialHasDigitWord = _dialTokens.some((w) => w === 'oh' || DIGIT_WORDS.includes(w));
+  const _dialConflictRisk = _dialHasDigitWord && _brandNums.length > 0;
+  const numberClarityTag = _dialConflictRisk
+    ? `numbers: keep brand number words and dial words distinct; do not merge adjacent number phrases; do not invent extra numbers; pronounce numbers exactly as written in lyrics and dial tag`
+    : `numbers: pronounce numbers exactly as written; do not invent or alter digits; no extra numbers`;
+
   const tagParts = [
     `commissioned for calendar year ${yr} only`,
     // Anti-crowd early — `tags` sliced to 1000 chars; `dial` placed soon so it survives long hints.
@@ -625,6 +636,7 @@ function buildSunoJingleArgs(p) {
     tagIsShort
       ? 'short slogan line: pronounce every word clearly in standard English; do not invent syllables or scat; no gibberish'
       : '',
+    numberClarityTag,
     eraTag,
     eraAnti,
     vocalDeliveryTag(fmtKey, !!tag),

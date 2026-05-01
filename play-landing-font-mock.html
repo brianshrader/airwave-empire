@@ -29,8 +29,15 @@
     .gridline {
       border-color: rgba(216, 155, 43, 0.18);
     }
+    /* Google Fonts are linked above — use them, not only the system stack, or the mock looks “reverted” */
     .mock-play {
-      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    .mock-play .mock-wordmark {
+      font-family: 'Oswald', 'Archivo Narrow', 'Inter', sans-serif;
+    }
+    .mock-play .mock-reading {
+      font-family: 'Lora', 'Libre Baskerville', Georgia, 'Times New Roman', serif;
     }
     .btn-outline {
       border: 1px solid rgba(120, 113, 108, 0.85);
@@ -51,6 +58,16 @@
     .btn-disabled {
       opacity: 0.45;
       pointer-events: none;
+    }
+    /* Match play: gold primary (cfm-like) vs outline (abt-like) */
+    .btn-cfm {
+      background: #d89b2b;
+      color: #111;
+      border: 1px solid rgba(200, 140, 32, 0.95);
+      font-weight: 700;
+    }
+    .btn-cfm:hover {
+      filter: brightness(1.06);
     }
     .tabular {
       font-variant-numeric: tabular-nums;
@@ -94,9 +111,9 @@
       box-shadow: 0 0 0 1px rgba(216, 155, 43, 0.35), 0 0 20px rgba(216, 155, 43, 0.12);
     }
     #mock-station-logo .mock-logo {
-      width: 2.75rem;
-      height: 2.75rem;
-      font-size: 0.8rem;
+      width: 3.5rem;
+      height: 3.5rem;
+      font-size: 0.95rem;
     }
     .mock-logo-svg-wrap {
       display: inline-flex;
@@ -119,9 +136,52 @@
       display: block;
     }
     #mock-station-logo .mock-logo-svg-wrap {
-      width: 3.25rem;
-      height: 3.25rem;
-      border-radius: 0.45rem;
+      width: 4.25rem;
+      height: 4.25rem;
+      border-radius: 0.5rem;
+    }
+    .mock-stat-label {
+      color: #d6d3d1;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+    }
+    .mock-share-hero {
+      font-size: clamp(1.75rem, 4vw, 2.35rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+    .mock-talent-row {
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .mock-talent-row:hover {
+      background: rgba(68, 64, 60, 0.38);
+    }
+    .mock-demo-bar-btn {
+      -webkit-tap-highlight-color: transparent;
+    }
+    .mock-demo-bar-btn:hover {
+      background: rgba(68, 64, 60, 0.2);
+    }
+    .mock-demo-bar-btn:focus-visible {
+      outline: 2px solid rgba(234, 179, 8, 0.55);
+      outline-offset: 1px;
+    }
+    .mock-demo-bar-btn .mock-demo-chevron {
+      transition: transform 0.18s ease;
+    }
+    .mock-demo-bar-btn[aria-expanded="true"] .mock-demo-chevron {
+      transform: rotate(-180deg);
+    }
+    .mock-sub-pill {
+      font-size: 0.7rem;
+      padding: 0.35rem 0.5rem;
+      border-radius: 0.25rem;
+      border: 1px solid rgba(120, 113, 108, 0.65);
+      color: #d6d3d1;
+      background: rgba(0, 0, 0, 0.25);
     }
     .mock-portrait {
       width: 2.25rem;
@@ -140,6 +200,270 @@
       color: #9a9a96;
       border-style: dashed;
     }
+    /* Compact market ranker: keep all columns on-screen; shrink logos to match */
+    #mock-rank-body .mock-logo-svg-wrap,
+    #mock-rank-body .mock-logo {
+      width: 1.2rem;
+      height: 1.2rem;
+      font-size: 0.5rem;
+    }
+    #mock-rk-wrap .mock-logo-svg-wrap,
+    #mock-rk-wrap .mock-logo {
+      width: 1.2rem;
+      height: 1.2rem;
+      font-size: 0.5rem;
+    }
+    /* Full #m-rk style modal — mirrors play + legacy openRanker */
+    #mock-m-rk[hidden] {
+      display: none;
+    }
+    .mock-m-rk-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 8000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.5rem;
+      background: rgba(0, 0, 0, 0.72);
+      -webkit-backdrop-filter: blur(2px);
+      backdrop-filter: blur(2px);
+    }
+    .mock-m-rk-page {
+      width: min(96vw, 84rem);
+      min-height: min(45vh, 420px);
+      max-height: min(92vh, 900px);
+      display: flex;
+      flex-direction: column;
+    }
+    .mock-m-rk-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.65rem 0.9rem 0.55rem;
+      border-bottom: 1px solid rgba(68, 64, 60, 0.65);
+    }
+    .mock-m-rk-title {
+      font-family: "Oswald", "Archivo Narrow", "Inter", sans-serif;
+      font-size: 1.05rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #fafaf9;
+    }
+    .mock-m-rk-x {
+      font: inherit;
+      color: #a8a29e;
+      background: rgba(0, 0, 0, 0.35);
+      border: 1px solid rgba(120, 113, 108, 0.55);
+      border-radius: 0.3rem;
+      padding: 0.35rem 0.6rem;
+      font-size: 0.7rem;
+      letter-spacing: 0.12em;
+      cursor: pointer;
+    }
+    .mock-m-rk-x:hover {
+      color: #e7e5e4;
+      border-color: rgba(216, 155, 43, 0.4);
+    }
+    /* Do not use flex:1+min-h:0 here — it collapses to 0 when parent height is content-sized. */
+    .mock-rk-wrap {
+      width: 100%;
+      min-height: 12rem;
+      max-height: min(72vh, 560px);
+      overflow: auto;
+      scroll-behavior: smooth;
+    }
+    .mock-rk-book-th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      padding: 0.3rem 0.28rem;
+      text-align: center;
+      background: #14120f;
+      border-bottom: 2px solid rgba(68, 64, 60, 0.7);
+      border-right: 1px solid rgba(50, 48, 45, 0.75);
+    }
+    .mock-rk-th-y {
+      display: block;
+      color: #fafaf9;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+    .mock-rk-th-p {
+      display: block;
+      color: #a8a29e;
+      font-size: 0.6rem;
+      font-family: "Inter", sans-serif;
+    }
+    .mock-rk-th-pre {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      min-width: 3.5rem;
+      text-align: center;
+      background: #14120f;
+      color: #fde68a;
+      border-bottom: 2px solid rgba(68, 64, 60, 0.7);
+      border-right: 1px solid rgba(50, 48, 45, 0.75);
+    }
+    .mock-rk-th-pre .mock-rk-th-pre-l1 {
+      display: block;
+      font-size: 0.6rem;
+      line-height: 1.25;
+    }
+    .mock-rk-th-pre .mock-rk-th-pre-l2 {
+      display: block;
+      font-size: 0.55rem;
+      color: #78716c;
+      font-family: "Inter", sans-serif;
+    }
+    .mock-rk-mkt-blk {
+      border-top: 1px solid rgba(41, 37, 36, 0.6);
+      margin-top: 0.6rem;
+      padding: 0.5rem 0.35rem 0;
+    }
+    .mock-rk-mkt-h {
+      font-size: 0.6rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #a8a29e;
+      margin-bottom: 0.45rem;
+      font-family: "Inter", sans-serif;
+    }
+    .mock-rk-mkt-lns {
+      font-size: 0.8rem;
+      line-height: 1.4;
+      color: #d6d3d1;
+      max-height: 8rem;
+      overflow-y: auto;
+    }
+    .mock-rk-mkt-line {
+      display: block;
+      padding: 0.2rem 0;
+    }
+    .mock-rk-amb {
+      color: #fde68a;
+    }
+    .mock-rk-sta-flex {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.5rem;
+      min-width: 0;
+      max-width: min(26rem, 48vw);
+    }
+    .mock-rkt {
+      border-collapse: collapse;
+      font-size: 0.85rem;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .mock-rkt th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      text-align: center;
+      background: #14120f;
+      color: #a8a29e;
+      border-bottom: 2px solid rgba(68, 64, 60, 0.7);
+      border-right: 1px solid rgba(50, 48, 45, 0.75);
+      padding: 0.4rem 0.35rem;
+      font-size: 0.68rem;
+      font-weight: 600;
+    }
+    .mock-rkt th.mock-rkt-sth {
+      text-align: left;
+      min-width: 11.5rem;
+      max-width: min(32rem, 42vw);
+      position: sticky;
+      left: 0;
+      z-index: 4;
+      top: 0;
+      letter-spacing: 0.08em;
+    }
+    .mock-rkt th.mock-rkt-sfmt {
+      min-width: 4.5rem;
+      max-width: 5.5rem;
+      text-align: left;
+      left: 11.5rem;
+      position: sticky;
+      z-index: 4;
+    }
+    .mock-rkt td {
+      border-bottom: 1px solid rgba(50, 48, 45, 0.45);
+      border-right: 1px solid rgba(40, 36, 32, 0.4);
+      padding: 0.3rem 0.35rem;
+      text-align: center;
+    }
+    .mock-rkt td.mock-rkt-stc,
+    .mock-rkt td.mock-rkt-sfmt2 {
+      position: sticky;
+      vertical-align: top;
+    }
+    .mock-rkt td.mock-rkt-stc {
+      left: 0;
+      z-index: 2;
+      text-align: left;
+      box-shadow: 4px 0 8px rgba(0, 0, 0, 0.45);
+      min-width: 0;
+    }
+    .mock-rk-td-stc,
+    .mock-rk-td-fmt {
+      background: rgba(3, 7, 8, 0.92) !important;
+      padding: 0.4rem 0.45rem !important;
+    }
+    .mock-rk-yous {
+      color: #f59e0b;
+      font-size: 0.55rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .mock-rk-calls {
+      color: #e7e5e4;
+      font-weight: 600;
+      font-size: 0.8rem;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+    .mock-rk-own {
+      color: #a8a29e;
+      font-size: 0.68rem;
+    }
+    .mock-rk-num {
+      font-variant: tabular-nums;
+      font-size: 0.8rem;
+    }
+    .mock-rk-sta-txt {
+      min-width: 0;
+      font-size: 0.7rem;
+      line-height: 1.35;
+      font-family: "Inter", sans-serif;
+    }
+    .mock-rkt td.mock-rkt-sfmt2 {
+      left: 11.5rem;
+      z-index: 2;
+      text-align: left;
+      min-width: 0;
+    }
+    .mock-rk-row:hover td {
+      background: rgba(245, 166, 35, 0.04);
+    }
+    .mock-rk-yours .mock-rkt-stc,
+    .mock-rk-yours .mock-rkt-sfmt2,
+    .mock-rk-yours td {
+      background: rgba(66, 46, 10, 0.4);
+    }
+    .mock-rk-hi {
+      color: #86efac;
+      font-weight: 600;
+    }
+    .mock-rk-mid {
+      color: #d6d3d1;
+    }
+    .mock-rk-lo {
+      color: #a8a29e;
+    }
+    .mock-rk-pre {
+      color: #d89b2b;
+    }
   </style>
 </head>
 <body class="antialiased mock-play">
@@ -150,8 +474,17 @@
   </p>
 
   <header class="border-b gridline flex flex-wrap items-center justify-between gap-4 px-4 py-3 md:px-6">
-    <div class="text-xl md:text-2xl font-black tracking-[0.18em] uppercase gold shrink-0">
+    <div class="flex items-center gap-3 min-w-0">
+    <div class="mock-wordmark text-xl md:text-2xl font-black tracking-[0.18em] uppercase gold shrink-0">
       Airwave Empire
+    </div>
+    <a
+      href="/account.html"
+      class="shrink-0 text-[0.65rem] sm:text-xs uppercase tracking-widest text-amber-200/90 border border-stone-600 rounded px-2.5 py-1.5 hover:border-amber-500/50 hover:text-amber-100 transition-colors"
+      target="_blank"
+      rel="noopener noreferrer"
+      title="Account, subscription, and billing (same as play)"
+    >Account</a>
     </div>
     <div class="flex-1 min-w-[200px] text-sm text-stone-300">
       <div id="mock-hmeta" class="flex flex-wrap items-baseline gap-x-2 gap-y-1"></div>
@@ -160,8 +493,8 @@
       </div>
       <div class="text-xs text-stone-500 mt-1 tracking-wide"><span id="mock-prog-lbl">1970 → 2020</span></div>
     </div>
-    <div class="text-right">
-      <div id="mock-cash" class="text-lg font-semibold tabular">$0</div>
+    <div class="text-right shrink-0 min-w-[9rem]">
+      <div id="mock-cash" class="text-2xl md:text-3xl font-bold tabular leading-tight">$0</div>
       <button type="button" class="mt-2 gold-bg px-4 py-2 text-sm font-bold uppercase tracking-wider rounded">
         ▶ Next period
       </button>
@@ -175,9 +508,11 @@
     <div id="mock-gm-grid" class="grid sm:grid-cols-2 lg:grid-cols-4 gap-2 text-stone-200 text-sm"></div>
   </div>
 
-  <main class="max-w-7xl mx-auto px-4 py-4 grid lg:grid-cols-2 gap-4">
-    <!-- Left -->
-    <div class="panel rounded-xl p-4 space-y-4">
+  <main
+    class="max-w-7xl mx-auto px-4 py-4 grid grid-cols-1 gap-4 lg:grid-cols-12"
+  >
+    <!-- Left: slightly narrower so ranker + demo + news don’t starve the right column -->
+    <div class="panel rounded-xl p-4 space-y-4 min-w-0 lg:col-span-5">
       <div id="mock-scorebar" class="rounded-lg border border-stone-700/80 bg-black/25 px-3 py-2 text-sm"></div>
 
       <div class="flex flex-wrap items-center justify-between gap-2 border-b border-stone-700/50 pb-2">
@@ -185,44 +520,66 @@
           Market <span id="mock-mkt-label" class="text-stone-400 font-normal normal-case">Atlanta</span>
         </span>
         <div class="flex flex-wrap gap-2">
-          <button type="button" class="btn-outline text-xs uppercase tracking-wide px-3 py-1.5 rounded">📊 Ranker</button>
+          <button
+            type="button"
+            class="btn-cfm text-xs uppercase tracking-wide px-3 py-1.5 rounded"
+            id="mock-btn-ranker"
+            title="In-game: om('m-rk') — same layout as the full market ranker (books × stations + export)"
+          >
+            📊 Ranker
+          </button>
           <button type="button" class="btn-outline text-xs uppercase tracking-wide px-3 py-1.5 rounded">📰 Digest</button>
         </div>
       </div>
 
-      <table class="w-full text-sm text-left text-stone-300">
-        <thead>
-          <tr class="text-xs uppercase tracking-wider text-stone-500 border-b border-stone-700">
-            <th class="pb-2 pr-1 w-8">#</th>
-            <th class="pb-2 pr-2 w-10" title="Brand mark">◆</th>
-            <th class="pb-2 pr-2">Station</th>
-            <th class="pb-2 pr-2">Format</th>
-            <th class="pb-2 text-right tabular">Share</th>
-            <th class="pb-2 text-right tabular">△</th>
-            <th class="pb-2 text-right tabular">Rev/pd</th>
-            <th class="pb-2 text-right tabular">EBITDA</th>
-          </tr>
-        </thead>
-        <tbody id="mock-rank-body" class="text-stone-200"></tbody>
-      </table>
+      <div class="w-full max-w-full rounded-lg border border-stone-800/50 bg-black/20 overflow-hidden">
+        <table
+          class="mock-rank-table w-full table-fixed text-[10px] sm:text-xs leading-tight sm:leading-snug text-left text-stone-300 border-separate border-spacing-0"
+        >
+          <colgroup>
+            <col style="width:6%" />
+            <col style="width:6%" />
+            <col style="width:34%" />
+            <col style="width:20%" />
+            <col style="width:10%" />
+            <col style="width:8%" />
+            <col style="width:8%" />
+          </colgroup>
+          <thead>
+            <tr class="text-[0.6rem] sm:text-xs uppercase tracking-wide text-stone-500 border-b border-stone-700">
+              <th class="pb-1.5 pl-0 pr-0.5 sm:pr-1" scope="col">#</th>
+              <th class="pb-1.5 pr-0.5 sm:pr-1" scope="col" title="Brand mark">◆</th>
+              <th class="pb-1.5 pr-0.5 sm:pr-1" scope="col">Station</th>
+              <th class="pb-1.5 pr-0.5" scope="col" title="On-air format">Format</th>
+              <th class="pb-1.5 pr-0.5 text-right" scope="col">Sh</th>
+              <th class="pb-1.5 pr-0.5 text-right" scope="col" title="Delta">Δ</th>
+              <th class="pb-1.5 pr-0 text-right" scope="col" title="Revenue / period">Rev</th>
+            </tr>
+          </thead>
+          <tbody id="mock-rank-body" class="text-stone-200"></tbody>
+        </table>
+      </div>
 
       <div>
-        <div class="text-xs uppercase tracking-widest text-stone-500 mb-2">Demo breakdown — your lead station</div>
-        <div id="mock-demo" class="space-y-2 text-sm"></div>
+        <div class="text-xs uppercase tracking-widest text-stone-500 mb-2">DEMO BREAKDOWN</div>
+        <div
+          id="mock-demo"
+          class="rounded-lg border border-stone-800/60 bg-stone-950/40 py-1 px-2"
+        ></div>
       </div>
 
       <div>
         <div class="text-xs uppercase tracking-widest text-stone-500 mb-2">News feed</div>
-        <ul id="mock-news" class="text-sm text-stone-400 space-y-2 leading-relaxed"></ul>
+        <ul id="mock-news" class="mock-reading text-sm text-stone-400 space-y-2 leading-relaxed"></ul>
       </div>
     </div>
 
-    <!-- Right -->
-    <div class="panel rounded-xl p-4 space-y-4">
+    <!-- Right: wider column -->
+    <div class="panel rounded-xl p-4 space-y-4 min-w-0 lg:col-span-7">
       <div class="border border-amber-900/25 rounded-lg p-3 bg-black/20">
         <div class="text-xs uppercase tracking-[0.2em] gold mb-1">Scenario</div>
         <div class="text-base font-semibold text-stone-100">General Manager: The Underdog</div>
-        <p class="text-sm text-stone-400 mt-2 leading-relaxed">
+        <p class="mock-reading text-sm text-stone-400 mt-2 leading-relaxed">
           Hired to run a struggling AM station — ownership expects sustainable results and periodic reviews.
         </p>
       </div>
@@ -230,11 +587,11 @@
       <div>
         <div class="text-xs uppercase tracking-widest text-stone-500 mb-2">Corporate actions</div>
         <div class="flex flex-wrap gap-2">
-          <button type="button" class="btn-outline text-xs px-3 py-2 rounded">📰 News</button>
+          <button type="button" class="btn-cfm text-xs px-3 py-2 rounded">📰 News</button>
           <button type="button" class="btn-outline text-xs px-3 py-2 rounded">📈 Financials</button>
           <button type="button" class="btn-outline text-xs px-3 py-2 rounded">💳 Loans</button>
           <button type="button" class="btn-outline text-xs px-3 py-2 rounded">📋 GM career</button>
-          <button type="button" class="btn-outline text-xs px-3 py-2 rounded">💾 Save / load</button>
+          <button type="button" class="btn-cfm text-xs px-3 py-2 rounded">💾 Save / load</button>
           <button type="button" class="btn-ghost text-xs px-3 py-2 rounded text-stone-400">📘 Tips</button>
         </div>
       </div>
@@ -242,71 +599,153 @@
       <div>
         <div class="text-xs uppercase tracking-widest text-stone-500 mb-2"><span id="mock-own-lbl">Your stations</span></div>
         <div class="border border-stone-700 rounded-lg overflow-hidden bg-stone-900/40">
-          <div class="px-4 py-3 border-b border-stone-700/80 flex flex-wrap justify-between gap-3 items-start">
-            <div class="flex gap-3 min-w-0">
-              <div id="mock-station-logo" class="mt-0.5"></div>
+          <!-- play.html: row1 = identity | share; quality + P&L full width below -->
+          <div
+            class="px-4 py-3 border-b border-stone-700/80 grid grid-cols-[1fr_auto] min-[900px]:grid-cols-[minmax(0,1fr)_minmax(7.5rem,11.5rem)] gap-x-3 gap-y-2 items-start w-full"
+          >
+            <div class="flex gap-3 min-w-0 items-start col-start-1 row-start-1">
+              <div id="mock-station-logo" class="mt-0.5 flex-shrink-0"></div>
               <div class="min-w-0">
                 <div id="mock-calls" class="text-lg font-bold text-stone-100 tracking-tight"></div>
-                <div id="mock-brand" class="text-sm text-stone-400"></div>
+                <div
+                  id="mock-freq-pwr"
+                  class="text-xs text-stone-500 font-mono tabular tracking-tight mt-0.5"
+                ></div>
+                <div id="mock-brand" class="text-sm text-stone-400 mt-1"></div>
               </div>
             </div>
-            <div class="text-right text-sm tabular space-y-0.5">
-              <div id="mock-share-big" class="text-stone-200 font-semibold"></div>
-              <div id="mock-rev-big" class="text-stone-500"></div>
-              <div id="mock-ebitda-row" class="text-xs font-medium"></div>
-              <div id="mock-margin-row" class="text-xs text-stone-500"></div>
+            <div
+              class="text-right tabular col-start-2 row-start-1 self-start justify-self-end min-w-[4.5rem] max-w-[9rem] flex flex-col items-end"
+            >
+              <div id="mock-share-big" class="mock-share-hero text-stone-100 leading-none"></div>
+              <div class="text-[0.65rem] uppercase tracking-widest text-stone-500 mt-1">Share (book)</div>
+            </div>
+            <div
+              class="col-span-2 row-start-2 w-full min-w-0 space-y-2 border-t border-stone-800/90 pt-2.5 -mx-4 px-4"
+            >
+              <div class="w-full">
+                <div class="flex justify-between items-center mb-1">
+                  <span class="text-xs uppercase tracking-wider text-stone-500">QUALITY</span>
+                  <span id="mock-pq-val" class="text-sm font-semibold text-stone-200 tabular"></span>
+                </div>
+                <div class="h-2 w-full rounded-full bg-stone-800 overflow-hidden">
+                  <div id="mock-pq-bar" class="h-full rounded-full bg-amber-600/90" style="width: 0%"></div>
+                </div>
+              </div>
+              <div id="mock-fg" class="grid w-full min-w-0 grid-cols-2 gap-x-3 gap-y-2 text-sm pt-1 border-t border-stone-800/80"></div>
             </div>
           </div>
 
-          <div class="px-4 py-3 border-b border-stone-800/90">
-            <div class="flex justify-between items-center mb-1">
-              <span class="text-xs uppercase tracking-wider text-stone-500">Programming quality</span>
-              <span id="mock-pq-val" class="text-sm font-semibold text-stone-200 tabular"></span>
+          <div
+            class="px-2 py-2 space-y-2 border-b border-stone-800/90 bg-black/20"
+            id="mock-station-actions"
+          >
+            <p class="text-[10px] text-stone-500 px-1 leading-snug">
+              Manage Talent by clicking on the daypart.
+            </p>
+            <div class="flex flex-wrap gap-1.5">
+              <button
+                type="button"
+                class="btn-cfm text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide"
+                id="mock-btn-prog"
+              >
+                Programming
+              </button>
+              <button type="button" class="btn-cfm text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Promotion</button>
+              <button type="button" class="btn-outline text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Sales</button>
+              <button type="button" class="btn-outline text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Spot load</button>
+              <button type="button" class="btn-outline text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Research</button>
+              <button
+                type="button"
+                class="btn-outline text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide"
+                id="mock-btn-admin"
+              >
+                Administration
+              </button>
             </div>
-            <div class="h-2 rounded-full bg-stone-800 overflow-hidden">
-              <div id="mock-pq-bar" class="h-full rounded-full bg-amber-600/90" style="width: 0%"></div>
+            <div id="mock-sub-programming" class="hidden pl-2 border-l-2 border-amber-600/45 space-y-1.5">
+              <div class="text-[10px] uppercase tracking-widest text-stone-500">Programming — set in modal</div>
+              <div class="flex flex-wrap gap-1.5">
+                <span class="mock-sub-pill">Format</span>
+                <span class="mock-sub-pill">Positioning</span>
+                <span class="mock-sub-pill">Demo target</span>
+                <span class="mock-sub-pill">Program budget</span>
+              </div>
             </div>
-          </div>
-
-          <div class="px-2 py-2 flex flex-wrap gap-1.5 border-b border-stone-800/90 bg-black/20">
-            <button type="button" class="btn-outline text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Programming</button>
-            <button type="button" class="btn-outline text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Manage talent</button>
-            <button type="button" class="btn-outline text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Spot load</button>
-            <button type="button" class="btn-outline text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Promotion</button>
-            <button type="button" class="btn-outline text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Brand</button>
-            <button type="button" class="btn-outline text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Research</button>
-            <button type="button" class="btn-warn text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide" id="mock-contract-btn">Contract</button>
-            <button type="button" class="btn-outline btn-disabled text-[11px] px-2.5 py-1.5 rounded uppercase tracking-wide">Acquire</button>
+            <div id="mock-sub-admin" class="hidden pl-2 border-l-2 border-stone-600/50 space-y-1.5">
+              <div class="text-[10px] uppercase tracking-widest text-stone-500">Administration — one modal</div>
+              <div class="flex flex-wrap gap-1.5">
+                <span class="mock-sub-pill">History</span>
+                <span class="mock-sub-pill">Swap signal</span>
+                <span class="mock-sub-pill">Translator</span>
+                <span class="mock-sub-pill">Sell / add / simulcast</span>
+              </div>
+            </div>
           </div>
 
           <div class="overflow-x-auto">
-            <table class="w-full text-xs text-left min-w-[420px]">
+            <table class="w-full text-xs text-left min-w-[480px]">
               <thead>
                 <tr class="text-stone-500 uppercase tracking-wider border-b border-stone-800">
                   <th class="py-2 pl-3 pr-2 font-medium">Daypart</th>
-                  <th class="py-2 px-1 font-medium w-12">Photo</th>
-                  <th class="py-2 px-2 font-medium">On-air</th>
-                  <th class="py-2 px-2 font-medium text-right tabular">Talent</th>
-                  <th class="py-2 px-2 font-medium text-right tabular">Morale</th>
-                  <th class="py-2 pr-3 pl-2 font-medium text-right tabular">Pay / pd</th>
+                  <th class="py-2 px-1 w-12"></th>
+                  <th class="py-2 px-2 font-medium min-w-0">Name</th>
+                  <th class="py-2 px-1 font-medium text-right tabular w-11" title="On-air talent rating (0–100)">Talent</th>
+                  <th class="py-2 px-1 font-medium text-center w-12" title="Morale (green / yellow / red)">Morale</th>
+                  <th class="py-2 px-1 font-bold text-right tabular w-11" title="Slot quality (0–100)">Slot</th>
+                  <th class="py-2 pr-3 pl-1 font-medium text-right tabular">Pay / pd</th>
                 </tr>
               </thead>
               <tbody id="mock-talent-body" class="text-stone-300"></tbody>
             </table>
           </div>
 
-          <div class="px-3 py-2 text-[11px] text-stone-500 border-t border-stone-800/90 flex flex-wrap gap-3 justify-between">
-            <span id="mock-talent-foot"></span>
-            <span class="tabular" id="mock-talent-cost"></span>
+          <div class="px-3 py-2 text-[11px] border-t border-stone-800/90 flex flex-wrap justify-end">
+            <span class="tabular text-stone-400" id="mock-talent-cost"></span>
           </div>
         </div>
       </div>
     </div>
   </main>
 
-  <footer class="max-w-7xl mx-auto px-4 py-6 text-center text-xs text-stone-600 border-t border-stone-800 mt-6">
-    <code class="text-stone-500">play-landing-font-mock.html</code> — static preview; refresh to re-roll values.
+  <footer class="max-w-7xl mx-auto px-4 py-8 mt-6 border-t border-stone-800 text-center text-xs text-stone-500" role="contentinfo">
+    <p class="text-stone-400 mb-3">
+      <span class="text-stone-500">© 2026 Airwave Empire</span> ·
+      <a class="text-amber-200/80 hover:underline" href="/legal/terms.html" target="_blank" rel="noopener">Terms</a> ·
+      <a class="text-amber-200/80 hover:underline" href="/legal/privacy.html" target="_blank" rel="noopener">Privacy</a> ·
+      <a class="text-amber-200/80 hover:underline" href="/legal/contact.html" target="_blank" rel="noopener">Contact</a>
+    </p>
+    <p class="text-stone-600 text-[0.7rem] leading-relaxed max-w-lg mx-auto mb-3">
+      Questions about purchases or your account: use
+      <a class="text-amber-200/80 hover:underline" href="/legal/contact.html" target="_blank" rel="noopener">Contact</a>
+      (or Account above when the game is online).
+    </p>
+    <p class="text-stone-600 text-[0.7rem] max-w-md mx-auto">
+      <code class="text-stone-500">play-landing-font-mock.html</code> is a static layout preview (refresh to re-roll numbers). The real sim UI is
+      <a class="text-amber-200/80 hover:underline" href="play.html">play.html</a> (or run <code class="text-stone-500">npm run start</code> and open the game URL the server prints).
+    </p>
   </footer>
+
+  <div
+    id="mock-m-rk"
+    class="mock-m-rk-overlay"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="mock-m-rk-title"
+    hidden
+  >
+    <div class="panel mock-m-rk-page rounded-lg overflow-hidden" id="mock-m-rk-panel">
+      <div class="mock-m-rk-head">
+        <span id="mock-m-rk-title" class="mock-m-rk-title">MARKET RANKER</span>
+        <button type="button" class="mock-m-rk-x" id="mock-m-rk-close" aria-label="Close ranker">CLOSE ×</button>
+      </div>
+      <div id="mock-rk-wrap" class="mock-rk-wrap border-t border-stone-800/50"></div>
+      <div class="px-3 py-2.5 border-t border-stone-800/60 space-y-2" id="mock-rk-legend">
+        <div class="text-[0.7rem] text-stone-500 text-right w-full" id="mock-rk-legend-top"></div>
+        <p class="text-[0.65rem] text-stone-500 leading-relaxed max-w-2xl ml-auto" id="mock-rk-legend-pre"></p>
+      </div>
+    </div>
+  </div>
 
   <script src="src/stationLogoConfig.js"></script>
   <script src="src/stationLogoSvg.js"></script>
@@ -314,6 +753,13 @@
 (function () {
   var rnd = function (a, b) {
     return a + Math.floor(Math.random() * (b - a + 1));
+  };
+  var escapeHtmlAttr = function (s) {
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
   };
   var pick = function (arr) {
     return arr[Math.floor(Math.random() * arr.length)];
@@ -358,8 +804,22 @@
   var fmtMoney = function (n) {
     return '$' + n.toLocaleString('en-US');
   };
-  var fmtPct = function (x) {
-    return x.toFixed(1) + '%';
+  /** In-game ranker: share is a number (e.g. 11.4), not “11.4%”. */
+  var fmtSharePts = function (x) {
+    return (Number(x) || 0).toFixed(1);
+  };
+  var bandFromRawCall = function (raw) {
+    return /\d+\.\d+/.test(String(raw || '')) ? 'FM' : 'AM';
+  };
+  var callLettersFromRaw = function (raw) {
+    return String(raw || '')
+      .replace(/[^A-Za-z]/g, '')
+      .slice(0, 4)
+      .toUpperCase() || 'WXYZ';
+  };
+  /** Ranker column: e.g. WZZZ-AM / WKRP-FM (no frequency in the label). */
+  var callRankerLabel = function (raw) {
+    return callLettersFromRaw(raw) + '-' + bandFromRawCall(raw);
   };
   var logoLetters = function (call) {
     var m = String(call).replace(/[^A-Za-z0-9]/g, '');
@@ -406,7 +866,7 @@
     return FORMAT_TO_KEY[lab] || 'ADULT_CONTEMP';
   };
   /**
-   * Procedural station mark — same pipeline as in-game Brand & Marketing (template SVG).
+   * Procedural station mark — same pipeline as in-game Brand & Promotion (template SVG).
    * AI-generated PNGs cache under generated-logos/ (usually empty in git); templates always work offline.
    */
   var logoMarkHtml = function (r, year, city) {
@@ -478,6 +938,21 @@
     if (t >= 52) return 'text-stone-200';
     return 'text-cash-warn';
   };
+  var slotQCls = function (q) {
+    if (q >= 72) return 'text-profit';
+    if (q >= 52) return 'text-cash-warn';
+    return 'text-loss';
+  };
+  var moraleDotHtml = function (mor) {
+    var bg = mor >= 72 ? 'bg-green-600' : mor >= 48 ? 'bg-amber-400' : 'bg-rose-500';
+    return (
+      '<span class="inline-block w-2.5 h-2.5 rounded-full ' +
+      bg +
+      ' ring-1 ring-black/40" title="Morale ' +
+      mor +
+      '"></span>'
+    );
+  };
 
   var cities = ['Atlanta', 'Nashville', 'Chicago', 'Seattle', 'Los Angeles', 'New York'];
   var years = [1970, 1974, 1978, 1982, 1985, 1990];
@@ -516,7 +991,7 @@
   var cashEl = document.getElementById('mock-cash');
   cashEl.textContent = fmtMoney(cash);
   cashEl.className =
-    'text-lg font-semibold tabular ' +
+    'text-2xl md:text-3xl font-bold tabular leading-tight ' +
     (cash < 0 ? 'text-loss' : cash < 120000 ? 'text-cash-warn' : 'text-profit');
   document.getElementById('mock-mkt-label').textContent = city;
 
@@ -561,45 +1036,51 @@
     }
   }
 
-  var vp = rnd(12, 240);
-  var decade = Math.floor(year / 10) * 10;
-  var rollupEbitda = rnd(-42000, 180000);
-  var rollupMargin = rnd(-15, 24);
-  var ebitdaCls = rollupEbitda >= 0 ? 'text-profit' : 'text-loss';
-  var rollupMarginCls = rollupMargin >= 0 ? 'text-profit' : 'text-loss';
-  document.getElementById('mock-scorebar').innerHTML =
-    '<div class="flex flex-wrap justify-between gap-2 items-baseline">' +
-    '<span class="text-stone-400 uppercase tracking-wide text-xs">Score · ' +
-    decade +
-    's</span>' +
-    '<span class="font-semibold text-stone-100 tabular">' +
-    vp +
-    ' VP</span></div>' +
-    '<div class="text-xs text-stone-500 mt-1">Best share ' +
-    fmtPct(rnd(32, 142) / 10) +
-    ' · Peak rev ' +
-    fmtMoney(rnd(180000, 2400000)) +
-    '</div>' +
-    '<div class="text-xs mt-1.5 flex flex-wrap gap-x-3 gap-y-1">' +
-    '<span><span class="text-stone-500">Company EBITDA (last)</span> <span class="tabular font-medium ' +
-    ebitdaCls +
-    '">' +
-    (rollupEbitda >= 0 ? '+' : '') +
-    fmtMoney(rollupEbitda) +
-    '</span></span>' +
-    '<span><span class="text-stone-500">Margin</span> <span class="tabular ' +
-    rollupMarginCls +
-    '">' +
-    (rollupMargin >= 0 ? '+' : '') +
-    rollupMargin +
-    '%</span></span>' +
-    '</div>';
-
   var ranks = [];
   var nRows = rnd(5, 9);
   var myRank = rnd(1, nRows);
   var myShare = rnd(35, 120) / 10;
   var myRev = rnd(14000, 62000);
+  var decade = Math.floor(year / 10) * 10;
+  var decadeScore = rnd(38, 94);
+  var totalVpSoFar = rnd(0, 240);
+  var nPorts = rnd(1, 3);
+  var combShare = myShare;
+  for (var pi2 = 1; pi2 < nPorts; pi2++) {
+    combShare += rnd(4, 28) / 10;
+  }
+  combShare = Math.min(99.2, Math.round(combShare * 10) / 10);
+  var decG =
+    decadeScore >= 80 ? 'A' : decadeScore >= 70 ? 'B' : decadeScore >= 60 ? 'C' : decadeScore >= 50 ? 'D' : 'F';
+  var decGCls =
+    decG === 'A'
+      ? 'text-profit'
+      : decG === 'B'
+        ? 'text-emerald-200'
+        : decG === 'C'
+          ? 'text-cash-warn'
+          : 'text-rose-400';
+  document.getElementById('mock-scorebar').innerHTML =
+    '<div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">' +
+    '<div class="flex flex-col gap-0.5 min-w-0"><span class="text-[0.65rem] uppercase tracking-widest text-stone-500">Combined share (you)</span>' +
+    '<span class="text-lg font-semibold text-amber-100/95 tabular">' +
+    combShare.toFixed(1) +
+    '%</span><span class="text-[0.6rem] text-stone-600">All owned stations, last book</span></div>' +
+    '<div class="flex flex-col gap-0.5 min-w-0"><span class="text-[0.65rem] uppercase tracking-widest text-stone-500">Decade score</span>' +
+    '<span class="text-lg font-semibold tabular ' +
+    decGCls +
+    '">' +
+    decadeScore +
+    ' <span class="text-sm">/100 ' +
+    decG +
+    '</span></span><span class="text-[0.6rem] text-stone-600">' +
+    decade +
+    's window</span></div>' +
+    '<div class="flex flex-col gap-0.5 min-w-0"><span class="text-[0.65rem] uppercase tracking-widest text-stone-500">Total VP (so far)</span>' +
+    '<span class="text-lg font-semibold text-amber-200/90 tabular">' +
+    totalVpSoFar +
+    ' VP</span><span class="text-[0.6rem] text-stone-600">Lifetime bank</span></div></div>';
+
   var myStationFmt = pick(formats);
   var myBrandSlogan = pick(['Metro Hits', 'Power 1280', 'The Hot Clock', 'City Sound']);
   var rivalBrandPool = [
@@ -618,7 +1099,13 @@
     var isMine = rank === myRank;
     var share = isMine ? myShare : rnd(25, 150) / 10;
     var rev = isMine ? myRev : rnd(8000, 72000);
-    var call = isMine ? 'WXYZ 1280' : pick(calls) + ' ' + pick(['590', '640', '96.1', '99.7', '104.5']);
+    var rawCall = isMine
+      ? 'WXYZ 1280'
+      : pick(calls) +
+        ' ' +
+        (Math.random() > 0.48
+          ? pick(['590', '640', '1280', '1500'])
+          : pick(['88.1', '96.1', '99.7', '101.1', '104.5']));
     var fmt = isMine ? myStationFmt : pick(formats);
     var brand = isMine ? myBrandSlogan : pick(rivalBrandPool);
     var delta = rnd(-14, 22) / 10;
@@ -626,7 +1113,8 @@
     var margin = rev > 0 ? Math.round((ebitda / rev) * 1000) / 10 : 0;
     ranks.push({
       rank: rank,
-      call: call,
+      call: rawCall,
+      callLabel: callRankerLabel(rawCall),
       fmt: fmt,
       brand: brand,
       share: share,
@@ -650,79 +1138,405 @@
       var rowCls = r.mine ? ' bg-amber-950/25' : '';
       var dCls = r.delta >= 0 ? ' text-profit' : ' text-loss';
       var dStr = (r.delta >= 0 ? '+' : '') + r.delta.toFixed(1);
-      var ebCls = r.ebitda >= 0 ? 'text-profit' : 'text-loss';
-      var ebStr = (r.ebitda >= 0 ? '+' : '') + fmtMoney(r.ebitda);
       return (
         '<tr class="border-b border-stone-800/80' +
         rowCls +
         '">' +
-        '<td class="py-2 pr-1 tabular align-middle">' +
+        '<td class="py-1.5 pl-0 pr-0.5 sm:pr-1 tabular align-middle">' +
         r.rank +
         '</td>' +
-        '<td class="py-2 pr-2 align-middle">' +
+        '<td class="py-1.5 pr-0.5 sm:pr-1 align-middle overflow-hidden">' +
         logoMarkHtml(r, year, city) +
         '</td>' +
-        '<td class="py-2 pr-2 font-medium align-middle ' +
+        '<td class="py-1.5 pr-0.5 sm:pr-1 min-w-0 font-medium align-middle ' +
         (r.mine ? 'gold' : '') +
+        '"><span class="block w-full min-w-0 overflow-hidden text-ellipsis whitespace-nowrap ' +
+        (r.mine ? '' : 'text-stone-200') +
         '">' +
-        (r.mine ? '<span class="text-amber-500/90 text-[10px] uppercase tracking-wider mr-1">You</span>' : '') +
-        r.call +
-        '</td>' +
-        '<td class="py-2 pr-2 text-stone-400 align-middle">' +
+        (r.mine
+          ? '<span class="text-amber-500/90 text-[0.5rem] sm:text-[0.6rem] uppercase tracking-wider mr-0.5">You</span> '
+          : '') +
+        r.callLabel +
+        '</span></td>' +
+        '<td class="py-1.5 pr-0.5 text-stone-400 align-middle min-w-0"><span class="block w-full min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">' +
         r.fmt +
+        '</span></td>' +
+        '<td class="py-1.5 pr-0.5 text-right tabular align-middle">' +
+        fmtSharePts(r.share) +
         '</td>' +
-        '<td class="py-2 text-right tabular align-middle">' +
-        fmtPct(r.share) +
-        '</td>' +
-        '<td class="py-2 text-right tabular align-middle ' +
+        '<td class="py-1.5 pr-0.5 text-right tabular align-middle ' +
         dCls +
         '">' +
         dStr +
         '</td>' +
-        '<td class="py-2 text-right tabular align-middle text-stone-300">' +
+        '<td class="py-1.5 pr-0 text-right tabular align-middle text-stone-300"><span class="whitespace-nowrap">' +
         fmtMoney(Math.round(r.rev / 1000)) +
-        'k</td>' +
-        '<td class="py-2 text-right tabular align-middle text-xs ' +
-        ebCls +
-        '">' +
-        ebStr +
-        '</td>' +
+        'k</span></td>' +
         '</tr>'
       );
     })
     .join('');
 
-  var demos = [
-    { label: '12–17', w: rnd(8, 22) },
-    { label: '18–24', w: rnd(12, 28) },
-    { label: '25–34', w: rnd(15, 32) },
-    { label: '35–49', w: rnd(18, 35) },
-    { label: '50–64', w: rnd(10, 28) },
-    { label: '65+', w: rnd(5, 18) },
+  function mockRkStepBackSem(cy, cs) {
+    if (cs === 0) return { y: cy - 1, s: 1 };
+    return { y: cy, s: 0 };
+  }
+  function mockRkBookSeqFromEnd(endY, endSeason, n) {
+    var cs = endSeason === 'FALL' ? 1 : 0;
+    var cy = endY;
+    var acc = [];
+    for (var j = 0; j < n; j++) {
+      acc.push({ y: cy, s: cs });
+      var o = mockRkStepBackSem(cy, cs);
+      cy = o.y;
+      cs = o.s;
+    }
+    return acc.reverse();
+  }
+  function mockRkBackfill(endingPts, n) {
+    var s = new Array(n);
+    s[n - 1] = Math.max(0.15, Math.min(38, endingPts));
+    for (var i = n - 2; i >= 0; i--) {
+      s[i] = Math.max(0.1, Math.min(38, s[i + 1] + (Math.random() - 0.5) * 1.75));
+    }
+    return s;
+  }
+  function mockRkCellClass(pts) {
+    if (pts >= 8) return 'mock-rk-hi';
+    if (pts >= 2) return 'mock-rk-mid';
+    if (pts < 0.5) return 'mock-rk-lo';
+    return 'mock-rk-mid';
+  }
+  function buildMockFullRankerModal() {
+    var rk = ranks && ranks.length ? ranks : null;
+    if (!rk) {
+      rk = [
+        { callLabel: 'WXYZ 1280', fmt: 'Top 40', share: 9.2, mine: true, rank: 1, call: 'WXYZ 1280', brand: 'B', ebitda: 0, rev: 0, delta: 0, margin: 0 },
+        { callLabel: 'WKRP 96.1', fmt: 'CHR', share: 7.1, mine: false, rank: 2, call: 'x', brand: 'b', ebitda: 0, rev: 0, delta: 0, margin: 0 },
+        { callLabel: 'WZZZ 99.7', fmt: 'Country', share: 5.4, mine: false, rank: 3, call: 'x', brand: 'b', ebitda: 0, rev: 0, delta: 0, margin: 0 }
+      ];
+    }
+    var lab6 = mockRkBookSeqFromEnd(year, season, 6);
+    var thBook = lab6
+      .map(function (b) {
+        return (
+          '<th class="mock-rk-book-th" scope="col"><span class="mock-rk-th-y">' +
+          b.y +
+          '</span><span class="mock-rk-th-p">' +
+          (b.s === 1 ? 'FALL' : 'SPRING') +
+          '</span></th>'
+        );
+      })
+      .join('');
+    thBook +=
+      '<th class="mock-rk-th-pre" scope="col" title="Pre-book — not yet the published book">' +
+      '<span class="mock-rk-th-pre-l1">' +
+      year +
+      ' ' +
+      season +
+      ' *</span><span class="mock-rk-th-pre-l2">pre-book</span></th>';
+    var bodyRows = rk
+      .map(function (r) {
+        var hist6 = mockRkBackfill(r.share, 6);
+        var preV = Math.max(0.1, hist6[5] * (0.92 + Math.random() * 0.12));
+        var cells = hist6
+          .map(function (v) {
+            return (
+              '<td class="' + mockRkCellClass(v) + ' mock-rk-num">' + v.toFixed(1) + '</td>'
+            );
+          })
+          .join('');
+        cells += '<td class="mock-rk-pre mock-rk-num">' + preV.toFixed(1) + '</td>';
+        var ycls = r.mine ? ' mock-rk-yours' : '';
+        return (
+          '<tr class="mock-rk-row' +
+          ycls +
+          '">' +
+          '<td class="mock-rkt-stc mock-rk-td-stc"><div class="mock-rk-sta-flex">' +
+          logoMarkHtml(r, year, city) +
+          '<div class="mock-rk-sta-txt">' +
+          (r.mine ? '<div class="mock-rk-yous">You</div>' : '') +
+          '<div class="mock-rk-calls">' +
+          r.callLabel +
+          '</div><div class="mock-rk-own" title="Mock owner">' +
+          (r.mine
+            ? 'Your company'
+            : pick(['Indie', 'Metro Media', 'Riverside', 'First Coast', 'Signal Group'])) +
+          '</div></div></div></td>' +
+          '<td class="mock-rkt-sfmt2 mock-rk-td-fmt" style="color:#d6d3d1; font-size:0.7rem; white-space: normal; word-break: break-word;">' +
+          r.fmt +
+          '</td>' +
+          cells +
+          '</tr>'
+        );
+      })
+      .join('');
+    var w = document.getElementById('mock-m-rk-title');
+    if (w) w.textContent = 'MARKET RANKER — ' + String(city).toUpperCase();
+    var mkt = [1, 2, 3, 4, 5]
+      .map(function () {
+        return (
+          '<span class="mock-rk-mkt-line">' +
+          pick(first) +
+          ' ' +
+          pick(last) +
+          ' &middot; ' +
+          rnd(56, 92) +
+          ' &middot; ' +
+          pick(calls) +
+          '</span>'
+        );
+      })
+      .join('');
+    var wrap = document.getElementById('mock-rk-wrap');
+    if (wrap) {
+      wrap.innerHTML =
+        '<table class="mock-rkt w-full table-fixed" style="min-width: 58rem; width: 100%">' +
+        '<thead><tr><th class="mock-rkt-sth" scope="col">STATION</th><th class="mock-rkt-sfmt" scope="col" title="On-air format">Format</th>' +
+        thBook +
+        '</tr></thead><tbody>' +
+        bodyRows +
+        '</tbody></table>' +
+        '<div class="mock-rk-mkt-blk">' +
+        '<div class="mock-rk-mkt-h">Market talent <span class="lowercase" style="letter-spacing:0.04em; text-transform:none; font-size:0.7rem; color: #a8a29e;">(quality · all stations, mock sample)</span></div>' +
+        '<div class="mock-rk-mkt-lns">' +
+        mkt +
+        '</div></div>';
+    }
+    var legT = document.getElementById('mock-rk-legend-top');
+    if (legT) {
+      legT.innerHTML =
+        '<button type="button" class="btn-cfm" style="font-size:0.7rem; padding:0.35rem 0.65rem; border-radius:0.25rem" disabled title="In-game: export ranker share history to CSV">Export share history (CSV)</button>';
+    }
+    var legP = document.getElementById('mock-rk-legend-pre');
+    if (legP) {
+      legP.innerHTML =
+        '<span class="mock-rk-amb">*</span> The amber column is the <strong>pre-book</strong> estimate for the current 6-mo accrual — the published book (and the ranker&rsquo;s headline shares) finalizes at period end. Scroll horizontally to see older books; the mock auto-scrolls to the right.';
+    }
+  }
+  function openMockMktRanker() {
+    var o = document.getElementById('mock-m-rk');
+    if (!o) return;
+    buildMockFullRankerModal();
+    o.removeAttribute('hidden');
+    var cbtn = o.querySelector('#mock-m-rk-close');
+    if (cbtn) cbtn.focus();
+    setTimeout(function () {
+      var wrap = document.getElementById('mock-rk-wrap');
+      if (wrap) wrap.scrollLeft = wrap.scrollWidth;
+    }, 80);
+  }
+  function closeMockMktRanker() {
+    var o = document.getElementById('mock-m-rk');
+    if (o) o.setAttribute('hidden', '');
+  }
+  var mkrBtn = document.getElementById('mock-btn-ranker');
+  if (mkrBtn) mkrBtn.addEventListener('click', openMockMktRanker);
+  var mkrX = document.getElementById('mock-m-rk-close');
+  if (mkrX) mkrX.addEventListener('click', closeMockMktRanker);
+  var mkrEl = document.getElementById('mock-m-rk');
+  if (mkrEl) {
+    mkrEl.addEventListener('click', function (e) {
+      if (e.target === mkrEl) closeMockMktRanker();
+    });
+  }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && mkrEl && !mkrEl.hasAttribute('hidden')) closeMockMktRanker();
+  });
+  buildMockFullRankerModal();
+
+  /**
+   * Demo: top 8 cume, gold = you. Tooltips on segments (hover); tap bar toggles a table (mobile-friendly).
+   */
+  var rivalChunkColors = [
+    '#3a342f',
+    '#2a4e46',
+    '#2e3f5c',
+    '#4a362c',
+    '#3a404d',
+    '#4a3f32',
+    '#1f4560',
   ];
-  var dSum = demos.reduce(function (s, d) {
-    return s + d.w;
-  }, 0);
-  document.getElementById('mock-demo').innerHTML = demos
-    .map(function (d) {
-      var pct = Math.round((d.w / dSum) * 100);
+  var top8BookSharesDesc = function () {
+    var raw = [];
+    for (var j = 0; j < 8; j++) raw.push(0.2 + Math.random() * 1.15);
+    var s0 = raw.reduce(function (a, b) {
+      return a + b;
+    }, 0);
+    var p = raw.map(function (u) {
+      return (u / s0) * 100;
+    });
+    p.sort(function (a, b) {
+      return b - a;
+    });
+    return p;
+  };
+  var bookRivalCallPool = ['WUFL', 'KSMR', 'WBQT', 'WZZA', 'WXRX', 'WKRP', 'KDRX', 'WHYZ', 'KZZA', 'WNRS'];
+  var top8CallLabels = function (playerAt) {
+    var pool = shuffle(bookRivalCallPool).slice(0, 7);
+    var j = 0;
+    var out = [];
+    for (var i = 0; i < 8; i++) {
+      if (i === playerAt) {
+        out[i] = 'WXYZ-AM (you)';
+      } else {
+        out[i] = pool[j++];
+      }
+    }
+    return out;
+  };
+  var fmtPctTitle = function (name, p) {
+    return name + ' — ' + (Math.round(p * 10) / 10) + '%';
+  };
+  var buildDemoTop8TableHtml = function (pcts, callLbl, playerPos) {
+    var rows = [];
+    for (var r = 0; r < 8; r++) {
+      var pRound = (Math.round(pcts[r] * 10) / 10).toFixed(1);
+      var isYou = r === playerPos;
+      var nameCell;
+      if (isYou) {
+        var yCall = String(callLbl[r]).replace(/\s*\(you\)\s*$/i, '');
+        nameCell =
+          '<span class="text-amber-500/90 font-semibold">You</span> ' +
+          '<span class="text-stone-200 font-medium">' +
+          escapeHtmlAttr(yCall) +
+          '</span>';
+      } else {
+        nameCell = '<span class="text-stone-200">' + escapeHtmlAttr(String(callLbl[r])) + '</span>';
+      }
+      rows.push(
+        '<tr' +
+        (isYou ? ' class="bg-amber-900/15"' : '') +
+        '>' +
+        '<td class="py-0.5 pr-2 w-5 text-stone-500 font-mono text-[0.65rem] text-right tabular align-middle">' +
+        (r + 1) +
+        '</td><td class="py-0.5 pr-1 min-w-0 text-[0.7rem] sm:text-xs align-middle"><span class="block truncate">' +
+        nameCell +
+        '</span></td>' +
+        '<td class="py-0.5 w-12 text-right tabular text-stone-100 text-[0.7rem] sm:text-xs align-middle">' +
+        pRound +
+        '%</td>' +
+        '</tr>'
+      );
+    }
+    return (
+      '<div class="rounded border border-stone-800/80 bg-black/30 px-1.5 py-1.5 -mx-0.5 overflow-hidden">' +
+      '<table class="w-full min-w-0" aria-label="Top 8 cume in this demo (book)">' +
+      '<thead><tr class="text-[0.6rem] uppercase tracking-wide text-stone-500 border-b border-stone-800/60">' +
+      '<th class="text-right font-medium pb-0.5 w-5 pr-2" scope="col">#</th>' +
+      '<th class="text-left font-medium pb-0.5 pr-1" scope="col">Station</th>' +
+      '<th class="text-right font-medium pb-0.5" scope="col">Cume</th>' +
+      '</tr></thead><tbody class="text-stone-200">' +
+      rows.join('') +
+      '</tbody></table></div>'
+    );
+  };
+  var demoMeta = [
+    { label: '12–17' },
+    { label: '18–24' },
+    { label: '25–34' },
+    { label: '35–49' },
+    { label: '50–64' },
+    { label: '65+' },
+  ];
+  var demoRowsHtml = demoMeta
+    .map(function (dm, di) {
+      var pcts = top8BookSharesDesc();
+      var playerPos = rnd(0, 7);
+      var callLbl = top8CallLabels(playerPos);
+      var ci = 0;
+      var barInner = pcts
+        .map(function (pct, segIdx) {
+          var tt = fmtPctTitle(callLbl[segIdx], pct);
+          if (segIdx === playerPos) {
+            return (
+              '<span class="h-full self-stretch" style="width:' +
+              pct +
+              '%;min-width:1.2px;box-sizing:border-box;background:linear-gradient(180deg,#e3a32e,#b87712);box-shadow:inset 0 0 0 1px rgba(253,240,200,.4)" title="' +
+              escapeHtmlAttr(tt) +
+              '"></span>'
+            );
+          }
+          var c = rivalChunkColors[ci % rivalChunkColors.length];
+          ci++;
+          return (
+            '<span class="h-full self-stretch" style="width:' +
+            pct +
+            '%;min-width:1.2px;box-sizing:border-box;background:' +
+            c +
+            ';box-shadow:inset 0 1px 0 rgba(255,255,255,.1),inset 0 0 0 1px rgba(0,0,0,.22)" title="' +
+            escapeHtmlAttr(tt) +
+            '"></span>'
+          );
+        })
+        .join('');
+      var top8Table = buildDemoTop8TableHtml(pcts, callLbl, playerPos);
+      var aLabel = 'Top 8 cume, age ' + dm.label + ' — open list (tap) or use segment tooltips (hover)';
       return (
-        '<div class="flex items-center gap-2">' +
-        '<span class="w-14 text-stone-500 shrink-0">' +
-        d.label +
+        '<div class="mock-demo-block border-b border-stone-800/70 last:border-0">' +
+        '<button type="button" class="mock-demo-bar-btn w-full text-left text-stone-200 rounded py-1.5 px-0.5 -mx-0.5" ' +
+        'id="mock-demo-toggle-' +
+        di +
+        '" ' +
+        'data-demo-index="' +
+        di +
+        '" ' +
+        'aria-expanded="false" ' +
+        'aria-controls="mock-demo-panel-' +
+        di +
+        '" ' +
+        'aria-label="' +
+        escapeHtmlAttr(aLabel) +
+        '">' +
+        '<span class="flex w-full min-w-0 items-center gap-1.5 sm:gap-2 min-h-9 py-0.5">' +
+        '<span class="w-10 sm:w-12 text-amber-200/95 font-medium shrink-0 text-[0.65rem] sm:text-[0.7rem] font-mono tabular text-right">' +
+        escapeHtmlAttr(dm.label) +
         '</span>' +
-        '<div class="flex-1 h-2 rounded bg-stone-800 overflow-hidden">' +
-        '<div class="h-full rounded bg-stone-500/80" style="width:' +
-        pct +
-        '%"></div>' +
-        '</div>' +
-        '<span class="w-10 text-right tabular text-stone-400">' +
-        pct +
-        '%</span>' +
-        '</div>'
+        '<span class="h-3.5 sm:h-4 min-h-[0.9rem] flex-1 min-w-0 flex flex-row overflow-hidden rounded-sm border border-stone-700/70 bg-black/40">' +
+        barInner +
+        '</span>' +
+        '<span class="text-[0.55rem] text-stone-500 leading-none pr-0.5 mock-demo-chevron select-none shrink-0" aria-hidden="true">▼</span>' +
+        '</span></button>' +
+        '<div class="hidden pl-0 sm:pl-[2.8rem] pb-2" id="mock-demo-panel-' +
+        di +
+        '" ' +
+        'role="region" ' +
+        'hidden ' +
+        'aria-labelledby="mock-demo-toggle-' +
+        di +
+        '">' +
+        top8Table +
+        '</div></div>'
       );
     })
     .join('');
+  var mockDemoHost = document.getElementById('mock-demo');
+  mockDemoHost.innerHTML = demoRowsHtml;
+  mockDemoHost.addEventListener('click', function (e) {
+    var btn = e.target.closest && e.target.closest('.mock-demo-bar-btn');
+    if (!btn || !mockDemoHost.contains(btn)) return;
+    var wasOpen = btn.getAttribute('aria-expanded') === 'true';
+    var allBtns = mockDemoHost.querySelectorAll('.mock-demo-bar-btn');
+    for (var bi = 0; bi < allBtns.length; bi++) {
+      var b = allBtns[bi];
+      var pId = b.getAttribute('aria-controls');
+      var pnl = pId ? document.getElementById(pId) : null;
+      b.setAttribute('aria-expanded', 'false');
+      if (pnl) {
+        pnl.classList.add('hidden');
+        pnl.setAttribute('hidden', '');
+      }
+    }
+    if (wasOpen) {
+      return;
+    }
+    var openPanel = document.getElementById(btn.getAttribute('aria-controls'));
+    btn.setAttribute('aria-expanded', 'true');
+    if (openPanel) {
+      openPanel.classList.remove('hidden');
+      openPanel.removeAttribute('hidden');
+    }
+  });
 
   var news = [
     '📡 Fall ad market: peak season. Revenue runs ~12% above annual average.',
@@ -752,16 +1566,18 @@
   var pq = rnd(42, 91);
   document.getElementById('mock-own-lbl').textContent =
     'Your stations · ' + rnd(1, 2) + ' AM · ' + rnd(0, 2) + ' FM';
-  document.getElementById('mock-calls').textContent = 'WXYZ 1280 AM';
+  document.getElementById('mock-calls').textContent = 'WXYZ-AM';
+  document.getElementById('mock-freq-pwr').textContent =
+    '1280 kHz · 5,000 W day (DA-2) · 1,000 W night';
   document.getElementById('mock-brand').textContent =
     myStationFmt + ' · “' + myBrandSlogan + '”';
   var myRow = ranks.filter(function (r) {
     return r.mine;
   })[0];
   var stEbitda = myRow ? myRow.ebitda : rnd(-8000, 22000);
-  var stMargin = myRow ? myRow.margin : rnd(-12, 28);
+  var stExp = Math.round(myRev * (0.72 + Math.random() * 0.12));
+  var stSell = rnd(52, 91);
   var stEbCls = stEbitda >= 0 ? 'text-profit' : 'text-loss';
-  var stMgCls = stMargin >= 0 ? 'text-profit' : 'text-loss';
 
   document.getElementById('mock-station-logo').innerHTML = logoMarkHtml(
     {
@@ -775,22 +1591,28 @@
     year,
     city
   );
-  document.getElementById('mock-share-big').textContent = fmtPct(myShare) + ' share';
-  document.getElementById('mock-rev-big').textContent = fmtMoney(myRev) + ' / period';
-  document.getElementById('mock-ebitda-row').innerHTML =
-    '<span class="text-stone-500">EBITDA</span> <span class="' +
-    stEbCls +
-    ' tabular">' +
-    (stEbitda >= 0 ? '+' : '') +
-    fmtMoney(stEbitda) +
-    '</span>';
-  document.getElementById('mock-margin-row').innerHTML =
-    '<span class="text-stone-500">Operating margin</span> <span class="' +
-    stMgCls +
-    ' tabular">' +
-    (stMargin >= 0 ? '+' : '') +
-    stMargin +
-    '%</span>';
+  var shareEl = document.getElementById('mock-share-big');
+  shareEl.textContent = fmtSharePts(myShare);
+  shareEl.className = 'mock-share-hero text-stone-100';
+  var fg = document.getElementById('mock-fg');
+  if (fg) {
+    fg.innerHTML =
+      '<div><span class="mock-stat-label block">Revenue (6-mo)</span><span class="text-stone-100 font-semibold tabular block mt-0.5">' +
+      fmtMoney(myRev) +
+      '</span></div>' +
+      '<div class="text-right min-[360px]:text-left"><span class="mock-stat-label block">Expenses (6-mo)</span><span class="text-stone-200 font-semibold tabular block mt-0.5">' +
+      fmtMoney(stExp) +
+      '</span></div>' +
+      '<div><span class="mock-stat-label block">EBITDA</span><span class="tabular font-semibold block mt-0.5 ' +
+      stEbCls +
+      '">' +
+      (stEbitda >= 0 ? '+' : '') +
+      fmtMoney(stEbitda) +
+      '</span></div>' +
+      '<div class="text-right min-[360px]:text-left"><span class="mock-stat-label block">Sellout</span><span class="text-amber-200/90 font-semibold tabular block mt-0.5">' +
+      stSell +
+      '%</span></div>';
+  }
   document.getElementById('mock-pq-val').textContent = pq + '/100';
   document.getElementById('mock-pq-val').className =
     'text-sm font-semibold tabular ' +
@@ -802,11 +1624,22 @@
     (pq >= 72 ? 'bg-emerald-500/90' : pq >= 52 ? 'bg-amber-600/90' : 'bg-rose-600/85');
 
   var vacant = Math.random() > 0.65;
-  var contractAlert = Math.random() > 0.5;
-  var btn = document.getElementById('mock-contract-btn');
-  if (!contractAlert) {
-    btn.classList.remove('btn-warn');
-    btn.classList.add('btn-outline');
+
+  var subProg = document.getElementById('mock-sub-programming');
+  var subAdm = document.getElementById('mock-sub-admin');
+  var btnProg = document.getElementById('mock-btn-prog');
+  var btnAdm = document.getElementById('mock-btn-admin');
+  if (btnProg && subProg) {
+    btnProg.addEventListener('click', function () {
+      subAdm && subAdm.classList.add('hidden');
+      subProg.classList.toggle('hidden');
+    });
+  }
+  if (btnAdm && subAdm) {
+    btnAdm.addEventListener('click', function () {
+      subProg && subProg.classList.add('hidden');
+      subAdm.classList.toggle('hidden');
+    });
   }
 
   var portraitOrder = shuffle(MOCK_PORTRAIT_PATHS);
@@ -816,6 +1649,7 @@
     var isVac = vacant && i === 0;
     var tq = rnd(38, 88);
     var mor = rnd(45, 96);
+    var slotQ = isVac ? null : rnd(28, 97);
     var pay = rnd(1800, 14500);
     if (!isVac) totalTalent += pay;
     var rel = !isVac ? portraitOrder[portraitIx++ % portraitOrder.length] : '';
@@ -831,8 +1665,10 @@
         JSON.stringify(portraitUrlFallback(fullName)) +
         '\' />';
     return (
-      '<tr class="border-b border-stone-800/70">' +
-      '<td class="py-2 pl-3 pr-2 text-stone-400 align-middle">' +
+      '<tr class="border-b border-stone-800/70 mock-talent-row" title="Change or hire talent for ' +
+      escapeHtmlAttr(dp) +
+      ' (mock)">' +
+      '<td class="py-2 pl-3 pr-2 text-stone-200 align-middle">' +
       dp +
       '</td>' +
       '<td class="py-2 px-1 align-middle">' +
@@ -841,27 +1677,33 @@
       '<td class="py-2 px-2 align-middle">' +
       nameHtml +
       '</td>' +
-      '<td class="py-2 px-2 text-right tabular align-middle ' +
-      (isVac ? '' : talentCls(tq)) +
+      '<td class="py-2 px-1 text-right tabular align-middle ' +
+      (isVac ? 'text-stone-600' : talentCls(tq)) +
       '">' +
       (isVac ? '—' : tq) +
       '</td>' +
-      '<td class="py-2 px-2 text-right tabular align-middle ' +
-      (isVac ? '' : moraleCls(mor)) +
-      '">' +
-      (isVac ? '—' : mor) +
+      '<td class="py-2 px-1 text-center align-middle">' +
+      (isVac ? '<span class="text-stone-600">—</span>' : moraleDotHtml(mor)) +
       '</td>' +
-      '<td class="py-2 pr-3 pl-2 text-right tabular align-middle">' +
+      '<td class="py-2 px-1 text-right tabular align-middle ' +
+      (isVac || slotQ == null ? 'text-stone-600' : 'font-bold ' + slotQCls(slotQ)) +
+      '">' +
+      (isVac || slotQ == null ? '—' : slotQ) +
+      '</td>' +
+      '<td class="py-2 pr-3 pl-1 text-right tabular align-middle">' +
       (isVac ? '—' : fmtMoney(pay)) +
       '</td>' +
       '</tr>'
     );
   });
   document.getElementById('mock-talent-body').innerHTML = rows.join('');
-  document.getElementById('mock-talent-foot').textContent =
-    'Slot quality (weighted) · ' + (vacant ? rnd(38, 58) : rnd(58, 86)) + '/100';
+  var talentAnnualR = Math.round((totalTalent * 2) / 500) * 500;
   document.getElementById('mock-talent-cost').textContent =
-    'Talent cost / period · ' + fmtMoney(totalTalent);
+    'Talent (this period) ' +
+    fmtMoney(totalTalent) +
+    ' · Annual (nearest $500) ' +
+    fmtMoney(talentAnnualR) +
+    ' (matches in-game display rounding)';
 })();
   </script>
 </body>

@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync, existsSync, readdirSync } from 'fs';
+import { copyFileSync, mkdirSync, existsSync, readdirSync, readFileSync } from 'fs';
 import { dirname, join, resolve } from 'path';
 import { fileURLToPath } from 'url';
 import { defineConfig, loadEnv } from 'vite';
@@ -17,6 +17,30 @@ function landingRedirectPlugin() {
           res.writeHead(302, { Location: '/' });
           res.end();
           return;
+        }
+        if (pathOnly === '/terms' || pathOnly === '/terms/') {
+          try {
+            const html = readFileSync(join(__dirname, 'legal', 'terms.html'), 'utf8');
+            res.setHeader('Content-Type', 'text/html; charset=utf-8');
+            res.end(html);
+            return;
+          } catch (_e) {
+            res.statusCode = 404;
+            res.end('Not found');
+            return;
+          }
+        }
+        if (pathOnly === '/privacy' || pathOnly === '/privacy/') {
+          try {
+            const html = readFileSync(join(__dirname, 'legal', 'privacy.html'), 'utf8');
+            res.setHeader('Content-Type', 'text/html; charset=utf-8');
+            res.end(html);
+            return;
+          } catch (_e) {
+            res.statusCode = 404;
+            res.end('Not found');
+            return;
+          }
         }
         next();
       });
@@ -45,6 +69,33 @@ function playHtmlClerkMetaPlugin(mode, env) {
   };
 }
 
+/** Inject API origin into play.html meta + MP lobby input (legacy.js is not Vite-bundled). */
+function playHtmlGameServerUrlPlugin(mode, env) {
+  const raw = (env.VITE_GAME_SERVER_URL || '').trim();
+  const esc = (s) =>
+    String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;');
+  const localhost = 'http://localhost:3000';
+  const inputValue = raw || (mode === 'development' ? localhost : '');
+  const inputPlaceholder = raw || localhost;
+  return {
+    name: 'play-html-game-server-url',
+    enforce: 'pre',
+    transformIndexHtml(html) {
+      if (!html.includes('name="wl-game-server-url"')) return html;
+      let out = html.replace(
+        /<meta\s+name="wl-game-server-url"\s+content="[^"]*"\s*\/?>/i,
+        `<meta name="wl-game-server-url" content="${raw ? esc(raw) : ''}">`,
+      );
+      out = out.replace(/<input id="mp-server-url"[\s\S]*?\/>/i, () =>
+        `<input id="mp-server-url" class="mp-inp mp-inp--row" type="text" value="${esc(inputValue)}"\n          placeholder="${esc(inputPlaceholder)}"/>`,
+      );
+      return out;
+    },
+  };
+}
+
 /** Dev-only: `marketSimHarness.js` is not copied to dist; script tag stripped from HTML on `vite build`. */
 function devOnlyMarketHarnessPlugin(command) {
   return {
@@ -66,6 +117,7 @@ export default defineConfig(({ command, mode }) => {
   plugins: [
     landingRedirectPlugin(),
     playHtmlClerkMetaPlugin(mode, env),
+    playHtmlGameServerUrlPlugin(mode, env),
     devOnlyMarketHarnessPlugin(command),
     // Non-module scripts referenced from play.html / inspect-*.html are not Rollup-bundled; copy into dist/src/
     // so production does not 404. See docs/RUNTIME-AND-ENV.md (section “Vite writeBundle: why legacy scripts are copied”).
@@ -130,19 +182,8 @@ export default defineConfig(({ command, mode }) => {
       input: {
         main: resolve(__dirname, 'index.html'),
         play: resolve(__dirname, 'play.html'),
+        'play-signin': resolve(__dirname, 'play-signin.html'),
         account: resolve(__dirname, 'account.html'),
-        'inspect-shares': resolve(__dirname, 'inspect-shares.html'),
-        'inspect-public-radio': resolve(__dirname, 'inspect-public-radio.html'),
-        'inspect-market-health': resolve(__dirname, 'inspect-market-health.html'),
-        'inspect-ecology-deep': resolve(__dirname, 'inspect-ecology-deep.html'),
-        'inspect-format-ecology': resolve(__dirname, 'inspect-format-ecology.html'),
-        'inspect-cash-flow': resolve(__dirname, 'inspect-cash-flow.html'),
-        'inspect-cash-bridge-audit': resolve(__dirname, 'inspect-cash-bridge-audit.html'),
-        'inspect-scenario-probe': resolve(__dirname, 'inspect-scenario-probe.html'),
-        'inspect-mega-snapshots': resolve(__dirname, 'inspect-mega-snapshots.html'),
-        'inspect-ratings-collapse': resolve(__dirname, 'inspect-ratings-collapse.html'),
-        'inspect-logo-templates': resolve(__dirname, 'inspect-logo-templates.html'),
-        'inspect-market-snowball': resolve(__dirname, 'inspect-market-snowball.html'),
       },
     },
   },

@@ -1,8 +1,16 @@
 'use strict';
 
 const { verifyClerkBearer } = require('./clerkVerify');
-const { fetchClerkBillingPlanSlug } = require('./clerkBillingPlan');
-const { monthlyLimitForPlan } = require('./aiEntitlements');
+const { monthlyLimitForPlan, CLERK_PLAN } = require('./aiEntitlements');
+const { resolveStripePlanForUser } = require('./stripePlanResolve');
+const {
+  tryConsumeTrialImage,
+  tryConsumeTrialJingle,
+  TRIAL_IMAGES_CAP,
+  TRIAL_JINGLE_CAP,
+} = require('./trialQuotaStore');
+const TRIAL_QUOTA_MSG =
+  "You've run out of generation credits for our free trial. Subscribe to bring your station to life with more generation credits!";
 
 /**
  * @param {import('express').Request} req
@@ -47,9 +55,10 @@ async function requireClerkUserIdForAi(req, res) {
  */
 async function requirePlanSlugOr503(res, userId) {
   try {
-    return await fetchClerkBillingPlanSlug(userId);
+    const r = await resolveStripePlanForUser(userId);
+    return r.planSlug;
   } catch (e) {
-    console.error('[ai-quota] Clerk billing plan resolution failed:', e.message || e);
+    console.error('[ai-quota] Stripe plan resolution failed:', e.message || e);
     res.status(503).json({
       ok: false,
       error: 'Could not verify your subscription. Try again in a moment.',
@@ -68,6 +77,39 @@ async function requirePlanSlugOr503(res, userId) {
  * @returns {Promise<boolean>} true if allowed
  */
 async function tryConsumeQuota(res, planSlug, kind, tryConsume, userId) {
+  if (planSlug === CLERK_PLAN.TRIAL) {
+    if (kind === 'jingle') {
+      const out = await tryConsumeTrialJingle(userId, TRIAL_JINGLE_CAP);
+      if (!out.ok) {
+        res.status(403).json({
+          ok: false,
+          error: TRIAL_QUOTA_MSG,
+          code: 'trial_quota_exhausted',
+          kind: 'jingle',
+          limit: out.limit,
+          used: out.used,
+        });
+        return false;
+      }
+      return true;
+    }
+    if (kind === 'logo' || kind === 'van') {
+      const out = await tryConsumeTrialImage(userId, TRIAL_IMAGES_CAP);
+      if (!out.ok) {
+        res.status(403).json({
+          ok: false,
+          error: TRIAL_QUOTA_MSG,
+          code: 'trial_quota_exhausted',
+          kind,
+          limit: out.limit,
+          used: out.used,
+        });
+        return false;
+      }
+      return true;
+    }
+  }
+
   const limit = monthlyLimitForPlan(planSlug, kind);
   const out = await tryConsume(userId, kind, limit);
   if (out.ok) return true;

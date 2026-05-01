@@ -1,9 +1,10 @@
 /**
  * Cloud saves and other subscriber-only features.
- * When STRIPE_SECRET_KEY is set, require an active/trialing Stripe subscription unless
- * CLOUD_SAVE_REQUIRE_SUBSCRIPTION=0 (local testing).
+ * Paid Starter/Pro, or the one-time signup trial (trial_user), qualify when STRIPE_SECRET_KEY is set,
+ * unless CLOUD_SAVE_REQUIRE_SUBSCRIPTION=0 (local testing).
  */
-const accountStore = require('./accountStore');
+const { CLERK_PLAN } = require('./aiEntitlements');
+const { resolveStripePlanForUser } = require('./stripePlanResolve');
 
 function subscriptionCheckEnabled() {
   if (process.env.CLOUD_SAVE_REQUIRE_SUBSCRIPTION === '0') return false;
@@ -15,64 +16,14 @@ function subscriptionCheckEnabled() {
  */
 async function userHasActiveSubscription(clerkUserId) {
   if (!subscriptionCheckEnabled()) return true;
-
-  if (accountStore.getSubscriptionActive(clerkUserId)) return true;
-
-  const secret = process.env.STRIPE_SECRET_KEY;
-  const stripe = require('stripe')(secret);
-
-  let customerId = accountStore.getStripeCustomerId(clerkUserId);
-  if (!customerId) {
-    try {
-      const found = await stripe.customers.search({
-        query: `metadata['clerk_user_id']:'${clerkUserId}'`,
-        limit: 1,
-      });
-      if (found.data.length) {
-        customerId = found.data[0].id;
-        accountStore.setStripeCustomerId(clerkUserId, customerId);
-      }
-    } catch (e) {
-      console.warn('[SUB] customer search failed:', e.message);
-    }
+  try {
+    const r = await resolveStripePlanForUser(clerkUserId);
+    const p = r.planSlug;
+    return p === CLERK_PLAN.STARTER || p === CLERK_PLAN.PRO || p === CLERK_PLAN.TRIAL;
+  } catch (e) {
+    console.warn('[SUB] plan resolve failed:', e.message || e);
+    return false;
   }
-  if (!customerId) return false;
-
-  const active = await stripe.subscriptions.list({
-    customer: customerId,
-    status: 'active',
-    limit: 1,
-  });
-  if (active.data.length) {
-    const s = active.data[0];
-    accountStore.setSubscriptionState(clerkUserId, {
-      active: true,
-      status: s.status,
-      subscriptionId: s.id,
-    });
-    return true;
-  }
-  const trialing = await stripe.subscriptions.list({
-    customer: customerId,
-    status: 'trialing',
-    limit: 1,
-  });
-  if (trialing.data.length) {
-    const s = trialing.data[0];
-    accountStore.setSubscriptionState(clerkUserId, {
-      active: true,
-      status: s.status,
-      subscriptionId: s.id,
-    });
-    return true;
-  }
-
-  accountStore.setSubscriptionState(clerkUserId, {
-    active: false,
-    status: 'none',
-    subscriptionId: null,
-  });
-  return false;
 }
 
 module.exports = {

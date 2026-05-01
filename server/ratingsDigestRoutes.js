@@ -1,10 +1,14 @@
 'use strict';
 
 const { posthog } = require('./posthog');
+const { verifyClerkBearer } = require('./clerkVerify');
+const { resolveStripePlanForUser } = require('./stripePlanResolve');
+const { CLERK_PLAN } = require('./aiEntitlements');
 
 /**
  * Trade-press style ratings digest via ShortAPI LLM (job/create + job/query, same transport as images).
  * POST /api/ratings-digest — body: { payload: { market, periodLabel, year, period, book: [{ rank, call, brand?, format, sharePct, deltaPts, band }], marketContext?: string[] } }
+ * Optional `Authorization: Bearer` (Clerk): trial + Starter → advanced insights; Pro → elite (extended); free_user / unsigned → standard column.
  * GET  /api/ratings-digest/status — { configured, model }
  *
  * Env: SHORTAPI_KEY and/or OPENROUTER_API_KEY and/or OPENAI_API_KEY; digest model vars below.
@@ -476,6 +480,52 @@ Rules:
 - If every row has deltaPts null, this is the first book in the simulation window — describe the rank/share snapshot only; do not pretend to know trends.
 - Sound like insider trade press: confident, concise, slightly cynical about consultants and format wars — but stay grounded in the numbers provided.`;
 
+/** Trial / Starter — deeper column + desk notes (same factual discipline as DIGEST_SYSTEM). */
+const DIGEST_SYSTEM_ADVANCED = `${DIGEST_SYSTEM}
+
+Subscriber advanced insights tier (signup trial or Starter — same factual rules as above; expanded output):
+- Write 4 to 6 paragraphs of fluent trade prose total (plain text only: no Markdown emphasis markers, no bullet lists, no numbered lists).
+- Include one paragraph that reads like an insider strategic memo: identify who gained and lost meaningful AQH share this book using calls from "book" only — when there are at least four ranked stations, explicitly contrast the two largest positive deltaPts moves versus the two largest negative deltaPts moves by station call (if fewer than four stations, cover everyone present).
+- After the main column, end with a separate short paragraph that begins with the exact words "Desk notes." (including the period and space). That paragraph must contain exactly three sentences about what to monitor next book — each sentence must follow only from deltaPts trends, sharePct clustering, or marketContext strings; when every deltaPts value is null (first book), describe snapshot positioning and competitive tension only — do not imply momentum you cannot see.
+`;
+
+/** Pro — builds on advanced: ownership-style read + longer desk notes + band/format coda (still facts-only). */
+const DIGEST_SYSTEM_ELITE = `${DIGEST_SYSTEM_ADVANCED}
+
+Pro tier — additions on top of Subscriber advanced tier (overwrite only where this block conflicts; plain text still):
+- Target roughly 7–10 paragraphs total blending the main trade column plus the structured inserts below — still no Markdown emphasis markers or lists.
+- Insert one standalone paragraph immediately *before* the paragraph that begins "Desk notes." — board/ownership readability: exactly three sentences tying leader, challenger, and at-risk stations to ranks, sharePct, and deltaPts; name every call listed in "book" when fewer than seven rows, otherwise prioritize top six by rank and mention aggregate AM vs FM share pressure only when both bands appear in rows.
+- The paragraph beginning "Desk notes." must contain **exactly five** sentences (not three), same grounding rules as the advanced tier Desk notes sentence constraints.
+- Immediately after Desk notes, add one final paragraph beginning with exactly "Competitive snapshot." (period and space) containing exactly four sentences analyzing band rivalry (FM cluster vs outliers, AM standing) using only ranks, bands, sharePct, deltaPts, formats, plus marketContext when it explains a cited move — ending on practical watch-outs for programmers or sales grounded only in supplied data (no speculative audience research).
+`;
+
+async function optionalClerkUserId(req) {
+  if (!process.env.CLERK_SECRET_KEY) return null;
+  const auth = req.headers.authorization || '';
+  const m = auth.match(/^Bearer\s+(.+)$/i);
+  if (!m) return null;
+  try {
+    return await verifyClerkBearer(m[1]);
+  } catch {
+    return null;
+  }
+}
+
+/** @returns {'standard'|'advanced'|'elite'} */
+async function digestInsightsTierForRequest(req) {
+  const uid = await optionalClerkUserId(req);
+  if (!uid) return 'standard';
+  try {
+    const r = await resolveStripePlanForUser(uid);
+    const slug = r.planSlug;
+    if (slug === CLERK_PLAN.PRO) return 'elite';
+    if (slug === CLERK_PLAN.TRIAL || slug === CLERK_PLAN.STARTER) return 'advanced';
+  } catch (e) {
+    console.warn('[ratings-digest] plan resolve:', e.message || e);
+  }
+  return 'standard';
+}
+
 function sanitizeDigestPayload(body) {
   const raw = body && typeof body === 'object' ? body.payload : null;
   if (!raw || typeof raw !== 'object') return null;
@@ -558,8 +608,16 @@ function mountRatingsDigestRoutes(app) {
         return res.status(400).json({ error: 'Payload too large.' });
       }
 
+      const insightsTier = await digestInsightsTierForRequest(req);
+      const systemPrompt =
+        insightsTier === 'elite'
+          ? DIGEST_SYSTEM_ELITE
+          : insightsTier === 'advanced'
+            ? DIGEST_SYSTEM_ADVANCED
+            : DIGEST_SYSTEM;
+
       const article = await digestChatComplete([
-        { role: 'system', content: DIGEST_SYSTEM },
+        { role: 'system', content: systemPrompt },
         { role: 'user', content: userMsg },
       ]);
 
@@ -572,9 +630,10 @@ function mountRatingsDigestRoutes(app) {
           period: payload.period,
           station_count: payload.book.length,
           provider: digestProviderMode(),
+          insights_tier: insightsTier,
         },
       });
-      res.json({ ok: true, article });
+      res.json({ ok: true, article, insightsTier });
     } catch (e) {
       const status = e.status && e.status >= 400 && e.status < 600 ? e.status : 500;
       console.error('[ratings-digest]', e.message);

@@ -5,24 +5,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>My account — Airwave Empire</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
     body { background: #0a0a0a; color: #f3efe6; }
+    .wordmark {
+      font-family: "Bebas Neue", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
+        "Segoe UI Emoji";
+    }
     .gold { color: #d89b2b; }
     .gold-bg { background: #d89b2b; color: #111; }
+    .wl-check { display: flex; align-items: flex-start; gap: 0.5rem; font-size: 0.875rem; line-height: 1.45; color: rgba(214, 211, 209, 0.95); }
+    .wl-check span.mark { flex-shrink: 0; width: 1.1rem; text-align: center; font-weight: 800; }
     .panel {
       background: linear-gradient(180deg, rgba(35,35,35,.95), rgba(15,15,15,.95));
       border: 1px solid rgba(216,155,43,.28);
       box-shadow: 0 0 0 1px rgba(216,155,43,.06) inset;
     }
     .gridline { border-color: rgba(216,155,43,.18); }
-    /* Clerk UserProfile needs room */
-    #wl-account-clerk { min-height: 480px; }
+    /* Clerk profile shell needs room */
+    #wl-account-clerk { min-height: 420px; }
+    /* Hide legacy Clerk Billing nav item if it still appears (Stripe is the billing source of truth). */
+    [class*="cl-navbarButton"][class*="billing"],
+    [class*="cl-navbarButton__billing"],
+    a[href*="#/billing"] {
+      display: none !important;
+    }
   </style>
 </head>
 <body class="antialiased">
   <header class="border-b border-stone-700/80">
     <div class="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between flex-wrap gap-4">
-      <a href="/" class="text-2xl md:text-3xl font-black tracking-[0.18em] uppercase gold">Airwave Empire</a>
+      <a href="/" class="wordmark text-4xl md:text-5xl font-normal tracking-[0.22em] uppercase gold">AIRWAVE EMPIRE</a>
       <nav class="flex items-center gap-4 md:gap-6 text-sm uppercase tracking-[0.14em] text-stone-300 flex-wrap">
         <a href="/" class="hover:text-white">Home</a>
         <a href="/#pricing" class="hover:text-white">Pricing</a>
@@ -33,10 +46,10 @@
   </header>
 
   <main class="max-w-5xl mx-auto px-6 py-10 md:py-14">
-    <p class="gold uppercase tracking-[0.2em] text-sm mb-2">Clerk</p>
+    <p class="gold uppercase tracking-[0.2em] text-sm mb-2">Account</p>
     <h1 class="text-3xl md:text-4xl font-black uppercase tracking-tight">My account</h1>
     <p class="mt-3 text-stone-400 text-base max-w-2xl leading-relaxed">
-      Profile, security, and <strong class="text-stone-200">subscription &amp; billing</strong> (upgrade, downgrade, payment method) when Clerk Billing is enabled.
+      Manage your profile and sign-in security below. Subscription and billing run through <strong class="text-stone-200">Stripe</strong> — update your payment method, invoices, upgrades, and downgrades in the customer portal.
     </p>
     <div class="mt-6">
       <button
@@ -48,18 +61,209 @@
       </button>
     </div>
 
-    <div class="panel rounded-2xl p-4 sm:p-6 mt-8">
-      <div id="wl-account-clerk" class="w-full"></div>
+    <div class="panel rounded-2xl p-5 sm:p-6 mt-8">
+      <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p class="gold text-sm uppercase tracking-[0.18em] mb-1">Stripe</p>
+          <h2 class="text-xl md:text-2xl font-black uppercase tracking-tight">Subscription &amp; billing</h2>
+          <p id="wl-account-billing-sub" class="mt-2 text-stone-400 text-sm leading-relaxed">
+            Sign in to see your current plan.
+          </p>
+        </div>
+        <div class="mt-3 sm:mt-0 flex flex-wrap gap-3">
+          <button
+            type="button"
+            id="wl-account-portal"
+            class="hidden gold-bg px-4 py-2 rounded-md font-bold uppercase tracking-[0.12em]"
+          >
+            Manage in Stripe
+          </button>
+        </div>
+      </div>
+
+      <!-- Mood-only hero (no pricing UI in the image — avoids doubling the plan cards below). -->
+      <section
+        id="wl-account-pricing-hero"
+        class="relative mt-8 overflow-hidden rounded-2xl border border-stone-800/90 min-h-[200px] md:min-h-[260px]"
+        aria-label="Subscription"
+      >
+        <div
+          class="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style="background-image: url('/landing-images/station.png');"
+        ></div>
+        <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/75 to-zinc-900/65"></div>
+        <div class="relative z-10 px-5 py-7 md:px-10 md:py-9 max-w-3xl">
+          <p class="flex items-center gap-2 text-stone-300 text-xs md:text-sm uppercase tracking-[0.16em] font-semibold">
+            <svg class="w-4 h-4 text-emerald-400 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            Your progress is saved
+          </p>
+          <h2 class="mt-4 text-2xl sm:text-3xl md:text-4xl font-black text-white tracking-tight leading-tight">
+            Keep Your Station Growing
+          </h2>
+          <p class="mt-2 text-base md:text-lg font-medium text-violet-300/95">
+            You've seen how it works. Now take it further.
+          </p>
+        </div>
+      </section>
+
+      <div id="wl-account-plan-actions" class="mt-10 border-t border-stone-800/70 pt-10">
+        <p class="text-stone-500 text-xs uppercase tracking-[0.18em] mb-8 text-center">Choose or change plan</p>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-4 items-stretch lg:items-start">
+          <!-- Starter -->
+          <section class="rounded-2xl border border-amber-700/35 bg-stone-950/55 p-6 flex flex-col shadow-lg shadow-black/30">
+            <p class="text-2xl leading-none" aria-hidden="true">📊</p>
+            <h3 class="mt-3 text-xl font-black uppercase tracking-tight gold">Starter</h3>
+            <div class="mt-5 flex flex-col gap-2.5 flex-1">
+              <div class="wl-check"><span class="mark text-amber-500">✓</span> Play across five major markets</div>
+              <div class="wl-check"><span class="mark text-amber-500">✓</span> Challenge yourself with our General Manager scenario</div>
+              <div class="wl-check"><span class="mark text-amber-500">✓</span> Build your on-air team with co-hosts</div>
+              <div class="wl-check"><span class="mark text-amber-500">✓</span> Expanded creative tools bring your station to life</div>
+              <div class="wl-check"><span class="mark text-amber-500">✓</span> More research insights</div>
+              <div class="wl-check"><span class="mark text-amber-500">✓</span> Cloud saves so you don&apos;t lose progress</div>
+            </div>
+            <div class="mt-5 flex flex-col gap-3">
+              <button
+                type="button"
+                data-wl-price="starter_monthly"
+                class="gold-bg w-full rounded-lg px-4 py-3.5 font-black uppercase tracking-[0.14em] text-sm hover:brightness-110 transition-all shadow-md shadow-amber-900/20"
+              >
+                <span class="block">Keep playing — Monthly</span>
+                <span class="wl-account-price-label mt-1 block text-[11px] font-bold opacity-90 normal-case tracking-normal" data-wl-price-label="starter_monthly"></span>
+              </button>
+              <button
+                type="button"
+                data-wl-price="starter_annual"
+                class="w-full rounded-lg border-2 border-amber-600/45 bg-stone-900/40 px-4 py-3 font-bold uppercase tracking-[0.12em] text-sm text-amber-100 hover:bg-stone-900/70 transition-colors"
+              >
+                <span class="block">Annual</span>
+                <span class="wl-account-price-label mt-1 block text-xs font-semibold text-amber-200/85 normal-case tracking-normal" data-wl-price-label="starter_annual"></span>
+              </button>
+            </div>
+          </section>
+
+          <!-- Pro (featured) -->
+          <section class="relative rounded-2xl border-2 border-violet-500/55 bg-stone-950/80 p-6 flex flex-col shadow-[0_0_48px_rgba(139,92,246,0.22)] lg:scale-[1.03] lg:z-10 ring-1 ring-violet-400/20">
+            <span class="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-violet-600 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-lg shadow-violet-900/40">
+              ★ Full experience
+            </span>
+            <p class="mt-3 text-2xl leading-none" aria-hidden="true">👑</p>
+            <h3 class="mt-3 text-xl font-black uppercase tracking-tight text-violet-200">Pro</h3>
+            <div class="mt-5 flex flex-col gap-2.5 flex-1">
+              <div class="wl-check"><span class="mark text-violet-400">✓</span> All markets—including new expansions</div>
+              <div class="wl-check"><span class="mark text-violet-400">✓</span> Full campaign mode</div>
+              <div class="wl-check"><span class="mark text-violet-400">✓</span> Elite access to creative tools</div>
+              <div class="wl-check"><span class="mark text-violet-400">✓</span> Own multiple stations</div>
+              <div class="wl-check"><span class="mark text-violet-400">✓</span> Unlimited cloud saves</div>
+              <div class="wl-check"><span class="mark text-violet-400">✓</span> Richer ratings digest — executive read &amp; competitive snapshot</div>
+              <div class="wl-check"><span class="mark text-violet-400">✓</span> Be first to play new features &amp; updates</div>
+            </div>
+            <p class="mt-4 flex items-center gap-2 text-xs text-violet-300/80">
+              <span aria-hidden="true">↻</span> Continue right where you left off
+            </p>
+            <div class="mt-5 flex flex-col gap-3">
+              <button
+                type="button"
+                data-wl-price="pro_monthly"
+                class="w-full rounded-lg bg-violet-600 hover:bg-violet-500 text-white px-4 py-3.5 font-black uppercase tracking-[0.14em] text-sm transition-colors shadow-lg shadow-violet-950/40"
+              >
+                <span class="block">Continue your station — Monthly</span>
+                <span class="wl-account-price-label mt-1 block text-[11px] font-bold opacity-95 normal-case tracking-normal text-violet-100" data-wl-price-label="pro_monthly"></span>
+              </button>
+              <button
+                type="button"
+                data-wl-price="pro_annual"
+                class="w-full rounded-lg border-2 border-violet-500/50 bg-stone-950/60 px-4 py-3 font-bold uppercase tracking-[0.12em] text-sm text-violet-100 hover:bg-violet-950/40 transition-colors"
+              >
+                <span class="block">Annual</span>
+                <span class="wl-account-price-label mt-1 block text-xs font-semibold text-violet-200/90 normal-case tracking-normal" data-wl-price-label="pro_annual"></span>
+              </button>
+            </div>
+          </section>
+
+          <!-- Free -->
+          <section class="rounded-2xl border border-emerald-800/40 bg-stone-950/40 p-6 flex flex-col shadow-lg shadow-black/25">
+            <p class="text-2xl leading-none" aria-hidden="true">📡</p>
+            <h3 class="mt-3 text-xl font-black uppercase tracking-tight text-emerald-300">Keep playing for free</h3>
+            <p class="mt-2 text-stone-500 text-sm leading-relaxed">Limited experience. Start over anytime.</p>
+            <div class="mt-5 flex flex-col gap-2.5 flex-1">
+              <div class="wl-check"><span class="mark text-emerald-500">✓</span> Solo Atlanta &amp; limited generation</div>
+              <div class="wl-check"><span class="mark text-emerald-500">✓</span> Core classic gameplay</div>
+              <div class="wl-check"><span class="mark text-emerald-500">✓</span> No subscription required</div>
+              <div class="wl-check"><span class="mark text-emerald-500">✓</span> Multiplayer — host in Atlanta; join friends in any city</div>
+            </div>
+            <p class="mt-5 text-[11px] uppercase tracking-wider text-stone-500">Paid tiers unlock more markets, campaign mode, and full creative tools.</p>
+            <div class="mt-5">
+              <a
+                href="/play.html"
+                class="flex w-full items-center justify-center rounded-lg border-2 border-emerald-600/50 bg-transparent px-4 py-3.5 font-black uppercase tracking-[0.14em] text-sm text-emerald-200 hover:bg-emerald-950/35 transition-colors"
+              >
+                Continue free
+              </a>
+            </div>
+          </section>
+        </div>
+
+        <p class="mt-8 text-center text-[11px] sm:text-[12px] text-stone-500 leading-relaxed max-w-2xl mx-auto px-2">
+          By subscribing, you agree to recurring billing and the
+          <a href="/terms" class="text-amber-200/90 hover:text-amber-100 underline underline-offset-2">Terms of Service</a>.
+        </p>
+
+        <div class="mt-10 rounded-xl border border-stone-800/80 bg-stone-950/40 px-4 py-6 md:px-8">
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center text-[11px] md:text-xs uppercase tracking-[0.12em] text-stone-500 leading-snug">
+            <div class="flex flex-col items-center gap-2">
+              <span class="text-lg" aria-hidden="true">☁️</span>
+              <span>Your progress is saved across devices</span>
+            </div>
+            <div class="flex flex-col items-center gap-2">
+              <span class="text-lg" aria-hidden="true">🛡️</span>
+              <span>Cancel anytime. No long-term contracts.</span>
+            </div>
+            <div class="flex flex-col items-center gap-2">
+              <span class="text-lg" aria-hidden="true">🔒</span>
+              <span>Secure payments. Privacy protected.</span>
+            </div>
+            <div class="flex flex-col items-center gap-2">
+              <span class="text-lg" aria-hidden="true">🎧</span>
+              <span>Need help? We're here.</span>
+            </div>
+          </div>
+          <p class="mt-6 text-center text-[11px] text-stone-600 uppercase tracking-[0.14em]">
+            Paid plans include expanded features and higher limits; multiplayer availability follows game updates.
+          </p>
+        </div>
+
+        <p id="wl-account-billing-err" class="mt-6 text-red-400/90 text-sm hidden"></p>
+      </div>
+    </div>
+
+    <div class="panel rounded-2xl p-4 sm:p-6 mt-6">
+      <p class="gold text-sm uppercase tracking-[0.18em] mb-2">Sign-in</p>
+      <h2 class="text-xl md:text-2xl font-black uppercase tracking-tight">Profile &amp; security</h2>
+      <p class="mt-2 text-stone-500 text-sm">
+        Email, password, sessions, and linked accounts. Charges and receipts appear in the Stripe portal — not on this screen.
+      </p>
+      <p id="wl-account-create-terms" class="hidden mt-4 text-[13px] text-stone-500 leading-relaxed max-w-xl">
+        By creating an account, you agree to the
+        <a href="/terms" class="text-amber-200/90 hover:text-amber-100 underline underline-offset-2">Terms of Service</a>
+        and
+        <a href="/privacy" class="text-amber-200/90 hover:text-amber-100 underline underline-offset-2">Privacy Policy</a>.
+      </p>
+      <div id="wl-account-clerk" class="w-full mt-4"></div>
       <p id="wl-account-no-key" class="text-stone-500 text-sm hidden">
-        Set <code class="text-amber-200/80">VITE_CLERK_PUBLISHABLE_KEY</code> in <code class="text-amber-200/80">.env.local</code> and restart Vite.
+        Account sign-in isn&apos;t available on this copy of the site. Use the live game site or contact support if this keeps happening.
       </p>
     </div>
   </main>
 
   <footer class="border-t border-stone-800 mt-12 py-8 text-center text-stone-500 text-xs uppercase tracking-[0.12em]">
-    <a href="/legal/terms.html" class="hover:text-stone-300">Terms</a>
+    <a href="/terms" class="hover:text-stone-300">Terms</a>
     <span class="mx-2">·</span>
-    <a href="/legal/privacy.html" class="hover:text-stone-300">Privacy</a>
+    <a href="/legal/subscription-policy.html" class="hover:text-stone-300">Subscription</a>
+    <span class="mx-2">·</span>
+    <a href="/privacy" class="hover:text-stone-300">Privacy</a>
     <span class="mx-2">·</span>
     <a href="/legal/contact.html" class="hover:text-stone-300">Contact</a>
   </footer>
