@@ -52,7 +52,8 @@
     "validate:wichita-econ": "node scripts/validate-gm-campaign-headless.mjs --mode=batch --wichita-econ-test --json=tmp/wichita_econ_test.json",
     "validate:am-lean-music": "node scripts/validate-am-lean-music-econ.mjs",
     "validate:brokered-mode": "node scripts/validate-brokered-mode.mjs",
-    "audit:swap-signal-fee": "node scripts/audit-swap-signal-fee.mjs"
+    "audit:swap-signal-fee": "node scripts/audit-swap-signal-fee.mjs",
+    "test:billing-e2e": "node scripts/e2e-billing-checkout-verify.mjs"
   },
   "devDependencies": {
     "playwright": "^1.59.1",

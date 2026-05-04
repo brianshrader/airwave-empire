@@ -1,6 +1,6 @@
 /**
  * Billing entitlements — plan → playable market ids.
- * Source of truth for *who paid*: server-side Stripe subscription (resolved via /api/entitlements).
+ * Server `/api/entitlements` resolves Stripe subscriptions (+ accountStore). Optional Clerk Billing merge only when WL_USE_CLERK_BILLING=1 on the server.
  */
 
 import { captureEvent } from './analyticsClient.js';

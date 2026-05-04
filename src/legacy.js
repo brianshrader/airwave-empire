@@ -14487,6 +14487,58 @@ function soloCheapestAcquisitionPrice(G){
   });
   return best;
 }
+/** Solo: cheapest listed FM commercial signal (excludes AM-only). Used for tutorial cash-threshold tips. */
+function soloCheapestFmAcquisitionPrice(G){
+  if(!G?.stations)return null;
+  const avail=G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic);
+  let best=null;
+  avail.forEach(s=>{
+    const isAm=s.sig.type==='AM'||s.fmBooster;
+    if(isAm)return;
+    if(!fccCanAcquire('player','FM',G))return;
+    const price=s.isPublic
+      ? Math.round((s.oq*2000+62500)/12500)*12500
+      : (acqPrice(s,G)||ACP[s.str]||50000);
+    if(best==null||price<best)best=price;
+  });
+  return best;
+}
+/**
+ * Runway required after buying the cheapest FM (tutorial second-station tip only).
+ * Flat dollars mis-scale with listing price — a % of the deal + a floor keeps first-time players
+ * from being nudged into “broke right after closing.”
+ */
+function wlTutorialSecondStationCushionForPrice(fmMin){
+  const p = Number(fmMin);
+  if (!Number.isFinite(p) || p <= 0) return 220000;
+  const pct = Math.round(p * 0.27);
+  const floor = 175000;
+  const cap = 600000;
+  return Math.min(cap, Math.max(floor, pct));
+}
+/**
+ * After the Turnaround lesson ends, one situational toast when cash can cover a 2nd FM + cushion.
+ * Does not block play; points to Acquire + Simulcast on the toolbar.
+ */
+function tutorialTurnaroundMaybeSecondStationCashTip(){
+  if(MP.mode==='live'||!G)return;
+  if(G.sc?.id!=='tutorial_turnaround'||G.tutorialMode)return;
+  if(G._tutorialSecondStationTipShown)return;
+  const ps=G.ps||[];
+  if(ps.length!==1)return;
+  const fmMin=soloCheapestFmAcquisitionPrice(G);
+  if(fmMin==null||!Number.isFinite(fmMin))return;
+  const need=fmMin+wlTutorialSecondStationCushionForPrice(fmMin);
+  if((G.cash||0)<need)return;
+  const gt=G._tutorialGradTurn|0;
+  if(gt>0&&(G.turn|0)<=gt)return;
+  G._tutorialSecondStationTipShown=true;
+  showToast(
+    `Strong cash position (${f$(G.cash)}). Ready to grow? Use Acquire station for a second FM — then Simulcast on the toolbar to share programming across signals and stretch budgets while you build.`,
+    'info',
+    14500,
+  );
+}
 function soloPlayerCanAffordReentry(G){
   if(MP.mode==='live')return false;
   const minP=soloCheapestAcquisitionPrice(G);
@@ -15088,6 +15140,8 @@ function genMarket(scenId){
       _tutorialSalesCoachStep:0,
       _tutorialFmtCoachStep:0,
       _tutorialProgModalIntroDone:false,
+      _tutorialSecondStationTipShown:false,
+      _tutorialGradTurn:0,
     }:{}),
     sportsRights:{},franchiseRights:{},teamRecords:{},
   };
@@ -17236,10 +17290,12 @@ function tutorialTurnaroundOnAdvTurnComplete(){
     if(G._tutorialAct8Turns>=1){
       G.tutorialMode=false;
       G.tutorialAct=0;
+      G._tutorialGradTurn=G.turn|0;
       tutorialTurnaroundCoachStop();
       tutorialTurnaroundShowGradModal();
     }
   }
+  tutorialTurnaroundMaybeSecondStationCashTip();
 }
 function tutorialTurnaroundOnResearchOpened(){
   if(!isTutorialTurnaroundScen()||MP.mode==='live'||G.tutorialAct!==2)return;

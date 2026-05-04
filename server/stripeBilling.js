@@ -9,6 +9,21 @@ const accountStore = require('./accountStore');
 const { verifyClerkBearer } = require('./clerkVerify');
 const { posthog } = require('./posthog');
 const { planFromStripeSubscription } = require('./stripePlan');
+const {
+  findCustomerIdByClerkUserId,
+  clerkUserIdFromCustomerMetadata,
+  clerkUserIdFromCheckoutSession,
+} = require('./stripeCustomerLookup');
+const { fetchClerkPrimaryEmail } = require('./clerkUserEmail');
+
+/** Stripe mode + optional NODE_ENV snippet for Checkout Session metadata (support traceability). */
+function stripeDeploymentEnvLabel() {
+  const sk = (process.env.STRIPE_SECRET_KEY || '').trim();
+  if (sk.startsWith('sk_live')) return 'live';
+  if (sk.startsWith('sk_test')) return 'test';
+  const n = (process.env.NODE_ENV || '').trim();
+  return n || 'unknown';
+}
 
 function mountStripeBilling(app) {
   const secret = process.env.STRIPE_SECRET_KEY;
@@ -40,13 +55,31 @@ function mountStripeBilling(app) {
     const priceId = req.body.priceId || process.env.STRIPE_PRICE_ID;
     if (!priceId) return res.status(400).json({ error: 'Missing priceId or STRIPE_PRICE_ID' });
 
+    const userEmail = (await fetchClerkPrimaryEmail(clerkUserId).catch(() => '')) || '';
+    const envLabel = stripeDeploymentEnvLabel();
+
     let customerId = accountStore.getStripeCustomerId(clerkUserId);
     if (!customerId) {
+      customerId = await findCustomerIdByClerkUserId(stripe, clerkUserId);
+      if (customerId) {
+        accountStore.setStripeCustomerId(
+          clerkUserId,
+          customerId,
+          userEmail ? { billingEmail: userEmail } : undefined,
+        );
+      }
+    }
+    if (!customerId) {
       const c = await stripe.customers.create({
+        email: userEmail || undefined,
         metadata: { clerk_user_id: clerkUserId },
       });
       customerId = c.id;
-      accountStore.setStripeCustomerId(clerkUserId, customerId);
+      accountStore.setStripeCustomerId(
+        clerkUserId,
+        customerId,
+        userEmail ? { billingEmail: userEmail } : undefined,
+      );
     }
 
     const baseUrl =
@@ -54,13 +87,29 @@ function mountStripeBilling(app) {
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
+      client_reference_id: clerkUserId,
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       // Shows “Add promotion code” on Checkout; create coupons + promotion codes in Stripe Dashboard.
       allow_promotion_codes: true,
       success_url: `${baseUrl}/play.html?billing=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/#pricing`,
-      metadata: { clerk_user_id: clerkUserId },
+      metadata: {
+        clerk_user_id: clerkUserId,
+        clerkUserId: clerkUserId,
+        price_id: priceId,
+        environment: envLabel,
+        ...(userEmail ? { user_email: userEmail } : {}),
+      },
+    });
+
+    console.log('[STRIPE] checkout session created', {
+      stripeSessionId: session.id,
+      clerkUserId,
+      stripeCustomerId: customerId,
+      priceId,
+      environment: envLabel,
+      userEmail: userEmail || null,
     });
 
     posthog.capture({
@@ -70,6 +119,8 @@ function mountStripeBilling(app) {
         price_id: priceId,
         mode: 'subscription',
         stripe_customer_id: customerId,
+        stripe_session_id: session.id,
+        environment: envLabel,
       },
     });
     res.json({ url: session.url });
@@ -101,12 +152,8 @@ function mountStripeBilling(app) {
 
     let customerId = accountStore.getStripeCustomerId(clerkUserId);
     if (!customerId) {
-      const found = await stripe.customers.search({
-        query: `metadata['clerk_user_id']:'${clerkUserId}'`,
-        limit: 1,
-      });
-      if (found.data.length) {
-        customerId = found.data[0].id;
+      customerId = await findCustomerIdByClerkUserId(stripe, clerkUserId);
+      if (customerId) {
         accountStore.setStripeCustomerId(clerkUserId, customerId);
       }
     }
@@ -116,6 +163,13 @@ function mountStripeBilling(app) {
       customer: customerId,
       return_url: returnUrl,
     });
+
+    console.log('[STRIPE] billing portal session created', {
+      clerkUserId,
+      stripeCustomerId: customerId,
+      stripePortalSessionId: session.id,
+    });
+
     res.json({ url: session.url });
   });
 }
@@ -126,8 +180,26 @@ async function syncSubscriptionFromStripeObject(stripe, sub) {
     const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer?.id;
     if (!customerId) return;
     const customer = await stripe.customers.retrieve(customerId);
-    const uid = customer.metadata?.clerk_user_id;
-    if (!uid) return;
+    const uid = clerkUserIdFromCustomerMetadata(customer.metadata);
+    const billingEmail =
+      typeof customer.email === 'string' && customer.email.trim() ? customer.email.trim() : '';
+
+    if (!uid) {
+      console.warn('[STRIPE] subscription webhook: Stripe Customer missing Clerk id (metadata.clerk_user_id / user_id)', {
+        stripeSubscriptionId: sub.id,
+        stripeCustomerId: customerId,
+        subscriptionStatus: sub.status,
+        billingEmail: billingEmail || null,
+      });
+      return;
+    }
+
+    accountStore.setStripeCustomerId(
+      uid,
+      customerId,
+      billingEmail ? { billingEmail } : undefined,
+    );
+
     const active = ['active', 'trialing'].includes(sub.status);
     const { planSlug, priceId } = planFromStripeSubscription(sub);
     accountStore.setSubscriptionState(uid, {
@@ -143,15 +215,21 @@ async function syncSubscriptionFromStripeObject(stripe, sub) {
     if (planSlug === CLERK_PLAN.STARTER || planSlug === CLERK_PLAN.PRO) {
       accountStore.setEverHadPaidSubscription(uid, true);
     }
+
     console.log(
-      '[STRIPE] subscription',
-      sub.id,
-      sub.status,
-      `(${planSlug})`,
-      '→ user',
-      uid,
-      active ? 'active' : 'inactive',
+      '[STRIPE] subscription synced',
+      JSON.stringify({
+        clerkUserId: uid,
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: sub.id,
+        status: sub.status,
+        planSlug,
+        priceId: priceId || null,
+        billingEmail: billingEmail || null,
+        active,
+      }),
     );
+
     posthog.capture({
       distinctId: uid,
       event: 'subscription activated',
@@ -161,6 +239,7 @@ async function syncSubscriptionFromStripeObject(stripe, sub) {
         active,
         plan: planSlug,
         price_id: priceId,
+        stripe_customer_id: customerId,
       },
     });
   } catch (e) {
@@ -192,8 +271,51 @@ async function stripeWebhookHandler(req, res) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const s = event.data.object;
-        const uid = s.metadata?.clerk_user_id;
-        if (uid) console.log('[STRIPE] checkout.session.completed for Clerk user', uid);
+        const uid = clerkUserIdFromCheckoutSession(s);
+        const custId =
+          typeof s.customer === 'string'
+            ? s.customer
+            : s.customer && typeof s.customer === 'object'
+              ? s.customer.id
+              : null;
+
+        if (!uid) {
+          console.warn('[STRIPE] checkout.session.completed missing Clerk identity (client_reference_id / metadata)', {
+            stripeSessionId: s.id,
+            stripeCustomerId: custId,
+            client_reference_id: s.client_reference_id || null,
+            metadataKeys: s.metadata && typeof s.metadata === 'object' ? Object.keys(s.metadata) : [],
+          });
+        } else {
+          let email =
+            s.customer_details &&
+            typeof s.customer_details.email === 'string' &&
+            s.customer_details.email.trim()
+              ? s.customer_details.email.trim()
+              : '';
+          if (!email && custId) {
+            try {
+              const c = await stripe.customers.retrieve(custId);
+              if (typeof c.email === 'string' && c.email.trim()) email = c.email.trim();
+            } catch (_e) {
+              /* ignore */
+            }
+          }
+          if (custId) {
+            accountStore.setStripeCustomerId(
+              uid,
+              custId,
+              email ? { billingEmail: email } : undefined,
+            );
+          }
+          console.log('[STRIPE] checkout.session.completed', {
+            clerkUserId: uid,
+            stripeSessionId: s.id,
+            stripeCustomerId: custId,
+            billingEmail: email || null,
+          });
+        }
+
         let subId = s.subscription;
         if (subId && typeof subId === 'object') subId = subId.id;
         if (typeof subId === 'string') {
@@ -219,4 +341,9 @@ async function stripeWebhookHandler(req, res) {
   res.json({ received: true });
 }
 
-module.exports = { mountStripeBilling, stripeWebhookHandler };
+module.exports = {
+  mountStripeBilling,
+  stripeWebhookHandler,
+  /** For integration scripts only — replays subscription state into accountStore like webhooks. */
+  syncSubscriptionFromStripeObject,
+};

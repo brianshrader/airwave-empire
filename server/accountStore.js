@@ -32,13 +32,22 @@ function getStripeCustomerId(clerkUserId) {
   return m[clerkUserId]?.stripeCustomerId || null;
 }
 
-function setStripeCustomerId(clerkUserId, stripeCustomerId) {
+/**
+ * @param {string} clerkUserId
+ * @param {string} stripeCustomerId
+ * @param {{ billingEmail?: string }} [opts] — optional billing email from Stripe Customer (support / traceability)
+ */
+function setStripeCustomerId(clerkUserId, stripeCustomerId, opts) {
   const m = readAll();
-  m[clerkUserId] = {
-    ...(m[clerkUserId] || {}),
+  const prev = m[clerkUserId] || {};
+  const row = {
+    ...prev,
     stripeCustomerId,
     updatedAt: new Date().toISOString(),
   };
+  const em = opts && typeof opts.billingEmail === 'string' ? opts.billingEmail.trim() : '';
+  if (em) row.billingEmail = em;
+  m[clerkUserId] = row;
   writeAll(m);
 }
 
