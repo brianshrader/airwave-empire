@@ -7,7 +7,8 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
-    body { background: #0a0a0a; color: #f3efe6; }
+    html { overflow-x: hidden; }
+    body { background: #0a0a0a; color: #f3efe6; overflow-x: hidden; }
     .wordmark {
       font-family: "Bebas Neue", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji",
         "Segoe UI Emoji";
@@ -33,19 +34,37 @@
   </style>
 </head>
 <body class="antialiased">
+  <div
+    id="wl-mobile-screen-notice"
+    class="md:hidden border-b border-stone-700/80 bg-stone-950/90 px-4 py-3 text-center"
+    role="status"
+  >
+    <p class="text-[13px] leading-snug text-stone-300">
+      For the <strong class="text-stone-100 font-semibold">best experience</strong>, use a
+      <strong class="text-stone-100 font-semibold">desktop, laptop, or tablet</strong>.
+      Account pages work on phones; gameplay is easier on larger screens.
+    </p>
+    <button
+      type="button"
+      id="wl-dismiss-mobile-screen-notice"
+      class="mt-2 text-[12px] uppercase tracking-[0.14em] text-amber-600/90 hover:text-amber-400"
+    >
+      Dismiss
+    </button>
+  </div>
   <header class="border-b border-stone-700/80">
-    <div class="max-w-5xl mx-auto px-6 py-5 flex items-center justify-between flex-wrap gap-4">
-      <a href="/" class="wordmark text-4xl md:text-5xl font-normal tracking-[0.22em] uppercase gold">AIRWAVE EMPIRE</a>
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between flex-wrap gap-4 min-w-0">
+      <a href="/" class="wordmark text-3xl sm:text-4xl md:text-5xl font-normal tracking-[0.12em] sm:tracking-[0.18em] md:tracking-[0.22em] uppercase gold min-w-0">AIRWAVE EMPIRE</a>
       <nav class="flex items-center gap-4 md:gap-6 text-sm uppercase tracking-[0.14em] text-stone-300 flex-wrap">
         <a href="/" class="hover:text-white">Home</a>
         <a href="/#pricing" class="hover:text-white">Pricing</a>
-        <a href="/play.html" class="hover:text-white">Play</a>
+        <a href="/play.html" id="wl-account-nav-play" class="hover:text-white">Play</a>
         <a href="/account.html" class="text-amber-200/90 font-semibold">Account</a>
       </nav>
     </div>
   </header>
 
-  <main class="max-w-5xl mx-auto px-6 py-10 md:py-14">
+  <main class="max-w-5xl mx-auto px-4 sm:px-6 py-10 md:py-14 min-w-0">
     <p class="gold uppercase tracking-[0.2em] text-sm mb-2">Account</p>
     <h1 class="text-3xl md:text-4xl font-black uppercase tracking-tight">My account</h1>
     <p class="mt-3 text-stone-400 text-base max-w-2xl leading-relaxed">
@@ -66,9 +85,13 @@
         <div>
           <p class="gold text-sm uppercase tracking-[0.18em] mb-1">Stripe</p>
           <h2 class="text-xl md:text-2xl font-black uppercase tracking-tight">Subscription &amp; billing</h2>
-          <p id="wl-account-billing-sub" class="mt-2 text-stone-400 text-sm leading-relaxed">
-            Sign in to see your current plan.
-          </p>
+          <div id="wl-account-plan-summary" class="mt-4 rounded-xl border border-amber-700/25 bg-stone-950/55 px-4 py-3 md:px-5 md:py-4">
+            <p id="wl-account-plan-eyebrow" class="text-[11px] uppercase tracking-[0.22em] text-stone-500 mb-1 hidden">Your plan</p>
+            <p id="wl-account-plan-name" class="hidden text-2xl md:text-3xl font-black uppercase tracking-[0.08em] text-amber-200/95 leading-tight">—</p>
+            <p id="wl-account-billing-sub" class="mt-2 text-stone-400 text-sm leading-relaxed">
+              Sign in to see your current plan.
+            </p>
+          </div>
         </div>
         <div class="mt-3 sm:mt-0 flex flex-wrap gap-3">
           <button
@@ -116,8 +139,17 @@
           <section class="rounded-2xl border border-amber-700/35 bg-stone-950/55 p-6 flex flex-col shadow-lg shadow-black/30">
             <p class="text-2xl leading-none" aria-hidden="true">📊</p>
             <h3 class="mt-3 text-xl font-black uppercase tracking-tight gold">Starter</h3>
+            <div class="mt-3 rounded-xl border border-amber-700/35 bg-stone-900/50 px-4 py-3">
+              <p class="text-2xl sm:text-[1.65rem] font-black tracking-tight leading-none gold">
+                <span class="wl-account-price-label" data-wl-price-label="starter_monthly"></span>
+              </p>
+              <p class="mt-2 text-[13px] text-stone-400 leading-snug">
+                Annual <strong class="text-stone-300"><span class="wl-account-price-label" data-wl-price-label="starter_annual"></span></strong> · Launch pricing
+              </p>
+            </div>
             <div class="mt-5 flex flex-col gap-2.5 flex-1">
               <div class="wl-check"><span class="mark text-amber-500">✓</span> Play across five major markets</div>
+              <div class="wl-check"><span class="mark text-amber-500">✓</span> Access more scenarios — every solo start in the 1970 &amp; 1978 eras</div>
               <div class="wl-check"><span class="mark text-amber-500">✓</span> Challenge yourself with our General Manager scenario</div>
               <div class="wl-check"><span class="mark text-amber-500">✓</span> Build your on-air team with co-hosts</div>
               <div class="wl-check"><span class="mark text-amber-500">✓</span> Expanded creative tools bring your station to life</div>
@@ -130,8 +162,8 @@
                 data-wl-price="starter_monthly"
                 class="gold-bg w-full rounded-lg px-4 py-3.5 font-black uppercase tracking-[0.14em] text-sm hover:brightness-110 transition-all shadow-md shadow-amber-900/20"
               >
-                <span class="block">Keep playing — Monthly</span>
-                <span class="wl-account-price-label mt-1 block text-[11px] font-bold opacity-90 normal-case tracking-normal" data-wl-price-label="starter_monthly"></span>
+                <span class="block">Expand your empire</span>
+                <span class="mt-1 block text-[11px] font-bold opacity-90 normal-case tracking-normal">Monthly · <span class="wl-account-price-label" data-wl-price-label="starter_monthly"></span></span>
               </button>
               <button
                 type="button"
@@ -145,14 +177,23 @@
           </section>
 
           <!-- Pro (featured) -->
-          <section class="relative rounded-2xl border-2 border-violet-500/55 bg-stone-950/80 p-6 flex flex-col shadow-[0_0_48px_rgba(139,92,246,0.22)] lg:scale-[1.03] lg:z-10 ring-1 ring-violet-400/20">
+          <section class="relative rounded-2xl border-2 border-violet-500/55 bg-stone-950/80 p-6 flex flex-col shadow-[0_0_48px_rgba(139,92,246,0.22)] lg:z-10 ring-1 ring-violet-400/20">
             <span class="absolute -top-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-violet-600 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-white shadow-lg shadow-violet-900/40">
               ★ Full experience
             </span>
             <p class="mt-3 text-2xl leading-none" aria-hidden="true">👑</p>
             <h3 class="mt-3 text-xl font-black uppercase tracking-tight text-violet-200">Pro</h3>
+            <div class="mt-3 rounded-xl border border-violet-500/35 bg-violet-950/30 px-4 py-3">
+              <p class="text-2xl sm:text-[1.65rem] font-black tracking-tight leading-none text-violet-100">
+                <span class="wl-account-price-label" data-wl-price-label="pro_monthly"></span>
+              </p>
+              <p class="mt-2 text-[13px] text-violet-200/80 leading-snug">
+                Annual <strong class="text-violet-100"><span class="wl-account-price-label" data-wl-price-label="pro_annual"></span></strong> · Launch pricing
+              </p>
+            </div>
             <div class="mt-5 flex flex-col gap-2.5 flex-1">
               <div class="wl-check"><span class="mark text-violet-400">✓</span> All markets—including new expansions</div>
+              <div class="wl-check"><span class="mark text-violet-400">✓</span> Exclusive 1985 Format Wars scenarios</div>
               <div class="wl-check"><span class="mark text-violet-400">✓</span> Full campaign mode</div>
               <div class="wl-check"><span class="mark text-violet-400">✓</span> Elite access to creative tools</div>
               <div class="wl-check"><span class="mark text-violet-400">✓</span> Own multiple stations</div>
@@ -169,8 +210,8 @@
                 data-wl-price="pro_monthly"
                 class="w-full rounded-lg bg-violet-600 hover:bg-violet-500 text-white px-4 py-3.5 font-black uppercase tracking-[0.14em] text-sm transition-colors shadow-lg shadow-violet-950/40"
               >
-                <span class="block">Continue your station — Monthly</span>
-                <span class="wl-account-price-label mt-1 block text-[11px] font-bold opacity-95 normal-case tracking-normal text-violet-100" data-wl-price-label="pro_monthly"></span>
+                <span class="block">Unlock the full dial</span>
+                <span class="mt-1 block text-[11px] font-bold opacity-95 normal-case tracking-normal text-violet-100">Monthly · <span class="wl-account-price-label" data-wl-price-label="pro_monthly"></span></span>
               </button>
               <button
                 type="button"
@@ -188,7 +229,7 @@
           <section class="rounded-2xl border border-emerald-800/40 bg-stone-950/40 p-6 flex flex-col shadow-lg shadow-black/25">
             <p class="text-2xl leading-none" aria-hidden="true">📡</p>
             <h3 class="mt-3 text-xl font-black uppercase tracking-tight text-emerald-300">Keep playing for free</h3>
-            <p class="mt-2 text-stone-500 text-sm leading-relaxed">Limited experience. Start over anytime.</p>
+            <p class="mt-2 text-stone-400 text-sm leading-relaxed">Play in the Atlanta market only.</p>
             <div class="mt-5 flex flex-col gap-2.5 flex-1">
               <div class="wl-check"><span class="mark text-emerald-500">✓</span> Solo Atlanta &amp; limited generation</div>
               <div class="wl-check"><span class="mark text-emerald-500">✓</span> Core classic gameplay</div>
@@ -252,7 +293,7 @@
         and
         <a href="/privacy" class="text-amber-200/90 hover:text-amber-100 underline underline-offset-2">Privacy Policy</a>.
       </p>
-      <div id="wl-account-clerk" class="w-full mt-4"></div>
+      <div id="wl-account-clerk" class="w-full min-w-0 max-w-full mt-4 overflow-x-hidden"></div>
       <p id="wl-account-no-key" class="text-stone-500 text-sm hidden">
         Account sign-in isn&apos;t available on this copy of the site. Use the live game site or contact support if this keeps happening.
       </p>
@@ -270,5 +311,24 @@
   </footer>
 
   <script type="module" src="/src/accountPage.js"></script>
+  <script>
+    (function () {
+      var notice = document.getElementById('wl-mobile-screen-notice');
+      var btn = document.getElementById('wl-dismiss-mobile-screen-notice');
+      try {
+        if (sessionStorage.getItem('wl-hide-mobile-screen-notice') === '1' && notice) {
+          notice.classList.add('hidden');
+        }
+      } catch (e) {}
+      if (btn && notice) {
+        btn.addEventListener('click', function () {
+          notice.classList.add('hidden');
+          try {
+            sessionStorage.setItem('wl-hide-mobile-screen-notice', '1');
+          } catch (e) {}
+        });
+      }
+    })();
+  </script>
 </body>
 </html>

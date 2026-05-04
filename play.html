@@ -49,8 +49,9 @@
 <div id="wl-beta-auth-gate" class="wl-ov-auth" style="display:none">
   <div class="wl-ov-auth__box">
     <div class="wl-ov-auth__wordmark">AIRWAVE EMPIRE</div>
-    <div id="wl-beta-auth-title" class="wl-ov-auth__title">PLAY YOUR FIRST GAME -- FREE!</div>
-    <p id="wl-beta-auth-msg" class="wl-ov-auth__msg">Sign in with your Airwave Empire account — email or social — to unlock the scenario selector.</p>
+    <div id="wl-beta-auth-title" class="wl-ov-auth__title">Start your first full game — free</div>
+    <p id="wl-beta-auth-msg" class="wl-ov-auth__msg">Sign in with email or social to choose your scenario and play. Your first full game is free—no payment required.</p>
+    <p class="wl-ov-auth__trial">Your first full game is free. Subscribe to start additional runs.</p>
   </div>
   <p id="wl-solo-auth-terms" class="wl-ov-auth__terms">
     By creating an account, you agree to the
@@ -339,7 +340,7 @@
         <button type="button" class="phbtn" onclick="openRatingsDigestTradeSheet()" title="AI trade-press column — cached until the book changes; Export .TXT available">📰 DIGEST</button>
       </div>
     </div>
-    <table id="wl-ft-tut-market-ratings" class="mt" title="Rank and share show the last published book (updated when you advance the period). The sim still models audience changes immediately for revenue and trends."><thead><tr><th>#</th><th>STATION</th><th>Format</th><th style="text-align:right">SHARE</th><th style="text-align:right">△</th><th style="text-align:right">REV/PD</th></tr></thead><tbody id="mtb"></tbody></table>
+    <table id="wl-ft-tut-market-ratings" class="mt" title="Rank and share show the last published book (updated when you advance the period). The sim still models audience changes immediately for revenue and trends."><thead><tr><th>#</th><th>STATION</th><th>Format</th><th style="text-align:right">SHARE / △</th><th style="text-align:right">REV/PD</th></tr></thead><tbody id="mtb"></tbody></table>
     <div class="sep"></div>
     <div class="dh">DEMO BREAKDOWN</div>
     <div id="dmb"></div>
@@ -371,7 +372,7 @@
 <div class="ov" id="m-sum"><div class="mo"><div class="mh"><span id="sumt">PERIOD END</span><button type="button" class="mc" onclick="cm('m-sum')">OK</button></div><div id="sumb"></div></div></div>
 <div class="ov" id="m-grade"><div class="mo wide"><div class="mh"><span id="gradet">DECADE REPORT</span><button class="mc" onclick="cm('m-grade')">CONTINUE →</button></div><div id="gradeb"></div></div></div>
 <div class="ov" id="m-trial-creative-notice" style="z-index:8500"><div class="mo" style="max-width:440px;padding:22px 24px"><div id="trial-creative-notice-title" style="font-family:var(--ft);font-size:13px;letter-spacing:2px;color:var(--amb);margin-bottom:10px"></div><div id="trial-creative-notice-body" style="font-family:var(--ft);font-size:15px;line-height:1.55;color:var(--off)"></div><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px"><button type="button" class="cfm" id="trial-creative-notice-primary"></button><button type="button" class="abt" id="trial-creative-notice-secondary"></button></div></div></div>
-<div class="ov" id="m-trial-end"><div class="mo wide" style="max-width:560px"><div class="mh"><span id="trialendt">FIRST 50 YEARS COMPLETE — SUBSCRIBE TO KEEP BUILDING</span><button type="button" class="mc" onclick="wlDismissTrialEndModal()">×</button></div><div id="trialendb" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.6;color:var(--off)"></div></div></div>
+<div class="ov" id="m-trial-end"><div class="mo wide" style="max-width:560px"><div class="mh"><span id="trialendt">Trial complete — keep building</span><button type="button" class="mc" onclick="wlDismissTrialEndModal()">×</button></div><div id="trialendb" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.6;color:var(--off)"></div></div></div>
 <div class="ov" id="m-rk"><div class="mo full"><div class="mh"><span id="m-rk-title">MARKET RANKER</span><button class="mc" onclick="cm('m-rk')">CLOSE ×</button></div><div id="rkwrap"></div><div class="rkleg" id="rk-legend"></div></div></div>
 <div class="ov" id="m-ci"><div class="mo"><div class="mh"><span id="ci-title">COMPETITOR INTEL</span><button class="mc" onclick="cm('m-ci')">CLOSE ×</button></div><div style="font-family:var(--fm);font-size:14px;color:var(--amb);padding:4px 20px 0;font-style:italic;letter-spacing:0.5px" id="ci-subtitle"></div><div id="ci-body" style="padding:16px 20px 20px"></div></div></div>
 <div class="ov" id="m-tal"><div class="mo"><div class="mh"><span>HIRE TALENT</span><button type="button" class="mc" onclick="cm('m-tal')">OK</button></div><div id="talb"></div></div></div>
@@ -491,7 +492,7 @@
   <script defer src="/src/stationLogoSvg.js"></script>
   <script defer src="/src/campaignMode.js"></script>
   <script defer src="/src/gmMode.js"></script>
-  <script defer src="/src/legacy.js?v=20260429-1029"></script>
+  <script defer src="/src/legacy.js?v=20260421-2"></script>
   <!-- Dev-only: stripped from production HTML by vite.config.js (file is not copied to dist). -->
   <script defer src="/src/marketSimHarness.js"></script>
 </body>

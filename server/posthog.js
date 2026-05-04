@@ -6,6 +6,10 @@ const { PostHog } = require('posthog-node');
 const noopClient = {
   capture() {},
   captureException() {},
+  /** posthog-node’s real client has shutdown(); keep noop compatible for SIGINT/SIGTERM. */
+  shutdown() {
+    return Promise.resolve();
+  },
 };
 
 const key = (process.env.POSTHOG_API_KEY && String(process.env.POSTHOG_API_KEY).trim()) || '';

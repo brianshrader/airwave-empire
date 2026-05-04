@@ -7,6 +7,9 @@ import {
   clearClerkFrontendOverrides,
   clerkConstructorOptionsFromEnv,
 } from './clerkClientInit.js';
+import { captureEvent, identifyClerkUser, initAnalyticsClient } from './analyticsClient.js';
+
+initAnalyticsClient();
 
 function wlDetectInAppBrowser() {
   const ua = navigator.userAgent || '';
@@ -70,6 +73,10 @@ if (!publishableKey) {
 
     window.Clerk = clerk;
 
+    try {
+      captureEvent('signin_page_viewed', { source: 'play_signin' });
+    } catch (_e) {}
+
     let metaEl = document.querySelector('meta[name="wl-clerk-publishable-key"]');
     if (!metaEl) {
       metaEl = document.createElement('meta');
@@ -86,6 +93,10 @@ if (!publishableKey) {
     };
 
     if (clerk.isSignedIn) {
+      try {
+        const uid = clerk.user?.id;
+        if (uid) identifyClerkUser(String(uid));
+      } catch (_e) {}
       goPlay();
     } else {
       host.innerHTML = '';
@@ -97,7 +108,13 @@ if (!publishableKey) {
         fallbackRedirectUrl: after,
       });
       clerk.addListener(() => {
-        if (clerk.isSignedIn) goPlay();
+        if (clerk.isSignedIn) {
+          try {
+            const uid = clerk.user?.id;
+            if (uid) identifyClerkUser(String(uid));
+          } catch (_e) {}
+          goPlay();
+        }
       });
     }
   } catch (e) {

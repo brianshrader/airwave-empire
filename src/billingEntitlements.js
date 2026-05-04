@@ -3,6 +3,8 @@
  * Source of truth for *who paid*: server-side Stripe subscription (resolved via /api/entitlements).
  */
 
+import { captureEvent } from './analyticsClient.js';
+
 export const CLERK_PLAN = {
   FREE: 'free_user',
   TRIAL: 'trial_user',
@@ -77,6 +79,9 @@ export async function fetchServerPlanSlug(clerk) {
       return slug;
   } catch (e) {
     console.warn('[entitlements] plan fetch failed:', String(e?.message || e || ''));
+    try {
+      captureEvent('api_error', { endpoint_group: 'entitlements', status: 0, context: 'fetch_failed' });
+    } catch (_e) {}
   }
   return CLERK_PLAN.FREE;
 }
@@ -132,5 +137,20 @@ export async function syncPlanMarkets(clerk) {
       window.__WL_TRIAL_LOCKED_MARKET_ID = '';
     }
   }
+  try {
+    const prev = typeof window !== 'undefined' ? window.__WL_ANALYTICS_ENTITLEMENT_SLUG : '';
+    if (typeof window !== 'undefined' && prev !== slug) {
+      window.__WL_ANALYTICS_ENTITLEMENT_SLUG = slug;
+      const plan =
+        slug === CLERK_PLAN.STARTER
+          ? 'starter'
+          : slug === CLERK_PLAN.PRO
+            ? 'pro'
+            : slug === CLERK_PLAN.TRIAL
+              ? 'trial'
+              : 'free';
+      captureEvent('subscription_access_detected', { plan, status: 'unknown', source: 'entitlement_refresh' });
+    }
+  } catch (_e) {}
   return { slug, marketIds };
 }

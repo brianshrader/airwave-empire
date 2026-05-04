@@ -165,6 +165,8 @@ export default defineConfig(({ command, mode }) => {
     },
   ],
   server: {
+    // Listen on LAN (0.0.0.0) so you can open http://<your-machine-ip>:5173 from a phone on the same Wi‑Fi.
+    host: true,
     port: 5173,
     proxy: {
       '/socket.io': { target: 'http://localhost:3000', ws: true },

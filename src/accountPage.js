@@ -10,8 +10,27 @@ import {
 import { effectivePriceLabelForKey } from './billingPriceLabels.js';
 import { billingCadenceFromStripePriceId, effectiveStripePrices } from './stripePriceIds.js';
 import { gameServerApiUrl as apiUrl } from './gameServerApiOrigin.js';
+import { captureEvent, identifyClerkUser, initAnalyticsClient } from './analyticsClient.js';
 
 const publishableKey = import.meta.env?.VITE_CLERK_PUBLISHABLE_KEY?.trim?.() ?? '';
+
+initAnalyticsClient();
+
+let __wlAccountAnalyticsSig = '';
+
+const PRICE_LABEL_ENV_ACCOUNT = Object.freeze({
+  starter_monthly: import.meta.env?.VITE_ACCOUNT_PRICE_STARTER_MONTHLY,
+  starter_annual: import.meta.env?.VITE_ACCOUNT_PRICE_STARTER_ANNUAL,
+  pro_monthly: import.meta.env?.VITE_ACCOUNT_PRICE_PRO_MONTHLY,
+  pro_annual: import.meta.env?.VITE_ACCOUNT_PRICE_PRO_ANNUAL,
+});
+
+function planCadenceFromPriceKeyAccount(priceKey) {
+  const k = String(priceKey || '');
+  const plan = k.startsWith('pro') ? 'pro' : 'starter';
+  const cadence = k.endsWith('annual') ? 'annual' : 'monthly';
+  return { plan, cadence };
+}
 
 function planDisplayName(slug) {
   const s = String(slug || '').trim();
@@ -20,6 +39,32 @@ function planDisplayName(slug) {
   if (s === 'trial_user') return 'Signup trial';
   if (s === 'free_user') return 'Free';
   return s ? s.charAt(0).toUpperCase() + s.slice(1) : 'Free';
+}
+
+/** Large label on account page — must read at a glance. */
+function planHeadlineFromSlug(planSlug) {
+  const p = String(planSlug || '').trim();
+  if (p === 'pro') return 'PRO';
+  if (p === 'starter') return 'STARTER';
+  if (p === 'free_user') return 'FREE';
+  if (p === 'trial_user') return 'SIGNUP TRIAL';
+  const lbl = planDisplayName(p);
+  return lbl ? lbl.toUpperCase() : 'FREE';
+}
+
+function setAccountPlanSummary(opts) {
+  const { showBadge, headline, detail } = opts || {};
+  const eyebrow = document.getElementById('wl-account-plan-eyebrow');
+  const nameEl = document.getElementById('wl-account-plan-name');
+  const subEl = document.getElementById('wl-account-billing-sub');
+  if (!subEl) return;
+  const show = !!showBadge && !!headline;
+  if (eyebrow) eyebrow.classList.toggle('hidden', !show);
+  if (nameEl) {
+    nameEl.classList.toggle('hidden', !show);
+    if (headline) nameEl.textContent = headline;
+  }
+  subEl.textContent = detail != null ? detail : '';
 }
 
 function formatSubscriptionStatus(status) {
@@ -48,6 +93,16 @@ function applyPlanPriceLabels() {
 async function startCheckoutForPriceKey(clerk, priceKey) {
   const priceIdToUse = effectiveStripePrices()[priceKey];
   if (!priceIdToUse || !clerk?.isSignedIn) return;
+  const { plan, cadence } = planCadenceFromPriceKeyAccount(priceKey);
+  const price_label = effectivePriceLabelForKey(priceKey, PRICE_LABEL_ENV_ACCOUNT[priceKey]) || '';
+  try {
+    captureEvent('checkout_started', {
+      plan,
+      cadence,
+      price_label: price_label.slice(0, 48),
+      source: 'account',
+    });
+  } catch (_e) {}
   try {
     setBillingError('');
     const t = await clerk.session?.getToken?.();
@@ -59,11 +114,27 @@ async function startCheckoutForPriceKey(clerk, priceKey) {
     });
     const cj = await cr.json().catch(() => ({}));
     if (!cr.ok || !cj.url) {
+      try {
+        captureEvent('checkout_failed', {
+          plan,
+          cadence,
+          source: 'account',
+          error_type: !cr ? 'network' : cr.status >= 500 ? 'server_error' : 'checkout_denied',
+        });
+      } catch (_e) {}
       setBillingError(cj.error || cr.statusText || 'Could not start checkout.');
       return;
     }
     window.location.assign(cj.url);
   } catch (e) {
+    try {
+      captureEvent('checkout_failed', {
+        plan,
+        cadence,
+        source: 'account',
+        error_type: 'network',
+      });
+    } catch (_e) {}
     setBillingError(String(e.message || e || 'Checkout error'));
   }
 }
@@ -115,7 +186,11 @@ async function refreshStripeBillingPanel(clerk) {
   actions.classList.remove('hidden');
 
   if (!clerk?.isSignedIn) {
-    subEl.textContent = 'Sign in below to see your current plan and choose a subscription.';
+    setAccountPlanSummary({
+      showBadge: false,
+      headline: '',
+      detail: 'Sign in below to see your current plan and choose a subscription.',
+    });
     portalBtn.classList.add('hidden');
     portalBtn.onclick = null;
     setBillingError('');
@@ -123,9 +198,18 @@ async function refreshStripeBillingPanel(clerk) {
   }
 
   try {
+    const uid = clerk.user?.id;
+    if (uid) identifyClerkUser(String(uid));
+  } catch (_e) {}
+
+  try {
     const token = await clerk.session?.getToken?.();
     if (!token) {
-      subEl.textContent = 'Could not read your session token. Try signing out and back in.';
+      setAccountPlanSummary({
+        showBadge: false,
+        headline: '',
+        detail: 'Could not read your session token. Try signing out and back in.',
+      });
       portalBtn.classList.add('hidden');
       return;
     }
@@ -135,14 +219,29 @@ async function refreshStripeBillingPanel(clerk) {
     });
     const j = await r.json().catch(() => ({}));
     if (!r.ok || !j.ok) {
-      subEl.textContent = j.error || 'Could not load subscription status. Plans below — retry or open Manage in Stripe if you already subscribe.';
+      try {
+        captureEvent('api_error', {
+          endpoint_group: 'entitlements',
+          status: r.status,
+          context: 'account_panel',
+        });
+      } catch (_e) {}
+      setAccountPlanSummary({
+        showBadge: false,
+        headline: '',
+        detail: j.error || 'Could not load subscription status. Plans below — retry or open Manage in Stripe if you already subscribe.',
+      });
       portalBtn.classList.add('hidden');
       return;
     }
 
     if (j.signedIn === false) {
-      subEl.textContent =
-        'We could not verify your sign-in for billing. Open this page from the same website as the game, or sign out and sign back in. You can still pick a plan below once your session syncs.';
+      setAccountPlanSummary({
+        showBadge: false,
+        headline: '',
+        detail:
+          'We could not verify your sign-in for billing. Open this page from the same website as the game, or sign out and sign back in. You can still pick a plan below once your session syncs.',
+      });
       portalBtn.classList.add('hidden');
       return;
     }
@@ -157,33 +256,43 @@ async function refreshStripeBillingPanel(clerk) {
     const ends = b.subscriptionCurrentPeriodEnd ? String(b.subscriptionCurrentPeriodEnd) : '';
     const cancelEnd = b.subscriptionCancelAtPeriodEnd === true;
     const paid = plan === 'starter' || plan === 'pro';
-    const label = planDisplayName(plan);
     const statusDisp = formatSubscriptionStatus(status);
 
-    let line = '';
+    const headline = planHeadlineFromSlug(plan);
+    const detailParts = [];
     if (plan === 'free_user') {
-      line = `Current plan: ${label}`;
-      if (statusDisp) line += ` · ${statusDisp}`;
+      if (statusDisp) detailParts.push(statusDisp);
     } else if (!active && paid) {
-      line = `Current plan: ${label} — billing sync pending; refresh or open Manage in Stripe.`;
-      if (statusDisp) line += ` · ${statusDisp}`;
-      if (cadence) line += ` · ${cadence}`;
+      detailParts.push('Billing sync pending — refresh or use Manage in Stripe');
+      if (statusDisp) detailParts.push(statusDisp);
+      if (cadence) detailParts.push(cadence);
     } else if (!active) {
-      line = `Current plan: ${label}`;
-      if (statusDisp) line += ` · ${statusDisp}`;
+      if (statusDisp) detailParts.push(statusDisp);
     } else {
-      const bits = [];
-      if (cadence) bits.push(cadence);
-      if (statusDisp) bits.push(statusDisp);
-      line = `Current plan: ${label}`;
-      if (bits.length) line += ` · ${bits.join(' · ')}`;
+      if (cadence) detailParts.push(cadence);
+      if (statusDisp) detailParts.push(statusDisp);
       if (ends) {
         const d = new Date(ends);
-        if (!Number.isNaN(d.getTime())) line += ` · Renews ${d.toLocaleString()}`;
+        if (!Number.isNaN(d.getTime())) {
+          detailParts.push(`Renews ${d.toLocaleDateString(undefined, { dateStyle: 'medium' })}`);
+        }
       }
-      if (cancelEnd) line += ' · Ends at period end';
+      if (cancelEnd) detailParts.push('Cancels at period end');
     }
-    subEl.textContent = line;
+    const detailLine = detailParts.join(' · ');
+    setAccountPlanSummary({ showBadge: true, headline, detail: detailLine });
+
+    try {
+      const planOut =
+        plan === 'starter' ? 'starter' : plan === 'pro' ? 'pro' : plan === 'trial_user' ? 'trial' : 'free';
+      const stLow = String(status || '').toLowerCase();
+      const statusOut = ['active', 'trialing', 'past_due', 'canceled'].includes(stLow) ? stLow : 'unknown';
+      const sig = `${planOut}|${statusOut}|account_load`;
+      if (sig !== __wlAccountAnalyticsSig) {
+        __wlAccountAnalyticsSig = sig;
+        captureEvent('subscription_access_detected', { plan: planOut, status: statusOut, source: 'account_load' });
+      }
+    } catch (_e) {}
 
     portalBtn.classList.remove('hidden');
     portalBtn.onclick = async () => {
@@ -207,7 +316,11 @@ async function refreshStripeBillingPanel(clerk) {
       }
     };
   } catch (e) {
-    subEl.textContent = String(e.message || e || 'Could not load billing info. Plans below remain available.');
+    setAccountPlanSummary({
+      showBadge: false,
+      headline: '',
+      detail: String(e.message || e || 'Could not load billing info. Plans below remain available.'),
+    });
     portalBtn.classList.add('hidden');
   }
 }
@@ -231,20 +344,41 @@ function clearAccountHost(clerk, host) {
   host.innerHTML = '';
 }
 
+/** Nav “Play” becomes the same gold Play now CTA as the home page when signed in. */
+function updateAccountNavPlayCta(clerk) {
+  const el = document.getElementById('wl-account-nav-play');
+  if (!el) return;
+  const signedIn = !!(clerk?.isSignedIn || clerk?.user);
+  el.setAttribute('href', '/play.html');
+  if (signedIn) {
+    el.className =
+      'gold-bg px-5 py-2.5 rounded-md font-bold uppercase tracking-[0.14em] text-stone-900 hover:opacity-95';
+    el.textContent = 'Play now';
+  } else {
+    el.className = 'hover:text-white';
+    el.textContent = 'Play';
+  }
+}
+
 function syncAccountView(clerk) {
   const host = document.getElementById('wl-account-clerk');
   const noKey = document.getElementById('wl-account-no-key');
-  if (!host) return;
+  if (!host) {
+    updateAccountNavPlayCta(clerk);
+    return;
+  }
   if (!publishableKey) {
     if (noKey) {
       noKey.classList.remove('hidden');
     }
     setSignOutButton(false);
+    updateAccountNavPlayCta(null);
     void refreshStripeBillingPanel(null);
     return;
   }
   if (noKey) noKey.classList.add('hidden');
   setSignOutButton(!!clerk.isSignedIn, clerk);
+  updateAccountNavPlayCta(clerk);
 
   const createTerms = document.getElementById('wl-account-create-terms');
   if (createTerms) {
@@ -281,10 +415,24 @@ function syncAccountView(clerk) {
   } else {
     clerk.mountSignIn(host, signProps);
     __wlAccountMountKind = 'signin';
+    try {
+      if (sessionStorage.getItem('wl_ph_signin_page_account_v1') !== '1') {
+        sessionStorage.setItem('wl_ph_signin_page_account_v1', '1');
+        captureEvent('signin_page_viewed', { source: 'account' });
+      }
+    } catch (_e) {}
   }
 }
 
 async function init() {
+  try {
+    const sp = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
+    if (sp.get('session_id') && sessionStorage.getItem('wl_ph_stripe_return_v1') !== '1') {
+      sessionStorage.setItem('wl_ph_stripe_return_v1', '1');
+      captureEvent('subscription_access_detected', { plan: 'unknown', status: 'unknown', source: 'post_checkout' });
+    }
+  } catch (_e) {}
+
   applyPlanPriceLabels();
 
   const planActions = document.getElementById('wl-account-plan-actions');

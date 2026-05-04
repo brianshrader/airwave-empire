@@ -90,6 +90,19 @@ body{background:var(--blk);color:var(--wht);font-family:var(--fm);min-height:100
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+/* Prevent play shell from extending past the viewport (avoids “pinch to see it all” on phones) */
+body#wl-play{
+  overflow-x: clip;
+  max-width:100%;
+}
+body#wl-play #main,
+body#wl-play #pl,
+body#wl-play #pc,
+body#wl-play .pnl{
+  max-width:100%;
+  min-width:0;
+  box-sizing:border-box;
+}
 body#wl-play::after{opacity:0.15}
 #wl-play #logo{
   font-family:var(--fd);
@@ -471,6 +484,7 @@ body#wl-play::after{opacity:0.15}
   color:var(--m-ink) !important;
   border:1px solid rgba(200,140,32,0.95) !important;
 }
+#wl-play .cfm.wl-commit-btn--flash{animation:wlCommitFlash .85s ease 1}
 
 /* #wl-play static shell: lobby, auth, MP (tokens in main #wl-play block above) */
 #wl-play .wl-ov-hint{
@@ -528,7 +542,13 @@ body#wl-play::after{opacity:0.15}
   letter-spacing: 2px;
   margin-bottom: 12px;
 }
-#wl-play .wl-ov-auth__msg{ font-size: 14px; color: var(--mut); line-height: 1.55; margin: 0; }
+#wl-play .wl-ov-auth__msg{ font-size: 14px; color: var(--mut); line-height: 1.55; margin: 0 0 12px; }
+#wl-play .wl-ov-auth__trial{
+  font-size: 13px;
+  color: rgba(214, 211, 209, 0.85);
+  line-height: 1.5;
+  margin: 0;
+}
 #wl-play .wl-ov-auth__terms{
   font-size: 13px;
   line-height: 1.5;
@@ -613,7 +633,40 @@ body#wl-play::after{opacity:0.15}
   color: var(--mut);
   line-height: 1.58;
   max-width: 36em;
-  margin: 0 0 clamp(14px, 3vw, 20px);
+  margin: 0 0 clamp(16px, 3vw, 22px);
+}
+#wl-play-signin .wl-signin-reassurance{
+  list-style: none;
+  padding: 0;
+  margin: 0 auto clamp(14px, 3vw, 20px);
+  max-width: min(94vw, 26rem);
+  text-align: left;
+}
+#wl-play-signin .wl-signin-reassurance li{
+  font-family: var(--fm);
+  font-size: 14px;
+  color: var(--off);
+  line-height: 1.5;
+  margin: 0 0 10px;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+#wl-play-signin .wl-signin-reassurance li:last-child{ margin-bottom: 0; }
+#wl-play-signin .wl-signin-reassurance__mark{
+  flex-shrink: 0;
+  color: var(--amb);
+  font-weight: 700;
+  width: 1.1rem;
+  text-align: center;
+}
+#wl-play-signin .wl-signin-trial-note{
+  font-family: var(--fm);
+  font-size: 13px;
+  color: rgba(214, 211, 209, 0.88);
+  line-height: 1.5;
+  max-width: min(94vw, 28rem);
+  margin: 0 auto clamp(18px, 3.5vw, 26px);
 }
 #wl-play-signin .wl-signin-terms{
   font-family: var(--fm);
@@ -1639,7 +1692,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .sim-tag{font-family:var(--ft);font-size:16px;color:var(--blu);background:rgba(90,180,255,.10);border:1px solid rgba(90,180,255,.3);padding:2px 8px;display:inline-block;margin-bottom:10px;letter-spacing:1px}
 /* SALES FORCE */
 .sf-row{padding:10px 12px;border:1px solid rgba(255,255,255,.08);border-radius:4px;margin:6px 0;cursor:pointer;transition:border-color .15s}
-.sf-row:hover{border-color:rgba(255,255,255,.25)}
+/* .sf-row:hover — in @media (hover: hover) with .to / .fmo */
 .sf-row.sf-pick{border-color:rgba(82,227,110,.38);box-shadow:0 0 0 1px rgba(82,227,110,.18)}
 .sf-cur{border-color:var(--grn)!important;background:rgba(82,227,110,.06);cursor:default}
 .sf-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
@@ -1679,9 +1732,34 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .fv.pos{color:var(--grn)}.fv.neg{color:var(--red)}.fv.amb{color:var(--amb)}
 .slots{margin-bottom:16px;overflow-x:auto;-webkit-overflow-scrolling:touch}
 /* Station card talent lineup: day · thumb · name · talent · morale · quality · pay · contract */
+.slots-lineup-stack{position:relative}
 .slots-lineup-meta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;margin:0 0 6px}
 .slots-lineup-meta .slots-legend-title{color:var(--off);font-weight:600;font-size:13px;letter-spacing:0.06em}
 .slots-lineup-hdr{margin:0 0 4px;padding:0 0 6px;border-bottom:1px solid rgba(255,255,255,.1)}
+.slots-lineup-hdr--with-help{position:relative;padding-right:36px}
+.slots-lineup-hdr--with-help .slots-lineup-grid--hdr{padding-right:4px}
+.slots-lineup-q{
+  position:absolute;
+  right:2px;
+  top:50%;
+  transform:translateY(-50%);
+  z-index:2;
+  width:28px;
+  height:28px;
+  margin:0;
+  padding:0;
+  border:1px solid var(--bdh);
+  border-radius:50%;
+  background:rgba(32,36,44,.95);
+  color:var(--amb);
+  font-weight:700;
+  font-size:14px;
+  line-height:1;
+  cursor:pointer;
+  box-shadow:0 1px 4px rgba(0,0,0,.35);
+}
+.slots-lineup-q:hover{border-color:var(--amb);color:var(--wht);background:rgba(45,50,60,.98)}
+.slots-lineup-q:focus-visible{outline:2px solid var(--amb);outline-offset:2px}
 .slots-lineup-grid{
   display:grid;
   width:100%;
@@ -1746,8 +1824,11 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .sl-mor-dot{display:inline-block;width:10px;height:10px;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.4);flex-shrink:0;vertical-align:middle}
 .sl-cell-pay,.sl-cell-sq,.sl-cell-tal{text-align:right;min-width:0}
 .sl-cell-pay{font-family:var(--ft);font-size:14px;color:var(--mut)}
+/* Verbose pay+contract line (see lineupContractVerboseUi) — mobile-only display + kind colors */
+.slots-lineup-grid .sl-pay-verbose{display:none}
+.sl-pay-amt{font-family:inherit}
 .sl-cell-sq{font-family:var(--ft);font-size:16px}
-.sl-cell-tal{font-family:var(--fd);font-size:16px;color:var(--off)}
+.sl-cell-tal{font-family:var(--ft);font-size:16px;font-weight:600;color:var(--off)}
 .slr{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid rgba(51,51,51,.6)}
 .slr:last-child{border-bottom:none}
 .slr.slots-lineup-grid{display:grid;align-items:center;column-gap:8px;row-gap:0;padding:7px 0;border-bottom:1px solid rgba(51,51,51,.6)}
@@ -1784,7 +1865,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .slt.vac{color:var(--red);font-style:italic;font-size:15px}
 .slsal{font-family:var(--ft);font-size:15px;color:var(--mut);width:52px;text-align:right;flex-shrink:0}
 .slq{font-family:var(--ft);font-size:15px;font-weight:600;width:40px;text-align:right;flex-shrink:0}
-.stal{font-family:var(--fd);font-size:15px;width:36px;text-align:right;flex-shrink:0;color:var(--off)}
+.stal{font-family:var(--ft);font-size:16px;font-weight:600;width:36px;text-align:right;flex-shrink:0;color:var(--off)}
 .slt.clickable{cursor:pointer;text-decoration:underline;text-decoration-color:rgba(255,255,255,.25);text-underline-offset:2px}
 .slt.clickable:hover{color:var(--amb)}
 .cyr-ok{font-family:var(--ft);font-size:15px;color:var(--mut);flex-shrink:0}
@@ -2352,10 +2433,11 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .mt th:nth-child(1),.mt td:nth-child(1){width:2.25rem;padding-left:4px;padding-right:4px}
 .mt th:nth-child(2),.mt td:nth-child(2){width:25%;overflow:hidden;min-width:0}
 .mt th:nth-child(3),.mt td:nth-child(3){width:24%}
-.mt th:nth-child(4),.mt td:nth-child(4){width:11%}
-.mt th:nth-child(5),.mt td:nth-child(5){width:8%}
-.mt td.mt-trend{text-align:right;white-space:nowrap}
-.mt th:nth-child(6),.mt td:nth-child(6){width:15%}
+.mt th:nth-child(4),.mt td:nth-child(4){width:19%}
+.mt th:nth-child(5),.mt td:nth-child(5){width:15%}
+.mt td.mt-share-trend-cell{text-align:right;white-space:nowrap;vertical-align:middle;padding:4px 6px}
+.mt td.mt-share-trend-cell .mt-trend{display:inline-block;margin-left:10px;vertical-align:middle}
+.mt td.mt-rev-cell{text-align:right;vertical-align:middle}
 .mt tr.station-row:hover td{background:rgba(245,166,35,.04)}
 .mt tr.station-row[onclick]:hover td{background:rgba(245,166,35,.09);cursor:pointer}
 .mt tr.station-row{position:relative}
@@ -2467,7 +2549,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 /* Scenario picker: single vertical list (not side-by-side columns) */
 .scn-wrap{display:grid;grid-template-columns:1fr;gap:14px;margin:0 0 20px}
 .scn-card{border:2px solid var(--bdr);border-radius:6px;padding:18px 20px;cursor:pointer;transition:background .18s,border-color .18s,box-shadow .18s;background:var(--drk);position:relative}
-.scn-card:hover{border-color:var(--bdh);background:var(--pnl)}
+/* .scn-card:hover — real hover only; see @media (hover: hover) block */
 /* Selected scenario: full card border + glow (no corner-only cue) */
 .scn-card.sel{
   border-color:var(--amb);
@@ -2544,6 +2626,22 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   font-weight:700;
 }
 .wl-upgrade-banner__btn--primary:hover{background:rgba(245,166,35,.32)}
+/* Trial banner: pricing link secondary to scenario CTAs */
+.wl-upgrade-banner__btn--plans-muted{
+  font-size:12px !important;
+  padding:8px 12px !important;
+  letter-spacing:0.06em !important;
+  opacity:0.78;
+  border-color:rgba(245,166,35,.28) !important;
+  background:rgba(0,0,0,.25) !important;
+  color:var(--mut) !important;
+  font-weight:500 !important;
+}
+.wl-upgrade-banner__btn--plans-muted:hover{
+  opacity:1;
+  color:var(--off) !important;
+  border-color:rgba(245,166,35,.42) !important;
+}
 
 /* Scenario picker (m-scen): stacked sections with clear separation */
 .scen-pick-stack{display:flex;flex-direction:column;gap:22px;margin-top:12px}
@@ -2608,7 +2706,67 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 }
 /* Two-step flow: play entry / new-game modes / classic solo (see scenSetView in legacy.js) */
 .scen-pick-section--entry{background:rgba(0,0,0,.2)}
-/* Play entry: resume stays primary; start new = one step down; load = tertiary (see legacy openScenSelect) */
+/* Play entry: guided first game primary; load secondary; MP / replay tertiary */
+.scen-entry-primary-block{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:0;
+  margin:12px 0 0;
+  padding:14px 14px 16px;
+  border-radius:10px;
+  border:1px solid rgba(245,166,35,.35);
+  background:linear-gradient(180deg,rgba(245,166,35,.08) 0%,rgba(0,0,0,.12) 100%);
+  box-shadow:0 0 28px rgba(245,166,35,.1),inset 0 1px 0 rgba(255,255,255,.04);
+}
+.scen-entry-rec-badge{
+  font-family:var(--ft);
+  font-size:11px;
+  letter-spacing:0.14em;
+  text-transform:uppercase;
+  color:var(--amb);
+  margin:0 0 10px;
+  padding:4px 10px;
+  border-radius:999px;
+  border:1px solid rgba(245,166,35,.45);
+  background:rgba(245,166,35,.1);
+}
+.scen-entry-rec-badge--players{
+  letter-spacing:0.1em;
+  font-size:10px;
+  max-width:min(100%,360px);
+  text-align:center;
+  line-height:1.35;
+}
+.scen-entry-primary-sub{
+  margin:10px 0 0;
+  padding:0 8px;
+  text-align:center;
+  font-family:var(--ft);
+  font-size:13px;
+  line-height:1.45;
+  color:var(--mut);
+  max-width:340px;
+}
+.scen-entry-primary-sub--stack{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  align-items:center;
+}
+.scen-entry-primary-sub-line{
+  margin:0;
+  font-family:var(--ft);
+  font-size:14px;
+  line-height:1.5;
+  color:var(--off);
+}
+.scen-entry-primary-sub-line--emph{
+  color:var(--amb);
+  font-weight:600;
+  font-size:13px;
+  letter-spacing:0.03em;
+}
 .scen-entry-start-wrap{
   display:flex;
   justify-content:center;
@@ -2616,6 +2774,20 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   margin:10px 0 0;
   padding:4px 0 2px;
   box-sizing:border-box;
+}
+.scen-entry-start-wrap--hero{margin:0;padding:0}
+.scen-entry-start-wrap--dual{
+  flex-direction:row;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:12px;
+  align-items:stretch;
+}
+.scen-entry-start-wrap--dual .cfm,
+.scen-entry-start-wrap--dual .abt.scen-entry-load-btn{
+  flex:1 1 auto;
+  min-width:min(100%,11rem);
+  max-width:100%;
 }
 #wl-play .scen-entry-start-btn,
 #wl-play button.scen-entry-start-btn{
@@ -2642,6 +2814,38 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   outline:2px solid rgba(255,220,150,0.45);
   outline-offset:2px;
 }
+/* Dominant CTA — Atlanta guided first game */
+#wl-play .scen-entry-start-btn--first-game,
+#wl-play button.scen-entry-start-btn--first-game{
+  font-size:0.95rem !important;
+  padding:0.75rem 1.35rem 0.8rem !important;
+  letter-spacing:0.14em !important;
+  box-shadow:0 2px 14px rgba(245,166,35,.22),0 2px 10px rgba(0,0,0,.35) !important;
+  border:1px solid rgba(245,186,80,.95) !important;
+}
+#wl-play .scen-entry-start-btn--first-game:hover,
+#wl-play button.scen-entry-start-btn--first-game:hover{
+  box-shadow:0 2px 22px rgba(245,166,35,.35),0 4px 16px rgba(0,0,0,.4) !important;
+  filter:brightness(1.06) !important;
+}
+.scen-entry-browse-wrap{
+  text-align:center;
+  margin:12px 0 0;
+  padding:0 6px;
+}
+.scen-entry-browse-all-btn{
+  font-family:var(--ft);
+  font-size:12px;
+  letter-spacing:0.06em;
+  color:var(--mut);
+  background:none;
+  border:none;
+  cursor:pointer;
+  text-decoration:underline;
+  text-underline-offset:3px;
+  padding:6px 8px;
+}
+.scen-entry-browse-all-btn:hover{color:var(--off)}
 .scen-entry-load-wrap{
   text-align:center;
   margin:14px 0 0;
@@ -2782,7 +2986,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .ob-key{font-family:var(--ft);font-size:15px;color:var(--wht);background:var(--crd);padding:2px 8px;letter-spacing:1px;flex-shrink:0;margin-top:2px}
 /* FM BOOSTER */
 .boost-card{border:1px solid var(--bdr);padding:14px 16px;margin-bottom:10px;cursor:pointer;transition:all .15s;background:var(--drk)}
-.boost-card:hover{border-color:var(--bdh)}
+/* .boost-card:hover — real hover only; see @media (hover: hover) block */
 .boost-card.sel{border-color:var(--amb);background:rgba(245,166,35,.07)}
 .boost-card h4{font-family:var(--fd);font-size:18px;letter-spacing:2px;color:var(--wht);margin-bottom:4px}
 .boost-card .bc-sub{font-family:var(--ft);font-size:15px;color:var(--mut);margin-bottom:8px}
@@ -2997,6 +3201,24 @@ html.wl-modal-open,body.wl-modal-open{overflow:hidden}
 #m-contract #contractb .contract-cta-bonus:disabled{
   opacity:0.45;cursor:not-allowed;
   filter:grayscale(0.15);
+}
+#m-contract #contractb .contract-cta-bonus--paid:disabled,
+#m-contract #contractb .contract-cta-bonus.contract-cta-bonus--paid:disabled{
+  opacity:1;
+  filter:none;
+  cursor:default;
+  background:rgba(42,90,62,.35);
+  border-color:rgba(90,170,115,.42) !important;
+  color:#a8d9b8;
+}
+#m-contract #contractb .contract-cta-bonus__l2-paid{
+  display:block;width:100%;
+  font-size:12px;font-weight:600;
+  font-family:var(--ft);
+  letter-spacing:0.06em;
+  text-transform:none;
+  color:#b8e8c8;
+  margin-top:4px;
 }
 #m-contract #contractb .contract-cta-let,
 #m-contract #contractb .contract-cta-bar .contract-cta-let{
@@ -3411,6 +3633,24 @@ html.wl-modal-open,body.wl-modal-open{overflow:hidden}
   border:1px solid rgba(100,200,130,.5) !important;
   color:#c8f0d5;
 }
+#m-fire .mt-slot .contract-extend-cta-block .contract-cta-bonus--paid:disabled,
+#m-fire .mt-slot .contract-extend-cta-block .contract-cta-bonus.contract-cta-bonus--paid:disabled{
+  opacity:1;
+  filter:none;
+  cursor:default;
+  background:rgba(42,90,62,.35);
+  border-color:rgba(90,170,115,.42) !important;
+  color:#a8d9b8;
+}
+#m-fire .mt-slot .contract-extend-cta-block .contract-cta-bonus__l2-paid{
+  display:block;width:100%;
+  font-size:12px;font-weight:600;
+  font-family:var(--ft);
+  letter-spacing:0.06em;
+  text-transform:none;
+  color:#b8e8c8;
+  margin-top:4px;
+}
 #m-fire .mt-slot .contract-extend-cta-block .contract-cta-let,
 #m-fire .mt-slot .contract-extend-cta-block .contract-cta-bar .contract-cta-let{
   text-transform:none;min-height:56px;padding:6px 4px;background:rgba(160,100,20,.2);
@@ -3462,9 +3702,18 @@ html.wl-modal-open,body.wl-modal-open{overflow:hidden}
   outline-offset:2px;
 }
 #m-contract #contractb .contract-dp-wrap{display:flex;gap:16px;align-items:stretch;min-width:0}
-#m-contract #contractb .contract-dp-aside{flex:0 0 200px;min-width:0;align-self:stretch}
 #m-contract #contractb .contract-dp-rail__h{margin:0 0 8px 0;font-family:var(--fd);font-size:12px;letter-spacing:0.1em;color:var(--mut)}
-#m-contract #contractb .contract-dp-body{flex:1;min-width:0;min-height:0}
+/* Safari: keep main talent pane above the daypart rail when the wrap stacks (narrow width). */
+#m-contract #contractb .contract-dp-body{
+  flex:1;
+  min-width:0;
+  min-height:0;
+  position:relative;
+  z-index:1;
+  isolation:isolate;
+  background:var(--crd);
+}
+#m-contract #contractb .contract-dp-aside{flex:0 0 200px;min-width:0;align-self:stretch;position:relative;z-index:0}
 #m-contract #contractb .contract-dp-aside .mt-dp-rail{flex:1 1 auto;width:100%}
 @media (max-width: 720px) {
   #m-contract #contractb .contract-dp-wrap{flex-direction:column;gap:12px}
@@ -3485,9 +3734,10 @@ html.wl-modal-open,body.wl-modal-open{overflow:hidden}
 /* Manage Talent — daypart rail + detail (standardized with wide modal in play.html) */
 .mt-manage__row{display:flex;gap:16px;align-items:stretch;min-height:0;margin-top:2px}
 .mt-manage__sel-label{font-size:12px;letter-spacing:0.1em;color:var(--mut);margin:0 0 8px 0}
+.mt-dp-inline-hint{display:none;font-weight:500;font-size:11px;letter-spacing:0.06em;color:var(--mut)}
 .mt-dp-rail{flex:0 0 200px;display:flex;flex-direction:column;gap:6px;min-width:0;align-self:stretch}
 .mt-dp-pill{display:flex;flex-direction:column;align-items:flex-start;text-align:left;width:100%;padding:10px 12px;border:1px solid var(--bdh);border-radius:8px;background:var(--crd);color:var(--off);font-family:var(--ft);font-size:12px;letter-spacing:0.04em;cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s;box-sizing:border-box}
-.mt-dp-pill:hover{border-color:var(--amb);color:var(--wht)}
+/* .mt-dp-pill:hover — only with real hover; see @media (hover: hover) below (touch scroll bug) */
 .mt-dp-pill--active{border-color:rgba(245,166,35,.55);background:rgba(245,166,35,.1);box-shadow:0 0 0 1px rgba(245,166,35,.22);color:var(--off)}
 .mt-dp-pill--active .mt-dp-pill__t{color:var(--wht)}
 .mt-dp-pill__t{font-family:var(--fd);font-size:14px;letter-spacing:0.06em;color:var(--wht);width:100%;text-align:left}
@@ -3528,7 +3778,7 @@ body.mp-endgame #mp-statusbar,body.mp-endgame #mp-chat-wrap{position:relative;z-
 .rkt th.sth{text-align:left;min-width:120px;position:sticky;left:0;z-index:3;background:var(--drk)}
 .rkt td{padding:5px 10px;border-bottom:1px solid rgba(51,51,51,.3);border-right:1px solid rgba(51,51,51,.2);text-align:center;color:var(--mut)}
 .rkt td.stc{text-align:left;position:sticky;left:0;background:var(--pnl);z-index:2;padding-right:14px;box-shadow:4px 0 8px rgba(0,0,0,.45);white-space:normal;vertical-align:top}
-.rkt tr:hover td{background:rgba(245,166,35,.04)}
+/* .rkt tr:hover td — real hover only; @media (hover: hover) block */
 .rkt tr.rky td{background:rgba(245,166,35,.06)}.rkt tr.rkp2 td{background:rgba(96,165,250,.04)}.rkt tr.rkp td{background:rgba(125,211,252,.04)}.rkt tr.rkp td.stc{background:#0a1a22;}.rkt tr.rky td.stc{background:#1e1800!important;}.rkt tr.rkp2 td.stc{background:#0d1622!important;}.rkt tr:not(.rky):not(.rkp2):not(.rkp) td.stc{background:var(--pnl)!important;}
 .rkt tr.rky td.stc{background:#2a2008;}
 .rkt--fmtcol{table-layout:fixed}
@@ -3537,6 +3787,15 @@ body.mp-endgame #mp-statusbar,body.mp-endgame #mp-chat-wrap{position:relative;z-
 .rkt td.stc-fmt{text-align:left;white-space:normal;vertical-align:top;max-width:7.5rem;overflow:hidden}
 .rkt tr.rky td.stc-fmt{background:#2a2008}.rkt tr.rkp2 td.stc-fmt{background:#0d1622}.rkt tr.rkp td.stc-fmt{background:#0a1a22}
 .rkt tr:not(.rky):not(.rkp2):not(.rkp) td.stc-fmt{background:var(--pnl)}
+/* Ranker: station column stacks call/freq · format · owner (format moved out of separate column) */
+.rkt--stacked{table-layout:fixed}
+.rkt--stacked th.sth{max-width:min(520px,58vw);width:42%}
+.rkt--stacked td{padding:4px 6px}
+.rkt--stacked td.stc{padding-right:10px}
+.rkt--stacked .rk-stfmt{font-size:14px;line-height:1.35;color:var(--off);margin-top:3px;white-space:normal}
+.rkt--stacked .sc-logo-thumb--compact{width:36px;height:36px;padding:2px;border-radius:4px}
+#m-brand.wl-tut-brand-promo-focus #brandb > :not(#wl-tu-tr-bm-promo){opacity:.22;pointer-events:none;transition:opacity .2s ease}
+#m-brand.wl-tut-brand-promo-focus #wl-tu-tr-bm-promo{opacity:1;pointer-events:auto}
 .rkt td.stc .rc{font-family:var(--fd);font-size:16px;letter-spacing:2px}
 .rkt td.stc .rf{font-size:15px;color:var(--mut)}.rkt td.stc-fmt .rf{color:var(--off)}
 .rcv{color:var(--wht)}.rcv.hi{color:var(--amb);font-weight:bold}.rcv.lo{color:rgba(136,136,136,.5)}
@@ -3566,7 +3825,7 @@ body.mp-endgame #mp-statusbar,body.mp-endgame #mp-chat-wrap{position:relative;z-
 /* DECISION UI */
 .ssl{display:flex;flex-direction:column;gap:7px;margin-bottom:16px}
 .ssb{background:var(--crd);border:1px solid var(--bdr);color:var(--wht);font-family:var(--ft);font-size:15px;padding:12px 16px;cursor:pointer;text-align:left;display:flex;justify-content:space-between;align-items:center;transition:all .15s}
-.ssb:hover{border-color:var(--amb);color:var(--amb)}
+/* .ssb:hover / .to:hover — on touch, :hover stuck under finger and looked “selected” while scrolling; use fine-pointer hover only */
 .ssb.sel{border-color:var(--amb);background:var(--abg);color:var(--amb)}
 .ssb .cur{color:var(--mut);font-size:15px}
 .tg{display:flex;flex-direction:column;gap:9px}
@@ -3576,8 +3835,22 @@ body.mp-endgame #mp-statusbar,body.mp-endgame #mp-chat-wrap{position:relative;z-
 .tg .to-hire .tost{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 12px;margin-top:8px}
 .tg .to-hire .tost>div{min-width:0}
 .tg .to-hire .tosl{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.to:hover{border-color:var(--amb);background:var(--abg)}
 .to.sel{border-color:var(--amb);background:rgba(245,166,35,.14)}
+@media (hover: hover) and (pointer: fine) {
+  .ssb:hover{border-color:var(--amb);color:var(--amb)}
+  .to:hover{border-color:var(--amb);background:var(--abg)}
+  .fmo:hover{border-color:var(--amb);background:var(--abg)}
+  .aco:hover{border-color:var(--amb);background:var(--abg)}
+  .mt-dp-pill:hover{border-color:var(--amb);color:var(--wht)}
+  .scn-card:hover{border-color:var(--bdh);background:var(--pnl)}
+  .boost-card:hover{border-color:var(--bdh)}
+  .rkt tr:hover td{background:rgba(245,166,35,.04)}
+  #wl-play .mo .sc-act .abt:hover{
+    border-color:rgba(216,155,43,0.58) !important;
+    background:rgba(245,166,35,0.09) !important;
+  }
+  .sf-row:hover{border-color:rgba(255,255,255,.25)}
+}
 .ton{font-family:var(--fd);font-size:20px;letter-spacing:2px;color:var(--wht)}
 .tos{font-family:var(--ft);font-size:15px;color:var(--mut)}
 .tost{display:flex;gap:14px;margin-top:6px}
@@ -3650,6 +3923,37 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   box-shadow:0 2px 10px rgba(245,166,35,0.38), 0 0 0 1px rgba(245,166,35,0.35);
   cursor:pointer;
 }
+/* Programming Budget + Spot Load: gold fill to thumb — `--wl-range-fill-pct` set from JS (WebKit); Gecko uses ::-moz-range-progress */
+#wl-play .mo input.wl-modal-range[type=range]{
+  --wl-range-fill-pct: 50%;
+  background: transparent;
+}
+#wl-play .mo input.wl-modal-range[type=range]::-webkit-slider-runnable-track{
+  height:10px;
+  border-radius:5px;
+  background:linear-gradient(
+    to right,
+    rgba(216, 155, 43, 0.38) 0%,
+    rgba(216, 155, 43, 0.38) var(--wl-range-fill-pct, 50%),
+    rgba(32, 28, 24, 0.98) var(--wl-range-fill-pct, 50%),
+    rgba(18, 16, 14, 1) 100%
+  );
+  box-shadow:inset 0 2px 4px rgba(0, 0, 0, 0.45);
+}
+#wl-play .mo input.wl-modal-range[type=range]::-webkit-slider-thumb{
+  margin-top:-6px;
+}
+#wl-play .mo input.wl-modal-range[type=range]::-moz-range-track{
+  height:10px;
+  border-radius:5px;
+  background:linear-gradient(180deg, rgba(52,48,45,0.95), rgba(28,26,24,0.98));
+  box-shadow:inset 0 2px 4px rgba(0,0,0,0.45);
+}
+#wl-play .mo input.wl-modal-range[type=range]::-moz-range-progress{
+  height:10px;
+  border-radius:5px 0 0 5px;
+  background:rgba(216, 155, 43, 0.38);
+}
 /* Quick actions + modal neutral buttons — slightly more “control-like” */
 #wl-play .mo .sc-act .abt{
   min-height:2.75rem !important;
@@ -3658,14 +3962,9 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   border-color:rgba(155,148,140,0.72) !important;
   box-shadow:inset 0 1px 0 rgba(255,255,255,0.06) !important;
 }
-#wl-play .mo .sc-act .abt:hover{
-  border-color:rgba(216,155,43,0.58) !important;
-  background:rgba(245,166,35,0.09) !important;
-}
 .sln2{font-size:15px;color:var(--off);line-height:1.65;margin-top:10px;font-style:italic}
 .fmg{display:flex;flex-direction:column;gap:8px}
 .fmo{background:var(--crd);border:1px solid var(--bdr);padding:12px 16px;cursor:pointer;transition:all .15s;display:flex;flex-direction:column;align-items:stretch;gap:0}
-.fmo:hover{border-color:var(--amb);background:var(--abg)}
 .fmo.sel{border-color:var(--amb);background:rgba(245,166,35,.14)}
 .fmo.unavail{opacity:.3;cursor:not-allowed}
 .fmo.locked{opacity:.45;cursor:not-allowed}
@@ -3679,7 +3978,6 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 .fmbdg.ok{border-color:var(--grn);color:var(--grn)}.fmbdg.risk{border-color:var(--amb);color:var(--amb)}.fmbdg.bad{border-color:var(--red);color:var(--red)}.fmbdg.lock{border-color:var(--mut);color:var(--mut)}
 .acg{display:flex;flex-direction:column;gap:9px}
 .aco{background:var(--crd);border:1px solid var(--bdr);padding:14px 16px;cursor:pointer;transition:all .15s;display:grid;grid-template-columns:1fr auto;gap:8px;align-items:start}
-.aco:hover{border-color:var(--amb);background:var(--abg)}
 .aco.sel{border-color:var(--amb);background:rgba(245,166,35,.14)}
 .aco.nope{opacity:.35;cursor:not-allowed}
 .acn{font-family:var(--fd);font-size:24px;letter-spacing:2px}
@@ -3711,6 +4009,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 .cfm.wl-commit-btn--pending{background:var(--amb);color:var(--blk);border:none;opacity:1}
 .cfm.wl-commit-btn--pending:hover{background:#fff;box-shadow:0 0 24px rgba(245,166,35,.5)}
 .cfm.wl-commit-btn--synced:disabled{opacity:.35;background:#2a2a2a;color:var(--mut);border-color:var(--bdh)}
+@keyframes wlCommitFlash{
+  0%{ box-shadow:0 0 0 1px rgba(245,166,35,.95),0 0 28px rgba(245,166,35,.55); }
+  100%{ box-shadow:0 0 0 0 rgba(245,166,35,0),0 0 0 0 rgba(245,166,35,0); }
+}
+.cfm.wl-commit-btn--flash{animation:wlCommitFlash .85s ease 1}
 .cfm.blu{background:var(--blu);color:var(--blk)}
 .cfm.blu:hover{background:#fff}
 .cnl{width:100%;background:transparent;border:1px solid var(--bdh);color:var(--off);font-family:var(--ft);font-size:15px;letter-spacing:2px;padding:11px;cursor:pointer;margin-top:8px;transition:all .15s}
@@ -3721,19 +4024,476 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 
 /* ── MOBILE RESPONSIVE ─────────────────────────────────────────── */
 @media(max-width:768px){
-  /* Header */
-  #hdr{grid-template-columns:1fr auto;gap:6px 10px;padding:6px 12px;min-height:52px;height:auto;align-items:center}
-  #hlogo{font-size:26px;letter-spacing:2px}
+  /* Header — full-width stack: brand row, cash, Next Period (easier thumbs + cleaner on phone) */
+  #hdr{
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    gap:10px;
+    padding:8px 12px 10px;
+    min-height:unset;
+    height:auto;
+  }
+  #hdr-brand,.hdr-brand{width:100%;justify-content:space-between;align-items:center}
   #hmeta{display:none}
   #wl-hdr-account,.wl-hdr-account{font-size:9px;letter-spacing:1px;padding:5px 8px}
-  #cash{font-size:20px}
+  #wl-play #logo{font-size:22px;letter-spacing:3px;line-height:1.05;max-width:min(100%,70vw)}
+  #hdr .hdr-actions{
+    width:100%;
+    align-items:stretch;
+    align-self:stretch;
+    gap:8px;
+  }
+  #hdr #cash{
+    font-size:20px;
+    width:100%;
+    text-align:center;
+    box-sizing:border-box;
+    letter-spacing:1px;
+  }
+  #hdr #abtn{
+    width:100%;
+    max-width:none;
+    box-sizing:border-box;
+    padding:12px 14px;
+    font-size:16px;
+    letter-spacing:2px;
+    clip-path:none;
+    border-radius:4px;
+  }
   #hbtns{gap:6px}
 
-  #main{grid-template-columns:1fr;min-height:unset}
+  #main{grid-template-columns:1fr;min-height:unset;width:100%}
   #scorebar{gap:10px}
-  #wl-play #scorebar{grid-template-columns:1fr;gap:0.4rem 0.25rem}
-  #wl-play #scorebar .sbi{border-right:none;border-bottom:1px solid rgba(216,155,43,0.1);padding:0.35rem 0}
-  #wl-play #scorebar .sbi:nth-child(3){border-bottom:0}
+  /* Score bar — one row (share | decade | VP); much shorter than stacked 1-col blocks */
+  #wl-play #scorebar{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:0.35rem 0.15rem;
+    padding:0.45rem 0.3rem;
+    margin-bottom:0.6rem;
+    align-items:stretch;
+  }
+  #wl-play #scorebar .sbi{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:0.12rem;
+    min-width:0;
+    padding:0.15rem 0.1rem;
+    border-right:1px solid rgba(216,155,43,0.12);
+    border-bottom:none;
+  }
+  #wl-play #scorebar .sbi:nth-child(3){border-right:none}
+  #wl-play #scorebar .sbi-lbl{
+    font-size:0.56rem;
+    letter-spacing:0.1em;
+    line-height:1.15;
+    max-width:none;
+  }
+  #wl-play #scorebar .sbi-val{
+    font-size:clamp(0.95rem,3.6vw,1.22rem);
+    font-weight:700;
+    line-height:1.1;
+  }
+  #wl-play #scorebar .sbi-grade{font-size:0.72em}
+  #wl-play #scorebar .sbi-sandbox{
+    grid-column:1/-1;
+    padding:0.2rem 0 0;
+    margin:0.12rem 0 0;
+    border-top:1px solid rgba(90,180,255,0.18);
+  }
+
+  /* Market ratings — rank | station+format (wide) | Share+△ on one line, REV below (mobile).
+     Override desktop .mt % column widths + .clg ellipsis — otherwise table-layout:fixed
+     keeps col2 at 25% and station text ellipsizes with a gap before the metrics column. */
+  #wl-play #pl table.mt{
+    width:100%;
+    max-width:100%;
+    table-layout:auto;
+    box-sizing:border-box;
+  }
+  #wl-play #pl table.mt thead,
+  #wl-play #pl table.mt tbody{
+    display:block;
+    width:100%;
+  }
+  #wl-play #pl table.mt thead tr,
+  #wl-play #pl table.mt tbody tr{
+    display:grid;
+    width:100%;
+    max-width:100%;
+    box-sizing:border-box;
+  }
+  #wl-play #pl .mt th:nth-child(1),
+  #wl-play #pl .mt td:nth-child(1){width:auto;max-width:none}
+  #wl-play #pl .mt th:nth-child(2),
+  #wl-play #pl .mt td:nth-child(2){width:auto;min-width:0;max-width:none;overflow:visible}
+  #wl-play #pl .mt th:nth-child(3),
+  #wl-play #pl .mt td:nth-child(3){width:auto;min-width:0;max-width:none;overflow:visible}
+  #wl-play #pl .mt th:nth-child(4),
+  #wl-play #pl .mt td:nth-child(4),
+  #wl-play #pl .mt th:nth-child(5),
+  #wl-play #pl .mt td:nth-child(5){width:auto;min-width:0}
+  #wl-play #pl .mt td.mt-station{overflow:visible}
+  #wl-play #pl .mt-station-inner{
+    flex-wrap:wrap;
+    align-items:flex-start;
+    row-gap:2px;
+  }
+  #wl-play #pl .mt-station-inner .clg{
+    white-space:normal;
+    overflow:visible;
+    text-overflow:unset;
+    max-width:none;
+    word-break:break-word;
+  }
+  #wl-play #pl table.mt thead tr{
+    grid-template-columns:22px minmax(0,1fr) minmax(4.25rem,max-content);
+    grid-template-rows:auto auto;
+    row-gap:4px;
+    column-gap:12px;
+    align-items:center;
+    padding-bottom:6px;
+    border-bottom:1px solid var(--bdr);
+  }
+  #wl-play #pl table.mt thead th{
+    font-size:10px;
+    letter-spacing:0.08em;
+    padding:2px 2px;
+    word-break:break-word;
+  }
+  #wl-play #pl table.mt thead th:nth-child(3){display:none}
+  #wl-play #pl table.mt thead th:nth-child(1){
+    grid-column:1;
+    grid-row:1 / -1;
+    align-self:center;
+    text-align:center;
+  }
+  #wl-play #pl table.mt thead th:nth-child(2){
+    grid-column:2;
+    grid-row:1 / -1;
+    align-self:end;
+    padding-bottom:2px;
+    text-align:left;
+  }
+  #wl-play #pl table.mt thead th:nth-child(4){
+    grid-column:3;
+    grid-row:1;
+    text-align:right;
+    line-height:1.25;
+  }
+  #wl-play #pl table.mt thead th:nth-child(5){
+    grid-column:3;
+    grid-row:2;
+    text-align:right;
+    line-height:1.25;
+  }
+  #wl-play #pl table.mt tbody tr{
+    grid-template-columns:22px minmax(0,1fr) minmax(4.25rem,max-content);
+    grid-template-rows:auto auto;
+    row-gap:5px;
+    column-gap:12px;
+    align-items:start;
+    padding:8px 0;
+    border-bottom:1px solid rgba(255,255,255,.06);
+  }
+  #wl-play #pl table.mt tbody td{
+    padding:2px 4px;
+    vertical-align:top;
+    box-sizing:border-box;
+    min-width:0;
+    /* Base .mt td sets border-bottom on every cell — removes inner lines under callsign/format */
+    border-bottom:none;
+  }
+  #wl-play #pl table.mt tbody td:nth-child(1){
+    grid-column:1;
+    grid-row:1 / -1;
+    align-self:center;
+    font-variant-numeric:tabular-nums;
+    text-align:center;
+  }
+  #wl-play #pl table.mt tbody td:nth-child(2){
+    grid-column:2;
+    grid-row:1;
+    font-weight:600;
+    white-space:normal;
+    overflow:visible;
+    text-overflow:unset;
+    word-break:break-word;
+    hyphens:auto;
+  }
+  #wl-play #pl table.mt tbody td:nth-child(3){
+    grid-column:2;
+    grid-row:2;
+    font-size:12px;
+    color:var(--mut);
+    line-height:1.35;
+    padding-top:0;
+    white-space:normal;
+    overflow:visible;
+    word-break:break-word;
+    align-self:start;
+  }
+  /* Share + trend inline; rev on next row, smaller */
+  #wl-play #pl table.mt tbody td.mt-share-trend-cell{
+    grid-column:3;
+    grid-row:1;
+    display:flex;
+    flex-wrap:wrap;
+    align-items:baseline;
+    justify-content:flex-end;
+    gap:6px 10px;
+    font-variant-numeric:tabular-nums;
+    font-size:13px;
+    line-height:1.2;
+    white-space:nowrap;
+    border:none;
+  }
+  #wl-play #pl table.mt tbody td.mt-share-trend-cell .mt-trend{
+    margin-left:0;
+  }
+  #wl-play #pl table.mt tbody td.mt-rev-cell{
+    grid-column:3;
+    grid-row:2;
+    text-align:right;
+    border:none;
+  }
+  #wl-play #pl table.mt tbody td.mt-rev-cell .rvn{
+    font-size:11px;
+    line-height:1.25;
+    font-variant-numeric:tabular-nums;
+    color:var(--mut);
+  }
+
+  /* Corporate + market row buttons — a bit more vertical padding */
+  .phbtn{padding:10px 12px;min-height:44px;box-sizing:border-box}
+  .mkt-hdr-btns .phbtn{min-height:44px}
+  .corp-actions-btns{gap:8px 10px;max-width:100%}
+  .corp-actions-btns .phbtn{min-height:44px;padding:10px 12px}
+
+  /* Talent lineup — mobile: day → portrait+name → Talent/Morale/Quality → Pay | Contract (desktop unchanged) */
+  #wl-play .slots{
+    overflow-x:visible;
+    max-width:100%;
+  }
+  #wl-play .slots-lineup-stack{max-width:100%;min-width:0}
+  /* Column labels duplicate the ::before labels on each row — hide on mobile only */
+  #wl-play .slots-lineup-grid.slots-lineup-grid--hdr{display:none !important}
+  /* Help button was anchored to the hidden hdr grid; keep it usable in the hdr strip */
+  #wl-play .slots-lineup-hdr.slots-lineup-hdr--with-help{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    min-height:0;
+    padding-right:0;
+    margin-bottom:6px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  #wl-play .slots-lineup-q{
+    position:relative;
+    right:auto;
+    top:auto;
+    transform:none;
+    flex-shrink:0;
+  }
+  #wl-play .slr.slots-lineup-grid,
+  #wl-play .slots-lineup-grid.slots-lineup-grid--hdr{
+    display:grid;
+    /* Thumb | Talent | Morale | Quality | Pay; contract line row4 when verbose */
+    grid-template-columns:42px repeat(4,minmax(0,1fr));
+    grid-template-rows:auto auto auto auto;
+    column-gap:8px;
+    row-gap:10px;
+    align-items:start;
+    min-width:0 !important;
+    width:100% !important;
+    max-width:100%;
+    box-sizing:border-box;
+  }
+  #wl-play .slr.slots-lineup-grid{
+    padding:12px 0;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  #wl-play .slr.slots-lineup-grid .sl-cell-day{
+    grid-column:1 / -1;
+    grid-row:1;
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color:var(--mut);
+    padding:0 0 4px;
+    margin:0;
+  }
+  #wl-play .slr.slots-lineup-grid .sl-cell-thumb{
+    grid-column:1;
+    grid-row:2;
+    align-self:start;
+  }
+  #wl-play .slr.slots-lineup-grid .sl-cell-thumb .tp-thumb,
+  #wl-play .slr.slots-lineup-grid .sl-cell-thumb .tp-thumb img{
+    width:40px;
+    height:40px;
+    box-sizing:border-box;
+    border-radius:4px;
+    object-fit:cover;
+  }
+  #wl-play .slr.slots-lineup-grid .sl-cell-host{
+    grid-column:2 / -1;
+    grid-row:2;
+    align-self:center;
+    white-space:normal;
+    overflow:visible;
+    text-overflow:unset;
+    font-size:14px;
+    line-height:1.35;
+    min-width:0;
+  }
+  /* Row 3: Talent | Morale | Quality | Pay on one line */
+  #wl-play .slr.slots-lineup-grid .sl-cell-mor,
+  #wl-play .slr.slots-lineup-grid .sl-cell-pay,
+  #wl-play .slr.slots-lineup-grid .sl-cell-cyr{
+    color:var(--off);
+  }
+  #wl-play .slr.slots-lineup-grid .sl-cell-tal{
+    grid-column:2;
+    grid-row:3;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:4px;
+    text-align:left;
+    font-family:var(--ft);
+    font-size:16px;
+    font-weight:600;
+    color:var(--off);
+    min-width:0;
+  }
+  #wl-play .slr.slots-lineup-grid .sl-cell-tal::before{
+    content:'Talent';
+    font-size:9px;
+    letter-spacing:0.12em;
+    font-weight:600;
+    color:var(--mut);
+    text-transform:uppercase;
+    font-family:var(--ft);
+    white-space:nowrap;
+  }
+  #wl-play .slr.slots-lineup-grid .sl-cell-mor{
+    grid-column:3;
+    grid-row:3;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    text-align:center;
+    min-width:0;
+  }
+  #wl-play .slr.slots-lineup-grid .sl-cell-mor::before{
+    content:'Morale';
+    font-size:9px;
+    letter-spacing:0.12em;
+    font-weight:600;
+    color:var(--mut);
+    text-transform:uppercase;
+    white-space:nowrap;
+  }
+  #wl-play .slr.slots-lineup-grid .sl-cell-sq{
+    grid-column:4;
+    grid-row:3;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:4px;
+    text-align:center;
+    font-family:var(--ft);
+    font-size:16px;
+    font-weight:600;
+    min-width:0;
+  }
+  #wl-play .slr.slots-lineup-grid .sl-cell-sq::before{
+    content:'Quality';
+    font-size:9px;
+    letter-spacing:0.12em;
+    font-weight:600;
+    color:var(--mut);
+    text-transform:uppercase;
+    font-family:var(--ft);
+    white-space:nowrap;
+  }
+  /* Pay in col 5 row 3. Split rows: pay cell only holds amount; .sl-pay-verbose is a sibling row (no display:contents — Safari-safe). */
+  #wl-play .slr.slots-lineup-grid .sl-cell-pay:not(.sl-cell-pay--split){
+    grid-column:5;
+    grid-row:3;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    justify-content:flex-start;
+    gap:4px;
+    text-align:right;
+    word-break:break-word;
+    line-height:1.35;
+    min-width:0;
+    min-height:2.8em;
+    align-self:start;
+  }
+  #wl-play .slr.slots-lineup-grid .sl-cell-pay.sl-cell-pay--split{
+    grid-column:5;
+    grid-row:3;
+    display:flex;
+    flex-direction:column;
+    align-items:flex-end;
+    justify-content:flex-start;
+    gap:4px;
+    text-align:right;
+    min-width:0;
+    align-self:start;
+    min-height:0;
+  }
+  #wl-play .slr.slots-lineup-grid .sl-cell-pay:not(.sl-cell-pay--split)::before,
+  #wl-play .slr.slots-lineup-grid .sl-cell-pay.sl-cell-pay--split::before{
+    content:'Pay';
+    font-size:9px;
+    letter-spacing:0.12em;
+    font-weight:600;
+    color:var(--mut);
+    text-transform:uppercase;
+    white-space:nowrap;
+    align-self:flex-end;
+  }
+  #wl-play .slr.slots-lineup-grid .sl-cell-pay--sim{
+    align-items:flex-end;
+    text-align:right;
+  }
+  #wl-play .slr.slots-lineup-grid .sl-cell-pay--sim .sl-pay-src{
+    display:block;
+    margin-top:2px;
+    line-height:1.25;
+  }
+  #wl-play .slr.slots-lineup-grid > .sl-pay-verbose{
+    display:block;
+    grid-column:2 / -1;
+    grid-row:4;
+    color:var(--mut);
+    font-size:11px;
+    font-weight:500;
+    line-height:1.4;
+    word-break:break-word;
+    padding-top:2px;
+  }
+  #wl-play .slr.slots-lineup-grid > .sl-pay-verbose.sl-pay-verbose--expired{color:var(--red);font-weight:600}
+  #wl-play .slr.slots-lineup-grid > .sl-pay-verbose.sl-pay-verbose--soon{color:var(--amb);font-weight:600}
+  #wl-play .slr.slots-lineup-grid > .sl-pay-verbose.sl-pay-verbose--moved{color:#e8cf57;font-weight:600}
+  #wl-play .slr.slots-lineup-grid > .sl-pay-verbose.sl-pay-verbose--poach{color:var(--amb);font-weight:600}
+  #wl-play .slr.slots-lineup-grid .sl-cell-pay .sl-pay-amt{
+    font-size:16px;
+    font-weight:600;
+    color:var(--off);
+    line-height:1.2;
+  }
+  #wl-play .slr.slots-lineup-grid .sl-cell-cyr{
+    display:none !important;
+  }
   .pnl{border-right:none;border-bottom:1px solid var(--bdr);padding:14px;width:100%}
   .pnl:last-child{border-bottom:none}
 
@@ -3743,10 +4503,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   /* Right column — station cards */
   #pc{padding:12px;border-right:none;border-bottom:1px solid var(--bdr)}
   .ph{font-size:15px;gap:8px;margin-bottom:10px}
-  .phbtn{padding:6px 12px;font-size:15px}
-  .mt th,.mt td{font-size:15px;padding:6px 4px}
-  /* Hide less critical columns on mobile */
-  .mt th:nth-child(5),.mt td:nth-child(5){display:none} /* TREND */
+  /* phbtn padding handled above (#wl-play corporate / market) — keep label size only */
+  .phbtn{font-size:15px}
+  #wl-play #pl table.mt th,
+  #wl-play #pl table.mt td{font-size:14px;padding:4px 2px}
+  /* Market table uses combined station/format grid — do not hide △ column */
 
   .sb{padding:10px}
   .ir{font-size:14px}
@@ -3778,6 +4539,35 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   .sc-act{gap:6px}
   .abt{padding:9px 6px;font-size:15px;letter-spacing:.3px}
 
+  /* Station card play actions — one pill per row, full width, touch-friendly */
+  #wl-play .sc-pc-pills{
+    flex-direction:column;
+    flex-wrap:nowrap;
+    gap:8px;
+  }
+  #wl-play .sc-pc-pills--secondary{
+    padding-top:0;
+    margin-top:0;
+    border-top:none;
+  }
+  #wl-play .sc-pc-pills--primary .pc-pill,
+  #wl-play .sc-pc-pills--secondary .pc-pill{
+    flex:0 0 auto;
+    width:100%;
+    min-height:46px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:6px;
+    padding:12px 14px;
+    font-size:14px;
+  }
+  #wl-play .sc.sc--compact .pc-pill{
+    min-width:0;
+    font-size:14px;
+    padding:10px 12px;
+  }
+
   /* Quality bar */
   .qr{gap:6px;margin-bottom:8px}
   .qb{flex:1}
@@ -3789,7 +4579,8 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   .mh{font-size:15px;margin-bottom:14px}
   .mc{font-size:15px;padding:4px 10px}
 
-  /* Unified Manage Talent */
+  /* Unified Manage Talent — daypart rail scrolls horizontally */
+  #wl-play .mt-dp-inline-hint{display:inline}
   .mt-manage__row{flex-direction:column;gap:10px}
   .mt-dp-rail{flex:0 0 auto;flex-direction:row;flex-wrap:nowrap;overflow-x:auto;-webkit-overflow-scrolling:touch;gap:8px;padding-bottom:6px;align-self:stretch;max-width:100%}
   .mt-dp-pill{flex:0 0 auto;min-width:min(200px,42vw);max-width:min(240px,90vw)}
@@ -3797,12 +4588,56 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   .mt-manage .mt-slot .mt-dp-head{font-size:14px;letter-spacing:0.12em}
   .mt-manage .abt{font-size:14px;padding:8px 12px}
 
-  /* Hire modal slots */
+  /* Hire modal — daypart picker */
   .ssb{padding:10px 12px;font-size:15px}
-  .to.to-hire{grid-template-columns:1fr;gap:10px}
-  .to-hire-side{text-align:left;padding-top:8px;margin-top:4px;border-top:1px solid rgba(255,255,255,.08)}
-  .tg .to-hire .tost{grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 8px}
   .tp-hire img,.tp-hire.tp-thumb--ph{width:60px;height:60px;font-size:24px}
+
+  /* Hire talent cards: vertical label/value rows on phone (free agents + poach use .tost) */
+  #wl-play .to.to-hire{
+    grid-template-columns:1fr;
+    gap:0;
+  }
+  #wl-play .tg .to-hire .tost{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+    margin-top:10px;
+  }
+  #wl-play .tg .to-hire .tost > div{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:4px;
+    min-width:0;
+  }
+  #wl-play .tg .to-hire .tosl{
+    white-space:normal;
+    overflow:visible;
+    text-overflow:unset;
+    font-size:11px;
+    letter-spacing:0.12em;
+    line-height:1.25;
+    max-width:100%;
+  }
+  #wl-play .tg .to-hire .tosv{font-size:16px;line-height:1.35}
+  #wl-play .tg .to-hire .to-hire-side{
+    align-self:stretch;
+    text-align:left;
+    padding-top:12px;
+    margin-top:10px;
+    border-top:1px solid rgba(255,255,255,.08);
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:4px;
+  }
+  #wl-play .tg .to-hire .tocl{
+    font-size:11px;
+    letter-spacing:0.12em;
+    text-align:left;
+    text-transform:uppercase;
+  }
+  #wl-play .tg .to-hire .toc{text-align:left;font-size:16px}
 
   /* Format grid */
   .fmg{gap:6px}
@@ -3826,6 +4661,10 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   .scn{font-size:15px}
   .abt{font-size:14px;padding:8px 4px}
   .mt th,.mt td{font-size:15px;padding:4px 3px}
-  /* On very small phones, hide revenue column too */
-  .mt th:nth-child(6),.mt td:nth-child(6){display:none}
+  /* Hide revenue on tiny screens for generic .mt only — play shell uses its own grid */
+  body:not(#wl-play) .mt th:nth-child(5),
+  body:not(#wl-play) .mt td:nth-child(5){display:none}
+  /* Keep full market table on play page */
+  #wl-play #pl table.mt thead th:nth-child(5),
+  #wl-play #pl table.mt tbody td:nth-child(5){display:block !important}
 }

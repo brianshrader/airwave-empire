@@ -76,16 +76,42 @@
         0 16px 40px -12px rgba(0, 0, 0, 0.55),
         0 0 28px rgba(216, 155, 43, 0.06);
     }
+    /* Prevent horizontal scroll on narrow viewports (long headlines, wide wordmark, nowrap links) */
+    html {
+      overflow-x: hidden;
+    }
+    body {
+      overflow-x: hidden;
+    }
   </style>
-  <script type="module" crossorigin src="/assets/main-CrJEwsC9.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/clerkClientInit-Ql-mBo7x.js">
+  <script type="module" crossorigin src="/assets/main-Co1aFnL_.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/analyticsClient-DseHga0r.js">
   <link rel="modulepreload" crossorigin href="/assets/billingPriceLabels-BRS4POW_.js">
   <link rel="modulepreload" crossorigin href="/assets/gameServerApiOrigin-fKQqZOIP.js">
 </head>
 <body class="antialiased">
+  <!-- Best on larger screens — shown on phone-sized viewports only -->
+  <div
+    id="wl-mobile-screen-notice"
+    class="md:hidden border-b gridline bg-stone-950/90 px-4 py-3 text-center"
+    role="status"
+  >
+    <p class="text-[13px] leading-snug text-stone-300">
+      For the <strong class="text-stone-100 font-semibold">best experience</strong>, play on a
+      <strong class="text-stone-100 font-semibold">desktop, laptop, or tablet</strong>.
+      This game is designed for larger screens.
+    </p>
+    <button
+      type="button"
+      id="wl-dismiss-mobile-screen-notice"
+      class="mt-2 text-[12px] uppercase tracking-[0.14em] text-amber-600/90 hover:text-amber-400"
+    >
+      Dismiss
+    </button>
+  </div>
   <header class="border-b gridline">
-    <div class="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between flex-wrap gap-4">
-      <div class="wordmark text-4xl md:text-5xl font-normal tracking-[0.22em] uppercase gold">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between flex-wrap gap-4 min-w-0">
+      <div class="wordmark text-3xl sm:text-4xl md:text-5xl font-normal tracking-[0.12em] sm:tracking-[0.18em] md:tracking-[0.22em] uppercase gold min-w-0">
         AIRWAVE EMPIRE
       </div>
       <nav class="flex items-center gap-6 md:gap-8 text-sm uppercase tracking-[0.16em] text-stone-300 flex-wrap">
@@ -93,16 +119,16 @@
         <a href="#eras" class="hover:text-white hidden sm:inline">Eras</a>
         <a href="#pricing" class="hover:text-white hidden sm:inline">Pricing</a>
         <a href="#faq" class="hover:text-white hidden sm:inline">FAQ</a>
-        <a href="/account.html" class="hover:text-white hidden sm:inline">Account</a>
-        <a href="#pricing" class="gold-bg px-5 py-2.5 rounded-md font-bold uppercase tracking-[0.14em] text-stone-900 hover:opacity-95">Free game</a>
+        <a href="/account.html" class="hover:text-white hidden sm:inline" data-wl-cta data-wl-cta-location="nav" data-wl-cta-label="account">Account</a>
+        <a href="#pricing" id="wl-nav-primary-cta" class="gold-bg px-5 py-2.5 rounded-md font-bold uppercase tracking-[0.14em] text-stone-900 hover:opacity-95" data-wl-cta data-wl-cta-location="nav" data-wl-cta-label="plans_and_trial">Plans &amp; trial</a>
       </nav>
     </div>
   </header>
 
-  <main>
+  <main class="min-w-0 max-w-full">
     <!-- Section 1 — Hero -->
-    <section class="max-w-7xl mx-auto px-6 py-14 md:py-16">
-      <div class="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center">
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-14 md:py-16 min-w-0">
+      <div class="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center min-w-0">
         <div>
           <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase leading-[1.02] tracking-tight">
             Run a Radio Station.
@@ -114,12 +140,18 @@
             <a
               href="#pricing"
               class="text-center text-sm uppercase tracking-[0.22em] text-amber-200/90 hover:text-amber-100 border border-amber-800/40 rounded-md px-6 py-3 transition-colors"
+              data-wl-cta
+              data-wl-cta-location="hero"
+              data-wl-cta-label="first_game_free_plans_details"
             >
-              Jump to full-access first game →
+              First game free — plans &amp; details →
             </a>
             <a
               href="#gameplay"
               class="text-center text-sm uppercase tracking-[0.18em] text-stone-500 hover:text-stone-300 transition-colors"
+              data-wl-cta
+              data-wl-cta-location="hero"
+              data-wl-cta-label="how_it_works"
             >
               How it works
             </a>
@@ -137,7 +169,7 @@
     </section>
 
     <section class="border-t gridline border-b">
-      <div class="max-w-7xl mx-auto px-6 py-12 md:py-14 grid md:grid-cols-4 gap-6">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-14 grid md:grid-cols-4 gap-6 min-w-0">
         <div class="panel rounded-xl p-6">
           <div class="gold text-sm uppercase tracking-[0.18em] mb-3">Launch Stations</div>
           <p class="text-stone-300 leading-relaxed">
@@ -165,7 +197,7 @@
       </div>
     </section>
 
-    <section id="gameplay" class="max-w-7xl mx-auto px-6 py-14 md:py-16">
+    <section id="gameplay" class="max-w-7xl mx-auto px-4 sm:px-6 py-14 md:py-16 min-w-0">
       <div class="max-w-3xl mb-8 md:mb-10">
         <p class="gold uppercase tracking-[0.22em] text-sm mb-3">Gameplay</p>
         <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tight">
@@ -177,7 +209,7 @@
         </p>
       </div>
 
-      <div class="grid lg:grid-cols-3 gap-6 md:gap-8">
+      <div class="grid lg:grid-cols-3 gap-6 md:gap-8 min-w-0">
         <div class="panel rounded-2xl p-4">
           <img src="/landing-images/market.png" alt="Market overview" class="rounded-xl w-full h-auto object-cover" />
           <div class="pt-4">
@@ -250,7 +282,7 @@
     </section>
 
     <section id="eras" class="border-t gridline border-b">
-      <div class="max-w-7xl mx-auto px-6 py-14 md:py-16">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 py-14 md:py-16 min-w-0">
         <div class="max-w-3xl mb-8 md:mb-10">
           <p class="gold uppercase tracking-[0.22em] text-sm mb-3">The Twist</p>
           <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tight">
@@ -299,14 +331,17 @@
     </section>
 
     <!-- Pricing: trial CTA flows into membership (tight vertical rhythm) -->
-    <section id="pricing" class="scroll-mt-24 max-w-6xl mx-auto px-6 py-14 md:py-16 border-t border-stone-800/40">
+    <section id="pricing" class="scroll-mt-24 max-w-6xl mx-auto px-4 sm:px-6 py-14 md:py-16 border-t border-stone-800/40 min-w-0">
       <div class="rounded-2xl border border-amber-600/28 bg-gradient-to-b from-stone-900/95 via-stone-950 to-[#0a0a0a] wl-pricing-hero-cta px-6 py-12 md:px-10 md:py-14 text-center mb-12 md:mb-14">
         <p class="gold uppercase tracking-[0.2em] text-xs md:text-sm mb-3 md:mb-4">Try it free</p>
-        <h2 class="text-4xl sm:text-5xl md:text-6xl lg:text-[3.35rem] font-black uppercase tracking-[0.04em] leading-[1.08] gold px-2">
-          Play your first game &mdash; free!
+        <h2 class="text-4xl sm:text-5xl md:text-6xl lg:text-[3.35rem] font-black uppercase tracking-[0.04em] leading-[1.08] gold px-2 break-words">
+          Play your first game free
         </h2>
         <p class="mt-5 md:mt-6 text-lg md:text-xl text-stone-300 max-w-lg mx-auto leading-relaxed font-medium">
-          Your first game is on us. Get full access to everything. No credit card required!
+          Full access for your first run: build stations, hire talent, and see how far you get. No payment required upfront.
+        </p>
+        <p class="mt-4 max-w-lg mx-auto text-sm md:text-[15px] text-stone-400 leading-relaxed">
+          Your first full game is free. Subscribe to start additional runs.
         </p>
         <p class="mt-6 md:mt-7 text-xs md:text-sm uppercase tracking-[0.2em] text-stone-500">
           Your first game includes:
@@ -328,8 +363,11 @@
         <a
           href="/play-signin.html"
           class="mt-6 md:mt-8 inline-flex items-center justify-center gold-bg wl-pricing-play-btn rounded-xl px-10 py-4 md:px-16 md:py-6 text-xl md:text-2xl font-black uppercase tracking-[0.14em] text-stone-900 hover:brightness-110 transition-[filter,transform] active:translate-y-[1px]"
+          data-wl-cta
+          data-wl-cta-location="pricing_hero"
+          data-wl-cta-label="play_your_first_game_free"
         >
-          Play now
+          Play your first game free
         </a>
         <p class="mt-5 max-w-lg mx-auto text-[13px] md:text-sm text-stone-500 leading-relaxed px-2">
           No credit card required. By creating an account, you agree to the
@@ -343,16 +381,37 @@
         <h2 class="text-center text-3xl sm:text-4xl md:text-5xl lg:text-[3rem] font-black uppercase tracking-[0.04em] leading-[1.1] mb-6">
           <span class="gold">Keep building your empire</span>
         </h2>
-        <p class="text-center text-stone-400 text-sm md:text-base max-w-2xl mx-auto leading-relaxed mb-8 px-2">
-          You can cancel anytime, and your subscription will remain active through the end of your billing period.
-          If something goes wrong—like an accidental charge or a technical issue—reach out within 48 hours and we&rsquo;ll make it right. In some cases, we may offer account credit or complimentary time instead of a refund.
-          <a href="/legal/subscription-policy.html" class="gold underline underline-offset-2 hover:text-amber-200 whitespace-nowrap">Full subscription policy</a>
+        <p class="text-center text-stone-400 text-sm md:text-base max-w-2xl mx-auto leading-relaxed mb-8 px-2 break-words">
+          Cancel anytime. No questions asked.
         </p>
-        <div id="wl-index-pricing-clerk" class="w-full cl-root"></div>
+        <div class="max-w-5xl mx-auto mb-10 md:mb-12 px-1">
+          <p class="text-center text-[11px] md:text-xs uppercase tracking-[0.22em] text-stone-500 mb-5">What players say</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-5">
+            <figure class="rounded-xl border border-stone-700/45 bg-stone-950/55 p-5 flex flex-col justify-between shadow-md shadow-black/20">
+              <blockquote class="text-stone-300 text-sm leading-relaxed">
+                &ldquo;OMG I&apos;ve become addicted to your game after one play lol its 4am… and I&apos;ve forced myself to close it so I can get some sleep.&rdquo;
+              </blockquote>
+              <figcaption class="mt-4 text-[11px] text-stone-500 uppercase tracking-wider">Airwave Empire player</figcaption>
+            </figure>
+            <figure class="rounded-xl border border-stone-700/45 bg-stone-950/55 p-5 flex flex-col justify-between shadow-md shadow-black/20">
+              <blockquote class="text-stone-300 text-sm leading-relaxed">
+                &ldquo;Nicely designed. The radio content is really well thought out. Very true to the business.&rdquo;
+              </blockquote>
+              <figcaption class="mt-4 text-[11px] text-stone-500 uppercase tracking-wider">Airwave Empire player</figcaption>
+            </figure>
+            <figure class="rounded-xl border border-stone-700/45 bg-stone-950/55 p-5 flex flex-col justify-between shadow-md shadow-black/20">
+              <blockquote class="text-stone-300 text-sm leading-relaxed">
+                &ldquo;I&apos;m absolutely loving the tactics of the game and how realistic you&apos;ve made it!&rdquo;
+              </blockquote>
+              <figcaption class="mt-4 text-[11px] text-stone-500 uppercase tracking-wider">Airwave Empire player</figcaption>
+            </figure>
+          </div>
+        </div>
+        <div id="wl-index-pricing-clerk" class="w-full min-w-0 max-w-full cl-root"></div>
       </div>
     </section>
 
-    <section id="faq" class="max-w-7xl mx-auto px-6 py-14 md:py-16 border-t border-stone-800/40">
+    <section id="faq" class="max-w-7xl mx-auto px-4 sm:px-6 py-14 md:py-16 border-t border-stone-800/40 min-w-0">
       <div class="max-w-4xl">
         <p class="gold uppercase tracking-[0.22em] text-sm mb-3">FAQ</p>
         <h2 class="text-4xl md:text-5xl font-black uppercase tracking-tight">
@@ -377,7 +436,7 @@
           <div class="panel rounded-xl p-6">
             <h3 class="text-2xl font-bold">What’s the difference between the free trial, Starter, and Pro?</h3>
             <p class="mt-2 text-stone-300 leading-relaxed">
-              Your first solo game unlocks everything. After that you can stay on limited free play or move up to Starter or Pro for more markets and perks &mdash; see <a href="#pricing" class="gold underline">above</a>.
+              Your first full solo game is free with full access. After that run, subscribe to start additional games, or keep playing for free in the <strong class="text-stone-200">Atlanta</strong> market only &mdash; compare Starter and Pro <a href="#pricing" class="gold underline">above</a>.
             </p>
           </div>
 
@@ -387,13 +446,21 @@
               No. Airwave Empire runs right in your browser.
             </p>
           </div>
+
+          <div class="panel rounded-xl p-6">
+            <h3 class="text-2xl font-bold">Can I play on my phone?</h3>
+            <p class="mt-2 text-stone-300 leading-relaxed">
+              You can open the game on a phone, but the interface is built for
+              <strong class="text-stone-200">desktop, laptop, and tablet</strong> screens. For the best experience—and to avoid a lot of scrolling and zooming—use a larger display.
+            </p>
+          </div>
         </div>
       </div>
     </section>
   </main>
 
   <footer class="border-t gridline">
-    <div class="max-w-7xl mx-auto px-6 py-8 flex flex-col md:flex-row gap-4 items-center justify-between text-sm text-stone-400 uppercase tracking-[0.14em]">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-8 flex flex-col md:flex-row gap-4 items-center justify-between text-sm text-stone-400 uppercase tracking-[0.14em] min-w-0">
       <div class="normal-case tracking-normal text-stone-300">© 2026 Airwave Empire</div>
       <div class="flex flex-wrap gap-6 justify-center">
         <a href="/terms" class="hover:text-white">Terms</a>
@@ -406,5 +473,24 @@
       </div>
     </div>
   </footer>
+  <script>
+    (function () {
+      var notice = document.getElementById('wl-mobile-screen-notice');
+      var btn = document.getElementById('wl-dismiss-mobile-screen-notice');
+      try {
+        if (sessionStorage.getItem('wl-hide-mobile-screen-notice') === '1' && notice) {
+          notice.classList.add('hidden');
+        }
+      } catch (e) {}
+      if (btn && notice) {
+        btn.addEventListener('click', function () {
+          notice.classList.add('hidden');
+          try {
+            sessionStorage.setItem('wl-hide-mobile-screen-notice', '1');
+          } catch (e) {}
+        });
+      }
+    })();
+  </script>
 </body>
 </html>

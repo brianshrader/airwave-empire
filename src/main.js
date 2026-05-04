@@ -2,6 +2,7 @@
  * Vite entry — Clerk (@clerk/clerk-js), UI bundle, SignIn / UserButton in MP lobby, optional beta solo gate, then legacy.js.
  */
 import './amFccRules.js';
+import { captureEvent, identifyClerkUser, initAnalyticsClient } from './analyticsClient.js';
 import { Clerk } from '@clerk/clerk-js';
 import {
   appendClerkUiScript,
@@ -13,6 +14,28 @@ import { BILLING_PRICE_SUMMARY_LINE } from './billingPriceLabels.js';
 
 if (typeof window !== 'undefined') {
   window.__WL_BILLING_PRICE_SUMMARY_LINE = BILLING_PRICE_SUMMARY_LINE;
+}
+
+initAnalyticsClient();
+
+function inferSigninCompletedSource() {
+  try {
+    const r = document.referrer || '';
+    if (/play-signin/i.test(r)) return 'play_signin';
+    if (/account\.html/i.test(r)) return 'account';
+  } catch (_e) {}
+  return 'game_gate';
+}
+
+function maybeTrackPlayShellSignin(clerk) {
+  try {
+    if (!clerk?.isSignedIn) return;
+    const uid = clerk.user?.id;
+    if (uid) identifyClerkUser(String(uid));
+    if (sessionStorage.getItem('wl_ph_signin_completed_v1') === '1') return;
+    sessionStorage.setItem('wl_ph_signin_completed_v1', '1');
+    captureEvent('signin_completed', { source: inferSigninCompletedSource() });
+  } catch (_e) {}
 }
 
 /** Public URL of the Node game server (Socket.io + /api). Vite: .env VITE_GAME_SERVER_URL; or meta on play.html. */
@@ -278,6 +301,17 @@ if (!publishableKey) {
     window.Clerk = clerk;
     window.__wlClerkLoaded = true;
 
+    maybeTrackPlayShellSignin(clerk);
+
+    if (requireClerk && !clerk.isSignedIn) {
+      try {
+        if (sessionStorage.getItem('wl_ph_signin_page_game_gate_v1') !== '1') {
+          sessionStorage.setItem('wl_ph_signin_page_game_gate_v1', '1');
+          captureEvent('signin_page_viewed', { source: 'game_gate' });
+        }
+      } catch (_e) {}
+    }
+
     try {
       await syncPlanMarkets(clerk);
     } catch (e) {
@@ -316,6 +350,7 @@ if (!publishableKey) {
     /** Remount SignIn vs UserButton when session changes (e.g. after sign-in). */
     window.wlRemountClerkLobby = () => mountClerkLobbyComponents(clerk);
     clerk.addListener(() => {
+      maybeTrackPlayShellSignin(clerk);
       mountClerkLobbyComponents(clerk);
       schedulePlanSync();
     });
