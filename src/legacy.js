@@ -157,11 +157,16 @@ function fccCanAcquire(entity, sigType, G){
   return serviceCount<lim.perService;
 }
 
+/** Intrinsic indie identity (hash-based parent label) — unchanged when absorbed into another indie group. */
+function indieNaturalLicenseeKey(s,G){
+  if(!s||s.isPlayer||s.isPublic||s.corpOwner||s._bpSlotDeferred)return '';
+  return rivalFictionalParentName(s,G)||('indie_'+s.id);
+}
 /** Stable indie “licensee” key for AI commercial stations (groups simulcast pairs via `rivalFictionalParentName`). */
 function indieLicenseeKey(s,G){
   if(!s||s.isPlayer||s.isPublic||s.corpOwner||s._bpSlotDeferred)return '';
   if(s.aiLicenseeKey)return s.aiLicenseeKey;
-  return rivalFictionalParentName(s,G)||('indie_'+s.id);
+  return indieNaturalLicenseeKey(s,G);
 }
 function fccOwnedIndie(licenseeKey, G){
   const mine=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic&&!s.corpOwner&&indieLicenseeKey(s,G)===licenseeKey);
@@ -183,7 +188,7 @@ function fccCanIndieAcquire(licenseeKey, sigType, G){
 function initIndieLicenseeKeysFromStations(stations, G){
   (stations||[]).forEach(s=>{
     if(!s||s._bpSlotDeferred||s.isPlayer||s.isPublic||s.corpOwner)return;
-    if(!s.aiLicenseeKey)s.aiLicenseeKey=rivalFictionalParentName(s,G)||('indie_'+s.id);
+    if(!s.aiLicenseeKey)s.aiLicenseeKey=indieNaturalLicenseeKey(s,G);
   });
 }
 
@@ -1142,7 +1147,7 @@ function setDaypartStaffingMode(sid,slot,mode){
   const m=normalizeDaypartStaffingMode(mode,s,G);
   if(!TALK_FMTS.includes(s.format)&&(raw==='light'||raw==='voice_tracked'||raw==='voicetracked'||raw==='syndicated')){
     if(m!=='light'){
-      if(!musicVoiceTrackEconomicallyActive(G))showToast('Voice-tracking was not available before 1995 — dayparts without a live host run as full automation.','info');
+      if(!musicVoiceTrackEconomicallyActive(G))showToast('Voice-tracking isn’t available yet in this era — dayparts without a live host run as full automation.','info');
       else if(!musicVoiceTrackAllowedForStation(G,s))showToast('Voice-tracking needs at least one employed host elsewhere in your company (on-air or bench).','warn');
     }
   }
@@ -1355,10 +1360,12 @@ function setStationProgrammingFocus(sid,value){
   if(isTutorialTurnaroundScen()&&MP.mode!=='live'){
     if((G.tutorialAct|0)===4&&(G._tutorialProgExtraStep|0)===4&&v==='midday'){
       G._tutorialProgExtraStep=0;
-      showToast('Midday is now your coaching focus. Close Programming, then click a daypart in your station’s lineup to open the talent contract.','info');
+      G._tutorialProgFocusCoachStep=0;
+      /* Inline in spotlight coach — a second modal (#m-turnaround-tip) layered with the lineup reads as clutter. */
+      G._tutorialMiddayFocusInlineTip=1;
       requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
     }else if(G.tutorialAct===5&&v==='midday')tutorialTurnaroundOnProgrammingFocusMidday();
-    else showToast(`Programming focus: ${pfLbl}.`,'info');
+    /* Turnaround uses spotlight coaches for focus — skip generic “Programming focus: …” popups. */
   }else showToast(`Programming focus: ${pfLbl}.`,'info');
   renderAll();
 }
@@ -2618,6 +2625,21 @@ function benchCoHostIfPresentInternal(sid,slot){
   const owner=MP.mode==='live'?(s._mpOwner!=null?s._mpOwner:MP.playerId):0;
   return benchSecondChairTalentCore(sid,slot,owner);
 }
+/**
+ * Before replacing the primary host (shuffle, transfer, roster move), bench anyone still in the second chair.
+ * Otherwise `setSlotTalentB(sd,null)` deletes them from the game without a bench entry.
+ * @returns {string|null} benched talent display name, if any
+ */
+function benchCoHostBeforePrimaryReplaceOrNull(sid,slot){
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s)return null;
+  const owner=MP.mode==='live'?(s._mpOwner!=null?s._mpOwner:MP.playerId):0;
+  const sd=s.prog?.[slot];
+  const b=slotTalentB(sd);
+  if(!b)return null;
+  const nm=b.name||'Co-host';
+  return benchSecondChairTalentCore(sid,slot,owner)?nm:null;
+}
 function initCoHostChemistryReveal(sd,fmt,sl,primary,cohost,chemRoll){
   if(!sd||!primary||!cohost||!chemRoll)return;
   sd._cohostChemActual=chemRoll.actual;
@@ -3097,19 +3119,101 @@ function wlToggleDmbCoh(coh){
   _dmbOpenCoh=_dmbOpenCoh===coh?null:coh;
   rMkt();
 }
-// Lightweight transient notification — uses alertbar briefly, then restores
+// Lightweight transient notification — uses alertbar briefly, then restores.
+// `renderAll()` calls `rHdr()` every frame of UI updates; without a hold, it strips `.on` from #alertbar (display:none) and the toast vanishes instantly.
+var _wlToastSeq=0,_wlToastHoldUntil=0,_wlToastTimer=null;
+function wlToastHoldActive(){
+  return Date.now()<(_wlToastHoldUntil|0);
+}
 function showToast(msg,type='info',holdMs){
   const ab=document.getElementById('alertbar');
   if(!ab)return;
-  const prev={cls:ab.className,txt:ab.textContent,bg:ab.style.background,bc:ab.style.borderColor,col:ab.style.color};
+  const seq=++_wlToastSeq;
+  const ms=Number.isFinite(holdMs)&&holdMs>0?holdMs:3500;
+  _wlToastHoldUntil=Date.now()+ms;
+  if(_wlToastTimer){clearTimeout(_wlToastTimer);_wlToastTimer=null;}
+  const prev={cls:ab.className,innerHTML:ab.innerHTML,bg:ab.style.background,bc:ab.style.borderColor,col:ab.style.color,z:ab.style.zIndex};
   ab.className='on';
+  // Ensure the toast stays visible above tutorial coach overlays / modal stacks.
+  ab.style.zIndex='14000';
   ab.style.background=type==='warn'?'rgba(240,88,88,.15)':'rgba(80,180,120,.15)';
   ab.style.borderColor=type==='warn'?'var(--red)':'var(--grn)';
   ab.style.color=type==='warn'?'var(--red)':'var(--grn)';
   ab.textContent=msg;
-  const ms=Number.isFinite(holdMs)&&holdMs>0?holdMs:3500;
-  setTimeout(()=>{ab.className=prev.cls;ab.textContent=prev.txt;ab.style.background=prev.bg;ab.style.borderColor=prev.bc;ab.style.color=prev.col;},ms);
+  _wlToastTimer=setTimeout(()=>{
+    _wlToastTimer=null;
+    if(seq!==_wlToastSeq)return;
+    _wlToastHoldUntil=0;
+    ab.className=prev.cls;
+    ab.innerHTML=prev.innerHTML;
+    ab.style.background=prev.bg;
+    ab.style.borderColor=prev.bc;
+    ab.style.color=prev.col;
+    ab.style.zIndex=prev.z;
+    try{if(typeof rHdr==='function')rHdr();}catch(e){}
+  },ms);
 }
+/** GM dismissal: rich toast + return to scenario select (solo + campaign paths). */
+function wlGmFiredToastEscape(s){
+  return String(s||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+function wlShowGmFiredDismissToast(G){
+  const ab=document.getElementById('alertbar');
+  if(!ab||typeof G==='undefined'||!G)return;
+  const seq=++_wlToastSeq;
+  _wlToastHoldUntil=Date.now()+86400000;
+  if(_wlToastTimer){clearTimeout(_wlToastTimer);_wlToastTimer=null;}
+  const prev={cls:ab.className,innerHTML:ab.innerHTML,bg:ab.style.background,bc:ab.style.borderColor,col:ab.style.color,z:ab.style.zIndex};
+  ab.className='on';
+  ab.style.zIndex='14000';
+  ab.style.background='rgba(240,88,88,.14)';
+  ab.style.borderColor='var(--red)';
+  ab.style.color='var(--off)';
+  let headline='You have been dismissed as General Manager.';
+  let detail='Ownership cites sustained underperformance versus formal expectations.';
+  try{
+    if(typeof wlGmMode!=='undefined'&&wlGmMode&&typeof wlGmMode.getGmDismissalToastCopy==='function'){
+      const c=wlGmMode.getGmDismissalToastCopy(G);
+      if(c&&c.headline)headline=String(c.headline);
+      if(c&&c.detail)detail=String(c.detail);
+    }
+  }catch(_e){}
+  const finish=function(){
+    if(seq!==_wlToastSeq)return;
+    _wlToastHoldUntil=0;
+    ab.className=prev.cls;
+    ab.innerHTML=prev.innerHTML;
+    ab.style.background=prev.bg;
+    ab.style.borderColor=prev.bc;
+    ab.style.color=prev.col;
+    ab.style.zIndex=prev.z;
+    try{if(typeof wlCampaignDeactivate==='function')wlCampaignDeactivate();}catch(_e){}
+    try{
+      if(typeof G!=='undefined'&&G){
+        delete G.campaignAssignment;
+        G.careerCampaign=false;
+        delete G._wlGmFiredFromCampaign;
+      }
+    }catch(_e){}
+    try{if(typeof openScenSelect==='function')openScenSelect(typeof getLocalSave==='function'?getLocalSave():null);}catch(_e){}
+    try{if(typeof rHdr==='function')rHdr();}catch(_e){}
+  };
+  ab.innerHTML=
+    '<span style="display:flex;flex-wrap:wrap;align-items:flex-start;gap:10px 14px;justify-content:space-between">'+
+    '<span style="flex:1;min-width:220px;line-height:1.45;font-size:14px">'+
+    '<strong style="display:block;margin-bottom:6px;color:var(--red);letter-spacing:0.04em;font-size:13px">'+
+    wlGmFiredToastEscape(headline)+'</strong>'+
+    '<span style="color:var(--off)">'+wlGmFiredToastEscape(detail)+'</span>'+
+    '</span>'+
+    '<button type="button" class="cfm" style="flex-shrink:0;padding:8px 16px;font-size:13px;letter-spacing:1px" id="wl-gm-fired-toast-ok">RETURN TO SCENARIOS</button></span>';
+  const btn=document.getElementById('wl-gm-fired-toast-ok');
+  if(btn)btn.onclick=function(){finish();};
+}
+try{globalThis.wlShowGmFiredDismissToast=wlShowGmFiredDismissToast;}catch(_e){}
 const qc=q=>q>=68?'good':q>=44?'warn':'poor';
 /** Unrounded price index — same phases as salInfl (talent / general nominal levels in-game). */
 function salInflMultiplier(year){
@@ -3708,12 +3812,11 @@ function wlTrialFirstGameBannerHtml(){
   }catch(_e){return ''}
   return `<div class="wl-upgrade-banner wl-trial-first-banner" role="region" aria-label="Free first game">
     <div class="wl-upgrade-banner__inner">
-      <div class="wl-upgrade-banner__title">START YOUR FIRST GAME — FREE</div>
-      <p class="wl-upgrade-banner__text">Be our guest for <strong>one</strong> full-featured run — classic solo, Atlanta guided walkthrough, or GM career. After you start, use <strong>Load game</strong> to resume; subscribe for additional fresh starts.</p>
-      <p class="wl-upgrade-banner__text">Start in Atlanta with a guided experience.</p>
-      <p class="wl-upgrade-banner__text">Continue with <strong>Starter</strong> or <strong>Pro</strong> for more cities, cloud saves, and features.</p>
+      <div class="wl-upgrade-banner__title">YOUR FIRST FULL GAME IS FREE</div>
+      <p class="wl-upgrade-banner__text">Start with the guided Atlanta turnaround challenge, or jump into a full solo or GM run.</p>
+      <p class="wl-upgrade-banner__text">Subscribe later for additional fresh starts, more cities, cloud saves, and features.</p>
       <div class="wl-upgrade-banner__actions">
-        <a href="/account.html" class="wl-upgrade-banner__btn wl-upgrade-banner__btn--plans-muted">SEE ALL PLANS</a>
+        <a href="/account.html" class="wl-upgrade-banner__btn wl-upgrade-banner__btn--plans-muted">SEE PLANS</a>
       </div>
     </div>
   </div>`;
@@ -3735,19 +3838,286 @@ function wlFreeTierUpgradeBannerHtml(){
         <a href="/account.html" target="_blank" rel="noopener noreferrer" class="wl-upgrade-banner__btn wl-upgrade-banner__btn--primary">Subscribe — open Account</a>
         <a href="/#pricing" target="_blank" rel="noopener noreferrer" class="wl-upgrade-banner__btn">All plans on the site</a>
       </div>
+      <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(216,155,43,.20)">
+        <div style="font-family:var(--ft);font-size:12px;letter-spacing:2px;color:var(--mut);margin-bottom:6px">OPTIONAL</div>
+        <div style="font-family:var(--fd);letter-spacing:0.12em;color:var(--amb);font-size:14px;margin-bottom:6px">GET GAME UPDATES</div>
+        <p style="margin:0 0 10px;font-size:14px;color:var(--off);line-height:1.5">Occasional updates. No spam. Unsubscribe anytime.</p>
+        <form id="wl-email-signup-paywall-form" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+          <input id="wl-email-signup-paywall-email" class="mp-inp" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" style="flex:1;min-width:220px" />
+          <button type="submit" class="abt g" style="padding:10px 16px;letter-spacing:2px">SIGN UP</button>
+        </form>
+        <div id="wl-email-signup-paywall-status" style="margin-top:8px;font-size:13px;color:var(--mut)" aria-live="polite"></div>
+      </div>
     </div>
   </div>`;
+}
+
+function wlGameApiUrl(path){
+  const p=(path&&String(path).startsWith('/'))?String(path):('/'+String(path||''));
+  let origin='';
+  try{
+    origin=(typeof window!=='undefined'&&window.__WL_GAME_SERVER_URL&&String(window.__WL_GAME_SERVER_URL).trim())||'';
+    if(origin&&typeof window!=='undefined'&&window.location&&window.location.port==='5173'){
+      try{const u=new URL(origin.replace(/\/$/,''));if(u.origin!==window.location.origin)origin='';}catch(_e){origin='';}
+    }
+  }catch(_e){origin='';}
+  origin=origin?origin.replace(/\/$/,''):'';
+  return origin?`${origin}${p}`:p;
+}
+
+async function wlSubscribeMarketingEmail(opts){
+  const o=opts||{};
+  const email=String(o.email||'').trim();
+  const source=String(o.source||'').trim()||'unknown';
+  const plan=String(o.plan||'').trim()||'';
+  const market=String(o.market||'').trim()||'';
+  try{wlAnalyticsCapture('marketing_subscribe_submitted',{source:source.slice(0,48)});}catch(_e){}
+  const r=await fetch(wlGameApiUrl('/api/marketing/subscribe'),{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      email,
+      SOURCE: source,
+      PLAN: plan,
+      MARKET: market,
+    }),
+  });
+  const j=await r.json().catch(()=>({}));
+  if(!r.ok||!j||!j.ok){
+    const err=(j&&j.error)?String(j.error):'Subscribe failed';
+    const e=new Error(err);
+    e.status=r.status;
+    throw e;
+  }
+  return true;
+}
+
+function wlBindPaywallEmailSignup(){
+  const form=document.getElementById('wl-email-signup-paywall-form');
+  if(!form||form.__wlBound)return;
+  form.__wlBound=true;
+  try{wlAnalyticsMarketingSignupTryViewed('scenario_banner');}catch(_e){}
+  const emailEl=document.getElementById('wl-email-signup-paywall-email');
+  const statusEl=document.getElementById('wl-email-signup-paywall-status');
+  const setStatus=(msg,kind)=>{
+    if(!statusEl)return;
+    statusEl.textContent=msg||'';
+    statusEl.style.color=kind==='ok'?'var(--grn)':kind==='bad'?'var(--red)':'var(--mut)';
+  };
+  form.addEventListener('submit',(e)=>{
+    e.preventDefault();
+    const email=emailEl?String(emailEl.value||'').trim():'';
+    if(!email){setStatus('Enter your email to sign up.','bad');return;}
+    setStatus('Signing you up…','');
+    const plan=(typeof wlClerkPlanSlug==='function')?String(wlClerkPlanSlug()||''):'';
+    const market=(typeof activeMarketId==='function')?String(activeMarketId()||''):'';
+    wlSubscribeMarketingEmail({email,source:'paywall_banner',plan,market})
+      .then(()=>{
+        setStatus('Subscribed. Thanks — watch your inbox for updates.','ok');
+        try{wlAnalyticsCapture('marketing_subscribe_success',{source:'paywall_banner'});}catch(_e){}
+        if(emailEl)emailEl.value='';
+      })
+      .catch((err)=>{
+        setStatus('Could not subscribe. Double-check the email and try again.','bad');
+        try{wlAnalyticsCapture('marketing_subscribe_failed',{source:'paywall_banner',error_type:(err&&err.status>=500)?'server_error':'denied'});}catch(_e){}
+      });
+  });
+}
+
+function wlScenarioEmailSignupHtml(){
+  return `<div class="wl-scenario-email-opt-in" role="region" aria-label="Optional email updates">
+    <div class="wl-scenario-email-opt-in__inner">
+      <div class="wl-scenario-email-opt-in__kicker">Optional</div>
+      <p class="wl-scenario-email-opt-in__title">Email updates about Airwave Empire</p>
+      <p class="wl-scenario-email-opt-in__lead">Occasional notes on balance, strategy, and new markets and features.</p>
+      <form id="wl-email-signup-scen-form" class="wl-scenario-email-opt-in__form">
+        <input id="wl-email-signup-scen-email" class="mp-inp wl-scenario-email-opt-in__input" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" />
+        <button type="submit" class="abt wl-scenario-email-opt-in__submit">Stay in the loop</button>
+      </form>
+      <div id="wl-email-signup-scen-status" class="wl-scenario-email-opt-in__status" aria-live="polite"></div>
+      <p class="wl-scenario-email-opt-in__fineprint">No spam. Usually 1–2 updates per week.</p>
+    </div>
+  </div>`;
+}
+
+function wlBindScenarioEmailSignup(){
+  const form=document.getElementById('wl-email-signup-scen-form');
+  if(!form||form.__wlBound)return;
+  form.__wlBound=true;
+  const emailEl=document.getElementById('wl-email-signup-scen-email');
+  const statusEl=document.getElementById('wl-email-signup-scen-status');
+  const setStatus=(msg,kind)=>{
+    if(!statusEl)return;
+    statusEl.textContent=msg||'';
+    statusEl.style.color=kind==='ok'?'var(--grn)':kind==='bad'?'var(--red)':'var(--mut)';
+  };
+  form.addEventListener('submit',(e)=>{
+    e.preventDefault();
+    const email=emailEl?String(emailEl.value||'').trim():'';
+    if(!email){setStatus('Enter your email to sign up.','bad');return;}
+    setStatus('Signing you up…','');
+    const plan=(typeof wlClerkPlanSlug==='function')?String(wlClerkPlanSlug()||''):'';
+    const market=(typeof activeMarketId==='function')?String(activeMarketId()||''):'';
+    wlSubscribeMarketingEmail({email,source:'scenario_selector',plan,market})
+      .then(()=>{
+        setStatus('Subscribed. Thanks!','ok');
+        try{wlAnalyticsCapture('marketing_subscribe_success',{source:'scenario_selector'});}catch(_e){}
+        if(emailEl)emailEl.value='';
+      })
+      .catch((err)=>{
+        setStatus('Could not subscribe. Double-check the email and try again.','bad');
+        try{wlAnalyticsCapture('marketing_subscribe_failed',{source:'scenario_selector',error_type:(err&&err.status>=500)?'server_error':'denied'});}catch(_e){}
+      });
+  });
+}
+
+function wlShowEmailSignupOverlay(source){
+  try{
+    const key='wl_email_overlay_'+String(source||'unknown');
+    if(sessionStorage.getItem(key)==='1')return;
+    sessionStorage.setItem(key,'1');
+  }catch(_e){}
+
+  if(document.getElementById('wl-email-signup-overlay'))return;
+  const wrap=document.createElement('div');
+  wrap.id='wl-email-signup-overlay';
+  wrap.setAttribute('role','dialog');
+  wrap.setAttribute('aria-modal','true');
+  wrap.style.cssText='position:fixed;inset:0;z-index:16000;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(0,0,0,.72)';
+  wrap.innerHTML=`
+    <div style="width:100%;max-width:520px;border:1px solid rgba(216,155,43,.35);border-radius:10px;background:linear-gradient(180deg, rgba(25,25,25,.98), rgba(10,10,10,.98));box-shadow:0 20px 80px rgba(0,0,0,.55);padding:16px 16px 14px">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+        <div>
+          <div style="font-family:var(--fd);letter-spacing:.16em;color:var(--amb);font-size:14px">AIRWAVE EMPIRE</div>
+          <div style="margin-top:4px;font-family:var(--fd);letter-spacing:.08em;color:var(--wht);font-size:20px">Get occasional updates</div>
+        </div>
+        <button type="button" id="wl-email-signup-overlay-close" class="cnl" style="padding:8px 12px">CLOSE</button>
+      </div>
+      <p style="margin:10px 0 12px;font-size:14px;color:var(--off);line-height:1.5">New scenarios, balance updates, and big features. Optional. Unsubscribe anytime.</p>
+      <form id="wl-email-signup-overlay-form" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+        <input id="wl-email-signup-overlay-email" class="mp-inp" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" style="flex:1;min-width:220px" />
+        <button type="submit" class="abt g" style="padding:10px 16px;letter-spacing:2px">SIGN UP</button>
+      </form>
+      <div id="wl-email-signup-overlay-status" style="margin-top:8px;font-size:13px;color:var(--mut)" aria-live="polite"></div>
+    </div>
+  `;
+  document.body.appendChild(wrap);
+  const phSrc=String(source||'tutorial_completion');
+  try{wlAnalyticsCapture('marketing_subscribe_viewed',{source:phSrc==='tutorial_completion'?'tutorial_end':phSrc.slice(0,48)});}catch(_e){}
+
+  const close=()=>{
+    try{wlAnalyticsCapture('marketing_subscribe_dismissed',{source:phSrc==='tutorial_completion'?'tutorial_end':phSrc.slice(0,48)});}catch(_e){}
+    try{wrap.remove();}catch(_e){}
+  };
+  wrap.addEventListener('click',(e)=>{ if(e&&e.target===wrap)close(); });
+  const closeBtn=document.getElementById('wl-email-signup-overlay-close');
+  if(closeBtn)closeBtn.addEventListener('click',close);
+
+  const form=document.getElementById('wl-email-signup-overlay-form');
+  const emailEl=document.getElementById('wl-email-signup-overlay-email');
+  const statusEl=document.getElementById('wl-email-signup-overlay-status');
+  const setStatus=(msg,kind)=>{
+    if(!statusEl)return;
+    statusEl.textContent=msg||'';
+    statusEl.style.color=kind==='ok'?'var(--grn)':kind==='bad'?'var(--red)':'var(--mut)';
+  };
+  if(form){
+    form.addEventListener('submit',(e)=>{
+      e.preventDefault();
+      const email=emailEl?String(emailEl.value||'').trim():'';
+      if(!email){setStatus('Enter your email to sign up.','bad');return;}
+      setStatus('Signing you up…','');
+      const plan=(typeof wlClerkPlanSlug==='function')?String(wlClerkPlanSlug()||''):'';
+      const market=(typeof activeMarketId==='function')?String(activeMarketId()||''):'';
+      wlSubscribeMarketingEmail({email,source:String(source||'tutorial_completion'),plan,market})
+        .then(()=>{
+          setStatus('Subscribed. Thanks!','ok');
+          try{
+            wlAnalyticsCapture('marketing_subscribe_success',{source:phSrc==='tutorial_completion'?'tutorial_end':phSrc.slice(0,48)});
+          }catch(_e){}
+          setTimeout(close,900);
+        })
+        .catch((err)=>{
+          setStatus('Could not subscribe. Double-check the email and try again.','bad');
+          try{
+            wlAnalyticsCapture('marketing_subscribe_failed',{source:phSrc==='tutorial_completion'?'tutorial_end':phSrc.slice(0,48),error_type:(err&&err.status>=500)?'server_error':'denied'});
+          }catch(_e){}
+        });
+    });
+  }
+}
+
+/**
+ * Autosave alone can prove the signup trial run is finished even if /api/trial/complete never ran
+ * (e.g. tutorial path where G.wlSignupTrial stayed false, or user left before the Fall 2020 modal).
+ */
+function wlAutosaveIndicatesSignupTrialConsumptionComplete(loc){
+  if(!loc||typeof loc!=='object')return false;
+  try{
+    const c=loc.campaign;
+    if(c&&(c.campaignWon||(c.active===false&&(c.completedAssignments|0)>0)))return true;
+    const G=loc.G;
+    if(!G)return false;
+    const y=Number(G.year);
+    const p=Number(G.period);
+    if(!Number.isFinite(y)||!Number.isFinite(p))return false;
+    if(y>2020||(y===2020&&p>=2))return true;
+    if(G.score&&G.score.isSandbox===true)return true;
+    return false;
+  }catch(_e){
+    return false;
+  }
+}
+
+async function wlMaybeFinalizeSignupTrialFromAutosave(localSave){
+  try{
+    if(typeof wlClerkPlanSlug!=='function'||wlClerkPlanSlug()!=='trial_user')return;
+    if(!wlAutosaveIndicatesSignupTrialConsumptionComplete(localSave))return;
+    await wlCompleteTrialOnServer();
+  }catch(_e){}
+}
+
+/** Leaving to scenario menu: end signup trial on server when the run is done, or when abandoning the guided tutorial (→ limited free Atlanta). */
+async function wlMaybeConsumeSignupTrialWhenLeavingToMenu(){
+  try{
+    if(typeof wlClerkPlanSlug!=='function'||wlClerkPlanSlug()!=='trial_user')return;
+    const loc=typeof getLocalSave==='function'?getLocalSave():null;
+    if(wlAutosaveIndicatesSignupTrialConsumptionComplete(loc)){
+      await wlCompleteTrialOnServer();
+      return;
+    }
+    const g=typeof G!=='undefined'?G:null;
+    if(g&&g.sc&&g.sc.id==='tutorial_turnaround'){
+      await wlCompleteTrialOnServer();
+    }
+  }catch(_e){}
 }
 
 async function wlCompleteTrialOnServer(){
   try{
     const clerk=typeof window!=='undefined'?window.Clerk:null;
     const t=clerk&&clerk.session&&await clerk.session.getToken().catch(()=>null);
-    if(!t)return;
-    await fetch(wlGameApiUrl('/api/trial/complete'),{method:'POST',headers:{Authorization:`Bearer ${t}`}});
+    if(!t)return false;
+    const url=wlGameApiUrl('/api/trial/complete');
+    let res=await fetch(url,{method:'POST',headers:{Authorization:`Bearer ${t}`}});
+    if(!res.ok){
+      await new Promise(r=>setTimeout(r,380));
+      res=await fetch(url,{method:'POST',headers:{Authorization:`Bearer ${t}`}});
+    }
     if(typeof window.__wlSyncPlanMarkets==='function')await window.__wlSyncPlanMarkets();
+    if(typeof wlClerkPlanSlug==='function'&&wlClerkPlanSlug()!=='trial_user'){
+      try{
+        window.__WL_TRIAL_LOCK_KIND='';
+        window.__WL_TRIAL_LOCKED_MARKET_ID='';
+      }catch(_e){}
+    }else if(typeof wlRefreshTrialLockFromServer==='function'){
+      await wlRefreshTrialLockFromServer();
+    }
     if(typeof wlRefreshOpenScenIfPlanChanged==='function')wlRefreshOpenScenIfPlanChanged();
-  }catch(_e){}
+    return !!(res&&res.ok);
+  }catch(_e){
+    return false;
+  }
 }
 
 /** Refresh server-side trial lock (call before resume/import if the tab might be stale). */
@@ -3773,6 +4143,8 @@ async function wlRefreshTrialLockFromServer(){
 async function wlEnsureTrialLockBeforeCampaignStart(){
   try{
     if(typeof MP!=='undefined'&&MP.mode==='live')return true;
+    const locCampaign=typeof getLocalSave==='function'?getLocalSave():null;
+    await wlMaybeFinalizeSignupTrialFromAutosave(locCampaign);
     if(wlClerkPlanSlug()!=='trial_user')return true;
     const k=wlTrialLockKind();
     if(k==='solo'||k==='tutorial'){
@@ -3821,7 +4193,9 @@ async function wlEnsureTrialMarketLockBeforeNewGame(scenId){
   try{
     if(typeof MP!=='undefined'&&MP.mode==='live')return {ok:true};
     if(globalThis._wlCampaignStarting)return {ok:true};
-    const slug=typeof window!=='undefined'?String(window.__WL_CLERK_PLAN_SLUG||'').trim():'';
+    const locLock=typeof getLocalSave==='function'?getLocalSave():null;
+    await wlMaybeFinalizeSignupTrialFromAutosave(locLock);
+    let slug=typeof window!=='undefined'?String(window.__WL_CLERK_PLAN_SLUG||'').trim():'';
     if(slug!=='trial_user')return {ok:true};
 
     const commitK=wlTrialLockKind();
@@ -3971,12 +4345,14 @@ function wlMaybeTrialApproachingFromQuota(trialQuota,feature){
   }
 }
 
-function wlTrialEndBuildEmpire(){
+async function wlTrialEndBuildEmpire(){
+  await wlCompleteTrialOnServer();
   try{window.open(WL_TRIAL_ACCOUNT_HREF,'_blank');}catch(_e){}
 }
-function wlTrialEndStartOverFree(){
+async function wlTrialEndStartOverFree(){
   cm('m-trial-end');
-  try{if(typeof window.__wlSyncPlanMarkets==='function')void window.__wlSyncPlanMarkets();}catch(_e){}
+  await wlCompleteTrialOnServer();
+  try{if(typeof window.__wlSyncPlanMarkets==='function')await window.__wlSyncPlanMarkets();}catch(_e){}
   try{if(typeof wlRefreshOpenScenIfPlanChanged==='function')wlRefreshOpenScenIfPlanChanged();}catch(_e){}
   openScenSelect(null);
 }
@@ -4002,7 +4378,7 @@ function wlTrialEndGradeEncouragement(letter){
 }
 
 /** Fall 2020 end of signup trial — score + subscribe CTA (replaces decade grade modal for that checkpoint). */
-function wlShowTrialSignupCompleteModal(sc){
+async function wlShowTrialSignupCompleteModal(sc){
   if(!G)return;
   G.wlSignupTrial=false;
   G._wlTrialEndModalShown=true;
@@ -4046,7 +4422,7 @@ function wlShowTrialSignupCompleteModal(sc){
         <button type="button" class="abt" onclick="wlTrialEndStartOverFree()" style="text-align:center">Stay on limited free play</button>
       </div>`;
   }
-  void wlCompleteTrialOnServer();
+  await wlCompleteTrialOnServer();
   try{autoSave();}catch(_e){}
   try{
     wlAnalyticsTrialEnded('trial_2020_end');
@@ -4055,11 +4431,24 @@ function wlShowTrialSignupCompleteModal(sc){
   om('m-trial-end');
 }
 
-function wlDismissTrialEndModal(){
+async function wlDismissTrialEndModal(){
+  await wlCompleteTrialOnServer();
   cm('m-trial-end');
   try{if(typeof wlRefreshOpenScenIfPlanChanged==='function')wlRefreshOpenScenIfPlanChanged();}catch(_e){}
 }
 window.wlDismissTrialEndModal=wlDismissTrialEndModal;
+
+/** GM signup trial: career finished (won or hard stop) — tell server trial is consumed so client can use free tier. */
+function wlMaybeFinalizeSignupTrialFromCampaign(ev){
+  try{
+    if(typeof MP!=='undefined'&&MP.mode==='live')return;
+    if(!ev||ev.nextAssignment)return;
+    if(!ev.campaignWin&&!ev.careerEndedHard)return;
+    if(typeof wlClerkPlanSlug!=='function'||wlClerkPlanSlug()!=='trial_user')return;
+    void wlCompleteTrialOnServer();
+  }catch(_e){}
+}
+if(typeof window!=='undefined')window.wlMaybeFinalizeSignupTrialFromCampaign=wlMaybeFinalizeSignupTrialFromCampaign;
 
 function wlAiTrialQuotaToast(data){
   try{
@@ -4069,6 +4458,117 @@ function wlAiTrialQuotaToast(data){
     }
   }catch(_e){}
   return false;
+}
+/**
+ * POST/GET creative endpoints failed — still grant in-game promo benefits for paid van/jingle purchases when quotas are exhausted, monthly caps hit, or the service cannot generate assets (503/5xx/network).
+ */
+function wlPromotionBenefitEligibleWhenCreativeUnavailable(res,data,feature){
+  const d=data&&typeof data==='object'?data:{};
+  if(d.code==='plan_unavailable')return false;
+  if(res&&res.ok&&d.ok===true)return false;
+  if(d.code==='trial_quota_exhausted')return true;
+  if(d.code==='quota_exceeded'){
+    const k=d.kind;
+    if(feature==='jingle')return k==='jingle';
+    if(feature==='van')return k==='van'||k==='logo';
+  }
+  if(!res)return false;
+  const st=(typeof res.status==='number'&&Number.isFinite(res.status))?res.status:0;
+  if(st===503||st===502||st===504)return true;
+  if(st>=500&&st<600&&st!==501)return true;
+  return false;
+}
+function wlApplyRemoteVanPromotionWithoutGeneratedImage(op,mode,vanCost,turnN,statusEl,extra){
+  extra=extra||{};
+  wlAdjustMyCash(-vanCost);
+  if(mode==='purchase'||mode==='replace'){
+    op.remoteVanMarketingLift=REMOTE_VAN_MARKETING_LIFT;
+    op.remoteVanPurchasedYear=G.year;
+  }
+  op._lastVanGenTurn=turnN;
+  if(mode==='purchase'){
+    delete op.cosmeticRemoteVanUrl;
+    delete op.cosmeticRemoteVanV;
+  }
+  recalc(G.stations,G);
+  const why=extra.reasonSnippet||'creative unavailable';
+  const logMsg=
+    extra.logHist
+    ||(`Remote broadcast van (${f$(vanCost)}) — ${mode==='replace'?'Fleet replaced ':'Purchased '}promotion boost without new artwork (${why}).`);
+  logHistory(op,'LOGO',logMsg,G);
+  autoSave();
+  if(MP.mode==='live'&&MP.socket&&MP.roomId){
+    const payload={
+      roomId:MP.roomId,
+      stationId:op.id,
+      remoteVanMarketingLift:op.remoteVanMarketingLift,
+      remoteVanPurchasedYear:op.remoteVanPurchasedYear,
+    };
+    if(op.cosmeticRemoteVanUrl){
+      payload.cosmeticRemoteVanUrl=op.cosmeticRemoteVanUrl;
+      payload.cosmeticRemoteVanV=op.cosmeticRemoteVanV;
+    }
+    MP.emit('mp_station_logo',payload);
+  }
+  renderAll();
+  if(statusEl){
+    statusEl.textContent=extra.statusMsg||(mode==='replace'
+      ?`Promotion boost restored — no new image (${why}).`
+      :`Promotion boost applied — no van artwork (${why}).`);
+  }
+  showToast(extra.toastMsg||'Remote van promotion benefit applied — custom artwork unavailable.','info');
+  try{wlAnalyticsCreativeTool('remote_van',extra.analyticsReason||'blocked',{reason:String(why)});}catch(_e){}
+  if(extra.trialQuotaData&&extra.trialQuotaData.code==='trial_quota_exhausted')wlAiTrialQuotaToast(extra.trialQuotaData);
+}
+/** Charge in-game fee and grant jingle package promotion lift without playable audio file. */
+function wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,statusEl,extra){
+  extra=extra||{};
+  wlAdjustMyCash(-jingleCost);
+  op.jingleMarketingLift=JINGLE_MARKETING_LIFT;
+  op.jingleCommissionedYear=G.year;
+  op._lastJingleGenTurn=turnOk;
+  if(typeof tagline==='string'&&tagline.trim())op.jingleTagline=tagline.trim().slice(0,60);
+  else delete op.jingleTagline;
+  delete op._pendingJingleVariants;
+  delete op._jinglePendingTagline;
+  delete op._jingleSunoPromptNote;
+  recalc(G.stations,G);
+  const why=extra.reasonSnippet||'creative unavailable';
+  logHistory(op,'LOGO',extra.logHist||(`Station jingle promotion (${f$(jingleCost)}) — boost without custom audio (${why}).`),G);
+  autoSave();
+  if(MP.mode==='live'&&MP.socket&&MP.roomId){
+    MP.emit('mp_station_logo',{
+      roomId:MP.roomId,
+      stationId:op.id,
+      jingleMarketingLift:op.jingleMarketingLift,
+      jingleCommissionedYear:op.jingleCommissionedYear,
+      jingleTagline:typeof op.jingleTagline==='string'?op.jingleTagline:'',
+    });
+  }
+  renderAll();
+  if(statusEl){
+    wlAiGenStatusBusy(statusEl,false);
+    statusEl.textContent=extra.statusMsg||`Promotion boost applied — no jingle audio (${why}).`;
+  }
+  showToast(extra.toastMsg||'Jingle package benefit applied — custom audio unavailable.','info');
+  try{wlAnalyticsCreativeTool('jingle',extra.analyticsReason||'blocked',{reason:String(why)});}catch(_e){}
+  if(extra.trialQuotaData&&extra.trialQuotaData.code==='trial_quota_exhausted')wlAiTrialQuotaToast(extra.trialQuotaData);
+}
+function wlDismissSoloBankruptcyCoach(){}
+/** Solo: forced liquidation with no acquisition runway — coached explanation (see `m-bankruptcy-coach` in play.html). */
+function wlShowSoloBankruptcyCoach(){
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
+  if(MP.mode==='live'||!G||!G._soloBankrupt)return;
+  const b=document.getElementById('bankruptcy-coachb');
+  if(!b)return;
+  b.innerHTML=
+    `<p class="di" style="margin-top:0">The station ran out of cash and had to be sold to pay off the debt.</p>`+
+    `<p class="di"><strong>Strong ratings alone are not enough.</strong> Expenses, staffing, promotion, sales and revenue all matter.</p>`+
+    `<p class="di">Every run plays out differently in this game! Want another shot? Restart the tutorial or try another scenario with a different strategy.</p>`;
+  om('m-bankruptcy-coach');
+}
+if(typeof globalThis!=='undefined'){
+  globalThis.wlDismissSoloBankruptcyCoach=wlDismissSoloBankruptcyCoach;
 }
 let ACTIVE_MARKET='atlanta';
 let _selectedMarket='atlanta';
@@ -4102,9 +4602,47 @@ function marketStartingCashMultiplier(marketId){
   else mult*=1.02;
   return Math.min(5.2,Math.max(0.62,mult));
 }
-function scaledScenarioCash(scBaseCash,marketId){
+/**
+ * National radio billing totals at Atlanta revScale≈1 — same anchors as `MARKET_BILLING_CURVE` / `marketAnnualBilling`,
+ * without per-market revScale or secondary lift (pure calendar-era nominal baseline).
+ */
+function nationalRadioBillingBaselineAtlanta(year){
+  const curve=MARKET_BILLING_CURVE;
+  const ys=Object.keys(curve).map(Number).sort((a,b)=>a-b);
+  const y=year;
+  if(y<=ys[0])return curve[ys[0]];
+  if(y>=ys[ys.length-1])return curve[ys[ys.length-1]];
+  for(let i=1;i<ys.length;i++){
+    const y0=ys[i-1],y1=ys[i];
+    if(y<=y1){
+      const t=(y-y0)/(y1-y0);
+      return curve[y0]+(curve[y1]-curve[y0])*t;
+    }
+  }
+  return curve[1987];
+}
+/** Softer than raw billing growth so late-era starts stay tense — exponent tunes wallet vs era. */
+const ERA_STARTING_CASH_FROM_BILLING_EXP=0.45;
+function scenarioStartingCashEraMultiplier(startYear){
+  const y=Math.max(1970,Math.min(2020,Number(startYear)||1970));
+  const b0=nationalRadioBillingBaselineAtlanta(1970);
+  const by=nationalRadioBillingBaselineAtlanta(y);
+  const ratio=b0>0?by/b0:1;
+  const era=Math.pow(ratio,ERA_STARTING_CASH_FROM_BILLING_EXP);
+  return Math.min(3.25,Math.max(0.92,era));
+}
+/**
+ * Scenario starting cash: base from SC × market size × era (start year).
+ * @param {number} scBaseCash
+ * @param {string} marketId
+ * @param {number} [startYearOpt] Scenario calendar start; defaults to 1970 when omitted (backward compatible).
+ */
+function scaledScenarioCash(scBaseCash,marketId,startYearOpt){
   const base=Number(scBaseCash);
-  return Math.round((Number.isFinite(base)?base:0)*marketStartingCashMultiplier(marketId));
+  const eraY=startYearOpt!=null&&Number.isFinite(Number(startYearOpt))?Number(startYearOpt):1970;
+  const eraMult=scenarioStartingCashEraMultiplier(eraY);
+  const mktMult=marketStartingCashMultiplier(marketId);
+  return Math.round((Number.isFinite(base)?base:0)*mktMult*eraMult);
 }
 function pickMarketPhase1(id){
   if(!PHASE1_MARKET_IDS.includes(id))return;
@@ -4525,7 +5063,8 @@ function getSportsBonus(s,G){
 }
 /**
  * Apply sports rights as a uniform scale on this station's cohort shares + AQH + mom,
- * so weighted s.rat.share rises by getSportsBonus (capped) and stays equal to Σ_c w_c·share_c.
+ * so interim weighted s.rat.share rises by getSportsBonus (capped). recalc() finishes by
+ * applying {@link applyListeningHoursShareFromAqh} so the headline book matches AQH/total.
  */
 function applySportsRatingsToCohorts(s,G,engageWeightedPop){
   if(!s||s._bpSlotDeferred||s.isPublic||!s.rat)return;
@@ -5933,6 +6472,15 @@ function mpHandleNextPeriod() {
 function mpOpenLobby() {
   document.getElementById('mp-lobby').style.display = 'block';
   try{
+    wlAnalyticsSessionTryOnce('wl_ph_scen_pick_mp',()=>{
+      wlAnalyticsEmitScenarioSelected({
+        scenario_id:'multiplayer_lobby',
+        picked_mode:'multiplayer',
+        market:String(_selectedMarket||ACTIVE_MARKET||'atlanta').slice(0,32),
+      });
+    });
+  }catch(_e){}
+  try{
     if(typeof wlMpRefreshMarketSelect==='function')wlMpRefreshMarketSelect();
   }catch(_e){}
   mpSyncEraButtonsForPlan();
@@ -6057,6 +6605,52 @@ function wlTrackSoloSession({ source, scenarioId, marketId }){
 function wlAnalyticsCapture(event,props){
   try{ if(typeof window.__WL_ANALYTICS_CAPTURE==='function')window.__WL_ANALYTICS_CAPTURE(event,props); }catch(_e){}
 }
+
+/** Dedupe funnel events inside a browser session (scenario screen open, marketing prompt, etc.). */
+function wlAnalyticsSessionTryOnce(storageKey,fn){
+  try{
+    if(typeof sessionStorage!=='undefined'&&sessionStorage.getItem(storageKey)==='1')return;
+    if(fn)fn();
+    if(typeof sessionStorage!=='undefined')sessionStorage.setItem(storageKey,'1');
+  }catch(_e){
+    try{ if(fn)fn(); }catch(_e2){}
+  }
+}
+
+/** Fire `scenario_selected` — commit intents only (minimal funnel noise). */
+function wlAnalyticsEmitScenarioSelected(o){
+  const x=o||{};
+  const scenario_id=typeof x.scenario_id==='string'?x.scenario_id.slice(0,64):'';
+  let picked_mode=typeof x.picked_mode==='string'?x.picked_mode.slice(0,24):'';
+  if(!picked_mode)picked_mode='unknown';
+  const market=typeof x.market==='string'?x.market.slice(0,32):String(_selectedMarket||ACTIVE_MARKET||'atlanta').slice(0,32);
+  const tutorial=scenario_id==='tutorial_turnaround'||(picked_mode==='tutorial');
+  const gm_mode=picked_mode==='gm'||scenario_id==='gm_under';
+  wlAnalyticsCapture('scenario_selected',{scenario_id,picked_mode,market,tutorial,gm_mode});
+}
+
+function wlAnalyticsMarketingSignupTryViewed(src){
+  const source=typeof src==='string'?src.slice(0,48):'unknown';
+  wlAnalyticsSessionTryOnce('wl_mk_sub_seen_'+source,()=>wlAnalyticsCapture('marketing_subscribe_viewed',{source}));
+}
+
+function wlEmitTutorialCompleted(reason){
+  if(!G)return;
+  if(G._wlTutorialCompletedAnalyticsSent)return;
+  G._wlTutorialCompletedAnalyticsSent=true;
+  try{
+    const t0=G._wlTutorialAnalyticsT0|0;
+    const elapsed_seconds=t0>0?Math.max(0,Math.round((Date.now()-t0)/1000)):0;
+    const market=String(G.marketId||ACTIVE_MARKET||'atlanta').slice(0,32);
+    wlAnalyticsCapture('tutorial_completed',{
+      market,
+      final_year:G.year|0,
+      final_period:G.period|0,
+      elapsed_seconds,
+      completion_source:String(reason||'').slice(0,32),
+    });
+  }catch(_e){}
+}
 function wlAnalyticsPlanLabel(){
   const s=typeof window!=='undefined'?String(window.__WL_CLERK_PLAN_SLUG||'').trim():'';
   if(s==='starter')return'starter';
@@ -6149,24 +6743,72 @@ function wlAnalyticsTrackGameResumedMp(){
     is_trial:ctx.is_trial,
   });
 }
-function wlAnalyticsScenarioScreenViewed(){
+function wlAnalyticsScenarioScreenViewed(hasAutosave){
   try{
     const signed=!!(typeof window!=='undefined'&&window.Clerk&&window.Clerk.isSignedIn);
     const slug=typeof window!=='undefined'?String(window.__WL_CLERK_PLAN_SLUG||'').trim():'';
-    wlAnalyticsCapture('scenario_screen_viewed',{
-      signed_in:signed,
-      plan:wlAnalyticsPlanLabel(),
-      trial_status:slug==='trial_user'?'in_trial':'not_in_trial',
+    wlAnalyticsSessionTryOnce('wl_ph_scenario_screen_v1',()=>{
+      wlAnalyticsCapture('scenario_screen_viewed',{
+        has_autosave:!!hasAutosave,
+        signed_in:signed,
+        logged_in:signed,
+        plan:wlAnalyticsPlanLabel(),
+        trial_status:slug==='trial_user'?'in_trial':'not_in_trial',
+      });
     });
+    wlAnalyticsMarketingSignupTryViewed('scenario_selector');
   }catch(_e){}
 }
 function wlAnalyticsTrialEnded(reason){
   wlAnalyticsCapture('trial_ended',{reason:String(reason||'').slice(0,48),...wlAnalyticsGameContextProps()});
 }
+/**
+ * Canonical `source` for `paywall_viewed` (PostHog dashboards). Call sites may still pass internal reason strings.
+ * Session dedupe uses the raw/internal key (`wl_pv_<reason_raw>`); do not change that without intending to merge surfaces.
+ *
+ * Canonical set: tutorial_end, trial_expired, account_page, pricing_page, scenario_locked, gm_locked,
+ * ai_limit, cloud_save_locked, multiplayer_locked, unknown.
+ *
+ * Mapping (internal → source):
+ *   scenario_1985_pro → scenario_locked
+ *   second_game_attempt → trial_expired
+ *   gm_locked → gm_locked
+ *   creative_limit → ai_limit
+ *   trial_2020_end → trial_expired
+ *   Values already canonical pass through unchanged; anything else → unknown
+ */
+function wlPaywallCanonicalSource(reasonRaw){
+  const key=String(reasonRaw||'').trim().slice(0,48);
+  const passThrough=new Set([
+    'tutorial_end','trial_expired','account_page','pricing_page','scenario_locked','gm_locked',
+    'ai_limit','cloud_save_locked','multiplayer_locked','unknown',
+  ]);
+  if(passThrough.has(key))return key;
+  /** @type {Record<string,string>} */
+  const map={
+    scenario_1985_pro:'scenario_locked',
+    second_game_attempt:'trial_expired',
+    gm_locked:'gm_locked',
+    creative_limit:'ai_limit',
+    trial_2020_end:'trial_expired',
+  };
+  const out=map[key];
+  return out||'unknown';
+}
 function wlAnalyticsPaywallViewed(reason){
+  const rsn=String(reason||'').trim().slice(0,48)||'unknown';
+  try{
+    if(typeof sessionStorage!=='undefined'&&sessionStorage.getItem('wl_pv_'+rsn)==='1')return;
+    if(typeof sessionStorage!=='undefined')sessionStorage.setItem('wl_pv_'+rsn,'1');
+  }catch(_e){}
   const ctx=wlAnalyticsGameContextProps();
+  const scen=typeof G!=='undefined'&&G?.sc?.id?String(G.sc.id).slice(0,48):'';
+  const src=wlPaywallCanonicalSource(rsn);
   wlAnalyticsCapture('paywall_viewed',{
-    reason:String(reason||'').slice(0,48),
+    reason:rsn,
+    reason_raw:rsn,
+    source:src,
+    scenario:scen||undefined,
     plan:wlAnalyticsPlanLabel(),
     mode:typeof MP!=='undefined'&&MP&&MP.mode==='live'?'multiplayer':wlAnalyticsSoloModeAtStart(),
     market:ctx.market,
@@ -6532,6 +7174,7 @@ async function wlCloudSaveLoadById(saveId) {
   migrateSave(G);
   try{
     if(typeof wlCampaignLoadFromSave==='function')wlCampaignLoadFromSave(payload.campaign);
+    if(typeof wlCampaignHandleLoadedGame==='function')wlCampaignHandleLoadedGame(G);
     if(typeof wlCampaignSyncFromGame==='function')wlCampaignSyncFromGame(G);
     if(typeof wlCampaignRepairLoadedGameIfMarketMismatch==='function')wlCampaignRepairLoadedGameIfMarketMismatch(G);
   }catch(_e){}
@@ -7571,7 +8214,7 @@ function removeTalentToBenchInternal(sid, slot){
   const benchId='b'+G._benchSeq;
   const owner=MP.mode==='live'?(s._mpOwner!=null?s._mpOwner:MP.playerId):0;
   G.talentBench.push({id:benchId,talent:sd.talent,_mpOwner:owner,sid,slot});
-  if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===4){
+  if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===4&&slot==='midday'){
     G._tutorialAct4BenchReleaseId=benchId;
     G._tutorialAct4BenchCoachStep=1;
     // Replace coach has no OK — flag stays false until now; clear so bench/CLOSE steps aren’t pre-empted on return.
@@ -7610,6 +8253,8 @@ function applyTalentCrossStationXferFull(fromSid, fromSlot, toSid, toSlot) {
       if(!removeTalentToBenchInternal(toSid,toSlot))return false;
     }
   }
+  const coNm=benchCoHostBeforePrimaryReplaceOrNull(toSid,toSlot);
+  if(coNm)displacedName=displacedName?`${displacedName} / ${coNm}`:coNm;
   const talA = fromSd.talent;
   const adjDip = 0.10;
   const fit = t => t.formatFit[dst.format] || 0.3;
@@ -7841,6 +8486,8 @@ window._mpApply_shuffle = function({ sid, fromSlot, toSlot }) {
       if (!removeTalentToBenchInternal(sid, toSlot)) return;
     }
   }
+  const coNm = benchCoHostBeforePrimaryReplaceOrNull(sid, toSlot);
+  if (coNm) displacedName = displacedName ? `${displacedName} / ${coNm}` : coNm;
   const adjDip = 0.08;
   const fit = t => t.formatFit[s.format] || 0.3;
   const boost = t => Math.round((t.quality / 100) * fit(t) * 0.35 * 18);
@@ -7959,13 +8606,17 @@ window._mpApply_placement_from_bench = function({ benchId, toSid, toSlot, _fromP
   refreshStationOQ(dst, G);
   logHistory(dst, 'TALENT', `${t.name} placed from bench — ${SL[toSlot]}`, G);
 };
-window._mpApply_extend = function({ sid, slot, years, newSalary, talentRole }) {
+window._mpApply_extend = function({ sid, slot, years, newSalary, talentRole, extendYear, extendPeriod }) {
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
   const sd = s.prog[slot]; if(!sd) return;
   const t = talentRole==='cohost' ? slotTalentB(sd) : sd.talent; if(!t) return;
   t.salary = newSalary; t.cyr = years; t.morale = Math.min(100,(t.morale||50)+10);
   if(talentRole!=='cohost'){
     t._underpaidInRole=false; t._slotPromotionPendingRenewal=false; t._promotionFromSlot=undefined;
+  }
+  if(extendYear!=null&&extendPeriod!=null){
+    t._contractExtendY=extendYear;
+    t._contractExtendP=extendPeriod;
   }
   renderAll();
 };
@@ -8178,7 +8829,139 @@ function effectiveBpForMarket(bpIndex,marketId){
   const base=BP[bpIndex];
   if(!base)return base;
   const p=(MARKET_BP_PATCH[marketId]||{})[bpIndex];
-  return p?{...base,...p}:base;
+  let eff=p?{...base,...p}:{...base};
+  /* GM career: optional merge onto BP slot 1 during genMarket (campaign sets global patch before gen). */
+  try{
+    const camp=typeof globalThis!=='undefined'?globalThis.__WL_GM_UNDER_PLAYER_BP_PATCH__:null;
+    if(camp&&bpIndex===1&&typeof camp==='object'&&!Array.isArray(camp))eff={...eff,...camp};
+  }catch(_e){}
+  return eff;
+}
+/** Deterministic PRNG seed for campaign ownership rolls (stable across reload for same assignment+year+period). */
+function wlCampaignAssignmentSeed32(G, asg){
+  const id=String(asg&&asg.id?asg.id:'');
+  const mid=String(asg&&asg.marketId?asg.marketId:'');
+  const t=String(asg&&asg.tier!=null?asg.tier:'');
+  const y=G&&G.year!=null?String(G.year):'1970';
+  const p=G&&G.period!=null?String(G.period):'0';
+  const s=id+'|'+mid+'|'+t+'|'+y+'|'+p;
+  let h=2166136261;
+  for(let i=0;i<s.length;i++){
+    h^=s.charCodeAt(i);
+    h=Math.imul(h,16777619)>>>0;
+  }
+  return h>>>0;
+}
+function wlCampaignMulberry32(seed){
+  return function(){
+    let t=(seed+=0x6d2b79f5);
+    t=Math.imul(t^t>>>15,t|1);
+    t^=t+Math.imul(t^t>>>7,t|61);
+    return((t^t>>>14)>>>0)/4294967296;
+  };
+}
+/**
+ * GM career campaign: randomize which blueprint station(s) the player operates (solo owns `isPlayer`).
+ * Seeded per assignment so reloads stay consistent. Adds FM early-era bridge cash when appropriate.
+ */
+function wlApplyCampaignLadderOwnershipVariety(G, asg){
+  if(!G||!G.stations||!G.sc||G.sc.id!=='gm_under')return;
+  const careerOk=!!(G.careerCampaign&&G.campaignAssignment);
+  const soloGmOk=!careerOk&&!!(G.sc&&G.sc.gmMode);
+  if(!careerOk&&!soloGmOk)return;
+  if(!asg||typeof asg!=='object')return;
+  if(G._campaignRestoredFromArchive)return;
+  const tier=asg.tier|0;
+  const rnd=wlCampaignMulberry32(wlCampaignAssignmentSeed32(G, asg));
+  G.stations.forEach(s=>{
+    if(s)s.isPlayer=false;
+  });
+  const commercial=[];
+  for(let i=0;i<BP.length;i++){
+    const st=G.stations[i];
+    if(!st||st._bpSlotDeferred||st.isPublic||!st.sig)continue;
+    const band=st.sig.type==='FM'?'FM':'AM';
+    commercial.push({idx:i,st,band});
+  }
+  const am=commercial.filter(x=>x.band==='AM');
+  const fm=commercial.filter(x=>x.band==='FM');
+  let picks=[];
+  const r=rnd();
+  const duoBias=tier===0?0.12:0;
+  const duoCut=0.40+duoBias;
+  const amCut=0.35+duoBias*0.5;
+  if(am.length&&fm.length&&r<duoCut){
+    const a=am[Math.floor(rnd()*am.length)];
+    let pool=fm.filter(x=>x.idx!==a.idx);
+    if(!pool.length)pool=fm;
+    const f=pool[Math.floor(rnd()*pool.length)];
+    picks=[a,f];
+  }else if(am.length&&(r<duoCut+amCut||!fm.length)){
+    picks=[am[Math.floor(rnd()*am.length)]];
+  }else if(fm.length){
+    picks=[fm[Math.floor(rnd()*fm.length)]];
+  }else if(am.length){
+    picks=[am[Math.floor(rnd()*am.length)]];
+  }
+  picks.forEach(p=>{
+    p.st.isPlayer=true;
+    if(G.sc.id==='gm_under'||G.sc.id==='under'){
+      const md=p.st.prog?.morningDrive;
+      if(md){
+        md.talent=null;
+        md.quality=Math.max(12,Math.round((md.quality||30)*0.52));
+      }
+      if(typeof refreshStationOQ==='function')refreshStationOQ(p.st,{year:G.year||1970});
+    }
+  });
+  if(!picks.length){
+    const fb=G.stations[1];
+    if(fb&&!fb._bpSlotDeferred){
+      fb.isPlayer=true;
+      if(G.sc.id==='gm_under'||G.sc.id==='under'){
+        const md=fb.prog?.morningDrive;
+        if(md){
+          md.talent=null;
+          md.quality=Math.max(12,Math.round((md.quality||30)*0.52));
+        }
+        if(typeof refreshStationOQ==='function')refreshStationOQ(fb,{year:G.year||1970});
+      }
+    }
+  }
+  G.ps=(G.stations||[]).filter(s=>s&&s.isPlayer);
+  (G.ps||[]).forEach(s=>{
+    if(s&&typeof applyDefaultBrandToPlayerStation==='function')applyDefaultBrandToPlayerStation(s);
+  });
+  const startY=G.year|0;
+  const fmOnly=(G.ps||[]).length>0&&(G.ps||[]).every(s=>s.sig?.type==='FM');
+  if(fmOnly&&startY<1978){
+    const bump=tier<=1?200000:150000;
+    G.cash=Math.max(0,(G.cash||0)+bump);
+    G._campaignFmEarlyLeeway=bump;
+    if(G.news){
+      G.news.unshift({
+        v:'MEDIUM',
+        t:`📋 Corporate FM bridge: +${f$(bump)} working capital — FM economics were still ramping before the late 1970s; the group does not expect miracles overnight.`,
+        y:G.year,
+        p:G.period,
+        iy:true,
+      });
+    }
+  }
+  const calls=(G.ps||[]).map(s=>s.callLetters||'?').join(' / ');
+  const bands=(G.ps||[]).map(s=>(s.sig?.type==='FM'?'FM':'AM')).join('+');
+  if(G.news&&(G.ps||[]).length){
+    G.news.unshift({
+      v:'HIGH',
+      t:`📋 Your posting: operate ${calls} (${bands}) — grow revenue and margins under ownership review.`,
+      y:G.year,
+      p:G.period,
+      iy:true,
+    });
+  }
+}
+if(typeof globalThis!=='undefined'){
+  globalThis.wlApplyCampaignLadderOwnershipVariety=wlApplyCampaignLadderOwnershipVariety;
 }
 /** Atlanta-style 1970 deferred slots; mega non-Sunbelt excludes idx 16 so remapped FM isn't replaced by late FM-country sign-on. */
 function isBpSlotDeferred1970(bpIndex,marketId){
@@ -8641,24 +9424,24 @@ function mkStn(bp,freq,year=1970){
 const SC=[
   {id:'under',l:'The Underdog',  d:"You are now in charge of a struggling AM station. The ratings are soft. The morning host just quit. You have some money to turn it around (if you move quickly).",idx:[1],cash:250000},
   /** GM Mode: same starting position as Underdog — hired GM; job security from board reviews (see gmMode.js). */
-  {id:'gm_under',l:'GENERAL MANAGER: THE UNDERDOG',d:"You were hired to run a struggling AM station: soft ratings and no morning host. Same challenge as The Underdog — but ownership expects sustainable results. Profit, revenue trend, and talent/franchise health are reviewed every two years. Underperform and you are out.",idx:[1],cash:250000,gmMode:true,gmOwnerArchetype:'turnaround'},
+  {id:'gm_under',l:'GENERAL MANAGER: THE UNDERDOG',d:"Corporate assigns you one or two stations in your chosen market (AM, FM, or both) — same turnaround pressures as The Underdog. Ownership expects sustainable results: profit, revenue trend, and talent/franchise health are reviewed on a rolling schedule. Underperform and you are out.",idx:[1],cash:250000,gmMode:true,gmOwnerArchetype:'turnaround'},
   {id:'cntry',l:'Country Roads', d:"An established country AM with solid ratings, a loyal audience, and real profit from day one. The question isn't survival — it's whether you can make the FM transition before erosion catches up.",idx:[2],cash:450000},
   {id:'soul', l:'Soul City',     d:"You're in charge of a Soul/R&B station that's doing well in the ratings, is deeply embedded in the community — but the sales are not as high as they could be. Build your audience and fight for every dollar.",idx:[3],cash:1750000},
   {id:'stack',l:'The Stack',     d:"You're running an AM/FM combo. In 1970, the AM station pays the bills, but they say FM is the future! Build an audience for your FM station — but make sure your AM station is healthy enough to subsidize your FM losses for a while.",idx:[5,8],cash:4000000},
   {id:'fmpn', l:'FM Pioneer',   d:"You own one of the market's first FM licenses. You start out with an Album Rock format, which is attracting a cult following in 1970. The problem: Advertisers aren't interested. FM is the future, but can you survive that long?",idx:[9],cash:900000},
   {id:'wsb',  l:'King of the Dial', d:"You own one of the nation's legendary stations — a powerful AM radio station in 1970. For decades, you have been the market leader with your everything-to-everyone programming style. However, the world is changing and new formats are emerging. Your listeners are leaving for more specialized programming. What will you become to maintain your legacy?",idx:[4],cash:2200000,diff:'MEDIUM',heritageIncumbent:true},
-  {id:'tutorial_turnaround',l:'Tutorial: Turnaround Station',d:"Atlanta, Spring 1970: one AM station on an older Middle-of-the-Road sound that’s losing listeners to FM and fresher formats. A guided coach walks you through research, programming (format through focus), talent, promotion, and sales — same tools as the full game, then you keep playing as a normal solo run.",idx:[4],cash:380000,diff:'EASY',oqBoost:-12,tutorial:true},
+  {id:'tutorial_turnaround',l:'Tutorial: Turnaround Station',d:"Spring 1970: one AM station on an older Middle-of-the-Road sound that’s losing listeners to FM and fresher formats. A guided coach walks you through research, programming (format through focus), talent, promotion, and sales — same tools as the full game, then you keep playing as a normal solo run.",idx:[4],cash:380000,diff:'EASY',oqBoost:-12,tutorial:true},
   // ── 1978 ERA ───────────────────────────────────────────────────
   {id:'fmrev', l:'FM Revolution', startYear:1978,
    d:"It's 1978 and FM just passed AM in total audience for the first time in American radio history. You survived the lean years with your FM Album Rock station, but the competition is heating up! As your AM competitors falter and your FM competitors get stronger, how will you build a winner for the 1980s and beyond?",
    idx:[7], cash:620000, diff:'HARD',
    oqBoost:-5, // slightly below market average — room to grow
-   hint:'Survive the lean 1978-80 period. Album Rock explodes after that.'},
+   hint:'Survive the lean early-FM years. Album Rock takes off once the culture and ad market catch up.'},
   {id:'acrise', l:'The Soft Touch', startYear:1978,
    d:"As FM grows in the late 1970s, the most profitable format is Adult Contemporary. It's the sound of softer pop hits, geared toward 25-49-year-old women, and it commands premium advertising rates. You just acquired an FM station that's still running the old-school Beautiful Music format with soft instrumentals and an ancient listener base. It's time to pivot, but all of your competitors are thinking the same thing. Build your audience and brand loyalty before they do!",
    idx:[14], cash:980000, diff:'MEDIUM',
    oqBoost:5, // inherited a reasonably-run station
-   hint:'AC gets crowded by 1983. Build advertiser relationships early.'},
+   hint:'AC gets crowded fast once rivals notice the money. Build advertiser relationships early.'},
   // ── 1985 ERA ───────────────────────────────────────────────────
   {id:'chrwar', l:'Format Wars', startYear:1985,
    d:"It's 1985 and you just bought an FM station with a good signal, but mediocre ratings with an Album Rock format. The big battle for ratings is now on FM, and your competitors are hungry. As new formats evolve and explode, how will you respond?",
@@ -8669,7 +9452,7 @@ const SC=[
    d:"By 1985, your AM Top 40 station is bleeding listeners to FM competitors. You're still alive for now, but there's not much you can do to convince listeners to hear new music over the crackle and hiss of AM. Is it time to pivot to a News/Talk format, or do you want to squeeze what you can out of Top 40 before the cliff hits?",
    idx:[1], cash:380000, diff:'HARD',
    oqBoost:-8, // the station has been sliding
-   hint:'Revenue cliff hits hard by 1988. Pivot to News/Talk — or watch your audience walk to FM.'},
+   hint:'The AM music revenue cliff hits hard once FM steals the mass audience. Pivot to News/Talk — or watch your audience walk to FM.'},
 ];
 
 
@@ -9917,7 +10700,8 @@ function stitchCollapsedMarketRatingsFromHistory(stations,G){
  * @returns {boolean} true if this station was repaired
  */
 function repairRatCurFromHeadlineShareIfAqhCollapsed(s,stations,G,opts){
-  if(!s||s._bpSlotDeferred||s.isPublic||!s.rat)return false;
+  // Public stations have no spot revenue in calcRev, but cohort AQH still drives books/listeners UI.
+  if(!s||s._bpSlotDeferred||!s.rat)return false;
   const ps=Number(s.rat.share);
   if(!(ps>1e-8))return false;
   const sumAqh=COH.reduce((a,coh)=>a+(s.rat.cur[coh]?.aqh||0),0);
@@ -9961,6 +10745,64 @@ function sanitizeStationShareForRanking(s){
   return s.rat.share;
 }
 /**
+ * Replace cohort-weighted headline `rat.share` with listening-hours share: each station's AQH
+ * divided by the sum of AQH across all non-deferred rated stations (commercial + public).
+ * Cohort rows and revenue math stay unchanged; display, rankings, and book deltas match AQH units.
+ *
+ * When total AQH mass collapses (~0), do **not** zero every headline share — that produced a rare
+ * all-0% rank book for one period. Fall back to cohort-weighted share (same basis as recalc) when
+ * `G` is provided; otherwise leave `rat.share` unchanged (seed paths already set it from cohorts).
+ * @param {unknown} [G] game state for fallback weighting; omit only in legacy seed helpers
+ */
+function applyListeningHoursShareFromAqh(stations,G){
+  const rated=(stations||[]).filter(s=>s&&!s._bpSlotDeferred&&s.rat);
+  let total=0;
+  for(const s of rated){
+    const a=Number(s.rat?.aqh);
+    if(Number.isFinite(a)&&a>0)total+=a;
+  }
+  if(total<=1e-12){
+    if(G){
+      const denom=publicRadioWeightedListeningDenominator(stations,G);
+      const d=Math.max(denom,1e-12);
+      for(const s of rated){
+        const H=publicNewsHabitEngageMult(s,G);
+        const sh=COH.reduce((sum,c)=>{
+          const pop=POP.cohorts[c]?.t||0;
+          const engage=(AQH_ENGAGE[c]||0.060)*H;
+          return sum+(s.rat.cur[c]?.share||0)*(pop*engage);
+        },0)/d;
+        s.rat.share=Math.round(sh*1e8)/1e8;
+      }
+      // Fallback restores headline share but leaves rat.cur[*].aqh at 0 → calcRev zeros terrestrial revenue
+      // despite a positive book. Rebuild cohort listening units from headline, then match headline to AQH/total.
+      for(const s of rated){
+        repairRatCurFromHeadlineShareIfAqhCollapsed(s,stations,G,{silent:true});
+      }
+      total=0;
+      for(const s of rated){
+        const a=Number(s.rat?.aqh);
+        if(Number.isFinite(a)&&a>0)total+=a;
+      }
+      if(total>1e-12){
+        const inv=1/total;
+        for(const s of rated){
+          const raw=Number(s.rat?.aqh);
+          const aq=Math.max(0,Number.isFinite(raw)?raw:0);
+          s.rat.share=Math.round(aq*inv*1e8)/1e8;
+        }
+      }
+    }
+    return;
+  }
+  const inv=1/total;
+  for(const s of rated){
+    const raw=Number(s.rat?.aqh);
+    const a=Math.max(0,Number.isFinite(raw)?raw:0);
+    s.rat.share=Math.round(a*inv*1e8)/1e8;
+  }
+}
+/**
  * Competition ranking by `rat.share` (ties share one rank). Deterministic tie-break: station id.
  * Zero-share stations never rank above positive-share; all-zero markets tie at last place (n), never all #1.
  */
@@ -10000,6 +10842,7 @@ function rankStationsByShareCompetition(stations){
   return{n,rankById};
 }
 window.rankStationsByShareCompetition=rankStationsByShareCompetition;
+window.applyListeningHoursShareFromAqh=applyListeningHoursShareFromAqh;
 window.playerLmaCashNetForSolo=playerLmaCashNetForSolo;
 
 /** Market education / civic-news proxy for public-station audience only (not commercial revenue). ~1.0 neutral. */
@@ -10406,6 +11249,91 @@ function initFmNonDupAfterPair(src,dst,G){
   fm.fmRemainderFormat=maxPct>=100?am.format:defaultFmRemainderFormat(am.format,G,fm.id);
 }
 
+/** Incremental credit for duplicated same-feed FM audience vs co-owned AM (not double-counted at 100%). */
+const SIMULCAST_SAME_FEED_AUDIENCE_INCREMENT=0.40;
+/**
+ * Overlap mass for two audience pools carrying the same duplicated programming (post-ratings AQH).
+ * Stronger pool is full credit; weaker is incremental only — no hard-coded AM/FM roles.
+ */
+function simulcastDupSliceOverlapDedupedAqh(legAqh,dupSliceAqh,inc){
+  const a=Math.max(0,Number(legAqh)||0);
+  const b=Math.max(0,Number(dupSliceAqh)||0);
+  const k=typeof inc==='number'&&!Number.isNaN(inc)?inc:SIMULCAST_SAME_FEED_AUDIENCE_INCREMENT;
+  return Math.max(a,b)+Math.min(a,b)*k;
+}
+/** Portion of FM clock duplicating co-owned AM (0–1), era-capped like {@link enforceFmNonDupConstraints}. */
+function fmAmCoownedDuplicateClockFraction01(fm,G){
+  if(!fm)return 0;
+  const q=fmAmNonDupQualifiedPair(fm,G);
+  if(!q||q.fm.id!==fm.id)return 0;
+  const tier=marketRankTierToFccSimulcastTier(G.marketId||ACTIVE_MARKET);
+  const maxPct=getMaxSimulcastPct(G.year||1970,tier);
+  if(maxPct>=100)return 1;
+  let dup=Number.isFinite(fm.fmSimulcastDupPct)?fm.fmSimulcastDupPct:maxPct;
+  dup=Math.max(0,Math.min(maxPct,dup));
+  return dup/100;
+}
+/**
+ * Deduped combined listening-hours mass for one co-owned AM + FM group (same-feed simulcast).
+ * Uses each leg’s AQH after the normal ratings pass (erosion, FM preference, format/signal/era, etc.).
+ * `dup01` is still the FM duplicate-clock fraction (FCC non-dup); only the duplicated FM slice is
+ * overlap-deduped vs the AM leg using {@link simulcastDupSliceOverlapDedupedAqh} so the stronger
+ * AQH is “lead” and the weaker slice is incremental — not AM-always-full + FM-discounted.
+ */
+function amFmPairDedupedSameFeedCombinedAqh(amAqh,fmAqh,dup01){
+  const inc=SIMULCAST_SAME_FEED_AUDIENCE_INCREMENT;
+  const am=Math.max(0,Number(amAqh)||0);
+  const fm=Math.max(0,Number(fmAqh)||0);
+  const d=Math.max(0,Math.min(1,Number(dup01)||0));
+  if(d<=0)return am+fm;
+  if(d>=1-1e-12)return simulcastDupSliceOverlapDedupedAqh(am,fm,inc);
+  const dupSlice=fm*d;
+  const indepFm=fm*(1-d);
+  return indepFm+simulcastDupSliceOverlapDedupedAqh(am,dupSlice,inc);
+}
+/** When lead + receivers are one AM hub and co-owned FM legs, return {am,fms}; else null. */
+function resolveCoownedAmFmSimulcastGroup(lead,recvs,G){
+  const all=[lead,...(recvs||[])].filter(Boolean);
+  if(all.length<2)return null;
+  const am=all.find(s=>s&&s.sig?.type==='AM'&&!s.fmBooster);
+  if(!am)return null;
+  const fms=all.filter(s=>s&&s.sig?.type==='FM'&&!s.fmBooster);
+  if(!fms.length)return null;
+  for(let i=0;i<fms.length;i++){
+    const q=fmAmNonDupQualifiedPair(fms[i],G);
+    if(!q||!q.am||q.am.id!==am.id)return null;
+  }
+  return{am,fms};
+}
+/** AQH mass for display/rank after same-feed overlap rules; null if not a modeled AM/FM co-owned simulcast group. */
+function coownedAmFmSimulcastGroupDedupedCombinedAqh(am,fms,G){
+  if(!am||!fms||!fms.length)return null;
+  const inc=SIMULCAST_SAME_FEED_AUDIENCE_INCREMENT;
+  const amA=Math.max(0,Number(am.rat?.aqh)||0);
+  if(fms.length===1){
+    const d=fmAmCoownedDuplicateClockFraction01(fms[0],G);
+    return amFmPairDedupedSameFeedCombinedAqh(amA,Math.max(0,Number(fms[0].rat?.aqh)||0),d);
+  }
+  let allFullDup=true;
+  for(let i=0;i<fms.length;i++){
+    if(fmAmCoownedDuplicateClockFraction01(fms[i],G)<1-1e-9){allFullDup=false;break;}
+  }
+  if(allFullDup){
+    const legs=[amA,...fms.map(f=>Math.max(0,Number(f.rat?.aqh)||0))];
+    const mx=Math.max.apply(null,legs);
+    const sum=legs.reduce((a,b)=>a+b,0);
+    return mx+(sum-mx)*inc;
+  }
+  let indepSum=0,dupSum=0;
+  for(let i=0;i<fms.length;i++){
+    const fa=Math.max(0,Number(fms[i].rat?.aqh)||0);
+    const d=fmAmCoownedDuplicateClockFraction01(fms[i],G);
+    indepSum+=fa*(1-d);
+    dupSum+=fa*d;
+  }
+  return indepSum+simulcastDupSliceOverlapDedupedAqh(amA,dupSum,inc);
+}
+
 /**
  * Baseline-relative talent adequacy (performance layer only — not economics).
  * expected ≈ f(format, market tier, AM/FM, audience share) so high-rev billers are not
@@ -10657,7 +11585,7 @@ function recalc(stations,G){
       const effVan=effectiveRemoteVanMarketingLift(s,G);
       const vanLift=effVan>0?1+Math.max(0,effVan):1;
       const jBase=typeof s.jingleMarketingLift==='number'&&!Number.isNaN(s.jingleMarketingLift)?Math.max(0,s.jingleMarketingLift):0;
-      const jingleLift=jBase>0&&s.cosmeticJingleUrl?1+Math.max(0,jBase):1;
+      const jingleLift=jBase>0?1+Math.max(0,jBase):1;
       const ndBlend=fmAmNonDupBlendForRecalc(s,G);
       let coreAppl;
       if(ndBlend){
@@ -10885,6 +11813,18 @@ function recalc(stations,G){
   stitchCollapsedMarketRatingsFromHistory(stations,G);
   let _ratCurRepairCount=0;
   stations.forEach(s=>{ if(repairRatCurFromHeadlineShareIfAqhCollapsed(s,stations,G))_ratCurRepairCount++; });
+
+  // Headless harness: pin player cohort books then derive headline share from AQH (below).
+  if(G&&typeof G._wlHarnessPinPlayerShare==='number'&&G._wlHarnessPinPlayerShare>0)
+    applyWlHarnessPlayerSharePin(stations,G);
+
+  applyListeningHoursShareFromAqh(stations,G);
+  {
+    const rated=(stations||[]).filter(s=>s&&!s._bpSlotDeferred&&s.rat);
+    const sumBk=rated.reduce((a,s)=>a+(Number(s.rat.share)||0),0);
+    if(sumBk<=1e-5) stitchCollapsedMarketRatingsFromHistory(stations,G);
+  }
+
   if(_ratCurRepairCount>0&&G){
     const comm=(stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPublic);
     wlTrackSimInvariant({
@@ -10906,9 +11846,6 @@ function recalc(stations,G){
     const cur=s.rat.share,prev=h[h.length-2]?.share||cur,two=h.length>=3?h[h.length-3]?.share||cur:cur;
     s.cp={dq:cur-prev,d2:cur-two,under:cur-two<-.008,col:cur-two<-.020,sur:cur-two>.010};
   });
-  // Headless harness: pin player book share and renormalize other commercial stations (preserves comm mass).
-  if(G&&typeof G._wlHarnessPinPlayerShare==='number'&&G._wlHarnessPinPlayerShare>0)
-    applyWlHarnessPlayerSharePin(stations,G);
 }
 /** Pin each player station to target `G._wlHarnessPinPlayerShare` (0–1); scale rivals down so total commercial share unchanged. */
 function applyWlHarnessPlayerSharePin(stations,G){
@@ -11029,6 +11966,7 @@ function seedNewEntry(s,G){
     const pop=POP.cohorts[c]?.t||0;const eng=AQH_ENGAGE[c]||0.060;
     return sum+(s.rat.cur[c]?.share||0)*(pop*eng)/Math.max(engWtPop,1);
   },0);
+  applyListeningHoursShareFromAqh(allStations,G);
 }
 
 function seedRat(stations,fmpOrYear){
@@ -11076,6 +12014,7 @@ function seedRat(stations,fmpOrYear){
       return sum+(s.rat.cur[c]?.share||0)*(pop*engage)/Math.max(engageWeightedPop,1);
     },0);
   });
+  applyListeningHoursShareFromAqh(stations,mockG);
 }
 
 // Simulcast economics: star model (`_simulcastSource` + `simulcastSourceStationId`) + legacy mutual `simulcastWith` pairs.
@@ -11584,7 +12523,7 @@ function calcRev(s,G){
       'URBAN_CONTEMP':0.08,'RHYTHMIC':0.08,'ALT_ROCK':0.06,'CLASSIC_ROCK':0.06,
       'COUNTRY':0.05,'SOUL_RNB':0.07,'GOSPEL':-0.02,
       'BEAUTIFUL_MUSIC':-0.05,'ADULT_STANDARDS':-0.04,'MOR':-0.03,
-      'ALL_NEWS':0.09,'NEWS_TALK':0.08}[s.format]||0;
+      'ALL_NEWS':0.09,'NEWS_TALK':0.08,'SPORTS_TALK':0.08,'PODCAST_TALK':0.06}[s.format]||0;
     // Pre-1980: agencies still bought “the big station” — compress spread so format sellout affinity stacks less vs rank
     if(year<1980){
       const mid=0.066;
@@ -11993,13 +12932,9 @@ function calcRev(s,G){
   // Zombie / niche-survival AM: brokered inventory, minimal sales — heavy revenue haircut
   if(s.isZombie)totalRev=Math.round(totalRev*0.17);
   else if(s.isNicheSurvival)totalRev=Math.round(totalRev*0.38);
-  // Receiver: incremental simulcast monetization (~35–60% of this signal’s standalone billings;
-  // scales with programming source oq — stronger show = more sell-through on the echo signal).
-  let simulcastRevMult=1;
-  if(isProgReceiver&&progSrcStation){
-    simulcastRevMult=0.35+0.25*Math.min(1,(progSrcStation.oq||50)/100);
-    totalRev=Math.round(totalRev*simulcastRevMult);
-  }
+  // Same-feed AM/FM simulcast: real-world sales treat it as one audience product (one packaged buy),
+  // not a deep-discount “echo” rate on the FM leg — AQH already splits across licenses in the book.
+  // No separate terrestrial revenue haircut on programming followers (costs still run per tower below).
   const _sportsPrem=getSportsBonus(s,G);
   if(_sportsPrem>0)totalRev=Math.round(totalRev*(1+Math.min(0.08,_sportsPrem*1.25)));
   // Headless harness: scale player commercial revenue only (stress / austerity A/B at fixed share).
@@ -12109,11 +13044,10 @@ function calcRev(s,G){
     const _lbu=Math.max(0,Math.min(1,totalRev/120000));
     fixedCost=Math.round(fixedCost*(0.70+0.30*_lbu));
   }
-  let simulcastProgFee=0;
-  if(isProgReceiver&&progSrcStation){
-    const srcTal=Object.values(progSrcStation.prog||{}).filter(sl=>sl?.talent).reduce((sum,sl)=>sum+payrollHalfPeriodForDaypartSlot(sl),0);
-    simulcastProgFee=Math.round(srcTal*0.38);
-  }
+  // Legacy hook charged followers ~38% of the hub’s talent payroll as “simulcast programming fee.” In reality the same
+  // hosts are already fully costed on the programming source — simulcast is mostly STL/transmitter/tower + shared sales/traffic.
+  // Incremental FM footprint stays in this leg’s fixed costs (receiver efficiency path); no duplicate programming-tax line item.
+  const simulcastProgFee=0;
   const promoCap=promoBudgetCapForPeriod(G);
   const progCap=progBudgetCapForPeriod(G);
   let effPromo=Math.min(s.ops?.promo||0,promoCap);
@@ -12127,8 +13061,8 @@ function calcRev(s,G){
     effProg=Math.max(effProg,bp.prog);
   }
   s.fin.rev=totalRev;
-  s.fin.streamRev=isProgReceiver&&progSrcStation?Math.round(streamRev*ccBonus*daPenalty*simulcastRevMult):streamRev;
-  s.fin.terRev=isProgReceiver&&progSrcStation?Math.round(rev*ccBonus*daPenalty*simulcastRevMult):Math.round(rev*ccBonus);
+  s.fin.streamRev=isProgReceiver&&progSrcStation?Math.round(streamRev*ccBonus*daPenalty):streamRev;
+  s.fin.terRev=isProgReceiver&&progSrcStation?Math.round(rev*ccBonus*daPenalty):Math.round(rev*ccBonus);
   const _mix=rev+streamRev;
   const _digFrac=_mix>0?streamRev/_mix:0;
   s.fin.digitalRev=Math.round(totalRev*_digFrac);
@@ -12241,8 +13175,34 @@ function marketFixedCostScaleMultiplier(marketId){
   const atMid=1+slopeMid*(MID_BREAK-1);
   return Math.max(floorMega,atMid-slopeMegaDecay*(rs-MID_BREAK));
 }
+/**
+ * Same-feed co-owned AM/FM: scale FM terrestrial/digital revenue after {@link calcRev} so duplicated
+ * clock does not double-bill at 100% (see {@link SIMULCAST_SAME_FEED_AUDIENCE_INCREMENT}).
+ */
+function applySimulcastCoownedFmRevenueDedupe(stations,G){
+  const inc=SIMULCAST_SAME_FEED_AUDIENCE_INCREMENT;
+  const seen=new Set();
+  (stations||[]).forEach(s=>{
+    if(!s||s._bpSlotDeferred||s.isPublic)return;
+    const q=fmAmNonDupQualifiedPair(s,G);
+    if(!q||!q.fm)return;
+    const ida=String(q.am.id),idf=String(q.fm.id);
+    const key=ida<=idf?ida+':'+idf:idf+':'+ida;
+    if(seen.has(key))return;
+    seen.add(key);
+    const dup=fmAmCoownedDuplicateClockFraction01(q.fm,G);
+    if(dup<=0)return;
+    const mult=(1-dup)+dup*inc;
+    const fm=q.fm;
+    fm.fin.rev=Math.round((Number(fm.fin.rev)||0)*mult);
+    if(fm.fin.terRev!=null)fm.fin.terRev=Math.round((Number(fm.fin.terRev)||0)*mult);
+    if(fm.fin.streamRev!=null)fm.fin.streamRev=Math.round((Number(fm.fin.streamRev)||0)*mult);
+    if(fm.fin.digitalRev!=null)fm.fin.digitalRev=Math.round((Number(fm.fin.digitalRev)||0)*mult);
+  });
+}
 function seedRev(stations,G){
   stations.forEach(s=>{ if(!s||s._bpSlotDeferred)return; calcRev(s,G); });
+  applySimulcastCoownedFmRevenueDedupe(stations,G);
   const comm=stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPublic);
   const mktId=G.marketId||ACTIVE_MARKET;
   const sorted=[...comm].sort((a,b)=>(b.rat?.share||0)-(a.rat?.share||0));
@@ -12392,7 +13352,7 @@ function debugRevenueTrace(G,focusStationId){
       focus_fin_rev:focus.fin?.rev,
       partner_fin_rev:partner.fin?.rev,
       card_revUi_sum_ifCombined:(focus.fin?.rev||0)+(partner.fin?.rev||0),
-      card_shareUi_sum_ifCombined:(focus.rat?.share||0)+(partner.rat?.share||0),
+      card_shareUi_sum_ifCombined:stationCardSimulcastPairDedupedShare01(focus,partner,G),
     }:null,
     stations:rows.sort((a,b)=>b.rev-a.rev),
   };
@@ -13679,7 +14639,7 @@ function openDrift(sid){
     <button class="cnl" onclick="cm('m-drift')">CANCEL</button>`;
   updDrift(sid, val);
   om('m-drift');
-  if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live')G._tutorialDriftCoachDismissed=0;
+  if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'){G._tutorialDriftCoachDismissed=0;G._tutorialDriftCoachStep=0;}
   if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===4)
     requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
   if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live')
@@ -14512,18 +15472,109 @@ function wlTutorialSecondStationCushionForPrice(fmMin){
   const p = Number(fmMin);
   if (!Number.isFinite(p) || p <= 0) return 220000;
   const pct = Math.round(p * 0.27);
-  const floor = 175000;
+  const floor = 200000;
   const cap = 600000;
   return Math.min(cap, Math.max(floor, pct));
 }
+function wlTutorialExpansionPostLesson(){
+  return !!(G&&G.sc&&G.sc.id==='tutorial_turnaround'&&!G.tutorialMode&&MP.mode!=='live');
+}
+function wlTutorialExpansionCoachActive(){
+  return !!(G&&(G._tutorialExpansionStep|0)>0&&!G._tutorialExpansionComplete&&wlTutorialExpansionPostLesson());
+}
 /**
- * After the Turnaround lesson ends, one situational toast when cash can cover a 2nd FM + cushion.
- * Does not block play; points to Acquire + Simulcast on the toolbar.
+ * Post-lesson expansion coach targets the main board. Pause while unrelated `.ov` modals are open
+ * (Manage Talent, Programming, etc.); only Acquire / Station Admin / Simulcast stay allowlisted when that flow needs them.
  */
-function tutorialTurnaroundMaybeSecondStationCashTip(){
-  if(MP.mode==='live'||!G)return;
-  if(G.sc?.id!=='tutorial_turnaround'||G.tutorialMode)return;
-  if(G._tutorialSecondStationTipShown)return;
+function wlTuExpansionBlockingGameOverlayOpen(){
+  const allow=new Set(['m-ac','m-stadmin','m-sim']);
+  const nodes=document.querySelectorAll('.ov.on');
+  for(let i=0;i<nodes.length;i++){
+    const id=nodes[i].id||'';
+    if(!id)continue;
+    if(allow.has(id))continue;
+    return true;
+  }
+  return false;
+}
+function wlTuExpansionPlayerAmFm(){
+  const ps=(G.ps||[]).filter(s=>s&&!s._bpSlotDeferred);
+  const am=ps.find(s=>s.sig.type==='AM'&&!s.fmBooster);
+  const fm=ps.find(s=>s.sig.type==='FM'&&!s.fmBooster);
+  return {ps,am,fm};
+}
+function wlTuExpansionFmDupNeedsCoach(fmId){
+  const fm=G.stations.find(s=>s.id===fmId);
+  if(!fm||!wlTutorialExpansionPostLesson())return false;
+  const pair=fmAmNonDupQualifiedPair(fm,G);
+  if(!pair)return false;
+  const maxP=getMaxSimulcastPctForMarket(G.year,G.marketId);
+  return maxP<100;
+}
+function wlTuExpansionSuppressFmDupToast(){
+  return !!(G&&G._tutorialExpansionPath==='sim'&&(G._tutorialExpansionStep|0)>=9&&(G._tutorialExpansionStep|0)<=11&&!G._tutorialExpansionComplete);
+}
+let _wlExpResizeHandler=null;
+let _wlExpResizeT=0;
+function wlTuExpansionUnbindResize(){
+  if(_wlExpResizeHandler){
+    window.removeEventListener('resize',_wlExpResizeHandler);
+    try{window.removeEventListener('scroll',_wlExpResizeHandler,{capture:true});}catch(e){window.removeEventListener('scroll',_wlExpResizeHandler,true);}
+    _wlExpResizeHandler=null;
+  }
+  if(_wlExpResizeT){clearTimeout(_wlExpResizeT);_wlExpResizeT=0;}
+}
+function wlTuExpansionBindResize(){
+  wlTuExpansionUnbindResize();
+  _wlExpResizeHandler=()=>{
+    clearTimeout(_wlExpResizeT);
+    _wlExpResizeT=setTimeout(()=>{
+      if(!wlTutorialExpansionCoachActive())return;
+      wlTuExpansionLayoutStep();
+    },100);
+  };
+  window.addEventListener('resize',_wlExpResizeHandler);
+  try{
+    window.addEventListener('scroll',_wlExpResizeHandler,{capture:true,passive:true});
+  }catch(e){
+    window.addEventListener('scroll',_wlExpResizeHandler,true);
+  }
+}
+function wlTuExpansionComplete(){
+  if(G){
+    G._tutorialExpansionComplete=true;
+    G._tutorialExpansionStep=0;
+    G._tutorialExpansionPath=null;
+    G._tutorialExpansionIntroCoachDispatched=false;
+    G._tutorialExpansionAwaitingIntroDismiss=false;
+    G._tutorialExpansionStep9Phase=null;
+    G._tutorialExpansionAcquireModalCoachDismissed=false;
+  }
+  _wlTuTr.active=false;
+  wlTuExpansionUnbindResize();
+  wlTuTurnaroundIoDisconnect();
+  wlTuTurnaroundTeardownShades();
+  if(_wlTuTr.root)_wlTuTr.root.style.display='none';
+}
+/** Post-lesson Turnaround FM expansion coach + acquisition: FM environment is brutal in the mid-70s — don’t prompt until this year (financial checks still apply). */
+const WL_TUTORIAL_TURNAROUND_FM_EXPANSION_MIN_YEAR=1977;
+function wlTutorialTurnaroundFmExpansionYearUnlocked(){
+  return !G||G.sc?.id!=='tutorial_turnaround'||G.tutorialMode||MP.mode==='live'||(G.year|0)>=WL_TUTORIAL_TURNAROUND_FM_EXPANSION_MIN_YEAR;
+}
+/** Post-lesson Turnaround: block FM purchases until calendar gate (financial checks still apply). */
+function wlTutorialTurnaroundFmPurchaseYearBlocked(){
+  return !!(G?.sc?.id==='tutorial_turnaround'&&!G.tutorialMode&&MP.mode!=='live'&&(G.year|0)<WL_TUTORIAL_TURNAROUND_FM_EXPANSION_MIN_YEAR);
+}
+/**
+ * After the Turnaround lesson ends, start a guided coach when cash can cover a 2nd FM + cushion (solo).
+ */
+function tutorialTurnaroundMaybeExpansionCoachStart(){
+  if(MP.mode==='live'||!G||G.sc?.id!=='tutorial_turnaround'||G.tutorialMode)return;
+  if(!wlTutorialTurnaroundFmExpansionYearUnlocked())return;
+  if(wlTutorialCoachUiSuppressed())return;
+  if(G._tutorialExpansionComplete)return;
+  if((G._tutorialExpansionStep|0)>0)return;
+  if(wlTuExpansionBlockingGameOverlayOpen())return;
   const ps=G.ps||[];
   if(ps.length!==1)return;
   const fmMin=soloCheapestFmAcquisitionPrice(G);
@@ -14532,12 +15583,532 @@ function tutorialTurnaroundMaybeSecondStationCashTip(){
   if((G.cash||0)<need)return;
   const gt=G._tutorialGradTurn|0;
   if(gt>0&&(G.turn|0)<=gt)return;
+  const {am}=wlTuExpansionPlayerAmFm();
+  if(!am)return;
+  G._tutorialExpansionAmSid=am.id;
+  G._tutorialExpansionStep=1;
+  G._tutorialExpansionPath=null;
+  G._tutorialExpansionIntroCoachDispatched=false;
+  G._tutorialExpansionAwaitingIntroDismiss=false;
   G._tutorialSecondStationTipShown=true;
-  showToast(
-    `Strong cash position (${f$(G.cash)}). Ready to grow? Use Acquire station for a second FM — then Simulcast on the toolbar to share programming across signals and stretch budgets while you build.`,
-    'info',
-    14500,
-  );
+  wlTuExpansionLayoutStep();
+}
+function wlTuExpansionStationCardElForSid(sid){
+  if(!sid)return null;
+  return document.querySelector('.sc[data-wl-station-ids*="'+sid+'"]');
+}
+function wlTuExpansionAfterRender(){
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
+  if(wlTutorialCoachUiSuppressed())return;
+  tutorialTurnaroundMaybeExpansionCoachStart();
+  if(wlTutorialExpansionCoachActive())wlTuExpansionLayoutStep();
+}
+function wlTuExpansionLayoutStep(){
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
+  if(wlTutorialCoachUiSuppressed()){
+    try{wlTuTurnaroundTeardownShades();wlTuTurnaroundIoDisconnect();wlTuExpansionUnbindResize();if(_wlTuTr.root)_wlTuTr.root.style.display='none';}catch(e){}
+    return;
+  }
+  if(!wlTutorialExpansionCoachActive())return;
+  if(!wlTutorialExpansionPostLesson()){wlTuExpansionComplete();return;}
+  if(document.getElementById('m-sum')?.classList.contains('on')){
+    if(_wlTuTr.root)_wlTuTr.root.style.display='none';
+    return;
+  }
+  /* Acquire modal: default — hide map coach; expansion step 2 shows in-modal gutter coach. */
+  if(document.getElementById('m-ac')?.classList.contains('on')){
+    const stAc=G._tutorialExpansionStep|0;
+    if(wlTutorialExpansionCoachActive()&&(stAc|0)===2&&!G._tutorialExpansionAcquireModalCoachDismissed){
+      const zAc=wlTuTurnaroundZBase();
+      const moAc=document.querySelector('#m-ac .mo');
+      wlTuTurnaroundEnsureRoot();
+      _wlTuTr.active=true;
+      wlTuExpansionBindResize();
+      wlTuTurnaroundIoDisconnect();
+      wlTuTurnaroundTeardownShades();
+      if(moAc){
+        _wlTuTr.root.style.display='block';
+        _wlTuTr.root.style.zIndex=String(zAc+2);
+        _wlTuTr.shadeWrap.style.zIndex=String(zAc);
+        _wlTuTr.card.style.zIndex=String(zAc+4);
+        wlTuTurnaroundResetCardPosition(_wlTuTr.card);
+        _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored wl-ft-tut-card--modal-gutter';
+        _wlTuTr.card.style.width='';
+        _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Acquire a station</h3>
+<p class="wl-ft-tut-p"><strong>Scroll down</strong> in this list, select an <strong>FM</strong> station, then tap <strong>SELECT</strong> and confirm your purchase.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuExpansionAckAcquireModalCoach()">OK</button></div>`;
+        requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,moAc));
+        requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,moAc)));
+      }
+      return;
+    }
+    wlTuTurnaroundTeardownShades();
+    if(_wlTuTr.root)_wlTuTr.root.style.display='none';
+    return;
+  }
+  if(wlTuExpansionBlockingGameOverlayOpen()){
+    wlTuTurnaroundTeardownShades();
+    wlTuTurnaroundIoDisconnect();
+    if(_wlTuTr.root)_wlTuTr.root.style.display='none';
+    return;
+  }
+  try{
+  const st=G._tutorialExpansionStep|0;
+  const z=wlTuTurnaroundZBase();
+  wlTuTurnaroundEnsureRoot();
+  _wlTuTr.active=true;
+  wlTuExpansionBindResize();
+  wlTuTurnaroundIoDisconnect();
+  wlTuTurnaroundTeardownShades();
+  const moPad=n=>{
+    const mo=document.querySelector('#m-stadmin .mo');
+    const moS=document.querySelector('#m-sim .mo');
+    if(st===7&&document.getElementById('m-stadmin')?.classList.contains('on')&&mo){
+      wlTuTurnaroundResetCardPosition(_wlTuTr.card);
+      _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored wl-ft-tut-card--modal-gutter';
+      _wlTuTr.card.style.width='';
+      _wlTuTr.card.innerHTML=n;
+      requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo));
+      requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo)));
+    }else if(st===9&&document.getElementById('m-stadmin')?.classList.contains('on')&&mo){
+      wlTuTurnaroundResetCardPosition(_wlTuTr.card);
+      _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored wl-ft-tut-card--modal-gutter';
+      _wlTuTr.card.style.width='';
+      _wlTuTr.card.innerHTML=n;
+      requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo));
+      requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo)));
+    }else if(st===8&&document.getElementById('m-sim')?.classList.contains('on')&&moS){
+      wlTuTurnaroundResetCardPosition(_wlTuTr.card);
+      _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored wl-ft-tut-card--modal-gutter';
+      _wlTuTr.card.style.width='';
+      _wlTuTr.card.innerHTML=n;
+      requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,moS));
+      requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,moS)));
+    }
+  };
+  if(st===6&&!document.getElementById('m-stadmin')?.classList.contains('on')&&!document.getElementById('m-sim')?.classList.contains('on')){
+    const amId=G._tutorialExpansionAmSid;
+    const adm=amId?document.getElementById('wl-admin-pill-'+amId):null;
+    if(adm){
+      wlFtTutorialScrollTargetIntoView(adm);
+      wlTuTurnaroundLayoutHoleDim(adm,z);
+      _wlTuTr.root.style.display='block';
+      _wlTuTr.root.style.zIndex=String(z+2);
+      _wlTuTr.shadeWrap.style.zIndex=String(z);
+      _wlTuTr.card.style.zIndex=String(z+4);
+      wlTuTurnaroundResetCardPosition(_wlTuTr.card);
+      _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored';
+      _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Simulcast setup</h3>
+<p class="wl-ft-tut-p">Open the <strong>Admin</strong> menu on the station whose programming you want to simulcast.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuExpansionAckSimAdmin()">OK</button></div>`;
+      return;
+    }
+  }
+  if(st===6&&document.getElementById('m-stadmin')?.classList.contains('on')){G._tutorialExpansionStep=7;wlTuExpansionLayoutStep();return;}
+  /* Sim modal open while still on step 7 must advance before drawing the Admin coach — otherwise both modals stay up and we never leave step 7 (loop after confirm). */
+  if(st===7&&document.getElementById('m-sim')?.classList.contains('on')){G._tutorialExpansionStep=8;wlTuExpansionLayoutStep();return;}
+  if(st===7){
+    const simB=document.getElementById('wl-stadmin-simulcast-btn');
+    if(simB&&document.getElementById('m-stadmin')?.classList.contains('on')){
+      wlFtTutorialScrollTargetIntoView(simB);
+      wlTuTurnaroundLayoutHoleDim(simB,z);
+      _wlTuTr.root.style.display='block';
+      _wlTuTr.root.style.zIndex=String(z+2);
+      _wlTuTr.shadeWrap.style.zIndex=String(z);
+      _wlTuTr.card.style.zIndex=String(z+4);
+      moPad(`<h3 class="wl-ft-tut-h">Simulcast</h3>
+<p class="wl-ft-tut-p">Select <strong>Simulcast This Station.</strong></p>
+<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0">Then choose your FM station in the next screen.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuExpansionAckSimulcastBtn()">OK</button></div>`);
+      return;
+    }
+  }
+  if(st===8&&document.getElementById('m-sim')?.classList.contains('on')){
+    const fmId=G._tutorialExpansionFmSid;
+    const pick=fmId?document.getElementById('wl-exp-sim-pick-'+fmId):null;
+    const cfm=document.getElementById('wl-exp-sim-confirm-btn');
+    const hole=pick||cfm;
+    if(hole){
+      wlFtTutorialScrollTargetIntoView(hole);
+      wlTuTurnaroundLayoutHoleDim(hole,z);
+      _wlTuTr.root.style.display='block';
+      _wlTuTr.root.style.zIndex=String(z+2);
+      _wlTuTr.shadeWrap.style.zIndex=String(z);
+      _wlTuTr.card.style.zIndex=String(z+4);
+      moPad(`<h3 class="wl-ft-tut-h">Choose your FM</h3>
+<p class="wl-ft-tut-p">Select your FM station, then tap <strong>SIMULCAST THIS STATION</strong> to confirm.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuExpansionAckPickFm()">OK</button></div>`);
+      return;
+    }
+  }
+  if(st===9){
+    const adm=document.getElementById('m-stadmin');
+    let phase=G._tutorialExpansionStep9Phase||'admin';
+    if(phase==='admin'){
+      if(adm?.classList.contains('on')){
+        const mo=document.querySelector('#m-stadmin .mo');
+        const closeB=document.querySelector('#m-stadmin button.cnl');
+        if(mo&&closeB){
+          wlFtTutorialScrollTargetIntoView(closeB);
+          wlTuTurnaroundLayoutHoleDim(closeB,z);
+          _wlTuTr.root.style.display='block';
+          _wlTuTr.root.style.zIndex=String(z+2);
+          _wlTuTr.shadeWrap.style.zIndex=String(z);
+          _wlTuTr.card.style.zIndex=String(z+4);
+          moPad(`<h3 class="wl-ft-tut-h">Station Admin</h3>
+<p class="wl-ft-tut-p">Your simulcast link is set. Tap <strong>CLOSE</strong> at the bottom of this window to return to your stations.</p>
+<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0">Next we&apos;ll cover the simulcast share slider on your FM card.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuExpansionAckAdminCloseCoach()">OK</button></div>`);
+          return;
+        }
+      }
+      const fmIdClose=G._tutorialExpansionFmSid;
+      if(wlTuExpansionFmDupNeedsCoach(fmIdClose)){
+        G._tutorialExpansionStep=10;
+        wlTuExpansionLayoutStep();
+        return;
+      }
+      G._tutorialExpansionStep9Phase='celebrate';
+      wlTuExpansionLayoutStep();
+      return;
+    }
+    const fmId=G._tutorialExpansionFmSid;
+    const card=fmId?wlTuExpansionStationCardElForSid(fmId):null;
+    if(card){
+      wlFtTutorialScrollTargetIfNeeded(card);
+      wlTuTurnaroundLayoutHoleDim(card,z);
+      _wlTuTr.root.style.display='block';
+      _wlTuTr.root.style.zIndex=String(z+2);
+      _wlTuTr.shadeWrap.style.zIndex=String(z);
+      _wlTuTr.card.style.zIndex=String(z+4);
+      wlTuTurnaroundResetCardPosition(_wlTuTr.card);
+      _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored';
+      _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Working together</h3>
+<p class="wl-ft-tut-p">Your <strong>AM</strong> and <strong>FM</strong> are now working together.</p>
+<p class="wl-ft-tut-p">The simulcast extends your reach and shares the same programming and talent.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuExpansionAckCardPaired()">OK</button></div>`;
+      return;
+    }
+  }
+  if(st===10){
+    const fmId=G._tutorialExpansionFmSid;
+    const rng=fmId?document.getElementById('fm-dup-range-'+fmId):null;
+    if(rng&&wlTuExpansionFmDupNeedsCoach(fmId)){
+      wlFtTutorialScrollTargetIntoView(rng);
+      wlTuTurnaroundLayoutHoleDim(rng,z);
+      _wlTuTr.root.style.display='block';
+      _wlTuTr.root.style.zIndex=String(z+2);
+      _wlTuTr.shadeWrap.style.zIndex=String(z);
+      _wlTuTr.card.style.zIndex=String(z+4);
+      wlTuTurnaroundResetCardPosition(_wlTuTr.card);
+      _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored';
+      _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Simulcast share</h3>
+<p class="wl-ft-tut-p">The government wants more unique programming on FM stations.</p>
+<p class="wl-ft-tut-p">Use the slider to decide how much of the day will be simulcast. You can program the remaining time separately.</p>
+<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0">Set the slider and click OK on the card.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuExpansionAckFccSlider()">OK</button></div>`;
+      return;
+    }
+    G._tutorialExpansionStep=11;
+    wlTuExpansionLayoutStep();
+    return;
+  }
+  if(st===11){
+    const fmId=G._tutorialExpansionFmSid;
+    const sel=fmId?document.getElementById('fm-dup-rem-'+fmId):null;
+    if(sel&&wlTuExpansionFmDupNeedsCoach(fmId)){
+      wlFtTutorialScrollTargetIntoView(sel);
+      wlTuTurnaroundLayoutHoleDim(sel,z);
+      _wlTuTr.root.style.display='block';
+      _wlTuTr.root.style.zIndex=String(z+2);
+      _wlTuTr.shadeWrap.style.zIndex=String(z);
+      _wlTuTr.card.style.zIndex=String(z+4);
+      wlTuTurnaroundResetCardPosition(_wlTuTr.card);
+      _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored';
+      _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Remainder format</h3>
+<p class="wl-ft-tut-p">Now pick a format that will fill the rest of the FM station&apos;s schedule. For the remaining time, choose a format that fits FM.</p>
+<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0">Select the remainder format and click OK on the card.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuExpansionAckRemainderFmt()">OK</button></div>`;
+      return;
+    }
+    G._tutorialExpansionStep=12;
+    wlTuExpansionLayoutStep();
+    return;
+  }
+  if(st===12){
+    _wlTuTr.root.style.display='block';
+    _wlTuTr.root.style.zIndex=String(z+2);
+    _wlTuTr.shadeWrap.style.zIndex=String(z);
+    _wlTuTr.card.style.zIndex=String(z+4);
+    wlTuTurnaroundTeardownShades();
+    _wlTuTr.shadeWrap.innerHTML='';
+    const dimF=document.createElement('div');
+    dimF.className='wl-ft-tut-shade wl-ft-tut-shade--full';
+    dimF.style.cssText=`position:fixed;inset:0;z-index:${z};pointer-events:auto;background:rgba(6,8,12,.52)`;
+    _wlTuTr.shadeWrap.appendChild(dimF);
+    wlTuTurnaroundResetCardPosition(_wlTuTr.card);
+    _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--center wl-tu-tr-card--layer';
+    _wlTuTr.card.style.width='min(500px,calc(100vw - 28px))';
+    _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Full-time FM later</h3>
+<p class="wl-ft-tut-p">You can end the simulcast anytime from the <strong>Admin</strong> menu and give your FM its own full-time format.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuExpansionAckFinal()">OK</button></div>`;
+    return;
+  }
+  if(st===1){
+    const tipOv=document.getElementById('m-turnaround-tip');
+    const tipBody=document.getElementById('turnaround-tip-body');
+    const tipOn=!!(tipOv&&tipOv.classList.contains('on'));
+    if(G._tutorialExpansionIntroCoachDispatched&&tipOn){
+      wlTuTurnaroundTeardownShades();
+      if(_wlTuTr.root)_wlTuTr.root.style.display='none';
+      return;
+    }
+    if(!G._tutorialExpansionIntroCoachDispatched&&tipOv&&tipBody){
+      const opened=tutorialTurnaroundUIMessage(
+        'You\'re doing well.\n\nYou now have enough cash to expand.\n\nIn this era, you can own one AM and one FM station — so your next move is buying an FM.',
+        'info',
+        undefined,
+        { expansionPostLessonIntro: true }
+      );
+      if(opened){
+        G._tutorialExpansionIntroCoachDispatched=true;
+        G._tutorialExpansionAwaitingIntroDismiss=true;
+        wlTuTurnaroundTeardownShades();
+        if(_wlTuTr.root)_wlTuTr.root.style.display='none';
+        return;
+      }
+    }
+    _wlTuTr.root.style.display='block';
+    _wlTuTr.root.style.zIndex=String(z+2);
+    _wlTuTr.shadeWrap.style.zIndex=String(z);
+    _wlTuTr.card.style.zIndex=String(z+4);
+    wlTuTurnaroundTeardownShades();
+    _wlTuTr.shadeWrap.innerHTML='';
+    const dimF=document.createElement('div');
+    dimF.className='wl-ft-tut-shade wl-ft-tut-shade--full';
+    dimF.style.cssText=`position:fixed;inset:0;z-index:${z};pointer-events:auto;background:rgba(6,8,12,.52)`;
+    _wlTuTr.shadeWrap.appendChild(dimF);
+    wlTuTurnaroundResetCardPosition(_wlTuTr.card);
+    _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--center wl-tu-tr-card--layer';
+    _wlTuTr.card.style.width='min(500px,calc(100vw - 28px))';
+    _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">You&apos;re doing well</h3>
+<p class="wl-ft-tut-p">You now have enough cash to expand.</p>
+<p class="wl-ft-tut-p">In this era, you can own one <strong>AM</strong> and one <strong>FM</strong> station — so your next move is buying an <strong>FM</strong>.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuExpansionAckIntro()">OK</button></div>`;
+    return;
+  }
+  if(st===2){
+    const acq=document.getElementById('wl-acquire-station-btn');
+    if(acq){
+      wlFtTutorialScrollTargetIntoView(acq);
+      wlTuTurnaroundLayoutHoleDim(acq,z);
+      _wlTuTr.root.style.display='block';
+      _wlTuTr.root.style.zIndex=String(z+2);
+      _wlTuTr.shadeWrap.style.zIndex=String(z);
+      _wlTuTr.card.style.zIndex=String(z+4);
+      wlTuTurnaroundResetCardPosition(_wlTuTr.card);
+      _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored';
+      _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Acquire a station</h3>
+<p class="wl-ft-tut-p">Click <strong>Acquire a station</strong> on the map to buy an <strong>FM</strong> station.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuExpansionAckAcquire()">OK</button></div>`;
+      return;
+    }
+  }
+  if(st===3){
+    const fmId=G._tutorialExpansionFmSid;
+    const card=fmId?wlTuExpansionStationCardElForSid(fmId):null;
+    if(card){
+      wlFtTutorialScrollTargetIfNeeded(card);
+      wlTuTurnaroundLayoutHoleDim(card,z);
+      _wlTuTr.root.style.display='block';
+      _wlTuTr.root.style.zIndex=String(z+2);
+      _wlTuTr.shadeWrap.style.zIndex=String(z);
+      _wlTuTr.card.style.zIndex=String(z+4);
+      wlTuTurnaroundResetCardPosition(_wlTuTr.card);
+      _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored';
+      _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Your new FM</h3>
+<p class="wl-ft-tut-p">This is your new <strong>FM</strong> station.</p>
+<p class="wl-ft-tut-p">You can run it independently — or use it to strengthen your AM.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuExpansionAckNewFm()">OK</button></div>`;
+      return;
+    }
+  }
+  if(st===4){
+    _wlTuTr.root.style.display='block';
+    _wlTuTr.root.style.zIndex=String(z+2);
+    _wlTuTr.shadeWrap.style.zIndex=String(z);
+    _wlTuTr.card.style.zIndex=String(z+4);
+    wlTuTurnaroundTeardownShades();
+    _wlTuTr.shadeWrap.innerHTML='';
+    const dimF=document.createElement('div');
+    dimF.className='wl-ft-tut-shade wl-ft-tut-shade--full';
+    dimF.style.cssText=`position:fixed;inset:0;z-index:${z};pointer-events:auto;background:rgba(6,8,12,.52)`;
+    _wlTuTr.shadeWrap.appendChild(dimF);
+    wlTuTurnaroundResetCardPosition(_wlTuTr.card);
+    _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--center wl-tu-tr-card--layer';
+    _wlTuTr.card.style.width='min(520px,calc(100vw - 28px))';
+    _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Choose a direction</h3>
+<p class="wl-ft-tut-p">Not sure what to do yet?</p>
+<p class="wl-ft-tut-p">You can <strong>simulcast</strong> your AM on FM — putting the same programming on a clearer signal.</p>
+<p class="wl-ft-tut-p">Or you can run your FM as its own station.</p>
+<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0">Pick what you want to try:</p>
+<div class="wl-ft-tut-btns" style="flex-wrap:wrap;gap:8px"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuExpansionChooseSimulcast()">Simulcast</button>
+<button type="button" class="wl-ft-tut-btn" onclick="wlTuExpansionChooseSeparate()">Run separately</button></div>`;
+    return;
+  }
+  if(st===5){
+    _wlTuTr.root.style.display='block';
+    _wlTuTr.root.style.zIndex=String(z+2);
+    _wlTuTr.shadeWrap.style.zIndex=String(z);
+    _wlTuTr.card.style.zIndex=String(z+4);
+    wlTuTurnaroundTeardownShades();
+    _wlTuTr.shadeWrap.innerHTML='';
+    const dimF=document.createElement('div');
+    dimF.className='wl-ft-tut-shade wl-ft-tut-shade--full';
+    dimF.style.cssText=`position:fixed;inset:0;z-index:${z};pointer-events:auto;background:rgba(6,8,12,.52)`;
+    _wlTuTr.shadeWrap.appendChild(dimF);
+    wlTuTurnaroundResetCardPosition(_wlTuTr.card);
+    _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--center wl-tu-tr-card--layer';
+    _wlTuTr.card.style.width='min(500px,calc(100vw - 28px))';
+    _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Selling later</h3>
+<p class="wl-ft-tut-p">If you need to, you can sell a station later from the <strong>Admin</strong> menu.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuExpansionAckSepDone()">Done</button></div>`;
+    return;
+  }
+  wlTuTurnaroundTeardownShades();
+  if(_wlTuTr.root)_wlTuTr.root.style.display='none';
+  }catch(err){
+    console.error('[wlTuExpansionLayoutStep]',err);
+    try{wlTuTurnaroundTeardownShades();wlTuTurnaroundIoDisconnect();wlTuExpansionUnbindResize();if(_wlTuTr.root)_wlTuTr.root.style.display='none';}catch(_e){}
+  }
+}
+function wlTuExpansionAckIntro(){
+  if(!wlTutorialExpansionCoachActive()||(G._tutorialExpansionStep|0)!==1)return;
+  G._tutorialExpansionStep=2;
+  wlTuExpansionLayoutStep();
+}
+function wlTuExpansionAckAcquire(){
+  if(!wlTutorialExpansionCoachActive()||(G._tutorialExpansionStep|0)!==2)return;
+  wlTuExpansionLayoutStep();
+}
+function wlTuExpansionAckAcquireModalCoach(){
+  if(!wlTutorialExpansionCoachActive()||(G._tutorialExpansionStep|0)!==2)return;
+  G._tutorialExpansionAcquireModalCoachDismissed=true;
+  wlTuExpansionLayoutStep();
+}
+function wlTuExpansionAckNewFm(){
+  if(!wlTutorialExpansionCoachActive()||(G._tutorialExpansionStep|0)!==3)return;
+  G._tutorialExpansionStep=4;
+  wlTuExpansionLayoutStep();
+}
+function wlTuExpansionChooseSeparate(){
+  if(!wlTutorialExpansionCoachActive()||(G._tutorialExpansionStep|0)!==4)return;
+  G._tutorialExpansionPath='sep';
+  G._tutorialExpansionStep=5;
+  wlTuExpansionLayoutStep();
+}
+function wlTuExpansionChooseSimulcast(){
+  if(!wlTutorialExpansionCoachActive()||(G._tutorialExpansionStep|0)!==4)return;
+  G._tutorialExpansionPath='sim';
+  G._tutorialExpansionStep=6;
+  wlTuExpansionLayoutStep();
+}
+function wlTuExpansionAckSepDone(){
+  if(!wlTutorialExpansionCoachActive()||(G._tutorialExpansionStep|0)!==5)return;
+  wlTuExpansionComplete();
+}
+function wlTuExpansionAckSimAdmin(){
+  if(!wlTutorialExpansionCoachActive()||(G._tutorialExpansionStep|0)!==6)return;
+  wlTuExpansionLayoutStep();
+}
+function wlTuExpansionAckSimulcastBtn(){
+  if(!wlTutorialExpansionCoachActive()||(G._tutorialExpansionStep|0)!==7)return;
+  wlTuExpansionLayoutStep();
+}
+function wlTuExpansionAckPickFm(){
+  if(!wlTutorialExpansionCoachActive()||(G._tutorialExpansionStep|0)!==8)return;
+  wlTuExpansionLayoutStep();
+}
+function wlTuExpansionAckAdminCloseCoach(){
+  if(!wlTutorialExpansionCoachActive()||(G._tutorialExpansionStep|0)!==9)return;
+  wlTuExpansionLayoutStep();
+}
+function wlTuExpansionAckCardPaired(){
+  if(!wlTutorialExpansionCoachActive()||(G._tutorialExpansionStep|0)!==9)return;
+  if((G._tutorialExpansionStep9Phase||'admin')!=='celebrate')return;
+  const fmId=G._tutorialExpansionFmSid;
+  if(wlTuExpansionFmDupNeedsCoach(fmId))G._tutorialExpansionStep=10;
+  else G._tutorialExpansionStep=12;
+  wlTuExpansionLayoutStep();
+}
+function wlTuExpansionAckFccSlider(){
+  if(!wlTutorialExpansionCoachActive()||(G._tutorialExpansionStep|0)!==10)return;
+  G._tutorialExpansionStep=11;
+  wlTuExpansionLayoutStep();
+}
+function wlTuExpansionAckRemainderFmt(){
+  if(!wlTutorialExpansionCoachActive()||(G._tutorialExpansionStep|0)!==11)return;
+  G._tutorialExpansionStep=12;
+  wlTuExpansionLayoutStep();
+}
+function wlTuExpansionAckFinal(){
+  if(!wlTutorialExpansionCoachActive()||(G._tutorialExpansionStep|0)!==12)return;
+  wlTuExpansionComplete();
+}
+function wlTuExpansionOnDidAcquire(s){
+  if(!s||!wlTutorialExpansionPostLesson())return;
+  if((G._tutorialExpansionStep|0)!==2)return;
+  const isFm=s.sig.type==='FM'&&!s.fmBooster;
+  if(!isFm){
+    showToast('For this lesson, choose an FM station to continue the coach.','warn',5200);
+    return;
+  }
+  G._tutorialExpansionFmSid=s.id;
+  G._tutorialExpansionAcquireModalCoachDismissed=false;
+  G._tutorialExpansionStep=3;
+}
+function wlTuExpansionOnDidSimulcast(srcId,dstId){
+  if(!wlTutorialExpansionPostLesson())return;
+  if((G._tutorialExpansionStep|0)!==8)return;
+  const path=G._tutorialExpansionPath;
+  /* Step 8 only exists on the simulcast branch; allow null path for older saves that missed the flag. */
+  if(path&&path!=='sim')return;
+  const amId=G._tutorialExpansionAmSid;
+  const fmId=G._tutorialExpansionFmSid;
+  const ns=(x)=>x==null?'':String(x);
+  const pairMatchesTutorial=
+    ns(srcId)===ns(amId)&&ns(dstId)===ns(fmId);
+  let linked=false;
+  if(!pairMatchesTutorial&&amId!=null&&fmId!=null){
+    const am=G.stations.find((s)=>ns(s.id)===ns(amId));
+    const fm=G.stations.find((s)=>ns(s.id)===ns(fmId));
+    if(am&&fm){
+      if(fm.simulcastSourceStationId!=null&&ns(fm.simulcastSourceStationId)===ns(am.id))linked=true;
+      else if(fm.simulcastWith!=null&&ns(fm.simulcastWith)===ns(am.id))linked=true;
+    }
+  }
+  if(pairMatchesTutorial||linked){
+    G._tutorialExpansionStep=9;
+    G._tutorialExpansionStep9Phase='admin';
+  }
+}
+if(typeof globalThis!=='undefined'){
+  globalThis.wlTuExpansionAckIntro=wlTuExpansionAckIntro;
+  globalThis.wlTuExpansionAckAcquire=wlTuExpansionAckAcquire;
+  globalThis.wlTuExpansionAckAcquireModalCoach=wlTuExpansionAckAcquireModalCoach;
+  globalThis.wlTuExpansionAckNewFm=wlTuExpansionAckNewFm;
+  globalThis.wlTuExpansionChooseSeparate=wlTuExpansionChooseSeparate;
+  globalThis.wlTuExpansionChooseSimulcast=wlTuExpansionChooseSimulcast;
+  globalThis.wlTuExpansionAckSepDone=wlTuExpansionAckSepDone;
+  globalThis.wlTuExpansionAckSimAdmin=wlTuExpansionAckSimAdmin;
+  globalThis.wlTuExpansionAckSimulcastBtn=wlTuExpansionAckSimulcastBtn;
+  globalThis.wlTuExpansionAckPickFm=wlTuExpansionAckPickFm;
+  globalThis.wlTuExpansionAckAdminCloseCoach=wlTuExpansionAckAdminCloseCoach;
+  globalThis.wlTuExpansionAckCardPaired=wlTuExpansionAckCardPaired;
+  globalThis.wlTuExpansionAckFccSlider=wlTuExpansionAckFccSlider;
+  globalThis.wlTuExpansionAckRemainderFmt=wlTuExpansionAckRemainderFmt;
+  globalThis.wlTuExpansionAckFinal=wlTuExpansionAckFinal;
+  globalThis.wlTuExpansionOnDidSimulcast=wlTuExpansionOnDidSimulcast;
 }
 function soloPlayerCanAffordReentry(G){
   if(MP.mode==='live')return false;
@@ -14613,6 +16184,7 @@ function mpExecuteBankruptcy(G,pid,pname){
 
 /** Solo: last station liquidated — observer mode only if you cannot afford any acquisition target. */
 function soloExecuteBankruptcy(G){
+  const wasSoloBankrupt=!!(G&&G._soloBankrupt);
   const stns=[...G.ps];
   stns.forEach(weakest=>{
     const lmaOp=stationIsPlayerLmaLesseeOperation(weakest);
@@ -14639,6 +16211,7 @@ function soloExecuteBankruptcy(G){
   G._soloBankrupt=!canContinue;
   if(G._soloBankrupt){
     showToast('Bankruptcy: You are out of active play. You can still advance periods to watch the market.','warn');
+    if(!wasSoloBankrupt){ requestAnimationFrame(()=>{ try{wlShowSoloBankruptcyCoach();}catch(_e){} }); }
   }else{
     showToast('Your group has no stations, but you have capital. Use Acquire a Station to get back on the air.','info');
   }
@@ -14858,7 +16431,7 @@ function genMarket(scenId){
   // Resolve scenario first so we can build BP talent at the correct start year
   const sc=scenId?SC.find(s=>s.id===scenId)||pick(SC):pick(SC);
   const bpYear=sc.startYear||1970;
-  const startCash=scaledScenarioCash(sc.cash,ACTIVE_MARKET);
+  const startCash=scaledScenarioCash(sc.cash,ACTIVE_MARKET,sc.startYear||1970);
   const scForGame={...sc,cash:startCash};
   const stations=[];
   const dialCtx={stations,marketId:ACTIVE_MARKET};
@@ -15139,7 +16712,11 @@ function genMarket(scenId){
       _tutorialDeferredTalentAdjusted:false,
       _tutorialSalesCoachStep:0,
       _tutorialFmtCoachStep:0,
+      _tutorialDriftCoachDismissed:0,_tutorialDriftCoachStep:0,
+      _tutorialLeanCoachDismissed:0,_tutorialLeanCoachStep:0,
+      _tutorialProgFocusCoachStep:0,
       _tutorialProgModalIntroDone:false,
+      _tutorialAct6SalesIntroPending:0,
       _tutorialSecondStationTipShown:false,
       _tutorialGradTurn:0,
     }:{}),
@@ -15305,8 +16882,111 @@ const _wlFtTut={
 function wlFtTutorialLsSet(v){
   try{localStorage.setItem(WL_FT_TUTORIAL_LS,v);}catch(e){}
 }
+/** Session flag: hide all coach/tutorial overlays without changing game or tutorial progress (recovery escape). */
+const WL_COACH_UI_SUPPRESS_SS='wlCoachUiSuppress';
+let _wlTutAutoScrollSuppressUntil=0;
+function wlTutShouldSuppressAutoScroll(){
+  return (Date.now()|0)<(_wlTutAutoScrollSuppressUntil|0);
+}
+try{
+  window.addEventListener('wheel',e=>{
+    if(!(_wlTuTr?.active||_wlFtTut?.active||wlTutorialExpansionCoachActive?.()))return;
+    if(!(e&&e.target&&e.target.closest&&e.target.closest('.mo')))return;
+    _wlTutAutoScrollSuppressUntil=(Date.now()|0)+900;
+  },{capture:true,passive:true});
+  window.addEventListener('touchmove',e=>{
+    if(!(_wlTuTr?.active||_wlFtTut?.active||wlTutorialExpansionCoachActive?.()))return;
+    if(!(e&&e.target&&e.target.closest&&e.target.closest('.mo')))return;
+    _wlTutAutoScrollSuppressUntil=(Date.now()|0)+1100;
+  },{capture:true,passive:true});
+}catch(_e){}
+function wlTutorialCoachUiSuppressed(){
+  try{return sessionStorage.getItem(WL_COACH_UI_SUPPRESS_SS)==='1';}catch(e){return false;}
+}
+function wlTutorialCoachSetUiSuppress(on){
+  try{
+    if(on)sessionStorage.setItem(WL_COACH_UI_SUPPRESS_SS,'1');
+    else sessionStorage.removeItem(WL_COACH_UI_SUPPRESS_SS);
+  }catch(e){}
+}
+function wlTutorialCoachInjectDismissFooter(card){
+  if(!card||!document.body.contains(card)||wlTutorialCoachUiSuppressed())return;
+  if(card.querySelector('[data-wl-coach-dismiss]'))return;
+  const btn=document.createElement('button');
+  btn.type='button';
+  btn.setAttribute('data-wl-coach-dismiss','1');
+  btn.className='wl-ft-tut-dismiss';
+  btn.setAttribute('aria-label','Dismiss tutorial overlay only — your game continues');
+  btn.textContent='Continue without guide';
+  btn.addEventListener('click',e=>{
+    e.preventDefault();
+    e.stopPropagation();
+    wlTutorialCoachEmergencyDismiss();
+  });
+  const rows=card.querySelectorAll('.wl-ft-tut-btns');
+  const row=rows&&rows.length?rows[rows.length-1]:null;
+  if(row&&row.appendChild){
+    row.insertBefore(btn,row.firstChild||null);
+  }else{
+    card.appendChild(btn);
+  }
+}
+function wlTutorialCoachEnsureDismissObserver(card){
+  if(!card||card._wlCoachDismissMO)return;
+  card._wlCoachDismissMO=new MutationObserver(()=>{
+    if(wlTutorialCoachUiSuppressed())return;
+    queueMicrotask(()=>wlTutorialCoachInjectDismissFooter(card));
+  });
+  card._wlCoachDismissMO.observe(card,{childList:true,subtree:false});
+}
+/**
+ * Tear down coach / first-turn overlays only. Does not change save, scenario, or tutorial act state.
+ * Pauses coach UI until @see wlTutorialCoachResumeUi (📘 TIPS while suppressed).
+ */
+function wlTutorialCoachEmergencyDismiss(){
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
+  wlTutorialCoachSetUiSuppress(true);
+  try{
+    const act=typeof G!=='undefined'&&G?G.tutorialAct|0:0;
+    wlAnalyticsCapture('tutorial_guide_hidden',{tutorial_act:act,source:'coach_footer'});
+  }catch(_e){}
+  try{
+    wlFtTutorialIoDisconnect();
+    wlFtTutorialUnbindLayoutListeners();
+    wlFtTutorialTeardownShades();
+    if(_wlFtTut.root)_wlFtTut.root.style.display='none';
+    if(_wlFtTut.card)wlFtTutorialResetCardPosition(_wlFtTut.card);
+  }catch(e){}
+  try{
+    wlTuTurnaroundIoDisconnect();
+    wlTuExpansionUnbindResize();
+    wlTuTurnaroundUnbindLayoutListeners();
+    wlTuTurnaroundTeardownShades();
+    if(_wlTuTr.root)_wlTuTr.root.style.display='none';
+  }catch(e){}
+  try{
+    showToast('Guide hidden. You can continue playing normally.','info',4600);
+  }catch(e){}
+}
+function wlTutorialCoachResumeUi(){
+  wlTutorialCoachSetUiSuppress(false);
+  try{
+    if(typeof renderAll==='function')renderAll();
+    else{
+      wlFtTutorialAfterRender();
+      wlTuExpansionAfterRender();
+    }
+  }catch(e){
+    console.error('[wlTutorialCoachResumeUi]',e);
+  }
+}
 function wlFtTutorialTeardownShades(){
   if(_wlFtTut.shadeWrap)_wlFtTut.shadeWrap.innerHTML='';
+  document.querySelectorAll('.mo.wl-tut-dim').forEach(mo=>{
+    mo.classList.remove('wl-tut-dim');
+    const d=mo.querySelector('.wl-tut-modal-dim');
+    if(d&&d.parentNode)d.parentNode.removeChild(d);
+  });
   document.querySelectorAll('.wl-ft-tut-spotlight').forEach(el=>{
     el.classList.remove('wl-ft-tut-spotlight');
     el.style.zIndex='';
@@ -15332,9 +17012,12 @@ function wlFtTutorialWatchHighlight(targetEl){
     const e=entries[0];
     if(!e||!document.body.contains(targetEl))return;
     if(e.intersectionRatio>=0.12)return;
+    // If the player is actively scrolling inside a modal, don't "chase" the highlight by re-layouting.
+    if(wlTutShouldSuppressAutoScroll()&&(targetEl.closest&&targetEl.closest('.mo')))return;
     clearTimeout(_wlFtTut._ioDebounce);
     _wlFtTut._ioDebounce=setTimeout(()=>{
       if(!_wlFtTut.active)return;
+      if(wlTutShouldSuppressAutoScroll()&&(targetEl.closest&&targetEl.closest('.mo')))return;
       wlFtTutorialLayoutStep();
     },90);
   },{
@@ -15353,7 +17036,10 @@ function wlFtTutorialUnbindLayoutListeners(){
   if(_wlFtTut._layoutSyncT){clearTimeout(_wlFtTut._layoutSyncT);_wlFtTut._layoutSyncT=0;}
 }
 function wlFtTutorialEnsureRoot(){
-  if(_wlFtTut.root&&document.body.contains(_wlFtTut.root))return _wlFtTut.root;
+  if(_wlFtTut.root&&document.body.contains(_wlFtTut.root)){
+    wlTutorialCoachEnsureDismissObserver(_wlFtTut.card);
+    return _wlFtTut.root;
+  }
   const root=document.createElement('div');
   root.id='wl-ft-tut-root';
   root.setAttribute('aria-live','polite');
@@ -15362,12 +17048,13 @@ function wlFtTutorialEnsureRoot(){
   _wlFtTut.root=root;
   _wlFtTut.shadeWrap=root.querySelector('#wl-ft-tut-shades');
   _wlFtTut.card=root.querySelector('#wl-ft-tut-card');
+  wlTutorialCoachEnsureDismissObserver(_wlFtTut.card);
   return root;
 }
 /** Clear inline position from a previous anchored step so CSS defaults (e.g. centered) apply. */
 function wlFtTutorialResetCardPosition(card){
   if(!card)return;
-  ['left','top','right','bottom','transform','width','maxWidth','visibility'].forEach(p=>card.style.removeProperty(p));
+  ['left','top','right','bottom','transform','width','max-width','max-height','visibility','overflow','overflow-y','overflow-x'].forEach(p=>card.style.removeProperty(p));
 }
 /**
  * Place the tutorial dialog next to the spotlight target instead of fixed bottom-center.
@@ -15376,7 +17063,9 @@ function wlFtTutorialResetCardPosition(card){
 function wlFtTutorialAnchorCardToTarget(card,target){
   if(!card||!target||!document.body.contains(target))return;
   const r=target.getBoundingClientRect();
-  const vw=window.innerWidth,vh=window.innerHeight;
+  const vv=typeof window!=='undefined'&&window.visualViewport;
+  const vw=vv?vv.width:window.innerWidth;
+  const vh=vv?vv.height:window.innerHeight;
   const maxW=Math.min(420,vw-32);
   card.style.boxSizing='border-box';
   card.style.width=maxW+'px';
@@ -15401,6 +17090,7 @@ function wlFtTutorialAnchorCardToTarget(card,target){
 /** Scroll solo tutorial target into view so the highlight isn’t off-screen (sync — layout runs immediately after). */
 function wlFtTutorialScrollTargetIntoView(el){
   if(!el||!document.body.contains(el))return;
+  if(wlTutShouldSuppressAutoScroll()&&(el.closest&&el.closest('.mo')))return;
   const st=el.style;
   const prevB=st.scrollMarginBottom;
   const prevT=st.scrollMarginTop;
@@ -15426,9 +17116,29 @@ function wlFtTutorialScrollTargetIntoView(el){
     else st.removeProperty('scroll-margin-top');
   }
 }
+/** Like {@link wlFtTutorialScrollTargetIntoView} but skips when the target already intersects the viewport — avoids scroll/z-index fights with Turnaround layout listeners on touch devices. */
+function wlFtTutorialScrollTargetIfNeeded(el){
+  if(!el||!document.body.contains(el))return;
+  if(wlTutShouldSuppressAutoScroll()&&(el.closest&&el.closest('.mo')))return;
+  const pad=12;
+  const r=el.getBoundingClientRect();
+  const vw=window.innerWidth,vh=window.innerHeight;
+  const intersects=r.bottom>pad&&r.top<vh-pad&&r.right>pad&&r.left<vw-pad;
+  if(intersects)return;
+  wlFtTutorialScrollTargetIntoView(el);
+}
 function wlFtTutorialLayoutHole(targetEl,zBase){
   if(!_wlFtTut.shadeWrap||!targetEl||!document.body.contains(targetEl))return;
   _wlFtTut.shadeWrap.innerHTML='';
+  const mo=targetEl.closest&&targetEl.closest('.mo');
+  if(mo){
+    mo.classList.add('wl-tut-dim');
+    if(!mo.querySelector('.wl-tut-modal-dim')){
+      const d=document.createElement('div');
+      d.className='wl-tut-modal-dim';
+      mo.insertBefore(d,mo.firstChild||null);
+    }
+  }
   const r=targetEl.getBoundingClientRect();
   const pad=10;
   const t=Math.max(0,r.top-pad), l=Math.max(0,r.left-pad);
@@ -15437,7 +17147,7 @@ function wlFtTutorialLayoutHole(targetEl,zBase){
   const mk=(top,left,height,width)=>{
     const d=document.createElement('div');
     d.className='wl-ft-tut-shade';
-    d.style.cssText=`position:fixed;left:${left}px;top:${top}px;width:${width}px;height:${height}px;z-index:${zBase};pointer-events:auto;background:rgba(6,8,12,.55)`;
+    d.style.cssText=`position:fixed;left:${left}px;top:${top}px;width:${width}px;height:${height}px;z-index:${zBase};pointer-events:none;background:rgba(6,8,12,.55)`;
     _wlFtTut.shadeWrap.appendChild(d);
   };
   mk(0,0,t,w);
@@ -15488,6 +17198,11 @@ function wlFtTutorialWireCard(){
 }
 function wlFtTutorialLayoutStep(){
   if(!_wlFtTut.active)return;
+  if(wlTutorialCoachUiSuppressed()){
+    if(_wlFtTut.root)_wlFtTut.root.style.display='none';
+    return;
+  }
+  try{
   wlFtTutorialIoDisconnect();
   wlFtTutorialEnsureRoot();
   wlFtTutorialTeardownShades();
@@ -15555,7 +17270,7 @@ function wlFtTutorialLayoutStep(){
     body='<p class="wl-ft-tut-p">This is your radio station.</p><p class="wl-ft-tut-p">Grow your share of the audience and keep the business profitable.</p>';
   }else if(st===2){
     title='AUDIENCE SHARE';
-    body='<p class="wl-ft-tut-p">The share shows the percentage of the radio audience you are capturing on average.</p><p class="wl-ft-tut-p">Higher share means more listeners—and more money.</p>';
+    body='<p class="wl-ft-tut-p">Share is your slice of measured listening in the market—same scale as audience (AQH), not a separate index.</p><p class="wl-ft-tut-p">Higher share means more listeners—and more money.</p>';
   }else if(st===3){
     title='MARKET RATINGS';
     body='<p class="wl-ft-tut-p">This is a ranking of all radio stations in the market.</p><p class="wl-ft-tut-p">You can see how you rate against the competition.</p>';
@@ -15607,6 +17322,10 @@ function wlFtTutorialLayoutStep(){
     wlFtTutorialAnchorCardToTarget(_wlFtTut.card,el);
     requestAnimationFrame(()=>wlFtTutorialAnchorCardToTarget(_wlFtTut.card,el));
   });
+  }catch(err){
+    console.error('[wlFtTutorialLayoutStep]',err);
+    try{wlFtTutorialIoDisconnect();wlFtTutorialUnbindLayoutListeners();wlFtTutorialTeardownShades();if(_wlFtTut.root)_wlFtTut.root.style.display='none';}catch(_e){}
+  }
 }
 function wlFtTutorialStop(opts){
   const persistSkip=opts&&opts.persistSkip;
@@ -15648,6 +17367,7 @@ function wlTutorialDevApplyThroughAct4(){
   G._tutorialResearchReportCoachDone=true;
   G._tutorialResearchCoachStep=6;
   G._tutorialProgExtraStep=4;
+  G._tutorialProgFocusCoachStep=0;
   G._tutorialFmtCoachStep=0;
   G._tutorialTalentRosterIntroDone=true;
   G._tutorialTalentExplainerDismissed=true;
@@ -15699,7 +17419,7 @@ function wlTutorialDevJump(target){
     wlTutorialDevApplyThroughAct6();
     G.tutorialAct=7;
     G._tutorialSpotsAdjusted=true;
-    G._tutorialSalesCoachStep=5;
+    G._tutorialSalesCoachStep=6;
     G._tutorialRankerCoachDismissed=false;
     if(t==='ranker'||t==='rk')G._tutorialAct7Phase=3;
     else if(t==='market'||t==='standings'||t==='table')G._tutorialAct7Phase=2;
@@ -15722,7 +17442,7 @@ function wlTutorialDevJump(target){
     G.tutorialAct=8;
     G._tutorialSpotsAdjusted=true;
     G._tutorialAct7Phase=0;
-    G._tutorialSalesCoachStep=5;
+    G._tutorialSalesCoachStep=6;
     G._tutorialRankerCoachDismissed=true;
     G._tutorialAct8Turns=0;
     tutorialTurnaroundCoachSync();
@@ -15754,6 +17474,7 @@ function wlTutorialDevJump(target){
     G._tutorialResearchReportCoachDone=true;
     G._tutorialResearchCoachStep=6;
     G._tutorialProgExtraStep=4;
+    G._tutorialProgFocusCoachStep=0;
     G._tutorialTalentRosterIntroDone=true;
     G._tutorialTalentExplainerDismissed=true;
     G._tutorialHireListCoachDismissed=true;
@@ -15803,12 +17524,110 @@ function wlTutorialDevHelp(){
   wlTutorialJump('market')  // phase 2 — market standings table
   wlTutorialJump('ranker')  // phase 3 — open Ranker (scripting only; om() still needs phase≥2)
   wlTutorialJump('finale')   // act 8
-  Does not change stations/format/talent — only tutorial flags.`);
+  Does not change stations/format/talent — only tutorial flags.
+
+  Post-lesson “expand / buy FM” coach (needs tutorial_turnaround save; graduation OK):
+  wlTutorialDevExpansionHelp()
+  wlTutorialDevExpansionPreview(1)       // steps 1–12 or names: intro, acquire, newFm, branch, sepFinal, simAdmin, simBtn, simPick, paired, fcc, remainder, final
+  wlTutorialDevExpansionPreview('paired',{openSim:true})  // optional openStationAdmin / openSim — see help text
+  wlTutorialDevExpansionExit()           // hide overlay without marking the coach “completed”`);
+}
+/**
+ * Solo dev: preview the post-lesson expansion coach (Acquire FM → branch → simulcast path).
+ * Requires localStorage wlTutorialDev=1 (same as wlTutorialJump).
+ * @param {number|string} step Step 1–12 or keyword (see wlTutorialDevExpansionHelp).
+ * @param {{openAdmin?:boolean,openSim?:boolean}} [opts] openAdmin opens Station Admin for steps 7–8; openSim opens Simulcast modal (step 8, AM sid).
+ */
+function wlTutorialDevExpansionPreview(step,opts){
+  opts=opts||{};
+  if(typeof MP!=='undefined'&&MP.mode==='live'){
+    console.warn('[wlTutorialDevExpansionPreview] disabled in live MP');
+    return false;
+  }
+  if(localStorage.getItem('wlTutorialDev')!=='1'){
+    console.warn('[wlTutorialDevExpansionPreview] Enable dev first: localStorage.setItem(\'wlTutorialDev\',\'1\'); location.reload()');
+    return false;
+  }
+  if(!G||G.sc?.id!=='tutorial_turnaround'){
+    console.warn('[wlTutorialDevExpansionPreview] Need an active Tutorial: Turnaround (solo) game.');
+    return false;
+  }
+  const hadTutorialMode=!!G.tutorialMode;
+  const nm={
+    intro:1,acquire:2,newfm:3,newFm:3,branch:4,separate:5,sepfinal:5,simadmin:6,simAdmin:6,
+    simbtn:7,simBtn:7,simpick:8,simPick:8,paired:9,fcc:10,remainder:11,final:12,
+  };
+  let st=typeof step==='string'?nm[String(step).toLowerCase().replace(/[\s_-]+/g,'')]:Number(step);
+  if(!Number.isFinite(st))st=1;
+  st=Math.max(1,Math.min(12,Math.floor(st)));
+  G.tutorialMode=false;
+  G.tutorialAct=0;
+  G._tutorialExpansionComplete=false;
+  G._tutorialExpansionIntroCoachDispatched=false;
+  G._tutorialExpansionAwaitingIntroDismiss=false;
+  const {am,fm}=wlTuExpansionPlayerAmFm();
+  if(am)G._tutorialExpansionAmSid=am.id;
+  if(fm)G._tutorialExpansionFmSid=fm.id;
+  if(st>=3&&!fm){
+    console.warn('[wlTutorialDevExpansionPreview] Step '+st+' needs an FM on your roster — use step 2 (acquire) in play, or preview(1) / preview(2) only.');
+    st=2;
+  }
+  if(st===5)G._tutorialExpansionPath='sep';
+  else if(st>=6)G._tutorialExpansionPath='sim';
+  else if(st===4)G._tutorialExpansionPath=null;
+  else if(st<4)G._tutorialExpansionPath=null;
+  G._tutorialExpansionStep=st;
+  if(st===9)G._tutorialExpansionStep9Phase='celebrate';
+  if(hadTutorialMode)console.warn('[wlTutorialDevExpansionPreview] Set tutorialMode=false for preview — use wlTutorialJump to get back to scripted acts if needed.');
+  renderAll();
+  if(opts.openAdmin&&st>=7&&st<=8&&G._tutorialExpansionAmSid&&typeof openStationAdmin==='function')openStationAdmin(G._tutorialExpansionAmSid);
+  if(opts.openSim&&st===8&&G._tutorialExpansionAmSid&&typeof openSim==='function')openSim(G._tutorialExpansionAmSid);
+  if(typeof wlTuExpansionLayoutStep==='function')wlTuExpansionLayoutStep();
+  console.log('[wlTutorialDevExpansionPreview] step '+st+'. Dismiss: wlTutorialDevExpansionExit()');
+  return true;
+}
+/** Hide expansion coach UI only (does not set _tutorialExpansionComplete). */
+function wlTutorialDevExpansionExit(){
+  if(typeof MP!=='undefined'&&MP.mode==='live')return;
+  if(!G)return;
+  G._tutorialExpansionStep=0;
+  G._tutorialExpansionPath=null;
+  G._tutorialExpansionIntroCoachDispatched=false;
+  G._tutorialExpansionAwaitingIntroDismiss=false;
+  G._tutorialExpansionStep9Phase=null;
+  _wlTuTr.active=false;
+  if(typeof wlTuExpansionUnbindResize==='function')wlTuExpansionUnbindResize();
+  wlTuTurnaroundIoDisconnect();
+  wlTuTurnaroundTeardownShades();
+  if(_wlTuTr.root)_wlTuTr.root.style.display='none';
+}
+function wlTutorialDevExpansionHelp(){
+  console.log(`Post-lesson expansion coach (dev):
+
+  1) localStorage.setItem('wlTutorialDev','1');  location.reload();
+  2) Load or continue Tutorial: Turnaround and finish the lesson (tutorialMode off) — or any solo turnaround save.
+  3) In the browser console:
+     wlTutorialDevExpansionPreview(1)     // step 1 — COACH NOTE (“You’re doing well…”)
+     wlTutorialDevExpansionPreview(2)     // highlight Acquire
+     wlTutorialDevExpansionPreview(3)     // needs you to own an FM first
+     wlTutorialDevExpansionPreview(4)     // Simulcast vs Run separately
+     wlTutorialDevExpansionPreview(6)     // simulcast path — highlight Admin on AM
+     wlTutorialDevExpansionPreview(7,{openAdmin:true})   // Admin open + highlight Simulcast button
+     wlTutorialDevExpansionPreview(8,{openSim:true})      // Simulcast modal — pick FM + confirm
+     wlTutorialDevExpansionPreview(9)     // best after pairing AM+FM in-game (combined card)
+     wlTutorialDevExpansionPreview(10)      // FCC slider (only if dupe cap < 100% for your year/market)
+
+  Named steps: intro, acquire, newFm, branch, sepFinal, simAdmin, simBtn, simPick, paired, fcc, remainder, final
+
+  wlTutorialDevExpansionExit()  — close overlay without marking coach complete`);
 }
 if(typeof globalThis!=='undefined'){
   globalThis.wlTutorialJump=wlTutorialDevJump;
   globalThis.wlTutorialDevSkipAnnounce=wlTutorialDevSkipAnnounce;
   globalThis.wlTutorialDevHelp=wlTutorialDevHelp;
+  globalThis.wlTutorialDevExpansionPreview=wlTutorialDevExpansionPreview;
+  globalThis.wlTutorialDevExpansionExit=wlTutorialDevExpansionExit;
+  globalThis.wlTutorialDevExpansionHelp=wlTutorialDevExpansionHelp;
   if(typeof document!=='undefined')document.addEventListener('keydown',e=>{
     try{
       if(localStorage.getItem('wlTutorialDev')!=='1')return;
@@ -15856,12 +17675,24 @@ function wlTuTurnaroundAckFmtCoachApply(){
 
 function wlTuTurnaroundAckDriftCoach(){
   if(!isTutorialTurnaroundScen()||!G?.tutorialMode||MP.mode==='live')return;
+  const st=G._tutorialDriftCoachStep|0;
+  if(st<=0){
+    G._tutorialDriftCoachStep=1;
+    requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
+    return;
+  }
   G._tutorialDriftCoachDismissed=1;
   wlTuTurnaroundTempDismiss();
 }
 
 function wlTuTurnaroundAckLeanCoach(){
   if(!isTutorialTurnaroundScen()||!G?.tutorialMode||MP.mode==='live')return;
+  const st=G._tutorialLeanCoachStep|0;
+  if(st<=0){
+    G._tutorialLeanCoachStep=1;
+    requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
+    return;
+  }
   G._tutorialLeanCoachDismissed=1;
   wlTuTurnaroundTempDismiss();
 }
@@ -15925,11 +17756,16 @@ function wlTuTurnaroundForceDriftCoach(){
   wlTuTurnaroundResetCardPosition(_wlTuTr.card);
   _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored wl-ft-tut-card--modal-gutter';
   _wlTuTr.card.style.width='';
-  _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Positioning</h3>
-<p class="wl-ft-tut-p">Each format has a slider that lets you determine how narrow or broad your format’s appeal will be.</p>
-<p class="wl-ft-tut-p">Read through the two ends of the spectrum and decide how you want your station to sound. The position of the slider is meaningful — overcorrecting can drive away your loyal listeners.</p>
-<p class="wl-ft-tut-p">Click the <strong>COMMIT POSITIONING</strong> button at the bottom to apply your changes.</p>`;
-  _wlTuTr.card.innerHTML+=`<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundAckDriftCoach()">OK</button></div>`;
+  const step=G._tutorialDriftCoachStep|0;
+  _wlTuTr.card.innerHTML=step<=0
+    ?`<h3 class="wl-ft-tut-h">Positioning</h3>
+<p class="wl-ft-tut-p">Each format has a slider that lets you decide how narrow or broad your format’s appeal will be.</p>
+<p class="wl-ft-tut-p">Read the two ends of the spectrum first, then choose where you want your station to sit between them.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundAckDriftCoach()">Next</button></div>`
+    :`<h3 class="wl-ft-tut-h">Commit your choice</h3>
+<p class="wl-ft-tut-p">When you’re ready, scroll down and click <strong>COMMIT POSITIONING</strong>.</p>
+<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0;font-size:13px">For now, click <strong>OK</strong> to continue the guide.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundAckDriftCoach()">OK</button></div>`;
   requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo));
   requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo)));
 }
@@ -15955,16 +17791,24 @@ function wlTuTurnaroundForceLeanCoach(){
   wlTuTurnaroundResetCardPosition(_wlTuTr.card);
   _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored wl-ft-tut-card--modal-gutter';
   _wlTuTr.card.style.width='';
-  _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Demo target</h3>
-<p class="wl-ft-tut-p"><strong>CPM</strong> (“cost per thousand listeners”) is what advertisers are willing to pay to reach 1,000 listeners in each age group.</p>
-<p class="wl-ft-tut-p">Your format choices will naturally appeal to certain ages more than others (the “affinity” score you see listed). Remember that younger demos often have a lower CPM than older ones, which affects revenue when your audience mix changes.</p>
-<p class="wl-ft-tut-p">Click <strong>APPLY TARGETING</strong> at the bottom to commit your decision.</p>
+  const step=G._tutorialLeanCoachStep|0;
+  _wlTuTr.card.innerHTML=step<=0
+    ?`<h3 class="wl-ft-tut-h">Demo target</h3>
+<p class="wl-ft-tut-p"><strong>CPM</strong> (“cost per thousand listeners”) is what advertisers pay to reach 1,000 listeners in each age group.</p>
+<p class="wl-ft-tut-p">Older demos usually have a higher CPM — so your demo mix affects revenue, not just audience size.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundAckLeanCoach()">Next</button></div>`
+    :`<h3 class="wl-ft-tut-h">Apply targeting</h3>
+<p class="wl-ft-tut-p">Pick your direction, then scroll down and click <strong>APPLY TARGETING</strong>.</p>
+<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0;font-size:13px">For now, click <strong>OK</strong> to continue the guide.</p>
 <div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundAckLeanCoach()">OK</button></div>`;
   requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo));
   requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo)));
 }
 function wlTuTurnaroundEnsureRoot(){
-  if(_wlTuTr.root&&document.body.contains(_wlTuTr.root))return _wlTuTr.root;
+  if(_wlTuTr.root&&document.body.contains(_wlTuTr.root)){
+    wlTutorialCoachEnsureDismissObserver(_wlTuTr.card);
+    return _wlTuTr.root;
+  }
   const root=document.createElement('div');
   root.id='wl-tu-tr-root';
   root.setAttribute('aria-live','polite');
@@ -15973,6 +17817,7 @@ function wlTuTurnaroundEnsureRoot(){
   _wlTuTr.root=root;
   _wlTuTr.shadeWrap=root.querySelector('#wl-tu-tr-shades');
   _wlTuTr.card=root.querySelector('#wl-tu-tr-card');
+  wlTutorialCoachEnsureDismissObserver(_wlTuTr.card);
   if(_wlTuTr.card&&!_wlTuTr.cardAckBound){
     _wlTuTr.cardAckBound=true;
     _wlTuTr.card.addEventListener('click',e=>{
@@ -15990,12 +17835,59 @@ function wlTuTurnaroundEnsureRoot(){
 }
 function wlTuTurnaroundTeardownShades(){
   if(_wlTuTr.shadeWrap)_wlTuTr.shadeWrap.innerHTML='';
+  document.querySelectorAll('.mo.wl-tut-dim').forEach(mo=>{
+    mo.classList.remove('wl-tut-dim');
+    const d=mo.querySelector('.wl-tut-modal-dim');
+    if(d&&d.parentNode)d.parentNode.removeChild(d);
+  });
   document.querySelectorAll('[data-wl-tu-tr-spot="1"]').forEach(el=>{
     el.removeAttribute('data-wl-tu-tr-spot');
     el.classList.remove('wl-ft-tut-spotlight');
     el.style.zIndex='';
     el.style.position='';
   });
+}
+function wlTuTurnaroundGateClear(){
+  if(_wlTuTr&&typeof _wlTuTr._gateCap==='function'){
+    try{
+      document.removeEventListener('pointerdown',_wlTuTr._gateCap,true);
+      document.removeEventListener('click',_wlTuTr._gateCap,true);
+    }catch(e){}
+    _wlTuTr._gateCap=null;
+  }
+  _wlTuTr._gateAllowed=null;
+  _wlTuTr._gateMsg='';
+}
+/**
+ * Selective “hard gate”: block clicks that don’t land on the highlighted control (or the coach card).
+ * Do NOT use a fullscreen pointer-capturing div — it sits above the target and makes e.target the gate,
+ * so real controls like #abtn never receive the click.
+ */
+function wlTuTurnaroundGateSet(allowedEl,_zBase,msg){
+  if(!_wlTuTr)return;
+  if(!allowedEl||!document.body.contains(allowedEl)){wlTuTurnaroundGateClear();return;}
+  if(_wlTuTr._gateAllowed===allowedEl&&_wlTuTr._gateCap){
+    _wlTuTr._gateMsg=msg||_wlTuTr._gateMsg||'';
+    return;
+  }
+  wlTuTurnaroundGateClear();
+  const onBlock=(e)=>{
+    if(!_wlTuTr||!_wlTuTr.active||!_wlTuTr._gateAllowed)return;
+    const allowed=_wlTuTr._gateAllowed;
+    const card=_wlTuTr.card;
+    const t=e&&e.target;
+    if(!t)return;
+    if(card&&card.contains(t))return;
+    if(allowed&&(t===allowed||allowed.contains(t)))return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(_wlTuTr._gateMsg)showToast(_wlTuTr._gateMsg,'info',2400);
+  };
+  document.addEventListener('pointerdown',onBlock,true);
+  document.addEventListener('click',onBlock,true);
+  _wlTuTr._gateCap=onBlock;
+  _wlTuTr._gateAllowed=allowedEl;
+  _wlTuTr._gateMsg=msg||'';
 }
 function wlTuTurnaroundIoDisconnect(){
   clearTimeout(_wlTuTr._ioDebounce);
@@ -16007,17 +17899,20 @@ function wlTuTurnaroundIoDisconnect(){
 }
 /** When the player scrolls the map/modal and the spotlight leaves view, snap back + redraw masks. */
 function wlTuTurnaroundWatchHighlight(targetEl){
-  if(!targetEl||!document.body.contains(targetEl)||!_wlTuTr.active)return;
+  if(!targetEl||!document.body.contains(targetEl)||(!_wlTuTr.active&&!wlTutorialExpansionCoachActive()))return;
   wlTuTurnaroundIoDisconnect();
   const hdr=document.getElementById('hdr');
   const topSlack=Math.min(120,(hdr?.offsetHeight||70)+4);
   _wlTuTr._spotlightIo=new IntersectionObserver((entries)=>{
-    if(!_wlTuTr.active)return;
+    if(!_wlTuTr.active&&!wlTutorialExpansionCoachActive())return;
     const e=entries[0];
     if(!e||!document.body.contains(targetEl))return;
     if(e.intersectionRatio>=0.12)return;
+    if(wlTutShouldSuppressAutoScroll()&&(targetEl.closest&&targetEl.closest('.mo')))return;
     clearTimeout(_wlTuTr._ioDebounce);
     _wlTuTr._ioDebounce=setTimeout(()=>{
+      if(wlTutShouldSuppressAutoScroll()&&(targetEl.closest&&targetEl.closest('.mo')))return;
+      if(wlTutorialExpansionCoachActive()){wlTuExpansionLayoutStep();return;}
       if(!_wlTuTr.active)return;
       wlTuTurnaroundLayoutStep();
     },90);
@@ -16039,12 +17934,20 @@ function wlTuTurnaroundUnbindLayoutListeners(){
 }
 function wlTuTurnaroundResetCardPosition(card){
   if(!card)return;
-  ['left','top','right','bottom','transform','width','maxWidth','visibility'].forEach(p=>card.style.removeProperty(p));
+  ['left','top','right','bottom','transform','width','max-width','max-height','visibility','overflow','overflow-y','overflow-x'].forEach(p=>card.style.removeProperty(p));
 }
 function wlTuTurnaroundLayoutHole(targetEl,zBase){
   if(!_wlTuTr.shadeWrap||!targetEl||!document.body.contains(targetEl))return;
   _wlTuTr.shadeWrap.innerHTML='';
   const r=targetEl.getBoundingClientRect();
+  if(!Number.isFinite(r.left)||!Number.isFinite(r.top)||r.width<2||r.height<2){
+    targetEl.setAttribute('data-wl-tu-tr-spot','1');
+    targetEl.classList.add('wl-ft-tut-spotlight');
+    targetEl.style.position='relative';
+    targetEl.style.zIndex=String((zBase|0)+1);
+    wlTuTurnaroundWatchHighlight(targetEl);
+    return;
+  }
   const pad=10;
   const t=Math.max(0,r.top-pad), l=Math.max(0,r.left-pad);
   const b=Math.min(window.innerHeight,r.bottom+pad), rt=Math.min(window.innerWidth,r.right+pad);
@@ -16070,11 +17973,26 @@ function wlTuTurnaroundLayoutHoleDim(targetEl,zBase){
   if(!_wlTuTr.shadeWrap||!targetEl||!document.body.contains(targetEl))return;
   /* Dim rects live under #wl-tu-tr-root (z~13020) while .ov modals are z~8000–8200 — opaque shades paint ON TOP of the modal and break Safari/WebKit compositing. Inside a modal, rely on ring-only spotlight; the modal backdrop already dims the map. */
   if(targetEl.closest&&targetEl.closest('.mo')){
+    const mo=targetEl.closest('.mo');
+    mo.classList.add('wl-tut-dim');
+    if(!mo.querySelector('.wl-tut-modal-dim')){
+      const d=document.createElement('div');
+      d.className='wl-tut-modal-dim';
+      mo.insertBefore(d,mo.firstChild||null);
+    }
     wlTuTurnaroundLayoutHole(targetEl,zBase);
     return;
   }
   _wlTuTr.shadeWrap.innerHTML='';
   const r=targetEl.getBoundingClientRect();
+  if(!Number.isFinite(r.left)||!Number.isFinite(r.top)||r.width<2||r.height<2){
+    targetEl.setAttribute('data-wl-tu-tr-spot','1');
+    targetEl.classList.add('wl-ft-tut-spotlight');
+    targetEl.style.position='relative';
+    targetEl.style.zIndex=String((zBase|0)+1);
+    wlTuTurnaroundWatchHighlight(targetEl);
+    return;
+  }
   const pad=10;
   const t=Math.max(0,r.top-pad), l=Math.max(0,r.left-pad);
   const b=Math.min(window.innerHeight,r.bottom+pad), rt=Math.min(window.innerWidth,r.right+pad);
@@ -16082,7 +18000,7 @@ function wlTuTurnaroundLayoutHoleDim(targetEl,zBase){
   const mk=(top,left,height,width)=>{
     const d=document.createElement('div');
     d.className='wl-ft-tut-shade';
-    d.style.cssText=`position:fixed;left:${left}px;top:${top}px;width:${width}px;height:${height}px;z-index:${zBase};pointer-events:auto;background:rgba(6,8,12,.55)`;
+    d.style.cssText=`position:fixed;left:${left}px;top:${top}px;width:${width}px;height:${height}px;z-index:${zBase};pointer-events:none;background:rgba(6,8,12,.55)`;
     _wlTuTr.shadeWrap.appendChild(d);
   };
   mk(0,0,t,w);
@@ -16095,7 +18013,7 @@ function wlTuTurnaroundLayoutHoleDim(targetEl,zBase){
   targetEl.style.zIndex=String(zBase+1);
   wlTuTurnaroundWatchHighlight(targetEl);
 }
-// Must stay above stacked .ov modals (which can be forced to z-index ~12080+ via _wlModalZSync()).
+// Must stay above default .ov stacking; modal stacks can be forced to ~42k+ via _wlModalZSync().
 function wlTuTurnaroundZBase(){return 13020;}
 /** Close ranker / trade digest / competitor intel during tutorials so map spotlights aren’t blocked and the coach isn’t stuck above an undismissable overlay. */
 function wlTutorialCloseDiscoveryOverlays(){
@@ -16202,19 +18120,19 @@ function wlTuTurnaroundGetTarget(act){
 function wlTuTurnaroundStepCopy(act){
   const a=act|0;
   if(a===1)return{
-    title:'Where do you stand?',
-    announce:'<p class="wl-ft-tut-p">Advance <strong>one six-month period</strong> and watch what happens to ratings.</p>',
-    spot:'Click <strong>▶ NEXT PERIOD</strong>. Read the summary when it appears — dismiss it with <strong>OK</strong> — then continue.',
+    title:'First: Run one period',
+    announce:'<p class="wl-ft-tut-p">Tap <strong>▶ NEXT PERIOD</strong> to run the next six months.</p><p class="wl-ft-tut-p">Let’s see how the station is performing.</p>',
+    spot:'Tap <strong>▶ NEXT PERIOD</strong> to run the next six months. Let’s see how the station is performing.',
   };
   if(a===2)return{
-    title:'Understand your audience',
-    announce:'<p class="wl-ft-tut-p">You need to understand your station’s strengths and weaknesses to make good decisions.</p><p class="wl-ft-tut-p">The <strong>Research</strong> panel gives you <strong>Listener Feedback</strong> (free) and a paid <strong>Consultant Report</strong> — we’ll walk through both inside the modal.</p>',
-    spot:'Open <strong>📊 RESEARCH</strong> on your station card.',
+    title:'Find out what’s wrong',
+    announce:'<p class="wl-ft-tut-p">Let’s figure out why your station is having trouble.</p><p class="wl-ft-tut-p">Open <strong>🔎 RESEARCH</strong>.</p><p class="wl-ft-tut-p">Let’s hear what your audience thinks.</p>',
+    spot:'Open <strong>🔎 RESEARCH</strong>.',
   };
   if(a===3)return{
-    title:'Modernize your format',
-    announce:'<p class="wl-ft-tut-p">Your research says listeners think you sound <strong>old-fashioned</strong>, <strong>midday</strong> is weak, and <strong>FM</strong> is pulling younger listeners.</p><p class="wl-ft-tut-p">Open <strong>Programming</strong>, then <strong>Format</strong>. Pick a direction that fits your <strong>AM</strong> signal, then confirm.</p>',
-    spot:'Open <strong>📻 PROGRAMMING</strong>, then follow the highlight to <strong>⚡ FORMAT</strong>.',
+    title:'Programming',
+    announce:'<p class="wl-ft-tut-p">Open <strong>Programming</strong> on your station card.</p>',
+    spot:'Open <strong>Programming</strong> on your station card.',
   };
   if(a===4)return{
     title:'Programming polish',
@@ -16305,6 +18223,13 @@ function wlTuTurnaroundProgExtraNext(){
   const st=G._tutorialProgExtraStep|0;
   if(st!==3)return;
   G._tutorialProgExtraStep=4;
+  G._tutorialProgFocusCoachStep=0;
+  wlTuTurnaroundLayoutStep();
+}
+function wlTuTurnaroundProgFocusCoachNext(){
+  if(!isTutorialTurnaroundScen()||MP.mode==='live'||(G.tutorialAct|0)!==4)return;
+  if((G._tutorialProgExtraStep|0)!==4)return;
+  if((G._tutorialProgFocusCoachStep|0)<1)G._tutorialProgFocusCoachStep=1;
   wlTuTurnaroundLayoutStep();
 }
 /** Turnaround act 6: stepped tour inside Brand & Promotion (Next → … → promo task). */
@@ -16316,6 +18241,12 @@ function wlTuTurnaroundBrandExtraNext(){
     G._tutorialBrandTourDone=true;
     G._tutorialBrandExtraStep=6;
   }
+  wlTuTurnaroundLayoutStep();
+}
+function wlTuTurnaroundPromoCloseCoachNext(){
+  if(!isTutorialTurnaroundScen()||MP.mode==='live'||(G.tutorialAct|0)!==6)return;
+  const st=G._tutorialPromoCloseCoachStep|0;
+  if(st<2)G._tutorialPromoCloseCoachStep=2;
   wlTuTurnaroundLayoutStep();
 }
 function wlTuTurnaroundAckTalentRosterIntro(){
@@ -16344,12 +18275,8 @@ function wlTuTurnaroundAckResearchReportIntro(){
   G._tutorialResearchCoachStep=6;
   tutorialTurnaroundCoachSync();
 }
-function wlTuTurnaroundAckProgModalIntro(){
-  if(!isTutorialTurnaroundScen()||MP.mode==='live')return;
-  G._tutorialProgModalIntroDone=true;
-  tutorialTurnaroundCoachSync();
-}
 function tutorialTurnaroundCoachStop(){
+  if(wlTutorialExpansionCoachActive())return;
   _wlTuTr.active=false;
   wlTuTurnaroundIoDisconnect();
   wlTuTurnaroundUnbindLayoutListeners();
@@ -16358,15 +18285,21 @@ function tutorialTurnaroundCoachStop(){
 }
 function wlTuTurnaroundLayoutStep(){
   if(!_wlTuTr.active||typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
+  if(wlTutorialCoachUiSuppressed()){
+    try{wlTuTurnaroundIoDisconnect();wlTuExpansionUnbindResize();wlTuTurnaroundUnbindLayoutListeners();wlTuTurnaroundTeardownShades();if(_wlTuTr.root)_wlTuTr.root.style.display='none';}catch(e){}
+    return;
+  }
   document.getElementById('m-brand')?.classList.remove('wl-tut-brand-promo-focus');
   if(!isTutorialTurnaroundScen()||!G.tutorialMode||MP.mode==='live'){
     tutorialTurnaroundCoachStop();
     return;
   }
+  try{
   wlTuTurnaroundIoDisconnect();
   wlTuTurnaroundEnsureRoot();
   if(isTutorialTurnaroundScen()&&G.tutorialMode)wlTutorialCloseDiscoveryOverlays();
   wlTuTurnaroundTeardownShades();
+  wlTuTurnaroundGateClear();
   wlTuTurnaroundBindResize();
   const act=G.tutorialAct|0;
   if(act===7&&G._tutorialSpotsAdjusted&&(G._tutorialAct7Phase|0)===0)G._tutorialAct7Phase=1;
@@ -16408,7 +18341,7 @@ function wlTuTurnaroundLayoutStep(){
     _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--center wl-tu-tr-card--layer';
     _wlTuTr.card.style.width='min(500px,calc(100vw - 28px))';
     _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Don&apos;t worry about a soft book</h3>
-<p class="wl-ft-tut-p">After a <strong>format change</strong>, it&apos;s common for <strong>ratings</strong> or <strong>revenue</strong> to dip for a book or two while listeners try the new sound. That doesn&apos;t mean you&apos;re failing — keep following the plan and give the audience time to adjust.</p>
+<p class="wl-ft-tut-p">After a format change, it&apos;s common for ratings or revenue to dip for a book or two while listeners try the new sound. That doesn&apos;t mean you&apos;re failing — keep following the plan and give the audience time to adjust.</p>
 <p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0">Tap <strong>OK</strong> here, then read your period summary and dismiss it with <strong>OK</strong> on that window.</p>
 <div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundAckAct5FormatCoach()">OK</button></div>`;
     return;
@@ -16438,13 +18371,13 @@ function wlTuTurnaroundLayoutStep(){
     return;
   }
   if(act===7&&(G._tutorialAct7Phase|0)===4&&rkOpen&&G._tutorialRankerCoachDismissed){if(_wlTuTr.root)_wlTuTr.root.style.display='none';return;}
-  /* Act 7 — Sales: 1 spot intro (OK) → 2 slider + SET SPOT LOAD (ring spotlight + gutter coach) → 3 sales staff intro (OK) → 4 pick tier / CLOSE. */
+  /* Act 7 — Sales: 1 spot OK → 2 slider → 3 sales team OK → 4 apply OK → 5 free → 6 done (after close). */
   if(act===7&&salesTutOpen){
     if(!(G._tutorialSalesCoachStep|0))G._tutorialSalesCoachStep=1;
     const st=G._tutorialSalesCoachStep|0;
     const zS=wlTuTurnaroundZBase();
     const mo=document.querySelector('#m-sales .mo');
-    if(st>=5){
+    if(st>=6){
       wlTuTurnaroundTeardownShades();
       if(_wlTuTr.root)_wlTuTr.root.style.display='none';
       return;
@@ -16462,11 +18395,10 @@ function wlTuTurnaroundLayoutStep(){
       _wlTuTr.card.style.zIndex=String(zS+4);
       wlTuTurnaroundResetCardPosition(_wlTuTr.card);
       _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--center wl-tu-tr-card--layer';
-      _wlTuTr.card.style.width='min(520px,calc(100vw - 28px))';
+      _wlTuTr.card.style.width='min(440px,calc(100vw - 28px))';
       _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Spot load</h3>
-<p class="wl-ft-tut-p">Here’s where you can set how many minutes of spots (commercials) your station will run each hour. Notice as you slide the button that more commercial minutes means more revenue — but it also can cost you listeners who don’t want so many commercials.</p>
-<p class="wl-ft-tut-p">Move the slider where you like and click <strong>SET SPOT LOAD</strong>.</p>
-<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0;font-size:13px">For now, click <strong>OK</strong> to advance.</p>
+<p class="wl-ft-tut-p">Commercial minutes per hour trades off revenue vs. listening — heavy loads can dent ratings.</p>
+<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0;font-size:13px">Next you’ll use the slider. Tap <strong>OK</strong>.</p>
 <div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundAckAct7SalesSpotIntro()">OK</button></div>`;
       return;
     }
@@ -16484,11 +18416,13 @@ function wlTuTurnaroundLayoutStep(){
         wlTuTurnaroundResetCardPosition(_wlTuTr.card);
         _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored wl-ft-tut-card--modal-gutter';
         _wlTuTr.card.style.width='';
-        _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Spot load</h3>
-<p class="wl-ft-tut-p">Use the slider for commercial minutes per hour — more can mean more revenue, but heavy loads can cost audience. You can adjust while you read this tip.</p>
-<p class="wl-ft-tut-p">Click <strong>SET SPOT LOAD</strong> when you’re ready to commit.</p>`;
-        requestAnimationFrame(()=>wlTuTurnaroundCoachClearOfRect(_wlTuTr.card,mo,spotBlk));
-        requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundCoachClearOfRect(_wlTuTr.card,mo,spotBlk)));
+        _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Set spot load</h3>
+<p class="wl-ft-tut-p">Adjust commercial minutes with the slider if you want, then tap <strong>SET SPOT LOAD</strong> (gold button) to commit once — you can keep the current value.</p>`;
+        const spotRange=document.getElementById('wl-spot-range');
+        const commitBtn=document.getElementById('sp-commit-btn');
+        const clearOf=(spotRange&&document.body.contains(spotRange))?spotRange:(commitBtn&&document.body.contains(commitBtn)?commitBtn:spotBlk);
+        requestAnimationFrame(()=>wlTuTurnaroundCoachClearOfRect(_wlTuTr.card,mo,clearOf));
+        requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundCoachClearOfRect(_wlTuTr.card,mo,clearOf)));
         return;
       }
       wlTuTurnaroundTeardownShades();
@@ -16496,6 +18430,27 @@ function wlTuTurnaroundLayoutStep(){
       return;
     }
     if(st===3&&mo){
+      const salesBlk=document.getElementById('wl-tu-tr-sales-team');
+      if(salesBlk){
+        wlTuTurnaroundTeardownShades();
+        _wlTuTr.shadeWrap.innerHTML='';
+        wlFtTutorialScrollTargetIntoView(salesBlk);
+        wlTuTurnaroundLayoutHoleDim(salesBlk,zS);
+        _wlTuTr.root.style.display='block';
+        _wlTuTr.root.style.zIndex=String(zS+2);
+        _wlTuTr.shadeWrap.style.zIndex=String(zS);
+        _wlTuTr.card.style.zIndex=String(zS+4);
+        wlTuTurnaroundResetCardPosition(_wlTuTr.card);
+        _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored wl-ft-tut-card--modal-gutter';
+        _wlTuTr.card.style.width='';
+        _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Sales team</h3>
+<p class="wl-ft-tut-p">Beefing up your sales staff can help revenue, if the ratings support the cost.</p>
+<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0;font-size:13px">Tap <strong>OK</strong> for the next tip.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundAckAct7SalesTeamIntro()">OK</button></div>`;
+        requestAnimationFrame(()=>wlTuTurnaroundCoachClearOfRect(_wlTuTr.card,mo,salesBlk));
+        requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundCoachClearOfRect(_wlTuTr.card,mo,salesBlk)));
+        return;
+      }
       wlTuTurnaroundTeardownShades();
       _wlTuTr.shadeWrap.innerHTML='';
       const dim=document.createElement('div');
@@ -16508,15 +18463,40 @@ function wlTuTurnaroundLayoutStep(){
       _wlTuTr.card.style.zIndex=String(zS+4);
       wlTuTurnaroundResetCardPosition(_wlTuTr.card);
       _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--center wl-tu-tr-card--layer';
-      _wlTuTr.card.style.width='min(520px,calc(100vw - 28px))';
+      _wlTuTr.card.style.width='min(440px,calc(100vw - 28px))';
       _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Sales team</h3>
-<p class="wl-ft-tut-p">You can also boost your sales staff by hiring managers. Depending on your ratings, a local sales manager, general sales manager or even hiring a national rep firm can help you earn even more revenue.</p>
-<p class="wl-ft-tut-p">After OK, tap a sales tier to hire if you want (you can keep your current staff). Click <strong>CLOSE</strong> when you’re finished.</p>
-<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0;font-size:13px">For now, click <strong>OK</strong> to advance.</p>
+<p class="wl-ft-tut-p">Compare tiers below when the list loads. Tap <strong>OK</strong> to continue.</p>
 <div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundAckAct7SalesTeamIntro()">OK</button></div>`;
       return;
     }
-    if(st===4){
+    if(st===4&&mo){
+      const applyBtn=document.getElementById('sp-apply-sales-btn');
+      const holeEl=applyBtn&&document.body.contains(applyBtn)?applyBtn:document.getElementById('wl-tu-tr-sales-team');
+      if(holeEl){
+        wlTuTurnaroundTeardownShades();
+        _wlTuTr.shadeWrap.innerHTML='';
+        wlFtTutorialScrollTargetIntoView(holeEl);
+        wlTuTurnaroundLayoutHoleDim(holeEl,zS);
+        _wlTuTr.root.style.display='block';
+        _wlTuTr.root.style.zIndex=String(zS+2);
+        _wlTuTr.shadeWrap.style.zIndex=String(zS);
+        _wlTuTr.card.style.zIndex=String(zS+4);
+        wlTuTurnaroundResetCardPosition(_wlTuTr.card);
+        _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored wl-ft-tut-card--modal-gutter';
+        _wlTuTr.card.style.width='';
+        _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Sales team</h3>
+<p class="wl-ft-tut-p">Look at the options and see if it makes sense for you. Then click <strong>APPLY SALES TEAM</strong>.</p>
+<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0;font-size:13px">Tap <strong>OK</strong> when you’ve read this.</p>
+<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundAckAct7SalesApplyIntro()">OK</button></div>`;
+        requestAnimationFrame(()=>wlTuTurnaroundCoachClearOfRect(_wlTuTr.card,mo,holeEl));
+        requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundCoachClearOfRect(_wlTuTr.card,mo,holeEl)));
+        return;
+      }
+      wlTuTurnaroundTeardownShades();
+      if(_wlTuTr.root)_wlTuTr.root.style.display='none';
+      return;
+    }
+    if(st===5){
       wlTuTurnaroundTeardownShades();
       if(_wlTuTr.root)_wlTuTr.root.style.display='none';
       return;
@@ -16549,12 +18529,12 @@ function wlTuTurnaroundLayoutStep(){
         wlTuTurnaroundLayoutHoleDim(block,zR);
         _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored wl-ft-tut-card--modal-gutter';
         _wlTuTr.card.style.width='';
-        _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Listener Feedback</h3>
-<p class="wl-ft-tut-p">This is free listener feedback, which often points you in the right direction.</p>
-<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0;font-size:13px">For now, click <strong>OK</strong> to advance.</p>
+        _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Start with quick feedback</h3>
+<p class="wl-ft-tut-p">This free listener feedback gives you a fast read on what’s going wrong.</p>
+<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0;font-size:13px">Read the feedback, then tap <strong>OK</strong> to continue.</p>
 <div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundSetResearchCoachStep(2)">OK</button></div>`;
-        requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo));
-        requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo)));
+        requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo,{prefer:'top'}));
+        requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo,{prefer:'top'})));
         return;
       }
       wlTuTurnaroundSetResearchCoachStep(2);
@@ -16568,12 +18548,13 @@ function wlTuTurnaroundLayoutStep(){
         wlTuTurnaroundLayoutHoleDim(block,zR);
         _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored wl-ft-tut-card--modal-gutter';
         _wlTuTr.card.style.width='';
-        _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Consultant report</h3>
-<p class="wl-ft-tut-p">You can dive deeper by commissioning a full Consultant Report and see where you stand in the market against competitors. The fee has been waived for the tutorial.</p>
-<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0;font-size:13px">For now, click <strong>OK</strong> to advance.</p>
+        _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Go deeper</h3>
+<p class="wl-ft-tut-p">Next you&apos;ll tap <strong>COMMISSION CONSULTANT REPORT</strong> — the <strong>gold button</strong> at the bottom of this panel (not the section header above).</p>
+<p class="wl-ft-tut-p">That commissions the full memo: what to fix and why.</p>
+<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0;font-size:13px">Tap <strong>OK</strong> here first, then use the button.</p>
 <div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundSetResearchCoachStep(3)">OK</button></div>`;
-        requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo));
-        requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo)));
+        requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo,{prefer:'top'}));
+        requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo,{prefer:'top'})));
         return;
       }
       wlTuTurnaroundSetResearchCoachStep(3);
@@ -16581,16 +18562,19 @@ function wlTuTurnaroundLayoutStep(){
     }
     if(rs===3){
       const btn=document.getElementById('wl-tu-tr-research-consultant');
-      if(btn){
+      const mo=document.querySelector('#m-research .mo');
+      if(btn&&mo){
         wlFtTutorialScrollTargetIntoView(btn);
         wlTuTurnaroundLayoutHoleDim(btn,zR);
-        _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored';
-        _wlTuTr.card.style.width='min(400px,calc(100vw - 28px))';
-        _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Commission the report</h3>
-<p class="wl-ft-tut-p">Use the highlighted <strong>COMMISSION CONSULTANT REPORT</strong> button (fee shows <strong>$0</strong> this once).</p>
+        _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored wl-ft-tut-card--modal-gutter';
+        _wlTuTr.card.style.width='';
+        _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Go deeper</h3>
+<p class="wl-ft-tut-p">Now click <strong>COMMISSION CONSULTANT REPORT</strong> (highlighted).</p>
+<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0;font-size:13px">Tip: the fee shows <strong>$0</strong> this once.</p>
 `;
-        requestAnimationFrame(()=>wlTuTurnaroundAnchorCardToTarget(_wlTuTr.card,btn));
-        requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundAnchorCardToTarget(_wlTuTr.card,btn)));
+        requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo,{prefer:'top'}));
+        requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo,{prefer:'top'})));
+        wlTuTurnaroundGateSet(btn,zR,'Follow the highlighted step to continue (or choose Continue without guide)');
         return;
       }
       if(cd){
@@ -16620,27 +18604,6 @@ function wlTuTurnaroundLayoutStep(){
   }
   // Consultant report advances act to 3 while m-research is still open — don't spotlight the shell until it closes.
   if(act>=3&&researchOpen){if(_wlTuTr.root)_wlTuTr.root.style.display='none';return;}
-  if(act===3&&progOpen&&!fmOpen&&!G._tutorialProgModalIntroDone){
-    const zI=wlTuTurnaroundZBase();
-    _wlTuTr.root.style.display='block';
-    _wlTuTr.root.style.zIndex=String(zI+2);
-    _wlTuTr.shadeWrap.style.zIndex=String(zI);
-    _wlTuTr.card.style.zIndex=String(zI+3);
-    wlTuTurnaroundTeardownShades();
-    _wlTuTr.shadeWrap.innerHTML='';
-    const dim=document.createElement('div');
-    dim.className='wl-ft-tut-shade wl-ft-tut-shade--full';
-    dim.style.cssText=`position:fixed;inset:0;z-index:${zI};pointer-events:auto;background:rgba(6,8,12,.48)`;
-    _wlTuTr.shadeWrap.appendChild(dim);
-    wlTuTurnaroundResetCardPosition(_wlTuTr.card);
-    _wlTuTr.card.className='wl-ft-tut-card wl-ft-tut-card--center wl-tu-tr-card--layer';
-    _wlTuTr.card.style.width='min(520px,calc(100vw - 28px))';
-    _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">Programming</h3>
-<p class="wl-ft-tut-p">The Programming panel gives you access to change the station’s <strong>Format</strong> (kind of programming), <strong>Positioning</strong> (tweaking the specific version of your format), and <strong>Demo Target</strong> (tailoring your sound to a particular age group).</p>
-<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0;font-size:13px">For now, click <strong>OK</strong> to advance.</p>
-<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundAckProgModalIntro()">OK</button></div>`;
-    return;
-  }
   if(act===4&&contractOpen&&!G._tutorialAct4ContractTipDone){
     const zTip=wlTuTurnaroundZBase();
     _wlTuTr.root.style.display='block';
@@ -16725,8 +18688,8 @@ function wlTuTurnaroundLayoutStep(){
 <p class="wl-ft-tut-p">You can extend the talent’s contract, give them a one-time bonus to boost morale, let the contract expire, or fire them immediately.</p>
 <p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0;font-size:13px">For now, click <strong>OK</strong> to advance.</p>
 <div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundAckAct4ExtendCoach()">OK</button></div>`;
-      requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo));
-      requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo)));
+      requestAnimationFrame(()=>wlTuTurnaroundCoachClearOfRect(_wlTuTr.card,mo,el));
+      requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundCoachClearOfRect(_wlTuTr.card,mo,el)));
       return;
     }
     G._tutorialAct4ExtendCoachDone=true;
@@ -16806,8 +18769,8 @@ function wlTuTurnaroundLayoutStep(){
 <p class="wl-ft-tut-p">Midday is unstaffed right now. Let’s fix the weak midday block by hiring a host. Click <strong>HIRE TALENT</strong>, then pick someone with a good mix of <strong>talent rating</strong> and <strong>format fit</strong> and click <strong>CONFIRM</strong>.</p>`
         :`<h3 class="wl-ft-tut-h">Replace Midday</h3>
 <p class="wl-ft-tut-p">Since the midday block is weak, let’s replace the talent. Click <strong>Replace</strong>, then pick someone with a strong mix of <strong>talent rating</strong> and <strong>format fit</strong> for your new format, and click <strong>CONFIRM</strong>.</p>`;
-      requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo));
-      requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo)));
+      requestAnimationFrame(()=>wlTuTurnaroundCoachClearOfRect(_wlTuTr.card,mo,el));
+      requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundCoachClearOfRect(_wlTuTr.card,mo,el)));
       return;
     }
     G._tutorialAct4ReplaceCoachDone=true;
@@ -16827,7 +18790,7 @@ function wlTuTurnaroundLayoutStep(){
     return;
   }
   if(act===4&&progOpen&&tutEx===0){if(_wlTuTr.root)_wlTuTr.root.style.display='none';return;}
-  if(act===4&&!progOpen&&tutEx>=1&&tutEx<=4)G._tutorialProgExtraStep=0;
+  if(act===4&&!progOpen&&tutEx>=1&&tutEx<=4){G._tutorialProgExtraStep=0;G._tutorialProgFocusCoachStep=0;}
   tutEx=G._tutorialProgExtraStep|0;
   if(act===5&&progOpen){if(_wlTuTr.root)_wlTuTr.root.style.display='none';return;}
   /* Act 5: coach must not sit on top of talent modals (z ~8k) — would grey them out and block clicks. */
@@ -16893,6 +18856,19 @@ function wlTuTurnaroundLayoutStep(){
     wlTuTurnaroundResetCardPosition(_wlTuTr.card);
     _wlTuTr.card.className='wl-ft-tut-card--center';
     _wlTuTr.card.style.width='min(480px,calc(100vw - 28px))';
+    // Middle-ground: lightly dim the board even during announce (non-blocking).
+    try{
+      const zA=wlTuTurnaroundZBase();
+      _wlTuTr.root.style.display='block';
+      _wlTuTr.root.style.zIndex=String(zA+2);
+      _wlTuTr.shadeWrap.style.zIndex=String(zA);
+      _wlTuTr.card.style.zIndex=String(zA+4);
+      _wlTuTr.shadeWrap.innerHTML='';
+      const dim=document.createElement('div');
+      dim.className='wl-ft-tut-shade wl-ft-tut-shade--full';
+      dim.style.cssText=`position:fixed;inset:0;z-index:${zA};pointer-events:none;background:rgba(6,8,12,.38)`;
+      _wlTuTr.shadeWrap.appendChild(dim);
+    }catch(_e){}
     const annFoot=act===4
       ?'<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0">Next: we’ll walk through the <strong>Programming</strong> window one control at a time.</p>'
       :'';
@@ -16928,7 +18904,10 @@ ${annFoot}
   if(act===4&&tutEx===1&&!document.getElementById('wl-tu-tr-prog-pos'))G._tutorialProgExtraStep=2;
   if(_wlTuTr.phase==='spotlight'){
     if(act===2)document.getElementById('pc')?.scrollIntoView({block:'nearest',behavior:'auto'});
-    if(act===7&&(G._tutorialAct7Phase|0)===2)(document.getElementById('wl-ft-tut-market-ratings')||document.getElementById('mtb'))?.scrollIntoView({block:'nearest',behavior:'auto'});
+    if(act===7&&(G._tutorialAct7Phase|0)===2){
+      const mtEl=document.getElementById('wl-ft-tut-market-ratings')||document.getElementById('mtb');
+      if(mtEl)wlFtTutorialScrollTargetIfNeeded(mtEl);
+    }
   }
   const el=wlTuTurnaroundGetTarget(act);
   if(!el){
@@ -16946,10 +18925,15 @@ ${annFoot}
     _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">${copy.title}</h3>${missP}`;
     return;
   }
-  wlFtTutorialScrollTargetIntoView(el);
+  const act7MapSpot=act===7&&((G._tutorialAct7Phase|0)===2||(G._tutorialAct7Phase|0)===3);
+  if(act7MapSpot)wlFtTutorialScrollTargetIfNeeded(el);
+  else wlFtTutorialScrollTargetIntoView(el);
   /* Act 7: do not let dim overlays intercept clicks (Ranker / table). */
-  if(act===7&&((G._tutorialAct7Phase|0)===2||(G._tutorialAct7Phase|0)===3))wlTuTurnaroundLayoutHole(el,z);
+  if(act7MapSpot)wlTuTurnaroundLayoutHole(el,z);
   else wlTuTurnaroundLayoutHoleDim(el,z);
+  if((act===1||act===2||act===3)&&_wlTuTr.phase==='spotlight'){
+    wlTuTurnaroundGateSet(el,z,'Follow the highlighted step to continue (or choose Continue without guide)');
+  }
   wlFtTutorialResetCardPosition(_wlTuTr.card);
   _wlTuTr.card.className='wl-ft-tut-card--bottom wl-ft-tut-card--anchored';
   _wlTuTr.card.style.width='';
@@ -16985,8 +18969,21 @@ ${annFoot}
     extraBtns='<div class="wl-ft-tut-btns" style="margin-top:12px"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundBrandExtraNext()">Next</button></div>';
     footMuted='';
   }else if(inBrandStep&&G._tutorialPromoRaised){
-    cardTitle='Promotion';
-    cardSpot='<strong>Promotion budget</strong> is committed for next period. Tap <strong>CLOSE</strong>.';
+    const pcst=G._tutorialPromoCloseCoachStep|0;
+    if(pcst<=1){
+      cardTitle='Community Identity';
+      cardSpot='You can also build goodwill in the community by sponsoring events and participating in charity. This can build loyalty over the years — you can come back to this later in Promotion.';
+      extraBtns='<div class="wl-ft-tut-btns" style="margin-top:12px"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundPromoCloseCoachNext()">Next</button></div>';
+      footMuted='';
+      const ciRange=document.querySelector('#m-brand input[id^="bm-ci-range-"]');
+      if(ciRange)wlTuTurnaroundLayoutHoleDim(ciRange,z);
+    }else{
+      cardTitle='Promotion';
+      cardSpot='<strong>Promotion budget</strong> is committed for next period. For now, click <strong>CLOSE</strong> at the bottom of the screen.';
+      footMuted='';
+      const closeBtn=document.getElementById('wl-tu-tr-bm-close');
+      if(closeBtn)wlTuTurnaroundLayoutHoleDim(closeBtn,z);
+    }
     footMuted='';
   }else if(inBrandStep&&(G._tutorialBrandTourDone||brandBex>=6)&&!G._tutorialPromoRaised){
     const basePromo=G._tutorialOpeningPromo!=null?f$(G._tutorialOpeningPromo):'where it was when this step started';
@@ -16995,15 +18992,20 @@ ${annFoot}
     footMuted='';
   }
   if(act===3&&progOpen){
-    cardTitle='Modernize your format';
-    cardSpot='Open <strong>FORMAT</strong>.';
+    cardTitle='Fix the sound';
+    cardSpot='The overall type of programming on your station is called the &ldquo;format.&rdquo; Click <strong>FORMAT</strong> to browse the options.';
   }
   if(act===4&&!inProgTour&&fireOpen&&!replaceView&&G._tutorialTalentExplainerDismissed){
     cardSpot='Find <strong>MIDDAY</strong>. Tap <strong>Replace</strong> (or <strong>Hire talent</strong> if the slot is empty).';
   }
   if(act===4&&!inProgTour&&!progOpen&&!contractOpen&&!fireOpen){
     cardTitle='Tweak the talent';
-    cardSpot='With your format in place, let’s look at your talent — the announcers on your station. On your station card, click the <strong>Midday</strong> row.';
+    if(G._tutorialMiddayFocusInlineTip){
+      cardSpot='You set <strong>Midday</strong> as your programming focus. Close <strong>Programming</strong> if it’s still open, then on your station card click the <strong>Midday</strong> row to open the talent contract.';
+      G._tutorialMiddayFocusInlineTip=0;
+    }else{
+      cardSpot='With your format in place, let’s look at your talent — the announcers on your station. On your station card, click the <strong>Midday</strong> row.';
+    }
   }
   if(act===5&&!progOpen&&!contractOpen&&!fireOpen){
     cardTitle='Let midday climb';
@@ -17018,7 +19020,7 @@ ${annFoot}
       cardTitle='Ratings &amp; revenue';
       if(phR===2){
         cardSpot='Here are <strong>market-wide ratings</strong> — quick context vs. competitors.';
-        extraBtns='<div class="wl-ft-tut-btns" style="margin-top:12px"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundAckAct7Ratings()">OK</button></div>';
+        extraBtns='<div class="wl-ft-tut-btns" style="margin-top:12px"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" data-wl-tu-tr-ack="act7-ratings" onclick="wlTuTurnaroundAckAct7Ratings()">OK</button></div>';
         footMuted='Then we’ll open the Ranker.';
       }else if(phR===3)cardSpot='Click <strong>📊 RANKER</strong> for share history across books.';
     }else if(phR===1&&!salesTutOpen){
@@ -17028,10 +19030,9 @@ ${annFoot}
   }
   let cardBodyHtml=`<p class="wl-ft-tut-p">${cardSpot}</p>`;
   if(inProgTour&&spotEx===4){
-    cardBodyHtml=
-      '<p class="wl-ft-tut-p">Programming Focus allows you to target a daypart for some extra attention and coaching.</p>'+
-      '<p class="wl-ft-tut-p">You can leave it at <strong>Balanced</strong> to help all dayparts equally, or select one for focusing.</p>'+
-      '<p class="wl-ft-tut-p">Since our consultant report indicated weak middays, select <strong>Midday</strong> as the focus, then set the Programming Budget by clicking the gold button.</p>';
+    cardBodyHtml='<p class="wl-ft-tut-p">Set <strong>Programming Focus</strong> to <strong>Midday</strong>, then click <strong>SET PROGRAMMING BUDGET</strong>.</p>'+
+      '<p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0;font-size:13px">This budget recurs each period until you change it.</p>';
+    extraBtns='<div class="wl-ft-tut-btns" style="margin-top:12px"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlTuTurnaroundProgFocusCoachNext()">OK</button></div>';
   }
   _wlTuTr.card.innerHTML=`<h3 class="wl-ft-tut-h">${cardTitle}</h3>${cardBodyHtml}${extraBtns}
 <p class="wl-ft-tut-p wl-ft-tut-muted" style="margin-bottom:0;font-size:13px">${footMuted}</p>`;
@@ -17047,43 +19048,103 @@ ${annFoot}
       requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,brandMo));
       requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,brandMo)));
     }
-  }else if(act===7&&((G._tutorialAct7Phase|0)===2||(G._tutorialAct7Phase|0)===3)){
-    requestAnimationFrame(()=>wlTuTurnaroundAnchorCardEastOfTarget(_wlTuTr.card,el));
-    requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundAnchorCardEastOfTarget(_wlTuTr.card,el)));
+  }else if(act7MapSpot){
+    requestAnimationFrame(()=>wlTuTurnaroundCoachAvoidMapTarget(_wlTuTr.card,el));
+    requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundCoachAvoidMapTarget(_wlTuTr.card,el)));
+  }else if(el&&el.closest){
+    const mo=el.closest('.mo');
+    if(mo){
+      const spotEx=G._tutorialProgExtraStep|0;
+      if(act===4&&spotEx===3){
+        requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo,{prefer:'top'}));
+        requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundModalCoachInGutter(_wlTuTr.card,mo,{prefer:'top'})));
+      }else{
+        requestAnimationFrame(()=>wlTuTurnaroundCoachClearOfRect(_wlTuTr.card,mo,el));
+        requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundCoachClearOfRect(_wlTuTr.card,mo,el)));
+      }
+    }else{
+      requestAnimationFrame(()=>wlTuTurnaroundAnchorCardToTarget(_wlTuTr.card,el));
+      requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundAnchorCardToTarget(_wlTuTr.card,el)));
+    }
   }else{
     requestAnimationFrame(()=>wlTuTurnaroundAnchorCardToTarget(_wlTuTr.card,el));
     requestAnimationFrame(()=>requestAnimationFrame(()=>wlTuTurnaroundAnchorCardToTarget(_wlTuTr.card,el)));
   }
+  }catch(err){
+    console.error('[wlTuTurnaroundLayoutStep]',err);
+    try{
+      wlTuTurnaroundIoDisconnect();
+      wlTuTurnaroundUnbindLayoutListeners();
+      wlTuTurnaroundTeardownShades();
+      wlTuTurnaroundGateClear();
+      if(_wlTuTr.root)_wlTuTr.root.style.display='none';
+    }catch(_e){}
+  }
 }
+/** Viewport width at which modal coaches dock on the left only (full-sized); narrower viewports may overlap the modal. */
+var WL_TU_MODAL_COACH_DESKTOP_MIN_W=900;
 /** Park turnaround coach in L/R (or top-centered) gutter so a modal body stays clear. */
-function wlTuTurnaroundModalCoachInGutter(card,modalMoEl){
+function wlTuTurnaroundModalCoachInGutter(card,modalMoEl,opts){
   if(!card||!modalMoEl||!document.body.contains(modalMoEl)||!document.body.contains(card))return;
   wlFtTutorialResetCardPosition(card);
   card.className='wl-ft-tut-card--bottom wl-ft-tut-card--anchored wl-ft-tut-card--modal-gutter';
   const r=modalMoEl.getBoundingClientRect();
-  const vw=window.innerWidth,vh=window.innerHeight;
+  const vv=typeof window!=='undefined'&&window.visualViewport;
+  const vvoL=vv?vv.offsetLeft:0;
+  const vvoT=vv?vv.offsetTop:0;
+  const vw=vv?vv.width:window.innerWidth;
+  const vh=vv?vv.height:window.innerHeight;
   const margin=12;
+  const gap=10;
   const maxW=400;
   const minW=260;
   let cardW=Math.min(maxW,Math.max(minW,vw*0.36));
   const leftRoom=r.left-margin;
   const rightRoom=vw-r.right-margin;
   card.style.boxSizing='border-box';
-  card.style.width=Math.round(cardW)+'px';
   card.style.maxHeight=Math.round(Math.min(560,vh-2*margin))+'px';
   let left;
-  if(leftRoom>=cardW+10){
-    left=margin;
-  }else if(rightRoom>=cardW+10){
-    left=Math.round(vw-cardW-margin);
+  const desktopModalCoach=vw>=WL_TU_MODAL_COACH_DESKTOP_MIN_W;
+  if(desktopModalCoach){
+    /* Desktop: always sit to the LEFT of the modal so highlighted controls stay visible; narrow the card if needed. */
+    let w=cardW;
+    for(let attempt=0;attempt<12;attempt++){
+      card.style.width=Math.round(w)+'px';
+      const cw=card.offsetWidth||w;
+      const desiredLeft=r.left-cw-gap;
+      if(desiredLeft>=margin){
+        left=Math.round(desiredLeft);
+        break;
+      }
+      w=Math.max(minW,w-28);
+    }
+    if(left===undefined){
+      card.style.width=Math.round(Math.max(minW,Math.min(cardW,r.left-2*margin-gap)))+'px';
+      left=Math.round(Math.max(margin,r.left-(card.offsetWidth||minW)-gap));
+    }
+  }else if(leftRoom>=cardW+gap){
+    left=Math.round(Math.max(margin,Math.min(r.left-cardW-margin,vw-cardW-margin)));
+    card.style.width=Math.round(cardW)+'px';
+  }else if(rightRoom>=cardW+gap){
+    left=Math.round(Math.max(margin,Math.min(r.right+gap,vw-cardW-margin)));
+    card.style.width=Math.round(cardW)+'px';
   }else{
     cardW=Math.min(420,vw-2*margin);
     card.style.width=Math.round(cardW)+'px';
     left=Math.round(Math.max(margin,(vw-cardW)/2));
   }
   const ch=Math.max(card.offsetHeight,160);
-  let top=Math.round(Math.max(margin,Math.min(r.top+28,vh-ch-margin)));
-  card.style.left=left+'px';
+  const pref=opts&&opts.prefer;
+  let top;
+  if(pref==='top'){
+    top=Math.round(Math.max(vvoT+margin,Math.min(vvoT+r.top+14,vvoT+vh-ch-margin)));
+  }else if(pref==='bottom'){
+    const want=(r.bottom||vh)-ch-14;
+    top=Math.round(Math.max(vvoT+margin,Math.min(vvoT+want,vvoT+vh-ch-margin)));
+  }else{
+    top=Math.round(Math.max(vvoT+margin,Math.min(vvoT+r.top+28,vvoT+vh-ch-margin)));
+  }
+  card.style.left=(vvoL+left)+'px';
   card.style.top=top+'px';
   card.style.right='auto';
   card.style.bottom='auto';
@@ -17097,7 +19158,11 @@ function wlTuTurnaroundCoachClearOfRect(card,modalMoEl,clearOfEl){
   }
   wlFtTutorialResetCardPosition(card);
   card.className='wl-ft-tut-card--bottom wl-ft-tut-card--anchored wl-ft-tut-card--modal-gutter';
-  const vw=window.innerWidth,vh=window.innerHeight;
+  const vv=typeof window!=='undefined'&&window.visualViewport;
+  const vvoL=vv?vv.offsetLeft:0;
+  const vvoT=vv?vv.offsetTop:0;
+  const vw=vv?vv.width:window.innerWidth;
+  const vh=vv?vv.height:window.innerHeight;
   const margin=12;
   const gap=10;
   const av=clearOfEl.getBoundingClientRect();
@@ -17105,7 +19170,8 @@ function wlTuTurnaroundCoachClearOfRect(card,modalMoEl,clearOfEl){
   let cardW=Math.min(420,Math.max(280,vw-2*margin));
   card.style.boxSizing='border-box';
   card.style.width=Math.round(cardW)+'px';
-  card.style.maxHeight=Math.round(Math.min(240,vh*0.36))+'px';
+  /* Height from CSS (.wl-ft-tut-card--modal-gutter); avoid a tiny inline cap that forces scroll on desktop. */
+  card.style.removeProperty('max-height');
   card.style.overflowY='auto';
   const size=()=>({w:card.offsetWidth||cardW,h:Math.max(card.offsetHeight||0,64)});
   const overlaps=(left,top,s)=>{
@@ -17113,13 +19179,45 @@ function wlTuTurnaroundCoachClearOfRect(card,modalMoEl,clearOfEl){
     return !(r.right<=av.left+gap||r.left>=av.right-gap||r.bottom<=av.top+gap||r.top>=av.bottom+gap);
   };
   const place=(left,top)=>{
-    card.style.left=Math.round(left)+'px';
-    card.style.top=Math.round(top)+'px';
+    card.style.left=Math.round(vvoL+left)+'px';
+    card.style.top=Math.round(vvoT+top)+'px';
     card.style.right='auto';
     card.style.bottom='auto';
     card.style.transform='none';
   };
   let s=size();
+
+  /* Desktop: dock LEFT of the modal only so highlights stay visible (matches wlTuTurnaroundModalCoachInGutter). */
+  if(vw>=WL_TU_MODAL_COACH_DESKTOP_MIN_W){
+    let w=s.w;
+    for(let attempt=0;attempt<14;attempt++){
+      card.style.width=Math.round(w)+'px';
+      s=size();
+      const dockL=mr.left-s.w-gap;
+      if(dockL>=margin){
+        const top=Math.max(margin,Math.min(mr.top+18,vh-s.h-margin));
+        place(dockL,top);
+        return;
+      }
+      w=Math.max(220,w-28);
+    }
+    card.style.width=Math.round(Math.max(220,Math.min(w,mr.left-2*margin-gap)))+'px';
+    s=size();
+    place(Math.max(margin,mr.left-s.w-gap),Math.max(margin,Math.min(mr.top+18,vh-s.h-margin)));
+    return;
+  }
+
+  // Tablet / smaller: prefer left gutter beside modal, then right — never prefer right when left fits.
+  const leftRoom=mr.left-margin;
+  const rightRoom=vw-mr.right-margin;
+  if(vw>=640&&(leftRoom>=s.w+10||rightRoom>=s.w+10)){
+    let dock=leftRoom>=s.w+10?mr.left-s.w-margin:mr.right+margin;
+    dock=Math.max(margin,Math.min(dock,vw-s.w-margin));
+    const top=Math.max(margin,Math.min(mr.top+18,vh-s.h-margin));
+    place(dock,top);
+    return;
+  }
+
   let left=Math.max(margin,Math.min(av.left+av.width/2-s.w/2,vw-s.w-margin));
   let top=av.top-s.h-gap;
   if(top>=margin&&!overlaps(left,top,s)){place(left,top);return;}
@@ -17135,7 +19233,70 @@ function wlTuTurnaroundCoachClearOfRect(card,modalMoEl,clearOfEl){
     top=Math.max(margin,Math.min(av.top+av.height/2-s.h/2,vh-s.h-margin));
     if(!overlaps(left,top,s)){place(left,top);return;}
   }
-  card.style.maxHeight=Math.round(Math.min(200,vh*0.3))+'px';
+  card.style.maxHeight=Math.round(Math.min(360,vh*0.55))+'px';
+  s=size();
+  top=margin;
+  left=Math.max(margin,Math.min((vw-s.w)/2,vw-s.w-margin));
+  place(left,top);
+}
+/**
+ * Act 7 map spotlight (no modal): keep the coach card out of the highlight rect.
+ * On narrow viewports {@link wlTuTurnaroundAnchorCardEastOfTarget} can pin the card to the right edge and cover header controls (e.g. Ranker).
+ */
+function wlTuTurnaroundCoachAvoidMapTarget(card,clearOfEl){
+  if(!card||!clearOfEl||!document.body.contains(card)||!document.body.contains(clearOfEl))return;
+  wlFtTutorialResetCardPosition(card);
+  card.className='wl-ft-tut-card wl-ft-tut-card--bottom wl-ft-tut-card--anchored wl-ft-tut-card--modal-gutter';
+  const vw=window.innerWidth,vh=window.innerHeight;
+  const margin=12,gap=14;
+  const av=clearOfEl.getBoundingClientRect();
+  let cardW=Math.min(400,Math.max(260,vw-2*margin));
+  if(vw<=520)cardW=vw-2*margin;
+  card.style.boxSizing='border-box';
+  card.style.width=Math.round(cardW)+'px';
+  card.style.maxHeight=Math.round(Math.min(0.42*vh,320))+'px';
+  card.style.overflowY='auto';
+  const size=()=>({w:card.offsetWidth||cardW,h:Math.max(card.offsetHeight||0,80)});
+  const overlaps=(left,top,s)=>{
+    const rr={left,top,right:left+s.w,bottom:top+s.h};
+    return !(rr.right<=av.left-gap||rr.left>=av.right+gap||rr.bottom<=av.top-gap||rr.top>=av.bottom+gap);
+  };
+  const place=(left,top)=>{
+    card.style.left=Math.round(left)+'px';
+    card.style.top=Math.round(top)+'px';
+    card.style.right='auto';
+    card.style.bottom='auto';
+    card.style.transform='none';
+  };
+  let s=size();
+  let left=Math.max(margin,Math.min(av.left+av.width/2-s.w/2,vw-s.w-margin));
+  let top=av.top-s.h-gap;
+  if(top>=margin&&!overlaps(left,top,s)){place(left,top);return;}
+  top=av.bottom+gap;
+  if(top+s.h<=vh-margin&&!overlaps(left,top,s)){place(left,top);return;}
+  const leftOf=av.left-s.w-gap;
+  if(leftOf>=margin){
+    left=leftOf;
+    top=Math.max(margin,Math.min(av.top+av.height/2-s.h/2,vh-s.h-margin));
+    s=size();
+    if(!overlaps(left,top,s)){place(left,top);return;}
+  }
+  const rightOf=av.right+gap;
+  if(rightOf+s.w<=vw-margin){
+    left=rightOf;
+    top=Math.max(margin,Math.min(av.top+av.height/2-s.h/2,vh-s.h-margin));
+    s=size();
+    if(!overlaps(left,top,s)){place(left,top);return;}
+  }
+  left=margin;
+  top=Math.max(margin,Math.min(av.top+av.height/2-s.h/2,vh-s.h-margin));
+  s=size();
+  if(!overlaps(left,top,s)){place(left,top);return;}
+  left=vw-s.w-margin;
+  top=Math.max(margin,Math.min(av.top+av.height/2-s.h/2,vh-s.h-margin));
+  s=size();
+  if(!overlaps(left,top,s)){place(left,top);return;}
+  card.style.maxHeight=Math.round(Math.min(200,vh*0.28))+'px';
   s=size();
   top=margin;
   left=Math.max(margin,Math.min((vw-s.w)/2,vw-s.w-margin));
@@ -17167,9 +19328,10 @@ function wlTuTurnaroundAnchorCardToTarget(card,target){
   if(!card||!target||!document.body.contains(target))return;
   wlFtTutorialAnchorCardToTarget(card,target);
   const r=target.getBoundingClientRect();
-  const vh=window.innerHeight;
+  const vv=typeof window!=='undefined'&&window.visualViewport;
+  const vh=vv?vv.height:window.innerHeight;
   if(r.bottom>vh*0.52){
-    const vw=window.innerWidth;
+    const vw=vv?vv.width:window.innerWidth;
     const maxW=Math.min(420,vw-32);
     card.style.boxSizing='border-box';
     card.style.width=maxW+'px';
@@ -17182,6 +19344,86 @@ function wlTuTurnaroundAnchorCardToTarget(card,target){
     card.style.transform='none';
   }
 }
+var _wlTuMsgAutoTimer=null,_wlTuMsgChain=null;
+
+function tutorialTurnaroundActScriptedMessage(){
+  if(!isTutorialTurnaroundScen()||MP.mode==='live')return;
+  const a=G.tutorialAct|0;
+  if(a===2)tutorialTurnaroundUIMessage('Results are in. Let’s see what changed.','info');
+  else if(a===3)tutorialTurnaroundUIMessage('The report says: Your sound is old-fashioned and your Midday programming is weak.  Let\'s fix it.','info');
+  else if(a===8)tutorialTurnaroundUIMessage('Final stretch — adjust what you like, then Next Period to finish the lesson.','info');
+}
+function tutorialTurnaroundDismissMessagePopup(opts){
+  opts=opts||{};
+  if(_wlTuMsgAutoTimer){clearTimeout(_wlTuMsgAutoTimer);_wlTuMsgAutoTimer=null;}
+  const next=_wlTuMsgChain;
+  _wlTuMsgChain=null;
+  const tip=document.getElementById('m-turnaround-tip');
+  if(tip&&tip.classList.contains('on'))cm('m-turnaround-tip',opts.wlTutorialSuppress?{wlTutorialSuppress:true}:undefined);
+  if(typeof next==='function'){
+    try{
+      queueMicrotask(()=>{try{next();}catch(e){}});
+    }catch(_e){}
+  }
+}
+window.tutorialTurnaroundDismissMessagePopup=tutorialTurnaroundDismissMessagePopup;
+/**
+ * Scripted Turnaround messages: centered modal (#m-turnaround-tip), above the floating coach overlay.
+ * Falls back to showToast outside this tutorial or if the modal is missing from the DOM.
+ * @param {string} msg
+ * @param {'info'|'warn'} [type]
+ * @param {number} [holdMs] Optional auto-dismiss; omit for OK-only.
+ * @param {{title?: string, queueNext?: () => void, expansionPostLessonIntro?: boolean}} [opts]
+ * @returns {boolean} True when the COACH NOTE modal (#m-turnaround-tip) was shown.
+ */
+function tutorialTurnaroundUIMessage(msg,type='info',holdMs,opts){
+  opts=opts||{};
+  const expansionIntro=!!(
+    opts.expansionPostLessonIntro &&
+    wlTutorialExpansionPostLesson() &&
+    typeof wlTutorialExpansionCoachActive==='function'&&wlTutorialExpansionCoachActive()&&
+    (G._tutorialExpansionStep|0)===1
+  );
+  if(!isTutorialTurnaroundScen()||MP.mode==='live'){
+    showToast(msg,type,holdMs);
+    if(opts.queueNext){try{opts.queueNext();}catch(_e){}}
+    return false;
+  }
+  if(!G?.tutorialMode&&!expansionIntro){
+    showToast(msg,type,holdMs);
+    if(opts.queueNext){try{opts.queueNext();}catch(_e){}}
+    return false;
+  }
+  const ov=document.getElementById('m-turnaround-tip');
+  const body=document.getElementById('turnaround-tip-body');
+  const title=document.getElementById('turnaround-tip-title');
+  const box=document.getElementById('turnaround-tip-mo');
+  if(!ov||!body||!title||!box){
+    showToast(msg,type,holdMs);
+    if(opts.queueNext){try{opts.queueNext();}catch(_e){}}
+    return false;
+  }
+  if(_wlTuMsgAutoTimer){clearTimeout(_wlTuMsgAutoTimer);_wlTuMsgAutoTimer=null;}
+  /* Do not orphan a chained step if the player is already reading a queued message — replace chain with latest. */
+  if(opts.queueNext)_wlTuMsgChain=opts.queueNext;
+  const isWarn=type==='warn';
+  title.textContent=opts.title||(isWarn?'HEADS UP':'COACH NOTE');
+  box.style.borderColor=isWarn?'rgba(240,88,88,.48)':'rgba(80,180,120,.42)';
+  title.style.color=isWarn?'var(--red)':'var(--grn)';
+  body.textContent=msg;
+  body.style.whiteSpace='pre-line';
+  if(!ov.classList.contains('on'))om('m-turnaround-tip');
+  /* Keep above #wl-tu-tr-root (~13020) even when .ov z-index was cleared for a single open modal. */
+  try{ov.style.setProperty('z-index','26000','important');}catch(e){}
+  /* Never stack spotlight/dim under an active scripted tip — tip dismiss re-runs coach via cm('m-turnaround-tip'). */
+  if(ov.classList.contains('on'))wlTuTurnaroundTempDismiss();
+  if(Number.isFinite(holdMs)&&holdMs>0){
+    _wlTuMsgAutoTimer=setTimeout(()=>tutorialTurnaroundDismissMessagePopup(),holdMs);
+  }
+  return true;
+}
+
+
 /** Call whenever act changes or UI should refresh the coach. */
 function tutorialTurnaroundCoachSync(){
   if(!isTutorialTurnaroundScen()||!G.tutorialMode||MP.mode==='live'){
@@ -17191,13 +19433,18 @@ function tutorialTurnaroundCoachSync(){
   const a=G.tutorialAct|0;
   if(a!==_wlTuTr.actPinned){
     _wlTuTr.actPinned=a;
-    _wlTuTr.phase='announce';
+    /* Act 7: in-modal Sales / map steps. Act 3: skip announce — same copy was repeating (announce card + spotlight both said “Open Programming…”). */
+    _wlTuTr.phase=a===7||a===3?'spotlight':'announce';
   }
   _wlTuTr.active=true;
   wlTuTurnaroundLayoutStep();
 }
 function tutorialTurnaroundCoachAfterRender(){
   if(!isTutorialTurnaroundScen()||!G.tutorialMode||MP.mode==='live')return;
+  if(wlTutorialCoachUiSuppressed()){
+    try{wlTuTurnaroundIoDisconnect();wlTuExpansionUnbindResize();wlTuTurnaroundUnbindLayoutListeners();wlTuTurnaroundTeardownShades();if(_wlTuTr.root)_wlTuTr.root.style.display='none';}catch(e){}
+    return;
+  }
   // Some modal open paths call this without going through tutorialTurnaroundCoachSync().
   // Ensure the coach is active so wlTuTurnaroundLayoutStep() actually renders.
   _wlTuTr.active=true;
@@ -17214,13 +19461,13 @@ function tutorialTurnaroundShowIntroModal(){
   if(!ov||!body||!title)return;
   const p=tutorialTurnaroundPlayerStation();
   const nm=p?callDisplay(p):'your station';
-  title.textContent='Your Station Needs Help';
-  body.innerHTML=`<p class="di" style="margin:0 0 12px;line-height:1.55">Welcome to Atlanta! You’ve taken over <strong>${nm}</strong> — an old-fashioned <strong>Middle of the Road</strong> station that has been slipping recently.</p>
-    <p class="di" style="margin:0 0 12px;line-height:1.55">The ratings are low.</p>
-    <p class="di" style="margin:0 0 18px;line-height:1.55">It’s your job to turn things around.</p>
-    <p class="di" style="margin:0;font-size:14px;color:var(--mut)">When you continue, use <strong>NEXT PERIOD</strong> to run the book — we’ll coach each step.</p>`;
+  title.textContent='Turnaround: Save this station';
+  body.innerHTML=`<p class="di" style="margin:0 0 12px;line-height:1.55">This AM station is losing listeners.</p>
+    <p class="di" style="margin:0 0 12px;line-height:1.55">It’s playing a safe, softer, older-leaning mix. Audiences are moving on.</p>
+    <p class="di" style="margin:0 0 12px;line-height:1.55">You’re in charge now. Let’s turn it around.</p>
+    <p class="di" style="margin:0;font-size:14px;color:var(--mut)">Let’s start by seeing what’s actually happening.</p>`;
   const foot=document.getElementById('m-tut-tr-foot');
-  if(foot)foot.innerHTML='<button type="button" class="cfm" style="width:100%" onclick="cm(\'m-tutorial-turnaround\')">CONTINUE</button>';
+  if(foot)foot.innerHTML='<button type="button" class="cfm" style="width:100%" onclick="cm(\'m-tutorial-turnaround\')">OK — SHOW ME</button>';
   om('m-tutorial-turnaround');
 }
 function tutorialTurnaroundShowGradModal(){
@@ -17237,46 +19484,65 @@ function tutorialTurnaroundShowGradModal(){
     <button type="button" class="cnl" style="width:100%" onclick="cm('m-tutorial-turnaround');openScenSelect(null)">START NEW SCENARIO</button>`;
   om('m-tutorial-turnaround');
 }
+/**
+ * Act 5 → 6: advance only after the player dismisses two period summaries (see m-sum close),
+ * so promotion messaging doesn’t stack on top of an unread summary.
+ */
+function tutorialTurnaroundMaybeAdvanceFromAct5(){
+  if(!isTutorialTurnaroundScen()||MP.mode==='live'||(G.tutorialAct|0)!==5)return;
+  const ps=tutorialTurnaroundPlayerStation();
+  if(!ps)return;
+  const sns=G._tutorialAct5SummariesSeen|0;
+  const n5=G._tutorialAct5MiddayTurns|0;
+  const adv=G._tutorialAct5TurnsAdvanced|0;
+  /* Require two summary dismissals; fallback if two books advanced but summaries didn’t count. */
+  if(sns<2&&!(adv>=2&&n5>=2))return;
+  if(!G._wlTutorialFirstPayoffCaptured){
+    G._wlTutorialFirstPayoffCaptured=true;
+    try{
+      wlAnalyticsCapture('tutorial_first_payoff_seen',{
+        tutorial_act:G.tutorialAct|0,
+        year:G.year|0,
+        period:G.period|0,
+        market:String(G.marketId||ACTIVE_MARKET||'atlanta').slice(0,32),
+      });
+    }catch(_e){}
+  }
+  G.tutorialAct=6;
+  G._tutorialOpeningPromo=ps.ops?.promo||0;
+  G._tutorialBrandExtraStep=0;
+  G._tutorialBrandTourDone=false;
+  G._tutorialBrandEverOpened=false;
+  tutorialTurnaroundUIMessage('Hopefully, you\'re seeing some ratings growth. Now that you\'ve made some changes, it\'s time to promote your station.','info');
+  const tipA5=document.getElementById('m-turnaround-tip');
+  if(tipA5&&tipA5.classList.contains('on'))wlTuTurnaroundTempDismiss();
+  else tutorialTurnaroundCoachSync();
+}
 function tutorialTurnaroundToastForAct(){
   if(!isTutorialTurnaroundScen()||MP.mode==='live')return;
-  tutorialTurnaroundCoachSync();
-  const a=G.tutorialAct|0;
-  if(a===2)showToast('Research: free Listener Feedback first, then commission the Consultant Report (fee waived once). The coach walks you through inside the modal.','info',7800);
-  else if(a===3)showToast('Programming → Format. Pick an AM-friendly format and confirm with APPLY FORMAT CHANGE at the bottom.','info',8200);
-  else if(a===4)showToast('Programming: Positioning → Demo Target → budget → Programming Focus (Midday). Then tap Midday on your station card for talent.','info',9800);
-  else if(a===5)showToast('Run Next Period twice with Midday focus — each advance is six months of game time.','info',7200);
-  else if(a===6)showToast('Open Promotion: follow the coach to Promotion budget (Community Identity is separate), raise budget if asked, close, then Next Period.','info',8800);
-  else if(a===7)showToast('Sales: set spot load and sales team, commit, Next Period — then market standings + Ranker.','info',7800);
-  else if(a===8)showToast('Final stretch — adjust what you like, then Next Period to finish the lesson.','info',7000);
+  /* Show scripted modal first so takeaway / beats aren’t trapped under the spotlight layer. */
+  tutorialTurnaroundActScriptedMessage();
+  const tip=document.getElementById('m-turnaround-tip');
+  if(tip&&tip.classList.contains('on'))wlTuTurnaroundTempDismiss();
+  else tutorialTurnaroundCoachSync();
 }
 function tutorialTurnaroundOnAdvTurnComplete(){
-  if(!isTutorialTurnaroundScen()||MP.mode==='live')return;
+  if(!G||G.sc?.id!=='tutorial_turnaround'||MP.mode==='live')return;
+  if(isTutorialTurnaroundScen()){
   const t=G.turn|0,a=G.tutorialAct|0;
   const ps=tutorialTurnaroundPlayerStation();
   if(a===1&&t>=1){
     G.tutorialAct=2;
     tutorialTurnaroundToastForAct();
-  }else if(a===5&&ps&&normalizeProgrammingFocus(ps.programmingFocus)==='midday'){
-    G._tutorialAct5MiddayTurns=(G._tutorialAct5MiddayTurns||0)+1;
-    const n5=G._tutorialAct5MiddayTurns;
-    if(n5===1){
-      showToast('Expect a soft book: a format flip often pulls share down while listeners decide if they like the new sound, and new talent needs time to gel. Midday focus is aimed at your weak daypart — one more period, then we’ll lean on promotion.','info',13000);
+  }else if(a===5&&ps){
+    G._tutorialAct5TurnsAdvanced=(G._tutorialAct5TurnsAdvanced|0)+1;
+    if(normalizeProgrammingFocus(ps.programmingFocus)==='midday'){
+      G._tutorialAct5MiddayTurns=(G._tutorialAct5MiddayTurns||0)+1;
     }
-    if(n5>=2){
-      G.tutorialAct=6;
-      if(ps)G._tutorialOpeningPromo=ps.ops?.promo||0;
-      G._tutorialBrandExtraStep=0;
-      G._tutorialBrandTourDone=false;
-      G._tutorialBrandEverOpened=false;
-      showToast('Midday should be climbing — promotion helps listeners find you after a big change.','info');
-      tutorialTurnaroundToastForAct();
-    }
+    /* Act 5→6 advance runs only from period-summary dismiss (two summaries) — see tutorialTurnaroundMaybeAdvanceFromAct5. */
   }else if(a===6&&G._tutorialPromoRaised){
-    G.tutorialAct=7;
-    if(ps)G._tutorialOpeningSpots=ps.ops?.spots||(FM[ps.format]?.sp||14);
-    G._tutorialSpotsAdjusted=false;
-    showToast('More spots can mean more revenue — too many can cost audience. Adjust spot load, then advance again.','info');
-    tutorialTurnaroundToastForAct();
+    /* Defer Sales lesson until the player dismisses the period summary for the book after raising promotion. */
+    G._tutorialAct6SalesIntroPending=1;
   }else if(a===7&&G._tutorialSpotsAdjusted){
     const ph=G._tutorialAct7Phase|0;
     if(ph===1){
@@ -17288,18 +19554,17 @@ function tutorialTurnaroundOnAdvTurnComplete(){
   }else if(a===8){
     G._tutorialAct8Turns=(G._tutorialAct8Turns||0)+1;
     if(G._tutorialAct8Turns>=1){
+      try{wlEmitTutorialCompleted('act8');}catch(_e){}
       G.tutorialMode=false;
       G.tutorialAct=0;
       G._tutorialGradTurn=G.turn|0;
+      try{wlShowEmailSignupOverlay('tutorial_completion');}catch(_e){}
       tutorialTurnaroundCoachStop();
       tutorialTurnaroundShowGradModal();
     }
   }
-  tutorialTurnaroundMaybeSecondStationCashTip();
-}
-function tutorialTurnaroundOnResearchOpened(){
-  if(!isTutorialTurnaroundScen()||MP.mode==='live'||G.tutorialAct!==2)return;
-  showToast('Listener feedback above is informal — skim for hints; tap Consultant below for the full memo-style report.','info');
+  }
+  tutorialTurnaroundMaybeExpansionCoachStart();
 }
 function tutorialTurnaroundOnConsultantDone(){
   if(!isTutorialTurnaroundScen()||MP.mode==='live'||G.tutorialAct!==2)return;
@@ -17315,7 +19580,6 @@ function tutorialTurnaroundAfterResearchClosed(){
   G.tutorialAct=3;
   G._tutorialResearchCoachStep=0;
   G._tutorialResearchReportCoachDone=false;
-  showToast('Bottom line: listeners think you sound old-fashioned, midday is weak, and FM is winning younger ears — time to modernize programming.','info',7200);
   tutorialTurnaroundToastForAct();
 }
 function tutorialTurnaroundOnFormatChanged(s,oldFmt,newFmt){
@@ -17330,12 +19594,24 @@ function tutorialTurnaroundOnFormatChanged(s,oldFmt,newFmt){
   G._tutorialAct4ContractTipDone=false;
   G._tutorialAct4ContractGutterDone=false;
   G._tutorialAct4ContractStatsCoachDone=false;
-  showToast('New format — your lineup may not fit. Walk through Programming (Positioning, Demo, budget, then Midday focus), then open a daypart from your station card to reach the contract & replace flow.','info');
-  tutorialTurnaroundToastForAct();
+  tutorialTurnaroundCoachSync();
 }
-function tutorialTurnaroundOnTalentAdjusted(){
+/** Act 4 talent lesson: finish by hiring/replacing (or otherwise staffing) Midday before advancing. */
+function tutorialTurnaroundAct4MiddayTalentLessonPending(){
+  return isTutorialTurnaroundScen()&&!!G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===4&&!G._tutorialTalentAdjusted;
+}
+/** If the Midday lesson is active and `slot` is not Midday, toast and return true (caller should abort). */
+function tutorialTurnaroundWarnMiddayLesson(slot){
+  if(!tutorialTurnaroundAct4MiddayTalentLessonPending())return false;
+  if(slot==='midday')return false;
+  tutorialTurnaroundUIMessage('For this tutorial step, use Midday — select Midday on the daypart rail first.','warn');
+  return true;
+}
+/** @param {string} [slot] Daypart affected (e.g. hire/replace/poach/shuffle destination). Omit when completing deferred advance after contract close. */
+function tutorialTurnaroundOnTalentAdjusted(slot){
   if(!isTutorialTurnaroundScen()||MP.mode==='live'||G.tutorialAct!==4)return;
   if(G._tutorialTalentAdjusted)return;
+  if(slot!==undefined&&slot!==null&&slot!=='midday')return;
   // Replace hire finishes with someone on the bench; bench coach needs act 4. Defer the act-5 advance until
   // they read RELEASE, then close the contract (see _wlModalAfterClose m-contract + step 2).
   if((G._tutorialAct4BenchCoachStep|0)===1||(G._tutorialAct4BenchCoachStep|0)===2){
@@ -17346,12 +19622,14 @@ function tutorialTurnaroundOnTalentAdjusted(){
   G._tutorialDeferredTalentAdjusted=false;
   G.tutorialAct=5;
   G._tutorialAct5MiddayTurns=0;
+  G._tutorialAct5TurnsAdvanced=0;
+  G._tutorialAct5SummariesSeen=0;
   G._tutorialHireListCoachDismissed=true;
   tutorialTurnaroundToastForAct();
 }
 function tutorialTurnaroundOnProgrammingFocusMidday(){
   if(!isTutorialTurnaroundScen()||MP.mode==='live'||G.tutorialAct!==5)return;
-  showToast('Focus set to Midday. Coaching helps that daypart over time; others may slip slightly. Run two periods with this focus.','info');
+  tutorialTurnaroundUIMessage('Programming focus is set. Coaching favors that daypart over the next two periods; other dayparts may slip slightly.','info');
 }
 function tutorialTurnaroundOnPromoCommitted(sid){
   if(!isTutorialTurnaroundScen()||MP.mode==='live'||G.tutorialAct!==6)return;
@@ -17359,7 +19637,7 @@ function tutorialTurnaroundOnPromoCommitted(sid){
   const base=G._tutorialOpeningPromo!=null?G._tutorialOpeningPromo:0;
   if(!s||!(s.ops.promo>base+1))return;
   G._tutorialPromoRaised=true;
-  showToast('Promotion increased. Advance one period to let it work through the book.','info');
+  G._tutorialPromoCloseCoachStep=1;
 }
 function tutorialTurnaroundOnSpotsCommitted(){
   if(!isTutorialTurnaroundScen()||MP.mode==='live'||G.tutorialAct!==7)return;
@@ -17370,18 +19648,17 @@ function tutorialTurnaroundOnSpotsCommitted(){
     G._tutorialSalesCoachStep=3;
     G._tutorialSpotsAdjusted=true;
     G._tutorialAct7Phase=1;
-    if(s&&s.ops.spots!==base){
-      showToast('Spot load updated — when you’re ready, run the book, then we’ll tour the market ratings table and ranker.','info',7800);
-    }
     tutorialTurnaroundCoachSync();
+    /* Do not open #m-turnaround-tip here — tutorialTurnaroundUIMessage calls wlTuTurnaroundTempDismiss() and hides the Sales coach before the player reads the Sales team step (felt like the flow jumped backward). Use a short toast; Next Period comes after Apply / Close on Sales. */
+    showToast('Spot load saved. Next: follow the coach for Sales team, then Apply sales team. You\'ll run Next Period after that.','info',5200);
     return;
   }
   if(!s||s.ops.spots===base)return;
   G._tutorialSpotsAdjusted=true;
   G._tutorialAct7Phase=1;
   G._tutorialSalesCoachStep=3;
-  showToast('Spot load updated — when you’re ready, run the book, then we’ll tour the market ratings table and ranker.','info',7800);
   tutorialTurnaroundCoachSync();
+  showToast('Spot load saved. Next: follow the coach for Sales team, then Apply sales team. You\'ll run Next Period after that.','info',5200);
 }
 function wlTuTurnaroundAckAct7Ratings(){
   if(!isTutorialTurnaroundScen()||MP.mode==='live'||(G.tutorialAct|0)!==7)return;
@@ -17412,11 +19689,21 @@ function wlTuTurnaroundAckAct7SalesSpotIntro(){
   tutorialTurnaroundCoachSync();
 }
 function wlTuTurnaroundAckAct7SalesSpotLoad(){ wlTuTurnaroundAckAct7SalesSpotIntro(); }
-/** Sales step 3 → 4: dismiss sales-team intro so the player can choose a tier. */
+/** Sales step 3 → 4: dismiss sales-team intro; next coach covers Apply. */
 function wlTuTurnaroundAckAct7SalesTeamIntro(){
   if(!isTutorialTurnaroundScen()||MP.mode==='live'||(G.tutorialAct|0)!==7)return;
   G._tutorialSalesCoachStep=4;
   tutorialTurnaroundCoachSync();
+}
+/** Sales step 4 → 5: dismiss Apply-line coach; player may change tier, APPLY SALES TEAM, or CLOSE. */
+function wlTuTurnaroundAckAct7SalesApplyIntro(){
+  if(!isTutorialTurnaroundScen()||MP.mode==='live'||(G.tutorialAct|0)!==7)return;
+  G._tutorialSalesCoachStep=5;
+  tutorialTurnaroundCoachSync();
+  requestAnimationFrame(()=>{
+    const el=document.getElementById('sp-apply-sales-btn');
+    if(el)wlFtTutorialScrollTargetIntoView(el);
+  });
 }
 function wlTuTurnaroundAckAct7SalesTeam(){ wlTuTurnaroundAckAct7SalesTeamIntro(); }
 
@@ -17574,8 +19861,14 @@ function wlFtTutorialRestartFromMenu(){
     showToast('First-turn guide is for solo play only.','info');
     return;
   }
+  if(wlTutorialCoachUiSuppressed()){
+    wlTutorialCoachResumeUi();
+    try{showToast('Coach tips are visible again.','info',3200);}catch(e){}
+    return;
+  }
   cm('m-save');
   try{localStorage.removeItem(WL_FT_TUTORIAL_LS);}catch(e){}
+  wlTutorialCoachSetUiSuppress(false);
   wlFtTutorialStart();
 }
 
@@ -17624,6 +19917,13 @@ function scenStartTutorialFromMenu(){
   }
   _pendingScenId=null;
   if(typeof cm==='function')cm('m-scen');
+  try{
+    wlAnalyticsEmitScenarioSelected({
+      scenario_id:'tutorial_turnaround',
+      picked_mode:'tutorial',
+      market:String((typeof _selectedMarket==='string'&&_selectedMarket)?_selectedMarket:'atlanta').slice(0,32),
+    });
+  }catch(_e){}
   openOnboarding('tutorial_turnaround');
 }
 if(typeof window!=='undefined'){
@@ -17697,30 +19997,46 @@ function wlGoToScenarioSelectFromLogo(){
   }
   openGameConfirm({title:'LEAVE GAME',message:'Return to scenario select? Your progress is autosaved in this browser.',confirmLabel:'CONTINUE'},(ok)=>{
     if(!ok)return;
-    try{
-      if(typeof autoSave==='function')autoSave();
-    }catch(_e){}
-    wlFtTutorialStop({});
-    document.querySelectorAll('.ov.on').forEach(el=>{el.classList.remove('on');});
-    syncModalBodyScrollLock();
-    if(G?.marketId&&PHASE1_MARKET_IDS.includes(G.marketId)){
-      let mid=G.marketId;
-      const plan=wlGetPlanPhase1MarketIds();
-      if(!plan.includes(mid))mid=plan.length?plan[0]:'atlanta';
-      _selectedMarket=mid;
-      ACTIVE_MARKET=mid;
-      syncMarketPopToMarket(mid);
-    }
-    openScenSelect(getLocalSave());
+    void (async()=>{
+      try{
+        if(typeof autoSave==='function')autoSave();
+      }catch(_e){}
+      wlFtTutorialStop({});
+      try{
+        if(typeof tutorialTurnaroundCoachStop==='function')tutorialTurnaroundCoachStop();
+      }catch(_e){}
+      document.querySelectorAll('.ov.on').forEach(el=>{el.classList.remove('on');});
+      try{_wlModalStack.length=0;}catch(_e){}
+      syncModalBodyScrollLock();
+      await wlMaybeConsumeSignupTrialWhenLeavingToMenu();
+      if(G?.marketId&&PHASE1_MARKET_IDS.includes(G.marketId)){
+        let mid=G.marketId;
+        const plan=wlGetPlanPhase1MarketIds();
+        if(!plan.includes(mid))mid=plan.length?plan[0]:'atlanta';
+        _selectedMarket=mid;
+        ACTIVE_MARKET=mid;
+        syncMarketPopToMarket(mid);
+      }
+      openScenSelect(getLocalSave());
+    })();
   });
 }
 
 function openScenSelect(localSave, opts){
   const _onlyRefresh=!!(opts&&opts.onlyRefresh);
   if(!_onlyRefresh) _scenView='entry';
-  if(!_onlyRefresh)try{wlAnalyticsScenarioScreenViewed();}catch(_e){}
   _pendingScenId=null;
   _lastScenSelectLocal=localSave||null;
+  if(!_onlyRefresh&&typeof wlClerkPlanSlug==='function'&&wlClerkPlanSlug()==='trial_user'){
+    void (async()=>{
+      try{
+        const _slugBefore=wlClerkPlanSlug();
+        if(typeof window.__wlSyncPlanMarkets==='function')await window.__wlSyncPlanMarkets();
+        if(typeof wlRefreshTrialLockFromServer==='function')await wlRefreshTrialLockFromServer();
+        if(wlClerkPlanSlug()!==_slugBefore)wlRefreshOpenScenIfPlanChanged();
+      }catch(_e){}
+    })();
+  }
   const _planMkt=wlGetPlanPhase1MarketIds();
   const _allowMkt=wlGetAllowedPhase1MarketIds();
   const _allowMktSet=new Set(_allowMkt);
@@ -17735,6 +20051,10 @@ function openScenSelect(localSave, opts){
     syncMarketPopToMarket(_fallbackMkt);
   }
   const hasSave=!!(localSave?.G?.year);
+  if(!_onlyRefresh&&hasSave&&typeof wlClerkPlanSlug==='function'&&wlClerkPlanSlug()==='trial_user'&&wlAutosaveIndicatesSignupTrialConsumptionComplete(localSave)){
+    void wlMaybeFinalizeSignupTrialFromAutosave(localSave);
+  }
+  if(!_onlyRefresh)try{wlAnalyticsScenarioScreenViewed(hasSave);}catch(_e){}
   const saveYear=localSave?.G?.year||null;
   const savePeriod=localSave?.G?.period===1?'Spring':'Fall';
   const saveLabel=localSave?.label||'';
@@ -17756,15 +20076,15 @@ function openScenSelect(localSave, opts){
   const _allowGmScen=wlClerkPlanAllowsGmScenario();
   const _allowGmCamp=wlClerkPlanAllowsGmCampaign();
   const _planSlugScen=wlClerkPlanSlug();
-  const diffHints={under:'Survival mode. Thin cash — morning slot empty; hire fast.',gm_under:'Same start as Underdog — plus General Manager job reviews on margin, revenue trend, and talent/franchise. Miss expectations too often and you are dismissed.',soul:'Strong cume; under-monetized. Grind sales and CPM.',fmpn:'Lean years 1970–72. Survive them and FM makes you wealthy.',cntry:'Profitable now. Erosion will catch up.',stack:'AM/FM combo. High ceiling, high overhead.',wsb:'Dominant now, eroding fast. Every format decision has a cost.',tutorial_turnaround:'Walkthrough — follow on-screen steps; finish anytime by playing normally after the last lesson.',fmrev:'Thin margins until 1980. Album Rock will make you rich if you survive.',acrise:'AC gets crowded fast. Brand loyalty is everything.',chrwar:'Three viable format bets. Only one will dominate.',amtalk:'Revenue cliff is coming. Move fast or move on.'};
+    const diffHints={under:'Survival mode. Thin cash — morning slot empty; hire fast.',gm_under:'Corporate randomly assigns one or two stations (AM/FM) — plus GM reviews on margin, revenue trend, and talent/franchise. Miss expectations too often and you are dismissed.',soul:'Strong cume; under-monetized. Grind sales and CPM.',fmpn:'Lean years 1970–72. Survive them and FM makes you wealthy.',cntry:'Profitable now. Erosion will catch up.',stack:'AM/FM combo. High ceiling, high overhead.',wsb:'Dominant now, eroding fast. Every format decision has a cost.',tutorial_turnaround:'Walkthrough — follow on-screen steps; finish anytime by playing normally after the last lesson.',fmrev:'Thin margins until 1980. Album Rock will make you rich if you survive.',acrise:'AC gets crowded fast. Brand loyalty is everything.',chrwar:'Three viable format bets. Only one will dominate.',amtalk:'Revenue cliff is coming. Move fast or move on.'};
   const makeCard=sc=>{
     const gmLocked=sc.id==='gm_under'&&!_allowGmScen;
     const pro1985Locked=wlScenarioIdIs1985ProExclusive(sc.id)&&!wlClerkPlanAllows1985Scenarios();
     const cardLocked=gmLocked||pro1985Locked;
     const diff=sc.diff||(sc.id==='under'||sc.id==='gm_under'||sc.id==='soul'||sc.id==='fmpn'||sc.id==='amtalk'||sc.id==='fmrev'?'HARD':sc.id==='cntry'||sc.id==='stack'||sc.id==='acrise'||sc.id==='chrwar'?'MEDIUM':'EASY');
     const diffCls=diff==='HARD'?'hard':diff==='MEDIUM'?'med':'easy';
-    const stnInfo=sc.idx.length===2?'AM/FM Combo':'Single Station';
-    const cashFmt=`${f$(scaledScenarioCash(sc.cash,_selectedMarket))} starting cash`;
+    const stnInfo=sc.id==='gm_under'?'1–2 stations assigned':sc.idx.length===2?'AM/FM Combo':'Single Station';
+    const cashFmt=`${f$(scaledScenarioCash(sc.cash,_selectedMarket,sc.startYear||1970))} starting cash`;
     const hint=sc.hint||diffHints[sc.id]||'';
     const span=`${sc.startYear||1970}–2020`;
     let lockBadge='';
@@ -17829,7 +20149,7 @@ function openScenSelect(localSave, opts){
       ${_hasCampMeta?`<button type="button" class="abt" style="padding:10px 18px;font-size:14px;letter-spacing:1px" onclick="wlCampaignOpenBriefing()">📋 CAREER BRIEFING</button>`:''}
     </div>`;
   const campaignLockedNote=_planSlugScen==='starter'
-    ?`<p style="margin:0 0 10px;font-size:14px;color:var(--amb);line-height:1.5">The multi-market <strong>General Manager career</strong> is included with <strong>Pro</strong> (and your signup free trial). Your Starter plan includes the General Manager classic scenario in <strong>Solo — Classic Run</strong> below.</p>`
+    ?`<p style="margin:0 0 10px;font-size:14px;color:var(--amb);line-height:1.5">The multi-market <strong>General Manager career</strong> is included with <strong>Pro</strong> (and your signup free trial). Your Starter plan includes the General Manager classic scenario under <strong>All Scenarios</strong> below.</p>`
     :`<p style="margin:0 0 10px;font-size:14px;color:var(--amb);line-height:1.5">The full <strong>General Manager career</strong> unlocks on <strong>Pro</strong> or during your <strong>signup free trial</strong>. Subscribe to play the career ladder across markets.</p>`;
   const campaignInner=_allowGmCamp?campaignIntroOk:`<p style="margin:0 0 12px;font-size:15px;color:var(--off);line-height:1.55;opacity:0.92">Climb from a small market to the flagship: corporate assigns stations, reviews your results, and moves you up (or down) the ladder.</p>
     ${campaignLockedNote}
@@ -17853,14 +20173,21 @@ function openScenSelect(localSave, opts){
       </div>
     </div>`
     :(tutAllowed
-    ?`<div class="scen-entry-primary-block">
-      <span class="scen-entry-rec-badge scen-entry-rec-badge--players">New players start here</span>
-      <div class="scen-entry-start-wrap scen-entry-start-wrap--hero">
-        <button type="button" class="cfm scen-entry-start-btn scen-entry-start-btn--first-game" onclick="scenStartTutorialFromMenu()">👉 TURN YOUR STATION AROUND</button>
-      </div>
-      <div class="scen-entry-primary-sub scen-entry-primary-sub--stack">
-        <p class="scen-entry-primary-sub-line">Fix a struggling station. We&apos;ll guide you.</p>
-        <p class="scen-entry-primary-sub-line scen-entry-primary-sub-line--emph">See your ratings change in minutes.</p>
+    ?`<div class="scen-entry-primary-block scen-entry-primary-block--trial-tutorial" role="region" aria-label="Guided tutorial — turnaround station">
+      <div class="scen-entry-trial-tutorial__inner">
+        <div class="scen-entry-trial-kicker">
+          <span class="scen-entry-trial-kicker__pre">First time playing?</span>
+          <span class="scen-entry-trial-kicker__here">Start here</span>
+        </div>
+        <h2 class="scen-entry-trial-hero-headline">Can you save this radio station?</h2>
+        <p class="scen-entry-trial-lead">Your station is losing listeners. We&apos;ll guide you through the turnaround.</p>
+        <p class="scen-entry-trial-ratings-hook">See your ratings change in minutes.</p>
+        <div class="scen-entry-start-wrap scen-entry-start-wrap--hero scen-entry-start-wrap--trial-cta">
+          <button type="button" class="cfm scen-entry-start-btn scen-entry-start-btn--first-game scen-entry-start-btn--tutorial-hero" onclick="scenStartTutorialFromMenu()">👉 TURN YOUR STATION AROUND</button>
+        </div>
+        <div class="scen-entry-browse-wrap scen-entry-browse-wrap--trial-secondary">
+          <button type="button" class="scen-entry-browse-all-btn scen-entry-browse-all-btn--trial-secondary" onclick="scenSetView('modes')">Experienced player? Start a custom game →</button>
+        </div>
       </div>
     </div>`
     :`<div class="scen-entry-primary-block">
@@ -17871,7 +20198,7 @@ function openScenSelect(localSave, opts){
     </div>`);
   const entryLoadWrap=hasSave
     ?''
-    :`<div class="scen-entry-load-wrap">
+    :`<div class="scen-entry-load-wrap${tutAllowed?' scen-entry-load-wrap--subdued':''}">
       <button type="button" class="abt scen-entry-load-btn" title="Load from a cloud slot, import a file, or this browser" onclick="cm('m-scen');openSaveLoad()">LOAD GAME</button>
       <p class="scen-entry-load-hint">Load from cloud or file</p>
     </div>`;
@@ -17879,14 +20206,14 @@ function openScenSelect(localSave, opts){
     ${saveResumeRow}
     ${entryPrimaryBlock}
     ${entryLoadWrap}
-    <div class="scen-entry-link-row" role="group" aria-label="More options">
+    <div class="scen-entry-link-row${tutAllowed&&!hasSave?' scen-entry-link-row--subdued':''}" role="group" aria-label="More options">
       <button type="button" class="abt scen-entry-aux-btn" onclick="cm('m-scen');mpOpenLobby()">🎙 MULTIPLAYER</button>
       ${tutAllowed?`<button type="button" class="abt scen-entry-aux-btn" onclick="scenStartTutorialFromMenu()" title="Replay the Atlanta guided walkthrough">Replay tutorial</button>`:''}
     </div>
   </div>`;
   const tutBlock=tutSc&&allowed.has('tutorial_turnaround')
     ?`<div class="scn-mode scn-mode--tut" role="button" tabindex="0" title="Start guided walkthrough" onclick="scenStartTutorialFromMenu()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scenStartTutorialFromMenu();}"><div class="scn-mode-ribbon">GUIDED TUTORIAL</div><h3 class="scn-mode-title" style="font-family:var(--fd);font-size:20px;letter-spacing:0.12em;color:var(--wht);margin:0 0 6px">${(tutSc.l||'').toUpperCase()}</h3>
-    <p style="font-family:var(--ft);font-size:15px;color:var(--amb);margin:0 0 8px;">${mktLabel} · ${tutSc.startYear||1970} · <strong style="color:var(--wht)">${f$(scaledScenarioCash(tutSc.cash,_selectedMarket))}</strong> starting</p>
+    <p style="font-family:var(--ft);font-size:15px;color:var(--amb);margin:0 0 8px;">${mktLabel} · ${tutSc.startYear||1970} · <strong style="color:var(--wht)">${f$(scaledScenarioCash(tutSc.cash,_selectedMarket,tutSc.startYear||1970))}</strong> starting</p>
     <p style="font-size:15px;color:var(--off);line-height:1.5;margin:0 0 12px;">On-screen walkthrough. Finish the lessons and keep playing, or exit and play on your own.</p>
     <div><span class="cfm" style="display:inline-block;padding:8px 16px;pointer-events:none" aria-hidden="true">▶ PLAY</span></div></div>`
     :'';
@@ -17894,11 +20221,11 @@ function openScenSelect(localSave, opts){
     <button type="button" class="abt scen-modes-back" style="margin:0 0 12px" onclick="scenSetView('entry')">← BACK</button>
     <div style="text-align:center;margin-bottom:18px">
       <div style="font-family:var(--fd);font-size:18px;letter-spacing:0.18em;color:var(--wht)">CHOOSE HOW TO START</div>
-      <p style="font-size:14px;color:var(--mut);margin:8px 0 0;line-height:1.5">Solo classic run, guided tutorial, or GM career.</p>
+      <p style="font-size:14px;color:var(--mut);margin:8px 0 0;line-height:1.5">All scenarios, guided tutorial, or GM career.</p>
     </div>
     ${tutBlock}
     <div class="scn-mode scn-mode--solo" style="margin-top:12px" role="button" tabindex="0" title="Choose market, then a historical scenario" onclick="scenSetView('solo')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scenSetView('solo');}">
-    <div class="scn-mode-ribbon">SOLO — CLASSIC RUN</div>
+    <div class="scn-mode-ribbon">ALL SCENARIOS</div>
     <h3 class="scn-mode-title" style="font-family:var(--fd);font-size:20px;letter-spacing:0.1em;color:var(--wht);margin:0 0 6px">1970 &rarr; 2020</h3>
     <p style="font-size:15px;color:var(--off);line-height:1.5;margin:0 0 12px;">Pick a market, then a starting scenario, and play the long arc. Same as the old solo list.</p>
     <div><span class="cfm" style="display:inline-block;padding:8px 16px;pointer-events:none" aria-hidden="true">▶ CHOOSE MARKET &amp; SCENARIO</span></div></div>
@@ -17914,7 +20241,7 @@ function openScenSelect(localSave, opts){
   </div>`;
   const soloSection=`<div class="scen-pick-section scen-pick-section--solo">
     <button type="button" class="abt" style="margin-bottom:8px" onclick="scenSetView('modes')">← BACK</button>
-    <div class="scen-pick-section__label scen-pick-section__label--solo-head">CLASSIC SOLO</div>
+    <div class="scen-pick-section__label scen-pick-section__label--solo-head">ALL SCENARIOS</div>
     <p class="scen-pick-solo-sub">You are a radio station owner. Pick a market, then choose a scenario.</p>
     <div style="font-family:var(--ft);font-size:12px;color:var(--mut);letter-spacing:2px;margin-bottom:8px">YOUR MARKET</div>
     <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">${marketPicker}</div>
@@ -17943,9 +20270,12 @@ function openScenSelect(localSave, opts){
     <div class="scen-pick-stack">
       ${mainPick}
     </div>
+    ${wlScenarioEmailSignupHtml()}
     ${wlSiteFooterEmbed}
     </div>`;
   om('m-scen');
+  try{wlBindPaywallEmailSignup();}catch(_e){}
+  try{wlBindScenarioEmailSignup();}catch(_e){}
 }
 
 function pickScen(id){
@@ -17984,6 +20314,15 @@ function confirmScen(){
     wlLocked1985ScenarioToast();
     return;
   }
+  const pid=_pendingScenId;
+  const picked=pid==='tutorial_turnaround'?'tutorial':pid==='gm_under'?'gm':'classic';
+  try{
+    wlAnalyticsEmitScenarioSelected({
+      scenario_id:pid,
+      picked_mode:picked,
+      market:String(_selectedMarket||ACTIVE_MARKET||'atlanta').slice(0,32),
+    });
+  }catch(_e){}
   cm('m-scen');
   openOnboarding(_pendingScenId);
 }
@@ -18003,18 +20342,18 @@ function openOnboarding(scenId){
   const eraTips={
     under:[
       {k:'MORNING DRIVE',v:`Your first hire matters most. A strong morning host can lift ratings 2-3 points on its own.`},
-      {k:'AM EROSION',v:`FM penetration rises every period starting in the mid-70s. Have an FM plan before 1978 or you will bleed out slowly.`},
+      {k:'AM EROSION',v:`FM penetration rises steadily once FM sets in. Have an FM plan early or you will bleed out slowly.`},
       {k:'CASH',v:`Thin margins early. Keep spot load high, spend carefully on talent. Survive long enough to matter.`},
     ],
     cntry:[
-      {k:'FM TRANSITION',v:`Country AM works fine through 1978-80. After that, FM Country pulls your audience. Buy or build an FM before 1982.`},
+      {k:'FM TRANSITION',v:`Country AM works fine for a while. Once FM Country takes hold, it pulls your audience. Buy or build an FM before the market tips.`},
       {k:'TALENT',v:`Country audiences follow personalities. A loyal morning host is worth every dollar — and their contract is your insurance.`},
       {k:'RIVALS',v:`A second Country station entering the market is an existential threat. Differentiate your brand before they arrive.`},
     ],
     soul:[
       {k:'CPM GAP',v:`Urban formats are undervalued by Madison Avenue. You'll need 50% more audience than a CHR to earn the same revenue. Fight for every advertiser relationship.`},
       {k:'COMMUNITY',v:`Your competitive moat is loyalty. Protect your Loyal listeners — rivals will try to poach them constantly.`},
-      {k:'FM',v:`Soul and R&B move to FM by the mid-80s. Urban Contemporary is the evolved format — transition when the time is right.`},
+      {k:'FM',v:`Soul and R&B eventually migrate to FM as receivers and habits change. Urban Contemporary is the evolved lane — transition when your audience starts sampling FM rivals.`},
     ],
     stack:[
       {k:'SIMULCAST',v:`Use the AM to fund the FM's growth. Simulcast the same format to build FM cume, then differentiate when you're ready.`},
@@ -18022,7 +20361,7 @@ function openOnboarding(scenId){
       {k:'TIMING',v:`The FM is your long-term asset. Don't wait too long to cut the AM loose — erosion compounds.`},
     ],
     fmpn:[
-      {k:'LEAN YEARS',v:`Advertisers don't understand FM yet. Revenue will be thin through 1972-74. Cut costs, not quality.`},
+      {k:'LEAN YEARS',v:`Advertisers don't understand FM yet. Revenue will be thin early in the FM era. Cut costs, not quality.`},
       {k:'AUDIENCE FIRST',v:`Build ratings now, monetize later. FM listenership is growing 20% a year — be the station they find.`},
       {k:'FORMAT LOCK',v:`Album Rock works. Resist the urge to chase pop formats — your credibility is the product.`},
     ],
@@ -18034,25 +20373,26 @@ function openOnboarding(scenId){
     fmrev:[
       {k:'THE MOMENT',v:`FM just crossed AM in total audience. The ad market hasn't caught up yet — but it will. You have 2-3 years to build before CPMs spike.`},
       {k:'ALBUM ROCK',v:`Low spot load is the format's identity. Programmers who pack the clock with ads destroy the brand. Stay under 12 min/hr.`},
-      {k:'COMPETITION',v:`Classic Rock and CHR will both emerge by 1980-82. Claim your niche before the format wars begin.`},
+      {k:'COMPETITION',v:`New hit and rock lanes will emerge quickly as FM heats up. Claim your niche before the format wars begin.`},
     ],
     acrise:[
-      {k:'AC WINDOW',v:`Adult Contemporary is underserved in 1978. You have roughly 4 years before it gets crowded. Use them to build unassailable audience loyalty.`},
+      {k:'AC WINDOW',v:`Adult Contemporary is underserved right now. You have a few years before it gets crowded. Use them to build unassailable audience loyalty.`},
       {k:'25-49 WOMEN',v:`This is your target demo and it's the most valuable in radio. Every programming decision should serve them.`},
       {k:'BRAND',v:`AC stations win or lose on brand perception. Hire a great morning host and don't change the music clock every 6 months.`},
     ],
     chrwar:[
-      {k:'THREE PATHS',v:`CHR peaks around 1988 then fragments. Classic Rock has 15 good years ahead. AC is steady but never dominant. Pick the format that fits your market position.`},
+      {k:'THREE PATHS',v:`CHR has a boom-and-fragment cycle. Classic Rock has a long runway. AC is steady but rarely dominant. Pick the lane that fits your market position.`},
       {k:'RATINGS RACE',v:`You're starting with mediocre ratings. The first 4 periods are critical — hire well, keep spot load tight, and build momentum.`},
-      {k:'CONSOLIDATION',v:`Corporate buyers arrive after 1996. A strong ratings position makes you an acquisition target — or gives you the cash to be the buyer.`},
+      {k:'CONSOLIDATION',v:`Corporate buyers arrive as consolidation accelerates. A strong ratings position makes you an acquisition target — or gives you the cash to be the buyer.`},
     ],
     amtalk:[
-      {k:'THE CLIFF',v:`Your AM music revenue will fall roughly 35-40% between now and 1990. The question is whether you pivot before or after it hurts.`},
-      {k:'NEWS/TALK',v:`Rush Limbaugh launches nationally in 1988. The Talk format explodes. Get there early or pay a premium to follow.`},
+      {k:'THE CLIFF',v:`Your AM music revenue will fall sharply over the next several years. The question is whether you pivot before or after it hurts.`},
+      {k:'NEWS/TALK',v:`Syndicated opinion is about to ignite the Talk boom. Get there early or pay a premium to follow.`},
       {k:'CASH',v:`Thin runway. Every period without a pivot is a period of compounding damage. Move fast.`},
     ],
     gm_under:[
-      {k:'BOARD REVIEWS',v:`Every two years (four periods), ownership scores your margin, revenue trend, and talent/franchise health. Job security drops on sustained misses — recovery is possible if you fix fundamentals.`},
+      {k:'YOUR POSTING',v:`Each new game randomly assigns one or two commercial stations (AM and/or FM), like corporate shuffling GMs across clusters.`},
+      {k:'BOARD REVIEWS',v:`Ownership scores margin, revenue trend, and talent/franchise health on a rolling schedule. Job security drops on sustained misses — recovery is possible if you fix fundamentals.`},
       {k:'NO CUTS TO WIN',v:`Slashing talent may lift margin short term but erodes franchise; the board notices revenue and franchise decay, not just this quarter.`},
       {k:'CASH VS CAREER',v:`Negative cash can still bankrupt you; General Manager job security is separate — you can be fired while solvent or survive a soft quarter if the trend is right.`},
     ],
@@ -18148,7 +20488,13 @@ async function startPlayAsync(scenId){
       wlLocked1985ScenarioToast();
       return;
     }
-    const lockRes=await wlEnsureTrialMarketLockBeforeNewGame(scenId);
+    let lockRes=await wlEnsureTrialMarketLockBeforeNewGame(scenId);
+    if(!lockRes.ok&&typeof wlClerkPlanSlug==='function'&&wlClerkPlanSlug()==='trial_user'){
+      try{
+        if(typeof window.__wlSyncPlanMarkets==='function')await window.__wlSyncPlanMarkets();
+        if(wlClerkPlanSlug()!=='trial_user')lockRes=await wlEnsureTrialMarketLockBeforeNewGame(scenId);
+      }catch(_e){}
+    }
     if(!lockRes.ok){
       try{wlAnalyticsPaywallViewed('second_game_attempt');}catch(_e){}
       showToast(lockRes.message||'Could not start game.','warn',9200);
@@ -18172,6 +20518,12 @@ async function startPlayAsync(scenId){
       G.wlSignupTrial=false;
     }
     G.companyName=companyName;
+    if(scenId==='gm_under'){
+      const _mid=ACTIVE_MARKET||_selectedMarket||(G.marketId||'atlanta');
+      const _syn={id:'gm_scenario_'+String(_mid),tier:0,marketId:String(_mid)};
+      if(typeof globalThis.wlApplyCampaignLadderOwnershipVariety==='function')
+        globalThis.wlApplyCampaignLadderOwnershipVariety(G,_syn);
+    }
     G.ps=(G.stations||[]).filter(s=>s&&s.isPlayer);
     G._portraitSessionId=(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():`${Date.now()}-${Math.random().toString(36).slice(2,11)}`;
     initSportsRights(G);
@@ -18198,6 +20550,19 @@ async function startPlayAsync(scenId){
       marketId:ACTIVE_MARKET||_selectedMarket||'atlanta',
     });
     try{wlAnalyticsTrackGameStartedSolo();}catch(_e){}
+    /* tutorialMode is always true for this scenario from genMarket — key off scenId so we never skip if flags drift */
+    if(scenId==='tutorial_turnaround'){
+      G._wlTutorialAnalyticsT0=Date.now();
+      if(!G._wlTutorialStartedCaptured){
+        G._wlTutorialStartedCaptured=true;
+        try{
+          wlAnalyticsCapture('tutorial_started',{
+            scenario_id:'tutorial_turnaround',
+            market:String(ACTIVE_MARKET||_selectedMarket||'atlanta').slice(0,32),
+          });
+        }catch(_e){}
+      }
+    }
     if(typeof wlGmMode!=='undefined'&&wlGmMode.initGmStateForGame)wlGmMode.initGmStateForGame(G);
     try{if(typeof autoSave==='function')autoSave();}catch(_e){}
   }catch(err){
@@ -18228,6 +20593,15 @@ function wlCampaignStartFromMenu(){
     wlLockedGmCampaignToast();
     return;
   }
+  try{
+    wlAnalyticsSessionTryOnce('wl_ph_scen_pick_gm',()=>{
+      wlAnalyticsEmitScenarioSelected({
+        scenario_id:'gm_career',
+        picked_mode:'gm',
+        market:String(_selectedMarket||ACTIVE_MARKET||'atlanta').slice(0,32),
+      });
+    });
+  }catch(_e){}
   if(typeof wlCampaignOpenStartModal==='function'){
     wlCampaignOpenStartModal();
     return;
@@ -18540,11 +20914,64 @@ function simulcastPairStationCardAnchor(a,b){
   if(bt&&!at)return b;
   return simulcastPairLeadReceiver(a,b).lead;
 }
+/** AQH mass for one rank row’s simulcast cluster (deduped when co-owned AM/FM same-feed rules apply). */
+function simulcastRankRowDedupedCombinedAqh(lead,receivers,G){
+  const rec=receivers||[];
+  const resolved=resolveCoownedAmFmSimulcastGroup(lead,rec,G);
+  if(resolved)return coownedAmFmSimulcastGroupDedupedCombinedAqh(resolved.am,resolved.fms,G);
+  return(Math.max(0,Number(lead.rat?.aqh)||0)+rec.reduce((a,r)=>a+Math.max(0,Number(r?.rat?.aqh)||0),0));
+}
+/**
+ * Sum of headline listening AQH across the book universe used for rank/share display,
+ * replacing raw AM+FM pair sums with deduped same-feed mass so combined rows match AQH-based shares.
+ */
+function marketListeningHoursTotalAqhDedupedForRankDisplay(stations,G){
+  const active=(stations||[]).filter(s=>s&&!s._bpSlotDeferred&&s.rat);
+  const seen=new Set();
+  let total=0;
+  const sorted=[...active].sort((a,b)=>(Number(b.rat?.share)||0)-(Number(a.rat?.share)||0));
+  sorted.forEach(s=>{
+    if(seen.has(s.id))return;
+    if(s.simulcastSourceStationId)return;
+    if(s._simulcastSource===true){
+      const recv=simulcastGroupReceivers(s.id,G).filter(r=>active.some(st=>st.id===r.id));
+      if(recv.length){
+        recv.forEach(r=>seen.add(r.id));
+        seen.add(s.id);
+        total+=simulcastRankRowDedupedCombinedAqh(s,recv,G);
+        return;
+      }
+      if(s.simulcastWith){
+        const p=active.find(st=>st.id===s.simulcastWith);
+        if(p&&p.simulcastWith===s.id){
+          seen.add(s.id);seen.add(p.id);
+          const {lead,rcv}=simulcastPairLeadReceiver(s,p);
+          total+=simulcastRankRowDedupedCombinedAqh(lead,[rcv],G);
+          return;
+        }
+      }
+      seen.add(s.id);
+      total+=Math.max(0,Number(s.rat?.aqh)||0);
+      return;
+    }
+    const p=s.simulcastWith?active.find(st=>st.id===s.simulcastWith):null;
+    if(p&&active.some(st=>st.id===p.id)&&p.simulcastWith===s.id){
+      seen.add(s.id);seen.add(p.id);
+      const {lead,rcv}=simulcastPairLeadReceiver(s,p);
+      total+=simulcastRankRowDedupedCombinedAqh(lead,[rcv],G);
+    }else{
+      seen.add(s.id);
+      total+=Math.max(0,Number(s.rat?.aqh)||0);
+    }
+  });
+  return total;
+}
 /** One row per station or combined simulcast group, sorted by total share (desc). */
 function buildSimulcastCombinedRankRows(allStations){
   const seen=new Set();
   const rows=[];
   const active=allStations.filter(s=>s&&!s._bpSlotDeferred&&s.rat);
+  const totalDed=marketListeningHoursTotalAqhDedupedForRankDisplay(allStations,G);
   const sorted=[...active].sort((a,b)=>b.rat.share-a.rat.share);
   sorted.forEach(s=>{
     if(seen.has(s.id))return;
@@ -18554,7 +20981,8 @@ function buildSimulcastCombinedRankRows(allStations){
       if(recv.length){
         recv.forEach(r=>seen.add(r.id));
         seen.add(s.id);
-        const share=s.rat.share+recv.reduce((sum,r)=>sum+r.rat.share,0);
+        const dedAqh=simulcastRankRowDedupedCombinedAqh(s,recv,G);
+        const share=totalDed>1e-12?Math.round((dedAqh/totalDed)*1e8)/1e8:s.rat.share+recv.reduce((sum,r)=>sum+r.rat.share,0);
         const rev=s.fin.rev+recv.reduce((sum,r)=>sum+r.fin.rev,0);
         rows.push({pair:true,lead:s,rcv:recv[0],receivers:recv,share,rev});
         return;
@@ -18564,22 +20992,32 @@ function buildSimulcastCombinedRankRows(allStations){
         if(p&&p.simulcastWith===s.id){
           seen.add(s.id);seen.add(p.id);
           const {lead,rcv}=simulcastPairLeadReceiver(s,p);
-          rows.push({pair:true,lead,rcv,receivers:[rcv],share:lead.rat.share+rcv.rat.share,rev:lead.fin.rev+rcv.fin.rev});
+          const dedAqh=simulcastRankRowDedupedCombinedAqh(lead,[rcv],G);
+          const share=totalDed>1e-12?Math.round((dedAqh/totalDed)*1e8)/1e8:lead.rat.share+rcv.rat.share;
+          rows.push({pair:true,lead,rcv,receivers:[rcv],share,rev:lead.fin.rev+rcv.fin.rev});
           return;
         }
       }
       seen.add(s.id);
-      rows.push({pair:false,st:s,share:s.rat.share,rev:s.fin.rev});
+      {
+        const aqh=Math.max(0,Number(s.rat?.aqh)||0);
+        const share=totalDed>1e-12?Math.round((aqh/totalDed)*1e8)/1e8:s.rat.share;
+        rows.push({pair:false,st:s,share,rev:s.fin.rev});
+      }
       return;
     }
     const p=s.simulcastWith?G.stations.find(st=>st.id===s.simulcastWith):null;
     if(p&&allStations.some(st=>st.id===p.id)&&p.simulcastWith===s.id){
       seen.add(s.id);seen.add(p.id);
       const {lead,rcv}=simulcastPairLeadReceiver(s,p);
-      rows.push({pair:true,lead,rcv,receivers:[rcv],share:lead.rat.share+rcv.rat.share,rev:lead.fin.rev+rcv.fin.rev});
+      const dedAqh=simulcastRankRowDedupedCombinedAqh(lead,[rcv],G);
+      const share=totalDed>1e-12?Math.round((dedAqh/totalDed)*1e8)/1e8:lead.rat.share+rcv.rat.share;
+      rows.push({pair:true,lead,rcv,receivers:[rcv],share,rev:lead.fin.rev+rcv.fin.rev});
     }else{
       seen.add(s.id);
-      rows.push({pair:false,st:s,share:s.rat.share,rev:s.fin.rev});
+      const aqh=Math.max(0,Number(s.rat?.aqh)||0);
+      const share=totalDed>1e-12?Math.round((aqh/totalDed)*1e8)/1e8:s.rat.share;
+      rows.push({pair:false,st:s,share,rev:s.fin.rev});
     }
   });
   rows.sort((a,b)=>b.share-a.share);
@@ -18618,6 +21056,7 @@ function snapStationCardShareDisplay(G){
   if(!G?.stations?.length)return;
   const byId=Object.create(null);
   const cpById=Object.create(null);
+  const pairDedupedShare01=Object.create(null);
   G.stations.forEach(st=>{
     if(!st||st._bpSlotDeferred||st.id==null)return;
     const sh=st.rat&&typeof st.rat.share==='number'&&!Number.isNaN(st.rat.share)?st.rat.share:0;
@@ -18633,13 +21072,78 @@ function snapStationCardShareDisplay(G){
       };
     }
   });
+  (G.stations||[]).forEach(st=>{
+    if(!st||st._bpSlotDeferred||!st.rat)return;
+    const p=simulcastPartnerStation(st);
+    if(!p||p._bpSlotDeferred||!p.rat)return;
+    const ids=[String(st.id),String(p.id)].sort();
+    const pk=ids[0]+':'+ids[1];
+    if(pairDedupedShare01[pk]!=null)return;
+    pairDedupedShare01[pk]=stationCardSimulcastPairDedupedShare01(st,p,G);
+  });
   G._stationCardShareSnap={
     year:G.year,
     period:G.period,
     turn:G.turn,
     byId,
     cpById,
+    pairDedupedShare01,
   };
+}
+/** Deduped combined book share (0–1) for a simulcast cluster shown on cards — matches ranker denominator. */
+function stationCardSimulcastPairDedupedShare01(stationA,stationB,G){
+  if(!stationA||!stationB||!G)return 0;
+  const td=marketListeningHoursTotalAqhDedupedForRankDisplay(G.stations,G);
+  if(td<=1e-12){
+    const sa=(Number(stationA.rat?.share)||0)+(Number(stationB.rat?.share)||0);
+    return Math.round(sa*1e8)/1e8;
+  }
+  const resolved=resolveCoownedAmFmSimulcastGroup(stationA,[stationB],G);
+  if(resolved){
+    const ded=coownedAmFmSimulcastGroupDedupedCombinedAqh(resolved.am,resolved.fms,G);
+    return Math.round((ded/td)*1e8)/1e8;
+  }
+  const raw=(Number(stationA.rat?.aqh)||0)+(Number(stationB.rat?.aqh)||0);
+  return Math.round((raw/td)*1e8)/1e8;
+}
+/** Combined simulcast share for roster cards — prefers last book snap. */
+function stationCardSimulcastCombinedShare01(a,b){
+  if(!a||!b)return 0;
+  const ids=[String(a.id),String(b.id)].sort();
+  const pk=ids[0]+':'+ids[1];
+  const ps=G._stationCardShareSnap?.pairDedupedShare01;
+  if(ps&&Object.prototype.hasOwnProperty.call(ps,pk)){
+    const v=ps[pk];
+    return typeof v==='number'&&!Number.isNaN(v)?v:0;
+  }
+  return stationCardSimulcastPairDedupedShare01(a,b,G);
+}
+/**
+ * Portfolio “book share” sum with same-feed AM/FM pairs counted once (deduped display basis).
+ * @param {object} G
+ * @param {object[]|undefined} [psForRollup] defaults to {@link myPS}; pass a filtered list in MP per-owner rollups.
+ */
+function playerPortfolioBookShareSum01Deduped(G,psForRollup){
+  const ps=(psForRollup&&psForRollup.length)?psForRollup:myPS();
+  const seen=new Set();
+  let tot=0;
+  for(let i=0;i<ps.length;i++){
+    const st=ps[i];
+    if(!st||seen.has(st.id))continue;
+    const p=simulcastPartnerStation(st);
+    if(p&&ps.some(x=>x.id===p.id)){
+      const id1=String(st.id),id2=String(p.id);
+      const pk=id1<=id2?id1+'|'+id2:id2+'|'+id1;
+      if(seen.has(pk))continue;
+      seen.add(st.id);
+      seen.add(p.id);
+      tot+=stationCardSimulcastCombinedShare01(st,p);
+      continue;
+    }
+    seen.add(st.id);
+    tot+=stationCardDisplayShare01(st);
+  }
+  return Math.round(tot*1e8)/1e8;
 }
 function stationCardDisplayShare01(s){
   if(!s||s._bpSlotDeferred)return 0;
@@ -18679,10 +21183,9 @@ function buildMarketRankRowsForDisplay(G){
     }
   }
   const orphans=liveRows.filter(r=>!used.has(marketRankRowKey(r))).sort((a,b)=>b.share-a.share);
-  let nextRank=out.length?Math.max(...out.map(o=>o.displayRank)):0;
-  for(const row of orphans){
-    nextRank++;
-    out.push({row,displayRank:nextRank,displayShare:row.share});
+  if(orphans.length){
+    const sorted=[...liveRows].sort((a,b)=>b.share-a.share);
+    return sorted.map((row,i)=>({row,displayRank:i+1,displayShare:row.share}));
   }
   out.sort((a,b)=>a.displayRank-b.displayRank);
   return out;
@@ -18717,25 +21220,34 @@ function milestoneRankLabelHtml(s){
   const {lead,rcv}=simulcastPairLeadReceiver(s,p);
   return '<strong>'+callDisplay(lead)+'</strong> & <strong>'+callDisplay(rcv)+'</strong>';
 }
-/** Combined share for messaging when simulcast; else this leg’s share. */
-function milestoneRankSharePct(s){
+/** Book-style combined share for simulcast messaging (deduped AM/FM same-feed when rules apply). */
+function simulcastMilestoneCombinedShare01FromStation(s,G){
+  if(!G||!s)return null;
+  const td=marketListeningHoursTotalAqhDedupedForRankDisplay(G.stations,G);
+  if(td<=1e-12)return null;
   if(s._simulcastSource===true){
-    const rec=simulcastGroupReceivers(s.id,G);
-    if(rec.length){
-      return shn(s.rat.share+rec.reduce((sum,r)=>sum+r.rat.share,0));
-    }
+    const rec=simulcastGroupReceivers(s.id,G).filter(r=>!r._bpSlotDeferred);
+    if(rec.length)return simulcastRankRowDedupedCombinedAqh(s,rec,G)/td;
   }
   if(s.simulcastSourceStationId){
     const lead=G.stations.find(t=>t.id===s.simulcastSourceStationId);
     if(lead){
-      const rec=simulcastGroupReceivers(lead.id,G);
-      return shn(lead.rat.share+rec.reduce((sum,r)=>sum+r.rat.share,0));
+      const rec=simulcastGroupReceivers(lead.id,G).filter(r=>!r._bpSlotDeferred);
+      return simulcastRankRowDedupedCombinedAqh(lead,rec,G)/td;
     }
   }
   const p=simulcastPartnerStation(s);
-  if(!p)return shn(s.rat.share);
-  const {lead,rcv}=simulcastPairLeadReceiver(s,p);
-  return shn(lead.rat.share+rcv.rat.share);
+  if(p){
+    const {lead,rcv}=simulcastPairLeadReceiver(s,p);
+    return simulcastRankRowDedupedCombinedAqh(lead,[rcv],G)/td;
+  }
+  return null;
+}
+/** Combined share for messaging when simulcast; else this leg’s share. */
+function milestoneRankSharePct(s){
+  const comb=typeof G!=='undefined'&&G?simulcastMilestoneCombinedShare01FromStation(s,G):null;
+  if(comb!=null)return shn(comb);
+  return shn(s.rat.share);
 }
 function scrollModalContentToTop(overlayId){
   const ov=document.getElementById(overlayId);
@@ -18994,14 +21506,16 @@ function renderResearchModalBody(sid,listenerNonce){
   const cache=s._consultantReportCache;
   const cacheLabel=cache&&typeof cache.year==='number'?consultantReportBookLabel(cache.year,cache.period):'';
   const hasCache=cache&&cache.html&&cacheLabel;
-  return`<div class="ibox" id="wl-tu-tr-research-feedback-block" style="margin-bottom:16px;text-align:left;border-color:rgba(245,166,35,.25)">
-    <div style="font-size:12px;color:var(--amb);letter-spacing:.12em;margin-bottom:6px">FREE — LISTENER FEEDBACK</div>
-    <p class="di" style="margin:0 0 10px">Here&apos;s a taste of some of the feedback we&apos;re getting from listeners, focus groups and people in the business.</p>
+  return`<div class="ms2" id="wl-tu-tr-research-feedback-block" style="margin-bottom:16px">
+    <div class="bm-section-h" style="margin-top:0">LISTENER FEEDBACK</div>
+    <div class="ibox" style="text-align:left;border-color:rgba(245,166,35,.25)">
+    <p class="di" style="margin:0 0 10px"><span style="color:var(--amb);font-size:12px;letter-spacing:.12em;font-style:normal;font-family:var(--m-ui);text-transform:uppercase">Free</span> — Here&apos;s a taste of some of the feedback we&apos;re getting from listeners, focus groups and people in the business.</p>
     ${_listenerFeedbackHtml(lines)}
+    </div>
   </div>
-  <div style="border-top:1px solid var(--bdh);margin:16px 0;padding-top:14px"></div>
+  <div style="border-top:1px solid var(--bdh);margin:16px 0;padding-top:8px"></div>
   <div id="wl-tu-tr-research-consultant-block">
-  <div style="font-size:12px;color:var(--grn);letter-spacing:.12em;margin-bottom:6px">PAID — CONSULTANT REPORT</div>
+  <div class="bm-section-h" style="margin-top:0">CONSULTANT REPORT</div>
   <p class="di">Structured analysis for <strong>${s.callLetters}</strong> — signal, competition, quality, format health, and recommendations. Clearer than the rumor mill.</p>
   ${hasCache?`<div class="ibox" style="margin-bottom:14px;text-align:left;border-color:rgba(52,211,153,.35)">
     <div style="font-size:12px;color:var(--grn);letter-spacing:.08em;margin-bottom:6px">SAVED REPORT</div>
@@ -19020,7 +21534,6 @@ function openResearch(sid){
   const rb=document.getElementById('researchb');
   rb.innerHTML=renderResearchModalBody(sid,Date.now());
   om('m-research');
-  tutorialTurnaroundOnResearchOpened();
   wlFtTutorialNotifyResearchOpen();
   if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===2&&!G._tutorialConsultantDone&&(G._tutorialResearchCoachStep|0)===0)
     G._tutorialResearchCoachStep=1;
@@ -19039,6 +21552,7 @@ function viewCachedConsultantReport(sid){
     c.html+
     `<div style="margin-top:18px;padding-top:12px;border-top:1px solid var(--bdh)"><button type="button" class="cnl" onclick="openResearch('${s.id}')">← BACK TO RESEARCH</button></div>`+
     `<button class="cnl" style="margin-top:12px" onclick="cm('m-research')">CLOSE</button>`;
+  if(isTutorialTurnaroundScen()&&G.tutorialAct===2&&!G._tutorialConsultantDone&&MP.mode!=='live')tutorialTurnaroundOnConsultantDone();
 }
 function doResearch(sid){
   sid=ensureOpsSourceSid(sid);
@@ -19128,7 +21642,9 @@ function wlCollectRatingsDigestSimulcastContext(G){
     seen.add(s.id);
     recv.forEach(r=>seen.add(r.id));
     const op=simulcastOperationalSource(s);
-    const comb=(s.rat.share||0)+recv.reduce((sum,r)=>sum+(r.rat.share||0),0);
+    const td=marketListeningHoursTotalAqhDedupedForRankDisplay(G.stations,G);
+    const dedAqh=simulcastRankRowDedupedCombinedAqh(s,recv,G);
+    const comb=td>1e-12?dedAqh/td:(s.rat.share||0)+recv.reduce((sum,r)=>sum+(r.rat.share||0),0);
     const legs=[s,...recv].map(x=>callDisplay(x)).join(' + ');
     const lmaStation=s._lmaStation?s:recv.find(r=>r._lmaStation);
     const lma=!!lmaStation;
@@ -19148,7 +21664,7 @@ function wlCollectRatingsDigestSimulcastContext(G){
     if(!p||p.simulcastWith!==s.id||p._bpSlotDeferred)continue;
     seen.add(key);
     const op=simulcastOperationalSource(s);
-    const comb=(s.rat.share||0)+(p.rat.share||0);
+    const comb=stationCardSimulcastPairDedupedShare01(s,p,G);
     const lma=s._lmaStation||p._lmaStation;
     const feeNote=lma?` LMA fee on leased leg ~${f$(lmaFeeForStation(s._lmaStation?s:p,G))}/period.`:'';
     let line=`◈ Simulcast: ${callDisplay(s)} + ${callDisplay(p)} — combined ~${(comb*100).toFixed(1)}% share${lma?' (includes LMA-operated leg)':''}. Programming hub: ${callDisplay(op)}.${feeNote}`;
@@ -19634,12 +22150,12 @@ function buildResearchReport(s,G){
   const simPlayerPair=simPairOk&&mpIsMe(s)&&mpIsMe(simPartnerR);
   let simulcastOverviewHtml='';
   if(simPlayerPair){
-    const combinedShareOv=(s.rat.share+simPartnerR.rat.share);
+    const combinedShareOv=stationCardSimulcastPairDedupedShare01(s,simPartnerR,G);
     const combinedRevOv=(s.fin.rev||0)+(simPartnerR.fin.rev||0);
     const srcOv=simulcastProgrammingSource(s)||s;
     const lmaLeg=s._lmaStation?s:simPartnerR._lmaStation?simPartnerR:null;
     const lmaNote=lmaLeg?`<p style="margin:8px 0 0;font-size:12px;color:var(--mut)">LMA fee on the leased leg is <strong>${f$(lmaFeeForStation(lmaLeg,G))}</strong>/period. The follower facility can still show a large cost line — that reflects facility and fixed ops for that license, not a mis-print of the LMA fee.</p>`:'';
-    simulcastOverviewHtml=consultantMemoSection('SIMULCAST PAIR',`<p style="margin:0 0 8px">Combined audience across both signals: <strong>${(combinedShareOv*100).toFixed(1)}%</strong> share · combined revenue (both licenses): <strong>${f$(combinedRevOv)}</strong>/period.</p><p style="margin:0;font-size:13px;color:var(--off)">Sections below focus on <strong>${callDisplay(s)}</strong> (this leg’s book). Programming hub: <strong>${callDisplay(srcOv)}</strong>.</p>${lmaNote}`);
+    simulcastOverviewHtml=consultantMemoSection('SIMULCAST PAIR',`<p style="margin:0 0 8px">Combined audience (same-feed overlap deduped for the co-owned simulcast): <strong>${(combinedShareOv*100).toFixed(1)}%</strong> share · combined revenue (both licenses): <strong>${f$(combinedRevOv)}</strong>/period.</p><p style="margin:0;font-size:13px;color:var(--off)">Sections below focus on <strong>${callDisplay(s)}</strong> (this leg’s book). Programming hub: <strong>${callDisplay(srcOv)}</strong>.</p>${lmaNote}`);
   }
 
   const swHtml=consultantMemoSection('STRENGTHS / WEAKNESSES',
@@ -19711,14 +22227,15 @@ function buildResearchReport(s,G){
   if(simPlayerPair){
     const amStR=s.sig.type==='AM'?s:simPartnerR;
     const fmStR=s.sig.type==='FM'||s.fmBooster?s:simPartnerR;
-    const combinedShare=(s.rat.share+simPartnerR.rat.share);
-    const _cs=Math.max(combinedShare,1e-9);
-    const amPct=(amStR.rat.share/_cs*100).toFixed(0);
-    const fmPct=(fmStR.rat.share/_cs*100).toFixed(0);
+    const combinedShare=stationCardSimulcastPairDedupedShare01(s,simPartnerR,G);
+    const rawSum=(amStR.rat.share||0)+(fmStR.rat.share||0);
+    const _cs=Math.max(rawSum,1e-9);
+    const amPct=((amStR.rat.share||0)/_cs*100).toFixed(0);
+    const fmPct=((fmStR.rat.share||0)/_cs*100).toFixed(0);
     const amAqh=Object.values(amStR.rat.cur||{}).reduce((sum,c)=>sum+(c?.aqh||0),0);
     const fmAqh=Object.values(fmStR.rat.cur||{}).reduce((sum,c)=>sum+(c?.aqh||0),0);
     simSection=hdr('SIMULCAST BREAKDOWN');
-    simSection+=row('Combined share',`${(combinedShare*100).toFixed(1)}%`,'Both signals combined','var(--grn)');
+    simSection+=row('Combined share',`${(combinedShare*100).toFixed(1)}%`,'Same-feed overlap deduped vs raw AM+FM sum','var(--grn)');
     simSection+=row(`${amStR.freq} AM`,`${(amStR.rat.share*100).toFixed(1)}% · ${amPct}% of combined`,`AQH: ${amAqh.toLocaleString()} · Rev: ${f$(amStR.fin.rev)}/period · Cost: ${f$(amStR.fin.cost)}/period`,amStR.rat.share>fmStR.rat.share?'var(--amb)':'var(--mut)');
     simSection+=row(`${fmStR.freq} FM`,`${(fmStR.rat.share*100).toFixed(1)}% · ${fmPct}% of combined`,`AQH: ${fmAqh.toLocaleString()} · Rev: ${f$(fmStR.fin.rev)}/period · Cost: ${f$(fmStR.fin.cost)}/period`,fmStR.rat.share>amStR.rat.share?'var(--amb)':'var(--mut)');
     // Recommendation: if FM is growing and AM is small, suggest migration
@@ -19755,7 +22272,7 @@ function buildResearchReport(s,G){
   if(fs2){
     const deadColor=eraViab<0.5?'var(--red)':'var(--amb)';
     fmtSection=hdr('FORMAT HEALTH');
-    fmtSection+=row('Era viability',`${Math.round(eraViab*100)}%`,`${fmtLabel(s.format)} peaked ${fs2.peak} and is fading. Transition before ${fs2.dead}.`,deadColor);
+    fmtSection+=row('Era viability',`${Math.round(eraViab*100)}%`,`${fmtLabel(s.format)} has passed its cultural high-water mark and is steadily losing oxygen. Trade press and competitors will keep nudging listeners toward fresher lanes — start planning your pivot now.`,deadColor);
   }
 
   // ── RECOMMENDATIONS ──
@@ -19787,7 +22304,7 @@ function buildResearchReport(s,G){
   }
 
   if(fs2&&eraViab<0.6){
-    recs.push({sev:'HIGH',txt:`${fmtLabel(s.format)} is fading (~${Math.round(eraViab*100)}% of peak) — plan a move before ${fs2.dead}.`});
+    recs.push({sev:'HIGH',txt:`${fmtLabel(s.format)} is fading (~${Math.round(eraViab*100)}% of peak) — plan your next lane while you still have enough share to move cleanly.`});
   }
 
   if(sameFormat.length>=2&&!memoNarrowDifferentiation){
@@ -20454,11 +22971,15 @@ function runIndependentAcquisitions(G){
       if(lim.mode==='96'&&owned.total>=lim.total)break;
       if(lim.mode==='pre96'&&owned.am>=lim.am&&owned.fm>=lim.fm)break;
 
-      const targets=(G.stations||[]).filter(s=>
-        s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic&&!s.corpOwner&&
-        indieLicenseeKey(s,G)!==k&&
-        (s.rat?.share||0)>MIN_TGT_SHARE
-      );
+      const targets=(G.stations||[]).filter(s=>{
+        if(!s||s._bpSlotDeferred||s.isPlayer||s.isPublic||s.corpOwner)return false;
+        if((s.rat?.share||0)<=MIN_TGT_SHARE)return false;
+        /* Same licensee cluster can’t buy itself. */
+        if(indieLicenseeKey(s,G)===k)return false;
+        /* Already rolled into another indie group this save — not a standalone target anymore. */
+        if(indieLicenseeKey(s,G)!==indieNaturalLicenseeKey(s,G))return false;
+        return true;
+      });
       if(!targets.length)break;
 
       const scored=targets.map(s=>{
@@ -20777,17 +23298,17 @@ function rLMA() {
 
   const pre1990CarryWarn =
     era === 'pre1990' && (activeLesseeStns.length || activeLessorStns.length)
-      ? `<div style="background:rgba(240,180,88,.12);border:1px solid rgba(240,180,88,.35);padding:8px 12px;font-family:var(--ft);font-size:14px;color:var(--amb);margin-bottom:12px">⚠ Before 1990, full programmatic LMAs / time brokerage of this scope were not how the FCC treated control. End legacy agreements when practical — new LMAs cannot be signed this era.</div>`
+      ? `<div style="background:rgba(240,180,88,.12);border:1px solid rgba(240,180,88,.35);padding:8px 12px;font-family:var(--ft);font-size:14px;color:var(--amb);margin-bottom:12px">⚠ This era: full programmatic LMAs / time brokerage of this scope weren’t treated as modern “control” structures. End legacy agreements when practical — new LMAs can’t be signed yet.</div>`
       : '';
 
   let feeNote;
   if (era === 'pre1990') {
-    feeNote = `<div style="background:rgba(90,180,255,.08);border:1px solid rgba(90,180,255,.25);padding:8px 12px;font-family:var(--ft);font-size:14px;color:var(--blu);margin-bottom:12px">📋 Pre-1990: new Local Marketing Agreements are unavailable. Operational control of another licensee without attribution was not the modern LMA practice.</div>`;
+    feeNote = `<div style="background:rgba(90,180,255,.08);border:1px solid rgba(90,180,255,.25);padding:8px 12px;font-family:var(--ft);font-size:14px;color:var(--blu);margin-bottom:12px">📋 This era: new Local Marketing Agreements are unavailable. The modern “operate someone else’s station without owning the license” playbook hasn’t taken shape yet.</div>`;
   } else if (era === 'transition') {
-    feeNote = `<div style="background:rgba(90,180,255,.08);border:1px solid rgba(90,180,255,.25);padding:8px 12px;font-family:var(--ft);font-size:14px;color:var(--blu);margin-bottom:12px">📋 1990–1995: LMAs are a regulatory workaround — operational control without owning the license. They do not count toward your FCC cap here, but you can hold at most ${LMA_TRANSITION_MAX_LESSEE_OPS} concurrent operations as lessee. Fees run ~10% higher (deal scrutiny).</div>`;
+    feeNote = `<div style="background:rgba(90,180,255,.08);border:1px solid rgba(90,180,255,.25);padding:8px 12px;font-family:var(--ft);font-size:14px;color:var(--blu);margin-bottom:12px">📋 Early LMA era: LMAs spread as a regulatory workaround — operational control without owning the license. They do not count toward your FCC cap here, but you can hold at most ${LMA_TRANSITION_MAX_LESSEE_OPS} concurrent operations as lessee. Fees run ~10% higher (deal scrutiny).</div>`;
   } else {
     feeNote = countsAgainstLimit
-      ? `<div style="background:rgba(240,88,88,.10);border:1px solid rgba(240,88,88,.3);padding:8px 12px;font-family:var(--ft);font-size:14px;color:var(--red);margin-bottom:12px">⚠ Since 1996, LMAs count toward FCC-style ownership limits in this sim. Prefer outright acquisition when you can; use LMAs as a bridge or when caps block a buy.</div>`
+      ? `<div style="background:rgba(240,88,88,.10);border:1px solid rgba(240,88,88,.3);padding:8px 12px;font-family:var(--ft);font-size:14px;color:var(--red);margin-bottom:12px">⚠ Deregulation era: LMAs count toward FCC-style ownership limits in this sim. Prefer outright acquisition when you can; use LMAs as a bridge or when caps block a buy.</div>`
       : '';
   }
 
@@ -20876,7 +23397,7 @@ function rLMA() {
   } else {
     lesseeHTML = `<div class="ms2" style="margin-bottom:14px">
       <div class="msh">STATIONS AVAILABLE TO OPERATE</div>
-      <p class="di" style="font-size:15px;color:var(--mut)">${maySign ? 'No stations currently available for LMA. Weak independents under ~4% share and corporate offers appear here when available.' : 'Not available before 1990 — the FCC did not permit this style of operational LMA. Use acquisitions and ordinary station operations.'}</p>
+      <p class="di" style="font-size:15px;color:var(--mut)">${maySign ? 'No stations currently available for LMA. Weak independents under ~4% share and corporate offers appear here when available.' : 'Not available yet in this era — regulators didn’t treat this style of operational control as a standard tool. Use acquisitions and ordinary station operations.'}</p>
     </div>`;
   }
 
@@ -20904,7 +23425,7 @@ function rLMA() {
   } else {
     lessorHTML = `<div class="ms2">
       <div class="msh">LEASE OUT ONE OF YOUR STATIONS</div>
-      <p class="di" style="font-size:15px;color:var(--mut)">${maySign ? 'You need at least 2 stations to lease one out — you must retain at least 1 licensed station.' : 'Leasing out operations in this form is not available before 1990.'}</p>
+      <p class="di" style="font-size:15px;color:var(--mut)">${maySign ? 'You need at least 2 stations to lease one out — you must retain at least 1 licensed station.' : 'Leasing out operations in this form is not available yet in this era.'}</p>
     </div>`;
   }
 
@@ -20912,9 +23433,9 @@ function rLMA() {
   if (era === 'pre1990') {
     histNote = `<p class="di" style="font-size:15px;margin-bottom:14px">Strict ownership era: the FCC focused on <em>control</em>, not just paper ownership. Full programmatic / sales control of another licensee through an LMA is not modeled as available here.</p>`;
   } else if (era === 'transition') {
-    histNote = `<p class="di" style="font-size:15px;margin-bottom:14px">1990–1995: LMAs spread as a <em>workaround</em> around ownership caps — operational control without buying the license. They should feel strategic and a bit fragile, not like ordinary expansion.</p>`;
+    histNote = `<p class="di" style="font-size:15px;margin-bottom:14px">Early LMA era: LMAs spread as a <em>workaround</em> around ownership caps — operational control without buying the license. They should feel strategic and a bit fragile, not like ordinary expansion.</p>`;
   } else {
-    histNote = `<p class="di" style="font-size:15px;margin-bottom:14px">Post–Telecom Act (1996+): caps eased and LMAs are treated as attributable in this sim — bridges to purchase, financing workarounds, or gap-fills when you cannot close an acquisition.</p>`;
+    histNote = `<p class="di" style="font-size:15px;margin-bottom:14px">Deregulation era: caps eased and LMAs are treated as attributable in this sim — bridges to purchase, financing workarounds, or gap-fills when you cannot close an acquisition.</p>`;
   }
 
   el.innerHTML = pre1990CarryWarn + histNote + feeNote + activeHTML + lesseeHTML + lessorHTML +
@@ -20929,7 +23450,7 @@ function doLMALessee(sid) {
     return;
   }
   if (!lmaPlayerMaySignNewAgreements(G)) {
-    showToast('Full operational LMAs are not available before 1990.', 'warn');
+    showToast('Full operational LMAs are not available yet in this era.', 'warn');
     return;
   }
   if (!playerCanEnterLMA('lessee', G)) {
@@ -20962,7 +23483,7 @@ function doLMALessor(sid) {
   const s = G.stations.find(st => st.id === sid);
   if (!s || !s.isPlayer) return;
   if (!lmaPlayerMaySignNewAgreements(G)) {
-    showToast('Leasing out operations in this form is not available before 1990.', 'warn');
+    showToast('Leasing out operations in this form is not available yet in this era.', 'warn');
     return;
   }
   if (!playerCanEnterLMA('lessor', G)) return;
@@ -21289,7 +23810,7 @@ function wlBuildStationCardAdminActionGrid(ctx) {
   };
   const simBtn = junior
     ? `<button class="abt" style="border-color:rgba(255,255,255,.15)" onclick="openSim('${s.id}')">◈ Break simulcast</button>`
-    : `<button class="abt b" onclick="openSim('${s.id}')">◈ Simulcast this station</button>`;
+    : `<button type="button" class="abt b" id="wl-stadmin-simulcast-btn" onclick="openSim('${s.id}')">◈ Simulcast this station</button>`;
   const streamBtn =
     '<button class="abt ' + (op.stream?.active ? 'g active' : G.year >= 2005 ? 'b' : '') + `" onclick="openStream('${op.id}')"` +
     (G.year < 2005 ? ' style="opacity:.30;cursor:default"' : '') +
@@ -21345,19 +23866,31 @@ function openStationAdmin(sid) {
     '</p>' +
     '<div class="msh" style="margin-top:0">ACTIONS</div>' +
     wlBuildStationCardAdminActionGrid(ctx) +
-    '<p class="di" style="margin-top:12px">These actions open the same screens as elsewhere. Close a sub-screen to return here.</p>' +
     '<button class="cnl" onclick="cm(\'m-stadmin\')">CLOSE</button>';
   const mh = document.getElementById('m-stadmin')?.querySelector?.('.mh span');
   if (mh) mh.textContent = 'STATION ADMIN — ' + callDisplay(ctx.op);
   om('m-stadmin');
+  setTimeout(()=>{try{if(typeof wlTuExpansionLayoutStep==='function')wlTuExpansionLayoutStep();}catch(_e){}},0);
 }
 window.openStationAdmin = openStationAdmin;
 
 // ── SALES FORCE (merged with spot load) ──────────────────────────
 let SALES_PICK=null; // { sid: string, level: number } pending selection in #m-sales
+function refreshSalesApplyCommitStandalone(sid){
+  sid=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  if(!document.getElementById('sp-apply-sales-btn'))return;
+  const cur=s.salesForce?.level||0;
+  const picked=SALES_PICK&&String(SALES_PICK.sid)===String(sid)&&SALES_PICK.level!==undefined&&SALES_PICK.level!==null
+    ?SALES_PICK.level|0
+    :cur;
+  wlSetCommitButtonState('sp-apply-sales-btn',picked!==cur);
+}
 function openSales(sid){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  wlCommitUiClear('sp-commit-btn');
+  wlCommitUiClear('sp-apply-sales-btn');
   const mh=document.querySelector('#m-sales .mh span');
   if(mh)mh.textContent='SALES';
   const cur=s.salesForce?.level||0;
@@ -21371,7 +23904,8 @@ function openSales(sid){
     const estRevGain=sf.id>cur?Math.round(s.fin.rev*(sf.sellBonus-(SF_LEVELS[cur].sellBonus||0))*0.6):0;
     const netPeriod=Math.round(estRevGain-(sf.cost-(SF_LEVELS[cur].cost||0))/2);
     const nc=netPeriod>0?'var(--grn)':netPeriod<0?'var(--red)':'var(--mut)';
-    const oc=isCur?'':`onclick="pickSalesLevel('${sid}',${sf.id})"`;
+    /* Every tier stays clickable — including current — so players can re-select minimal staffing after previewing another tier. */
+    const oc=`onclick="pickSalesLevel('${sid}',${sf.id})"`;
     const ch=sf.cost>0?'<span class="sf-cost">'+f$(sf.cost/2)+'/period</span>':'<span class="sf-cost" style="color:var(--mut)">free</span>';
     const gh=sf.id>cur?'<div class="sf-gain">Est. lift: <strong style="color:var(--grn)">+'+f$(estRevGain)+'</strong> · Net: <strong style="color:'+nc+'">'+(netPeriod>=0?'+':'')+f$(netPeriod)+'</strong>/period</div>':'';
     return '<div class="sf-row'+(isCur?' sf-cur':'')+(isPick&&!isCur?' sf-pick':'')+'" '+oc+'>'+'<div class="sf-top"><span class="sf-l">'+sf.l+'</span>'+(isCur?'<span class="sf-badge">CURRENT</span>':'')+(isPick&&!isCur?'<span class="sf-badge" style="background:rgba(82,227,110,.14);border-color:rgba(82,227,110,.35);color:var(--grn)">SELECTED</span>':'')+ch+'</div>'+'<div class="sf-desc">'+sf.desc+'</div>'+gh+'</div>';
@@ -21398,7 +23932,7 @@ function openSales(sid){
   SS = { sid, val: s.ops.spots };
   const spotBlock =
     '<div class="ms2" style="margin-top:14px">' +
-    '<div class="msh">SPOT LOAD (COMMERCIAL INVENTORY)</div>' +
+    '<div class="bm-section-h" style="margin-top:0">SPOT LOAD (COMMERCIAL INVENTORY)</div>' +
     '<p class="di" style="margin-top:4px">More spots means more revenue, but more minutes of commercials usually hurt TSL (time spent listening) and can bring down ratings.</p>' +
     '<p class="di" style="margin-top:6px">The normal for this format is <strong>' +
     norm0 +
@@ -21439,11 +23973,12 @@ function openSales(sid){
     rows +
     '</div>' +
     '<div class="ibox" style="font-size:15px">Changes to spot load and sales team take effect next period.</div>' +
-    `<button class="cfm wl-commit-btn" type="button" id="sp-apply-sales-btn" style="margin-top:10px" onclick="commitSalesPick('${sid}')" ${picked===cur?'disabled style="opacity:.45;pointer-events:none"':''}>APPLY SALES TEAM</button>` +
+    `<button class="cfm wl-commit-btn wl-commit-btn--synced" type="button" id="sp-apply-sales-btn" style="margin-top:10px" onclick="commitSalesPick('${sid}')">APPLY SALES TEAM</button>` +
     '<button class="cnl" onclick="cm(\'m-sales\')">CLOSE</button>';
   updSpots(sid, s.ops.spots);
   refreshSpotCommitStandalone();
   om('m-sales');
+  refreshSalesApplyCommitStandalone(sid);
   wlFtTutorialNotifySalesOpen();
   /* Turnaround tutorial: opening Sales via a spotlight should clear the map highlight immediately. */
   if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'){
@@ -21452,6 +23987,7 @@ function openSales(sid){
 }
 function pickSalesLevel(sid,level){
   sid=ensureOpsSourceSid(sid);
+  wlCommitUiClear('sp-apply-sales-btn');
   if(!SALES_PICK||SALES_PICK.sid!==sid) SALES_PICK={sid,level};
   SALES_PICK.level=level;
   openSales(sid);
@@ -21461,12 +23997,32 @@ function commitSalesPick(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const cur=s.salesForce?.level||0;
   const picked=SALES_PICK&&SALES_PICK.sid===sid?SALES_PICK.level:cur;
-  if(picked==null||picked===cur)return;
+  if(picked==null)return;
+  if(picked===cur){
+    /* Tutorial: allow "minimal staffing" (or current) to be applied to continue. */
+    if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===7){
+      wlCommitUiMarkSatisfied('sp-apply-sales-btn');
+      refreshSalesApplyCommitStandalone(sid);
+      wlFlashCommitButton('sp-apply-sales-btn');
+      const finishSales=()=>{
+        cm('m-sales',{wlTutorialSuppress:true});
+        wlFtTutorialTryAdvanceAfterSalesClosed();
+        renderAll();
+      };
+      if(document.getElementById('sp-apply-sales-btn'))setTimeout(finishSales,260);
+      else finishSales();
+      return;
+    }
+    showToast('Already at this staffing level.','info');
+    return;
+  }
   doSales(sid,picked);
 }
 function doSales(sid,level){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  wlCommitUiMarkSatisfied('sp-apply-sales-btn');
+  refreshSalesApplyCommitStandalone(sid);
   wlFlashCommitButton('sp-apply-sales-btn');
   const prev=s.salesForce?.level||0;
   s.salesForce={level,periodsHeld:0};
@@ -21606,6 +24162,14 @@ function advTurn(mpCoalesceSeq){
         if (btn) { btn.disabled = false; btn.textContent = '▶ NEXT PERIOD'; }
         MP.renderStatus();
         return;
+      }
+      if(MP.mode!=='live'&&typeof wlCampaignShouldBlockAdvTurn==='function'){
+        const _campBlock=wlCampaignShouldBlockAdvTurn(G);
+        if(_campBlock){
+          if(btn){btn.disabled=false;btn.textContent='▶ NEXT PERIOD';}
+          if(typeof showToast==='function')showToast(_campBlock,'warn',7200);
+          return;
+        }
       }
       if(wlCashBridgeAuditActive()){
         G._cashBridgeTurnSteps=[];
@@ -21854,10 +24418,20 @@ function advTurn(mpCoalesceSeq){
       if(wasYear===2020){G.score.isSandbox=true;}
       // In MP each client shows their own score, not the host's shared scoreCalc
       const _gradeScForDisplay = (MP.mode==='live') ? playerScoreCalc(MP.playerId) : sc;
-      const trialSignupEnd=MP.mode!=='live'&&G.wlSignupTrial&&!G._wlTrialEndModalShown&&wasYear===2020&&wasPeriod===2;
-      if(trialSignupEnd)setTimeout(()=>wlShowTrialSignupCompleteModal(_gradeScForDisplay),1600);
-      else setTimeout(()=>showGrade(wasYear,_gradeScForDisplay),1400);
+      // Solo/tutorial signup trial: `G.wlSignupTrial` is false for the tutorial (tutorialMode) path, so key off plan + exclude GM career mid-ladder.
+      const _planSolo = typeof wlClerkPlanSlug === 'function' ? wlClerkPlanSlug() : '';
+      const _trialSoloFinale =
+        MP.mode !== 'live' &&
+        wasYear === 2020 &&
+        wasPeriod === 2 &&
+        !G._wlTrialEndModalShown &&
+        _planSolo === 'trial_user' &&
+        !G.careerCampaign &&
+        !G.campaignAssignment;
+      if (_trialSoloFinale) setTimeout(() => void wlShowTrialSignupCompleteModal(_gradeScForDisplay), 1600);
+      else setTimeout(() => showGrade(wasYear, _gradeScForDisplay), 1400);
     }
+    try{ wlGmMaybeAutoCampaignLifeline(); }catch(_e){}
     autoSave();
     renderAll();
     try{
@@ -22265,9 +24839,9 @@ function stationDialAndBandForMarketing(s){
   if(!s)return'';
   const sig=s.sig||{};
   const raw=(s.freq!=null&&s.freq!=='')?String(s.freq).trim():((sig.freq!=null&&sig.freq!=='')?String(sig.freq).trim():'');
-  const band=sig.type==='FM'||s.fmBooster?'FM':sig.type==='AM'?'AM':inferBandFromDialStr(raw)||'';
-  if(raw&&band)return `${raw} ${band}`;
-  return raw||'—';
+  const call=callDisplay(s);
+  if(raw)return `${call} ${raw}`;
+  return call||'—';
 }
 /** Station logo thumb — AI raster if present, else deterministic SVG. */
 function cosmeticLogoThumbHtmlForStation(s, opts){
@@ -22472,34 +25046,116 @@ function mtDefaultSelectedSl(s){
   return DAYPART_SLOTS.find(sl=>s.prog[sl]?.talent)||'morningDrive';
 }
 function manageTalentDaypartRailSubline(s, sl, _simSrc) {
-  const t = s.prog[sl]?.talent;
+  const sd = s.prog?.[sl];
+  const slotQ = Math.round(sd?.quality || 0);
+  const sqLbl = `Slot Q ${slotQ}`;
+  const t = sd?.talent;
   if (t?.name) {
     const n = t.name;
-    return n.length > 24 ? n.slice(0, 22) + '…' : n;
+    const truncated = n.length > 24 ? n.slice(0, 22) + '…' : n;
+    return `${truncated} · ${sqLbl}`;
   }
   const em = manageTalentEmptySlotMeta(s, sl, _simSrc);
-  if (em.status === 'Off-air') return 'Off-air';
+  if (em.status === 'Off-air') return `Off-air · ${sqLbl}`;
   if (em.status === 'Syndicated') {
-    if (em.detail && String(em.detail).length <= 20) return em.detail;
-    return 'Syndicated';
+    if (em.detail && String(em.detail).length <= 16) return `${em.detail} · ${sqLbl}`;
+    return `Syndicated · ${sqLbl}`;
   }
-  if (em.status === 'Automation') return 'Automation';
-  if (em.status === 'National show') return 'National';
-  if (em.status === 'Paid programming') return 'Paid';
-  return 'Open';
+  if (em.status === 'Automation') return `Automation · ${sqLbl}`;
+  if (em.status === 'National show') return `National · ${sqLbl}`;
+  if (em.status === 'Paid programming') return `Paid · ${sqLbl}`;
+  return `Open · ${sqLbl}`;
+}
+/**
+ * Contract urgency on the Manage Talent / contract daypart rail — mirrors lineup grid MOVED · Exp · Exp soon
+ * (sl-cell-cyr), including co-host expiry when a second chair exists.
+ */
+function manageTalentDaypartRailContractUi(s, sl, _simSrc) {
+  const sd = s.prog?.[sl];
+  const t = sd?.talent;
+  if (!t) return { pillMod: '', badgeHtml: '', slotMod: '' };
+  const restrictedHost = daytimerRestrictedSlot(s, sl);
+  const cohostEligible =
+    daypartAllowsCoHostModel(sl) &&
+    !restrictedHost &&
+    !getStationFranchise(s, sl, G) &&
+    !(_simSrc && _simSrc.prog && _simSrc.prog[sl]?.talent);
+  const ch = cohostEligible ? slotTalentB(sd) : null;
+  const slotRen = t._slotPromotionPendingRenewal === true;
+  const cyrH = t.cyr || 0;
+  const chCyr = ch ? ch.cyr || 0 : 0;
+  let hostLbl = '';
+  if (slotRen) hostLbl = 'MOVED';
+  else if (cyrH <= 0) hostLbl = 'EXP';
+  else if (cyrH <= 0.5) hostLbl = 'EXP⬆';
+  let chLbl = '';
+  if (ch) {
+    if (chCyr <= 0) chLbl = 'EXP';
+    else if (chCyr <= 0.5) chLbl = 'EXP⬆';
+  }
+  const badges = [];
+  if (hostLbl) {
+    const hostCls = hostLbl === 'EXP' ? 'cyr-exp' : 'cyr-warn';
+    let hostTitle = '';
+    if (hostLbl === 'MOVED') hostTitle = 'Moved dayparts — new deal needed for this slot.';
+    else if (hostLbl === 'EXP') hostTitle = 'Contract expired — use Contract & pay below to extend.';
+    else if (chLbl === 'EXP⬆') hostTitle = 'Host and co-host contracts expire next period.';
+    else if (chLbl === 'EXP') hostTitle = 'Co-host contract expired — host deal expires next period.';
+    else hostTitle = 'Contract expires next period.';
+    badges.push({
+      txt: cyrStatusDisplay(hostLbl === 'EXP⬆' ? 'EXP⬆' : hostLbl),
+      cls: hostCls,
+      tit: hostTitle,
+    });
+  }
+  if (chLbl) {
+    const bothExp = hostLbl === 'EXP' && chLbl === 'EXP';
+    const bothSoon = hostLbl === 'EXP⬆' && chLbl === 'EXP⬆';
+    if (!bothExp && !bothSoon) {
+      const chCls = chLbl === 'EXP' ? 'cyr-exp' : 'cyr-warn';
+      const chTitle =
+        chLbl === 'EXP'
+          ? 'Co-host contract expired — extend co-host deal below.'
+          : 'Co-host contract expires next period.';
+      const txt =
+        hostLbl && chLbl === 'EXP' && hostLbl !== 'EXP'
+          ? 'Co·Exp'
+          : cyrStatusDisplay(chLbl === 'EXP⬆' ? 'EXP⬆' : 'EXP');
+      badges.push({ txt, cls: chCls, tit: chTitle });
+    }
+  }
+  if (!badges.length) return { pillMod: '', badgeHtml: '', slotMod: '' };
+  const hasExp = badges.some(b => b.cls === 'cyr-exp');
+  const sevMod = hasExp ? '--cyr-exp' : '--cyr-warn';
+  const pillMod = ` mt-dp-pill${sevMod}`;
+  const slotMod = ` mt-slot${sevMod}`;
+  const badgeHtml = ` <span class="mt-dp-pill__badges">${badges
+    .map(
+      b =>
+        `<span class="mt-dp-pill__cyr ${b.cls}" title="${rosterHtmlEsc(b.tit)}">${b.txt}</span>`
+    )
+    .join('')}</span>`;
+  return { pillMod, badgeHtml, slotMod };
 }
 function manageTalentDaypartRailHtml(s, _simSrc, activeSl, onClickFn) {
   const clickName=(typeof onClickFn==='string'&&onClickFn)?onClickFn:'mtSelectDaypart';
   return `<div class="mt-dp-rail" role="tablist" aria-label="Daypart">` + DAYPART_SLOTS.map(sl => {
     const sub = manageTalentDaypartRailSubline(s, sl, _simSrc);
     const isAct = sl === activeSl;
-    return `<button type="button" role="tab" class="mt-dp-pill${isAct ? ' mt-dp-pill--active' : ''}"${isAct ? ' aria-selected="true"' : ''} id="mt-dp-rail-${s.id}-${sl}" onclick="${clickName}('${s.id}','${sl}')">` +
-      `<span class="mt-dp-pill__t">${SL[sl]}</span><span class="mt-dp-pill__s">${rosterHtmlEsc(sub)}</span></button>`;
+    const { pillMod, badgeHtml } = manageTalentDaypartRailContractUi(s, sl, _simSrc);
+    return `<button type="button" role="tab" class="mt-dp-pill${isAct ? ' mt-dp-pill--active' : ''}${pillMod}"${isAct ? ' aria-selected="true"' : ''} id="mt-dp-rail-${s.id}-${sl}" onclick="${clickName}('${s.id}','${sl}')">` +
+      `<span class="mt-dp-pill__t">${SL[sl]}${badgeHtml}</span><span class="mt-dp-pill__s">${rosterHtmlEsc(sub)}</span></button>`;
   }).join('') + `</div>`;
 }
 function mtSelectDaypart(sid, sl) {
   sid = ensureOpsSourceSid(sid);
   if (!DAYPART_SLOTS.includes(sl)) return;
+  if (tutorialTurnaroundAct4MiddayTalentLessonPending() && sl !== 'midday') {
+    tutorialTurnaroundUIMessage('For this tutorial step, use Midday — select Midday on the daypart rail.', 'warn');
+    MT_SEL_SL = 'midday';
+    renderManageTalentStation(sid);
+    return;
+  }
   MT_SEL_SL = sl;
   renderManageTalentStation(sid);
 }
@@ -22519,6 +25175,7 @@ function openManageTalent(sid, optSlot){
   MT_ACTIVE_SID=sid;
   if(prevMt!=null&&prevMt!==sid) MT_SEL_SL=null;
   if(optSlot&&DAYPART_SLOTS.includes(optSlot)) MT_SEL_SL=optSlot;
+  if(tutorialTurnaroundAct4MiddayTalentLessonPending()) MT_SEL_SL='midday';
   document.getElementById('fire-title').textContent='MANAGE TALENT';
   renderManageTalentStation(sid);
   om('m-fire');
@@ -22605,28 +25262,17 @@ function renderManageTalentStation(sid){
     </div>`;
   }).join('');
   ensureStationProgrammingFocus(s);
-  const pfCur=normalizeProgrammingFocus(s.programmingFocus);
-  const pfOpts=[
-    [PROGRAMMING_FOCUS_BALANCED,'Balanced'],
-    ['morningDrive','Morning'],
-    ['midday','Midday'],
-    ['afternoonDrive','Afternoon'],
-    ['evening','Evening'],
-    ['overnight','Overnight'],
-  ];
-  const pfSel=pfOpts.map(([val,lab])=>'<option value="'+val+'"'+(pfCur===val?' selected':'')+'>'+lab+'</option>').join('');
-  const progFocusPanel=`<div class="ms2 bm-prog-focus-box"><div class="msh">PROGRAMMING FOCUS</div><p class="di">Pick a daypart where you want to focus on coaching, production and promotions. The other dayparts will get investment, but not as much as your focused daypart.</p><label class="bm-prog-focus-fld" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--off)"><span class="bm-prog-focus-eyebrow">Focus</span><select class="abt" onchange="setStationProgrammingFocus('${s.id}',this.value)">${pfSel}</select></label></div>`;
   document.getElementById('fireb').innerHTML=`
     <div class="mt-manage">
       ${rosterStationSectionHeaderHtml(s)}
       <p class="di bm-hero-line">Hire, replace, fire, move or bench talent for all dayparts on this station. You also can transfer talent to another station in your company. If you move or transfer talent to an occupied daypart, the previous talent will appear on that station&apos;s bench at the bottom of the Manage Talent list. You can hire co-hosts for Morning and Afternoon dayparts. Click Contract/Pay to manage that talent&apos;s contract or pay bonuses. <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:4px" onclick="openTalentMetricsHelp()" title="Talent metrics glossary">?</button></p>
-      ${progFocusPanel}
       <div class="mt-manage__sel-label">DAYPART<span class="mt-dp-inline-hint"> · Scroll <span aria-hidden="true">←</span><span aria-hidden="true">→</span> to select</span></div>
       <div class="mt-manage__row">
         ${rail}
         <div class="mt-dp-panel" id="mt-dp-${s.id}-${selSl}">${detail}</div>
       </div>
       <div class="ms2" style="margin-top:8px"><div class="msh">TALENT BENCH</div>${benchRows||'<p class="di" style="color:var(--mut)">Bench is empty.</p>'}</div>
+      ${contractTalentProgrammingCrosslinkNoteHtml()}
       <button class="cnl" type="button" onclick="cm('m-fire')" style="margin-top:16px">CLOSE</button>
     </div>`;
 }
@@ -22713,6 +25359,7 @@ function manageTalentDaypartDetailHtml(s,sl,_simSrc,stationOQ){
     }
   }
   const rivalBox=(()=>{const rp=s._rivalPoachPending;if(!rp||rp.slot!==sl||rp.talentId!==t.id)return'';const riv=G.stations.find(st=>st.id===rp.rivalId);const minM=Math.round(rp.offerSalary*0.95/500)*500;return`<div class="ibox" style="border-color:rgba(245,166,35,.42);margin:0.35rem 0 0.25rem 0;padding:8px 12px;font-size:13px;line-height:1.45;color:var(--off)"><strong style="color:var(--amb)">⚡ Rival courting this host</strong> — ${riv?riv.callLetters:'A rival'} offered ${f$(rp.offerSalary)}/yr. Use <strong>Extend Contract</strong> (below) and sign at ≥ ${f$(minM)}/yr to keep them.</div>`;})();
+  const mtRailCyrUi=manageTalentDaypartRailContractUi(s,sl,_simSrc);
   const ceLead=buildContractEconObject(s, sl, t, false, t);
   const leadContractBlock=contractExtensionAndCtaBlockHtml(s.id, sl, t, false, ceLead, true);
   const viewDetails=`<details class="mt-stat-more">
@@ -22744,7 +25391,7 @@ ${contractCta}
 </div>`
     :`${contractCta}
 ${moreAct}`;
-  return`<div class="mt-slot"${tutMidAttr}>
+  return`<div class="mt-slot${mtRailCyrUi.slotMod||''}"${tutMidAttr}>
   <p class="msh mt-dp-head">${SL[sl]}</p>
   <p class="mt-dp-sub">${subLine}</p>
   <section class="mt-talent-card" aria-label="Lead host">
@@ -22773,6 +25420,7 @@ function mtOpenHireSlot(sid,slot,fromContract){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);
   if(!s)return;
+  if(tutorialTurnaroundWarnMiddayLesson(slot))return;
   MT_SEL_SL=slot;
   if(daytimerRestrictedSlot(s,slot)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
   if(franchiseSlotBlocksNewLocalTalent(s,slot,G)){
@@ -22794,6 +25442,7 @@ function mtOpenReplaceSlot(sid,slot,fromContract){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);
   if(!s||!s.prog[slot]?.talent)return;
+  if(tutorialTurnaroundWarnMiddayLesson(slot))return;
   MT_SEL_SL=slot;
   if(daytimerRestrictedSlot(s,slot)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
   if(fromContract===true)setMFireReturnContract(sid,slot,'host');
@@ -22808,6 +25457,7 @@ function mtOpenReplaceSlotChairB(sid,slot,fromContract){
   const s=G.stations.find(st=>st.id===sid);
   const sd=s?.prog[slot];
   if(!s||!sd?.talent||!slotTalentB(sd)){showToast('No second chair to replace in this slot.','warn');return;}
+  if(tutorialTurnaroundWarnMiddayLesson(slot))return;
   MT_SEL_SL=slot;
   if(daytimerRestrictedSlot(s,slot)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
   if(franchiseSlotBlocksNewLocalTalent(s,slot,G)){
@@ -22871,6 +25521,7 @@ function mtOpenCohostHire(sid,slot,fromContract){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);
   if(!s||!mpIsMe(s))return;
+  if(tutorialTurnaroundWarnMiddayLesson(slot))return;
   if(wlFreePostTrialSoloLimitsActive()&&wlCountPlayerCohostSlotsAllStations(G)>=1){
     showToast('You’ve hit the free-tier limit: one co-hosted show across your company. Upgrade in Account for full co-host access on Starter or Pro.','warn',7800);
     return;
@@ -23055,6 +25706,7 @@ function mtSwapLeadCohost(sid,slot){
 }
 function mtOpenMoveSameStation(sid,fromSlot,fromContract){
   sid=ensureOpsSourceSid(sid);
+  if(tutorialTurnaroundWarnMiddayLesson(fromSlot))return;
   MT_SEL_SL=fromSlot;
   if(fromContract===true)setMFireReturnContract(sid,fromSlot,'host');
   MOVE_CTX={fromSid:sid,fromSlot,benchId:null,chair:'A'};
@@ -23082,6 +25734,7 @@ function mtOpenMoveSameStation(sid,fromSlot,fromContract){
 }
 function mtOpenMoveSameStationChairB(sid,fromSlot,fromContract){
   sid=ensureOpsSourceSid(sid);
+  if(tutorialTurnaroundWarnMiddayLesson(fromSlot))return;
   MT_SEL_SL=fromSlot;
   if(fromContract===true)setMFireReturnContract(sid,fromSlot,'cohost');
   const s=G.stations.find(st=>st.id===sid);
@@ -23107,6 +25760,7 @@ function mtOpenMoveSameStationChairB(sid,fromSlot,fromContract){
 }
 function mtBeginTransfer(sid,slot,fromContract){
   sid=ensureOpsSourceSid(sid);
+  if(tutorialTurnaroundWarnMiddayLesson(slot))return;
   MT_SEL_SL=slot;
   const s=G.stations.find(st=>st.id===sid);
   if(!s?.prog[slot]?.talent){showToast('No talent in this slot.','warn');return;}
@@ -23119,6 +25773,7 @@ function mtBeginTransfer(sid,slot,fromContract){
 }
 function mtBeginTransferChairB(sid,slot,fromContract){
   sid=ensureOpsSourceSid(sid);
+  if(tutorialTurnaroundWarnMiddayLesson(slot))return;
   MT_SEL_SL=slot;
   const s=G.stations.find(st=>st.id===sid);
   const sd=s?.prog[slot];
@@ -23215,6 +25870,7 @@ function rHire(s, scrollAfter){
 }
 function pickSlot(sid,sl){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  if(tutorialTurnaroundWarnMiddayLesson(sl))return;
   if(daytimerRestrictedSlot(s,sl)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
   if((HS._hireKind==='hire'||HS._hireKind==='replace_chairb')&&franchiseSlotBlocksNewLocalTalent(s,sl,G)){
     showToast('That daypart is under your syndication deal — pick another slot or use National Franchises.','warn');
@@ -23247,6 +25903,7 @@ function doHire(){
   if(daytimerRestrictedSlot(s,sl)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
   const incumbent=s.prog[sl]?.talent;
   const hk=HS._hireKind;
+  if((hk==='hire'||hk==='replace'||hk==='replace_chairb')&&tutorialTurnaroundWarnMiddayLesson(sl))return;
   let benchedReplaceName=null;
   if(hk==='replace'){
     if(!incumbent){
@@ -23351,11 +26008,11 @@ function doHire(){
       renderManageTalentStation(s.id);
     }
     renderAll();
-    if(runTurnaroundAfterHire)tutorialTurnaroundOnTalentAdjusted();
+    if(runTurnaroundAfterHire)tutorialTurnaroundOnTalentAdjusted(sl);
     return;
   }
   cm('m-tal');renderAll();
-  if(runTurnaroundAfterHire)tutorialTurnaroundOnTalentAdjusted();
+  if(runTurnaroundAfterHire)tutorialTurnaroundOnTalentAdjusted(sl);
 }
 
 // 2. SPOT LOAD — SS shared with Sales & Inventory modal (openSales)
@@ -23374,6 +26031,7 @@ function openSpots(sid) {
 }
 function updSpots(sid,v){
   sid=ensureOpsSourceSid(sid);
+  wlCommitUiClear('sp-commit-btn');
   SS.val=parseInt(v);SS.sid=sid;
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const norm=FM[canonicalHitsFormatKey(s.format)]?.sp||14,ratio=SS.val/norm;
@@ -23400,23 +26058,42 @@ function doSpots(){
     renderAll();
     openSales(sid);
     requestAnimationFrame(()=>{
+      wlCommitUiMarkSatisfied('sp-commit-btn');
+      refreshSpotCommitStandalone();
       wlFlashCommitButton('sp-commit-btn');
       tutorialTurnaroundCoachAfterRender();
     });
     return;
   }
+  wlCommitUiMarkSatisfied('sp-commit-btn');
+  refreshSpotCommitStandalone();
   wlFlashCommitButton('sp-commit-btn');
   const finishSpots=()=>{ cm('m-sales',{wlTutorialSuppress:true}); renderAll(); };
-  if(document.getElementById('sp-commit-btn'))setTimeout(finishSpots,260);
+  if(document.getElementById('sp-commit-btn'))setTimeout(finishSpots,900);
   else finishSpots();
 }
 
-/** Slider/input + confirm: gold when pending change, muted when UI matches committed game state. */
+/** Tracks commit buttons where the slider matched state after APPLY/SET until the slider moves again — shows gold “recognized” styling. Key: element id string */
+const _wlCommitSatisfied=new Map();
+function wlCommitUiClear(btnId){
+  const id=typeof btnId==='string'?btnId:(btnId&&btnId.id)||'';
+  if(id)_wlCommitSatisfied.delete(id);
+}
+function wlCommitUiMarkSatisfied(btnId){
+  const id=typeof btnId==='string'?btnId:(btnId&&btnId.id)||'';
+  if(id)_wlCommitSatisfied.set(id,true);
+}
+/** Slider/input + confirm: gold when pending; after commit stays gold (“committed”) until the control changes again. */
 function wlSetCommitButtonState(btnId,isPending){
   const el=typeof btnId==='string'?document.getElementById(btnId):btnId;
   if(!el)return;
+  const key=el.id||'';
+  if(!key)return;
+  if(isPending)_wlCommitSatisfied.delete(key);
+  const glow=!isPending&&_wlCommitSatisfied.get(key)===true;
   el.classList.toggle('wl-commit-btn--pending',!!isPending);
-  el.classList.toggle('wl-commit-btn--synced',!isPending);
+  el.classList.toggle('wl-commit-btn--committed',glow);
+  el.classList.toggle('wl-commit-btn--synced',!isPending&&!glow);
 }
 /** Brief pulse after a successful commit so SET … / APPLY … feels acknowledged. */
 function wlFlashCommitButton(btnId){
@@ -23430,7 +26107,9 @@ function wlFlashCommitButton(btnId){
 function refreshSpotCommitStandalone(){
   const sid=ensureOpsSourceSid(SS.sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  const pending=SS.val!==s.ops.spots;
+  let pending=SS.val!==s.ops.spots;
+  /* Turnaround Sales tutorial (step 2): commit must register even without moving the slider — keep SET SPOT LOAD gold/readable. */
+  if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===7&&(G._tutorialSalesCoachStep|0)===2)pending=true;
   wlSetCommitButtonState('sp-commit-btn',pending);
 }
 function refreshProgCommitStandalone(){
@@ -23453,7 +26132,7 @@ function refreshRenameCommitStandalone(){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const btn=document.getElementById('rn-btn');
   if(!btn){return;}
-  if(btn.disabled){wlSetCommitButtonState('rn-btn',false);return;}
+  if(btn.disabled){wlCommitUiClear('rn-btn');wlSetCommitButtonState('rn-btn',false);return;}
   const pfxEl=document.getElementById('rn-prefix');
   const sfxEl=document.getElementById('rn-suffix');
   if(!pfxEl||!sfxEl)return;
@@ -23616,10 +26295,16 @@ function bmApplyBrand(sid){
   showToast('Brand saved.','info');
   renderAll();
   if(BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
+  requestAnimationFrame(()=>{
+    wlCommitUiMarkSatisfied('bm-brand-btn-'+safe);
+    bmRefreshBrandCommitState(sid);
+    wlFlashCommitButton('bm-brand-btn-'+safe);
+  });
 }
 function bmUpdBrand(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const safe=bmSafeElId(sid);
+  wlCommitUiClear('bm-brand-btn-'+safe);
   document.querySelectorAll('.bm-bp-'+safe).forEach(el=>el.classList.remove('bpsel'));
   bmRefreshBrandMarketingLogoPreview(sid);
   bmRefreshBrandCommitState(sid);
@@ -23633,6 +26318,7 @@ function callLettersPreviewForBmUi(baseVal,s){
 function bmUpdRenamePreview(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const safe=bmSafeElId(sid);
+  wlCommitUiClear('bm-rn-btn-'+safe);
   const pfxEl=document.getElementById('bm-rn-prefix-'+safe);
   const sfxEl=document.getElementById('bm-rn-suffix-'+safe);
   if(!pfxEl||!sfxEl)return;
@@ -23670,7 +26356,7 @@ function bmRefreshRenameCommitState(sid){
   const safe=bmSafeElId(sid);
   const btn=document.getElementById('bm-rn-btn-'+safe);
   if(!btn)return;
-  if(btn.disabled){wlSetCommitButtonState('bm-rn-btn-'+safe,false);return;}
+  if(btn.disabled){wlCommitUiClear('bm-rn-btn-'+safe);wlSetCommitButtonState('bm-rn-btn-'+safe,false);return;}
   const pfxEl=document.getElementById('bm-rn-prefix-'+safe);
   const sfxEl=document.getElementById('bm-rn-suffix-'+safe);
   if(!pfxEl||!sfxEl)return;
@@ -23726,10 +26412,16 @@ function bmDoRename(sid){
   MP.action('rename', {sid:s.id, callLetters:s.callLetters, brand:s.brand});
   renderAll();
   if(BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
+  requestAnimationFrame(()=>{
+    wlCommitUiMarkSatisfied('bm-rn-btn-'+safe);
+    bmRefreshRenameCommitState(sid);
+    wlFlashCommitButton('bm-rn-btn-'+safe);
+  });
 }
 function bmUpdPromo(sid,v){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  wlCommitUiClear('bm-pr-commit-'+bmSafeElId(sid));
   const prCap=promoBudgetCapForPeriod(G);
   const val=Math.min(parseInt(v,10)||0,prCap);
   const safe=bmSafeElId(sid);
@@ -23767,16 +26459,19 @@ function bmDoPromo(sid){
   renderAll();
   if(BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
   requestAnimationFrame(()=>{
+    const safe=bmSafeElId(ensureOpsSourceSid(sid));
+    wlCommitUiMarkSatisfied('bm-pr-commit-'+safe);
     bmRefreshPromoCommitState(ensureOpsSourceSid(sid));
-    wlFlashCommitButton('bm-pr-commit-'+bmSafeElId(sid));
+    wlFlashCommitButton('bm-pr-commit-'+safe);
   });
   if(isTutorialTurnaroundScen()&&G.tutorialMode&&MP.mode!=='live')requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
 }
 function bmUpdIdent(sid,v){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
-  const val=parseInt(v,10)||0;
   const safe=bmSafeElId(sid);
+  wlCommitUiClear('bm-ci-commit-'+safe);
+  const val=parseInt(v,10)||0;
   const vEl=document.getElementById('bm-ci-val-'+safe),nEl=document.getElementById('bm-ci-note-'+safe);
   if(vEl)vEl.textContent=f$(val);
   if(nEl){
@@ -23800,6 +26495,11 @@ function bmDoIdent(sid){
   G.news.unshift({v:'LOW',t:`${s.callLetters} community investment set to ${f$(v)}/period${v===0?' — discontinued.':'.'}`,y:G.year,p:G.period});
   renderAll();
   if(BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
+  requestAnimationFrame(()=>{
+    wlCommitUiMarkSatisfied('bm-ci-commit-'+safe);
+    bmRefreshIdentCommitState(sid);
+    wlFlashCommitButton('bm-ci-commit-'+safe);
+  });
 }
 /** Call letters + FCC rename only — used per simulcast leg when group shares one brand surface. */
 function brandMarketingCallLettersOnlyHtml(leg, opts){
@@ -23962,7 +26662,7 @@ function brandMarketingVanOnlyHtml(leg){
     ${hasVanImg&&vanLiftActive?`<p class="di" style="font-size:13px;color:var(--amb);margin:0 0 8px">Remote van promotion boost: <strong>+${Math.round(REMOTE_VAN_MARKETING_LIFT*100)}%</strong> promotional effectiveness.${vanAgeYears!=null?' Fleet in service <strong>'+vanAgeYears+'</strong> yr — replace after <strong>'+REMOTE_VAN_LIFETIME_YEARS+'</strong> yr when worn.':''}</p>`:''}
     ${hasVanImg&&!vanLiftActive?`<p class="di" style="font-size:13px;color:var(--red);margin:0 0 8px">Promotion boost <strong>ended</strong> — remote fleet is worn out. Use <strong>Replace fleet</strong> (${f$(vanCost)}) to restore <strong>+${Math.round(REMOTE_VAN_MARKETING_LIFT*100)}%</strong>. You can still <strong>Repaint</strong> the artwork anytime.</p>`:''}
     <div id="bm-van-status-${safe}" class="wl-ai-gen-status${s._vanGenPending?' wl-ai-gen-status--busy':''}" role="status" aria-live="polite"></div>
-    ${vanRel?`<div style="text-align:center;margin:10px 0;cursor:pointer" onclick="wlOpenRemoteVanModal('${s.id}')" title="View full size"><img class="bm-van-hero" src="${vanRel}" alt="" style="max-width:100%;border-radius:8px;border:1px solid var(--bdr)" draggable="false"></div>`:''}
+    ${vanRel?`<div class="bm-van-hero-wrap" style="cursor:pointer" onclick="wlOpenRemoteVanModal('${s.id}')" title="View full size"><img class="bm-van-hero" src="${vanRel}" alt="" draggable="false"></div>`:''}
     ${!hasVanImg&&vanTurnBlocked?`<p class="di" style="font-size:13px;color:var(--mut);margin:0 0 8px">Van slot already used this period — try again next period.</p>`:''}
     <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
       ${hasVanImg?`<button type="button" class="abt" onclick="wlClearRemoteVan('${s.id}')">Sell / remove van</button>`+(s.cosmeticLogoUrl?`<button type="button" id="bm-van-repaint-btn-${safe}" class="abt g" onclick="wlRepaintRemoteVan('${s.id}')"${!canRepaintVan?' disabled':''} aria-busy="${s._vanGenPending?'true':'false'}" title="${!canRepaintVan&&myCash<repaintCost?'Need '+f$(repaintCost):''}">Repaint van — ${f$(repaintCost)}</button>`:'')+(canReplaceVan?`<button type="button" id="bm-van-replace-btn-${safe}" class="abt g" onclick="wlReplaceRemoteVan('${s.id}')" aria-busy="${s._vanGenPending?'true':'false'}">Replace fleet — ${f$(vanCost)}</button>`:''):`<button type="button" id="bm-van-gen-btn-${safe}" class="abt g" onclick="wlPurchaseRemoteVan('${s.id}')"${vanPurchaseDisabled?' disabled':''} aria-busy="${s._vanGenPending?'true':'false'}" title="${vanTurnBlocked?'Van action already used this period — try next period.':(vanTitle||'Beta — remote van tooling may change.')}">Purchase remote van — ${f$(vanCost)}</button>`}
@@ -24125,6 +26825,13 @@ function renderBrandMarketingStation(primarySid){
 function openBrandMarketing(sid){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s||!mpIsMe(s))return;
+  brandMarketingStationLegs(sid).forEach(leg=>{
+    const safe=bmSafeElId(leg.id);
+    wlCommitUiClear('bm-pr-commit-'+safe);
+    wlCommitUiClear('bm-ci-commit-'+safe);
+    wlCommitUiClear('bm-brand-btn-'+safe);
+    wlCommitUiClear('bm-rn-btn-'+safe);
+  });
   renderBrandMarketingStation(sid);
   om('m-brand');
   scrollModalContentToTop('m-brand');
@@ -24197,7 +26904,13 @@ function moveRoleWithinOrAcrossStations(fromSid,fromSlot,fromRole,toSid,toSlot,t
     const chem=rollCoHostChemistryPair(toSd.talent,moving,dst.format);
     initCoHostChemistryReveal(toSd,dst.format,toSlot,toSd.talent,moving,chem);
   }else{
+    // Caller may have benched only the prior primary; co-host is promoted into `talent` and must be benched too before we assign `moving`.
+    while(toSd.talent){
+      if(!removeTalentToBenchInternal(toSid,toSlot))return false;
+    }
+    benchCoHostBeforePrimaryReplaceOrNull(toSid,toSlot);
     clearCoHostPairingState(toSd);
+    setSlotTalentB(toSd,null);
     toSd.talent=moving;
     moving.slot=toSlot;
     initTalentPerformanceReveal(toSd,moving,dst.format,'xfer');
@@ -24380,7 +27093,18 @@ function rosterOwnedStations(){
 }
 function myBenchEntries(){
   ensureTalentBench(G);
-  return G.talentBench.filter(e=>MP.mode!=='live'||e._mpOwner===MP.playerId);
+  const raw=G.talentBench.filter(e=>MP.mode!=='live'||e._mpOwner===MP.playerId);
+  const seen=new Set();
+  const out=[];
+  for(const e of raw){
+    const tid=e?.talent?.id;
+    if(tid!=null){
+      if(seen.has(tid))continue;
+      seen.add(tid);
+    }
+    out.push(e);
+  }
+  return out;
 }
 /** Player moves host to temporary bench (not a firing). */
 function benchTalentFromSlot(sid,slot){
@@ -24451,6 +27175,7 @@ function mtBackFromSubflow(){
   else openTalentRoster();
 }
 function rosterBenchClick(sid,slot,fromContract){
+  if(tutorialTurnaroundWarnMiddayLesson(slot))return;
   MT_SEL_SL=slot;
   if(!benchTalentFromSlot(sid,slot))return;
   if(fromContract===true){
@@ -24465,6 +27190,7 @@ function rosterBenchChairBClick(sid,slot,fromContract){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);
   if(!s||!mpIsMe(s))return;
+  if(tutorialTurnaroundWarnMiddayLesson(slot))return;
   if(!benchCoHostIfPresentInternal(sid,slot)){
     showToast('No second chair to bench in this slot.','warn');
     return;
@@ -24591,20 +27317,28 @@ function doRosterPlace(toSid,toSlot,toRole){
     const occ=dst.prog[toSlot]?.talent;
     const finishBenchPlace=()=>{
       const toSd=dst.prog[toSlot];
+      // After one `removeTalentToBenchInternal`, a co-host may have been promoted into `talent`; bench them before placing from bench.
+      while(toSd?.talent){
+        if(!removeTalentToBenchInternal(toSid,toSlot))return;
+      }
+      benchCoHostBeforePrimaryReplaceOrNull(toSid,toSlot);
       const adjDip=0.08;
       const fit=t0=>t0.formatFit[dst.format]||0.3;
       const boost=t0=>Math.round((t0.quality/100)*fit(t0)*0.35*18);
       clearCoHostPairingState(toSd);
+      setSlotTalentB(toSd,null);
       toSd.talent=t;
       toSd.quality=Math.min(100,Math.max(10,Math.round((toSd.quality||30)*(1-adjDip)))+boost(t));
       initTalentPerformanceReveal(toSd,t,dst.format,'xfer');
       applyDaypartPromotionEconomics(t,prevSlot,toSlot);
-      G.talentBench=G.talentBench.filter(e=>e.id!==ctx.benchId);
+      G.talentBench=(G.talentBench||[]).filter(e=>e.id!==ctx.benchId);
+      G.talentBench=(G.talentBench||[]).filter(e=>e.talent?.id!==t.id);
       G.news.unshift({v:'LOW',t:`${t.name} assigned from bench to ${callDisplay(dst)} ${SL[toSlot]}.`,y:G.year,p:G.period});
       logHistory(dst,'TALENT',`${t.name} placed from bench — ${SL[toSlot]}`,G);
       MP.action('placement_from_bench',{benchId:ctx.benchId,toSid,toSlot});
       refreshStationOQ(dst,G);
       MOVE_CTX={fromSid:null,fromSlot:null,benchId:null,role:'host'};
+      MT_ACTIVE_SID=toSid;
       mtBackFromSubflow();renderAll();
     };
     if(occ){
@@ -24955,7 +27689,7 @@ function doShuffle(sid,fromSlot,toSlot){
   logHistory(s,'TALENT',hMsg,G);
   refreshStationOQ(s,G);
   MP.action('shuffle',{sid,fromSlot,toSlot});
-  if(s.isPlayer)tutorialTurnaroundOnTalentAdjusted();
+  if(s.isPlayer)tutorialTurnaroundOnTalentAdjusted(toSlot);
   mtBackFromSubflow();renderAll();
 }
 
@@ -25518,6 +28252,13 @@ function doFire(sid,slot){
   logHistory(s,'TALENT',`Released ${name} — ${SL[slot]}${buyout>0?' (buyout: '+f$(buyout)+')':''}`,G);
   MP.action('fire', {sid, slot});
   MT_SEL_SL=slot;
+  showToast(
+    buyout>0
+      ? `${name} released — buyout ${f$(buyout)} paid. The daypart is on automation until you hire.`
+      : `${name} released — daypart on automation until you hire.`,
+    'info',
+    5200
+  );
   if(MT_ACTIVE_SID) renderManageTalentStation(MT_ACTIVE_SID);
   else renderManageTalentStation(sid);
   renderAll();
@@ -25603,16 +28344,17 @@ function openProgramming(sid){
       ['overnight','Overnight'],
     ];
     const pfSel=pfOpts.map(([val,lab])=>'<option value="'+val+'"'+(pfCur===val?' selected':'')+'>'+lab+'</option>').join('');
-    progFocusHtml=`<div id="wl-tu-tr-prog-focus" class="ms2 bm-prog-focus-box"><div class="msh">PROGRAMMING FOCUS</div><p class="di">Pick a daypart where you want to focus on coaching, production and promotions. The other dayparts will get investment, but not as much as your focused daypart.</p><label class="bm-prog-focus-fld" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--off)"><span class="bm-prog-focus-eyebrow">Focus</span><select class="abt" onchange="setStationProgrammingFocus('${s.id}',this.value)">${pfSel}</select></label></div>`;
+    progFocusHtml=`<div id="wl-tu-tr-prog-focus" class="ms2 bm-prog-focus-box"><div class="bm-section-h">PROGRAMMING FOCUS</div><p class="di">Pick a daypart where you want to focus on coaching, production and promotions. The other dayparts will get investment, but not as much as your focused daypart.</p><label class="bm-prog-focus-fld" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--off)"><span class="bm-prog-focus-eyebrow">Focus</span><select class="abt" onchange="setStationProgrammingFocus('${s.id}',this.value)">${pfSel}</select></label></div>`;
   }
   const mh=document.getElementById('prog-mh-title');
   if(mh)mh.textContent='PROGRAMMING';
   const body=document.getElementById('prog-body');
   if(!body)return;
+  wlCommitUiClear('pg-commit-btn');
   body.innerHTML=`
     <p class="di bm-hero-line">${programmingModalContextSubtitle(s)}</p>
     <div style="margin-bottom:14px">
-      <div class="msh">QUICK ACTIONS</div>
+      <div class="bm-section-h">QUICK ACTIONS</div>
       <div class="sc-act">
         <button type="button" class="abt d" ${tutProgIds?'id="wl-tu-tr-prog-fmt" ':''}onclick="openFmtFromProgramming('${s.id}')">⚡ FORMAT</button>
         ${driftQuick||'<div class="sc-act-empty" aria-hidden="true"></div>'}
@@ -25622,9 +28364,9 @@ function openProgramming(sid){
         <div class="sc-act-empty" aria-hidden="true"></div>
       </div>
     </div>
-    <div class="ms2"><div class="msh">CURRENT DAYPART QUALITY</div>${drows}<p class="di" style="margin-top:10px;font-size:13px;color:var(--mut)">${TALK_FMTS.includes(s.format)?'On <strong>spoken-word</strong> formats (news/talk, sports, etc.), you can select <strong>syndicated national programming</strong> or <strong>paid programming</strong> for unstaffed dayparts.':'On <strong>music</strong> stations, an unstaffed daypart can run as fully automated or, as technology improves, voice-tracked. Expect cost savings but programming quality will suffer. <strong>National franchise</strong> dayparts are syndicated when vacant — no automation / voice-track choice.'}</p></div>
+    <div class="ms2"><div class="bm-section-h">CURRENT DAYPART QUALITY</div>${drows}<p class="di" style="margin-top:10px;font-size:13px;color:var(--mut)">${TALK_FMTS.includes(s.format)?'On <strong>spoken-word</strong> formats (news/talk, sports, etc.), you can select <strong>syndicated national programming</strong> or <strong>paid programming</strong> for unstaffed dayparts.':'On <strong>music</strong> stations, an unstaffed daypart can run as fully automated or, as technology improves, voice-tracked. Expect cost savings but programming quality will suffer. <strong>National franchise</strong> dayparts are syndicated when vacant — no automation / voice-track choice.'}</p></div>
     <div class="ms2">
-      <div class="msh">PROGRAMMING BUDGET</div>
+      <div class="bm-section-h">PROGRAMMING BUDGET</div>
       <p class="di" style="margin:0 0 12px">Set a programming budget below to pay for coaching, production and content development. This will improve programming quality and slow the natural decay over time. This spending will recur each period until you change it.</p>
       <div class="slsec"${tutProgIds?' id="wl-tu-tr-prog-budget"':''}>
         <div class="sll"><span>BUDGET / PERIOD</span><span><strong id="pg-val">${f$(PI.val)}</strong><span id="pg-pct" style="color:var(--mut);font-weight:400"> · ${progBudgetInvestmentTierLabel(PI.val,pgCap)}</span></span></div>
@@ -25654,6 +28396,7 @@ function openProgramming(sid){
 function openProg(sid){openProgramming(sid);}
 function updProg(sid,v){
   sid=ensureOpsSourceSid(sid);
+  wlCommitUiClear('pg-commit-btn');
   PI.sid=sid;
   const pgCap=progBudgetCapForPeriod(G);
   PI.val=progBudgetDollarsFromPermille(v,pgCap);
@@ -25677,18 +28420,20 @@ function doProg(){
   if(!s.ops)s.ops={spots:14,sell:0.65,promo:0,progBudget:0};
   const cap=progBudgetCapForPeriod(G);
   const v=Math.min(PI.val,cap);
-  wlFlashCommitButton('pg-commit-btn');
   s.ops.progBudget=v;
   MP.action('prog',{sid,progBudget:v});
   syncOwnedSimulcastSpendFromSource(s);
   G.news.unshift({v:'LOW',t:`${s.callLetters} programming budget set to ${f$(v)}/period${v===0?' — discontinued.':'.'}`,y:G.year,p:G.period});
+  wlCommitUiMarkSatisfied('pg-commit-btn');
+  refreshProgCommitStandalone();
+  wlFlashCommitButton('pg-commit-btn');
   const finishProg=()=>{
     cm('m-programming',{wlTutorialSuppress:true});
     wlFtTutorialTryAdvanceAfterProgrammingClosed();
     renderAll();
     if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
   };
-  if(document.getElementById('pg-commit-btn'))setTimeout(finishProg,260);
+  if(document.getElementById('pg-commit-btn'))setTimeout(finishProg,900);
   else finishProg();
 }
 // 3b2. COMMUNITY INVESTMENT
@@ -25717,6 +28462,7 @@ function openIdent(sid){
     ALBUM_ROCK:'Concert sponsorships, local band showcases, college partnerships.',
     CLASSIC_ROCK:'Reunion concert sponsorships, veteran events, classic car show remotes.',
   }[s.format]||'Remotes, sponsorships, local event coverage, public service programming.';
+  wlCommitUiClear('ident-commit-btn');
   document.getElementById('identb').innerHTML=`
     <p class="di">Community Identity is how much <strong>${s.callLetters}</strong> feels like the community&apos;s station. A higher score boosts loyalty, giving you a cushion in ratings and helping your talent&apos;s morale.</p>
     <p class="di" style="font-size:14px;color:var(--off);line-height:1.5">Your recurring <strong>investment</strong> speeds how fast the identity score climbs toward the format ceiling (muted under heavy budget stress). Spending is charged as <strong>operating cost</strong> each period.</p>
@@ -25742,6 +28488,7 @@ function openIdent(sid){
 }
 function updIdent(sid,v){
   sid=ensureOpsSourceSid(sid);
+  wlCommitUiClear('ident-commit-btn');
   CI.val=parseInt(v);CI.sid=sid;
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const vEl=document.getElementById('ci-val'),nEl=document.getElementById('ci-note');
@@ -25762,7 +28509,10 @@ function doIdent(){
   MP.action('ident', {sid, budget:CI.val});
   syncOwnedSimulcastSpendFromSource(s);
   G.news.unshift({v:'LOW',t:`${s.callLetters} community investment set to ${f$(CI.val)}/period${CI.val===0?' — discontinued.':'.'}`,y:G.year,p:G.period});
-  cm('m-ident');renderAll();
+  wlCommitUiMarkSatisfied('ident-commit-btn');
+  refreshIdentCommitStandalone();
+  wlFlashCommitButton('ident-commit-btn');
+  setTimeout(()=>{ cm('m-ident');renderAll(); },480);
 }
 
 // 3c. DEMO LEAN TARGETING
@@ -25804,7 +28554,7 @@ function openLean(sid){
     <button class="cnl" onclick="cm('m-lean')">CANCEL</button>`;
   updLean(sid, Math.round((s.demoLean||0)*100));
   om('m-lean');
-  if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live')G._tutorialLeanCoachDismissed=0;
+  if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'){G._tutorialLeanCoachDismissed=0;G._tutorialLeanCoachStep=0;}
   if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===4)
     requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
   if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live')
@@ -25974,7 +28724,8 @@ function callDisplay(s){
   if(!s)return '';
   const isFm=s.fmBooster||s.sig?.type==='FM';
   const base=stripCallBandSuffix(s.callLetters);
-  return `${base}-${isFm?'FM':'AM'}`;
+  const baseCaps=String(base).toUpperCase();
+  return `${baseCaps}-${isFm?'FM':'AM'}`;
 }
 /** Histogram of `callDisplay` for commercial stations (ranker / intel disambiguation). */
 function marketRankCallDisplayHistogram(stations){
@@ -26020,6 +28771,7 @@ function applyDefaultBrandToPlayerStation(s){
 /** Legacy standalone rename modal — same rules as Brand & Promotion identity fields. */
 function openRename(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  wlCommitUiClear('rn-btn');
   _renameBrandAtOpen=s.brand;
   const cur=stripCallBandSuffix(s.callLetters);
   const requiredPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
@@ -26061,6 +28813,7 @@ function openRename(sid){
 let _renameSid=null; // module-level — set when modal opens, read by updRename
 let _renameBrandAtOpen=null;
 function updRename(){
+  wlCommitUiClear('rn-btn');
   const pfxEl=document.getElementById('rn-prefix');
   const sfxEl=document.getElementById('rn-suffix');
   if(!pfxEl||!sfxEl)return;
@@ -26559,7 +29312,17 @@ function doFmt(keepSim){
 // 5. ACQUIRE
 const ACP={dominant:2800000,strong:1800000,moderate:950000,emerging:550000,niche:350000,weak:200000};
 let AS={chosen:null};
-function openAcq(){AS={chosen:null};rAcq();om('m-ac');}
+function openAcq(){
+  AS={chosen:null};
+  if(typeof wlTutorialExpansionCoachActive==='function'&&wlTutorialExpansionCoachActive()){
+    wlTuTurnaroundTeardownShades();
+    wlTuTurnaroundIoDisconnect();
+    if(_wlTuTr.root)_wlTuTr.root.style.display='none';
+  }
+  rAcq();
+  om('m-ac');
+  if(typeof wlTuExpansionLayoutStep==='function')wlTuExpansionLayoutStep();
+}
 function rAcq(){
   const lim=fccLimits(G.year,G.stations.length);
   const myOwned=fccOwned('player',G);
@@ -26576,16 +29339,22 @@ function rAcq(){
     const can=G.cash>=price;
     const sigType=s.sig.type==='AM'||s.fmBooster?'AM':'FM';
     const typeOk=fccCanAcquire('player',sigType,G);
-    const blocked=!typeOk;
+    const fmYearLock=sigType==='FM'&&wlTutorialTurnaroundFmPurchaseYearBlocked();
     const isSel=AS.chosen===s.id;
-    return `<div class="aco ${(can&&typeOk)?'':'nope'}" style="${isSel?'border-color:var(--grn);background:rgba(82,227,110,.06)':''}">
+    const canSelect=can&&typeOk&&!fmYearLock;
+    const blockWhy=!can
+      ?'NO FUNDS'
+      :fmYearLock
+        ?`FM unlocks ${WL_TUTORIAL_TURNAROUND_FM_EXPANSION_MIN_YEAR} (Turnaround)`
+        :(!typeOk?'FCC LIMIT':'NO FUNDS');
+    return `<div class="aco ${canSelect?'':'nope'}" style="${isSel?'border-color:var(--grn);background:rgba(82,227,110,.06)':''}">
       <div style="flex:1"><div class="acn" style="color:${s.color}">${callDisplay(s)}</div>
       <div class="aci">${s.freq} · ${signalPowerDisplayLabel(s.sig.pw)} · ${fmtLabel(s.format)} · ${s.sig.type} · Quality: ${s.oq}${s.isPublic?'  <span style="color:#7dd3fc;font-size:14px">PUBLIC — converts to commercial on acquisition</span>':''}</div>
       <div class="aci" style="margin-top:2px">Share: ${pct(s.rat.share)} · Rev: ${f$(s.fin.rev)}/period${s.isPublic?' · <span style="color:#7dd3fc">Non-commercial</span>':''}</div></div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;margin-left:8px">
-        <span style="font-family:var(--fd);font-size:15px;color:${(can&&typeOk)?'var(--amb)':'var(--red)'}">${f$(price)}</span>
-        ${(can&&typeOk)?`<button class="abt" style="white-space:nowrap;background:${isSel?'var(--grn)':'transparent'};color:${isSel?'#000':'var(--wht)'};border:1px solid ${isSel?'var(--grn)':'var(--off)'};font-size:15px" onclick="${isSel?'doAcq()':'pickAcq(\''+s.id+'\')'}">
-          ${isSel?'✓ CONFIRM':'SELECT'}</button>`:`<span style="font-size:15px;color:var(--red)">${blocked?'FCC LIMIT':'NO FUNDS'}</span>`}
+        <span style="font-family:var(--fd);font-size:15px;color:${canSelect?'var(--amb)':'var(--red)'}">${f$(price)}</span>
+        ${canSelect?`<button class="abt" style="white-space:nowrap;background:${isSel?'var(--grn)':'transparent'};color:${isSel?'#000':'var(--wht)'};border:1px solid ${isSel?'var(--grn)':'var(--off)'};font-size:15px" onclick="${isSel?'doAcq()':'pickAcq(\''+s.id+'\')'}">
+          ${isSel?'✓ CONFIRM':'SELECT'}</button>`:`<span style="font-size:15px;color:var(--red);text-align:right;max-width:180px;line-height:1.25">${blockWhy}</span>`}
       </div></div>`;
   }).join('');
   const ownDesc=lim.mode==='pre96'?`${myOwned.am}/${lim.am} AM, ${myOwned.fm}/${lim.fm} FM`:`${myOwned.total}/${lim.total} total (${myOwned.am} AM, ${myOwned.fm} FM)`;
@@ -26596,6 +29365,11 @@ function doAcq(){
   if(!AS.chosen)return;
   const s=G.stations.find(st=>st.id===AS.chosen);
   if(!s)return;
+  const acqBand=s.sig?.type==='AM'||s.fmBooster?'AM':'FM';
+  if(acqBand==='FM'&&wlTutorialTurnaroundFmPurchaseYearBlocked()){
+    showToast(`In this turnaround scenario, FM stations unlock once you reach ${WL_TUTORIAL_TURNAROUND_FM_EXPANSION_MIN_YEAR} and meet the cash benchmark.` ,'warn',6400);
+    return;
+  }
   if(wlFreePostTrialSoloLimitsActive()&&wlPlayerOperatedStationCount(G)>=2){
     showToast('Free tier is limited to two operated stations in this market. Run more stations with Starter and Pro — open Account to subscribe.','warn',7200);
     return;
@@ -26666,7 +29440,9 @@ function doAcq(){
   G.news.unshift({v:'HIGH',
     t:`You acquire ${s.callLetters} (${fmtLabel(s.format)}) ${wasCorpOwned||''} for ${f$(price)}. Expect ~${churnPct}% listener churn as the station transitions — keep format and talent stable to minimize losses.`,
     y:G.year,p:G.period,iy:true});
-  cm('m-ac');renderAll();
+  cm('m-ac');
+  if(typeof wlTuExpansionOnDidAcquire==='function')wlTuExpansionOnDidAcquire(s);
+  renderAll();
   queueAutoLogosForPlayerStations();
 }
 
@@ -26677,6 +29453,7 @@ function benchmarkSoloAcquireStation(G,s){
   if(!Number.isFinite(price)||G.cash<price)return false;
   const sigType=s.sig.type==='AM'||s.fmBooster?'AM':'FM';
   if(!fccCanAcquire('player',sigType,G))return false;
+  if(sigType==='FM'&&wlTutorialTurnaroundFmPurchaseYearBlocked())return false;
   G.cash-=price;
   if(s.corpOwner&&G.corps){
     const corp=G.corps.find(c=>c.id===s.corpOwner);
@@ -26789,6 +29566,7 @@ function simulcastModalLmaLicenseHint(st){
 }
 function openSim(sid){
   SimS={a:sid,b:null};rSim();om('m-sim');
+  setTimeout(()=>{try{if(typeof wlTuExpansionLayoutStep==='function')wlTuExpansionLayoutStep();}catch(_e){}},0);
 }
 function rSim(){
   const s=G.stations.find(st=>st.id===SimS.a);
@@ -26849,7 +29627,7 @@ function rSim(){
           ?`<span style="color:var(--mut);font-size:14px">${fmtLabel(p.format)} — formats match ✓</span>`
           :`<span style="color:var(--amb);font-size:14px">⚡ <strong>${callDisplay(p)}</strong> will adopt <strong>${s.callLetters}</strong>'s <em>${fmtLabel(s.format)}</em> (repeater)</span>`;
         const talentNote=`<span style="color:var(--mut);font-size:14px">Partner drops separate local staffing; ${s.callLetters} keeps the on-air roster.</span>`;
-        return `<div class="aco${SimS.b===p.id?' sel':''}" onclick="pickSim('${p.id}')">
+        return `<div class="aco${SimS.b===p.id?' sel':''}" id="wl-exp-sim-pick-${p.id}" onclick="pickSim('${p.id}')">
       <div>
         <div class="acn" style="color:${p.color||'var(--amb)'}">${callDisplay(p)}</div>
         <div class="aci">${p.freq} · ${p.fmBooster?'FM BOOSTER':p.sig.type}</div>
@@ -26880,7 +29658,7 @@ function rSim(){
     <div class="bbox"><strong>How it works:</strong> This station is the programming source. Each station you add carries the same programming and brand. Each facility keeps its own call letters — change them in <strong>Brand &amp; Marketing</strong>. AM↔FM pairs still get +15% AM reach bonus where applicable.<br><br>${fmtDirectionNote}</div>
     ${partners.length?`<p class="di" style="margin-top:12px;margin-bottom:6px"><strong>Add another receiver</strong> (optional)</p><div class="acg">${opts}</div>`:`<p class="di" style="color:var(--mut);margin-top:12px;margin-bottom:6px">No additional owned stations are available to add. Use <strong>End all simulcasts</strong> above to separate this group.</p>`}
     ${partnerPreview}
-    <button class="cfm" onclick="doSim()" ${!SimS.b?'disabled':''}>SIMULCAST THIS STATION</button>
+    <button type="button" class="cfm" id="wl-exp-sim-confirm-btn" onclick="doSim()" ${!SimS.b?'disabled':''}>SIMULCAST THIS STATION</button>
     <button class="cnl" onclick="cm('m-sim')">CANCEL</button>`;
       return;
     }
@@ -26904,7 +29682,7 @@ function rSim(){
       ?`<span style="color:var(--mut);font-size:14px">${fmtLabel(p.format)} — formats match ✓</span>`
       :`<span style="color:var(--amb);font-size:14px">⚡ <strong>${callDisplay(p)}</strong> will adopt <strong>${s.callLetters}</strong>'s <em>${fmtLabel(s.format)}</em> (repeater)</span>`;
     const talentNote=`<span style="color:var(--mut);font-size:14px">Partner drops separate local staffing; ${s.callLetters} keeps the on-air roster.</span>`;
-    return `<div class="aco${SimS.b===p.id?' sel':''}" onclick="pickSim('${p.id}')">
+    return `<div class="aco${SimS.b===p.id?' sel':''}" id="wl-exp-sim-pick-${p.id}" onclick="pickSim('${p.id}')">
       <div>
         <div class="acn" style="color:${p.color||'var(--amb)'}">${callDisplay(p)}</div>
         <div class="aci">${p.freq} · ${p.fmBooster?'FM BOOSTER':p.sig.type}</div>
@@ -26939,10 +29717,10 @@ function rSim(){
     <div class="bbox"><strong>How it works:</strong> This station is the programming source. Each station you add carries the same programming and brand. Each facility keeps its own call letters — change them in <strong>Brand &amp; Marketing</strong>. AM↔FM pairs still get +15% AM reach bonus where applicable.<br><br>${fmtDirectionNote}</div>
     <div class="acg">${opts}</div>
     ${partnerPreview}
-    <button class="cfm" onclick="doSim()" ${!SimS.b?'disabled':''}>SIMULCAST THIS STATION</button>
+    <button type="button" class="cfm" id="wl-exp-sim-confirm-btn" onclick="doSim()" ${!SimS.b?'disabled':''}>SIMULCAST THIS STATION</button>
     <button class="cnl" onclick="cm('m-sim')">CANCEL</button>`;
 }
-function pickSim(id){SimS.b=id;rSim();}
+function pickSim(id){SimS.b=id;rSim();setTimeout(()=>{try{if(typeof wlTuExpansionLayoutStep==='function')wlTuExpansionLayoutStep();}catch(_e){}},0);}
 function stripSimulcastReceiverProgrammingState(junior, lead){
   DAYPART_SLOTS.forEach(sl=>{
     if(junior.prog[sl]?.talent) junior.prog[sl].talent=null;
@@ -26997,7 +29775,10 @@ function doSim(){
   const talentNote=DAYPART_SLOTS.some(sl=>src.prog[sl]?.talent)?` On-air talent remains on ${src.callLetters}.`:'';
   G.news.unshift({v:'MEDIUM',t:`${callDisplay(dst)} now simulcasts ${callDisplay(src)} (${fmtLabel(src.format)}).${talentNote}`,y:G.year,p:G.period});
   MP.action('sim', {sid:SimS.a, partnerId:SimS.b});
-  cm('m-sim');renderAll();
+  const _simSrc=SimS.a,_simDst=SimS.b;
+  cm('m-sim');
+  if(typeof wlTuExpansionOnDidSimulcast==='function')wlTuExpansionOnDidSimulcast(_simSrc,_simDst);
+  renderAll();
 }
 function doBreakSim(id){
   const s=G.stations.find(st=>st.id===id); if(!s)return;
@@ -27796,27 +30577,19 @@ async function wlRemoteVanImageOp(stationId,mode){
     });
     const data=await res.json().catch(()=>({}));
     if(!res.ok||!data.ok){
-      if(data&&data.code==='trial_quota_exhausted'&&mode==='purchase'&&!op.cosmeticRemoteVanUrl){
-        wlAdjustMyCash(-vanCost);
-        op.remoteVanMarketingLift=REMOTE_VAN_MARKETING_LIFT;
-        op.remoteVanPurchasedYear=G.year;
-        op._lastVanGenTurn=turnN;
-        recalc(G.stations,G);
-        logHistory(op,'LOGO',`Remote broadcast van promotion (${f$(vanCost)}) — boost without custom artwork (creative limit).`,G);
-        autoSave();
-        if(MP.mode==='live'&&MP.socket&&MP.roomId){
-          MP.emit('mp_station_logo',{
-            roomId:MP.roomId,
-            stationId:op.id,
-            remoteVanMarketingLift:op.remoteVanMarketingLift,
-            remoteVanPurchasedYear:op.remoteVanPurchasedYear,
-          });
-        }
-        renderAll();
-        if(statusEl)statusEl.textContent='Promotion boost applied — creative limit reached; no new van artwork.';
-        showToast('Promotion boost applied — creative limit reached; no new van artwork.','info');
-        try{wlAnalyticsCreativeTool('remote_van','blocked',{reason:'trial_limit'});}catch(_e){}
-        wlAiTrialQuotaToast(data);
+      const canVanBenefitSansArt=(mode==='purchase'||mode==='replace')
+        &&wlPromotionBenefitEligibleWhenCreativeUnavailable(res,data,'van')
+        && !(mode==='purchase'&&op.cosmeticRemoteVanUrl);
+      if(canVanBenefitSansArt){
+        const lim=data&&data.code==='trial_quota_exhausted';
+        wlApplyRemoteVanPromotionWithoutGeneratedImage(op,mode,vanCost,turnN,statusEl,{
+          trialQuotaData:lim?data:null,
+          reasonSnippet:data.error||res.statusText||'no artwork',
+          toastMsg:lim
+            ?'Promotion boost applied — creative limit reached; no new van artwork.'
+            :'Promotion boost applied — van artwork unavailable; fleet benefit is in place.',
+          analyticsReason:lim?'blocked':'service_unavailable',
+        });
         return;
       }
       if(wlAiTrialQuotaToast(data))return;
@@ -27860,9 +30633,18 @@ async function wlRemoteVanImageOp(stationId,mode){
     renderAll();
     try{wlAnalyticsCreativeTool('remote_van','succeeded',{});}catch(_e){}
   }catch(_e){
-    if(statusEl)statusEl.textContent='Network error — try again.';
-    showToast('Remote van request failed.','warn');
-    try{wlAnalyticsCreativeTool('remote_van','failed',{});}catch(_f){}
+    const canCatch=(mode==='purchase'||mode==='replace')&&!(mode==='purchase'&&op.cosmeticRemoteVanUrl)&&mpMyCashOnHand()>=vanCost;
+    if(canCatch){
+      wlApplyRemoteVanPromotionWithoutGeneratedImage(op,mode,vanCost,turnN,statusEl,{
+        reasonSnippet:'network or API error',
+        toastMsg:'Promotion boost applied — could not reach artwork service; fleet benefit is in place.',
+        analyticsReason:'network_fallback',
+      });
+    }else{
+      if(statusEl)statusEl.textContent='Network error — try again.';
+      showToast('Remote van request failed.','warn');
+      try{wlAnalyticsCreativeTool('remote_van','failed',{});}catch(_f){}
+    }
   }finally{
     op._vanGenPending=false;
     if(statusEl)wlAiGenStatusBusy(statusEl,false);
@@ -27943,33 +30725,16 @@ async function wlCommissionStationJingle(stationId){
     });
     const data=await res.json().catch(()=>({}));
     if(!res.ok||!data.ok){
-      if(data&&data.code==='trial_quota_exhausted'){
-        wlAdjustMyCash(-jingleCost);
-        op.jingleMarketingLift=JINGLE_MARKETING_LIFT;
-        op.jingleCommissionedYear=G.year;
-        op._lastJingleGenTurn=turnOk;
-        delete op._pendingJingleVariants;
-        delete op._jinglePendingTagline;
-        recalc(G.stations,G);
-        logHistory(op,'LOGO',`Station jingle promotion (${f$(jingleCost)}) — boost without custom audio (creative limit).`,G);
-        autoSave();
-        if(MP.mode==='live'&&MP.socket&&MP.roomId){
-          MP.emit('mp_station_logo',{
-            roomId:MP.roomId,
-            stationId:op.id,
-            jingleMarketingLift:op.jingleMarketingLift,
-            jingleCommissionedYear:op.jingleCommissionedYear,
-            jingleTagline:typeof op.jingleTagline==='string'?op.jingleTagline:'',
-          });
-        }
-        renderAll();
-        if(statusEl){
-          wlAiGenStatusBusy(statusEl,false);
-          statusEl.textContent='Promotion boost applied — creative limit reached; no new jingle audio.';
-        }
-        showToast('Promotion boost applied — creative limit reached; no new jingle audio.','info');
-        try{wlAnalyticsCreativeTool('jingle','blocked',{reason:'trial_limit'});}catch(_e){}
-        wlAiTrialQuotaToast(data);
+      if(wlPromotionBenefitEligibleWhenCreativeUnavailable(res,data,'jingle')){
+        const lim=data&&data.code==='trial_quota_exhausted';
+        wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,statusEl,{
+          trialQuotaData:lim?data:null,
+          reasonSnippet:data.error||res.statusText||'no audio',
+          toastMsg:lim
+            ?'Promotion boost applied — creative limit reached; no new jingle audio.'
+            :'Promotion boost applied — jingle audio unavailable; package benefit is in place.',
+          analyticsReason:lim?'blocked':'service_unavailable',
+        });
         return;
       }
       if(wlAiTrialQuotaToast(data))return;
@@ -27984,23 +30749,32 @@ async function wlCommissionStationJingle(stationId){
     const workingBase='WORKING — Creating two jingle takes. Often 1–4 minutes. Do not close this panel or click again; this message will clear when ready.';
     if(!variants||!variants.length){
       if(!jobId){
-        if(statusEl)statusEl.textContent=data.error||'Server did not return a jingle job id.';
-        showToast(data.error||'Jingle generation failed.','warn');
+        wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,statusEl,{
+          reasonSnippet:data.error||'no jingle job id',
+          toastMsg:'Promotion boost applied — jingle job could not start; package benefit is in place.',
+          analyticsReason:'no_job_id',
+        });
         return;
       }
       if(statusEl)statusEl.textContent=workingBase;
       const done=await wlPollStationJingleJob(jobId);
       if(done.status!=='complete'||!done.ok||!Array.isArray(done.variants)||!done.variants.length){
-        if(statusEl)statusEl.textContent=done.error||'Jingle generation failed.';
-        showToast(done.error||'Jingle generation failed.','warn');
+        const lim=done&&done.code==='trial_quota_exhausted';
+        wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,statusEl,{
+          trialQuotaData:lim?done:null,
+          reasonSnippet:(done&&done.error)||'Jingle generation did not complete.',
+          analyticsReason:'poll_failed',
+        });
         return;
       }
       if(done.trialQuota)wlMaybeTrialApproachingFromQuota(done.trialQuota,'jingle');
       variants=done.variants;
     }
     if(!variants||!variants.length){
-      if(statusEl)statusEl.textContent='No jingle variants returned.';
-      showToast('Jingle generation failed.','warn');
+      wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,statusEl,{
+        reasonSnippet:'No jingle variants returned.',
+        analyticsReason:'empty_variants',
+      });
       return;
     }
     wlAdjustMyCash(-jingleCost);
@@ -28013,9 +30787,17 @@ async function wlCommissionStationJingle(stationId){
     showToast('Jingle package ready — pick a variant.','info');
     try{wlAnalyticsCreativeTool('jingle','succeeded',{});}catch(_e){}
   }catch(_e){
-    if(statusEl)statusEl.textContent='Network error — try again.';
-    showToast('Jingle request failed.','warn');
-    try{wlAnalyticsCreativeTool('jingle','failed',{});}catch(_f){}
+    if(mpMyCashOnHand()>=jingleCost){
+      wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,statusEl,{
+        reasonSnippet:'network error',
+        toastMsg:'Promotion boost applied — could not reach audio service; package benefit is in place.',
+        analyticsReason:'network_fallback',
+      });
+    }else{
+      if(statusEl)statusEl.textContent='Network error — try again.';
+      showToast('Jingle request failed.','warn');
+      try{wlAnalyticsCreativeTool('jingle','failed',{});}catch(_f){}
+    }
   }finally{
     op._jingleGenPending=false;
     const jingleStatusFresh=document.getElementById('bm-jingle-status-'+_bmSafe);
@@ -28488,6 +31270,7 @@ function importSave(file){
       migrateSave(G); // handles all field migrations and public station injection
       try{
         if(typeof wlCampaignLoadFromSave==='function')wlCampaignLoadFromSave(payload.campaign);
+        if(typeof wlCampaignHandleLoadedGame==='function')wlCampaignHandleLoadedGame(G);
         if(typeof wlCampaignSyncFromGame==='function')wlCampaignSyncFromGame(G);
         if(typeof wlCampaignRepairLoadedGameIfMarketMismatch==='function')wlCampaignRepairLoadedGameIfMarketMismatch(G);
       }catch(_e){}
@@ -29196,6 +31979,7 @@ async function loadLocalSaveAsync(){
   if(!G.news)G.news=[];
   try{
     if(typeof wlCampaignLoadFromSave==='function')wlCampaignLoadFromSave(local.campaign);
+    if(typeof wlCampaignHandleLoadedGame==='function')wlCampaignHandleLoadedGame(G);
     if(typeof wlCampaignSyncFromGame==='function')wlCampaignSyncFromGame(G);
     if(typeof wlCampaignRepairLoadedGameIfMarketMismatch==='function')wlCampaignRepairLoadedGameIfMarketMismatch(G);
   }catch(_e){}
@@ -29216,7 +32000,13 @@ async function loadLocalSaveAsync(){
     marketId:G.marketId||'atlanta',
   });
   try{wlAnalyticsTrackGameResumedSolo();}catch(_e){}
-  cm('m-scen');
+  /* Career: pending assignment-end modal uses showWhenClear() — it waits until no `.ov.on`. Opening
+   * scenario select here would sit on top and block ASSIGNMENT COMPLETE forever after resume. */
+  if(MP.mode!=='live'&&typeof wlCampaignShouldBlockAdvTurn==='function'&&wlCampaignShouldBlockAdvTurn(G)){
+    /* Stay on the board; wlCampaignAfterRenderAll opens m-campaign-end on next paint cycle. */
+  }else{
+    cm('m-scen');
+  }
 }
 
 if(typeof globalThis!=='undefined'){globalThis.loadLocalSave=loadLocalSave;}
@@ -29561,7 +32351,13 @@ function syncModalBodyScrollLock(){
     _wlModalScrollLock.y=0;
   }
 }
+if(typeof window!=='undefined')window.syncModalBodyScrollLock=syncModalBodyScrollLock;
 window.addEventListener('pageshow',()=>{ syncModalBodyScrollLock(); });
+/** Safari / tab switches: resync modal scroll lock so body is not left `position:fixed` with no visible modal (wheel dead + clicks swallowed). */
+document.addEventListener('visibilitychange',()=>{
+  if(document.visibilityState!=='visible')return;
+  try{syncModalBodyScrollLock();}catch(_e){}
+});
 /** LIFO order of open `.ov` modals. Closing a modal also closes any that were opened above it (stack tail). */
 const _wlModalStack=[];
 function _wlModalZSync(){
@@ -29569,9 +32365,11 @@ function _wlModalZSync(){
     const one=document.getElementById(_wlModalStack[0]);
     if(one)one.style.removeProperty('z-index');
   }else if(_wlModalStack.length>1){
+    /* Above turnaround coach (#wl-tu-tr-root ~13020) and #m-turnaround-tip (26000). */
+    const zBase=42200;
     for(let k=0;k<_wlModalStack.length;k++){
       const o=document.getElementById(_wlModalStack[k]);
-      if(o)o.style.setProperty('z-index',String(12080+k*20),'important');
+      if(o)o.style.setProperty('z-index',String(zBase+k*20),'important');
     }
   }
   try{
@@ -29587,6 +32385,14 @@ function _wlModalZSync(){
 function _wlModalAfterClose(id,opts){
   if(id==='m-brand')BM_ACTIVE_SID=null;
   const wlTutSup=opts&&opts.wlTutorialSuppress;
+  if(id==='m-ac'&&!wlTutSup){
+    try{
+      if(G)G._tutorialExpansionAcquireModalCoachDismissed=false;
+    }catch(_e){}
+    try{
+      if(typeof wlTuExpansionLayoutStep==='function')requestAnimationFrame(()=>wlTuExpansionLayoutStep());
+    }catch(_e){}
+  }
   if(!wlTutSup){
     if(id==='m-programming'){
       wlFtTutorialNotifyProgrammingClose();
@@ -29616,15 +32422,22 @@ function _wlModalAfterClose(id,opts){
       wlFtTutorialNotifyResearchClose();
       if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'){
         tutorialTurnaroundAfterResearchClosed();
-        requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
+        /* AfterResearchClosed opens #m-turnaround-tip and temp-dismisses the coach; do not re-run layout here
+           or the spotlight comes back on top of the takeaway on the next frame. */
+        const tipTr=document.getElementById('m-turnaround-tip');
+        if(!tipTr||!tipTr.classList.contains('on')){
+          requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
+        }
       }
     }
     if(id==='m-rk'&&isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===7&&(G._tutorialAct7Phase|0)===4){
       /* End the turnaround tutorial immediately after Ranker close. */
+      try{wlEmitTutorialCompleted('ranker_shortcut');}catch(_e){}
       G.tutorialMode=false;
       G.tutorialAct=0;
       G._tutorialAct7Phase=0;
       G._tutorialRankerCoachDismissed=false;
+      try{wlShowEmailSignupOverlay('tutorial_completion');}catch(_e){}
       tutorialTurnaroundCoachStop();
       tutorialTurnaroundShowGradModal();
     }
@@ -29635,15 +32448,59 @@ function _wlModalAfterClose(id,opts){
       requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
     }
   }
-  if(id==='m-sales'&&isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G._tutorialSalesCoachStep|0)===4){
-    G._tutorialSalesCoachStep=5;
-    requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
+  if(id==='m-turnaround-tip'){
+    if(_wlTuMsgAutoTimer){clearTimeout(_wlTuMsgAutoTimer);_wlTuMsgAutoTimer=null;}
+    try{document.getElementById('m-turnaround-tip')?.style.removeProperty('z-index');}catch(_e){}
+    if(
+      isTutorialTurnaroundScen()&&MP.mode!=='live'&&
+      G?._tutorialExpansionAwaitingIntroDismiss&&
+      typeof wlTutorialExpansionCoachActive==='function'&&wlTutorialExpansionCoachActive()&&
+      (G._tutorialExpansionStep|0)===1
+    ){
+      G._tutorialExpansionAwaitingIntroDismiss=false;
+      G._tutorialExpansionStep=2;
+      requestAnimationFrame(()=>{
+        if(typeof wlTuExpansionLayoutStep==='function')wlTuExpansionLayoutStep();
+      });
+    }
+    if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live')requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
+  }
+  if(id==='m-sales'&&isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'){
+    const ss=G._tutorialSalesCoachStep|0;
+    if(ss===4||ss===5){
+      G._tutorialSalesCoachStep=6;
+      requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
+    }
   }
   if(id==='m-sum'&&isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'){
-    if((G.tutorialAct|0)===5)G._tutorialAct5SummariesSeen=(G._tutorialAct5SummariesSeen|0)+1;
-    requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
+    if((G.tutorialAct|0)===5){
+      G._tutorialAct5SummariesSeen=(G._tutorialAct5SummariesSeen|0)+1;
+      tutorialTurnaroundMaybeAdvanceFromAct5();
+    }
+    /* Act 6 → 7 after the period summary closes for the book following a promotion raise (deferred from turn-complete). */
+    if((G.tutorialAct|0)===6&&G._tutorialPromoRaised&&(G._tutorialAct6SalesIntroPending|0)){
+      G._tutorialAct6SalesIntroPending=0;
+      const pss=tutorialTurnaroundPlayerStation();
+      G.tutorialAct=7;
+      if(pss)G._tutorialOpeningSpots=pss.ops?.spots||(FM[pss.format]?.sp||14);
+      G._tutorialSpotsAdjusted=false;
+      tutorialTurnaroundUIMessage('The audience is growing. Now let\'s make sure the station is actually making money from it.','info');
+      const tipS=document.getElementById('m-turnaround-tip');
+      if(tipS&&tipS.classList.contains('on'))wlTuTurnaroundTempDismiss();
+      else tutorialTurnaroundCoachSync();
+    }
+    const tipSum=document.getElementById('m-turnaround-tip');
+    if(!tipSum||!tipSum.classList.contains('on')){
+      requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
+    }
   }
   if(id==='m-sum')wlFtTutorialOnPeriodSummaryDismissed();
+  if(typeof G!=='undefined'&&G&&G.sc?.id==='tutorial_turnaround'&&!G._tutorialExpansionComplete&&MP.mode!=='live'){
+    requestAnimationFrame(()=>{
+      if(typeof tutorialTurnaroundMaybeExpansionCoachStart==='function')tutorialTurnaroundMaybeExpansionCoachStart();
+      if(typeof wlTutorialExpansionCoachActive==='function'&&wlTutorialExpansionCoachActive()&&typeof wlTuExpansionLayoutStep==='function')wlTuExpansionLayoutStep();
+    });
+  }
   if(id==='m-tutorial-turnaround')tutorialTurnaroundOnTutorialModalClosed();
   if(id==='m-sum'&&typeof G!=='undefined'&&G&&G._mpShowEndgameAfterSumClose){
     G._mpShowEndgameAfterSumClose=false;
@@ -29654,6 +32511,16 @@ function _wlModalAfterClose(id,opts){
   if(id==='m-sum'&&typeof G!=='undefined'&&G&&G._openStationOfferAfterSumClose){
     G._openStationOfferAfterSumClose=false;
     if(G.pendingStationOffer)setTimeout(()=>openStationListingOfferModal(),220);
+  }
+  if(MP.mode!=='live'&&typeof G!=='undefined'&&G){
+    if(id==='m-gm-review'&&G._gm&&G._gm.fired&&!G._wlGmFiredFromCampaign){
+      requestAnimationFrame(()=>wlShowGmFiredDismissToast(G));
+    }
+    /* Campaign assignment modal: header ✕ only — BACK TO MENU / CONTINUE clear flags in campaignMode.js */
+    if(id==='m-campaign-end'&&G._wlGmFiredFromCampaign&&G._gm&&G._gm.fired){
+      G._wlGmFiredFromCampaign=false;
+      requestAnimationFrame(()=>wlShowGmFiredDismissToast(G));
+    }
   }
 }
 /** All `.ov` modals: close only via header/footer buttons — backdrop click does not dismiss (avoids accidental closes). */
@@ -29668,10 +32535,10 @@ function om(id){
         if(ph===2){
           try{ wlTuTurnaroundAckAct7Ratings(); }catch(_e){}
         }else if(ph<2){
-          showToast('Follow the tutorial highlight on your station card — you can open the ranker again after this sequence.','info',5600);
+          tutorialTurnaroundUIMessage('Follow the tutorial highlight on your station card — you can open the ranker again after this sequence.','info');
           return;
         }else if(ph<3){
-          showToast('Follow the tutorial highlight — we’ll open the ranker in the next step.','info',4200);
+          tutorialTurnaroundUIMessage('Follow the tutorial highlight — we’ll open the ranker in the next step.','info');
           return;
         }
       }
@@ -29743,7 +32610,7 @@ function companyFinanceRollup(){
   const talentCostAnnual=sumAnnualTalentPayrollForOwnedStations(ps);
   const fixedCost=ps.reduce((s,st)=>s+(st.fin.fix||0),0);
   const cash=MP.mode==='live'?(G._playerCash?.[MP.playerId]??G.cash):G.cash;
-  const shareSum=ps.reduce((s,st)=>s+st.rat.share,0);
+  const shareSum=playerPortfolioBookShareSum01Deduped(G);
   const avgSellout=ps.length?Math.round((ps.reduce((s,st)=>s+(st.ops?.sell||0),0)/ps.length)*1000)/1000:0;
   const digitalRev=ps.reduce((sum,st)=>sum+((st.fin.digitalRev??st.fin.streamRev)||0),0);
   const digitalSharePct=revenue>0?Math.round((digitalRev/revenue)*1000)/10:0;
@@ -30037,7 +32904,7 @@ function recordCompanyFinHistory(G, wasYear, wasPeriod, profit){
     const margin=revenue>0?Math.round((pProfit/revenue)*100):0;
     const talentCost=ps.reduce((sum,s)=>sum+Object.values(s.prog).filter(sl=>sl?.talent).reduce((a,sl)=>a+payrollHalfPeriodForDaypartSlot(sl),0),0);
     const fixedCost=ps.reduce((s,st)=>s+(st.fin.fix||0),0);
-    const shareSum=ps.reduce((s,st)=>s+st.rat.share,0);
+    const shareSum=playerPortfolioBookShareSum01Deduped(G,ps);
     const avgSellout=ps.length?Math.round((ps.reduce((s,st)=>s+(st.ops?.sell||0),0)/ps.length)*1000)/1000:0;
     const _loanPid=pid!=null&&pid!==undefined?pid:0;
     const debtPrincipal=debtPrincipalForPid(G,_loanPid);
@@ -30212,7 +33079,7 @@ function stationDriverCandidates(s,G,junior){
     add(78,'Leased-out license — fee income with no operating spend on this line.','cost');
     return candidates;
   }
-  const shareN=(junior?s.rat.share+junior.rat.share:s.rat.share)||0;
+  const shareN=(junior?stationCardSimulcastCombinedShare01(s,junior):s.rat.share)||0;
   if(pr){
     if(pr.col) add(96,'Sharp share losses are cutting billing power.','cross');
     else if(pr.under) add(84,'Slipping share is capping what you can bill.','cross');
@@ -30762,12 +33629,17 @@ function contractExtensionAndCtaBlockHtml(sid, slot, t, isCoHost, ce, forManageT
     G &&
     t._moraleBonusAccrualY === G.year &&
     t._moraleBonusAccrualP === G.period;
+  const extendUsedThisPeriod =
+    typeof G !== 'undefined' &&
+    G &&
+    t._contractExtendY === G.year &&
+    t._contractExtendP === G.period;
   const bonusBtn = bonusPaidThisAccrual
     ? `<button type="button" class="abt contract-cta-bonus contract-cta-bonus--paid" disabled title="You already paid a morale bonus this accrual period. You can pay again after the next period."><span class="contract-cta-bonus__l1">morale bonus</span><span class="contract-cta-bonus__l2"><span class="contract-cta-bonus__l2-paid">Paid this period</span></span></button>`
     : `<button type="button" class="abt contract-cta-bonus" style="width:100%;box-sizing:border-box" onclick="doBonus('${sid}','${slot}',${ce.bonusCost},'${ce.trJs}'${mtf2})" ${G.cash < ce.bonusCost ? 'disabled' : ''} title="One-time cash. Morale +15 to +20. No change to contract years."><span class="contract-cta-bonus__l1">morale bonus</span><span class="contract-cta-bonus__l2"><span class="contract-cta-bonus__l2-amount">+${f$(ce.bonusCost)}</span><span class="contract-cta-bonus__l2-note">(optional)</span></span></button>`;
-  return`<div class="contract-extend-cta-block${forManageTalent?' contract-extend-cta-block--mt':''}" style="display:flex;flex-direction:column;gap:2px;margin-bottom:12px">
-      <div class="msh">Extend Contract</div>
-      <div class="contract-extend-compact" role="group" aria-label="Sign new deal">
+  const extendTiles=extendUsedThisPeriod
+    ?`<div class="contract-extend-used-msg ibox" style="margin:0;border-color:rgba(125,211,252,.35);font-size:13px;line-height:1.45;color:var(--off)">You already extended this contract this period. You can negotiate another extension <strong>next period</strong>.</div>`
+    :`<div class="contract-extend-compact" role="group" aria-label="Sign new deal">
         <button type="button" class="cfm contract-ext-btn" onclick="doExtend('${sid}','${slot}',1,${ce.ext1Cost},'${ce.trJs}'${mtf2})" ${G.cash<ce.ext1Cost/2?'disabled':''}>
           ${ce.poach1yrMatchLabel}
           <div class="contract-ext-btn__line1">SIGN 1 YR</div>
@@ -30784,7 +33656,10 @@ function contractExtensionAndCtaBlockHtml(sid, slot, t, isCoHost, ce, forManageT
           <div class="contract-ext-btn__line2">${ce.ext3Cost?$salK(ce.ext3Annual):'N/A'}/YR</div>
           <div class="contract-ext-btn__line3${ce.ext3Cost?'':' contract-ext-btn__line3--sub'}">${ce.ext3Cost?'Raise +'+ce.r3+'%':'Morale too low'}</div>
         </button>
-      </div>
+      </div>`;
+  return`<div class="contract-extend-cta-block${forManageTalent?' contract-extend-cta-block--mt':''}" style="display:flex;flex-direction:column;gap:2px;margin-bottom:12px">
+      <div class="msh">Extend Contract</div>
+      ${extendTiles}
       <div class="contract-cta-bar">
         <div class="contract-cta-bar__row" role="group" aria-label="Morale, non-renewal, fire or remove">
           <div class="contract-cta-bar__cell">
@@ -30872,20 +33747,26 @@ function contractSelectDaypart(sid, sl){
   openContract(sid, sl, role);
 }
 
-function contractProgrammingFocusPanelHtml(s){
-  if(!s)return'';
-  ensureStationProgrammingFocus(s);
-  const pfCur=normalizeProgrammingFocus(s.programmingFocus);
-  const pfOpts=[
-    [PROGRAMMING_FOCUS_BALANCED,'Balanced'],
-    ['morningDrive','Morning'],
-    ['midday','Midday'],
-    ['afternoonDrive','Afternoon'],
-    ['evening','Evening'],
-    ['overnight','Overnight'],
-  ];
-  const pfSel=pfOpts.map(([val,lab])=>'<option value="'+val+'"'+(pfCur===val?' selected':'')+'>'+lab+'</option>').join('');
-  return `<div class="ms2 bm-prog-focus-box" style="margin-bottom:14px"><div class="msh">PROGRAMMING FOCUS</div><p class="di">You can give equal attention to all dayparts or add a little extra focus to a particular daypart. It gives a little extra coaching and attention to boost quality there.</p><label class="bm-prog-focus-fld" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:14px;color:var(--off)"><span class="bm-prog-focus-eyebrow">Focus</span><select class="abt" onchange="setStationProgrammingFocus('${s.id}',this.value)">${pfSel}</select></label></div>`;
+/** Subtle reminder: programming-focus control lives only in the Programming modal. */
+function contractTalentProgrammingCrosslinkNoteHtml(){
+  return '<p class="contract-prog-crosslink-note di" style="margin:12px 0 0;font-size:11px;color:var(--mut);letter-spacing:0.02em;line-height:1.45">Programming focus is managed in the <strong style="font-weight:600;color:var(--mut)">Programming</strong> panel.</p>';
+}
+
+/** Second line under daypart · station on the Talent Management (contract) empty slot card. */
+function contractUnstaffedStatusSubline(em){
+  if(!em)return'';
+  const st=rosterHtmlEsc(em.status);
+  if(em.status==='Syndicated'||em.status==='National show')return `${st} · ${rosterHtmlEsc(em.detail)}`;
+  return `${st} · Unstaffed`;
+}
+
+/** One-line explainer under the status card for empty daypart (contract modal). */
+function contractUnstaffedAutomationExplainer(em){
+  if(!em)return'';
+  if(em.status==='Syndicated'||em.status==='National show')
+    return 'This daypart follows your syndication or simulcast rules until you change setup in Programming or Franchises.';
+  if(em.status==='Off-air')return em.hireNote||'';
+  return 'Until you hire a local host, this daypart uses the run mode below.';
 }
 
 /** Automation / voice-track (music) or syndicated / paid (talk) for vacant local slots — mirrors Programming modal; shown on Talent Management empty daypart. */
@@ -30920,9 +33801,8 @@ function contractModalUnstaffedStaffingHtml(s,slot){
           <option value="vacant"${stf==='live'?' selected':''}>Unattended — full automation (no on-air staff)</option>
         </select>`;
   }
-  return`<div class="ibox contract-unstaffed-staffing" style="margin-bottom:12px;line-height:1.45">
-    <div style="font-size:12px;color:var(--mut);letter-spacing:0.06em;margin-bottom:4px">UNSTAFFED DAYPART</div>
-    <p style="margin:0 0 8px;font-size:13px;color:var(--off)">How this daypart runs until you hire a local host (same options as Programming).</p>
+  return`<div class="ibox contract-unstaffed-staffing contract-unstaffed-staffing--compact" style="margin-bottom:14px;line-height:1.45">
+    <label style="display:block;font-size:12px;color:var(--mut);letter-spacing:0.04em;margin-bottom:6px">Run mode until hired</label>
     ${inner}
   </div>`;
 }
@@ -30965,6 +33845,11 @@ function openContract(sid, slot, talentRole){
   const isCoHost=role==='cohost';
   const s=G.stations.find(st=>st.id===sid);
   if(!s)return;
+  if(tutorialTurnaroundAct4MiddayTalentLessonPending()&&slot!=='midday'){
+    showToast('For this tutorial step, use Midday — select Midday in the daypart rail first.','warn');
+    openContract(sid,'midday',talentRole);
+    return;
+  }
   const mhSpan=document.querySelector('#m-contract .mh span');
   if(mhSpan)mhSpan.textContent='📋 TALENT MANAGEMENT';
   const sd=s.prog[slot];
@@ -30985,16 +33870,17 @@ function openContract(sid, slot, talentRole){
         ${contractDpRail}
       </aside>
       <div class="contract-dp-body">
-      <div class="msh" style="margin-bottom:12px">📋 TALENT MANAGEMENT — ${callDisplay(s)} ${SL[slot]}</div>
-      <p class="di bm-hero-line">This daypart has no local host yet. Use the same contract screen for every daypart — hire, then manage contract &amp; pay here.</p>
-      ${contractProgrammingFocusPanelHtml(s)}
-      <div class="ibox" style="margin-bottom:12px">
-        <strong>${SL[slot]}</strong> · ${rosterHtmlEsc(callDisplay(s))}<br>
-        <span style="color:var(--mut);font-size:14px">${rosterHtmlEsc(em.status)}${em.detail?(' · '+rosterHtmlEsc(em.detail)) : ''}</span>
+      <div class="msh" style="margin-bottom:10px">📋 TALENT MANAGEMENT — ${callDisplay(s)} ${SL[slot]}</div>
+      <p class="di" style="margin:0 0 14px;line-height:1.5">This daypart has no local host yet.</p>
+      <div class="ibox contract-talent-status-card" style="margin-bottom:12px;line-height:1.45">
+        <div style="font-family:var(--fd);font-size:16px;letter-spacing:0.08em;color:var(--amb)">${SL[slot]} · ${rosterHtmlEsc(callDisplay(s))}</div>
+        <div style="margin-top:8px;font-size:14px;color:var(--off);font-family:var(--ft)">${contractUnstaffedStatusSubline(em)}</div>
       </div>
+      <p class="di" style="margin:0 0 12px;font-size:13px;color:var(--mut);line-height:1.45">${rosterHtmlEsc(contractUnstaffedAutomationExplainer(em))}</p>
       ${contractModalUnstaffedStaffingHtml(s,slot)}
       ${hireBtn||`<div class="ibox" style="margin-bottom:12px;border-color:rgba(255,255,255,.12);color:var(--mut)">Hire is not available for this daypart right now.</div>`}
       ${contractBenchRowsHtml()}
+      ${contractTalentProgrammingCrosslinkNoteHtml()}
       <button class="cnl" id="wl-tu-tr-contract-close" onclick="cm('m-contract')">CLOSE</button>
       </div>
       </div>`;
@@ -31131,8 +34017,8 @@ function openContract(sid, slot, talentRole){
     ${addCohostBlock}
     </div>
 
-    ${contractProgrammingFocusPanelHtml(s)}
     ${contractBenchRowsHtml()}
+    ${contractTalentProgrammingCrosslinkNoteHtml()}
     <button class="cnl" id="wl-tu-tr-contract-close" onclick="cm('m-contract')">CLOSE</button>
     </div>
     </div>`;
@@ -31146,6 +34032,10 @@ function doExtend(sid, slot, years, newSalary, talentRole, fromManageTalent){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const sd=s.prog[slot];if(!sd)return;
   const t=role==='cohost'?slotTalentB(sd):sd.talent;if(!t)return;
+  if(t._contractExtendY===G.year&&t._contractExtendP===G.period){
+    showToast('You already extended this contract this period — try again next period.','warn');
+    return;
+  }
   const rp=s._rivalPoachPending;
   if(role==='host'&&rp&&rp.slot===slot&&t.id===rp.talentId){
     const minSal=Math.round((rp.offerSalary||0)*0.95/500)*500;
@@ -31164,8 +34054,10 @@ function doExtend(sid, slot, years, newSalary, talentRole, fromManageTalent){
     t._promotionFromSlot=undefined;
   }
   const roleBit=role==='cohost'?' co-host':'';
+  t._contractExtendY=G.year;
+  t._contractExtendP=G.period;
   G.news.unshift({v:'LOW',t:`📋 ${t.name} signs ${years}-year extension${roleBit} at ${s.callLetters} — ${f$(newSalary)}/yr.`,y:G.year,p:G.period});
-  MP.action('extend',{sid,slot,years,newSalary,talentRole:role==='cohost'?'cohost':undefined});
+  MP.action('extend',{sid,slot,years,newSalary,talentRole:role==='cohost'?'cohost':undefined,extendYear:G.year,extendPeriod:G.period});
   if(fromManageTalent)renderManageTalentStation(ensureOpsSourceSid(sid));
   else openContract(sid, slot, role === 'cohost' ? 'cohost' : undefined);
   renderAll();
@@ -31178,12 +34070,12 @@ function doBonus(sid, slot, amount, talentRole, fromManageTalent){
   const t=role==='cohost'?slotTalentB(sd):sd.talent;if(!t)return;
   if(t._moraleBonusAccrualY===G.year&&t._moraleBonusAccrualP===G.period)return;
   if(G.cash<amount)return;
+  t._moraleBonusAccrualY=G.year;
+  t._moraleBonusAccrualP=G.period;
   G.cash-=amount;
   if(MP.mode==='live'){if(!G._playerCash)G._playerCash={};G._playerCash[MP.playerId]=G.cash;MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash});}
   const boost=Math.round(rnd(15,20));
   t.morale=Math.min(100,t.morale+boost);
-  t._moraleBonusAccrualY=G.year;
-  t._moraleBonusAccrualP=G.period;
   const roleBit=role==='cohost'?' (co-host)':'';
   G.news.unshift({v:'LOW',t:`💰 ${t.name} receives ${f$(amount)} bonus${roleBit} at ${s.callLetters} — morale up ${boost} pts.`,y:G.year,p:G.period});
   MP.action('bonus',{sid,slot,amount,boost,talentRole:role==='cohost'?'cohost':undefined,bonusYear:G.year,bonusPeriod:G.period});
@@ -31216,6 +34108,7 @@ function doLetExpire(sid, slot, talentRole, fromManageTalent){
 
 function doPoach(sid, slot, rivalId){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
+  if(tutorialTurnaroundWarnMiddayLesson(slot))return;
   if(daytimerRestrictedSlot(s,slot)){showToast(DAYTIMER_AM_NIGHT_MSG,'warn');return;}
   if(getStationFranchise(s,slot,G)){
     showToast('You can’t sign talent into a daypart that belongs to your syndicated franchise.','warn');
@@ -31279,17 +34172,40 @@ function doPoach(sid, slot, rivalId){
       renderManageTalentStation(sid);
     }
     renderAll();
-    if(runTurnaroundAfterPoach)tutorialTurnaroundOnTalentAdjusted();
+    if(runTurnaroundAfterPoach)tutorialTurnaroundOnTalentAdjusted(slot);
     return;
   }
   cm('m-contract');
   cm('m-tal');renderAll();
-  if(runTurnaroundAfterPoach)tutorialTurnaroundOnTalentAdjusted();
+  if(runTurnaroundAfterPoach)tutorialTurnaroundOnTalentAdjusted(slot);
 }
 
 // ════════════════════════════════════════════════════════════════
 // RENDER
 // ════════════════════════════════════════════════════════════════
+/** GM Career: lifeline is automatic — uses Corporate bailout math without duplicate headline news (toast explains). */
+function wlGmMaybeAutoCampaignLifeline(){
+  if(typeof MP==='undefined'||MP.mode==='live'||!G)return;
+  if(!G.careerCampaign||!G.sc||!G.sc.gmMode)return;
+  if((G.cash||0)>=0)return;
+  if(typeof wlGmMode==='undefined'||!wlGmMode.computeCorporateLifelineOffer||!wlGmMode.applyCorporateLifeline)return;
+  const off=wlGmMode.computeCorporateLifelineOffer(G);
+  if(!off||!off.available)return;
+  const ok=wlGmMode.applyCorporateLifeline(G,{suppressNews:true});
+  if(!ok)return;
+  const msg=off.wouldFire
+    ? 'Corporate wired emergency funds, but ownership had already lost confidence — see your status panel.'
+    : 'Corporate is concerned about the financials and has extended working capital for now. Continued losses can end this posting.';
+  showToast(msg,off.wouldFire?'warn':'info',9200);
+}
+/** One-time nudge when digital/streaming rules activate (2005+). */
+function wlMaybeDigitalEraToast(){
+  if(typeof MP==='undefined'||MP.mode==='live'||!G)return;
+  if(G.year<2005)return;
+  if(G._wlDigitalEraToastShown)return;
+  G._wlDigitalEraToastShown=true;
+  showToast('Digital era: audiences split across streams and downloads. Use Station Admin on each license to enable streaming and digital revenue.','info',10000);
+}
 function renderAll(){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   // Guard: if G hasn't been initialized yet, don't render garbage
@@ -31313,12 +34229,16 @@ function renderAll(){
     const w = G._playerCash?.[MP.playerId];
     if (w !== undefined && w !== null) G.cash = w;
   }
-  rHdr();rTick();rScore();rStns();rMkt();rIntel();rNews();
+  rHdr();
+  wlMaybeDigitalEraToast();
+  rTick();rScore();rStns();rMkt();rIntel();rNews();
   if(typeof wlGmMode!=='undefined'&&wlGmMode.renderGmHeader)wlGmMode.renderGmHeader(G);
+  if(MP.mode!=='live'&&typeof wlCampaignEnsurePendingEndModalAfterRender==='function')wlCampaignEnsurePendingEndModalAfterRender(G);
   if(document.body) document.body.classList.toggle('mp-endgame', typeof mpEndgameFrozen==='function'&&mpEndgameFrozen());
   maybeShowPendingTroubleModal();
   bmRefreshOpenBrandModalLogos();
   wlFtTutorialAfterRender();
+  wlTuExpansionAfterRender();
 }
 
 function maybeShowPendingTroubleModal(){
@@ -31371,64 +34291,69 @@ function rHdr(){
   const gmCareerCorpBtn=document.getElementById('wl-corp-gm-career-btn');
   if(gmCareerCorpBtn)gmCareerCorpBtn.hidden=!isGmCareer;
   document.getElementById('proglbl').textContent=`${startYrP} → 2020`;
-  const ab=document.getElementById('alertbar');
-  // Detect broken/uninitialized state: stations exist but no revenue has ever run
-  const _isBlankState = _hdrCash===0 && G.turn===0 && G.ps.every(s=>!s.fin?.rev);
-  if(_isBlankState){
-    ab.className='on';
-    ab.style.background='rgba(245,166,35,.12)';
-    ab.style.borderColor='var(--amb)';
-    ab.style.color='var(--amb)';
-    ab.innerHTML=`⚠ Game state appears incomplete. <a href="#" onclick="openScenSelect(getLocalSave());return false;" style="color:var(--amb);font-weight:bold">← Back to scenario select</a> &nbsp;|&nbsp; <a href="#" onclick="wlClearAutosaveAndReload();return false;" style="color:var(--red)">🗑 Clear save &amp; restart</a>`;
-    return;
-  }
-  const expiring=myPS().flatMap(s=>Object.entries(s.prog).flatMap(([sl,sd])=>{
-    const bits=[];
-    if(sd?.talent&&(sd.talent.cyr||0)<=0)bits.push(`${s.callLetters} ${SL[sl]} (${sd.talent.name})`);
-    const chEx=slotTalentB(sd);
-    if(chEx&&(chEx.cyr||0)<=0)bits.push(`${s.callLetters} ${SL[sl]} co-host (${chEx.name})`);
-    return bits;
-  }));
-  const daypartReneg=myPS().flatMap(s=>Object.entries(s.prog)
-    .filter(([,sd])=>sd?.talent&&sd.talent._slotPromotionPendingRenewal&&(sd.talent.cyr||0)>0)
-    .map(([sl,sd])=>`${s.callLetters} ${SL[sl]} (${sd.talent.name})`));
-  const _myDisplayCash = _hdrCash;
-  if((MP.mode==='live'&&G._mpBankrupt?.[MP.playerId])||G._soloBankrupt){
-    ab.className='on';
-    ab.style.background='rgba(240,88,88,.1)';
-    ab.style.borderColor='var(--mut)';
-    ab.style.color='var(--mut)';
-    ab.textContent='Bankruptcy: You are out of active play. Keep advancing to watch the market.';
-  }else if(MP.mode!=='live'&&G._gmCareerEnded){
-    ab.className='on';
-    ab.style.background='rgba(240,88,88,.1)';
-    ab.style.borderColor='var(--mut)';
-    ab.style.color='var(--mut)';
-    ab.textContent='General Manager: You have been dismissed. Keep advancing to watch the market.';
-  }else if(MP.mode!=='live'&&!G._soloBankrupt&&(!G.ps||!G.ps.length)&&_myDisplayCash>0){
-    ab.className='on';
-    ab.style.background='rgba(245,166,35,.1)';
-    ab.style.borderColor='var(--amb)';
-    ab.style.color='var(--off)';
-    ab.textContent='No stations in your group — use Acquire a Station (player panel) to get back on the air.';
-  }else if(_myDisplayCash<0&&!G.score.isSandbox){
-    ab.className='on';
-    ab.style.background='';ab.style.borderColor='';ab.style.color='';
-    const _dq=MP.mode==='live'?(G._mpDebtWarningQ?.[MP.playerId]||0):(G.debtWarningQ||0);
-    const _rem=Math.max(0,2-_dq);
-    ab.textContent=`⚠ NEGATIVE CASH — ${f$(_myDisplayCash)} — Recover within ${_rem} period${_rem!==1?'s':''} or face forced sale${MP.mode==='live'&&myPS().length<=1?' (you have no extra station to sell)' : ''}.`;
-  } else if(expiring.length||daypartReneg.length){
-    ab.className='on';
-    ab.style.background='rgba(245,166,35,.15)';
-    ab.style.borderColor='var(--amb)';
-    ab.style.color='var(--amb)';
-    const bits=[];
-    if(expiring.length)bits.push(`Contract ending: ${expiring.join(' · ')}`);
-    if(daypartReneg.length)bits.push(`Daypart move (new deal): ${daypartReneg.join(' · ')}`);
-    ab.textContent=`📋 ${bits.join(' — ')} — open contract from the station card.`;
-  } else {
-    ab.className='';
-    ab.style.background='';ab.style.borderColor='';ab.style.color='';
+  if(!wlToastHoldActive()){
+    const ab=document.getElementById('alertbar');
+    // Detect broken/uninitialized state: stations exist but no revenue has ever run
+    const _isBlankState = _hdrCash===0 && G.turn===0 && G.ps.every(s=>!s.fin?.rev);
+    if(_isBlankState){
+      ab.className='on';
+      ab.style.background='rgba(245,166,35,.12)';
+      ab.style.borderColor='var(--amb)';
+      ab.style.color='var(--amb)';
+      ab.innerHTML=`⚠ Game state appears incomplete. <a href="#" onclick="openScenSelect(getLocalSave());return false;" style="color:var(--amb);font-weight:bold">← Back to scenario select</a> &nbsp;|&nbsp; <a href="#" onclick="wlClearAutosaveAndReload();return false;" style="color:var(--red)">🗑 Clear save &amp; restart</a>`;
+      return;
+    }
+    const expiring=myPS().flatMap(s=>Object.entries(s.prog).flatMap(([sl,sd])=>{
+      const bits=[];
+      if(sd?.talent&&(sd.talent.cyr||0)<=0)bits.push(`${s.callLetters} ${SL[sl]} (${sd.talent.name})`);
+      const chEx=slotTalentB(sd);
+      if(chEx&&(chEx.cyr||0)<=0)bits.push(`${s.callLetters} ${SL[sl]} co-host (${chEx.name})`);
+      return bits;
+    }));
+    const daypartReneg=myPS().flatMap(s=>Object.entries(s.prog)
+      .filter(([,sd])=>sd?.talent&&sd.talent._slotPromotionPendingRenewal&&(sd.talent.cyr||0)>0)
+      .map(([sl,sd])=>`${s.callLetters} ${SL[sl]} (${sd.talent.name})`));
+    const _myDisplayCash = _hdrCash;
+    if((MP.mode==='live'&&G._mpBankrupt?.[MP.playerId])||G._soloBankrupt){
+      ab.className='on';
+      ab.style.background='rgba(240,88,88,.1)';
+      ab.style.borderColor='var(--mut)';
+      ab.style.color='var(--mut)';
+      ab.textContent='Bankruptcy: You are out of active play. Keep advancing to watch the market.';
+    }else if(MP.mode!=='live'&&G._gmCareerEnded){
+      ab.className='on';
+      ab.style.background='rgba(240,88,88,.1)';
+      ab.style.borderColor='var(--mut)';
+      ab.style.color='var(--mut)';
+      ab.textContent='General Manager: You have been dismissed. Keep advancing to watch the market.';
+    }else if(MP.mode!=='live'&&!G._soloBankrupt&&(!G.ps||!G.ps.length)&&_myDisplayCash>0){
+      ab.className='on';
+      ab.style.background='rgba(245,166,35,.1)';
+      ab.style.borderColor='var(--amb)';
+      ab.style.color='var(--off)';
+      ab.textContent='No stations in your group — use Acquire a Station (player panel) to get back on the air.';
+    }else if(_myDisplayCash<0&&!G.score.isSandbox){
+      ab.className='on';
+      ab.style.background='';ab.style.borderColor='';ab.style.color='';
+      const _dq=MP.mode==='live'?(G._mpDebtWarningQ?.[MP.playerId]||0):(G.debtWarningQ||0);
+      const _rem=Math.max(0,2-_dq);
+      const _gmCareerNeg=MP.mode!=='live'&&!!(G.careerCampaign&&G.sc?.gmMode);
+      ab.textContent=_gmCareerNeg
+        ?`⚠ NEGATIVE CASH — ${f$(_myDisplayCash)} — Corporate may extend working capital while you stabilize operations; sustained losses can still end your posting.`
+        :`⚠ NEGATIVE CASH — ${f$(_myDisplayCash)} — Recover within ${_rem} period${_rem!==1?'s':''} or face forced sale${MP.mode==='live'&&myPS().length<=1?' (you have no extra station to sell)' : ''}.`;
+    } else if(expiring.length||daypartReneg.length){
+      ab.className='on';
+      ab.style.background='rgba(245,166,35,.15)';
+      ab.style.borderColor='var(--amb)';
+      ab.style.color='var(--amb)';
+      const bits=[];
+      if(expiring.length)bits.push(`Contract ending: ${expiring.join(' · ')}`);
+      if(daypartReneg.length)bits.push(`Daypart move (new deal): ${daypartReneg.join(' · ')}`);
+      ab.textContent=`📋 ${bits.join(' — ')} — open contract from the station card.`;
+    } else {
+      ab.className='';
+      ab.style.background='';ab.style.borderColor='';ab.style.color='';
+    }
   }
   // FCC ownership label
   const lim=fccLimits(G.year,G.stations.length);
@@ -31457,7 +34382,7 @@ function rScore(){
   const rankLabel=primaryRank<=0?'—':`#${primaryRank} of ${_cr.length}`;
   const rankColor=primaryRank<=1?'var(--grn)':primaryRank<=3?'var(--amb)':'var(--off)';
   const gradeColor=grade==='A'?'var(--grn)':grade==='B'?'#8aef8a':grade==='C'?'var(--amb)':grade==='F'?'var(--red)':'#e89020';
-  const myShareTotal=myPS().reduce((s,st)=>s+(st.rat.share||0),0);
+  const myShareTotal=playerPortfolioBookShareSum01Deduped(G);
   const curDecY=Math.floor((G.year||1970)/10)*10;
   const curDecEntry=_dcSource[curDecY];
   const decScoreForBar=(curDecEntry!=null&&typeof curDecEntry.total==='number')?curDecEntry.total:sc.total;
@@ -31531,9 +34456,18 @@ function rStns(){
     const revUi=junior?s.fin.rev+junior.fin.rev:s.fin.rev;
     const costUi=junior?s.fin.cost+junior.fin.cost:s.fin.cost;
     const stnEbitda=revUi-costUi;
-    const shareUi=junior?stationCardDisplayShare01(s)+stationCardDisplayShare01(junior):stationCardDisplayShare01(s);
+    const shareUi=junior
+      ?stationCardSimulcastCombinedShare01(s,junior)
+      :stationCardDisplayShare01(s);
+    const _simShareTitle=junior
+      ?rosterHtmlEsc('Combined share: co-owned same-feed AM/FM overlap is deduped (same basis as the market ranker). Per-leg % on the card is still each license’s book.')
+      :'';
+    const _revTitle=junior
+      ?rosterHtmlEsc('Combined terrestrial revenue for both licenses — same-feed simulcast is sold as one audience reach story (advertisers buy the cluster’s listeners, not separate AM vs FM rate cards for identical spots).')
+      :'';
     const div=document.createElement('div');
     div.className=`sc sc--compact ${stnEbitda>=0?'profit':'loss'}`;
+    div.setAttribute('data-wl-station-ids',junior?[s.id,junior.id].sort().join(','):s.id);
     const _simSrc=simulcastProgrammingSource(s);
     const _hdrDaypart=rosterHtmlEsc('Time block in your station clock. Hover a row for that day’s actions.');
     const slotsLegend=`<div class="slots-lineup-stack"><div class="slots-lineup-meta"><span class="slots-legend-title">Lineup</span></div><div class="slots-lineup-hdr slots-lineup-hdr--with-help"><button type="button" class="slots-lineup-q" onclick="openStationLineupHelp()" title="About the lineup grid" aria-label="About the lineup grid">?</button><div class="slots-lineup-grid slots-lineup-grid--hdr"><span title="${_hdrDaypart}">Day part</span><span class="sl-h-pad" aria-hidden="true"></span><span>Name</span><span class="slots-hdr-tal">Talent</span><span class="slots-hdr-mor" title="Morale (green / yellow / red)">Morale</span><span class="slots-hdr-sq">Quality</span><span class="slots-hdr-pay">Pay</span><span class="slots-hdr-contract" title="MOVED after moving talent to another daypart (new contract). EXP⬆ expiring next period. EXP in red if expired. ⚡ rival approached — open Contract.">Contract</span></div></div></div>`;
@@ -31649,7 +34583,16 @@ function rStns(){
     const _frCls='sc-hero-pill sc-hero-pill--franchise'+
       (_myFrH.length?' sc-hero-pill--st-owned':' sc-hero-pill--st-empty')+
       (_openFrH.length?' sc-hero-pill--st-bid':'');
-    const scHeroRights=(!_teamsH.length&&!_eligFrH.length)?'':`<div class="sc-hero-rights" role="group" aria-label="Station assets: sports and franchise">${
+    const _digOn=!!(op.stream&&op.stream.active);
+    const _digVal=_digOn?'On':'Off';
+    const _digTitle=rosterHtmlEsc('Streaming & digital — open Station Admin to enable the stream and digital revenue.');
+    const _digCls='sc-hero-pill sc-hero-pill--digital'+(_digOn?' sc-hero-pill--st-owned':' sc-hero-pill--st-empty');
+    const _digPill=(G.year>=2005)
+      ?`<button type="button" class="${_digCls}" title="${_digTitle}" onclick="openStationAdmin('${op.id}')">`+
+      `<span class="sc-hero-pill-ic" aria-hidden="true">📶</span><span class="sc-hero-pill-txt">`+
+      `<span class="sc-hero-pill-k">Digital</span><span class="sc-hero-pill-sep">:</span> <span class="sc-hero-pill-v">${_digVal}</span></span></button>`
+      :'';
+    const scHeroRights=(!_teamsH.length&&!_eligFrH.length&&!_digPill)?'':`<div class="sc-hero-rights" role="group" aria-label="Station assets: sports, franchise, digital">${
       _teamsH.length
         ?`<button type="button" class="${_spCls}" title="${_spTitle}" onclick="openSports('${op.id}')">`+
         `<span class="sc-hero-pill-ic" aria-hidden="true">🏈</span><span class="sc-hero-pill-txt">`+
@@ -31661,7 +34604,7 @@ function rStns(){
         `<span class="sc-hero-pill-ic" aria-hidden="true">🏢</span><span class="sc-hero-pill-txt">`+
         `<span class="sc-hero-pill-k">Franchise</span><span class="sc-hero-pill-sep">:</span> <span class="sc-hero-pill-v">${_frVal}</span></span></button>`
         :''
-    }</div>`;
+    }${_digPill}</div>`;
     const brokeredFmtGmNoteCard=(op.format==='BROKERED_PROGRAMMING'&&(G.sc&&G.sc.gmMode))
       ?'<div class="sc-compact-line sc-compact-line--warn">General Manager: <strong>Paid programming</strong> can weigh on reviews.</div>'
       :'';
@@ -31679,7 +34622,7 @@ function rStns(){
         }else{
           const cur=Math.min(maxP,Number.isFinite(fmLegCard.fmSimulcastDupPct)?fmLegCard.fmSimulcastDupPct:maxP);
           const rem0=fmLegCard.fmRemainderFormat||defaultFmRemainderFormat(pairNd.am.format,G,fmLegCard.id);
-          if(!G._fmDupExplainerShown){
+          if(!G._fmDupExplainerShown&&!wlTuExpansionSuppressFmDupToast()){
             G._fmDupExplainerShown=1;
             showToast(`Simulcast rule: the FCC caps how much of your FM can duplicate your AM. Here, max is ${maxP}%, so the remaining ${100-maxP}% must run a different “remainder” format.`, 'info', 9500);
             try{ if(typeof autoSave==='function')autoSave(); }catch(_e){}
@@ -31718,7 +34661,7 @@ function rStns(){
       '<button type="button" class="pc-pill" '+_pillSal+' onclick="openSales(\''+_opId+'\');wlSetPcPill(this)">Sales</button>'+
       '</div><div class="sc-pc-pills sc-pc-pills--secondary">'+
       '<button type="button" class="pc-pill" '+_pillRes+' onclick="openResearch(\''+_opId+'\');wlSetPcPill(this)">Research</button>'+
-      '<button type="button" class="pc-pill" onclick="wlPcAdminPill(\''+_opId+'\',this)">Admin</button>'+
+      '<button type="button" class="pc-pill" id="wl-admin-pill-'+_opId+'" onclick="wlPcAdminPill(\''+_opId+'\',this)">Admin</button>'+
       '</div></div>';
     div.innerHTML=`
       <div class="sc-hero"><div class="sctop-inner sc-hero__id">`+_logoThumb+`<div>
@@ -31732,14 +34675,14 @@ function rStns(){
         ${brokeredStationTagHtml}
         ${scHeroRights}
       </div></div>
-      <div class="sc-hero__share"${_shareTut}>
+      <div class="sc-hero__share"${_shareTut}${junior?' title="'+_simShareTitle+'"':''}>
         <div class="scshv">${shn(shareUi)}</div>
         <div class="scshl">Share ${trd}</div>
       </div>
       <div class="sc-hero__detail">
       <div class="qr"><span class="ql">Quality</span><div class="qb"><div class="qf ${qc2}" style="width:${op.oq}%"></div></div><span class="qn">${op.oq}</span></div>
       <div class="fg sc-hero__fg">
-        <div><span class="fl">${s.lmaLessorId?'License fee income':'Revenue / period'} ${s.lmaLessorId?'':('<span style="font-size:15px;color:'+( G.period===2?'var(--grn)':'var(--amb)')+'">'+(G.period===2?'▲ Fall':'▼ Spring')+'</span>')}</span><span class="fv">${f$(revUi)}</span></div>
+        <div${junior?' title="'+_revTitle+'"':''}><span class="fl">${s.lmaLessorId?'License fee income':'Revenue / period'} ${s.lmaLessorId?'':('<span style="font-size:15px;color:'+( G.period===2?'var(--grn)':'var(--amb)')+'">'+(G.period===2?'▲ Fall':'▼ Spring')+'</span>')}</span><span class="fv">${f$(revUi)}</span></div>
         <div><span class="fl">${s.lmaLessorId?'Operator expenses (LMA)':''}${!s.lmaLessorId?'Expenses / period':''}</span><span class="fv ${s.lmaLessorId?'pos':''}">${s.lmaLessorId?'Borne by operator':f$(costUi)}</span></div>
         <div><span class="fl">EBITDA</span><span class="fv ${stnEbitda>=0?'pos':'neg'}">${stnEbitda>=0?'+':''}${f$(stnEbitda)}</span></div>
         <div><span class="fl">Sellout</span><span class="fv ${op.ops.sell>.75?'pos':op.ops.sell>.55?'amb':'neg'}">${Math.round(op.ops.sell*100)}%</span></div>
@@ -31777,7 +34720,7 @@ function rStns(){
     div.style.cssText='margin-top:8px';
     const minAcqPrice=Math.min(...G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!s.isPublic).map(s=>acqPrice(s,G)||9999999),9999999);
     const canAffordAcq=G.cash>=Math.min(minAcqPrice,200000);
-    div.innerHTML=`<button class="abt g" style="width:100%;padding:14px;font-size:15px;${canAffordAcq?'':' opacity:.45'}" onclick="openAcq()">🏢 Acquire a Station${canAffordAcq?'':'  — Insufficient Funds'}</button>`;
+    div.innerHTML=`<button type="button" class="abt g" id="wl-acquire-station-btn" style="width:100%;padding:14px;font-size:15px;${canAffordAcq?'':' opacity:.45'}" onclick="openAcq()">🏢 Acquire a Station${canAffordAcq?'':'  — Insufficient Funds'}</button>`;
     c.appendChild(div);
   }
   // LMA button — hidden before 1990 unless you still have agreements to wind down
@@ -31788,7 +34731,7 @@ function rStns(){
       ||G.stations.some(s=>s.corpOwner&&s._corpLMAOffer&&!s.lmaLesseeId));
     const lmaDiv=document.createElement('div');
     lmaDiv.style.cssText='margin-top:6px';
-    const lmaHint=!lmaMaySign&&hasActiveLMAs?' title="Pre-1990: new LMAs unavailable — end legacy deals here"':' title="Operational control without owning the license (era rules apply)"';
+    const lmaHint=!lmaMaySign&&hasActiveLMAs?' title="This era: new LMAs unavailable — end legacy deals here"':' title="Operational control without owning the license (era rules apply)"';
     lmaDiv.innerHTML=`<button class="abt" style="width:100%;padding:12px;font-size:14px;background:rgba(90,180,255,.10);border:1px solid rgba(90,180,255,.35);color:var(--blu)"${lmaHint} onclick="openLMA()">📝 Local marketing agreements${hasActiveLMAs?' ●':hasLMATargets?' — deals available':''}</button>`;
     c.appendChild(lmaDiv);
   }
@@ -31865,23 +34808,44 @@ function rMkt(){
   // Pick the lead station (highest share among this player's stations)
   const _leadStn = _myStns.reduce((best,s)=>(!best||s.rat.share>best.rat.share)?s:best, null) || ps;
   const _cohJs=coh=>String(coh).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  // Total AQH per demo across the rated market — same mass as headline share, scoped to one age band.
+  const _marketCohAqh={};
+  COH.forEach(coh=>{
+    let t=0;
+    for(const x of G.stations||[]){
+      if(!x||x._bpSlotDeferred||!x.rat)continue;
+      t+=x.rat.cur?.[coh]?.aqh||0;
+    }
+    _marketCohAqh[coh]=t;
+  });
+  const _demoMkShare=(s,coh)=>{
+    const tot=_marketCohAqh[coh]||0;
+    if(tot<=1e-12)return 0;
+    return(s.rat.cur?.[coh]?.aqh||0)/tot;
+  };
   document.getElementById('dmb').innerHTML=COH.map(coh=>{
-    const by=[...G.stations].filter(s=>s&&!s._bpSlotDeferred&&s.rat).sort((a,b)=>(b.rat.cur[coh]?.share||0)-(a.rat.cur[coh]?.share||0));
-    const mx2=by[0]?.rat.cur[coh]?.share||1;
+    const by=[...G.stations].filter(s=>s&&!s._bpSlotDeferred&&s.rat).sort((a,b)=>_demoMkShare(b,coh)-_demoMkShare(a,coh));
     const top8=by.slice(0,8);
+    const mx2=Math.max(...top8.map(s=>_demoMkShare(s,coh)),1e-12);
     const open=_dmbOpenCoh===coh;
-    const bars=top8.map(s=>{const sh=s.rat.cur[coh]?.share||0,w=Math.round((sh/mx2)*100);const op=simulcastOperationalSource(s);const _isMe=mpIsMe(s),_isAnyP=s.isPlayer;return `<div class="cb" data-tip="${callDisplay(s)} · ${fmtLabel(op.format)} · ${shn(sh)}" style="background:${s.color};width:${w}%;opacity:${_isAnyP?(_isMe?1:.65):.38};${_isMe?'outline:2px solid rgba(255,255,255,.4)':_isAnyP?'outline:1px dashed rgba(255,255,255,.2)':''}" title=""></div>`;}).join('');
+    const bars=top8.map(s=>{
+      const sh=_demoMkShare(s,coh);
+      const w=Math.round((sh/mx2)*100);
+      const op=simulcastOperationalSource(s);
+      const _isMe=mpIsMe(s),_isAnyP=s.isPlayer;
+      return `<div class="cb" data-tip="${callDisplay(s)} · ${fmtLabel(op.format)} · ${shn(sh)} demo share" style="background:${s.color};width:${w}%;opacity:${_isAnyP?(_isMe?1:.65):.38};${_isMe?'outline:2px solid rgba(255,255,255,.4)':_isAnyP?'outline:1px dashed rgba(255,255,255,.2)':''}" title=""></div>`;
+    }).join('');
     const _cohId=String(coh).replace(/[^a-zA-Z0-9_-]/g,'_');
-    const subTable=open?`<div class="dmb-coh-panel" id="dmb-sub-${_cohId}"><table class="dmb-mini-mt"><thead><tr><th>#</th><th>STATION</th><th class="dmb-mini-sh">SHARE</th></tr></thead><tbody>`+
+    const subTable=open?`<div class="dmb-coh-panel" id="dmb-sub-${_cohId}"><table class="dmb-mini-mt"><thead><tr><th>#</th><th>STATION</th><th class="dmb-mini-sh" title="Share of this demo’s measured listening (AQH) in the market">SHARE</th></tr></thead><tbody>`+
       top8.map((s,i)=>{
-        const csh=s.rat.cur[coh]?.share||0;
-        const op=simulcastOperationalSource(s);
+        const csh=_demoMkShare(s,coh);
         const _me=mpIsMe(s);
         const you=_me?'<span class="dmb-you">YOU</span> ':'';
         return `<tr class="${_me?'dmb-mini-owned':''}"><td>${i+1}</td><td class="dmb-mini-call">${you}<span class="dmb-mini-clg" style="color:${mpStationColor(s)}">${callDisplay(s)}</span> <span class="dmb-mini-fmt">${fmtLabel(op.format)}</span></td><td class="dmb-mini-sh">${shn(csh)}</td></tr>`;
       }).join('')+
       `</tbody></table></div>`:'';
-    return `<div class="dmb-coh${open?' dmb-coh--open':''}"><button type="button" class="cr dmb-coh-btn" aria-expanded="${open}" onclick="wlToggleDmbCoh('${_cohJs(coh)}')"><span class="crl">${coh}</span><div class="cbs">${bars}</div><span class="cp">${shn(_leadStn.rat.cur[coh]?.share||0)}</span><span class="dmb-coh-chev" aria-hidden="true"></span></button>${subTable}</div>`;
+    const leadDemo=_demoMkShare(_leadStn,coh);
+    return `<div class="dmb-coh${open?' dmb-coh--open':''}"><button type="button" class="cr dmb-coh-btn" aria-expanded="${open}" onclick="wlToggleDmbCoh('${_cohJs(coh)}')" title="Listening share within this age group (station AQH ÷ total market AQH for this demo — same scale as headline share)"><span class="crl">${coh}</span><div class="cbs">${bars}</div><span class="cp">${shn(leadDemo)}</span><span class="dmb-coh-chev" aria-hidden="true"></span></button>${subTable}</div>`;
   }).join('');
 }
 
