@@ -95,7 +95,7 @@ function makeCtx() {
 
 const SLOTS = ['morningDrive', 'midday', 'afternoonDrive', 'evening', 'overnight'];
 /** Spoken-word never uses music `staffingMode: light` (voice-track); vacant = syndicated default. */
-const TALK_FMTS_STAFF = ['NEWS_TALK', 'SPORTS_TALK', 'PODCAST_TALK', 'ALL_NEWS'];
+const TALK_FMTS_STAFF = ['NEWS_TALK', 'SPORTS_TALK', 'PERSONALITY_TALK', 'ALL_NEWS'];
 
 function stubStation(format, sigType) {
   const prog = {};

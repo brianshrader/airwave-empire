@@ -583,7 +583,7 @@
     var h = fnv1a('layout|' + seed + '|' + variant + '|' + variantBump + '|' + formatKey);
     var idx = (off + h + variant * 7) % list.length;
     var fk = String(formatKey || '').toUpperCase();
-    if (family === 'news' && fk.indexOf('PODCAST') >= 0) {
+    if (family === 'news' && fk.indexOf('PERSONALITY') >= 0) {
       var mh = list.indexOf('masthead');
       if (mh >= 0 && h % 4 < 2) idx = mh;
     }

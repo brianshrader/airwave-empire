@@ -206,7 +206,13 @@
         });
         var candidates = avail
           .map(function (x) {
-            var pr = typeof acqPrice === 'function' ? acqPrice(x, G) : 1e12;
+            var pr =
+              typeof window !== 'undefined' && typeof window.playerAcqAsk === 'function'
+                ? window.playerAcqAsk(x, G)
+                : typeof acqPrice === 'function'
+                  ? acqPrice(x, G)
+                  : 1e12;
+            if (pr == null || !Number.isFinite(pr)) return false;
             var isFm = x.sig && x.sig.type === 'FM' && !x.fmBooster;
             return { s: x, price: pr, isFm: isFm };
           })

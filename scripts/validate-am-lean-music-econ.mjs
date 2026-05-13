@@ -250,7 +250,7 @@ function runSingleShot(ctx, opts) {
         if (!s || !s.isPlayer || !s.sig || s.sig.type !== 'AM' || s.fmBooster) return false;
         var fmt = s.format;
         if (fmt === 'ALL_NEWS' || fmt === 'BROKERED_PROGRAMMING') return false;
-        if (['NEWS_TALK', 'SPORTS_TALK', 'PODCAST_TALK'].indexOf(fmt) >= 0) return false;
+        if (['NEWS_TALK', 'SPORTS_TALK', 'PERSONALITY_TALK'].indexOf(fmt) >= 0) return false;
         return true;
       }
 
@@ -415,7 +415,7 @@ function runSweep(ctx, opts, marketId) {
         if (!s || !s.isPlayer || !s.sig || s.sig.type !== 'AM' || s.fmBooster) return false;
         var fmt = s.format;
         if (fmt === 'ALL_NEWS' || fmt === 'BROKERED_PROGRAMMING') return false;
-        if (['NEWS_TALK', 'SPORTS_TALK', 'PODCAST_TALK'].indexOf(fmt) >= 0) return false;
+        if (['NEWS_TALK', 'SPORTS_TALK', 'PERSONALITY_TALK'].indexOf(fmt) >= 0) return false;
         return true;
       }
 

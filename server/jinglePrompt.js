@@ -250,12 +250,13 @@ const FORMAT_SUNO = {
   TOP40: 'bright CHR pop, tight vocals',
   NEWS_TALK: 'authoritative news-talk booth',
   SPORTS_TALK: 'bold sports imaging, dry room',
-  PODCAST_TALK: 'intimate conversational polish',
+  PERSONALITY_TALK: 'FM talk-show booth, punchy VO bed',
   ALL_NEWS: 'urgent credible network sting',
   COUNTRY: 'warm twang, hooky guitar',
   ALBUM_ROCK: 'AOR guitars, roomy mix',
   CLASSIC_ROCK: 'classic-rock swagger sting',
   ALT_ROCK: 'alt-rock grit, edgy hook',
+  AAA: 'adult-discovery melodic lift, tasteful guitar',
   MOR: 'smooth MOR glide',
   OLDIES: 'gold-era bounce',
   ADULT_CONTEMP: 'warm AC melodic lift',
@@ -289,7 +290,7 @@ const SPOKEN_FORWARD_FORMATS = new Set([
   'NEWS_TALK',
   'SPORTS_TALK',
   'ALL_NEWS',
-  'PODCAST_TALK',
+  'PERSONALITY_TALK',
   'PUBLIC_NEWS',
 ]);
 
@@ -347,6 +348,9 @@ function vocalDeliveryTag(fmtKey, hasTagline) {
   if (fmtKey === 'PUBLIC_ECLECTIC') {
     return `noncomm warmth; intimate vocal; ${SUNG_TAGLINE_AND_BRAND}`;
   }
+  if (fmtKey === 'AAA') {
+    return `AAA adult melodic lead; tasteful discovery guitars; ${SUNG_TAGLINE_AND_BRAND}; warm not teenage`;
+  }
   if (fmtKey === 'INDIETRONICA') {
     return `indie electronic vocal; dry intimate mix; ${SUNG_TAGLINE_AND_BRAND}`;
   }
@@ -372,6 +376,16 @@ function eraTagsForYearAndFormat(yr, fmtKey) {
       return { eraTag: 'Gospel station ID: organ or piano uplift, choir swell optional, reverent analog warmth.' };
     }
     return { eraTag: 'Gospel station ID: worship-stage polish, pad + piano, restrained dynamics.' };
+  }
+
+  if (fmtKey === 'AAA') {
+    if (yr < 1992) {
+      return { eraTag: 'AAA station ID: warm adult melodic lift, thoughtful guitar colors, polished FM vocal.' };
+    }
+    if (yr < 2012) {
+      return { eraTag: 'AAA station ID: discovery-friendly melancholy hook, tasteful mix-forward guitars.' };
+    }
+    return { eraTag: 'AAA station ID: modern adult-discovery polish, intimate vocal, restrained drums.' };
   }
 
   if (ROCK_IMAGERY_FORMATS.has(fmtKey)) {
@@ -400,7 +414,7 @@ function eraTagsForYearAndFormat(yr, fmtKey) {
     const bases = {
       SPORTS_TALK: 'Sports talk ID: impactful transients, dry VO booth, light crowd punctuation',
       ALL_NEWS: 'All-news ID: urgent ticker energy, authoritative bed, credible network tone',
-      PODCAST_TALK: 'Podcast-forward ID: close-mic intimacy, whisper-thin neutral music',
+      PERSONALITY_TALK: 'FM personality-talk ID: close-mic host energy, light rock or AC-adjacent sting under VO',
       PUBLIC_NEWS: 'Public radio news ID: measured dynamics, woody room, understated strings optional',
       NEWS_TALK: 'News-talk ID: booth authority, subtle low shelf pad, razor dynamics',
     };

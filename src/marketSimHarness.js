@@ -35,7 +35,7 @@
 (function () {
   'use strict';
 
-  var TALK_FMTS = ['NEWS_TALK', 'SPORTS_TALK', 'PODCAST_TALK', 'ALL_NEWS'];
+  var TALK_FMTS = ['NEWS_TALK', 'SPORTS_TALK', 'PERSONALITY_TALK', 'ALL_NEWS'];
 
   /** Defaults mirror ALL_PLAYABLE_MARKET_IDS / DEV_BENCHMARK_MEGA_MARKET_IDS in legacy.js (fallback if harness loads first). */
   function getPlayableMarketIds() {
@@ -2297,6 +2297,7 @@
       ALBUM_ROCK: 'rock_alt',
       CLASSIC_ROCK: 'rock_alt',
       ALT_ROCK: 'rock_alt',
+      AAA: 'rock_alt',
       ADULT_CONTEMP: 'ac_hits_oldies',
       CLASSIC_HITS: 'ac_hits_oldies',
       OLDIES: 'ac_hits_oldies',
@@ -2307,7 +2308,7 @@
       NEWS_TALK: 'news_talk',
       ALL_NEWS: 'news_talk',
       SPORTS_TALK: 'news_talk',
-      PODCAST_TALK: 'news_talk',
+      PERSONALITY_TALK: 'news_talk',
       GOSPEL: 'religious_gospel',
       SPANISH: 'spanish',
       BEAUTIFUL_MUSIC: 'beautiful_standards_easy',

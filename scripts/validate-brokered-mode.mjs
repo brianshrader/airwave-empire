@@ -340,7 +340,7 @@ function runMarketEconomics(ctx, opts, marketId) {
         return { ok: false, market: marketId, error: 'No player AM station for brokered format bench.' };
       }
       am.operatingMode = 'normal';
-      var _talkBench = ['NEWS_TALK', 'ALL_NEWS', 'SPORTS_TALK', 'PODCAST_TALK', 'BROKERED_PROGRAMMING'];
+      var _talkBench = ['NEWS_TALK', 'ALL_NEWS', 'SPORTS_TALK', 'PERSONALITY_TALK', 'BROKERED_PROGRAMMING'];
       if (_talkBench.indexOf(am.format) >= 0) {
         am.format = 'OLDIES';
       } else {
@@ -473,7 +473,7 @@ function runGmBrokeredPenalty(ctx) {
       }
       if (!am) return { ok: false, error: 'No player AM for GM probe' };
       am.operatingMode = 'normal';
-      var _talkBench2 = ['NEWS_TALK', 'ALL_NEWS', 'SPORTS_TALK', 'PODCAST_TALK', 'BROKERED_PROGRAMMING'];
+      var _talkBench2 = ['NEWS_TALK', 'ALL_NEWS', 'SPORTS_TALK', 'PERSONALITY_TALK', 'BROKERED_PROGRAMMING'];
       if (_talkBench2.indexOf(am.format) >= 0) am.format = 'OLDIES';
       else am.format = 'TOP40';
       var baseFmtProbe = am.format;

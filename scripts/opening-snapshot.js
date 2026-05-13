@@ -79,8 +79,8 @@ function snapshot(ctx, label, scenId) {
 
   const family = (fmt) => {
     if (['TOP40', 'CHR', 'RHYTHMIC', 'HOT_AC', 'CLASSIC_HITS'].includes(fmt)) return 'chr_top40_hotac';
-    if (['ALBUM_ROCK', 'CLASSIC_ROCK', 'ALT_ROCK'].includes(fmt)) return 'aor_rock';
-    if (['NEWS_TALK', 'SPORTS_TALK', 'ALL_NEWS', 'PODCAST_TALK'].includes(fmt)) return 'talk_news';
+    if (['ALBUM_ROCK', 'CLASSIC_ROCK', 'ALT_ROCK', 'AAA'].includes(fmt)) return 'aor_rock';
+    if (['NEWS_TALK', 'SPORTS_TALK', 'ALL_NEWS', 'PERSONALITY_TALK'].includes(fmt)) return 'talk_news';
     if (['BEAUTIFUL_MUSIC', 'MOR', 'ADULT_CONTEMP', 'ADULT_STANDARDS'].includes(fmt)) return 'ac_mor_bm';
     if (fmt === 'COUNTRY') return 'country';
     if (['SOUL_RNB', 'URBAN_CONTEMP'].includes(fmt)) return 'urban_soul';

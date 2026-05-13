@@ -30,7 +30,7 @@
     { id: 'm-rhy-12', formatKey: 'RHYTHMIC', formatLabel: 'Rhythmic CHR', callDisplay: 'WPTY-FM', dial: '102.7 FM', band: 'FM', brand: 'Party 102', year: 2012 },
     { id: 'm-span-05', formatKey: 'SPANISH', formatLabel: 'Spanish', callDisplay: 'WLEY-FM', dial: '107.9 FM', band: 'FM', brand: 'La Mega', year: 2005 },
     { id: 'm-gospel-89', formatKey: 'GOSPEL', formatLabel: 'Gospel', callDisplay: 'WGOS-FM', dial: '102.3 FM', band: 'FM', brand: 'Praise 102', year: 1989 },
-    { id: 'm-pod-16', formatKey: 'PODCAST_TALK', formatLabel: 'Podcast Talk', callDisplay: 'WPNC-AM', dial: '680 AM', band: 'AM', brand: 'The Feed 680', year: 2016 },
+    { id: 'm-personality-16', formatKey: 'PERSONALITY_TALK', formatLabel: 'Personality Talk', callDisplay: 'WPNC-AM', dial: '680 AM', band: 'AM', brand: 'Real Talk 680', year: 2016 },
     { id: 'm-longbrand', formatKey: 'TOP40', formatLabel: 'CHR (TOP40)', callDisplay: 'WMMS-FM', dial: '100.7 FM', band: 'FM', brand: 'The Buzz — Today\'s Hits & Throwbacks', year: 2007 },
     { id: 'm-shortcall', formatKey: 'NEWS_TALK', formatLabel: 'News/Talk', callDisplay: 'WJR-AM', dial: '760 AM', band: 'AM', brand: 'NewsTalk 760', year: 1984 },
     { id: 'm-plainfreq', formatKey: 'ADULT_CONTEMP', formatLabel: 'AC', callDisplay: 'WLTW-FM', dial: '106.7 FM', band: 'FM', brand: '106.7 Lite FM', year: 1993 },

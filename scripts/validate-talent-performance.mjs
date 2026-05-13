@@ -41,7 +41,7 @@ const FORMAT_PICK = {
   news_talk: ['NEWS_TALK', 'ALL_NEWS'],
   ac_easy: ['ADULT_CONTEMP', 'HOT_AC'],
   country: ['COUNTRY'],
-  album_rock: ['ALBUM_ROCK', 'CLASSIC_ROCK', 'ALT_ROCK'],
+  album_rock: ['ALBUM_ROCK', 'CLASSIC_ROCK', 'ALT_ROCK', 'AAA'],
 };
 
 const FORMAT_LABEL = {

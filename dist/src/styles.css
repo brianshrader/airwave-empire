@@ -1626,6 +1626,18 @@ body#wl-play:has(#alertbar:not([hidden])) #main{
   border-color:rgba(240,88,88,.45);
   color:#ffd4d4;
 }
+.wl-toast .wl-toast-cta{
+  display:inline-block;
+  margin-top:6px;
+  font-size:13px;
+  letter-spacing:.06em;
+  font-weight:600;
+  color:inherit;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.wl-toast--info .wl-toast-cta{ color:#b8f5cc; }
+.wl-toast--warn .wl-toast-cta{ color:#ffe0e0; }
 .wl-game-notice{
   font-family:var(--ft);
   font-size:14px;
@@ -2005,7 +2017,7 @@ body#wl-play:has(#alertbar:not([hidden])) #main{
     38px
     52px
     42px
-    minmax(72px,max-content)
+    minmax(90px,max-content)
     minmax(44px,max-content);
   column-gap:8px;
   align-items:center;
@@ -2441,7 +2453,7 @@ body#wl-play:has(#alertbar:not([hidden])) #main{
     40px
     58px
     44px
-    minmax(72px, max-content)
+    minmax(92px, max-content)
     minmax(64px, max-content);
   column-gap: 12px;
 }
@@ -5065,7 +5077,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   }
   #wl-play .slr.slots-lineup-grid .sl-cell-pay:not(.sl-cell-pay--split)::before,
   #wl-play .slr.slots-lineup-grid .sl-cell-pay.sl-cell-pay--split::before{
-    content:'Pay';
+    content:'Pay/yr';
     font-size:9px;
     letter-spacing:0.12em;
     font-weight:600;

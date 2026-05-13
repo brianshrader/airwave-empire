@@ -32,10 +32,11 @@
     COUNTRY: 'country',
     GOSPEL: 'gospel',
     NEWS_TALK: 'news',
-    PODCAST_TALK: 'news',
+    PERSONALITY_TALK: 'news',
     ALL_NEWS: 'news',
     PUBLIC_NEWS: 'news',
     PUBLIC_ECLECTIC: 'rock',
+    AAA: 'rock',
     SPORTS_TALK: 'sports',
     ALBUM_ROCK: 'rock',
     /** Classic-rock / classic-hits station marks — badge, sunburst, heritage lockups (not album-rock aggression). */

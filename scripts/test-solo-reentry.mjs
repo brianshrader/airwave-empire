@@ -3,10 +3,11 @@
  * Sanity checks for solo bankruptcy re-entry:
  * soloCheapestAcquisitionPrice / soloPlayerCanAffordReentry (and _soloBankrupt = !canReenter).
  *
- * Logic mirrors src/legacy.js — if these fail after an FCC or acquisition pricing change,
- * update legacy.js and align this file (search for "soloCheapestAcquisitionPrice").
+ * Uses scripts/acquisitionSellerDisposition.mjs (SYNC with src/legacy.js seller tiers + playerAcqAsk).
  */
 /* eslint-disable no-console */
+
+import { acqPrice, playerAcqAsk, stationIsNoncommercialInstitutional } from './acquisitionSellerDisposition.mjs';
 
 const MP = { mode: 'solo', playerId: 0 };
 
@@ -64,27 +65,17 @@ function fccCanAcquire(entity, sigType, G) {
   return serviceCount < lim.perService;
 }
 
-// ── Acquisition (mirror legacy.js ACP ~13095, acqPrice ~9401) ───────────────
-const ACP = { dominant: 2800000, strong: 1800000, moderate: 950000, emerging: 550000, niche: 350000, weak: 200000 };
-
-function acqPrice(s, G) {
-  const annualRev = (s.fin?.rev || 50000) * 2;
-  const base = Math.max(625000, annualRev * 10);
-  const corpPremium = s.corpOwner ? 1.6 : 1.0;
-  const sharePrem = 1 + s.rat.share * 4;
-  return Math.round((base * corpPremium * sharePrem) / 100000) * 100000;
-}
-
 function soloCheapestAcquisitionPrice(G) {
   if (!G?.stations) return null;
-  const avail = G.stations.filter((s) => s && !s._bpSlotDeferred && !s.isPlayer && !s.isPublic);
+  const avail = G.stations.filter(
+    (s) => s && !s._bpSlotDeferred && !s.isPlayer && !stationIsNoncommercialInstitutional(s)
+  );
   let best = null;
   avail.forEach((s) => {
     const sigType = s.sig.type === 'AM' || s.fmBooster ? 'AM' : 'FM';
     if (!fccCanAcquire('player', sigType, G)) return;
-    const price = s.isPublic
-      ? Math.round((s.oq * 2000 + 62500) / 12500) * 12500
-      : acqPrice(s, G) || ACP[s.str] || 50000;
+    const price = playerAcqAsk(s, G);
+    if (price == null || !Number.isFinite(price)) return;
     if (best == null || price < best) best = price;
   });
   return best;
@@ -117,7 +108,7 @@ function stn(opts) {
     format: opts.format ?? 'COUNTRY',
     freq: opts.freq ?? '99.7 FM',
     sig: opts.sig ?? { type: 'FM', pw: '100kw' },
-    fin: { rev: opts.rev ?? 50000 },
+    fin: { rev: opts.rev ?? 50000, ebitda: opts.ebitda ?? 0 },
     rat: { share: opts.share ?? 0.05 },
   };
 }
@@ -129,13 +120,14 @@ const manual = stn({ id: 'm1' });
 const pManual = acqPrice(manual, { year: 2000, stations: [] });
 assert(pManual === 1200000, `acqPrice expected 1_200_000, got ${pManual}`);
 
-// 2) Cheapest rival + affordability threshold
+// 2) Cheapest rival + affordability threshold (two commercial rivals so #1 is not “whole market” crown)
 const G2 = {
   year: 2000,
   cash: 0,
   stations: [
+    stn({ id: 'rivTop', isPlayer: false, share: 0.09, rev: 55000 }),
     stn({ id: 'riv1', isPlayer: false, share: 0.05, rev: 50000 }),
-    ...Array.from({ length: 18 }, (_, i) => stn({ id: `pad${i}`, isPlayer: false, isPublic: true })),
+    ...Array.from({ length: 17 }, (_, i) => stn({ id: `pad${i}`, isPlayer: false, isPublic: true })),
   ],
 };
 const min2 = soloCheapestAcquisitionPrice(G2);
@@ -161,7 +153,7 @@ const G4 = {
 };
 assert(soloCheapestAcquisitionPrice(G4) === null, 'only public/deferred → null');
 
-// 5) Post-96: at FM sub-cap, pick cheaper AM if FM blocked
+// 5) Post-96: at FM sub-cap, pick cheaper purchasable signal (playerAcqAsk, not raw acqPrice)
 const G5 = {
   year: 2000,
   stations: [
@@ -178,7 +170,7 @@ const G5 = {
     stn({
       id: 'rivFm',
       isPlayer: false,
-      share: 0.01,
+      share: 0.015,
       rev: 30000,
       str: 'niche',
     }),
@@ -187,8 +179,8 @@ const G5 = {
 assert(fccCanAcquire('player', 'FM', G5) === false, 'FM slot should be full');
 assert(fccCanAcquire('player', 'AM', G5) === true, 'AM slot should be open');
 const min5 = soloCheapestAcquisitionPrice(G5);
-const amOnly = acqPrice(G5.stations.find((s) => s.id === 'cheapAm'), G5);
-assert(min5 === amOnly, `expected cheapest to be AM-only price ${amOnly}, got ${min5}`);
+const cheapAm = G5.stations.find((s) => s.id === 'cheapAm');
+assert(min5 === playerAcqAsk(cheapAm, G5), `expected cheapest AM playerAcqAsk ${playerAcqAsk(cheapAm, G5)}, got ${min5}`);
 
 // 6) Multiplayer mode: never "solo re-entry"
 MP.mode = 'live';
