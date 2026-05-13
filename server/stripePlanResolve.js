@@ -75,6 +75,15 @@ async function mergeClerkBillingIfStronger(clerkUserId, resolved) {
   }
   try {
     const clerkSlug = await fetchClerkBillingPlanSlug(clerkUserId);
+    // Clerk Dashboard can still advertise a "trial" plan after we've recorded Fall 2020 / career completion —
+    // do not resurrect signup-trial entitlements over resolved free tier.
+    if (
+      clerkSlug === CLERK_PLAN.TRIAL &&
+      resolved.planSlug === CLERK_PLAN.FREE &&
+      accountStore.getTrialGameCompleted(clerkUserId)
+    ) {
+      return resolved;
+    }
     const best =
       planRank(clerkSlug) > planRank(resolved.planSlug) ? clerkSlug : resolved.planSlug;
     if (best === resolved.planSlug) {

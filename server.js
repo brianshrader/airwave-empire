@@ -63,6 +63,9 @@ app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), strip
 const JSON_BODY_LIMIT = process.env.JSON_BODY_LIMIT || '32mb';
 app.use(express.json({ limit: JSON_BODY_LIMIT }));
 
+const { mountGuestSessionRoutes } = require('./server/guestSessionRoutes');
+mountGuestSessionRoutes(app);
+
 const { mountLogoRoutes } = require('./server/logoRoutes');
 const { mountRemoteVanRoutes } = require('./server/remoteVanRoutes');
 const { mountPortraitRoutes } = require('./server/portraitRoutes');
@@ -81,6 +84,9 @@ mountFeedback(app);
 
 const { mountAnalytics } = require('./server/analyticsRoutes');
 mountAnalytics(app);
+
+const { mountBrevoMarketingRoutes } = require('./server/brevoMarketingRoutes');
+mountBrevoMarketingRoutes(app);
 
 const { mountRatingsDigestRoutes } = require('./server/ratingsDigestRoutes');
 mountRatingsDigestRoutes(app);
@@ -1062,13 +1068,38 @@ setInterval(() => {
 // Without dist/, the browser loads raw /src/main.js and cannot resolve @clerk/clerk-js imports.
 const DIST_DIR = path.join(__dirname, 'dist');
 const DIST_INDEX = path.join(DIST_DIR, 'index.html');
+const DIST_PRICING = path.join(DIST_DIR, 'pricing.html');
+const DIST_ACCOUNT = path.join(DIST_DIR, 'account.html');
+const DIST_PLAY_SIGNIN = path.join(DIST_DIR, 'play-signin.html');
+const DIST_PLAY_GUEST = path.join(DIST_DIR, 'play-guest.html');
 const HAS_DIST = fs.existsSync(DIST_INDEX);
 
+if (HAS_DIST) {
+  /** Clean URLs (canonical in sitemap); files remain *.html for static hosting fallback. */
+  app.get(['/pricing', '/pricing/'], (_req, res) => res.sendFile(DIST_PRICING));
+  app.get(['/account', '/account/'], (_req, res) => res.sendFile(DIST_ACCOUNT));
+  app.get(['/play-signin', '/play-signin/'], (_req, res) => res.sendFile(DIST_PLAY_SIGNIN));
+  app.get(['/play-guest', '/play-guest/'], (_req, res) => res.sendFile(DIST_PLAY_GUEST));
+} else {
+  const rootPricing = path.join(__dirname, 'pricing.html');
+  const rootAccount = path.join(__dirname, 'account.html');
+  const rootPlaySignin = path.join(__dirname, 'play-signin.html');
+  const rootPlayGuest = path.join(__dirname, 'play-guest.html');
+  if (fs.existsSync(rootPricing)) app.get(['/pricing', '/pricing/'], (_req, res) => res.sendFile(rootPricing));
+  if (fs.existsSync(rootAccount)) app.get(['/account', '/account/'], (_req, res) => res.sendFile(rootAccount));
+  if (fs.existsSync(rootPlaySignin)) app.get(['/play-signin', '/play-signin/'], (_req, res) => res.sendFile(rootPlaySignin));
+  if (fs.existsSync(rootPlayGuest)) app.get(['/play-guest', '/play-guest/'], (_req, res) => res.sendFile(rootPlayGuest));
+}
 if (HAS_DIST) {
   app.use(
     express.static(DIST_DIR, {
       setHeaders(res, filePath) {
-        if (typeof filePath === 'string' && (filePath.endsWith('play.html') || filePath.endsWith('play-signin.html'))) {
+        if (
+          typeof filePath === 'string' &&
+          (filePath.endsWith('play.html') ||
+            filePath.endsWith('play-signin.html') ||
+            filePath.endsWith('play-guest.html'))
+        ) {
           res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
           res.setHeader('Pragma', 'no-cache');
         }

@@ -11,11 +11,88 @@ import {
 import { effectiveStripePrices } from './stripePriceIds.js';
 import { gameServerApiUrl } from './gameServerApiOrigin.js';
 import { captureEvent, identifyClerkUser, initAnalyticsClient } from './analyticsClient.js';
+import { initMetaPixel } from './metaPixelClient.js';
 import { effectivePriceLabelForKey } from './billingPriceLabels.js';
 
 const publishableKey = import.meta.env?.VITE_CLERK_PUBLISHABLE_KEY?.trim?.() ?? '';
 
 initAnalyticsClient();
+initMetaPixel();
+
+async function subscribeMarketingEmail(opts) {
+  const o = opts || {};
+  const email = String(o.email || '').trim();
+  const source = String(o.source || 'home').trim() || 'home';
+  const plan = String(o.plan || '').trim();
+  const market = String(o.market || '').trim();
+  const r = await fetch(gameServerApiUrl('/api/marketing/subscribe'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email,
+      SOURCE: source,
+      PLAN: plan,
+      MARKET: market,
+    }),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || !j || !j.ok) {
+    const e = new Error(String(j?.error || 'Subscribe failed'));
+    e.status = r.status;
+    throw e;
+  }
+  return true;
+}
+
+function bindHomeEmailSignup() {
+  const form = document.getElementById('wl-home-email-form');
+  if (!form || form.__wlBound) return;
+  form.__wlBound = true;
+  try {
+    if (sessionStorage.getItem('wl_mk_sub_seen_homepage') !== '1') {
+      sessionStorage.setItem('wl_mk_sub_seen_homepage', '1');
+      captureEvent('marketing_subscribe_viewed', { source: 'homepage' });
+    }
+  } catch (_e) {}
+  const emailEl = document.getElementById('wl-home-email');
+  const statusEl = document.getElementById('wl-home-email-status');
+  const setStatus = (msg, kind) => {
+    if (!statusEl) return;
+    statusEl.textContent = msg || '';
+    statusEl.className =
+      'mt-3 text-sm ' +
+      (kind === 'ok' ? 'text-emerald-300' : kind === 'bad' ? 'text-rose-300' : 'text-stone-400');
+  };
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = String(emailEl?.value || '').trim();
+    if (!email) {
+      setStatus('Enter your email to sign up.', 'bad');
+      return;
+    }
+    setStatus('Signing you up…');
+    try {
+      captureEvent('marketing_subscribe_submitted', { source: 'homepage' });
+    } catch (_e) {}
+    subscribeMarketingEmail({ email, source: 'home_pricing_follow', plan: '', market: '' })
+      .then(() => {
+        setStatus('Subscribed. Thanks!', 'ok');
+        try {
+          captureEvent('marketing_subscribe_success', { source: 'home_pricing_follow' });
+        } catch (_e) {}
+        if (emailEl) emailEl.value = '';
+      })
+      .catch((err) => {
+        setStatus('Could not subscribe. Double-check the email and try again.', 'bad');
+        try {
+          captureEvent('marketing_subscribe_failed', {
+            source: 'home_pricing_follow',
+            error_type: err?.status >= 500 ? 'server_error' : 'denied',
+          });
+        } catch (_e) {}
+      });
+  });
+}
 
 const PRICE_LABEL_ENV = Object.freeze({
   starter_monthly: import.meta.env?.VITE_ACCOUNT_PRICE_STARTER_MONTHLY,
@@ -199,6 +276,8 @@ async function startCheckout(clerk, priceKey) {
     captureEvent('checkout_started', {
       plan,
       cadence,
+      selected_plan: plan,
+      billing_cycle: cadence,
       price_label: price_label.slice(0, 48),
       source: 'landing',
     });
@@ -215,6 +294,8 @@ async function startCheckout(clerk, priceKey) {
       captureEvent('checkout_failed', {
         plan,
         cadence,
+        selected_plan: plan,
+        billing_cycle: cadence,
         source: 'landing',
         error_type: !r ? 'network' : r.status >= 500 ? 'server_error' : 'checkout_denied',
       });
@@ -229,6 +310,7 @@ async function startCheckout(clerk, priceKey) {
 async function init() {
   trackLandingView();
   queueMicrotask(() => wireLandingCtas());
+  queueMicrotask(() => bindHomeEmailSignup());
 
   const mountEl = document.getElementById('wl-index-pricing-clerk');
   if (!mountEl) return;
@@ -240,8 +322,8 @@ async function init() {
     hint.className =
       'mt-4 text-center text-[13px] text-stone-500 leading-relaxed max-w-lg mx-auto px-2';
     hint.innerHTML = import.meta.env.DEV
-      ? '<span class="text-stone-400">Local dev:</span> add <code class="text-amber-200/90 text-[12px]">VITE_CLERK_PUBLISHABLE_KEY</code> to <code class="text-amber-200/90 text-[12px]">.env.local</code> to test checkout from this page. Until then, plan buttons open <a href="/account.html#wl-account-plan-actions" class="text-amber-200/85 underline underline-offset-2 hover:text-amber-100">Account</a>.'
-      : 'Checkout isn’t wired on this deployment. Open <a href="/account.html#wl-account-plan-actions" class="text-amber-200/85 underline underline-offset-2 hover:text-amber-100">Account</a> to sign in and subscribe.';
+      ? '<span class="text-stone-400">Local dev:</span> add <code class="text-amber-200/90 text-[12px]">VITE_CLERK_PUBLISHABLE_KEY</code> to <code class="text-amber-200/90 text-[12px]">.env.local</code> to test checkout from this page. Until then, plan buttons open <a href="/account#wl-account-plan-actions" class="text-amber-200/85 underline underline-offset-2 hover:text-amber-100">Account</a>.'
+      : 'Checkout isn’t wired on this deployment. Open <a href="/account#wl-account-plan-actions" class="text-amber-200/85 underline underline-offset-2 hover:text-amber-100">Account</a> to sign in and subscribe.';
     mountEl.appendChild(hint);
     mountEl.querySelectorAll('button[data-price]').forEach((btn) => {
       btn.addEventListener('click', () => {
@@ -252,7 +334,7 @@ async function init() {
             destination: 'account_fallback',
           });
         } catch (_e) {}
-        window.location.assign('/account.html#wl-account-plan-actions');
+        window.location.assign('/account#wl-account-plan-actions');
       });
     });
     return;
@@ -297,7 +379,7 @@ async function init() {
   } catch (e) {
     console.error('[indexMarketing] pricing:', e);
     mountEl.innerHTML =
-      '<p class="text-stone-600 text-[13px] text-center leading-relaxed">Could not load memberships. Try <a href="/account.html" class="text-amber-200/85 underline underline-offset-2">Account</a> or <a href="/play.html" class="text-amber-200/85 underline underline-offset-2">Play</a>.</p>';
+      '<p class="text-stone-600 text-[13px] text-center leading-relaxed">Could not load memberships. Try <a href="/account" class="text-amber-200/85 underline underline-offset-2">Account</a> or <a href="/play.html" class="text-amber-200/85 underline underline-offset-2">Play</a>.</p>';
   }
 }
 

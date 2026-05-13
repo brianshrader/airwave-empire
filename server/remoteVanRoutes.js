@@ -18,11 +18,25 @@ const {
 } = require('./services/logoProvider');
 const { GENERATED_DIR, cacheKeyParts, logoBaseFileName, validateBody } = require('./logoRoutes');
 const { tryConsume, refundOne } = require('./aiUsageStore');
-const { requireClerkUserIdForAi, requirePlanSlugOr503, tryConsumeQuota } = require('./aiQuotaHttp');
+const {
+  requirePlanSlugOr503,
+  tryConsumeQuota,
+  resolveAiPrincipal,
+  consumeGuestAi,
+  refundGuestAi,
+} = require('./aiQuotaHttp');
 const { refundTrialImage, getTrialQuotaSnapshot } = require('./trialQuotaStore');
 const { CLERK_PLAN } = require('./aiEntitlements');
 
 const GENERATED_VAN_DIR = path.join(__dirname, '..', 'generated-remote-vans');
+
+/** Grok accepts multiple ratios; 3:2 reads more “photo” and avoids ultra-wide 16:9 stretch artifacts on some runs. */
+const ALLOWED_VAN_AR = new Set(['16:9', '3:2', '4:3', '1:1']);
+
+function resolveVanAspectRatio() {
+  const raw = String(process.env.GROK_VAN_ASPECT_RATIO || '3:2').trim();
+  return ALLOWED_VAN_AR.has(raw) ? raw : '3:2';
+}
 
 function ensureVanDir() {
   if (!fs.existsSync(GENERATED_VAN_DIR)) fs.mkdirSync(GENERATED_VAN_DIR, { recursive: true });
@@ -142,10 +156,8 @@ function mountRemoteVanRoutes(app) {
       return res.status(400).json({ ok: false, error: verrors.join(' ') });
     }
 
-    const clerkUserId = await requireClerkUserIdForAi(req, res);
-    if (!clerkUserId) return;
-    const planSlug = await requirePlanSlugOr503(res, clerkUserId);
-    if (planSlug == null) return;
+    const principal = await resolveAiPrincipal(req, res);
+    if (!principal) return;
 
     const regenerateVan = body.regenerate === true;
     const keyMaterial = cacheKeyParts(body);
@@ -155,12 +167,24 @@ function mountRemoteVanRoutes(app) {
 
     if (!regenerateVan && fs.existsSync(vanPath)) {
       const payload = { ok: true, cached: true, imageUrl: `/generated-remote-vans/${vanName}` };
-      if (planSlug === CLERK_PLAN.TRIAL) payload.trialQuota = getTrialQuotaSnapshot(clerkUserId);
+      if (principal.kind === 'clerk') {
+        const ps = await requirePlanSlugOr503(res, principal.userId);
+        if (ps == null) return;
+        if (ps === CLERK_PLAN.TRIAL) payload.trialQuota = getTrialQuotaSnapshot(principal.userId);
+      }
       return res.json(payload);
     }
 
-    const allowed = await tryConsumeQuota(res, planSlug, 'van', tryConsume, clerkUserId);
-    if (!allowed) return;
+    let planSlug = null;
+    if (principal.kind === 'guest') {
+      const okG = await consumeGuestAi(res, principal.guestId, 'van');
+      if (!okG) return;
+    } else {
+      planSlug = await requirePlanSlugOr503(res, principal.userId);
+      if (planSlug == null) return;
+      const allowed = await tryConsumeQuota(res, planSlug, 'van', tryConsume, principal.userId);
+      if (!allowed) return;
+    }
 
     let needRefund = true;
     try {
@@ -176,7 +200,7 @@ function mountRemoteVanRoutes(app) {
       const { buffer } = await generateGrokImageEdit({
         prompt,
         sourcePngBuffer: logoBuf,
-        aspect_ratio: '16:9',
+        aspect_ratio: resolveVanAspectRatio(),
         resolution: process.env.GROK_VAN_RESOLUTION === '2k' ? '2k' : '1k',
       });
 
@@ -185,12 +209,14 @@ function mountRemoteVanRoutes(app) {
 
       needRefund = false;
       const payload = { ok: true, cached: false, imageUrl: `/generated-remote-vans/${vanName}` };
-      if (planSlug === CLERK_PLAN.TRIAL) payload.trialQuota = getTrialQuotaSnapshot(clerkUserId);
+      if (principal.kind === 'clerk' && planSlug === CLERK_PLAN.TRIAL)
+        payload.trialQuota = getTrialQuotaSnapshot(principal.userId);
       return res.json(payload);
     } catch (e) {
       if (needRefund) {
-        if (planSlug === CLERK_PLAN.TRIAL) await refundTrialImage(clerkUserId);
-        else await refundOne(clerkUserId, 'van');
+        if (principal.kind === 'guest') await refundGuestAi(principal.guestId, 'van');
+        else if (planSlug === CLERK_PLAN.TRIAL) await refundTrialImage(principal.userId);
+        else await refundOne(principal.userId, 'van');
       }
       console.error('[remote-van] failed:', e.message || e);
       const status = e.status && Number.isInteger(e.status) ? e.status : 500;

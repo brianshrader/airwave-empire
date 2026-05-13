@@ -1,7 +1,6 @@
 /**
- * Builds a tightly controlled image prompt from station metadata.
- * Goal: print-era / broadcast-sticker authenticity — no glossy modern branding.
- * Format, year, era, band, tone are style direction only; they must not become logo text.
+ * Builds compact image prompts from station metadata.
+ * Goal: print-era broadcast wordmark + readable contrast; style hints stay off the canvas as extra text.
  */
 
 /** @param {number} year */
@@ -86,18 +85,16 @@ function buildLogoPrompt(meta) {
   const bandStyle =
     band === 'AM' ? 'AM' : band === 'FM' ? 'FM' : 'AM/FM';
 
-  // frequency omitted from prompt to avoid dial numbers being painted as logo text
+  // frequency omitted — avoids painting dial numbers as extra logo text
 
   return [
-    'The only text that may appear in the logo is the stationName string exactly as provided. Do not add call letters, format names, years, era labels, slogans, subtitles, frequencies, or extra descriptive text unless they are already part of stationName.',
-    `Render this exact string as the logo wordmark (only these words, no additions): "${stationName}".`,
-    `Use visual styling inspired by ${year} American ${bandStyle} radio broadcast branding and by ${eraLabel} American ${format}-format station graphic design — color, weight, ornament, and composition only; do not paint the format name, year digits, era labels, or band letters as readable text.`,
-    tone ? `Mood and attitude for the art direction only (not as on-image text): ${tone}.` : '',
-    `Graphic vocabulary (invisible cues — not words to render): ${fmtNotes}`,
-    `Period surface treatment (invisible cues — not words to render): ${eraNotes}`,
-    'Layout: bold retro typography for the station name string only; print-era radio feel; limited color palette (2–4 colors); flat or lightly airbrushed; bumper-sticker or van-decal composition.',
-    'Readability (mandatory): the wordmark must be legible at small size. Use strong contrast — never pale pastel, ice blue, blush pink, or washed-out tints on white or off-white. Never put yellow, cream, gold, or light lime on white or near-white (those combinations are illegible). If the background is light, use deep navy, black, dark red, forest green, or other saturated dark ink for the letters; if the letters are light, place them on a solid mid or dark band, badge, or field — not on white. Prefer either a solid colored or mid-gray background behind the name, or a dark outline / heavy stroke / crisp drop shadow around the letters so they separate clearly from the background.',
-    'Background: transparent or plain flat field. If the field is white or very light, the station name must still read clearly (outline, shadow, or dark letters as above). Hard constraints: no modern glossy effects, no esports or gaming aesthetic, no photorealism, no stock-photo collage, no fake 3D chrome, no smartphone-app icon style.',
+    `Wordmark only (exact string, no added words): "${stationName}".`,
+    `Style like ${year} ${eraLabel} US ${bandStyle} ${format} station art — color, weight, shape, texture only; no extra readable words beyond the wordmark.`,
+    tone ? `Scene mood (style only, not text): ${tone}.` : '',
+    `Look & feel: ${fmtNotes} ${eraNotes}`.trim(),
+    'Composition: bold retro type, 2–4 spot colors, matte print or light airbrush, bumper-sticker / van-decal layout.',
+    'Contrast: small-size legible; saturated ink on light fields OR light letters on mid/dark band; optional heavy stroke or shadow; avoid washed pastels on white.',
+    'Background: transparent or flat field. Matte print-era finish — vector-sticker or screen-print, not photo collage, 3D chrome, app icon, or esports gloss.',
   ]
     .filter(Boolean)
     .join(' ');
@@ -114,15 +111,15 @@ function remoteVanVehicleNotes(year) {
     return 'Use a period-accurate 1970s American step van or full-size van (e.g. Ford Econoline era) with ladder rack — believable for the decade.';
   }
   if (y < 1995) {
-    return 'Use a 1980s–early-90s white fleet van or box truck typical of radio remotes — not wood-paneled consumer vans unless clearly era-specific.';
+    return 'White 1980s–early-90s fleet van or small box truck, radio-remote spec, roof mast credible for the era.';
   }
   if (y < 2005) {
-    return 'Use a late-90s / early-2000s broadcast remote van: white fleet full-size van or small box truck with mast — professional news-radio look.';
+    return 'Late-90s / early-2000s white broadcast remote: full-size fleet van or box truck, professional news-radio layout.';
   }
   if (y < 2015) {
-    return 'Use a 2000s–early-2010s remote vehicle: Mercedes Sprinter, Ford E-Series, or similar white fleet van with roof mast — NOT a 1970s wood-grain consumer van.';
+    return '2000s–early-2010s Sprinter / E-Series–class white fleet van, roof mast, cables, professional cluster vehicle.';
   }
-  return 'Use a current-era professional remote broadcast vehicle: Mercedes-Benz Sprinter, Ford Transit, Ram ProMaster, or Chevrolet Express–class white fleet van with roof mast and cables — modern news-radio fleet look. Do NOT depict a vintage 1970s–80s wood-paneled personal van unless the game year is in that decade.';
+  return 'Current-era white fleet remote: Sprinter, Transit, ProMaster, or Express class, roof mast and cables, modern news-radio fleet.';
 }
 
 /**
@@ -146,13 +143,14 @@ function buildRemoteVanPrompt(meta) {
   const vehicleNotes = remoteVanVehicleNotes(year);
 
   return [
-    'The attached reference image is the official station logo artwork. Treat the van as if it were painted and designed as a cohesive custom livery: the logo lockup (same colors, shapes, and lettering as the reference) is the centerpiece of a full-body paint scheme — not a rectangle slapped on the door. Extend the logo palette into accent stripes, color blocks, or subtle two-tone panels that wrap naturally around corners and wheel wells so branding feels intentional and factory-custom. Do not invent different call letters or a new logo.',
-    'Logo integration (critical): the artwork must read as automotive paint and clearcoat — same lighting, specular highlights, and panel curvature as the rest of the van; perspective-correct across doors and seams; no magnetic panel edge, no obvious sticker outline, no vinyl wrap seam cutting across the graphic. The logo must NOT look like a flat UI overlay, a pasted decal with a thick white halo, or a layer separate from the metal. No duplicate logos on every surface unless it fits the livery design.',
-    `Station identity (scene context only — do not add extra readable text beyond the logo): "${stationName}", ${format} format, calendar year ${year}, ${bandNote}.`,
-    tone ? `Mood for the scene (not as on-image text): ${tone}.` : '',
+    'Reference image = official station logo. Full-body custom livery: match reference colors, shapes, and lettering; wrap stripes and color blocks around panels and wheel wells like factory paint — same lockup, no invented callsign.',
+    'Paint reads as real clearcoat: logo follows door curvature and light; one cohesive vehicle surface (no floating graphic, no sticker halo, no UI paste).',
+    `Context (no extra on-image text beyond the logo): "${stationName}", ${format}, year ${year}, ${bandNote}.`,
+    tone ? `Scene mood (not text): ${tone}.` : '',
     vehicleNotes,
-    `Photorealistic wide 3/4 view (${eraLabel} American setting) of one radio remote broadcast van parked at a live event: street fair, concert gate, stadium lot, or county fair — pick one. Include extendable mast antenna, coiled cables, sandbags or folding chairs; optional engineer silhouette. Show the integrated paint livery prominently on the side — logo and supporting colors flowing together.`,
-    'Lighting: natural daylight, documentary news photography, shallow depth of field, mild film grain OK. No CGI sheen, no holograms, no neon cyberpunk, no futuristic HUD.',
+    `Photoreal three-quarter side view, ${eraLabel} US setting, one remote van at a fair, stadium lot, or street event — mast, cables, sandbags or chairs; optional engineer silhouette. Livery hero on the side.`,
+    'Camera: ~50mm documentary, rectilinear, square pixels, natural fleet-van proportions; wheels circular; roof height and wheelbase like a real parked Sprinter / E-Series / Transit class.',
+    'Light: daylight, shallow DOF, light grain. Credible news-remote photograph.',
   ]
     .filter(Boolean)
     .join(' ');

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Targeted validation: Seattle integration + public-radio (PUBLIC_NEWS / PUBLIC_CLASSICAL) tuning.
+ * Targeted validation: Seattle integration + public-radio (PUBLIC_NEWS / PUBLIC_CLASSICAL / PUBLIC_ECLECTIC) tuning.
  *
  *   node scripts/validate-seattle-and-public.mjs
  *   node scripts/validate-seattle-and-public.mjs --mode=tuned
@@ -51,6 +51,7 @@ function stubEl() {
     innerHTML: '',
     value: '',
     style: {},
+    dataset: {},
     classList: { contains() { return false; }, add() {}, remove() {} },
     appendChild() {},
     querySelector() { return null; },
@@ -58,6 +59,9 @@ function stubEl() {
     click() {},
     addEventListener() {},
     removeEventListener() {},
+    closest() {
+      return null;
+    },
   };
 }
 
@@ -77,6 +81,8 @@ const documentStub = {
     return null;
   },
   readyState: 'complete',
+  addEventListener() {},
+  removeEventListener() {},
 };
 
 function createVmContext(quiet) {
@@ -241,11 +247,15 @@ function installValidationSampler(ctx) {
         }
         var pubNews = null;
         var pubClass = null;
+        var pubEclectic = null;
         for (i = 0; i < snap.public.length; i++) {
           var p = snap.public[i];
           if (p.format === 'PUBLIC_NEWS') pubNews = p.share;
           if (p.format === 'PUBLIC_CLASSICAL') pubClass = p.share;
+          if (p.format === 'PUBLIC_ECLECTIC') pubEclectic = p.share;
         }
+        var sy = G.scenario && G.scenario.startYear != null ? G.scenario.startYear : 1985;
+        var targetPub = typeof computePublicStationTargetCount === 'function' ? computePublicStationTargetCount(marketId, sy) : null;
         return {
           ok: true,
           marketId: marketId,
@@ -254,6 +264,7 @@ function installValidationSampler(ctx) {
           commercial: mh.commercial,
           active: mh.active,
           publicStations: mh.public,
+          targetPublicCount: targetPub,
           spokenWordLaneShare: spokenSum,
           topCommercialNewsTalkShare: topNewsTalk,
           rockLaneShareSum: rockSum,
@@ -264,6 +275,7 @@ function installValidationSampler(ctx) {
           viableRock: rockV,
           publicNewsShare: pubNews,
           publicClassicalShare: pubClass,
+          publicEclecticShare: pubEclectic,
         };
       } finally {
         ui.restore();
@@ -377,7 +389,30 @@ function main() {
     compare: null,
     spillover: [],
     warnings: [],
+    publicStationScale: null,
   };
+
+  report.publicStationScale = vm.runInContext(
+    `(function(){
+      function genCount(mid){
+        ACTIVE_MARKET = mid;
+        syncMarketPopToMarket(mid);
+        G = genMarketMP('1985');
+        var sy = (G.scenario && G.scenario.startYear != null) ? G.scenario.startYear : 1985;
+        var tgt = computePublicStationTargetCount(mid, sy);
+        var n = 0, ec = false;
+        for (var i = 0; i < G.stations.length; i++) {
+          var s = G.stations[i];
+          if (!s || s._bpSlotDeferred || !s.isPublic) continue;
+          n++;
+          if (s.format === 'PUBLIC_ECLECTIC') ec = true;
+        }
+        return { market: mid, scenarioStart: sy, target: tgt, count: n, eclectic: ec, countMatchesTarget: n === tgt };
+      }
+      return [genCount('wichita'), genCount('newyork'), genCount('losangeles'), genCount('nashville'), genCount('seattle')];
+    })()`,
+    ctx
+  );
 
   function runGrid(tuningLabel) {
     const grid = {};
@@ -386,6 +421,7 @@ function main() {
       for (const yr of ERAS) {
         const sharesNews = [];
         const sharesClass = [];
+        const sharesEclectic = [];
         const spill = [];
         for (let r = 0; r < runsPerCell; r++) {
           const seed = 424200 + PUBLIC_MARKETS.indexOf(mkt) * 997 + ERAS.indexOf(yr) * 13 + r * 7919;
@@ -396,6 +432,7 @@ function main() {
           }
           if (o.publicNewsShare != null) sharesNews.push(o.publicNewsShare);
           if (o.publicClassicalShare != null) sharesClass.push(o.publicClassicalShare);
+          if (o.publicEclecticShare != null) sharesEclectic.push(o.publicEclecticShare);
           spill.push({
             spokenWordLaneShare: o.spokenWordLaneShare,
             topCommercialNewsTalkShare: o.topCommercialNewsTalkShare,
@@ -408,6 +445,7 @@ function main() {
         grid[mkt][yr] = {
           PUBLIC_NEWS: statsShares(sharesNews),
           PUBLIC_CLASSICAL: statsShares(sharesClass),
+          PUBLIC_ECLECTIC: statsShares(sharesEclectic),
           spill: {
             spokenWordLaneShare: meanArr(spill.map((x) => x.spokenWordLaneShare)),
             topCommercialNewsTalkShare: meanArr(spill.map((x) => x.topCommercialNewsTalkShare)),
@@ -468,7 +506,7 @@ function main() {
     const deltas = [];
     for (const mkt of PUBLIC_MARKETS) {
       for (const yr of ERAS) {
-        for (const fmt of ['PUBLIC_NEWS', 'PUBLIC_CLASSICAL']) {
+        for (const fmt of ['PUBLIC_NEWS', 'PUBLIC_CLASSICAL', 'PUBLIC_ECLECTIC']) {
           const a = tuned[mkt][yr][fmt].mean;
           const b = baseline[mkt][yr][fmt].mean;
           if (a != null && b != null) {
@@ -540,7 +578,7 @@ function main() {
 
   // ── Console report ──
   console.log('\n══════════════════════════════════════════════════════════════');
-  console.log('  VALIDATE: Seattle + Public radio (PUBLIC_NEWS / PUBLIC_CLASSICAL)');
+  console.log('  VALIDATE: Seattle + Public radio (PUBLIC_NEWS / PUBLIC_CLASSICAL / PUBLIC_ECLECTIC)');
   console.log(`  Mode: ${mode}  ·  runs/cell: ${runsPerCell}  ·  JSON: ${jsonOutPath}`);
   console.log('══════════════════════════════════════════════════════════════\n');
 
@@ -550,7 +588,9 @@ function main() {
   console.log(`   Rival branding: side west=${branding.marketSideWest}  K-call violations=${branding.kCallViolations}/24`);
   console.log(`   Hook samples: ${branding.hookSample.join(' | ')}\n`);
 
-  console.log('2) Seattle vs peers (mean over small runs, fall P2) — commercial / lanes');
+  console.log('1b) Public station count vs target (genMarketMP 1985 / chrwar)');
+  console.log(JSON.stringify(report.publicStationScale, null, 2));
+  console.log('');
   const ecoRows = [];
   for (const mkt of ecoMarkets) {
     const row = { market: mkt };
@@ -579,7 +619,7 @@ function main() {
   console.log('3) Public radio summary (share = decimal ARP; % = ×100)\n');
   const g = grid;
   if (g) {
-    for (const fmt of ['PUBLIC_NEWS', 'PUBLIC_CLASSICAL']) {
+    for (const fmt of ['PUBLIC_NEWS', 'PUBLIC_CLASSICAL', 'PUBLIC_ECLECTIC']) {
       console.log(`   --- ${fmt} (mean % · median % · n runs) ---`);
       const rows = [];
       for (const mkt of PUBLIC_MARKETS) {
@@ -607,7 +647,7 @@ function main() {
 
   if (mode === 'compare' && report.compare && report.compare.length) {
     console.log('4) Baseline vs tuned — mean share delta (tuned − baseline)\n');
-    for (const fmt of ['PUBLIC_NEWS', 'PUBLIC_CLASSICAL']) {
+    for (const fmt of ['PUBLIC_NEWS', 'PUBLIC_CLASSICAL', 'PUBLIC_ECLECTIC']) {
       console.log(`   ${fmt} (Δ mean share decimal)`);
       const rows = [];
       for (const mkt of PUBLIC_MARKETS) {

@@ -29,6 +29,16 @@ const {
   normalizeEraDir,
   ERA_DIRS,
 } = require('./portraitLibrary');
+const { tryConsume, refundOne } = require('./aiUsageStore');
+const {
+  resolveAiPrincipal,
+  consumeGuestAi,
+  refundGuestAi,
+  requirePlanSlugOr503,
+  tryConsumeQuota,
+} = require('./aiQuotaHttp');
+const { refundTrialImage } = require('./trialQuotaStore');
+const { CLERK_PLAN } = require('./aiEntitlements');
 
 function shortapiConfigured() {
   return Boolean(process.env.SHORTAPI_KEY);
@@ -306,74 +316,105 @@ function mountPortraitRoutes(app) {
         }
       }
 
-      const prompt = buildPortraitPrompt(profile);
-      let buffer;
-      let ext;
-      let aiSource;
-      if (shortapiConfigured()) {
-        const r = await generateShortapiImage({ prompt, aspect_ratio: '1:1' });
-        buffer = r.buffer;
-        ext = r.ext;
-        aiSource = 'shortapi';
-      } else if (imageGenerationConfigured()) {
-        const r = await generateXaiImage({ prompt, aspect_ratio: '1:1' });
-        buffer = r.buffer;
-        ext = r.ext;
-        aiSource = getActiveImageProvider() || 'ai';
-      } else {
+      if (!shortapiConfigured() && !imageGenerationConfigured()) {
         return res.status(503).json({
           ok: false,
           error:
             'No portrait source: add stock images under generated-portraits/library/<male|female>/<era>/ (and enable library picks), or set SHORTAPI_KEY / GROK_API_KEY.',
         });
       }
-      const safeExt = TRY_EXTS.includes(ext) ? ext : 'png';
-      const genderSeg =
-        gender === 'male' ? 'male' : gender === 'female' ? 'female' : 'unknown';
-      const eraSeg = normalizeEraDir(eraBucket);
-      const relSegs = ['grok', genderSeg, eraSeg, `${fileBase}.${safeExt}`];
-      const absPath = path.join(PORTRAIT_DIR, ...relSegs);
-      const relPosix = relSegs.join('/');
-      fs.mkdirSync(path.dirname(absPath), { recursive: true });
-      unlinkPortraitVariantsExcept(fileBase, absPath);
-      fs.writeFileSync(absPath, buffer);
 
-      const imageUrl = `/generated-portraits/${relPosix}`;
-      setRegistryEntry(fileBase, {
-        imageUrl,
-        fileName: relPosix,
-        ...profile,
-        source: aiSource,
-        libraryAsset: null,
-      });
+      const principal = await resolveAiPrincipal(req, res);
+      if (!principal) return;
 
-      return res.json({
-        ok: true,
-        cached: false,
-        source: aiSource,
-        libraryAsset: null,
-        imageUrl,
-        profile: {
-          eraBucket: profile.eraBucket,
-          wardrobeType: profile.wardrobeType,
-          expressionType: profile.expressionType,
-          settingType: profile.settingType,
-          identityKey: profile.identityKey,
-          gender: profile.gender,
-          ageRange: profile.ageRange,
-          bodyType: profile.bodyType,
-          faceShape: profile.faceShape,
-          hairStyle: profile.hairStyle,
-          personalStyle: profile.personalStyle,
-          heritageId: profile.heritageId,
-          heritagePrompt: profile.heritagePrompt,
-          facialDetail: profile.facialDetail,
-          demeanor: profile.demeanor,
-          attractivenessAnchor: profile.attractivenessAnchor,
-          variationSeed: profile.variationSeed,
+      let planSlug = null;
+      let refundGuestId = null;
+      let refundClerkId = null;
+      if (principal.kind === 'guest') {
+        const okG = await consumeGuestAi(res, principal.guestId, 'logo');
+        if (!okG) return;
+        refundGuestId = principal.guestId;
+      } else {
+        planSlug = await requirePlanSlugOr503(res, principal.userId);
+        if (planSlug == null) return;
+        const allowed = await tryConsumeQuota(res, planSlug, 'logo', tryConsume, principal.userId);
+        if (!allowed) return;
+        refundClerkId = principal.userId;
+      }
+
+      try {
+        const prompt = buildPortraitPrompt(profile);
+        let buffer;
+        let ext;
+        let aiSource;
+        if (shortapiConfigured()) {
+          const r = await generateShortapiImage({ prompt, aspect_ratio: '1:1' });
+          buffer = r.buffer;
+          ext = r.ext;
+          aiSource = 'shortapi';
+        } else if (imageGenerationConfigured()) {
+          const r = await generateXaiImage({ prompt, aspect_ratio: '1:1' });
+          buffer = r.buffer;
+          ext = r.ext;
+          aiSource = getActiveImageProvider() || 'ai';
+        } else {
+          throw Object.assign(new Error('No AI portrait provider'), { status: 503 });
+        }
+        const safeExt = TRY_EXTS.includes(ext) ? ext : 'png';
+        const genderSeg =
+          gender === 'male' ? 'male' : gender === 'female' ? 'female' : 'unknown';
+        const eraSeg = normalizeEraDir(eraBucket);
+        const relSegs = ['grok', genderSeg, eraSeg, `${fileBase}.${safeExt}`];
+        const absPath = path.join(PORTRAIT_DIR, ...relSegs);
+        const relPosix = relSegs.join('/');
+        fs.mkdirSync(path.dirname(absPath), { recursive: true });
+        unlinkPortraitVariantsExcept(fileBase, absPath);
+        fs.writeFileSync(absPath, buffer);
+
+        const imageUrl = `/generated-portraits/${relPosix}`;
+        setRegistryEntry(fileBase, {
+          imageUrl,
+          fileName: relPosix,
+          ...profile,
+          source: aiSource,
           libraryAsset: null,
-        },
-      });
+        });
+
+        return res.json({
+          ok: true,
+          cached: false,
+          source: aiSource,
+          libraryAsset: null,
+          imageUrl,
+          profile: {
+            eraBucket: profile.eraBucket,
+            wardrobeType: profile.wardrobeType,
+            expressionType: profile.expressionType,
+            settingType: profile.settingType,
+            identityKey: profile.identityKey,
+            gender: profile.gender,
+            ageRange: profile.ageRange,
+            bodyType: profile.bodyType,
+            faceShape: profile.faceShape,
+            hairStyle: profile.hairStyle,
+            personalStyle: profile.personalStyle,
+            heritageId: profile.heritageId,
+            heritagePrompt: profile.heritagePrompt,
+            facialDetail: profile.facialDetail,
+            demeanor: profile.demeanor,
+            attractivenessAnchor: profile.attractivenessAnchor,
+            variationSeed: profile.variationSeed,
+            libraryAsset: null,
+          },
+        });
+      } catch (genErr) {
+        if (refundGuestId) await refundGuestAi(refundGuestId, 'logo');
+        else if (refundClerkId) {
+          if (planSlug === CLERK_PLAN.TRIAL) await refundTrialImage(refundClerkId);
+          else await refundOne(refundClerkId, 'logo');
+        }
+        throw genErr;
+      }
     } catch (e) {
       const status = e.status && Number.isInteger(e.status) ? e.status : 500;
       console.error('[portrait]', e.message || e);

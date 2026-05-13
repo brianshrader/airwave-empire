@@ -9,6 +9,7 @@ const ALL_PLAYABLE_MARKET_IDS = Object.freeze([
   'losangeles',
   'chicago',
   'seattle',
+  'sanfrancisco',
   'atlanta',
   'nashville',
   'wichita',

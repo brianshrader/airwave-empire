@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-04-16T14:07:06.858Z",
-  "mode": "compare",
-  "runsPerCell": 20,
+  "generatedAt": "2026-05-13T16:40:13.448Z",
+  "mode": "tuned",
+  "runsPerCell": 2,
   "seattle": {
     "marketObject": true,
     "phase1": true,
@@ -11,157 +11,157 @@
       "marketSideWest": true,
       "hookSample": [
         "the Sound",
-        "across Puget Sound",
-        "Seattle-Tacoma",
         "the city and suburbs",
-        "across Puget Sound"
+        "around western Washington",
+        "Seattle-Tacoma",
+        "the city and suburbs"
       ]
     }
   },
   "ecologyPeer": {
     "seattle": {
       "2005": {
-        "meanCommercial": 25.333333333333332,
-        "meanActive": 27.333333333333332,
-        "meanSpokenLane": 0.1875819483349593,
-        "meanRockLane": 0.1952475590724084,
-        "meanCountryLane": 0.08321347506896644,
-        "meanViable": 18.666666666666668,
-        "runs": 3
+        "meanCommercial": 27.5,
+        "meanActive": 30.5,
+        "meanSpokenLane": 0.165530415,
+        "meanRockLane": 0.20680306999999998,
+        "meanCountryLane": 0.135756785,
+        "meanViable": 19,
+        "runs": 2
       },
       "2015": {
-        "meanCommercial": 23,
-        "meanActive": 25,
-        "meanSpokenLane": 0.1515011972875228,
-        "meanRockLane": 0.18322984304047818,
-        "meanCountryLane": 0.12130238285942758,
-        "meanViable": 15.333333333333334,
-        "runs": 3
+        "meanCommercial": 25.5,
+        "meanActive": 28.5,
+        "meanSpokenLane": 0.119727515,
+        "meanRockLane": 0.16911872,
+        "meanCountryLane": 0.14586757,
+        "meanViable": 21.5,
+        "runs": 2
       },
       "2025": {
-        "meanCommercial": 22.333333333333332,
-        "meanActive": 24.333333333333332,
-        "meanSpokenLane": 0.13424091183988537,
-        "meanRockLane": 0.1751230080020937,
-        "meanCountryLane": 0.13185329253927286,
-        "meanViable": 15,
-        "runs": 3
+        "meanCommercial": 25.5,
+        "meanActive": 28.5,
+        "meanSpokenLane": 0.114736425,
+        "meanRockLane": 0.12976615,
+        "meanCountryLane": 0.18497324,
+        "meanViable": 18.5,
+        "runs": 2
       }
     },
     "chicago": {
       "2005": {
-        "meanCommercial": 28,
-        "meanActive": 30,
-        "meanSpokenLane": 0.206829136848076,
-        "meanRockLane": 0.2453093285308242,
-        "meanCountryLane": 0.04158307713454035,
-        "meanViable": 19,
-        "runs": 3
+        "meanCommercial": 35,
+        "meanActive": 38,
+        "meanSpokenLane": 0.15049348499999998,
+        "meanRockLane": 0.23190631499999997,
+        "meanCountryLane": 0.12349571,
+        "meanViable": 22.5,
+        "runs": 2
       },
       "2015": {
-        "meanCommercial": 28,
-        "meanActive": 30,
-        "meanSpokenLane": 0.16057429193945402,
-        "meanRockLane": 0.13940675041058392,
-        "meanCountryLane": 0.09889552336746198,
-        "meanViable": 19.333333333333332,
-        "runs": 3
+        "meanCommercial": 36,
+        "meanActive": 39,
+        "meanSpokenLane": 0.119704605,
+        "meanRockLane": 0.189263965,
+        "meanCountryLane": 0.08760482,
+        "meanViable": 24.5,
+        "runs": 2
       },
       "2025": {
-        "meanCommercial": 27.666666666666668,
-        "meanActive": 29.666666666666668,
-        "meanSpokenLane": 0.12762126111775465,
-        "meanRockLane": 0.1688567832765584,
-        "meanCountryLane": 0.05248979075670216,
-        "meanViable": 16,
-        "runs": 3
+        "meanCommercial": 33,
+        "meanActive": 36,
+        "meanSpokenLane": 0.14596645,
+        "meanRockLane": 0.22892807,
+        "meanCountryLane": 0.10616569000000001,
+        "meanViable": 19.5,
+        "runs": 2
       }
     },
     "atlanta": {
       "2005": {
-        "meanCommercial": 25.333333333333332,
-        "meanActive": 27.333333333333332,
-        "meanSpokenLane": 0.1938202025121761,
-        "meanRockLane": 0.26806000812084035,
-        "meanCountryLane": 0.06497629074635498,
-        "meanViable": 19.333333333333332,
-        "runs": 3
+        "meanCommercial": 26,
+        "meanActive": 29,
+        "meanSpokenLane": 0.143936385,
+        "meanRockLane": 0.19634445499999997,
+        "meanCountryLane": 0.16116341499999998,
+        "meanViable": 19,
+        "runs": 2
       },
       "2015": {
-        "meanCommercial": 23.666666666666668,
-        "meanActive": 25.666666666666668,
-        "meanSpokenLane": 0.14491208775210443,
-        "meanRockLane": 0.22766561386770987,
-        "meanCountryLane": 0.11091944039623608,
-        "meanViable": 18,
-        "runs": 3
+        "meanCommercial": 28.5,
+        "meanActive": 31.5,
+        "meanSpokenLane": 0.077918735,
+        "meanRockLane": 0.20588114500000002,
+        "meanCountryLane": 0.13123621,
+        "meanViable": 24.5,
+        "runs": 2
       },
       "2025": {
-        "meanCommercial": 20.333333333333332,
-        "meanActive": 22.333333333333332,
-        "meanSpokenLane": 0.12205077670730978,
-        "meanRockLane": 0.1810635736907041,
-        "meanCountryLane": 0.1022507399521015,
-        "meanViable": 13,
-        "runs": 3
+        "meanCommercial": 24.5,
+        "meanActive": 27.5,
+        "meanSpokenLane": 0.12276883999999999,
+        "meanRockLane": 0.21575981,
+        "meanCountryLane": 0.060947385,
+        "meanViable": 20,
+        "runs": 2
       }
     },
     "losangeles": {
       "2005": {
-        "meanCommercial": 26.666666666666668,
-        "meanActive": 28.666666666666668,
-        "meanSpokenLane": 0.1917713953323471,
-        "meanRockLane": 0.24720808114708356,
-        "meanCountryLane": 0.02042864609808021,
-        "meanViable": 19.666666666666668,
-        "runs": 3
+        "meanCommercial": 35.5,
+        "meanActive": 37.5,
+        "meanSpokenLane": 0.160539675,
+        "meanRockLane": 0.23520666499999998,
+        "meanCountryLane": 0.086869225,
+        "meanViable": 26.5,
+        "runs": 2
       },
       "2015": {
-        "meanCommercial": 28.666666666666668,
-        "meanActive": 30.666666666666668,
-        "meanSpokenLane": 0.13069523219111145,
-        "meanRockLane": 0.1892062873518435,
-        "meanCountryLane": 0.04858726096273036,
-        "meanViable": 22.666666666666668,
-        "runs": 3
+        "meanCommercial": 35.5,
+        "meanActive": 37.5,
+        "meanSpokenLane": 0.110168745,
+        "meanRockLane": 0.16317070500000003,
+        "meanCountryLane": 0.066907615,
+        "meanViable": 24,
+        "runs": 2
       },
       "2025": {
-        "meanCommercial": 27.666666666666668,
-        "meanActive": 29.666666666666668,
-        "meanSpokenLane": 0.13733072920362294,
-        "meanRockLane": 0.20375450092852612,
-        "meanCountryLane": 0.0718346353441849,
-        "meanViable": 19.333333333333332,
-        "runs": 3
+        "meanCommercial": 38,
+        "meanActive": 40,
+        "meanSpokenLane": 0.111164475,
+        "meanRockLane": 0.14757638,
+        "meanCountryLane": 0.07437576500000001,
+        "meanViable": 26,
+        "runs": 2
       }
     },
     "nashville": {
       "2005": {
-        "meanCommercial": 25.333333333333332,
-        "meanActive": 27.333333333333332,
-        "meanSpokenLane": 0.19980543267708684,
-        "meanRockLane": 0.2134807440438192,
-        "meanCountryLane": 0.07522259672288767,
-        "meanViable": 18,
-        "runs": 3
+        "meanCommercial": 19,
+        "meanActive": 21,
+        "meanSpokenLane": 0.21403662,
+        "meanRockLane": 0.26559241499999997,
+        "meanCountryLane": 0.103931355,
+        "meanViable": 11,
+        "runs": 2
       },
       "2015": {
-        "meanCommercial": 21.333333333333332,
-        "meanActive": 23.333333333333332,
-        "meanSpokenLane": 0.16558239452712858,
-        "meanRockLane": 0.20161961376711343,
-        "meanCountryLane": 0.1161928681978573,
-        "meanViable": 14,
-        "runs": 3
+        "meanCommercial": 20.5,
+        "meanActive": 22.5,
+        "meanSpokenLane": 0.148916135,
+        "meanRockLane": 0.23633784,
+        "meanCountryLane": 0.10475024499999999,
+        "meanViable": 13,
+        "runs": 2
       },
       "2025": {
-        "meanCommercial": 22,
-        "meanActive": 24,
-        "meanSpokenLane": 0.15038316356870568,
-        "meanRockLane": 0.2012859635926678,
-        "meanCountryLane": 0.1140274323804974,
-        "meanViable": 14,
-        "runs": 3
+        "meanCommercial": 19,
+        "meanActive": 21,
+        "meanSpokenLane": 0.140051345,
+        "meanRockLane": 0.20930187,
+        "meanCountryLane": 0.13309469000000002,
+        "meanViable": 12.5,
+        "runs": 2
       }
     }
   },
@@ -170,2433 +170,1784 @@
       "newyork": {
         "1985": {
           "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.04655068138833721,
-            "median": 0.04653925494226385,
-            "min": 0.04553921285827004,
-            "max": 0.04829603539556039,
+            "n": 2,
+            "mean": 0.030416635,
+            "median": 0.030416635,
+            "min": 0.02858425,
+            "max": 0.03224902,
             "lt2": 0,
-            "ge2": 20,
-            "ge4": 20,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.018254558436409298,
-            "median": 0.018211185772395097,
-            "min": 0.01764565920901975,
-            "max": 0.019149749050233453,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.22910280124852167,
-            "topCommercialNewsTalkShare": 0.099477522462951,
-            "viableCommercial": 13.7,
-            "viableChr": 1.7,
-            "viableAc": 2,
-            "viableRock": 5
-          }
-        },
-        "1995": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.0340503731234431,
-            "median": 0.034019554023615936,
-            "min": 0.03051388147064604,
-            "max": 0.03995922122555931,
-            "lt2": 0,
-            "ge2": 20,
+            "ge2": 2,
             "ge4": 0,
             "ge6": 0
           },
           "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.01891663300481396,
-            "median": 0.01876648936078044,
-            "min": 0.017092971061668065,
-            "max": 0.02210811254056088,
-            "lt2": 16,
-            "ge2": 4,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.25037429327514016,
-            "topCommercialNewsTalkShare": 0.10253376540789569,
-            "viableCommercial": 16.85,
-            "viableChr": 2.45,
-            "viableAc": 2.3,
-            "viableRock": 6.1
-          }
-        },
-        "2005": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.03638233406904158,
-            "median": 0.03636354638688598,
-            "min": 0.0315050156104713,
-            "max": 0.04366430159215136,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 2,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.015367206254235932,
-            "median": 0.015181796564897505,
-            "min": 0.013160493450448875,
-            "max": 0.018851392404196757,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.25336180301535327,
-            "topCommercialNewsTalkShare": 0.1043493184847065,
-            "viableCommercial": 20.25,
-            "viableChr": 2.5,
-            "viableAc": 3.45,
-            "viableRock": 5.7
-          }
-        },
-        "2015": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.05779261159891967,
-            "median": 0.05709576235118223,
-            "min": 0.05071400026469006,
-            "max": 0.06634914379895052,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 20,
-            "ge6": 7
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.017444501054359886,
-            "median": 0.01773155488259645,
-            "min": 0.015058392523140986,
-            "max": 0.020030284024619215,
-            "lt2": 19,
-            "ge2": 1,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.17407526232832846,
-            "topCommercialNewsTalkShare": 0.0717430048054103,
-            "viableCommercial": 22.5,
-            "viableChr": 2.7,
-            "viableAc": 4.15,
-            "viableRock": 5.05
-          }
-        },
-        "2025": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.06215322972863689,
-            "median": 0.0623610212467818,
-            "min": 0.05526612472813924,
-            "max": 0.07061039840736254,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 20,
-            "ge6": 16
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.016740229877429107,
-            "median": 0.016865554134399705,
-            "min": 0.014809602342576082,
-            "max": 0.018399452293277427,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.17439416452860618,
-            "topCommercialNewsTalkShare": 0.08003650117584968,
-            "viableCommercial": 19.85,
-            "viableChr": 2.65,
-            "viableAc": 3.5,
-            "viableRock": 3.4
-          }
-        }
-      },
-      "losangeles": {
-        "1985": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.05119488613873182,
-            "median": 0.05126804475031478,
-            "min": 0.04998337783317781,
-            "max": 0.05219047536919188,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 20,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.021774374451171856,
-            "median": 0.021793916500106952,
-            "min": 0.021135502973361933,
-            "max": 0.022236301294303724,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.13983809287659651,
-            "topCommercialNewsTalkShare": 0.10039686507940893,
-            "viableCommercial": 13.45,
-            "viableChr": 1.25,
-            "viableAc": 2,
-            "viableRock": 6
-          }
-        },
-        "1995": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.036548404070342703,
-            "median": 0.035967627359248855,
-            "min": 0.0332215172751246,
-            "max": 0.041376768933877775,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 2,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.021727140848061693,
-            "median": 0.021332162299285837,
-            "min": 0.019457066839806053,
-            "max": 0.024917908259537908,
+            "n": 2,
+            "mean": 0.010360685,
+            "median": 0.010360685,
+            "min": 0.00974649,
+            "max": 0.01097488,
             "lt2": 2,
-            "ge2": 18,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.18163760041861138,
-            "topCommercialNewsTalkShare": 0.08298761177528184,
-            "viableCommercial": 16.65,
-            "viableChr": 1.9,
-            "viableAc": 2.05,
-            "viableRock": 6.3
-          }
-        },
-        "2005": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.037808483362188616,
-            "median": 0.03773996438720063,
-            "min": 0.03237448736124164,
-            "max": 0.043881498107513434,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 4,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.017363572423613912,
-            "median": 0.017170655544035143,
-            "min": 0.014418589606791576,
-            "max": 0.019956587398008152,
-            "lt2": 20,
             "ge2": 0,
             "ge4": 0,
             "ge6": 0
           },
-          "spill": {
-            "spokenWordLaneShare": 0.18015322328222988,
-            "topCommercialNewsTalkShare": 0.08068336279494377,
-            "viableCommercial": 20.3,
-            "viableChr": 2.6,
-            "viableAc": 3.35,
-            "viableRock": 6.05
-          }
-        },
-        "2015": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.053146119310744755,
-            "median": 0.052879302497850666,
-            "min": 0.048247614823986984,
-            "max": 0.06462476387629573,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 20,
-            "ge6": 1
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.018253501238443087,
-            "median": 0.018442992431440215,
-            "min": 0.016151820358991653,
-            "max": 0.022289549444979247,
-            "lt2": 18,
-            "ge2": 2,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.12481199961705296,
-            "topCommercialNewsTalkShare": 0.05648126756920886,
-            "viableCommercial": 21.8,
-            "viableChr": 2.85,
-            "viableAc": 4.4,
-            "viableRock": 5.4
-          }
-        },
-        "2025": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.05458373070096858,
-            "median": 0.05468779770555751,
-            "min": 0.04735561810580697,
-            "max": 0.06601844795695866,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 20,
-            "ge6": 2
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.016899246480078654,
-            "median": 0.016890629587435223,
-            "min": 0.01459879921415152,
-            "max": 0.020715683671168994,
-            "lt2": 19,
-            "ge2": 1,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.1374969186885427,
-            "topCommercialNewsTalkShare": 0.06296562109500523,
-            "viableCommercial": 19.15,
-            "viableChr": 2.4,
-            "viableAc": 3.55,
-            "viableRock": 4.25
-          }
-        }
-      },
-      "chicago": {
-        "1985": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.046926552425906154,
-            "median": 0.04693141502907896,
-            "min": 0.04496479774584092,
-            "max": 0.04808024319281065,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 20,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.02043848290416705,
-            "median": 0.02040366244001196,
-            "min": 0.01943613011161358,
-            "max": 0.021240439544750515,
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.00549106,
+            "median": 0.00549106,
+            "min": 0.00517415,
+            "max": 0.00580797,
             "lt2": 2,
-            "ge2": 18,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.18066151687516072,
-            "topCommercialNewsTalkShare": 0.10244731931009976,
-            "viableCommercial": 11.55,
-            "viableChr": 1,
-            "viableAc": 2.05,
-            "viableRock": 3.9
-          }
-        },
-        "1995": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.034963661007640326,
-            "median": 0.03444134252183964,
-            "min": 0.03019615390638754,
-            "max": 0.03994814631681702,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.02148370579643246,
-            "median": 0.021087478779139343,
-            "min": 0.018611955793928225,
-            "max": 0.024798255485707823,
-            "lt2": 5,
-            "ge2": 15,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.21610836018556062,
-            "topCommercialNewsTalkShare": 0.10125054244991358,
-            "viableCommercial": 15,
-            "viableChr": 2.3,
-            "viableAc": 1.85,
-            "viableRock": 4.85
-          }
-        },
-        "2005": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.03589196833994823,
-            "median": 0.03469828152137537,
-            "min": 0.03175852202706387,
-            "max": 0.0456856887950524,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 2,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.017029954293788074,
-            "median": 0.016580121435002784,
-            "min": 0.014735309233810438,
-            "max": 0.021476981276960502,
-            "lt2": 18,
-            "ge2": 2,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.2111883985059833,
-            "topCommercialNewsTalkShare": 0.0961909290619549,
-            "viableCommercial": 18.6,
-            "viableChr": 2.5,
-            "viableAc": 3.2,
-            "viableRock": 4.95
-          }
-        },
-        "2015": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.04913208753511921,
-            "median": 0.04886564850985206,
-            "min": 0.04179648736734622,
-            "max": 0.0568070916346507,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 20,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.01801062446877909,
-            "median": 0.01823275066319976,
-            "min": 0.014782229965012505,
-            "max": 0.020244014702293815,
-            "lt2": 19,
-            "ge2": 1,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.14648138445237627,
-            "topCommercialNewsTalkShare": 0.06140276957454999,
-            "viableCommercial": 19.1,
-            "viableChr": 2.65,
-            "viableAc": 3.45,
-            "viableRock": 3.85
-          }
-        },
-        "2025": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.050110831264958855,
-            "median": 0.04927302261971617,
-            "min": 0.042623953980070954,
-            "max": 0.05682104859099141,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 20,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.016827100892430814,
-            "median": 0.016694529772895914,
-            "min": 0.01450236162809235,
-            "max": 0.01968133444017729,
-            "lt2": 20,
             "ge2": 0,
             "ge4": 0,
             "ge6": 0
           },
           "spill": {
-            "spokenWordLaneShare": 0.14133044594147917,
-            "topCommercialNewsTalkShare": 0.06780453970184232,
-            "viableCommercial": 15.1,
-            "viableChr": 2.2,
-            "viableAc": 2.95,
-            "viableRock": 2.9
-          }
-        }
-      },
-      "atlanta": {
-        "1985": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.03808245082285148,
-            "median": 0.037943103371837206,
-            "min": 0.037199444930510764,
-            "max": 0.038733343102941895,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.01865764497843237,
-            "median": 0.018650072355686383,
-            "min": 0.018184674107531235,
-            "max": 0.0193900368641152,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.13334148360075132,
-            "topCommercialNewsTalkShare": 0.09699756350696628,
-            "viableCommercial": 12.45,
-            "viableChr": 1.85,
-            "viableAc": 2,
-            "viableRock": 3
-          }
-        },
-        "1995": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.03522984504582991,
-            "median": 0.034949877985841336,
-            "min": 0.03124547398945482,
-            "max": 0.04196967554205013,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 2,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.02436586877559061,
-            "median": 0.024087121306024393,
-            "min": 0.02144969139412472,
-            "max": 0.029753477081926324,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.19730085602131653,
-            "topCommercialNewsTalkShare": 0.10135139302859106,
-            "viableCommercial": 12.35,
-            "viableChr": 1.05,
-            "viableAc": 1.05,
-            "viableRock": 4.3
-          }
-        },
-        "2005": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.03489075949772873,
-            "median": 0.0351304912749586,
-            "min": 0.027407526920924904,
-            "max": 0.04190385000252709,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 2,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.019867128852924333,
-            "median": 0.0199905855812019,
-            "min": 0.01568378258105819,
-            "max": 0.02417975650088723,
-            "lt2": 10,
-            "ge2": 10,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.1879180956475311,
-            "topCommercialNewsTalkShare": 0.08870523166358513,
-            "viableCommercial": 17.55,
-            "viableChr": 2.25,
-            "viableAc": 2.65,
-            "viableRock": 4.95
-          }
-        },
-        "2015": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.04128250586020081,
-            "median": 0.0405780024534801,
-            "min": 0.03509002085227977,
-            "max": 0.05149373376192522,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 12,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.019648571356848214,
-            "median": 0.019149813981657153,
-            "min": 0.016709148526200854,
-            "max": 0.025083117436569526,
-            "lt2": 14,
-            "ge2": 6,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.1573057980384452,
-            "topCommercialNewsTalkShare": 0.07054762762858154,
-            "viableCommercial": 16.5,
-            "viableChr": 2.5,
-            "viableAc": 3.2,
-            "viableRock": 4.3
-          }
-        },
-        "2025": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.04388736138702505,
-            "median": 0.04299431164007421,
-            "min": 0.03831652092485574,
-            "max": 0.05076228197497712,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 18,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.02011258452551041,
-            "median": 0.019863515564835198,
-            "min": 0.017298543272234894,
-            "max": 0.02383936280664081,
-            "lt2": 10,
-            "ge2": 10,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.13128772114471607,
-            "topCommercialNewsTalkShare": 0.06648532261466546,
-            "viableCommercial": 15.15,
-            "viableChr": 2.45,
-            "viableAc": 3.05,
-            "viableRock": 4.1
-          }
-        }
-      },
-      "nashville": {
-        "1985": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.03438410128454651,
-            "median": 0.0343952137609896,
-            "min": 0.032740882921846536,
-            "max": 0.035567608717092164,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.017411301134326648,
-            "median": 0.017438788877282334,
-            "min": 0.016803808910915877,
-            "max": 0.017966955458365463,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.12516273400950925,
-            "topCommercialNewsTalkShare": 0.09326383153782963,
-            "viableCommercial": 10.1,
-            "viableChr": 1.15,
-            "viableAc": 2,
-            "viableRock": 2.6
-          }
-        },
-        "1995": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.03192619522971506,
-            "median": 0.03187021322709224,
-            "min": 0.02825630428551431,
-            "max": 0.035827599433981505,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.023109237587656793,
-            "median": 0.02305336253212404,
-            "min": 0.020631161165371118,
-            "max": 0.02665252517944396,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.1807174785910895,
-            "topCommercialNewsTalkShare": 0.09700490210494561,
-            "viableCommercial": 11.3,
-            "viableChr": 1,
-            "viableAc": 1,
-            "viableRock": 3.65
-          }
-        },
-        "2005": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.029904089401362362,
-            "median": 0.030358575580623264,
-            "min": 0.02514733126125983,
-            "max": 0.033033089561708515,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.018800305377320612,
-            "median": 0.019057160080587034,
-            "min": 0.015345929998675605,
-            "max": 0.020881300137396593,
-            "lt2": 16,
-            "ge2": 4,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.19657762779479246,
-            "topCommercialNewsTalkShare": 0.09032240393764146,
-            "viableCommercial": 18.1,
-            "viableChr": 2.1,
-            "viableAc": 2.9,
-            "viableRock": 4.7
-          }
-        },
-        "2015": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.03148343234890501,
-            "median": 0.030480232100583954,
-            "min": 0.027550770689573952,
-            "max": 0.03882309046447876,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.017162884036953756,
-            "median": 0.0166334406263363,
-            "min": 0.014942417960463687,
-            "max": 0.02176542408406921,
-            "lt2": 19,
-            "ge2": 1,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.15945737923997869,
-            "topCommercialNewsTalkShare": 0.07170404547451188,
-            "viableCommercial": 15.2,
-            "viableChr": 2.25,
-            "viableAc": 2.95,
-            "viableRock": 3.95
-          }
-        },
-        "2025": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.03463541603766253,
-            "median": 0.034711597609385816,
-            "min": 0.029197981915438345,
-            "max": 0.03961955115723415,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.018395977406233385,
-            "median": 0.018697371437929412,
-            "min": 0.015656520930796433,
-            "max": 0.02099647885838314,
-            "lt2": 17,
-            "ge2": 3,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.13754022255975878,
-            "topCommercialNewsTalkShare": 0.0717542988219641,
-            "viableCommercial": 13.35,
-            "viableChr": 2.25,
-            "viableAc": 2.9,
-            "viableRock": 2.4
-          }
-        }
-      },
-      "seattle": {
-        "1985": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.04569653928563898,
-            "median": 0.04570224092112542,
-            "min": 0.043420090534950384,
-            "max": 0.04709323795338872,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 20,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.01940776705914512,
-            "median": 0.019402990897364174,
-            "min": 0.01863119681399215,
-            "max": 0.02006981176143697,
-            "lt2": 18,
-            "ge2": 2,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.13220975033870414,
-            "topCommercialNewsTalkShare": 0.09667461239138915,
-            "viableCommercial": 12.1,
-            "viableChr": 1.45,
-            "viableAc": 2,
-            "viableRock": 3.2
-          }
-        },
-        "1995": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.04124797032093672,
-            "median": 0.041400912987462624,
-            "min": 0.036171902138851665,
-            "max": 0.04906449830554404,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 14,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.024600859309387345,
-            "median": 0.024781345736811816,
-            "min": 0.02112873889093863,
-            "max": 0.029508780329562497,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.1908858114530237,
-            "topCommercialNewsTalkShare": 0.10049809084385204,
-            "viableCommercial": 12.3,
-            "viableChr": 1,
-            "viableAc": 1.1,
-            "viableRock": 4.6
-          }
-        },
-        "2005": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.04519734895159481,
-            "median": 0.04462646668425547,
-            "min": 0.03787906800232978,
-            "max": 0.05527671367175036,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 16,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.021216306316993724,
-            "median": 0.020746688065805537,
-            "min": 0.01802488048804416,
-            "max": 0.02710766634326156,
-            "lt2": 9,
-            "ge2": 11,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.18658330852139585,
-            "topCommercialNewsTalkShare": 0.09335628706375948,
-            "viableCommercial": 17.2,
-            "viableChr": 2.1,
-            "viableAc": 2.6,
-            "viableRock": 4.9
-          }
-        },
-        "2015": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.05922183144632802,
-            "median": 0.05750994317765925,
-            "min": 0.05165434355507696,
-            "max": 0.0696560243309828,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 20,
-            "ge6": 8
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.020344390532679276,
-            "median": 0.01994462028935246,
-            "min": 0.017649106522750937,
-            "max": 0.024348948513619625,
-            "lt2": 10,
-            "ge2": 10,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.15886452912314958,
-            "topCommercialNewsTalkShare": 0.07490115637646315,
-            "viableCommercial": 14,
-            "viableChr": 2.05,
-            "viableAc": 2.75,
-            "viableRock": 3.75
-          }
-        },
-        "2025": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.06651862919652636,
-            "median": 0.0662885441209537,
-            "min": 0.054615035561353144,
-            "max": 0.07807347125014862,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 20,
-            "ge6": 19
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.021172339912547435,
-            "median": 0.020509590066365206,
-            "min": 0.017840089704929573,
-            "max": 0.025001731471195873,
-            "lt2": 6,
-            "ge2": 14,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.12698862728266708,
-            "topCommercialNewsTalkShare": 0.06752783634402956,
-            "viableCommercial": 15.05,
-            "viableChr": 2.35,
-            "viableAc": 3.25,
-            "viableRock": 3.55
-          }
-        }
-      }
-    },
-    "baseline": {
-      "newyork": {
-        "1985": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.025742720805415807,
-            "median": 0.025709851008246434,
-            "min": 0.024991267543647958,
-            "max": 0.027056617066563225,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.012600280716142182,
-            "median": 0.012589673784719181,
-            "min": 0.012174049574742997,
-            "max": 0.013281214765397486,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.2393866649601793,
-            "topCommercialNewsTalkShare": 0.10394729176197123,
-            "viableCommercial": 13.65,
-            "viableChr": 1.65,
-            "viableAc": 2,
-            "viableRock": 5
-          }
-        },
-        "1995": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.01715294626052651,
-            "median": 0.016784728560709845,
-            "min": 0.014374853796316025,
-            "max": 0.019818747595061446,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.012069091619373452,
-            "median": 0.011868423068246241,
-            "min": 0.010062256256749195,
-            "max": 0.013894961348509224,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.24399582615858528,
-            "topCommercialNewsTalkShare": 0.11001737199247044,
-            "viableCommercial": 16.55,
-            "viableChr": 2.6,
-            "viableAc": 2.15,
-            "viableRock": 6
-          }
-        },
-        "2005": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.01262524046547558,
-            "median": 0.012463241404438821,
-            "min": 0.01031599,
-            "max": 0.015529557502138403,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.008726450939367065,
-            "median": 0.008668688669402012,
-            "min": 0.00705934,
-            "max": 0.01095153410328487,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.26611878592663907,
-            "topCommercialNewsTalkShare": 0.1155073193988593,
-            "viableCommercial": 19,
-            "viableChr": 2.65,
-            "viableAc": 2.9,
-            "viableRock": 5.25
-          }
-        },
-        "2015": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.01343146697787725,
-            "median": 0.01340553606269711,
-            "min": 0.011464386433833839,
-            "max": 0.016014775432522284,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.00976095260168361,
-            "median": 0.009672899296228653,
-            "min": 0.008186397349580595,
-            "max": 0.012023213001568785,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.20484404712143428,
-            "topCommercialNewsTalkShare": 0.08808762188535808,
-            "viableCommercial": 22.8,
-            "viableChr": 2.85,
-            "viableAc": 4.25,
-            "viableRock": 5.2
-          }
-        },
-        "2025": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.013416503943587912,
-            "median": 0.013450322722728295,
-            "min": 0.011312608141941596,
-            "max": 0.015913588174840516,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.009392292049615319,
-            "median": 0.009426560695356485,
-            "min": 0.00785691883864023,
-            "max": 0.011137719597103113,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.1832658478788068,
-            "topCommercialNewsTalkShare": 0.0852847639924078,
-            "viableCommercial": 19.15,
-            "viableChr": 2.55,
-            "viableAc": 4.2,
-            "viableRock": 3.65
-          }
-        }
-      },
-      "losangeles": {
-        "1985": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.03158365090478155,
-            "median": 0.031590357139645905,
-            "min": 0.030727021674611717,
-            "max": 0.032506419339502,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.015480358234844421,
-            "median": 0.015509746413716469,
-            "min": 0.01511108218162542,
-            "max": 0.015804726558626202,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.14489120073660458,
-            "topCommercialNewsTalkShare": 0.10382101076450663,
-            "viableCommercial": 13.45,
-            "viableChr": 1.25,
-            "viableAc": 2,
+            "spokenWordLaneShare": 0.174663405,
+            "topCommercialNewsTalkShare": 0.06817626,
+            "viableCommercial": 17.5,
+            "viableChr": 0.5,
+            "viableAc": 4,
             "viableRock": 6
           }
         },
         "1995": {
           "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.019224686072696427,
-            "median": 0.01916430428631795,
-            "min": 0.01590208752984639,
-            "max": 0.02293664728094053,
-            "lt2": 13,
-            "ge2": 7,
+            "n": 2,
+            "mean": 0.02055633,
+            "median": 0.02055633,
+            "min": 0.02009566,
+            "max": 0.021017,
+            "lt2": 0,
+            "ge2": 2,
             "ge4": 0,
             "ge6": 0
           },
           "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.013447089859147415,
-            "median": 0.013571244402358913,
-            "min": 0.011045066737859216,
-            "max": 0.01605412605739263,
-            "lt2": 20,
+            "n": 2,
+            "mean": 0.009701645,
+            "median": 0.009701645,
+            "min": 0.00945101,
+            "max": 0.00995228,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.006437385,
+            "median": 0.006437385,
+            "min": 0.00628362,
+            "max": 0.00659115,
+            "lt2": 2,
             "ge2": 0,
             "ge4": 0,
             "ge6": 0
           },
           "spill": {
-            "spokenWordLaneShare": 0.17823556736711538,
-            "topCommercialNewsTalkShare": 0.0841691750773223,
-            "viableCommercial": 16.25,
+            "spokenWordLaneShare": 0.207730835,
+            "topCommercialNewsTalkShare": 0.087963465,
+            "viableCommercial": 24,
             "viableChr": 2,
-            "viableAc": 2.1,
-            "viableRock": 6.55
+            "viableAc": 5.5,
+            "viableRock": 5.5
           }
         },
         "2005": {
           "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.013848313843130896,
-            "median": 0.013708217772337872,
-            "min": 0.012182773468701865,
-            "max": 0.01658586811160062,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.009576609886408145,
-            "median": 0.00950483856489191,
-            "min": 0.00826632783520496,
-            "max": 0.011797889451324617,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.18111720261163075,
-            "topCommercialNewsTalkShare": 0.08373174991520735,
-            "viableCommercial": 21,
-            "viableChr": 2.5,
-            "viableAc": 3.4,
-            "viableRock": 5.9
-          }
-        },
-        "2015": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.014198502825800752,
-            "median": 0.01393830329940492,
-            "min": 0.012657554394668693,
-            "max": 0.017790414701723378,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.010245475288703234,
-            "median": 0.010146848449980142,
-            "min": 0.008828351642799255,
-            "max": 0.013322490022962223,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.13173711432647806,
-            "topCommercialNewsTalkShare": 0.05803270516303921,
-            "viableCommercial": 21.95,
-            "viableChr": 2.8,
-            "viableAc": 3.9,
-            "viableRock": 5.15
-          }
-        },
-        "2025": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.013458500987878133,
-            "median": 0.013358211065388021,
-            "min": 0.011168965461849183,
-            "max": 0.017029126399193923,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.009341991203477501,
-            "median": 0.009249530246513427,
-            "min": 0.0077227858434745465,
-            "max": 0.012075844914097297,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.15297778957099267,
-            "topCommercialNewsTalkShare": 0.07438148164318772,
-            "viableCommercial": 18.35,
-            "viableChr": 2.35,
-            "viableAc": 3.5,
-            "viableRock": 3.75
-          }
-        }
-      },
-      "chicago": {
-        "1985": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.02906073441400329,
-            "median": 0.029056116298808818,
-            "min": 0.02781162272714766,
-            "max": 0.029890013661626587,
+            "n": 2,
+            "mean": 0.021774985,
+            "median": 0.021774985,
+            "min": 0.02109651,
+            "max": 0.02245346,
             "lt2": 0,
-            "ge2": 20,
+            "ge2": 2,
             "ge4": 0,
             "ge6": 0
           },
           "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.014345830573308951,
-            "median": 0.014332260614342278,
-            "min": 0.013585807855172834,
-            "max": 0.014919118535794937,
-            "lt2": 20,
+            "n": 2,
+            "mean": 0.007890935,
+            "median": 0.007890935,
+            "min": 0.00785111,
+            "max": 0.00793076,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.012398275,
+            "median": 0.012398275,
+            "min": 0.01179585,
+            "max": 0.0130007,
+            "lt2": 2,
             "ge2": 0,
             "ge4": 0,
             "ge6": 0
           },
           "spill": {
-            "spokenWordLaneShare": 0.18750946891718362,
-            "topCommercialNewsTalkShare": 0.10594799981114258,
-            "viableCommercial": 11.4,
-            "viableChr": 1,
-            "viableAc": 2.05,
-            "viableRock": 3.7
-          }
-        },
-        "1995": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.019061586396658305,
-            "median": 0.018828057743130396,
-            "min": 0.01620805151342141,
-            "max": 0.022790826789529386,
-            "lt2": 17,
-            "ge2": 3,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.013349413149436523,
-            "median": 0.013227764544749849,
-            "min": 0.011340788805846318,
-            "max": 0.016462223987397093,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.21445804131516413,
-            "topCommercialNewsTalkShare": 0.0914249474637235,
-            "viableCommercial": 14.7,
-            "viableChr": 2.15,
-            "viableAc": 1.8,
-            "viableRock": 4.85
-          }
-        },
-        "2005": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.014951993381697695,
-            "median": 0.014847905777044847,
-            "min": 0.013256531289092129,
-            "max": 0.017528159833869513,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.010426263998749328,
-            "median": 0.010327502788724945,
-            "min": 0.009078514090418746,
-            "max": 0.012301325231852206,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.21410431862642473,
-            "topCommercialNewsTalkShare": 0.09529195648037725,
-            "viableCommercial": 19.2,
-            "viableChr": 2.4,
-            "viableAc": 3.1,
-            "viableRock": 4.75
-          }
-        },
-        "2015": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.014012731630835606,
-            "median": 0.013753010889664638,
-            "min": 0.012170378896242581,
-            "max": 0.017785555731278165,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.009993125741884101,
-            "median": 0.009869516375629167,
-            "min": 0.008320625778885798,
-            "max": 0.012926346268534224,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.16999959681740678,
-            "topCommercialNewsTalkShare": 0.07928456728636299,
-            "viableCommercial": 20.05,
-            "viableChr": 2.65,
-            "viableAc": 4.1,
-            "viableRock": 3.95
-          }
-        },
-        "2025": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.013496085975281282,
-            "median": 0.013478480028522291,
-            "min": 0.011904617912251792,
-            "max": 0.01485939576280216,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.009366251357454308,
-            "median": 0.009356508909670193,
-            "min": 0.008200059404142628,
-            "max": 0.010694829267743244,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.1365987784158484,
-            "topCommercialNewsTalkShare": 0.06750255604109892,
-            "viableCommercial": 15.95,
-            "viableChr": 2.2,
-            "viableAc": 2.7,
-            "viableRock": 3.25
-          }
-        }
-      },
-      "atlanta": {
-        "1985": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.026762268699180497,
-            "median": 0.026735597541049864,
-            "min": 0.026024044249942865,
-            "max": 0.027397038467737066,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.013079105341223921,
-            "median": 0.01306745508746154,
-            "min": 0.01266267960035345,
-            "max": 0.01368929546776965,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.13669003089382584,
-            "topCommercialNewsTalkShare": 0.0992360777403147,
-            "viableCommercial": 12.55,
-            "viableChr": 1.85,
-            "viableAc": 2,
-            "viableRock": 3
-          }
-        },
-        "1995": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.022509566222893497,
-            "median": 0.022636806269964106,
-            "min": 0.019233682757703784,
-            "max": 0.025903771517850248,
-            "lt2": 1,
-            "ge2": 19,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.015530029575851614,
-            "median": 0.015666865691110265,
-            "min": 0.01328187198184239,
-            "max": 0.0180582751991016,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.19942874686074508,
-            "topCommercialNewsTalkShare": 0.09914113322570131,
-            "viableCommercial": 12.65,
-            "viableChr": 1,
-            "viableAc": 1.05,
+            "spokenWordLaneShare": 0.18613047500000002,
+            "topCommercialNewsTalkShare": 0.08305675,
+            "viableCommercial": 27,
+            "viableChr": 3,
+            "viableAc": 5,
             "viableRock": 4.5
           }
         },
-        "2005": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.017802675348911876,
-            "median": 0.01760549696527046,
-            "min": 0.015165337705382134,
-            "max": 0.020374344318328134,
-            "lt2": 17,
-            "ge2": 3,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.012349900476122925,
-            "median": 0.012305436432412338,
-            "min": 0.01039142399179145,
-            "max": 0.014244654834625519,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.19944632503148513,
-            "topCommercialNewsTalkShare": 0.08957983287993175,
-            "viableCommercial": 18.4,
-            "viableChr": 2.85,
-            "viableAc": 2.9,
-            "viableRock": 5.05
-          }
-        },
         "2015": {
           "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.017150053515751832,
-            "median": 0.016869219642200436,
-            "min": 0.015475901836925814,
-            "max": 0.020105765703028796,
-            "lt2": 19,
-            "ge2": 1,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.012154586421686694,
-            "median": 0.011997918772012228,
-            "min": 0.010718332847693284,
-            "max": 0.014789140968606162,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.16480850385275628,
-            "topCommercialNewsTalkShare": 0.07199745133686306,
-            "viableCommercial": 16.9,
-            "viableChr": 2.6,
-            "viableAc": 3.35,
-            "viableRock": 4.45
-          }
-        },
-        "2025": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.01710606718002509,
-            "median": 0.016927083000578075,
-            "min": 0.014988571182676439,
-            "max": 0.021063376602706477,
-            "lt2": 18,
+            "n": 2,
+            "mean": 0.036721985,
+            "median": 0.036721985,
+            "min": 0.03643995,
+            "max": 0.03700402,
+            "lt2": 0,
             "ge2": 2,
             "ge4": 0,
             "ge6": 0
           },
           "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.011972980465885808,
-            "median": 0.011793296798550124,
-            "min": 0.010344380888876528,
-            "max": 0.015126515151255288,
-            "lt2": 20,
+            "n": 2,
+            "mean": 0.009354645,
+            "median": 0.009354645,
+            "min": 0.00903967,
+            "max": 0.00966962,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.0142291,
+            "median": 0.0142291,
+            "min": 0.01411379,
+            "max": 0.01434441,
+            "lt2": 2,
             "ge2": 0,
             "ge4": 0,
             "ge6": 0
           },
           "spill": {
-            "spokenWordLaneShare": 0.14943858520843084,
-            "topCommercialNewsTalkShare": 0.06999579607158943,
-            "viableCommercial": 14.3,
-            "viableChr": 2.15,
-            "viableAc": 3.15,
-            "viableRock": 3.25
-          }
-        }
-      },
-      "nashville": {
-        "1985": {
-          "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.024981885788070573,
-            "median": 0.024940074099701035,
-            "min": 0.023622338465051497,
-            "max": 0.02585377862362056,
-            "lt2": 0,
-            "ge2": 20,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.012233160889119101,
-            "median": 0.012252786520635849,
-            "min": 0.011792742511473293,
-            "max": 0.012629867485006212,
-            "lt2": 20,
-            "ge2": 0,
-            "ge4": 0,
-            "ge6": 0
-          },
-          "spill": {
-            "spokenWordLaneShare": 0.12808633348752124,
-            "topCommercialNewsTalkShare": 0.09529001558808406,
-            "viableCommercial": 9.95,
-            "viableChr": 1.05,
-            "viableAc": 2,
+            "spokenWordLaneShare": 0.222774475,
+            "topCommercialNewsTalkShare": 0.115262855,
+            "viableCommercial": 24.5,
+            "viableChr": 3,
+            "viableAc": 5,
             "viableRock": 2.5
           }
         },
-        "1995": {
+        "2025": {
           "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.021581549079816062,
-            "median": 0.020994415217441442,
-            "min": 0.01929794995656262,
-            "max": 0.027004960602579963,
-            "lt2": 3,
-            "ge2": 17,
-            "ge4": 0,
+            "n": 2,
+            "mean": 0.043581419999999996,
+            "median": 0.043581419999999996,
+            "min": 0.04103105,
+            "max": 0.04613179,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 2,
             "ge6": 0
           },
           "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.01480015288138312,
-            "median": 0.014285678983383916,
-            "min": 0.0130474521419645,
-            "max": 0.019008401536964085,
-            "lt2": 20,
+            "n": 2,
+            "mean": 0.010214625,
+            "median": 0.010214625,
+            "min": 0.00954741,
+            "max": 0.01088184,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.015652640000000002,
+            "median": 0.015652640000000002,
+            "min": 0.01496521,
+            "max": 0.01634007,
+            "lt2": 2,
             "ge2": 0,
             "ge4": 0,
             "ge6": 0
           },
           "spill": {
-            "spokenWordLaneShare": 0.18248194849181415,
-            "topCommercialNewsTalkShare": 0.09814212486623745,
-            "viableCommercial": 11.85,
-            "viableChr": 1,
-            "viableAc": 1.05,
-            "viableRock": 3.9
+            "spokenWordLaneShare": 0.18322284,
+            "topCommercialNewsTalkShare": 0.08849385,
+            "viableCommercial": 23,
+            "viableChr": 2.5,
+            "viableAc": 5.5,
+            "viableRock": 4.5
+          }
+        }
+      },
+      "losangeles": {
+        "1985": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.03367564,
+            "median": 0.03367564,
+            "min": 0.03221262,
+            "max": 0.03513866,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.010075259999999999,
+            "median": 0.010075259999999999,
+            "min": 0.00962313,
+            "max": 0.01052739,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "max": null,
+            "lt2": 0,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.12476253000000001,
+            "topCommercialNewsTalkShare": 0.07773858,
+            "viableCommercial": 15,
+            "viableChr": 0,
+            "viableAc": 4,
+            "viableRock": 5.5
+          }
+        },
+        "1995": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.030479254999999997,
+            "median": 0.030479254999999997,
+            "min": 0.02848902,
+            "max": 0.03246949,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.01223397,
+            "median": 0.01223397,
+            "min": 0.01139463,
+            "max": 0.01307331,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "max": null,
+            "lt2": 0,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.10384322,
+            "topCommercialNewsTalkShare": 0.057346725,
+            "viableCommercial": 25.5,
+            "viableChr": 2.5,
+            "viableAc": 4.5,
+            "viableRock": 4.5
           }
         },
         "2005": {
           "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.018133190736372172,
-            "median": 0.01746639101816838,
-            "min": 0.015825625467312116,
-            "max": 0.0244140380416807,
-            "lt2": 17,
-            "ge2": 3,
+            "n": 2,
+            "mean": 0.02877072,
+            "median": 0.02877072,
+            "min": 0.02739654,
+            "max": 0.0301449,
+            "lt2": 0,
+            "ge2": 2,
             "ge4": 0,
             "ge6": 0
           },
           "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.01258887028116897,
-            "median": 0.01203298739996876,
-            "min": 0.0109337042710086,
-            "max": 0.017133323056550052,
-            "lt2": 20,
+            "n": 2,
+            "mean": 0.008546024999999999,
+            "median": 0.008546024999999999,
+            "min": 0.00811481,
+            "max": 0.00897724,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "max": null,
+            "lt2": 0,
             "ge2": 0,
             "ge4": 0,
             "ge6": 0
           },
           "spill": {
-            "spokenWordLaneShare": 0.19946056932551431,
-            "topCommercialNewsTalkShare": 0.09485161253608508,
-            "viableCommercial": 17.65,
-            "viableChr": 2.2,
-            "viableAc": 2.35,
-            "viableRock": 4.9
+            "spokenWordLaneShare": 0.160074245,
+            "topCommercialNewsTalkShare": 0.060349605,
+            "viableCommercial": 23.5,
+            "viableChr": 3,
+            "viableAc": 4,
+            "viableRock": 4
           }
         },
         "2015": {
           "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.016540176630245484,
-            "median": 0.016510451247104797,
-            "min": 0.013611266751597212,
-            "max": 0.02165635310531245,
-            "lt2": 19,
-            "ge2": 1,
-            "ge4": 0,
+            "n": 2,
+            "mean": 0.050173604999999996,
+            "median": 0.050173604999999996,
+            "min": 0.04840008,
+            "max": 0.05194713,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 2,
             "ge6": 0
           },
           "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.011696216871235064,
-            "median": 0.011570250677508945,
-            "min": 0.009447493475695288,
-            "max": 0.015270376301337126,
-            "lt2": 20,
+            "n": 2,
+            "mean": 0.010739499999999999,
+            "median": 0.010739499999999999,
+            "min": 0.01044006,
+            "max": 0.01103894,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "max": null,
+            "lt2": 0,
             "ge2": 0,
             "ge4": 0,
             "ge6": 0
           },
           "spill": {
-            "spokenWordLaneShare": 0.15712851135994912,
-            "topCommercialNewsTalkShare": 0.07052368487681115,
-            "viableCommercial": 15.45,
-            "viableChr": 2.15,
-            "viableAc": 2.9,
-            "viableRock": 3.8
+            "spokenWordLaneShare": 0.08997967500000001,
+            "topCommercialNewsTalkShare": 0.063376845,
+            "viableCommercial": 27.5,
+            "viableChr": 2.5,
+            "viableAc": 6,
+            "viableRock": 5
           }
         },
         "2025": {
           "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.01669518572303763,
-            "median": 0.016750725435097716,
-            "min": 0.014405387120018626,
-            "max": 0.020390482023735463,
-            "lt2": 19,
-            "ge2": 1,
-            "ge4": 0,
+            "n": 2,
+            "mean": 0.050869235,
+            "median": 0.050869235,
+            "min": 0.04938422,
+            "max": 0.05235425,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 2,
             "ge6": 0
           },
           "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.011673205493129635,
-            "median": 0.01168570702589401,
-            "min": 0.009916273034159418,
-            "max": 0.014396510648235732,
-            "lt2": 20,
+            "n": 2,
+            "mean": 0.00992354,
+            "median": 0.00992354,
+            "min": 0.00948501,
+            "max": 0.01036207,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "max": null,
+            "lt2": 0,
             "ge2": 0,
             "ge4": 0,
             "ge6": 0
           },
           "spill": {
-            "spokenWordLaneShare": 0.13423153090049614,
-            "topCommercialNewsTalkShare": 0.07085136635799423,
-            "viableCommercial": 13.45,
-            "viableChr": 2.05,
-            "viableAc": 2.9,
-            "viableRock": 2.85
+            "spokenWordLaneShare": 0.15123663499999998,
+            "topCommercialNewsTalkShare": 0.07842964,
+            "viableCommercial": 24,
+            "viableChr": 3,
+            "viableAc": 5.5,
+            "viableRock": 4
+          }
+        }
+      },
+      "chicago": {
+        "1985": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.028681384999999997,
+            "median": 0.028681384999999997,
+            "min": 0.02748481,
+            "max": 0.02987796,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.010819385,
+            "median": 0.010819385,
+            "min": 0.01028984,
+            "max": 0.01134893,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.00431812,
+            "median": 0.00431812,
+            "min": 0.0041345,
+            "max": 0.00450174,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.133826565,
+            "topCommercialNewsTalkShare": 0.06611793,
+            "viableCommercial": 12.5,
+            "viableChr": 0,
+            "viableAc": 4,
+            "viableRock": 4
+          }
+        },
+        "1995": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.02515348,
+            "median": 0.02515348,
+            "min": 0.02410175,
+            "max": 0.02620521,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.013524564999999999,
+            "median": 0.013524564999999999,
+            "min": 0.0130151,
+            "max": 0.01403403,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.00584786,
+            "median": 0.00584786,
+            "min": 0.0057229,
+            "max": 0.00597282,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.13429565,
+            "topCommercialNewsTalkShare": 0.078452125,
+            "viableCommercial": 23.5,
+            "viableChr": 2,
+            "viableAc": 4.5,
+            "viableRock": 5
+          }
+        },
+        "2005": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.02085074,
+            "median": 0.02085074,
+            "min": 0.02042208,
+            "max": 0.0212794,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.008718420000000001,
+            "median": 0.008718420000000001,
+            "min": 0.00867252,
+            "max": 0.00876432,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.01008799,
+            "median": 0.01008799,
+            "min": 0.01000748,
+            "max": 0.0101685,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.17235804,
+            "topCommercialNewsTalkShare": 0.069726015,
+            "viableCommercial": 25,
+            "viableChr": 2.5,
+            "viableAc": 4,
+            "viableRock": 5
+          }
+        },
+        "2015": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.027342575,
+            "median": 0.027342575,
+            "min": 0.02482881,
+            "max": 0.02985634,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.00851816,
+            "median": 0.00851816,
+            "min": 0.00768412,
+            "max": 0.0093522,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.009649365,
+            "median": 0.009649365,
+            "min": 0.00906809,
+            "max": 0.01023064,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.17228756999999997,
+            "topCommercialNewsTalkShare": 0.08411616499999999,
+            "viableCommercial": 20.5,
+            "viableChr": 2.5,
+            "viableAc": 3.5,
+            "viableRock": 3
+          }
+        },
+        "2025": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.03660821,
+            "median": 0.03660821,
+            "min": 0.03214329,
+            "max": 0.04107313,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 1,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.0101364,
+            "median": 0.0101364,
+            "min": 0.00880061,
+            "max": 0.01147219,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.012020175000000001,
+            "median": 0.012020175000000001,
+            "min": 0.01088438,
+            "max": 0.01315597,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.14113946,
+            "topCommercialNewsTalkShare": 0.075670755,
+            "viableCommercial": 20,
+            "viableChr": 2.5,
+            "viableAc": 5,
+            "viableRock": 3.5
           }
         }
       },
       "seattle": {
         "1985": {
           "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.02787115527428243,
-            "median": 0.02784651492279541,
-            "min": 0.02634281684000077,
-            "max": 0.028832810691469847,
+            "n": 2,
+            "mean": 0.03195885,
+            "median": 0.03195885,
+            "min": 0.03169181,
+            "max": 0.03222589,
             "lt2": 0,
-            "ge2": 20,
+            "ge2": 2,
             "ge4": 0,
             "ge6": 0
           },
           "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.01363830193641718,
-            "median": 0.013625431480507995,
-            "min": 0.013131206571053218,
-            "max": 0.014209593362307643,
-            "lt2": 20,
+            "n": 2,
+            "mean": 0.01157783,
+            "median": 0.01157783,
+            "min": 0.01147285,
+            "max": 0.01168281,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.00476036,
+            "median": 0.00476036,
+            "min": 0.00467145,
+            "max": 0.00484927,
+            "lt2": 2,
             "ge2": 0,
             "ge4": 0,
             "ge6": 0
           },
           "spill": {
-            "spokenWordLaneShare": 0.13693107638850177,
-            "topCommercialNewsTalkShare": 0.09984777229163802,
-            "viableCommercial": 11.9,
-            "viableChr": 1.3,
-            "viableAc": 2,
-            "viableRock": 3.15
+            "spokenWordLaneShare": 0.105210935,
+            "topCommercialNewsTalkShare": 0.08209322,
+            "viableCommercial": 12.5,
+            "viableChr": 1.5,
+            "viableAc": 3,
+            "viableRock": 3
           }
         },
         "1995": {
           "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.02203576031475848,
-            "median": 0.02216341929325972,
-            "min": 0.01946248924530815,
-            "max": 0.024457053485369272,
-            "lt2": 2,
-            "ge2": 18,
+            "n": 2,
+            "mean": 0.02847764,
+            "median": 0.02847764,
+            "min": 0.02736257,
+            "max": 0.02959271,
+            "lt2": 0,
+            "ge2": 2,
             "ge4": 0,
             "ge6": 0
           },
           "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.015196608865876959,
-            "median": 0.015329046081295285,
-            "min": 0.013200415381016732,
-            "max": 0.01703871824249368,
-            "lt2": 20,
+            "n": 2,
+            "mean": 0.01447057,
+            "median": 0.01447057,
+            "min": 0.01406051,
+            "max": 0.01488063,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.0064797399999999995,
+            "median": 0.0064797399999999995,
+            "min": 0.00627764,
+            "max": 0.00668184,
+            "lt2": 2,
             "ge2": 0,
             "ge4": 0,
             "ge6": 0
           },
           "spill": {
-            "spokenWordLaneShare": 0.19906463195761384,
-            "topCommercialNewsTalkShare": 0.10084835830402183,
-            "viableCommercial": 12.65,
-            "viableChr": 1,
-            "viableAc": 1,
+            "spokenWordLaneShare": 0.12162382,
+            "topCommercialNewsTalkShare": 0.0886648,
+            "viableCommercial": 15.5,
+            "viableChr": 2.5,
+            "viableAc": 2,
             "viableRock": 4.5
           }
         },
         "2005": {
           "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.017621796504421507,
-            "median": 0.01769095986498189,
-            "min": 0.014711120476884857,
-            "max": 0.01898022052611627,
-            "lt2": 20,
-            "ge2": 0,
+            "n": 2,
+            "mean": 0.02608469,
+            "median": 0.02608469,
+            "min": 0.02524491,
+            "max": 0.02692447,
+            "lt2": 0,
+            "ge2": 2,
             "ge4": 0,
             "ge6": 0
           },
           "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.012156736463395459,
-            "median": 0.012158566135043077,
-            "min": 0.00999428682272954,
-            "max": 0.013253010545898745,
-            "lt2": 20,
+            "n": 2,
+            "mean": 0.010633545,
+            "median": 0.010633545,
+            "min": 0.01037931,
+            "max": 0.01088778,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.011685190000000002,
+            "median": 0.011685190000000002,
+            "min": 0.01087356,
+            "max": 0.01249682,
+            "lt2": 2,
             "ge2": 0,
             "ge4": 0,
             "ge6": 0
           },
           "spill": {
-            "spokenWordLaneShare": 0.20025457890286189,
-            "topCommercialNewsTalkShare": 0.09207957612165003,
-            "viableCommercial": 18.45,
-            "viableChr": 2.35,
-            "viableAc": 2.45,
-            "viableRock": 5.15
+            "spokenWordLaneShare": 0.14301086500000001,
+            "topCommercialNewsTalkShare": 0.07684835000000001,
+            "viableCommercial": 22.5,
+            "viableChr": 3,
+            "viableAc": 4,
+            "viableRock": 5
           }
         },
         "2015": {
           "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.017153213053495094,
-            "median": 0.01717540543139326,
-            "min": 0.014584047499854607,
-            "max": 0.02069074858436028,
-            "lt2": 19,
-            "ge2": 1,
+            "n": 2,
+            "mean": 0.0363039,
+            "median": 0.0363039,
+            "min": 0.0353241,
+            "max": 0.0372837,
+            "lt2": 0,
+            "ge2": 2,
             "ge4": 0,
             "ge6": 0
           },
           "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.012070335398724943,
-            "median": 0.012122685241025274,
-            "min": 0.010095112124996211,
-            "max": 0.014809949205684783,
-            "lt2": 20,
+            "n": 2,
+            "mean": 0.011103405,
+            "median": 0.011103405,
+            "min": 0.01032895,
+            "max": 0.01187786,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.012064410000000001,
+            "median": 0.012064410000000001,
+            "min": 0.01198337,
+            "max": 0.01214545,
+            "lt2": 2,
             "ge2": 0,
             "ge4": 0,
             "ge6": 0
           },
           "spill": {
-            "spokenWordLaneShare": 0.1574692426863641,
-            "topCommercialNewsTalkShare": 0.0751740135752509,
-            "viableCommercial": 16.25,
-            "viableChr": 2.05,
-            "viableAc": 3.3,
-            "viableRock": 4.35
+            "spokenWordLaneShare": 0.09737009999999999,
+            "topCommercialNewsTalkShare": 0.037733575,
+            "viableCommercial": 19,
+            "viableChr": 3,
+            "viableAc": 5,
+            "viableRock": 2.5
           }
         },
         "2025": {
           "PUBLIC_NEWS": {
-            "n": 20,
-            "mean": 0.017873233813145685,
-            "median": 0.017688812080842914,
-            "min": 0.015053024455421402,
-            "max": 0.022989508298839414,
-            "lt2": 19,
-            "ge2": 1,
+            "n": 2,
+            "mean": 0.03867106,
+            "median": 0.03867106,
+            "min": 0.03856121,
+            "max": 0.03878091,
+            "lt2": 0,
+            "ge2": 2,
             "ge4": 0,
             "ge6": 0
           },
           "PUBLIC_CLASSICAL": {
-            "n": 20,
-            "mean": 0.012459970784012037,
-            "median": 0.012353053326616788,
-            "min": 0.010594453300074323,
-            "max": 0.01590800125590923,
-            "lt2": 20,
+            "n": 2,
+            "mean": 0.010616460000000001,
+            "median": 0.010616460000000001,
+            "min": 0.01059029,
+            "max": 0.01064263,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.01226061,
+            "median": 0.01226061,
+            "min": 0.01219989,
+            "max": 0.01232133,
+            "lt2": 2,
             "ge2": 0,
             "ge4": 0,
             "ge6": 0
           },
           "spill": {
-            "spokenWordLaneShare": 0.14269071402855696,
-            "topCommercialNewsTalkShare": 0.07098572053880728,
-            "viableCommercial": 15.15,
-            "viableChr": 2.55,
-            "viableAc": 2.9,
-            "viableRock": 3.25
+            "spokenWordLaneShare": 0.11551609,
+            "topCommercialNewsTalkShare": 0.05930223,
+            "viableCommercial": 22.5,
+            "viableChr": 3,
+            "viableAc": 5,
+            "viableRock": 3.5
+          }
+        }
+      },
+      "sanfrancisco": {
+        "1985": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.03838449,
+            "median": 0.03838449,
+            "min": 0.03771425,
+            "max": 0.03905473,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.010903405000000001,
+            "median": 0.010903405000000001,
+            "min": 0.01063647,
+            "max": 0.01117034,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.0046882,
+            "median": 0.0046882,
+            "min": 0.00460265,
+            "max": 0.00477375,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.117386535,
+            "topCommercialNewsTalkShare": 0.09133171,
+            "viableCommercial": 13,
+            "viableChr": 2,
+            "viableAc": 3,
+            "viableRock": 3
+          }
+        },
+        "1995": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.033999095,
+            "median": 0.033999095,
+            "min": 0.03177511,
+            "max": 0.03622308,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.012652895,
+            "median": 0.012652895,
+            "min": 0.01142639,
+            "max": 0.0138794,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.006166055,
+            "median": 0.006166055,
+            "min": 0.00591747,
+            "max": 0.00641464,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.13209079499999998,
+            "topCommercialNewsTalkShare": 0.060842085,
+            "viableCommercial": 18,
+            "viableChr": 2,
+            "viableAc": 2.5,
+            "viableRock": 5
+          }
+        },
+        "2005": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.03848825,
+            "median": 0.03848825,
+            "min": 0.03762439,
+            "max": 0.03935211,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.010613605,
+            "median": 0.010613605,
+            "min": 0.01026946,
+            "max": 0.01095775,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.012716655,
+            "median": 0.012716655,
+            "min": 0.01240514,
+            "max": 0.01302817,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.144968005,
+            "topCommercialNewsTalkShare": 0.076727685,
+            "viableCommercial": 21,
+            "viableChr": 3,
+            "viableAc": 3.5,
+            "viableRock": 4.5
+          }
+        },
+        "2015": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.05332347,
+            "median": 0.05332347,
+            "min": 0.04402023,
+            "max": 0.06262671,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 2,
+            "ge6": 1
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.01024708,
+            "median": 0.01024708,
+            "min": 0.00848426,
+            "max": 0.0120099,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.01207658,
+            "median": 0.01207658,
+            "min": 0.01011584,
+            "max": 0.01403732,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.136910605,
+            "topCommercialNewsTalkShare": 0.068227695,
+            "viableCommercial": 19.5,
+            "viableChr": 3,
+            "viableAc": 3.5,
+            "viableRock": 3
+          }
+        },
+        "2025": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.063126775,
+            "median": 0.063126775,
+            "min": 0.06141314,
+            "max": 0.06484041,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 2,
+            "ge6": 2
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.011190055,
+            "median": 0.011190055,
+            "min": 0.01085532,
+            "max": 0.01152479,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.013158630000000001,
+            "median": 0.013158630000000001,
+            "min": 0.01305118,
+            "max": 0.01326608,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.10573476000000001,
+            "topCommercialNewsTalkShare": 0.06085839999999999,
+            "viableCommercial": 16.5,
+            "viableChr": 3,
+            "viableAc": 3.5,
+            "viableRock": 2
+          }
+        }
+      },
+      "atlanta": {
+        "1985": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.02575857,
+            "median": 0.02575857,
+            "min": 0.02503554,
+            "max": 0.0264816,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.010819269999999999,
+            "median": 0.010819269999999999,
+            "min": 0.01050107,
+            "max": 0.01113747,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.00576585,
+            "median": 0.00576585,
+            "min": 0.00549041,
+            "max": 0.00604129,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.10960148,
+            "topCommercialNewsTalkShare": 0.08306946000000001,
+            "viableCommercial": 11.5,
+            "viableChr": 1.5,
+            "viableAc": 3,
+            "viableRock": 3
+          }
+        },
+        "1995": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.02096461,
+            "median": 0.02096461,
+            "min": 0.02017849,
+            "max": 0.02175073,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.01231314,
+            "median": 0.01231314,
+            "min": 0.01194519,
+            "max": 0.01268109,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.007498525,
+            "median": 0.007498525,
+            "min": 0.0073843,
+            "max": 0.00761275,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.130648575,
+            "topCommercialNewsTalkShare": 0.088894105,
+            "viableCommercial": 16,
+            "viableChr": 2,
+            "viableAc": 3.5,
+            "viableRock": 4
+          }
+        },
+        "2005": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.020374299999999998,
+            "median": 0.020374299999999998,
+            "min": 0.0191496,
+            "max": 0.021599,
+            "lt2": 1,
+            "ge2": 1,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.010052245,
+            "median": 0.010052245,
+            "min": 0.00936153,
+            "max": 0.01074296,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.014457615,
+            "median": 0.014457615,
+            "min": 0.01371677,
+            "max": 0.01519846,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.131425725,
+            "topCommercialNewsTalkShare": 0.0697069,
+            "viableCommercial": 20,
+            "viableChr": 3,
+            "viableAc": 4,
+            "viableRock": 4.5
+          }
+        },
+        "2015": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.022860065,
+            "median": 0.022860065,
+            "min": 0.02239325,
+            "max": 0.02332688,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.00925476,
+            "median": 0.00925476,
+            "min": 0.00918895,
+            "max": 0.00932057,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.012992614999999999,
+            "median": 0.012992614999999999,
+            "min": 0.01292116,
+            "max": 0.01306407,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.10946578500000001,
+            "topCommercialNewsTalkShare": 0.058809735,
+            "viableCommercial": 21,
+            "viableChr": 2.5,
+            "viableAc": 5,
+            "viableRock": 4
+          }
+        },
+        "2025": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.022860739999999997,
+            "median": 0.022860739999999997,
+            "min": 0.0227213,
+            "max": 0.02300018,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.00889912,
+            "median": 0.00889912,
+            "min": 0.0087781,
+            "max": 0.00902014,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 2,
+            "mean": 0.01271835,
+            "median": 0.01271835,
+            "min": 0.01243886,
+            "max": 0.01299784,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.079439945,
+            "topCommercialNewsTalkShare": 0.043504635,
+            "viableCommercial": 21,
+            "viableChr": 2.5,
+            "viableAc": 3.5,
+            "viableRock": 4
+          }
+        }
+      },
+      "nashville": {
+        "1985": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.03397561,
+            "median": 0.03397561,
+            "min": 0.03354887,
+            "max": 0.03440235,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.014713085,
+            "median": 0.014713085,
+            "min": 0.01442161,
+            "max": 0.01500456,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "max": null,
+            "lt2": 0,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.15250233500000002,
+            "topCommercialNewsTalkShare": 0.12004942500000002,
+            "viableCommercial": 8.5,
+            "viableChr": 1,
+            "viableAc": 2,
+            "viableRock": 2
+          }
+        },
+        "1995": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.033087835,
+            "median": 0.033087835,
+            "min": 0.03222798,
+            "max": 0.03394769,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.02028439,
+            "median": 0.02028439,
+            "min": 0.01980678,
+            "max": 0.020762,
+            "lt2": 1,
+            "ge2": 1,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "max": null,
+            "lt2": 0,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.161765965,
+            "topCommercialNewsTalkShare": 0.1179801,
+            "viableCommercial": 9,
+            "viableChr": 1,
+            "viableAc": 1,
+            "viableRock": 3.5
+          }
+        },
+        "2005": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.035339635,
+            "median": 0.035339635,
+            "min": 0.03491603,
+            "max": 0.03576324,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.01883623,
+            "median": 0.01883623,
+            "min": 0.0185655,
+            "max": 0.01910696,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "max": null,
+            "lt2": 0,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.19500527,
+            "topCommercialNewsTalkShare": 0.108586255,
+            "viableCommercial": 5,
+            "viableChr": 0.5,
+            "viableAc": 1,
+            "viableRock": 1.5
+          }
+        },
+        "2015": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.029827705,
+            "median": 0.029827705,
+            "min": 0.02899672,
+            "max": 0.03065869,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.013695295,
+            "median": 0.013695295,
+            "min": 0.01310998,
+            "max": 0.01428061,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "max": null,
+            "lt2": 0,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.14340877,
+            "topCommercialNewsTalkShare": 0.08332607,
+            "viableCommercial": 12.5,
+            "viableChr": 1.5,
+            "viableAc": 1.5,
+            "viableRock": 3
+          }
+        },
+        "2025": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.029638529999999996,
+            "median": 0.029638529999999996,
+            "min": 0.02784977,
+            "max": 0.03142729,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.0132648,
+            "median": 0.0132648,
+            "min": 0.01221173,
+            "max": 0.01431787,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "max": null,
+            "lt2": 0,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.161532945,
+            "topCommercialNewsTalkShare": 0.07377305,
+            "viableCommercial": 11.5,
+            "viableChr": 1,
+            "viableAc": 2,
+            "viableRock": 3
+          }
+        }
+      },
+      "wichita": {
+        "1985": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.043749785,
+            "median": 0.043749785,
+            "min": 0.04148886,
+            "max": 0.04601071,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 2,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.020275935000000002,
+            "median": 0.020275935000000002,
+            "min": 0.01920341,
+            "max": 0.02134846,
+            "lt2": 1,
+            "ge2": 1,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "max": null,
+            "lt2": 0,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.13221768,
+            "topCommercialNewsTalkShare": 0.09748523,
+            "viableCommercial": 7.5,
+            "viableChr": 1,
+            "viableAc": 1,
+            "viableRock": 3
+          }
+        },
+        "1995": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.031919505,
+            "median": 0.031919505,
+            "min": 0.03149452,
+            "max": 0.03234449,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.01984391,
+            "median": 0.01984391,
+            "min": 0.01930099,
+            "max": 0.02038683,
+            "lt2": 1,
+            "ge2": 1,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "max": null,
+            "lt2": 0,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.17504376500000002,
+            "topCommercialNewsTalkShare": 0.09924833,
+            "viableCommercial": 8,
+            "viableChr": 1,
+            "viableAc": 1,
+            "viableRock": 3
+          }
+        },
+        "2005": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.028339895,
+            "median": 0.028339895,
+            "min": 0.02564657,
+            "max": 0.03103322,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.014549875,
+            "median": 0.014549875,
+            "min": 0.01332757,
+            "max": 0.01577218,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "max": null,
+            "lt2": 0,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.15502570999999998,
+            "topCommercialNewsTalkShare": 0.079997985,
+            "viableCommercial": 11.5,
+            "viableChr": 2,
+            "viableAc": 1.5,
+            "viableRock": 3.5
+          }
+        },
+        "2015": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.028261385,
+            "median": 0.028261385,
+            "min": 0.027789,
+            "max": 0.02873377,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.012511379999999999,
+            "median": 0.012511379999999999,
+            "min": 0.01219808,
+            "max": 0.01282468,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "max": null,
+            "lt2": 0,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.14984566,
+            "topCommercialNewsTalkShare": 0.067043185,
+            "viableCommercial": 12.5,
+            "viableChr": 2,
+            "viableAc": 2,
+            "viableRock": 3.5
+          }
+        },
+        "2025": {
+          "PUBLIC_NEWS": {
+            "n": 2,
+            "mean": 0.032108845000000004,
+            "median": 0.032108845000000004,
+            "min": 0.03106394,
+            "max": 0.03315375,
+            "lt2": 0,
+            "ge2": 2,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_CLASSICAL": {
+            "n": 2,
+            "mean": 0.013982905,
+            "median": 0.013982905,
+            "min": 0.01346104,
+            "max": 0.01450477,
+            "lt2": 2,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "PUBLIC_ECLECTIC": {
+            "n": 0,
+            "mean": null,
+            "median": null,
+            "min": null,
+            "max": null,
+            "lt2": 0,
+            "ge2": 0,
+            "ge4": 0,
+            "ge6": 0
+          },
+          "spill": {
+            "spokenWordLaneShare": 0.121637745,
+            "topCommercialNewsTalkShare": 0.057257695,
+            "viableCommercial": 8,
+            "viableChr": 1.5,
+            "viableAc": 1,
+            "viableRock": 2.5
           }
         }
       }
     }
   },
-  "compare": [
-    {
-      "market": "newyork",
-      "year": 1985,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.04655068138833721,
-      "baselineMeanShare": 0.025742720805415807,
-      "delta": 0.020807960582921406
-    },
-    {
-      "market": "newyork",
-      "year": 1985,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.018254558436409298,
-      "baselineMeanShare": 0.012600280716142182,
-      "delta": 0.005654277720267116
-    },
-    {
-      "market": "newyork",
-      "year": 1995,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.0340503731234431,
-      "baselineMeanShare": 0.01715294626052651,
-      "delta": 0.01689742686291659
-    },
-    {
-      "market": "newyork",
-      "year": 1995,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.01891663300481396,
-      "baselineMeanShare": 0.012069091619373452,
-      "delta": 0.006847541385440508
-    },
-    {
-      "market": "newyork",
-      "year": 2005,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.03638233406904158,
-      "baselineMeanShare": 0.01262524046547558,
-      "delta": 0.023757093603566003
-    },
-    {
-      "market": "newyork",
-      "year": 2005,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.015367206254235932,
-      "baselineMeanShare": 0.008726450939367065,
-      "delta": 0.006640755314868867
-    },
-    {
-      "market": "newyork",
-      "year": 2015,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.05779261159891967,
-      "baselineMeanShare": 0.01343146697787725,
-      "delta": 0.044361144621042424
-    },
-    {
-      "market": "newyork",
-      "year": 2015,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.017444501054359886,
-      "baselineMeanShare": 0.00976095260168361,
-      "delta": 0.007683548452676275
-    },
-    {
-      "market": "newyork",
-      "year": 2025,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.06215322972863689,
-      "baselineMeanShare": 0.013416503943587912,
-      "delta": 0.04873672578504898
-    },
-    {
-      "market": "newyork",
-      "year": 2025,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.016740229877429107,
-      "baselineMeanShare": 0.009392292049615319,
-      "delta": 0.007347937827813789
-    },
-    {
-      "market": "losangeles",
-      "year": 1985,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.05119488613873182,
-      "baselineMeanShare": 0.03158365090478155,
-      "delta": 0.019611235233950267
-    },
-    {
-      "market": "losangeles",
-      "year": 1985,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.021774374451171856,
-      "baselineMeanShare": 0.015480358234844421,
-      "delta": 0.006294016216327435
-    },
-    {
-      "market": "losangeles",
-      "year": 1995,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.036548404070342703,
-      "baselineMeanShare": 0.019224686072696427,
-      "delta": 0.017323717997646277
-    },
-    {
-      "market": "losangeles",
-      "year": 1995,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.021727140848061693,
-      "baselineMeanShare": 0.013447089859147415,
-      "delta": 0.008280050988914277
-    },
-    {
-      "market": "losangeles",
-      "year": 2005,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.037808483362188616,
-      "baselineMeanShare": 0.013848313843130896,
-      "delta": 0.02396016951905772
-    },
-    {
-      "market": "losangeles",
-      "year": 2005,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.017363572423613912,
-      "baselineMeanShare": 0.009576609886408145,
-      "delta": 0.007786962537205767
-    },
-    {
-      "market": "losangeles",
-      "year": 2015,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.053146119310744755,
-      "baselineMeanShare": 0.014198502825800752,
-      "delta": 0.038947616484944006
-    },
-    {
-      "market": "losangeles",
-      "year": 2015,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.018253501238443087,
-      "baselineMeanShare": 0.010245475288703234,
-      "delta": 0.008008025949739853
-    },
-    {
-      "market": "losangeles",
-      "year": 2025,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.05458373070096858,
-      "baselineMeanShare": 0.013458500987878133,
-      "delta": 0.04112522971309045
-    },
-    {
-      "market": "losangeles",
-      "year": 2025,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.016899246480078654,
-      "baselineMeanShare": 0.009341991203477501,
-      "delta": 0.007557255276601152
-    },
-    {
-      "market": "chicago",
-      "year": 1985,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.046926552425906154,
-      "baselineMeanShare": 0.02906073441400329,
-      "delta": 0.017865818011902863
-    },
-    {
-      "market": "chicago",
-      "year": 1985,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.02043848290416705,
-      "baselineMeanShare": 0.014345830573308951,
-      "delta": 0.0060926523308581
-    },
-    {
-      "market": "chicago",
-      "year": 1995,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.034963661007640326,
-      "baselineMeanShare": 0.019061586396658305,
-      "delta": 0.01590207461098202
-    },
-    {
-      "market": "chicago",
-      "year": 1995,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.02148370579643246,
-      "baselineMeanShare": 0.013349413149436523,
-      "delta": 0.008134292646995937
-    },
-    {
-      "market": "chicago",
-      "year": 2005,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.03589196833994823,
-      "baselineMeanShare": 0.014951993381697695,
-      "delta": 0.020939974958250538
-    },
-    {
-      "market": "chicago",
-      "year": 2005,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.017029954293788074,
-      "baselineMeanShare": 0.010426263998749328,
-      "delta": 0.006603690295038746
-    },
-    {
-      "market": "chicago",
-      "year": 2015,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.04913208753511921,
-      "baselineMeanShare": 0.014012731630835606,
-      "delta": 0.035119355904283604
-    },
-    {
-      "market": "chicago",
-      "year": 2015,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.01801062446877909,
-      "baselineMeanShare": 0.009993125741884101,
-      "delta": 0.00801749872689499
-    },
-    {
-      "market": "chicago",
-      "year": 2025,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.050110831264958855,
-      "baselineMeanShare": 0.013496085975281282,
-      "delta": 0.03661474528967757
-    },
-    {
-      "market": "chicago",
-      "year": 2025,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.016827100892430814,
-      "baselineMeanShare": 0.009366251357454308,
-      "delta": 0.007460849534976506
-    },
-    {
-      "market": "atlanta",
-      "year": 1985,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.03808245082285148,
-      "baselineMeanShare": 0.026762268699180497,
-      "delta": 0.011320182123670981
-    },
-    {
-      "market": "atlanta",
-      "year": 1985,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.01865764497843237,
-      "baselineMeanShare": 0.013079105341223921,
-      "delta": 0.00557853963720845
-    },
-    {
-      "market": "atlanta",
-      "year": 1995,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.03522984504582991,
-      "baselineMeanShare": 0.022509566222893497,
-      "delta": 0.012720278822936415
-    },
-    {
-      "market": "atlanta",
-      "year": 1995,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.02436586877559061,
-      "baselineMeanShare": 0.015530029575851614,
-      "delta": 0.008835839199738998
-    },
-    {
-      "market": "atlanta",
-      "year": 2005,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.03489075949772873,
-      "baselineMeanShare": 0.017802675348911876,
-      "delta": 0.01708808414881685
-    },
-    {
-      "market": "atlanta",
-      "year": 2005,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.019867128852924333,
-      "baselineMeanShare": 0.012349900476122925,
-      "delta": 0.007517228376801409
-    },
-    {
-      "market": "atlanta",
-      "year": 2015,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.04128250586020081,
-      "baselineMeanShare": 0.017150053515751832,
-      "delta": 0.02413245234444898
-    },
-    {
-      "market": "atlanta",
-      "year": 2015,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.019648571356848214,
-      "baselineMeanShare": 0.012154586421686694,
-      "delta": 0.00749398493516152
-    },
-    {
-      "market": "atlanta",
-      "year": 2025,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.04388736138702505,
-      "baselineMeanShare": 0.01710606718002509,
-      "delta": 0.02678129420699996
-    },
-    {
-      "market": "atlanta",
-      "year": 2025,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.02011258452551041,
-      "baselineMeanShare": 0.011972980465885808,
-      "delta": 0.0081396040596246
-    },
-    {
-      "market": "nashville",
-      "year": 1985,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.03438410128454651,
-      "baselineMeanShare": 0.024981885788070573,
-      "delta": 0.009402215496475939
-    },
-    {
-      "market": "nashville",
-      "year": 1985,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.017411301134326648,
-      "baselineMeanShare": 0.012233160889119101,
-      "delta": 0.0051781402452075465
-    },
-    {
-      "market": "nashville",
-      "year": 1995,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.03192619522971506,
-      "baselineMeanShare": 0.021581549079816062,
-      "delta": 0.010344646149898995
-    },
-    {
-      "market": "nashville",
-      "year": 1995,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.023109237587656793,
-      "baselineMeanShare": 0.01480015288138312,
-      "delta": 0.008309084706273673
-    },
-    {
-      "market": "nashville",
-      "year": 2005,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.029904089401362362,
-      "baselineMeanShare": 0.018133190736372172,
-      "delta": 0.01177089866499019
-    },
-    {
-      "market": "nashville",
-      "year": 2005,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.018800305377320612,
-      "baselineMeanShare": 0.01258887028116897,
-      "delta": 0.006211435096151642
-    },
-    {
-      "market": "nashville",
-      "year": 2015,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.03148343234890501,
-      "baselineMeanShare": 0.016540176630245484,
-      "delta": 0.014943255718659523
-    },
-    {
-      "market": "nashville",
-      "year": 2015,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.017162884036953756,
-      "baselineMeanShare": 0.011696216871235064,
-      "delta": 0.005466667165718692
-    },
-    {
-      "market": "nashville",
-      "year": 2025,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.03463541603766253,
-      "baselineMeanShare": 0.01669518572303763,
-      "delta": 0.017940230314624897
-    },
-    {
-      "market": "nashville",
-      "year": 2025,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.018395977406233385,
-      "baselineMeanShare": 0.011673205493129635,
-      "delta": 0.0067227719131037495
-    },
-    {
-      "market": "seattle",
-      "year": 1985,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.04569653928563898,
-      "baselineMeanShare": 0.02787115527428243,
-      "delta": 0.017825384011356547
-    },
-    {
-      "market": "seattle",
-      "year": 1985,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.01940776705914512,
-      "baselineMeanShare": 0.01363830193641718,
-      "delta": 0.005769465122727939
-    },
-    {
-      "market": "seattle",
-      "year": 1995,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.04124797032093672,
-      "baselineMeanShare": 0.02203576031475848,
-      "delta": 0.019212210006178235
-    },
-    {
-      "market": "seattle",
-      "year": 1995,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.024600859309387345,
-      "baselineMeanShare": 0.015196608865876959,
-      "delta": 0.009404250443510386
-    },
-    {
-      "market": "seattle",
-      "year": 2005,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.04519734895159481,
-      "baselineMeanShare": 0.017621796504421507,
-      "delta": 0.0275755524471733
-    },
-    {
-      "market": "seattle",
-      "year": 2005,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.021216306316993724,
-      "baselineMeanShare": 0.012156736463395459,
-      "delta": 0.009059569853598265
-    },
-    {
-      "market": "seattle",
-      "year": 2015,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.05922183144632802,
-      "baselineMeanShare": 0.017153213053495094,
-      "delta": 0.04206861839283292
-    },
-    {
-      "market": "seattle",
-      "year": 2015,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.020344390532679276,
-      "baselineMeanShare": 0.012070335398724943,
-      "delta": 0.008274055133954333
-    },
-    {
-      "market": "seattle",
-      "year": 2025,
-      "format": "PUBLIC_NEWS",
-      "tunedMeanShare": 0.06651862919652636,
-      "baselineMeanShare": 0.017873233813145685,
-      "delta": 0.048645395383380675
-    },
-    {
-      "market": "seattle",
-      "year": 2025,
-      "format": "PUBLIC_CLASSICAL",
-      "tunedMeanShare": 0.021172339912547435,
-      "baselineMeanShare": 0.012459970784012037,
-      "delta": 0.008712369128535399
-    }
-  ],
+  "compare": null,
   "spillover": [],
-  "warnings": []
+  "warnings": [],
+  "publicStationScale": [
+    {
+      "market": "wichita",
+      "scenarioStart": 1985,
+      "target": 2,
+      "count": 2,
+      "eclectic": false,
+      "countMatchesTarget": true
+    },
+    {
+      "market": "newyork",
+      "scenarioStart": 1985,
+      "target": 3,
+      "count": 3,
+      "eclectic": true,
+      "countMatchesTarget": true
+    },
+    {
+      "market": "losangeles",
+      "scenarioStart": 1985,
+      "target": 2,
+      "count": 2,
+      "eclectic": false,
+      "countMatchesTarget": true
+    },
+    {
+      "market": "nashville",
+      "scenarioStart": 1985,
+      "target": 2,
+      "count": 2,
+      "eclectic": false,
+      "countMatchesTarget": true
+    },
+    {
+      "market": "seattle",
+      "scenarioStart": 1985,
+      "target": 3,
+      "count": 3,
+      "eclectic": true,
+      "countMatchesTarget": true
+    }
+  ]
 }

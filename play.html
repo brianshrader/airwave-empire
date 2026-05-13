@@ -2,16 +2,22 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="description" content="Airwave Empire — a radio station simulation and management game from the 1970s through the streaming era. Build formats, hire talent, and compete in major US markets.">
-<meta name="keywords" content="Airwave Empire, radio game, station simulation, music radio, broadcasting game, tycoon">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="canonical" href="https://airwaveempire.com/play.html">
+<meta name="description" content="Play Airwave Empire in your browser—a deep solo or multiplayer radio management simulation. Pick a market and era, run stations, chase ratings and revenue across decades.">
 <meta name="robots" content="index, follow">
 <meta property="og:title" content="Airwave Empire">
-<meta property="og:description" content="Run stations from the 1970s through the streaming era. Formats, talent, promotions, and major US markets — build your dial empire.">
+<meta property="og:description" content="Play Airwave Empire in your browser—a deep solo or multiplayer radio management simulation spanning decades on the dial.">
 <meta property="og:type" content="website">
-<meta name="twitter:card" content="summary">
+<meta property="og:url" content="https://airwaveempire.com/play.html">
+<meta property="og:image" content="https://airwaveempire.com/landing-images/overview.png">
+<meta property="og:image:alt" content="Airwave Empire — radio simulation gameplay">
+<meta property="og:site_name" content="Airwave Empire">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Airwave Empire">
-<meta name="twitter:description" content="Run stations from the 1970s through the streaming era. Formats, talent, promotions, and major US markets.">
+<meta name="twitter:description" content="Play Airwave Empire in your browser—a deep solo or multiplayer radio management simulation spanning decades on the dial.">
+<meta name="twitter:image" content="https://airwaveempire.com/landing-images/overview.png">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
 <!-- Clerk publishable key — required for play (solo + multiplayer). https://dashboard.clerk.com -->
 <meta name="wl-clerk-publishable-key" content="">
 <!-- Source value is replaced by Vite (vite.config.js): development → 0, production build → 1. Override with VITE_WL_REQUIRE_CLERK_META in .env.* -->
@@ -28,7 +34,7 @@
 <meta name="wl-feedback-formsubmit-email" content="">
 <!-- When the game is served from a different origin than the Node API, set the API origin here (or use VITE_GAME_SERVER_URL at build). Example: content="https://api.airwaveempire.com" -->
 <meta name="wl-game-server-url" content="">
-<title>Airwave Empire — Play</title>
+<title>Airwave Empire</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <!-- Station logo templates (curated subset — deterministic SVG typography) -->
 <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=Archivo+Narrow:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Oswald:wght@400;500;600;700&family=Pacifico&family=Playfair+Display:wght@400;600;700&family=Roboto+Slab:wght@400;600;700&display=swap" rel="stylesheet">
@@ -182,6 +188,7 @@
           <option value="newyork">New York — Northeast · mega</option>
           <option value="losangeles">Los Angeles — West Coast · mega</option>
           <option value="seattle">Seattle — Pacific Northwest · large</option>
+          <option value="sanfrancisco">San Francisco — West Coast · large</option>
           <option value="chicago">Chicago — Midwest · mega</option>
         </select>
         <div class="mp-wait__start-note">All players must be connected. You can start with 2–4.</div>
@@ -324,7 +331,11 @@
     <button type="button" id="abtn">▶ NEXT PERIOD</button>
   </div>
 </header>
-<div id="alertbar"></div>
+<div id="alertbar" hidden aria-hidden="true"></div>
+<div id="wl-toast-host" class="wl-toast-host" aria-live="polite">
+  <div id="wl-game-notice" class="wl-game-notice" hidden></div>
+  <div id="wl-toast-stack" class="wl-toast-stack"></div>
+</div>
 <!-- GM Mode (solo): status panel — populated by gmMode.js -->
 <div id="wl-gm-panel" aria-label="General Manager status"></div>
 <main id="main">
@@ -358,7 +369,7 @@
         <button type="button" class="phbtn" onclick="openLoan()">💳 LOANS</button>
         <button type="button" class="phbtn" id="wl-corp-gm-career-btn" hidden onclick="wlCampaignOpenBriefing()" title="General Manager career ladder">📋 GENERAL MANAGER CAREER</button>
         <button type="button" class="phbtn" onclick="openSaveLoad()">💾 SAVE / LOAD</button>
-        <button type="button" class="phbtn" onclick="wlFtTutorialRestartFromMenu()" title="Replay the short solo first-turn walkthrough">📘 TIPS</button>
+        <button type="button" class="phbtn" onclick="wlFtTutorialRestartFromMenu()" title="First-turn walkthrough, or restore coach tips if you dismissed a stuck overlay">📘 TIPS</button>
       </div>
     </div>
     <div class="ph">YOUR STATIONS <sub id="ownlbl">1 AM · 1 FM</sub></div>
@@ -396,6 +407,7 @@
 <div class="ov" id="m-hist"><div class="mo"><div class="mh"><span id="hist-title">STATION HISTORY</span><button class="mc" onclick="cm('m-hist')">CLOSE ×</button></div><div id="histb"></div></div></div>
 <div class="ov" id="m-sell"><div class="mo"><div class="mh"><span>SELL STATION</span><button class="mc" onclick="cm('m-sell')">CLOSE ×</button></div><div id="sellb"></div></div></div>
 <div class="ov" id="m-gameover-sellout"><div class="mo wide" style="max-width:520px"><div class="mh"><span>RUN COMPLETE</span><button type="button" class="mc" onclick="cm('m-gameover-sellout');openScenSelect(null)">SCENARIO SELECTION →</button></div><div id="gameover-selloutb" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.55;color:var(--off)"></div></div></div>
+<div class="ov" id="m-bankruptcy-coach" style="z-index:9120"><div class="mo wide" style="max-width:560px"><div class="mh"><span id="bankruptcy-coach-title">STATION BANKRUPTCY</span><button type="button" class="mc" onclick="cm('m-bankruptcy-coach');wlDismissSoloBankruptcyCoach()">OK</button></div><div id="bankruptcy-coachb" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.6;color:var(--off)"></div></div></div>
 <div class="ov" id="m-sta-offer"><div class="mo"><div class="mh"><span>OFF-MARKET LISTING</span><button type="button" class="mc" onclick="rejectStationListingOffer()">DECLINE ×</button></div><div id="sta-offerb"></div></div></div>
 <div class="ov" id="m-game-confirm"><div class="mo" style="max-width:480px"><div class="mh"><span id="gameconf-title">CONFIRM</span></div><div id="gameconfb" style="padding:8px 20px 4px"></div><div style="padding:8px 20px 20px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button type="button" class="cnl" onclick="wlGameConfirmDismiss()">CANCEL</button><button type="button" class="cfm" id="gameconf-ok" onclick="wlGameConfirmCommit()" style="width:auto;min-width:120px;margin-top:0;padding:12px 20px">OK</button></div></div></div>
 <div class="ov" id="m-scen"><div class="mo wide" style="max-width:780px"><div id="scenb"></div></div></div>
@@ -405,6 +417,12 @@
 <div class="ov" id="m-sales"><div class="mo wide" style="max-width:min(96vw,720px)"><div class="mh"><span>SALES</span><button class="mc" onclick="cm('m-sales')">CLOSE ×</button></div><div id="salesb"></div></div></div>
 <div class="ov" id="m-research"><div class="mo" style="max-width:580px"><div class="mh"><span id="research-title">📊 STATION RESEARCH</span><button class="mc" onclick="cm('m-research')">CLOSE ×</button></div><div id="researchb"></div></div></div>
 <div class="ov" id="m-tutorial-turnaround"><div class="mo wide tut-modal-mo"><div class="mh"><span id="m-tut-tr-title">TUTORIAL</span><button type="button" class="mc" onclick="cm('m-tutorial-turnaround')">CLOSE ×</button></div><div id="m-tut-tr-body" class="tut-modal-body"></div><div id="m-tut-tr-foot" class="tut-modal-foot"></div></div></div>
+<!-- Turnaround guided script: modal notes (replacing Easy-to-miss header “toasts”). -->
+<div class="ov" id="m-turnaround-tip"><div class="mo" id="turnaround-tip-mo" style="max-width:min(500px,94vw);padding:22px 24px;background:var(--pnl);border:1px solid rgba(80,180,120,.42);border-radius:8px;box-shadow:0 16px 48px rgba(0,0,0,.55)">
+  <div id="turnaround-tip-title" style="font-family:var(--ft);font-size:12px;letter-spacing:0.16em;color:var(--grn);margin-bottom:12px">COACH NOTE</div>
+  <div id="turnaround-tip-body" style="font-family:var(--ft);font-size:16px;line-height:1.55;color:var(--off)"></div>
+  <div style="margin-top:22px;display:flex;justify-content:flex-end"><button type="button" class="cfm" id="turnaround-tip-ok" onclick="tutorialTurnaroundDismissMessagePopup()" style="margin-top:0;min-width:120px">OK</button></div>
+</div></div>
 <div class="ov" id="m-ratings-digest"><div class="mo wide" style="max-width:720px"><div class="mh"><span id="ratings-digest-title">📰 TRADE PRESS — RATINGS DIGEST</span><button class="mc" onclick="cm('m-ratings-digest')">CLOSE ×</button></div><div id="ratings-digestb" style="padding:16px 20px 20px"></div></div></div>
 <div class="ov" id="m-milestone"><div class="mo" style="max-width:520px"><div id="milestoneb"></div></div></div>
 <div class="ov" id="m-period-news"><div class="mo" style="max-width:560px"><div class="mh"><span>📰 NEWS — LAST PERIOD</span><button type="button" class="mc" onclick="cm('m-period-news')">OK</button></div><div id="periodnewsb" style="padding:16px 20px 20px"></div></div></div>
@@ -412,6 +430,7 @@
 <div class="ov" id="m-gm-onboard"><div class="mo" style="max-width:560px"><div class="mh"><span>GENERAL MANAGER CAREER</span><button type="button" class="mc" onclick="wlGmDismissOnboarding()">OK</button></div><div id="gm-onboardb" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.55;color:var(--off)"></div></div></div>
 <div class="ov" id="m-gm-explain"><div class="mo wide" style="max-width:620px"><div class="mh"><span>CORPORATE EXPECTATIONS</span><button type="button" class="mc" onclick="cm('m-gm-explain')">CLOSE ×</button></div><div id="gm-explainb" style="padding:16px 20px 22px;font-family:var(--ft);font-size:15px;line-height:1.6;color:var(--off)"></div></div></div>
 <div class="ov" id="m-gm-review"><div class="mo wide" style="max-width:580px"><div class="mh"><span id="gm-review-mh-title">CURRENT STANDING</span><button type="button" class="mc" onclick="cm('m-gm-review')">CLOSE ×</button></div><div id="gm-reviewb" style="padding:16px 20px 20px"></div></div></div>
+<div class="ov" id="m-gm-lifeline"><div class="mo" style="max-width:520px"><div class="mh"><span>CORPORATE LIFELINE</span><button type="button" class="mc" onclick="wlGmCancelLifelineModal()">CLOSE ×</button></div><div id="gm-lifelineb" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.55;color:var(--off)"></div><div style="padding:0 20px 20px;display:flex;gap:10px;flex-wrap:wrap"><button type="button" class="cfm" style="flex:1;min-width:140px" onclick="wlGmConfirmLifeline()">ACCEPT FUNDS</button><button type="button" class="abt" style="flex:1;min-width:120px" onclick="wlGmCancelLifelineModal()">Cancel</button></div></div></div>
 
 <div class="ov" id="m-campaign-start"><div class="mo" style="max-width:520px"><div class="mh"><span>START GENERAL MANAGER CAREER</span><button type="button" class="mc" onclick="cm('m-campaign-start')">CLOSE ×</button></div><div style="padding:8px 20px 20px;font-family:var(--ft);font-size:15px;color:var(--off);line-height:1.55">
   <p class="di" style="margin-top:0">Enter your name as <strong>General Manager</strong>. Your employer is the broadcast group that owns the station license — edit the generated name or roll a new one.</p>
@@ -454,7 +473,7 @@
 <div class="ov" id="m-mp-endgame"><div class="mo wide mp-endgame-mo" style="max-width:560px;border:2px solid rgba(212,175,55,.45);box-shadow:0 0 60px rgba(212,175,55,.18),0 12px 40px rgba(0,0,0,.5)"><div class="mh mp-endgame-mh" style="background:linear-gradient(180deg,rgba(212,175,55,.12),transparent);border-bottom:1px solid rgba(212,175,55,.25)"><span id="mp-endgame-title" style="font-family:var(--fd);letter-spacing:3px;color:var(--amb)">FINAL RESULTS — 2025</span></div><div id="mp-endgame-body" style="padding:16px 20px 8px"></div><div style="padding:0 20px 22px"><button type="button" class="cfm" id="mp-endgame-continue" onclick="mpContinueBeyondEndgame()" style="width:100%;font-size:16px;padding:14px">Continue Playing →</button><p style="font-family:var(--ft);font-size:13px;color:var(--mut);margin:10px 0 0 0;text-align:center">Resumes normal play from Spring 2026 onward.</p></div></div></div>
 
 <div class="ov" id="m-logo"><div class="mo wide" style="max-width:min(96vw,960px)"><div class="mh"><span>STATION LOGO</span><button type="button" class="mc" onclick="cm('m-logo')">← BACK</button></div><div style="text-align:center;padding:8px 0 20px"><img id="wl-logo-modal-img" alt="Station logo" style="display:none;max-width:100%;max-height:min(78vh,880px);width:auto;height:auto;object-fit:contain;border-radius:4px;background:rgba(0,0,0,.2)"><div id="wl-logo-modal-svg" class="wl-logo-modal-svg-host" style="display:none;max-width:min(92vw,720px);max-height:min(78vh,880px);margin:0 auto"></div></div><div style="display:flex;justify-content:center;padding-bottom:8px"><button type="button" id="wl-logo-dl" class="cfm" onclick="wlLogoDownloadClick(event)" style="display:inline-block;min-width:220px;text-align:center;width:auto;margin-top:0">💾 Save file</button></div></div></div>
-<div class="ov" id="m-remote-van"><div class="mo wide" style="max-width:min(96vw,960px)"><div class="mh"><span>REMOTE BROADCAST VAN</span><button type="button" class="mc" onclick="cm('m-remote-van')">← BACK</button></div><div style="text-align:center;padding:8px 0 20px"><img id="wl-remote-van-modal-img" alt="Remote broadcast van" style="display:block;max-width:100%;max-height:min(78vh,880px);width:auto;height:auto;object-fit:contain;border-radius:4px;background:rgba(0,0,0,.2)"></div><div style="display:flex;justify-content:center;padding-bottom:8px"><button type="button" id="wl-remote-van-dl" class="cfm" onclick="wlRemoteVanDownloadClick(event)" style="display:inline-block;min-width:220px;text-align:center;width:auto;margin-top:0">💾 Save file</button></div></div></div>
+<div class="ov" id="m-remote-van"><div class="mo wide" style="max-width:min(96vw,960px)"><div class="mh"><span>REMOTE BROADCAST VAN</span><button type="button" class="mc" onclick="cm('m-remote-van')">← BACK</button></div><div class="wl-remote-van-modal-frame"><img id="wl-remote-van-modal-img" alt="Remote broadcast van"></div><div style="display:flex;justify-content:center;padding-bottom:8px"><button type="button" id="wl-remote-van-dl" class="cfm" onclick="wlRemoteVanDownloadClick(event)" style="display:inline-block;min-width:220px;text-align:center;width:auto;margin-top:0">💾 Save file</button></div></div></div>
 <div class="ov" id="m-portrait"><div class="mo" style="max-width:min(96vw,520px)"><div class="mh"><span>TALENT PORTRAIT</span><button type="button" class="mc" onclick="cm('m-portrait')">← BACK</button></div><div style="text-align:center;padding:12px 16px 8px"><img id="wl-portrait-modal-img" alt="" style="max-width:100%;max-height:min(82vh,720px);object-fit:contain;border-radius:6px;background:rgba(0,0,0,.2)"></div><div id="wl-portrait-modal-name" style="font-family:var(--fd);font-size:22px;text-align:center;color:var(--wht);letter-spacing:1px"></div><div id="wl-portrait-modal-ctx" style="font-family:var(--ft);font-size:14px;color:var(--mut);text-align:center;margin:8px 0 16px;line-height:1.45"></div></div></div>
 
 <footer id="site-footer" class="site-footer site-footer--compact" role="contentinfo">
@@ -492,7 +511,7 @@
   <script defer src="/src/stationLogoSvg.js"></script>
   <script defer src="/src/campaignMode.js"></script>
   <script defer src="/src/gmMode.js"></script>
-  <script defer src="/src/legacy.js?v=20260421-2"></script>
+  <script defer src="/src/legacy.js?v=20260511-4"></script>
   <!-- Dev-only: stripped from production HTML by vite.config.js (file is not copied to dist). -->
   <script defer src="/src/marketSimHarness.js"></script>
 </body>

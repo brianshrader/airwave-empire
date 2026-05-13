@@ -3,6 +3,7 @@
  */
 import './amFccRules.js';
 import { captureEvent, identifyClerkUser, initAnalyticsClient } from './analyticsClient.js';
+import { initMetaPixel } from './metaPixelClient.js';
 import { Clerk } from '@clerk/clerk-js';
 import {
   appendClerkUiScript,
@@ -17,6 +18,7 @@ if (typeof window !== 'undefined') {
 }
 
 initAnalyticsClient();
+initMetaPixel();
 
 function inferSigninCompletedSource() {
   try {
@@ -124,7 +126,79 @@ function emitBetaAuthOk() {
   window.dispatchEvent(new CustomEvent('wl-beta-auth-ok'));
 }
 
-if (!requireClerk) {
+function wlGuestOnboardingMeta() {
+  try {
+    return document.querySelector('meta[name="wl-guest-onboarding"]')?.getAttribute('content')?.trim() === '1';
+  } catch (_e) {
+    return false;
+  }
+}
+
+function showGuestSessionFailedGate() {
+  const gate = document.getElementById('wl-beta-auth-gate');
+  const msg = document.getElementById('wl-beta-auth-msg');
+  const title = document.getElementById('wl-beta-auth-title');
+  const solo = document.getElementById('wl-solo-clerk-mount');
+  if (title) title.textContent = 'Could not start instant play';
+  if (msg) {
+    msg.innerHTML =
+      'The server could not issue a guest session. Check that <code style="color:var(--amb)">VITE_GAME_SERVER_URL</code> / <code style="color:var(--amb)">wl-game-server-url</code> points at your Node API, then refresh.<br><br>' +
+      '<span style="color:var(--mut);font-size:14px">Or continue with a free account:</span>';
+  }
+  if (solo) {
+    solo.innerHTML = `<a class="abt g" style="display:inline-block;padding:12px 20px;text-decoration:none" href="/play-signin.html">Sign in / Create account</a>`;
+  }
+  if (gate) {
+    gate.style.display = 'flex';
+    gate.setAttribute('aria-hidden', 'false');
+  }
+}
+
+/** Guest HTML mints session before Clerk loads so legacy never boots without a bearer token for AI routes. */
+let guestSessionReady = false;
+if (typeof window !== 'undefined' && wlGuestOnboardingMeta()) {
+  const base = (gameServerUrl || '').replace(/\/$/, '');
+  window.__WL_GUEST_BOOT_PROMISE = (async () => {
+    if (!base) {
+      console.warn('[guest] Set VITE_GAME_SERVER_URL or wl-game-server-url meta so /api/guest/session can be reached.');
+      return false;
+    }
+    try {
+      const r = await fetch(`${base}/api/guest/session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{}',
+      });
+      const j = await r.json().catch(() => ({}));
+      if (!r.ok || !j.token) {
+        console.warn('[guest] Session mint failed:', j);
+        return false;
+      }
+      try {
+        sessionStorage.setItem('wl_guest_token_v1', j.token);
+        if (j.guestId) sessionStorage.setItem('wl_guest_id_v1', String(j.guestId));
+      } catch (_e) {}
+      window.__WL_GUEST_TOKEN = j.token;
+      window.__WL_GUEST_ONBOARDING = true;
+      window.__WL_REQUIRE_CLERK = false;
+      window.__wlBetaAuthUnlocked = true;
+      emitBetaAuthOk();
+      window.__WL_CLERK_PLAN_SLUG = 'free_user';
+      window.__WL_PLAN_MARKET_IDS = marketIdsForClerkPlanSlug('free_user');
+      return true;
+    } catch (e) {
+      console.warn('[guest] Session request failed:', e);
+      return false;
+    }
+  })();
+  guestSessionReady = await window.__WL_GUEST_BOOT_PROMISE;
+  if (!guestSessionReady) {
+    window.__WL_GUEST_BOOT_FAILED = true;
+    queueMicrotask(() => showGuestSessionFailedGate());
+  }
+}
+
+if (!requireClerk && !window.__WL_GUEST_ONBOARDING && !window.__WL_GUEST_BOOT_FAILED) {
   window.__wlBetaAuthUnlocked = true;
   queueMicrotask(() => emitBetaAuthOk());
 }
@@ -270,11 +344,18 @@ function setupBetaSoloGate(clerk) {
 }
 
 if (!publishableKey) {
-  console.warn(
-    '[Clerk] Add VITE_CLERK_PUBLISHABLE_KEY to .env (or fill the meta tag) to enable multiplayer sign-in.',
-  );
-  if (requireClerk) {
+  if (!guestSessionReady) {
+    console.warn(
+      '[Clerk] Add VITE_CLERK_PUBLISHABLE_KEY to .env (or fill the meta tag) to enable multiplayer sign-in.',
+    );
+  }
+  if (requireClerk && !guestSessionReady) {
     queueMicrotask(() => showMissingClerkKeyGate());
+  }
+} else if (guestSessionReady) {
+  if (typeof window !== 'undefined') {
+    window.__WL_CLERK_PLAN_SLUG = window.__WL_CLERK_PLAN_SLUG || 'free_user';
+    window.__WL_PLAN_MARKET_IDS = window.__WL_PLAN_MARKET_IDS || marketIdsForClerkPlanSlug('free_user');
   }
 } else {
   // `legacy.js` (deferred) can run while this module is still awaiting Clerk. Without a preset,

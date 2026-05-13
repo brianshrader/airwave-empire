@@ -85,6 +85,7 @@
 
   var GM_ONBOARD_HTML =
     '<p style="margin-top:0">You are the General Manager. The license owner evaluates your results on a fixed schedule — separate from day-to-day cash stress or bankruptcy risk.</p>' +
+    '<p style="margin:12px 0 0">If company cash goes <strong>negative</strong>, you may request a <strong>corporate lifeline</strong> (working capital) from the status strip — at the cost of job security.</p>' +
     '<p style="margin:12px 0 0"><strong>Tip:</strong> Open <strong>Corporate expectations</strong> anytime for the full performance brief.</p>';
 
   /** Long-form explainer — corporate memo tone (modal: m-gm-explain). */
@@ -113,7 +114,9 @@
     '<h4 style="font-family:var(--fd);font-size:13px;letter-spacing:2px;color:var(--amb);margin:16px 0 8px">Termination</h4>' +
     '<p>You can be dismissed if job security falls to zero, or if you are already on probation and deliver another clearly failed review. That is <strong>separate from bankruptcy</strong>: you can be fired while the company still has cash, or keep your job through a tight cash quarter if ownership likes the trend.</p>' +
     '<h4 style="font-family:var(--fd);font-size:13px;letter-spacing:2px;color:var(--amb);margin:16px 0 8px">Cash and credit vs. reviews</h4>' +
-    '<p><strong>Financial distress</strong> (low cash, loans, bankruptcy warnings) is a balance-sheet problem. <strong>General Manager reviews</strong> are a leadership scorecard. Fix cash with financing and costs; fix reviews with margins, revenue growth, and building the station for the long run.</p>';
+    '<p><strong>Financial distress</strong> (low cash, loans, bankruptcy warnings) is a balance-sheet problem. <strong>General Manager reviews</strong> are a leadership scorecard. Fix cash with financing and costs; fix reviews with margins, revenue growth, and building the station for the long run.</p>' +
+    '<h4 style="font-family:var(--fd);font-size:13px;letter-spacing:2px;color:var(--amb);margin:16px 0 8px">Corporate lifeline</h4>' +
+    '<p>When company cash is <strong>negative</strong>, corporate may wire <strong>working capital</strong> so you can keep operating — but it is not free money. Each lifeline cuts <strong>job security</strong> sharply; repeated bailouts read as leadership failure and can end your tenure immediately if confidence hits zero.</p>';
 
   function gmScenarioActive(G) {
     var mp = typeof MP !== 'undefined' ? MP : null;
@@ -843,6 +846,10 @@
       gm.status = 'fired';
       reasonsOut.push('Ownership has dismissed you as General Manager.');
       G._gmCareerEnded = true;
+      try {
+        G._wlGmDismissalMechanism =
+          prev === 'probation' && evalRes.bad ? 'probation_bad_review' : 'job_security_zero';
+      } catch (_e) {}
       return;
     }
     gm.status = getGmStatusLabel(gm.confidence, false);
@@ -1071,6 +1078,145 @@
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;');
+  }
+
+  /** Plain text for solo/campaign dismissal (bottom notice + modal paths; not the retired header strip). */
+  function getGmDismissalToastCopy(G) {
+    var gm = G && G._gm;
+    if (!gm || !gm.fired) {
+      return {
+        headline: 'Dismissed',
+        detail: 'Ownership ended your tenure as General Manager.',
+      };
+    }
+    var hist = gm.reviewHistory || [];
+    var entry = hist.length ? hist[hist.length - 1] : null;
+    var cfg = gm.config || resolveGmConfig(G || { sc: {} });
+    var headline = 'You have been dismissed as General Manager.';
+    var parts = [];
+    try {
+      var mech = G._wlGmDismissalMechanism;
+      if (mech === 'lifeline_confidence_zero') {
+        return {
+          headline: 'Dismissed — corporate lifeline',
+          detail:
+            'Emergency working capital kept the lights on, but job security collapsed — ownership judges bailouts as failed leadership and replaced you immediately.',
+        };
+      }
+      if (mech === 'probation_bad_review') {
+        parts.push(
+          'You were on probation and this formal review missed expectations — ownership replaced you immediately.'
+        );
+      } else {
+        parts.push('Job security reached 0% after repeated weak formal reviews.');
+      }
+    } catch (_e) {
+      parts.push('Ownership cites sustained underperformance versus expectations.');
+    }
+    if (entry && entry.kpis) {
+      var nb = needsImprovementBullets(entry.kpis, cfg);
+      if (nb.length) parts.push(nb[0]);
+    }
+    if (parts.length < 2) {
+      parts.push(
+        'Corporate weighed profitability, revenue trend, and long-term station strength — the combination did not clear the bar.'
+      );
+    }
+    var detail = parts.filter(Boolean).join(' ');
+    return { headline: headline, detail: detail };
+  }
+
+  function fmtMoneyGm(n) {
+    var v = Math.round(n || 0);
+    if (typeof global !== 'undefined' && typeof global.f$ === 'function') return global.f$(v);
+    return '$' + Math.abs(v).toLocaleString();
+  }
+
+  /** Solo GM scenario + GM career: bridge cash when deeply negative — trades job security. */
+  function computeCorporateLifelineOffer(G) {
+    if (!gmScenarioActive(G) || !G._gm || G._gm.fired) return { available: false };
+    var gm = G._gm;
+    var cash =
+      typeof global !== 'undefined' && typeof global.mpMyCashOnHand === 'function'
+        ? global.mpMyCashOnHand()
+        : G.cash || 0;
+    if (cash >= 0) return { available: false };
+    var maxUses = 5;
+    var used = gm.corporateLifelinesUsed != null ? gm.corporateLifelinesUsed | 0 : 0;
+    if (used >= maxUses) return { available: false, reason: 'max' };
+    var tier = getCampaignTierPressure(G).tier;
+    var mid = (G && G.marketId) || (typeof global !== 'undefined' ? global.ACTIVE_MARKET : '') || 'atlanta';
+    var M =
+      typeof global !== 'undefined' && global.MARKETS && global.MARKETS[mid]
+        ? global.MARKETS[mid]
+        : null;
+    var rs = M && typeof M.revScale === 'number' ? M.revScale : 1;
+    var shortfall = -cash;
+    var runway = Math.round(88000 + 92000 * rs);
+    var cap = Math.round(340000 + 130000 * tier + 240000 * rs);
+    var inject = Math.min(cap, shortfall + runway);
+    inject = Math.max(Math.min(shortfall, cap), Math.min(inject, cap));
+    var penalty = 11 + tier * 2 + used * 9;
+    penalty = Math.min(52, Math.max(9, penalty));
+    var conf0 = gm.confidence != null ? gm.confidence : 78;
+    var confAfter = Math.max(0, Math.round(conf0 - penalty));
+    var wouldFire = confAfter <= 0;
+    return {
+      available: true,
+      inject: inject,
+      penalty: penalty,
+      wouldFire: wouldFire,
+      confidenceAfter: confAfter,
+      usesSoFar: used,
+      usesRemaining: maxUses - used - 1,
+    };
+  }
+
+  function applyCorporateLifeline(G, opts) {
+    opts = opts || {};
+    var offer = computeCorporateLifelineOffer(G);
+    if (!offer.available) return false;
+    var gm = G._gm;
+    var inject = offer.inject | 0;
+    var penalty = offer.penalty | 0;
+    G.cash = (G.cash || 0) + inject;
+    gm.corporateLifelinesUsed = (gm.corporateLifelinesUsed | 0) + 1;
+    gm.confidence = Math.max(0, Math.min(100, Math.round((gm.confidence || 0) - penalty)));
+    try {
+      delete G._wlGmDismissalMechanism;
+    } catch (_e) {}
+    gm.status = getGmStatusLabel(gm.confidence, false);
+    if (gm.confidence <= 0) {
+      gm.fired = true;
+      gm.status = 'fired';
+      try {
+        G._gmCareerEnded = true;
+        G._wlGmDismissalMechanism = 'lifeline_confidence_zero';
+      } catch (_e2) {}
+    }
+    try {
+      if (typeof G.debtWarningQ === 'number' && (G.cash || 0) >= 0) G.debtWarningQ = 0;
+    } catch (_e3) {}
+    if (G.news && !opts.suppressNews) {
+      var injStr = fmtMoneyGm(inject);
+      var tag = gm.fired
+        ? '📋 Corporate lifeline: ownership wired ' +
+          injStr +
+          ' — job security collapsed after this bailout and your GM tenure ends immediately.'
+        : '📋 Corporate lifeline: ' +
+          injStr +
+          ' working capital wired — job security −' +
+          penalty +
+          '%. Ownership expects a credible turnaround next period.';
+      G.news.unshift({
+        v: gm.fired ? 'HIGH' : 'HIGH',
+        t: tag,
+        y: G.year,
+        p: G.period,
+        iy: true,
+      });
+    }
+    return true;
   }
 
   function goodBullets(kpis, ev, cfg) {
@@ -1333,6 +1479,11 @@
         ? '<br/><span style="color:var(--amb)">Brokered economics on this run count as declining this mandate.</span>'
         : '';
       var trend = prog.shareTrend ? String(prog.shareTrend) : 'flat';
+      var startPct =
+        typeof prog.startShare === 'number' && Number.isFinite(prog.startShare)
+          ? Math.round(prog.startShare * 1000) / 10
+          : null;
+      var startRk = prog.startRank != null ? prog.startRank | 0 : null;
       mandateBlock =
         '<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.1)">' +
         '<div style="font-size:11px;letter-spacing:2px;color:var(--amb);margin-bottom:6px">CORPORATE MANDATE</div>' +
@@ -1341,11 +1492,11 @@
         escapeHtml(String(callM)) +
         '</strong> to <strong style="color:var(--wht)">' +
         escapeHtml(String(fmtHuman)) +
-        '</strong> and reach at least <strong style="color:var(--wht)">' +
+        '</strong>. Meet ownership by <strong style="color:var(--wht)">' +
         pct +
-        '%</strong> total-market share within <strong style="color:var(--wht)">' +
+        '%</strong> AQH share <em>or</em> meaningful ratings improvement (enough share gain, relative growth vs mandate start, or climbing into the market top half / up two rank spots) — while staying on that format — within <strong style="color:var(--wht)">' +
         (cm.deadlinePeriods | 0) +
-        '</strong> operating periods (from assignment start).' +
+        '</strong> operating periods from assignment start.' +
         brkLine +
         '</p>' +
         '<p style="margin:8px 0 0;font-size:12px;color:var(--mut)">Tracking: format ' +
@@ -1354,6 +1505,9 @@
         escapeHtml(trend) +
         (typeof prog.bestShareWhileTarget === 'number'
           ? ' · best share while on target ' + (Math.round(prog.bestShareWhileTarget * 1000) / 10) + '%'
+          : '') +
+        (startPct != null
+          ? ' · mandate baseline ' + startPct + '% AQH' + (startRk != null ? ', rank #' + startRk : '')
           : '') +
         '</p>' +
         '</div>';
@@ -1397,6 +1551,7 @@
       consecutiveBadReviews: 0,
       consecutiveMediocreReviews: 0,
       formalReviewsCompletedThisAssignment: 0,
+      corporateLifelinesUsed: 0,
       pendingGmOnboarding: true,
       gmOnboardingSeen: false,
     };
@@ -1536,6 +1691,7 @@
   function migrateGmOnboardingFlags(G) {
     var gm = G._gm;
     if (!gm) return;
+    if (gm.corporateLifelinesUsed == null) gm.corporateLifelinesUsed = 0;
     if (gm.pendingGmOnboarding === undefined && gm.gmOnboardingSeen === undefined) gm.gmOnboardingSeen = true;
     if (
       gm.formalReviewsCompletedThisAssignment == null &&
@@ -1565,6 +1721,23 @@
     var owner = ownerTypeLabel(cfg.archetype);
     var focusShort = ownershipPriorityShort(cfg);
     var pct = Math.max(0, Math.min(100, Math.round(gm.confidence)));
+    var careerContractHtml = (function () {
+      var ca = G && G.careerCampaign && G.campaignAssignment ? G.campaignAssignment : null;
+      if (!ca) return '';
+      var cap = ca.contractLengthPeriods != null ? ca.contractLengthPeriods | 0 : 16;
+      var closed = gm.closedPeriods != null ? gm.closedPeriods | 0 : 0;
+      var left = Math.max(0, cap - closed);
+      return (
+        '<div class="wl-gm-strip-item"><span class="wl-gm-strip-k">Career contract</span> ' +
+        '<span class="wl-gm-strip-v" title="Ladder moves (promotion, lateral, or demotion) are decided when this posting ends — not from job security alone.">' +
+        closed +
+        ' / ' +
+        cap +
+        ' periods · ' +
+        left +
+        ' until close-out</span></div>'
+      );
+    })();
 
     el.className = 'wl-gm-panel--on wl-gm-panel--corp wl-gm-strip ' + securityClass(st);
     el.innerHTML =
@@ -1574,6 +1747,18 @@
       '<div class="wl-gm-strip-actions" role="toolbar" aria-label="General Manager resources">' +
       '<button type="button" class="wl-gm-strip-link" onclick="wlGmExplainReviews()">Expectations</button>' +
       '<button type="button" class="wl-gm-strip-link" onclick="wlGmOpenCurrentStanding()">Standing</button>' +
+      (function () {
+        if (G && G.careerCampaign) return '';
+        var off = computeCorporateLifelineOffer(G);
+        if (!off.available)
+          return '';
+        var cls = off.wouldFire ? ' wl-gm-strip-link--danger' : '';
+        return (
+          '<button type="button" class="wl-gm-strip-link' +
+          cls +
+          '" onclick="wlGmOpenLifelineModal()" title="Emergency working capital vs job security">Corporate lifeline</button>'
+        );
+      })() +
       '</div></div>' +
       '<div class="wl-gm-strip-metricrow" role="group" aria-label="General manager at a glance">' +
       '<div class="wl-gm-strip-item"><span class="wl-gm-strip-k">Job security</span> ' +
@@ -1595,6 +1780,7 @@
       '<span class="wl-gm-strip-v">' +
       escapeHtml(focusShort) +
       '</span></div>' +
+      careerContractHtml +
       '</div></div>';
 
     if (gm.pendingReviewModal) {
@@ -1730,6 +1916,71 @@
     if (typeof global.om === 'function') global.om('m-gm-review');
   };
 
+  function fillGmLifelineModal(G) {
+    var b = document.getElementById('gm-lifelineb');
+    if (!b || !G || !G._gm) return;
+    var off = computeCorporateLifelineOffer(G);
+    if (!off.available) {
+      b.innerHTML =
+        '<p class="di" style="margin-top:0">A corporate lifeline is not available (positive cash, maximum bailouts reached, or you have been dismissed).</p>';
+      return;
+    }
+    var gm = G._gm;
+    var inj = fmtMoneyGm(off.inject);
+    var pct = Math.round(gm.confidence != null ? gm.confidence : 0);
+    var after = off.confidenceAfter;
+    var warn = off.wouldFire
+      ? '<p style="margin:14px 0 0;font-size:14px;color:var(--red);line-height:1.55"><strong>Warning:</strong> This bailout would push job security to zero — <strong>ownership dismisses you immediately</strong> after the wire.</p>'
+      : '<p style="margin:14px 0 0;font-size:14px;color:var(--mut);line-height:1.55">Approximate job security after approval: <strong>' +
+        after +
+        '%</strong> (currently ' +
+        pct +
+        '%).</p>';
+    b.innerHTML =
+      '<p class="di" style="margin-top:0">Company cash is negative. Corporate can wire <strong>' +
+      inj +
+      '</strong> in working capital so you can keep the company solvent this period.</p>' +
+      '<p class="di" style="margin-top:12px">Emergency funding is not free: <strong>−' +
+      off.penalty +
+      '% job security</strong>. Each additional lifeline this run costs more trust.</p>' +
+      warn +
+      '<p style="margin:12px 0 0;font-size:13px;color:var(--mut)">Bailouts used this run: ' +
+      off.usesSoFar +
+      '. After this: ' +
+      Math.max(0, off.usesRemaining) +
+      ' remaining.</p>';
+  }
+
+  global.wlGmOpenLifelineModal = function () {
+    var G = global.G;
+    if (!G || !G._gm || G._gm.fired) return;
+    var off = computeCorporateLifelineOffer(G);
+    if (!off.available) {
+      if (typeof global.showToast === 'function')
+        global.showToast('Corporate lifeline is not available right now.', 'warn', 4200);
+      return;
+    }
+    fillGmLifelineModal(G);
+    if (typeof global.om === 'function') global.om('m-gm-lifeline');
+  };
+
+  global.wlGmConfirmLifeline = function () {
+    var G = global.G;
+    if (!G || !applyCorporateLifeline(G)) return;
+    if (typeof global.cm === 'function') global.cm('m-gm-lifeline');
+    if (typeof global.renderAll === 'function') global.renderAll();
+    try {
+      if (typeof global.autoSave === 'function') global.autoSave();
+    } catch (_e) {}
+    if (G._gm && G._gm.fired && typeof global.wlShowGmFiredDismissToast === 'function') {
+      global.wlShowGmFiredDismissToast(G);
+    }
+  };
+
+  global.wlGmCancelLifelineModal = function () {
+    if (typeof global.cm === 'function') global.cm('m-gm-lifeline');
+  };
+
   /** @deprecated use wlGmOpenCurrentStanding */
   global.wlGmOpenLastReview = global.wlGmOpenCurrentStanding;
 
@@ -1737,6 +1988,7 @@
     gmScenarioActive: gmScenarioActive,
     initGmStateForGame: initGmStateForGame,
     onPeriodClose: onPeriodClose,
+    getGmDismissalToastCopy: getGmDismissalToastCopy,
     renderGmHeader: renderGmHeader,
     computeGmKpis: computeGmKpis,
     evaluateGmReview: evaluateGmReview,
@@ -1749,5 +2001,7 @@
     buildCampaignGmSummaryHtml: buildCampaignGmSummaryHtml,
     nextReviewPhrase: nextReviewPhrase,
     getDiagnosticsSnapshot: getDiagnosticsSnapshot,
+    computeCorporateLifelineOffer: computeCorporateLifelineOffer,
+    applyCorporateLifeline: applyCorporateLifeline,
   };
 })(typeof window !== 'undefined' ? window : globalThis);

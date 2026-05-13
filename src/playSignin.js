@@ -8,8 +8,10 @@ import {
   clerkConstructorOptionsFromEnv,
 } from './clerkClientInit.js';
 import { captureEvent, identifyClerkUser, initAnalyticsClient } from './analyticsClient.js';
+import { initMetaPixel } from './metaPixelClient.js';
 
 initAnalyticsClient();
+initMetaPixel();
 
 function wlDetectInAppBrowser() {
   const ua = navigator.userAgent || '';

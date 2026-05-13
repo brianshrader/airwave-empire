@@ -61,6 +61,7 @@ rsync -avz \
   --exclude '.env.*' \
   --exclude 'keys' \
   --exclude 'deploy.zip' \
+  --exclude 'marketing' \
   -e "ssh -i /Users/brianshrader/Documents/Games/Cursor/Frequencies/keys/airwaveempirekey.pem" \
   ./ admin@3.18.148.115:~/airwave-empire/
 

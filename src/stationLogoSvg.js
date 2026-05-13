@@ -460,6 +460,13 @@
     if (casing === 'upper') return String(str).toUpperCase();
     if (casing === 'title') {
       return String(str).replace(/\S+/g, function (w) {
+        /** US call letters (W/K + 3); optional -AM/-FM. Title case must not yield “Kwat”. */
+        var noSuffix = w.replace(/-(AM|FM)$/i, '');
+        var letters = noSuffix.replace(/[^A-Za-z]/g, '');
+        if (/^[WK][A-Z]{2,3}$/i.test(letters)) {
+          var suf = /-(AM|FM)$/i.test(w) ? String(w.match(/-(AM|FM)$/i)[0]).toUpperCase() : '';
+          return letters.toUpperCase() + suf;
+        }
         return w.charAt(0).toUpperCase() + w.slice(1).toLowerCase();
       });
     }
@@ -1179,6 +1186,7 @@
     var cfg = getConfig();
     var id = String(input.id || 'stn');
     var callDisplay = String(input.callDisplay || 'WXXX-AM').trim();
+    callDisplay = callDisplay.toUpperCase();
     var brandRaw = String(input.brand || callDisplay).trim() || callDisplay;
     var layoutMode = String(input.layoutMode || 'brandHero');
     var variantBump = Math.max(0, Math.floor(Number(input.variantBump) || 0));

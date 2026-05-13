@@ -1,0 +1,25 @@
+# Airwave Empire — production site (https://airwaveempire.com)
+# Duplicate deploy/preview hosts: prefer linking to canonical airwaveempire.com.
+
+User-agent: *
+Allow: /
+Allow: /pricing
+Allow: /pricing/
+Allow: /account
+Allow: /account/
+Allow: /play-signin
+Allow: /play-signin/
+
+# Optional deep links (explicit allows help some crawlers; / is Allow-all above)
+Allow: /terms
+Allow: /privacy
+Allow: /play.html
+
+# Dev / internal tooling accidentally exposed alongside the game
+Disallow: /tools/
+Disallow: /archive/
+Disallow: /mockups/
+Disallow: /clerk-javascript/
+Disallow: /admin/
+
+Sitemap: https://airwaveempire.com/sitemap.xml

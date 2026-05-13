@@ -5,14 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- OAuth / handshake may return to `/` or `/play.html`. Do NOT redirect — `indexMarketing.js`
        completes session on the home page so Pricing → Stripe checkout can run. -->
-  <meta name="description" content="Airwave Empire — a radio station simulation spanning decades of the dial. Build formats, hire talent, and compete in major US markets." />
-  <meta property="og:title" content="Airwave Empire" />
-  <meta property="og:description" content="Run stations from the 1970s through the streaming era. Formats, talent, promotions, and major US markets — build your dial empire." />
+  <link rel="canonical" href="https://airwaveempire.com/" />
+  <meta name="description" content="Start in 1970 and build a radio empire across decades of broadcasting history. Launch stations, hire talent, manage formats, survive FM disruption, and compete for ratings." />
+  <meta property="og:title" content="Airwave Empire — Radio Management Simulator" />
+  <meta property="og:description" content="Start in 1970 and build a radio empire across decades of broadcasting history. Launch stations, hire talent, manage formats, survive FM disruption, and compete for ratings." />
   <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://airwaveempire.com/" />
+  <meta property="og:image" content="https://airwaveempire.com/landing-images/overview.png" />
+  <meta property="og:image:alt" content="Airwave Empire — radio station management gameplay" />
+  <meta property="og:site_name" content="Airwave Empire" />
+  <meta property="og:locale" content="en_US" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Airwave Empire" />
-  <meta name="twitter:description" content="Run stations from the 1970s through the streaming era. Formats, talent, promotions, and major US markets." />
-  <title>Airwave Empire</title>
+  <meta name="twitter:title" content="Airwave Empire — Radio Management Simulator" />
+  <meta name="twitter:description" content="Start in 1970 and build a radio empire across decades of broadcasting history. Launch stations, hire talent, manage formats, survive FM disruption, and compete for ratings." />
+  <meta name="twitter:image" content="https://airwaveempire.com/landing-images/overview.png" />
+  <meta name="robots" content="index, follow" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <title>Airwave Empire — Radio Management Simulator</title>
+  <script type="application/ld+json">
+  {"@context":"https://schema.org","@type":["SoftwareApplication","VideoGame"],"name":"Airwave Empire","applicationCategory":["GameApplication","SimulationApplication"],"operatingSystem":"Web browser","browserRequirements":"Requires HTML5 and JavaScript.","description":"Start in 1970 and build a radio empire across decades of broadcasting history. Launch stations, hire talent, manage formats, survive FM disruption, and compete for ratings.","url":"https://airwaveempire.com/","offers":{"@type":"Offer","price":"0","priceCurrency":"USD","description":"Play your first full game free — no payment required."}}
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
@@ -84,10 +96,10 @@
       overflow-x: hidden;
     }
   </style>
-  <script type="module" crossorigin src="/assets/main-Co1aFnL_.js"></script>
-  <link rel="modulepreload" crossorigin href="/assets/analyticsClient-DseHga0r.js">
-  <link rel="modulepreload" crossorigin href="/assets/billingPriceLabels-BRS4POW_.js">
-  <link rel="modulepreload" crossorigin href="/assets/gameServerApiOrigin-fKQqZOIP.js">
+  <script type="module" crossorigin src="/assets/analyticsClient-CfAY6Y7_.js"></script>
+  <script type="module" crossorigin src="/assets/billingPriceLabels-BRS4POW_.js"></script>
+  <script type="module" crossorigin src="/assets/gameServerApiOrigin-fKQqZOIP.js"></script>
+  <script type="module" crossorigin src="/assets/indexMarketing-Dt4fNV3g.js"></script>
 </head>
 <body class="antialiased">
   <!-- Best on larger screens — shown on phone-sized viewports only -->
@@ -119,7 +131,7 @@
         <a href="#eras" class="hover:text-white hidden sm:inline">Eras</a>
         <a href="#pricing" class="hover:text-white hidden sm:inline">Pricing</a>
         <a href="#faq" class="hover:text-white hidden sm:inline">FAQ</a>
-        <a href="/account.html" class="hover:text-white hidden sm:inline" data-wl-cta data-wl-cta-location="nav" data-wl-cta-label="account">Account</a>
+        <a href="/account" class="hover:text-white hidden sm:inline" data-wl-cta data-wl-cta-location="nav" data-wl-cta-label="account">Account</a>
         <a href="#pricing" id="wl-nav-primary-cta" class="gold-bg px-5 py-2.5 rounded-md font-bold uppercase tracking-[0.14em] text-stone-900 hover:opacity-95" data-wl-cta data-wl-cta-location="nav" data-wl-cta-label="plans_and_trial">Plans &amp; trial</a>
       </nav>
     </div>
@@ -136,26 +148,40 @@
           <p class="mt-8 text-xl md:text-2xl text-stone-300 max-w-xl leading-relaxed font-medium">
             Build your station. Chase ratings. Survive the industry.
           </p>
-          <div class="mt-10 flex flex-col sm:flex-row gap-6 sm:items-center">
+          <div class="mt-10 flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-center flex-wrap">
             <a
-              href="#pricing"
-              class="text-center text-sm uppercase tracking-[0.22em] text-amber-200/90 hover:text-amber-100 border border-amber-800/40 rounded-md px-6 py-3 transition-colors"
+              href="/play-guest.html"
+              class="text-center gold-bg rounded-xl px-8 py-4 md:px-10 md:py-5 text-lg md:text-xl font-black uppercase tracking-[0.12em] text-stone-900 hover:brightness-110 transition-[filter,transform] active:translate-y-[1px] shadow-md shadow-black/30 min-w-[min(100%,280px)]"
               data-wl-cta
               data-wl-cta-location="hero"
-              data-wl-cta-label="first_game_free_plans_details"
+              data-wl-cta-label="play_free_no_signup"
             >
-              First game free — plans &amp; details →
+              Play free — no signup required
             </a>
-            <a
-              href="#gameplay"
-              class="text-center text-sm uppercase tracking-[0.18em] text-stone-500 hover:text-stone-300 transition-colors"
-              data-wl-cta
-              data-wl-cta-location="hero"
-              data-wl-cta-label="how_it_works"
-            >
-              How it works
-            </a>
+            <div class="flex flex-col sm:flex-row gap-4 sm:items-center">
+              <a
+                href="/play-signin.html"
+                class="text-center text-sm uppercase tracking-[0.18em] text-amber-200/95 hover:text-amber-50 border border-amber-700/45 rounded-md px-5 py-2.5 transition-colors"
+                data-wl-cta
+                data-wl-cta-location="hero"
+                data-wl-cta-label="sign_in_full_library"
+              >
+                Sign in — full game
+              </a>
+              <a
+                href="#gameplay"
+                class="text-center text-sm uppercase tracking-[0.18em] text-stone-500 hover:text-stone-300 transition-colors"
+                data-wl-cta
+                data-wl-cta-location="hero"
+                data-wl-cta-label="how_it_works"
+              >
+                How it works
+              </a>
+            </div>
           </div>
+          <p class="mt-4 text-sm text-stone-500 max-w-xl">
+            Try the guided tutorial instantly in your browser. Create an account anytime for saves, multiplayer, and every scenario.
+          </p>
         </div>
 
         <div class="panel rounded-2xl p-4 lg:p-5">
@@ -361,14 +387,17 @@
           </li>
         </ul>
         <a
-          href="/play-signin.html"
+          href="/play-guest.html"
           class="mt-6 md:mt-8 inline-flex items-center justify-center gold-bg wl-pricing-play-btn rounded-xl px-10 py-4 md:px-16 md:py-6 text-xl md:text-2xl font-black uppercase tracking-[0.14em] text-stone-900 hover:brightness-110 transition-[filter,transform] active:translate-y-[1px]"
           data-wl-cta
           data-wl-cta-location="pricing_hero"
-          data-wl-cta-label="play_your_first_game_free"
+          data-wl-cta-label="play_free_no_signup"
         >
-          Play your first game free
+          Play free — no signup required
         </a>
+        <p class="mt-4 max-w-lg mx-auto text-sm text-stone-400">
+          Or <a href="/play-signin.html" class="gold underline underline-offset-2 hover:text-amber-200">sign in</a> for your first full game with an account.
+        </p>
         <p class="mt-5 max-w-lg mx-auto text-[13px] md:text-sm text-stone-500 leading-relaxed px-2">
           No credit card required. By creating an account, you agree to the
           <a href="/terms" class="gold underline underline-offset-2 hover:text-amber-200">Terms of Service</a>
@@ -408,6 +437,39 @@
           </div>
         </div>
         <div id="wl-index-pricing-clerk" class="w-full min-w-0 max-w-full cl-root"></div>
+
+        <section class="mt-10 md:mt-12">
+          <div class="panel rounded-2xl p-6 md:p-8">
+            <p class="gold uppercase tracking-[0.22em] text-xs mb-2">Follow the development of Airwave Empire</p>
+            <h3 class="text-2xl md:text-3xl font-black uppercase tracking-tight">Get occasional updates</h3>
+            <p class="mt-3 text-stone-300 text-sm md:text-base leading-relaxed max-w-3xl">
+              Get occasional updates, strategy notes, and announcements about new markets and features.
+              New markets and major features are added regularly!
+            </p>
+
+            <form id="wl-home-email-form" class="mt-5 flex flex-col sm:flex-row gap-3 items-stretch sm:items-end max-w-2xl">
+              <label class="flex-1">
+                <span class="block text-[11px] uppercase tracking-[0.18em] text-stone-500 mb-1">Email</span>
+                <input
+                  id="wl-home-email"
+                  type="email"
+                  inputmode="email"
+                  autocomplete="email"
+                  placeholder="you@example.com"
+                  class="w-full rounded-lg border border-stone-700 bg-stone-950/60 px-4 py-3 text-stone-100 placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-600/40"
+                />
+              </label>
+              <button
+                type="submit"
+                class="gold-bg rounded-lg px-6 py-3 font-black uppercase tracking-[0.14em] text-sm hover:brightness-110 transition-all"
+              >
+                Get updates
+              </button>
+            </form>
+            <p id="wl-home-email-status" class="mt-3 text-sm text-stone-400" aria-live="polite"></p>
+            <p class="mt-2 text-[12px] text-stone-500">No spam. Usually 1–2 updates per week.</p>
+          </div>
+        </section>
       </div>
     </section>
 

@@ -112,13 +112,11 @@ function buildPortraitPrompt(p) {
     'Facial attractiveness must read as strictly ordinary — not pretty, not “leading role.”';
 
   const lead = [
-    `NOT a model, actor headshot, dating-app photo, Instagram face, or luxury-brand ad. NOT “Hollywood handsome” or “conventionally stunning.”`,
-    `Head-and-shoulders portrait of one specific ${who}, apparently in their ${age}, with ${bodyArticle} ${bodyPhrase}.`,
-    `Their face reads as ${face}, with ${detail} — a memorable, ordinary person; visibly not a model, influencer, or network-TV anchor look.`,
-    `MANDATORY LOOKS TARGET: ${anchor}`,
-    `Hair: ${hair}. On-camera presence: ${vibe}; ${look} overall presentation.`,
-    `Lighting: flat, harsh, or cheap — office fluorescent, on-camera flash snap, or dull station lighting. No ring light, no beauty dish, no golden-hour glow, no soft glam.`,
-    `Small-market ${eraLabel} station promo realism — ${era}.`,
+    `Head-and-shoulders of one specific ${who}, ${age}, ${bodyArticle} ${bodyPhrase} — DMV / employee-photo / morning-show regular energy (never catalog-model glamour).`,
+    `Face reads as ${face}, ${detail}. Target: ${anchor}`,
+    `Hair: ${hair}. Presence: ${vibe}; wardrobe vibe: ${look}.`,
+    `Lighting: fluorescent, dull office snap, or on-camera flash — utilitarian station promo, matte skin texture.`,
+    `Small-market ${eraLabel} realism — ${era}.`,
   ].join(' ');
 
   const gameLine = p.gameplayNotes ? `Light character note (do not erase unique face): ${p.gameplayNotes}.` : '';
@@ -129,13 +127,13 @@ function buildPortraitPrompt(p) {
   return [
     lead,
     genderLine,
-    'DIVERSITY LOCK: Follow the exact heritage and skin-tone cues in the subject line above — this portrait is one station employee in a varied staff. Do not reuse one default skin color or ethnicity across images; render natural variation (fair, olive, brown, deep) as described.',
-    'CASTING: local radio personality energy — goofy, average, or slightly odd-looking is ideal; conventionally handsome or pretty is wrong for this image. Think character actor, morning zoo crew, DMV photo energy, or awkward community booster — not a catalog model.',
-    'Avoid identical “same face” results: distinctive features, natural asymmetry, believable skin texture; not airbrushed, not symmetry-perfect, not glamour lighting.',
-    'STUDIO GEAR (mandatory): At least one large broadcast / studio microphone must be clearly visible (desk stand, boom arm, or side-address studio mic). Headphones alone are not enough — do not output only headphones with no microphone.',
-    'STUDIO SETTING (mandatory): The scene must read as a radio on-air studio or booth — acoustic treatment, equipment rack, mixer/console edge, broadcast furniture, or typical station interior. Not a blank void, not a generic office with zero broadcast gear besides headphones.',
+    'Honor heritage + skin-tone cues explicitly; varied fair-to-deep complexions allowed — mirror the lineage described above.',
+    'Cast ordinary locals: quirky, tired, approachable — character-host energy beats soap-opera glamour.',
+    'Natural asymmetry, real skin texture — light retouch only; believable quirks over symmetry.',
+    'Show a boom or desk-mounted broadcast microphone in frame — headphones-only shots are unacceptable.',
+    'Backdrop must read as booth or rack-filled studio — foam panels, consoles, racks, clutter welcome.',
     `Environment framing: ${st}`,
-    'Believable awkward station snapshot or promo still — one real person, not stock photography, not dating-app headshots, not aspirational beauty casting.',
+    'Deliver an awkward-but-real promo still — stock-beauty headshots fail the brief.',
     `Wardrobe: ${wd}`,
     `Secondary micro-mood (subtle): ${ex}`,
     STRICT_NON_SMILE_EXPRESSIONS.has(p.expressionType)
@@ -143,8 +141,8 @@ function buildPortraitPrompt(p) {
       : '',
     gameLine,
     seedLine,
-    'No caricature, no costume stereotypes, no exaggerated comedy face; subtle human imperfection is good.',
-    'CRITICAL: The image must show only the person and environment — absolutely no text, no letters, no numbers, no logos, no captions, no name tags, no station call signs, no watermarks.',
+    'Subtle imperfections welcome — skip caricature and costume gag energy.',
+    'No on-image writing: faces and studio only — zero text, numerals, logos, captions, placards, or watermarks.',
   ]
     .filter(Boolean)
     .join(' ');

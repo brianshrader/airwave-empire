@@ -1,6 +1,11 @@
 'use strict';
 
 const { verifyClerkBearer } = require('./clerkVerify');
+const { verifyGuestToken } = require('./guestJwt');
+const guestAiUsage = require('./guestAiUsageStore');
+
+const GUEST_AI_QUOTA_MSG =
+  'Free guest AI limit reached. Create a free account or subscribe for more.';
 const { monthlyLimitForPlan, CLERK_PLAN } = require('./aiEntitlements');
 const { resolveStripePlanForUser } = require('./stripePlanResolve');
 const {
@@ -126,9 +131,71 @@ async function tryConsumeQuota(res, planSlug, kind, tryConsume, userId) {
   return false;
 }
 
+/**
+ * Clerk JWT or guest HMAC token (anonymous onboarding).
+ * @returns {Promise<{ kind: 'clerk', userId: string } | { kind: 'guest', guestId: string } | null>}
+ */
+async function resolveAiPrincipal(req, res) {
+  const auth = req.headers.authorization || '';
+  const m = auth.match(/^Bearer\s+(.+)$/i);
+  if (!m) {
+    res.status(401).json({
+      ok: false,
+      error: 'Sign in required',
+      code: 'auth_required',
+    });
+    return null;
+  }
+  const bearer = m[1].trim();
+  const guestId = verifyGuestToken(bearer);
+  if (guestId) return { kind: 'guest', guestId };
+
+  if (!process.env.CLERK_SECRET_KEY) {
+    res.status(503).json({
+      ok: false,
+      error: 'Server auth is not configured (CLERK_SECRET_KEY).',
+      code: 'clerk_unconfigured',
+    });
+    return null;
+  }
+  try {
+    const userId = await verifyClerkBearer(bearer);
+    return { kind: 'clerk', userId };
+  } catch {
+    res.status(401).json({
+      ok: false,
+      error: 'Invalid session',
+      code: 'auth_invalid',
+    });
+    return null;
+  }
+}
+
+/**
+ * @param {'logo' | 'jingle' | 'van'} kind
+ * @returns {Promise<boolean>}
+ */
+async function consumeGuestAi(res, guestId, kind) {
+  const out = await guestAiUsage.tryConsume(guestId, kind);
+  if (out.ok) return true;
+  res.status(403).json({
+    ok: false,
+    code: 'guest_quota_exhausted',
+    kind: out.kind,
+    limit: out.limit,
+    used: out.used,
+    error: GUEST_AI_QUOTA_MSG,
+  });
+  return false;
+}
+
 module.exports = {
   requireClerkUserIdForAi,
   requirePlanSlugOr503,
   tryConsumeQuota,
   monthlyLimitForPlan,
+  resolveAiPrincipal,
+  consumeGuestAi,
+  refundGuestAi: guestAiUsage.refundOne,
+  GUEST_AI_QUOTA_MSG,
 };

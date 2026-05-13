@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<link rel="canonical" href="https://airwaveempire.com/play-guest.html">
+<meta name="description" content="Play Airwave Empire in your browser—a deep solo or multiplayer radio management simulation. Pick a market and era, run stations, chase ratings and revenue across decades.">
+<meta name="robots" content="index, follow">
+<meta property="og:title" content="Airwave Empire">
+<meta property="og:description" content="Play Airwave Empire in your browser—a deep solo or multiplayer radio management simulation spanning decades on the dial.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://airwaveempire.com/play-guest.html">
+<meta property="og:image" content="https://airwaveempire.com/landing-images/overview.png">
+<meta property="og:image:alt" content="Airwave Empire — radio simulation gameplay">
+<meta property="og:site_name" content="Airwave Empire">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Airwave Empire">
+<meta name="twitter:description" content="Play Airwave Empire in your browser—a deep solo or multiplayer radio management simulation spanning decades on the dial.">
+<meta name="twitter:image" content="https://airwaveempire.com/landing-images/overview.png">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<!-- Clerk publishable key — required for play (solo + multiplayer). https://dashboard.clerk.com -->
+<meta name="wl-clerk-publishable-key" content="">
+<!-- Guest onboarding: no Clerk gate; production vite plugin skips overwriting this file (see vite.config.js). -->
+<meta name="wl-require-clerk" content="0">
+<meta name="wl-guest-onboarding" content="1">
+<!-- Sync gate flag before deferred legacy.js: ES module main.js may run later (top-level await), so legacy must not see undefined __WL_REQUIRE_CLERK. -->
+<script>
+(function(){
+  var el=document.querySelector('meta[name="wl-require-clerk"]');
+  var v=el&&el.getAttribute('content');v=v==null?'':String(v).trim();
+  window.__WL_REQUIRE_CLERK=(v==='1');
+})();
+</script>
+<!-- Optional: FormSubmit destination for player feedback (same as FEEDBACK_TO). Prefer VITE_FEEDBACK_FORMSUBMIT_EMAIL in .env at build. -->
+<meta name="wl-feedback-formsubmit-email" content="">
+<!-- When the game is served from a different origin than the Node API, set the API origin here (or use VITE_GAME_SERVER_URL at build). Example: content="https://api.airwaveempire.com" -->
+<meta name="wl-game-server-url" content="https://api.airwaveempire.com">
+<title>Airwave Empire — Play free (guest)</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<!-- Station logo templates (curated subset — deterministic SVG typography) -->
+<link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Anton&family=Archivo+Narrow:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Libre+Baskerville:wght@400;700&family=Lora:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Oswald:wght@400;500;600;700&family=Pacifico&family=Playfair+Display:wght@400;600;700&family=Roboto+Slab:wght@400;600;700&display=swap" rel="stylesheet">
+
+<!-- Socket.io — loaded dynamically only in multiplayer mode -->
+<!-- <script src="/socket.io/socket.io.js"></script> -->
+  <script type="module" crossorigin src="/assets/analyticsClient-CfAY6Y7_.js"></script>
+  <script type="module" crossorigin src="/assets/billingPriceLabels-BRS4POW_.js"></script>
+  <script type="module" crossorigin src="/assets/main-5CSIYKyb.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/styles-C5JJWnaz.css">
+</head>
+<body id="wl-play">
+
+<!-- Google blocks “Sign in with Google” in embedded in-app browsers (Instagram, FB, TikTok, etc.). -->
+<div id="wl-inapp-browser-hint" class="wl-ov-hint" style="display:none">
+  <strong>Sign-in:</strong> Google may block sign-in inside this app’s browser. Open <strong>airwaveempire.com</strong> in <strong>Safari</strong> or <strong>Chrome</strong> (⋯ menu → “Open in Browser” / “Open in Safari”).
+  <button type="button" id="wl-inapp-browser-hint-close" class="wl-ov-hint__close" aria-label="Dismiss">&times;</button>
+</div>
+
+<!-- Clerk — blocks scenario select until signed in (wl-require-clerk=1 by default; see src/main.js) -->
+<div id="wl-beta-auth-gate" class="wl-ov-auth" style="display:none">
+  <div class="wl-ov-auth__box">
+    <div class="wl-ov-auth__wordmark">AIRWAVE EMPIRE</div>
+    <div id="wl-beta-auth-title" class="wl-ov-auth__title">Start your first full game — free</div>
+    <p id="wl-beta-auth-msg" class="wl-ov-auth__msg">Sign in with email or social to choose your scenario and play. Your first full game is free—no payment required.</p>
+    <p class="wl-ov-auth__trial">Your first full game is free. Subscribe to start additional runs.</p>
+  </div>
+  <p id="wl-solo-auth-terms" class="wl-ov-auth__terms">
+    By creating an account, you agree to the
+    <a href="/terms">Terms of Service</a>
+    and
+    <a href="/privacy">Privacy Policy</a>.
+  </p>
+  <div id="wl-solo-clerk-mount" class="wl-ov-auth__clerk"></div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════════════
+     MULTIPLAYER LOBBY OVERLAY
+     Shown before game starts. Hidden once game is in progress.
+     ══════════════════════════════════════════════════════════════ -->
+<div id="mp-lobby" class="mp-lobby" style="display:none">
+  <div class="mp-lobby__inner">
+    <a href="/" class="mp-lobby-home-link" title="Back to Airwave Empire home">AIRWAVE EMPIRE</a>
+    <div class="mp-lobby__mp-label">MULTIPLAYER</div>
+
+    <div class="mp-panel">
+      <div class="mp-panel__h">MARKETS</div>
+      <p>The host picks the city once everyone is in the waiting room.</p>
+      <ul>
+        <li><strong>Atlanta</strong></li>
+        <li><strong>Nashville</strong></li>
+        <li><strong>New York</strong></li>
+        <li><strong>Los Angeles</strong></li>
+        <li><strong>Chicago</strong></li>
+      </ul>
+      <div class="mp-panel__h mp-panel__h--tight">STARTING ERAS</div>
+      <p>The host picks the start year when creating a room (CREATE GAME tab):</p>
+      <ul>
+        <li><strong>1970s</strong> — AM-heavy opening, full arc through 2020</li>
+        <li><strong>1978</strong> — FM overtakes AM; lean early years</li>
+        <li><strong>1985</strong> — CHR / classic rock peak; harder opening</li>
+      </ul>
+    </div>
+
+    <!-- Account (Clerk) — prebuilt SignIn / UserButton mount here when VITE_CLERK_PUBLISHABLE_KEY is set -->
+    <div id="wl-mp-auth" class="mp-auth-box" style="display:none">
+      <div class="mp-panel__h">ACCOUNT</div>
+      <p id="wl-mp-auth-terms" class="mp-auth-box__terms">
+        By creating an account, you agree to the
+        <a href="/terms">Terms of Service</a>
+        and
+        <a href="/privacy">Privacy Policy</a>.
+      </p>
+      <div id="wl-clerk-components" class="mp-auth-box__clerk"></div>
+    </div>
+
+    <!-- Server connect panel -->
+    <div id="mp-connect-panel">
+      <div class="mp-field-lbl">SERVER ADDRESS</div>
+      <div class="mp-row">
+        <input id="mp-server-url" class="mp-inp mp-inp--row" type="text" value="https://api.airwaveempire.com"
+          placeholder="https://api.airwaveempire.com"/>
+        <button onclick="mpConnect()" class="abt mp-connect-btn" type="button" id="mp-connect-btn">CONNECT</button>
+      </div>
+      <div id="mp-connect-status" class="mp-conn-status">Connecting…</div>
+    </div>
+
+    <!-- Create/Join tabs — shown after connect -->
+    <div id="mp-cj-panel" class="mp-cj" style="display:none">
+      <div class="mp-tabs" role="tablist">
+        <button type="button" id="mp-tab-create" class="mp-tabs__btn mp-tabs__btn--active" onclick="mpShowTab('create')">
+          CREATE GAME</button>
+        <button type="button" id="mp-tab-join" class="mp-tabs__btn" onclick="mpShowTab('join')">
+          JOIN GAME</button>
+        <button type="button" id="mp-tab-rejoin" class="mp-tabs__btn" onclick="mpShowTab('rejoin')">
+          REJOIN</button>
+      </div>
+
+      <!-- Company name (shared — shown in header & rejoin matching) -->
+      <div class="mp-field-block">
+        <div class="mp-field-lbl--14">YOUR COMPANY'S NAME</div>
+        <input id="mp-player-name" class="mp-inp" type="text" maxlength="40" placeholder="e.g. Peachtree Broadcasting Group"/>
+      </div>
+
+      <!-- CREATE tab -->
+      <div id="mp-create-tab">
+        <div class="mp-field-lbl--14">STARTING ERA</div>
+        <div class="mp-era-row">
+          <button type="button" id="mp-era-1970" onclick="mpPickEra('1970')" class="abt mp-era-btn mp-era-on">1970s</button>
+          <button type="button" id="mp-era-1978" onclick="mpPickEra('1978')" class="abt mp-era-btn">1978</button>
+          <button type="button" id="mp-era-1985" onclick="mpPickEra('1985')" class="abt mp-era-btn">1985</button>
+        </div>
+        <input type="hidden" id="mp-era" value="1970"/>
+        <div id="mp-era-desc" class="mp-era-desc">
+          Start in 1970 — AM dominates, FM is wide open. Host picks the market in the waiting room. Full 50-year arc.
+        </div>
+        <button type="button" onclick="mpCreateRoom()" class="abt g mp-btn-wide">CREATE ROOM</button>
+      </div>
+
+      <!-- JOIN tab -->
+      <div id="mp-join-tab" style="display:none">
+        <div class="mp-field-lbl--14">ROOM CODE</div>
+        <input id="mp-room-code" class="mp-inp mp-inp--code mp-inp--mb" type="text" maxlength="6" placeholder="6-character code"/>
+        <button type="button" onclick="mpJoinRoom()" class="abt mp-btn-wide">JOIN ROOM</button>
+        <p class="mp-rejoin-hint" style="margin-top:14px;margin-bottom:0">Free accounts can accept any invite—the host’s city is chosen by whoever created the room.</p>
+      </div>
+
+      <!-- REJOIN tab — for mid-game reconnects and refreshes -->
+      <div id="mp-rejoin-tab" style="display:none">
+        <p class="mp-rejoin-hint">Use this if you were already in a game and got disconnected, hit refresh, or lost your connection. Enter the same room code and the same company name you used when you joined.</p>
+        <div class="mp-field-lbl--14">ROOM CODE</div>
+        <input id="mp-rejoin-code" class="mp-inp mp-inp--code mp-inp--mb" type="text" maxlength="6" placeholder="6-character code"/>
+        <button type="button" onclick="mpRejoinRoom()" class="abt mp-btn-wide">RECONNECT TO GAME</button>
+      </div>
+
+      <div id="mp-cj-error" class="mp-err" role="status" aria-live="polite"></div>
+    </div>
+
+    <!-- Waiting room — shown after create/join -->
+    <div id="mp-waiting-panel" class="mp-wait" style="display:none">
+      <div class="mp-wait__h">ROOM CODE</div>
+      <div id="mp-room-display" class="mp-wait__code" aria-live="polite"></div>
+      <div class="mp-wait__share">Share this code with other players</div>
+
+      <div class="mp-wait__h2">PLAYERS</div>
+      <div id="mp-player-list" class="mp-wait__list" aria-live="polite"></div>
+
+      <div id="mp-host-controls" class="mp-wait__host" style="display:none">
+        <div class="mp-field-lbl--14 mp-wait__market-lbl">MARKET</div>
+        <select id="mp-market" class="mp-wait__market" title="City for this multiplayer game">
+          <option value="atlanta">Atlanta — Southeast · large</option>
+          <option value="nashville">Nashville — South · medium</option>
+          <option value="wichita">Wichita — Midwest · small</option>
+          <option value="newyork">New York — Northeast · mega</option>
+          <option value="losangeles">Los Angeles — West Coast · mega</option>
+          <option value="seattle">Seattle — Pacific Northwest · large</option>
+          <option value="chicago">Chicago — Midwest · mega</option>
+        </select>
+        <div class="mp-wait__start-note">All players must be connected. You can start with 2–4.</div>
+        <button type="button" onclick="mpStartGame()" id="mp-start-btn" class="abt g mp-btn-wide mp-start-btn" disabled>
+          START DRAFT →</button>
+      </div>
+      <div id="mp-guest-waiting" class="mp-wait__guest" style="display:none">
+        Waiting for host to start the game…<br/>
+        <span class="mp-wait__guest-sub">The host already chose the start era when creating the room; they pick the market here before the draft. Your plan does not need to match the city—you’re joining their game.</span>
+      </div>
+    </div>
+
+    <div class="site-footer site-footer--embed" role="contentinfo">
+      <div class="site-footer-inner">
+        <span class="site-footer-copy">© 2026 Airwave Empire. All rights reserved.</span>
+        <nav class="site-footer-links" aria-label="Legal and social">
+          <a href="/legal/terms.html" target="_blank" rel="noopener">Terms</a>
+          <span class="site-footer-dot" aria-hidden="true">·</span>
+          <a href="/legal/subscription-policy.html" target="_blank" rel="noopener">Subscription</a>
+          <span class="site-footer-dot" aria-hidden="true">·</span>
+          <a href="/legal/privacy.html" target="_blank" rel="noopener">Privacy</a>
+          <span class="site-footer-dot" aria-hidden="true">·</span>
+          <a href="/legal/contact.html" target="_blank" rel="noopener">Contact</a>
+          <span class="site-footer-dot" aria-hidden="true">·</span>
+          <span class="site-footer-social">
+            <a href="https://www.facebook.com/profile.php?id=61575347974985" target="_blank" rel="noopener noreferrer">Facebook</a>
+            <span class="site-footer-dot" aria-hidden="true">·</span>
+            <a href="https://x.com/airwaveempire" target="_blank" rel="noopener noreferrer">X</a>
+            <span class="site-footer-dot" aria-hidden="true">·</span>
+            <a href="https://www.instagram.com/airwaveempire" target="_blank" rel="noopener noreferrer">Instagram</a>
+          </span>
+        </nav>
+        <p class="site-footer-sim">Fictional simulation — not affiliated with real stations or broadcasters.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════════
+     MULTIPLAYER DRAFT SCREEN
+     Shown after host starts game, before game begins.
+     All players pick their stations in snake-draft order.
+     ══════════════════════════════════════════════════════════════ -->
+<div id="mp-draft" class="mp-draft" style="display:none">
+  <div class="mp-draft__inner">
+
+    <div class="mp-draft__head">
+      <div>
+        <div class="mp-draft__title">STATION DRAFT</div>
+        <div id="draft-subtitle" class="mp-draft__sub"></div>
+      </div>
+      <div id="draft-order-strip" class="mp-draft__order" aria-label="Draft order"></div>
+    </div>
+
+    <!-- Current pick banner -->
+    <div id="draft-banner" class="mp-draft__banner">
+      <span id="draft-banner-text" class="mp-draft__banner-t"></span>
+    </div>
+
+    <div id="draft-fairness-hint" class="mp-draft__fair" style="display:none" role="status"></div>
+
+    <!-- Station cards grid -->
+    <div id="draft-cards" class="mp-draft__cards"></div>
+
+    <!-- Second station option (after first pick) -->
+    <div id="draft-second-wrap" class="mp-draft__second" style="display:none">
+      <div class="mp-draft__h">OPTIONAL: BUY A SECOND STATION</div>
+      <p class="mp-draft__p">You start with <strong id="draft-cash-show"></strong>. Buying a second station costs its market value — deducted from your starting cash.</p>
+      <button type="button" id="draft-pass-btn" onclick="mpDraftPass()" class="abt mp-draft__pass">PASS — START WITH ONE STATION</button>
+    </div>
+
+    <!-- Draft log -->
+    <div id="draft-log" class="mp-draft__log" aria-live="polite"></div>
+
+    <div class="site-footer site-footer--embed" role="contentinfo">
+      <div class="site-footer-inner">
+        <span class="site-footer-copy">© 2026 Airwave Empire. All rights reserved.</span>
+        <nav class="site-footer-links" aria-label="Legal and social">
+          <a href="/legal/terms.html" target="_blank" rel="noopener">Terms</a>
+          <span class="site-footer-dot" aria-hidden="true">·</span>
+          <a href="/legal/subscription-policy.html" target="_blank" rel="noopener">Subscription</a>
+          <span class="site-footer-dot" aria-hidden="true">·</span>
+          <a href="/legal/privacy.html" target="_blank" rel="noopener">Privacy</a>
+          <span class="site-footer-dot" aria-hidden="true">·</span>
+          <a href="/legal/contact.html" target="_blank" rel="noopener">Contact</a>
+          <span class="site-footer-dot" aria-hidden="true">·</span>
+          <span class="site-footer-social">
+            <a href="https://www.facebook.com/profile.php?id=61575347974985" target="_blank" rel="noopener noreferrer">Facebook</a>
+            <span class="site-footer-dot" aria-hidden="true">·</span>
+            <a href="https://x.com/airwaveempire" target="_blank" rel="noopener noreferrer">X</a>
+            <span class="site-footer-dot" aria-hidden="true">·</span>
+            <a href="https://www.instagram.com/airwaveempire" target="_blank" rel="noopener noreferrer">Instagram</a>
+          </span>
+        </nav>
+        <p class="site-footer-sim">Fictional simulation — not affiliated with real stations or broadcasters.</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MP Status Bar — shown during multiplayer game (injected into header area) -->
+<div id="mp-statusbar" class="mp-statusbar" style="display:none">
+  <span id="mp-status-players"></span>
+  <span class="mp-statusbar__sep" aria-hidden="true"> &nbsp;·&nbsp; </span>
+  <span id="mp-status-commits"></span>
+  <span class="mp-statusbar__sep" aria-hidden="true"> &nbsp;·&nbsp; </span>
+  <span id="mp-status-room"></span>
+</div>
+
+<!-- MP Chat -->
+<div id="mp-chat-wrap" class="mp-chat" style="display:none">
+  <div class="mp-chat__shell">
+    <div class="mp-chat__head" onclick="mpToggleChat()">
+      <span class="mp-chat__title">RADIO ROOM</span>
+      <span id="mp-chat-badge" class="mp-chat__badge">!</span>
+    </div>
+    <div id="mp-chat-body" class="mp-chat__body" style="display:none">
+      <div id="mp-chat-msgs" class="mp-chat__msgs" aria-live="polite"></div>
+    </div>
+    <div id="mp-chat-input-row" class="mp-chat__form" style="display:none">
+      <input id="mp-chat-in" class="mp-chat__in" type="text" maxlength="200" placeholder="Say something…"
+        onkeydown="if(event.key==='Enter')mpSendChat()"/>
+    </div>
+  </div>
+</div>
+<header id="hdr">
+  <div id="hdr-brand" class="hdr-brand">
+    <div id="logo" role="button" tabindex="0" title="Scenario select — return to markets &amp; scenarios (solo)" onclick="wlGoToScenarioSelectFromLogo()" onkeydown="if(event.key==='Enter'||event.key===' ') { event.preventDefault(); wlGoToScenarioSelectFromLogo(); }">AIRWAVE EMPIRE</div>
+    <a id="wl-hdr-account" class="wl-hdr-account" href="/account.html" target="_blank" rel="noopener noreferrer" title="Account, subscription, and billing">ACCOUNT</a>
+  </div>
+  <div id="hmeta" class="hdr-meta">
+    <div id="hmetarow"><span id="hcity">ATLANTA</span><span class="hmeta-sep" aria-hidden="true">·</span><span class="hmeta-period"><strong class="hmeta-year" id="hy">1970</strong><strong class="hmeta-season" id="hp">SPRING</strong></span><span class="hmeta-sep" aria-hidden="true">·</span><strong id="hsc" onclick="openScenSelect(getLocalSave())" title="Click to change scenario / new game" class="hmeta-scenario">—</strong><span class="hmeta-sep" aria-hidden="true">·</span><span id="hmode" class="hmode">SOLO</span></div>
+    <div id="progwrap"><div id="progbar"><div id="progfill" style="width:0%"></div></div><span id="proglbl">1970 → 2020</span></div>
+  </div>
+  <div class="hdr-actions" id="hdr-actions">
+    <div id="cash">$<span id="hcash">0</span></div>
+    <button type="button" id="abtn">▶ NEXT PERIOD</button>
+  </div>
+</header>
+<div id="alertbar" hidden aria-hidden="true"></div>
+<div id="wl-toast-host" class="wl-toast-host" aria-live="polite">
+  <div id="wl-game-notice" class="wl-game-notice" hidden></div>
+  <div id="wl-toast-stack" class="wl-toast-stack"></div>
+</div>
+<!-- GM Mode (solo): status panel — populated by gmMode.js -->
+<div id="wl-gm-panel" aria-label="General Manager status"></div>
+<main id="main">
+  <!-- LEFT COLUMN: score strip, market standings, news feed -->
+  <div class="pnl" id="pl">
+    <div id="scorebar"></div>
+    <div class="ph ph--mkt">
+      <div class="mkt-hdr">
+        <span id="mkt-city" class="mkt-hdr-city">ATLANTA</span><span class="mkt-hdr-sep" aria-hidden="true">·</span><span id="mkt-book-period" class="mkt-hdr-book">1970 SPRING</span>
+      </div>
+      <div class="mkt-hdr-btns">
+        <button type="button" class="phbtn" id="wl-tu-tr-ranker-btn" onclick="om('m-rk')">📊 RANKER</button>
+        <button type="button" class="phbtn" onclick="openRatingsDigestTradeSheet()" title="AI trade-press column — cached until the book changes; Export .TXT available">📰 DIGEST</button>
+      </div>
+    </div>
+    <table id="wl-ft-tut-market-ratings" class="mt" title="Rank and share show the last published book (updated when you advance the period). The sim still models audience changes immediately for revenue and trends."><thead><tr><th>#</th><th>STATION</th><th>Format</th><th style="text-align:right">SHARE / △</th><th style="text-align:right">REV/PD</th></tr></thead><tbody id="mtb"></tbody></table>
+    <div class="sep"></div>
+    <div class="dh">DEMO BREAKDOWN</div>
+    <div id="dmb"></div>
+    <div class="sep"></div>
+    <div class="ph">NEWS FEED <sub>RECENT</sub></div><div id="news"></div>
+  </div>
+  <!-- RIGHT COLUMN: scenario banner, your stations -->
+  <div class="pnl pc-rail" id="pc">
+    <div id="scen-banner"></div>
+    <div class="corp-actions-wrap">
+      <div class="corp-actions-h">CORPORATE ACTIONS</div>
+      <div class="corp-actions-btns">
+        <button type="button" class="phbtn" onclick="openPeriodNews()" title="Headlines from the period you just finished">📰 NEWS</button>
+        <button type="button" class="phbtn" onclick="openFinancials()">📈 FINANCIALS</button>
+        <button type="button" class="phbtn" onclick="openLoan()">💳 LOANS</button>
+        <button type="button" class="phbtn" id="wl-corp-gm-career-btn" hidden onclick="wlCampaignOpenBriefing()" title="General Manager career ladder">📋 GENERAL MANAGER CAREER</button>
+        <button type="button" class="phbtn" onclick="openSaveLoad()">💾 SAVE / LOAD</button>
+        <button type="button" class="phbtn" onclick="wlFtTutorialRestartFromMenu()" title="First-turn walkthrough, or restore coach tips if you dismissed a stuck overlay">📘 TIPS</button>
+      </div>
+    </div>
+    <div class="ph">YOUR STATIONS <sub id="ownlbl">1 AM · 1 FM</sub></div>
+    <div id="stns"></div>
+  </div>
+  <!-- Hidden targets — score detail + scenario sync + competitor intel (rIntel / rScore / rMkt) -->
+  <div style="display:none"><div id="intel"></div><div id="scorebox"></div><div id="scenwrap"></div></div>
+</main>
+
+<!-- Modals -->
+<div class="ov" id="m-sum"><div class="mo"><div class="mh"><span id="sumt">PERIOD END</span><button type="button" class="mc" onclick="cm('m-sum')">OK</button></div><div id="sumb"></div></div></div>
+<div class="ov" id="m-grade"><div class="mo wide"><div class="mh"><span id="gradet">DECADE REPORT</span><button class="mc" onclick="cm('m-grade')">CONTINUE →</button></div><div id="gradeb"></div></div></div>
+<div class="ov" id="m-trial-creative-notice" style="z-index:8500"><div class="mo" style="max-width:440px;padding:22px 24px"><div id="trial-creative-notice-title" style="font-family:var(--ft);font-size:13px;letter-spacing:2px;color:var(--amb);margin-bottom:10px"></div><div id="trial-creative-notice-body" style="font-family:var(--ft);font-size:15px;line-height:1.55;color:var(--off)"></div><div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px"><button type="button" class="cfm" id="trial-creative-notice-primary"></button><button type="button" class="abt" id="trial-creative-notice-secondary"></button></div></div></div>
+<div class="ov" id="m-trial-end"><div class="mo wide" style="max-width:560px"><div class="mh"><span id="trialendt">Trial complete — keep building</span><button type="button" class="mc" onclick="wlDismissTrialEndModal()">×</button></div><div id="trialendb" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.6;color:var(--off)"></div></div></div>
+<div class="ov" id="m-rk"><div class="mo full"><div class="mh"><span id="m-rk-title">MARKET RANKER</span><button class="mc" onclick="cm('m-rk')">CLOSE ×</button></div><div id="rkwrap"></div><div class="rkleg" id="rk-legend"></div></div></div>
+<div class="ov" id="m-ci"><div class="mo"><div class="mh"><span id="ci-title">COMPETITOR INTEL</span><button class="mc" onclick="cm('m-ci')">CLOSE ×</button></div><div style="font-family:var(--fm);font-size:14px;color:var(--amb);padding:4px 20px 0;font-style:italic;letter-spacing:0.5px" id="ci-subtitle"></div><div id="ci-body" style="padding:16px 20px 20px"></div></div></div>
+<div class="ov" id="m-tal"><div class="mo"><div class="mh"><span>HIRE TALENT</span><button type="button" class="mc" onclick="cm('m-tal')">OK</button></div><div id="talb"></div></div></div>
+<div class="ov" id="m-pr2"><div class="mo"><div class="mh"><span>PROMOTION BUDGET</span><button class="mc" onclick="cm('m-pr2')">CLOSE ×</button></div><div id="prb"></div></div></div>
+<div class="ov" id="m-fm"><div class="mo"><div class="mh"><span>FORMAT CHANGE</span><button class="mc" onclick="cm('m-fm')">CLOSE ×</button></div><div id="fmb"></div></div></div>
+<div class="ov" id="m-ac"><div class="mo"><div class="mh"><span>ACQUIRE STATION</span><button class="mc" onclick="cm('m-ac')">CLOSE ×</button></div><div id="acb"></div></div></div>
+<div class="ov" id="m-sim"><div class="mo"><div class="mh"><span>SIMULCAST</span><button class="mc" onclick="cm('m-sim')">CLOSE ×</button></div><div id="simb"></div></div></div>
+<div class="ov" id="m-drift"><div class="mo"><div class="mh"><span id="drift-title">POSITIONING</span><button class="mc" onclick="cm('m-drift')">CLOSE ×</button></div><div id="driftb"></div></div></div>
+<div class="ov" id="m-save"><div class="mo"><div class="mh"><span>💾 SAVE / LOAD</span><button class="mc" onclick="wlCloseSaveLoadModal()">CLOSE ×</button></div><div id="saveb"></div></div></div>
+<div class="ov" id="m-fin"><div class="mo wide"><div class="mh"><span>FINANCIALS</span><button class="mc" onclick="cm('m-fin')">CLOSE ×</button></div><div id="finb"></div></div></div>
+<div class="ov" id="m-loan"><div class="mo"><div class="mh"><span>💳 FINANCING</span><button class="mc" onclick="cm('m-loan')">CLOSE ×</button></div><div id="loanb"></div></div></div>
+<div class="ov" id="m-stream"><div class="mo"><div class="mh"><span>📶 DIGITAL</span><button class="mc" onclick="cm('m-stream')">CLOSE ×</button></div><div id="streamb"></div></div></div>
+<div class="ov" id="m-rename"><div class="mo"><div class="mh"><span>RENAME STATION</span><button class="mc" onclick="cm('m-rename')">CLOSE ×</button></div><div id="renameb"></div></div></div>
+<div class="ov" id="m-migrate"><div class="mo"><div class="mh"><span>MOVE FORMAT TO FM</span><button class="mc" onclick="cm('m-migrate')">CLOSE ×</button></div><div id="migrateb"></div></div></div>
+<div class="ov" id="m-fire"><div class="mo wide"><div class="mh"><span id="fire-title">MANAGE TALENT</span><button type="button" class="mc" onclick="mFireHeaderClose()">CLOSE ×</button></div><div id="fireb"></div></div></div>
+<div class="ov" id="m-pg"><div class="mo"><div class="mh"><span>INVEST IN PROGRAMMING</span><button type="button" class="mc" onclick="cm('m-pg')">OK</button></div><div id="pgb"></div></div></div>
+<div class="ov" id="m-programming"><div class="mo wide"><div class="mh"><span id="prog-mh-title">PROGRAMMING</span><button type="button" class="mc" onclick="cm('m-programming')">OK</button></div><div id="prog-body" class="bm-manage"></div></div></div>
+<div class="ov" id="m-ident"><div class="mo"><div class="mh"><span>COMMUNITY IDENTITY</span><button class="mc" onclick="cm('m-ident')">CLOSE ×</button></div><div id="identb"></div></div></div>
+<div class="ov" id="m-brand"><div class="mo wide"><div class="mh"><span id="brand-title">PROMOTION</span><button class="mc" onclick="cm('m-brand')">CLOSE ×</button></div><div id="brandb" class="bm-manage"></div></div></div>
+<div class="ov" id="m-lean"><div class="mo"><div class="mh"><span>DEMO TARGETING</span><button class="mc" onclick="cm('m-lean')">CLOSE ×</button></div><div id="leanb"></div></div></div>
+<div class="ov" id="m-hist"><div class="mo"><div class="mh"><span id="hist-title">STATION HISTORY</span><button class="mc" onclick="cm('m-hist')">CLOSE ×</button></div><div id="histb"></div></div></div>
+<div class="ov" id="m-sell"><div class="mo"><div class="mh"><span>SELL STATION</span><button class="mc" onclick="cm('m-sell')">CLOSE ×</button></div><div id="sellb"></div></div></div>
+<div class="ov" id="m-gameover-sellout"><div class="mo wide" style="max-width:520px"><div class="mh"><span>RUN COMPLETE</span><button type="button" class="mc" onclick="cm('m-gameover-sellout');openScenSelect(null)">SCENARIO SELECTION →</button></div><div id="gameover-selloutb" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.55;color:var(--off)"></div></div></div>
+<div class="ov" id="m-bankruptcy-coach" style="z-index:9120"><div class="mo wide" style="max-width:560px"><div class="mh"><span id="bankruptcy-coach-title">STATION BANKRUPTCY</span><button type="button" class="mc" onclick="cm('m-bankruptcy-coach');wlDismissSoloBankruptcyCoach()">OK</button></div><div id="bankruptcy-coachb" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.6;color:var(--off)"></div></div></div>
+<div class="ov" id="m-sta-offer"><div class="mo"><div class="mh"><span>OFF-MARKET LISTING</span><button type="button" class="mc" onclick="rejectStationListingOffer()">DECLINE ×</button></div><div id="sta-offerb"></div></div></div>
+<div class="ov" id="m-game-confirm"><div class="mo" style="max-width:480px"><div class="mh"><span id="gameconf-title">CONFIRM</span></div><div id="gameconfb" style="padding:8px 20px 4px"></div><div style="padding:8px 20px 20px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button type="button" class="cnl" onclick="wlGameConfirmDismiss()">CANCEL</button><button type="button" class="cfm" id="gameconf-ok" onclick="wlGameConfirmCommit()" style="width:auto;min-width:120px;margin-top:0;padding:12px 20px">OK</button></div></div></div>
+<div class="ov" id="m-scen"><div class="mo wide" style="max-width:780px"><div id="scenb"></div></div></div>
+<div class="ov" id="m-onboard"><div class="mo" style="max-width:660px"><div class="mh"><span>HOW TO PLAY</span><button class="mc" onclick="cm('m-onboard');startPlay(_pendingScenId)">START →</button></div><div id="onboardb"></div></div></div>
+<div class="ov" id="m-boost"><div class="mo"><div class="mh"><span>FM BOOSTER</span><button class="mc" onclick="cm('m-boost')">CLOSE ×</button></div><div id="boostb"></div></div></div>
+<div class="ov" id="m-stadmin"><div class="mo wide" style="max-width:min(96vw,720px)"><div class="mh"><span>STATION ADMIN</span><button class="mc" onclick="cm('m-stadmin')">CLOSE ×</button></div><div id="stadmb" class="bm-manage"></div></div></div>
+<div class="ov" id="m-sales"><div class="mo wide" style="max-width:min(96vw,720px)"><div class="mh"><span>SALES</span><button class="mc" onclick="cm('m-sales')">CLOSE ×</button></div><div id="salesb"></div></div></div>
+<div class="ov" id="m-research"><div class="mo" style="max-width:580px"><div class="mh"><span id="research-title">📊 STATION RESEARCH</span><button class="mc" onclick="cm('m-research')">CLOSE ×</button></div><div id="researchb"></div></div></div>
+<div class="ov" id="m-guest-conversion"><div class="mo wide tut-modal-mo" style="max-width:min(92vw,520px)"><div class="mh"><span id="m-guest-conv-title">Keep Building Your Radio Empire</span><button type="button" class="mc" onclick="cm('m-guest-conversion')">CLOSE ×</button></div><div id="m-guest-conv-body" class="tut-modal-body"><p class="di" style="margin:0 0 12px;line-height:1.55">Create a free account to unlock the full library, cloud saves, multiplayer, and more AI generations.</p><ul class="di" style="margin:0;padding-left:18px;line-height:1.55;color:var(--off)"><li>Every scenario and market you’re entitled to on your plan</li><li>Save progress to your account</li><li>More logos, jingles, and remote van artwork</li></ul></div><div id="m-guest-conv-foot" class="tut-modal-foot"><button type="button" class="cfm" style="width:100%;margin-bottom:8px" id="m-guest-conv-signup">Create free account</button><button type="button" class="abt g" style="width:100%;margin-bottom:8px" id="m-guest-conv-pricing">View plans</button><button type="button" class="cnl" style="width:100%" id="m-guest-conv-exit">Exit</button></div></div></div>
+<div class="ov" id="m-tutorial-turnaround"><div class="mo wide tut-modal-mo"><div class="mh"><span id="m-tut-tr-title">TUTORIAL</span><button type="button" class="mc" onclick="cm('m-tutorial-turnaround')">CLOSE ×</button></div><div id="m-tut-tr-body" class="tut-modal-body"></div><div id="m-tut-tr-foot" class="tut-modal-foot"></div></div></div>
+<!-- Turnaround guided script: modal notes (replacing Easy-to-miss header “toasts”). -->
+<div class="ov" id="m-turnaround-tip"><div class="mo" id="turnaround-tip-mo" style="max-width:min(500px,94vw);padding:22px 24px;background:var(--pnl);border:1px solid rgba(80,180,120,.42);border-radius:8px;box-shadow:0 16px 48px rgba(0,0,0,.55)">
+  <div id="turnaround-tip-title" style="font-family:var(--ft);font-size:12px;letter-spacing:0.16em;color:var(--grn);margin-bottom:12px">COACH NOTE</div>
+  <div id="turnaround-tip-body" style="font-family:var(--ft);font-size:16px;line-height:1.55;color:var(--off)"></div>
+  <div style="margin-top:22px;display:flex;justify-content:flex-end"><button type="button" class="cfm" id="turnaround-tip-ok" onclick="tutorialTurnaroundDismissMessagePopup()" style="margin-top:0;min-width:120px">OK</button></div>
+</div></div>
+<div class="ov" id="m-ratings-digest"><div class="mo wide" style="max-width:720px"><div class="mh"><span id="ratings-digest-title">📰 TRADE PRESS — RATINGS DIGEST</span><button class="mc" onclick="cm('m-ratings-digest')">CLOSE ×</button></div><div id="ratings-digestb" style="padding:16px 20px 20px"></div></div></div>
+<div class="ov" id="m-milestone"><div class="mo" style="max-width:520px"><div id="milestoneb"></div></div></div>
+<div class="ov" id="m-period-news"><div class="mo" style="max-width:560px"><div class="mh"><span>📰 NEWS — LAST PERIOD</span><button type="button" class="mc" onclick="cm('m-period-news')">OK</button></div><div id="periodnewsb" style="padding:16px 20px 20px"></div></div></div>
+
+<div class="ov" id="m-gm-onboard"><div class="mo" style="max-width:560px"><div class="mh"><span>GENERAL MANAGER CAREER</span><button type="button" class="mc" onclick="wlGmDismissOnboarding()">OK</button></div><div id="gm-onboardb" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.55;color:var(--off)"></div></div></div>
+<div class="ov" id="m-gm-explain"><div class="mo wide" style="max-width:620px"><div class="mh"><span>CORPORATE EXPECTATIONS</span><button type="button" class="mc" onclick="cm('m-gm-explain')">CLOSE ×</button></div><div id="gm-explainb" style="padding:16px 20px 22px;font-family:var(--ft);font-size:15px;line-height:1.6;color:var(--off)"></div></div></div>
+<div class="ov" id="m-gm-review"><div class="mo wide" style="max-width:580px"><div class="mh"><span id="gm-review-mh-title">CURRENT STANDING</span><button type="button" class="mc" onclick="cm('m-gm-review')">CLOSE ×</button></div><div id="gm-reviewb" style="padding:16px 20px 20px"></div></div></div>
+<div class="ov" id="m-gm-lifeline"><div class="mo" style="max-width:520px"><div class="mh"><span>CORPORATE LIFELINE</span><button type="button" class="mc" onclick="wlGmCancelLifelineModal()">CLOSE ×</button></div><div id="gm-lifelineb" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.55;color:var(--off)"></div><div style="padding:0 20px 20px;display:flex;gap:10px;flex-wrap:wrap"><button type="button" class="cfm" style="flex:1;min-width:140px" onclick="wlGmConfirmLifeline()">ACCEPT FUNDS</button><button type="button" class="abt" style="flex:1;min-width:120px" onclick="wlGmCancelLifelineModal()">Cancel</button></div></div></div>
+
+<div class="ov" id="m-campaign-start"><div class="mo" style="max-width:520px"><div class="mh"><span>START GENERAL MANAGER CAREER</span><button type="button" class="mc" onclick="cm('m-campaign-start')">CLOSE ×</button></div><div style="padding:8px 20px 20px;font-family:var(--ft);font-size:15px;color:var(--off);line-height:1.55">
+  <p class="di" style="margin-top:0">Enter your name as <strong>General Manager</strong>. Your employer is the broadcast group that owns the station license — edit the generated name or roll a new one.</p>
+  <label for="campaign-start-player" style="display:block;font-size:13px;color:var(--mut);margin-bottom:6px">Your name</label>
+  <input type="text" id="campaign-start-player" maxlength="48" autocomplete="name" placeholder="e.g. Jordan Ellis"
+    style="width:100%;box-sizing:border-box;background:var(--crd);border:1px solid var(--bdr);color:var(--wht);font-family:var(--ft);font-size:15px;padding:10px 12px;margin-bottom:14px;border-radius:2px;outline:none"/>
+  <label for="campaign-start-owner" style="display:block;font-size:13px;color:var(--mut);margin-bottom:6px">Owning company (employer)</label>
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <input type="text" id="campaign-start-owner" maxlength="56" placeholder="Generated broadcast group name"
+      style="flex:1;min-width:200px;box-sizing:border-box;background:var(--crd);border:1px solid var(--bdr);color:var(--wht);font-family:var(--ft);font-size:15px;padding:10px 12px;border-radius:2px;outline:none"/>
+    <button type="button" class="abt" onclick="wlCampaignRegenerateOwnerName()" style="padding:10px 14px;font-size:13px;white-space:nowrap">New name</button>
+  </div>
+  <button type="button" class="cfm" style="width:100%" onclick="wlCampaignCommitStart()">ON AIR — START CAREER →</button>
+</div></div></div>
+<div class="ov" id="m-campaign-brief"><div class="mo" style="max-width:520px"><div class="mh"><span>GENERAL MANAGER CAREER</span><button type="button" class="mc" onclick="cm('m-campaign-brief')">CLOSE ×</button></div><div id="campaign-careerb" style="padding:16px 20px 20px"></div></div></div>
+<div class="ov" id="m-campaign-end"><div class="mo" style="max-width:620px"><div class="mh"><span>ASSIGNMENT COMPLETE</span><button type="button" class="mc" onclick="cm('m-campaign-end')">CLOSE ×</button></div><div id="campaign-endb" style="padding:16px 20px 20px"></div><div style="padding:0 20px 20px"><button type="button" class="cfm" id="campaign-end-continue" style="width:100%">CONTINUE →</button></div></div></div>
+
+<div class="ov" id="m-feedback"><div class="mo" style="max-width:520px"><div class="mh"><span>SEND FEEDBACK</span><button type="button" class="mc" onclick="cm('m-feedback')">CLOSE ×</button></div><div id="feedbackb" style="padding:16px 20px 22px;position:relative">
+  <p class="di" style="margin-top:0">What should we improve? Bugs, balance, clarity — everything helps.</p>
+  <label for="wl-feedback-email" style="display:block;font-size:13px;color:var(--mut);margin-bottom:6px">Your email <span style="opacity:.85">(optional — if we may follow up)</span></label>
+  <input type="email" id="wl-feedback-email" autocomplete="email" placeholder="you@example.com" style="width:100%;box-sizing:border-box;background:var(--crd);border:1px solid var(--bdr);color:var(--wht);font-family:var(--ft);font-size:15px;padding:10px 12px;margin-bottom:14px;border-radius:2px;outline:none"/>
+  <label for="wl-feedback-msg" style="display:block;font-size:13px;color:var(--mut);margin-bottom:6px">Message</label>
+  <textarea id="wl-feedback-msg" rows="9" placeholder="Bugs, ideas, difficulty, UI…" style="width:100%;box-sizing:border-box;background:var(--crd);border:1px solid var(--bdr);color:var(--off);font-family:var(--ft);font-size:15px;line-height:1.5;padding:10px 12px;margin-bottom:12px;border-radius:2px;resize:vertical;min-height:140px;outline:none"></textarea>
+  <input type="text" id="wl-feedback-hp" name="_gotcha" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0"/>
+  <button type="button" class="cfm" id="wl-feedback-send" onclick="wlSubmitFeedback()" style="width:100%">Send feedback</button>
+  <p id="wl-feedback-status" style="margin-top:14px;font-size:14px;font-family:var(--ft);line-height:1.45;min-height:1.2em"></p>
+</div></div></div>
+
+<div class="ov" id="m-talent-help"><div class="mo" style="max-width:540px"><div class="mh"><span>TALENT METRICS</span><button class="mc" onclick="cm('m-talent-help')">CLOSE ×</button></div><div id="talent-helpb" style="padding:16px 20px 20px"></div></div></div>
+<div class="ov" id="m-contract"><div class="mo wide"><div class="mh"><span>📋 TALENT MANAGEMENT</span><button type="button" class="mc" onclick="cm('m-contract')">OK</button></div><div id="contractb"></div></div></div>
+<div class="ov" id="m-lma"><div class="mo" style="max-width:640px"><div class="mh"><span>📝 LOCAL MARKETING AGREEMENT</span><button class="mc" onclick="cm('m-lma')">CLOSE ×</button></div><div id="lmab"></div></div></div>
+
+<div class="ov" id="m-talent-trouble"><div class="mo" style="border:2px solid var(--red);box-shadow:0 0 40px rgba(240,88,88,.25)"><div class="mh" style="background:rgba(240,88,88,.10);border-bottom:1px solid rgba(240,88,88,.3)"><span id="trouble-title" style="color:var(--red);letter-spacing:2px">⚠ TALENT INCIDENT</span></div><div id="trouble-body" style="padding:20px"></div></div></div>
+<div class="ov" id="m-poach-alert"><div class="mo" style="border:2px solid var(--red);box-shadow:0 0 40px rgba(240,88,88,.25)"><div class="mh" style="background:rgba(240,88,88,.12);border-bottom:1px solid rgba(240,88,88,.3)"><span style="color:var(--red);letter-spacing:2px">⚠ TALENT RAID IN PROGRESS</span><button type="button" class="mc" onclick="cm('m-poach-alert')">OK</button></div><div id="poach-alert-body" style="padding:20px"></div></div></div>
+<div class="ov" id="m-sports"><div class="mo"><div class="mh"><span id="sports-title">🏟 SPORTS RIGHTS</span><button class="mc" onclick="cm('m-sports')">CLOSE ×</button></div><div id="sportsb" style="padding:16px 20px 20px"></div></div></div>
+<div class="ov" id="m-franchise"><div class="mo"><div class="mh"><span id="franchise-title">📻 NATIONAL FRANCHISES</span><button class="mc" onclick="cm('m-franchise')">CLOSE ×</button></div><div id="franchiseb" style="padding:16px 20px 20px"></div></div></div>
+<div class="ov" id="m-frmove"><div class="mo"><div class="mh"><span>📻 FRANCHISE SLOT</span><button type="button" class="mc" onclick="cm('m-frmove')">OK</button></div><div id="frmoveb" style="padding:16px 20px 20px"></div></div></div>
+<div class="ov" id="m-swap"><div class="mo"><div class="mh"><span id="swap-title">⇄ SWAP SIGNAL</span><button type="button" class="mc" onclick="cm('m-swap')">OK</button></div><div id="swapb" style="padding:16px 20px 20px"></div></div></div>
+<div class="ov" id="m-trade"><div class="mo"><div class="mh"><span id="trade-title">🤝 TRADE OFFER</span><button type="button" class="mc" onclick="cm('m-trade')">OK</button></div><div id="tradeb" style="padding:16px 20px 20px"></div></div></div>
+<div class="ov" id="m-mp-endgame"><div class="mo wide mp-endgame-mo" style="max-width:560px;border:2px solid rgba(212,175,55,.45);box-shadow:0 0 60px rgba(212,175,55,.18),0 12px 40px rgba(0,0,0,.5)"><div class="mh mp-endgame-mh" style="background:linear-gradient(180deg,rgba(212,175,55,.12),transparent);border-bottom:1px solid rgba(212,175,55,.25)"><span id="mp-endgame-title" style="font-family:var(--fd);letter-spacing:3px;color:var(--amb)">FINAL RESULTS — 2025</span></div><div id="mp-endgame-body" style="padding:16px 20px 8px"></div><div style="padding:0 20px 22px"><button type="button" class="cfm" id="mp-endgame-continue" onclick="mpContinueBeyondEndgame()" style="width:100%;font-size:16px;padding:14px">Continue Playing →</button><p style="font-family:var(--ft);font-size:13px;color:var(--mut);margin:10px 0 0 0;text-align:center">Resumes normal play from Spring 2026 onward.</p></div></div></div>
+
+<div class="ov" id="m-logo"><div class="mo wide" style="max-width:min(96vw,960px)"><div class="mh"><span>STATION LOGO</span><button type="button" class="mc" onclick="cm('m-logo')">← BACK</button></div><div style="text-align:center;padding:8px 0 20px"><img id="wl-logo-modal-img" alt="Station logo" style="display:none;max-width:100%;max-height:min(78vh,880px);width:auto;height:auto;object-fit:contain;border-radius:4px;background:rgba(0,0,0,.2)"><div id="wl-logo-modal-svg" class="wl-logo-modal-svg-host" style="display:none;max-width:min(92vw,720px);max-height:min(78vh,880px);margin:0 auto"></div></div><div style="display:flex;justify-content:center;padding-bottom:8px"><button type="button" id="wl-logo-dl" class="cfm" onclick="wlLogoDownloadClick(event)" style="display:inline-block;min-width:220px;text-align:center;width:auto;margin-top:0">💾 Save file</button></div></div></div>
+<div class="ov" id="m-remote-van"><div class="mo wide" style="max-width:min(96vw,960px)"><div class="mh"><span>REMOTE BROADCAST VAN</span><button type="button" class="mc" onclick="cm('m-remote-van')">← BACK</button></div><div class="wl-remote-van-modal-frame"><img id="wl-remote-van-modal-img" alt="Remote broadcast van"></div><div style="display:flex;justify-content:center;padding-bottom:8px"><button type="button" id="wl-remote-van-dl" class="cfm" onclick="wlRemoteVanDownloadClick(event)" style="display:inline-block;min-width:220px;text-align:center;width:auto;margin-top:0">💾 Save file</button></div></div></div>
+<div class="ov" id="m-portrait"><div class="mo" style="max-width:min(96vw,520px)"><div class="mh"><span>TALENT PORTRAIT</span><button type="button" class="mc" onclick="cm('m-portrait')">← BACK</button></div><div style="text-align:center;padding:12px 16px 8px"><img id="wl-portrait-modal-img" alt="" style="max-width:100%;max-height:min(82vh,720px);object-fit:contain;border-radius:6px;background:rgba(0,0,0,.2)"></div><div id="wl-portrait-modal-name" style="font-family:var(--fd);font-size:22px;text-align:center;color:var(--wht);letter-spacing:1px"></div><div id="wl-portrait-modal-ctx" style="font-family:var(--ft);font-size:14px;color:var(--mut);text-align:center;margin:8px 0 16px;line-height:1.45"></div></div></div>
+
+<footer id="site-footer" class="site-footer site-footer--compact" role="contentinfo">
+  <div class="site-footer-inner">
+    <nav class="site-footer-links" aria-label="Legal, feedback, and social">
+      <span class="site-footer-copy">© 2026 Airwave Empire</span>
+      <span class="site-footer-dot" aria-hidden="true">·</span>
+      <button type="button" class="site-footer-linkbtn" onclick="openFeedback()">Feedback</button>
+      <span class="site-footer-dot" aria-hidden="true">·</span>
+      <a href="/legal/terms.html" target="_blank" rel="noopener">Terms</a>
+      <span class="site-footer-dot" aria-hidden="true">·</span>
+      <a href="/legal/subscription-policy.html" target="_blank" rel="noopener">Subscription</a>
+      <span class="site-footer-dot" aria-hidden="true">·</span>
+      <a href="/legal/privacy.html" target="_blank" rel="noopener">Privacy</a>
+      <span class="site-footer-dot" aria-hidden="true">·</span>
+      <a href="/legal/contact.html" target="_blank" rel="noopener">Contact</a>
+      <span class="site-footer-dot" aria-hidden="true">·</span>
+      <a href="/account.html" target="_blank" rel="noopener">Account</a>
+      <span class="site-footer-dot" aria-hidden="true">·</span>
+      <span class="site-footer-social">
+        <a href="https://www.facebook.com/profile.php?id=61575347974985" target="_blank" rel="noopener noreferrer">Facebook</a>
+        <span class="site-footer-dot" aria-hidden="true">·</span>
+        <a href="https://x.com/airwaveempire" target="_blank" rel="noopener noreferrer">X</a>
+        <span class="site-footer-dot" aria-hidden="true">·</span>
+        <a href="https://www.instagram.com/airwaveempire" target="_blank" rel="noopener noreferrer">Instagram</a>
+      </span>
+    </nav>
+    <p class="site-footer-sim">Fictional simulation — not affiliated with real stations or broadcasters.</p>
+  </div>
+</footer>
+
+  <!-- Vite: env in src/main.js (VITE_CLERK_PUBLISHABLE_KEY). Plain server: set meta above or use .env only after vite build. -->
+  <script defer src="/src/stationLogoConfig.js"></script>
+  <script defer src="/src/stationLogoSvg.js"></script>
+  <script defer src="/src/campaignMode.js"></script>
+  <script defer src="/src/gmMode.js"></script>
+  <script defer src="/src/legacy.js?v=20260511-2"></script>
+  <!-- Dev-only: stripped from production HTML by vite.config.js (file is not copied to dist). -->
+</body>
+</html>

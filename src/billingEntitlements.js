@@ -149,7 +149,12 @@ export async function syncPlanMarkets(clerk) {
             : slug === CLERK_PLAN.TRIAL
               ? 'trial'
               : 'free';
-      captureEvent('subscription_access_detected', { plan, status: 'unknown', source: 'entitlement_refresh' });
+      captureEvent('subscription_access_detected', {
+        plan,
+        selected_plan: plan,
+        status: 'unknown',
+        source: 'entitlement_refresh',
+      });
     }
   } catch (_e) {}
   return { slug, marketIds };

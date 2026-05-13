@@ -21,7 +21,12 @@ const {
   downloadAudioUrl,
 } = require('./services/sunoJingleProvider');
 const { tryConsume } = require('./aiUsageStore');
-const { requireClerkUserIdForAi, requirePlanSlugOr503, tryConsumeQuota } = require('./aiQuotaHttp');
+const {
+  requirePlanSlugOr503,
+  tryConsumeQuota,
+  resolveAiPrincipal,
+  consumeGuestAi,
+} = require('./aiQuotaHttp');
 const { getTrialQuotaSnapshot } = require('./trialQuotaStore');
 const { CLERK_PLAN } = require('./aiEntitlements');
 
@@ -246,9 +251,8 @@ function mountJingleRoutes(app) {
       variants: j.variants || [],
       ...(j.sunoPromptConfidence ? { sunoPromptConfidence: j.sunoPromptConfidence } : {}),
     };
-    if (j.planSlug === CLERK_PLAN.TRIAL && j.clerkUserId) {
+    if (j.planSlug === CLERK_PLAN.TRIAL && j.clerkUserId)
       out.trialQuota = getTrialQuotaSnapshot(j.clerkUserId);
-    }
     return res.json(out);
   });
 
@@ -271,10 +275,18 @@ function mountJingleRoutes(app) {
       return res.status(400).json({ ok: false, error: verrors.join(' ') });
     }
 
-    const clerkUserId = await requireClerkUserIdForAi(req, res);
-    if (!clerkUserId) return;
-    const planSlug = await requirePlanSlugOr503(res, clerkUserId);
-    if (planSlug == null) return;
+    const principal = await resolveAiPrincipal(req, res);
+    if (!principal) return;
+    let planSlug = null;
+    if (principal.kind === 'guest') {
+      const okG = await consumeGuestAi(res, principal.guestId, 'jingle');
+      if (!okG) return;
+    } else {
+      planSlug = await requirePlanSlugOr503(res, principal.userId);
+      if (planSlug == null) return;
+      const allowed = await tryConsumeQuota(res, planSlug, 'jingle', tryConsume, principal.userId);
+      if (!allowed) return;
+    }
 
     const stationId = String(body.stationId).trim();
     const audienceHint = sanitizeJingleSonicHint(body.audienceHint, 100);
@@ -293,9 +305,6 @@ function mountJingleRoutes(app) {
     };
     const sunoArgs = buildSunoJingleArgs(sunoArgPayload);
 
-    const allowed = await tryConsumeQuota(res, planSlug, 'jingle', tryConsume, clerkUserId);
-    if (!allowed) return;
-
     const stamp = Date.now();
     const h = crypto.createHash('sha256').update(JSON.stringify(sunoArgs) + stamp).digest('hex').slice(0, 10);
     const base = `${slugPart(stationId, 32)}-${stamp}-${h}`;
@@ -308,7 +317,8 @@ function mountJingleRoutes(app) {
       sunoArgs,
       base,
       stationId,
-      clerkUserId,
+      clerkUserId: principal.kind === 'clerk' ? principal.userId : null,
+      guestId: principal.kind === 'guest' ? principal.guestId : null,
       planSlug,
       trace: {
         format: String(body.format).trim(),
@@ -328,7 +338,8 @@ function mountJingleRoutes(app) {
     });
 
     const out = { ok: true, jobId };
-    if (planSlug === CLERK_PLAN.TRIAL) out.trialQuota = getTrialQuotaSnapshot(clerkUserId);
+    if (planSlug === CLERK_PLAN.TRIAL && principal.kind === 'clerk')
+      out.trialQuota = getTrialQuotaSnapshot(principal.userId);
     return res.json(out);
   });
 }

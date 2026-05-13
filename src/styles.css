@@ -349,9 +349,9 @@ body#wl-play::after{opacity:0.15}
 }
 #wl-play .abt:disabled{opacity:0.45;cursor:not-allowed}
 /* Contract extend “Sign” tiles use .cfm.contract-ext-btn — scoped rules below (#m-contract / #m-fire) must win over play-shell defaults */
-#wl-play .cfm:not(.contract-ext-btn),
-#wl-play a.cfm:not(.contract-ext-btn),
-#wl-play button.cfm:not(.contract-ext-btn){
+#wl-play .cfm:not(.contract-ext-btn):not(.wl-commit-btn),
+#wl-play a.cfm:not(.contract-ext-btn):not(.wl-commit-btn),
+#wl-play button.cfm:not(.contract-ext-btn):not(.wl-commit-btn){
   display:block;
   width:100%;
   box-sizing:border-box;
@@ -370,13 +370,13 @@ body#wl-play::after{opacity:0.15}
   transition: filter .12s, opacity .12s, box-shadow .12s, background .12s, color .12s;
   clip-path: none;
 }
-#wl-play .cfm:not(.contract-ext-btn):hover{
+#wl-play .cfm:not(.contract-ext-btn):not(.wl-commit-btn):hover{
   filter:brightness(1.06) !important;
   background:var(--m-gold) !important;
   color:var(--m-ink) !important;
   box-shadow:none;
 }
-#wl-play .cfm:not(.contract-ext-btn):disabled{opacity:0.35;cursor:not-allowed;filter:none}
+#wl-play .cfm:not(.contract-ext-btn):not(.wl-commit-btn):disabled{opacity:0.35;cursor:not-allowed;filter:none}
 #wl-play .cnl{
   display:block;
   width:100%;
@@ -483,6 +483,19 @@ body#wl-play::after{opacity:0.15}
   background:var(--m-gold) !important;
   color:var(--m-ink) !important;
   border:1px solid rgba(200,140,32,0.95) !important;
+}
+/* Just committed: distinct from gold “pending” so the player sees the choice landed */
+#wl-play .cfm.wl-commit-btn--committed{
+  background:linear-gradient(180deg,rgba(34,197,94,.42),rgba(22,101,52,.55)) !important;
+  color:#ecfdf5 !important;
+  border:1px solid rgba(74,222,128,.55) !important;
+  box-shadow:0 0 0 1px rgba(34,197,94,.12) inset !important;
+  font-weight:700;
+}
+#wl-play .cfm.wl-commit-btn--committed:hover{
+  background:linear-gradient(180deg,rgba(52,211,153,.5),rgba(21,128,61,.58)) !important;
+  color:#fff !important;
+  box-shadow:0 0 18px rgba(34,197,94,.28) !important;
 }
 #wl-play .cfm.wl-commit-btn--flash{animation:wlCommitFlash .85s ease 1}
 
@@ -886,6 +899,11 @@ body#wl-play::after{opacity:0.15}
 .bm-manage .bm-logo-hero{max-width:min(280px,100%);max-height:220px;object-fit:contain;border-radius:8px;cursor:pointer;border:1px solid var(--bdh);background:rgba(0,0,0,.2)}
 .bm-manage .bm-logo-hero--svg{display:inline-flex;align-items:center;justify-content:center;max-width:min(280px,100%);min-height:120px;padding:8px;box-sizing:border-box}
 .bm-manage .bm-logo-hero--svg svg{max-width:100%;max-height:min(280px,42vh);width:auto;height:auto;display:block}
+/* Remote van: flex wrapper avoids any flex-child stretch; img keeps natural aspect (no horizontal squash in layout). */
+.bm-manage .bm-van-hero-wrap{display:flex;justify-content:center;align-items:center;width:100%;margin:10px 0;min-width:0}
+.bm-manage .bm-van-hero{flex:0 1 auto;display:block;max-width:100%;width:auto;height:auto;max-height:min(52vh,420px);object-fit:contain;object-position:center;border-radius:8px;border:1px solid var(--bdh);background:rgba(0,0,0,.18);cursor:pointer}
+#wl-play #m-remote-van .wl-remote-van-modal-frame{display:flex;justify-content:center;align-items:center;padding:8px 0 20px;min-width:0}
+#wl-play #wl-remote-van-modal-img{display:block;max-width:100%;width:auto;height:auto;max-height:min(78vh,880px);object-fit:contain;object-position:center;border-radius:4px;background:rgba(0,0,0,.2);flex-shrink:0}
 /* Brand & Marketing — station name hero */
 .bm-station-hero-square{display:flex;flex-direction:column;align-items:stretch;justify-content:center;min-height:0;padding:10px 12px;box-sizing:border-box;background:rgba(0,0,0,.22);border:1px solid rgba(245,166,35,.35);border-radius:8px}
 .bm-station-hero-lbl{font-family:var(--fm);font-size:13px;font-weight:600;letter-spacing:0.03em;color:var(--off);margin-bottom:6px;text-transform:none}
@@ -948,7 +966,9 @@ body#wl-play::after{opacity:0.15}
   font-style:normal;
 }
 #m-brand .bm-section-h,
-#m-sales .bm-section-h{
+#m-programming .bm-section-h,
+#m-sales .bm-section-h,
+#m-research .bm-section-h{
   font-family:var(--fd);
   font-size:17px;
   font-weight:700;
@@ -957,6 +977,18 @@ body#wl-play::after{opacity:0.15}
   border-bottom:1px solid rgba(245,166,35,.38);
   padding:0 0 8px 0;
   margin:22px 0 12px 0;
+}
+/* First section after modal hero / title row — tighter top rhythm */
+#m-programming p.bm-hero-line + div .bm-section-h:first-child,
+#m-research #researchb > .ms2:first-child .bm-section-h:first-child{
+  margin-top:10px;
+}
+/* Section title inside bordered Programming Focus card */
+#m-programming .bm-prog-focus-box .bm-section-h,
+#m-fire .bm-prog-focus-box .bm-section-h{
+  margin-top:0;
+  margin-bottom:10px;
+  font-size:16px;
 }
 #m-brand .bm-marketing-summary-box + .bm-section-h{
   margin-top:14px;
@@ -1500,8 +1532,127 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 #abtn:hover{background:#fff;box-shadow:0 0 28px rgba(245,166,35,.7);transform:scale(1.03)}
 #abtn:disabled{opacity:.35;cursor:not-allowed;transform:none}
 
-#alertbar{display:none;background:rgba(240,88,88,.12);border-bottom:1px solid rgba(240,88,88,.4);padding:8px 22px;font-family:var(--ft);font-size:15px;color:var(--red);letter-spacing:1px}
-#alertbar.on{display:block}
+/* Top strip for persistent game notices (contracts, cash, bankruptcy). Toasts stay bottom (#wl-toast-stack). */
+#alertbar[hidden]{display:none!important}
+#alertbar{
+  display:block;
+  position:fixed;
+  left:0;
+  right:0;
+  top:76px;
+  z-index:180;
+  margin:0;
+  padding:8px 16px;
+  font-family:var(--ft);
+  font-size:13px;
+  letter-spacing:.04em;
+  line-height:1.45;
+  text-align:center;
+  color:var(--off);
+  background:rgba(18,16,12,.97);
+  border-bottom:1px solid rgba(245,166,35,.35);
+  box-sizing:border-box;
+  max-height:min(28vh,220px);
+  overflow-y:auto;
+}
+#alertbar.alertbar--warn{
+  color:#fecaca;
+  border-bottom-color:rgba(240,88,88,.45);
+  background:rgba(40,14,14,.94);
+}
+#alertbar.alertbar--amb{
+  color:var(--off);
+  border-bottom-color:rgba(245,166,35,.45);
+  background:rgba(36,28,10,.94);
+}
+#alertbar.alertbar--mut{
+  color:var(--off);
+  border-bottom-color:rgba(255,255,255,.12);
+  background:rgba(16,16,20,.94);
+}
+/* Fixed #alertbar is out of flow — keep station grid from sitting underneath */
+body#wl-play:has(#alertbar:not([hidden])) #main{
+  padding-top:min(120px,max(44px,12vh));
+}
+
+/* Bottom toast stack; #wl-game-notice reserved for GM-dismissal card (interactive). */
+.wl-toast-host{
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  z-index:13500;
+  pointer-events:none;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:flex-end;
+  gap:10px;
+  padding:10px 14px max(14px, env(safe-area-inset-bottom));
+  box-sizing:border-box;
+}
+.wl-toast-host .wl-game-notice,
+.wl-toast-host .wl-toast-stack{
+  pointer-events:auto;
+  width:min(720px,96vw);
+}
+.wl-toast-stack{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.wl-toast{
+  font-family:var(--ft);
+  font-size:15px;
+  letter-spacing:.06em;
+  line-height:1.45;
+  padding:12px 16px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,.12);
+  box-shadow:0 8px 28px rgba(0,0,0,.45);
+  animation:wlToastIn .22s ease-out;
+}
+@keyframes wlToastIn{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.wl-toast--info{
+  background:rgba(22,40,28,.94);
+  border-color:rgba(82,227,110,.35);
+  color:#c8f5d4;
+}
+.wl-toast--warn{
+  background:rgba(48,18,18,.94);
+  border-color:rgba(240,88,88,.45);
+  color:#ffd4d4;
+}
+.wl-toast .wl-toast-cta{
+  display:inline-block;
+  margin-top:6px;
+  font-size:13px;
+  letter-spacing:.06em;
+  font-weight:600;
+  color:inherit;
+  text-decoration:underline;
+  text-underline-offset:3px;
+}
+.wl-toast--info .wl-toast-cta{ color:#b8f5cc; }
+.wl-toast--warn .wl-toast-cta{ color:#ffe0e0; }
+.wl-game-notice{
+  font-family:var(--ft);
+  font-size:14px;
+  letter-spacing:.05em;
+  line-height:1.5;
+  padding:12px 16px;
+  border-radius:8px;
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow:0 10px 32px rgba(0,0,0,.5);
+  color:var(--off);
+}
+.wl-game-notice[hidden]{display:none!important}
+.wl-game-notice--warn{border-color:rgba(240,88,88,.5);background:rgba(40,14,14,.92)}
+.wl-game-notice--amb{border-color:rgba(245,166,35,.45);background:rgba(36,28,10,.92)}
+.wl-game-notice--mut{border-color:rgba(255,255,255,.12);background:rgba(16,16,20,.92)}
 
 /* GM Mode — main status panel (solo) — corporate oversight strip */
 #wl-gm-panel{display:none;box-sizing:border-box;padding:0;font-family:var(--ft);font-size:15px;line-height:1.5;color:var(--off);border-bottom:1px solid var(--bdr);background:linear-gradient(180deg,rgba(18,16,12,.98),rgba(8,8,10,.96));box-shadow:0 8px 32px rgba(0,0,0,.35)}
@@ -1556,6 +1707,8 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 #wl-gm-panel .wl-gm-strip-actions{display:flex;flex-wrap:wrap;align-items:center;gap:0.35rem 0.5rem;justify-content:flex-end;margin-left:auto}
 #wl-gm-panel .wl-gm-strip-link{background:transparent;border:0;color:var(--mut);font-family:var(--ft);font-size:0.7rem;letter-spacing:0.1em;cursor:pointer;text-decoration:underline;text-underline-offset:0.2em}
 #wl-gm-panel .wl-gm-strip-link:hover{color:var(--amb);border-color:var(--amb)}
+#wl-gm-panel .wl-gm-strip-link--danger{color:var(--amb)}
+#wl-gm-panel .wl-gm-strip-link--danger:hover{color:var(--red)}
 #gm-reviewb .wl-gm-sec{margin:0 0 14px;font-family:var(--ft);font-size:16px;line-height:1.55;color:var(--off)}
 #gm-reviewb .wl-gm-sec h3{font-family:var(--fd);font-size:13px;letter-spacing:2px;color:var(--amb);margin:0 0 8px;font-weight:600}
 #gm-reviewb ul{margin:6px 0 0;padding-left:20px;line-height:1.55}
@@ -1563,6 +1716,9 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 #gm-explainb h4:first-of-type{margin-top:0}
 /* Turnaround scripted tutorial coach (spotlight + cards — parallel to #wl-ft-tut-root) */
 #wl-tu-tr-root{position:fixed;inset:0;pointer-events:none;z-index:13020}
+/* Turnaround scripted COACH NOTE — stack above spotlight (#wl-tu-tr-root) so body text stays readable */
+#wl-play #m-turnaround-tip.ov.on{z-index:26000!important;isolation:isolate}
+#wl-play #m-turnaround-tip.ov.on .mo{position:relative;z-index:1}
 #wl-tu-tr-shades{position:fixed;inset:0;pointer-events:none}
 #wl-tu-tr-card{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);width:min(420px,calc(100vw - 32px));box-sizing:border-box;background:var(--pnl);border:1px solid var(--bdh);border-top:3px solid var(--amb);padding:18px 20px 16px;box-shadow:0 12px 48px rgba(0,0,0,.65);font-family:var(--ft);pointer-events:auto}
 #wl-play #wl-tu-tr-card{
@@ -1573,13 +1729,97 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 #m-tutorial-turnaround .tut-modal-mo{max-width:min(680px,96vw)}
 #m-tutorial-turnaround .tut-modal-body{padding:4px 0 8px;min-width:0}
 #m-tutorial-turnaround .tut-modal-foot{padding:0 0 4px 0}
+/* Turnaround coach cards: JS picks desktop LEFT gutter vs mobile overlap — keep generous vertical room here so inline JS rarely fights CSS. */
 #wl-tu-tr-card.wl-ft-tut-card--anchored{max-height:min(420px,calc(100vh - 24px));overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
-#wl-tu-tr-card.wl-ft-tut-card--modal-gutter{max-height:min(520px,calc(100vh - 24px))}
+#wl-tu-tr-card.wl-ft-tut-card--modal-gutter{
+  max-height:min(72vh,calc(100vh - 24px));
+  max-height:min(72dvh,calc(100dvh - 24px));
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+}
+@media (min-width:900px){
+  #wl-tu-tr-card.wl-ft-tut-card--modal-gutter{
+    max-height:min(82vh,calc(100vh - 40px));
+    max-height:min(82dvh,calc(100dvh - 40px));
+  }
+}
 #wl-tu-tr-card.wl-ft-tut-card--center{bottom:auto;top:50%;transform:translate(-50%,-50%)}
 #wl-tu-tr-card.wl-tu-tr-card--layer{padding:20px 22px 18px}
+/* Turnaround / scripted coach: smaller footprint on narrow viewports (modal + map still visible) */
+@media (max-width: 520px){
+  #wl-tu-tr-root #wl-tu-tr-card,
+  #wl-play #wl-tu-tr-card{
+    left:max(8px, env(safe-area-inset-left, 0px)) !important;
+    right:max(8px, env(safe-area-inset-right, 0px));
+    width:auto !important;
+    max-width:none;
+    transform:none;
+    bottom:max(10px, env(safe-area-inset-bottom, 0px));
+    padding:12px 14px max(10px, calc(10px + env(safe-area-inset-bottom, 0px)));
+  }
+  #wl-tu-tr-card.wl-ft-tut-card--center,
+  #wl-play #wl-tu-tr-card.wl-ft-tut-card--center{
+    left:max(8px, env(safe-area-inset-left, 0px)) !important;
+    right:max(8px, env(safe-area-inset-right, 0px));
+    width:auto !important;
+    max-width:none;
+    top:50%;
+    bottom:auto;
+    transform:translateY(-50%);
+    max-height:min(78vh, calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px));
+    max-height:min(78dvh, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px));
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+  }
+  #wl-tu-tr-card .wl-ft-tut-h{font-size:15px;letter-spacing:1.2px;margin:0 0 8px}
+  #wl-tu-tr-card .wl-ft-tut-p{font-size:14px;margin:0 0 8px;line-height:1.45}
+  #wl-tu-tr-card .wl-ft-tut-muted{font-size:13px}
+  #wl-tu-tr-card.wl-ft-tut-card--anchored,
+  #wl-tu-tr-card.wl-ft-tut-card--modal-gutter{
+    max-height:min(42vh, 300px) !important;
+    max-height:min(42dvh, 300px) !important;
+  }
+  #wl-ft-tut-card{
+    left:max(8px, env(safe-area-inset-left, 0px)) !important;
+    right:max(8px, env(safe-area-inset-right, 0px));
+    width:auto !important;
+    max-width:none;
+    transform:none;
+    bottom:max(10px, env(safe-area-inset-bottom, 0px));
+    padding:12px 14px max(10px, calc(10px + env(safe-area-inset-bottom, 0px)));
+  }
+  #wl-ft-tut-card.wl-ft-tut-card--center{
+    left:max(8px, env(safe-area-inset-left, 0px)) !important;
+    right:max(8px, env(safe-area-inset-right, 0px));
+    width:auto !important;
+    max-width:none;
+    top:50%;
+    bottom:auto;
+    transform:translateY(-50%);
+    max-height:min(78vh, calc(100vh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px));
+    max-height:min(78dvh, calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 24px));
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+  }
+  #wl-ft-tut-card .wl-ft-tut-h{font-size:15px;margin:0 0 8px}
+  #wl-ft-tut-card .wl-ft-tut-p{font-size:14px;margin:0 0 8px}
+  #wl-ft-tut-card.wl-ft-tut-card--anchored{max-height:min(42vh, 300px) !important;max-height:min(42dvh, 300px) !important}
+}
 
 /* Live game — ~⅓ market (left), ~⅔ stations (right); minmax(0,…) prevents grid blowout from long text */
 #main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);align-items:start;min-height:calc(100vh - 100px)}
+/* Main columns: light stacking hint only — avoid touch-action/transform on every control (Safari can steal wheel scroll over pills while modal lock is ambiguous). */
+#wl-play #main .pnl{position:relative}
+#wl-play #main button,
+#wl-play #main .phbtn,
+#wl-play #main .pc-pill,
+#wl-play #main .sc-hero-pill,
+#wl-play #main .cfm{
+  -webkit-tap-highlight-color:transparent;
+}
 .pnl{border-right:1px solid var(--bdr);padding:20px}
 #pc{border-right:none}
 #pl{padding-right:16px}
@@ -1597,7 +1837,8 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .sep{height:1px;background:var(--bdr);margin:18px 0}
 
 /* SCORE BOX + compact strip (reference layout) */
-#scorebar{display:flex;align-items:center;gap:16px;padding:8px 14px;background:rgba(245,166,35,.06);border:1px solid rgba(245,166,35,.18);border-radius:2px;margin-bottom:10px;flex-wrap:wrap;position:sticky;top:0;z-index:10;backdrop-filter:blur(4px);pointer-events:auto}
+/* Sticky + backdrop-filter broke hit-testing in Safari (clicks miss until scroll). Solid bg + compositing layer instead. */
+#scorebar{display:flex;align-items:center;gap:16px;padding:8px 14px;background:rgba(22,18,14,.92);border:1px solid rgba(245,166,35,.22);border-radius:2px;margin-bottom:10px;flex-wrap:wrap;position:sticky;top:0;z-index:10;pointer-events:auto;-webkit-transform:translateZ(0);transform:translateZ(0);-webkit-backface-visibility:hidden;backface-visibility:hidden}
 .sbi{display:flex;flex-direction:column;align-items:flex-start;min-width:60px}
 .sbi-lbl{font-family:var(--ft);font-size:12px;color:var(--mut);letter-spacing:0.12em}
 .sbi-val{font-family:var(--fd);font-size:20px;color:var(--wht);line-height:1.1}
@@ -1693,7 +1934,12 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 /* SALES FORCE */
 .sf-row{padding:10px 12px;border:1px solid rgba(255,255,255,.08);border-radius:4px;margin:6px 0;cursor:pointer;transition:border-color .15s}
 /* .sf-row:hover — in @media (hover: hover) with .to / .fmo */
-.sf-row.sf-pick{border-color:rgba(82,227,110,.38);box-shadow:0 0 0 1px rgba(82,227,110,.18)}
+/* Pending sales tier (picked but not yet applied) — whole row reads as selected, not only the badge */
+.sf-row.sf-pick{
+  border-color:rgba(82,227,110,.72)!important;
+  background:rgba(82,227,110,.12);
+  box-shadow:0 0 0 1px rgba(82,227,110,.28),inset 0 0 28px rgba(82,227,110,.06);
+}
 .sf-cur{border-color:var(--grn)!important;background:rgba(82,227,110,.06);cursor:default}
 .sf-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
 .sf-l{font-family:var(--ft);font-size:15px;letter-spacing:1px;color:var(--wht)}
@@ -1771,7 +2017,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
     38px
     52px
     42px
-    minmax(72px,max-content)
+    minmax(90px,max-content)
     minmax(44px,max-content);
   column-gap:8px;
   align-items:center;
@@ -2033,6 +2279,18 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   box-shadow: 0 1px 0 rgba(120, 200, 255, 0.15) inset;
 }
 #wl-play .sc-hero-pill--st-owned .sc-hero-pill-v{ color: rgba(210, 230, 252, 0.98); }
+/* Digital streaming pill — teal accent distinct from sports/franchise */
+#wl-play .sc-hero-pill--digital.sc-hero-pill--st-empty{
+  border-color: rgba(90, 200, 190, 0.38);
+}
+#wl-play .sc-hero-pill--digital.sc-hero-pill--st-owned{
+  border-color: rgba(70, 230, 200, 0.52);
+  background: linear-gradient(180deg, rgba(18, 52, 48, 0.55) 0%, rgba(0,0,0,.22) 100%);
+  box-shadow: 0 1px 0 rgba(120, 255, 230, 0.12) inset;
+}
+#wl-play .sc-hero-pill--digital.sc-hero-pill--st-owned .sc-hero-pill-v{
+  color: rgba(190, 255, 245, 0.96);
+}
 #wl-play .sc-hero-pill--st-bid{
   box-shadow:
     0 1px 0 rgba(255,255,255,0.05) inset,
@@ -2195,7 +2453,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
     40px
     58px
     44px
-    minmax(72px, max-content)
+    minmax(92px, max-content)
     minmax(64px, max-content);
   column-gap: 12px;
 }
@@ -2550,11 +2808,14 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .scn-wrap{display:grid;grid-template-columns:1fr;gap:14px;margin:0 0 20px}
 .scn-card{border:2px solid var(--bdr);border-radius:6px;padding:18px 20px;cursor:pointer;transition:background .18s,border-color .18s,box-shadow .18s;background:var(--drk);position:relative}
 /* .scn-card:hover — real hover only; see @media (hover: hover) block */
-/* Selected scenario: full card border + glow (no corner-only cue) */
+/* Selected scenario: brighter full-card border + glow than hover */
 .scn-card.sel{
   border-color:var(--amb);
-  background:rgba(245,166,35,.12);
-  box-shadow:0 0 0 1px rgba(245,166,35,.35),0 6px 28px rgba(245,166,35,.14);
+  background:rgba(245,166,35,.16);
+  box-shadow:
+    0 0 0 1px rgba(245,166,35,.48),
+    0 0 22px rgba(245,166,35,.2),
+    0 8px 34px rgba(245,166,35,.2);
 }
 .scn-title{font-family:var(--fd);font-size:22px;letter-spacing:3px;color:var(--amb);margin-bottom:4px}
 .scn-sub{font-family:var(--ft);font-size:15px;color:var(--mut);letter-spacing:2px;margin-bottom:10px}
@@ -2643,8 +2904,91 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   border-color:rgba(245,166,35,.42) !important;
 }
 
+/* First-time trial: info strip — supportive, not competing with tutorial CTA below */
+.wl-trial-first-banner.wl-upgrade-banner{
+  margin:8px 0 2px;
+  padding:11px 14px 12px;
+  border-width:1px;
+  border-color:rgba(245,166,35,.28);
+  background:linear-gradient(165deg,rgba(245,166,35,.06) 0%,rgba(0,0,0,.32) 100%);
+  box-shadow:0 2px 14px rgba(0,0,0,.25);
+}
+.wl-trial-first-banner .wl-upgrade-banner__title{
+  font-size:13px;
+  letter-spacing:0.16em;
+  color:var(--mut);
+  margin-bottom:6px;
+}
+.wl-trial-first-banner .wl-upgrade-banner__text{
+  font-size:13px;
+  color:var(--mut);
+  line-height:1.5;
+  margin:0 0 6px;
+}
+.wl-trial-first-banner .wl-upgrade-banner__text:last-of-type{margin-bottom:8px}
+.wl-trial-first-banner .wl-upgrade-banner__actions{margin-top:4px}
+
 /* Scenario picker (m-scen): stacked sections with clear separation */
 .scen-pick-stack{display:flex;flex-direction:column;gap:22px;margin-top:12px}
+
+/* Scenario entry: mailing list sits below gameplay — visually secondary vs Resume / New Game */
+.wl-scenario-email-opt-in{
+  margin:20px auto 0;
+  padding:14px 16px 16px;
+  max-width:640px;
+  border-radius:8px;
+  border:1px solid rgba(216,155,43,.2);
+  background:rgba(0,0,0,.16);
+  box-sizing:border-box;
+}
+.wl-scenario-email-opt-in__inner{width:100%;max-width:100%}
+.wl-scenario-email-opt-in__kicker{
+  font-family:var(--ft);
+  font-size:10px;
+  letter-spacing:0.22em;
+  color:var(--mut);
+  text-transform:uppercase;
+  margin:0 0 6px;
+}
+.wl-scenario-email-opt-in__title{
+  font-family:var(--ft);
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:0.04em;
+  color:var(--off);
+  margin:0 0 8px;
+  line-height:1.35;
+}
+.wl-scenario-email-opt-in__lead{
+  font-family:var(--ft);
+  font-size:13px;
+  color:var(--mut);
+  line-height:1.45;
+  margin:0 0 12px;
+}
+.wl-scenario-email-opt-in__form{display:flex;flex-wrap:wrap;gap:8px;align-items:stretch;margin:0}
+.wl-scenario-email-opt-in__input{flex:1;min-width:min(220px,100%);font-size:14px!important}
+#wl-play .wl-scenario-email-opt-in__submit,
+#wl-play button.wl-scenario-email-opt-in__submit{
+  flex-shrink:0;
+  font-size:12px!important;
+  padding:8px 14px!important;
+  letter-spacing:0.04em!important;
+  text-transform:none!important;
+  opacity:1;
+}
+.wl-scenario-email-opt-in__status{
+  margin-top:8px;
+  font-size:12px;
+  color:var(--mut);
+  min-height:1.2em;
+}
+.wl-scenario-email-opt-in__fineprint{
+  margin:6px 0 0;
+  font-size:11px;
+  color:var(--mut);
+  line-height:1.4;
+}
 .scen-pick-section{
   padding:18px 18px 20px;
   background:rgba(0,0,0,.22);
@@ -2718,6 +3062,158 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   border:1px solid rgba(245,166,35,.35);
   background:linear-gradient(180deg,rgba(245,166,35,.08) 0%,rgba(0,0,0,.12) 100%);
   box-shadow:0 0 28px rgba(245,166,35,.1),inset 0 1px 0 rgba(255,255,255,.04);
+}
+/* First-time guided tutorial — cinematic hero card (see openScenSelect tutorial branch) */
+.scen-entry-primary-block.scen-entry-primary-block--trial-tutorial{
+  margin:18px auto 0;
+  padding:0;
+  max-width:min(100%,460px);
+  border:none;
+  background:transparent;
+  box-shadow:none;
+  align-self:stretch;
+}
+.scen-entry-primary-block--trial-tutorial .scen-entry-trial-tutorial__inner{
+  position:relative;
+  padding:26px 18px 22px;
+  border-radius:16px;
+  border:2px solid rgba(245,166,35,.52);
+  background:
+    radial-gradient(ellipse 110% 65% at 50% -15%, rgba(245,166,35,.2), transparent 52%),
+    linear-gradient(165deg, rgba(26,20,14,.98) 0%, rgba(6,7,10,.96) 55%, rgba(4,5,8,.94) 100%);
+  box-shadow:
+    0 0 0 1px rgba(255,230,180,.1),
+    0 18px 56px rgba(0,0,0,.58),
+    0 0 72px rgba(245,166,35,.16);
+  overflow:hidden;
+}
+.scen-entry-primary-block--trial-tutorial .scen-entry-trial-tutorial__inner::before{
+  content:'';
+  position:absolute;
+  right:-4%;
+  bottom:10%;
+  width:52%;
+  height:42%;
+  min-height:96px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 140 72' preserveAspectRatio='xMaxYMax meet'%3E%3Cpath d='M4 58 L28 52 L52 44 L76 32 L100 18 L132 6' fill='none' stroke='%23f5a623' stroke-opacity='0.22' stroke-width='2.2' stroke-linecap='round'/%3E%3Cpath d='M4 62 L132 62' stroke='%23ffffff' stroke-opacity='0.06' stroke-width='1'/%3E%3C/svg%3E") no-repeat right bottom / contain;
+  opacity:0.85;
+  pointer-events:none;
+}
+.scen-entry-primary-block--trial-tutorial .scen-entry-trial-tutorial__inner::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background-image:repeating-linear-gradient(
+    -14deg,
+    transparent,
+    transparent 5px,
+    rgba(255,255,255,.018) 5px,
+    rgba(255,255,255,.018) 6px
+  );
+  opacity:0.55;
+  pointer-events:none;
+}
+.scen-entry-trial-kicker{
+  position:relative;
+  z-index:1;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:6px;
+  margin:0 0 16px;
+}
+.scen-entry-trial-kicker__pre{
+  font-family:var(--ft);
+  font-size:clamp(0.92rem,2.6vw,1.05rem);
+  letter-spacing:0.18em;
+  text-transform:uppercase;
+  color:rgba(255,240,215,.94);
+  font-weight:700;
+}
+.scen-entry-trial-kicker__here{
+  font-family:var(--fd);
+  font-size:clamp(1.45rem,5vw,2rem);
+  letter-spacing:0.22em;
+  text-transform:uppercase;
+  color:var(--amb);
+  font-weight:800;
+  line-height:1.05;
+  text-shadow:
+    0 0 22px rgba(245,166,35,.45),
+    0 2px 18px rgba(0,0,0,.55);
+}
+.scen-entry-trial-hero-headline{
+  position:relative;
+  z-index:1;
+  font-family:var(--fd);
+  font-size:clamp(1.28rem,4.5vw,1.92rem);
+  font-weight:700;
+  letter-spacing:0.08em;
+  line-height:1.12;
+  color:var(--wht);
+  text-align:center;
+  margin:0 0 12px;
+  max-width:22ch;
+  margin-left:auto;
+  margin-right:auto;
+  text-wrap:balance;
+  text-shadow:0 2px 28px rgba(0,0,0,.55),0 0 40px rgba(245,166,35,.08);
+}
+.scen-entry-trial-lead{
+  position:relative;
+  z-index:1;
+  margin:0 0 10px;
+  font-family:var(--ft);
+  font-size:14px;
+  line-height:1.55;
+  color:var(--off);
+  text-align:center;
+  max-width:26rem;
+  margin-left:auto;
+  margin-right:auto;
+}
+.scen-entry-trial-ratings-hook{
+  position:relative;
+  z-index:1;
+  margin:0 0 18px;
+  font-family:var(--fd);
+  font-size:clamp(0.98rem,3vw,1.12rem);
+  font-weight:700;
+  letter-spacing:0.06em;
+  color:var(--amb);
+  text-align:center;
+  text-shadow:0 0 18px rgba(245,166,35,.28);
+}
+.scen-entry-start-wrap--trial-cta{
+  position:relative;
+  z-index:1;
+  margin:0;
+  padding:4px 0 6px;
+  width:100%;
+}
+.scen-entry-browse-wrap--trial-secondary{
+  position:relative;
+  z-index:1;
+  margin-top:16px;
+  padding-top:14px;
+  border-top:1px solid rgba(245,166,35,.18);
+}
+.scen-entry-browse-all-btn--trial-secondary{
+  font-size:11px !important;
+  letter-spacing:0.05em !important;
+  opacity:0.72;
+}
+.scen-entry-browse-all-btn--trial-secondary:hover{
+  opacity:0.95;
+  color:var(--off);
+}
+.scen-entry-load-wrap--subdued{
+  margin-top:16px;
+  opacity:0.62;
+}
+.scen-entry-link-row--subdued{
+  margin-top:10px;
+  opacity:0.52;
 }
 .scen-entry-rec-badge{
   font-family:var(--ft);
@@ -2828,6 +3324,32 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   box-shadow:0 2px 22px rgba(245,166,35,.35),0 4px 16px rgba(0,0,0,.4) !important;
   filter:brightness(1.06) !important;
 }
+/* Tutorial hero CTA — larger, full-width within card, stronger glow */
+#wl-play .scen-entry-start-btn--tutorial-hero.scen-entry-start-btn--first-game,
+#wl-play button.scen-entry-start-btn--tutorial-hero.scen-entry-start-btn--first-game{
+  width:100% !important;
+  max-width:100% !important;
+  box-sizing:border-box !important;
+  font-size:clamp(0.92rem,3.6vw,1.05rem) !important;
+  padding:1rem 1.2rem 1.05rem !important;
+  min-height:52px !important;
+  letter-spacing:0.13em !important;
+  line-height:1.25 !important;
+  border-width:2px !important;
+  border-color:rgba(250,190,90,.95) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,220,160,.12),
+    0 6px 28px rgba(245,166,35,.38),
+    0 12px 40px rgba(0,0,0,.48) !important;
+}
+#wl-play .scen-entry-start-btn--tutorial-hero:hover,
+#wl-play button.scen-entry-start-btn--tutorial-hero:hover{
+  filter:brightness(1.08) !important;
+  box-shadow:
+    0 0 0 1px rgba(255,230,190,.2),
+    0 8px 36px rgba(245,166,35,.48),
+    0 16px 48px rgba(0,0,0,.52) !important;
+}
 .scen-entry-browse-wrap{
   text-align:center;
   margin:12px 0 0;
@@ -2846,6 +3368,12 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   padding:6px 8px;
 }
 .scen-entry-browse-all-btn:hover{color:var(--off)}
+.scen-entry-browse-all-btn:focus-visible{
+  outline:1px solid rgba(245,166,35,.55);
+  outline-offset:3px;
+  border-radius:4px;
+  color:var(--amb);
+}
 .scen-entry-load-wrap{
   text-align:center;
   margin:14px 0 0;
@@ -2991,8 +3519,8 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .boost-card h4{font-family:var(--fd);font-size:18px;letter-spacing:2px;color:var(--wht);margin-bottom:4px}
 .boost-card .bc-sub{font-family:var(--ft);font-size:15px;color:var(--mut);margin-bottom:8px}
 
-/* SITE FOOTER — legal links */
-#main{box-sizing:border-box;padding-bottom:max(56px,calc(44px + env(safe-area-inset-bottom,0px)));}
+/* SITE FOOTER — legal links (extra bottom pad: compact footer is often taller than 56px + Safari UI chrome) */
+#main{box-sizing:border-box;padding-bottom:max(80px,calc(52px + env(safe-area-inset-bottom,0px)));}
 .site-footer{position:fixed;bottom:0;left:0;right:0;z-index:65;display:flex;justify-content:center;align-items:center;padding:8px 16px max(10px,env(safe-area-inset-bottom,0px));font-family:var(--ft);font-size:13px;color:var(--mut);background:rgba(8,8,8,.94);border-top:1px solid rgba(255,255,255,.08);pointer-events:auto;}
 /* Compact bar on play — ~half the old height; © + Feedback + legal on one row, disclaimer one slim line */
 .site-footer.site-footer--compact{padding:4px 10px 5px;font-size:12px;line-height:1.3;}
@@ -3040,15 +3568,27 @@ html.wl-modal-open,body.wl-modal-open{overflow:hidden}
 #m-drift.on,#m-lean.on{z-index:8100}
 /* Above turnaround coach (#wl-tu-tr-root ~11020) so the format list is never buried under scripted tips */
 #m-fm.on{z-index:12060}
+/* Opaque coach shades (#wl-tu-tr-root z~13020) sit above default .ov — without this, the hole lines up with the list and the UI looks “stuck” (see wlTuTurnaroundLayoutHoleDim). */
+#m-ac.on{z-index:13500}
 /* Above Manage Talent (m-fire) so glossary stays visible when opened from roster */
 #m-talent-help.on{z-index:8200}
 /* Fire / leave-game confirm must stack above other .ov modals (e.g. #m-contract is later in DOM at same 8000). */
-#m-game-confirm.on{z-index:8060}
+/* Above tutorial overlays (~13k) and turnaround tip modal (26k); see _wlModalZSync for stacks. */
+#wl-play #m-game-confirm.on{z-index:42000!important}
 /* First-turn tutorial (solo) — z-index set in JS (wlFtTutorialZBase ~11k) so card/shades stay above modals */
 #wl-ft-tut-root{position:fixed;inset:0;pointer-events:none}
 #wl-ft-tut-shades{position:fixed;inset:0;pointer-events:none}
-.wl-ft-tut-spotlight{box-shadow:0 0 0 3px rgba(245,166,35,.95),0 8px 40px rgba(0,0,0,.55);border-radius:4px}
-#wl-play .wl-ft-tut-spotlight{box-shadow:0 0 0 3px rgba(var(--m-gold-rgb),0.95),0 8px 40px rgba(0,0,0,.55)}
+.wl-ft-tut-spotlight{
+  /* Outline remains visible even when a parent scroll container clips box-shadow (e.g. .mo overflow-y:auto). */
+  outline:3px solid rgba(245,166,35,.92);
+  outline-offset:2px;
+  box-shadow:0 0 0 3px rgba(245,166,35,.95),0 8px 40px rgba(0,0,0,.55);
+  border-radius:4px;
+}
+#wl-play .wl-ft-tut-spotlight{
+  outline-color:rgba(var(--m-gold-rgb),0.92);
+  box-shadow:0 0 0 3px rgba(var(--m-gold-rgb),0.95),0 8px 40px rgba(0,0,0,.55);
+}
 /* First-turn tips: extra emphasis on station action pills + Next Period while spotlighted */
 #wl-play .pc-pill.wl-ft-tut-spotlight,#wl-play #abtn.wl-ft-tut-spotlight{
   filter:brightness(1.08);
@@ -3068,12 +3608,38 @@ html.wl-modal-open,body.wl-modal-open{overflow:hidden}
 .wl-ft-tut-btn--pri{background:rgba(245,166,35,.12);border-color:rgba(245,166,35,.45);color:var(--amb)}
 .wl-ft-tut-btn--pri:hover{background:rgba(245,166,35,.2)}
 .wl-ft-tut-skip{color:var(--mut);border-color:rgba(255,255,255,.12)}
+/* Stuck recovery — low-emphasis text control; game / tutorial progress unchanged */
+.wl-ft-tut-dismiss{
+  font-family:inherit;
+  font-size:11px;
+  letter-spacing:0.04em;
+  color:var(--mut);
+  background:transparent;
+  border:0;
+  text-decoration:underline;
+  text-underline-offset:0.22em;
+  cursor:pointer;
+  padding:6px 8px;
+  margin-right:auto;
+  display:inline-flex;
+  align-items:center;
+  min-height:34px;
+  box-sizing:border-box;
+  line-height:1.2;
+  -webkit-tap-highlight-color:transparent;
+}
+.wl-ft-tut-dismiss:hover,.wl-ft-tut-dismiss:focus-visible{color:var(--off)}
 /* Modal shell: play-modal-mock. Design tokens: first #wl-play block in this file.
    play.html: body#wl-play — type + legacy vars mapped there so .mo, .msh, .abt, .cfm inherit the mock stack.
    .ov + .mo + .mh + .msh + .cfm + .abt; contract/brand: #m-contract, .bm-manage */
 .mo{background:var(--pnl);border:1px solid var(--bdh);border-top:3px solid var(--amb);max-width:640px;width:93%;max-height:94vh;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;box-shadow:0 0 90px rgba(245,166,35,.2);padding:28px;transform:translateY(20px);transition:transform .25s}
 #wl-play .mo{box-shadow:0 0 90px rgba(var(--m-gold-rgb),0.2)}
 .ov.on .mo{transform:translateY(0)}
+.mo.wl-tut-dim{position:relative}
+/* Dim sits behind modal content; spotlight ring sits above dim. */
+/* Dim *above* modal content; spotlight is raised above the dim so it stays undimmed. */
+.mo.wl-tut-dim .wl-tut-modal-dim{position:absolute;inset:0;z-index:1;pointer-events:none;background:rgba(6,8,12,.38)}
+.mo.wl-tut-dim .wl-ft-tut-spotlight{position:relative;z-index:3}
 .mo.wide{max-width:800px}
 .mo.full{max-width:96vw;width:96vw;max-height:92vh}
 .mh{font-family:var(--fd);font-size:24px;letter-spacing:4px;color:var(--amb);margin-bottom:22px;display:flex;justify-content:space-between;align-items:center}
@@ -3087,6 +3653,29 @@ html.wl-modal-open,body.wl-modal-open{overflow:hidden}
 .sr .vl.pos{color:var(--grn)}.sr .vl.neg{color:var(--red)}.sr .vl.amb{color:var(--amb)}
 /* Contract modal — avoid slight horizontal scroll on narrow widths */
 #m-contract #contractb{min-width:0;overflow-x:hidden;box-sizing:border-box}
+/* WebKit: extend / morale CTAs occasionally miss taps until scroll — lift hit targets into their own layer */
+#m-contract.on #contractb .contract-extend-compact,
+#m-contract.on #contractb .contract-cta-bar{
+  position:relative;
+  z-index:1;
+  touch-action:manipulation;
+}
+#m-contract.on #contractb .contract-ext-btn,
+#m-contract.on #contractb .contract-cta-bonus{
+  -webkit-tap-highlight-color:transparent;
+  transform:translateZ(0);
+}
+#m-fire .mt-slot .contract-extend-compact,
+#m-fire .mt-slot .contract-cta-bar{
+  position:relative;
+  z-index:1;
+  touch-action:manipulation;
+}
+#m-fire .mt-slot .contract-ext-btn,
+#m-fire .mt-slot .contract-cta-bonus{
+  -webkit-tap-highlight-color:transparent;
+  transform:translateZ(0);
+}
 #m-contract #contractb .contract-summary .sr{flex-wrap:wrap;align-items:flex-start;gap:6px 10px}
 #m-contract #contractb .contract-summary .sr .lb{flex:0 0 auto;max-width:100%}
 #m-contract #contractb .contract-summary .sr .vl{flex:1 1 12rem;min-width:0;text-align:right;word-break:break-word}
@@ -3740,8 +4329,17 @@ html.wl-modal-open,body.wl-modal-open{overflow:hidden}
 /* .mt-dp-pill:hover — only with real hover; see @media (hover: hover) below (touch scroll bug) */
 .mt-dp-pill--active{border-color:rgba(245,166,35,.55);background:rgba(245,166,35,.1);box-shadow:0 0 0 1px rgba(245,166,35,.22);color:var(--off)}
 .mt-dp-pill--active .mt-dp-pill__t{color:var(--wht)}
-.mt-dp-pill__t{font-family:var(--fd);font-size:14px;letter-spacing:0.06em;color:var(--wht);width:100%;text-align:left}
+.mt-dp-pill__t{font-family:var(--fd);font-size:14px;letter-spacing:0.06em;color:var(--wht);width:100%;text-align:left;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 8px}
+.mt-dp-pill__badges{display:inline-flex;flex-wrap:wrap;gap:4px;align-items:center;justify-content:flex-end;margin-left:auto}
+.mt-dp-pill__cyr{font-family:var(--ft);font-size:10px;letter-spacing:0.08em;line-height:1.2;white-space:nowrap}
+.mt-dp-pill--cyr-warn{border-color:rgba(245,166,35,.48);box-shadow:0 0 0 1px rgba(245,166,35,.18)}
+.mt-dp-pill--cyr-exp{border-color:rgba(255,96,96,.55);box-shadow:0 0 0 1px rgba(255,64,64,.22)}
+.mt-dp-pill--active.mt-dp-pill--cyr-warn{border-color:rgba(245,166,35,.62);box-shadow:0 0 0 1px rgba(245,166,35,.28),0 0 14px rgba(245,166,35,.12)}
+.mt-dp-pill--active.mt-dp-pill--cyr-exp{border-color:rgba(255,130,110,.72);background:rgba(255,70,50,.07);box-shadow:0 0 0 1px rgba(255,64,64,.32),0 0 16px rgba(255,60,60,.14)}
 .mt-dp-pill__s{font-size:12px;color:var(--mut);margin-top:4px;line-height:1.35;width:100%;word-break:break-word}
+/* Detail panel: same urgency cue as rail (lineup-style contract attention) */
+#m-fire .mt-slot--cyr-warn{box-shadow:inset 3px 0 0 rgba(245,166,35,.55)}
+#m-fire .mt-slot--cyr-exp{box-shadow:inset 3px 0 0 rgba(255,96,96,.72)}
 .mt-dp-panel{flex:1;min-width:0;min-height:0}
 #m-fire .mt-dp-panel .mt-slot{min-width:0}
 body.mp-endgame #pl,body.mp-endgame #pc{position:relative}
@@ -3842,7 +4440,22 @@ body.mp-endgame #mp-statusbar,body.mp-endgame #mp-chat-wrap{position:relative;z-
   .fmo:hover{border-color:var(--amb);background:var(--abg)}
   .aco:hover{border-color:var(--amb);background:var(--abg)}
   .mt-dp-pill:hover{border-color:var(--amb);color:var(--wht)}
-  .scn-card:hover{border-color:var(--bdh);background:var(--pnl)}
+  .mt-dp-pill.mt-dp-pill--cyr-warn:hover{border-color:rgba(245,166,35,.72);color:var(--wht)}
+  .mt-dp-pill.mt-dp-pill--cyr-exp:hover{border-color:rgba(255,110,96,.85);color:var(--wht)}
+  /* Match pre-select “peek” to the old selected look: full-card gold (locked cards stay flat) */
+  .scn-card:not(.scn-card--locked):not(.sel):hover{
+    border-color:var(--amb);
+    background:rgba(245,166,35,.12);
+    box-shadow:0 0 0 1px rgba(245,166,35,.35),0 6px 28px rgba(245,166,35,.14);
+  }
+  .scn-card.sel:hover{
+    border-color:var(--amb);
+    background:rgba(245,166,35,.18);
+    box-shadow:
+      0 0 0 1px rgba(245,166,35,.58),
+      0 0 30px rgba(245,166,35,.26),
+      0 10px 40px rgba(245,166,35,.24);
+  }
   .boost-card:hover{border-color:var(--bdh)}
   .rkt tr:hover td{background:rgba(245,166,35,.04)}
   #wl-play .mo .sc-act .abt:hover{
@@ -4008,6 +4621,18 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 .cfm.wl-commit-btn--synced:hover{background:#404040;color:var(--off);box-shadow:none}
 .cfm.wl-commit-btn--pending{background:var(--amb);color:var(--blk);border:none;opacity:1}
 .cfm.wl-commit-btn--pending:hover{background:#fff;box-shadow:0 0 24px rgba(245,166,35,.5)}
+.cfm.wl-commit-btn--committed{
+  background:linear-gradient(180deg,rgba(34,197,94,.4),rgba(22,101,52,.52));
+  color:#ecfdf5;
+  border:1px solid rgba(74,222,128,.5);
+  box-shadow:0 0 0 1px rgba(34,197,94,.1) inset;
+  opacity:1;
+}
+.cfm.wl-commit-btn--committed:hover{
+  background:linear-gradient(180deg,rgba(52,211,153,.48),rgba(21,128,61,.55));
+  color:#fff;
+  box-shadow:0 0 16px rgba(34,197,94,.25);
+}
 .cfm.wl-commit-btn--synced:disabled{opacity:.35;background:#2a2a2a;color:var(--mut);border-color:var(--bdh)}
 @keyframes wlCommitFlash{
   0%{ box-shadow:0 0 0 1px rgba(245,166,35,.95),0 0 28px rgba(245,166,35,.55); }
@@ -4452,7 +5077,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   }
   #wl-play .slr.slots-lineup-grid .sl-cell-pay:not(.sl-cell-pay--split)::before,
   #wl-play .slr.slots-lineup-grid .sl-cell-pay.sl-cell-pay--split::before{
-    content:'Pay';
+    content:'Pay/yr';
     font-size:9px;
     letter-spacing:0.12em;
     font-weight:600;

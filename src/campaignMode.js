@@ -29,6 +29,7 @@
    * T1: wide survival–success band → real lateral lane (not pure promote/demote).
    * Promotions (T1+): each step includes a one-time corporate purse + at least one formal review of “turnaround patience”
    * so a trusted GM is not dropped into gm_under with no cash runway (see corporateCashGrant / evaluationGraceReviews).
+   * cashMult is never below 1 on promotion — larger markets get bigger grants so one bad book does not zero the wallet.
    * T4: softer margin + lower survival bar + modest promotion bar — elite pressure without firing cliff.
    * T5: slightly softer than pre-pass (see git history) so flagship wins are possible but uncommon; batch still shows laterals + occasional demotions.
    */
@@ -46,12 +47,10 @@
       failureThreshold: 31,
       /** Scenario cash × mult + grant: starter runway so Tier 0 can reach assignment-end reviews (still far leaner than T1+ packages). */
       cashMult: 1.15,
-      corporateCashGrant: 420000,
+      corporateCashGrant: 500000,
       corporateCommitmentNote:
         'Corporate front-loaded working capital for your first chair — enough to survive a bad opening book in a small market, not a major-market war chest.',
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 84 },
-      /** AM dial; merged onto BP idx 1 instead of default AM Top 40 — variety for GM career only. */
-      starterPlayerBpPatch: { type: 'AM', fmt: 'COUNTRY', pw: 'DA', str: 'moderate' },
       flavor:
         'Your first real General Manager chair: a modest Plains market with real P&L and real competition — lower stakes than a major, but every decision still counts.',
     },
@@ -66,9 +65,9 @@
       successThreshold: 56,
       survivalThreshold: 40,
       failureThreshold: 33,
-      /** Promotion tier: scenario cash + grant + modest mult — corporate backs a proven GM with real runway. */
-      cashMult: 0.95,
-      corporateCashGrant: 100000,
+      /** Promotion tier: lift scenario cash (mult ≥1) + large grant — never shrink bankroll vs a fresh gen in this market. */
+      cashMult: 1.08,
+      corporateCashGrant: 560000,
       evaluationGraceReviews: 1,
       corporateCommitmentNote:
         'Corporate approved a one-time rebuild purse for this posting — you were promoted because they trust you, not to starve the cluster of cash on day one.',
@@ -87,13 +86,12 @@
       successThreshold: 54,
       survivalThreshold: 44,
       failureThreshold: 32,
-      cashMult: 1.0,
-      /** Atlanta large-market P&L is punishing vs Wichita/Nashville; extra grant is campaign-only runway (scenario cash unchanged). */
-      corporateCashGrant: 285000,
+      cashMult: 1.08,
+      /** Atlanta large-market P&L is punishing vs Wichita/Nashville; grant scales for one bad period without game over. */
+      corporateCashGrant: 520000,
       evaluationGraceReviews: 1,
       corporateCommitmentNote:
         'Ownership backed this promotion with a one-time operating budget — large-market salvage needs more than good intentions; you get enough cash to survive early losses while you execute, with a bit more bridge than the last Atlanta posting so the chair stays playable.',
-      starterPlayerBpPatch: { type: 'AM', fmt: 'SOUL_RNB', pw: '10kw', str: 'strong' },
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 80 },
       flavor:
         'A Sunbelt major market: more revenue on the table — and more scrutiny — but corporate put money behind the seat so a turnaround is playable, not a few rounds to bankruptcy.',
@@ -110,10 +108,9 @@
       successThreshold: 58,
       survivalThreshold: 42,
       failureThreshold: 33,
-      /** Scenario starting cash only (no mult bump); corporate grant is the main one-time runway (see applyAssignmentToGame). */
-      cashMult: 1.0,
-      /** Tier 3 + 18-period contract: larger-market burn needs more day-one cash than the old $100k grant. */
-      corporateCashGrant: 290000,
+      cashMult: 1.1,
+      /** Tier 3 + 18-period contract: larger-market burn — mult + grant so one ugly book does not end the arc. */
+      corporateCashGrant: 580000,
       /**
        * First N formal GM reviews use turnaround patience (see gmMode.js): trajectory and spend are judged more like a rebuild,
        * not like a mature cash cow. After N reviews, standard corporate discipline applies.
@@ -121,11 +118,10 @@
       evaluationGraceReviews: 1,
       /** Short line for in-game campaign UI (gmMode campaign callout). */
       corporateCommitmentNote:
-        'Corporate approved a limited rebuild budget for this assignment. Your first formal review emphasizes measurable progress over instant profit — after that, expectations match a normal major-market General Manager scorecard.',
+        'Corporate backed this posting with meaningful bridge capital — your first formal review still emphasizes measurable progress over instant profit, but you are not expected to run the cluster on fumes from day one.',
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 78, minFranchiseAvg: 0.5 },
-      starterPlayerBpPatch: { type: 'AM', fmt: 'NEWS_TALK', pw: '50kw', str: 'emerging' },
       flavor:
-        'A competitive major market where brand and ratings momentum matter as much as margin. Corporate funded modest runway — enough to maneuver, not a comfort cushion — and one early review cycle where they judge direction before holding you to steady-state standards.',
+        'A competitive major market where brand and ratings momentum matter as much as margin. Corporate funded real runway for a rebuild — enough to absorb a bad period — plus one early review cycle where they judge direction before holding you to steady-state standards.',
     },
     {
       id: 'c4_chicago',
@@ -138,13 +134,12 @@
       successThreshold: 55,
       survivalThreshold: 40,
       failureThreshold: 35,
-      cashMult: 1.05,
-      /** Tier 4 + 22 periods: major-market ops scale — extra grant only (scenario cash unchanged). */
-      corporateCashGrant: 330000,
+      cashMult: 1.1,
+      /** Tier 4 + 22 periods: major-market ops scale — higher grant for mega-class burn. */
+      corporateCashGrant: 640000,
       evaluationGraceReviews: 1,
       corporateCommitmentNote:
         'Promotion to a major-market chair included limited bridge funding — corporate expects discipline, but they will not pretend an underfunded General Manager can fix a broken cluster overnight.',
-      starterPlayerBpPatch: { type: 'AM', fmt: 'NEWS_TALK', pw: '50kw', str: 'emerging' },
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 79, minMarginPct: 8 },
       flavor:
         'Big payroll, big expectations — cash discipline matters as much as ratings — with enough corporate runway that the opening quarters reward direction, not only the bottom line.',
@@ -160,9 +155,9 @@
       successThreshold: 57,
       survivalThreshold: 43,
       failureThreshold: 37,
-      cashMult: 1.08,
+      cashMult: 1.12,
       /** Tier 5 flagship: top-market economics need a credible opening bankroll (campaign-only). */
-      corporateCashGrant: 400000,
+      corporateCashGrant: 750000,
       evaluationGraceReviews: 1,
       corporateCommitmentNote:
         'Even at the flagship, the group funded transition support — you are here to win, not to run out of cash before the first books settle.',
@@ -498,6 +493,106 @@
     return Math.round((lo + span * t) * 10000) / 10000;
   }
 
+  /** Stations with a numeric AQH `rat.share` — same pool used for mandate rank / top-half. */
+  function campaignMandateCommercialShareRows(G) {
+    var stations = (G && G.stations) || [];
+    var rows = [];
+    for (var i = 0; i < stations.length; i++) {
+      var s = stations[i];
+      if (!s) continue;
+      var sh = s.rat && typeof s.rat.share === 'number' ? s.rat.share : null;
+      if (sh == null || !Number.isFinite(sh)) continue;
+      rows.push({ id: s.id, share: sh });
+    }
+    rows.sort(function (a, b) {
+      if (b.share !== a.share) return b.share - a.share;
+      return String(a.id || '').localeCompare(String(b.id || ''));
+    });
+    return rows;
+  }
+
+  function campaignMandateShareSnapshot(G, stationId) {
+    var rows = campaignMandateCommercialShareRows(G);
+    var count = rows.length;
+    var rank = count + 1;
+    var share = 0;
+    for (var i = 0; i < rows.length; i++) {
+      if (rows[i].id === stationId) {
+        rank = i + 1;
+        share = rows[i].share;
+        break;
+      }
+    }
+    return { share: share, rank: rank, count: count };
+  }
+
+  /** Meaningful point gain vs mandate start (AQH share). */
+  var MANDATE_IMPROVE_DELTA_PP = 0.015;
+  /** Below this start share, relative-growth path is disabled (avoids pass from near-zero). */
+  var MANDATE_GROWTH_START_MIN = 0.013;
+  var MANDATE_GROWTH_FACTOR = 1.35;
+  /** Need enough stations for “top half” to mean something. */
+  var MANDATE_RANK_TOP_HALF_MIN_STATIONS = 3;
+
+  /**
+   * Hybrid mandate success vs AQH share: absolute target OR vetted improvement / rank.
+   * @param {number} endShare
+   * @param {{ minShare?: number }} man
+   * @param {{ startShare?: number|null, startRank?: number|null, endRank?: number, commercialStationCount?: number }} ctx
+   */
+  function corporateMandateHybridMet(endShare, man, ctx) {
+    ctx = ctx || {};
+    var minShare = Number(man && man.minShare) || 0;
+    var startShare =
+      ctx.startShare != null && Number.isFinite(Number(ctx.startShare)) ? Number(ctx.startShare) : 0;
+    var startRank = ctx.startRank != null ? ctx.startRank | 0 : 999;
+    var endRank = ctx.endRank != null ? ctx.endRank | 0 : 999;
+    var n = ctx.commercialStationCount != null ? ctx.commercialStationCount | 0 : 0;
+    var es = Number(endShare);
+    if (!Number.isFinite(es)) es = 0;
+
+    var deltaMinEnd = Math.max(0.027, minShare * 0.68);
+    var growthMinEnd = Math.max(0.025, minShare * 0.65);
+    var rankHalfMinEnd = Math.max(0.022, minShare * 0.6);
+    var rankJumpMinEnd = Math.max(0.022, minShare * 0.58);
+
+    var paths = {};
+    paths.absolute = es >= minShare;
+    paths.delta = es >= startShare + MANDATE_IMPROVE_DELTA_PP && es >= deltaMinEnd;
+    paths.growth =
+      startShare >= MANDATE_GROWTH_START_MIN &&
+      es >= startShare * MANDATE_GROWTH_FACTOR &&
+      es >= growthMinEnd;
+    paths.rankHalf =
+      n >= MANDATE_RANK_TOP_HALF_MIN_STATIONS &&
+      endRank <= Math.ceil(n / 2) &&
+      es >= rankHalfMinEnd;
+    paths.rankJump =
+      n >= 2 &&
+      startRank - endRank >= 2 &&
+      endRank < startRank &&
+      es >= rankJumpMinEnd;
+
+    var ok =
+      !!paths.absolute ||
+      !!paths.delta ||
+      !!paths.growth ||
+      !!paths.rankHalf ||
+      !!paths.rankJump;
+    var primary = paths.absolute
+      ? 'absolute'
+      : paths.growth
+        ? 'growth'
+        : paths.delta
+          ? 'delta'
+          : paths.rankHalf
+            ? 'rank_half'
+            : paths.rankJump
+              ? 'rank_jump'
+              : null;
+    return { ok: ok, paths: paths, primary: primary };
+  }
+
   function campaignCreateMandateProgress() {
     return {
       everAtTargetFormat: false,
@@ -506,6 +601,10 @@
       bestShareWhileTarget: 0,
       lastShare: null,
       shareTrend: 'flat',
+      startShare: null,
+      startRank: null,
+      commercialCount: 0,
+      startShareRecorded: false,
     };
   }
 
@@ -583,6 +682,12 @@
       noBrokered: noBrokered,
     };
     G.campaignAssignment.corporateMandateProgress = campaignCreateMandateProgress();
+    var progInit = G.campaignAssignment.corporateMandateProgress;
+    var snapInit = campaignMandateShareSnapshot(G, st.id);
+    progInit.startShare = snapInit.share;
+    progInit.startRank = snapInit.rank;
+    progInit.commercialCount = snapInit.count;
+    progInit.startShareRecorded = true;
   }
 
   /** Each sim period after GM bookkeeping — updates mandate progress (read-only on sim). */
@@ -597,11 +702,25 @@
     var closed = gm && gm.closedPeriods != null ? gm.closedPeriods | 0 : 0;
     var st = campaignFindStationById(G, man.stationId);
     if (!st) return;
+    if (!prog.startShareRecorded) {
+      var snapM = campaignMandateShareSnapshot(G, man.stationId);
+      prog.startShare = snapM.share;
+      prog.startRank = snapM.rank;
+      prog.commercialCount = snapM.count;
+      prog.startShareRecorded = true;
+    }
     var share = st.rat && typeof st.rat.share === 'number' ? st.rat.share : 0;
     if (st.format === man.targetFormat) {
       prog.everAtTargetFormat = true;
       if (share > prog.bestShareWhileTarget) prog.bestShareWhileTarget = share;
-      if (share >= man.minShare && prog.firstGoodClosedPeriod == null) prog.firstGoodClosedPeriod = closed;
+      var snapR = campaignMandateShareSnapshot(G, man.stationId);
+      var hyTick = corporateMandateHybridMet(share, man, {
+        startShare: prog.startShare,
+        startRank: prog.startRank,
+        endRank: snapR.rank,
+        commercialStationCount: snapR.count,
+      });
+      if (hyTick.ok && prog.firstGoodClosedPeriod == null) prog.firstGoodClosedPeriod = closed;
     }
     if (prog.lastShare != null && typeof prog.lastShare === 'number') {
       if (share > prog.lastShare + 0.0005) prog.shareTrend = 'rising';
@@ -618,7 +737,16 @@
    * Returns { delta, outcome, detail } for diagnostics and UI.
    */
   function evaluateCorporateMandateAtAssignmentEnd(G, asg) {
-    var out = { delta: 0, outcome: null, detail: null };
+    var out = {
+      delta: 0,
+      outcome: null,
+      detail: null,
+      successPath: null,
+      endShare: null,
+      shareDelta: null,
+      shareGrowthPct: null,
+      endRank: null,
+    };
     if (!G || !asg || !asg.corporateMandate || asg.corporateMandate.type !== 'make_format_work') return out;
     tickCorporateMandateProgress(G);
     var man = asg.corporateMandate;
@@ -626,30 +754,47 @@
     if (!prog) return out;
     var st = campaignFindStationById(G, man.stationId);
     var share = st && st.rat && typeof st.rat.share === 'number' ? st.rat.share : 0;
-    var endOk = !!(st && st.format === man.targetFormat && share >= man.minShare);
+    var snapEnd = campaignMandateShareSnapshot(G, man.stationId);
+    var hyEnd = corporateMandateHybridMet(share, man, {
+      startShare: prog.startShare,
+      startRank: prog.startRank,
+      endRank: snapEnd.rank,
+      commercialStationCount: snapEnd.count,
+    });
+    var endOk = !!(st && st.format === man.targetFormat && hyEnd.ok);
     var metByDeadline =
       prog.firstGoodClosedPeriod != null && (prog.firstGoodClosedPeriod | 0) <= (man.deadlinePeriods | 0);
+    var startS =
+      prog.startShare != null && Number.isFinite(Number(prog.startShare)) ? Number(prog.startShare) : 0;
+    out.endShare = share;
+    out.endRank = snapEnd.rank;
+    out.shareDelta = share - startS;
+    out.shareGrowthPct = startS > 1e-6 ? ((share - startS) / startS) * 100 : null;
+    out.successPath = hyEnd.primary;
 
     if (man.noBrokered && prog.brokeredForbiddenObserved) {
       out.delta = -6;
       out.outcome = 'ignored';
       out.detail = 'brokered_forbidden';
+      out.successPath = null;
       return out;
     }
     if (!prog.everAtTargetFormat) {
       out.delta = -5;
       out.outcome = 'ignored';
       out.detail = 'never_switched';
+      out.successPath = null;
       return out;
     }
     if (endOk && metByDeadline) {
       out.delta = 3;
       out.outcome = 'success';
-      out.detail = 'met_target_on_time';
+      out.detail = hyEnd.paths && hyEnd.paths.absolute ? 'met_target_on_time' : 'met_alternate_on_time';
       return out;
     }
     out.delta = -2;
     out.outcome = 'failure';
+    out.successPath = null;
     out.detail = endOk && !metByDeadline ? 'late_or_slipped' : 'missed_share_or_format';
     return out;
   }
@@ -758,6 +903,12 @@
 
     var campaignWin = tierBefore === 5 && !fired && contractDone && conf >= succThr;
 
+    if (kind === 'fired') {
+      try {
+        G._wlGmFiredFromCampaign = true;
+      } catch (_e) {}
+    }
+
     if (campaignWin) {
       st.campaignWon = true;
       st.active = false;
@@ -851,7 +1002,43 @@
     };
   }
 
-  function applyAssignmentToGame(G, asg) {
+  /** After `tryAttachCorporateMandate`; keeps mandate announcement in one place. */
+  function pushCorporateMandateNewsIfAny(G) {
+    if (!G || !G.campaignAssignment || !G.campaignAssignment.corporateMandate || !G.news) return;
+    var cm = G.campaignAssignment.corporateMandate;
+    var stM = campaignFindStationById(G, cm.stationId);
+    var callM = (stM && (stM.callLetters || stM.brand || stM.name)) || 'the station';
+    var fmtHuman =
+      typeof global !== 'undefined' && typeof global.fmtLabel === 'function'
+        ? global.fmtLabel(cm.targetFormat, G.year)
+        : cm.targetFormat;
+    var pct = Math.round((cm.minShare || 0) * 1000) / 10;
+    var brk = cm.noBrokered ? ' Paid-programming (brokered) economics will be read as declining the mandate.' : '';
+    G.news.unshift({
+      v: 'HIGH',
+      t:
+        '📋 Corporate mandate: flip ' +
+        callM +
+        ' to ' +
+        fmtHuman +
+        ' — reach at least ' +
+        pct +
+        '% AQH share or show meaningful ratings improvement (share gain, relative growth, or market rank) within ' +
+        (cm.deadlinePeriods | 0) +
+        ' operating periods (still on format at contract end).' +
+        brk,
+      y: G.year,
+      p: G.period,
+      iy: true,
+    });
+  }
+
+  /**
+   * @param {object} [opts]
+   * @param {boolean} [opts.deferCorporateMandate] — if true, skip mandate roll + news (run after campaign ownership variety).
+   */
+  function applyAssignmentToGame(G, asg, opts) {
+    opts = opts || {};
     if (!G || !G.sc) return;
     G._campaignOutcomeRecorded = false;
     G.careerCampaign = true;
@@ -886,34 +1073,9 @@
       (asg.tier | 0) >= 5
     );
     if (typeof wlGmMode !== 'undefined' && wlGmMode.initGmStateForGame) wlGmMode.initGmStateForGame(G);
-    tryAttachCorporateMandate(G, asg);
-    if (G.campaignAssignment.corporateMandate && G.news) {
-      var cm = G.campaignAssignment.corporateMandate;
-      var stM = campaignFindStationById(G, cm.stationId);
-      var callM = (stM && (stM.callLetters || stM.brand || stM.name)) || 'the station';
-      var fmtHuman =
-        typeof global !== 'undefined' && typeof global.fmtLabel === 'function'
-          ? global.fmtLabel(cm.targetFormat, G.year)
-          : cm.targetFormat;
-      var pct = Math.round((cm.minShare || 0) * 1000) / 10;
-      var brk = cm.noBrokered ? ' Paid-programming (brokered) economics will be read as declining the mandate.' : '';
-      G.news.unshift({
-        v: 'HIGH',
-        t:
-          '📋 Corporate mandate: flip ' +
-          callM +
-          ' to ' +
-          fmtHuman +
-          ' and reach at least ' +
-          pct +
-          '% share within ' +
-          (cm.deadlinePeriods | 0) +
-          ' operating periods.' +
-          brk,
-        y: G.year,
-        p: G.period,
-        iy: true,
-      });
+    if (!opts.deferCorporateMandate) {
+      tryAttachCorporateMandate(G, asg);
+      pushCorporateMandateNewsIfAny(G);
     }
     var st = ensureState();
     if (st.active) st.currentTier = asg.tier | 0;
@@ -961,6 +1123,179 @@
     }
   }
 
+  /**
+   * Rebuild `G.campaignAssignment` + `G.careerCampaign` when browser autosave has persistent `campaign` state
+   * but `G` lost those fields (refresh / ordering / older saves). Without them, `wlCampaignOnPeriodClose` never
+   * runs assignment-end → no ladder promotion despite strong job security.
+   * Does not touch cash or `gmConfig` — only the envelope ownership expects on `G`.
+   */
+  function repairCareerFlagsOnGFromPersistentState(G) {
+    if (!G || !G.sc || G.sc.id !== 'gm_under' || !G.sc.gmMode) return false;
+    if (G.careerCampaign && G.campaignAssignment) return false;
+    var st = ensureState();
+    if (st.awaitingLaunch && st.awaitingLaunch.ended) return false;
+    if (st.campaignWon) return false;
+    var looksCareer =
+      st.active === true ||
+      (st.completedAssignments | 0) > 0 ||
+      (st.history && st.history.length);
+    if (!looksCareer) return false;
+    var tier = st.currentTier != null ? st.currentTier | 0 : 0;
+    var asg = pickAssignmentForTier(tier, st);
+    if (!asg) return false;
+    G.careerCampaign = true;
+    G.campaignAssignment = {
+      id: asg.id,
+      tier: asg.tier,
+      marketId: asg.marketId,
+      scenarioId: asg.scenarioId || 'gm_under',
+      ownerArchetype: asg.ownerArchetype,
+      title: asg.title,
+      contractLengthPeriods: asg.contractLengthPeriods,
+      successThreshold: asg.successThreshold,
+      survivalThreshold: asg.survivalThreshold,
+      failureThreshold: asg.failureThreshold,
+      flavor: asg.flavor || '',
+      evaluationGraceReviews: asg.evaluationGraceReviews | 0,
+      corporateCashGrant: asg.corporateCashGrant | 0,
+      corporateCommitmentNote: asg.corporateCommitmentNote || '',
+    };
+    G._campaignOutcomeRecorded = false;
+    try {
+      delete G._campaignAssignmentEnded;
+    } catch (_e) {}
+    if (typeof global.console !== 'undefined' && console.warn) {
+      console.warn(
+        '[wlCampaign] Restored G.careerCampaign + G.campaignAssignment from saved career state (tier ' +
+          (asg.tier | 0) +
+          ', ' +
+          (asg.marketId || '') +
+          ').',
+      );
+    }
+    return true;
+  }
+
+  /**
+   * If assignment ended but the end modal never ran (e.g. mobile refresh before `afterRenderAll`), persisted
+   * `st.awaitingLaunch.ended` holds the payload — replay so the player can continue the ladder.
+   */
+  function attachPendingAssignmentEndForAfterRender(G) {
+    var st = ensureState();
+    var al = st.awaitingLaunch;
+    if (!al || !al.ended) return false;
+    try {
+      /**
+       * Do not set `G._campaignAssignmentEnded` here. `ensurePendingCareerEndModalAfterRender` (first
+       * `renderAll` after load) must set that flag and call `wlCampaignAfterRenderAll`; if it is
+       * already set, ensurePending returns early and the ASSIGNMENT COMPLETE modal never opens.
+       */
+      // Saves taken mid–assignment-end can have outcome=true with no `campaignAssignment`; clear so
+      // `wlCampaignOnPeriodClose` / repairs are not blocked after the player dismisses the modal.
+      G._campaignOutcomeRecorded = false;
+    } catch (_e) {
+      return false;
+    }
+    return true;
+  }
+
+  /** Call after `wlCampaignLoadFromSave` + assigning `G` from disk, before `renderAll`. */
+  function handleLoadedGameState(G) {
+    if (global.MP && global.MP.mode === 'live') return;
+    if (!G) return;
+    restoreAwaitingLaunchFromGameMirror(G);
+    if (attachPendingAssignmentEndForAfterRender(G)) return;
+    repairCareerFlagsOnGFromPersistentState(G);
+  }
+
+  /** Serialize pending assignment-end onto `G` so a single autosave blob cannot lose it vs `campaign` only. */
+  function mirrorAwaitingLaunchOntoGame(G, ev, nextAssignment, careerEndedHard) {
+    if (!G || !ev) return;
+    try {
+      G._wlCampaignPendingEndV1 = {
+        v: 1,
+        ended: JSON.parse(JSON.stringify(ev)),
+        nextAssignment: nextAssignment ? JSON.parse(JSON.stringify(nextAssignment)) : null,
+        careerEndedHard: !!careerEndedHard,
+      };
+    } catch (_e) {
+      G._wlCampaignPendingEndV1 = { v: 1, ended: ev, nextAssignment: nextAssignment || null, careerEndedHard: !!careerEndedHard };
+    }
+  }
+
+  function clearCareerPendingMirrorOnGame(G) {
+    if (!G) return;
+    try {
+      delete G._wlCampaignPendingEndV1;
+    } catch (_e) {}
+  }
+
+  /** If `campaign.awaitingLaunch` was lost but `G` still has the mirror, restore session state. */
+  function restoreAwaitingLaunchFromGameMirror(G) {
+    var d = G && G._wlCampaignPendingEndV1;
+    if (!d || d.v !== 1 || !d.ended) return false;
+    var st = ensureState();
+    if (st.awaitingLaunch && st.awaitingLaunch.ended) return false;
+    st.awaitingLaunch = {
+      ended: d.ended,
+      nextAssignment: d.nextAssignment,
+      careerEndedHard: !!d.careerEndedHard,
+    };
+    return true;
+  }
+
+  var _wlCampaignEndModalKickAt = 0;
+  /**
+   * If a posting ended but the assignment-end modal never opened (e.g. overlay queue / refresh), re-arm
+   * `wlCampaignAfterRenderAll` from persistent `awaitingLaunch`. Throttled to avoid double-scheduling.
+   */
+  function ensurePendingCareerEndModalAfterRender(G) {
+    if (global.MP && global.MP.mode === 'live') return;
+    if (!G) return;
+    var st = ensureState();
+    var al = st.awaitingLaunch;
+    if (!al || !al.ended) return;
+    var m = typeof document !== 'undefined' ? document.getElementById('m-campaign-end') : null;
+    if (m && m.classList.contains('on')) return;
+    if (G._campaignAssignmentEnded) return;
+    var now = Date.now();
+    if (now - _wlCampaignEndModalKickAt < 700) return;
+    _wlCampaignEndModalKickAt = now;
+    try {
+      G._campaignAssignmentEnded = al.ended;
+      G._campaignOutcomeRecorded = false;
+    } catch (_e) {}
+    setTimeout(function () {
+      if (typeof global.wlCampaignAfterRenderAll === 'function') global.wlCampaignAfterRenderAll(G);
+    }, 0);
+  }
+
+  /** Open the assignment-end modal immediately when the player is blocked (e.g. hit Next Period first). */
+  function ensureEndModalVisible(G) {
+    if (global.MP && global.MP.mode === 'live') return;
+    var m = typeof document !== 'undefined' ? document.getElementById('m-campaign-end') : null;
+    if (m && m.classList.contains('on')) return;
+    var st = ensureState();
+    var al = st && st.awaitingLaunch;
+    if (!al || !al.ended) return;
+    fillCampaignEndModal(al.ended);
+    if (typeof global.om === 'function') global.om('m-campaign-end');
+  }
+
+  /** Block advancing another sim period until the career close-out modal is dismissed (prevents orphaned play). */
+  function shouldBlockAdvTurnForPendingCareerEnd(G) {
+    if (!G) return null;
+    if (global.MP && global.MP.mode === 'live') return null;
+    var st = ensureState();
+    var al = st.awaitingLaunch;
+    if (!al || !al.ended) return null;
+    var m = typeof document !== 'undefined' ? document.getElementById('m-campaign-end') : null;
+    if (m && m.classList.contains('on')) return null;
+    var sum = typeof document !== 'undefined' ? document.getElementById('m-sum') : null;
+    if (sum && sum.classList.contains('on')) return null;
+    return 'Close the Career Assignment summary (the window that opened when your posting ended) before running another period — your calendar is paused until you do.';
+  }
+
   function onPeriodClose(G, wasYear, wasPeriod) {
     if (global.MP && global.MP.mode === 'live') return;
     if (!G || !G.careerCampaign || !G.campaignAssignment) return;
@@ -980,6 +1315,10 @@
       nextAssignment: ev.nextAssignment,
       careerEndedHard: ev.careerEndedHard,
     };
+    mirrorAwaitingLaunchOntoGame(G, ev, ev.nextAssignment, ev.careerEndedHard);
+    try {
+      if (typeof global.autoSave === 'function') global.autoSave();
+    } catch (_e) {}
   }
 
   function afterRenderAll(G) {
@@ -996,6 +1335,9 @@
         return;
       }
       fillCampaignEndModal(payload);
+      if (typeof global.wlMaybeFinalizeSignupTrialFromCampaign === 'function') {
+        global.wlMaybeFinalizeSignupTrialFromCampaign(payload);
+      }
       if (typeof global.om === 'function') global.om('m-campaign-end');
       try {
         if (typeof global.autoSave === 'function') global.autoSave();
@@ -1015,8 +1357,8 @@
         : payload.kind === 'lateral'
           ? 'Retained — lateral move'
           : payload.kind === 'demoted'
-            ? 'Reassigned — demotion / fallback'
-            : 'Fired — career setback';
+            ? 'Reassigned — demotion / easier market'
+            : 'Dismissed — fired (contract ended; job is gone)';
 
     if (payload.campaignWin) resultLabel = 'Campaign complete — top-market success';
 
@@ -1036,12 +1378,22 @@
         '. Start a new career anytime from scenario select.'
       : payload.careerEndedHard
         ? pName + ', your General Manager career path has ended after repeated setbacks at the bottom of the ladder.'
-        : 'Next: ' +
-          oName +
-          ' is assigning you to ' +
-          (next && next.title ? next.title : 'a General Manager role') +
-          (nextCity ? ' in ' + nextCity : '') +
-          (next ? ' (Tier ' + next.tier + ').' : '.');
+        : payload.kind === 'fired'
+          ? (next
+              ? 'When you continue, you will open your next corporate posting (this is a new seat after dismissal, not a promotion from the contract that just ended): ' +
+                oName +
+                ' routes you to ' +
+                (next.title ? next.title : 'a General Manager role') +
+                (nextCity ? ' in ' + nextCity : '') +
+                ' (Tier ' +
+                next.tier +
+                ').'
+              : 'When you continue, you will leave this summary and either pick up a recovery posting or return to the menu — follow the button label below.')
+          : oName +
+            ' is assigning you to ' +
+            (next && next.title ? next.title : 'a General Manager role') +
+            (nextCity ? ' in ' + nextCity : '') +
+            (next ? ' (Tier ' + next.tier + ').' : '.');
 
     var standing =
       payload.standing === 'rising'
@@ -1053,7 +1405,15 @@
     var mandLine = '';
     var me = payload.corporateMandateEvaluation;
     if (me && me.outcome) {
-      if (me.outcome === 'success') mandLine = 'Corporate mandate: success (+' + (me.delta | 0) + ' confidence at close-out).';
+      if (me.outcome === 'success')
+        mandLine =
+          'Corporate mandate: success (+' +
+          (me.delta | 0) +
+          ' confidence at close-out)' +
+          (me.detail === 'met_alternate_on_time'
+            ? ' — met via ratings improvement / rank (not the headline share floor alone)'
+            : '') +
+          '.';
       else if (me.outcome === 'failure') mandLine = 'Corporate mandate: missed (' + (me.delta | 0) + ' confidence at close-out).';
       else mandLine = 'Corporate mandate: ignored / declined (' + (me.delta | 0) + ' confidence at close-out).';
     }
@@ -1061,13 +1421,31 @@
     var lateEraBlock = '';
     try {
       if (typeof global.buildLateEraCampaignEndHtml === 'function' && global.G) {
-        lateEraBlock = global.buildLateEraCampaignEndHtml(global.G) || '';
+        lateEraBlock = global.buildLateEraCampaignEndHtml(global.G, { forCareerAssignmentModal: true }) || '';
       }
     } catch (_e) {
       lateEraBlock = '';
     }
 
+    var mhEl = document.querySelector('#m-campaign-end .mh span');
+    if (mhEl) {
+      if (payload.kind === 'fired') mhEl.textContent = 'CONTRACT ENDED — DISMISSED';
+      else if (payload.campaignWin) mhEl.textContent = 'CAMPAIGN COMPLETE';
+      else mhEl.textContent = 'ASSIGNMENT COMPLETE';
+    }
+
+    var firedBanner =
+      payload.kind === 'fired'
+        ? '<div class="ibox" style="margin-bottom:14px;border-color:rgba(255,82,82,.55);background:rgba(255,82,82,.1)"><strong style="color:var(--red);font-size:16px">You were fired.</strong><span style="display:block;margin-top:8px;font-size:14px;line-height:1.55;color:var(--off)">Corporate ended your General Manager contract. What follows is the formal readout; when you continue you will leave this posting.</span></div>'
+        : '';
+    var demoteBanner =
+      payload.kind === 'demoted' && !payload.careerEndedHard
+        ? '<div class="ibox" style="margin-bottom:14px;border-color:rgba(245,166,35,.45);background:rgba(245,166,35,.08)"><strong style="color:var(--amb)">Reassigned to an easier market.</strong><span style="display:block;margin-top:8px;font-size:14px;line-height:1.55;color:var(--off)">This is a demotion / fallback move — you are still employed on the ladder unless the text below says your career path has ended.</span></div>'
+        : '';
+
     b.innerHTML =
+      firedBanner +
+      demoteBanner +
       '<div class="ms2">' +
       '<div class="msh">ASSIGNMENT RESULT</div>' +
       '<div class="sr"><span class="lb">General Manager</span><span class="vl">' +
@@ -1079,22 +1457,28 @@
       '<div class="sr"><span class="lb">Outcome</span><span class="vl">' +
       esc(resultLabel) +
       '</span></div>' +
-      '<div class="sr"><span class="lb">Why</span><span class="vl" style="font-size:15px;line-height:1.45">' +
+      '<p class="di" style="margin:12px 0 0;font-size:15px;line-height:1.55;color:var(--off)">' +
       esc(payload.why) +
-      '</span></div>' +
+      '</p>' +
       (mandLine
-        ? '<div class="sr"><span class="lb">Mandate</span><span class="vl" style="font-size:14px;line-height:1.45">' +
+        ? '<div class="sr" style="margin-top:12px"><span class="lb">Mandate</span><span class="vl" style="font-size:14px;line-height:1.45">' +
           esc(mandLine) +
           '</span></div>'
         : '') +
-      '<div class="sr"><span class="lb">Career standing</span><span class="vl">' +
+      '<div class="sr" style="margin-top:12px"><span class="lb">Career standing</span><span class="vl">' +
       esc(standing) +
       ' · Rep ' +
       (st.reputation | 0) +
       '/100</span></div>' +
-      '<div class="sr"><span class="lb">Next role</span><span class="vl" style="font-size:15px;line-height:1.45">' +
-      esc(nextLine) +
-      '</span></div>' +
+      (payload.campaignWin || payload.careerEndedHard
+        ? '<p class="di" style="margin:14px 0 0;font-size:15px;line-height:1.55;color:var(--off)">' +
+          esc(nextLine) +
+          '</p>'
+        : '<p class="di" style="margin:14px 0 0;font-size:15px;line-height:1.55;color:var(--off)"><strong>' +
+          (payload.kind === 'fired' ? 'What happens next.' : 'Next assignment.') +
+          '</strong> ' +
+          esc(nextLine) +
+          '</p>') +
       lateEraBlock +
       '</div>';
 
@@ -1103,18 +1487,31 @@
       if (payload.campaignWin || payload.careerEndedHard) {
         btn.textContent = 'BACK TO MENU';
         btn.onclick = function () {
+          try {
+            if (global.G && payload.kind === 'fired') global.G._wlGmFiredFromCampaign = false;
+          } catch (_e) {}
           if (typeof global.cm === 'function') global.cm('m-campaign-end');
           st.awaitingLaunch = null;
+          clearCareerPendingMirrorOnGame(global.G);
           try {
             if (typeof global.autoSave === 'function') global.autoSave();
           } catch (_e) {}
-          if (typeof global.openScenSelect === 'function') global.openScenSelect(typeof global.getLocalSave === 'function' ? global.getLocalSave() : null);
+          if (payload.kind === 'fired' && typeof global.wlShowGmFiredDismissToast === 'function') {
+            global.wlShowGmFiredDismissToast(global.G);
+          } else if (typeof global.openScenSelect === 'function') {
+            global.openScenSelect(typeof global.getLocalSave === 'function' ? global.getLocalSave() : null);
+          }
         };
       } else {
         btn.textContent = 'CONTINUE CAREER →';
         btn.onclick = function () {
+          try {
+            if (global.G) global.G._wlGmFiredFromCampaign = false;
+          } catch (_e) {}
           if (typeof global.cm === 'function') global.cm('m-campaign-end');
-          if (typeof global.wlCampaignStartNextAssignment === 'function') global.wlCampaignStartNextAssignment();
+          /* Pass next assignment explicitly — mobile/session edge cases can lose `st.awaitingLaunch` sync. */
+          if (typeof global.wlCampaignStartNextAssignment === 'function')
+            global.wlCampaignStartNextAssignment(payload.nextAssignment || null);
         };
       }
     }
@@ -1136,6 +1533,11 @@
   /** Partial blueprint merge for Underdog player slot (BP idx 1); see legacy `effectiveBpForMarket`. Only set around genMarket. */
   function applyCampaignStarterBpPatch(asg) {
     if (typeof globalThis === 'undefined') return;
+    /* Default: random ownership variety — do not lock BP slot 1 to a fixed format. */
+    if (!asg || asg.randomOwnership !== false) {
+      delete globalThis.__WL_GM_UNDER_PLAYER_BP_PATCH__;
+      return;
+    }
     var p = asg && asg.starterPlayerBpPatch;
     if (p && typeof p === 'object') globalThis.__WL_GM_UNDER_PLAYER_BP_PATCH__ = p;
     else delete globalThis.__WL_GM_UNDER_PLAYER_BP_PATCH__;
@@ -1225,7 +1627,18 @@
       }
     }
     global.G.companyName = companyName;
-    applyAssignmentToGame(global.G, asg);
+    applyAssignmentToGame(global.G, asg, restored ? {} : { deferCorporateMandate: true });
+    if (
+      !restored &&
+      global.G.careerCampaign &&
+      typeof global.wlApplyCampaignLadderOwnershipVariety === 'function'
+    ) {
+      global.wlApplyCampaignLadderOwnershipVariety(global.G, asg);
+    }
+    if (!restored) {
+      tryAttachCorporateMandate(global.G, asg);
+      pushCorporateMandateNewsIfAny(global.G);
+    }
     global.G.ps = (global.G.stations || []).filter(function (s) {
       return s && s.isPlayer;
     });
@@ -1270,39 +1683,75 @@
     }
   }
 
-  function startNextAssignment() {
+  /**
+   * @param {object|null|undefined} nextAssignmentOverride — from assignment-end modal closure; avoids relying
+   * only on `st.awaitingLaunch` (can desync on mobile if autosave/state ordering differs).
+   */
+  function startNextAssignment(nextAssignmentOverride) {
     if (global.MP && global.MP.mode === 'live') return;
     var st = ensureState();
     var al = st.awaitingLaunch;
-    if (!al || !al.nextAssignment) return;
-    var asg = al.nextAssignment;
+    var asg =
+      nextAssignmentOverride ||
+      (al && al.nextAssignment) ||
+      (_diagLastAssignmentEndPayload && _diagLastAssignmentEndPayload.nextAssignment) ||
+      null;
+    if (!asg) return;
     st.awaitingLaunch = null;
+    clearCareerPendingMirrorOnGame(global.G);
     global._wlCampaignStarting = true;
     try {
       if (typeof global.genMarket === 'function') {
         var h = hydrateCampaignWorldForAssignment(asg, st, {});
         var restored = h.restored;
         var mid = h.mid;
-        if (typeof global.cm === 'function') global.cm('m-scen');
-        // Restored markets: skip renderAll here — it can re-fire year-based events after calendar
-        // advance and inject extra rival stations, breaking lineup continuity.
-        if (typeof global.renderAll === 'function' && !restored) global.renderAll();
-        if (typeof global.queuePlayerTalentPortraits === 'function')
-          global.queuePlayerTalentPortraits();
-        if (typeof global.queueAutoLogosForPlayerStations === 'function')
-          global.queueAutoLogosForPlayerStations();
-        if (typeof global.wlTrackSoloSession === 'function')
-          global.wlTrackSoloSession({
-            source: 'campaign_next',
-            scenarioId: 'gm_under',
-            marketId: mid,
+        /** Defer paint so Safari/mobile clears modal scroll-lock (`body.position=fixed`) before drawing the play shell. */
+        var finishUi = function () {
+          try {
+            try {
+              if (typeof global.syncModalBodyScrollLock === 'function') global.syncModalBodyScrollLock();
+            } catch (_e) {}
+            if (typeof global.cm === 'function') global.cm('m-scen');
+            // Restored markets: skip renderAll here — it can re-fire year-based events after calendar
+            // advance and inject extra rival stations, breaking lineup continuity.
+            if (typeof global.renderAll === 'function' && !restored) global.renderAll();
+            try {
+              if (typeof global.syncModalBodyScrollLock === 'function') global.syncModalBodyScrollLock();
+            } catch (_e2) {}
+            if (typeof global.queuePlayerTalentPortraits === 'function')
+              global.queuePlayerTalentPortraits();
+            if (typeof global.queueAutoLogosForPlayerStations === 'function')
+              global.queueAutoLogosForPlayerStations();
+            if (typeof global.wlTrackSoloSession === 'function')
+              global.wlTrackSoloSession({
+                source: 'campaign_next',
+                scenarioId: 'gm_under',
+                marketId: mid,
+              });
+            if (typeof global.autoSave === 'function') global.autoSave();
+          } finally {
+            try {
+              delete global._wlCampaignStarting;
+            } catch (_e3) {}
+          }
+        };
+        if (typeof global.requestAnimationFrame === 'function') {
+          global.requestAnimationFrame(function () {
+            global.requestAnimationFrame(finishUi);
           });
-        if (typeof global.autoSave === 'function') global.autoSave();
+        } else {
+          setTimeout(finishUi, 0);
+        }
+      } else {
+        try {
+          delete global._wlCampaignStarting;
+        } catch (_e4) {}
       }
     } catch (err) {
+      try {
+        delete global._wlCampaignStarting;
+      } catch (_e5) {}
       if (typeof global.showError === 'function') global.showError(String(err && err.message ? err.message : err), '');
-    } finally {
-      delete global._wlCampaignStarting;
     }
   }
 
@@ -1350,7 +1799,15 @@
         syncLegacyGameRef(global.G);
         global.G._campaignRestoredFromArchive = false;
         global.G.companyName = companyName;
-        applyAssignmentToGame(global.G, asg);
+        applyAssignmentToGame(global.G, asg, { deferCorporateMandate: true });
+        if (
+          global.G.careerCampaign &&
+          typeof global.wlApplyCampaignLadderOwnershipVariety === 'function'
+        ) {
+          global.wlApplyCampaignLadderOwnershipVariety(global.G, asg);
+        }
+        tryAttachCorporateMandate(global.G, asg);
+        pushCorporateMandateNewsIfAny(global.G);
         global.G.ps = (global.G.stations || []).filter(function (s) {
           return s && s.isPlayer;
         });
@@ -1626,4 +2083,8 @@
   global.wlCampaignRegenerateOwnerName = regenerateOwnerField;
   global.wlCampaignGetLastAssignmentEndPayload = getLastAssignmentEndPayload;
   global.wlCampaignRepairLoadedGameIfMarketMismatch = repairLoadedGameIfCampaignMarketMismatch;
+  global.wlCampaignHandleLoadedGame = handleLoadedGameState;
+  global.wlCampaignEnsurePendingEndModalAfterRender = ensurePendingCareerEndModalAfterRender;
+  global.wlCampaignEnsureEndModalVisible = ensureEndModalVisible;
+  global.wlCampaignShouldBlockAdvTurn = shouldBlockAdvTurnForPendingCareerEnd;
 })(typeof window !== 'undefined' ? window : globalThis);

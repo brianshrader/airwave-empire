@@ -11,10 +11,89 @@ import { effectivePriceLabelForKey } from './billingPriceLabels.js';
 import { billingCadenceFromStripePriceId, effectiveStripePrices } from './stripePriceIds.js';
 import { gameServerApiUrl as apiUrl } from './gameServerApiOrigin.js';
 import { captureEvent, identifyClerkUser, initAnalyticsClient } from './analyticsClient.js';
+import { initMetaPixel } from './metaPixelClient.js';
 
 const publishableKey = import.meta.env?.VITE_CLERK_PUBLISHABLE_KEY?.trim?.() ?? '';
 
 initAnalyticsClient();
+initMetaPixel();
+
+async function subscribeMarketingEmail(opts) {
+  const o = opts || {};
+  const email = String(o.email || '').trim();
+  const source = String(o.source || 'account').trim() || 'account';
+  const plan = String(o.plan || '').trim();
+  const market = String(o.market || '').trim();
+  const r = await fetch(apiUrl('/api/marketing/subscribe'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email,
+      SOURCE: source,
+      PLAN: plan,
+      MARKET: market,
+    }),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok || !j || !j.ok) {
+    const e = new Error(String(j?.error || 'Subscribe failed'));
+    e.status = r.status;
+    throw e;
+  }
+  return true;
+}
+
+function bindAccountMarketingEmailForm() {
+  const form = document.getElementById('wl-account-marketing-email-form');
+  if (!form || form.__wlBound) return;
+  form.__wlBound = true;
+  try {
+    if (sessionStorage.getItem('wl_mk_sub_seen_account_page') !== '1') {
+      sessionStorage.setItem('wl_mk_sub_seen_account_page', '1');
+      captureEvent('marketing_subscribe_viewed', { source: 'account_page' });
+    }
+  } catch (_e) {}
+  const emailEl = document.getElementById('wl-account-marketing-email');
+  const statusEl = document.getElementById('wl-account-marketing-email-status');
+  const setStatus = (msg, kind) => {
+    if (!statusEl) return;
+    statusEl.textContent = msg || '';
+    statusEl.className =
+      'mt-3 text-sm ' +
+      (kind === 'ok' ? 'text-emerald-300' : kind === 'bad' ? 'text-rose-300' : 'text-stone-400');
+  };
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const email = String(emailEl?.value || '').trim();
+    if (!email) {
+      setStatus('Enter your email to sign up.', 'bad');
+      return;
+    }
+    setStatus('Signing you up…');
+    const plan = String(window.__WL_CLERK_PLAN_SLUG || '').trim();
+    try {
+      captureEvent('marketing_subscribe_submitted', { source: 'account_page' });
+    } catch (_e) {}
+    subscribeMarketingEmail({ email, source: 'account_page', plan, market: '' })
+      .then(() => {
+        setStatus('Subscribed. Thanks!', 'ok');
+        try {
+          captureEvent('marketing_subscribe_success', { source: 'account_page', plan });
+        } catch (_e) {}
+        if (emailEl) emailEl.value = '';
+      })
+      .catch((err) => {
+        setStatus('Could not subscribe. Double-check the email and try again.', 'bad');
+        try {
+          captureEvent('marketing_subscribe_failed', {
+            source: 'account_page',
+            plan,
+            error_type: err?.status >= 500 ? 'server_error' : 'denied',
+          });
+        } catch (_e) {}
+      });
+  });
+}
 
 let __wlAccountAnalyticsSig = '';
 
@@ -99,6 +178,8 @@ async function startCheckoutForPriceKey(clerk, priceKey) {
     captureEvent('checkout_started', {
       plan,
       cadence,
+      selected_plan: plan,
+      billing_cycle: cadence,
       price_label: price_label.slice(0, 48),
       source: 'account',
     });
@@ -118,6 +199,8 @@ async function startCheckoutForPriceKey(clerk, priceKey) {
         captureEvent('checkout_failed', {
           plan,
           cadence,
+          selected_plan: plan,
+          billing_cycle: cadence,
           source: 'account',
           error_type: !cr ? 'network' : cr.status >= 500 ? 'server_error' : 'checkout_denied',
         });
@@ -131,6 +214,8 @@ async function startCheckoutForPriceKey(clerk, priceKey) {
       captureEvent('checkout_failed', {
         plan,
         cadence,
+        selected_plan: plan,
+        billing_cycle: cadence,
         source: 'account',
         error_type: 'network',
       });
@@ -290,7 +375,13 @@ async function refreshStripeBillingPanel(clerk) {
       const sig = `${planOut}|${statusOut}|account_load`;
       if (sig !== __wlAccountAnalyticsSig) {
         __wlAccountAnalyticsSig = sig;
-        captureEvent('subscription_access_detected', { plan: planOut, status: statusOut, source: 'account_load' });
+        captureEvent('subscription_access_detected', {
+          plan: planOut,
+          selected_plan: planOut,
+          billing_cycle: cadence || undefined,
+          status: statusOut,
+          source: 'account_load',
+        });
       }
     } catch (_e) {}
 
@@ -429,11 +520,17 @@ async function init() {
     const sp = new URLSearchParams(typeof location !== 'undefined' ? location.search : '');
     if (sp.get('session_id') && sessionStorage.getItem('wl_ph_stripe_return_v1') !== '1') {
       sessionStorage.setItem('wl_ph_stripe_return_v1', '1');
-      captureEvent('subscription_access_detected', { plan: 'unknown', status: 'unknown', source: 'post_checkout' });
+      captureEvent('subscription_access_detected', {
+        plan: 'unknown',
+        selected_plan: 'unknown',
+        status: 'unknown',
+        source: 'post_checkout',
+      });
     }
   } catch (_e) {}
 
   applyPlanPriceLabels();
+  bindAccountMarketingEmailForm();
 
   const planActions = document.getElementById('wl-account-plan-actions');
   if (planActions) {

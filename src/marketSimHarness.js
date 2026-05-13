@@ -41,7 +41,7 @@
   function getPlayableMarketIds() {
     return typeof ALL_PLAYABLE_MARKET_IDS !== 'undefined'
       ? ALL_PLAYABLE_MARKET_IDS
-      : ['newyork', 'losangeles', 'chicago', 'atlanta', 'nashville', 'seattle', 'wichita'];
+      : ['newyork', 'losangeles', 'chicago', 'seattle', 'sanfrancisco', 'atlanta', 'nashville', 'wichita'];
   }
   function getMegaBenchmarkMarketIds() {
     return typeof DEV_BENCHMARK_MEGA_MARKET_IDS !== 'undefined'
@@ -1519,6 +1519,9 @@
     var klass = (G.stations || []).find(function (s) {
       return s && s.isPublic && s.format === 'PUBLIC_CLASSICAL';
     });
+    var eclectic = (G.stations || []).find(function (s) {
+      return s && s.isPublic && s.format === 'PUBLIC_ECLECTIC';
+    });
     function row(st) {
       if (!st || !st.rat) return null;
       var sh = st.rat.share;
@@ -1533,6 +1536,7 @@
       nStations: r.n,
       PUBLIC_NEWS: row(news),
       PUBLIC_CLASSICAL: row(klass),
+      PUBLIC_ECLECTIC: row(eclectic),
     };
   }
 
@@ -1627,6 +1631,8 @@
                 newsRank: snap.PUBLIC_NEWS && snap.PUBLIC_NEWS.rank,
                 classShare: snap.PUBLIC_CLASSICAL && snap.PUBLIC_CLASSICAL.share,
                 classRank: snap.PUBLIC_CLASSICAL && snap.PUBLIC_CLASSICAL.rank,
+                eclecticShare: snap.PUBLIC_ECLECTIC && snap.PUBLIC_ECLECTIC.share,
+                eclecticRank: snap.PUBLIC_ECLECTIC && snap.PUBLIC_ECLECTIC.rank,
                 decade: decadeLabelPub(y),
               };
               samples.push(rec);
@@ -1645,8 +1651,10 @@
     }
 
     function summarize(fmtKey) {
-      var shareKey = fmtKey === 'PUBLIC_NEWS' ? 'newsShare' : 'classShare';
-      var rankKey = fmtKey === 'PUBLIC_NEWS' ? 'newsRank' : 'classRank';
+      var shareKey =
+        fmtKey === 'PUBLIC_NEWS' ? 'newsShare' : fmtKey === 'PUBLIC_CLASSICAL' ? 'classShare' : 'eclecticShare';
+      var rankKey =
+        fmtKey === 'PUBLIC_NEWS' ? 'newsRank' : fmtKey === 'PUBLIC_CLASSICAL' ? 'classRank' : 'eclecticRank';
       var byMarket = {};
       samples.forEach(function (r) {
         if (r[shareKey] == null || r[rankKey] == null) return;
@@ -1699,6 +1707,7 @@
 
     var newsSum = summarize('PUBLIC_NEWS');
     var classSum = summarize('PUBLIC_CLASSICAL');
+    var eclecticSum = summarize('PUBLIC_ECLECTIC');
 
     var lines = [];
     lines.push('══════════════════════════════════════════════════════════════');
@@ -1715,6 +1724,9 @@
     lines.push('');
     lines.push('PUBLIC CLASSICAL — mean share & rank');
     lines.push(JSON.stringify(classSum.rows, null, 2));
+    lines.push('');
+    lines.push('PUBLIC ECLECTIC — mean share & rank (markets with a third public outlet only)');
+    lines.push(JSON.stringify(eclecticSum.rows, null, 2));
     lines.push('');
     lines.push('--- By decade + market (PUBLIC_NEWS): mean share %, mean rank, % periods rank≤5 / ≤10 ---');
     Object.keys(newsSum.byMarket).forEach(function (mk) {
@@ -2276,6 +2288,7 @@
     if (!inFm) return { bucket: 'unmapped', publicKind: null, knownInFM: false };
     if (fmt === 'PUBLIC_NEWS') return { bucket: 'public', publicKind: 'news', knownInFM: true };
     if (fmt === 'PUBLIC_CLASSICAL') return { bucket: 'public', publicKind: 'classical', knownInFM: true };
+    if (fmt === 'PUBLIC_ECLECTIC') return { bucket: 'public', publicKind: 'eclectic', knownInFM: true };
     var map = {
       TOP40: 'top40_pop',
       CHR: 'top40_pop',
@@ -2579,7 +2592,7 @@
     lines.push('══════════════════════════════════════════════════════════════');
     lines.push('  FORMAT ECOLOGY / FORMAT ECONOMY (dev diagnostic)');
     lines.push('  Commercial stations: broad buckets + share + health (not gameplay).');
-    lines.push('  Public (PUBLIC_NEWS / PUBLIC_CLASSICAL) reported separately from commercial counts.');
+    lines.push('  Public (PUBLIC_NEWS / PUBLIC_CLASSICAL / PUBLIC_ECLECTIC) reported separately from commercial counts.');
     lines.push('  Deferred slots (_bpSlotDeferred) excluded; simulcast legs each count as one station.');
     lines.push('  Markets: ' + markets.join(', '));
     lines.push('  Runs/market: ' + numRunsPerMarket + ' · Record year ≥ ' + minRecordYear + ' · End ' + endYear);

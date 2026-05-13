@@ -18,6 +18,20 @@ function landingRedirectPlugin() {
           res.end();
           return;
         }
+        /* Clean URLs mirror production Express routes → same HTML entry as *.html */
+        const cleanToHtml = [
+          ['/pricing', '/pricing.html'],
+          ['/account', '/account.html'],
+          ['/play-signin', '/play-signin.html'],
+          ['/play-guest', '/play-guest.html'],
+        ];
+        for (const [clean, htmlPath] of cleanToHtml) {
+          if (pathOnly === clean || pathOnly === clean + '/') {
+            const q = req.url.includes('?') ? '?' + (req.url.split('?')[1] || '') : '';
+            req.url = htmlPath + q;
+            break;
+          }
+        }
         if (pathOnly === '/terms' || pathOnly === '/terms/') {
           try {
             const html = readFileSync(join(__dirname, 'legal', 'terms.html'), 'utf8');
@@ -59,12 +73,17 @@ function playHtmlClerkMetaPlugin(mode, env) {
   return {
     name: 'play-html-clerk-meta',
     enforce: 'pre',
-    transformIndexHtml(html) {
-      if (!html.includes('name="wl-require-clerk"')) return html;
-      return html.replace(
-        /<meta\s+name="wl-require-clerk"\s+content="[^"]*"\s*\/?>/i,
-        `<meta name="wl-require-clerk" content="${content}">`,
-      );
+    transformIndexHtml: {
+      order: 'pre',
+      handler(html, ctx) {
+        const pathStr = ctx?.path || ctx?.filename || '';
+        if (pathStr.includes('play-guest')) return html;
+        if (!html.includes('name="wl-require-clerk"')) return html;
+        return html.replace(
+          /<meta\s+name="wl-require-clerk"\s+content="[^"]*"\s*\/?>/i,
+          `<meta name="wl-require-clerk" content="${content}">`,
+        );
+      },
     },
   };
 }
@@ -183,7 +202,9 @@ export default defineConfig(({ command, mode }) => {
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
+        pricing: resolve(__dirname, 'pricing.html'),
         play: resolve(__dirname, 'play.html'),
+        'play-guest': resolve(__dirname, 'play-guest.html'),
         'play-signin': resolve(__dirname, 'play-signin.html'),
         account: resolve(__dirname, 'account.html'),
       },

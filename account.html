@@ -3,7 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My account — Airwave Empire</title>
+  <link rel="canonical" href="https://airwaveempire.com/account" />
+  <meta name="description" content="Manage your Airwave Empire profile, subscription, and Stripe billing. Sign in securely to upgrade plans or open the customer portal." />
+  <meta property="og:title" content="Account — Airwave Empire" />
+  <meta property="og:description" content="Manage your profile and subscription—billing through Stripe checkout and the customer portal." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://airwaveempire.com/account" />
+  <meta property="og:image" content="https://airwaveempire.com/landing-images/account-subscription-hero.png" />
+  <meta property="og:image:alt" content="Airwave Empire account and membership" />
+  <meta property="og:site_name" content="Airwave Empire" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Account — Airwave Empire" />
+  <meta name="twitter:description" content="Manage your profile and subscription—Stripe billing and customer portal." />
+  <meta name="twitter:image" content="https://airwaveempire.com/landing-images/account-subscription-hero.png" />
+  <meta name="robots" content="index, follow" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <title>Account — Airwave Empire</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet" />
   <style>
@@ -57,9 +72,9 @@
       <a href="/" class="wordmark text-3xl sm:text-4xl md:text-5xl font-normal tracking-[0.12em] sm:tracking-[0.18em] md:tracking-[0.22em] uppercase gold min-w-0">AIRWAVE EMPIRE</a>
       <nav class="flex items-center gap-4 md:gap-6 text-sm uppercase tracking-[0.14em] text-stone-300 flex-wrap">
         <a href="/" class="hover:text-white">Home</a>
-        <a href="/#pricing" class="hover:text-white">Pricing</a>
+        <a href="/pricing" class="hover:text-white">Pricing</a>
         <a href="/play.html" id="wl-account-nav-play" class="hover:text-white">Play</a>
-        <a href="/account.html" class="text-amber-200/90 font-semibold">Account</a>
+        <a href="/account" class="text-amber-200/90 font-semibold">Account</a>
       </nav>
     </div>
   </header>
@@ -279,6 +294,34 @@
 
         <p id="wl-account-billing-err" class="mt-6 text-red-400/90 text-sm hidden"></p>
       </div>
+    </div>
+
+    <div class="panel rounded-2xl p-5 sm:p-6 mt-6">
+      <p class="gold text-sm uppercase tracking-[0.18em] mb-1">Updates</p>
+      <h2 class="text-xl md:text-2xl font-black uppercase tracking-tight">Email newsletter</h2>
+      <p class="mt-3 text-stone-400 text-sm leading-relaxed max-w-2xl">
+        Optional. Occasional game updates and release notes. Unsubscribe anytime.
+      </p>
+      <form id="wl-account-marketing-email-form" class="mt-4 flex flex-col sm:flex-row gap-3 items-stretch sm:items-end max-w-xl">
+        <label class="flex-1">
+          <span class="block text-xs uppercase tracking-[0.18em] text-stone-500 mb-1">Email</span>
+          <input
+            id="wl-account-marketing-email"
+            type="email"
+            inputmode="email"
+            autocomplete="email"
+            placeholder="you@example.com"
+            class="w-full rounded-lg border border-stone-700 bg-stone-950/60 px-4 py-3 text-stone-100 placeholder:text-stone-600 focus:outline-none focus:ring-2 focus:ring-amber-600/40"
+          />
+        </label>
+        <button
+          type="submit"
+          class="gold-bg rounded-lg px-5 py-3 font-black uppercase tracking-[0.14em] text-sm hover:brightness-110 transition-all"
+        >
+          Sign up
+        </button>
+      </form>
+      <p id="wl-account-marketing-email-status" class="mt-3 text-sm text-stone-400" aria-live="polite"></p>
     </div>
 
     <div class="panel rounded-2xl p-4 sm:p-6 mt-6">
