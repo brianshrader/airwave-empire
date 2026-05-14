@@ -2939,7 +2939,7 @@ const DECADE_NAMES={1979:'THE SEVENTIES',1989:'THE EIGHTIES',1999:'THE NINETIES'
 
 // ── TALENT & GENERATION ───────────────────────────────────────────
 /** Free-agent ask ranges by daypart × tier ($/yr, pre-inflation). Wider bands = more “shopping” feel; still ordered star > mid > entry. */
-const SAL={morningDrive:{entry:[9500,24000],mid:[19000,42000],star:[32000,75000]},afternoonDrive:{entry:[7500,20000],mid:[14000,34000],star:[24000,58000]},midday:{entry:[6000,16000],mid:[11000,28000],star:[18000,42000]},evening:{entry:[6500,17000],mid:[12000,32000],star:[21000,48000]},overnight:{entry:[4000,10000],mid:[6500,18000],star:[11000,26000]}};
+const SAL={morningDrive:{entry:[9500,24000],mid:[19000,42000],star:[32000,75000]},afternoonDrive:{entry:[7500,20000],mid:[14000,34000],star:[24000,58000]},midday:{entry:[6000,16000],mid:[11000,28000],star:[18000,42000]},evening:{entry:[6500,17000],mid:[12000,32000],star:[21000,48000]},overnight:{entry:[5500,14000],mid:[9500,24000],star:[16000,38000]}};
 /** True on-air quality bands (scouting noise layered on top; pool skews middling vs legacy). */
 const QRG={entry:[24,52],mid:[36,66],star:[50,82]};
 /** Periods on-air (~4 calendar years at 2 periods/yr) to fold hidden performance into slot quality. */
@@ -4017,7 +4017,7 @@ function mkTal(slot,fmt,tier='mid',year=1970,nameCtx){
     : 1.0;
   // Outside AM drive, spoken-word hosts still anchor dayparts (esp. large-market N/T evenings).
   if(isTalkFmt && !isAllNews && slot !== 'morningDrive'){
-    const bump = slot === 'afternoonDrive' ? 0.055 : slot === 'midday' ? 0.045 : slot === 'evening' ? 0.085 : slot === 'overnight' ? 0.03 : 0.04;
+    const bump = slot === 'afternoonDrive' ? 0.055 : slot === 'midday' ? 0.045 : slot === 'evening' ? 0.085 : slot === 'overnight' ? 0.05 : 0.04;
     talkDiscount = Math.min(0.95, talkDiscount + bump);
   }
 
@@ -12084,6 +12084,14 @@ function applyListeningHoursShareFromAqh(stations,G){
     const a=Math.max(0,Number.isFinite(raw)?raw:0);
     s.rat.share=Math.round(a*inv*1e8)/1e8;
   }
+  if(G){
+    for(const s of rated){
+      if(s.format==='BROKERED_PROGRAMMING'&&stationBrokeredEconomicsActive(s,G)){
+        const cap=0.012;
+        if((s.rat.share||0)>cap)s.rat.share=cap;
+      }
+    }
+  }
 }
 /**
  * Competition ranking by `rat.share` (ties share one rank). Deterministic tie-break: station id.
@@ -13751,6 +13759,34 @@ function isSimulcastProgrammingReceiver(s,G){
   const src=simulcastProgrammingSourceStation(s,G);
   return !!(src&&src.id!==s.id);
 }
+/** Progressive sales/G&A load index used for simulcast receiver sales trim (matches calcRev big-biller ramp). */
+function simulcastReceiverSalesAdminCostMult(totalRev){
+  const bigK=_smoothstep(140000,900000,totalRev||0);
+  return Math.min(0.54,0.42+0.14*bigK);
+}
+/**
+ * Explicit simulcast programming receiver (not legacy unflagged mutual pairs): lean-license cost multipliers in {@link calcRev}.
+ * Source leg and normal clusters are unaffected.
+ */
+function simulcastReceiverExpensePolicy(s,G){
+  if(!s||!G||!isSimulcastProgrammingReceiver(s,G))return null;
+  return{
+    staffFacEfficiencyMult:0.38,
+    groupOverheadMult:0.58,
+    opsFloorMult:0.30,
+    effPromoMult:0.24,
+    effProgMult:0.24,
+    identityPnlMult:0.20,
+    salesAdminMultForRev:simulcastReceiverSalesAdminCostMult,
+  };
+}
+/** Identity budget charged to P&L; does not mutate stored s.identityBudget. */
+function stationIdentityBudgetPnlContribution(s,G){
+  const b=Math.round(Number(s?.identityBudget)||0);
+  if(!b)return 0;
+  if(G&&isSimulcastProgrammingReceiver(s,G))return Math.round(b*0.20);
+  return b;
+}
 /** Stable key for AI virtual debt: corp cluster, simulcast pair, or solo station. */
 function rivalPortfolioDebtKey(s){
   if(!s||s.isPlayer)return null;
@@ -13947,7 +13983,7 @@ function applyBudgetAusterityOperatingTrim(s,fixedCost,opsFloor,salesAdminCost,a
   };
 }
 /** After seedRev rescales revenue, salesAdmin and eff promo/prog are rebuilt from full rates — re-apply stress trims and rebuild cost/ebitda. fix/ops/contest/stream stay as post–calcRev values. */
-function reapplyBudgetAusterityAfterSeedRev(s){
+function reapplyBudgetAusterityAfterSeedRev(s,G){
   if(s.isPublic)return;
   const bs=wlBudgetAusterityDisabled()?0:Math.max(0,Math.min(1,s.budgetStress||0));
   let sa=s.fin.salesAdmin||0;
@@ -13961,7 +13997,8 @@ function reapplyBudgetAusterityAfterSeedRev(s){
     s.fin.effPromo=ep;
     s.fin.effProg=epg;
   }
-  s.fin.cost=(s.fin.fix||0)+(s.fin.tal||0)+sa+(s.fin.opsFloor||0)+ep+epg+(s.identityBudget||0)+(s.fin.streamUpkeep||0)+(s.fin.simulcastProgFee||0)+(s.fin.syndicationRights||0)+(s.fin.aiLoanInterest||0)+(s.fin.amHitsContestOpex||0);
+  const identPnl=typeof G!=='undefined'&&G?stationIdentityBudgetPnlContribution(s,G):(s.identityBudget||0);
+  s.fin.cost=(s.fin.fix||0)+(s.fin.tal||0)+sa+(s.fin.opsFloor||0)+ep+epg+identPnl+(s.fin.streamUpkeep||0)+(s.fin.simulcastProgFee||0)+(s.fin.syndicationRights||0)+(s.fin.aiLoanInterest||0)+(s.fin.amHitsContestOpex||0);
   s.fin.ebitda=(s.fin.rev||0)-s.fin.cost;
 }
 
@@ -14430,11 +14467,12 @@ function calcRev(s,G){
   const playerPaired=!!(s.simulcastWith&&clusterPeers.some(st=>st.id===s.simulcastWith));
   const progSrcStation=simulcastProgrammingSourceStation(s,G);
   const isProgReceiver=isSimulcastProgrammingReceiver(s,G);
+  const _simPol=simulcastReceiverExpensePolicy(s,G);
   const legacySimPair=playerPaired&&simPartner&&s._simulcastSource!==true&&simPartner._simulcastSource!==true;
   let efficiencyMult;
   if(isProgReceiver){
-    // Receiver: second stick — mostly transmitter/site + lean local ops (~40–48% of standalone fixed footprint)
-    efficiencyMult=0.44;
+    // Receiver: second stick — transmitter/site + lean shared ops (see simulcastReceiverExpensePolicy).
+    efficiencyMult=_simPol?_simPol.staffFacEfficiencyMult:0.38;
   }else if(legacySimPair){
     // Legacy saves with no explicit source flag: both stations very lean (pre-flag behavior)
     efficiencyMult=0.15;
@@ -14521,6 +14559,7 @@ function calcRev(s,G){
     regCostScaled=Math.round(regCostScaled*0.92);
     sfCostScaled=Math.round(sfCostScaled*0.78);
   }
+  if(_simPol)groupOverheadHalf=Math.round(groupOverheadHalf*_simPol.groupOverheadMult);
   let fixedCost=staffCost+facCost+regCostScaled+sfCostScaled+groupOverheadHalf;
   // ── DIGITAL REVENUE (stream launch = participation; includes streaming + on-demand/talent extension) ──
   ensureStationDigitalState(s);
@@ -14686,7 +14725,7 @@ function calcRev(s,G){
     fixedCost=Math.round(fixedCost*_smSurvScale.fixedMult);
   }
   s._leanAmSurvivalReliefSales=staffingAutomationEconomicsActive(s,G)?_autoSurv.sales:1;
-  const rightsHalfPeriod=syndicationFeesForStation(s,G)+talkSyndicatedFillHalfPeriodCost(s,G);
+  const rightsHalfPeriod=syndicationFeesForStation(s,G)+(isProgReceiver?0:talkSyndicatedFillHalfPeriodCost(s,G));
   const salesRate=year<1980?0.18:year<1990?0.17:year<2005?0.16:0.15;
   const adminRate=year<1980?0.12:year<1990?0.11:year<2005?0.10:0.09;
   // Era trim + late squeeze: smooth ramp so 1980s–90s carry a bit more G&A than the 1970s baseline.
@@ -14755,6 +14794,10 @@ function calcRev(s,G){
       salesAdminCost=Math.round(salesAdminCost*(1-stackEase*0.36));
     }
   }
+  if(_simPol){
+    salesAdminCost=Math.round(salesAdminCost*_simPol.salesAdminMultForRev(totalRev));
+    opsFloor=Math.round(opsFloor*_simPol.opsFloorMult);
+  }
   // Very low realized billing (pre–seedRev): taper fixed footprint for early FM music so weak sticks aren’t crushed by market-scaled overhead alone.
   if(year<1980&&s.sig.type==='FM'&&!TALK_FMTS.includes(s.format)&&totalRev<120000){
     const _lbu=Math.max(0,Math.min(1,totalRev/120000));
@@ -14775,6 +14818,10 @@ function calcRev(s,G){
     competitiveBaselineProg=bp.prog;
     effPromo=Math.max(effPromo,bp.promo);
     effProg=Math.max(effProg,bp.prog);
+  }
+  if(_simPol){
+    effPromo=Math.round(effPromo*_simPol.effPromoMult);
+    effProg=Math.round(effProg*_simPol.effProgMult);
   }
   s.fin.rev=totalRev;
   s.fin.streamRev=isProgReceiver&&progSrcStation?Math.round(streamRev*ccBonus*daPenalty):streamRev;
@@ -14843,7 +14890,7 @@ function calcRev(s,G){
   s.fin.streamUpkeep=streamUpkeep;
   s.fin.amHitsContestOpex=amHitsContestOpex;
   s.fin.austerityStress=_aust.bs;
-  s.fin.cost=fixedCost+talCost+salesAdminCost+opsFloor+effPromo+effProg+(s.identityBudget||0)+streamUpkeep+simulcastProgFee+rightsHalfPeriod+aiLoanInt+amHitsContestOpex;
+  s.fin.cost=fixedCost+talCost+salesAdminCost+opsFloor+effPromo+effProg+stationIdentityBudgetPnlContribution(s,G)+streamUpkeep+simulcastProgFee+rightsHalfPeriod+aiLoanInt+amHitsContestOpex;
   s.fin.ebitda=s.fin.rev-s.fin.cost;
   if(typeof G!=='undefined'&&G._econDebugIds&&Array.isArray(G._econDebugIds)&&G._econDebugIds.includes(s.id)){
     const _commDbg=[...(G.stations||[])].filter(st=>st&&!st._bpSlotDeferred&&!stationIsNoncommercialInstitutional(st)).sort((a,b)=>(b.rat?.share||0)-(a.rat?.share||0));
@@ -14964,6 +15011,7 @@ function seedRev(stations,G){
       if(s.fin.streamRev!=null)s.fin.streamRev=Math.round(s.fin.streamRev*eff*scale);
       if(s.fin.digitalRev!=null)s.fin.digitalRev=Math.round(s.fin.digitalRev*eff*scale);
       if(s.fin.salesAdminRate!=null){
+        const _rp=simulcastReceiverExpensePolicy(s,G);
         s.fin.salesAdmin=Math.round(s.fin.rev*s.fin.salesAdminRate);
         if(staffingAutomationEconomicsActive(s,G)){
           const t=stationAutomationScore(s,G);
@@ -14971,6 +15019,7 @@ function seedRev(stations,G){
           const _ls=s._leanAmSurvivalReliefSales;
           if(typeof _ls==='number'&&_ls>0&&_ls<1)s.fin.salesAdmin=Math.round(s.fin.salesAdmin*_ls);
         }
+        if(_rp)s.fin.salesAdmin=Math.round(s.fin.salesAdmin*_rp.salesAdminMultForRev(s.fin.rev||0));
         const pc=promoBudgetCapForPeriod(G),pgc=progBudgetCapForPeriod(G);
         let ep=Math.min(s.ops?.promo||0,pc),epg=Math.min(s.ops?.progBudget||0,pgc);
         let cbp=0,cbg=0;
@@ -14981,9 +15030,13 @@ function seedRev(stations,G){
         }
         s.fin.effPromo=ep;
         s.fin.effProg=epg;
+        if(_rp){
+          s.fin.effPromo=Math.round(s.fin.effPromo*_rp.effPromoMult);
+          s.fin.effProg=Math.round(s.fin.effProg*_rp.effProgMult);
+        }
         s.fin.competitiveBaselinePromo=cbp;
         s.fin.competitiveBaselineProg=cbg;
-        reapplyBudgetAusterityAfterSeedRev(s);
+        reapplyBudgetAusterityAfterSeedRev(s,G);
       }else{
         s.fin.ebitda=s.fin.rev-s.fin.cost;
       }
@@ -22383,7 +22436,7 @@ function openScenSelect(localSave, opts){
     else if(_planSlugScen==='trial_user'&&_trialLock&&_trialLock!==id)
       lockTitle='Your free trial uses one market — resume that save or subscribe to play other cities.';
     else if(_planSlugScen==='free_user')lockTitle='Upgrade in Account to play markets beyond Atlanta.';
-    else if(_planSlugScen==='starter'&&(id==='seattle'||id==='wichita'))lockTitle='Seattle and Wichita are Pro markets — open Account to upgrade.';
+    else if(_planSlugScen==='starter'&&(id==='seattle'||id==='wichita'||id==='sanfrancisco'))lockTitle='Seattle, San Francisco, and Wichita are Pro markets — open Account to upgrade.';
     else if(id==='seattle')lockTitle='Seattle is included with Pro.';
     return `<button type="button" class="abt${sel} scen-mkt-locked" disabled title="${lockTitle}" style="font-size:13px;padding:6px 12px;letter-spacing:1px;opacity:0.5;cursor:not-allowed" aria-disabled="true">${m.label} <span style="font-size:11px" aria-hidden="true">🔒</span></button>`;
   }).join('');
@@ -23757,7 +23810,8 @@ function consultantReportBookLabel(year,period){
   return `${year||1970} ${PERIODS[(period||1)-1]}`;
 }
 function renderResearchModalBody(sid,listenerNonce){
-  const s=G.stations.find(st=>st.id===sid);
+  const sidUse=ensureOpsSourceSid(sid);
+  const s=G.stations.find(st=>st.id===sidUse);
   if(!s)return'';
   let cost=researchConsultantReportCost(s,G);
   const tutorialFree=isTutorialTurnaroundScen()&&G.tutorialAct===2&&!G._tutorialConsultantDone&&MP.mode!=='live';
@@ -24159,6 +24213,8 @@ function buildResearchReport(s,G){
   const fmd=FM[canonicalHitsFormatKey(s.format)]||{};
   const year=G.year;
   const fmp=G.fmp;
+  const myPartner=simulcastPartnerStation(s);
+  const exclCluster=new Set([s.id,myPartner?.id].filter(Boolean));
 
   // ── SIGNAL HEALTH ──
   const isAM=s.sig.type==='AM'&&!s.fmBooster;
@@ -24179,8 +24235,8 @@ function buildResearchReport(s,G){
 
   // ── COMPETITION ──
   const compFmts=FMT_COMPETITION[s.format]||[];
-  const directCompetitors=G.stations.filter(o=>o&&!o._bpSlotDeferred&&o.id!==s.id&&compFmts.includes(o.format));
-  const sameFormat=G.stations.filter(o=>o&&!o._bpSlotDeferred&&o.id!==s.id&&o.format===s.format);
+  const directCompetitors=G.stations.filter(o=>o&&!o._bpSlotDeferred&&!exclCluster.has(o.id)&&compFmts.includes(o.format));
+  const sameFormat=G.stations.filter(o=>o&&!o._bpSlotDeferred&&!exclCluster.has(o.id)&&o.format===s.format);
   const totalCompCount=directCompetitors.length;
   const competitionBleed=Math.min(0.22,COMPETITION_BLEED*(totalCompCount/5));
 
@@ -24214,13 +24270,13 @@ function buildResearchReport(s,G){
     else if(year>fs2.peak){const t=(year-fs2.peak)/(fs2.dead-fs2.peak);eraViab=Math.max(0.02,1-(3*t*t-2*t*t*t)*0.98);}
   }
 
-  // ── RANK vs COMPETITION ──
-  const allByShare=[...G.stations].filter(s=>s&&!s._bpSlotDeferred&&s.rat).sort((a,b)=>b.rat.share-a.rat.share);
-  const rank=allByShare.findIndex(st=>st.id===s.id)+1;
-  const total=allByShare.length;
+  // ── RANK vs COMPETITION (deduped simulcast rows — same basis as market ranker) ──
+  const combRows=buildSimulcastCombinedRankRows(G.stations);
+  const rank=combinedMarketRankForStation(s,combRows)||combRows.length+1;
+  const total=combRows.length;
 
   const call=callDisplay(s);
-  const comm=G.stations.filter(o=>o&&!o._bpSlotDeferred&&!stationIsNoncommercialInstitutional(o)&&o.rat&&o.id!==s.id);
+  const comm=G.stations.filter(o=>o&&!o._bpSlotDeferred&&!stationIsNoncommercialInstitutional(o)&&o.rat&&!exclCluster.has(o.id));
   const myDq=researchStationShareDelta(s);
   let memoNarrowDifferentiation=false;
 
@@ -27453,28 +27509,34 @@ function showCompIntel(sid){
     const val=dr.val||0;
     const poleAName=dr.cfg.poleA?.name||'Conservative';
     const poleBName=dr.cfg.poleB?.name||'Aggressive';
-    const abs=Math.abs(val);
-    if(abs<15){
+    const distFromMid=Math.abs(val-50);
+    if(distFromMid<15){
       strategyLine=`<span style="color:var(--off)">Holding center — no strong lean</span>`;
     } else {
       const pole=val>50?poleBName:poleAName;
-      const strength=abs>=75?'strongly leaning':abs>=50?'leaning':'slightly leaning';
+      const strength=distFromMid>=75?'strongly leaning':distFromMid>=50?'leaning':'slightly leaning';
       strategyLine=`<span style="color:var(--amb)">${strength} toward <strong>${pole}</strong></span>`;
     }
   } else {
     strategyLine=`<span style="color:var(--mut)">Standard format — no positioning drift</span>`;
   }
 
-  // Top demographic
+  // Top demographic — use operational book (simulcast receiver inherits source leg’s cohort curve)
+  const ratCurForDemo=op.rat?.cur||s.rat?.cur||{};
   const topCoh=COH.reduce((best,c)=>{
-    const sh=s.rat.cur[c]?.share||0;
-    return sh>(s.rat.cur[best]?.share||0)?c:best;
+    const sh=ratCurForDemo[c]?.share||0;
+    return sh>(ratCurForDemo[best]?.share||0)?c:best;
   },COH[0]);
   const cohLabels={'12-17':'Teens (12–17)','18-24':'Young Adults (18–24)','25-34':'Adults 25–34','35-49':'Adults 35–49','50-64':'Adults 50–64','65+':'Seniors 65+'};
+  const demoSliderLine=(typeof op.demoLean==='number'&&!Number.isNaN(op.demoLean))
+    ?`<div class="sr"><span class="lb">Demo slider</span><span class="vl" style="font-size:14px;color:var(--mut)">${leanLabel(op.demoLean)} — audience targeting you set in station admin (book “core demo” above is measured listening)</span></div>`
+    :'';
 
-  // Competition: who's competing for same listeners
+  // Competition: who's competing for same listeners (exclude co-owned simulcast partner — same feed, not a rival)
   const competitors=(FMT_COMPETITION[op.format]||[]);
-  const sameFormat=G.stations.filter(o=>o.id!==sid&&competitors.includes(o.format));
+  const intelPartner=simulcastPartnerStation(s);
+  const intelExcl=new Set([sid,intelPartner?.id].filter(Boolean));
+  const sameFormat=G.stations.filter(o=>o&&!o._bpSlotDeferred&&!intelExcl.has(o.id)&&competitors.includes(o.format));
   const compText=sameFormat.length
     ?sameFormat.map(o=>`<span style="color:${o.isPlayer?'var(--amb)':'var(--mut)'}">${o.callLetters}</span>`).join(', ')
     :'None in direct competition';
@@ -27486,6 +27548,17 @@ function showCompIntel(sid){
   const corpLine=s.corpOwner
     ?`<div class="sr"><span class="lb">Ownership</span><span class="vl" style="color:${s.corpColor||'#9ca3af'}">${s.corpName||'Corporate'}</span></div>`
     :`<div class="sr"><span class="lb">Ownership</span><span class="vl" style="color:var(--mut)">${rivalOwnershipLabel(s,G,isOwn)}</span></div>`;
+
+  const intelBookShare01=bookIntel
+    ?(()=>{
+      const p=simulcastPartnerStation(s);
+      if(p&&p.rat){
+        if(isOwn&&mpIsMe(p))return stationCardSimulcastCombinedShare01(s,p);
+        if(isHumanRival&&p.isPlayer&&(MP.mode!=='live'||p._mpOwner===s._mpOwner))return stationCardSimulcastCombinedShare01(s,p);
+      }
+      return stationCardDisplayShare01(s);
+    })()
+    :(Number(s.rat?.share)||0);
 
   document.getElementById('ci-title').textContent=`${s.callLetters} — ${isOwn?'STATION INTEL':'COMPETITOR INTEL'}`;
   const intelStory=!isOwn?competitorIntelStoryLine(s):'';
@@ -27515,12 +27588,13 @@ function showCompIntel(sid){
     </div>
     <div class="ms2" style="margin-top:12px">
       <div class="msh">RATINGS & REVENUE</div>
-      <div class="sr"><span class="lb">Overall Share</span><span class="vl amb">${pct(bookIntel?stationCardDisplayShare01(s):s.rat.share)}</span></div>
+      <div class="sr"><span class="lb">Overall Share</span><span class="vl amb">${pct(intelBookShare01)}</span></div>
       <div class="sr"><span class="lb">AQH Listeners</span><span class="vl">${s.rat.aqh.toLocaleString()}</span></div>
       <div class="sr"><span class="lb">Trend</span><span class="vl" style="color:${trendColor}">${trend}</span></div>
       ${intelStory?`<div class="sr"><span class="lb">Likely story</span><span class="vl" style="font-size:14px;color:var(--mut);line-height:1.45">${intelStory}</span></div>`:''}
       <div class="sr"><span class="lb">${isOwn||isHumanRival?'Revenue / Period':'Est. Revenue / Period'}</span><span class="vl">${f$((isOwn||isHumanRival)?Math.round((s.fin?.rev||0)/50000)*50000:Math.round(estRev/50000)*50000)}</span></div>
       <div class="sr"><span class="lb">Core Demographic</span><span class="vl">${cohLabels[topCoh]||topCoh}</span></div>
+      ${demoSliderLine}
     </div>
     <div class="ms2" style="margin-top:12px">
       <div class="msh">FORMAT POSITIONING</div>
@@ -28385,7 +28459,7 @@ function rHire(s, scrollAfter){
     const cur=s2.prog[HS.slot]?.talent;
     const slotQcur=Math.round(s2.prog[HS.slot]?.quality||0);
     const poachList=hireModalRivalPoachCandidates(HS.sid,HS.slot);
-    const freeRows=HS.pool.map((t,i)=>{const fitF=talentScoutFormatFit01(t,s2.format);const fit=Math.round(fitF*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const liftRaw=(q/100)*fitF*35;const liftDec=Math.round(liftRaw*10)/10;const newSlotQ=Math.min(100,Math.round(curSlotQ+liftRaw));const liftLbl=`${liftDec>=0?'+':''}${liftDec.toFixed(1)}`;const hStar=t.superstar===true?'★ ':'';let deltaHtml='';if(HS._hireKind==='replace'&&cur){const dQ=q-Math.round(cur.quality);const curW=talentDestFormatFitSummary(cur,s2.format).words;const newW=talentDestFormatFitSummary(t,s2.format,{scout:true}).words;const dSal=t.salary-cur.salary;deltaHtml=`<div style="font-size:12px;color:var(--amb);margin-top:6px;font-family:var(--ft);line-height:1.55"><div>Δ Talent rating: ${dQ>=0?'+':''}${dQ}</div><div>Δ Format fit: ${curW} → ${newW}</div><div>Δ Salary: ${dSal>=0?'+':''}${f$(dSal)}/yr</div></div>`;}return `<div class="to to-hire${HS.sel===i&&!HS.poachRivalId?' sel':''}" onclick="pickTal(${i})"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-hire',`${callDisplay(s2)} · ${SL[HS.slot]} · hire list`)}</div><div style="flex:1;min-width:0"><div class="ton">${hStar}${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div>${deltaHtml}<div class="tost"><div><span class="tosl">Talent score</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">Format fit</span><span class="tosv ${fc}">${fl}</span></div><div><span class="tosl" title="After hire: current slot ${curSlotQ} + lift (${liftLbl} pts), rounded, max 100 — same formula as confirm hire.">Projected slot quality</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ} <span style="font-size:12px;color:var(--mut);font-family:var(--ft);font-weight:400">(${liftLbl})</span></span></div></div></div></div><div class="to-hire-side"><span class="tocl">Pay/yr</span><span class="toc">${f$(t.salary)}/yr</span></div></div>`;}).join('');
+    const freeRows=HS.pool.map((t,i)=>{const fitF=talentScoutFormatFit01(t,s2.format);const fit=Math.round(fitF*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const liftRaw=(q/100)*fitF*35;const liftDec=Math.round(liftRaw*10)/10;const newSlotQ=Math.min(100,Math.round(curSlotQ+liftRaw));const liftLbl=`${liftDec>=0?'+':''}${liftDec.toFixed(1)}`;const hStar=t.superstar===true?'★ ':'';let deltaHtml='';if(HS._hireKind==='replace'&&cur){const dQ=q-Math.round(cur.quality);const curW=talentDestFormatFitSummary(cur,s2.format).words;const newW=talentDestFormatFitSummary(t,s2.format,{scout:true}).words;const dSal=t.salary-cur.salary;deltaHtml=`<div style="font-size:12px;color:var(--amb);margin-top:6px;font-family:var(--ft);line-height:1.55"><div>Δ Talent rating: ${dQ>=0?'+':''}${dQ}</div><div>Δ Format fit: ${curW} → ${newW}</div><div>Δ Salary: ${dSal>=0?'+':''}${f$(dSal)}/yr</div></div>`;}return `<div class="to to-hire${HS.sel===i&&!HS.poachRivalId?' sel':''}" onclick="pickTal(${i})"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-hire',`${callDisplay(s2)} · ${SL[HS.slot]} · hire list`)}</div><div style="flex:1;min-width:0"><div class="ton">${hStar}${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div>${deltaHtml}<div class="tost"><div><span class="tosl">Talent score</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">Format fit</span><span class="tosv ${fc}">${fl}</span></div><div><span class="tosl" title="Headline is rounded slot quality, max 100. The parenthetical is uncapped model lift (talent×format fit×scale); when several candidates show → 100, compare lifts or raw blend.">Projected slot quality</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ} <span style="font-size:12px;color:var(--mut);font-family:var(--ft);font-weight:400">(${liftLbl} uncapped lift)</span></span>${newSlotQ>=100&&(curSlotQ+liftRaw)>100.001?'<span style="display:block;font-size:11px;color:var(--mut);margin-top:3px;font-family:var(--ft)">Raw blend ~'+(Math.round((curSlotQ+liftRaw)*10)/10).toFixed(1)+' before 100 cap.</span>':''}</div></div></div></div><div class="to-hire-side"><span class="tocl">Pay/yr</span><span class="toc">${f$(t.salary)}/yr</span></div></div>`;}).join('');
     const rivalRows=poachList.map(({st,sd:rsd})=>{
       const rt=rsd.talent;
       const fit=Math.round(talentScoutFormatFit01(rt,s2.format)*100);
@@ -28405,7 +28479,7 @@ function rHire(s, scrollAfter){
     const curBox=cur?`<div class="ibox">Current: <strong>${cur.name}</strong> — quality ${Math.round(cur.quality)}, slot quality ${slotQcur}, ${f$(cur.salary)}/yr.</div>`:'';
     const freeSection=HS.pool.length
       ?`<div class="msh" style="margin-top:16px;margin-bottom:8px;font-size:13px;letter-spacing:.12em;color:var(--mut)">FREE AGENTS</div>
-    <p class="di">Here are four candidates for the role. <strong>Talent rating</strong> is how good they are. <strong>Format fit</strong> is how well they are suited to your station&apos;s current format. <strong>Projected slot quality</strong> is an estimate of the quality score for the daypart if the candidate is hired. <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:4px" onclick="openTalentMetricsHelp('slotboost')">Explain metrics</button></p>
+    <p class="di">Here are four candidates for the role. <strong>Talent rating</strong> is how good they are. <strong>Format fit</strong> is how well they are suited to your station&apos;s current format. <strong>Projected slot quality</strong> is rounded and capped at 100; the <strong>uncapped lift</strong> in parentheses explains why two people can both show <strong>→ 100</strong> with different numbers. <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:4px" onclick="openTalentMetricsHelp('slotboost')">Explain metrics</button></p>
     <div class="tg">${freeRows}</div>`
       :'';
     const rivalBlock=HS._hireKind==='replace_chairb'
@@ -36209,7 +36283,10 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra
     ${rightsLines.length?`<div class="ms2"><div class="msh">RIGHTS &amp; SYNDICATION (THIS PERIOD)</div>${rightsLines.map(t=>`<div class="sr"><span class="vl" style="color:var(--off);font-size:15px;font-family:var(--ft)">${t}</span></div>`).join('')}</div>`:''}
     ${ps.map(s=>{
       const op=simulcastOperationalSource(s);
-      const trd=formatPeriodSummaryShareTrendHtml(s.cp);
+      const pairPartner=simulcastPartnerStation(s);
+      const pairBothIn=!!(pairPartner&&ps.some(st=>st.id===pairPartner.id));
+      const trdStation=pairBothIn&&pairPartner?simulcastPairStationCardAnchor(s,pairPartner):s;
+      const trd=formatPeriodSummaryShareTrendHtml(trdStation.cp||s.cp);
       const stnMargin=s.fin.rev>0?Math.round((s.fin.ebitda/s.fin.rev)*100):0;
       // Match intuition: any positive station EBITDA = green; loss = red. (Old code used margin % only and painted thin profits red.)
       let mc='amb';
@@ -36227,8 +36304,13 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra
       }).map(k=>SL[k]);
       const simulcastLine=simSrc?`<div class="sr"><span class="lb" style="color:var(--mut)">Programming</span><span class="vl" style="font-size:14px;color:var(--off)">Supplied by <strong>${callDisplay(simSrc)}</strong> (simulcast)</span></div>`:'';
       const simFeeLine=(s.fin?.simulcastProgFee>0)?`<div class="sr"><span class="lb" style="color:var(--mut)">Simulcast program fee</span><span class="vl" style="font-size:14px;color:var(--off)">${f$(s.fin.simulcastProgFee)}/period <span style="color:var(--mut)">(in costs above)</span></span></div>`:'';
-      return `<div class="ms2"><div class="msh">${callDisplay(s)} — "${op.brand}" · ${fmtLabel(op.format)}${s.simulcastWith?' ◈':''}</div>
-        <div class="sr"><span class="lb">Share</span><span class="vl">${pct(s.rat.share)}${trd}</span></div>
+      const shComb=pairBothIn&&pairPartner?stationCardSimulcastCombinedShare01(s,pairPartner):null;
+      const shareBlock=shComb!=null
+        ?`<div class="sr"><span class="lb">Share</span><span class="vl">${pct(shComb)}${trd} <span style="font-size:12px;color:var(--mut)">(deduped AM/FM pair)</span></span></div>
+        <div class="sr"><span class="lb" style="color:var(--mut)">Book, this license</span><span class="vl" style="font-size:14px;color:var(--mut)">${pct(s.rat.share)}</span></div>`
+        :`<div class="sr"><span class="lb">Share</span><span class="vl">${pct(s.rat.share)}${trd}</span></div>`;
+      return `<div class="ms2"><div class="msh">${callDisplay(s)} — "${op.brand}" · ${fmtLabel(op.format)}${stationHasSimulcastLeg(s,G)?' ◈':''}</div>
+        ${shareBlock}
         <div class="sr"><span class="lb">Revenue / Costs</span><span class="vl">${f$(s.fin.rev)} / ${f$(s.fin.cost)}</span></div>
         <div class="sr"><span class="lb">EBITDA</span><span class="vl ${mc}">${s.fin.ebitda>=0?'+':''}${f$(s.fin.ebitda)} (${stnMargin}%)</span></div>
         ${(G.year||0)>=2005?`<div class="sr"><span class="lb" title="Digital reflects streaming and on-demand audience extension.">Digital revenue</span><span class="vl">${f$((s.fin.digitalRev??s.fin.streamRev)||0)}</span></div>
@@ -36320,7 +36402,7 @@ function openTalentMetricsHelp(section){
     <h4 id="tm-qualityshare" style="font-family:var(--fd);color:var(--amb);margin:22px 0 8px;font-size:14px;letter-spacing:0.12em">QUALITY SHARE (~%) — MANAGE TALENT</h4>
     <p class="di">Only on the <strong>Manage Talent</strong> box, the Quality Share shows the approximate share this daypart contributes to the station&apos;s overall programming quality. This is not audience share.</p>
     <h4 id="tm-slotboost" style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">PROJECTED SLOT QUALITY — HIRING</h4>
-    <p class="di">When hiring or replacing talent, they will get a projected slot quality score, based on the current score, talent quality and format fit. The <strong>(+N.N)</strong> beside a candidate is the expected lift in slot points so similar rounded totals don&apos;t hide different talent×fit mixes.</p>`;
+    <p class="di">When hiring or replacing talent, the list shows <strong>projected slot quality</strong> after rounding, capped at <strong>100</strong>. The <strong>(+N.N)</strong> is the <em>uncapped</em> model lift in points (talent × format fit × scale) — two candidates can both read <strong>→ 100</strong> with different lifts because the cap clips the headline number, not the parenthetical.</p>`;
   om('m-talent-help');
   if(section){
     requestAnimationFrame(()=>{
@@ -36420,7 +36502,7 @@ function buildContractEconObject(s, slot, t, isCoHost, primaryHost){
     }
   }
   // Leverage: strong hosts push for flexibility — short deals cost more annual; long commits are not a quiet discount.
-  if(renewalLeverage>=0.36){
+  if(renewalLeverage>=0.28){
     const L=renewalLeverage;
     const flex1=1+0.048*L+0.055*Math.max(0,L-0.55);
     const flex2=1+0.022*L+0.02*Math.max(0,L-0.62);
@@ -36514,7 +36596,7 @@ function contractExtensionAndCtaBlockHtml(sid, slot, t, isCoHost, ce, forManageT
           <div class="contract-ext-btn__line3${ce.ext3Cost?'':' contract-ext-btn__line3--sub'}">${ce.ext3Cost?'Raise +'+ce.r3+'%':'Morale too low'}</div>
         </button>
       </div>`;
-  const leverageRenewHint=extendUsedThisPeriod||typeof ce.renewalLeverage!=='number'||ce.renewalLeverage<0.52
+  const leverageRenewHint=extendUsedThisPeriod||typeof ce.renewalLeverage!=='number'||ce.renewalLeverage<0.42
     ?''
     :'<p class="di" style="margin:0 0 10px;font-size:13px;line-height:1.45;color:var(--mut)">Strong negotiating <strong>leverage</strong> — the one-year ask clears highest; longer deals are not a stealth discount.</p>';
   return`<div class="contract-extend-cta-block${forManageTalent?' contract-extend-cta-block--mt':''}" style="display:flex;flex-direction:column;gap:2px;margin-bottom:12px">
@@ -37704,8 +37786,16 @@ function rMkt(){
     return;
   }
   if(!ps)return;
-  // Pick the lead station (highest share among this player's stations)
-  const _leadStn = _myStns.reduce((best,s)=>(!best||s.rat.share>best.rat.share)?s:best, null) || ps;
+  const _port=_myStns;
+  const _combinedBook01=st=>{
+    const p=simulcastPartnerStation(st);
+    if(p&&_port.some(x=>x.id===p.id))return stationCardSimulcastCombinedShare01(st,p);
+    return stationCardDisplayShare01(st);
+  };
+  const _leadStn=_myStns.reduce((best,s)=>{
+    if(!best)return s;
+    return _combinedBook01(s)>_combinedBook01(best)?s:best;
+  },null)||ps;
   const _cohJs=coh=>String(coh).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
   // Total AQH per demo across the rated market — same mass as headline share, scoped to one age band.
   const _marketCohAqh={};
@@ -37744,7 +37834,13 @@ function rMkt(){
         return `<tr class="${_me?'dmb-mini-owned':''}"><td>${i+1}</td><td class="dmb-mini-call">${you}<span class="dmb-mini-clg" style="color:${mpStationColor(s)}">${callDisplay(s)}</span> <span class="dmb-mini-fmt">${fmtLabel(opSt.format)}</span></td><td class="dmb-mini-sh">${shn(csh)}</td></tr>`;
       }).join('')+
       `</tbody></table></div>`:'';
-    const leadDemo=_demoMkShare(_leadStn,coh);
+    const leadDemo=(()=>{
+      const p=simulcastPartnerStation(_leadStn);
+      if(!p||!_port.some(x=>x.id===p.id))return _demoMkShare(_leadStn,coh);
+      const tot=_marketCohAqh[coh]||0;
+      if(tot<=1e-12)return 0;
+      return((_leadStn.rat.cur?.[coh]?.aqh||0)+(p.rat.cur?.[coh]?.aqh||0))/tot;
+    })();
     return `<div class="dmb-coh${open?' dmb-coh--open':''}"><button type="button" class="cr dmb-coh-btn" aria-expanded="${open}" onclick="wlToggleDmbCoh('${_cohJs(coh)}')" title="Listening share within this age group (station AQH ÷ total market AQH for this demo — same scale as headline share)"><span class="crl">${coh}</span><div class="cbs">${bars}</div><span class="cp">${shn(leadDemo)}</span><span class="dmb-coh-chev" aria-hidden="true"></span></button>${subTable}</div>`;
   }).join('');
 }
