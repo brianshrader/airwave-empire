@@ -265,24 +265,25 @@ const FORMAT_SUNO = {
   RHYTHMIC: 'rhythm-pop club brightness',
   SOUL_RNB: 'groove-heavy R&B soul',
   SPANISH: 'Latin-radio bounce',
-  GOSPEL: 'gospel choir uplift',
+  GOSPEL: 'urban gospel lift, choir or solo, rhythmic inspirational',
   CLASSIC_HITS: 'singalong hooks, tight close',
   BEAUTIFUL_MUSIC: 'soft beds, orchestral pad',
   ADULT_STANDARDS: 'standards-era elegance',
   PUBLIC_NEWS: 'measured public-radio tone',
   PUBLIC_CLASSICAL: 'refined classical restraint',
   PUBLIC_ECLECTIC: 'warm eclectic noncomm',
+  PUBLIC_JAZZ: 'public jazz: straight-ahead swing, cultured metro noncomm (not smooth jazz)',
   RELIGIOUS_TEACHING: 'teaching-floor calm reverence',
   INDIETRONICA: 'quirky indie electronic',
   JAZZ: 'smooth jazz melodic hook',
 };
 
 /** Formats where the global “radio jingle era” defaults (brass, punchy VO) fight the intended sound. */
-const SOFT_IMAGERY_FORMATS = new Set(['BEAUTIFUL_MUSIC', 'MOR', 'ADULT_STANDARDS', 'PUBLIC_CLASSICAL']);
+const SOFT_IMAGERY_FORMATS = new Set(['BEAUTIFUL_MUSIC', 'MOR', 'ADULT_STANDARDS', 'PUBLIC_CLASSICAL', 'PUBLIC_JAZZ']);
 /** Guitar-forward formats — avoid decade ladder that assumes “top 40 brass sting” in the 60s–80s. */
 const ROCK_IMAGERY_FORMATS = new Set(['ALBUM_ROCK', 'CLASSIC_ROCK', 'ALT_ROCK']);
 /** Rhythmic pop / R&B — short ID can use groove; different from soft AC or news VO. */
-const RHYTHMIC_POP_FORMATS = new Set(['URBAN_CONTEMP', 'RHYTHMIC', 'SOUL_RNB', 'HOT_AC']);
+const RHYTHMIC_POP_FORMATS = new Set(['URBAN_CONTEMP', 'RHYTHMIC', 'SOUL_RNB', 'HOT_AC', 'GOSPEL']);
 /** Oldies / classic hits — avoid generic decade “top-40 brass” ladder. */
 const OLDIES_IMAGERY_FORMATS = new Set(['OLDIES', 'CLASSIC_HITS']);
 /** Formats that should sound like a spoken / VO-forward ID (no sung/spoken split). */
@@ -347,6 +348,9 @@ function vocalDeliveryTag(fmtKey, hasTagline) {
   }
   if (fmtKey === 'PUBLIC_ECLECTIC') {
     return `noncomm warmth; intimate vocal; ${SUNG_TAGLINE_AND_BRAND}`;
+  }
+  if (fmtKey === 'PUBLIC_JAZZ') {
+    return `public jazz ID; swing pocket or walking bass hint; brushed or light ride; ${SUNG_TAGLINE_AND_BRAND}; not smooth jazz`;
   }
   if (fmtKey === 'AAA') {
     return `AAA adult melodic lead; tasteful discovery guitars; ${SUNG_TAGLINE_AND_BRAND}; warm not teenage`;
@@ -483,6 +487,10 @@ function eraTagsForYearAndFormat(yr, fmtKey) {
 
   if (fmtKey === 'PUBLIC_ECLECTIC') {
     return { eraTag: 'Eclectic noncomm ID: fingerpicked warmth, mellow synth dust, campfire closeness.' };
+  }
+
+  if (fmtKey === 'PUBLIC_JAZZ') {
+    return { eraTag: 'Public jazz ID: upright bass warmth, brushed ride, small-club horn stabs, university-radio polish.' };
   }
 
   if (fmtKey === 'INDIETRONICA') {

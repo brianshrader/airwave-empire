@@ -37,7 +37,7 @@ const STRAF={
   TOP40:.91,RHYTHMIC:.88,HOT_AC:.80,URBAN_CONTEMP:.82,ALT_ROCK:.85,AAA:.76,
   ADULT_CONTEMP:.72,CLASSIC_ROCK:.68,CLASSIC_HITS:.65,OLDIES:.55,COUNTRY:.58,SOUL_RNB:.75,
   ALBUM_ROCK:.70,NEWS_TALK:.62,ALL_NEWS:.60,SPORTS_TALK:.60,PERSONALITY_TALK:0.78,
-  MOR:.35,GOSPEL:.30,BEAUTIFUL_MUSIC:.28,
+  MOR:.35,GOSPEL:.38,BEAUTIFUL_MUSIC:.28,
   BROKERED_PROGRAMMING:.22,
 };
 
@@ -51,10 +51,10 @@ const STRAF={
 // This is surfaced in the station card as an audience character note, not as a lever
 // the player can pull directly — it's a consequence of format choice.
 const FGS={
-  BEAUTIFUL_MUSIC:.72, ADULT_CONTEMP:.67, HOT_AC:.64, GOSPEL:.62,
+  BEAUTIFUL_MUSIC:.72, ADULT_CONTEMP:.67, HOT_AC:.64, GOSPEL:.59,
   SOUL_RNB:.55, URBAN_CONTEMP:.54, COUNTRY:.53, TOP40:.55, MOR:.51, ADULT_STANDARDS:.48,
   RHYTHMIC:.51, CLASSIC_HITS:.51, SPANISH:.50, OLDIES:.48,
-  PUBLIC_CLASSICAL:.52, PUBLIC_NEWS:.48, PUBLIC_ECLECTIC:.54, RELIGIOUS_NETWORK:.64,
+  PUBLIC_CLASSICAL:.52, PUBLIC_NEWS:.48, PUBLIC_ECLECTIC:.54, PUBLIC_JAZZ:.50, RELIGIOUS_NETWORK:.64,
   PERSONALITY_TALK:.46, NEWS_TALK:.40, ALL_NEWS:.41, ALT_ROCK:.38, CLASSIC_ROCK:.32,
   ALBUM_ROCK:.30, AAA:.42, SPORTS_TALK:.24, BROKERED_PROGRAMMING:.38,
 };
@@ -242,7 +242,7 @@ const FM={
   NEWS_TALK:      {l:'News / Talk',        cpm:1.55,sp:12,fm:false,ab:0,   unlock:1970,d:'News, talk and information for an older audience that often is more valuable to advertisers. It\'s often strong on AM and can be very profitable, even with modest ratings.'},
   ALBUM_ROCK:     {l:'Album Rock',         cpm:1.22,sp:10,fm:true, ab:0,   unlock:1970,d:'Albums, attitude and listener loyalty drive the programming that was one of the first popular formats on FM. Works best with a cleaner sound and fewer commercials.'},
   BEAUTIFUL_MUSIC:{l:'Beautiful Music',    cpm:.80, sp:20,fm:true, ab:0,   unlock:1970,d:'Soft, instrumental-heavy music for older audiences. "Elevator music" that\'s stable, background listening, geared toward the 50+ crowd, but has limited growth in the future.'},
-  GOSPEL:         {l:'Gospel',             cpm:.72, sp:12,fm:false,ab:0,   unlock:1970,d:'A niche format with a steady, loyal audience, but growth and advertising upside could be limited.'},
+  GOSPEL:         {l:'Gospel',             cpm:.86, sp:13,fm:true, ab:0,   unlock:1970,d:'Commercial urban and inspirational gospel music — Black gospel and crossover inspirational, Nielsen-style. Strong community loyalty; competes in the urban/R&B lane for 25–54 more than old AM-religious-niche stereotypes. Still a specialty vs mainstream CHR or Urban Contemporary.'},
   CLASSIC_ROCK:   {l:'Classic Rock',       cpm:1.10,sp:12,fm:true, ab:0,   unlock:1980,d:'Familiar rock hits built around proven favorites and big names. Builds a durable, loyal audience that skews a bit older, but still has broad demographic appeal.'},
   ADULT_CONTEMP:  {l:'Adult Contemporary', cpm:1.05,sp:16,fm:true, ab:0,   unlock:1980,d:'Softer pop hits aimed at adults. Profitable, advertiser-friendly and popular with 25-49 females, but lack of a strong identity can make it harder to stand out in the market.'},
   URBAN_CONTEMP:  {l:'Urban Contemporary', cpm:.95, sp:14,fm:true, ab:.10, unlock:1983,d:'An evolution of the Soul / R&B sound of the 1970s. Rhythmic pop and R&B aimed at a younger, urban audience.'},
@@ -264,6 +264,7 @@ const FM={
   PUBLIC_NEWS:    {l:'Public News / Talk', cpm:0,   sp:0,  fm:true, ab:0,  unlock:1975,d:'Non-commercial: respected, long-form news and talk from public radio. It can be a strong competitor to commercial News/Talk stations in some markets.',public:true},
   PUBLIC_CLASSICAL:{l:'Public Classical',  cpm:0,   sp:0,  fm:true, ab:0,  unlock:1975,d:'Non-commercial: cultured, calm classical programming for a narrow, but loyal audience.',public:true},
   PUBLIC_ECLECTIC:{l:'Public Eclectic Music',cpm:0, sp:0, fm:true, ab:0, unlock:1991,d:'Non-commercial: community-minded eclectic music (indie, roots, discovery) — KCRW / WXPN / KUTX energy; competes lightly with commercial AAA for educated ears.',public:true},
+  PUBLIC_JAZZ:    {l:'Public Jazz',        cpm:0,   sp:0,  fm:true, ab:0,  unlock:1988,d:'Non-commercial: metro public jazz — WBGO / KKJZ / KCSM energy; cultured FM, not smooth jazz. Rare outside large educated markets.',public:true},
   /** National/regional non-commercial Christian music / ministry network (ratings competitor only; not commercial Gospel; not player-selectable). */
   RELIGIOUS_NETWORK:{l:'Religious network',cpm:0,sp:0,fm:true,ab:0,unlock:1985,institutional:true,
     d:'Non-commercial religious music / ministry network. Institutional dial competitor — not commercial Gospel, not a normal corporate asset, no terrestrial spot revenue.'},
@@ -640,14 +641,14 @@ function injectReligiousNetworkAtMarketGenIfDue(stations,dialCtx,scenarioStartYe
 }
 const FADJ={
   TOP40:['SOUL_RNB','ALBUM_ROCK','URBAN_CONTEMP','RHYTHMIC'],SOUL_RNB:['TOP40','GOSPEL','URBAN_CONTEMP'],
-  ALBUM_ROCK:['TOP40','CLASSIC_ROCK','ALT_ROCK','AAA'],COUNTRY:['MOR','GOSPEL','CLASSIC_HITS'],
+  ALBUM_ROCK:['TOP40','CLASSIC_ROCK','ALT_ROCK','AAA'],COUNTRY:['MOR','CLASSIC_HITS'],
   MOR:['COUNTRY','BEAUTIFUL_MUSIC','NEWS_TALK','ADULT_CONTEMP','BROKERED_PROGRAMMING'],NEWS_TALK:['MOR','SPORTS_TALK','PERSONALITY_TALK','ALL_NEWS'],
-  BEAUTIFUL_MUSIC:['MOR','ADULT_CONTEMP'],GOSPEL:['SOUL_RNB','COUNTRY'],
+  BEAUTIFUL_MUSIC:['MOR','ADULT_CONTEMP'],GOSPEL:['SOUL_RNB','URBAN_CONTEMP','RHYTHMIC','HOT_AC'],
   CLASSIC_ROCK:['ALBUM_ROCK','CLASSIC_HITS','AAA'],
-  ADULT_CONTEMP:['MOR','BEAUTIFUL_MUSIC','HOT_AC','AAA'],URBAN_CONTEMP:['SOUL_RNB','TOP40','RHYTHMIC'],
+  ADULT_CONTEMP:['MOR','BEAUTIFUL_MUSIC','HOT_AC','AAA'],URBAN_CONTEMP:['SOUL_RNB','TOP40','RHYTHMIC','GOSPEL'],
   SPORTS_TALK:['NEWS_TALK'],ALT_ROCK:['ALBUM_ROCK','AAA'],SPANISH:['URBAN_CONTEMP'],
-  RHYTHMIC:['TOP40','URBAN_CONTEMP'],HOT_AC:['ADULT_CONTEMP','TOP40','AAA'],
-  AAA:['ALT_ROCK','ADULT_CONTEMP','HOT_AC','CLASSIC_ROCK','ALBUM_ROCK','CLASSIC_HITS','PUBLIC_ECLECTIC'],
+  RHYTHMIC:['TOP40','URBAN_CONTEMP','GOSPEL'],HOT_AC:['ADULT_CONTEMP','TOP40','AAA','GOSPEL'],
+  AAA:['ALT_ROCK','ADULT_CONTEMP','HOT_AC','CLASSIC_ROCK','ALBUM_ROCK','CLASSIC_HITS','PUBLIC_ECLECTIC','PUBLIC_JAZZ'],
   OLDIES:['MOR','CLASSIC_HITS','COUNTRY','BROKERED_PROGRAMMING'],CLASSIC_HITS:['OLDIES','CLASSIC_ROCK','MOR'],
   PERSONALITY_TALK:['NEWS_TALK','SPORTS_TALK','ALL_NEWS','ALT_ROCK','CLASSIC_ROCK','ALBUM_ROCK','ADULT_CONTEMP','HOT_AC'],
   ADULT_STANDARDS:['MOR','BEAUTIFUL_MUSIC','OLDIES','NEWS_TALK','BROKERED_PROGRAMMING'],
@@ -664,7 +665,7 @@ const FA={
   NEWS_TALK:      {'12-17':.04,'18-24':.08,'25-34':.18,'35-49':.35,'50-64':.48,'65+':.42},
   ALBUM_ROCK:     {'12-17':.45,'18-24':.65,'25-34':.38,'35-49':.08,'50-64':.02,'65+':.01},
   BEAUTIFUL_MUSIC:{'12-17':.03,'18-24':.06,'25-34':.15,'35-49':.38,'50-64':.55,'65+':.58},
-  GOSPEL:         {'12-17':.08,'18-24':.10,'25-34':.18,'35-49':.28,'50-64':.35,'65+':.42},
+  GOSPEL:         {'12-17':.06,'18-24':.16,'25-34':.36,'35-49':.32,'50-64':.20,'65+':.12},
   CLASSIC_ROCK:   {'12-17':.20,'18-24':.42,'25-34':.55,'35-49':.62,'50-64':.35,'65+':.12},
   ADULT_CONTEMP:  {'12-17':.10,'18-24':.28,'25-34':.52,'35-49':.58,'50-64':.40,'65+':.22},
   URBAN_CONTEMP:  {'12-17':.60,'18-24':.65,'25-34':.52,'35-49':.30,'50-64':.12,'65+':.05},
@@ -683,6 +684,7 @@ const FA={
   PUBLIC_NEWS:    {'12-17':.02,'18-24':.06,'25-34':.20,'35-49':.52,'50-64':.60,'65+':.48},
   PUBLIC_CLASSICAL:{'12-17':.01,'18-24':.04,'25-34':.12,'35-49':.38,'50-64':.62,'65+':.58},
   PUBLIC_ECLECTIC:{'12-17':.04,'18-24':.22,'25-34':.34,'35-49':.32,'50-64':.22,'65+':.12},
+  PUBLIC_JAZZ:    {'12-17':.01,'18-24':.05,'25-34':.16,'35-49':.46,'50-64':.58,'65+':.44},
   RELIGIOUS_NETWORK:{'12-17':.14,'18-24':.34,'25-34':.52,'35-49':.48,'50-64':.36,'65+':.22},
 };
 // ── Top 40 / CHR unified lineage (internal id: TOP40) ─────────────────
@@ -835,6 +837,11 @@ function migrateHitsLineage(G){
     if(!s?.prog)return;
     Object.values(s.prog).forEach(sd=>mergeTalentFit(sd?.talent?.formatFit));
   });
+}
+/** Save-safe: commercial Gospel taxonomy marker (no format-key rewrites). */
+function migrateGospelTaxonomy(G){
+  if(!G)return;
+  G._gospelTaxonomyMigratedV1=1;
 }
 const SW={morningDrive:.38,afternoonDrive:.26,midday:.18,evening:.11,overnight:.07};
 const SL={morningDrive:'MORNING',afternoonDrive:'AFTERNOON',midday:'MIDDAY',evening:'EVENING',overnight:'OVERNIGHT'};
@@ -2530,7 +2537,8 @@ function fmMusicEraPreferenceMult(s, year, fmp, marketId) {
   let fmtW = 0;
   if (strong.has(s.format)) fmtW = 1;
   else if (s.format === 'COUNTRY') fmtW = 0.55;
-  else if (['SPANISH', 'GOSPEL', 'CLASSIC_HITS', 'ADULT_STANDARDS'].includes(s.format)) fmtW = 0.45;
+  else if (['SPANISH', 'CLASSIC_HITS', 'ADULT_STANDARDS'].includes(s.format)) fmtW = 0.45;
+  else if (s.format === 'GOSPEL') fmtW = 0.72;
   else return 1;
   // FM-friendly music lanes that defined late-70s Atlanta dial wars
   const late70sCore = new Set(['TOP40', 'ALBUM_ROCK', 'BEAUTIFUL_MUSIC', 'ADULT_CONTEMP', 'SOUL_RNB', 'MOR']);
@@ -2560,19 +2568,19 @@ const AQH_ENGAGE={
 const FMT_COMPETITION={
   TOP40:['TOP40','SOUL_RNB','ALBUM_ROCK','RHYTHMIC','HOT_AC','URBAN_CONTEMP'],
   COUNTRY:['COUNTRY','CLASSIC_HITS','OLDIES'],
-  SOUL_RNB:['SOUL_RNB','TOP40','URBAN_CONTEMP','RHYTHMIC'],
+  SOUL_RNB:['SOUL_RNB','TOP40','URBAN_CONTEMP','RHYTHMIC','GOSPEL'],
   ALBUM_ROCK:['ALBUM_ROCK','TOP40','CLASSIC_ROCK','ALT_ROCK','AAA'],
   CLASSIC_ROCK:['CLASSIC_ROCK','ALBUM_ROCK','AAA'],
   ALT_ROCK:['ALT_ROCK','ALBUM_ROCK','TOP40','AAA'],
-  AAA:['AAA','ALT_ROCK','CLASSIC_ROCK','ADULT_CONTEMP','HOT_AC','ALBUM_ROCK','PUBLIC_ECLECTIC','NEWS_TALK'],
+  AAA:['AAA','ALT_ROCK','CLASSIC_ROCK','ADULT_CONTEMP','HOT_AC','ALBUM_ROCK','PUBLIC_ECLECTIC','PUBLIC_JAZZ','NEWS_TALK'],
   MOR:['MOR','ADULT_CONTEMP','CLASSIC_HITS','OLDIES','ADULT_STANDARDS'],
   ADULT_STANDARDS:['ADULT_STANDARDS','MOR','BEAUTIFUL_MUSIC','OLDIES'],
   ADULT_CONTEMP:['ADULT_CONTEMP','MOR','HOT_AC','CLASSIC_HITS','OLDIES','AAA'],
-  HOT_AC:['HOT_AC','ADULT_CONTEMP','TOP40','AAA'],
+  HOT_AC:['HOT_AC','ADULT_CONTEMP','TOP40','AAA','GOSPEL'],
   BEAUTIFUL_MUSIC:['BEAUTIFUL_MUSIC','MOR'],
   CLASSIC_HITS:['CLASSIC_HITS','OLDIES','ADULT_CONTEMP','COUNTRY'],
   OLDIES:['OLDIES','CLASSIC_HITS','MOR'],
-  GOSPEL:['GOSPEL','MOR'],
+  GOSPEL:['GOSPEL','URBAN_CONTEMP','RHYTHMIC','SOUL_RNB','HOT_AC'],
   NEWS_TALK:['NEWS_TALK','SPORTS_TALK'],
   SPORTS_TALK:['SPORTS_TALK','NEWS_TALK'],
   PERSONALITY_TALK:['PERSONALITY_TALK','NEWS_TALK','SPORTS_TALK','ALT_ROCK','CLASSIC_ROCK','HOT_AC','ADULT_CONTEMP'],
@@ -2581,7 +2589,9 @@ const FMT_COMPETITION={
   RELIGIOUS_NETWORK:['ADULT_CONTEMP','HOT_AC','GOSPEL','CLASSIC_HITS'],
   /** Used only for competition-bleed count: public news competes with commercial spoken-word, but bleed is scaled down via publicNewsCompetitionInsulationFactor. */
   PUBLIC_NEWS:['NEWS_TALK','SPORTS_TALK','PERSONALITY_TALK','ALL_NEWS'],
-  PUBLIC_ECLECTIC:['ALT_ROCK','ADULT_CONTEMP','HOT_AC','ALBUM_ROCK','CLASSIC_ROCK','CLASSIC_HITS','AAA'],
+  PUBLIC_ECLECTIC:['ALT_ROCK','ADULT_CONTEMP','HOT_AC','ALBUM_ROCK','CLASSIC_ROCK','CLASSIC_HITS','AAA','PUBLIC_JAZZ'],
+  PUBLIC_JAZZ:['PUBLIC_CLASSICAL','PUBLIC_ECLECTIC','SOUL_RNB','ADULT_CONTEMP','AAA'],
+  PUBLIC_CLASSICAL:['PUBLIC_JAZZ','PUBLIC_ECLECTIC'],
 };
 const COMPETITION_BLEED=0.16; // per competing station, max 22% total bleed
 /** FM formats that steal youth/AC spill from AM Top 40 but are not already in FMT_COMPETITION.TOP40 (avoids double-count). */
@@ -2706,7 +2716,7 @@ const BRANDS={
   NEWS_TALK:['News {FREQ}','{CITY} News {FREQ}','{ABBREV} News {FREQ}','{FREQ} Talk','NewsRadio {AMCHOP}','Information {AMCHOP}','Radio {AMCHOP}','{CALL} Radio {AMCHOP}','{CITY} Radio {AMCHOP}','{ABBREV} Radio {AMCHOP}','Channel {AMCHOP}','All News {AMCHOP}','MetroNews {AMCHOP}'],
   ALBUM_ROCK:['Rock {FREQ}','Free {FREQ}','The Planet {FREQ}','Deep {FREQ}','Raw {FREQ}','Underground {FREQ}','{CITY} Rock {FREQ}'],
   BEAUTIFUL_MUSIC:['Soft {FREQ}','Breeze {FREQ}','Easy Sounds {FREQ}','Smooth {FREQ}','Mellow {FREQ}','Tranquil {FREQ}'],
-  GOSPEL:['Gospel {FREQ}','Praise {FREQ}','The Word {FREQ}','Grace {FREQ}','Heaven {FREQ}','Light {FREQ}','Inspiration {FREQ}'],
+  GOSPEL:['Praise {FREQ}','Spirit {FREQ}','The Lift {FREQ}','Joy Gospel {FREQ}','Urban Spirit {FREQ}','Gospel Heat {FREQ}','Power Praise {FREQ}','Inspiration {FREQ}'],
   CLASSIC_ROCK:['Classic Rock {FREQ}','Thunder {FREQ}','The Eagle {FREQ}','The Fox {FREQ}','The Hawk {FREQ}','Mountain {FREQ}','{CITY} Rock {FREQ}'],
   ADULT_CONTEMP:['Lite {FREQ}','Star {FREQ}','Sunny {FREQ}','Mix {FREQ}','Soft Hits {FREQ}','Warm {FREQ}','Today {FREQ}','{CITY} {FREQ}'],
   URBAN_CONTEMP:['Power {FREQ}','The Heat {FREQ}','Urban {FREQ}','Flavor {FREQ}','Fire {FREQ}','The Spot {FREQ}','{ABBREV} {FREQ}'],
@@ -2722,7 +2732,8 @@ const BRANDS={
   PUBLIC_NEWS:['{CITY} Public Radio {FREQ}','Community Radio {FREQ}','Public News {FREQ}','{ABBREV} Public {FREQ}'],
   PUBLIC_CLASSICAL:['Classical {FREQ}','Fine Arts {FREQ}','Community Classical {FREQ}','{CITY} Classical {FREQ}'],
   PUBLIC_ECLECTIC:['The Current {FREQ}','Eclectic {FREQ}','Community Music {FREQ}','{ABBREV} Sounds {FREQ}'],
-  RELIGIOUS_NETWORK:['Hope {FREQ}','Praise {FREQ}','Faith {FREQ}','Joy {FREQ}','Inspiration {FREQ}','Life {FREQ}','The Bridge {FREQ}'],
+  PUBLIC_JAZZ:['Jazz {FREQ}','City Jazz {FREQ}','The Jazz Station {FREQ}','Blue Note {FREQ}','Jazz 88 {FREQ}','Metro Jazz {FREQ}','{CITY} Jazz {FREQ}','{ABBREV} Jazz {FREQ}'],
+  RELIGIOUS_NETWORK:['Hope {FREQ}','Faith {FREQ}','Life {FREQ}','The Bridge {FREQ}','Renew {FREQ}','Living Word {FREQ}','Family {FREQ}'],
   ALL_NEWS:['All News {FREQ}','{CITY} News {FREQ}','NewsCenter {AMCHOP}','MetroNews {AMCHOP}','Information {AMCHOP}','Radio {AMCHOP}','{CALL} Radio {AMCHOP}','News {FREQ}'],
 };
 /** Resolve {FREQ}, {CITY}, {ABBREV}, {AMCHOP}, {CALL} in a brand name */
@@ -4190,7 +4201,7 @@ const MARKETS={
     culture:{country:0.06,urban:0.06,newsTalk:0.05,religion:0.10,spanish:0.02},
     selectBlurb:'A growing Sunbelt market with a strong appetite for Soul/R&B and Top 40 in the 1970s. FM specialization accelerates as the market grows and matures.',
     fmPenBias:0, fmMusicFragMult:1, spokenWordAmResilience:1.02, heritageAmResilience:1.02, countryAmHoldout:1,
-    /** ~1.0 = neutral public-radio / educated-listener proxy; used only for PUBLIC_NEWS / PUBLIC_CLASSICAL / PUBLIC_ECLECTIC audience math (not commercial rev). */
+    /** ~1.0 = neutral public-radio / educated-listener proxy; used only for PUBLIC_NEWS / PUBLIC_CLASSICAL / PUBLIC_ECLECTIC / PUBLIC_JAZZ audience math (not commercial rev). */
     eduIndex:0.96,
     publicCivicIndex:0.98,
     teams:[
@@ -11035,23 +11046,23 @@ const DRIFT={
        effect:(s,drift)=>{return drift>55?0.025:0;}},
     ]
   },
-  // GOSPEL: Inspirational Crossover vs Traditional
+  // GOSPEL: Heritage church gospel vs current inspirational / crossover (commercial; not CCM network theology)
   GOSPEL:{
     label:'Sound Style',
-    poleA:{name:'Traditional Gospel',desc:'Classic church sounds, quartet, choirs. Intense core loyalty. Brokered time slots viable.'},
-    poleB:{name:'Contemporary Christian',desc:'Modern production, broader appeal. Attracts white evangelical demo and younger Black listeners.'},
-    default:30,
+    poleA:{name:'Heritage / Choir',desc:'Quartet and choir-centered Sunday sound. Older core, deep church loyalty, less crossover to secular occasions.'},
+    poleB:{name:'Current / Inspirational',desc:'Contemporary gospel production and crossover inspirational energy — broader 25–44, Kirk Franklin / Mary Mary era framing without white CCM network positioning.'},
+    default:34,
     demoEffect:(drift,coh)=>{
       const contemp=drift/100;
-      const shift={'18-24':contemp*.12,'25-34':contemp*.10,'50-64':(1-contemp)*.12,'65+':(1-contemp)*.10};
+      const shift={'18-24':contemp*.10,'25-34':contemp*.12,'35-49':contemp*.06,'50-64':(1-contemp)*.10,'65+':(1-contemp)*.08};
       return 1+(shift[coh]||0);
     },
     inflections:[
-      {y:1993,p:1,id:'ccm_boom',name:'Contemporary Christian Music Boom',
-       desc:'CCM becomes a mainstream genre with mainstream distribution. Contemporary-leaning Gospel stations crossover.',
-       effect:(s,drift)=>{return drift>50?0.025:0.005;}},
+      {y:1993,p:1,id:'gospel_radio_expansion',name:'Gospel Radio Finds FM Homes',
+       desc:'Syndicated and local gospel hours expand; heritage stations tighten the core while FM signals improve reach.',
+       effect:(s,drift)=>{return drift<42?0.012:0.022;}},
       {y:2000,p:1,id:'gospel_mainstream',name:'Gospel Crosses Over',
-       desc:'Kirk Franklin, Mary Mary. Gospel earns mainstream chart presence. Contemporary leans earn broader audience.',
+       desc:'Kirk Franklin, Mary Mary, and chart gospel lift inspirational-leaning stations with younger 25–44 spill.',
        effect:(s,drift)=>{return drift>45?0.020:0.010;}},
     ]
   },
@@ -11193,8 +11204,8 @@ const DRIFT_POLE_GUIDANCE={
     B:{audience:'35–49; new wave and power-pop friendly',strengths:'Younger classic demo; higher upside in rebrands',weaknesses:'Weaker pure-oldies identity',monetization:'Broader retail; entertainment',risks:'War with classic rock and CHR gold'}
   },
   GOSPEL:{
-    A:{audience:'Church-rooted; older Black listeners; tradition-focused',strengths:'Intense loyalty; brokered dayparts viable; community trust',weaknesses:'Limited secular ad pool; narrow youth',monetization:'Faith, local services, community',risks:'Younger migration to contemporary sound'},
-    B:{audience:'Younger faith listeners; crossover and CCM-curious',strengths:'Broader audience; national CCM tie-ins',weaknesses:'Traditionalists push back; identity dilution',monetization:'Touring artists; family brands; broader retail',risks:'Format definition fights; competition from AC/CHR inspirational'}
+    A:{audience:'Church-rooted adults; heritage choir and quartet loyalists',strengths:'Intense community loyalty; appointment listening; stable core',weaknesses:'Thinner secular ad set vs mainstream urban; younger demos sample current gospel',monetization:'Local services, automotive, faith-adjacent retail',risks:'Sounds “too Sunday” for casual diary if heritage-heavy'},
+    B:{audience:'25–44 Black adults and crossover listeners; inspirational-leaning',strengths:'Current gospel lifts cume; competes for Hot AC / Urban AC spill without CHR dominance',weaknesses:'Format purity debates; must hold lane vs Rhythmic and Urban Contemporary',monetization:'Concerts, packaged goods, national gospel-friendly buys when books are hot',risks:'Streaming playlists skim recurrent stacks; inspirational blur vs AC'}
   },
   PERSONALITY_TALK:{
     A:{audience:'Younger 18–34; male-leaning; rock-radio spill',strengths:'Explosive cume when talent connects; rock-format adjacency',weaknesses:'Advertiser boycotts; FCC and scandal risk; churn when hosts exit',monetization:'Direct response; concerts; edgy national buys',risks:'One viral misstep can crater billing'},
@@ -11384,6 +11395,76 @@ function wlBuildJingleSonicHints(s,_G){
     audienceHint:wlJingleAudienceHintFromLean(s.demoLean),
     positionHint:wlJinglePositionHintFromDrift(s),
   };
+}
+/**
+ * Commercial gospel (Nielsen-style urban/inspirational) — market lift only; clamped inside appl().
+ * Stronger in Black / church / urban-bonus markets; softer in secular coastal archetypes.
+ */
+function gospelCommercialMarketAppealDelta(marketId,mkt,year){
+  const cult=mkt.culture||{};
+  const ub=typeof mkt.urbanBonus==='number'?mkt.urbanBonus:0;
+  const bp=typeof mkt.blackPop==='number'?mkt.blackPop:0.2;
+  const ch=typeof mkt.churchGoing==='number'?mkt.churchGoing:0.45;
+  const rel=typeof cult.religion==='number'?cult.religion:0.06;
+  const arch=String(mkt.archetypeId||'');
+  const tier=String(mkt.rankTier||'medium');
+  let d=ub*0.092+bp*0.11+(ch-0.42)*0.038+rel*0.085;
+  if(marketId==='atlanta')d+=0.064;
+  if(marketId==='nashville')d+=0.044;
+  if(marketId==='chicago'||marketId==='newyork')d+=0.02;
+  if(marketId==='losangeles')d+=0.012;
+  if(marketId==='wichita')d+=0.012;
+  if(/coastal_secular/i.test(arch))d-=0.04;
+  if(marketId==='seattle'||marketId==='sanfrancisco')d-=0.034;
+  if(tier==='small'&&bp<0.12&&marketId!=='wichita')d-=0.016;
+  if(year<1983)d-=0.014*(1-_smoothstep(1972,1983,year));
+  return d;
+}
+/**
+ * 0–1 structural fit for Nielsen-style commercial Gospel (not RELIGIOUS_NETWORK).
+ * Drives AI plausibility + light inertia — cold in Pacific secular, hot in Southern / high-church / soul-lane markets.
+ */
+function gospelCommercialMarketFit01(marketId,mkt){
+  const m=mkt||(MARKETS[marketId]||MARKETS.atlanta);
+  const cult=m.culture||{};
+  const bp=typeof m.blackPop==='number'?m.blackPop:0.2;
+  const ch=typeof m.churchGoing==='number'?m.churchGoing:0.45;
+  const ub=typeof m.urbanBonus==='number'?m.urbanBonus:0;
+  const rel=typeof cult.religion==='number'?cult.religion:0.06;
+  const arch=String(m.archetypeId||'');
+  const tier=String(m.rankTier||'medium');
+  let f=bp*0.68+(ch-0.42)*0.52+ub*0.36+rel*4.0;
+  if(marketId==='atlanta')f+=0.24;
+  else if(marketId==='nashville')f+=0.17;
+  else if(marketId==='memphis'||marketId==='birmingham')f+=0.13;
+  else if(marketId==='wichita')f+=0.11;
+  else if(marketId==='chicago'||marketId==='newyork'||marketId==='losangeles')f+=0.055;
+  if(/sunbelt|southern|country|legacy|prairie|plains|heartland/i.test(arch))f+=0.048;
+  if(/coastal_secular/i.test(arch))f-=0.11;
+  if(marketId==='seattle'||marketId==='portland'||marketId==='sanfrancisco')f-=0.22;
+  if(tier==='small'&&bp<0.13&&marketId!=='wichita')f-=0.055;
+  return Math.max(0.02,Math.min(1,f));
+}
+/**
+ * AI rival reformat candidate weight — market-fit greenfield/2nd/3rd+ damp; RELIGIOUS_NETWORK is a parallel lane,
+ * not a full substitute for commercial Gospel in high-fit markets (no changes to RELIGIOUS_NETWORK itself).
+ */
+function aiGospelFormatPlausibilityMult(marketId,year,gospelStations,candidateGreenfield,relNetworkStations){
+  const mkt=MARKETS[marketId]||MARKETS.atlanta;
+  const fit=gospelCommercialMarketFit01(marketId,mkt);
+  const base=1+gospelCommercialMarketAppealDelta(marketId,mkt,year)*1.06;
+  let m=base;
+  const relN=Math.max(0,Math.min(4,Number(relNetworkStations)||0));
+  if(relN>=1&&fit>=0.34){
+    const rnEra=_smoothstep(1988,2006,year);
+    m*=1+0.05*Math.min(2,relN)*fit*rnEra;
+  }
+  const gs=gospelStations|0;
+  if(candidateGreenfield&&gs===0)m*=0.60+0.38*fit;
+  if(gs===1)m*=0.72+0.22*fit;
+  if(gs>=2)m*=0.52+0.20*fit;
+  if(gs>=3)m*=0.68;
+  return Math.max(0.24,Math.min(1.36,m));
 }
 function appl(s,coh,G){
   // BP-slot placeholders and any malformed row must not break appeal math (e.g. seedNewEntry
@@ -11584,6 +11665,10 @@ function appl(s,coh,G){
       aaaEraAppealMult*=1+(0.40*plT+0.62*plT*plT)*yrW;
     }
   }
+  if(s.format==='GOSPEL'){
+    mktFmt+=gospelCommercialMarketAppealDelta(marketId,mkt,year);
+    mktFmt+=0.026*gospelCommercialMarketFit01(marketId,mkt);
+  }
   mktFmt=Math.max(0.86,Math.min(1.24,mktFmt));
   const out=Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * morHeritageHybridMult * hitsLineageEraMult * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G) * mktFmt * allNewsSig * zombieNicheMult * staffingAutomationAppealTradeoffMult(s,G)*brokeredAppealTradeoffMult(s,G)*aaaEraAppealMult);
   return Number.isFinite(out)?out:0;
@@ -11689,6 +11774,7 @@ function applyOtherAudioListeningDilution(stations,G,engageWeightedPop){
   const m=MARKETS[mktId]||MARKETS.atlanta;
   const fBase=otherAudioShareFraction(G.year,mktId);
   G._otherAudioShareLast=fBase;
+  if(G._modernColdStartIncumbentRecalc)return;
   const y=G.year||1970;
   const idx=marketOtherAudioFragmentationIndex(mktId);
   const tier=m.rankTier||'medium';
@@ -12065,26 +12151,31 @@ function publicStationCountQuantile01(marketId,startYear){
   return h/4294967296;
 }
 /**
- * Target count of terrestrial public (NCE) music/news outlets at market gen (news + classical + optional eclectic).
- * Caps at 3 for this phase. Wichita-style small markets stay at 2; megas commonly pick up eclectic.
+ * Target count of terrestrial public (NCE) music/news outlets at market gen (news + classical + optional third/fourth).
+ * Small markets: 2. Medium/large/mega: 2–4 depending on tier + deterministic hashes (Wichita-class stays 2).
  * @param {string} marketId
  * @param {number} startYear scenario start year
- * @returns {2|3}
+ * @returns {2|3|4}
  */
 function computePublicStationTargetCount(marketId,startYear){
   const mid=String(marketId||ACTIVE_MARKET||'atlanta');
   const m=MARKETS[mid]||MARKETS.atlanta;
   const rankTier=String(m.rankTier||'medium');
-  const u=publicStationCountQuantile01(mid,startYear);
+  const fy=Math.round(Number(startYear))||1970;
+  const u=publicStationCountQuantile01(mid,fy);
   const edu=typeof m.eduIndex==='number'&&!Number.isNaN(m.eduIndex)?m.eduIndex:1;
   const civic=typeof m.publicCivicIndex==='number'&&!Number.isNaN(m.publicCivicIndex)?m.publicCivicIndex:1;
   const eduN=Math.max(0,Math.min(1,(edu-0.88)/(1.24-0.88)));
   const civN=Math.max(0,Math.min(1,(civic-0.92)/(1.12-0.92)));
   const eduCivicBlend=0.48*eduN+0.52*civN;
   if(rankTier==='small')return 2;
+  const u4=(wlHash32(`${PUBLIC_STATION_COUNT_HASH_SALT}::fourthPublic::${mid}::${fy}`)>>>0)/4294967296;
   if(rankTier==='mega'){
     const p3=Math.min(0.94,0.78+0.20*eduCivicBlend);
-    return u<p3?3:2;
+    let c=u<p3?3:2;
+    const eliteMega=eduN>=0.58&&civN>=0.55;
+    if(c===3&&eliteMega&&u4<0.26)c=4;
+    return c;
   }
   if(rankTier==='large'){
     const p3=0.36+0.32*eduCivicBlend;
@@ -12095,7 +12186,6 @@ function computePublicStationTargetCount(marketId,startYear){
     const mediumCivicArts=civic>=0.942&&edu>=0.86;
     if(!mediumEduBrain&&!mediumCivicArts)return 2;
     if(mid==='nashville'&&mediumCivicArts){
-      const fy=Math.round(Number(startYear))||1970;
       const uN=(wlHash32(`${PUBLIC_STATION_COUNT_HASH_SALT}::nashvilleThird::${fy}`)>>>0)/4294967296;
       return uN<0.34?3:2;
     }
@@ -12104,9 +12194,55 @@ function computePublicStationTargetCount(marketId,startYear){
   }
   return 2;
 }
+/**
+ * Which extra public FM formats (beyond news + classical) exist for this market + scenario start year.
+ * Deterministic; does not allocate dial slots. Order is creation preference (genMarket walks in array order).
+ * @returns {('PUBLIC_ECLECTIC'|'PUBLIC_JAZZ')[]}
+ */
+function computePublicExpansionFormatsAfterBase(marketId,startYear){
+  const n=computePublicStationTargetCount(marketId,startYear);
+  const mid=String(marketId||ACTIVE_MARKET||'atlanta');
+  const fy=Math.round(Number(startYear))||1970;
+  const m=MARKETS[mid]||MARKETS.atlanta;
+  const rankTier=String(m.rankTier||'medium');
+  const edu=typeof m.eduIndex==='number'&&!Number.isNaN(m.eduIndex)?m.eduIndex:1;
+  const civic=typeof m.publicCivicIndex==='number'&&!Number.isNaN(m.publicCivicIndex)?m.publicCivicIndex:1;
+  const eduN=Math.max(0,Math.min(1,(edu-0.88)/(1.24-0.88)));
+  const civN=Math.max(0,Math.min(1,(civic-0.92)/(1.12-0.92)));
+  const uJ=(wlHash32(`${PUBLIC_STATION_COUNT_HASH_SALT}::expFmt::${mid}::${fy}`)>>>0)/4294967296;
+  const out=[];
+  if(n<=2)return out;
+  if(n===3){
+    if(rankTier==='medium'){
+      const jazzOk=eduN>=0.48&&civN>=0.55&&uJ>=0.90;
+      out.push(jazzOk?'PUBLIC_JAZZ':'PUBLIC_ECLECTIC');
+      return out;
+    }
+    if(rankTier==='large'){
+      if(mid==='nashville')out.push(uJ<0.78?'PUBLIC_ECLECTIC':'PUBLIC_JAZZ');
+      else out.push(uJ<0.52?'PUBLIC_ECLECTIC':'PUBLIC_JAZZ');
+      return out;
+    }
+    if(rankTier==='mega'){
+      out.push(uJ<0.38?'PUBLIC_ECLECTIC':'PUBLIC_JAZZ');
+      return out;
+    }
+    out.push('PUBLIC_ECLECTIC');
+    return out;
+  }
+  if(n>=4&&rankTier==='mega'){
+    if(uJ<0.48){
+      out.push('PUBLIC_ECLECTIC','PUBLIC_JAZZ');
+    }else{
+      out.push('PUBLIC_JAZZ','PUBLIC_ECLECTIC');
+    }
+  }
+  return out;
+}
 function normalizePublicNceFormatKey(format){
   if(format==='PUBLIC_CLASSICAL')return'PUBLIC_CLASSICAL';
   if(format==='PUBLIC_ECLECTIC')return'PUBLIC_ECLECTIC';
+  if(format==='PUBLIC_JAZZ')return'PUBLIC_JAZZ';
   return'PUBLIC_NEWS';
 }
 const PUBLIC_NCE_TIER_HASH_SALT='wlPublicNceTier|v1';
@@ -12147,7 +12283,8 @@ function computePublicNceTier(p){
   const eraN=_smoothstep(1985,2010,y0)*0.55+_smoothstep(2010,2026,y0)*0.45;
   let S=0.38*eduN+0.16*civN+0.28*tierNorm+0.18*eraN;
   if(fmt==='PUBLIC_CLASSICAL')S*=0.88;
-  if(fmt==='PUBLIC_ECLECTIC')S*=0.94;
+  else if(fmt==='PUBLIC_ECLECTIC')S*=0.94;
+  else if(fmt==='PUBLIC_JAZZ')S*=0.86;
   S=Math.max(0,Math.min(1,S));
   const u=publicNceTierQuantile01(marketId,fmt,y0);
   const C=0.58*S+0.42*u;
@@ -12171,6 +12308,14 @@ function computePublicNceTier(p){
     if(C>=0.698)return'strong';
     return'typical';
   }
+  if(fmt==='PUBLIC_JAZZ'){
+    if(isBig&&S>=0.545&&C>=0.828)return'flagship';
+    if((rankTier==='mega'||largeElite)&&S>=0.755&&C>=0.802)return'flagship';
+    if(isBig&&S>=0.475&&C>=0.792)return'flagship';
+    if(rankTier==='medium'&&S>=0.618&&C>=0.852)return'flagship';
+    if(C>=0.708)return'strong';
+    return'typical';
+  }
   if(C>=0.805&&isBig&&S>=0.55)return'flagship';
   if(C>=0.72)return'strong';
   return'typical';
@@ -12189,7 +12334,7 @@ function publicNceTierEffect(s){
 function assignPublicNceTierToStation(s,marketId,startYear){
   if(!s||!s.isPublic)return;
   const fmt=normalizePublicNceFormatKey(s.format);
-  if(fmt!=='PUBLIC_NEWS'&&fmt!=='PUBLIC_CLASSICAL'&&fmt!=='PUBLIC_ECLECTIC')return;
+  if(fmt!=='PUBLIC_NEWS'&&fmt!=='PUBLIC_CLASSICAL'&&fmt!=='PUBLIC_ECLECTIC'&&fmt!=='PUBLIC_JAZZ')return;
   const blend=publicRadioTuningBlend();
   s._nceTier=computePublicNceTier({
     marketId:marketId||ACTIVE_MARKET||'atlanta',
@@ -12209,6 +12354,11 @@ function publicNceTierPeakFactors(s){
   if(s.format==='PUBLIC_ECLECTIC'){
     if(tier==='flagship')return{base:1.07,peak:1.22};
     if(tier==='strong')return{base:1.035,peak:1.10};
+    return{base:1,peak:1};
+  }
+  if(s.format==='PUBLIC_JAZZ'){
+    if(tier==='flagship')return{base:1.034,peak:1.065};
+    if(tier==='strong')return{base:1.017,peak:1.028};
     return{base:1,peak:1};
   }
   if(s.format==='PUBLIC_CLASSICAL'){
@@ -12232,7 +12382,7 @@ function ensurePublicNceTiersForGame(G){
   const sy=(G.scenario&&G.scenario.startYear!=null)?G.scenario.startYear:(G.year||1970);
   G.stations.forEach(s=>{
     if(!s||s._bpSlotDeferred||!s.isPublic)return;
-    if(s.format!=='PUBLIC_NEWS'&&s.format!=='PUBLIC_CLASSICAL'&&s.format!=='PUBLIC_ECLECTIC')return;
+    if(s.format!=='PUBLIC_NEWS'&&s.format!=='PUBLIC_CLASSICAL'&&s.format!=='PUBLIC_ECLECTIC'&&s.format!=='PUBLIC_JAZZ')return;
     if(s._nceTier==='strong'||s._nceTier==='flagship'||s._nceTier==='typical')return;
     assignPublicNceTierToStation(s,mkt,sy);
   });
@@ -12265,6 +12415,10 @@ function publicClassicalEraLift(year){
 /** Era curve for eclectic public music — between classical and news; ramps with FM discovery era. */
 function publicEclecticEraLift(year){
   return publicNewsEraLift(year)*0.72;
+}
+/** Era curve for public jazz — niche music; between classical and eclectic. */
+function publicJazzEraLift(year){
+  return publicNewsEraLift(year)*0.60;
 }
 /** Small habit / routine-listening nudge for public News/Talk in educated markets (post-2000). */
 function publicNewsHabitStick(year,eduIndex){
@@ -12366,6 +12520,23 @@ function publicEclecticSceneMult(s,G){
   else if(tier==='strong')m*=1.032;
   return Math.max(0.72,Math.min(1.28,m));
 }
+/**
+ * Metro / university public-jazz standout (not news-habit math). Capped so jazz stays a niche book.
+ */
+function publicJazzSceneMult(s,G){
+  if(!s?.isPublic||s.format!=='PUBLIC_JAZZ')return 1;
+  if(publicRadioTuningBlend()===0)return 1;
+  const y=G?.year||1970;
+  if(y<1988)return 0.58+0.42*_smoothstep(1978,1988,y);
+  const edu=marketEduIndex(G?.marketId||ACTIVE_MARKET);
+  const civ=publicCivicIndexForMarket(G?.marketId||ACTIVE_MARKET);
+  let m=1+0.095*Math.max(0,edu-0.94)*_smoothstep(1992,2012,y);
+  m+=0.055*Math.max(0,civ-1.0)*_smoothstep(2002,2024,y);
+  const tier=publicNceTierEffect(s);
+  if(tier==='flagship')m*=1.045;
+  else if(tier==='strong')m*=1.024;
+  return Math.max(0.74,Math.min(1.22,m));
+}
 /** Denominator for weighted rat.share when PUBLIC_NEWS uses habit-adjusted engagement. */
 function publicRadioWeightedListeningDenominator(stations,G){
   let t=0;
@@ -12388,7 +12559,7 @@ function publicRadioWeightedListeningDenominator(stations,G){
 function publicEduAudienceMultiplier(s,G,yearOverride){
   if(!s?.isPublic)return 1;
   const fmt=s.format;
-  if(fmt!=='PUBLIC_NEWS'&&fmt!=='PUBLIC_CLASSICAL'&&fmt!=='PUBLIC_ECLECTIC')return 1;
+  if(fmt!=='PUBLIC_NEWS'&&fmt!=='PUBLIC_CLASSICAL'&&fmt!=='PUBLIC_ECLECTIC'&&fmt!=='PUBLIC_JAZZ')return 1;
   if(publicRadioTuningBlend()===0)return 1;
   const y=yearOverride!=null?yearOverride:(G?.year||1970);
   const edu=marketEduIndex(G?.marketId||ACTIVE_MARKET);
@@ -12432,6 +12603,19 @@ function publicEduAudienceMultiplier(s,G,yearOverride){
   else if(nceCl==='strong')m*=1.012;
   return Math.max(0.90,Math.min(1.48,m));
   }
+  if(fmt==='PUBLIC_JAZZ'){
+    const eraJ=publicJazzEraLift(y);
+    let mj=1+Math.max(0,edu-0.94)*eraJ*0.88;
+    mj*=0.968+0.032*_smoothstep(1988,2004,y);
+    const tierJ=(MARKETS[G?.marketId||ACTIVE_MARKET]||MARKETS.atlanta).rankTier||'medium';
+    if((tierJ==='mega'||tierJ==='large')&&y>=1998)mj*=1+0.036*_smoothstep(1998,2010,y)+0.030*_smoothstep(2010,2026,y);
+    const civJ=publicCivicIndexForMarket(G?.marketId||ACTIVE_MARKET)-1;
+    mj*=1+Math.max(0,civJ)*0.052*_smoothstep(2000,2020,y);
+    const nceJ=publicNceTierEffect(s);
+    if(nceJ==='flagship')mj*=1.036;
+    else if(nceJ==='strong')mj*=1.018;
+    return Math.max(0.87,Math.min(1.58,mj));
+  }
   const eraE=publicEclecticEraLift(y);
   let me=1+Math.max(0,edu-0.92)*eraE*0.92;
   me*=0.965+0.035*_smoothstep(1992,2010,y);
@@ -12460,6 +12644,7 @@ function reportPublicEduDiagnostics(){
     PUBLIC_NEWS:mock('PUBLIC_NEWS',y).toFixed(3),
     PUBLIC_CLASSICAL:mock('PUBLIC_CLASSICAL',y).toFixed(3),
     PUBLIC_ECLECTIC:mock('PUBLIC_ECLECTIC',y).toFixed(3),
+    PUBLIC_JAZZ:mock('PUBLIC_JAZZ',y).toFixed(3),
     eraNewsLift:publicNewsEraLift(y).toFixed(2),
   }));
   console.log('[Public edu] market=%s eduIndex=%s',mkt,edu.toFixed(2));
@@ -12475,7 +12660,7 @@ function reportPublicRadioModelDiagnostics(){
   }
   const mkt=G.marketId||ACTIVE_MARKET||'atlanta';
   const edu=marketEduIndex(mkt);
-  const list=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&s.isPublic&&(s.format==='PUBLIC_NEWS'||s.format==='PUBLIC_CLASSICAL'||s.format==='PUBLIC_ECLECTIC'));
+  const list=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&s.isPublic&&(s.format==='PUBLIC_NEWS'||s.format==='PUBLIC_CLASSICAL'||s.format==='PUBLIC_ECLECTIC'||s.format==='PUBLIC_JAZZ'));
   const r=rankStationsByShareCompetition(G.stations);
   const rankOf=id=>(r.rankById[id]!=null?r.rankById[id]:null);
   const rows=list.map(s=>{
@@ -12506,6 +12691,11 @@ function reportPublicRadioModelDiagnostics(){
       row.habitEngage='—';
       row.breakout=publicEclecticSceneMult(s,G).toFixed(3);
       row.highEdu='—';
+    }else if(s.format==='PUBLIC_JAZZ'){
+      row.insulation='—';
+      row.habitEngage='—';
+      row.breakout=publicJazzSceneMult(s,G).toFixed(3);
+      row.highEdu='—';
     }else{
       row.insulation='—';
       row.habitEngage='—';
@@ -12527,7 +12717,7 @@ try{
   // Direct reference only: a wrapper `p=>computePublicNceTier(p)` would replace the global
   // binding and recurse forever when assignPublicNceTierToStation calls computePublicNceTier.
   window.computePublicNceTier=computePublicNceTier;
-  window.computePublicStationTargetCount=computePublicStationTargetCount;
+  window.computePublicExpansionFormatsAfterBase=computePublicExpansionFormatsAfterBase;
   window.publicStationCountQuantile01=publicStationCountQuantile01;
   window.publicNceTierRead=publicNceTierRead;
   window.publicNceTierEffect=publicNceTierEffect;
@@ -12818,7 +13008,7 @@ const TALENT_EXPECT_BASE_BY_FORMAT={
   AAA:84000,
   OLDIES:65000,ADULT_STANDARDS:62000,CLASSIC_HITS:78000,
   RHYTHMIC:90000,URBAN_CONTEMP:88000,SOUL_RNB:90000,
-  SPANISH:78000,GOSPEL:70000,
+  SPANISH:78000,GOSPEL:76000,
 };
 function formatTalentExpectationBase(s){
   const f=s?.format;
@@ -12875,7 +13065,7 @@ const TALENT_FORMAT_WEIGHT={
   OLDIES:0.3,
   ADULT_STANDARDS:0.2,
   CLASSIC_HITS:0.35, RHYTHMIC:0.55, URBAN_CONTEMP:0.55, SOUL_RNB:0.55,
-  SPANISH:0.45, GOSPEL:0.4,
+  SPANISH:0.45, GOSPEL:0.48,
 };
 function talentFormatWeightForStation(s){
   const f=s?.format;
@@ -13050,6 +13240,9 @@ function recalc(stations,G){
         }else if(s.format==='PUBLIC_ECLECTIC'){
           pubBaseRaw=0.096+0.098*_prb;
           pubPeakRaw=0.495+0.375*_prb;
+        }else if(s.format==='PUBLIC_JAZZ'){
+          pubBaseRaw=0.091+0.093*_prb;
+          pubPeakRaw=0.415+0.305*_prb;
         }else{
           pubBaseRaw=0.10+0.10*_prb;
           pubPeakRaw=0.45+0.29*_prb;
@@ -13062,6 +13255,8 @@ function recalc(stations,G){
         rawPub*=publicNewsHighEduBreakoutMult(s,G);
       }else if(s.format==='PUBLIC_ECLECTIC'){
         rawPub*=publicEclecticSceneMult(s,G);
+      }else if(s.format==='PUBLIC_JAZZ'){
+        rawPub*=publicJazzSceneMult(s,G);
       }
       return Number.isFinite(rawPub)?Math.max(0,rawPub):0;
       }else if(s.format==='RELIGIOUS_NETWORK'||s.isReligiousNetwork){
@@ -13105,6 +13300,9 @@ function recalc(stations,G){
       let rv=Math.max(0,coreAppl*effB*promoBoost*vanLift*jingleLift);
       const tpm=talentPmFor(s);
       rv*=tpm.ceilingMult;
+      if(G._modernColdStartIncumbentRecalc&&Number(s._modernColdIncumbentSeedW)>1){
+        rv*=Math.min(1.38,Number(s._modernColdIncumbentSeedW));
+      }
       return Number.isFinite(rv)?rv:0;
     });
     // Lane crowding: superlinear pain once a lane has more than `laneStart` commercial stations.
@@ -13170,6 +13368,8 @@ function recalc(stations,G){
         bleedPenalty*=0.62;
       }else if(s.format==='PUBLIC_ECLECTIC'){
         bleedPenalty*=0.74;
+      }else if(s.format==='PUBLIC_JAZZ'){
+        bleedPenalty*=0.77;
       }
       const bleed=1-bleedPenalty;
       return r*bleed;
@@ -13196,6 +13396,9 @@ function recalc(stations,G){
       const tgt=Math.max(raw[ri], identityFloor),cur=s.mom[coh]?.cur||s.rat.cur[coh]?.share||0;
       const d=tgt-cur;
       let spd=(d>0?.35:.60);
+      if(G._modernColdStartIncumbentRecalc&&!s.isPublic&&Number(s._modernColdIncumbentSeedW)>1){
+        spd=d>0?Math.min(0.96,spd+0.52):Math.min(0.88,spd+0.26);
+      }
       const gy=G.year||1970;
       if(gy<1986&&s.format==='TOP40'&&s.sig?.type==='AM'){
         const shStation=s.rat?.share||0;
@@ -13247,7 +13450,7 @@ function recalc(stations,G){
   // stations don’t collapse near zero. Total commercial share mass is preserved (scale),
   // then cohort cur shares scale proportionally so AQH stays consistent.
   const comm = stations.filter(s => s && !s._bpSlotDeferred && !stationIsNoncommercialInstitutional(s));
-  if (comm.length >= 2) {
+  if (comm.length >= 2 && !G._modernColdStartIncumbentRecalc) {
     const sumRaw = comm.reduce((a, s) => a + s.rat.share, 0);
     if (sumRaw > 1e-8) {
       const avg = sumRaw / comm.length;
@@ -13346,6 +13549,7 @@ function recalc(stations,G){
 
   stations.forEach(s=>{
     if(!s||s._bpSlotDeferred||!s.rat)return;
+    if(!Array.isArray(s.rat.hist))s.rat.hist=[];
     s.rat.hist.push({year:G.year,period:G.period,share:s.rat.share});
     if(s.rat.hist.length>24)s.rat.hist.shift();
   });
@@ -13483,18 +13687,19 @@ function seedRat(stations,fmpOrYear){
   const year=fmpOrYear>1?fmpOrYear:1970; // if >1 it's a year, otherwise treat as legacy fmp
   const mockG={year,satDrag:0,streamDrag:0,marketId:ACTIVE_MARKET};
   const activeIx=stations.map((s,i)=>s&&!s._bpSlotDeferred?i:-1).filter(i=>i>=0);
+  const CAP=0.22;
   COH.forEach(coh=>{
     const sc=activeIx.map(i=>{
       const s=stations[i];
       const m=STM[s.str]||{b:.7,v:.12,launchB:.20,ramp:8};
       // Established stations (launchPeriod=-999) seed at mature b-value, not launchB
       const seedB=s.launchPeriod===-999?m.b:m.launchB;
-      const sv=Math.max(0,appl(s,coh,mockG)*(seedB+rnd(-m.v*.3,m.v*.3)));
+      const incW=year>=2000&&Number(s._modernColdIncumbentSeedW)>1?Math.min(1.38,Number(s._modernColdIncumbentSeedW)):1;
+      const sv=Math.max(0,appl(s,coh,mockG)*(seedB+rnd(-m.v*.3,m.v*.3))*incW);
       return Number.isFinite(sv)?sv:0;
     });
     const tot=sc.reduce((a,b)=>a+(Number.isFinite(b)?Math.max(0,b):0),0);
     let raw=Number.isFinite(tot)&&tot>0?sc.map(v=>v/tot):sc.map(()=>0);
-    const CAP=0.22;
     for(let iter=0;iter<5;iter++){
       let excess=0,freeSum=0;
       raw=raw.map((r,i)=>{if(r>CAP){excess+=r-CAP;return CAP;}freeSum+=r;return r;});
@@ -14032,7 +14237,7 @@ function calcRev(s,G){
     // Adult Standards/Beautiful Music/MOR had thin ad markets — low ceilings.
     let fmtSellAffinity={'TOP40':0.13,'HOT_AC':0.10,'ADULT_CONTEMP':0.07,
       'URBAN_CONTEMP':0.08,'RHYTHMIC':0.08,'ALT_ROCK':0.06,'CLASSIC_ROCK':0.06,
-      'COUNTRY':0.05,'SOUL_RNB':0.07,'GOSPEL':-0.02,
+      'COUNTRY':0.05,'SOUL_RNB':0.07,'GOSPEL':0.038,
       'BEAUTIFUL_MUSIC':-0.05,'ADULT_STANDARDS':-0.04,'MOR':-0.03,
       'ALL_NEWS':0.09,'NEWS_TALK':0.08,'SPORTS_TALK':0.08,'PERSONALITY_TALK':0.06}[s.format]||0;
     // Pre-1980: agencies still bought “the big station” — compress spread so format sellout affinity stacks less vs rank
@@ -14051,7 +14256,7 @@ function calcRev(s,G){
       // Primary demo band for each format: Y=youth (12-34), M=mid (25-54), O=older (35+)
       const _demoBand = f => {
         const yFmts = ['TOP40','ALT_ROCK','RHYTHMIC','HOT_AC','URBAN_CONTEMP'];
-        const oFmts = ['NEWS_TALK','ALL_NEWS','SPORTS_TALK','BEAUTIFUL_MUSIC','ADULT_STANDARDS','GOSPEL','PERSONALITY_TALK'];
+        const oFmts = ['NEWS_TALK','ALL_NEWS','SPORTS_TALK','BEAUTIFUL_MUSIC','ADULT_STANDARDS','PERSONALITY_TALK'];
         if(yFmts.includes(f)) return 'Y';
         if(oFmts.includes(f)) return 'O';
         return 'M'; // Country, AC, Classic Rock, MOR, Soul, Oldies etc.
@@ -15149,7 +15354,6 @@ function runMarketAttrition(G){
   const amSurvivalFormats = (year) => {
     const pool = [];
     if(year>=1992)pool.push('ADULT_STANDARDS');
-    if(year>=1988)pool.push('GOSPEL');
     if(year>=1992)pool.push('SPANISH');
     if(year>=1970)pool.push('NEWS_TALK');
     if(year>=1970)pool.push('BROKERED_PROGRAMMING');
@@ -15181,7 +15385,7 @@ function runMarketAttrition(G){
     const isAMMusic = s.sig.type==='AM'&&!s.fmBooster&&
       ['TOP40','COUNTRY','SOUL_RNB','MOR','ALBUM_ROCK','BEAUTIFUL_MUSIC',
        'CLASSIC_ROCK','ADULT_CONTEMP','URBAN_CONTEMP','ALT_ROCK','AAA',
-       'RHYTHMIC','HOT_AC','CLASSIC_HITS','OLDIES','BROKERED_PROGRAMMING'].includes(s.format);
+       'RHYTHMIC','HOT_AC','CLASSIC_HITS','OLDIES','BROKERED_PROGRAMMING','GOSPEL'].includes(s.format);
     const isAMTalk = s.sig.type==='AM'&&!s.fmBooster&&
       ['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format);
     const isImplausible = s.sig.type==='AM'&&!s.fmBooster&&
@@ -15236,7 +15440,7 @@ function runMarketAttrition(G){
       continue;
     }
 
-    const alreadyNicheFmt = ['GOSPEL','SPANISH','ADULT_STANDARDS','PERSONALITY_TALK','BROKERED_PROGRAMMING'].includes(s.format);
+    const alreadyNicheFmt = ['SPANISH','ADULT_STANDARDS','PERSONALITY_TALK','BROKERED_PROGRAMMING'].includes(s.format);
     const densityRatio=MKTCAP>0?allComm.length/MKTCAP:1;
 
     // ── Long-run zombies: resolve niche / removal / stay — prevents indefinite undead pile-up
@@ -18176,6 +18380,172 @@ function applyMarketOpeningShape(stations,marketId){
   });
 }
 
+/**
+ * Modern cold-start only (`startYear` ≥ 2000): modest OQ / identity / talent-franchise lift on
+ * 1–2 strongest commercial candidates so mega/large markets open with credible leader concentration.
+ * Caller should run this **after** `injectMegaFragmentationThroughPeriod` (when used) so new dial slots
+ * participate in the follow-up `seedRat`, then `recalc`. Does not touch public NCE, religious network, or brokered economics.
+ */
+function applyModernColdStartCommercialIncumbentConcentration(stations,startYear,marketId,mockGCtx){
+  const y=Math.round(Number(startYear))||1970;
+  if(y<2000||!stations)return;
+  const m=MARKETS[marketId||ACTIVE_MARKET]||MARKETS.atlanta;
+  const tier=String(m.rankTier||'medium');
+  if(tier!=='mega'&&tier!=='large')return;
+  const eraRamp=Math.max(0.38,Math.min(1,_smoothstep(2000,2011,y)));
+  const want=tier==='mega'?2:1;
+  const fmtPri=fmt=>{
+    const M={
+      TOP40:1,HOT_AC:1,URBAN_CONTEMP:0.98,RHYTHMIC:0.95,COUNTRY:0.96,
+      NEWS_TALK:0.94,SPORTS_TALK:0.9,ADULT_CONTEMP:0.96,ALBUM_ROCK:0.88,CLASSIC_ROCK:0.86,
+      ALT_ROCK:0.85,AAA:0.85,SPANISH:0.92,PERSONALITY_TALK:0.82,ALL_NEWS:0.88,CLASSIC_HITS:0.8,
+      OLDIES:0.72,MOR:0.55,BEAUTIFUL_MUSIC:0.5,ADULT_STANDARDS:0.62,GOSPEL:0.7,
+    };
+    return M[fmt]??0.64;
+  };
+  const bumpStrSteps=(s,steps)=>{
+    const order=['weak','niche','emerging','moderate','strong','dominant'];
+    let ix=order.indexOf(s.str);
+    if(ix<0)return;
+    for(let u=0;u<steps&&ix<order.length-1;u++){
+      ix++;
+      s.str=order[ix];
+    }
+  };
+  const Gx=mockGCtx||{year:y,marketId:marketId||ACTIVE_MARKET,adx:1,streamDrag:0,period:1};
+  const list=[];
+  for(let i=0;i<stations.length;i++){
+    const s=stations[i];
+    if(!s||s._bpSlotDeferred||stationIsNoncommercialInstitutional(s))continue;
+    if(s.isPlayer||s.isZombie||s.isNicheSurvival)continue;
+    if(stationBrokeredEconomicsActive(s,Gx))continue;
+    if(s.format==='BROKERED_PROGRAMMING')continue;
+    if(!FM[s.format])continue;
+    const eu=Math.min(1.2,effUniverse(s));
+    const mstm=STM[s.str]||{b:0.7};
+    const pq=(s.oq/100)*0.34+eu*0.32+fmtPri(s.format)*0.22+(mstm.b||0.7)*0.12;
+    list.push({s,pq:pq*eraRamp});
+  }
+  const cmp=(a,b)=>{
+    const d=b.pq-a.pq;
+    if(Math.abs(d)>1e-9)return d;
+    return String(a.s.id||'').localeCompare(String(b.s.id||''));
+  };
+  list.sort(cmp);
+  const picked=[];
+  const addIf=s=>{
+    if(!s)return;
+    const id=s.id;
+    if(picked.some(x=>x.id===id))return;
+    picked.push(s);
+  };
+  if(want===2&&tier==='mega'){
+    const mus=list.filter(o=>o.s.sig?.type==='FM'&&!TALK_FMTS.includes(o.s.format));
+    const tlk=list.filter(o=>TALK_FMTS.includes(o.s.format));
+    mus.sort(cmp);
+    tlk.sort(cmp);
+    addIf(mus[0]?.s);
+    addIf(tlk[0]?.s);
+    for(const o of list){
+      if(picked.length>=2)break;
+      addIf(o.s);
+    }
+  }else{
+    const seen=new Set();
+    for(let k=0;k<list.length&&picked.length<want;k++){
+      const id=list[k].s.id;
+      if(seen.has(id))continue;
+      seen.add(id);
+      picked.push(list[k].s);
+    }
+  }
+  if(!picked.length)return;
+  const qBumpPrimary=Math.round(3+2*eraRamp+(tier==='mega'?2:0));
+  const qBumpSecondary=tier==='mega'?Math.max(3,qBumpPrimary-1):Math.max(2,qBumpPrimary-1);
+  const idBump=tier==='mega'?Math.round(9+5*eraRamp):Math.round(6+3*eraRamp);
+  const frBump=0.042+0.024*eraRamp+(tier==='mega'?0.014:0);
+  const dayparts=['morningDrive','afternoonDrive','midday','evening'];
+  picked.forEach((s,idx)=>{
+    if(tier==='mega'){
+      s._modernColdIncumbentSeedW=idx===0?1.28:1.06;
+    }else{
+      s._modernColdIncumbentSeedW=1.18;
+    }
+    if(tier==='mega'&&idx===0&&!TALK_FMTS.includes(s.format)){
+      s.str='dominant';
+    }else if(tier==='large'&&idx===0){
+      bumpStrSteps(s,2);
+    }else{
+      bumpStrSteps(s,tier==='mega'?2:1);
+    }
+    const qb=idx===0?qBumpPrimary:qBumpSecondary;
+    for(const sl of dayparts){
+      const sd=s.prog?.[sl];
+      if(sd&&sd.quality!=null)sd.quality=Math.min(93,Math.round(sd.quality+qb));
+    }
+    refreshStationOQ(s,Gx);
+    s.identity=Math.min(100,Math.max(0,Math.round((s.identity||0)+idBump*(idx===0?1:0.78))));
+    const fr=s.talentFranchise;
+    const baseFr=fr==null||!Number.isFinite(fr)?0.88:fr;
+    s.talentFranchise=Math.min(0.97,baseFr+frBump*(idx===0?1:0.65));
+  });
+}
+
+/**
+ * Gen-only headline correction after cold `recalc`/`seedRev`: mega/large modern starts sometimes
+ * land with PUBLIC_NEWS #1 purely because the commercial leader is a few points too soft.
+ * Lifts the top commercial station’s cohort mass modestly (caps), then re-derives AQH headline shares.
+ * Does not edit public NCE math, tiers, or appeal formulas.
+ */
+function nudgeModernColdStartCommercialLeaderHeadline(stations,marketId,startYear,Gctx){
+  const y=Math.round(Number(startYear))||1970;
+  if(y<2000)return;
+  const m=MARKETS[marketId||ACTIVE_MARKET]||MARKETS.atlanta;
+  const tier=String(m.rankTier||'');
+  if(tier!=='mega'&&tier!=='large')return;
+  const news=stations.find(s=>s&&!s._bpSlotDeferred&&s.isPublic&&s.format==='PUBLIC_NEWS');
+  const comm=stations.filter(s=>s&&!s._bpSlotDeferred&&!stationIsNoncommercialInstitutional(s)&&!s.isPublic&&s.rat);
+  if(!news||comm.length<6)return;
+  const nShare=Number(news.rat?.share)||0;
+  let lead=null,lShare=0;
+  for(const s of comm){
+    const sh=Number(s.rat?.share)||0;
+    if(sh>lShare){lShare=sh;lead=s;}
+  }
+  if(!lead||lShare<1e-6)return;
+  const eraG=_smoothstep(2000,2014,y);
+  const floor=tier==='mega'?0.082+0.007*eraG:0.076+0.005*eraG;
+  const ceiling=tier==='mega'?0.115:0.099;
+  if(lShare>=floor&&lShare+0.008>=nShare)return;
+  const hashSalt='modernColdCommHead|v1';
+  const u=(wlHash32(`${hashSalt}|${String(marketId)}|${y}|${lead.callLetters||lead.id}`)>>>0)/4294967296;
+  const newsMargin=tier==='mega'?0.011+0.007*eraG:0.007+0.004*eraG;
+  const wantBeat=u<(tier==='mega'?0.30:0.16);
+  let tgt=Math.min(
+    ceiling,
+    Math.max(
+      floor,
+      Math.min(wantBeat?nShare+newsMargin:nShare*0.91,lShare*(tier==='mega'?1.48:1.24)),
+    ),
+  );
+  if(tgt<=lShare*1.015)return;
+  const f=tgt/lShare;
+  COH.forEach(coh=>{
+    const c=lead.rat.cur[coh];
+    if(!c)return;
+    c.share=Math.min(0.215,Math.round(c.share*f*1e4)/1e4);
+    const pop=(POP.cohorts[coh]?.t||0)*effUniverse(lead);
+    const engage=AQH_ENGAGE[coh]||0.060;
+    c.aqh=Math.round(c.share*pop*engage);
+    if(lead.mom[coh]){
+      lead.mom[coh].cur=c.share;
+      lead.mom[coh].tgt=Math.max(lead.mom[coh].tgt||0,c.share);
+    }
+  });
+  lead.rat.aqh=COH.reduce((sum,c)=>sum+(lead.rat.cur[c]?.aqh||0),0);
+  applyListeningHoursShareFromAqh(stations,Gctx||{year:y,marketId,stations});
+}
+
 /** Seeded stations + calls for scripted solo tutorial (1970 Atlanta-style BP). */
 function applyTutorialTurnaroundPostGen(stations,sc,bpYear){
   if(sc.id!=='tutorial_turnaround'||bpYear!==1970)return;
@@ -18356,24 +18726,27 @@ function genMarket(scenId){
     };
   }
   const _pubCity=MARKETS[ACTIVE_MARKET]?.label||'Atlanta';
-  const _pubClNews=gc(),_pubClClass=gc(),_pubClEclectic=gc();
+  const _pubClNews=gc(),_pubClClass=gc(),_pubClEclectic=gc(),_pubClJazz=gc();
   const pubNews=mkPub(_pubClNews,'88.5 FM','PUBLIC_NEWS','50kw',0.92,gb('PUBLIC_NEWS','88.5 FM',_pubCity,ACTIVE_MARKET,_gbBrandIdTaken,_pubClNews),72,1975,'#94a3b8');
   const pubClass=mkPub(_pubClClass,'90.1 FM','PUBLIC_CLASSICAL','25kw',0.78,gb('PUBLIC_CLASSICAL','90.1 FM',_pubCity,ACTIVE_MARKET,_gbBrandIdTaken,_pubClClass),68,1979,'#7c8fa8');
   stations.push(pubNews,pubClass);
   const startYear=sc.startYear||1970;
   assignPublicNceTierToStation(pubNews,ACTIVE_MARKET,startYear);
   assignPublicNceTierToStation(pubClass,ACTIVE_MARKET,startYear);
-  if(computePublicStationTargetCount(ACTIVE_MARKET,startYear)>=3){
-    const hasE=stations.some(s=>s&&!s._bpSlotDeferred&&s.isPublic&&s.format==='PUBLIC_ECLECTIC');
-    if(!hasE){
-      const fe=nextUnusedCommercialFreq({stations,marketId:ACTIVE_MARKET},'FM');
-      if(fe){
-        const eLaunch=Math.max(1991,Math.round(Number(startYear))||1970);
-        const pubEc=mkPub(_pubClEclectic,fe,'PUBLIC_ECLECTIC','25kw',0.82,gb('PUBLIC_ECLECTIC',fe,_pubCity,ACTIVE_MARKET,_gbBrandIdTaken,_pubClEclectic),70,eLaunch,'#6b8cae');
-        stations.push(pubEc);
-        assignPublicNceTierToStation(pubEc,ACTIVE_MARKET,startYear);
-      }
-    }
+  const pubExp=computePublicExpansionFormatsAfterBase(ACTIVE_MARKET,startYear);
+  for(let exi=0;exi<pubExp.length;exi++){
+    const exFmt=pubExp[exi];
+    if(stations.some(s=>s&&!s._bpSlotDeferred&&s.isPublic&&s.format===exFmt))continue;
+    const fe=nextUnusedCommercialFreq({stations,marketId:ACTIVE_MARKET},'FM');
+    if(!fe)continue;
+    const callEx=exFmt==='PUBLIC_ECLECTIC'?_pubClEclectic:_pubClJazz;
+    const launchEx=exFmt==='PUBLIC_ECLECTIC'?Math.max(1991,Math.round(Number(startYear))||1970):Math.max(1988,Math.round(Number(startYear))||1970);
+    const reachEx=exFmt==='PUBLIC_ECLECTIC'?0.82:0.76;
+    const oqEx=exFmt==='PUBLIC_ECLECTIC'?70:69;
+    const colEx=exFmt==='PUBLIC_ECLECTIC'?'#6b8cae':'#5b7fa4';
+    const pubX=mkPub(callEx,fe,exFmt,'25kw',reachEx,gb(exFmt,fe,_pubCity,ACTIVE_MARKET,_gbBrandIdTaken,callEx),oqEx,launchEx,colEx);
+    stations.push(pubX);
+    assignPublicNceTierToStation(pubX,ACTIVE_MARKET,startYear);
   }
   const genMarketRelNetNews=[];
   injectReligiousNetworkAtMarketGenIfDue(stations,dialCtx,startYear,genMarketRelNetNews);
@@ -18470,14 +18843,26 @@ function genMarket(scenId){
       _megaFragmentationAdded:0,
     };
     injectMegaFragmentationThroughPeriod(fragShell,startYear,1);
+    applyModernColdStartCommercialIncumbentConcentration(stations,startYear,ACTIVE_MARKET,{
+      year:startYear,
+      marketId:ACTIVE_MARKET,
+      adx:finalAdx,
+      streamDrag:finalStream,
+      period:1,
+    });
+    seedRat(stations, startYear);
     const mockGRecalc={
       stations,marketId:ACTIVE_MARKET,year:startYear,period:1,turn:fragShell.turn,
       adx:finalAdx,streamDrag:finalStream,satDrag:0,
       fmp:effectiveFmpForMarket(startYear,ACTIVE_MARKET),
       ps:fragShell.ps,
+      _modernColdStartIncumbentRecalc:true,
     };
     recalc(stations,mockGRecalc);
     seedRev(stations,mockGRecalc);
+    nudgeModernColdStartCommercialLeaderHeadline(stations,ACTIVE_MARKET,startYear,mockGRecalc);
+    stations.forEach(s=>{if(s)delete s._modernColdIncumbentSeedW;});
+    delete mockGRecalc._modernColdStartIncumbentRecalc;
     // Filter out events that already happened
     const remainingEvq=EVDATA.filter(ev=>ev.y>startYear||(ev.y===startYear&&ev.p===2));
     _gbBrandIdTaken=null;
@@ -23790,7 +24175,7 @@ function buildResearchReport(s,G){
     return Math.max(0.12,0.12-(year-1993)*0.005);
   })();
   const amPenalty=isAMMusic?Math.max(0.10,(1.0-0.60*fmp)*amViab):1.0;
-  const isTalkAM=isAM&&['NEWS_TALK','ALL_NEWS','SPORTS_TALK','GOSPEL','PERSONALITY_TALK'].includes(s.format);
+  const isTalkAM=isAM&&['NEWS_TALK','ALL_NEWS','SPORTS_TALK','PERSONALITY_TALK'].includes(s.format);
 
   // ── COMPETITION ──
   const compFmts=FMT_COMPETITION[s.format]||[];
@@ -24556,6 +24941,11 @@ function rivalReformat(G){
         flipProb*=(1+Math.min(0.055,0.02+0.045*(dRf.relativePressure01||0)));
       }
       flipProb=Math.min(0.88,Math.max(0.035,flipProb));
+      if(s.format==='GOSPEL'){
+        const mktG=MARKETS[G.marketId||ACTIVE_MARKET]||MARKETS.atlanta;
+        const gFit=gospelCommercialMarketFit01(G.marketId||'atlanta',mktG);
+        flipProb*=1-Math.min(0.38,0.12+0.28*gFit);
+      }
       if(Math.random()>=flipProb)return;
       const candidates=eligibleFormats.filter(f=>
         f!==s.format&&(FM[f]?.unlock||1900)<=G.year&&
@@ -24617,6 +25007,11 @@ function rivalReformat(G){
           score*=Math.max(0.14,0.26+0.74*p)*Math.max(0.28,0.18+0.82*eLift);
           const greenAaa=(fmtCounts.AAA||0)===0&&y>=1990&&eLift>=0.60&&p>=0.45;
           if(greenAaa)score*=2.0;
+        }
+        if(f==='GOSPEL'){
+          const greenG=(fmtCounts.GOSPEL||0)===0;
+          const relNetCt=fmtCounts.RELIGIOUS_NETWORK||0;
+          score*=aiGospelFormatPlausibilityMult(G.marketId||ACTIVE_MARKET,y,fmtCounts.GOSPEL||0,greenG&&count===0,relNetCt);
         }
         if(s.aiArchetype==='trend_chaser'&&y>=1976&&y<=1998){
           if(['TOP40','ADULT_CONTEMP','URBAN_CONTEMP','ALT_ROCK','HOT_AC'].includes(f))score*=1+0.11*era.fmPull;
@@ -26074,7 +26469,7 @@ function openSales(sid){
   // Cluster demo breadth note for the sales modal
   const _sDemoBand = f => {
     const yFmts=['TOP40','ALT_ROCK','RHYTHMIC','HOT_AC','URBAN_CONTEMP'];
-    const oFmts=['NEWS_TALK','ALL_NEWS','SPORTS_TALK','BEAUTIFUL_MUSIC','ADULT_STANDARDS','GOSPEL','PERSONALITY_TALK'];
+    const oFmts=['NEWS_TALK','ALL_NEWS','SPORTS_TALK','BEAUTIFUL_MUSIC','ADULT_STANDARDS','PERSONALITY_TALK'];
     return yFmts.includes(f)?'Youth (12–34)':oFmts.includes(f)?'Older (35+)':'Mid (25–54)';
   };
   const _clusterStns = myPS();
@@ -30755,7 +31150,7 @@ function openIdent(sid){
   // Format-appropriate description of what investment means
   const fmtDesc={
     SOUL_RNB:'Remote broadcasts from community events, neighborhood sponsorships, supporting local artists.',
-    GOSPEL:'Church partnerships, charity drives, funeral home sponsorships, community prayer segments.',
+    GOSPEL:'Local concerts, choir events, automotive, faith-friendly retail, and community uplift sponsors.',
     COUNTRY:'County fair remotes, local rodeo coverage, high school sports, farm report sponsorships.',
     NEWS_TALK:'Editorial board endorsements, town halls, community call-in events, local issue coverage.',
     SPORTS_TALK:'Local team coverage, athlete interviews, youth sports sponsorships, pre/postgame remotes.',
@@ -31363,7 +31758,7 @@ function openFmBooster(sid){
   }
   const cost=getBoosterCost(G.year);
   const canAfford=G.cash>=cost;
-  const isMusFmt=!['NEWS_TALK','ALL_NEWS','SPORTS_TALK','PERSONALITY_TALK','GOSPEL','SPANISH'].includes(s.format);
+  const isMusFmt=!['NEWS_TALK','ALL_NEWS','SPORTS_TALK','PERSONALITY_TALK','SPANISH'].includes(s.format);
   const erosionRisk=(isMusFmt&&s.sig.type==='AM')||(['NEWS_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format)&&s.sig.type==='AM'&&!s.fmBooster&&!stationHasSimulcastLeg(s,G)&&(G?.year||0)>=2007);
   document.getElementById('boostb').innerHTML=`
     <p class="di">An FM translator rebroadcasts your AM signal on a low-power FM frequency. Made available to AM stations by the FCC's AM Revitalization proceeding starting 2009 — typically by placing the AM on an HD Radio subchannel and qualifying a translator for that feed. It covers the city core (~99 watts) and picks up FM-only listeners in that footprint. <strong>It does not stop AM erosion entirely</strong> — listeners in your AM fringe beyond the translator's reach still can't receive the FM signal and keep drifting away. The bigger your AM signal, the more fringe audience remains exposed. A full FM license is the only complete solution. The translator also partially shields Talk and Sports from streaming-era AM signal quality penalties.</p>
@@ -31603,6 +31998,7 @@ function doFmt(keepSim){
   // (e.g., Midday unexpectedly becomes unstaffed before the guided replace/hire step).
   const isTutTurnaround=isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&s.isPlayer;
   if(!isTutTurnaround&&!adj)Object.entries(s.prog).forEach(([sl,sd])=>{if(sd?.talent&&Math.random()<.25){sd.talent=null;sd.quality*=.60;}});
+  if(!Array.isArray(s.flog))s.flog=[];
   s.flog.push({from:old,to:nf});
   // Drama: name the community loss if it was meaningful
   const betrayalNote=preFlipIdentity>=40?` Community identity drops from ${Math.round(preFlipIdentity)} → ${Math.round(s.identity)}.`:'';
@@ -33933,6 +34329,7 @@ function maybeRefreshOpenRankerModal(){
 function migrateSave(G){
   G.news=G.news||[];
   migrateHitsLineage(G);
+  migrateGospelTaxonomy(G);
   const _chrCross=hitsLineageFirstChrCalendarYear();
   if(_chrCross!=null&&G._hitsChrTransitionNewsShown!==true&&(G.year||1970)>_chrCross)G._hitsChrTransitionNewsShown=true;
   // Fix missing fields added in recent updates
@@ -34000,6 +34397,7 @@ function migrateSave(G){
   G._playerFinHistory=G._playerFinHistory||{};
   G.stationFinHistory=G.stationFinHistory||{};
   if(!G.score)G.score={isSandbox:false,shareHistory:[],peakRevenue:0,decadeScores:{}};
+  else if(!Array.isArray(G.score.shareHistory))G.score.shareHistory=[];
   G._atl1970DeferredQueue=G._atl1970DeferredQueue||[];
   if(G._megaFragmentationQueue===undefined)G._megaFragmentationQueue=[];
   if(G._megaFragmentationAdded===undefined)G._megaFragmentationAdded=0;
@@ -34103,7 +34501,8 @@ function migrateSave(G){
     // Fin object
     if(!s.fin)s.fin={rev:0,fix:0,tal:0,cost:0,ebitda:0};
     // Rat object
-    if(!s.rat)s.rat={share:0.01,aqh:100,cur:{},prev:{}};
+    if(!s.rat)s.rat={share:0.01,aqh:100,cur:{},prev:{},hist:[]};
+    else if(!Array.isArray(s.rat.hist))s.rat.hist=[];
     // Mom object
     if(!s.mom){s.mom={};COH.forEach(c=>{s.mom[c]={tgt:0.01,cur:0.01};});}
     // Ops object
@@ -34180,7 +34579,7 @@ function migrateSave(G){
       sig:{type:'FM',reach:0.92,power:'50kw'},str:'moderate',
       freq:'88.5 FM',launchPeriod:0,
       ops:{spots:0,sell:0,promo:0,progBudget:0},fin:{rev:0,fix:0,tal:0,cost:0,ebitda:0},
-      rat:{share:0.04,aqh:4000,cur:{},prev:{}},
+      rat:{share:0.04,aqh:4000,cur:{},prev:{},hist:[]},
       mom:{},prog:{},drift:{},stream:{active:false,aqh:0,rev:0,upkeep:0,dragOffset:0,launchYear:0},
       pers:{l:'Public Station',rs:.20,ag:.00,ms:.20,tr:.20,pt:.002,ic:.05}
     };
@@ -34198,7 +34597,7 @@ function migrateSave(G){
       sig:{type:'FM',reach:0.78,power:'25kw'},str:'niche',
       freq:'90.1 FM',launchPeriod:0,
       ops:{spots:0,sell:0,promo:0,progBudget:0},fin:{rev:0,fix:0,tal:0,cost:0,ebitda:0},
-      rat:{share:0.02,aqh:2000,cur:{},prev:{}},
+      rat:{share:0.02,aqh:2000,cur:{},prev:{},hist:[]},
       mom:{},prog:{},drift:{},stream:{active:false,aqh:0,rev:0,upkeep:0,dragOffset:0,launchYear:0},
       pers:{l:'Public Station',rs:.20,ag:.00,ms:.20,tr:.20,pt:.002,ic:.05}
     };
@@ -34207,30 +34606,41 @@ function migrateSave(G){
     G.stations.push(pubClass);
     assignPublicNceTierToStation(pubClass,G.marketId||ACTIVE_MARKET,(G.scenario&&G.scenario.startYear!=null)?G.scenario.startYear:(G.year||1970));
   }
-  const hasPubEclectic=G.stations.some(s=>s.isPublic&&s.format==='PUBLIC_ECLECTIC');
-  const syEclectic=(G.scenario&&G.scenario.startYear!=null)?G.scenario.startYear:(G.year||1970);
-  if(!hasPubEclectic&&computePublicStationTargetCount(G.marketId||ACTIVE_MARKET,syEclectic)>=3&&G.year>=1991){
-    const dialCtx={stations:G.stations,marketId:G.marketId||ACTIVE_MARKET};
-    const feEc=nextUnusedCommercialFreq(dialCtx,'FM');
-    if(feEc){
-      const _pubPrefE=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
-      const eLaunch=Math.max(1991,Math.round(Number(syEclectic))||1970);
-      const pubEclectic={
-        id:'pub_eclectic_'+Date.now(),callLetters:_pubPrefE+['PEC','ECL','ARC','AIR','SON'][Math.floor(Math.random()*5)],color:'#6b8cae',isPublic:true,isPlayer:false,
-        brand:'Eclectic Public Radio',oq:70,_pubLaunchYear:eLaunch,
-        format:'PUBLIC_ECLECTIC',
-        sig:{type:'FM',reach:0.82,power:'25kw'},str:'moderate',
-        freq:feEc,launchPeriod:0,
-        ops:{spots:0,sell:0,promo:0,progBudget:0},fin:{rev:0,fix:0,tal:0,cost:0,ebitda:0},
-        rat:{share:0.02,aqh:1500,cur:{},prev:{}},
-        mom:{},prog:{},drift:{},stream:{active:false,aqh:0,rev:0,upkeep:0,dragOffset:0,launchYear:0},
-        pers:{l:'Public Station',rs:.20,ag:.00,ms:.20,tr:.20,pt:.002,ic:.05}
-      };
-      COH.forEach(c=>{pubEclectic.mom[c]={tgt:0.015,cur:0.015};});
-      Object.keys(SL).forEach(k=>{pubEclectic.prog[k]=null;});
-      G.stations.push(pubEclectic);
-      assignPublicNceTierToStation(pubEclectic,G.marketId||ACTIVE_MARKET,syEclectic);
-    }
+  const midPubPlan=G.marketId||ACTIVE_MARKET||'atlanta';
+  const syPlan=(G.scenario&&G.scenario.startYear!=null)?G.scenario.startYear:(G.year||1970);
+  const expFmts=computePublicExpansionFormatsAfterBase(midPubPlan,syPlan);
+  for(let ei=0;ei<expFmts.length;ei++){
+    const fmtPlan=expFmts[ei];
+    const hasF=G.stations.some(s=>s.isPublic&&s.format===fmtPlan);
+    const yrNeed=fmtPlan==='PUBLIC_ECLECTIC'?1991:1988;
+    if(hasF||G.year<yrNeed)continue;
+    const dialCtxM={stations:G.stations,marketId:midPubPlan};
+    const fePl=nextUnusedCommercialFreq(dialCtxM,'FM');
+    if(!fePl)continue;
+    const _pubPrefP=getCallPrefixForMarket(midPubPlan);
+    const launchPl=fmtPlan==='PUBLIC_ECLECTIC'?Math.max(1991,Math.round(Number(syPlan))||1970):Math.max(1988,Math.round(Number(syPlan))||1970);
+    const brandPl=fmtPlan==='PUBLIC_ECLECTIC'?'Eclectic Public Radio':'Public Jazz';
+    const colorPl=fmtPlan==='PUBLIC_ECLECTIC'?'#6b8cae':'#5b7fa4';
+    const reachPl=fmtPlan==='PUBLIC_ECLECTIC'?0.82:0.76;
+    const oqPl=fmtPlan==='PUBLIC_ECLECTIC'?70:69;
+    const strPl=fmtPlan==='PUBLIC_ECLECTIC'?'moderate':'niche';
+    const idPrefix=fmtPlan==='PUBLIC_ECLECTIC'?'pub_eclectic_':'pub_jazz_';
+    const callsPool=fmtPlan==='PUBLIC_ECLECTIC'?['PEC','ECL','ARC','AIR','SON']:['PJZ','JAZ','WBG','KJZ','CSM'];
+    const pubExtra={
+      id:idPrefix+Date.now(),callLetters:_pubPrefP+callsPool[Math.floor(Math.random()*callsPool.length)],color:colorPl,isPublic:true,isPlayer:false,
+      brand:brandPl,oq:oqPl,_pubLaunchYear:launchPl,
+      format:fmtPlan,
+      sig:{type:'FM',reach:reachPl,power:'25kw'},str:strPl,
+      freq:fePl,launchPeriod:0,
+      ops:{spots:0,sell:0,promo:0,progBudget:0},fin:{rev:0,fix:0,tal:0,cost:0,ebitda:0},
+      rat:{share:0.02,aqh:1500,cur:{},prev:{},hist:[]},
+      mom:{},prog:{},drift:{},stream:{active:false,aqh:0,rev:0,upkeep:0,dragOffset:0,launchYear:0},
+      pers:{l:'Public Station',rs:.20,ag:.00,ms:.20,tr:.20,pt:.002,ic:.05}
+    };
+    COH.forEach(c=>{pubExtra.mom[c]={tgt:0.015,cur:0.015};});
+    Object.keys(SL).forEach(k=>{pubExtra.prog[k]=null;});
+    G.stations.push(pubExtra);
+    assignPublicNceTierToStation(pubExtra,midPubPlan,syPlan);
   }
 
   // Deterministic institutional CCM ecosystem — repair orphan slot keys, inject missing slots.

@@ -48,6 +48,7 @@
     MOR: 'ac',
     ADULT_STANDARDS: 'ac',
     PUBLIC_CLASSICAL: 'ac',
+    PUBLIC_JAZZ: 'rock',
     OLDIES: 'oldies',
     CLASSIC_HITS: 'oldies',
     SOUL_RNB: 'urban',
