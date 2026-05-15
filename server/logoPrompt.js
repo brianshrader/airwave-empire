@@ -148,8 +148,8 @@ function buildRemoteVanPrompt(meta) {
     `Context (no extra on-image text beyond the logo): "${stationName}", ${format}, year ${year}, ${bandNote}.`,
     tone ? `Scene mood (not text): ${tone}.` : '',
     vehicleNotes,
-    `Photoreal three-quarter side view, ${eraLabel} US setting, one remote van at a fair, stadium lot, or street event — mast, cables, sandbags or chairs; optional engineer silhouette. Livery hero on the side.`,
-    'Camera: ~50mm documentary, rectilinear, square pixels, natural fleet-van proportions; wheels circular; roof height and wheelbase like a real parked Sprinter / E-Series / Transit class.',
+    `Photoreal three-quarter side view, ${eraLabel} US setting, one remote van at a fair, stadium lot, or street event — mast, cables, sandbags or chairs; optional engineer silhouette. Entire vehicle visible in frame. Integrated station branding painted on the side panels, proportional to the vehicle — clear and readable, but not oversized.`,
+    'Camera: ~50mm documentary, rectilinear, square pixels — no anamorphic squeeze. Normal wheelbase and roof height; wheels circular in the final image (not elliptical). No stretched, squashed, or compressed body. No giant logo covering most of the vehicle; natural fleet-van proportions like a real parked Sprinter / E-Series / Transit class.',
     'Light: daylight, shallow DOF, light grain. Credible news-remote photograph.',
   ]
     .filter(Boolean)

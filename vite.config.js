@@ -155,6 +155,7 @@ export default defineConfig(({ command, mode }) => {
         copy('stationLogoSvg.js');
         // inspect-shares.html (share calibration batch tool)
         copy('marketSimHarness.js');
+        copy('marketTraitProfile.js');
         copy('inspectSharesBoot.js');
         copy('inspectPublicRadioBoot.js');
         copy('inspectMarketHealthBoot.js');

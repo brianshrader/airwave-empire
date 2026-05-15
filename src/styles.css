@@ -1574,6 +1574,12 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 body#wl-play:has(#alertbar:not([hidden])) #main{
   padding-top:min(120px,max(44px,12vh));
 }
+/* Fixed #site-footer (z-index:65) sits above in-flow content — generic #main bottom pad can be shorter than
+   the compact footer + disclaimer + iOS safe-area, so the last lineup rows can still receive taps on the
+   Facebook / legal links. Extra clearance on play only (see also .wl-modal-open footer pointer-events:none). */
+body#wl-play #main{
+  padding-bottom:max(120px,calc(92px + env(safe-area-inset-bottom,0px)));
+}
 
 /* Bottom toast stack; #wl-game-notice reserved for GM-dismissal card (interactive). */
 .wl-toast-host{

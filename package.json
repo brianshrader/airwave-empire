@@ -30,6 +30,7 @@
     "diag:fixed-cluster": "node scripts/fixed-cost-cluster-diag.mjs",
     "diag:late-era-cost-mix": "node scripts/late-era-cost-mix-diag.mjs",
     "diag:top40-chr": "node scripts/diag-top40-chr-evolution.mjs",
+    "diag:major-market-talent-comp": "node scripts/diag-major-market-talent-comp.mjs",
     "audit:am": "node scripts/audit-am-stations.mjs",
     "audit:lma": "node scripts/audit-lma-fees.mjs",
     "audit:van-repaint": "node scripts/audit-van-repaint-cost.mjs",
@@ -54,6 +55,9 @@
     "validate:gm-campaign": "node scripts/validate-gm-campaign-headless.mjs",
     "validate:wichita-econ": "node scripts/validate-gm-campaign-headless.mjs --mode=batch --wichita-econ-test --json=tmp/wichita_econ_test.json",
     "validate:am-lean-music": "node scripts/validate-am-lean-music-econ.mjs",
+    "report:market-traits": "node scripts/report-market-traits.mjs",
+    "diag:share-concentration": "node scripts/diag-share-concentration.mjs",
+    "diag:tier-concentration-formats": "node scripts/diag-tier-concentration-formats.mjs",
     "validate:brokered-mode": "node scripts/validate-brokered-mode.mjs",
     "audit:swap-signal-fee": "node scripts/audit-swap-signal-fee.mjs",
     "test:billing-e2e": "node scripts/e2e-billing-checkout-verify.mjs"

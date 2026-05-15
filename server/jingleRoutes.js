@@ -39,6 +39,15 @@ const jingleRateMap = new Map();
 const jingleJobs = new Map();
 const JINGLE_JOB_TTL_MS = 2 * 60 * 60 * 1000;
 
+/** ShortAPI/Suno-style automated prompt rejection — show actionable copy in the game UI. */
+function formatJingleJobError(raw) {
+  const s = String(raw || 'Jingle generation failed').slice(0, 400);
+  if (/2013|failed review|prompt violated/i.test(s)) {
+    return 'The music provider rejected this prompt after automated review. Try a shorter brand or slogan, remove special hints, or rephrase anything that could sound suggestive or like nightlife or adult-venue wording.';
+  }
+  return s;
+}
+
 function pruneJingleJobs() {
   const now = Date.now();
   for (const [id, j] of jingleJobs) {
@@ -89,7 +98,7 @@ async function runJingleJob(jobId) {
     console.error('[jingle job]', jobId, e.message || e);
     posthog.captureException(e, j.ip);
     j.status = 'failed';
-    j.error = String(e.message || 'Jingle generation failed').slice(0, 400);
+    j.error = formatJingleJobError(e.message);
     j.completedAt = Date.now();
   }
 }
@@ -332,7 +341,7 @@ function mountJingleRoutes(app) {
       const j = jingleJobs.get(jobId);
       if (j && j.status === 'pending') {
         j.status = 'failed';
-        j.error = String(e.message || 'Jingle job crashed').slice(0, 400);
+        j.error = formatJingleJobError(e.message);
         j.completedAt = Date.now();
       }
     });

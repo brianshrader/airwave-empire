@@ -8,6 +8,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp');
 const { buildLogoPrompt, buildRemoteVanPrompt } = require('./logoPrompt');
 const {
   generateShortapiImage,
@@ -30,12 +31,12 @@ const { CLERK_PLAN } = require('./aiEntitlements');
 
 const GENERATED_VAN_DIR = path.join(__dirname, '..', 'generated-remote-vans');
 
-/** Grok accepts multiple ratios; 3:2 reads more “photo” and avoids ultra-wide 16:9 stretch artifacts on some runs. */
+/** Grok accepts multiple ratios; default 16:9 matches prior remote-van composition (env can override). */
 const ALLOWED_VAN_AR = new Set(['16:9', '3:2', '4:3', '1:1']);
 
 function resolveVanAspectRatio() {
-  const raw = String(process.env.GROK_VAN_ASPECT_RATIO || '3:2').trim();
-  return ALLOWED_VAN_AR.has(raw) ? raw : '3:2';
+  const raw = String(process.env.GROK_VAN_ASPECT_RATIO || '16:9').trim();
+  return ALLOWED_VAN_AR.has(raw) ? raw : '16:9';
 }
 
 function ensureVanDir() {
@@ -197,12 +198,29 @@ function mountRemoteVanRoutes(app) {
         band: typeof body.band === 'string' ? body.band : '',
       });
 
+      const aspectRatio = resolveVanAspectRatio();
+      const resolution = process.env.GROK_VAN_RESOLUTION === '2k' ? '2k' : '1k';
+      if (process.env.LOG_REMOTE_VAN_PROMPT === '1') {
+        console.log('[remote-van-prompt]', { aspect_ratio: aspectRatio, resolution, prompt });
+      }
+
       const { buffer } = await generateGrokImageEdit({
         prompt,
         sourcePngBuffer: logoBuf,
-        aspect_ratio: resolveVanAspectRatio(),
-        resolution: process.env.GROK_VAN_RESOLUTION === '2k' ? '2k' : '1k',
+        aspect_ratio: aspectRatio,
+        resolution,
       });
+
+      if (process.env.LOG_REMOTE_VAN_PROMPT === '1') {
+        try {
+          const meta = await sharp(buffer, { failOn: 'none', unlimited: true }).metadata();
+          console.log('[remote-van-prompt]', {
+            output_px_after_sharp: meta.width && meta.height ? { width: meta.width, height: meta.height } : null,
+          });
+        } catch (e) {
+          console.warn('[remote-van-prompt] sharp metadata failed:', e && e.message ? e.message : e);
+        }
+      }
 
       if (fs.existsSync(vanPath)) fs.unlinkSync(vanPath);
       fs.writeFileSync(vanPath, buffer);

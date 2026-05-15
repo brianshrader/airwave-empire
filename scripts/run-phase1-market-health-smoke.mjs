@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Six-market market-health smoke (genMarketMP 1985 → 2025): station counts / survival signals by decade.
+ * Phase-1 pilot market-health smoke (genMarketMP 1985 → 2025): station counts / survival signals by decade.
  *
  *   node scripts/run-phase1-market-health-smoke.mjs
  *   PHASE1_QUICK=0 node scripts/run-phase1-market-health-smoke.mjs   # full (slow): 4 runs/market
@@ -44,6 +44,7 @@ function stubEl() {
     innerHTML: '',
     value: '',
     style: {},
+    dataset: {},
     classList: { contains() { return false; }, add() {}, remove() {} },
     appendChild() {},
     querySelector() { return null; },
@@ -51,14 +52,24 @@ function stubEl() {
     click() {},
     addEventListener() {},
     removeEventListener() {},
+    getAttribute() {
+      return null;
+    },
+    setAttribute() {},
   };
 }
 
 const documentStub = {
-  body: { innerHTML: '' },
+  body: {
+    innerHTML: '',
+    appendChild() {},
+    contains() {
+      return false;
+    },
+  },
   head: { appendChild() {} },
   createElement() {
-    return { href: '', download: '', click() {} };
+    return stubEl();
   },
   getElementById() {
     return stubEl();
@@ -70,6 +81,9 @@ const documentStub = {
     return null;
   },
   readyState: 'complete',
+  /** legacy.js registers dev tutorial hotkeys at parse time */
+  addEventListener() {},
+  removeEventListener() {},
 };
 
 function createVmContext() {

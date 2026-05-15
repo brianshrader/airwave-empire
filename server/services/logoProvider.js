@@ -39,7 +39,7 @@ const OUTPUT_SIZE = 512;
 /** @type {import('sharp').ResizeOptions} */
 const RESIZE_OPTS = { width: OUTPUT_SIZE, height: OUTPUT_SIZE, fit: 'cover', position: 'centre' };
 
-/** Remote van art: cap long edge for cache + UI (xAI may return 1k–2k wide). */
+/** Remote van art: max width for cache + UI (xAI may return 1k–2k wide). Height scales proportionally — never force a square box, which has caused horizontally “squished” vans with some PNGs. */
 const VAN_MAX_EDGE = 1680;
 
 const POLL_MS = 1500;
@@ -649,10 +649,9 @@ async function generateGrokImageEdit({ prompt, sourcePngBuffer, aspect_ratio = '
 
   try {
     buffer = await sharp(buffer, { failOn: 'none', unlimited: true })
+      .rotate()
       .resize({
         width: VAN_MAX_EDGE,
-        height: VAN_MAX_EDGE,
-        fit: 'inside',
         withoutEnlargement: true,
       })
       .png()

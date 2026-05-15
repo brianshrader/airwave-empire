@@ -3292,14 +3292,16 @@ function adjustCohostSalaryForRole(t,sl,G){
   const sal0=Number(t.salary)||0;
   t.salary=Math.max(3500,Math.round(sal0*mult/500)*500);
   const tier=talentTrueQuality(t)<42?'entry':talentTrueQuality(t)<68?'mid':'star';
-  const baseFl=Math.round(salInfl((SAL[sl]?.[tier]?.[0]||5000),G.year)*0.58/500)*500;
+  const mktAdj=G?.marketId||ACTIVE_MARKET;
+  const flBoost=1+(marketRankTierOnAirPayMult(mktAdj)-1)*0.5;
+  const baseFl=Math.round(salInfl((SAL[sl]?.[tier]?.[0]||5000),G.year)*0.58*flBoost/500)*500;
   if(t.salary<baseFl)t.salary=baseFl;
-  const slotStarMax=({morningDrive:60000,afternoonDrive:42000,midday:28000,evening:22000,overnight:16000})[sl]||42000;
+  const slotBx=Math.round(slotStarMaxBaseForDaypart(sl)*marketRankTierOnAirPayMult(mktAdj));
   const isDrive=sl==='morningDrive'||sl==='afternoonDrive';
   let capMult=1;
   if(isDrive&&tenureY>=20)capMult=1.08;
   else if(isDrive&&tenureY>=10)capMult=1.05;
-  const cap=Math.round(salInfl(Math.round(slotStarMax*0.62*capMult),G.year)/500)*500;
+  const cap=Math.round(salInfl(Math.round(slotBx*0.62*capMult),G.year)/500)*500;
   if(t.salary>cap)t.salary=cap;
   if(tenureY>=10){
     const parts=[`tenY=${tenureY}`,`mult=${mult}`,`capX${capMult}`];
@@ -3847,6 +3849,59 @@ function marketTalentMult(marketId){
   return Math.max(0.70, Math.min(1.35, 0.70 + rs*0.30));
 }
 
+/** Daypart salary-cap anchors ($ at 1970 scale before salInfl). */
+function slotStarMaxBaseForDaypart(sl){
+  const m={morningDrive:60000,afternoonDrive:42000,midday:28000,evening:22000,overnight:16000};
+  return m[sl]||42000;
+}
+/**
+ * Lifts incumbent / hire anchors in larger metros (orthogonal to revScale → marketTalentMult).
+ * Keeps small markets unchanged.
+ */
+function marketRankTierOnAirPayMult(marketId){
+  const rt=(MARKETS[marketId||ACTIVE_MARKET]||MARKETS.atlanta).rankTier||'medium';
+  if(rt==='mega')return 1.14;
+  if(rt==='large')return 1.09;
+  if(rt==='medium')return 1.03;
+  return 1.0;
+}
+/** Fall on-air raise: smooth share ramp + extra lift for mega/large when books are competitive (replaces stepped perfPressure). */
+function talentFallPerfPressureFromShare(stShare,marketId){
+  const sh=Number(stShare);
+  if(!Number.isFinite(sh)||sh<=0)return 0;
+  let p=Math.max(0,(sh-0.04)*0.095);
+  p=Math.min(0.010,p);
+  const rt=(MARKETS[marketId||ACTIVE_MARKET]||MARKETS.atlanta).rankTier||'medium';
+  if(sh>=0.068){
+    if(rt==='mega')p+=0.0022;
+    else if(rt==='large')p+=0.0016;
+    else if(rt==='medium')p+=0.0008;
+  }
+  return Math.min(0.0135,p);
+}
+/** Fall COLA for on-air talent — slightly faster in top markets post-1985 (consolidation era still lags mega/large reality). */
+function talentFallBaseInflationForMarket(year,marketId){
+  let b=year<=1980?0.012:year<=1990?0.018:year<=2000?0.015:year<=2010?0.010:0.008;
+  if(year>=1985){
+    const rt=(MARKETS[marketId||ACTIVE_MARKET]||MARKETS.atlanta).rankTier||'medium';
+    if(rt==='mega')b+=0.0018;
+    else if(rt==='large')b+=0.0012;
+    else if(rt==='medium')b+=0.0006;
+  }
+  return b;
+}
+/** Contract renewal demand multiplier — strong #2 books (≈9+) in mega/large land between old 8% and 12% tiers. */
+function contractRenewalPerfDemandMult(stShare,marketId){
+  const sh=Number(stShare)||0;
+  const rt=(MARKETS[marketId||ACTIVE_MARKET]||MARKETS.atlanta).rankTier||'medium';
+  const top=rt==='mega'||rt==='large';
+  if(sh>0.12)return top?1.34:1.30;
+  if(top&&sh>0.095)return 1.26;
+  if(sh>0.08)return top?1.22:1.18;
+  if(sh>0.05)return 1.10;
+  return 1.00;
+}
+
 /** 0–1 weight: drive slots get full elite comp; other dayparts get small spill (narrow realism, not global SAL lift). */
 function eliteCompDriveSlotStrength(sl){
   if(sl==='morningDrive'||sl==='afternoonDrive')return 1;
@@ -3861,9 +3916,13 @@ function eliteCompQualifiesForPremium(t,sl){
   const disp=Math.round(t.quality||0);
   const tq=talentTrueQuality(t);
   const drivePrime=sl==='morningDrive'||sl==='afternoonDrive';
+  const rt=(typeof G!=='undefined'&&G)
+    ?((MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium')
+    :'medium';
+  const driveQGate=(rt==='mega'||rt==='large')?88:92;
   if(tq>=90)return true;
   if(t.superstar===true)return true;
-  if(drivePrime&&disp>=92)return true;
+  if(drivePrime&&disp>=driveQGate)return true;
   return false;
 }
 /**
@@ -3880,7 +3939,12 @@ function eliteTalentIncumbentPremiumMults(t,sl,stShare){
   else if(tq>=90)add+=0.10;
   if(t.superstar===true)add+=0.10;
   const sh=typeof stShare==='number'&&!Number.isNaN(stShare)?stShare:0;
+  const rt=(typeof G!=='undefined'&&G)
+    ?((MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium')
+    :'medium';
+  const topMkt=rt==='mega'||rt==='large';
   if(sh>0.12)add+=0.07;
+  else if(topMkt&&sh>0.095)add+=0.054;
   else if(sh>0.08)add+=0.04;
   add=Math.min(0.35,add);
   const capM=1+add*str;
@@ -3909,6 +3973,8 @@ function eliteRenewalAnchorAnnual(s,slot,t){
   const sh=s.rat?.share||0;
   if(sh>0.12)k+=0.06;
   else if(sh>0.08)k+=0.04;
+  const rt=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
+  if((rt==='mega'||rt==='large')&&sh>0.088&&sh<=0.12)k+=0.02;
   return Math.round(anchor*k/500)*500;
 }
 /** Console diagnostics: `wlEliteCompDiagnostics()` — Fall host cap base vs elite + renewal anchors (year fixed at 1994 for benchmarks). */
@@ -3990,6 +4056,11 @@ function talentRenewalLeverage01(s,slot,t,isCoHost){
   if(Number.isFinite(q))v+=Math.max(0,Math.min(0.26,(q-54)/118));
   const sh=Number(s.rat?.share);
   if(Number.isFinite(sh))v+=Math.max(0,Math.min(0.20,(sh-0.044)/0.088));
+  const mktId=(typeof G!=='undefined'&&G?.marketId)||ACTIVE_MARKET||'atlanta';
+  const rt=(MARKETS[mktId]||{}).rankTier||'medium';
+  if(rt==='mega')v+=0.042;
+  else if(rt==='large')v+=0.032;
+  else if(rt==='medium')v+=0.014;
   if(t.superstar===true)v+=0.11;
   const mor=Number(t.morale);
   if(Number.isFinite(mor)){
@@ -4085,6 +4156,7 @@ function mkTal(slot,fmt,tier='mid',year=1970,nameCtx){
   }
   const tierSalMult=tier==='star'?1:tier==='mid'?0.93:0.84;
   finalSal=Math.round(finalSal*tierSalMult/500)*500;
+  finalSal=Math.round(finalSal*marketRankTierOnAirPayMult(marketId)/500)*500;
 
   const gender=Math.random()<0.5?'female':'male';
   const name=gn({...nameCtx,fmt,year,gender});
@@ -11985,6 +12057,7 @@ function stitchCollapsedMarketRatingsFromHistory(stations,G){
 function repairRatCurFromHeadlineShareIfAqhCollapsed(s,stations,G,opts){
   // Public stations have no spot revenue in calcRev, but cohort AQH still drives books/listeners UI.
   if(!s||s._bpSlotDeferred||!s.rat)return false;
+  if(!s.rat.cur||typeof s.rat.cur!=='object')s.rat.cur={};
   const ps=Number(s.rat.share);
   if(!(ps>1e-8))return false;
   const sumAqh=COH.reduce((a,coh)=>a+(s.rat.cur[coh]?.aqh||0),0);
@@ -14238,6 +14311,10 @@ function lateEraTerrestrialCommoditizationMult(s,G){
 
 function calcRev(s,G){
   if(s._bpSlotDeferred)return;
+  // Any path can call calcRev without a full recalc; headline share with collapsed cohort AQH → $0 rev / seedRev anomalies.
+  if(G?.stations?.length&&s?.rat){
+    repairRatCurFromHeadlineShareIfAqhCollapsed(s,G.stations,G,{silent:true});
+  }
   if(stationIsNoncommercialInstitutional(s)){
     s.fin={rev:0,fix:0,tal:0,cost:0,ebitda:0};
     return;
@@ -15205,11 +15282,11 @@ function decay(s,year,period){
           chairB._trueQuality=Math.max(15,Math.round(chairB._trueQuality*(1-mdVtC)));
         chairB.cyr=Math.max(0,(chairB.cyr||2)-0.5);
         if(period===2){
-          const baseInfl=year<=1980?0.012:year<=1990?0.018:year<=2000?0.015:year<=2010?0.010:0.008;
+          const baseInfl=talentFallBaseInflationForMarket(year,G.marketId||ACTIVE_MARKET);
           const tqC=talentTrueQuality(chairB);
           const meritC=tqC>85?0.006:tqC>72?0.003:0.001;
           const stShare=s.rat?.share||0;
-          const perfC=stShare>0.12?0.006:stShare>0.08?0.003:stShare>0.05?0.001:0;
+          const perfC=Math.min(0.010,talentFallPerfPressureFromShare(stShare,G.marketId||ACTIVE_MARKET)*0.8);
           const moraleModC=chairB.morale<50?0.003:chairB.morale>80?-0.0015:0;
           chairB.salary=Math.round(chairB.salary*(1+baseInfl+meritC+perfC+moraleModC)/500)*500;
           const tierC=tqC<42?'entry':tqC<68?'mid':'star';
@@ -15221,7 +15298,7 @@ function decay(s,year,period){
           const slCap=chairB.slot||sl;
           const driveCap=slCap==='morningDrive'||slCap==='afternoonDrive';
           const capPremC=driveCap?(tenYb>=20?1.08:tenYb>=10?1.05:1):1;
-          const slotStarMaxC=Math.round(({morningDrive:60000,afternoonDrive:42000,midday:28000,evening:22000,overnight:16000})[slCap]*0.62*capPremC);
+          const slotStarMaxC=Math.round(slotStarMaxBaseForDaypart(slCap)*marketRankTierOnAirPayMult(G.marketId||ACTIVE_MARKET)*0.62*capPremC);
           let mktCapC=Math.round(salInfl(slotStarMaxC,G.year)/500)*500;
           const [capElB]=eliteTalentIncumbentPremiumMults(chairB,slCap,stShare);
           mktCapC=Math.round(mktCapC*capElB/500)*500;
@@ -15262,19 +15339,18 @@ function decay(s,year,period){
         }
       }
       // Salary inflation: fires every Fall (period 2)
-      // ~3.5%/yr base through 1985, then ~2.5% — tracks broadcast industry pay growth
-      // Star talent (Q>75) gets merit bump on top
+      // COLA + merit + smooth share-linked pressure (rank-tier tuned); see talentFallBaseInflationForMarket.
+      // Star talent (high true Q) gets merit bump on top
       if(period===2){
         // Salary growth: COLA + merit + station performance pressure.
         // High-rated stations = talent knows their value = bigger asks.
         // Faster pre-1990 (inflation era), slower post-2000 (consolidation/digital).
         const stShare=s.rat?.share||0;
-        const baseInflation=year<=1980?0.012:year<=1990?0.018:year<=2000?0.015:year<=2010?0.010:0.008;
+        const baseInflation=talentFallBaseInflationForMarket(year,G.marketId||ACTIVE_MARKET);
         const tqMerit=talentTrueQuality(sd.talent);
         const merit=tqMerit>85?0.008:tqMerit>72?0.004:0.001;
-        // Performance pressure: strong ratings = talent demands more at renewal
-        // Share > 8 = solid performer asking for their cut; > 12 = they KNOW they're valuable
-        const perfPressure=stShare>0.12?0.008:stShare>0.08?0.004:stShare>0.05?0.002:0;
+        // Performance pressure: smooth share ramp + rank-tier lift (see talentFallPerfPressureFromShare).
+        const perfPressure=talentFallPerfPressureFromShare(stShare,G.marketId||ACTIVE_MARKET);
         // Morale modifier: happy talent accepts less; disgruntled talent pushes harder
         const moraleMod=sd.talent.morale<50?0.004:sd.talent.morale>80?-0.002:0;
         const vtSal=Math.min(0.028,vtLd*0.021);
@@ -15283,23 +15359,25 @@ function decay(s,year,period){
         // Salary floor: 75% of market rate (up from 55%) — long-tenured talent never drifts low
         {const tier=tqMerit<42?'entry':tqMerit<68?'mid':'star';
          // Floor = 100% of entry-tier minimum (was 75%) so no one earns poverty wages
-         const baseFl=Math.round(salInfl((SAL[sl]?.[tier]?.[0]||5000),G.year)*0.60/500)*500;
+         const flBoost=1+(marketRankTierOnAirPayMult(G.marketId||ACTIVE_MARKET)-1)*0.5;
+         const baseFl=Math.round(salInfl((SAL[sl]?.[tier]?.[0]||5000),G.year)*0.60*flBoost/500)*500;
          // Tenure premium: each year over 5 adds 2% to floor, up to +40% at 25 years
          const tenureYrs=G.year-(sd.talent._hireYear||G.year);
          const tenurePrem=Math.min(0.10, Math.max(0, tenureYrs-10)*0.01);
          const floor=Math.round(baseFl*(1+tenurePrem)*floorElHost/500)*500;
          if(sd.talent.salary<floor)sd.talent.salary=floor;}
         // Tenure cap: salary can float up to 1.8x market rate for very long-tenured stars
-        const slotStarMax=({morningDrive:60000,afternoonDrive:42000,midday:28000,evening:22000,overnight:16000})[sd.talent.slot||sl]||42000;
+        const slotBx=Math.round(slotStarMaxBaseForDaypart(sd.talent.slot||sl)*marketRankTierOnAirPayMult(G.marketId||ACTIVE_MARKET));
         const tenureYrsForCap=G.year-(sd.talent._hireYear||G.year);
         const tenureCapMult=1.00+Math.min(0.18, Math.max(0,tenureYrsForCap-12)*0.012);
-        const mktCap=Math.round(salInfl(slotStarMax,G.year)*tenureCapMult*capElHost/500)*500;
+        const mktCap=Math.round(salInfl(slotBx,G.year)*tenureCapMult*capElHost/500)*500;
         if(sd.talent.salary>mktCap)sd.talent.salary=mktCap;
       }
       // Universal floor (applies every period, not just Fall — catches legacy saves and new hires)
       {const tqFloor=talentTrueQuality(sd.talent);
        const tier2=tqFloor<42?'entry':tqFloor<68?'mid':'star';
-       const flBase2=Math.round(salInfl((SAL[sl]?.[tier2]?.[0]||5000),G.year)*0.60/500)*500;
+       const flBoost2=1+(marketRankTierOnAirPayMult(G.marketId||ACTIVE_MARKET)-1)*0.5;
+       const flBase2=Math.round(salInfl((SAL[sl]?.[tier2]?.[0]||5000),G.year)*0.60*flBoost2/500)*500;
        const tenYrs2=G.year-(sd.talent._hireYear||G.year);
        const tenPrem2=Math.min(0.10, Math.max(0, tenYrs2-10)*0.01);
        const [_ceh,floorElHard]=eliteTalentIncumbentPremiumMults(sd.talent,sl,s.rat?.share||0);
@@ -23170,8 +23248,12 @@ function simulcastPartnerStation(s){
   }
   if(s._simulcastSource===true){
     const rec=simulcastGroupReceivers(s.id,G);
-    return rec[0]||null;
+    if(rec.length)return rec[0];
+    const inbound=(G.stations||[]).find(t=>t&&!t._bpSlotDeferred&&t.simulcastSourceStationId===s.id);
+    return inbound||null;
   }
+  const starRx=(G.stations||[]).find(t=>t&&!t._bpSlotDeferred&&t.simulcastSourceStationId===s.id&&!s._simulcastSource);
+  if(starRx)return starRx;
   if(!s.simulcastWith)return null;
   const p=G.stations.find(st=>st.id===s.simulcastWith);
   if(!p||p.simulcastWith!==s.id)return null;
@@ -23387,9 +23469,10 @@ function snapStationCardShareDisplay(G){
     }
   });
   (G.stations||[]).forEach(st=>{
-    if(!st||st._bpSlotDeferred||!st.rat)return;
+    if(!st||st._bpSlotDeferred)return;
     const p=simulcastPartnerStation(st);
-    if(!p||p._bpSlotDeferred||!p.rat)return;
+    if(!p||p._bpSlotDeferred)return;
+    if(!st.rat&&!p.rat)return;
     const ids=[String(st.id),String(p.id)].sort();
     const pk=ids[0]+':'+ids[1];
     if(pairDedupedShare01[pk]!=null)return;
@@ -23420,16 +23503,9 @@ function stationCardSimulcastPairDedupedShare01(stationA,stationB,G){
   const raw=(Number(stationA.rat?.aqh)||0)+(Number(stationB.rat?.aqh)||0);
   return Math.round((raw/td)*1e8)/1e8;
 }
-/** Combined simulcast share for roster cards — prefers last book snap. */
+/** Combined simulcast share for roster cards — live AQH/dedupe basis (same as Ranker / {@link buildSimulcastCombinedRankRows}). */
 function stationCardSimulcastCombinedShare01(a,b){
   if(!a||!b)return 0;
-  const ids=[String(a.id),String(b.id)].sort();
-  const pk=ids[0]+':'+ids[1];
-  const ps=G._stationCardShareSnap?.pairDedupedShare01;
-  if(ps&&Object.prototype.hasOwnProperty.call(ps,pk)){
-    const v=ps[pk];
-    return typeof v==='number'&&!Number.isNaN(v)?v:0;
-  }
   return stationCardSimulcastPairDedupedShare01(a,b,G);
 }
 /**
@@ -23461,12 +23537,8 @@ function playerPortfolioBookShareSum01Deduped(G,psForRollup){
 }
 function stationCardDisplayShare01(s){
   if(!s||s._bpSlotDeferred)return 0;
-  const snap=G._stationCardShareSnap&&G._stationCardShareSnap.byId;
-  if(snap&&Object.prototype.hasOwnProperty.call(snap,s.id)){
-    const v=snap[s.id];
-    return typeof v==='number'&&!Number.isNaN(v)?v:(s.rat&&s.rat.share)||0;
-  }
-  return(s.rat&&s.rat.share)||0;
+  const sh=s.rat&&typeof s.rat.share==='number'&&!Number.isNaN(s.rat.share)?s.rat.share:0;
+  return Math.round(sh*1e8)/1e8;
 }
 /** Book trend flags for station cards — same snap as share; avoids intra-period recalc rewriting `s.cp` from last tick vs last book. */
 function stationCardDisplayCp(s){
@@ -23492,7 +23564,8 @@ function buildMarketRankRowsForDisplay(G){
   for(const sr of snap.rows){
     const live=liveByKey.get(sr.key);
     if(live){
-      out.push({row:live,displayRank:sr.rank,displayShare:sr.share});
+      const liveSh=typeof live.share==='number'&&!Number.isNaN(live.share)?live.share:sr.share;
+      out.push({row:live,displayRank:sr.rank,displayShare:liveSh});
       used.add(sr.key);
     }
   }
@@ -26895,6 +26968,11 @@ function advTurn(mpCoalesceSeq){
     // Ranker snapshot (numeric year/period so JSON saves match entryTurn lookups reliably)
     const snap={year:Number(G.year),period:Number(G.period),label:`${G.year} ${PERIODS[G.period-1]}`,shares:{}};
     G.stations.forEach(s=>{ if(!s||s._bpSlotDeferred||!s.id)return; snap.shares[s.id]=s.rat.share; });
+    const _rkPairDed=Object.create(null);
+    buildSimulcastCombinedRankRows(G.stations).forEach(r=>{
+      if(r&&r.pair&&typeof r.share==='number'&&!Number.isNaN(r.share))_rkPairDed[marketRankRowKey(r)]=r.share;
+    });
+    snap.pairDedupedShare01ByKey=_rkPairDed;
     G.rankerHistory.push(snap);
     acts.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     consolidationActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
@@ -27306,6 +27384,50 @@ function rankerHistoryColumnIndexForEntryTurn(h, entry){
   if(!Number.isFinite(ey)||!Number.isFinite(ep))return -1;
   return h.findIndex(hh=>Number(hh.year)===ey&&Number(hh.period)===ep);
 }
+/**
+ * `rankerHistory` stores per-station `shares`; summing AM+FM legs double-counts simulcast AQH.
+ * After Next Period, `G.year`/`G.period` advance before the next book is pushed, so `openRanker`'s
+ * `idxCur` is often -1 even for the rightmost column — use `_mktRankBookSnap` for that completed book
+ * (same basis as #mtb / simulcast cards).
+ */
+function rankerMktSnapDedupedPairShare01(G, row, colYear, colPeriod){
+  if(!row||!row.pair)return null;
+  const snap=G&&G._mktRankBookSnap;
+  if(!snap||!Array.isArray(snap.rows))return null;
+  if(Number(snap.year)!==Number(colYear)||Number(snap.period)!==Number(colPeriod))return null;
+  const key=marketRankRowKey(row);
+  for(let i=0;i<snap.rows.length;i++){
+    const r=snap.rows[i];
+    if(r&&r.key===key&&typeof r.share==='number'&&!Number.isNaN(r.share))return r.share;
+  }
+  return null;
+}
+/**
+ * One Ranker cell for a simulcast pair: `rankerHistory[].shares` is per-station (summing legs double-counts).
+ * Prefer `pairDedupedShare01ByKey` frozen at book-close, then `_mktRankBookSnap`, then live combined `row.share`
+ * for the rightmost column only, else raw leg sum (legacy saves / pre-fix history columns).
+ */
+function rankerSimulcastPairShare01ForCol(G, row, colIdx, cols, idxCur){
+  if(!row||!row.pair)return null;
+  const c=cols[colIdx];
+  if(!c)return null;
+  const k=marketRankRowKey(row);
+  const histMap=c.pairDedupedShare01ByKey;
+  if(histMap&&typeof histMap==='object'&&Object.prototype.hasOwnProperty.call(histMap,k)){
+    const h0=histMap[k];
+    if(typeof h0==='number'&&!Number.isNaN(h0))return h0;
+  }
+  const lastIdx=cols.length-1;
+  if(idxCur>=0&&colIdx===idxCur){
+    return typeof row.share==='number'&&!Number.isNaN(row.share)?row.share:0;
+  }
+  const fromSnap=rankerMktSnapDedupedPairShare01(G, row, c.year, c.period);
+  if(fromSnap!=null)return fromSnap;
+  if(colIdx===lastIdx){
+    return typeof row.share==='number'&&!Number.isNaN(row.share)?row.share:0;
+  }
+  return(c.shares[row.lead.id]||0)+(c.shares[row.rcv.id]||0);
+}
 /** Download market ranker share history as CSV (all stations × periods). */
 function exportRankerHistoryCsv(){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
@@ -27314,6 +27436,7 @@ function exportRankerHistoryCsv(){
     showToast('No share history to export yet.','warn');
     return;
   }
+  const idxCur=h.findIndex(c=>Number(c.year)===Number(G.year)&&Number(c.period)===Number(G.period));
   const rowObjs=buildSimulcastCombinedRankRows(G.stations);
   const cityRaw=(G.city||MARKETS[G.marketId||'atlanta']?.label||'market').replace(/[\\/:*?"<>|]+/g,'');
   const periodCols=h.map(c=>c.label||`${c.year}`);
@@ -27327,12 +27450,17 @@ function exportRankerHistoryCsv(){
     const owner=stationOwnerLabelForRanker(row.pair?row.lead:s);
     const fmt=fmtLabel(op.format);
     const entry=row.pair?row.lead.entryTurn:s.entryTurn;
-    const shareCells=h.map(c=>{
+    const shareCells=h.map((c,i)=>{
       if(entry){
         const entryIdx=rankerHistoryColumnIndexForEntryTurn(h, entry);
         if(entryIdx>=0&&h.indexOf(c)<entryIdx)return '';
       }
-      const v=row.pair?(c.shares[row.lead.id]||0)+(c.shares[row.rcv.id]||0):(c.shares[s.id]||0);
+      let v;
+      if(row.pair){
+        v=rankerSimulcastPairShare01ForCol(G, row, i, h, idxCur);
+      }else{
+        v=c.shares[s.id]||0;
+      }
       if(!v)return '';
       return (v*100).toFixed(2);
     });
@@ -27358,7 +27486,15 @@ function openRanker(){
     return;
   }
   const nPersist=h.length;
-  const cols=h.map(c=>({year:c.year,period:c.period,label:c.label,shares:{...c.shares}}));
+  const cols=h.map(c=>({
+    year:c.year,
+    period:c.period,
+    label:c.label,
+    shares:{...c.shares},
+    pairDedupedShare01ByKey:c.pairDedupedShare01ByKey&&typeof c.pairDedupedShare01ByKey==='object'
+      ?{...c.pairDedupedShare01ByKey}
+      :undefined,
+  }));
   const idxCur=h.findIndex(c=>Number(c.year)===Number(G.year)&&Number(c.period)===Number(G.period));
   if(idxCur>=0){
     refreshRankerSnapSharesFromStations(cols[idxCur],G.stations);
@@ -27380,7 +27516,12 @@ function openRanker(){
         const entryIdx=rankerHistoryColumnIndexForEntryTurn(h, entry);
         if(entryIdx>=0&&colIdx<entryIdx&&colIdx<nPersist)return '<td class="stc" style="position:static"></td>';
       }
-      const v=row.pair?(c.shares[row.lead.id]||0)+(c.shares[row.rcv.id]||0):(c.shares[s.id]||0);
+      let v;
+      if(row.pair){
+        v=rankerSimulcastPairShare01ForCol(G, row, colIdx, cols, idxCur);
+      }else{
+        v=c.shares[s.id]||0;
+      }
       if(!v)return '<td>—</td>';
       const pv=(v*100).toFixed(1);
       const cls=v>=.08?'rcv hi':v>=.02?'rcv':v<.005?'rcv lo':'rcv';
@@ -27528,9 +27669,13 @@ function showCompIntel(sid){
     return sh>(ratCurForDemo[best]?.share||0)?c:best;
   },COH[0]);
   const cohLabels={'12-17':'Teens (12–17)','18-24':'Young Adults (18–24)','25-34':'Adults 25–34','35-49':'Adults 35–49','50-64':'Adults 50–64','65+':'Seniors 65+'};
-  const demoSliderLine=(typeof op.demoLean==='number'&&!Number.isNaN(op.demoLean))
-    ?`<div class="sr"><span class="lb">Demo slider</span><span class="vl" style="font-size:14px;color:var(--mut)">${leanLabel(op.demoLean)} — audience targeting you set in station admin (book “core demo” above is measured listening)</span></div>`
-    :'';
+  const demoLeanIsNum = typeof op.demoLean === 'number' && !Number.isNaN(op.demoLean);
+  const targetAudienceMain = demoLeanIsNum ? leanLabel(op.demoLean) : (bookIntel ? 'Not set' : 'Undisclosed');
+  const targetAudienceLabel = bookIntel ? 'Target audience' : 'Likely target audience';
+  const targetAudienceHelper = bookIntel ? 'From station strategy.' : 'Competitive estimate from format and positioning.';
+  const audienceIntelRows =
+    `<div class="sr"><span class="lb">${targetAudienceLabel}</span><span class="vl" style="font-size:14px;color:var(--mut)">${targetAudienceMain} · ${targetAudienceHelper}</span></div>` +
+    `<div class="sr"><span class="lb">Actual audience</span><span class="vl" style="font-size:14px;color:var(--mut)">${cohLabels[topCoh] || topCoh} · Largest age group in current ratings.</span></div>`;
 
   // Competition: who's competing for same listeners (exclude co-owned simulcast partner — same feed, not a rival)
   const competitors=(FMT_COMPETITION[op.format]||[]);
@@ -27577,7 +27722,7 @@ function showCompIntel(sid){
         ?`<strong style="color:var(--grn)">Your station</strong> — Revenue and share below are from your books and ratings (no masking).`
         :isHumanRival
           ?`<strong style="color:var(--off)">Human opponent</strong> — Revenue, share, and talent pay match the shared game state (same sim you both play).`
-          :`<strong style="color:var(--amb)">⚠ Trade Publication Estimates</strong> — Revenue figures are approximate. Share data is from Arbitron ratings.`}
+          :`<strong style="color:var(--amb)">⚠ Trade Publication Estimates</strong> — Revenue figures are approximate. Audience share uses your market’s modeled books — direct listening in this sim, not syndicated survey fog.`}
     </div>
     <div class="ms2">
       <div class="msh">STATION PROFILE</div>
@@ -27593,8 +27738,7 @@ function showCompIntel(sid){
       <div class="sr"><span class="lb">Trend</span><span class="vl" style="color:${trendColor}">${trend}</span></div>
       ${intelStory?`<div class="sr"><span class="lb">Likely story</span><span class="vl" style="font-size:14px;color:var(--mut);line-height:1.45">${intelStory}</span></div>`:''}
       <div class="sr"><span class="lb">${isOwn||isHumanRival?'Revenue / Period':'Est. Revenue / Period'}</span><span class="vl">${f$((isOwn||isHumanRival)?Math.round((s.fin?.rev||0)/50000)*50000:Math.round(estRev/50000)*50000)}</span></div>
-      <div class="sr"><span class="lb">Core Demographic</span><span class="vl">${cohLabels[topCoh]||topCoh}</span></div>
-      ${demoSliderLine}
+      ${audienceIntelRows}
     </div>
     <div class="ms2" style="margin-top:12px">
       <div class="msh">FORMAT POSITIONING</div>
@@ -27875,6 +28019,8 @@ function renderManageTalentStation(sid){
   MT_ACTIVE_SID=sid;
   const s=G.stations.find(st=>st.id===sid);
   if(!s||!mpIsMe(s))return;
+  const ftEl=document.getElementById('fire-title');
+  if(ftEl) ftEl.textContent='MANAGE TALENT';
   const _simSrc=simulcastProgrammingSource(s);
   const stationOQ=s.oq||50;
   if(!MT_SEL_SL||!DAYPART_SLOTS.includes(MT_SEL_SL)) MT_SEL_SL=mtDefaultSelectedSl(s);
@@ -28301,16 +28447,33 @@ function removeCoHostFromSlot(sid,slot){
   const sd=s.prog[slot];
   const chRm=slotTalentB(sd);
   if(!chRm){showToast('No co-host in this slot.','warn');return;}
+  const buyout=talentFireBuyout(chRm);
+  if(buyout>0&&G.cash<buyout){
+    showToast(`Can't remove ${chRm.name} — buyout is ${f$(buyout)} and you only have ${f$(G.cash)}.`,'warn');
+    return;
+  }
+  if(buyout>0){
+    G.cash-=buyout;
+    if(MP.mode==='live'){if(!G._playerCash)G._playerCash={};G._playerCash[MP.playerId]=G.cash;MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash});}
+  }
   const nm=chRm.name;
   clearCoHostPairingState(sd);
   setSlotTalentB(sd,null);
   refreshStationOQ(s,G);
-  G.news.unshift({v:'LOW',t:`${nm} steps off the ${SL[slot]} show at ${s.callLetters}.`,y:G.year,p:G.period});
-  logHistory(s,'TALENT',`Co-host removed — ${SL[slot]}`,G);
+  const buyoutNews=buyout>0?` Buyout paid: ${f$(buyout)}.`:'';
+  G.news.unshift({v:buyout>0?'MEDIUM':'LOW',t:`${nm} steps off the ${SL[slot]} show at ${s.callLetters}.${buyoutNews}`,y:G.year,p:G.period});
+  logHistory(s,'TALENT',`Co-host removed — ${SL[slot]}${buyout>0?' (buyout: '+f$(buyout)+')':''}`,G);
   MP.action('cohost_fire',{sid,slot});
   MT_SEL_SL=slot;
   renderManageTalentStation(sid);
   renderAll();
+  showToast(
+    buyout>0
+      ? `${nm} removed — buyout ${f$(buyout)} paid. Pairing chemistry cleared.`
+      : `${nm} removed — pairing chemistry cleared.`,
+    'info',
+    5200,
+  );
 }
 /** Exchange lead host and second chair in one daypart; re-roll pairing chemistry. */
 function swapLeadAndCoHostInSlot(sid,slot){
@@ -34777,9 +34940,17 @@ function migrateSave(G){
   G.ps=G.stations.filter(s=>s.isPlayer);
   if(G.pendingDecisionEvent && !TROUBLE_SCENARIOS.find(sc=>sc.id===G.pendingDecisionEvent.scenarioId))
     G.pendingDecisionEvent=null;
+  const _scSnap=G._stationCardShareSnap;
+  const _scStale=
+    !_scSnap||
+    typeof _scSnap.byId!=='object'||
+    typeof _scSnap.cpById!=='object'||
+    _scSnap.year!==G.year||
+    _scSnap.period!==G.period||
+    _scSnap.turn!==G.turn;
   if(!G._mktRankBookSnap||!Array.isArray(G._mktRankBookSnap.rows)||!G._mktRankBookSnap.rows.length){
     snapMarketRankBookDisplay(G);
-  } else if(!G._stationCardShareSnap||typeof G._stationCardShareSnap.byId!=='object'||typeof G._stationCardShareSnap.cpById!=='object'){
+  } else if(_scStale){
     snapStationCardShareDisplay(G);
   }
   // Saves from rare ratings desync: headline share valid but cohort AQH all zero → $0 revenue until next book.
@@ -36306,8 +36477,7 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra
       const simFeeLine=(s.fin?.simulcastProgFee>0)?`<div class="sr"><span class="lb" style="color:var(--mut)">Simulcast program fee</span><span class="vl" style="font-size:14px;color:var(--off)">${f$(s.fin.simulcastProgFee)}/period <span style="color:var(--mut)">(in costs above)</span></span></div>`:'';
       const shComb=pairBothIn&&pairPartner?stationCardSimulcastCombinedShare01(s,pairPartner):null;
       const shareBlock=shComb!=null
-        ?`<div class="sr"><span class="lb">Share</span><span class="vl">${pct(shComb)}${trd} <span style="font-size:12px;color:var(--mut)">(deduped AM/FM pair)</span></span></div>
-        <div class="sr"><span class="lb" style="color:var(--mut)">Book, this license</span><span class="vl" style="font-size:14px;color:var(--mut)">${pct(s.rat.share)}</span></div>`
+        ?`<div class="sr"><span class="lb">Share</span><span class="vl">${pct(shComb)}${trd} <span style="font-size:12px;color:var(--mut)">(simulcast cluster — one audience; same basis as Ranker)</span></span></div>`
         :`<div class="sr"><span class="lb">Share</span><span class="vl">${pct(s.rat.share)}${trd}</span></div>`;
       return `<div class="ms2"><div class="msh">${callDisplay(s)} — "${op.brand}" · ${fmtLabel(op.format)}${stationHasSimulcastLeg(s,G)?' ◈':''}</div>
         ${shareBlock}
@@ -36426,7 +36596,7 @@ function buildContractEconObject(s, slot, t, isCoHost, primaryHost){
   const renewalLeverage=talentRenewalLeverage01(s,slot,t,isCoHost);
   const mor=t.morale||65;
   const stShare=s.rat?.share||0;
-  const perfMult=stShare>0.12?1.30:stShare>0.08?1.18:stShare>0.05?1.10:1.00;
+  const perfMult=contractRenewalPerfDemandMult(stShare,G?.marketId||ACTIVE_MARKET);
   const qualMult=t.quality>82?1.15:t.quality>70?1.07:1.00;
   const demandBase=perfMult*qualMult;
   const moraleFactor=mor<50?1.08:mor>80?0.95:1.0;
@@ -36549,9 +36719,16 @@ function contractExtensionAndCtaBlockHtml(sid, slot, t, isCoHost, ce, forManageT
   const escAttr=(x)=>rosterHtmlEsc(String(x==null?'':x));
   const ctaFireBtn=(()=>{
     if(isCoHost){
-      return forManageTalent
-        ?`<button type="button" class="abt contract-exit-now contract-cta-now" style="width:100%;box-sizing:border-box" data-wl-roster-fire="cohost" data-wl-sid="${escAttr(sid)}" data-wl-slot="${escAttr(slot)}"><span class="contract-cta-fire__l1">remove immediately</span></button>`
-        :`<button type="button" class="abt contract-exit-now contract-cta-now" style="width:100%;box-sizing:border-box" data-wl-roster-fire="cohost" data-wl-sid="${escAttr(sid)}" data-wl-slot="${escAttr(slot)}" data-wl-close-m="1"><span class="contract-cta-fire__l1">remove immediately</span></button>`;
+      const fireBuyC=talentFireBuyout(t);
+      const canPayC=fireBuyC<=0||G.cash>=fireBuyC;
+      const fireLinesC=fireBuyC>0
+        ?('<span class="contract-cta-fire__l1">remove immediately</span><span class="contract-cta-fire__l2">'+f$(fireBuyC)+'</span>')
+        :('<span class="contract-cta-fire__l1">remove immediately</span><span class="contract-cta-fire__l2 contract-cta-fire__l2--mut">(no buyout)</span>');
+      let fireTC=fireBuyC>0?('Severance '+f$(fireBuyC)+' if you remove them this period.'):'Removes this period; no buyout in this case.';
+      if(fireBuyC>0&&!canPayC)fireTC='Not enough cash for this buyout.';
+      const disC=fireBuyC>0&&!canPayC?' disabled':'';
+      const closeAttr=forManageTalent?'':' data-wl-close-m="1"';
+      return`<button type="button" class="abt contract-exit-now contract-cta-now" style="width:100%;box-sizing:border-box" data-wl-roster-fire="cohost" data-wl-sid="${escAttr(sid)}" data-wl-slot="${escAttr(slot)}"${closeAttr}${disC} title="${String(fireTC).replace(/&/g,'&amp;').replace(/"/g,'&quot;')}">${fireLinesC}</button>`;
     }
     const fireBuy0=talentFireBuyout(t);
     const canPay0=fireBuy0<=0||G.cash>=fireBuy0;
@@ -36643,7 +36820,8 @@ function rosterFireCoHostPrompt(sid,slot,closeModalId){
   if(!s||!mpIsMe(s))return;
   const ch=slotTalentB(s.prog?.[slot]);
   if(!ch)return;
-  const msg=`Remove ${ch.name} as co-host on ${callDisplay(s)} ${SL[slot]}? They leave the show and pairing chemistry clears.`;
+  const buyout=talentFireBuyout(ch);
+  const msg=`Remove ${ch.name} as co-host on ${callDisplay(s)} ${SL[slot]}?${buyout>0?` Contract buyout ${f$(buyout)}.`:' No buyout.'} They leave the show and pairing chemistry clears.`;
   openGameConfirm({title:'REMOVE CO-HOST',message:msg,confirmLabel:'REMOVE',danger:true},(ok)=>{
     if(!ok)return;
     removeCoHostFromSlot(sid,slot);
@@ -37440,7 +37618,7 @@ function rStns(){
       ?stationCardSimulcastCombinedShare01(s,junior)
       :stationCardDisplayShare01(s);
     const _simShareTitle=junior
-      ?rosterHtmlEsc('Combined share: co-owned same-feed AM/FM overlap is deduped (same basis as the market ranker). Per-leg % on the card is still each license’s book.')
+      ?rosterHtmlEsc('One cluster share for this simulcast — AM/FM overlap deduped; same basis as the market Ranker.')
       :'';
     const _revTitle=junior
       ?rosterHtmlEsc('Combined terrestrial revenue for both licenses — same-feed simulcast is sold as one audience reach story (advertisers buy the cluster’s listeners, not separate AM vs FM rate cards for identical spots).')
@@ -37526,7 +37704,6 @@ function rStns(){
     const _soloSimRole=!_simLegs&&partner&&!isPlayerPair?'<div class="sim-role-strip sim-role-strip--solo"><span class="sim-role-pill sim-role-pill--solo">'+(s._simulcastSource===true?'Simulcast source':'Simulcast follower')+' ('+s.sig.type+') · paired with '+callDisplay(partner)+'</span></div>':'';
     const _lmaLegForPair=s._lmaStation?s:(junior&&junior._lmaStation?junior:null);
     const _simLmaNote=_simLegs&&_lmaLegForPair?'<div style="font-size:12px;color:var(--mut);margin-top:8px;line-height:1.45">LMA fee (<strong>'+f$(lmaFeeForStation(_lmaLegForPair,G))+'</strong>/period) is only the payment to the licensor. Facility “costs” on the follower leg still include fixed site and operations — they are not the same as that fee.</div>':'';
-    const _simEconHint=_simLegs?'<div class="sim-econ-hint"><div><span class="sim-econ-hint-lbl">'+callDisplay(_simLegs.src)+'</span> · Higher programming cost center</div><div><span class="sim-econ-hint-lbl">'+callDisplay(_simLegs.flw)+'</span> · Lower programming cost (simulcast)</div>'+_simLmaNote+'</div>':'';
     const brokeredStationTagHtml=(()=>{
       const legs=junior?[s,junior]:[s];
       const any=legs.some(st=>st&&stationBrokeredEconomicsActive(st,G));
@@ -37598,7 +37775,7 @@ function rStns(){
         const maxP=getMaxSimulcastPctForMarket(G.year,G.marketId);
         const mktLbl=(MARKETS[G.marketId||'atlanta']||{}).label||'';
         if(maxP>=100){
-          fmDupUiCard='<div class="ibox sc-ibox-tight" style="font-size:12px;color:var(--mut);line-height:1.4">FCC max AM on FM in <strong style="color:var(--off)">'+mktLbl+'</strong> · <strong style="color:var(--off)">'+G.year+'</strong>: <strong style="color:var(--grn)">100%</strong> simulcast ok.</div>';
+          fmDupUiCard='';
         }else{
           const cur=Math.min(maxP,Number.isFinite(fmLegCard.fmSimulcastDupPct)?fmLegCard.fmSimulcastDupPct:maxP);
           const rem0=fmLegCard.fmRemainderFormat||defaultFmRemainderFormat(pairNd.am.format,G,fmLegCard.id);
@@ -37657,7 +37834,7 @@ function rStns(){
       </div></div>
       <div class="sc-hero__share"${_shareTut}${junior?' title="'+_simShareTitle+'"':''}>
         <div class="scshv">${shn(shareUi)}</div>
-        <div class="scshl">Share ${trd}</div>
+        <div class="scshl">${junior?'Cluster share':'Share'} ${trd}</div>
       </div>
       <div class="sc-hero__detail">
       <div class="qr"><span class="ql">Quality</span><div class="qb"><div class="qf ${qc2}" style="width:${op.oq}%"></div></div><span class="qn">${op.oq}</span></div>
@@ -37683,7 +37860,7 @@ function rStns(){
       </div>
       </div>
       </div>
-      ${_simEconHint}
+      ${_simLmaNote}
       ${scCardCompact}
       ${scPills}
       ${scAiStatus}

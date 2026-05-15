@@ -55,7 +55,7 @@ const countrySung = buildSunoJingleArgs({
   band: 'FM',
 });
 assert(!countrySung.lyrics.includes('[Spoken word]'), 'music formats use flat lyrics, not spoken block');
-assert(countrySung.tags.includes('sung jingle'), 'country should ask for sung tagline + brand');
+assert(countrySung.tags.includes('melodic sung ID'), 'country should ask for sung tagline + brand');
 assert(countrySung.lyrics.includes('Seattle'), 'tagline should appear in lyrics');
 
 const callsNotInBrand = buildSunoJingleArgs({

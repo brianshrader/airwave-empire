@@ -18,6 +18,7 @@ export const ALL_PLAYABLE_MARKET_IDS_ORDERED = Object.freeze([
   'losangeles',
   'chicago',
   'seattle',
+  'sanfrancisco',
   'atlanta',
   'nashville',
   'wichita',
