@@ -24,6 +24,7 @@ import { mkdirSync, writeFileSync, readFileSync } from 'fs';
 import vm from 'vm';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { injectMarketEcologyIife } from './vmInjectMarketEcologyIife.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
@@ -187,6 +188,7 @@ function createVmContext(quiet) {
 }
 
 function loadSim(ctx) {
+  injectMarketEcologyIife(ctx);
   vm.runInContext(loadLegacySrc(), ctx, { filename: 'legacy.js' });
   vm.runInContext(readFileSync(harnessPath, 'utf8'), ctx, { filename: 'marketSimHarness.js' });
 }

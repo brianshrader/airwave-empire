@@ -34097,6 +34097,33 @@
       "variationSeed": "fc1f79cc8da97b67",
       "source": "library",
       "libraryAsset": "library/female/2000s+/stock-female-2000s-37-2008.png"
+    },
+    "dale-sullivan-2009-cb541eca-43a8-4abf-bbc6-": {
+      "imageUrl": "/generated-portraits/library/male/2000s+/stock-male-2000s-8-2000.png",
+      "fileName": "library/male/2000s+/stock-male-2000s-8-2000.png",
+      "eraBucket": "2000s+",
+      "wardrobeType": "casual",
+      "expressionType": "tired",
+      "settingType": "radioStudio",
+      "identityKey": "dale sullivan|2009",
+      "name": "Dale Sullivan",
+      "firstHireYear": 2009,
+      "gender": "male",
+      "talentId": "8c4fzsr2",
+      "heritageId": "africanAmerican",
+      "heritagePrompt": "African American radio personality — Black features with natural brown to deep brown skin",
+      "attractivenessAnchor": "Slightly awkward or bland bone structure — believable small-market radio, not TV.",
+      "facialDetail": "bland resting face — would not cast as “the attractive one”",
+      "demeanor": "distracted, mid-thought look",
+      "ageRange": "60s",
+      "bodyType": "slim",
+      "faceShape": "round",
+      "hairStyle": "side-parted neat hair",
+      "personalStyle": "plain",
+      "gameplayNotes": "",
+      "variationSeed": "76ea00c26df8ff73",
+      "source": "library",
+      "libraryAsset": "library/male/2000s+/stock-male-2000s-8-2000.png"
     }
   }
 }

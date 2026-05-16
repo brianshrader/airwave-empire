@@ -8,6 +8,7 @@
     "dev": "node --watch server.js",
     "client:dev": "vite",
     "build": "vite build",
+    "build:market-ecology-iife": "node scripts/build-market-ecology-iife.mjs",
     "pm2:start": "pm2 start ecosystem.config.cjs --env production",
     "pm2:reload": "pm2 reload ecosystem.config.cjs --env production",
     "pm2:logs": "pm2 logs airwave-empire",
@@ -58,6 +59,7 @@
     "report:market-traits": "node scripts/report-market-traits.mjs",
     "diag:share-concentration": "node scripts/diag-share-concentration.mjs",
     "diag:tier-concentration-formats": "node scripts/diag-tier-concentration-formats.mjs",
+    "diag:market-ecology-regression": "node scripts/diag-market-ecology-regression.mjs",
     "validate:brokered-mode": "node scripts/validate-brokered-mode.mjs",
     "audit:swap-signal-fee": "node scripts/audit-swap-signal-fee.mjs",
     "test:billing-e2e": "node scripts/e2e-billing-checkout-verify.mjs"

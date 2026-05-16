@@ -11,6 +11,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import vm from 'vm';
+import { injectMarketEcologyIife } from './vmInjectMarketEcologyIife.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
@@ -280,6 +281,7 @@ const harnessJs = `
 
 function main() {
   const ctx = createCtx();
+  injectMarketEcologyIife(ctx);
   vm.runInContext(loadLegacySrc(), ctx);
   const rows = vm.runInContext(harnessJs, ctx);
   console.log(JSON.stringify(rows, null, 2));

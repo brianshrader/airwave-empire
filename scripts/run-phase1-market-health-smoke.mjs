@@ -14,6 +14,7 @@ import { writeFileSync, mkdirSync, readFileSync } from 'fs';
 import vm from 'vm';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { injectMarketEcologyIife } from './vmInjectMarketEcologyIife.mjs';
 import { ALL_PLAYABLE_MARKET_IDS } from './market-ids.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -173,6 +174,7 @@ function createVmContext() {
 function main() {
   const quick = process.env.PHASE1_QUICK !== '0' && process.env.PHASE1_QUICK !== 'false';
   const ctx = createVmContext();
+  injectMarketEcologyIife(ctx);
   vm.runInContext(loadLegacySrc(), ctx);
   vm.runInContext(readFileSync(harnessPath, 'utf8'), ctx);
 

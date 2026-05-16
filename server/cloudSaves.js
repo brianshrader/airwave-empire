@@ -17,6 +17,7 @@ const MAX_BYTES = Math.min(
   24 * 1024 * 1024,
   parseInt(process.env.CLOUD_SAVE_MAX_BYTES || String(12 * 1024 * 1024), 10) || 12 * 1024 * 1024,
 );
+// Ops: if browsers show HTTP 413 + “CORS” errors, nginx (or ALB) is rejecting the body before Node — raise client_max_body_size (e.g. 25m) for /api/.
 
 function safeUid(uid) {
   return String(uid).replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 180);

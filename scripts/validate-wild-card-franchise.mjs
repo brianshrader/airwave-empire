@@ -10,6 +10,7 @@ import path from 'path';
 import { readFileSync } from 'fs';
 import vm from 'vm';
 import { fileURLToPath } from 'url';
+import { injectMarketEcologyIife } from './vmInjectMarketEcologyIife.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
@@ -92,6 +93,7 @@ function createVmContext() {
 
 function main() {
   const ctx = createVmContext();
+  injectMarketEcologyIife(ctx);
   vm.runInContext(loadLegacySrc(), ctx, { filename: 'legacy.js' });
 
   vm.runInContext(

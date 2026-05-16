@@ -47,6 +47,7 @@
 
 import { mkdirSync, writeFileSync, readFileSync } from 'fs';
 import vm from 'vm';
+import { injectMarketEcologyIife } from './vmInjectMarketEcologyIife.mjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -460,6 +461,7 @@ function installHarness(ctx, careerMaxSteps) {
 }
 
 function loadSim(ctx, careerMaxSteps) {
+  injectMarketEcologyIife(ctx);
   vm.runInContext(loadLegacySrc(), ctx);
   vm.runInContext(readFileSync(harnessPath, 'utf8'), ctx);
   installHarness(ctx, careerMaxSteps);

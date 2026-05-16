@@ -7,8 +7,8 @@
  *   node scripts/report-market-traits.mjs --years=1970,2000
  *
  * Output:
- *   Console: year-sensitivity note, wide trait table, semantic warnings
- *   tmp/market_traits_report.csv (includes urbanDensityAffinity, blackMusicAffinity, rhythmicDiversityAffinity, …)
+ *   Console: year-sensitivity note, wide trait table, ecology trait rankings, semantic warnings
+ *   tmp/market_traits_report.csv (profile affinities + Phase-1 `deriveMarketEcology` traits)
  */
 /* eslint-disable no-console */
 
@@ -18,7 +18,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 import { marketTraitProfile } from '../src/marketTraitProfile.js';
-
+import { deriveMarketEcology } from '../src/marketEcology.js';
+import { injectMarketEcologyIife } from './vmInjectMarketEcologyIife.mjs';
 const require = createRequire(import.meta.url);
 const { ALL_PLAYABLE_MARKET_IDS } = require('./market-ids.cjs');
 
@@ -185,6 +186,7 @@ function parseYears(argv) {
 
 function loadMarketsFromLegacyVm() {
   const ctx = createVmContext();
+  injectMarketEcologyIife(ctx);
   vm.runInContext(loadLegacySrc(), ctx);
   const M = vm.runInContext('typeof MARKETS !== "undefined" ? MARKETS : null', ctx);
   if (!M || typeof M !== 'object') throw new Error('Could not read MARKETS from legacy VM');
@@ -219,6 +221,47 @@ const CSV_COLUMNS = [
   'heritageInertia',
   'rankTier',
   'archetypeId',
+  // Phase-1 market ecology (deriveMarketEcology) — diagnostic only
+  'ecologyVersion',
+  'publicRadioStrength',
+  'spanishLanguageStrength',
+  'blackMusicStrength',
+  'urbanContemporaryStrength',
+  'gospelStrength',
+  'ccmStrength',
+  'countryStrength',
+  'aaaAlternativeStrength',
+  'spokenWordStrength',
+  'sportsStrength',
+  'chrResistance',
+  'marketFragmentation',
+  'ecologyAmResilience',
+  'modernMusicSubstitution',
+  'ecologyRegion',
+];
+
+const ECOLOGY_SORT_KEYS = [
+  'chrResistance',
+  'publicRadioStrength',
+  'aaaAlternativeStrength',
+  'countryStrength',
+  'spanishLanguageStrength',
+  'gospelStrength',
+  'ccmStrength',
+  'spokenWordStrength',
+  'marketFragmentation',
+  'sportsStrength',
+];
+
+const ECOLOGY_FOCUS_MARKETS = [
+  'seattle',
+  'sanfrancisco',
+  'losangeles',
+  'newyork',
+  'chicago',
+  'atlanta',
+  'nashville',
+  'wichita',
 ];
 
 function rowToCsv(r) {
@@ -237,6 +280,9 @@ function printYearSensitivityNote(years) {
     'Scalars that change with the `year` argument (MARKETS demographic trend hooks):\n' +
       '  • hispanicAffinity — hispPop1970 → 2000 → 2020 interpolation\n' +
       '  • rhythmicDiversityAffinity — includes hispanicAffinity in its blend\n' +
+      '  • Ecology: spanishLanguageStrength (Hispanic interpolation + culture.spanish)\n' +
+      '  • Ecology: modernMusicSubstitution (year ramp 2005+; optional G.streamDrag not used in this report)\n' +
+      '  • Ecology: chrResistance (depends on modernMusicSubstitution + spanishLanguageStrength)\n' +
       'All other exported columns are static for a given marketId (repeated year rows mirror the same MARKETS row).\n' +
       `This run uses years: ${years.join(', ')} — if you only need static traits, pass e.g. --years=2026 once.\n`
   );
@@ -310,6 +356,71 @@ function collectSemanticWarnings(rows) {
   return warnings;
 }
 
+/**
+ * Merge legacy profile row with deriveMarketEcology (renames `amResilience` from ecology to avoid
+ * colliding with profile `amResilience` in CSV — both kept: profile uses existing column).
+ */
+function buildRow(MARKETS, mid, y) {
+  const prof = marketTraitProfile(MARKETS, mid, y);
+  const m = MARKETS[mid] || {};
+  const eco = deriveMarketEcology(m, mid, y, undefined);
+  return {
+    ...prof,
+    ecologyVersion: eco.version,
+    publicRadioStrength: eco.publicRadioStrength,
+    spanishLanguageStrength: eco.spanishLanguageStrength,
+    blackMusicStrength: eco.blackMusicStrength,
+    urbanContemporaryStrength: eco.urbanContemporaryStrength,
+    gospelStrength: eco.gospelStrength,
+    ccmStrength: eco.ccmStrength,
+    countryStrength: eco.countryStrength,
+    aaaAlternativeStrength: eco.aaaAlternativeStrength,
+    spokenWordStrength: eco.spokenWordStrength,
+    sportsStrength: eco.sportsStrength,
+    chrResistance: eco.chrResistance,
+    marketFragmentation: eco.marketFragmentation,
+    ecologyAmResilience: eco.amResilience,
+    modernMusicSubstitution: eco.modernMusicSubstitution,
+    ecologyRegion: eco.region,
+  };
+}
+
+function printEcologyRankings(rows, refYear) {
+  const slice = rows.filter((r) => r.year === refYear);
+  if (!slice.length) return;
+  console.log(`\n=== Ecology trait rankings (year=${refYear}, all playable markets) ===`);
+  console.log('Sorted high → low per trait.\n');
+
+  for (const key of ECOLOGY_SORT_KEYS) {
+    const sorted = [...slice].sort((a, b) => (b[key] || 0) - (a[key] || 0));
+    const line = sorted.map((r) => `${r.marketId}:${(r[key] ?? 0).toFixed(2)}`).join('  |  ');
+    console.log(`${key}: ${line}`);
+  }
+
+  console.log(`\n=== Ecology snapshot: focus markets (year=${refYear}) ===`);
+  const focus = ECOLOGY_FOCUS_MARKETS.map((id) => slice.find((r) => r.marketId === id)).filter(Boolean);
+  const snapCols = [
+    'marketId',
+    'chrResistance',
+    'publicRadioStrength',
+    'aaaAlternativeStrength',
+    'countryStrength',
+    'spanishLanguageStrength',
+    'gospelStrength',
+    'ccmStrength',
+    'spokenWordStrength',
+    'marketFragmentation',
+    'sportsStrength',
+    'modernMusicSubstitution',
+  ];
+  const snap = focus.map((r) => {
+    const o = {};
+    for (const k of snapCols) o[k] = typeof r[k] === 'number' ? Number(r[k].toFixed(3)) : r[k];
+    return o;
+  });
+  console.table(snap);
+}
+
 function main() {
   const years = parseYears(process.argv);
   const MARKETS = loadMarketsFromLegacyVm();
@@ -318,8 +429,7 @@ function main() {
   const rows = [];
   for (const mid of markets) {
     for (const y of years) {
-      const r = marketTraitProfile(MARKETS, mid, y);
-      rows.push(r);
+      rows.push(buildRow(MARKETS, mid, y));
     }
   }
 
@@ -357,6 +467,9 @@ function main() {
   console.log(`Wrote ${outCsv} (${rows.length} rows)\n`);
   printYearSensitivityNote(years);
   console.table(print);
+
+  const refYear = Math.max(...years);
+  printEcologyRankings(rows, refYear);
 
   const warns = collectSemanticWarnings(rows);
   if (warns.length) {

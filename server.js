@@ -59,7 +59,7 @@ app.use(cors(corsOpts));
 const { stripeWebhookHandler, mountStripeBilling } = require('./server/stripeBilling');
 app.post('/api/stripe/webhook', express.raw({ type: 'application/json' }), stripeWebhookHandler);
 
-// Default 32mb — Express default (~100kb) rejects large cloud saves. Override with JSON_BODY_LIMIT; nginx needs client_max_body_size to match.
+// Default 32mb — Express default (~100kb) rejects large cloud saves. Override with JSON_BODY_LIMIT. Nginx (or similar) must use client_max_body_size ≥ this or uploads fail with 413; missing CORS on that 413 response makes the browser blame “Access-Control-Allow-Origin”.
 const JSON_BODY_LIMIT = process.env.JSON_BODY_LIMIT || '32mb';
 app.use(express.json({ limit: JSON_BODY_LIMIT }));
 

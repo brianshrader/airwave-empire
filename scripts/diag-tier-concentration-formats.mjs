@@ -16,6 +16,7 @@ import { writeFileSync, mkdirSync, readFileSync } from 'fs';
 import vm from 'vm';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { injectMarketEcologyIife } from './vmInjectMarketEcologyIife.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
@@ -241,6 +242,7 @@ function escCsv(s) {
 function main() {
   const opts = parseArgs(process.argv.slice(2));
   const ctx = createVmContext();
+  injectMarketEcologyIife(ctx);
   vm.runInContext(loadLegacySrc(), ctx);
   vm.runInContext(readFileSync(harnessPath, 'utf8'), ctx);
 

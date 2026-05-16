@@ -11,6 +11,7 @@
 
 import { readFileSync, writeFileSync, mkdirSync } from 'fs';
 import vm from 'vm';
+import { injectMarketEcologyIife } from './vmInjectMarketEcologyIife.mjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -392,6 +393,7 @@ const RUNNER_JS = `
 function main() {
   mkdirSync(path.join(root, 'tmp'), { recursive: true });
   const ctx = createVmContext();
+  injectMarketEcologyIife(ctx);
   vm.runInContext(loadLegacySrc(), ctx);
   const text = vm.runInContext(`${RUNNER_JS}(${JSON.stringify(SCENARIOS)})`, ctx);
   console.log(text);

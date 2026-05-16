@@ -24,6 +24,7 @@
 
 import { mkdirSync, writeFileSync, readFileSync, existsSync } from 'fs';
 import vm from 'vm';
+import { injectMarketEcologyIife } from './vmInjectMarketEcologyIife.mjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -187,6 +188,7 @@ function createVmContext(quiet) {
 }
 
 function loadSim(ctx) {
+  injectMarketEcologyIife(ctx);
   vm.runInContext(loadLegacySrc(), ctx);
   vm.runInContext(readFileSync(harnessPath, 'utf8'), ctx);
 }

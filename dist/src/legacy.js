@@ -351,8 +351,18 @@ function religiousNetworkCcmCoreMarket(marketId){
   return false;
 }
 /** Markets that keep a minimum slot count + early-era sign-on (presence only — not ratings). */
-function religiousNetworkInstitutionalPresenceCore(mid,isCcm,S,aff){
-  if(mid==='nashville'||mid==='atlanta'||mid==='wichita')return true;
+function religiousNetworkInstitutionalPresenceCore(mid,isCcm,S,aff,startYear){
+  const y=Math.round(Number(startYear))||2010;
+  const eco=marketEcologySnapshotForGameplay(String(mid||'atlanta'),MARKETS[mid]||MARKETS.atlanta,y,null);
+  if(eco){
+    const g=typeof eco.gospelStrength==='number'?eco.gospelStrength:0;
+    const c=typeof eco.ccmStrength==='number'?eco.ccmStrength:0;
+    const co=typeof eco.countryStrength==='number'?eco.countryStrength:0;
+    if(g>=0.58||c>=0.65||co>=0.55)return true;
+  }else{
+    const mm=String(mid||'');
+    if(mm==='nashville'||mm==='atlanta'||mm==='wichita')return true;
+  }
   if(!isCcm)return false;
   if(aff>=0.56||S>=0.58)return true;
   return false;
@@ -452,7 +462,7 @@ function computeReligiousNetworkPresence(marketId,startYear){
   const C=0.52*S+0.48*u;
   let noneThresh=Math.max(0.10,Math.min(0.50,0.46-0.58*S));
   if(isCcm)noneThresh=Math.max(0.085,noneThresh-0.055);
-  const presenceCore=religiousNetworkInstitutionalPresenceCore(mid,isCcm,S,aff);
+  const presenceCore=religiousNetworkInstitutionalPresenceCore(mid,isCcm,S,aff,fy);
   let noneMargin=0;
   if(!presenceCore){
     if(/coastal_secular|west_fm_fragmented|northeast_mega/i.test(arch))noneMargin+=0.042;
@@ -698,6 +708,117 @@ function canonicalHitsFormatKey(fmt){
 }
 function hitsLineageAxisBlendT(year){
   return _smoothstep(1978,1992,year||1970);
+}
+/**
+ * Fallback when `marketEcologyCore.iife.js` was not loaded (e.g. stray script order). Mirrors pre-ecology Phase-1 curve.
+ * @deprecated Prefer loading `src/marketEcologyCore.iife.js` before legacy in HTML and VM harnesses.
+ */
+function __modernChrPressure01LegacyFallback(marketId,mkt,year,G){
+  const y=Math.round(Number(year))||1970;
+  if(y<2005)return 0;
+  const m=mkt||MARKETS[marketId||'atlanta']||MARKETS.atlanta;
+  const tier=String(m.rankTier||'medium');
+  if(tier!=='large'&&tier!=='mega')return 0;
+  const arch=String(m.archetypeId||'');
+  const archeW=/west_fm_fragmented|coastal_secular/i.test(arch)?1:0.42;
+  const edu=typeof m.eduIndex==='number'&&!Number.isNaN(m.eduIndex)?m.eduIndex:1;
+  const civic=typeof m.publicCivicIndex==='number'&&!Number.isNaN(m.publicCivicIndex)?m.publicCivicIndex:1;
+  const eduPart=_clamp01((edu-1)/0.18);
+  const civicPart=_clamp01((civic-1)/0.12);
+  const eduCivic=0.4+0.6*_clamp01(0.55*eduPart+0.45*civicPart);
+  const cult=m.culture||{};
+  const spanUrban=(typeof m.urbanBonus==='number'?m.urbanBonus:0)+
+    (typeof cult.spanish==='number'?cult.spanish:0);
+  const damp=1-0.48*_clamp01(spanUrban/0.30);
+  const early=_smoothstep(2005,2013,y);
+  const late=_smoothstep(2013,2024,y);
+  const timeShape=early*(0.55+0.45*late);
+  let streamT=1;
+  if(G!=null&&typeof G==='object'&&typeof G.streamDrag==='number'&&G.streamDrag>0){
+    streamT=0.90+0.10*_clamp01(G.streamDrag/0.45);
+  }
+  return _clamp01(timeShape*archeW*eduCivic*damp*streamT);
+}
+/**
+ * Modern CHR / TOP40 calibration pressure (0–1) for large/mega markets, year ≥ 2005.
+ * Delegates to `deriveMarketEcology` via globals set by `src/marketEcologyCore.iife.js` (browser + VM).
+ */
+function modernChrPressure01(marketId,mkt,year,G){
+  const y=Math.round(Number(year))||1970;
+  if(y<2005)return 0;
+  const m=mkt||MARKETS[marketId||'atlanta']||MARKETS.atlanta;
+  const tier=String(m.rankTier||'medium');
+  if(tier!=='large'&&tier!=='mega')return 0;
+  const g=typeof globalThis!=='undefined'?globalThis:typeof window!=='undefined'?window:null;
+  if(g&&typeof g.__wlDeriveMarketEcology==='function'&&typeof g.__wlModernChrPressure01FromEcology==='function'){
+    const eco=g.__wlDeriveMarketEcology(m,marketId,year,G);
+    return g.__wlModernChrPressure01FromEcology(eco,year,G);
+  }
+  return __modernChrPressure01LegacyFallback(marketId,mkt,year,G);
+}
+/**
+ * Trait snapshot from `deriveMarketEcology` for gameplay (no persisted fields; safe for saves).
+ * Returns null when `marketEcologyCore.iife.js` globals are not loaded — callers keep legacy branches.
+ */
+function marketEcologySnapshotForGameplay(marketId,mkt,year,G){
+  const gl=typeof globalThis!=='undefined'?globalThis:typeof window!=='undefined'?window:null;
+  if(!gl||typeof gl.__wlDeriveMarketEcology!=='function')return null;
+  const mid=String(marketId||'').trim()||'atlanta';
+  const m=mkt&&typeof mkt==='object'?mkt:(MARKETS[mid]||MARKETS.atlanta);
+  const y=Math.round(Number(year))||1970;
+  try{
+    return gl.__wlDeriveMarketEcology(m,mid,y,G!=null&&typeof G==='object'?G:null);
+  }catch(_e){
+    return null;
+  }
+}
+/**
+ * Phase 2A: fractional extra competitor mass for hits-lineage `FMT_COMPETITION` bleed (`TOP40` / `CHR`)
+ * when `modernChrPressure01` is active and substitute formats are on the air (year ≥ 2005).
+ * Capped when applied to `count` — does not touch appeal, seeds, or cold-start.
+ */
+function top40ModernSubstitutionBleedExtra01(G,stations,activeIx,pMod){
+  const y=G.year||1970;
+  if(y<2005||!(pMod>0))return 0;
+  const present=new Set();
+  for(let k=0;k<activeIx.length;k++){
+    const f=stations[activeIx[k]]?.format;
+    if(f)present.add(f);
+  }
+  let spanStr=0;
+  const gl=typeof globalThis!=='undefined'?globalThis:typeof window!=='undefined'?window:null;
+  const mid=G.marketId||ACTIVE_MARKET;
+  const mkt=MARKETS[mid]||MARKETS.atlanta;
+  if(gl&&typeof gl.__wlDeriveMarketEcology==='function'){
+    try{
+      spanStr=Number(gl.__wlDeriveMarketEcology(mkt,mid,y,G).spanishLanguageStrength)||0;
+    }catch(_e){
+      spanStr=0;
+    }
+  }
+  const eraRamp=_smoothstep(2005,2014,y)*(0.45+0.55*_smoothstep(2010,2025,y));
+  const pressBias=0.38+0.62*_clamp01(pMod);
+  let w=0;
+  const bump=(fmt,wt)=>{if(present.has(fmt))w+=wt;};
+  bump('HOT_AC',0.22);
+  bump('RHYTHMIC',0.22);
+  bump('URBAN_CONTEMP',0.20);
+  bump('SOUL_RNB',0.12);
+  bump('ALBUM_ROCK',0.16);
+  bump('ADULT_CONTEMP',0.40*pressBias);
+  bump('AAA',0.36*pressBias);
+  bump('ALT_ROCK',0.32*pressBias);
+  bump('CLASSIC_ROCK',0.30*pressBias);
+  bump('PUBLIC_NEWS',0.16);
+  bump('NEWS_TALK',0.19);
+  bump('ALL_NEWS',0.16);
+  bump('SPORTS_TALK',0.18);
+  if(present.has('SPANISH')&&spanStr>=0.22){
+    w+=0.34*_clamp01((spanStr-0.22)/0.48);
+  }
+  if(w<0.12)return 0;
+  const raw=pMod*eraRamp*w;
+  return Number.isFinite(raw)?Math.max(0,raw):0;
 }
 /** Era split for news / save migration — same threshold the old Top 40 vs CHR labels used. */
 function hitsLineageUsesEarlyTop40Branding(year){
@@ -2472,9 +2593,13 @@ function aaaEraLift(year){
   if(y<=2010)return 0.80+0.20*_smoothstep(1995,1998,y);
   return Math.max(0.875,Math.min(0.95,1.0-0.075*_smoothstep(2010,2026,y)));
 }
-/** 0–1: where commercial AAA is a credible ratings / AI format bet (edu, market size, culture — not revenue math). */
-function aaaMarketPlausibility01(marketId){
+/** 0–1: where commercial AAA is a credible ratings / AI format bet (edu, market size, culture — not revenue math).
+ * Phase 3A: when ecology globals exist, AAA lift uses `aaaAlternativeStrength` instead of hardcoded Seattle/SF/Wichita ids.
+ */
+function aaaMarketPlausibility01(marketId,yearOpt,Gopt){
   const m=MARKETS[marketId||ACTIVE_MARKET]||MARKETS.atlanta;
+  const y=yearOpt!=null&&Number.isFinite(yearOpt)?Math.round(yearOpt):(typeof G!=='undefined'&&G?.year)||2010;
+  const gCtx=Gopt!==undefined?Gopt:(typeof G!=='undefined'?G:null);
   const edu=typeof m.eduIndex==='number'&&!Number.isNaN(m.eduIndex)?m.eduIndex:1;
   const rs=Math.max(0.25,Math.min(2.2,typeof m.revScale==='number'?m.revScale:1));
   const tier=m.rankTier||'medium';
@@ -2486,9 +2611,16 @@ function aaaMarketPlausibility01(marketId){
   const arch=String(m.archetypeId||'');
   if(/west_fm_fragmented|coastal|northeast_mega|secular|music|diversified/i.test(arch))v+=0.045;
   if(/heartland|prairie|agrarian|legacy|country|bible/i.test(arch)&&edu<0.98)v-=0.055;
-  const id=String(m.id||marketId||'');
-  if(id==='seattle'||id==='sanfrancisco')v+=0.05;
-  if(id==='wichita')v-=0.06;
+  const eco=marketEcologySnapshotForGameplay(marketId,m,y,gCtx);
+  if(eco&&typeof eco.aaaAlternativeStrength==='number'){
+    const a=eco.aaaAlternativeStrength;
+    if(a>=0.52)v+=0.052*_smoothstep(0.52,0.80,a);
+    else if(a<=0.30)v-=0.058*_smoothstep(0.10,0.30,Math.max(0,0.30-a));
+  }else{
+    const id=String(m.id||marketId||'');
+    if(id==='seattle'||id==='sanfrancisco')v+=0.05;
+    if(id==='wichita')v-=0.06;
+  }
   return Math.max(0.10,Math.min(1,v));
 }
 try{globalThis.aaaEraLift=aaaEraLift;globalThis.aaaMarketPlausibility01=aaaMarketPlausibility01;}catch(_e){}
@@ -3293,7 +3425,7 @@ function adjustCohostSalaryForRole(t,sl,G){
   t.salary=Math.max(3500,Math.round(sal0*mult/500)*500);
   const tier=talentTrueQuality(t)<42?'entry':talentTrueQuality(t)<68?'mid':'star';
   const mktAdj=G?.marketId||ACTIVE_MARKET;
-  const flBoost=1+(marketRankTierOnAirPayMult(mktAdj)-1)*0.5;
+  const flBoost=1+(marketRankTierOnAirPayMult(mktAdj)-1)*0.58;
   const baseFl=Math.round(salInfl((SAL[sl]?.[tier]?.[0]||5000),G.year)*0.58*flBoost/500)*500;
   if(t.salary<baseFl)t.salary=baseFl;
   const slotBx=Math.round(slotStarMaxBaseForDaypart(sl)*marketRankTierOnAirPayMult(mktAdj));
@@ -3860,9 +3992,9 @@ function slotStarMaxBaseForDaypart(sl){
  */
 function marketRankTierOnAirPayMult(marketId){
   const rt=(MARKETS[marketId||ACTIVE_MARKET]||MARKETS.atlanta).rankTier||'medium';
-  if(rt==='mega')return 1.14;
-  if(rt==='large')return 1.09;
-  if(rt==='medium')return 1.03;
+  if(rt==='mega')return 1.17;
+  if(rt==='large')return 1.12;
+  if(rt==='medium')return 1.04;
   return 1.0;
 }
 /** Fall on-air raise: smooth share ramp + extra lift for mega/large when books are competitive (replaces stepped perfPressure). */
@@ -4157,6 +4289,10 @@ function mkTal(slot,fmt,tier='mid',year=1970,nameCtx){
   const tierSalMult=tier==='star'?1:tier==='mid'?0.93:0.84;
   finalSal=Math.round(finalSal*tierSalMult/500)*500;
   finalSal=Math.round(finalSal*marketRankTierOnAirPayMult(marketId)/500)*500;
+  const rk=(MARKETS[marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
+  if((rk==='mega'||rk==='large')&&(slot==='afternoonDrive'||slot==='evening'||slot==='midday')){
+    finalSal=Math.round(finalSal*1.055/500)*500;
+  }
 
   const gender=Math.random()<0.5?'female':'male';
   const name=gn({...nameCtx,fmt,year,gender});
@@ -5918,6 +6054,38 @@ function applyDaypartPromotionEconomics(talent,fromSlot,toSlot){
   talent._promotionFromSlot=fromSlot;
   talent.cyr=Math.min(talent.cyr!=null?talent.cyr:2,0.5);
 }
+/**
+ * When the player signs the cheapest FA in a multi-candidate pool by a wide margin, flag for
+ * morale pressure + slower programming-budget slot lift (bargain hire — not a free lunch).
+ */
+function markBudgetHireFromFreeAgentPool(t, pool){
+  if(!t||!pool||pool.length<2)return;
+  delete t._budgetHire;
+  const salz=[];
+  for(let i=0;i<pool.length;i++){
+    const v=Number(pool[i]?.salary);
+    if(Number.isFinite(v)&&v>0)salz.push(v);
+  }
+  if(salz.length<2)return;
+  salz.sort((a,b)=>a-b);
+  const minS=salz[0];
+  const secondS=salz[1];
+  const sal=Number(t.salary);
+  if(!Number.isFinite(sal)||sal>minS+250)return;
+  const relGap=secondS/Math.max(1,minS)-1;
+  const absGap=secondS-minS;
+  if(relGap>=0.155||absGap>=11500)t._budgetHire=true;
+}
+/** Morale hit after signing a flagged bargain hire (stronger in top markets). */
+function applyBudgetHireMoraleOnSign(t){
+  if(!t||!t._budgetHire)return;
+  const rt=(MARKETS[G?.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
+  let pen=11;
+  if(rt==='mega')pen=17;
+  else if(rt==='large')pen=15;
+  else if(rt==='medium')pen=12;
+  t.morale=Math.max(30,Math.round((t.morale||58)-pen));
+}
 // Sync POP.cohorts to the active market — the static POP constant is a fallback only.
 syncMarketPopToMarket(ACTIVE_MARKET);
 
@@ -6923,7 +7091,7 @@ function mpRenderDraft(players, era) {
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
           <div>
             <div style="font-size:16px;color:${isMyStation?'var(--amb)':'#fff'};letter-spacing:1px">${s.callLetters}</div>
-            <div style="font-size:14px;color:var(--mut)">${s.sig?.type} · ${signalPowerDisplayLabel(s.sig?.pw)} · ${(s.str||'').toUpperCase()}</div>
+            <div style="font-size:14px;color:var(--mut)">${s.sig?.type} · ${signalPowerDisplayLabel(s.sig?.pw,s)} · ${(s.str||'').toUpperCase()}</div>
           </div>
           <div style="text-align:right">
             <div style="font-size:14px;color:${diff.color}">${diff.label}</div>
@@ -8076,6 +8244,10 @@ function wlCloudSaveUploadStatus(msg, opts) {
   const el = document.getElementById('wl-cloud-save-status');
   if (!el) return;
   el.textContent = msg || '';
+  el.title =
+    msg && opts && opts.error
+      ? 'Cloud saves POST JSON to /api/saves/cloud. Console 413 + CORS: nginx body limit — increase client_max_body_size. Other failures: API URL, SSL, or Node down.'
+      : '';
   let col = 'var(--mut)';
   if (opts && opts.error) col = 'var(--red)';
   else if (opts && opts.working) col = 'var(--amb)';
@@ -8124,9 +8296,15 @@ async function wlCloudSaveUploadCurrent() {
       body: JSON.stringify(payload),
     });
   } catch (e) {
-    wlCloudSaveUploadStatus('Could not reach the game server. Check <code>VITE_GAME_SERVER_URL</code> and that the API is up.', {
-      error: true,
-    });
+    const api =
+      typeof wlGameServerOrigin === 'function' && wlGameServerOrigin()
+        ? wlGameServerOrigin()
+        : '';
+    const where = api ? `at ${api}` : '— no API origin set (browser is calling /api on this page’s host only)';
+    const msgNet = `Could not reach the game server ${where}. Set meta wl-game-server-url or VITE_GAME_SERVER_URL to your Node API; confirm the server is running.`;
+    const msg413Hint =
+      ' If the browser console shows HTTP 413 and CORS errors together, the upload body is too large for your reverse proxy (nginx client_max_body_size) — raise it (e.g. 25m) so requests reach Node; the CORS message is a side effect of the 413 page.';
+    wlCloudSaveUploadStatus(msgNet + msg413Hint, { error: true });
     showToast('Could not reach the game server.', 'warn');
     reenableUploadBtn();
     return;
@@ -8269,12 +8447,12 @@ async function wlCloudSaveRenderPanel(hostId) {
     });
   } catch (e) {
     el.innerHTML =
-      '<div class="ibox" style="color:var(--mut);margin-top:12px">Could not reach the game server. Use the same API host as your game (see <code>VITE_GAME_SERVER_URL</code>) or run the Node server locally.</div>';
+      '<div class="ibox" style="color:var(--mut);margin-top:12px">Could not reach the game server. Use the same API host as your build: set <span style="font-family:var(--ft);color:var(--amb)">wl-game-server-url</span> in play.html or <span style="font-family:var(--ft);color:var(--amb)">VITE_GAME_SERVER_URL</span> at build time, and run the Node server.</div>';
     return;
   }
   if (stRes.status === 503) {
     el.innerHTML =
-      '<div class="ibox" style="color:var(--mut);margin-top:12px">Cloud saves need <code>CLERK_SECRET_KEY</code> on the game server.</div>';
+      '<div class="ibox" style="color:var(--mut);margin-top:12px">Cloud saves need <span style="font-family:var(--ft);color:var(--amb)">CLERK_SECRET_KEY</span> on the game server.</div>';
     return;
   }
   const st = await stRes.json().catch(() => ({}));
@@ -9666,7 +9844,9 @@ window._mpApply_extend = function({ sid, slot, years, newSalary, talentRole, ext
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
   const sd = s.prog[slot]; if(!sd) return;
   const t = talentRole==='cohost' ? slotTalentB(sd) : sd.talent; if(!t) return;
+  const prevSal=Number(t.salary)||0;
   t.salary = newSalary; t.cyr = years; t.morale = Math.min(100,(t.morale||50)+10);
+  if(t._budgetHire&&newSalary>=Math.round(prevSal*1.14/500)*500)delete t._budgetHire;
   if(talentRole!=='cohost'){
     t._underpaidInRole=false; t._slotPromotionPendingRenewal=false; t._promotionFromSlot=undefined;
   }
@@ -10456,9 +10636,19 @@ function stationIsAmDaytimer(s){
 function daytimerRestrictedSlot(s,sl){
   return stationIsAmDaytimer(s)&&(sl==='evening'||sl==='overnight');
 }
-/** UI label for `sig.pw` (internal code remains `'DA'` = high day / reduced night, not “sign off at sunset”). */
-function signalPowerDisplayLabel(pw){
-  if(pw==='DA')return 'Reduced at night';
+/**
+ * Illustrative day/night kW pair for AM `DA` (sim uses one token; numbers are tiered by blueprint `str`).
+ * moderate matches “10kw/DA” rows; strong reads as a larger day facility with a bigger night drop.
+ */
+function amDaDayNightPowerDisplay(s){
+  const st=String(s?.str||'').toLowerCase();
+  if(st==='weak')return '5kW day / 1kW night';
+  if(st==='strong')return '50kW day / 10kW night';
+  return '10kW day / 1kW night';
+}
+/** UI label for `sig.pw` (internal `'DA'` = day/night split; pass `station` when available for concrete kW text). */
+function signalPowerDisplayLabel(pw,s){
+  if(pw==='DA')return s?amDaDayNightPowerDisplay(s):'10kW day / 1kW night';
   return String(pw||'').toUpperCase();
 }
 const DAYTIMER_AM_NIGHT_MSG='Evening and Overnight don’t carry a local host on this signal — night power and coverage are limited.';
@@ -11495,9 +11685,12 @@ function gospelCommercialMarketAppealDelta(marketId,mkt,year){
 /**
  * 0–1 structural fit for Nielsen-style commercial Gospel (not RELIGIOUS_NETWORK).
  * Drives AI plausibility + light inertia — cold in Pacific secular, hot in Southern / high-church / soul-lane markets.
+ * Phase 3A: when ecology globals load, blends `gospelStrength` (12%) into the legacy heuristic (city list unchanged for fallback).
  */
-function gospelCommercialMarketFit01(marketId,mkt){
+function gospelCommercialMarketFit01(marketId,mkt,yearOpt,Gopt){
   const m=mkt||(MARKETS[marketId]||MARKETS.atlanta);
+  const y=yearOpt!=null&&Number.isFinite(yearOpt)?Math.round(yearOpt):(typeof G!=='undefined'&&G?.year)||2010;
+  const gCtx=Gopt!==undefined?Gopt:(typeof G!=='undefined'?G:null);
   const cult=m.culture||{};
   const bp=typeof m.blackPop==='number'?m.blackPop:0.2;
   const ch=typeof m.churchGoing==='number'?m.churchGoing:0.45;
@@ -11515,6 +11708,10 @@ function gospelCommercialMarketFit01(marketId,mkt){
   if(/coastal_secular/i.test(arch))f-=0.11;
   if(marketId==='seattle'||marketId==='portland'||marketId==='sanfrancisco')f-=0.22;
   if(tier==='small'&&bp<0.13&&marketId!=='wichita')f-=0.055;
+  const eco=marketEcologySnapshotForGameplay(marketId,m,y,gCtx);
+  if(eco&&typeof eco.gospelStrength==='number'){
+    f=0.88*f+0.12*_clamp01(eco.gospelStrength);
+  }
   return Math.max(0.02,Math.min(1,f));
 }
 /**
@@ -11523,7 +11720,7 @@ function gospelCommercialMarketFit01(marketId,mkt){
  */
 function aiGospelFormatPlausibilityMult(marketId,year,gospelStations,candidateGreenfield,relNetworkStations){
   const mkt=MARKETS[marketId]||MARKETS.atlanta;
-  const fit=gospelCommercialMarketFit01(marketId,mkt);
+  const fit=gospelCommercialMarketFit01(marketId,mkt,year,G);
   const base=1+gospelCommercialMarketAppealDelta(marketId,mkt,year)*1.06;
   let m=base;
   const relN=Math.max(0,Math.min(4,Number(relNetworkStations)||0));
@@ -11658,6 +11855,13 @@ function appl(s,coh,G){
     const broadTight=1+0.14*_smoothstep(1972,1982,year)*(1-0.55*t);
     const fmYouth=s.sig.type==='FM'?1+0.07*t*_smoothstep(1983,1996,year):1;
     hitsLineageEraMult=broadTight*fmYouth;
+    const pMod=modernChrPressure01(marketId,mkt,year,G);
+    if(pMod>0){
+      const e2005=_smoothstep(2005,2012,year)*0.06;
+      const e2012=_smoothstep(2012,2025,year)*0.055;
+      const erosion=pMod*(e2005+e2012);
+      hitsLineageEraMult*=Math.max(0.88,1-erosion);
+    }
   }
 
   // Format era viability — smoothstep sunset curves
@@ -11730,7 +11934,7 @@ function appl(s,coh,G){
     const edu=typeof mkt.eduIndex==='number'&&!Number.isNaN(mkt.eduIndex)?mkt.eduIndex:1;
     mktFmt+=0.065*(edu-1)*_smoothstep(1990,2005,year);
     const el=aaaEraAppealMult;
-    const pl=aaaMarketPlausibility01(marketId);
+    const pl=aaaMarketPlausibility01(marketId,year,G);
     if(year>=1995&&el>=0.75&&pl>=0.55){
       const plT=_clamp01((pl-0.55)/0.34);
       const yrW=_smoothstep(1995,2003,year);
@@ -11739,7 +11943,7 @@ function appl(s,coh,G){
   }
   if(s.format==='GOSPEL'){
     mktFmt+=gospelCommercialMarketAppealDelta(marketId,mkt,year);
-    mktFmt+=0.026*gospelCommercialMarketFit01(marketId,mkt);
+    mktFmt+=0.026*gospelCommercialMarketFit01(marketId,mkt,year,G);
   }
   mktFmt=Math.max(0.86,Math.min(1.24,mktFmt));
   const out=Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * morHeritageHybridMult * hitsLineageEraMult * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G) * mktFmt * allNewsSig * zombieNicheMult * staffingAutomationAppealTradeoffMult(s,G)*brokeredAppealTradeoffMult(s,G)*aaaEraAppealMult);
@@ -12266,7 +12470,9 @@ function computePublicStationTargetCount(marketId,startYear){
     const mediumEduBrain=eduN>=0.52&&civN>=0.58;
     const mediumCivicArts=civic>=0.942&&edu>=0.86;
     if(!mediumEduBrain&&!mediumCivicArts)return 2;
-    if(mid==='nashville'&&mediumCivicArts){
+    const ecoPub=marketEcologySnapshotForGameplay(mid,m,fy,null);
+    const thirdPubArts=mediumCivicArts&&(ecoPub?ecoPub.countryStrength>=0.88:mid==='nashville');
+    if(thirdPubArts){
       const uN=(wlHash32(`${PUBLIC_STATION_COUNT_HASH_SALT}::nashvilleThird::${fy}`)>>>0)/4294967296;
       return uN<0.34?3:2;
     }
@@ -12291,6 +12497,7 @@ function computePublicExpansionFormatsAfterBase(marketId,startYear){
   const eduN=Math.max(0,Math.min(1,(edu-0.88)/(1.24-0.88)));
   const civN=Math.max(0,Math.min(1,(civic-0.92)/(1.12-0.92)));
   const uJ=(wlHash32(`${PUBLIC_STATION_COUNT_HASH_SALT}::expFmt::${mid}::${fy}`)>>>0)/4294967296;
+  const ecoSnap=marketEcologySnapshotForGameplay(mid,m,fy,null);
   const out=[];
   if(n<=2)return out;
   if(n===3){
@@ -12300,7 +12507,8 @@ function computePublicExpansionFormatsAfterBase(marketId,startYear){
       return out;
     }
     if(rankTier==='large'){
-      if(mid==='nashville')out.push(uJ<0.78?'PUBLIC_ECLECTIC':'PUBLIC_JAZZ');
+      const nashLikeLarge=ecoSnap?ecoSnap.countryStrength>=0.88:mid==='nashville';
+      if(nashLikeLarge)out.push(uJ<0.78?'PUBLIC_ECLECTIC':'PUBLIC_JAZZ');
       else out.push(uJ<0.52?'PUBLIC_ECLECTIC':'PUBLIC_JAZZ');
       return out;
     }
@@ -13278,6 +13486,11 @@ function recalc(stations,G){
     return m;
   };
   const activeIx=stations.map((s,i)=>s&&!s._bpSlotDeferred?i:-1).filter(i=>i>=0);
+  const gyBleed=G.year||1970;
+  const midBleed=G.marketId||ACTIVE_MARKET;
+  const mktBleed=MARKETS[midBleed]||MARKETS.atlanta;
+  const pTop40ModBleed=gyBleed>=2005?modernChrPressure01(midBleed,mktBleed,gyBleed,G):0;
+  const top40SubstBleedExtra=pTop40ModBleed>0?Math.min(2.5,top40ModernSubstitutionBleedExtra01(G,stations,activeIx,pTop40ModBleed)):0;
   const talentPmById=new Map();
   const talentPmFor=s=>{
     if(!s?.id)return talentFranchiseRatingsEffect(s,G);
@@ -13394,10 +13607,14 @@ function recalc(stations,G){
       const eraCrowd=_smoothstep(1978,1983,gyLane)*Math.max(0.35,1-_smoothstep(1994,2006,gyLane)*0.65);
       const tierCrowd=(MARKETS[G.marketId||ACTIVE_MARKET]||{}).rankTier||'medium';
       const megaKScale=tierCrowd==='mega'?1.14:tierCrowd==='large'?1.06:1;
-      let kChrLane=(0.074+0.068*eraCrowd)*megaKScale;
+      const mLane=MARKETS[G.marketId||ACTIVE_MARKET]||MARKETS.atlanta;
+      const pLane=modernChrPressure01(G.marketId||ACTIVE_MARKET,mLane,gyLane,G);
+      const chrFloorLift=pLane>0?pLane*_smoothstep(2003,2020,gyLane)*0.10:0;
+      const eraChr=Math.min(1.28,eraCrowd+chrFloorLift);
+      let kChrLane=(0.074+0.068*eraChr)*megaKScale;
       let kTalkLane=(0.062+0.058*eraCrowd)*megaKScale;
       const kFmtLane=0.032+0.024*eraCrowd;
-      const pileChr=(0.11+0.09*eraCrowd)*megaKScale;
+      const pileChr=(0.11+0.09*eraChr)*megaKScale;
       const pileTalk=(0.092+0.078*eraCrowd)*megaKScale;
       const laneStart=2;
       const laneCounts=new Map();
@@ -13431,9 +13648,14 @@ function recalc(stations,G){
     raw=raw.map((r,ri)=>{
       const i=activeIx[ri];
       const s=stations[i];
-      const competitors=(FMT_COMPETITION[s.format]||[]);
-      let count=activeIx.filter(j=>j!==i&&competitors.includes(stations[j].format)).length;
-      if(s.format==='TOP40'&&s.sig?.type==='AM'&&(G.year||1970)<=1985){
+      const compKey=canonicalHitsFormatKey(s.format)||s.format;
+      const competitors=(FMT_COMPETITION[compKey]||[]);
+      let count=activeIx.filter(j=>{
+        if(j===i)return false;
+        const fj=canonicalHitsFormatKey(stations[j].format)||stations[j].format;
+        return competitors.includes(fj);
+      }).length;
+      if(isHitsFormatLineage(s.format)&&s.sig?.type==='AM'&&(G.year||1970)<=1985){
         const ySp=G.year||1970;
         const fmpSp=G.fmp!=null?G.fmp:0.5;
         const spillWt=_smoothstep(1971,1981,ySp)*(0.18+0.40*fmpSp);
@@ -13442,6 +13664,9 @@ function recalc(stations,G){
           const st=stations[j];
           if(st.sig?.type==='FM'&&AM_TOP40_FM_SPILL_FORMATS.includes(st.format))count+=spillWt;
         }
+      }
+      if(isHitsFormatLineage(s.format)&&gyBleed>=2005&&pTop40ModBleed>0&&top40SubstBleedExtra>0){
+        count+=top40SubstBleedExtra;
       }
       let bleedPenalty=Math.min(0.22,COMPETITION_BLEED*(count/5));
       if(s.format==='PUBLIC_NEWS'){
@@ -15221,7 +15446,13 @@ function decay(s,year,period){
     const austerityProgEff=1-_bsAust*0.38;
     const boost=(totalProgSpend/progRef)*4*austerityProgEff;
     const slotBoosts={morningDrive:boost*1.4,afternoonDrive:boost*1.1,midday:boost,evening:boost*.8,overnight:boost*.6};
-    Object.entries(slotBoosts).forEach(([sl,b])=>{if(s.prog[sl])s.prog[sl].quality=Math.min(100,s.prog[sl].quality+b);});
+    Object.entries(slotBoosts).forEach(([sl,b])=>{
+      if(!s.prog[sl])return;
+      let bb=b;
+      const hostTal=s.prog[sl].talent;
+      if(hostTal&&hostTal._budgetHire)bb*=0.66;
+      s.prog[sl].quality=Math.min(100,s.prog[sl].quality+bb);
+    });
   }
   const decayMod=totalProgSpend>0?0.60:1.0;
   s.progInvestment=0; // clear one-shot; progBudget persists
@@ -15351,15 +15582,17 @@ function decay(s,year,period){
         const merit=tqMerit>85?0.008:tqMerit>72?0.004:0.001;
         // Performance pressure: smooth share ramp + rank-tier lift (see talentFallPerfPressureFromShare).
         const perfPressure=talentFallPerfPressureFromShare(stShare,G.marketId||ACTIVE_MARKET);
+        const levHost=talentRenewalLeverage01(s,sl,sd.talent,false);
+        const levSal=levHost>=0.44?0.0052:levHost>=0.36?0.0036:levHost>=0.30?0.0022:levHost>=0.26?0.0011:0;
         // Morale modifier: happy talent accepts less; disgruntled talent pushes harder
         const moraleMod=sd.talent.morale<50?0.004:sd.talent.morale>80?-0.002:0;
         const vtSal=Math.min(0.028,vtLd*0.021);
-        sd.talent.salary=Math.round(sd.talent.salary*(1+baseInflation+merit+perfPressure+moraleMod+vtSal)/500)*500;
+        sd.talent.salary=Math.round(sd.talent.salary*(1+baseInflation+merit+perfPressure+moraleMod+vtSal+levSal)/500)*500;
         const [capElHost,floorElHost]=eliteTalentIncumbentPremiumMults(sd.talent,sl,stShare);
         // Salary floor: 75% of market rate (up from 55%) — long-tenured talent never drifts low
         {const tier=tqMerit<42?'entry':tqMerit<68?'mid':'star';
          // Floor = 100% of entry-tier minimum (was 75%) so no one earns poverty wages
-         const flBoost=1+(marketRankTierOnAirPayMult(G.marketId||ACTIVE_MARKET)-1)*0.5;
+         const flBoost=1+(marketRankTierOnAirPayMult(G.marketId||ACTIVE_MARKET)-1)*0.58;
          const baseFl=Math.round(salInfl((SAL[sl]?.[tier]?.[0]||5000),G.year)*0.60*flBoost/500)*500;
          // Tenure premium: each year over 5 adds 2% to floor, up to +40% at 25 years
          const tenureYrs=G.year-(sd.talent._hireYear||G.year);
@@ -15376,7 +15609,7 @@ function decay(s,year,period){
       // Universal floor (applies every period, not just Fall — catches legacy saves and new hires)
       {const tqFloor=talentTrueQuality(sd.talent);
        const tier2=tqFloor<42?'entry':tqFloor<68?'mid':'star';
-       const flBoost2=1+(marketRankTierOnAirPayMult(G.marketId||ACTIVE_MARKET)-1)*0.5;
+       const flBoost2=1+(marketRankTierOnAirPayMult(G.marketId||ACTIVE_MARKET)-1)*0.58;
        const flBase2=Math.round(salInfl((SAL[sl]?.[tier2]?.[0]||5000),G.year)*0.60*flBoost2/500)*500;
        const tenYrs2=G.year-(sd.talent._hireYear||G.year);
        const tenPrem2=Math.min(0.10, Math.max(0, tenYrs2-10)*0.01);
@@ -24742,7 +24975,7 @@ function buildResearchReport(s,G){
       <p class="di" style="margin:0 0 10px;font-size:13px;color:var(--mut)">Paid memo — not Listener Feedback.</p>
       ${row('Station',call,'','var(--off)')}
       ${row('Format',fmtLabel(s.format),'','var(--off)')}
-      ${row('Signal',`${s.sig.type} · ${signalPowerDisplayLabel(s.sig.pw)}`,'','var(--off)')}
+      ${row('Signal',`${s.sig.type} · ${signalPowerDisplayLabel(s.sig.pw,s)}`,'','var(--off)')}
       ${row('Share',`${(cur*100).toFixed(1)}%`,`Trend: ${pill(trending,trendColor)}`,'var(--off)')}
     </div>
     ${audienceFlowHtml}
@@ -25046,6 +25279,7 @@ function rivalReformat(G){
 
     // Stage 3 (periods 6+): Reformat — only if consistently bad (archetype + era + inertia bias flip odds)
     if(p>=6){
+      const y=G.year||1970;
       ensureAiRivalArchetype(s,G);
       const arch=AI_ARCHETYPE_DEF[s.aiArchetype]||AI_ARCHETYPE_DEF.trend_chaser;
       const era=aiEraStrategicDial(G.year);
@@ -25072,7 +25306,7 @@ function rivalReformat(G){
       flipProb=Math.min(0.88,Math.max(0.035,flipProb));
       if(s.format==='GOSPEL'){
         const mktG=MARKETS[G.marketId||ACTIVE_MARKET]||MARKETS.atlanta;
-        const gFit=gospelCommercialMarketFit01(G.marketId||'atlanta',mktG);
+        const gFit=gospelCommercialMarketFit01(G.marketId||'atlanta',mktG,y,G);
         flipProb*=1-Math.min(0.38,0.12+0.28*gFit);
       }
       if(Math.random()>=flipProb)return;
@@ -25085,7 +25319,6 @@ function rivalReformat(G){
       const mktComm=G.stations.filter(st=>st&&!st._bpSlotDeferred&&!stationIsNoncommercialInstitutional(st));
       const fmtCounts={};mktComm.forEach(st=>{fmtCounts[st.format]=(fmtCounts[st.format]||0)+1;});
       const fmtShares={};mktComm.forEach(st=>{fmtShares[st.format]=(fmtShares[st.format]||0)+st.rat.share;});
-      const y=G.year||1970;
       // Score each candidate format
       const scored=candidates.map(f=>{
         let score=1.0;
@@ -25131,7 +25364,7 @@ function rivalReformat(G){
         // Imperfect evaluation — top choice favored, not guaranteed
         score*=1+arch.pickErr*aiSeededNoise(s.id+':'+f,G.turn||0,31);
         if(f==='AAA'){
-          const p=aaaMarketPlausibility01(G.marketId||ACTIVE_MARKET);
+          const p=aaaMarketPlausibility01(G.marketId||ACTIVE_MARKET,y,G);
           const eLift=aaaEraLift(y);
           score*=Math.max(0.14,0.26+0.74*p)*Math.max(0.28,0.18+0.82*eLift);
           const greenAaa=(fmtCounts.AAA||0)===0&&y>=1990&&eLift>=0.60&&p>=0.45;
@@ -25988,7 +26221,7 @@ function rLMA() {
       return `<div class="lma-row${ok?'':' nope'}" style="opacity:${ok?1:.4}">
         <div>
           <div class="lma-call" style="color:${s.color||'var(--wht)'}">${s.callLetters}${corpTag}</div>
-          <div class="lma-meta">${s.freq} · ${signalPowerDisplayLabel(s.sig.pw)} · ${fmtLabel(s.format)} · Quality: ${Math.round(s.oq)}</div>
+          <div class="lma-meta">${s.freq} · ${signalPowerDisplayLabel(s.sig.pw,s)} · ${fmtLabel(s.format)} · Quality: ${Math.round(s.oq)}</div>
           <div class="lma-meta">Share: ${pct(s.rat.share)} · Revenue: ${f$(s.fin?.rev||0)}/period</div>
           <div class="lma-terms">Fee: ${f$(fee)}/period → Est. net to you: ${f$(netEst)}/period</div>
           ${lmaUiFeeDescriptor(s, G)}
@@ -27591,7 +27824,7 @@ function signalLineForIntel(s){
   let band=sig.type==='FM'?'FM':sig.type==='AM'?'AM':(sig.type?String(sig.type).trim():'');
   if(!band)band=inferBandFromDialStr(raw);
   if(!band)band='AM/FM';
-  const pw=sig.pw!=null&&sig.pw!==''?signalPowerDisplayLabel(sig.pw):'';
+  const pw=sig.pw!=null&&sig.pw!==''?signalPowerDisplayLabel(sig.pw,s):'';
   const parts=[band];
   if(pw)parts.push(pw);
   parts.push(freq);
@@ -28622,7 +28855,7 @@ function rHire(s, scrollAfter){
     const cur=s2.prog[HS.slot]?.talent;
     const slotQcur=Math.round(s2.prog[HS.slot]?.quality||0);
     const poachList=hireModalRivalPoachCandidates(HS.sid,HS.slot);
-    const freeRows=HS.pool.map((t,i)=>{const fitF=talentScoutFormatFit01(t,s2.format);const fit=Math.round(fitF*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const liftRaw=(q/100)*fitF*35;const liftDec=Math.round(liftRaw*10)/10;const newSlotQ=Math.min(100,Math.round(curSlotQ+liftRaw));const liftLbl=`${liftDec>=0?'+':''}${liftDec.toFixed(1)}`;const hStar=t.superstar===true?'★ ':'';let deltaHtml='';if(HS._hireKind==='replace'&&cur){const dQ=q-Math.round(cur.quality);const curW=talentDestFormatFitSummary(cur,s2.format).words;const newW=talentDestFormatFitSummary(t,s2.format,{scout:true}).words;const dSal=t.salary-cur.salary;deltaHtml=`<div style="font-size:12px;color:var(--amb);margin-top:6px;font-family:var(--ft);line-height:1.55"><div>Δ Talent rating: ${dQ>=0?'+':''}${dQ}</div><div>Δ Format fit: ${curW} → ${newW}</div><div>Δ Salary: ${dSal>=0?'+':''}${f$(dSal)}/yr</div></div>`;}return `<div class="to to-hire${HS.sel===i&&!HS.poachRivalId?' sel':''}" onclick="pickTal(${i})"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-hire',`${callDisplay(s2)} · ${SL[HS.slot]} · hire list`)}</div><div style="flex:1;min-width:0"><div class="ton">${hStar}${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div>${deltaHtml}<div class="tost"><div><span class="tosl">Talent score</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">Format fit</span><span class="tosv ${fc}">${fl}</span></div><div><span class="tosl" title="Headline is rounded slot quality, max 100. The parenthetical is uncapped model lift (talent×format fit×scale); when several candidates show → 100, compare lifts or raw blend.">Projected slot quality</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ} <span style="font-size:12px;color:var(--mut);font-family:var(--ft);font-weight:400">(${liftLbl} uncapped lift)</span></span>${newSlotQ>=100&&(curSlotQ+liftRaw)>100.001?'<span style="display:block;font-size:11px;color:var(--mut);margin-top:3px;font-family:var(--ft)">Raw blend ~'+(Math.round((curSlotQ+liftRaw)*10)/10).toFixed(1)+' before 100 cap.</span>':''}</div></div></div></div><div class="to-hire-side"><span class="tocl">Pay/yr</span><span class="toc">${f$(t.salary)}/yr</span></div></div>`;}).join('');
+    const freeRows=HS.pool.map((t,i)=>{const fitF=talentScoutFormatFit01(t,s2.format);const fit=Math.round(fitF*100);const fl=fit>=75?'GREAT FIT':fit>=55?'DECENT FIT':'POOR FIT';const fc=fit>=75?'good':fit>=55?'warn':'poor';const q=Math.round(t.quality);const curSlotQ=Math.round(s2.prog[HS.slot]?.quality||0);const liftRaw=(q/100)*fitF*35;const liftDec=Math.round(liftRaw*10)/10;const newSlotQ=Math.min(100,Math.round(curSlotQ+liftRaw));const liftLbl=`${liftDec>=0?'+':''}${liftDec.toFixed(1)}`;const hStar=t.superstar===true?'★ ':'';let deltaHtml='';if(HS._hireKind==='replace'&&cur){const dQ=q-Math.round(cur.quality);const curW=talentDestFormatFitSummary(cur,s2.format).words;const newW=talentDestFormatFitSummary(t,s2.format,{scout:true}).words;const dSal=t.salary-cur.salary;deltaHtml=`<div style="font-size:12px;color:var(--amb);margin-top:6px;font-family:var(--ft);line-height:1.55"><div>Δ Talent rating: ${dQ>=0?'+':''}${dQ}</div><div>Δ Format fit: ${curW} → ${newW}</div><div>Δ Salary: ${dSal>=0?'+':''}${f$(dSal)}/yr</div></div>`;}return `<div class="to to-hire${HS.sel===i&&!HS.poachRivalId?' sel':''}" onclick="pickTal(${i})"><div class="to-hire-main"><div style="flex-shrink:0">${talentPortraitThumbHtml(t,'tp-hire',`${callDisplay(s2)} · ${SL[HS.slot]} · hire list`)}</div><div style="flex:1;min-width:0"><div class="ton">${hStar}${t.name}</div>${hireTalentCareerLine(t,G.year)}<div class="tos">${SL[t.slot]}</div>${deltaHtml}<div class="tost"><div><span class="tosl">Talent score</span><span class="tosv ${qc(q)}">${q}/100</span></div><div><span class="tosl">Format fit</span><span class="tosv ${fc}">${fl}</span></div><div><span class="tosl" title="Headline is rounded slot quality, max 100. The parenthetical is uncapped model lift (talent×format fit×scale); when several candidates show → 100, compare lifts or raw blend.">Projected slot quality</span><span class="tosv ${qc(newSlotQ)}">→ ${newSlotQ} <span style="font-size:12px;color:var(--mut);font-family:var(--ft);font-weight:400">(${liftLbl} uncapped lift)</span></span>${newSlotQ>=100?'<span style="display:block;font-size:11px;color:var(--mut);margin-top:3px;font-family:var(--ft)">Raw blend ~'+(Math.round((curSlotQ+liftRaw)*10)/10).toFixed(1)+' before 100 cap — compare across candidates when headline is tied.</span>':''}</div></div></div></div><div class="to-hire-side"><span class="tocl">Pay/yr</span><span class="toc">${f$(t.salary)}/yr</span></div></div>`;}).join('');
     const rivalRows=poachList.map(({st,sd:rsd})=>{
       const rt=rsd.talent;
       const fit=Math.round(talentScoutFormatFit01(rt,s2.format)*100);
@@ -28642,7 +28875,7 @@ function rHire(s, scrollAfter){
     const curBox=cur?`<div class="ibox">Current: <strong>${cur.name}</strong> — quality ${Math.round(cur.quality)}, slot quality ${slotQcur}, ${f$(cur.salary)}/yr.</div>`:'';
     const freeSection=HS.pool.length
       ?`<div class="msh" style="margin-top:16px;margin-bottom:8px;font-size:13px;letter-spacing:.12em;color:var(--mut)">FREE AGENTS</div>
-    <p class="di">Here are four candidates for the role. <strong>Talent rating</strong> is how good they are. <strong>Format fit</strong> is how well they are suited to your station&apos;s current format. <strong>Projected slot quality</strong> is rounded and capped at 100; the <strong>uncapped lift</strong> in parentheses explains why two people can both show <strong>→ 100</strong> with different numbers. <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:4px" onclick="openTalentMetricsHelp('slotboost')">Explain metrics</button></p>
+    <p class="di">Here are four candidates for the role. <strong>Talent rating</strong> is how good they are. <strong>Format fit</strong> is how well they are suited to your station&apos;s current format. <strong>Projected slot quality</strong> is rounded and capped at 100; the <strong>uncapped lift</strong> in parentheses explains why two people can both show <strong>→ 100</strong>. When that happens, compare <strong>raw blend</strong> (shown under the row) and <strong>talent score</strong> — headline 100 alone does not mean identical long-term upside. <button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle;margin-left:4px" onclick="openTalentMetricsHelp('slotboost')">Explain metrics</button></p>
     <div class="tg">${freeRows}</div>`
       :'';
     const rivalBlock=HS._hireKind==='replace_chairb'
@@ -28785,6 +29018,8 @@ function doHire(){
     showToast('Occupied slot — use Replace or fix hire mode.','warn');
     return;
   }
+  markBudgetHireFromFreeAgentPool(t,HS.pool||[]);
+  applyBudgetHireMoraleOnSign(t);
   t.periodsAtStation=0;
   t._hireYear=G.year;
   if(t._portraitFirstHireYear==null||t._portraitFirstHireYear===undefined)t._portraitFirstHireYear=G.year;
@@ -28796,6 +29031,7 @@ function doHire(){
   initTalentPerformanceReveal(s.prog[sl],t,s.format,'hire');
   s.oq=Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+effSlotQForOq(s.prog[sl2])*w,0));
   G.news.unshift({v:'LOW',t:`You hire ${t.name} for ${s.callLetters} ${SL[sl]}`,y:G.year,p:G.period});
+  if(t._budgetHire)showToast('Bargain hire: expect tougher morale and slower coaching lift until they earn a real raise.','info',5200);
   logHistory(s,'TALENT',`Hired ${t.name} — ${SL[sl]} (Q:${t.quality})`,G);
   if(benchedReplaceName) logHistory(s,'TALENT',`Benched ${benchedReplaceName} — ${SL[sl]} (replaced)`,G);
   MP.action('hire', {sid:s.id, slot:sl, talent:t});
@@ -32002,7 +32238,7 @@ function openFmBooster(sid){
     <div class="ms2">
       <div class="msh">TRANSLATOR DETAILS — ${G.year}</div>
       <div class="sr"><span class="lb">Station</span><span class="vl">${s.callLetters} · ${fmtLabel(s.format)}</span></div>
-      <div class="sr"><span class="lb">Current Signal</span><span class="vl">AM ${signalPowerDisplayLabel(s.sig.pw)} · ${s.freq}</span></div>
+      <div class="sr"><span class="lb">Current Signal</span><span class="vl">AM ${signalPowerDisplayLabel(s.sig.pw,s)} · ${s.freq}</span></div>
       <div class="sr"><span class="lb">After Translator</span><span class="vl" style="color:var(--grn)">FM Translator · city core coverage</span></div>
       <div class="sr"><span class="lb">Metro Coverage</span><span class="vl" style="color:var(--grn)">Full AM coverage + FM city core pickup</span></div>
       <div class="sr"><span class="lb">AM Erosion</span><span class="vl pos">✓ Stops immediately</span></div>
@@ -32298,7 +32534,7 @@ function rAcq(){
       :`<div style="font-family:var(--fd);font-size:13px;color:var(--mut);text-align:right">Fair ${f$(fair)} · Ask <span style="color:var(--amb)">${f$(ask)}</span></div>`;
     return `<div class="aco ${canSelect?'':'nope'}" style="${isSel?'border-color:var(--grn);background:rgba(82,227,110,.06)':''}">
       <div style="flex:1"><div class="acn" style="color:${s.color}">${callDisplay(s)}</div>
-      <div class="aci">${s.freq} · ${signalPowerDisplayLabel(s.sig.pw)} · ${fmtLabel(s.format)} · ${s.sig.type} · Quality: ${s.oq}${s.isPublic?'  <span style="color:#7dd3fc;font-size:14px">PUBLIC — converts to commercial on acquisition</span>':''}</div>
+      <div class="aci">${s.freq} · ${signalPowerDisplayLabel(s.sig.pw,s)} · ${fmtLabel(s.format)} · ${s.sig.type} · Quality: ${s.oq}${s.isPublic?'  <span style="color:#7dd3fc;font-size:14px">PUBLIC — converts to commercial on acquisition</span>':''}</div>
       <div class="aci" style="margin-top:2px">Share: ${pct(s.rat.share)} · Rev: ${f$(s.fin.rev)}/period${s.isPublic?' · <span style="color:#7dd3fc">Non-commercial</span>':''}</div>
       <span style="${chipStyle};border-color:${chipColor}">${chipLabel}</span></div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;margin-left:8px">
@@ -32947,7 +33183,7 @@ function openStationListingOfferModal(){
   const ownDesc=lim.mode==='pre96'?`${myOwned.am}/${lim.am} AM, ${myOwned.fm}/${lim.fm} FM`:`${myOwned.total}/${lim.total} total (${myOwned.am} AM, ${myOwned.fm} FM)`;
   const blockReason=!typeOk?'FCC limit for this band (AM/FM).':G.cash<price?`Short ${f$(price-G.cash)}.`:null;
   document.getElementById('sta-offerb').innerHTML=`
-    <p class="di">A broker is offering <strong>${s.callLetters}</strong> — ${fmtLabel(s.format)} on ${s.freq} · ${signalPowerDisplayLabel(s.sig.pw)} · Quality ${s.oq} · Share ${pct(s.rat.share)}.</p>
+    <p class="di">A broker is offering <strong>${s.callLetters}</strong> — ${fmtLabel(s.format)} on ${s.freq} · ${signalPowerDisplayLabel(s.sig.pw,s)} · Quality ${s.oq} · Share ${pct(s.rat.share)}.</p>
     <div class="ms2"><div class="msh">DEAL</div>
       <div class="sr"><span class="lb">Ask</span><span class="vl amb">${f$(price)}</span></div>
       <div class="sr"><span class="lb">Your cash</span><span class="vl">${f$(G.cash)}</span></div>
@@ -36693,6 +36929,19 @@ function buildContractEconObject(s, slot, t, isCoHost, primaryHost){
     ext2Annual=ext2Cost;
     if(ext3Cost!=null)ext3Annual=ext3Cost;
   }
+  const mktId=G?.marketId||ACTIVE_MARKET||'atlanta';
+  const mkRt=(MARKETS[mktId]||{}).rankTier||'medium';
+  const topMk=mkRt==='mega'||mkRt==='large';
+  if(!isCoHost&&renewalLeverage>=0.34){
+    const f2=topMk?0.935:0.905;
+    ext2Cost=Math.max(ext2Cost,Math.round(ext1Cost*f2/500)*500);
+    ext2Annual=ext2Cost;
+  }
+  if(!isCoHost&&renewalLeverage>=0.34&&ext3Cost!=null){
+    const f3=topMk?0.895:0.865;
+    ext3Cost=Math.max(ext3Cost,Math.round(ext1Cost*f3/500)*500);
+    ext3Annual=ext3Cost;
+  }
   const bonusCost=Math.round(t.salary*rnd(0.08,0.15)/500)*500;
   const cyr=Math.round((t.cyr||0)*10)/10;
   const cyrRemStr=Number.isInteger(cyr)?String(cyr):cyr.toFixed(1);
@@ -37191,12 +37440,14 @@ function doExtend(sid, slot, years, newSalary, talentRole, fromManageTalent){
       G.news.unshift({v:'LOW',t:`📋 ${t.name} stays — your contract fends off the rival bid.`,y:G.year,p:G.period});
     }
   }
+  const prevSal=Number(t.salary)||0;
   t.salary=newSalary;
   t.cyr=years;
   t.morale=Math.min(100,t.morale+10); // relief at being signed
   t._underpaidInRole=false;
   t._slotPromotionPendingRenewal=false;
   t._promotionFromSlot=undefined;
+  if(t._budgetHire&&newSalary>=Math.round(prevSal*1.14/500)*500)delete t._budgetHire;
   const roleBit=role==='cohost'?' co-host':'';
   t._contractExtendY=G.year;
   t._contractExtendP=G.period;
@@ -37591,7 +37842,7 @@ function rStns(){
       ? st.freq+' · <span style="color:var(--grn);font-family:var(--ft);font-size:14px">FM translator</span>'+(st._boosterOrigFreq?' · <span style="color:var(--mut)">+'+st._boosterOrigFreq+'</span>':'')
       : st.sig.pw==='DA'
         ? st.freq+' · <span style="color:var(--red);font-family:var(--ft);font-size:14px" title="High power by day, lower at night (still broadcasting overnight; fringe coverage drops)">Reduced at night</span>'
-        : st.freq+' · '+signalPowerDisplayLabel(st.sig.pw);
+        : st.freq+' · '+signalPowerDisplayLabel(st.sig.pw,st);
   };
   const slMorDot=(m,title='Morale')=>{const col=m>=70?'#22c55e':m>=45?'#f5a623':'#f05858';return `<span class="sl-mor-dot" style="background:${col}" title="${title} ${m}" role="img" aria-label="${title} ${m}"></span>`;};
   const renderedPlayerSimPairKeys=new Set();

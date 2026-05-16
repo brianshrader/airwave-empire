@@ -23,6 +23,7 @@
 
 import { mkdirSync, writeFileSync, readFileSync } from 'fs';
 import vm from 'vm';
+import { injectMarketEcologyIife } from './vmInjectMarketEcologyIife.mjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -307,6 +308,7 @@ function installReligiousHarness(ctx) {
 }
 
 function loadSim(ctx) {
+  injectMarketEcologyIife(ctx);
   vm.runInContext(loadLegacySrc(), ctx);
   vm.runInContext(readFileSync(harnessPath, 'utf8'), ctx);
   installReligiousHarness(ctx);

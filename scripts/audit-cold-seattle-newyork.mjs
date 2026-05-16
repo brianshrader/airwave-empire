@@ -7,6 +7,7 @@
 
 import { readFileSync } from 'fs';
 import vm from 'vm';
+import { injectMarketEcologyIife } from './vmInjectMarketEcologyIife.mjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -303,6 +304,7 @@ const MKT_INDEX = { seattle: 0, newyork: 1 };
 
 function main() {
   const ctx = createVmContext();
+  injectMarketEcologyIife(ctx);
   vm.runInContext(loadLegacySrc(), ctx);
   vm.runInContext(readFileSync(harnessPath, 'utf8'), ctx);
   vm.runInContext(AUDIT_BOOT, ctx);
