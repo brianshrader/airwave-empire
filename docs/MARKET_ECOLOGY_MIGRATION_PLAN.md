@@ -81,29 +81,53 @@
 
 ---
 
-## 4. Task 5 — Market scaffold factory (design only)
+## 4. Market scaffold workflow (v1 — diagnostic only)
 
-### CLI (future)
+**Docs:** [MARKET_ADD_CHECKLIST.md](./MARKET_ADD_CHECKLIST.md) · [MARKET_DATA_SCHEMA.md](./MARKET_DATA_SCHEMA.md)
+
+### CLI
 
 ```bash
 npm run scaffold:market -- --city=phoenix
+npm run scaffold:market -- --city=phoenix --template=sunbelt
+npm run scaffold:market -- --city=portland --template=west_fm_fragmented --out=tmp/market_scaffold/portland
 ```
 
-### Pipeline
+**Templates (built-in, no live fetch):** `sunbelt`, `northeast_mega`, `west_fm_fragmented`, `southern_country`, `midwest_legacy`, `coastal_secular`, `plains_small`
 
-1. **Input:** `--city=phoenix` (slug), optional `--fccRank`, `--population`, `--archetypeHint`.
-2. **Raw demographic JSON** — Census-style fields already used in ecology (`hispPop*`, `blackPop`, `urbanBonus`, `culture.*`, `churchGoing`, `eduIndex`, `publicCivicIndex`, …).
-3. **Revenue calibration JSON** — `revScale`, `fmMusicFragMult`, billing curve anchor inputs.
-4. **Derived ecology JSON** — run `deriveMarketEcology` on the candidate row + scenario years `[1995,2010,2026]` for sanity.
-5. **Suggested `MARKETS` row** — TypeScript-shaped object matching existing keys used by `legacy.js`.
-6. **Diagnostics report** — same metrics as `diag-market-ecology-regression.mjs` (single-run smoke).
-7. **Assumptions notes** — archetype choice, missing-field defaults, comparison to nearest neighbor market.
+**Output folder:** `tmp/market_scaffold/<cityId>/`
+
+| File | Purpose |
+|------|---------|
+| `raw_market_data.json` | Draft market row + `_scaffold` metadata and TODO source notes |
+| `derived_ecology.json` | `deriveMarketEcology` for 1970, 1985, 1995, 2005, 2015, 2026 |
+| `suggested_MARKETS_row.js` | Copy-paste `MARKETS` entry (commented warnings) |
+| `diagnostics_notes.md` | Trait summary, format heuristics, revenue notes, post-merge commands |
+
+### Pipeline (human-in-the-loop)
+
+1. Run scaffold → edit `raw_market_data.json` with real sources.
+2. Re-run scaffold or hand-edit `derived_ecology.json` after demographic changes.
+3. Merge reviewed `suggested_MARKETS_row.js` into `src/legacy.js` `MARKETS`.
+4. Add id to `scripts/market-ids.cjs`, billing/plan lists, scenario picker.
+5. Run `report-market-traits`, `diag:market-ecology-regression`, tier concentration diag.
+
+**Not in v2:** automatic `legacy.js` insertion, FCC/Census API fetch, gameplay changes, adding cities to playable lists from scaffold alone.
+
+### Readiness gates (v2)
+
+```bash
+npm run scaffold:market -- --city=<slug> --derive   # refresh after raw edits
+npm run scaffold:market -- --city=<slug> --check    # DRAFT → … → MERGE_READY
+```
+
+See [MARKET_ADD_CHECKLIST.md](./MARKET_ADD_CHECKLIST.md) and [MARKET_DATA_SCHEMA.md](./MARKET_DATA_SCHEMA.md). Check writes `readiness.json` and updates `diagnostics_notes.md` with last results.
 
 ### Engineering
 
-- **Package:** script in `scripts/scaffold-market.mjs` (not implemented in Phase 3A).
-- **Validation:** `marketTraitProfile` + `report-market-traits` must accept new id once added to `market-ids.cjs` / `ALL_PLAYABLE_MARKET_IDS`.
-- **Expansion:** Top-50 = 50 rows of raw JSON + one codegen pass; **no** new `if (marketId === 'phoenix')` in gameplay.
+- **Script:** `scripts/scaffold-market.mjs`
+- **Validation:** `marketTraitProfile` + `report-market-traits` after id is in `market-ids.cjs` / `ALL_PLAYABLE_MARKET_IDS`.
+- **Expansion:** Top-50 = repeated scaffold + review; **no** new `if (marketId === 'phoenix')` in gameplay.
 
 ---
 

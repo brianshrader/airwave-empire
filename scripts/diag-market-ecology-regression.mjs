@@ -27,6 +27,10 @@ import {
   classifyTop40Mismatch,
   expectedFormatLeadershipProfile,
 } from './expectedFormatLeadershipProfile.mjs';
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+const { ALL_PLAYABLE_MARKET_IDS, DIAG_ONLY_MARKET_IDS } = require('./market-ids.cjs');
 
 function joinMismatchFlags(...flags) {
   return flags.filter(Boolean).join('|');
@@ -253,10 +257,91 @@ function mean(xs) {
   return s / xs.length;
 }
 
+/** Phoenix / Spanish investigation — per-market station + share breakdown. */
+function printSpanishMarketDiagnostics(ctx, okRows, marketIds, years) {
+  const MARKETS = vm.runInContext('typeof MARKETS !== "undefined" ? MARKETS : null', ctx);
+  const lines = ['', '=== Spanish format diagnostics (station generation + book share) ==='];
+  for (const mid of marketIds) {
+    const mktRow = MARKETS?.[mid] || {};
+    const cult = mktRow.culture || {};
+    lines.push(`\n[${mid}] MARKETS inputs: hispPop2020=${mktRow.hispPop2020 ?? '—'} culture.spanish=${cult.spanish ?? '—'} rankTier=${mktRow.rankTier ?? '—'}`);
+    lines.push(`  Note: spanishLanguageStrength (ecology trait) is a lane prior, not a target Nielsen share.`);
+    for (const y of years) {
+      const list = okRows.filter((r) => r.marketId === mid && r.year === y);
+      if (!list.length) continue;
+      let ecoSpan = null;
+      try {
+        const eco = deriveMarketEcology(mktRow, mid, y, null);
+        ecoSpan = eco?.spanishLanguageStrength;
+      } catch {
+        ecoSpan = null;
+      }
+      const n = list.length;
+      const stBook = mean(list.map((r) => r.spanishStationCount));
+      const stAll = mean(list.map((r) => r.spanishStationCountAll));
+      const shTotal = mean(list.map((r) => r.spanishShare));
+      const shLead = mean(list.map((r) => r.spanishLeaderShare));
+      const shAm = mean(list.map((r) => r.spanishAmShare));
+      const shFm = mean(list.map((r) => r.spanishFmShare));
+      const nBook = mean(list.map((r) => r.nBook));
+      lines.push(
+        `  ${y}: ecology.spanishLanguageStrength=${ecoSpan != null ? (ecoSpan * 100).toFixed(1) + '%' : '—'} | ` +
+          `SPANISH stations in book ${stBook != null ? stBook.toFixed(2) : '—'} (all commercial ${stAll != null ? stAll.toFixed(2) : '—'}) | ` +
+          `book stations total ${nBook != null ? nBook.toFixed(1) : '—'}`,
+      );
+      lines.push(
+        `       book share: total ${shTotal != null ? (shTotal * 100).toFixed(2) : '—'}% | ` +
+          `top SPANISH ${shLead != null ? (shLead * 100).toFixed(2) : '—'}% | ` +
+          `AM ${shAm != null ? (shAm * 100).toFixed(2) : '—'}% FM ${shFm != null ? (shFm * 100).toFixed(2) : '—'}% of Spanish mass`,
+      );
+      lines.push(`       format labels counted as Spanish: SPANISH only (raw rf==='SPANISH')`);
+      const srcAgg = {};
+      for (const r of list) {
+        const o = r.spanishBySource || {};
+        for (const k of Object.keys(o)) srcAgg[k] = (srcAgg[k] || 0) + o[k];
+      }
+      const srcMean = Object.keys(srcAgg)
+        .sort()
+        .map((k) => `${k}:${(srcAgg[k] / n).toFixed(2)}`)
+        .join(' ');
+      lines.push(`       Spanish stations by source (mean/run): ${srcMean || '(none)'}`);
+      if (mid === 'phoenix' && list[0]) {
+        const sample = list[Math.floor(list.length / 2)];
+        lines.push(`       sample run top5: ${sample.top5mix || '(none)'}`);
+      }
+    }
+  }
+  lines.push('');
+  lines.push(
+    'Generation context: national timeline adds rival-SPANISH-AM at 1992; MARKETS.spanishLaunches queue adds scheduled entrants (Phoenix: 1994 FM + 2002 FM).',
+  );
+  return lines.join('\n');
+}
+
 function escCsv(s) {
   const t = String(s ?? '');
   if (/[",\n]/.test(t)) return `"${t.replace(/"/g, '""')}"`;
   return t;
+}
+
+function assertDiagnosticMarkets(ctx, marketIds) {
+  const MARKETS = vm.runInContext('typeof MARKETS !== "undefined" ? MARKETS : null', ctx);
+  if (!MARKETS || typeof MARKETS !== 'object') throw new Error('MARKETS missing after legacy load');
+  const playable = new Set(ALL_PLAYABLE_MARKET_IDS);
+  const diagOnly = new Set(DIAG_ONLY_MARKET_IDS);
+  for (const mid of marketIds) {
+    if (!MARKETS[mid]) {
+      throw new Error(
+        `Unknown market "${mid}". Add a MARKETS row (see tmp/market_scaffold/<city>/suggested_MARKETS_row.js) ` +
+          `or use --markets with a playable id (${ALL_PLAYABLE_MARKET_IDS.join(', ')}).`,
+      );
+    }
+    if (!playable.has(mid) && !diagOnly.has(mid)) {
+      console.warn(
+        `[diag] "${mid}" is not in ALL_PLAYABLE_MARKET_IDS or DIAG_ONLY_MARKET_IDS — proceeding for harness only.`,
+      );
+    }
+  }
 }
 
 function main() {
@@ -265,6 +350,7 @@ function main() {
   injectMarketEcologyIife(ctx);
   vm.runInContext(loadLegacySrc(), ctx);
   vm.runInContext(readFileSync(harnessPath, 'utf8'), ctx);
+  assertDiagnosticMarkets(ctx, opts.markets);
 
   const salts = {};
   for (const m of opts.markets) salts[m] = marketSalt(m);
@@ -324,6 +410,21 @@ function main() {
       var fmtSum={};
       var chr=0, ctry=0, talk=0, pub=0, gos=0, span=0, hhi=0;
       var chrLineageCount=0, chrLeaderShare=0;
+      var spanishStationCount=0, spanishStationCountAll=0, spanishLeaderShare=0;
+      var spanishAmShare=0, spanishFmShare=0, spanishLabelHist={};
+      var spanishBySource={};
+      var allSt=(G.stations||[]).filter(function(s){
+        return s&&!s._bpSlotDeferred&&!s.isPlayer&&typeof stationIsNoncommercialInstitutional==='function'&&!stationIsNoncommercialInstitutional(s);
+      });
+      for(var ai=0;ai<allSt.length;ai++){
+        var ast=allSt[ai];
+        if(String(ast.format||'')!=='SPANISH')continue;
+        spanishStationCountAll++;
+        var src=ast._spanishLaunchId
+          ?('launch:'+ast._spanishLaunchId)
+          :(ast._megaFragmentationEntrant?'mega_frag':(ast._spanishLaunchEntrant?'spanish_launch':'timeline_or_other'));
+        spanishBySource[src]=(spanishBySource[src]||0)+1;
+      }
       for(var j=0;j<book.length;j++){
         var st=book[j];
         var sh=Number(st.rat&&st.rat.share)||0;
@@ -340,7 +441,15 @@ function main() {
         if(rf==='NEWS_TALK'||rf==='SPORTS_TALK'||rf==='PERSONALITY_TALK'||rf==='ALL_NEWS')talk+=sh;
         if(st.isPublic||rf.indexOf('PUBLIC_')===0)pub+=sh;
         if(rf==='GOSPEL')gos+=sh;
-        if(rf==='SPANISH')span+=sh;
+        if(rf==='SPANISH'){
+          span+=sh;
+          spanishStationCount++;
+          spanishLabelHist[rf]=(spanishLabelHist[rf]||0)+1;
+          if(sh>spanishLeaderShare)spanishLeaderShare=sh;
+          var band=(st.sig&&st.sig.type)||'?';
+          if(band==='AM')spanishAmShare+=sh;
+          else spanishFmShare+=sh;
+        }
       }
       var lead=book[0]||null;
       var sh1=lead?Number(lead.rat.share)||0:0;
@@ -363,6 +472,13 @@ function main() {
         publicShare:pub,
         gospelShare:gos,
         spanishShare:span,
+        spanishStationCount:spanishStationCount,
+        spanishStationCountAll:spanishStationCountAll,
+        spanishLeaderShare:spanishLeaderShare,
+        spanishAmShare:spanishAmShare,
+        spanishFmShare:spanishFmShare,
+        spanishLabelHist:spanishLabelHist,
+        spanishBySource:spanishBySource,
         hhi_x10000:hhi*10000,
         gap12:sh1-sh2,
         gap15:sh1-sh5,
@@ -412,6 +528,13 @@ function main() {
               publicShare:r.publicShare,
               gospelShare:r.gospelShare,
               spanishShare:r.spanishShare,
+              spanishStationCount:r.spanishStationCount,
+              spanishStationCountAll:r.spanishStationCountAll,
+              spanishLeaderShare:r.spanishLeaderShare,
+              spanishAmShare:r.spanishAmShare,
+              spanishFmShare:r.spanishFmShare,
+              spanishLabelHist:r.spanishLabelHist,
+              spanishBySource:r.spanishBySource,
               hhi_x10000:r.hhi_x10000,
               gap12:r.gap12,
               gap15:r.gap15,
@@ -687,6 +810,43 @@ function main() {
 
   writeFileSync(outCsv, csvLines.join('\n') + '\n', 'utf8');
   console.log(linesOut.join('\n'));
+
+  const spanishDiagMarkets = opts.markets.filter((m) => m === 'phoenix' || process.argv.includes('--spanish-diag'));
+  if (spanishDiagMarkets.length) {
+    console.log(printSpanishMarketDiagnostics(ctx, okRows, spanishDiagMarkets, opts.years));
+    if (spanishDiagMarkets.includes('phoenix')) {
+      const outJson = path.join(root, 'tmp', 'market_scaffold', 'phoenix', 'spanish_format_diag.json');
+      mkdirSync(path.dirname(outJson), { recursive: true });
+      const byYear = {};
+      for (const y of opts.years) {
+        const list = okRows.filter((r) => r.marketId === 'phoenix' && r.year === y);
+        if (!list.length) continue;
+        const srcAgg = {};
+        for (const r of list) {
+          for (const [k, v] of Object.entries(r.spanishBySource || {})) {
+            srcAgg[k] = (srcAgg[k] || 0) + v;
+          }
+        }
+        const srcMean = {};
+        for (const k of Object.keys(srcAgg)) srcMean[k] = srcAgg[k] / list.length;
+        byYear[y] = {
+          meanSpanishStationCount: mean(list.map((r) => r.spanishStationCount)),
+          meanSpanishStationCountAll: mean(list.map((r) => r.spanishStationCountAll)),
+          meanSpanishShare: mean(list.map((r) => r.spanishShare)),
+          meanSpanishLeaderShare: mean(list.map((r) => r.spanishLeaderShare)),
+          spanishBySourceMean: srcMean,
+          runs: list.length,
+        };
+      }
+      writeFileSync(
+        outJson,
+        `${JSON.stringify({ marketId: 'phoenix', recordedAt: new Date().toISOString(), byYear }, null, 2)}\n`,
+        'utf8',
+      );
+      console.log(`Wrote ${outJson}`);
+    }
+  }
+
   console.log(`\nWrote ${outCsv} (${csvLines.length - 1} summary rows)`);
 }
 

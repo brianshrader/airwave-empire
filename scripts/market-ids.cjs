@@ -18,7 +18,14 @@ const ALL_PLAYABLE_MARKET_IDS = Object.freeze([
 /** LA / NYC / Chicago — mega-only benchmarks, ecology compare quick mode, FM rules scoped to top metros. */
 const DEV_BENCHMARK_MEGA_MARKET_IDS = Object.freeze(['newyork', 'losangeles', 'chicago']);
 
+/**
+ * MARKETS rows present for ecology/scaffold harness only — never add to ALL_PLAYABLE_MARKET_IDS or billing.
+ * Keep in sync with DIAG_ONLY rows in src/legacy.js MARKETS.
+ */
+const DIAG_ONLY_MARKET_IDS = Object.freeze(['phoenix']);
+
 module.exports = {
   ALL_PLAYABLE_MARKET_IDS,
   DEV_BENCHMARK_MEGA_MARKET_IDS,
+  DIAG_ONLY_MARKET_IDS,
 };
