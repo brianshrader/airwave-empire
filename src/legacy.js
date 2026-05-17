@@ -4647,14 +4647,14 @@ const MARKETS={
     amFreqs:['900 AM','1070 AM','1240 AM','1330 AM','1410 AM'],
     // All entries must be >91.9 MHz — `nextUnusedCommercialFreq` skips 88–91.9 (NCE reserved); 88.9/91.1 were inert and exhausted the dial before BP slot 17.
     fmFreqs:['92.3 FM','93.9 FM','94.5 FM','95.1 FM','96.7 FM','97.3 FM','98.1 FM','99.9 FM','100.1 FM','101.9 FM','102.7 FM','104.5 FM','105.3 FM','106.5 FM','103.1 FM','105.1 FM','105.9 FM','107.1 FM','107.9 FM'],
-    /** Blueprint indices (national AM rows) forced to FM here because the market has only five AM allotments. */
+    /** Blueprint indices (national AM rows) forced to FM — country-heavy remaps; CLASSIC_HITS not TOP40 (five-AM constraint). */
     dialBpAmToFm:{
-      3:{fmt:'ALBUM_ROCK',pw:'50kw'},
+      3:{fmt:'COUNTRY',pw:'50kw',str:'moderate'},
       6:{fmt:'GOSPEL',pw:'25kw'},
-      10:{fmt:'TOP40',pw:'50kw'},
-      11:{fmt:'ALBUM_ROCK',pw:'25kw'},
+      10:{fmt:'CLASSIC_HITS',pw:'50kw',str:'moderate'},
+      11:{fmt:'COUNTRY',pw:'25kw',str:'emerging'},
       12:{fmt:'GOSPEL',pw:'25kw'},
-      13:{fmt:'COUNTRY',pw:'50kw'},
+      13:{fmt:'COUNTRY',pw:'50kw',str:'strong'},
       17:{fmt:'GOSPEL',pw:'10kw'},
     },
     fmFacilityByFreq:{
@@ -10369,6 +10369,15 @@ const MARKET_BP_PATCH={
     2:{fmt:'NEWS_TALK',str:'emerging'},
     13:{fmt:'MOR',pw:'DA',str:'moderate'},
     16:{fmt:'TOP40',str:'emerging'},
+  },
+  /** Wichita: country-heavy Plains dial; weak AOR seed (BP 7/9 niche) + softer classic-rock emergence (BP 15). */
+  wichita:{
+    7:{fmt:'ALBUM_ROCK',str:'niche'},
+    9:{fmt:'ALBUM_ROCK',str:'niche'},
+    10:{fmt:'CLASSIC_HITS',str:'moderate'},
+    11:{fmt:'COUNTRY',pw:'5kw',str:'moderate'},
+    15:{fmt:'CLASSIC_ROCK',str:'emerging'},
+    16:{fmt:'COUNTRY',str:'strong'},
   },
   /** Phoenix diag — Duncan-style dial: fewer AM Top 40 anchors, more adult FM (see `phoenixDiagOpeningOqMult`). */
   phoenix:{
