@@ -256,7 +256,7 @@ const FM={
   CLASSIC_HITS:   {l:'Classic Hits',       cpm:.92, sp:16,fm:true, ab:0,   unlock:2005,d:'An evolved Oldies format with nostalgic hits, but a little broader feel than Oldies. Performs well, but make sure you\'re not skewing too old.'},
   PERSONALITY_TALK:   {l:'Personality Talk',   cpm:1.18,sp:9,  fm:false,ab:0,  unlock:1993,d:'FM host-driven spoken word — shock and hot talk, relationship and lifestyle shows, celebrity chat, and syndicated personalities. Not news, sports, or public radio. Strong in large fragmented metros with rock heritage; a tougher sell where spoken-word is already crowded.'},
   ADULT_STANDARDS:{l:'Adult Standards',   cpm:.82, sp:14,fm:false,ab:0,  unlock:1981,d:'For listeners who want elegance, not current hits. Features timeless vocals and standards, often with an older, but loyal audience.'},
-  ALL_NEWS:       {l:'All-News',           cpm:1.72,sp:8,  fm:false,ab:0,  unlock:1970,talk:true,
+  ALL_NEWS:       {l:'All-News',           cpm:1.72,sp:12, fm:false,ab:0,  unlock:1970,talk:true,
     d:'24/7 news, weather, traffic and sports that can be highly profitable, but is expensive to operate. Best suited to larger markets.'},
   BROKERED_PROGRAMMING:{l:'Brokered / Paid Programming',cpm:.52,sp:18,fm:false,ab:0,unlock:1970,
     d:'Paid blocks, religious long-form, and remnant inventory — stabilizes cash on a struggling signal but trades audience, ratings upside, and corporate goodwill. Not a growth format.'},
@@ -1146,20 +1146,20 @@ function brokeredProgrammingTerrestrialRev(s,G,competitiveRevHalf){
 // Keys = G.marketId for top-3 metros; omit format → 1. Does not affect shares.
 const MARKET_FMT_ADJ={
   newyork:{
-    NEWS_TALK:1.05,SPORTS_TALK:1.04,
+    NEWS_TALK:1.05,SPORTS_TALK:1.04,ALL_NEWS:1.10,
     URBAN_CONTEMP:0.90,RHYTHMIC:0.90,SOUL_RNB:0.92,
   },
   losangeles:{
-    SPANISH:1.08,NEWS_TALK:0.95,URBAN_CONTEMP:0.94,
+    SPANISH:1.08,NEWS_TALK:0.95,ALL_NEWS:1.08,URBAN_CONTEMP:0.94,
   },
   chicago:{
-    NEWS_TALK:1.08,SPORTS_TALK:1.06,URBAN_CONTEMP:0.95,RHYTHMIC:0.96,
+    NEWS_TALK:1.08,SPORTS_TALK:1.06,ALL_NEWS:1.10,URBAN_CONTEMP:0.95,RHYTHMIC:0.96,
   },
   seattle:{
-    ALT_ROCK:1.07,ALBUM_ROCK:1.04,AAA:1.06,NEWS_TALK:1.04,SPANISH:0.88,SPORTS_TALK:1.03,
+    ALT_ROCK:1.07,ALBUM_ROCK:1.04,AAA:1.06,NEWS_TALK:1.04,ALL_NEWS:1.04,SPANISH:0.88,SPORTS_TALK:1.03,
   },
   sanfrancisco:{
-    AAA:1.05,ALT_ROCK:1.04,
+    AAA:1.05,ALT_ROCK:1.04,ALL_NEWS:1.08,
   },
   nashville:{
     AAA:1.03,COUNTRY:1.02,
@@ -14708,7 +14708,8 @@ function calcRev(s,G){
     // AM signal quality penalty: FM got higher CPMs due to fidelity/reach advantages
     // But Talk/Sports AM was genuinely competitive — smaller penalty than AM music
     const sigMult=s.sig.type==='AM'
-      ?(['NEWS_TALK','SPORTS_TALK','PERSONALITY_TALK','ALL_NEWS'].includes(s.format)?0.88:0.72)
+      ?(s.format==='ALL_NEWS'?0.92
+        :['NEWS_TALK','SPORTS_TALK','PERSONALITY_TALK'].includes(s.format)?0.88:0.72)
       :1.0;
     const sfBonus=(SF_LEVELS[s.salesForce?.level||0]?.sellBonus||0);
     const sellCap=Math.min(0.88,(fmtPrem>1?0.84:0.80)+sfBonus);
