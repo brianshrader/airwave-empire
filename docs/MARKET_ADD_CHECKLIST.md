@@ -60,6 +60,8 @@ Record sources in `raw_market_data.json` → `sourceNotes`.
 - [ ] `npm run scaffold:market -- --city=<slug> --derive`
 - [ ] Review `derived_ecology.json` and `diagnostics_notes.md` (template comparison section)
 - [ ] Review `signal_allocation.json` — confirm `signalProfile` tiers vs competitive reality (AM clear/regional/local, FM major/medium/rimshot)
+- [ ] Review `signal_allocation.json` → `signalInventory` — set `signalInventory.viable1983` and `measurable2026` for your `rankTier` (see tier ranges in [MARKET_DATA_SCHEMA.md](./MARKET_DATA_SCHEMA.md)); fix **WARN** if outside small/large/mega targets
+- [ ] If the market can start in the 1970s: set `am1975`, `fm1975`, `total1975` (and optional `viable1975`) from **historical** dial — not modern `amFreqs`/`fmFreqs` length; clear `inventory_1975_modern_dial_assumed` **WARN**
 - [ ] Fix band constraint **FAIL** items (graveyard AM tier/power, invalid NCE/commercial placement)
 - [ ] Add `amSignalByFreq` / `fmSignalByFreq` metadata for graveyard and NCE stations as needed
 - [ ] Adjust `signalProfile` in `raw_market_data.json` if tier counts do not match market depth; re-run `--derive`
@@ -70,7 +72,7 @@ Record sources in `raw_market_data.json` → `sourceNotes`.
 
 - [ ] `npm run scaffold:market -- --city=<slug> --check`
 - [ ] Fix all **FAIL** items (expect **DRAFT** until fixed)
-- [ ] Set `_scaffold.signalReviewed: true` only after signal-tier review (`signal_allocation.json` clean)
+- [ ] Set `_scaffold.signalReviewed: true` only after signal-tier review (`signal_allocation.json` clean) **and** explicit `signalInventory` era counts are set
 - [ ] Set `_scaffold.dialReviewed: true` only after FCC dial verified **and** `signalReviewed` is true
 - [ ] Target **MERGE_READY** before touching `legacy.js`
 

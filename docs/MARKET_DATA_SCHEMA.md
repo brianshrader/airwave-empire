@@ -66,6 +66,74 @@ See also: [MARKET_ADD_CHECKLIST.md](./MARKET_ADD_CHECKLIST.md), [MARKET_ECOLOGY_
 | `teams` | array | Sports teams: `{ id, name, sport, introduced, baseFee, baseBonus, contractYrs }`. |
 | `selectBlurb` | string | Scenario picker description. |
 | `signalProfile` | object | Competitive signal-depth tiers (gameplay abstraction; see below). |
+| `signalInventory` | object | Era inventory counts for tier sanity checks (see below). |
+
+---
+
+## `signalInventory` (tier targets v2)
+
+Rough **competitive station inventory** by market era — not exact FCC engineering. Used by `--derive` / `--check` to warn when a market is thin or overstuffed for its `rankTier`.
+
+**1970s starts:** Scenarios beginning in the 1970s should document **historical** AM/FM availability at start (`am1975`, `fm1975`, `total1975`) — not the size of the modern `amFreqs` / `fmFreqs` lists used for 2026 gameplay. FM expansion and rimshots inflate the modern dial; the scaffold warns when no 1975 anchors are set but the dial looks like a 2026 inventory.
+
+```json
+{
+  "am1975": 11,
+  "fm1975": 9,
+  "total1975": 20,
+  "viable1975": 20,
+  "viable1983": 22,
+  "measurable2026": 38,
+  "inventoryExplained": true,
+  "notes": "Phoenix large-market anchor: ~22 viable (1983), ~38 measurable (2026)."
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `am1975` | number | Historical AM stations on air / competitive ~1975. |
+| `fm1975` | number | Historical FM stations on air / competitive ~1975. |
+| `total1975` | number | Total historical signals ~1975; must equal `am1975 + fm1975` when all three are set. |
+| `viable1975` | number | Optional competitive subset in 1975 (≤ `total1975`). |
+| `viable1983` | number | Full-power signals that could compete in the early-1980s (~1983 anchor). |
+| `measurable2026` | number | Stations that would show as measurable in a modern Nielsen-style book (~2026 anchor). |
+| `inventoryExplained` | boolean | Set when era counts intentionally differ from dial-listed totals. |
+| `notes` | string | Provenance / anchor comparison (e.g. Phoenix vs Wichita). |
+
+**Tier target ranges** (scaffold warns outside range; does not require FCC perfection):
+
+| `rankTier` | 1983 viable | 2026 measurable |
+|------------|-------------|-----------------|
+| `small` | 10–14 | 16–24 |
+| `medium` | 14–18 | 24–32 |
+| `large` | 18–26 | 32–42 |
+| `mega` | 28–35 | 45–55 |
+
+**Rough anchors:** Wichita (small) ~12 / ~20; Phoenix (large) ~22 / ~38; NYC (mega) ~30 / ~48.
+
+**1975 example anchors (documentation):**
+
+| Market | 1975 AM | 1975 FM | 1975 total | Later |
+|--------|---------|---------|------------|-------|
+| NYC | 11 | 9 | 20 | mega 2026 measurable ~48 |
+| New Orleans | 9 | 7 | 16 | 1985 total ~20; 2026 measurable ~20 |
+
+**Primary full-power dial count:** `amFreqs` + `fmFreqs` minus rows marked `translatorFed`, `hdSubchannel`, `hdFed`, or `excludeFromPrimaryInventory` in `amSignalByFreq` / `fmSignalByFreq`. Include translators only when `includeInPrimaryInventory: true`.
+
+**Validation**
+
+| Check | Level |
+|-------|--------|
+| Below/above tier range for `viable1983` or `measurable2026` | **WARN** |
+| Missing explicit counts (proxy from dial/profile) | **WARN** |
+| `viable1983` === `measurable2026` === dial total without `inventoryExplained` / `notes` | **WARN** |
+| No `am1975` / `fm1975` / `total1975` but modern dial listed (`inventory_1975_modern_dial_assumed`) | **WARN** |
+| `total1975` ≠ `am1975 + fm1975` when all three set | **WARN**; **FAIL** if `signalReviewed` |
+| Incomplete 1975 band fields (only some of am/fm/total) | **WARN** |
+| Modern dial ≈ `total1975` while `measurable2026` much higher (unexplained) | **WARN** |
+| Missing `viable1983` or `measurable2026` after `_scaffold.signalReviewed: true` | **FAIL** |
+
+Output: `signal_allocation.json` → `signalInventory` block (targets, `inventory1975`, counts, sources, warnings).
 
 ---
 
@@ -157,6 +225,10 @@ Validated on `--derive` / `--check`. Blocks **MERGE_READY** when constraint **FA
 | `signalTier` | string | `major` \| `medium` \| `rimshot` |
 | `formatHint` | string | e.g. `CCM`, `PUBLIC_NEWS` — triggers NCE/commercial band rules |
 | `commercialOverride` | boolean | Explicit commercial-band NCE/translator (HD era; rare in v2) |
+| `translatorFed` | boolean | HD/translator-fed — excluded from primary inventory count unless `includeInPrimaryInventory` |
+| `hdSubchannel` | boolean | HD subchannel — excluded from primary inventory count |
+| `excludeFromPrimaryInventory` | boolean | Exclude from primary full-power inventory count |
+| `includeInPrimaryInventory` | boolean | Force-include translator/HD row in primary count |
 
 **WARN (v2, not FAIL):** Missing or thin reserved-band **capacity** vs ecology (`nce_reserved_capacity_missing`, `nce_reserved_capacity_low`). **Info only** when >6 reserved-band slots are listed.
 
@@ -174,6 +246,7 @@ Validated on `--derive` / `--check`. Blocks **MERGE_READY** when constraint **FA
 | `amFacilityByFreq` | object | Per-AM facility overrides. |
 | `amSignalByFreq` | object | Per-AM signal metadata for band-constraint validation (v2). |
 | `fmSignalByFreq` | object | Per-FM signal metadata for band-constraint validation (v2). |
+| `signalInventory` | object | Era viable/measurable counts for tier inventory checks (v1). |
 | `sourceNotes` | object | Provenance per field: `{ "revScale": "Nielsen 2024 rank …" }`. |
 
 ---
@@ -260,12 +333,15 @@ Required for **MERGE_READY** readiness (or set `_scaffold.ecologyRegressionRecor
 - `selectBlurb` / team names still contain `TODO`
 - `_scaffold.signalReviewed` / `dialReviewed` / `dataReviewed` not set
 - Missing `signalProfile` (WARN at **ECOLOGY_READY** and below; **FAIL** at **PLAYTEST_READY** and above)
+- `signalInventory` outside tier range (`inventory_viable_*`, `inventory_measurable_*`)
+- Missing explicit `signalInventory` counts (WARN until reviewed)
 
 **FAIL** (invalid scaffold state):
 
 - `_scaffold.dialReviewed` true while `signalReviewed` is false
 - `_scaffold.dialReviewed` or `signalReviewed` true while band constraint validation fails
 - Graveyard AM (`1230`–`1490` local channels) marked **big** / **clear**, or **> 1 kW** without `graveyardOverride`
+- `_scaffold.signalReviewed` true but `signalInventory.viable1983` or `measurable2026` still missing
 
 ---
 

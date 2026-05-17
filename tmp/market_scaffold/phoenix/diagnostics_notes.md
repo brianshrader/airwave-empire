@@ -6,11 +6,11 @@
 ## Readiness (last check)
 
 **State:** `PLAYTEST_READY`  
-**Checked:** 2026-05-17T17:32:37.604Z
+**Checked:** 2026-05-17T18:35:48.894Z
 
 | Result | Count |
 |--------|-------|
-| PASS | 13 |
+| PASS | 16 |
 | WARN | 3 |
 | FAIL | 0 |
 
@@ -31,6 +31,9 @@
 [PASS] signalProfile present (AM=12, FM=23)
 [WARN] _scaffold.signalReviewed is not true — human signal-tier review required
 [PASS] Band constraints OK
+[PASS] signalInventory explicit (viable1983=22, measurable2026=38)
+[PASS] 1975 inventory: 14 AM + 9 FM = 23 total (viable 20)
+[PASS] large-tier targets: viable 18–26 (in), measurable 32–42 (in)
 ```
 
 ## Template comparison (diagnostic only)
@@ -83,11 +86,25 @@ Sunbelt growth: soul/R&B, Top 40, gospel lanes. Compare Hispanic share to Dallas
 - **AAA / ALT_ROCK / ALBUM_ROCK** (low aaaAlternativeStrength)
 - **PUBLIC_NEWS / PUBLIC_ECLECTIC / PUBLIC_JAZZ** (low publicRadioStrength)
 
+## Signal inventory (tier targets)
+
+| Era | Value | large-tier target | Source |
+|-----|-------|-----------------------------|--------|
+| 1975 historical | 14 AM / 9 FM / 23 total | historical dial | explicit |
+| 1983 viable | 22 | 18–26 | explicit |
+| 2026 measurable | 38 | 32–42 | explicit |
+
+Primary full-power on dial: **35** (12 AM + 23 FM; 0 excluded translator/HD). Dial listed: 35. Profile grand total: 35. 
+
+Anchor phoenix (large); ~22 viable (1983); ~38 measurable (2026)
+Notes: Approximate mid-1970s Phoenix dial anchor (14 AM / 9 FM / 23 total; viable 20) — modern dial is larger and must not be assumed for 1970s starts. Large-market anchors: ~22 viable (1983), ~38 measurable (2026). Dial lists 35 gameplay tokens (12 AM + 23 FM incl. 3 reserved-band NCE); measurable includes fragmentation/rimshots in book.
+
+
 ## Revenue assumptions (draft)
 
 | Field | Value | Note |
 |-------|-------|------|
-| rankTier | large | Drives dial depth targets |
+| rankTier | large | Drives dial depth + inventory targets |
 | revScale | 1.18 | Compare Nielsen revenue rank |
 | adxBonus | 0.025 | Template default until sourced |
 | timezone | America/Phoenix | Required for merge readiness |

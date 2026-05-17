@@ -1,125 +1,330 @@
 {
+  "id": "portland",
+  "label": "Portland",
   "archetypeId": "west_fm_fragmented",
   "region": "West Coast",
   "callPrefix": "K",
   "rankTier": "large",
-  "revScale": 1.55,
+  "revScale": 1.38,
   "adxBonus": 0.025,
   "timezone": "America/Los_Angeles",
   "pop": {
-    "12-17": 320,
-    "18-24": 340,
-    "25-34": 380,
-    "35-49": 480,
-    "50-64": 400,
-    "65+": 240
+    "12-17": 260,
+    "18-24": 280,
+    "25-34": 310,
+    "35-49": 390,
+    "50-64": 330,
+    "65+": 200
   },
-  "blackPop": 0.09,
-  "hispPop1970": 0.03,
-  "hispPop2000": 0.09,
-  "hispPop2020": 0.14,
-  "churchGoing": 0.38,
-  "countryBonus": 0.1,
-  "urbanBonus": 0.06,
+  "blackPop": 0.062,
+  "hispPop1970": 0.04,
+  "hispPop2000": 0.085,
+  "hispPop2020": 0.125,
+  "churchGoing": 0.34,
+  "countryBonus": 0.07,
+  "urbanBonus": 0.05,
   "culture": {
-    "country": 0.12,
-    "urban": 0.07,
-    "newsTalk": 0.09,
-    "religion": 0.05,
-    "spanish": 0.08
+    "country": 0.08,
+    "urban": 0.06,
+    "newsTalk": 0.1,
+    "religion": 0.04,
+    "spanish": 0.06
   },
-  "eduIndex": 1.12,
-  "publicCivicIndex": 1.07,
-  "fmPenBias": 0.042,
-  "fmMusicFragMult": 1.04,
-  "spokenWordAmResilience": 1.05,
-  "heritageAmResilience": 1,
-  "countryAmHoldout": 0.95,
+  "eduIndex": 1.14,
+  "publicCivicIndex": 1.1,
+  "fmPenBias": 0.044,
+  "fmMusicFragMult": 1.05,
+  "spokenWordAmResilience": 1.04,
+  "heritageAmResilience": 0.99,
+  "countryAmHoldout": 0.9,
+  "sportsMarketIndex": 0.88,
+  "commuterStressIndex": 0.92,
   "amFreqs": [
-    "570 AM",
+    "620 AM",
+    "750 AM",
     "800 AM",
-    "1000 AM",
-    "1090 AM",
+    "860 AM",
+    "910 AM",
+    "970 AM",
+    "1010 AM",
+    "1080 AM",
     "1150 AM",
-    "1180 AM",
-    "1250 AM",
-    "1300 AM",
-    "1420 AM",
-    "1500 AM"
+    "1190 AM",
+    "1230 AM",
+    "1330 AM"
   ],
   "fmFreqs": [
-    "92.5 FM",
-    "93.3 FM",
-    "93.7 FM",
-    "94.1 FM",
-    "94.9 FM",
-    "95.7 FM",
-    "96.5 FM",
-    "96.9 FM",
+    "88.3 FM",
+    "89.1 FM",
+    "89.9 FM",
+    "90.7 FM",
+    "91.5 FM",
+    "92.3 FM",
+    "93.1 FM",
+    "93.9 FM",
+    "94.7 FM",
+    "95.5 FM",
     "97.1 FM",
-    "98.9 FM",
-    "99.1 FM",
+    "98.7 FM",
+    "99.5 FM",
     "100.3 FM",
     "101.1 FM",
-    "102.5 FM",
+    "101.9 FM",
     "103.3 FM",
-    "104.5 FM",
+    "104.1 FM",
+    "105.1 FM",
     "105.9 FM",
-    "106.1 FM",
-    "107.7 FM"
+    "106.7 FM",
+    "107.5 FM"
   ],
+  "signalProfile": {
+    "am": {
+      "big": 3,
+      "medium": 5,
+      "small": 4
+    },
+    "fm": {
+      "major": 5,
+      "medium": 11,
+      "rimshot": 6
+    }
+  },
+  "signalInventory": {
+    "am1975": 11,
+    "fm1975": 8,
+    "total1975": 19,
+    "viable1975": 17,
+    "viable1983": 20,
+    "measurable2026": 34,
+    "inventoryExplained": true,
+    "notes": "Approximate mid-1970s Portland dial anchor (11 AM / 8 FM / 19 total; viable 17) — modern measurable count includes later FM/rimshot/NCE growth and must not be assumed for 1970s starts. Large-tier but less dense than Phoenix (~22 / ~38). viable1983 is the early-1980s competitive set; measurable2026 includes rimshots, fringe FMs, and reserved-band NCE/public capacity beyond the 34 dial-listed gameplay tokens."
+  },
+  "amSignalByFreq": {
+    "750 AM": {
+      "amClassHint": "clear",
+      "signalTier": "big",
+      "dayPowerKw": 50,
+      "nightPowerKw": 20
+    },
+    "1080 AM": {
+      "amClassHint": "clear",
+      "signalTier": "big",
+      "dayPowerKw": 50,
+      "nightPowerKw": 10
+    },
+    "1190 AM": {
+      "amClassHint": "clear",
+      "signalTier": "big",
+      "dayPowerKw": 50,
+      "nightPowerKw": 50
+    },
+    "620 AM": {
+      "amClassHint": "regional",
+      "signalTier": "medium",
+      "dayPowerKw": 25,
+      "nightPowerKw": 10
+    },
+    "860 AM": {
+      "amClassHint": "regional",
+      "signalTier": "medium",
+      "dayPowerKw": 50,
+      "nightPowerKw": 5
+    },
+    "910 AM": {
+      "amClassHint": "regional",
+      "signalTier": "medium",
+      "dayPowerKw": 5,
+      "nightPowerKw": 5
+    },
+    "970 AM": {
+      "amClassHint": "regional",
+      "signalTier": "medium",
+      "dayPowerKw": 5,
+      "nightPowerKw": 5
+    },
+    "1330 AM": {
+      "amClassHint": "regional",
+      "signalTier": "medium",
+      "dayPowerKw": 5,
+      "nightPowerKw": 5
+    },
+    "1010 AM": {
+      "amClassHint": "local",
+      "signalTier": "small",
+      "dayPowerKw": 4.5,
+      "nightPowerKw": 1.1,
+      "directionalNight": true
+    },
+    "800 AM": {
+      "amClassHint": "local",
+      "signalTier": "small",
+      "dayPowerKw": 1,
+      "nightPowerKw": 0.5,
+      "directionalNight": true
+    },
+    "1150 AM": {
+      "amClassHint": "local",
+      "signalTier": "small",
+      "dayPowerKw": 5,
+      "nightPowerKw": 0.047,
+      "directionalNight": true
+    },
+    "1230 AM": {
+      "amClassHint": "local",
+      "signalTier": "small",
+      "dayPowerKw": 1,
+      "nightPowerKw": 1
+    }
+  },
+  "fmSignalByFreq": {
+    "88.3 FM": {
+      "reservedBand": true,
+      "nceEligible": true,
+      "formatHint": "CCM",
+      "signalTier": "medium",
+      "erpKw": 3.5,
+      "classHint": "C3"
+    },
+    "89.1 FM": {
+      "reservedBand": true,
+      "nceEligible": true,
+      "formatHint": "PUBLIC_JAZZ",
+      "signalTier": "medium",
+      "erpKw": 7.9,
+      "classHint": "C2"
+    },
+    "89.9 FM": {
+      "reservedBand": true,
+      "nceEligible": true,
+      "formatHint": "PUBLIC_ECLECTIC",
+      "signalTier": "medium",
+      "erpKw": 5.9,
+      "classHint": "C2"
+    },
+    "90.7 FM": {
+      "reservedBand": true,
+      "nceEligible": true,
+      "formatHint": "NCE",
+      "signalTier": "medium",
+      "erpKw": 26.5,
+      "classHint": "C1"
+    },
+    "91.5 FM": {
+      "reservedBand": true,
+      "nceEligible": true,
+      "formatHint": "PUBLIC_NEWS",
+      "signalTier": "major",
+      "erpKw": 73,
+      "classHint": "C0"
+    },
+    "94.7 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 6.3,
+      "classHint": "C3"
+    },
+    "93.1 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 1.6,
+      "classHint": "C3"
+    },
+    "104.1 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 7,
+      "classHint": "C3"
+    },
+    "105.1 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 22.5,
+      "classHint": "C2"
+    },
+    "105.9 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 22.5,
+      "classHint": "C2"
+    },
+    "98.7 FM": {
+      "signalTier": "medium",
+      "erpKw": 37,
+      "classHint": "B"
+    }
+  },
   "fmFacilityByFreq": {
-    "92.5 FM": "100kw",
-    "93.7 FM": "100kw",
-    "94.1 FM": "100kw",
-    "96.5 FM": "100kw",
+    "88.3 FM": "3.5kw",
+    "89.1 FM": "7.9kw",
+    "89.9 FM": "5.9kw",
+    "90.7 FM": "26.5kw",
+    "91.5 FM": "73kw",
+    "92.3 FM": "100kw",
+    "93.1 FM": "1.6kw",
+    "93.9 FM": "52kw",
+    "94.7 FM": "6.3kw",
+    "95.5 FM": "100kw",
     "97.1 FM": "100kw",
-    "98.9 FM": "100kw",
+    "98.7 FM": "37kw",
+    "99.5 FM": "52kw",
     "100.3 FM": "100kw",
-    "104.5 FM": "100kw"
+    "101.1 FM": "100kw",
+    "101.9 FM": "100kw",
+    "103.3 FM": "100kw",
+    "104.1 FM": "7kw",
+    "105.1 FM": "22.5kw",
+    "105.9 FM": "22.5kw",
+    "106.7 FM": "100kw",
+    "107.5 FM": "68kw"
   },
   "teams": [
     {
-      "id": "pro_baseball",
-      "name": "TODO MLB",
-      "sport": "PRO_BASEBALL",
-      "introduced": 1977,
-      "baseFee": 200000,
-      "baseBonus": 0.018,
+      "id": "blazers",
+      "name": "Portland Trail Roses",
+      "sport": "PRO_BASKETBALL",
+      "introduced": 1970,
+      "baseFee": 115000,
+      "baseBonus": 0.012,
       "contractYrs": 3
     },
     {
-      "id": "pro_football",
-      "name": "TODO NFL",
-      "sport": "PRO_FOOTBALL",
-      "introduced": 1976,
-      "baseFee": 380000,
-      "baseBonus": 0.027,
-      "contractYrs": 4
+      "id": "winterhawks",
+      "name": "Portland Winter Hawks",
+      "sport": "PRO_HOCKEY",
+      "introduced": 1970,
+      "baseFee": 75000,
+      "baseBonus": 0.009,
+      "contractYrs": 3
     }
   ],
-  "selectBlurb": "TODO: West FM-fragmented — rock/alt heritage, educated listeners, competitive news.",
+  "selectBlurb": "Pacific Northwest dial with strong OPB/NCE public radio, AAA and alternative heritage, and fragmented commercial FM — country and gospel stay thinner than Sunbelt markets, Spanish is present but modest, and indie/eclectic lanes compete with news/talk on AM big sticks.",
+  "ecologyNotes": "Portland is west_fm_fragmented like Seattle/SF but smaller and less Hispanic than Phoenix: ~12.5% Hispanic (vs ~30% PHX), ~6% Black (vs ~7% PHX, ~36% ATL). Higher eduIndex/publicCivicIndex than Phoenix — expect stronger publicRadioStrength and aaaAlternativeStrength, weaker gospelStrength/ccmStrength and lower countryStrength than Phoenix/Nashville. Five reserved-band slots (88.3 CCM, 89.1 jazz, 89.9 classical, 90.7 community, 91.5 NPR) vs Phoenix three. FM fragmentation with rimshots (94.7, 93.1, 104.1, 105.x) — no Phoenix spanishLaunches or CHR trim hacks. Country lane exists (KWJJ heritage) but countryAmHoldout 0.90 and culture.country 0.08 keep it below Sunbelt dominance.",
   "sourceNotes": {
-    "default": "Template: west_fm_fragmented (Seattle-shaped)."
+    "rankTier": "Nielsen Audio FA24 Red Book DMA #22 (Portland, PPM) — large tier.",
+    "revScale": "Draft 1.38 vs Seattle 1.55 / Phoenix 1.18 — ~2.5M 12+ pop vs ~4.0M SEA / ~4.0M PHX.",
+    "blackPop": "Nielsen FA24 Black 12+ ~155k / 2.5M ≈ 6.2%.",
+    "hispPop2020": "Nielsen FA24 Hispanic 12+ ~310k / 2.5M ≈ 12.5%.",
+    "hispPop1970": "Census/Oregon in-migration estimate — modest vs sunbelt.",
+    "hispPop2000": "Census 2000 metro Hispanic share ~8.5% (rounded).",
+    "timezone": "America/Los_Angeles (Pacific).",
+    "callPrefix": "K — western US allotment.",
+    "dial": "PDX Radio Guide / FCC draft — AM 620–1330 core; FM reserved 88.3–91.5 + commercial 92.3–107.5; ERP tiers gameplay tokens.",
+    "signalProfile": "Gameplay: 3 big / 5 medium / 3 small AM; 5 major / 11 medium / 6 rimshot FM (5 reserved NCE).",
+    "teams": "NBA Trail Blazers + WHL-style hockey proxy (no MLB/NFL in market).",
+    "ecology": "See ecologyNotes — compare seattle, sanfrancisco, phoenix, atlanta."
   },
-  "_dialFingerprint": "{\"am\":[\"1000 AM\",\"1090 AM\",\"1150 AM\",\"1180 AM\",\"1250 AM\",\"1300 AM\",\"1420 AM\",\"1500 AM\",\"570 AM\",\"800 AM\"],\"fm\":[\"100.3 FM\",\"101.1 FM\",\"102.5 FM\",\"103.3 FM\",\"104.5 FM\",\"105.9 FM\",\"106.1 FM\",\"107.7 FM\",\"92.5 FM\",\"93.3 FM\",\"93.7 FM\",\"94.1 FM\",\"94.9 FM\",\"95.7 FM\",\"96.5 FM\",\"96.9 FM\",\"97.1 FM\",\"98.9 FM\",\"99.1 FM\"]}",
+  "_dialFingerprint": "{\"am\":[\"620 AM\",\"750 AM\",\"800 AM\",\"860 AM\",\"910 AM\",\"970 AM\",\"1080 AM\",\"1150 AM\",\"1190 AM\",\"1230 AM\",\"1330 AM\"],\"fm\":[\"100.3 FM\",\"101.1 FM\",\"101.9 FM\",\"103.3 FM\",\"104.1 FM\",\"105.1 FM\",\"105.9 FM\",\"106.7 FM\",\"107.5 FM\",\"88.3 FM\",\"89.1 FM\",\"89.9 FM\",\"90.7 FM\",\"91.5 FM\",\"92.3 FM\",\"93.1 FM\",\"93.9 FM\",\"94.7 FM\",\"95.5 FM\",\"97.1 FM\",\"98.7 FM\",\"99.5 FM\"]}",
   "_templateKey": "west_fm_fragmented",
-  "id": "portland",
-  "label": "Portland",
   "_scaffold": {
     "version": 2,
     "template": "west_fm_fragmented",
     "status": "draft",
-    "generatedAt": "2026-05-17T14:48:51.500Z",
+    "generatedAt": "2026-05-17T18:00:00.000Z",
     "dialReviewed": false,
+    "signalReviewed": false,
     "dataReviewed": false,
     "ecologyRegressionRecorded": false,
     "warnings": [
-      "PLACEHOLDER — template copy; not sourced from Census/Nielsen/FCC.",
-      "Dial lists (amFreqs/fmFreqs/fmFacilityByFreq) require human review before merge.",
-      "Set _scaffold.dialReviewed=true after FCC-sourced dial is verified.",
-      "teams names/fees are TODO stubs.",
-      "Do not add this market to playable lists until readiness is MERGE_READY."
+      "Real-data draft (May 2026) — demographics anchored to Nielsen FA24 / PDX dial research.",
+      "signalProfile first-pass — set _scaffold.signalReviewed after competitive signal review.",
+      "Five reserved-band NCE/public slots — strong OPB cluster vs Phoenix three.",
+      "Dial is Portland-specific (not Seattle template copy); dialReviewed false until human FCC pass.",
+      "Do not add to playable market lists until MERGE_READY and explicit sign-off."
     ]
   }
 }

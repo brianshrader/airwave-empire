@@ -61,6 +61,129 @@ const SIGNAL_DEPTH_HINTS = {
   medium: { am: 5, fm: 10 },
   small: { am: 3, fm: 6 },
 };
+
+/**
+ * Era inventory targets by rankTier (full-power competitive signals — not FCC-perfect).
+ * `viable1983` ≈ stations that could matter in the early-1980s; `measurable2026` ≈ book-measurable count today.
+ */
+const SIGNAL_INVENTORY_TARGETS = {
+  small: { viable1983: [10, 14], measurable2026: [16, 24] },
+  medium: { viable1983: [14, 18], measurable2026: [24, 32] },
+  large: { viable1983: [18, 26], measurable2026: [32, 42] },
+  mega: { viable1983: [28, 35], measurable2026: [45, 55] },
+};
+
+/** Rough real-market anchors for scaffold sanity checks (documentation / comparison only). */
+const SIGNAL_INVENTORY_ANCHORS = {
+  wichita: { rankTier: 'small', viable1983: 12, measurable2026: 20 },
+  phoenix: { rankTier: 'large', viable1983: 22, measurable2026: 38 },
+  newyork: {
+    rankTier: 'mega',
+    viable1983: 30,
+    measurable2026: 48,
+    inventory1975: { am1975: 11, fm1975: 9, total1975: 20, viable1975: 20 },
+  },
+  neworleans: {
+    rankTier: 'large',
+    inventory1975: { am1975: 9, fm1975: 7, total1975: 16, viable1975: 16 },
+    total1985: 20,
+    measurable2026: 20,
+  },
+};
+
+const INVENTORY_1975_FIELDS = ['am1975', 'fm1975', 'viable1975', 'total1975'];
+
+function parseInventoryInt(inv, key) {
+  if (inv[key] == null || Number.isNaN(Number(inv[key]))) return null;
+  return Math.round(Number(inv[key]));
+}
+
+/**
+ * Optional 1975 historical dial anchors — 1970s starts should not assume modern dial depth.
+ * @returns {{ block: object, warnings: object[], reviewFailures: object[] }}
+ */
+function assessInventory1975(inv, primary, measurable2026, inventoryExplained) {
+  const am1975 = parseInventoryInt(inv, 'am1975');
+  const fm1975 = parseInventoryInt(inv, 'fm1975');
+  const viable1975 = parseInventoryInt(inv, 'viable1975');
+  const total1975 = parseInventoryInt(inv, 'total1975');
+  const warnings = [];
+  const reviewFailures = [];
+  const modernDial = primary.total;
+
+  const hasAny1975 = INVENTORY_1975_FIELDS.some((k) => parseInventoryInt(inv, k) != null);
+  const hasBandTotals = am1975 != null && fm1975 != null && total1975 != null;
+  const sumBands = am1975 != null && fm1975 != null ? am1975 + fm1975 : null;
+
+  const explicit = Object.fromEntries(INVENTORY_1975_FIELDS.map((k) => [k, parseInventoryInt(inv, k) != null]));
+
+  if (!hasAny1975) {
+    if (modernDial > 0) {
+      warnings.push({
+        code: 'inventory_1975_modern_dial_assumed',
+        level: 'warn',
+        message: `No 1975 inventory (am1975/fm1975/total1975) — 1970s-era starts should use historical AM/FM availability, not modern dial size (${modernDial} full-power listed)`,
+      });
+    }
+  } else {
+    if (!hasBandTotals) {
+      const missing = ['am1975', 'fm1975', 'total1975'].filter((k) => parseInventoryInt(inv, k) == null);
+      if (missing.length > 0 && missing.length < 3) {
+        warnings.push({
+          code: 'inventory_1975_incomplete',
+          level: 'warn',
+          message: `1975 inventory incomplete (missing ${missing.join(', ')}) — set am1975, fm1975, and total1975 together when documenting historical dial`,
+        });
+      }
+    }
+
+    if (hasBandTotals && total1975 !== sumBands) {
+      const msg = `signalInventory.total1975 (${total1975}) must equal am1975 (${am1975}) + fm1975 (${fm1975}) = ${sumBands}`;
+      reviewFailures.push({ code: 'inventory_1975_total_mismatch', message: msg });
+    }
+
+    if (viable1975 != null && total1975 != null && viable1975 > total1975) {
+      warnings.push({
+        code: 'inventory_1975_viable_above_total',
+        level: 'warn',
+        message: `viable1975 (${viable1975}) exceeds total1975 (${total1975})`,
+      });
+    }
+
+    if (hasBandTotals && modernDial > 0 && !inventoryExplained) {
+      if (Math.abs(modernDial - total1975) <= 1 && measurable2026 > total1975 + 4) {
+        warnings.push({
+          code: 'inventory_1975_equals_modern_dial',
+          level: 'warn',
+          message: `Modern dial (${modernDial}) ≈ total1975 (${total1975}) but measurable2026 (${measurable2026}) is much higher — confirm 1975 anchors are historical, not copied from the 2026 dial list`,
+        });
+      } else if (modernDial >= total1975 + 6) {
+        warnings.push({
+          code: 'inventory_1975_growth_documented',
+          level: 'info',
+          message: `1975 total ${total1975} vs modern dial ${modernDial} — FM expansion / fragmentation expected between 1975 and 2026`,
+        });
+      }
+    }
+  }
+
+  return {
+    block: {
+      am1975,
+      fm1975,
+      viable1975,
+      total1975,
+      sumBands,
+      explicit,
+      hasAny1975,
+      hasBandTotals,
+      eraNote:
+        '1970s market starts should use historical AM/FM availability at scenario start — not the full modern 2026 dial list.',
+    },
+    warnings,
+    reviewFailures,
+  };
+}
 const POP_KEYS = ['12-17', '18-24', '25-34', '35-49', '50-64', '65+'];
 const ECOLOGY_TRAIT_KEYS = [
   'publicRadioStrength',
@@ -173,6 +296,208 @@ function dialFingerprint(amFreqs, fmFreqs) {
 function signalTierTotal(profile, band, tiers) {
   if (!profile?.[band] || typeof profile[band] !== 'object') return 0;
   return tiers.reduce((sum, tier) => sum + Math.max(0, Number(profile[band][tier]) || 0), 0);
+}
+
+/** Per-frequency metadata: exclude translators/HD-fed unless explicitly marked primary. */
+function isExcludedFromPrimaryInventory(meta) {
+  if (!meta || typeof meta !== 'object') return false;
+  if (meta.includeInPrimaryInventory === true || meta.primaryInventory === true) return false;
+  if (meta.excludeFromPrimaryInventory === true) return true;
+  if (meta.translatorFed === true || meta.translator === true) return true;
+  if (meta.hdSubchannel === true || meta.hdFed === true) return true;
+  return false;
+}
+
+function countPrimaryFullPowerSignals(raw) {
+  const amMeta = raw.amSignalByFreq && typeof raw.amSignalByFreq === 'object' ? raw.amSignalByFreq : {};
+  const fmMeta = raw.fmSignalByFreq && typeof raw.fmSignalByFreq === 'object' ? raw.fmSignalByFreq : {};
+  const amListed = raw.amFreqs || [];
+  const fmListed = raw.fmFreqs || [];
+  let am = 0;
+  let fm = 0;
+  let excluded = 0;
+  const excludedFreqs = [];
+  for (const freq of amListed) {
+    if (isExcludedFromPrimaryInventory(amMeta[freq])) {
+      excluded += 1;
+      excludedFreqs.push(freq);
+    } else am += 1;
+  }
+  for (const freq of fmListed) {
+    if (isExcludedFromPrimaryInventory(fmMeta[freq])) {
+      excluded += 1;
+      excludedFreqs.push(freq);
+    } else fm += 1;
+  }
+  return {
+    am,
+    fm,
+    total: am + fm,
+    excluded,
+    excludedFreqs,
+    dialListed: amListed.length + fmListed.length,
+  };
+}
+
+/**
+ * Tier-based viable (1983) / measurable (2026) inventory sanity check.
+ * @returns {object} inventory block for signal_allocation.json + readiness warnings
+ */
+function assessSignalInventory(raw) {
+  const rankTier = String(raw.rankTier || '').trim() || 'medium';
+  const targets = SIGNAL_INVENTORY_TARGETS[rankTier] || null;
+  const inv =
+    raw.signalInventory && typeof raw.signalInventory === 'object' ? raw.signalInventory : {};
+  const primary = countPrimaryFullPowerSignals(raw);
+  const profile = raw.signalProfile;
+  const profileGrandTotal = profile
+    ? signalTierTotal(profile, 'am', AM_SIGNAL_TIERS) + signalTierTotal(profile, 'fm', FM_SIGNAL_TIERS)
+    : 0;
+  const dialListedTotal = primary.dialListed;
+
+  const hasExplicitViable = inv.viable1983 != null && !Number.isNaN(Number(inv.viable1983));
+  const hasExplicitMeasurable = inv.measurable2026 != null && !Number.isNaN(Number(inv.measurable2026));
+  const sources = {};
+  let viable1983 = hasExplicitViable ? Math.round(Number(inv.viable1983)) : null;
+  let measurable2026 = hasExplicitMeasurable ? Math.round(Number(inv.measurable2026)) : null;
+
+  if (viable1983 == null) {
+    viable1983 = primary.total;
+    sources.viable1983 = 'primary_dial_proxy';
+  }
+  if (measurable2026 == null) {
+    measurable2026 = Math.max(primary.total, profileGrandTotal || 0);
+    sources.measurable2026 =
+      profileGrandTotal > primary.total ? 'profile_or_dial_proxy' : 'primary_dial_proxy';
+  }
+
+  const inventoryExplained =
+    inv.inventoryExplained === true || (typeof inv.notes === 'string' && inv.notes.trim().length > 0);
+  const warnings = [];
+
+  if (!hasExplicitViable || !hasExplicitMeasurable) {
+    warnings.push({
+      code: 'inventory_not_explicit',
+      level: 'warn',
+      message: `Add signalInventory.viable1983 and measurable2026 in raw_market_data.json (rankTier=${rankTier} targets in signal_allocation.json)`,
+    });
+  }
+
+  const identicalProxy =
+    viable1983 === measurable2026 &&
+    viable1983 === dialListedTotal &&
+    viable1983 === primary.total &&
+    measurable2026 === primary.total;
+
+  if (identicalProxy && !inventoryExplained) {
+    warnings.push({
+      code: 'inventory_identical_proxy',
+      level: 'warn',
+      message:
+        'viable1983, measurable2026, and dial primary count are identical without signalInventory.inventoryExplained or notes — set explicit era counts or document why',
+    });
+  } else if (viable1983 === measurable2026 && !inventoryExplained && !identicalProxy) {
+    warnings.push({
+      code: 'inventory_viable_measurable_same',
+      level: 'warn',
+      message:
+        'viable1983 equals measurable2026 without inventoryExplained/notes — modern markets usually have more measurable than viable full-power signals',
+    });
+  }
+
+  if (primary.excluded > 0) {
+    warnings.push({
+      code: 'inventory_translator_excluded',
+      level: 'info',
+      message: `${primary.excluded} dial row(s) excluded from primary full-power count (translator/HD metadata): ${primary.excludedFreqs.join(', ')}`,
+    });
+  }
+
+  if (targets) {
+    const checkRange = (eraLabel, value, range, codeLow, codeHigh) => {
+      if (value < range[0]) {
+        warnings.push({
+          code: codeLow,
+          level: 'warn',
+          message: `${eraLabel} inventory ${value} is below ${rankTier}-tier target ${range[0]}–${range[1]} (rough anchors only)`,
+        });
+      } else if (value > range[1]) {
+        warnings.push({
+          code: codeHigh,
+          level: 'warn',
+          message: `${eraLabel} inventory ${value} is above ${rankTier}-tier target ${range[0]}–${range[1]} (rough anchors only)`,
+        });
+      }
+    };
+    checkRange(
+      '1983 viable',
+      viable1983,
+      targets.viable1983,
+      'inventory_viable_below_tier',
+      'inventory_viable_above_tier',
+    );
+    checkRange(
+      '2026 measurable',
+      measurable2026,
+      targets.measurable2026,
+      'inventory_measurable_below_tier',
+      'inventory_measurable_above_tier',
+    );
+  } else {
+    warnings.push({
+      code: 'inventory_tier_unknown',
+      level: 'warn',
+      message: `No signal inventory targets for rankTier=${rankTier}`,
+    });
+  }
+
+  const anchor = SIGNAL_INVENTORY_ANCHORS[raw.id];
+  let anchorNote = null;
+  if (anchor) {
+    const parts = [`Anchor ${raw.id} (${anchor.rankTier})`];
+    if (anchor.inventory1975) {
+      const i = anchor.inventory1975;
+      parts.push(`1975: ${i.am1975} AM / ${i.fm1975} FM / ${i.total1975} total`);
+    }
+    if (anchor.viable1983 != null) parts.push(`~${anchor.viable1983} viable (1983)`);
+    if (anchor.total1985 != null) parts.push(`~${anchor.total1985} total (1985)`);
+    if (anchor.measurable2026 != null) parts.push(`~${anchor.measurable2026} measurable (2026)`);
+    anchorNote = parts.join('; ');
+  }
+
+  const inv1975 = assessInventory1975(inv, primary, measurable2026, inventoryExplained);
+  warnings.push(...inv1975.warnings);
+
+  return {
+    schemaVersion: 2,
+    rankTier,
+    targets: targets
+      ? { viable1983: targets.viable1983, measurable2026: targets.measurable2026 }
+      : null,
+    anchors: SIGNAL_INVENTORY_ANCHORS,
+    anchorNote,
+    primaryFullPower: primary,
+    dialListedTotal,
+    profileGrandTotal,
+    viable1983,
+    measurable2026,
+    inventory1975: inv1975.block,
+    sources,
+    explicit: {
+      viable1983: hasExplicitViable,
+      measurable2026: hasExplicitMeasurable,
+      ...inv1975.block.explicit,
+    },
+    inventoryExplained,
+    notes: typeof inv.notes === 'string' ? inv.notes : null,
+    warnings,
+    reviewFailures1975: inv1975.reviewFailures,
+    missingExplicit: { viable1983: !hasExplicitViable, measurable2026: !hasExplicitMeasurable },
+    inventoryNote:
+      'Primary full-power count excludes translatorFed/hdSubchannel/hdFed dial rows unless includeInPrimaryInventory is set. Not FCC-perfect.',
+    inventory1975Note:
+      '1970s starts: document signalInventory.am1975, fm1975, total1975 (and optional viable1975) from historical dial — not modern 2026 amFreqs/fmFreqs length.',
+  };
 }
 
 /**
@@ -654,6 +979,11 @@ function buildSignalAllocation(raw) {
     });
   }
 
+  const signalInventory = assessSignalInventory(raw);
+  for (const w of signalInventory.warnings) {
+    warnings.push(w);
+  }
+
   const bandConstraints = runSignalBandConstraints(raw);
   for (const c of bandConstraints.constraintFailures) {
     warnings.push(c);
@@ -734,6 +1064,7 @@ function buildSignalAllocation(raw) {
     tierVocabularyNote: bandConstraints.tierVocabularyNote,
     nceCapacityNote: bandConstraints.nceCapacityNote,
     ccmHdNote: bandConstraints.ccmHdNote,
+    signalInventory,
     note: 'signalProfile is a gameplay abstraction for competitive signal strength — not FCC engineering data.',
   };
 }
@@ -1191,6 +1522,7 @@ function templateComparisonBlock(templateKey) {
 
 function emitDiagnosticsNotes(raw, derived, checkSummary) {
   const eco = derived.latest;
+  const inventory = assessSignalInventory(raw);
   const { strong, weak } = ecologyFormatHints(eco);
   const traitLines = Object.entries(eco)
     .filter(([, v]) => typeof v === 'number')
@@ -1249,11 +1581,33 @@ ${strong.length ? strong.join('\n') : '- (none above threshold — review raw de
 
 ${weak.length ? weak.join('\n') : '- (none flagged)'}
 
+## Signal inventory (tier targets)
+
+| Era | Value | ${raw.rankTier}-tier target | Source |
+|-----|-------|-----------------------------|--------|
+| 1975 historical | ${
+  inventory.inventory1975?.hasBandTotals
+    ? `${inventory.inventory1975.am1975} AM / ${inventory.inventory1975.fm1975} FM / ${inventory.inventory1975.total1975} total`
+    : inventory.inventory1975?.hasAny1975
+      ? '(incomplete — set am1975, fm1975, total1975)'
+      : '— (not set)'
+} | historical dial | ${inventory.inventory1975?.hasBandTotals ? 'explicit' : 'missing'} |
+| 1983 viable | ${inventory.viable1983} | ${inventory.targets ? `${inventory.targets.viable1983[0]}–${inventory.targets.viable1983[1]}` : '—'} | ${inventory.sources.viable1983 || 'explicit'} |
+| 2026 measurable | ${inventory.measurable2026} | ${inventory.targets ? `${inventory.targets.measurable2026[0]}–${inventory.targets.measurable2026[1]}` : '—'} | ${inventory.sources.measurable2026 || 'explicit'} |
+
+Primary full-power on dial: **${inventory.primaryFullPower.total}** (${inventory.primaryFullPower.am} AM + ${inventory.primaryFullPower.fm} FM; ${inventory.primaryFullPower.excluded} excluded translator/HD). Dial listed: ${inventory.dialListedTotal}. Profile grand total: ${inventory.profileGrandTotal}. ${
+  !inventory.inventory1975?.hasAny1975
+    ? '**1970s starts:** add `signalInventory.am1975` / `fm1975` / `total1975` — do not use modern dial size as the 1975 inventory.'
+    : ''
+}
+
+${inventory.anchorNote ? `${inventory.anchorNote}\n` : ''}${inventory.notes ? `Notes: ${inventory.notes}\n` : ''}
+
 ## Revenue assumptions (draft)
 
 | Field | Value | Note |
 |-------|-------|------|
-| rankTier | ${raw.rankTier} | Drives dial depth targets |
+| rankTier | ${raw.rankTier} | Drives dial depth + inventory targets |
 | revScale | ${raw.revScale} | Compare Nielsen revenue rank |
 | adxBonus | ${raw.adxBonus} | Template default until sourced |
 | timezone | ${raw.timezone ?? '(missing)'} | Required for merge readiness |
@@ -1490,6 +1844,59 @@ function runReadinessChecks(raw, derived, paths, templates) {
     add('FAIL', 'signal_constraint_fail', 'signalReviewed is true but band constraint validation failed');
   }
 
+  const signalInventory = assessSignalInventory(raw);
+  if (signalInventory.missingExplicit.viable1983 || signalInventory.missingExplicit.measurable2026) {
+    if (signalReviewed) {
+      add(
+        'FAIL',
+        'inventory_missing',
+        'signalInventory.viable1983 and/or measurable2026 required after _scaffold.signalReviewed=true',
+      );
+    } else {
+      add(
+        'WARN',
+        'inventory_missing',
+        'Add signalInventory.viable1983 and measurable2026 (tier targets in signal_allocation.json)',
+      );
+    }
+  } else {
+    add(
+      'PASS',
+      'inventory_explicit',
+      `signalInventory explicit (viable1983=${signalInventory.viable1983}, measurable2026=${signalInventory.measurable2026})`,
+    );
+  }
+  for (const w of signalInventory.warnings) {
+    if (w.level === 'info') continue;
+    add('WARN', w.code || 'inventory_warn', w.message);
+  }
+  for (const f of signalInventory.reviewFailures1975 || []) {
+    if (signalReviewed) add('FAIL', f.code, f.message);
+    else add('WARN', f.code, f.message);
+  }
+  if (signalInventory.inventory1975?.hasBandTotals) {
+    const i = signalInventory.inventory1975;
+    add(
+      'PASS',
+      'inventory_1975',
+      `1975 inventory: ${i.am1975} AM + ${i.fm1975} FM = ${i.total1975} total` +
+        (i.viable1975 != null ? ` (viable ${i.viable1975})` : ''),
+    );
+  }
+  if (signalInventory.targets) {
+    const [vLo, vHi] = signalInventory.targets.viable1983;
+    const [mLo, mHi] = signalInventory.targets.measurable2026;
+    const inViable =
+      signalInventory.viable1983 >= vLo && signalInventory.viable1983 <= vHi ? 'in' : 'outside';
+    const inMeas =
+      signalInventory.measurable2026 >= mLo && signalInventory.measurable2026 <= mHi ? 'in' : 'outside';
+    add(
+      'PASS',
+      'inventory_tier_targets',
+      `${signalInventory.rankTier}-tier targets: viable ${vLo}–${vHi} (${inViable}), measurable ${mLo}–${mHi} (${inMeas})`,
+    );
+  }
+
   const counts = { PASS: 0, WARN: 0, FAIL: 0 };
   for (const it of items) counts[it.level] = (counts[it.level] || 0) + 1;
 
@@ -1560,6 +1967,8 @@ function computeReadiness(readinessItems) {
     'signal_profile_missing',
     'signal_profile_invalid',
     'signal_unreviewed',
+    'inventory_missing',
+    'inventory_1975_total_mismatch',
   ];
   if (mergeBlockers.some((c) => codes.has(c))) return 'PLAYTEST_READY';
 

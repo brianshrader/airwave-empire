@@ -90,6 +90,16 @@
       "rimshot": 5
     }
   },
+  "signalInventory": {
+    "am1975": 14,
+    "fm1975": 9,
+    "total1975": 23,
+    "viable1975": 20,
+    "viable1983": 22,
+    "measurable2026": 38,
+    "inventoryExplained": true,
+    "notes": "Approximate mid-1970s Phoenix dial anchor (14 AM / 9 FM / 23 total; viable 20) — modern dial is larger and must not be assumed for 1970s starts. Large-market anchors: ~22 viable (1983), ~38 measurable (2026). Dial lists 35 gameplay tokens (12 AM + 23 FM incl. 3 reserved-band NCE); measurable includes fragmentation/rimshots in book."
+  },
   "amSignalByFreq": {
     "1230 AM": {
       "amClassHint": "local",

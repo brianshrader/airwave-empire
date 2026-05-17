@@ -1,25 +1,31 @@
 {
-  "readiness": "DRAFT",
-  "checkedAt": "2026-05-17T14:48:51.596Z",
+  "readiness": "PLAYTEST_READY",
+  "checkedAt": "2026-05-17T18:35:52.936Z",
   "counts": {
-    "PASS": 8,
-    "WARN": 4,
-    "FAIL": 1
+    "PASS": 16,
+    "WARN": 3,
+    "FAIL": 0
   },
   "lines": [
     "[PASS] callPrefix=K",
     "[PASS] rankTier=large",
-    "[PASS] revScale=1.55",
+    "[PASS] revScale=1.38",
     "[PASS] timezone=America/Los_Angeles",
     "[PASS] region matches geography hint (West Coast)",
-    "[FAIL] Dial lists match untouched template fingerprint (west_fm_fragmented) — FCC review required",
+    "[WARN] _scaffold.dialReviewed is not true — confirm dial is sourced",
     "[PASS] pop cohorts present",
     "[PASS] culture fields present",
-    "[WARN] selectBlurb still contains TODO",
-    "[WARN] One or more teams still have TODO names",
+    "[PASS] selectBlurb present",
+    "[PASS] teams count=2",
     "[PASS] All core ecology traits present (2026)",
-    "[WARN] No ecology regression record — run diag after MARKETS merge, save ecology_regression_record.json",
-    "[WARN] _scaffold.dataReviewed is not true"
+    "[PASS] ecology_regression_record.json present",
+    "[WARN] _scaffold.dataReviewed is not true",
+    "[PASS] signalProfile present (AM=12, FM=22)",
+    "[WARN] _scaffold.signalReviewed is not true — human signal-tier review required",
+    "[PASS] Band constraints OK",
+    "[PASS] signalInventory explicit (viable1983=20, measurable2026=34)",
+    "[PASS] 1975 inventory: 11 AM + 8 FM = 19 total (viable 17)",
+    "[PASS] large-tier targets: viable 18–26 (in), measurable 32–42 (in)"
   ],
   "items": [
     {
@@ -35,7 +41,7 @@
     {
       "level": "PASS",
       "code": "rev_scale",
-      "message": "revScale=1.55"
+      "message": "revScale=1.38"
     },
     {
       "level": "PASS",
@@ -48,9 +54,9 @@
       "message": "region matches geography hint (West Coast)"
     },
     {
-      "level": "FAIL",
-      "code": "dial_placeholder",
-      "message": "Dial lists match untouched template fingerprint (west_fm_fragmented) — FCC review required"
+      "level": "WARN",
+      "code": "dial_unreviewed",
+      "message": "_scaffold.dialReviewed is not true — confirm dial is sourced"
     },
     {
       "level": "PASS",
@@ -63,14 +69,14 @@
       "message": "culture fields present"
     },
     {
-      "level": "WARN",
-      "code": "select_blurb_todo",
-      "message": "selectBlurb still contains TODO"
+      "level": "PASS",
+      "code": "select_blurb",
+      "message": "selectBlurb present"
     },
     {
-      "level": "WARN",
-      "code": "teams_todo",
-      "message": "One or more teams still have TODO names"
+      "level": "PASS",
+      "code": "teams",
+      "message": "teams count=2"
     },
     {
       "level": "PASS",
@@ -78,14 +84,44 @@
       "message": "All core ecology traits present (2026)"
     },
     {
-      "level": "WARN",
-      "code": "regression_missing",
-      "message": "No ecology regression record — run diag after MARKETS merge, save ecology_regression_record.json"
+      "level": "PASS",
+      "code": "regression_file",
+      "message": "ecology_regression_record.json present"
     },
     {
       "level": "WARN",
       "code": "data_unreviewed",
       "message": "_scaffold.dataReviewed is not true"
+    },
+    {
+      "level": "PASS",
+      "code": "signal_profile",
+      "message": "signalProfile present (AM=12, FM=22)"
+    },
+    {
+      "level": "WARN",
+      "code": "signal_unreviewed",
+      "message": "_scaffold.signalReviewed is not true — human signal-tier review required"
+    },
+    {
+      "level": "PASS",
+      "code": "signal_constraints_ok",
+      "message": "Band constraints OK"
+    },
+    {
+      "level": "PASS",
+      "code": "inventory_explicit",
+      "message": "signalInventory explicit (viable1983=20, measurable2026=34)"
+    },
+    {
+      "level": "PASS",
+      "code": "inventory_1975",
+      "message": "1975 inventory: 11 AM + 8 FM = 19 total (viable 17)"
+    },
+    {
+      "level": "PASS",
+      "code": "inventory_tier_targets",
+      "message": "large-tier targets: viable 18–26 (in), measurable 32–42 (in)"
     }
   ]
 }

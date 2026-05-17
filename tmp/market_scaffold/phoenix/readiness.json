@@ -1,8 +1,8 @@
 {
   "readiness": "PLAYTEST_READY",
-  "checkedAt": "2026-05-17T17:32:37.604Z",
+  "checkedAt": "2026-05-17T18:35:48.894Z",
   "counts": {
-    "PASS": 13,
+    "PASS": 16,
     "WARN": 3,
     "FAIL": 0
   },
@@ -22,7 +22,10 @@
     "[WARN] _scaffold.dataReviewed is not true",
     "[PASS] signalProfile present (AM=12, FM=23)",
     "[WARN] _scaffold.signalReviewed is not true — human signal-tier review required",
-    "[PASS] Band constraints OK"
+    "[PASS] Band constraints OK",
+    "[PASS] signalInventory explicit (viable1983=22, measurable2026=38)",
+    "[PASS] 1975 inventory: 14 AM + 9 FM = 23 total (viable 20)",
+    "[PASS] large-tier targets: viable 18–26 (in), measurable 32–42 (in)"
   ],
   "items": [
     {
@@ -104,6 +107,21 @@
       "level": "PASS",
       "code": "signal_constraints_ok",
       "message": "Band constraints OK"
+    },
+    {
+      "level": "PASS",
+      "code": "inventory_explicit",
+      "message": "signalInventory explicit (viable1983=22, measurable2026=38)"
+    },
+    {
+      "level": "PASS",
+      "code": "inventory_1975",
+      "message": "1975 inventory: 14 AM + 9 FM = 23 total (viable 20)"
+    },
+    {
+      "level": "PASS",
+      "code": "inventory_tier_targets",
+      "message": "large-tier targets: viable 18–26 (in), measurable 32–42 (in)"
     }
   ]
 }
