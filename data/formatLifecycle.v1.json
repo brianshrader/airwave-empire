@@ -1,0 +1,315 @@
+{
+  "version": 1,
+  "description": "National format lifecycle catalog (v1 diagnostic). Authoring source for formatLifecycleCore.js — not loaded by gameplay.",
+  "nationalFormats": {
+    "TOP40": {
+      "lane": "hits",
+      "emergence": 1955,
+      "peak": 1982,
+      "plateauEnd": 1992,
+      "declineEnd": 2020,
+      "modernRetention": 0.25,
+      "declineSteepness": 0.85,
+      "floor": 0.08,
+      "notes": "CHR umbrella; historically dominant ~1980; fragments to HOT_AC/RHYTHMIC"
+    },
+    "HOT_AC": {
+      "lane": "hits",
+      "emergence": 1988,
+      "peak": 2004,
+      "plateauEnd": 2012,
+      "declineEnd": 2026,
+      "modernRetention": 0.55,
+      "declineSteepness": 0.55,
+      "floor": 0.1,
+      "notes": "Mass-appeal successor lane to Top 40"
+    },
+    "ADULT_CONTEMP": {
+      "lane": "ac",
+      "emergence": 1970,
+      "peak": 1990,
+      "plateauEnd": 2005,
+      "declineEnd": 2026,
+      "modernRetention": 0.65,
+      "declineSteepness": 0.35,
+      "floor": 0.12,
+      "notes": "AC / soft rock workhorse 35-54"
+    },
+    "CLASSIC_HITS": {
+      "lane": "heritage",
+      "emergence": 1995,
+      "peak": 2010,
+      "plateauEnd": 2018,
+      "declineEnd": 2026,
+      "modernRetention": 0.5,
+      "declineSteepness": 0.5,
+      "floor": 0.08,
+      "notes": "Oldies successor; demo aging 2010+"
+    },
+    "CLASSIC_ROCK": {
+      "lane": "rock",
+      "emergence": 1985,
+      "peak": 2000,
+      "plateauEnd": 2015,
+      "declineEnd": 2026,
+      "modernRetention": 0.75,
+      "declineSteepness": 0.3,
+      "floor": 0.15,
+      "notes": "Heritage rock; slow national fade"
+    },
+    "ALBUM_ROCK": {
+      "lane": "rock",
+      "emergence": 1970,
+      "peak": 1982,
+      "plateauEnd": 1990,
+      "declineEnd": 2005,
+      "modernRetention": 0.35,
+      "declineSteepness": 0.75,
+      "floor": 0.06,
+      "notes": "AOR peak late 70s; AM collapse first"
+    },
+    "COUNTRY": {
+      "lane": "country",
+      "emergence": 1960,
+      "peak": 2005,
+      "plateauEnd": 2015,
+      "declineEnd": 2026,
+      "modernRetention": 0.8,
+      "declineSteepness": 0.25,
+      "floor": 0.18,
+      "notes": "Second peak 1990s-2000s; national stickiness high; local coastal variance"
+    },
+    "NEWS_TALK": {
+      "lane": "spoken",
+      "emergence": 1985,
+      "peak": 2012,
+      "plateauEnd": 2020,
+      "declineEnd": 2026,
+      "modernRetention": 0.85,
+      "declineSteepness": 0.2,
+      "floor": 0.2,
+      "notes": "AM to FM; podcast drag post-2015"
+    },
+    "SPORTS_TALK": {
+      "lane": "spoken",
+      "emergence": 1990,
+      "peak": 2015,
+      "plateauEnd": 2022,
+      "declineEnd": 2026,
+      "modernRetention": 0.8,
+      "declineSteepness": 0.25,
+      "floor": 0.12,
+      "notes": "Team-market coupled"
+    },
+    "ALL_NEWS": {
+      "lane": "spoken",
+      "emergence": 1990,
+      "peak": 2000,
+      "plateauEnd": 2008,
+      "declineEnd": 2018,
+      "modernRetention": 0.3,
+      "declineSteepness": 0.8,
+      "floor": 0.04,
+      "notes": "Few metros sustain; edu/coastal"
+    },
+    "PUBLIC": {
+      "lane": "public",
+      "emergence": 1970,
+      "peak": 2020,
+      "plateauEnd": null,
+      "declineEnd": 2060,
+      "modernRetention": 0.95,
+      "declineSteepness": 0,
+      "floor": 0.2,
+      "notes": "Aggregate NCE lane; gradual growth especially educated metros"
+    },
+    "SPANISH": {
+      "lane": "ethnic",
+      "emergence": 1975,
+      "peak": 2024,
+      "plateauEnd": null,
+      "declineEnd": 2060,
+      "modernRetention": 0.95,
+      "declineSteepness": 0,
+      "floor": 0.15,
+      "notes": "Demographic-driven growth"
+    },
+    "URBAN_CONTEMP": {
+      "lane": "urban",
+      "emergence": 1970,
+      "peak": 1998,
+      "plateauEnd": 2010,
+      "declineEnd": 2026,
+      "modernRetention": 0.55,
+      "declineSteepness": 0.45,
+      "floor": 0.1,
+      "notes": "FM migration from AM soul"
+    },
+    "RHYTHMIC": {
+      "lane": "hits",
+      "emergence": 1995,
+      "peak": 2010,
+      "plateauEnd": 2016,
+      "declineEnd": 2026,
+      "modernRetention": 0.5,
+      "declineSteepness": 0.55,
+      "floor": 0.08,
+      "notes": "CHR sub-lane"
+    },
+    "AAA": {
+      "lane": "aaa",
+      "emergence": 1985,
+      "peak": 2012,
+      "plateauEnd": 2020,
+      "declineEnd": 2026,
+      "modernRetention": 0.6,
+      "declineSteepness": 0.35,
+      "floor": 0.1,
+      "notes": "Later emergence; edu/fragmented FM"
+    },
+    "ALT_ROCK": {
+      "lane": "aaa",
+      "emergence": 1988,
+      "peak": 1998,
+      "plateauEnd": 2008,
+      "declineEnd": 2020,
+      "modernRetention": 0.45,
+      "declineSteepness": 0.6,
+      "floor": 0.06,
+      "notes": "Select markets; post-peak niche"
+    },
+    "GOSPEL": {
+      "lane": "religious",
+      "emergence": 1965,
+      "peak": 2000,
+      "plateauEnd": 2012,
+      "declineEnd": 2026,
+      "modernRetention": 0.55,
+      "declineSteepness": 0.4,
+      "floor": 0.1,
+      "notes": "Commercial gospel; regional"
+    },
+    "CCM": {
+      "lane": "religious",
+      "emergence": 1980,
+      "peak": 2008,
+      "plateauEnd": 2018,
+      "declineEnd": 2026,
+      "modernRetention": 0.65,
+      "declineSteepness": 0.3,
+      "floor": 0.12,
+      "notes": "HD/translator era widens footprint post-2004"
+    },
+    "MOR": {
+      "lane": "heritage",
+      "emergence": 1960,
+      "peak": 1976,
+      "plateauEnd": 1985,
+      "declineEnd": 1998,
+      "modernRetention": 0.15,
+      "declineSteepness": 0.95,
+      "floor": 0.03,
+      "notes": "Steep decline; overlaps legacy FORMAT_SUNSET"
+    },
+    "ADULT_STANDARDS": {
+      "lane": "heritage",
+      "emergence": 1965,
+      "peak": 1980,
+      "plateauEnd": 1990,
+      "declineEnd": 2005,
+      "modernRetention": 0.2,
+      "declineSteepness": 0.9,
+      "floor": 0.04,
+      "notes": "Standards / nostalgia AM-FM"
+    },
+    "BEAUTIFUL_MUSIC": {
+      "lane": "heritage",
+      "emergence": 1965,
+      "peak": 1980,
+      "plateauEnd": 1988,
+      "declineEnd": 1995,
+      "modernRetention": 0.1,
+      "declineSteepness": 0.98,
+      "floor": 0.02,
+      "notes": "Extinct by 1995 in gameplay"
+    }
+  },
+  "laneInteraction": {
+    "hits": {
+      "youthMusicDecayTraitWeight": 0.4,
+      "eduAccelDeclinePost2005": 0.12
+    },
+    "country": {
+      "coastalResistanceTraitWeight": 0.35,
+      "modernRetentionModifierKey": "countryRetention"
+    },
+    "public": {
+      "educationBoostTraitWeight": 0.45,
+      "publicAffinityTraitWeight": 0.5
+    },
+    "aaa": {
+      "educationBoostTraitWeight": 0.35,
+      "fragmentationTraitWeight": 0.2
+    },
+    "ethnic": {
+      "spanishGrowthTraitWeight": 0.55
+    },
+    "spoken": {
+      "spokenWordTraitWeight": 0.4,
+      "sportsInventoryTraitWeight": 0.25
+    },
+    "religious": {
+      "hdTranslatorBoostAfter": 2004,
+      "hdTranslatorBoostMax": 0.08,
+      "churchTraitWeight": 0.35
+    },
+    "urban": {
+      "urbanResistanceTraitWeight": 0.25
+    },
+    "rock": {
+      "fragmentationTraitWeight": 0.15
+    },
+    "ac": {
+      "coastalResistanceTraitWeight": 0.1
+    },
+    "heritage": {
+      "coastalResistanceTraitWeight": 0.05
+    }
+  },
+  "traitToModifierBoost": {
+    "publicRadioStrength": { "PUBLIC": 0.35, "AAA": 0.1 },
+    "spanishLanguageStrength": { "SPANISH": 0.45 },
+    "countryStrength": { "COUNTRY": 0.4 },
+    "aaaAlternativeStrength": { "AAA": 0.35, "ALT_ROCK": 0.2 },
+    "spokenWordStrength": { "NEWS_TALK": 0.3, "ALL_NEWS": 0.15 },
+    "sportsStrength": { "SPORTS_TALK": 0.35 },
+    "gospelStrength": { "GOSPEL": 0.25 },
+    "ccmStrength": { "CCM": 0.3 },
+    "urbanContemporaryStrength": { "URBAN_CONTEMP": 0.3, "RHYTHMIC": 0.15 },
+    "chrResistance": { "TOP40": -0.12, "HOT_AC": -0.08 },
+    "modernMusicSubstitution": { "TOP40": -0.1, "HOT_AC": -0.06, "RHYTHMIC": -0.06 }
+  },
+  "marketProfiles": {
+    "portland": {
+      "comment": "Design persona — weak modern country, strong public/AAA",
+      "formatModifiers": {
+        "COUNTRY": { "historicStrength": 0.72, "modernRetention": 0.38 },
+        "AAA": { "historicStrength": 0.55, "modernRetention": 0.78 },
+        "PUBLIC": { "historicStrength": 0.5, "modernRetention": 0.85 }
+      }
+    },
+    "nashville": {
+      "comment": "Design persona — strong country retention",
+      "formatModifiers": {
+        "COUNTRY": { "historicStrength": 0.95, "modernRetention": 0.92 }
+      }
+    },
+    "phoenix": {
+      "comment": "DIAG_ONLY — moderate country, Spanish growth",
+      "formatModifiers": {
+        "COUNTRY": { "historicStrength": 0.58, "modernRetention": 0.62 },
+        "SPANISH": { "historicStrength": 0.5, "modernRetention": 0.88 }
+      }
+    }
+  }
+}

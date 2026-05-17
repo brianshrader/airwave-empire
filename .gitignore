@@ -12,7 +12,8 @@ generated-portraits/*
 !generated-portraits/library/**/*
 .env
 ecosystem.config.local.cjs
-data/
+data/*
+!data/formatLifecycle.v1.json
 audit-output/
 trace-output/
 .env.*
