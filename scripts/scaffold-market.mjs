@@ -28,6 +28,39 @@ const TEMPLATE_KEYS = [
 ];
 const VALID_RANK_TIERS = new Set(['mega', 'large', 'medium', 'small']);
 const VALID_CALL_PREFIX = new Set(['K', 'W']);
+const AM_SIGNAL_TIERS = ['big', 'medium', 'small'];
+const FM_SIGNAL_TIERS = ['major', 'medium', 'rimshot'];
+/** AM graveyard/local channels (kHz) — local/small tier only in gameplay scaffold. */
+const AM_GRAVEYARD_KHZ = new Set([1230, 1240, 1340, 1400, 1450, 1490]);
+const FM_NCE_MHZ_MIN = 87.9;
+const FM_NCE_MHZ_MAX = 91.9;
+const FM_COMMERCIAL_MHZ_MIN = 92.1;
+const FM_COMMERCIAL_MHZ_MAX = 107.9;
+const AM_GRAVEYARD_MAX_KW = 1;
+const AM_TIER_VOCABULARY = {
+  big: 'clear / big-stick',
+  medium: 'regional',
+  small: 'local',
+};
+const AM_CLASS_TO_TIER = { clear: 'big', regional: 'medium', local: 'small' };
+const VALID_AM_CLASS_HINT = new Set(['clear', 'regional', 'local', 'unknown']);
+const VALID_FM_CLASS_HINT = new Set(['C', 'C0', 'C1', 'C2', 'C3', 'A', 'B', 'B1', 'unknown']);
+const NCE_FORMAT_HINTS = new Set([
+  'CCM',
+  'RELIGIOUS_NETWORK',
+  'PUBLIC_NEWS',
+  'PUBLIC_ECLECTIC',
+  'PUBLIC_JAZZ',
+  'NPR',
+  'NCE',
+]);
+/** Minimum profile+dial signal counts by rankTier (gameplay depth hints). */
+const SIGNAL_DEPTH_HINTS = {
+  mega: { am: 10, fm: 22 },
+  large: { am: 8, fm: 16 },
+  medium: { am: 5, fm: 10 },
+  small: { am: 3, fm: 6 },
+};
 const POP_KEYS = ['12-17', '18-24', '25-34', '35-49', '50-64', '65+'];
 const ECOLOGY_TRAIT_KEYS = [
   'publicRadioStrength',
@@ -135,6 +168,574 @@ function dialFingerprint(amFreqs, fmFreqs) {
     am: [...(amFreqs || [])].sort(),
     fm: [...(fmFreqs || [])].sort(),
   });
+}
+
+function signalTierTotal(profile, band, tiers) {
+  if (!profile?.[band] || typeof profile[band] !== 'object') return 0;
+  return tiers.reduce((sum, tier) => sum + Math.max(0, Number(profile[band][tier]) || 0), 0);
+}
+
+/**
+ * Draft signalProfile from dial list lengths (template / new markets).
+ * Not FCC-sourced — human signalReviewed required before merge.
+ */
+function buildDefaultSignalProfile(amCount, fmCount) {
+  const am = Math.max(0, amCount);
+  const fm = Math.max(0, fmCount);
+  if (am === 0 && fm === 0) {
+    return {
+      am: { big: 0, medium: 0, small: 0 },
+      fm: { major: 0, medium: 0, rimshot: 0 },
+    };
+  }
+  const amBig = am ? Math.max(1, Math.round(am * 0.25)) : 0;
+  const amMed = am ? Math.max(1, Math.round(am * 0.42)) : 0;
+  const amSmall = Math.max(0, am - amBig - amMed);
+
+  const fmMajor = fm ? Math.max(1, Math.round(fm * 0.35)) : 0;
+  const fmMed = fm ? Math.max(1, Math.round(fm * 0.45)) : 0;
+  const fmRim = Math.max(0, fm - fmMajor - fmMed);
+
+  return {
+    am: { big: amBig, medium: amMed, small: amSmall },
+    fm: { major: fmMajor, medium: fmMed, rimshot: fmRim },
+  };
+}
+
+function isValidSignalProfile(profile) {
+  if (!profile || typeof profile !== 'object') return false;
+  for (const tier of AM_SIGNAL_TIERS) {
+    const v = profile.am?.[tier];
+    if (v != null && (typeof v !== 'number' || Number.isNaN(v) || v < 0)) return false;
+  }
+  for (const tier of FM_SIGNAL_TIERS) {
+    const v = profile.fm?.[tier];
+    if (v != null && (typeof v !== 'number' || Number.isNaN(v) || v < 0)) return false;
+  }
+  return Boolean(profile.am && profile.fm);
+}
+
+function parseAmKhz(freqToken) {
+  const m = String(freqToken || '').match(/(\d{3,4})\s*AM/i);
+  return m ? Number(m[1]) : null;
+}
+
+function parseFmMhz(freqToken) {
+  const m = String(freqToken || '').match(/(\d{2,3}(?:\.\d)?)\s*FM/i);
+  return m ? Number(m[1]) : null;
+}
+
+function parseKwToken(token) {
+  if (token == null) return null;
+  if (typeof token === 'number' && !Number.isNaN(token)) return token;
+  const m = String(token).match(/([\d.]+)\s*kw/i);
+  return m ? Number(m[1]) : null;
+}
+
+function effectiveAmSignalTier(meta) {
+  if (!meta || typeof meta !== 'object') return null;
+  if (meta.signalTier && AM_SIGNAL_TIERS.includes(meta.signalTier)) return meta.signalTier;
+  const hint = String(meta.amClassHint || '').toLowerCase();
+  return AM_CLASS_TO_TIER[hint] || null;
+}
+
+function isGraveyardAmKhz(khz) {
+  return khz != null && AM_GRAVEYARD_KHZ.has(khz);
+}
+
+function fmBandZone(mhz) {
+  if (mhz == null || Number.isNaN(mhz)) return 'unknown';
+  if (mhz >= FM_NCE_MHZ_MIN && mhz <= FM_NCE_MHZ_MAX) return 'nce_reserved';
+  if (mhz >= FM_COMMERCIAL_MHZ_MIN && mhz <= FM_COMMERCIAL_MHZ_MAX) return 'commercial';
+  return 'out_of_band';
+}
+
+/** Ecology likely needs 87.9–91.9 MHz capacity (not a fixed station count). */
+function ecologyExpectsReservedBandCapacity(raw) {
+  const religion = Number(raw.culture?.religion) || 0;
+  const publicIdx = Number(raw.publicCivicIndex) || 0;
+  const edu = Number(raw.eduIndex) || 0;
+  return religion >= 0.08 || publicIdx >= 0.92 || edu >= 1.05;
+}
+
+/**
+ * Reserved-band capacity checks (slots are capacity; occupants vary by market).
+ * public / university / jazz / classical / CCM / religious / ethnic NCE compete for these frequencies.
+ */
+function assessReservedBandCapacity(raw, reservedCount) {
+  const warnings = [];
+  const info = [];
+  const expects = ecologyExpectsReservedBandCapacity(raw);
+  const tier = String(raw.rankTier || '').trim();
+  const isLargePlus = tier === 'large' || tier === 'mega';
+
+  if (expects && reservedCount === 0) {
+    warnings.push({
+      code: 'nce_reserved_capacity_missing',
+      level: 'warn',
+      message:
+        'Ecology expects reserved-band (87.9–91.9 MHz) capacity but dial lists none — add slots for NCE/public/CCM mix, not fixed format assignments',
+    });
+  } else if (isLargePlus && reservedCount === 1) {
+    warnings.push({
+      code: 'nce_reserved_capacity_low',
+      level: 'warn',
+      message: `Large market lists only ${reservedCount} reserved-band slot; typical capacity is 2–6 (public, university, jazz, classical, CCM, religious, ethnic NCE)`,
+    });
+  } else if (reservedCount > 6) {
+    info.push({
+      code: 'nce_reserved_capacity_high',
+      level: 'info',
+      message: `${reservedCount} reserved-band slots listed — above typical 2–6 capacity (informational only)`,
+    });
+  }
+
+  let assessment = 'ok';
+  if (reservedCount >= 2 && reservedCount <= 6) assessment = 'plausible';
+  else if (expects && reservedCount === 0) assessment = 'missing';
+  else if (isLargePlus && reservedCount === 1) assessment = 'low';
+  else if (reservedCount > 6) assessment = 'high';
+
+  return { warnings, info, expects, plausible: reservedCount >= 2 && reservedCount <= 6, assessment };
+}
+
+/**
+ * Band constraint validation (signal allocation v2).
+ * @returns {object} constraints payload for signal_allocation.json + readiness
+ */
+function runSignalBandConstraints(raw) {
+  const amMetaByFreq = raw.amSignalByFreq && typeof raw.amSignalByFreq === 'object' ? raw.amSignalByFreq : {};
+  const fmMetaByFreq = raw.fmSignalByFreq && typeof raw.fmSignalByFreq === 'object' ? raw.fmSignalByFreq : {};
+  const fmFacilityByFreq = raw.fmFacilityByFreq && typeof raw.fmFacilityByFreq === 'object' ? raw.fmFacilityByFreq : {};
+
+  const constraintFailures = [];
+  const constraintWarnings = [];
+  const constraintInfo = [];
+  const fail = (code, message, freq = null) => {
+    constraintFailures.push({ code, level: 'error', message, freq });
+  };
+  const warn = (code, message, freq = null) => {
+    constraintWarnings.push({ code, level: 'warn', message, freq });
+  };
+  const info = (code, message, freq = null) => {
+    constraintInfo.push({ code, level: 'info', message, freq });
+  };
+
+  const counts = {
+    amClear: 0,
+    amRegional: 0,
+    amLocal: 0,
+    amGraveyard: 0,
+    amGraveyardOnDial: 0,
+    fmReservedBand: 0,
+    fmCommercialBand: 0,
+    fmOutOfBand: 0,
+    fmMajor: 0,
+    fmMedium: 0,
+    fmRimshot: 0,
+    nceFormatOnCommercial: 0,
+  };
+
+  const amFrequencies = [];
+  for (const freq of raw.amFreqs || []) {
+    const khz = parseAmKhz(freq);
+    const meta = amMetaByFreq[freq] || {};
+    const graveyard = isGraveyardAmKhz(khz);
+    const tier = effectiveAmSignalTier(meta);
+    const amClassHint = meta.amClassHint ? String(meta.amClassHint).toLowerCase() : graveyard ? 'local' : 'unknown';
+    const dayKw = meta.dayPowerKw != null ? Number(meta.dayPowerKw) : null;
+    const nightKw = meta.nightPowerKw != null ? Number(meta.nightPowerKw) : null;
+    const powerKw = Math.max(dayKw ?? 0, nightKw ?? 0) || null;
+    const override = meta.graveyardOverride === true;
+
+    if (graveyard) counts.amGraveyardOnDial += 1;
+
+    if (tier === 'big' || amClassHint === 'clear') {
+      counts.amClear += 1;
+    } else if (tier === 'medium' || amClassHint === 'regional') {
+      counts.amRegional += 1;
+    } else if (tier === 'small' || amClassHint === 'local') {
+      counts.amLocal += 1;
+    }
+
+    if (graveyard) {
+      counts.amGraveyard += 1;
+      if (tier === 'big' || amClassHint === 'clear') {
+        fail('graveyard_am_big', `${freq} is a graveyard/local AM channel — cannot be clear/big-stick tier`, freq);
+      }
+      if ((tier === 'medium' || amClassHint === 'regional') && !override) {
+        fail(
+          'graveyard_am_regional',
+          `${freq} graveyard channel cannot be regional/medium without graveyardOverride`,
+          freq,
+        );
+      }
+      if (powerKw != null && powerKw > AM_GRAVEYARD_MAX_KW && !override) {
+        fail(
+          'graveyard_am_power',
+          `${freq} graveyard AM power ${powerKw}kW exceeds ${AM_GRAVEYARD_MAX_KW}kW without graveyardOverride`,
+          freq,
+        );
+      }
+      if (!meta || Object.keys(meta).length === 0) {
+        warn(
+          'graveyard_am_unassigned',
+          `${freq} is graveyard/local — add amSignalByFreq with local/small tier and ≤${AM_GRAVEYARD_MAX_KW}kW`,
+          freq,
+        );
+      }
+    } else if (powerKw != null && powerKw > 50 && tier === 'small') {
+      warn('am_power_tier_mismatch', `${freq} reports ${powerKw}kW but signalTier is small/local`, freq);
+    }
+
+    if (meta.amClassHint && !VALID_AM_CLASS_HINT.has(amClassHint)) {
+      warn('am_class_hint_invalid', `${freq} amClassHint "${meta.amClassHint}" not in clear|regional|local|unknown`, freq);
+    }
+
+    amFrequencies.push({
+      freq,
+      khz,
+      graveyard,
+      band: 'am',
+      tierVocabulary: tier ? AM_TIER_VOCABULARY[tier] : null,
+      signalTier: tier,
+      amClassHint,
+      dayPowerKw: dayKw,
+      nightPowerKw: nightKw,
+      directionalDay: meta.directionalDay ?? null,
+      directionalNight: meta.directionalNight ?? null,
+      graveyardOverride: override,
+    });
+  }
+
+  const fmFrequencies = [];
+  for (const freq of raw.fmFreqs || []) {
+    const mhz = parseFmMhz(freq);
+    const meta = fmMetaByFreq[freq] || {};
+    const zone = fmBandZone(mhz);
+    const reservedBand =
+      meta.reservedBand === true || (meta.nceEligible === true && meta.reservedBand !== false);
+    const nceEligible = reservedBand || zone === 'nce_reserved' || meta.nceEligible === true;
+    const erpKw = meta.erpKw != null ? Number(meta.erpKw) : parseKwToken(fmFacilityByFreq[freq]);
+    const signalTier = meta.signalTier && FM_SIGNAL_TIERS.includes(meta.signalTier) ? meta.signalTier : null;
+    const formatHint = meta.formatHint ? String(meta.formatHint).toUpperCase() : null;
+    const commercialOverride = meta.commercialOverride === true || meta.translatorHdOverride === true;
+
+    if (zone === 'nce_reserved') counts.fmReservedBand += 1;
+    else if (zone === 'commercial') counts.fmCommercialBand += 1;
+    else counts.fmOutOfBand += 1;
+
+    if (signalTier === 'major') counts.fmMajor += 1;
+    else if (signalTier === 'medium') counts.fmMedium += 1;
+    else if (signalTier === 'rimshot') counts.fmRimshot += 1;
+
+    if (zone === 'commercial' && nceEligible && !commercialOverride) {
+      warn(
+        'fm_nce_on_commercial',
+        `${freq} is in commercial FM band but marked nceEligible/reserved — use 87.9–91.9 MHz or commercialOverride`,
+        freq,
+      );
+    }
+
+    if (zone === 'commercial' && formatHint && NCE_FORMAT_HINTS.has(formatHint) && !commercialOverride) {
+      counts.nceFormatOnCommercial += 1;
+      warn(
+        'fm_nce_format_commercial',
+        `${freq} formatHint ${formatHint} on commercial band — prefer reserved NCE band (HD/translator layer deferred)`,
+        freq,
+      );
+    }
+
+    if (zone === 'nce_reserved' && formatHint && !NCE_FORMAT_HINTS.has(formatHint) && formatHint !== 'UNKNOWN') {
+      warn(
+        'fm_commercial_on_nce',
+        `${freq} in NCE reserved band with non-NCE formatHint ${formatHint}`,
+        freq,
+      );
+    }
+
+    if (meta.classHint && !VALID_FM_CLASS_HINT.has(String(meta.classHint))) {
+      warn('fm_class_hint_invalid', `${freq} classHint "${meta.classHint}" not recognized`, freq);
+    }
+
+    fmFrequencies.push({
+      freq,
+      mhz,
+      band: 'fm',
+      bandZone: zone,
+      nceEligible,
+      reservedBand: zone === 'nce_reserved' || reservedBand,
+      commercialBand: zone === 'commercial',
+      signalTier,
+      classHint: meta.classHint ?? 'unknown',
+      erpKw,
+      haatM: meta.haatM != null ? Number(meta.haatM) : null,
+      formatHint,
+      commercialOverride,
+    });
+  }
+
+  const reservedListed = fmFrequencies.filter((f) => f.bandZone === 'nce_reserved').length;
+  const reservedCapacity = assessReservedBandCapacity(raw, reservedListed);
+  for (const w of reservedCapacity.warnings) {
+    warn(w.code, w.message);
+  }
+  for (const i of reservedCapacity.info) {
+    info(i.code, i.message);
+  }
+
+  const profile = raw.signalProfile;
+  if (profile) {
+    const graveyardProfileSmall = Number(profile.am?.small) || 0;
+    if (counts.amGraveyardOnDial > graveyardProfileSmall) {
+      warn(
+        'graveyard_profile_small',
+        `${counts.amGraveyardOnDial} graveyard AM channel(s) on dial but signalProfile.am.small=${graveyardProfileSmall}`,
+      );
+    }
+  }
+
+  return {
+    constraintSchemaVersion: 2,
+    amFrequencies,
+    fmFrequencies,
+    counts,
+    constraintFailures,
+    constraintWarnings,
+    constraintInfo,
+    reservedBandCapacity: {
+      listed: reservedListed,
+      ecologyExpectsCapacity: reservedCapacity.expects,
+      plausibleRange: [2, 6],
+      assessment: reservedCapacity.assessment,
+    },
+    hasConstraintFailures: constraintFailures.length > 0,
+    tierVocabularyNote:
+      'AM tiers map to gameplay vocabulary: big=clear/big-stick, medium=regional, small=local. Not exact FCC class modeling.',
+    nceCapacityNote:
+      'Reserved-band (87.9–91.9 MHz) entries are capacity slots; public, university, jazz, classical, CCM, religious, and ethnic NCE formats compete for them — no fixed occupant count.',
+    ccmHdNote:
+      'Commercial-band CCM/K-Love/Air1 via HD-fed translators is deferred until the HD radio/subchannel layer exists.',
+  };
+}
+
+function buildSuggestedDialTierPlaceholders(raw, profile) {
+  const placeholders = [];
+  if (!profile) return placeholders;
+
+  const amDial = (raw.amFreqs || []).length;
+  const fmDial = (raw.fmFreqs || []).length;
+  const amProfileTotal = signalTierTotal(profile, 'am', AM_SIGNAL_TIERS);
+  const fmProfileTotal = signalTierTotal(profile, 'fm', FM_SIGNAL_TIERS);
+
+  if (amProfileTotal > amDial) {
+    const gap = amProfileTotal - amDial;
+    placeholders.push({
+      band: 'am',
+      tier: '(any)',
+      needed: gap,
+      note: `Profile expects ${amProfileTotal} AM signals but dial lists ${amDial}; add ${gap} frequency placeholder(s) or lower tier counts.`,
+    });
+    for (const tier of AM_SIGNAL_TIERS) {
+      const count = Number(profile.am[tier]) || 0;
+      for (let i = 0; i < count && placeholders.length < amProfileTotal + 4; i += 1) {
+        placeholders.push({
+          band: 'am',
+          tier,
+          placeholder: `TBD ${tier} AM slot ${i + 1}`,
+          note: 'Assign to amFreqs after FCC / market guide review',
+        });
+      }
+    }
+  }
+
+  if (fmProfileTotal > fmDial) {
+    const gap = fmProfileTotal - fmDial;
+    placeholders.push({
+      band: 'fm',
+      tier: '(any)',
+      needed: gap,
+      note: `Profile expects ${fmProfileTotal} FM signals but dial lists ${fmDial}; add ${gap} frequency placeholder(s) or lower tier counts.`,
+    });
+    for (const tier of FM_SIGNAL_TIERS) {
+      const count = Number(profile.fm[tier]) || 0;
+      for (let i = 0; i < count && placeholders.filter((p) => p.band === 'fm').length < fmProfileTotal + 4; i += 1) {
+        placeholders.push({
+          band: 'fm',
+          tier,
+          placeholder: `TBD ${tier} FM slot ${i + 1}`,
+          note: 'Assign to fmFreqs after FCC / market guide review',
+        });
+      }
+    }
+  }
+
+  return placeholders;
+}
+
+/**
+ * @returns {object} signal_allocation.json payload
+ */
+function buildSignalAllocation(raw) {
+  const profile = raw.signalProfile;
+  const amDial = (raw.amFreqs || []).length;
+  const fmDial = (raw.fmFreqs || []).length;
+  const amProfileTotal = profile ? signalTierTotal(profile, 'am', AM_SIGNAL_TIERS) : 0;
+  const fmProfileTotal = profile ? signalTierTotal(profile, 'fm', FM_SIGNAL_TIERS) : 0;
+  const signalReviewed = raw._scaffold?.signalReviewed === true;
+  const warnings = [];
+
+  if (!profile) {
+    warnings.push({
+      code: 'signal_profile_missing',
+      level: 'error',
+      message: 'signalProfile missing from raw_market_data.json',
+    });
+  } else if (!isValidSignalProfile(profile)) {
+    warnings.push({
+      code: 'signal_profile_invalid',
+      level: 'error',
+      message: 'signalProfile structure invalid (need am.{big,medium,small} and fm.{major,medium,rimshot} with non-negative numbers)',
+    });
+  } else {
+    if (amDial > 0 && amProfileTotal !== amDial) {
+      warnings.push({
+        code: 'am_profile_dial_mismatch',
+        level: 'warn',
+        message: `AM profile tiers sum to ${amProfileTotal} but amFreqs has ${amDial} entries`,
+      });
+    }
+    if (fmDial > 0 && fmProfileTotal !== fmDial) {
+      warnings.push({
+        code: 'fm_profile_dial_mismatch',
+        level: 'warn',
+        message: `FM profile tiers sum to ${fmProfileTotal} but fmFreqs has ${fmDial} entries`,
+      });
+    }
+    const hints = SIGNAL_DEPTH_HINTS[raw.rankTier];
+    if (hints) {
+      if (amProfileTotal > 0 && amProfileTotal < hints.am) {
+        warnings.push({
+          code: 'am_depth_low',
+          level: 'warn',
+          message: `AM profile total ${amProfileTotal} is low for rankTier=${raw.rankTier} (hint ≥${hints.am})`,
+        });
+      }
+      if (fmProfileTotal > 0 && fmProfileTotal < hints.fm) {
+        warnings.push({
+          code: 'fm_depth_low',
+          level: 'warn',
+          message: `FM profile total ${fmProfileTotal} is low for rankTier=${raw.rankTier} (hint ≥${hints.fm})`,
+        });
+      }
+    }
+    if (amProfileTotal === 0 && fmProfileTotal === 0) {
+      warnings.push({
+        code: 'signal_profile_empty',
+        level: 'warn',
+        message: 'signalProfile tier counts are all zero',
+      });
+    }
+  }
+
+  if (!signalReviewed) {
+    warnings.push({
+      code: 'signal_unreviewed',
+      level: 'warn',
+      message: '_scaffold.signalReviewed is not true — human signal-tier review required before merge',
+    });
+  }
+
+  if (raw._scaffold?.dialReviewed === true && !signalReviewed) {
+    warnings.push({
+      code: 'dial_before_signal',
+      level: 'error',
+      message: '_scaffold.dialReviewed is true but signalReviewed is false (invalid order)',
+    });
+  }
+
+  const bandConstraints = runSignalBandConstraints(raw);
+  for (const c of bandConstraints.constraintFailures) {
+    warnings.push(c);
+  }
+  for (const c of bandConstraints.constraintWarnings) {
+    warnings.push(c);
+  }
+  for (const c of bandConstraints.constraintInfo || []) {
+    warnings.push(c);
+  }
+
+  if (raw._scaffold?.dialReviewed === true && bandConstraints.hasConstraintFailures) {
+    warnings.push({
+      code: 'dial_constraint_fail',
+      level: 'error',
+      message: 'dialReviewed is true but band constraint validation has FAIL items',
+    });
+  }
+  if (signalReviewed && bandConstraints.hasConstraintFailures) {
+    warnings.push({
+      code: 'signal_constraint_fail',
+      level: 'error',
+      message: 'signalReviewed is true but band constraint validation has FAIL items',
+    });
+  }
+
+  return {
+    marketId: raw.id,
+    generatedAt: new Date().toISOString(),
+    constraintSchemaVersion: bandConstraints.constraintSchemaVersion,
+    signalProfile: profile ?? null,
+    summary: {
+      am: profile
+        ? {
+            ...Object.fromEntries(AM_SIGNAL_TIERS.map((t) => [t, Number(profile.am[t]) || 0])),
+            profileTotal: amProfileTotal,
+            dialListed: amDial,
+            clear: bandConstraints.counts.amClear,
+            regional: bandConstraints.counts.amRegional,
+            local: bandConstraints.counts.amLocal,
+            graveyard: bandConstraints.counts.amGraveyardOnDial,
+          }
+        : { profileTotal: 0, dialListed: amDial, graveyard: bandConstraints.counts.amGraveyardOnDial },
+      fm: profile
+        ? {
+            ...Object.fromEntries(FM_SIGNAL_TIERS.map((t) => [t, Number(profile.fm[t]) || 0])),
+            profileTotal: fmProfileTotal,
+            dialListed: fmDial,
+            reservedBand: bandConstraints.counts.fmReservedBand,
+            commercialBand: bandConstraints.counts.fmCommercialBand,
+            major: bandConstraints.counts.fmMajor,
+            medium: bandConstraints.counts.fmMedium,
+            rimshot: bandConstraints.counts.fmRimshot,
+          }
+        : {
+            profileTotal: 0,
+            dialListed: fmDial,
+            reservedBand: bandConstraints.counts.fmReservedBand,
+            commercialBand: bandConstraints.counts.fmCommercialBand,
+          },
+      totalAmSignals: amProfileTotal,
+      totalFmSignals: fmProfileTotal,
+      grandTotal: amProfileTotal + fmProfileTotal,
+    },
+    bandClassification: {
+      am: bandConstraints.amFrequencies,
+      fm: bandConstraints.fmFrequencies,
+    },
+    bandConstraintCounts: bandConstraints.counts,
+    constraintFailures: bandConstraints.constraintFailures,
+    constraintWarnings: bandConstraints.constraintWarnings,
+    constraintInfo: bandConstraints.constraintInfo,
+    reservedBandCapacity: bandConstraints.reservedBandCapacity,
+    hasConstraintFailures: bandConstraints.hasConstraintFailures,
+    signalReviewed,
+    warnings,
+    suggestedDialTierPlaceholders: buildSuggestedDialTierPlaceholders(raw, profile),
+    tierVocabularyNote: bandConstraints.tierVocabularyNote,
+    nceCapacityNote: bandConstraints.nceCapacityNote,
+    ccmHdNote: bandConstraints.ccmHdNote,
+    note: 'signalProfile is a gameplay abstraction for competitive signal strength — not FCC engineering data.',
+  };
 }
 
 function hasTodoText(val) {
@@ -435,18 +1036,24 @@ function buildRawMarketData(cityId, label, templateKey, templates) {
   raw.label = label;
   const geo = CITY_GEOGRAPHY[cityId];
   if (geo?.timezone && !raw.timezone) raw.timezone = geo.timezone;
+  raw.signalProfile = buildDefaultSignalProfile(
+    (raw.amFreqs || []).length,
+    (raw.fmFreqs || []).length,
+  );
   raw._scaffold = {
     version: 2,
     template: templateKey,
     status: 'draft',
     generatedAt: new Date().toISOString(),
     dialReviewed: false,
+    signalReviewed: false,
     dataReviewed: false,
     ecologyRegressionRecorded: false,
     warnings: [
       'PLACEHOLDER — template copy; not sourced from Census/Nielsen/FCC.',
+      'signalProfile is a gameplay tier draft — set _scaffold.signalReviewed after human signal review.',
       'Dial lists (amFreqs/fmFreqs/fmFacilityByFreq) require human review before merge.',
-      'Set _scaffold.dialReviewed=true after FCC-sourced dial is verified.',
+      'Set _scaffold.dialReviewed=true only after signalReviewed and FCC-sourced dial verified.',
       'teams names/fees are TODO stubs.',
       'Do not add this market to playable lists until readiness is MERGE_READY.',
     ],
@@ -681,7 +1288,14 @@ function scaffoldPaths(cityId, outDirOpt) {
     notesPath: path.join(outDir, 'diagnostics_notes.md'),
     readinessPath: path.join(outDir, 'readiness.json'),
     regressionPath: path.join(outDir, 'ecology_regression_record.json'),
+    signalAllocationPath: path.join(outDir, 'signal_allocation.json'),
   };
+}
+
+function writeSignalAllocation(raw, paths) {
+  const allocation = buildSignalAllocation(raw);
+  writeFileSync(paths.signalAllocationPath, `${JSON.stringify(allocation, null, 2)}\n`, 'utf8');
+  return allocation;
 }
 
 function writeDerivedOutputs(raw, derived, paths, checkSummary = null, { writeRaw = true } = {}) {
@@ -689,6 +1303,7 @@ function writeDerivedOutputs(raw, derived, paths, checkSummary = null, { writeRa
   writeFileSync(paths.derivedPath, `${JSON.stringify(derived, null, 2)}\n`, 'utf8');
   writeFileSync(paths.rowPath, `${emitSuggestedMarketsRow(raw)}\n`, 'utf8');
   writeFileSync(paths.notesPath, emitDiagnosticsNotes(raw, derived, checkSummary), 'utf8');
+  writeSignalAllocation(raw, paths);
 }
 
 /**
@@ -812,6 +1427,69 @@ function runReadinessChecks(raw, derived, paths, templates) {
     add('WARN', 'data_unreviewed', '_scaffold.dataReviewed is not true');
   }
 
+  const signalReviewed = raw._scaffold?.signalReviewed === true;
+  const dialReviewedFlag = raw._scaffold?.dialReviewed === true;
+  const hasDerivedEcology = Boolean(derived?.latest);
+  const profile = raw.signalProfile;
+
+  if (!profile) {
+    if (hasDerivedEcology) {
+      add('FAIL', 'signal_profile_missing', 'signalProfile missing (required once ecology is derived)');
+    } else {
+      add('WARN', 'signal_profile_missing', 'signalProfile missing — add tier counts before playtest');
+    }
+  } else if (!isValidSignalProfile(profile)) {
+    add('FAIL', 'signal_profile_invalid', 'signalProfile invalid — need am/fm tier objects with non-negative counts');
+  } else {
+    const amPt = signalTierTotal(profile, 'am', AM_SIGNAL_TIERS);
+    const fmPt = signalTierTotal(profile, 'fm', FM_SIGNAL_TIERS);
+    add('PASS', 'signal_profile', `signalProfile present (AM=${amPt}, FM=${fmPt})`);
+    const amDial = (raw.amFreqs || []).length;
+    const fmDial = (raw.fmFreqs || []).length;
+    if (amDial > 0 && amPt !== amDial) {
+      add('WARN', 'am_profile_dial_mismatch', `AM profile total ${amPt} ≠ amFreqs length ${amDial}`);
+    }
+    if (fmDial > 0 && fmPt !== fmDial) {
+      add('WARN', 'fm_profile_dial_mismatch', `FM profile total ${fmPt} ≠ fmFreqs length ${fmDial}`);
+    }
+    const hints = SIGNAL_DEPTH_HINTS[raw.rankTier];
+    if (hints && (amPt < hints.am || fmPt < hints.fm)) {
+      add('WARN', 'signal_depth_low', `Signal depth may be low for rankTier=${raw.rankTier}`);
+    }
+  }
+
+  if (dialReviewedFlag && !signalReviewed) {
+    add('FAIL', 'dial_before_signal', 'dialReviewed cannot be true unless signalReviewed is true');
+  }
+
+  if (!signalReviewed) {
+    add('WARN', 'signal_unreviewed', '_scaffold.signalReviewed is not true — human signal-tier review required');
+  } else {
+    add('PASS', 'signal_reviewed', 'Signal tiers marked reviewed (_scaffold.signalReviewed=true)');
+  }
+
+  const bandConstraints = runSignalBandConstraints(raw);
+  for (const c of bandConstraints.constraintFailures) {
+    add('FAIL', c.code, c.message);
+  }
+  for (const c of bandConstraints.constraintWarnings) {
+    add('WARN', c.code, c.message);
+  }
+  if (bandConstraints.hasConstraintFailures) {
+    add('FAIL', 'signal_constraints', `${bandConstraints.constraintFailures.length} band constraint failure(s)`);
+  } else if (bandConstraints.constraintWarnings.length > 0) {
+    add('PASS', 'signal_constraints_ok', `Band constraints OK (${bandConstraints.constraintWarnings.length} warning(s))`);
+  } else {
+    add('PASS', 'signal_constraints_ok', 'Band constraints OK');
+  }
+
+  if (dialReviewedFlag && bandConstraints.hasConstraintFailures) {
+    add('FAIL', 'dial_constraint_fail', 'dialReviewed is true but band constraint validation failed');
+  }
+  if (signalReviewed && bandConstraints.hasConstraintFailures) {
+    add('FAIL', 'signal_constraint_fail', 'signalReviewed is true but band constraint validation failed');
+  }
+
   const counts = { PASS: 0, WARN: 0, FAIL: 0 };
   for (const it of items) counts[it.level] = (counts[it.level] || 0) + 1;
 
@@ -848,12 +1526,26 @@ function computeReadiness(readinessItems) {
     return 'ECOLOGY_READY';
   }
 
-  if (codes.has('dial_unreviewed') || codes.has('select_blurb_todo') || codes.has('teams_todo') || codes.has('data_unreviewed')) {
+  if (
+    codes.has('dial_unreviewed') ||
+    codes.has('signal_unreviewed') ||
+    codes.has('signal_profile_missing') ||
+    codes.has('select_blurb_todo') ||
+    codes.has('teams_todo') ||
+    codes.has('data_unreviewed')
+  ) {
     return 'PLAYTEST_READY';
   }
 
   const mergeBlockers = [
     'dial_placeholder',
+    'dial_before_signal',
+    'dial_constraint_fail',
+    'signal_constraint_fail',
+    'signal_constraints',
+    'graveyard_am_big',
+    'graveyard_am_regional',
+    'graveyard_am_power',
     'region_mismatch',
     'call_prefix',
     'rev_scale',
@@ -865,6 +1557,9 @@ function computeReadiness(readinessItems) {
     'missing_row',
     'regression_missing',
     'regression_parse',
+    'signal_profile_missing',
+    'signal_profile_invalid',
+    'signal_unreviewed',
   ];
   if (mergeBlockers.some((c) => codes.has(c))) return 'PLAYTEST_READY';
 
@@ -898,6 +1593,7 @@ function runCheck(cityId, outDirOpt, templates) {
 
   const summary = { readiness, checkedAt, counts, lines, items };
   writeFileSync(paths.readinessPath, `${JSON.stringify(summary, null, 2)}\n`, 'utf8');
+  writeSignalAllocation(raw, paths);
 
   if (derived) {
     writeFileSync(paths.notesPath, emitDiagnosticsNotes(raw, derived, summary), 'utf8');
@@ -934,6 +1630,7 @@ function runDerive(cityId, outDirOpt) {
   console.log('  derived_ecology.json');
   console.log('  suggested_MARKETS_row.js');
   console.log('  diagnostics_notes.md');
+  console.log('  signal_allocation.json');
   console.log('  (raw_market_data.json preserved)');
 }
 
@@ -951,6 +1648,7 @@ function runCreate(cityId, templateKey, outDirOpt, templates) {
   console.log('  derived_ecology.json');
   console.log('  suggested_MARKETS_row.js');
   console.log('  diagnostics_notes.md');
+  console.log('  signal_allocation.json');
   console.log('');
   console.log(`Market: ${label} (${cityId}) | template: ${templateKey}`);
   const e = derived.latest;

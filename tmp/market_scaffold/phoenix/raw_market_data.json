@@ -54,6 +54,9 @@
     "1230 AM"
   ],
   "fmFreqs": [
+    "88.3 FM",
+    "89.5 FM",
+    "91.5 FM",
     "92.3 FM",
     "93.3 FM",
     "94.5 FM",
@@ -75,7 +78,57 @@
     "106.9 FM",
     "107.9 FM"
   ],
+  "signalProfile": {
+    "am": {
+      "big": 3,
+      "medium": 5,
+      "small": 4
+    },
+    "fm": {
+      "major": 6,
+      "medium": 12,
+      "rimshot": 5
+    }
+  },
+  "amSignalByFreq": {
+    "1230 AM": {
+      "amClassHint": "local",
+      "signalTier": "small",
+      "dayPowerKw": 1,
+      "nightPowerKw": 0.25,
+      "directionalNight": true
+    }
+  },
+  "fmSignalByFreq": {
+    "88.3 FM": {
+      "reservedBand": true,
+      "nceEligible": true,
+      "formatHint": "CCM",
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "89.5 FM": {
+      "reservedBand": true,
+      "nceEligible": true,
+      "formatHint": "PUBLIC_ECLECTIC",
+      "signalTier": "medium",
+      "erpKw": 100,
+      "classHint": "C0"
+    },
+    "91.5 FM": {
+      "reservedBand": true,
+      "nceEligible": true,
+      "formatHint": "PUBLIC_NEWS",
+      "signalTier": "medium",
+      "erpKw": 100,
+      "classHint": "C0"
+    }
+  },
   "fmFacilityByFreq": {
+    "88.3 FM": "50kw",
+    "89.5 FM": "100kw",
+    "91.5 FM": "100kw",
     "92.3 FM": "100kw",
     "93.3 FM": "50kw",
     "94.5 FM": "50kw",
@@ -147,7 +200,8 @@
     "timezone": "America/Phoenix — no DST (gameplay field TBD on MARKETS row).",
     "callPrefix": "K — western US allotment convention.",
     "region": "Southwest UI bucket (not Southeast / not West Coast coastal).",
-    "dial": "Major commercial AM/FM allotments in Phoenix metro (FCC FM table + market guides); ERP tiers are draft game tokens pending station-level review.",
+    "dial": "Commercial AM/FM plus reserved-band NCE (88.3 CCM, 89.5 public classical, 91.5 public news) — draft allotments; ERP tiers are gameplay tokens pending FCC pass.",
+    "signalProfile": "Gameplay tiers: 3 big / 5 medium / 4 small AM; 6 major / 12 medium / 5 rimshot FM (includes 3 reserved-band NCE). Pending signalReviewed.",
     "teams": "MLB/NFL/NBA/NHL presence; fees are draft placeholders vs Atlanta/Seattle comps.",
     "ecology": "See ecologyNotes — tuned vs atlanta, nashville, losangeles, portland/seattle archetypes."
   },
@@ -157,11 +211,14 @@
     "status": "draft",
     "generatedAt": "2026-05-17T14:48:47.166Z",
     "dialReviewed": false,
+    "signalReviewed": false,
     "dataReviewed": false,
     "ecologyRegressionRecorded": false,
     "warnings": [
       "Real-data draft (May 2026) — demographics sourced to Nielsen FA24 / Census anchors.",
-      "Dial lists are Phoenix-specific (not sunbelt template) but _scaffold.dialReviewed remains false until human FCC pass.",
+      "signalProfile is a first-pass gameplay tier draft — set _scaffold.signalReviewed after competitive signal review.",
+      "Reserved-band FM (88.3 / 89.5 / 91.5) added for NCE/public/CCM scaffold capacity — not full FCC dial pass.",
+      "Dial lists are Phoenix-specific (not sunbelt template) but _scaffold.dialReviewed remains false until human FCC pass (after signalReviewed).",
       "revScale and team fees need finance pass before merge.",
       "Do not add to playable market lists until MERGE_READY and explicit sign-off."
     ]

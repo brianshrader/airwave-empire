@@ -1,9 +1,9 @@
 {
   "readiness": "PLAYTEST_READY",
-  "checkedAt": "2026-05-17T15:23:17.306Z",
+  "checkedAt": "2026-05-17T17:32:37.604Z",
   "counts": {
-    "PASS": 11,
-    "WARN": 2,
+    "PASS": 13,
+    "WARN": 3,
     "FAIL": 0
   },
   "lines": [
@@ -19,7 +19,10 @@
     "[PASS] teams count=4",
     "[PASS] All core ecology traits present (2026)",
     "[PASS] ecology_regression_record.json present",
-    "[WARN] _scaffold.dataReviewed is not true"
+    "[WARN] _scaffold.dataReviewed is not true",
+    "[PASS] signalProfile present (AM=12, FM=23)",
+    "[WARN] _scaffold.signalReviewed is not true — human signal-tier review required",
+    "[PASS] Band constraints OK"
   ],
   "items": [
     {
@@ -86,6 +89,21 @@
       "level": "WARN",
       "code": "data_unreviewed",
       "message": "_scaffold.dataReviewed is not true"
+    },
+    {
+      "level": "PASS",
+      "code": "signal_profile",
+      "message": "signalProfile present (AM=12, FM=23)"
+    },
+    {
+      "level": "WARN",
+      "code": "signal_unreviewed",
+      "message": "_scaffold.signalReviewed is not true — human signal-tier review required"
+    },
+    {
+      "level": "PASS",
+      "code": "signal_constraints_ok",
+      "message": "Band constraints OK"
     }
   ]
 }

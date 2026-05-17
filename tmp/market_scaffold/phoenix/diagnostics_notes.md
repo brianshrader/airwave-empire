@@ -6,12 +6,12 @@
 ## Readiness (last check)
 
 **State:** `PLAYTEST_READY`  
-**Checked:** 2026-05-17T15:23:17.306Z
+**Checked:** 2026-05-17T17:32:37.604Z
 
 | Result | Count |
 |--------|-------|
-| PASS | 11 |
-| WARN | 2 |
+| PASS | 13 |
+| WARN | 3 |
 | FAIL | 0 |
 
 ```
@@ -28,6 +28,9 @@
 [PASS] All core ecology traits present (2026)
 [PASS] ecology_regression_record.json present
 [WARN] _scaffold.dataReviewed is not true
+[PASS] signalProfile present (AM=12, FM=23)
+[WARN] _scaffold.signalReviewed is not true — human signal-tier review required
+[PASS] Band constraints OK
 ```
 
 ## Template comparison (diagnostic only)
@@ -106,6 +109,8 @@ npm run diag:market-ecology-regression -- --markets=phoenix --runs=8
 ## Scaffold warnings
 
 - Real-data draft (May 2026) — demographics sourced to Nielsen FA24 / Census anchors.
-- Dial lists are Phoenix-specific (not sunbelt template) but _scaffold.dialReviewed remains false until human FCC pass.
+- signalProfile is a first-pass gameplay tier draft — set _scaffold.signalReviewed after competitive signal review.
+- Reserved-band FM (88.3 / 89.5 / 91.5) added for NCE/public/CCM scaffold capacity — not full FCC dial pass.
+- Dial lists are Phoenix-specific (not sunbelt template) but _scaffold.dialReviewed remains false until human FCC pass (after signalReviewed).
 - revScale and team fees need finance pass before merge.
 - Do not add to playable market lists until MERGE_READY and explicit sign-off.

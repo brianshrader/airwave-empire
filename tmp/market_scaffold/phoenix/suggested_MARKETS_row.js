@@ -14,8 +14,11 @@
     revScale:1.18, adxBonus:0.025,
     // timezone:'America/Phoenix' — add to MARKETS when gameplay supports it
     amFreqs:['550 AM','620 AM','660 AM','710 AM','860 AM','910 AM','960 AM','1010 AM','1060 AM','1100 AM','1150 AM','1230 AM'],
-    fmFreqs:['92.3 FM','93.3 FM','94.5 FM','95.5 FM','96.1 FM','96.9 FM','97.9 FM','98.7 FM','99.3 FM','99.9 FM','100.3 FM','100.7 FM','101.1 FM','102.5 FM','103.9 FM','104.7 FM','105.1 FM','105.9 FM','106.9 FM','107.9 FM'],
+    fmFreqs:['88.3 FM','89.5 FM','91.5 FM','92.3 FM','93.3 FM','94.5 FM','95.5 FM','96.1 FM','96.9 FM','97.9 FM','98.7 FM','99.3 FM','99.9 FM','100.3 FM','100.7 FM','101.1 FM','102.5 FM','103.9 FM','104.7 FM','105.1 FM','105.9 FM','106.9 FM','107.9 FM'],
     fmFacilityByFreq:{
+      '88.3 FM':'50kw',
+      '89.5 FM':'100kw',
+      '91.5 FM':'100kw',
       '92.3 FM':'100kw',
       '93.3 FM':'50kw',
       '94.5 FM':'50kw',

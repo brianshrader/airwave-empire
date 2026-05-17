@@ -37,6 +37,7 @@ Output: `tmp/market_scaffold/<slug>/` — see [MARKET_DATA_SCHEMA.md](./MARKET_D
 - [ ] FM fragmentation and AM resilience research (→ `fmPenBias`, `fmMusicFragMult`, AM holdout fields)
 - [ ] **IANA timezone** (→ `timezone` in raw JSON)
 - [ ] Real commercial dial plan: AM/FM frequencies and ERP (→ `amFreqs`, `fmFreqs`, `fmFacilityByFreq`)
+- [ ] Competitive signal depth by tier (→ `signalProfile` — gameplay abstraction, not FCC engineering)
 - [ ] Pro sports inventory and rough rights fees (→ `teams`)
 - [ ] Scenario picker blurb (→ `selectBlurb`)
 - [ ] Callsign prefix (`K` / `W`) and region label
@@ -58,6 +59,10 @@ Record sources in `raw_market_data.json` → `sourceNotes`.
 - [ ] Edit `raw_market_data.json` (demographics, revenue, dial, timezone, region)
 - [ ] `npm run scaffold:market -- --city=<slug> --derive`
 - [ ] Review `derived_ecology.json` and `diagnostics_notes.md` (template comparison section)
+- [ ] Review `signal_allocation.json` — confirm `signalProfile` tiers vs competitive reality (AM clear/regional/local, FM major/medium/rimshot)
+- [ ] Fix band constraint **FAIL** items (graveyard AM tier/power, invalid NCE/commercial placement)
+- [ ] Add `amSignalByFreq` / `fmSignalByFreq` metadata for graveyard and NCE stations as needed
+- [ ] Adjust `signalProfile` in `raw_market_data.json` if tier counts do not match market depth; re-run `--derive`
 
 ---
 
@@ -65,7 +70,8 @@ Record sources in `raw_market_data.json` → `sourceNotes`.
 
 - [ ] `npm run scaffold:market -- --city=<slug> --check`
 - [ ] Fix all **FAIL** items (expect **DRAFT** until fixed)
-- [ ] Set `_scaffold.dialReviewed: true` only after FCC dial verified
+- [ ] Set `_scaffold.signalReviewed: true` only after signal-tier review (`signal_allocation.json` clean)
+- [ ] Set `_scaffold.dialReviewed: true` only after FCC dial verified **and** `signalReviewed` is true
 - [ ] Target **MERGE_READY** before touching `legacy.js`
 
 ---
