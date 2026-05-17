@@ -564,6 +564,122 @@ function effectiveAmSignalTier(meta) {
   return AM_CLASS_TO_TIER[hint] || null;
 }
 
+function effectiveFmSignalTier(meta) {
+  if (!meta || typeof meta !== 'object') return null;
+  if (meta.signalTier && FM_SIGNAL_TIERS.includes(meta.signalTier)) return meta.signalTier;
+  return null;
+}
+
+function profileTierCounts(profile, band) {
+  const tiers = band === 'am' ? AM_SIGNAL_TIERS : FM_SIGNAL_TIERS;
+  const branch = band === 'am' ? profile?.am : profile?.fm;
+  return Object.fromEntries(tiers.map((t) => [t, Math.max(0, Number(branch?.[t]) || 0)]));
+}
+
+/**
+ * Count per-tier tags from amSignalByFreq / fmSignalByFreq (signalTier or AM class hint).
+ * @returns {object} band consistency payload for signal_allocation.json
+ */
+function assessBandProfileMetadata(raw, profile, band) {
+  const tiers = band === 'am' ? AM_SIGNAL_TIERS : FM_SIGNAL_TIERS;
+  const metaKey = band === 'am' ? 'amSignalByFreq' : 'fmSignalByFreq';
+  const freqs = raw[band === 'am' ? 'amFreqs' : 'fmFreqs'] || [];
+  const metaByFreq = raw[metaKey] || {};
+  const profileCounts = profile ? profileTierCounts(profile, band) : Object.fromEntries(tiers.map((t) => [t, 0]));
+  const metadataCounts = Object.fromEntries(tiers.map((t) => [t, 0]));
+  const missingTierFreqs = [];
+
+  for (const freq of freqs) {
+    const meta = metaByFreq[freq];
+    const tier =
+      band === 'am' ? effectiveAmSignalTier(meta) : effectiveFmSignalTier(meta);
+    if (tier) metadataCounts[tier] += 1;
+    else missingTierFreqs.push(freq);
+  }
+
+  const mismatches = tiers
+    .filter((t) => profileCounts[t] !== metadataCounts[t])
+    .map((t) => ({
+      tier: t,
+      profile: profileCounts[t],
+      metadata: metadataCounts[t],
+      delta: metadataCounts[t] - profileCounts[t],
+    }));
+
+  const metadataTagged = freqs.length - missingTierFreqs.length;
+  const metadataComplete = missingTierFreqs.length === 0;
+  const hasMismatch = mismatches.length > 0 || !metadataComplete;
+
+  return {
+    band,
+    profileCounts,
+    metadataCounts,
+    mismatches,
+    dialListed: freqs.length,
+    metadataTagged,
+    metadataComplete,
+    missingTierFreqs,
+    hasMismatch,
+  };
+}
+
+/**
+ * Compare signalProfile tier totals to per-frequency metadata tier tags.
+ */
+function assessProfileMetadataConsistency(raw, profile) {
+  if (!profile || !isValidSignalProfile(profile)) {
+    return {
+      profileCounts: null,
+      metadataCounts: null,
+      mismatches: { am: [], fm: [] },
+      am: null,
+      fm: null,
+      hasMismatch: false,
+      metadataComplete: false,
+      reviewFailures: [],
+      warnings: [],
+      note: 'signalProfile missing or invalid — tier metadata comparison skipped.',
+    };
+  }
+
+  const am = assessBandProfileMetadata(raw, profile, 'am');
+  const fm = assessBandProfileMetadata(raw, profile, 'fm');
+  const warnings = [];
+  const reviewFailures = [];
+
+  const bandWarn = (bandResult, code) => {
+    if (!bandResult.hasMismatch) return;
+    const tierDetail = bandResult.mismatches
+      .map((m) => `${m.tier}: profile ${m.profile} vs metadata ${m.metadata}`)
+      .join('; ');
+    const missing =
+      bandResult.missingTierFreqs.length > 0
+        ? `; ${bandResult.missingTierFreqs.length} freq(s) without tier metadata: ${bandResult.missingTierFreqs.slice(0, 6).join(', ')}${bandResult.missingTierFreqs.length > 6 ? '…' : ''}`
+        : '';
+    const msg = tierDetail
+      ? `signalProfile.${bandResult.band} does not match ${bandResult.band}SignalByFreq tier counts (${tierDetail})${missing}`
+      : `${bandResult.band}SignalByFreq tier tags incomplete (${bandResult.metadataTagged}/${bandResult.dialListed} freqs)${missing}`;
+    warnings.push({ code, level: 'warn', message: msg });
+    reviewFailures.push({ code, message: msg });
+  };
+
+  bandWarn(am, 'am_profile_metadata_mismatch');
+  bandWarn(fm, 'fm_profile_metadata_mismatch');
+
+  return {
+    profileCounts: { am: am.profileCounts, fm: fm.profileCounts },
+    metadataCounts: { am: am.metadataCounts, fm: fm.metadataCounts },
+    mismatches: { am: am.mismatches, fm: fm.mismatches },
+    am,
+    fm,
+    hasMismatch: am.hasMismatch || fm.hasMismatch,
+    metadataComplete: am.metadataComplete && fm.metadataComplete,
+    reviewFailures,
+    warnings,
+    note: 'signalProfile tier totals are draft estimates until _scaffold.signalReviewed is true; metadataCounts come from explicit per-frequency signalTier (and AM amClassHint when signalTier is omitted).',
+  };
+}
+
 function isGraveyardAmKhz(khz) {
   return khz != null && AM_GRAVEYARD_KHZ.has(khz);
 }
@@ -984,6 +1100,16 @@ function buildSignalAllocation(raw) {
     warnings.push(w);
   }
 
+  const profileMetadata = assessProfileMetadataConsistency(raw, profile);
+  for (const w of profileMetadata.warnings) {
+    warnings.push(w);
+  }
+  if (signalReviewed) {
+    for (const f of profileMetadata.reviewFailures) {
+      warnings.push({ code: f.code, level: 'error', message: f.message });
+    }
+  }
+
   const bandConstraints = runSignalBandConstraints(raw);
   for (const c of bandConstraints.constraintFailures) {
     warnings.push(c);
@@ -1065,6 +1191,29 @@ function buildSignalAllocation(raw) {
     nceCapacityNote: bandConstraints.nceCapacityNote,
     ccmHdNote: bandConstraints.ccmHdNote,
     signalInventory,
+    profileMetadataConsistency: {
+      profileCounts: profileMetadata.profileCounts,
+      metadataCounts: profileMetadata.metadataCounts,
+      mismatches: profileMetadata.mismatches,
+      am: profileMetadata.am
+        ? {
+            metadataComplete: profileMetadata.am.metadataComplete,
+            metadataTagged: profileMetadata.am.metadataTagged,
+            dialListed: profileMetadata.am.dialListed,
+            missingTierFreqs: profileMetadata.am.missingTierFreqs,
+          }
+        : null,
+      fm: profileMetadata.fm
+        ? {
+            metadataComplete: profileMetadata.fm.metadataComplete,
+            metadataTagged: profileMetadata.fm.metadataTagged,
+            dialListed: profileMetadata.fm.dialListed,
+            missingTierFreqs: profileMetadata.fm.missingTierFreqs,
+          }
+        : null,
+      hasMismatch: profileMetadata.hasMismatch,
+      note: profileMetadata.note,
+    },
     note: 'signalProfile is a gameplay abstraction for competitive signal strength — not FCC engineering data.',
   };
 }
@@ -1874,6 +2023,23 @@ function runReadinessChecks(raw, derived, paths, templates) {
     if (signalReviewed) add('FAIL', f.code, f.message);
     else add('WARN', f.code, f.message);
   }
+
+  const profileMetadata = assessProfileMetadataConsistency(raw, profile);
+  if (profileMetadata.hasMismatch) {
+    if (signalReviewed) {
+      for (const f of profileMetadata.reviewFailures) {
+        add('FAIL', f.code, f.message);
+      }
+    } else {
+      for (const w of profileMetadata.warnings) {
+        add('WARN', w.code, w.message);
+      }
+    }
+  } else if (profile && profileMetadata.metadataComplete) {
+    add('PASS', 'profile_metadata_match', 'signalProfile tier counts match per-frequency metadata');
+  } else if (profile) {
+    add('PASS', 'profile_metadata_match', 'signalProfile matches metadata where tagged (incomplete metadata on dial)');
+  }
   if (signalInventory.inventory1975?.hasBandTotals) {
     const i = signalInventory.inventory1975;
     add(
@@ -1969,6 +2135,8 @@ function computeReadiness(readinessItems) {
     'signal_unreviewed',
     'inventory_missing',
     'inventory_1975_total_mismatch',
+    'am_profile_metadata_mismatch',
+    'fm_profile_metadata_mismatch',
   ];
   if (mergeBlockers.some((c) => codes.has(c))) return 'PLAYTEST_READY';
 

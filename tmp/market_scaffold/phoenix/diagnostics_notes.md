@@ -6,11 +6,11 @@
 ## Readiness (last check)
 
 **State:** `PLAYTEST_READY`  
-**Checked:** 2026-05-17T18:35:48.894Z
+**Checked:** 2026-05-17T18:45:28.527Z
 
 | Result | Count |
 |--------|-------|
-| PASS | 16 |
+| PASS | 17 |
 | WARN | 3 |
 | FAIL | 0 |
 
@@ -32,6 +32,7 @@
 [WARN] _scaffold.signalReviewed is not true — human signal-tier review required
 [PASS] Band constraints OK
 [PASS] signalInventory explicit (viable1983=22, measurable2026=38)
+[PASS] signalProfile tier counts match per-frequency metadata
 [PASS] 1975 inventory: 14 AM + 9 FM = 23 total (viable 20)
 [PASS] large-tier targets: viable 18–26 (in), measurable 32–42 (in)
 ```

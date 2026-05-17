@@ -135,6 +135,18 @@ Rough **competitive station inventory** by market era — not exact FCC engineer
 
 Output: `signal_allocation.json` → `signalInventory` block (targets, `inventory1975`, counts, sources, warnings).
 
+### Profile vs per-frequency metadata (v2)
+
+`signal_allocation.json` → `profileMetadataConsistency` compares `signalProfile` tier totals to explicit `signalTier` tags in `amSignalByFreq` / `fmSignalByFreq` (AM may infer tier from `amClassHint` when `signalTier` is omitted).
+
+| Check | Level |
+|-------|--------|
+| Tier count mismatch (`am_profile_metadata_mismatch`, `fm_profile_metadata_mismatch`) | **WARN** |
+| Mismatch after `_scaffold.signalReviewed: true` | **FAIL** |
+| Dial freq missing tier metadata | Treated as mismatch (incomplete metadata) |
+
+`signalProfile` may remain draft-estimated until `signalReviewed`; metadata should be filled for every dial row before review.
+
 ---
 
 ## `signalProfile` (signal allocation v1–v2)

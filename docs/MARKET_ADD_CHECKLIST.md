@@ -60,6 +60,7 @@ Record sources in `raw_market_data.json` → `sourceNotes`.
 - [ ] `npm run scaffold:market -- --city=<slug> --derive`
 - [ ] Review `derived_ecology.json` and `diagnostics_notes.md` (template comparison section)
 - [ ] Review `signal_allocation.json` — confirm `signalProfile` tiers vs competitive reality (AM clear/regional/local, FM major/medium/rimshot)
+- [ ] Confirm `profileMetadataConsistency` — every `amFreqs` / `fmFreqs` row has matching `signalTier` metadata; clear `am_profile_metadata_mismatch` / `fm_profile_metadata_mismatch` **WARN**s
 - [ ] Review `signal_allocation.json` → `signalInventory` — set `signalInventory.viable1983` and `measurable2026` for your `rankTier` (see tier ranges in [MARKET_DATA_SCHEMA.md](./MARKET_DATA_SCHEMA.md)); fix **WARN** if outside small/large/mega targets
 - [ ] If the market can start in the 1970s: set `am1975`, `fm1975`, `total1975` (and optional `viable1975`) from **historical** dial — not modern `amFreqs`/`fmFreqs` length; clear `inventory_1975_modern_dial_assumed` **WARN**
 - [ ] Fix band constraint **FAIL** items (graveyard AM tier/power, invalid NCE/commercial placement)

@@ -1,6 +1,6 @@
 {
   "marketId": "portland",
-  "generatedAt": "2026-05-17T18:35:52.936Z",
+  "generatedAt": "2026-05-17T18:45:31.411Z",
   "constraintSchemaVersion": 2,
   "signalProfile": {
     "am": {
@@ -27,9 +27,9 @@
       "graveyard": 1
     },
     "fm": {
-      "major": 1,
-      "medium": 5,
-      "rimshot": 5,
+      "major": 5,
+      "medium": 11,
+      "rimshot": 6,
       "profileTotal": 22,
       "dialListed": 22,
       "reservedBand": 5,
@@ -294,8 +294,8 @@
         "nceEligible": false,
         "reservedBand": false,
         "commercialBand": true,
-        "signalTier": null,
-        "classHint": "unknown",
+        "signalTier": "major",
+        "classHint": "C0",
         "erpKw": 100,
         "haatM": null,
         "formatHint": null,
@@ -324,8 +324,8 @@
         "nceEligible": false,
         "reservedBand": false,
         "commercialBand": true,
-        "signalTier": null,
-        "classHint": "unknown",
+        "signalTier": "medium",
+        "classHint": "B",
         "erpKw": 52,
         "haatM": null,
         "formatHint": null,
@@ -354,8 +354,8 @@
         "nceEligible": false,
         "reservedBand": false,
         "commercialBand": true,
-        "signalTier": null,
-        "classHint": "unknown",
+        "signalTier": "major",
+        "classHint": "C0",
         "erpKw": 100,
         "haatM": null,
         "formatHint": null,
@@ -369,8 +369,8 @@
         "nceEligible": false,
         "reservedBand": false,
         "commercialBand": true,
-        "signalTier": null,
-        "classHint": "unknown",
+        "signalTier": "major",
+        "classHint": "C0",
         "erpKw": 100,
         "haatM": null,
         "formatHint": null,
@@ -399,8 +399,8 @@
         "nceEligible": false,
         "reservedBand": false,
         "commercialBand": true,
-        "signalTier": null,
-        "classHint": "unknown",
+        "signalTier": "medium",
+        "classHint": "B",
         "erpKw": 52,
         "haatM": null,
         "formatHint": null,
@@ -414,8 +414,8 @@
         "nceEligible": false,
         "reservedBand": false,
         "commercialBand": true,
-        "signalTier": null,
-        "classHint": "unknown",
+        "signalTier": "major",
+        "classHint": "C0",
         "erpKw": 100,
         "haatM": null,
         "formatHint": null,
@@ -429,8 +429,8 @@
         "nceEligible": false,
         "reservedBand": false,
         "commercialBand": true,
-        "signalTier": null,
-        "classHint": "unknown",
+        "signalTier": "medium",
+        "classHint": "C0",
         "erpKw": 100,
         "haatM": null,
         "formatHint": null,
@@ -444,8 +444,8 @@
         "nceEligible": false,
         "reservedBand": false,
         "commercialBand": true,
-        "signalTier": null,
-        "classHint": "unknown",
+        "signalTier": "medium",
+        "classHint": "C0",
         "erpKw": 100,
         "haatM": null,
         "formatHint": null,
@@ -459,8 +459,8 @@
         "nceEligible": false,
         "reservedBand": false,
         "commercialBand": true,
-        "signalTier": null,
-        "classHint": "unknown",
+        "signalTier": "medium",
+        "classHint": "C0",
         "erpKw": 100,
         "haatM": null,
         "formatHint": null,
@@ -519,8 +519,8 @@
         "nceEligible": false,
         "reservedBand": false,
         "commercialBand": true,
-        "signalTier": null,
-        "classHint": "unknown",
+        "signalTier": "medium",
+        "classHint": "C0",
         "erpKw": 100,
         "haatM": null,
         "formatHint": null,
@@ -534,8 +534,8 @@
         "nceEligible": false,
         "reservedBand": false,
         "commercialBand": true,
-        "signalTier": null,
-        "classHint": "unknown",
+        "signalTier": "rimshot",
+        "classHint": "B",
         "erpKw": 68,
         "haatM": null,
         "formatHint": null,
@@ -552,9 +552,9 @@
     "fmReservedBand": 5,
     "fmCommercialBand": 17,
     "fmOutOfBand": 0,
-    "fmMajor": 1,
-    "fmMedium": 5,
-    "fmRimshot": 5,
+    "fmMajor": 5,
+    "fmMedium": 11,
+    "fmRimshot": 6,
     "nceFormatOnCommercial": 0
   },
   "constraintFailures": [],
@@ -677,6 +677,50 @@
     },
     "inventoryNote": "Primary full-power count excludes translatorFed/hdSubchannel/hdFed dial rows unless includeInPrimaryInventory is set. Not FCC-perfect.",
     "inventory1975Note": "1970s starts: document signalInventory.am1975, fm1975, total1975 (and optional viable1975) from historical dial — not modern 2026 amFreqs/fmFreqs length."
+  },
+  "profileMetadataConsistency": {
+    "profileCounts": {
+      "am": {
+        "big": 3,
+        "medium": 5,
+        "small": 4
+      },
+      "fm": {
+        "major": 5,
+        "medium": 11,
+        "rimshot": 6
+      }
+    },
+    "metadataCounts": {
+      "am": {
+        "big": 3,
+        "medium": 5,
+        "small": 4
+      },
+      "fm": {
+        "major": 5,
+        "medium": 11,
+        "rimshot": 6
+      }
+    },
+    "mismatches": {
+      "am": [],
+      "fm": []
+    },
+    "am": {
+      "metadataComplete": true,
+      "metadataTagged": 12,
+      "dialListed": 12,
+      "missingTierFreqs": []
+    },
+    "fm": {
+      "metadataComplete": true,
+      "metadataTagged": 22,
+      "dialListed": 22,
+      "missingTierFreqs": []
+    },
+    "hasMismatch": false,
+    "note": "signalProfile tier totals are draft estimates until _scaffold.signalReviewed is true; metadataCounts come from explicit per-frequency signalTier (and AM amClassHint when signalTier is omitted)."
   },
   "note": "signalProfile is a gameplay abstraction for competitive signal strength — not FCC engineering data."
 }

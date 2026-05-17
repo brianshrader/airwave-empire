@@ -60,6 +60,7 @@
     "diag:share-concentration": "node scripts/diag-share-concentration.mjs",
     "diag:tier-concentration-formats": "node scripts/diag-tier-concentration-formats.mjs",
     "diag:market-ecology-regression": "node scripts/diag-market-ecology-regression.mjs",
+    "diag:format-lifecycle": "node scripts/diag-format-lifecycle.mjs",
     "scaffold:market": "node scripts/scaffold-market.mjs",
     "scaffold:market:check": "node scripts/scaffold-market.mjs --check",
     "validate:brokered-mode": "node scripts/validate-brokered-mode.mjs",

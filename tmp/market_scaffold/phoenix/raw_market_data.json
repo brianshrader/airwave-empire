@@ -101,39 +101,43 @@
     "notes": "Approximate mid-1970s Phoenix dial anchor (14 AM / 9 FM / 23 total; viable 20) — modern dial is larger and must not be assumed for 1970s starts. Large-market anchors: ~22 viable (1983), ~38 measurable (2026). Dial lists 35 gameplay tokens (12 AM + 23 FM incl. 3 reserved-band NCE); measurable includes fragmentation/rimshots in book."
   },
   "amSignalByFreq": {
-    "1230 AM": {
-      "amClassHint": "local",
-      "signalTier": "small",
-      "dayPowerKw": 1,
-      "nightPowerKw": 0.25,
-      "directionalNight": true
-    }
+    "550 AM": { "amClassHint": "clear", "signalTier": "big", "dayPowerKw": 50, "nightPowerKw": 50 },
+    "620 AM": { "amClassHint": "regional", "signalTier": "medium", "dayPowerKw": 25, "nightPowerKw": 10 },
+    "660 AM": { "amClassHint": "local", "signalTier": "small", "dayPowerKw": 5, "nightPowerKw": 5 },
+    "710 AM": { "amClassHint": "local", "signalTier": "small", "dayPowerKw": 5, "nightPowerKw": 5 },
+    "860 AM": { "amClassHint": "regional", "signalTier": "medium", "dayPowerKw": 50, "nightPowerKw": 5 },
+    "910 AM": { "amClassHint": "regional", "signalTier": "medium", "dayPowerKw": 5, "nightPowerKw": 5 },
+    "960 AM": { "amClassHint": "regional", "signalTier": "medium", "dayPowerKw": 5, "nightPowerKw": 5 },
+    "1010 AM": { "amClassHint": "clear", "signalTier": "big", "dayPowerKw": 50, "nightPowerKw": 10 },
+    "1060 AM": { "amClassHint": "regional", "signalTier": "medium", "dayPowerKw": 5, "nightPowerKw": 5 },
+    "1100 AM": { "amClassHint": "clear", "signalTier": "big", "dayPowerKw": 50, "nightPowerKw": 10 },
+    "1150 AM": { "amClassHint": "local", "signalTier": "small", "dayPowerKw": 5, "nightPowerKw": 0.047, "directionalNight": true },
+    "1230 AM": { "amClassHint": "local", "signalTier": "small", "dayPowerKw": 1, "nightPowerKw": 0.25, "directionalNight": true }
   },
   "fmSignalByFreq": {
-    "88.3 FM": {
-      "reservedBand": true,
-      "nceEligible": true,
-      "formatHint": "CCM",
-      "signalTier": "medium",
-      "erpKw": 50,
-      "classHint": "C1"
-    },
-    "89.5 FM": {
-      "reservedBand": true,
-      "nceEligible": true,
-      "formatHint": "PUBLIC_ECLECTIC",
-      "signalTier": "medium",
-      "erpKw": 100,
-      "classHint": "C0"
-    },
-    "91.5 FM": {
-      "reservedBand": true,
-      "nceEligible": true,
-      "formatHint": "PUBLIC_NEWS",
-      "signalTier": "medium",
-      "erpKw": 100,
-      "classHint": "C0"
-    }
+    "88.3 FM": { "reservedBand": true, "nceEligible": true, "formatHint": "CCM", "signalTier": "medium", "erpKw": 50, "classHint": "C1" },
+    "89.5 FM": { "reservedBand": true, "nceEligible": true, "formatHint": "PUBLIC_ECLECTIC", "signalTier": "medium", "erpKw": 100, "classHint": "C0" },
+    "91.5 FM": { "reservedBand": true, "nceEligible": true, "formatHint": "PUBLIC_NEWS", "signalTier": "medium", "erpKw": 100, "classHint": "C0" },
+    "92.3 FM": { "signalTier": "major", "erpKw": 100, "classHint": "C0" },
+    "93.3 FM": { "signalTier": "medium", "erpKw": 50, "classHint": "C1" },
+    "94.5 FM": { "signalTier": "medium", "erpKw": 50, "classHint": "C1" },
+    "95.5 FM": { "signalTier": "medium", "erpKw": 50, "classHint": "C1" },
+    "96.1 FM": { "signalTier": "major", "erpKw": 100, "classHint": "C0" },
+    "96.9 FM": { "signalTier": "medium", "erpKw": 50, "classHint": "C1" },
+    "97.9 FM": { "signalTier": "medium", "erpKw": 50, "classHint": "C1" },
+    "98.7 FM": { "signalTier": "medium", "erpKw": 50, "classHint": "C1" },
+    "99.3 FM": { "signalTier": "medium", "erpKw": 50, "classHint": "C1" },
+    "99.9 FM": { "signalTier": "major", "erpKw": 100, "classHint": "C0" },
+    "100.3 FM": { "signalTier": "major", "erpKw": 100, "classHint": "C0" },
+    "100.7 FM": { "signalTier": "medium", "erpKw": 50, "classHint": "C1" },
+    "101.1 FM": { "signalTier": "medium", "erpKw": 50, "classHint": "C1" },
+    "102.5 FM": { "signalTier": "rimshot", "erpKw": 50, "classHint": "C2" },
+    "103.9 FM": { "signalTier": "rimshot", "erpKw": 50, "classHint": "C2" },
+    "104.7 FM": { "signalTier": "rimshot", "erpKw": 50, "classHint": "C2" },
+    "105.1 FM": { "signalTier": "rimshot", "erpKw": 50, "classHint": "C2" },
+    "105.9 FM": { "signalTier": "major", "erpKw": 50, "classHint": "C1" },
+    "106.9 FM": { "signalTier": "major", "erpKw": 50, "classHint": "C1" },
+    "107.9 FM": { "signalTier": "rimshot", "erpKw": 50, "classHint": "C2" }
   },
   "fmFacilityByFreq": {
     "88.3 FM": "50kw",

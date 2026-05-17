@@ -242,11 +242,18 @@
       "erpKw": 22.5,
       "classHint": "C2"
     },
-    "98.7 FM": {
-      "signalTier": "medium",
-      "erpKw": 37,
-      "classHint": "B"
-    }
+    "92.3 FM": { "signalTier": "major", "erpKw": 100, "classHint": "C0" },
+    "93.9 FM": { "signalTier": "medium", "erpKw": 52, "classHint": "B" },
+    "95.5 FM": { "signalTier": "major", "erpKw": 100, "classHint": "C0" },
+    "97.1 FM": { "signalTier": "major", "erpKw": 100, "classHint": "C0" },
+    "98.7 FM": { "signalTier": "medium", "erpKw": 37, "classHint": "B" },
+    "99.5 FM": { "signalTier": "medium", "erpKw": 52, "classHint": "B" },
+    "100.3 FM": { "signalTier": "major", "erpKw": 100, "classHint": "C0" },
+    "101.1 FM": { "signalTier": "medium", "erpKw": 100, "classHint": "C0" },
+    "101.9 FM": { "signalTier": "medium", "erpKw": 100, "classHint": "C0" },
+    "103.3 FM": { "signalTier": "medium", "erpKw": 100, "classHint": "C0" },
+    "106.7 FM": { "signalTier": "medium", "erpKw": 100, "classHint": "C0" },
+    "107.5 FM": { "signalTier": "rimshot", "erpKw": 68, "classHint": "B" }
   },
   "fmFacilityByFreq": {
     "88.3 FM": "3.5kw",

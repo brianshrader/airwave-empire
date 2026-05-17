@@ -2,6 +2,8 @@
 
 **Principles:** No save-schema changes; no global “nerf TOP40” without diagnostics; prefer `deriveMarketEcology(market, marketId, year, G)` (or `marketEcologySnapshotForGameplay` in `legacy.js`) over new `marketId` branches; keep **legacy fallbacks** when IIFE globals are absent (VM/tools without inject).
 
+**Format lifecycle (v1 design):** [FORMAT_LIFECYCLE_LAYER_V1.md](./FORMAT_LIFECYCLE_LAYER_V1.md) — national curves + market affinity + era interaction; diagnostic harness `npm run diag:format-lifecycle` (no gameplay wiring yet).
+
 ---
 
 ## 1. Trait inventory (from `deriveMarketEcology`)
