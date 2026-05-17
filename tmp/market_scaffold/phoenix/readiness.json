@@ -1,0 +1,91 @@
+{
+  "readiness": "PLAYTEST_READY",
+  "checkedAt": "2026-05-17T15:23:17.306Z",
+  "counts": {
+    "PASS": 11,
+    "WARN": 2,
+    "FAIL": 0
+  },
+  "lines": [
+    "[PASS] callPrefix=K",
+    "[PASS] rankTier=large",
+    "[PASS] revScale=1.18",
+    "[PASS] timezone=America/Phoenix",
+    "[PASS] region matches geography hint (Southwest)",
+    "[WARN] _scaffold.dialReviewed is not true — confirm dial is sourced",
+    "[PASS] pop cohorts present",
+    "[PASS] culture fields present",
+    "[PASS] selectBlurb present",
+    "[PASS] teams count=4",
+    "[PASS] All core ecology traits present (2026)",
+    "[PASS] ecology_regression_record.json present",
+    "[WARN] _scaffold.dataReviewed is not true"
+  ],
+  "items": [
+    {
+      "level": "PASS",
+      "code": "call_prefix",
+      "message": "callPrefix=K"
+    },
+    {
+      "level": "PASS",
+      "code": "rank_tier",
+      "message": "rankTier=large"
+    },
+    {
+      "level": "PASS",
+      "code": "rev_scale",
+      "message": "revScale=1.18"
+    },
+    {
+      "level": "PASS",
+      "code": "timezone",
+      "message": "timezone=America/Phoenix"
+    },
+    {
+      "level": "PASS",
+      "code": "region_geo",
+      "message": "region matches geography hint (Southwest)"
+    },
+    {
+      "level": "WARN",
+      "code": "dial_unreviewed",
+      "message": "_scaffold.dialReviewed is not true — confirm dial is sourced"
+    },
+    {
+      "level": "PASS",
+      "code": "pop_cohorts",
+      "message": "pop cohorts present"
+    },
+    {
+      "level": "PASS",
+      "code": "culture",
+      "message": "culture fields present"
+    },
+    {
+      "level": "PASS",
+      "code": "select_blurb",
+      "message": "selectBlurb present"
+    },
+    {
+      "level": "PASS",
+      "code": "teams",
+      "message": "teams count=4"
+    },
+    {
+      "level": "PASS",
+      "code": "ecology_traits",
+      "message": "All core ecology traits present (2026)"
+    },
+    {
+      "level": "PASS",
+      "code": "regression_file",
+      "message": "ecology_regression_record.json present"
+    },
+    {
+      "level": "WARN",
+      "code": "data_unreviewed",
+      "message": "_scaffold.dataReviewed is not true"
+    }
+  ]
+}

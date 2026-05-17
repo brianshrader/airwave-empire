@@ -1,0 +1,71 @@
+{
+  "marketId": "phoenix",
+  "recordedAt": "2026-05-17T16:33:39.280Z",
+  "byYear": {
+    "1995": {
+      "meanSpanishStationCount": 0.625,
+      "meanSpanishStationCountAll": 0.625,
+      "meanSpanishShare": 0.002112255,
+      "meanSpanishLeaderShare": 0.002112255,
+      "spanishBySourceMean": {
+        "timeline_or_other": 0.625
+      },
+      "runs": 8
+    },
+    "2000": {
+      "meanSpanishStationCount": 1.625,
+      "meanSpanishStationCountAll": 1.625,
+      "meanSpanishShare": 0.028804240000000002,
+      "meanSpanishLeaderShare": 0.024598778749999998,
+      "spanishBySourceMean": {
+        "timeline_or_other": 0.875,
+        "launch:phoenix_spanish_1994_fm": 0.75
+      },
+      "runs": 8
+    },
+    "2006": {
+      "meanSpanishStationCount": 2.375,
+      "meanSpanishStationCountAll": 2.375,
+      "meanSpanishShare": 0.060538303749999994,
+      "meanSpanishLeaderShare": 0.04953595,
+      "spanishBySourceMean": {
+        "timeline_or_other": 1.5,
+        "launch:phoenix_spanish_1994_fm": 0.875
+      },
+      "runs": 8
+    },
+    "2010": {
+      "meanSpanishStationCount": 2.5,
+      "meanSpanishStationCountAll": 2.5,
+      "meanSpanishShare": 0.06496648375,
+      "meanSpanishLeaderShare": 0.05378548625000001,
+      "spanishBySourceMean": {
+        "timeline_or_other": 1.625,
+        "launch:phoenix_spanish_1994_fm": 0.875
+      },
+      "runs": 8
+    },
+    "2020": {
+      "meanSpanishStationCount": 2.75,
+      "meanSpanishStationCountAll": 2.75,
+      "meanSpanishShare": 0.09191399250000001,
+      "meanSpanishLeaderShare": 0.059917452499999996,
+      "spanishBySourceMean": {
+        "timeline_or_other": 1.75,
+        "launch:phoenix_spanish_1994_fm": 1
+      },
+      "runs": 8
+    },
+    "2026": {
+      "meanSpanishStationCount": 1.875,
+      "meanSpanishStationCountAll": 1.875,
+      "meanSpanishShare": 0.04756157375,
+      "meanSpanishLeaderShare": 0.03333627,
+      "spanishBySourceMean": {
+        "timeline_or_other": 1.25,
+        "launch:phoenix_spanish_1994_fm": 0.625
+      },
+      "runs": 8
+    }
+  }
+}

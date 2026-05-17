@@ -5,9 +5,10 @@ const { verifyClerkBearer } = require('./clerkVerify');
 const { resolveStripePlanForUser } = require('./stripePlanResolve');
 const { CLERK_PLAN } = require('./aiEntitlements');
 const { getTrialQuotaSnapshot } = require('./trialQuotaStore');
-const { ALL_PLAYABLE_MARKET_IDS_ORDERED } = require('./planMarkets');
+const { marketIdsForPlanSlug } = require('./planMarkets');
 
-const ALLOWED_MARKET = new Set(ALL_PLAYABLE_MARKET_IDS_ORDERED);
+/** Signup trial solo lock — same cities as client trial plan (Pro-only markets excluded). */
+const ALLOWED_MARKET = new Set(marketIdsForPlanSlug(CLERK_PLAN.TRIAL));
 
 async function requireUid(req, res) {
   if (!process.env.CLERK_SECRET_KEY) {

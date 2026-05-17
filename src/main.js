@@ -10,7 +10,7 @@ import {
   clearClerkFrontendOverrides,
   clerkConstructorOptionsFromEnv,
 } from './clerkClientInit.js';
-import { marketIdsForClerkPlanSlug, syncPlanMarkets } from './billingEntitlements.js';
+import { marketIdsForClerkPlanSlug, syncPlanMarkets, PRO_ONLY_MARKET_IDS } from './billingEntitlements.js';
 import { BILLING_PRICE_SUMMARY_LINE } from './billingPriceLabels.js';
 
 if (typeof window !== 'undefined') {
@@ -185,6 +185,7 @@ if (typeof window !== 'undefined' && wlGuestOnboardingMeta()) {
       emitBetaAuthOk();
       window.__WL_CLERK_PLAN_SLUG = 'free_user';
       window.__WL_PLAN_MARKET_IDS = marketIdsForClerkPlanSlug('free_user');
+      window.__WL_PRO_ONLY_MARKET_IDS = [...PRO_ONLY_MARKET_IDS];
       return true;
     } catch (e) {
       console.warn('[guest] Session request failed:', e);
@@ -356,6 +357,7 @@ if (!publishableKey) {
   if (typeof window !== 'undefined') {
     window.__WL_CLERK_PLAN_SLUG = window.__WL_CLERK_PLAN_SLUG || 'free_user';
     window.__WL_PLAN_MARKET_IDS = window.__WL_PLAN_MARKET_IDS || marketIdsForClerkPlanSlug('free_user');
+    window.__WL_PRO_ONLY_MARKET_IDS = window.__WL_PRO_ONLY_MARKET_IDS || [...PRO_ONLY_MARKET_IDS];
   }
 } else {
   // `legacy.js` (deferred) can run while this module is still awaiting Clerk. Without a preset,
@@ -364,6 +366,7 @@ if (!publishableKey) {
   // `syncPlanMarkets` replaces them with the real plan.
   if (typeof window !== 'undefined') {
     window.__WL_PLAN_MARKET_IDS = marketIdsForClerkPlanSlug('free_user');
+    window.__WL_PRO_ONLY_MARKET_IDS = [...PRO_ONLY_MARKET_IDS];
   }
   try {
     clearClerkFrontendOverrides();
@@ -399,6 +402,7 @@ if (!publishableKey) {
       console.warn('[entitlements] initial sync failed:', e?.message || e);
       window.__WL_CLERK_PLAN_SLUG = 'free_user';
       window.__WL_PLAN_MARKET_IDS = marketIdsForClerkPlanSlug('free_user');
+      window.__WL_PRO_ONLY_MARKET_IDS = [...PRO_ONLY_MARKET_IDS];
     }
     if (typeof window.wlRefreshOpenScenIfPlanChanged === 'function') {
       window.wlRefreshOpenScenIfPlanChanged();

@@ -1,0 +1,91 @@
+{
+  "readiness": "DRAFT",
+  "checkedAt": "2026-05-17T14:48:51.596Z",
+  "counts": {
+    "PASS": 8,
+    "WARN": 4,
+    "FAIL": 1
+  },
+  "lines": [
+    "[PASS] callPrefix=K",
+    "[PASS] rankTier=large",
+    "[PASS] revScale=1.55",
+    "[PASS] timezone=America/Los_Angeles",
+    "[PASS] region matches geography hint (West Coast)",
+    "[FAIL] Dial lists match untouched template fingerprint (west_fm_fragmented) — FCC review required",
+    "[PASS] pop cohorts present",
+    "[PASS] culture fields present",
+    "[WARN] selectBlurb still contains TODO",
+    "[WARN] One or more teams still have TODO names",
+    "[PASS] All core ecology traits present (2026)",
+    "[WARN] No ecology regression record — run diag after MARKETS merge, save ecology_regression_record.json",
+    "[WARN] _scaffold.dataReviewed is not true"
+  ],
+  "items": [
+    {
+      "level": "PASS",
+      "code": "call_prefix",
+      "message": "callPrefix=K"
+    },
+    {
+      "level": "PASS",
+      "code": "rank_tier",
+      "message": "rankTier=large"
+    },
+    {
+      "level": "PASS",
+      "code": "rev_scale",
+      "message": "revScale=1.55"
+    },
+    {
+      "level": "PASS",
+      "code": "timezone",
+      "message": "timezone=America/Los_Angeles"
+    },
+    {
+      "level": "PASS",
+      "code": "region_geo",
+      "message": "region matches geography hint (West Coast)"
+    },
+    {
+      "level": "FAIL",
+      "code": "dial_placeholder",
+      "message": "Dial lists match untouched template fingerprint (west_fm_fragmented) — FCC review required"
+    },
+    {
+      "level": "PASS",
+      "code": "pop_cohorts",
+      "message": "pop cohorts present"
+    },
+    {
+      "level": "PASS",
+      "code": "culture",
+      "message": "culture fields present"
+    },
+    {
+      "level": "WARN",
+      "code": "select_blurb_todo",
+      "message": "selectBlurb still contains TODO"
+    },
+    {
+      "level": "WARN",
+      "code": "teams_todo",
+      "message": "One or more teams still have TODO names"
+    },
+    {
+      "level": "PASS",
+      "code": "ecology_traits",
+      "message": "All core ecology traits present (2026)"
+    },
+    {
+      "level": "WARN",
+      "code": "regression_missing",
+      "message": "No ecology regression record — run diag after MARKETS merge, save ecology_regression_record.json"
+    },
+    {
+      "level": "WARN",
+      "code": "data_unreviewed",
+      "message": "_scaffold.dataReviewed is not true"
+    }
+  ]
+}

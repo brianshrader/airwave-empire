@@ -14,19 +14,29 @@ const ALL_PLAYABLE_MARKET_IDS_ORDERED = Object.freeze([
   'wichita',
 ]);
 
-/** Starter: five major markets (no Seattle/Wichita). */
+/** Starter: five major markets (no Pro-only cities). */
 const STARTER_MARKET_IDS = Object.freeze(['newyork', 'losangeles', 'chicago', 'atlanta', 'nashville']);
 const FREE_USER_MARKET_IDS = Object.freeze(['atlanta']);
+/** Pro plan only — keep in sync with src/billingEntitlements.js */
+const PRO_ONLY_MARKET_IDS = Object.freeze(['seattle', 'sanfrancisco', 'wichita']);
 
 /** @param {string} [slug] */
 function marketIdsForPlanSlug(slug) {
   const s = String(slug || '').trim();
-  if (s === CLERK_PLAN.PRO || s === CLERK_PLAN.TRIAL) return [...ALL_PLAYABLE_MARKET_IDS_ORDERED];
+  if (s === CLERK_PLAN.PRO) return [...ALL_PLAYABLE_MARKET_IDS_ORDERED];
+  if (s === CLERK_PLAN.TRIAL) {
+    return ALL_PLAYABLE_MARKET_IDS_ORDERED.filter((id) => id !== 'sanfrancisco');
+  }
   if (s === CLERK_PLAN.STARTER) {
     return [...STARTER_MARKET_IDS];
   }
   return [...FREE_USER_MARKET_IDS];
 }
 
-module.exports = { marketIdsForPlanSlug, ALL_PLAYABLE_MARKET_IDS_ORDERED, STARTER_MARKET_IDS };
+module.exports = {
+  marketIdsForPlanSlug,
+  ALL_PLAYABLE_MARKET_IDS_ORDERED,
+  STARTER_MARKET_IDS,
+  PRO_ONLY_MARKET_IDS,
+};
 

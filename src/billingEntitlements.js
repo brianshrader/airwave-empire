@@ -30,17 +30,30 @@ const STARTER_MARKET_IDS = Object.freeze(['newyork', 'losangeles', 'chicago', 'a
 /** Free / default: one market (Atlanta). */
 const FREE_USER_MARKET_IDS = Object.freeze(['atlanta']);
 
+/** Pro plan only — keep in sync with server/planMarkets.js */
+export const PRO_ONLY_MARKET_IDS = Object.freeze(['seattle', 'sanfrancisco', 'wichita']);
+
+const PRO_ONLY_SET = new Set(PRO_ONLY_MARKET_IDS);
+
 /**
  * @param {string} [slug] — Clerk plan `slug` (Dashboard "Plan key"); defaults to free.
  * @returns {string[]}
  */
 export function marketIdsForClerkPlanSlug(slug) {
   const s = String(slug || '').trim();
-  if (s === CLERK_PLAN.PRO || s === CLERK_PLAN.TRIAL) return [...ALL_PLAYABLE_MARKET_IDS_ORDERED];
+  if (s === CLERK_PLAN.PRO) return [...ALL_PLAYABLE_MARKET_IDS_ORDERED];
+  if (s === CLERK_PLAN.TRIAL) {
+    return ALL_PLAYABLE_MARKET_IDS_ORDERED.filter((id) => id !== 'sanfrancisco');
+  }
   if (s === CLERK_PLAN.STARTER) {
     return [...STARTER_MARKET_IDS];
   }
   return [...FREE_USER_MARKET_IDS];
+}
+
+/** @param {string} marketId */
+export function isProOnlyMarketId(marketId) {
+  return PRO_ONLY_SET.has(String(marketId || '').trim());
 }
 
 /**
@@ -112,6 +125,7 @@ export async function syncPlanMarkets(clerk) {
   if (typeof window !== 'undefined') {
     window.__WL_CLERK_PLAN_SLUG = slug;
     window.__WL_PLAN_MARKET_IDS = marketIds;
+    window.__WL_PRO_ONLY_MARKET_IDS = [...PRO_ONLY_MARKET_IDS];
 
     if (slug === CLERK_PLAN.TRIAL && clerk?.isSignedIn) {
       try {

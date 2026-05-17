@@ -21,7 +21,12 @@ var WLME = (() => {
   // src/marketEcologyCore.js
   var marketEcologyCore_exports = {};
   __export(marketEcologyCore_exports, {
+    chrLineageBucketAppealEraMultFromEcology: () => chrLineageBucketAppealEraMultFromEcology,
+    classifyChrBucketMismatch: () => classifyChrBucketMismatch,
+    classifyChrConcentrationMismatch: () => classifyChrConcentrationMismatch,
     deriveMarketEcology: () => deriveMarketEcology,
+    expectedChrBucketStrengthByEra: () => expectedChrBucketStrengthByEra,
+    expectedChrLeaderShareCap: () => expectedChrLeaderShareCap,
     modernChrPressure01FromEcology: () => modernChrPressure01FromEcology
   });
   function _clamp01(x) {
@@ -215,6 +220,98 @@ var WLME = (() => {
     }
     return _clamp01(timeShape * raw * damp * streamTail);
   }
+  var CHR_BUCKET_ERA_ANCHORS = [
+    { y: 1970, v: 0.32 },
+    { y: 1978, v: 0.28 },
+    { y: 1985, v: 0.22 },
+    { y: 1995, v: 0.16 },
+    { y: 2005, v: 0.12 },
+    { y: 2015, v: 0.1 },
+    { y: 2026, v: 0.08 }
+  ];
+  var CHR_LEADER_CONC_ANCHORS = [
+    { y: 1970, v: 0.55 },
+    { y: 1990, v: 0.65 },
+    { y: 2026, v: 0.45 }
+  ];
+  function _interpAnchorsSmooth(year, anchors) {
+    const y = Math.max(anchors[0].y, Math.min(anchors[anchors.length - 1].y, Number(year) || 1970));
+    for (let i = 0; i < anchors.length - 1; i++) {
+      const a = anchors[i];
+      const b = anchors[i + 1];
+      if (y >= a.y && y <= b.y) {
+        const t = _smoothstep(a.y, b.y, y);
+        return a.v + (b.v - a.v) * t;
+      }
+    }
+    return anchors[anchors.length - 1].v;
+  }
+  function _chrBucketTierScale(rankTier) {
+    const rt = String(rankTier || "medium");
+    if (rt === "mega") return 0.9;
+    if (rt === "large") return 0.95;
+    if (rt === "small") return 1.06;
+    return 1;
+  }
+  function expectedChrBucketStrengthByEra(year, ecology) {
+    const y = Math.max(1970, Math.min(2060, Math.round(Number(year)) || 1970));
+    const e = ecology && typeof ecology === "object" ? ecology : {};
+    const E = _interpAnchorsSmooth(y, CHR_BUCKET_ERA_ANCHORS);
+    const frag = _clamp01(e.marketFragmentation);
+    const res = _clamp01(e.chrResistance);
+    const sub = _clamp01(e.modernMusicSubstitution);
+    const post05 = _smoothstep(2005, 2012, y);
+    const mod = _clamp01(1 - 0.28 * frag - 0.22 * res - 0.35 * sub * post05);
+    const tier = _chrBucketTierScale(e.rankTier);
+    const raw = E * mod * tier;
+    return Math.max(0.06, Math.min(0.36, raw));
+  }
+  function expectedChrLeaderShareCap(year, ecology) {
+    const bucket = expectedChrBucketStrengthByEra(year, ecology);
+    const conc = _interpAnchorsSmooth(year, CHR_LEADER_CONC_ANCHORS);
+    const raw = bucket * conc;
+    return Math.min(0.14, Math.max(0.02, raw));
+  }
+  function classifyChrBucketMismatch(actualBucket, expectedBucket, year) {
+    const y = Math.round(Number(year)) || 1970;
+    if (y < 2e3) return "";
+    const a = _clamp01(actualBucket);
+    const e = _clamp01(expectedBucket);
+    if (a > e + 0.08) return "BUCKET_SEVERE";
+    if (a > e + 0.05) return "BUCKET_MODERATE";
+    return "";
+  }
+  function classifyChrConcentrationMismatch(leaderShare, cap) {
+    const l = _clamp01(leaderShare);
+    const c = _clamp01(cap);
+    if (l > c + 0.04) return "CONCENTRATION_SEVERE";
+    if (l > c + 0.025) return "CONCENTRATION_MODERATE";
+    return "";
+  }
+  function chrLineageBucketAppealEraMultFromEcology(ecology, year) {
+    const y = Math.max(1970, Math.min(2060, Math.round(Number(year)) || 1970));
+    if (y < 1995) return 1;
+    const e = ecology && typeof ecology === "object" ? ecology : {};
+    const gate1995 = _smoothstep(1995, 2005, y);
+    const gate2005 = _smoothstep(2005, 2018, y);
+    const eraGate = y < 2005 ? 0.4 * gate1995 : 0.4 + 0.6 * gate2005;
+    const subRamp = _smoothstep(2005, 2012, y);
+    const traitUrgency = _clamp01(
+      0.38 * _clamp01(e.modernMusicSubstitution) * subRamp + 0.34 * _clamp01(e.chrResistance) + 0.28 * _clamp01(e.marketFragmentation)
+    );
+    const expected = expectedChrBucketStrengthByEra(y, e);
+    const eraw = _interpAnchorsSmooth(y, CHR_BUCKET_ERA_ANCHORS);
+    const ceiling = Math.max(0.1, eraw * _chrBucketTierScale(e.rankTier));
+    const pull = _clamp01(expected / ceiling);
+    const overshoot = _clamp01((0.2 - expected) / 0.14);
+    const blend = 0.55 * pull + 0.45 * overshoot;
+    const trimDepth = eraGate * (0.62 + 0.38 * traitUrgency);
+    let mult = 1 - trimDepth * (1 - blend);
+    const floor = y < 1985 ? 1 : y < 1995 ? 0.94 : y < 2005 ? 0.82 : 0.5;
+    if (mult < floor) mult = floor;
+    if (mult > 1) mult = 1;
+    return mult;
+  }
   return __toCommonJS(marketEcologyCore_exports);
 })();
 
@@ -222,4 +319,7 @@ var WLME = (() => {
   var g=typeof globalThis!=='undefined'?globalThis:typeof window!=='undefined'?window:{};
   g.__wlDeriveMarketEcology=WLME.deriveMarketEcology;
   g.__wlModernChrPressure01FromEcology=WLME.modernChrPressure01FromEcology;
+  g.__wlExpectedChrBucketStrengthByEra=WLME.expectedChrBucketStrengthByEra;
+  g.__wlExpectedChrLeaderShareCap=WLME.expectedChrLeaderShareCap;
+  g.__wlChrLineageBucketAppealEraMultFromEcology=WLME.chrLineageBucketAppealEraMultFromEcology;
 })();

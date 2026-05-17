@@ -1,0 +1,20 @@
+{
+  "marketId": "phoenix",
+  "recordedAt": "2026-05-17T15:10:00.000Z",
+  "command": "npm run diag:market-ecology-regression -- --markets=phoenix --runs=8",
+  "genEra": "1985",
+  "runsPerCell": 8,
+  "seed": 20260515,
+  "years": [1995, 2000, 2006, 2010, 2020, 2026],
+  "pass": false,
+  "note": "Harness completed (48/48 runs). 2026: HHI≈486, chr bucket 14.0% (exp 6.0%), country 13.7%, spanish 2.6%, public 4.7%, #1 keys urban/classic-rock mix (0% TOP40 #1 wins). Legacy years 1995–2000 show SEVERE/MODERATE TOP40 #1 win-rate vs trait prior; CHR bucket BUCKET_SEVERE/MODERATE on 2000–2026. Dial/ecology tuning still open — not merge-ready.",
+  "summaryByYear": {
+    "1995": { "hhi": 697, "chrBucketPct": 22.0, "countryPct": 9.3, "spanishPct": 0.3, "top40Num1WinPct": 87.5, "flags": ["TOP40_SEVERE", "CONCENTRATION_MODERATE"] },
+    "2000": { "hhi": 653, "chrBucketPct": 19.0, "countryPct": 10.9, "spanishPct": 1.9, "top40Num1WinPct": 62.5, "flags": ["TOP40_MODERATE", "BUCKET_SEVERE", "CONCENTRATION_MODERATE"] },
+    "2006": { "hhi": 557, "chrBucketPct": 15.6, "countryPct": 12.0, "spanishPct": 2.8, "top40Num1WinPct": 25.0, "flags": ["BUCKET_MODERATE"] },
+    "2010": { "hhi": 531, "chrBucketPct": 16.5, "countryPct": 12.2, "spanishPct": 1.0, "top40Num1WinPct": 25.0, "flags": ["BUCKET_SEVERE", "CONCENTRATION_MODERATE"] },
+    "2020": { "hhi": 475, "chrBucketPct": 14.4, "countryPct": 12.5, "spanishPct": 1.2, "top40Num1WinPct": 12.5, "flags": ["BUCKET_SEVERE", "CONCENTRATION_MODERATE"] },
+    "2026": { "hhi": 486, "chrBucketPct": 14.0, "countryPct": 13.7, "spanishPct": 2.6, "top40Num1WinPct": 0.0, "flags": ["BUCKET_MODERATE", "CONCENTRATION_MODERATE"] }
+  },
+  "csv": "tmp/market_ecology_regression.csv"
+}
