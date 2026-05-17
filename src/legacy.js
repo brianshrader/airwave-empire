@@ -38347,24 +38347,11 @@ function rMkt(){
     const stationCell=`<div class="mt-station-inner"><span class="clg" style="color:${mpStationColor(s)}" title="${_lblEsc}">${callText}</span>${simBadge}${badges||''}</div>`;
     return `<tr class="station-row${_me?' owned':''}"${clickAttr}><td><span class="rn">${displayRank}</span></td><td class="mt-station">${stationCell}</td><td><span class="fmtag">${fmtLabel(op.format)}</span></td><td class="mt-share-trend-cell"><span class="shn" style="color:${_me?'var(--amb)':_anyP?s.color:'var(--wht)'}">${shn(share)}</span><span class="mt-trend"><span class="${tc}" style="font-size:15px">${tr}</span></span></td><td class="mt-rev-cell"><span class="rvn">${f$(rev)}</span></td></tr>`;
   }).join('');
-  // In MP, show the current player's lead station; in solo, G.ps[0]
   const _myStns = MP.mode==='live' ? G.ps.filter(s=>s._mpOwner===MP.playerId) : G.ps;
-  const ps = _myStns[0] || G.ps[0];
   if(!_myStns.length){
     document.getElementById('dmb').innerHTML='<div class="ibox" style="margin:8px 0;font-size:14px;line-height:1.5">No stations in your group — audience mix appears when you own a signal. Use <strong style="color:var(--amb)">Acquire a Station</strong> (below) if you have capital.</div>';
     return;
   }
-  if(!ps)return;
-  const _port=_myStns;
-  const _combinedBook01=st=>{
-    const p=simulcastPartnerStation(st);
-    if(p&&_port.some(x=>x.id===p.id))return stationCardSimulcastCombinedShare01(st,p);
-    return stationCardDisplayShare01(st);
-  };
-  const _leadStn=_myStns.reduce((best,s)=>{
-    if(!best)return s;
-    return _combinedBook01(s)>_combinedBook01(best)?s:best;
-  },null)||ps;
   const _cohJs=coh=>String(coh).replace(/\\/g,'\\\\').replace(/'/g,"\\'");
   // Total AQH per demo across the rated market — same mass as headline share, scoped to one age band.
   const _marketCohAqh={};
@@ -38403,14 +38390,7 @@ function rMkt(){
         return `<tr class="${_me?'dmb-mini-owned':''}"><td>${i+1}</td><td class="dmb-mini-call">${you}<span class="dmb-mini-clg" style="color:${mpStationColor(s)}">${callDisplay(s)}</span> <span class="dmb-mini-fmt">${fmtLabel(opSt.format)}</span></td><td class="dmb-mini-sh">${shn(csh)}</td></tr>`;
       }).join('')+
       `</tbody></table></div>`:'';
-    const leadDemo=(()=>{
-      const p=simulcastPartnerStation(_leadStn);
-      if(!p||!_port.some(x=>x.id===p.id))return _demoMkShare(_leadStn,coh);
-      const tot=_marketCohAqh[coh]||0;
-      if(tot<=1e-12)return 0;
-      return((_leadStn.rat.cur?.[coh]?.aqh||0)+(p.rat.cur?.[coh]?.aqh||0))/tot;
-    })();
-    return `<div class="dmb-coh${open?' dmb-coh--open':''}"><button type="button" class="cr dmb-coh-btn" aria-expanded="${open}" onclick="wlToggleDmbCoh('${_cohJs(coh)}')" title="Listening share within this age group (station AQH ÷ total market AQH for this demo — same scale as headline share)"><span class="crl">${coh}</span><div class="cbs">${bars}</div><span class="cp">${shn(leadDemo)}</span><span class="dmb-coh-chev" aria-hidden="true"></span></button>${subTable}</div>`;
+    return `<div class="dmb-coh${open?' dmb-coh--open':''}"><button type="button" class="cr dmb-coh-btn" aria-expanded="${open}" onclick="wlToggleDmbCoh('${_cohJs(coh)}')" title="Listening share within this age group (station AQH ÷ total market AQH for this demo — same scale as headline share)"><span class="crl">${coh}</span><div class="cbs">${bars}</div><span class="dmb-coh-chev" aria-hidden="true"></span></button>${subTable}</div>`;
   }).join('');
 }
 

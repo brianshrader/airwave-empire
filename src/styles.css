@@ -2756,7 +2756,7 @@ body#wl-play #main{
   -webkit-tap-highlight-color:transparent
 }
 .dmb-coh-btn.cr:focus-visible{outline:2px solid rgba(216,155,43,0.5);outline-offset:2px}
-.dmb-coh-chev{flex:0 0 0.9rem;width:0.9rem;height:0.9rem;position:relative;align-self:center}
+.dmb-coh-chev{flex:0 0 0.9rem;width:0.9rem;height:0.9rem;position:relative;align-self:center;margin-left:auto}
 .dmb-coh-chev::before{content:"▶";position:absolute;left:0;top:50%;transform:translateY(-50%);font-size:0.55rem;opacity:0.55;line-height:1}
 .dmb-coh--open .dmb-coh-chev::before{content:"▲";opacity:0.75}
 .dmb-coh--open .dmb-coh-btn{background:rgba(216,155,43,0.04)}
@@ -2786,8 +2786,6 @@ body#wl-play #main{
 .cb[data-tip]:hover::after{content:attr(data-tip);position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);background:#1a1a1a;border:1px solid rgba(255,255,255,.15);color:#fff;font-family:var(--ft);font-size:15px;letter-spacing:.5px;padding:3px 7px;border-radius:2px;white-space:nowrap;z-index:99;pointer-events:none}
 .cb[data-tip]:hover::before{content:'';position:absolute;bottom:calc(100% + 1px);left:50%;transform:translateX(-50%);border:4px solid transparent;border-top-color:rgba(255,255,255,.15);z-index:99;pointer-events:none}
 .cb[data-tip]{cursor:default}
-.cp{font-family:var(--ft);font-size:15px;color:var(--amb);width:46px;text-align:right;flex-shrink:0}
-.dmb-coh-btn .cp{color:var(--wht);font-weight:600}
 
 /* INTEL ROWS (competitor list — may be in hidden #intel) */
 .ir{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid rgba(51,51,51,.5);transition:background .15s}.ir.clickable{cursor:pointer}.ir.clickable:hover{background:rgba(245,166,35,.07)}
