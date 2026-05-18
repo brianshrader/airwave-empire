@@ -778,6 +778,19 @@ function isChrLineageFormat(fmt){
   return canonicalHitsFormatKey(f)==='TOP40';
 }
 
+/** High-Hispanic market gate — hispPop2020 ≥ 20% or culture.spanish ≥ 12% (MARKETS demographics). */
+function isHighHispanicMarket(marketId){
+  const m=MARKETS[marketId||'']||{};
+  const h=m.hispPop2020??0;
+  const span=(m.culture&&m.culture.spanish)??0;
+  return h>=0.20||span>=0.12;
+}
+/** High-Hispanic mega markets — generalized Spanish FM launch augmentation (not large/Phoenix). */
+function isHighHispanicMegaMarket(marketId){
+  if(!isHighHispanicMarket(marketId))return false;
+  return (MARKETS[marketId||'']||{}).rankTier==='mega';
+}
+
 // ── Phoenix diag-only market calibration (NOT in ALL_PLAYABLE_MARKET_IDS) ─────
 /** Ecology harness / scaffold QA market id — must match `MARKETS.phoenix.id`. */
 const PHOENIX_DIAG_MARKET_ID='phoenix';
@@ -941,6 +954,42 @@ function applyModernTop40LeaderPeakabilityTrim(stations,G,activeIx,engageWeighte
     const add=toPool*(sh/poolSum);
     const newSh=sh+add;
     scaleStationListeningShares(s,G,s,newSh/Math.max(1e-9,sh),engageWeightedPop,habitDenom);
+  }
+}
+/**
+ * Post-AQH: modest Spanish leader nudge when close behind rock leader (high-Hispanic markets only).
+ * Leader-only redistribution — does not globally inflate Spanish bucket mass.
+ */
+function applyHighHispanicSpanishLeaderBoost(stations,G,activeIx,engageWeightedPop,habitDenom){
+  const mid=G.marketId||ACTIVE_MARKET;
+  if(!isHighHispanicMarket(mid))return;
+  const y=Math.round(Number(G?.year))||1970;
+  if(y<1992)return;
+  const comm=[];
+  for(let k=0;k<activeIx.length;k++){
+    const s=stations[activeIx[k]];
+    if(s&&!stationIsNoncommercialInstitutional(s))comm.push(s);
+  }
+  if(comm.length<2)return;
+  let bookLeader=null,bookLeaderSh=0;
+  let topSpan=null,topSpanSh=0;
+  for(let i=0;i<comm.length;i++){
+    const s=comm[i];
+    const sh=Number(s.rat?.share)||0;
+    if(sh>bookLeaderSh){bookLeaderSh=sh;bookLeader=s;}
+    if(s.format==='SPANISH'&&sh>topSpanSh){topSpanSh=sh;topSpan=s;}
+  }
+  if(!topSpan||topSpanSh<0.04)return;
+  if(bookLeader&&bookLeader.format==='SPANISH')return;
+  if(bookLeader&&bookLeader.format!=='CLASSIC_ROCK'&&bookLeader.format!=='ALBUM_ROCK')return;
+  const gap=bookLeaderSh-topSpanSh;
+  if(gap<0||gap>0.045)return;
+  const boost=Math.min(0.028,gap*0.55+0.008);
+  const newSpan=topSpanSh+boost;
+  scaleStationListeningShares(topSpan,G,topSpan,newSpan/Math.max(1e-9,topSpanSh),engageWeightedPop,habitDenom);
+  if(bookLeader&&bookLeaderSh>newSpan){
+    const trim=boost*0.92;
+    scaleStationListeningShares(bookLeader,G,bookLeader,(bookLeaderSh-trim)/Math.max(1e-9,bookLeaderSh),engageWeightedPop,habitDenom);
   }
 }
 /** Phase 3B-a: TOP40 appeal trim toward trait-era CHR bucket setpoint (1995+). Returns 1 when IIFE missing. */
@@ -4647,14 +4696,14 @@ const MARKETS={
     amFreqs:['900 AM','1070 AM','1240 AM','1330 AM','1410 AM'],
     // All entries must be >91.9 MHz — `nextUnusedCommercialFreq` skips 88–91.9 (NCE reserved); 88.9/91.1 were inert and exhausted the dial before BP slot 17.
     fmFreqs:['92.3 FM','93.9 FM','94.5 FM','95.1 FM','96.7 FM','97.3 FM','98.1 FM','99.9 FM','100.1 FM','101.9 FM','102.7 FM','104.5 FM','105.3 FM','106.5 FM','103.1 FM','105.1 FM','105.9 FM','107.1 FM','107.9 FM'],
-    /** Blueprint indices (national AM rows) forced to FM here because the market has only five AM allotments. */
+    /** Blueprint indices (national AM rows) forced to FM — country-heavy remaps; CLASSIC_HITS not TOP40 (five-AM constraint). */
     dialBpAmToFm:{
-      3:{fmt:'ALBUM_ROCK',pw:'50kw'},
+      3:{fmt:'COUNTRY',pw:'50kw',str:'moderate'},
       6:{fmt:'GOSPEL',pw:'25kw'},
-      10:{fmt:'TOP40',pw:'50kw'},
-      11:{fmt:'ALBUM_ROCK',pw:'25kw'},
+      10:{fmt:'CLASSIC_HITS',pw:'50kw',str:'moderate'},
+      11:{fmt:'COUNTRY',pw:'25kw',str:'emerging'},
       12:{fmt:'GOSPEL',pw:'25kw'},
-      13:{fmt:'COUNTRY',pw:'50kw'},
+      13:{fmt:'COUNTRY',pw:'50kw',str:'strong'},
       17:{fmt:'GOSPEL',pw:'10kw'},
     },
     fmFacilityByFreq:{
@@ -10370,6 +10419,15 @@ const MARKET_BP_PATCH={
     13:{fmt:'MOR',pw:'DA',str:'moderate'},
     16:{fmt:'TOP40',str:'emerging'},
   },
+  /** Wichita: country-heavy Plains dial; weak AOR seed (BP 7/9 niche) + softer classic-rock emergence (BP 15). */
+  wichita:{
+    7:{fmt:'ALBUM_ROCK',str:'niche'},
+    9:{fmt:'ALBUM_ROCK',str:'niche'},
+    10:{fmt:'CLASSIC_HITS',str:'moderate'},
+    11:{fmt:'COUNTRY',pw:'5kw',str:'moderate'},
+    15:{fmt:'CLASSIC_ROCK',str:'emerging'},
+    16:{fmt:'COUNTRY',str:'strong'},
+  },
   /** Phoenix diag — Duncan-style dial: fewer AM Top 40 anchors, more adult FM (see `phoenixDiagOpeningOqMult`). */
   phoenix:{
     0:{fmt:'MOR',str:'strong'},
@@ -10842,14 +10900,50 @@ function processMegaMarketFragmentationLaunches(G){
   }
   G._megaFragmentationQueue=remain;
 }
-/** Optional MARKETS[id].spanishLaunches — scheduled FM/AM Spanish entrants (diag / high-Hispanic markets). */
+/** Optional MARKETS[id].spanishLaunches + high-Hispanic mega supplemental FM schedule. */
+const HIGH_HISPANIC_MEGA_SPANISH_SUPPLEMENTAL=[
+  {y:1994,p:1,win:2,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
+  {y:2003,p:1,win:3,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
+];
+function spanishLaunchDefsHasFmNearYear(defs,year,win){
+  return defs.some(d=>d.bp&&d.bp.fmt==='SPANISH'&&Math.abs((d.y||0)-year)<=win);
+}
+/** Mega fragmentation schedule — avoid triple-stacking 2003 supplemental + ~2006 SPANISH entrant. */
+function megaFragmentationHasSpanishFmNearYear(marketId,year,win){
+  if(!isMegaMarketId(marketId))return false;
+  return MEGA_MARKET_FRAGMENTATION_LAUNCHES.some(
+    ({y,bp})=>bp&&bp.fmt==='SPANISH'&&Math.abs(y-year)<=win,
+  );
+}
 function marketSpanishLaunchesDefs(marketId){
   const m=MARKETS[marketId||'']||null;
-  if(!m||!Array.isArray(m.spanishLaunches)||!m.spanishLaunches.length)return [];
-  return m.spanishLaunches.map(ent=>({
-    ...ent,
-    bp:ent.bp?{...ent.bp}:null,
-  }));
+  let defs=[];
+  if(m&&Array.isArray(m.spanishLaunches)&&m.spanishLaunches.length){
+    defs=m.spanishLaunches.map(ent=>({
+      ...ent,
+      bp:ent.bp?{...ent.bp}:null,
+    }));
+  }
+  if(isHighHispanicMegaMarket(marketId)){
+    for(const ent of HIGH_HISPANIC_MEGA_SPANISH_SUPPLEMENTAL){
+      if(spanishLaunchDefsHasFmNearYear(defs,ent.y,ent.win))continue;
+      if(ent.y===2003&&megaFragmentationHasSpanishFmNearYear(marketId,ent.y,ent.win))continue;
+      defs.push({
+        id:`${marketId}_mega_spanish_${ent.y}_fm`,
+        y:ent.y,
+        p:ent.p,
+        bp:{...ent.bp},
+      });
+    }
+    defs.sort((a,b)=>a.y-b.y||(a.p-b.p));
+  }
+  defs=defs.map(d=>{
+    if(!d.bp||d.bp.fmt!=='SPANISH')return d;
+    const bp={...d.bp};
+    if(bp.str==='emerging')bp.str='moderate';
+    return {...d,bp};
+  });
+  return defs;
 }
 function marketSpanishLaunchesQueueForNewGame(marketId){
   return marketSpanishLaunchesDefs(marketId);
@@ -10909,7 +11003,7 @@ function injectMarketSpanishLaunchesThroughPeriod(G,maxYear,maxPeriod){
   }
   G._spanishLaunchesQueue=remain;
 }
-/** Runs even in harness/quiet sim — only markets with `spanishLaunches` on MARKETS row. */
+/** Runs even in harness/quiet sim — markets with explicit or mega supplemental `spanishLaunches`. */
 function processMarketSpanishLaunches(G){
   if(!marketSpanishLaunchesDefs(G.marketId||ACTIVE_MARKET).length)return;
   const q=G._spanishLaunchesQueue;
@@ -12494,6 +12588,11 @@ function appl(s,coh,G){
     const sh=s.rat?.share??0;
     if(sh>=0.075)fmLeaderAppealTrim=1-_smoothstep(0.075,0.148,sh)*0.05;
   }
+  if(s.format==='SPANISH'&&isHighHispanicMarket(marketId)&&year>=1990){
+    const sh=s.rat?.share??0;
+    if(sh>=0.045&&sh<0.14)fmLeaderAppealTrim*=1+_smoothstep(0.045,0.11,sh)*0.08;
+    if(sh>=0.08)fmLeaderAppealTrim*=1.04;
+  }
   const cult=mkt.culture||{};
   // AM survival: brokered / zombie / ethnic-religious limp-along — minimal competitive footprint
   let zombieNicheMult=1;
@@ -12511,6 +12610,12 @@ function appl(s,coh,G){
   if(['SPANISH','RHYTHMIC','URBAN_CONTEMP'].includes(s.format)){
     mktFmt+=(cult.spanish||0)*0.18+(mkt.urbanBonus||0)*0.12;
     if(marketId==='losangeles')mktFmt+=0.065;
+    if(s.format==='SPANISH'&&isHighHispanicMarket(marketId)){
+      const h2020=mkt.hispPop2020??0;
+      const hCult=cult.spanish??0;
+      const hisp01=Math.min(1,h2020/0.45);
+      mktFmt+=0.06+0.14*hisp01+0.08*Math.min(1,hCult/0.24);
+    }
   }
   if((marketId==='newyork'||marketId==='chicago')&&s.sig?.type==='AM'&&['NEWS_TALK','MOR'].includes(s.format))
     mktFmt+=0.028;
@@ -14435,6 +14540,7 @@ function recalc(stations,G){
   {
     const postAqhDenom=publicRadioWeightedListeningDenominator(stations,G);
     applyModernTop40LeaderPeakabilityTrim(stations,G,activeIx,engageWeightedPop,postAqhDenom);
+    applyHighHispanicSpanishLeaderBoost(stations,G,activeIx,engageWeightedPop,postAqhDenom);
     applyListeningHoursShareFromAqh(stations,G);
   }
   {

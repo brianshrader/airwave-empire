@@ -3,6 +3,8 @@
  * Not used by gameplay. For regression / scaffold diagnostics.
  */
 
+import { isSpanishLanguageFormat } from './spanishLanguageFormats.mjs';
+
 export const LEADERSHIP_BUCKET_KEYS = [
   'TOP40_CHR',
   'AC_HOT_AC',
@@ -51,7 +53,7 @@ export function mapCanonicalFmtKeyToLeadershipBucket(fmtKey) {
   }
   if (k.startsWith('PUBLIC_')) return 'PUBLIC_RADIO';
   if (k === 'URBAN_CONTEMP' || k === 'SOUL_RNB') return 'URBAN_RHYTHMIC';
-  if (k === 'SPANISH') return 'SPANISH';
+  if (isSpanishLanguageFormat(k)) return 'SPANISH';
   if (k === 'GOSPEL' || k === 'RELIGIOUS_NETWORK') return 'GOSPEL_CCM';
   return null;
 }

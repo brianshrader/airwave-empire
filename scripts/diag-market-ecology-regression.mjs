@@ -27,6 +27,12 @@ import {
   classifyTop40Mismatch,
   expectedFormatLeadershipProfile,
 } from './expectedFormatLeadershipProfile.mjs';
+import {
+  describeSpanishLanguageBucket,
+  isSpanishLanguageFormat,
+  SPANISH_LANGUAGE_FORMAT_IDS,
+  SPANISH_LANGUAGE_FORMAT_PREFIXES,
+} from './spanishLanguageFormats.mjs';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
@@ -294,7 +300,13 @@ function printSpanishMarketDiagnostics(ctx, okRows, marketIds, years) {
           `top SPANISH ${shLead != null ? (shLead * 100).toFixed(2) : '—'}% | ` +
           `AM ${shAm != null ? (shAm * 100).toFixed(2) : '—'}% FM ${shFm != null ? (shFm * 100).toFixed(2) : '—'}% of Spanish mass`,
       );
-      lines.push(`       format labels counted as Spanish: SPANISH only (raw rf==='SPANISH')`);
+      const shLang = mean(list.map((r) => r.spanishLanguageShare));
+      const shLegacy = mean(list.map((r) => r.spanishShareLegacy));
+      lines.push(
+        `       Spanish-language book share: ${shLang != null ? (shLang * 100).toFixed(2) : '—'}% ` +
+          `(legacy SPANISH-only: ${shLegacy != null ? (shLegacy * 100).toFixed(2) : '—'}%)`,
+      );
+      lines.push(`       ${describeSpanishLanguageBucket()}`);
       const srcAgg = {};
       for (const r of list) {
         const o = r.spanishBySource || {};
@@ -355,10 +367,25 @@ function main() {
   const salts = {};
   for (const m of opts.markets) salts[m] = marketSalt(m);
 
+  const spanishFmtExact = [...SPANISH_LANGUAGE_FORMAT_IDS];
+  const spanishFmtPrefixes = [...SPANISH_LANGUAGE_FORMAT_PREFIXES];
   const innerFixed = `
   (function(){
     var SALTS = ${JSON.stringify(salts)};
     var GEN_ERA = ${JSON.stringify(opts.era)};
+    var SPANISH_LANG_FMT_EXACT = ${JSON.stringify(spanishFmtExact)};
+    var SPANISH_LANG_FMT_PREFIXES = ${JSON.stringify(spanishFmtPrefixes)};
+    function isSpanishLanguageFormat(fmt){
+      var raw=String(fmt||'').trim().toUpperCase();
+      if(!raw)return false;
+      for(var i=0;i<SPANISH_LANG_FMT_EXACT.length;i++){
+        if(SPANISH_LANG_FMT_EXACT[i]===raw)return true;
+      }
+      for(var j=0;j<SPANISH_LANG_FMT_PREFIXES.length;j++){
+        if(raw.indexOf(SPANISH_LANG_FMT_PREFIXES[j])===0)return true;
+      }
+      return false;
+    }
     function eligibleBookStations(G){
       return (G.stations||[]).filter(function(s){
         return s&&!s._bpSlotDeferred&&s.rat&&typeof s.rat.share==='number';
@@ -408,17 +435,18 @@ function main() {
         return {ok:false,err:'miss',atYear:G.year,atPeriod:G.period,steps:steps};
       var book=sortBook(eligibleBookStations(G));
       var fmtSum={};
-      var chr=0, ctry=0, talk=0, pub=0, gos=0, span=0, hhi=0;
+      var chr=0, ctry=0, talk=0, pub=0, gos=0, hhi=0;
       var chrLineageCount=0, chrLeaderShare=0;
       var spanishStationCount=0, spanishStationCountAll=0, spanishLeaderShare=0;
       var spanishAmShare=0, spanishFmShare=0, spanishLabelHist={};
       var spanishBySource={};
+      var span=0, spanLegacy=0;
       var allSt=(G.stations||[]).filter(function(s){
         return s&&!s._bpSlotDeferred&&!s.isPlayer&&typeof stationIsNoncommercialInstitutional==='function'&&!stationIsNoncommercialInstitutional(s);
       });
       for(var ai=0;ai<allSt.length;ai++){
         var ast=allSt[ai];
-        if(String(ast.format||'')!=='SPANISH')continue;
+        if(!isSpanishLanguageFormat(ast.format))continue;
         spanishStationCountAll++;
         var src=ast._spanishLaunchId
           ?('launch:'+ast._spanishLaunchId)
@@ -441,8 +469,9 @@ function main() {
         if(rf==='NEWS_TALK'||rf==='SPORTS_TALK'||rf==='PERSONALITY_TALK'||rf==='ALL_NEWS')talk+=sh;
         if(st.isPublic||rf.indexOf('PUBLIC_')===0)pub+=sh;
         if(rf==='GOSPEL')gos+=sh;
-        if(rf==='SPANISH'){
+        if(isSpanishLanguageFormat(rf)){
           span+=sh;
+          if(rf==='SPANISH')spanLegacy+=sh;
           spanishStationCount++;
           spanishLabelHist[rf]=(spanishLabelHist[rf]||0)+1;
           if(sh>spanishLeaderShare)spanishLeaderShare=sh;
@@ -471,6 +500,8 @@ function main() {
         newsTalk:talk,
         publicShare:pub,
         gospelShare:gos,
+        spanishLanguageShare:span,
+        spanishShareLegacy:spanLegacy,
         spanishShare:span,
         spanishStationCount:spanishStationCount,
         spanishStationCountAll:spanishStationCountAll,
@@ -527,6 +558,8 @@ function main() {
               newsTalk:r.newsTalk,
               publicShare:r.publicShare,
               gospelShare:r.gospelShare,
+              spanishLanguageShare:r.spanishLanguageShare,
+              spanishShareLegacy:r.spanishShareLegacy,
               spanishShare:r.spanishShare,
               spanishStationCount:r.spanishStationCount,
               spanishStationCountAll:r.spanishStationCountAll,
@@ -580,6 +613,8 @@ function main() {
     'mean_country_share',
     'mean_gospel_share',
     'mean_spanish_share',
+    'mean_spanish_language_share',
+    'mean_spanish_share_legacy',
     'mean_nBook',
     'top5_mean_formats',
     'num1_format_key_histogram',
@@ -608,6 +643,7 @@ function main() {
     'CHR lane = TOP40 (canonical) + CHR + RHYTHMIC + HOT_AC.',
     'Spoken word = NEWS_TALK + SPORTS_TALK + PERSONALITY_TALK + ALL_NEWS.',
     'Public = isPublic or format prefix PUBLIC_.',
+    describeSpanishLanguageBucket(),
     'Expected leadership = QA-only `expectedFormatLeadershipProfile(ecology,year)` (see scripts/expectedFormatLeadershipProfile.mjs).',
     'actual_top40_win_rate = fraction of runs where #1 canonical key is TOP40 (CHR maps to TOP40).',
     'mismatch_top40: SEVERE if wins>70% and expected<35%; MODERATE if wins−expected>0.20 and wins>45%.',
@@ -636,7 +672,8 @@ function main() {
       const pubs = list.map((r) => r.publicShare);
       const cts = list.map((r) => r.country);
       const gos = list.map((r) => r.gospelShare);
-      const sps = list.map((r) => r.spanishShare);
+      const sps = list.map((r) => r.spanishLanguageShare ?? r.spanishShare);
+      const spsLegacy = list.map((r) => r.spanishShareLegacy ?? r.spanishShare);
       const nbs = list.map((r) => r.nBook);
 
       const fmtMeans = new Map();
@@ -701,6 +738,8 @@ function main() {
         mean_country_share: mean(cts),
         mean_gospel_share: mean(gos),
         mean_spanish_share: mean(sps),
+        mean_spanish_language_share: mean(sps),
+        mean_spanish_share_legacy: mean(spsLegacy),
         mean_nBook: mean(nbs),
         top5_mean_formats: top5f,
         num1_format_key_histogram: histKeyStr,
@@ -736,6 +775,8 @@ function main() {
           row.mean_country_share != null ? (row.mean_country_share * 100).toFixed(2) : '',
           row.mean_gospel_share != null ? (row.mean_gospel_share * 100).toFixed(2) : '',
           row.mean_spanish_share != null ? (row.mean_spanish_share * 100).toFixed(2) : '',
+          row.mean_spanish_language_share != null ? (row.mean_spanish_language_share * 100).toFixed(2) : '',
+          row.mean_spanish_share_legacy != null ? (row.mean_spanish_share_legacy * 100).toFixed(2) : '',
           row.mean_nBook != null ? row.mean_nBook.toFixed(2) : '',
           escCsv(row.top5_mean_formats),
           escCsv(row.num1_format_key_histogram),
@@ -764,7 +805,8 @@ function main() {
           `pub=${row.mean_public_share != null ? (row.mean_public_share * 100).toFixed(1) : '—'}% ` +
           `ctry=${row.mean_country_share != null ? (row.mean_country_share * 100).toFixed(1) : '—'}% ` +
           `gos=${row.mean_gospel_share != null ? (row.mean_gospel_share * 100).toFixed(1) : '—'}% ` +
-          `esp=${row.mean_spanish_share != null ? (row.mean_spanish_share * 100).toFixed(1) : '—'}% | #1 keys ${histKeyStr}`,
+          `esp=${row.mean_spanish_language_share != null ? (row.mean_spanish_language_share * 100).toFixed(1) : '—'}%` +
+          `${row.mean_spanish_share_legacy != null && Math.abs(row.mean_spanish_language_share - row.mean_spanish_share_legacy) > 0.0005 ? ` (legacy ${(row.mean_spanish_share_legacy * 100).toFixed(1)}%)` : ''} | #1 keys ${histKeyStr}`,
       );
       linesOut.push(
         `  [expected leadership] ${row.expected_top_buckets}  (TOP40 #1 prior ${(row.expected_top40_weight * 100).toFixed(1)}%)`,
@@ -811,15 +853,17 @@ function main() {
   writeFileSync(outCsv, csvLines.join('\n') + '\n', 'utf8');
   console.log(linesOut.join('\n'));
 
-  const spanishDiagMarkets = opts.markets.filter((m) => m === 'phoenix' || process.argv.includes('--spanish-diag'));
+  const spanishDiagMarkets = opts.markets.filter(
+    (m) => m === 'phoenix' || m === 'miami' || process.argv.includes('--spanish-diag'),
+  );
   if (spanishDiagMarkets.length) {
     console.log(printSpanishMarketDiagnostics(ctx, okRows, spanishDiagMarkets, opts.years));
-    if (spanishDiagMarkets.includes('phoenix')) {
-      const outJson = path.join(root, 'tmp', 'market_scaffold', 'phoenix', 'spanish_format_diag.json');
+    for (const diagMid of spanishDiagMarkets) {
+      const outJson = path.join(root, 'tmp', 'market_scaffold', diagMid, 'spanish_format_diag.json');
       mkdirSync(path.dirname(outJson), { recursive: true });
       const byYear = {};
       for (const y of opts.years) {
-        const list = okRows.filter((r) => r.marketId === 'phoenix' && r.year === y);
+        const list = okRows.filter((r) => r.marketId === diagMid && r.year === y);
         if (!list.length) continue;
         const srcAgg = {};
         for (const r of list) {
@@ -832,7 +876,8 @@ function main() {
         byYear[y] = {
           meanSpanishStationCount: mean(list.map((r) => r.spanishStationCount)),
           meanSpanishStationCountAll: mean(list.map((r) => r.spanishStationCountAll)),
-          meanSpanishShare: mean(list.map((r) => r.spanishShare)),
+          meanSpanishLanguageShare: mean(list.map((r) => r.spanishLanguageShare ?? r.spanishShare)),
+          meanSpanishShareLegacy: mean(list.map((r) => r.spanishShareLegacy ?? r.spanishShare)),
           meanSpanishLeaderShare: mean(list.map((r) => r.spanishLeaderShare)),
           spanishBySourceMean: srcMean,
           runs: list.length,
@@ -840,7 +885,7 @@ function main() {
       }
       writeFileSync(
         outJson,
-        `${JSON.stringify({ marketId: 'phoenix', recordedAt: new Date().toISOString(), byYear }, null, 2)}\n`,
+        `${JSON.stringify({ marketId: diagMid, recordedAt: new Date().toISOString(), byYear }, null, 2)}\n`,
         'utf8',
       );
       console.log(`Wrote ${outJson}`);
