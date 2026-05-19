@@ -6,7 +6,7 @@
 
 **Goal:** A three-layer model that separates **national format lifecycle**, **market affinity modifiers**, and **era × market interaction**, with a data-driven catalog and QA harnesses before any `legacy.js` behavior change.
 
-Related: [MARKET_ECOLOGY_MIGRATION_PLAN.md](./MARKET_ECOLOGY_MIGRATION_PLAN.md), [MARKET_DATA_SCHEMA.md](./MARKET_DATA_SCHEMA.md).
+Related: [FORMAT_FAMILY_ARCHITECTURE.md](./FORMAT_FAMILY_ARCHITECTURE.md), [data/formatFamilies.v1.json](../data/formatFamilies.v1.json) (`npm run lint:format-families`), [MARKET_ECOLOGY_MIGRATION_PLAN.md](./MARKET_ECOLOGY_MIGRATION_PLAN.md), [MARKET_DATA_SCHEMA.md](./MARKET_DATA_SCHEMA.md).
 
 ---
 
@@ -100,6 +100,10 @@ Each format **family** is defined by piecewise anchors (same interpolation style
 | **GOSPEL / CCM** | ~1965 / ~1980 | **1995–2010** | Medium (~0.55) | Split | Commercial gospel vs **RELIGIOUS_NETWORK** institutional; HD/translator era widens CCM footprint post-~2004 |
 | **STANDARDS / MOR** | ~1960 | **1972–1980** | Very low (~0.15) | Very steep | **MOR/Standards decline**; overlaps `FORMAT_SUNSET` in `legacy.js` |
 | **BEAUTIFUL_MUSIC** | ~1965 | **1975–1985** | Very low | Very steep | Effectively extinct by 1995 gameplay |
+| **OLDIES** | ~1975 | **~2000** | Low (~0.35) | Moderate–steep | Aligns `FORMAT_SUNSET`; successor Classic Hits |
+| **SOUL / R&B** | ~1965 | **~1978** | Low–medium (~0.42) | Moderate | Yields to Urban Contemporary on FM |
+| **PERSONALITY_TALK** | ~1990 | **~2005** | Medium (~0.48) | Moderate | FM hot talk; post-podcast pressure |
+| **HOT_AC** (taxonomy) | ~1988 | **2000–2008** | Medium (~0.55) | Moderate | **Canonical family ADULT**; diagnostic lane `hits` for CHR cross-tags (`crossFamilyLaneAllowed`) |
 
 Institutional / non-player formats (`PUBLIC_*`, `RELIGIOUS_NETWORK`) use **lane-level** lifecycle rows for diagnostics, not per-station gameplay keys.
 

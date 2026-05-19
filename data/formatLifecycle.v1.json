@@ -15,6 +15,9 @@
     },
     "HOT_AC": {
       "lane": "hits",
+      "canonicalFamily": "ADULT",
+      "diagnosticLane": "hits",
+      "crossFamilyLaneAllowed": true,
       "emergence": 1988,
       "peak": 2004,
       "plateauEnd": 2012,
@@ -22,7 +25,7 @@
       "modernRetention": 0.55,
       "declineSteepness": 0.55,
       "floor": 0.1,
-      "notes": "Mass-appeal successor lane to Top 40"
+      "notes": "Canonical family ADULT (formatFamilies.v1.json). Diagnostic lane hits for CHR-bucket / modernChrPressure cross-tags — not a taxonomy error."
     },
     "ADULT_CONTEMP": {
       "lane": "ac",
@@ -34,6 +37,17 @@
       "declineSteepness": 0.35,
       "floor": 0.12,
       "notes": "AC / soft rock workhorse 35-54"
+    },
+    "OLDIES": {
+      "lane": "heritage",
+      "emergence": 1975,
+      "peak": 2000,
+      "plateauEnd": 2005,
+      "declineEnd": 2015,
+      "modernRetention": 0.35,
+      "declineSteepness": 0.72,
+      "floor": 0.05,
+      "notes": "50s/60s gold; aligns FORMAT_SUNSET peak 2000 / dead 2015; rebrands toward Classic Hits"
     },
     "CLASSIC_HITS": {
       "lane": "heritage",
@@ -101,6 +115,17 @@
       "floor": 0.12,
       "notes": "Team-market coupled"
     },
+    "PERSONALITY_TALK": {
+      "lane": "spoken",
+      "emergence": 1990,
+      "peak": 2005,
+      "plateauEnd": 2012,
+      "declineEnd": 2026,
+      "modernRetention": 0.48,
+      "declineSteepness": 0.45,
+      "floor": 0.08,
+      "notes": "FM hot talk / lifestyle; syndication peak 2000s; post-podcast fragmentation"
+    },
     "ALL_NEWS": {
       "lane": "spoken",
       "emergence": 1990,
@@ -133,6 +158,17 @@
       "declineSteepness": 0,
       "floor": 0.15,
       "notes": "Demographic-driven growth"
+    },
+    "SOUL_RNB": {
+      "lane": "urban",
+      "emergence": 1965,
+      "peak": 1978,
+      "plateauEnd": 1990,
+      "declineEnd": 2005,
+      "modernRetention": 0.42,
+      "declineSteepness": 0.55,
+      "floor": 0.08,
+      "notes": "AM soul heritage; disco/funk peak; yields share to Urban Contemporary on FM"
     },
     "URBAN_CONTEMP": {
       "lane": "urban",
@@ -285,7 +321,8 @@
     "sportsStrength": { "SPORTS_TALK": 0.35 },
     "gospelStrength": { "GOSPEL": 0.25 },
     "ccmStrength": { "CCM": 0.3 },
-    "urbanContemporaryStrength": { "URBAN_CONTEMP": 0.3, "RHYTHMIC": 0.15 },
+    "urbanContemporaryStrength": { "URBAN_CONTEMP": 0.3, "RHYTHMIC": 0.15, "SOUL_RNB": 0.12 },
+    "blackMusicStrength": { "SOUL_RNB": 0.2, "URBAN_CONTEMP": 0.15, "GOSPEL": 0.1 },
     "chrResistance": { "TOP40": -0.12, "HOT_AC": -0.08 },
     "modernMusicSubstitution": { "TOP40": -0.1, "HOT_AC": -0.06, "RHYTHMIC": -0.06 }
   },

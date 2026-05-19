@@ -1,0 +1,615 @@
+{
+  "version": 1,
+  "description": "Canonical format-family taxonomy (Phase 0 metadata). Maps legacy FM/DRIFT/sunset keys to families for lifecycle, ecology, and diagnostics. Not loaded by gameplay.",
+  "spec": "docs/FORMAT_FAMILY_ARCHITECTURE.md",
+  "families": {
+    "HITS": {
+      "label": "Hits / CHR",
+      "competitive": true,
+      "permanent": false,
+      "lifecycleLane": "hits",
+      "notes": "Top 40 lineage, rhythmic CHR, gold-based hits formats"
+    },
+    "ROCK": {
+      "label": "Rock",
+      "competitive": true,
+      "permanent": false,
+      "lifecycleLane": "rock",
+      "notes": "Album-rock lineage, classic rock, alternative, AAA"
+    },
+    "ADULT": {
+      "label": "Adult / AC",
+      "competitive": true,
+      "permanent": false,
+      "lifecycleLane": "ac",
+      "notes": "MOR, easy listening, AC, Hot AC, standards"
+    },
+    "COUNTRY": {
+      "label": "Country",
+      "competitive": true,
+      "permanent": false,
+      "lifecycleLane": "country"
+    },
+    "URBAN": {
+      "label": "Urban",
+      "competitive": true,
+      "permanent": false,
+      "lifecycleLane": "urban"
+    },
+    "SPOKEN": {
+      "label": "Spoken word",
+      "competitive": true,
+      "permanent": false,
+      "lifecycleLane": "spoken"
+    },
+    "CHRISTIAN": {
+      "label": "Christian (commercial)",
+      "competitive": true,
+      "permanent": false,
+      "lifecycleLane": "religious",
+      "notes": "Commercial gospel and future Christian AC/CHR — not institutional networks"
+    },
+    "SPANISH": {
+      "label": "Spanish",
+      "competitive": true,
+      "permanent": true,
+      "lifecycleLane": "ethnic"
+    },
+    "PUBLIC": {
+      "label": "Public radio",
+      "competitive": false,
+      "permanent": true,
+      "lifecycleLane": "public",
+      "notes": "NCE institutional; rival-only"
+    },
+    "REMNANT": {
+      "label": "Remnant / inventory",
+      "competitive": false,
+      "permanent": false,
+      "lifecycleLane": null,
+      "meta": true,
+      "notes": "Paid brokered blocks; not a ratings format family"
+    },
+    "INSTITUTIONAL": {
+      "label": "Institutional religious network",
+      "competitive": false,
+      "permanent": true,
+      "lifecycleLane": "religious",
+      "meta": true,
+      "notes": "RELIGIOUS_NETWORK — parallel to PUBLIC, not player-selectable"
+    }
+  },
+  "saveAliases": {
+    "CHR": "TOP40"
+  },
+  "legacyIdMap": {
+    "TOP40": {
+      "family": "HITS",
+      "logicalFormat": "top40_chr",
+      "displayDefault": "Top 40 / CHR",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1970,
+      "crossTags": ["hitsLineage"],
+      "driftKey": "TOP40",
+      "lifecycleCatalogKey": "TOP40"
+    },
+    "RHYTHMIC": {
+      "family": "HITS",
+      "logicalFormat": "rhythmic_chr",
+      "displayDefault": "Rhythmic CHR",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 2000,
+      "crossTags": ["hitsLineage", "chrPressure"],
+      "driftKey": "RHYTHMIC",
+      "lifecycleCatalogKey": "RHYTHMIC"
+    },
+    "OLDIES": {
+      "family": "HITS",
+      "logicalFormat": "oldies",
+      "displayDefault": "Oldies",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1983,
+      "driftKey": "OLDIES",
+      "lifecycleCatalogKey": "OLDIES",
+      "formatSunset": true
+    },
+    "CLASSIC_HITS": {
+      "family": "HITS",
+      "logicalFormat": "classic_hits",
+      "displayDefault": "Classic Hits",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 2005,
+      "driftKey": "CLASSIC_HITS",
+      "lifecycleCatalogKey": "CLASSIC_HITS"
+    },
+    "ALBUM_ROCK": {
+      "family": "ROCK",
+      "logicalFormat": "album_rock_lineage",
+      "displayDefault": "Album Rock",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1970,
+      "driftKey": "ALBUM_ROCK",
+      "lifecycleCatalogKey": "ALBUM_ROCK",
+      "displayLabelRule": "ALBUM_ROCK"
+    },
+    "CLASSIC_ROCK": {
+      "family": "ROCK",
+      "logicalFormat": "classic_rock",
+      "displayDefault": "Classic Rock",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1980,
+      "driftKey": "CLASSIC_ROCK",
+      "lifecycleCatalogKey": "CLASSIC_ROCK"
+    },
+    "ALT_ROCK": {
+      "family": "ROCK",
+      "logicalFormat": "alternative",
+      "displayDefault": "Alternative Rock",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1991,
+      "driftKey": "ALT_ROCK",
+      "lifecycleCatalogKey": "ALT_ROCK"
+    },
+    "AAA": {
+      "family": "ROCK",
+      "logicalFormat": "aaa",
+      "displayDefault": "Adult Album Alternative",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1985,
+      "driftKey": "AAA",
+      "lifecycleCatalogKey": "AAA"
+    },
+    "MOR": {
+      "family": "ADULT",
+      "logicalFormat": "mor_full_service",
+      "displayDefault": "Middle of the Road",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1970,
+      "driftKey": "MOR",
+      "lifecycleCatalogKey": "MOR",
+      "formatSunset": true
+    },
+    "BEAUTIFUL_MUSIC": {
+      "family": "ADULT",
+      "logicalFormat": "beautiful_music",
+      "displayDefault": "Beautiful Music",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1970,
+      "driftKey": "BEAUTIFUL_MUSIC",
+      "lifecycleCatalogKey": "BEAUTIFUL_MUSIC",
+      "formatSunset": true
+    },
+    "ADULT_CONTEMP": {
+      "family": "ADULT",
+      "logicalFormat": "adult_contemporary",
+      "displayDefault": "Adult Contemporary",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1980,
+      "driftKey": "ADULT_CONTEMP",
+      "lifecycleCatalogKey": "ADULT_CONTEMP",
+      "notes": "Soft AC is pole A of ADULT_CONTEMP drift; no separate SOFT_AC ID in Phase 0"
+    },
+    "HOT_AC": {
+      "family": "ADULT",
+      "logicalFormat": "hot_ac",
+      "displayDefault": "Hot Adult Contemporary",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 2000,
+      "crossTags": ["chrPressure", "hitsLineage"],
+      "driftKey": "HOT_AC",
+      "lifecycleCatalogKey": "HOT_AC",
+      "lifecycleLaneOverride": {
+        "canonicalFamily": "ADULT",
+        "diagnosticLane": "hits",
+        "crossFamilyLaneAllowed": true,
+        "reason": "CHR-bucket and hits-lane diagnostic pressure; lifecycle lane hits is intentional cross-tag, not HITS family membership"
+      }
+    },
+    "ADULT_STANDARDS": {
+      "family": "ADULT",
+      "logicalFormat": "adult_standards",
+      "displayDefault": "Adult Standards",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1981,
+      "driftKey": "ADULT_STANDARDS",
+      "lifecycleCatalogKey": "ADULT_STANDARDS"
+    },
+    "COUNTRY": {
+      "family": "COUNTRY",
+      "logicalFormat": "country",
+      "displayDefault": "Country",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1970,
+      "driftKey": "COUNTRY",
+      "lifecycleCatalogKey": "COUNTRY"
+    },
+    "SOUL_RNB": {
+      "family": "URBAN",
+      "logicalFormat": "soul_rnb",
+      "displayDefault": "Soul / R&B",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1970,
+      "driftKey": "SOUL_RNB",
+      "lifecycleCatalogKey": "SOUL_RNB"
+    },
+    "URBAN_CONTEMP": {
+      "family": "URBAN",
+      "logicalFormat": "urban_contemporary",
+      "displayDefault": "Urban Contemporary",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1983,
+      "driftKey": "URBAN_CONTEMP",
+      "lifecycleCatalogKey": "URBAN_CONTEMP",
+      "notes": "Hip-hop lean is drift pole B; separate HIP_HOP ID deferred"
+    },
+    "ALL_NEWS": {
+      "family": "SPOKEN",
+      "logicalFormat": "news_all_news",
+      "displayDefault": "All-News",
+      "displaySpecLabel": "News",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1970,
+      "talkFormat": true,
+      "lifecycleCatalogKey": "ALL_NEWS",
+      "notes": "No DRIFT entry in gameplay; future breaking vs in-depth axis"
+    },
+    "NEWS_TALK": {
+      "family": "SPOKEN",
+      "logicalFormat": "news_talk",
+      "displayDefault": "News / Talk",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1970,
+      "talkFormat": true,
+      "driftKey": "NEWS_TALK",
+      "lifecycleCatalogKey": "NEWS_TALK"
+    },
+    "PERSONALITY_TALK": {
+      "family": "SPOKEN",
+      "logicalFormat": "personality_talk",
+      "displayDefault": "Personality Talk",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1993,
+      "talkFormat": true,
+      "driftKey": "PERSONALITY_TALK",
+      "lifecycleCatalogKey": "PERSONALITY_TALK"
+    },
+    "SPORTS_TALK": {
+      "family": "SPOKEN",
+      "logicalFormat": "sports_talk",
+      "displayDefault": "Sports Talk",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1990,
+      "talkFormat": true,
+      "driftKey": "SPORTS_TALK",
+      "lifecycleCatalogKey": "SPORTS_TALK"
+    },
+    "GOSPEL": {
+      "family": "CHRISTIAN",
+      "logicalFormat": "gospel",
+      "displayDefault": "Gospel",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1970,
+      "driftKey": "GOSPEL",
+      "lifecycleCatalogKey": "GOSPEL"
+    },
+    "SPANISH": {
+      "family": "SPANISH",
+      "logicalFormat": "spanish_umbrella",
+      "displayDefault": "Spanish / Latin",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1992,
+      "driftKey": "SPANISH",
+      "lifecycleCatalogKey": "SPANISH"
+    },
+    "PUBLIC_NEWS": {
+      "family": "PUBLIC",
+      "logicalFormat": "public_news",
+      "displayDefault": "Public News / Talk",
+      "implemented": true,
+      "playerSelectable": false,
+      "publicFormat": true,
+      "fmUnlock": 1975,
+      "lifecycleCatalogAggregate": "PUBLIC"
+    },
+    "PUBLIC_CLASSICAL": {
+      "family": "PUBLIC",
+      "logicalFormat": "public_classical",
+      "displayDefault": "Public Classical",
+      "implemented": true,
+      "playerSelectable": false,
+      "publicFormat": true,
+      "fmUnlock": 1975,
+      "lifecycleCatalogAggregate": "PUBLIC"
+    },
+    "PUBLIC_ECLECTIC": {
+      "family": "PUBLIC",
+      "logicalFormat": "public_eclectic",
+      "displayDefault": "Public Eclectic Music",
+      "implemented": true,
+      "playerSelectable": false,
+      "publicFormat": true,
+      "fmUnlock": 1991,
+      "lifecycleCatalogAggregate": "PUBLIC"
+    },
+    "PUBLIC_JAZZ": {
+      "family": "PUBLIC",
+      "logicalFormat": "public_jazz",
+      "displayDefault": "Public Jazz",
+      "implemented": true,
+      "playerSelectable": false,
+      "publicFormat": true,
+      "fmUnlock": 1988,
+      "lifecycleCatalogAggregate": "PUBLIC"
+    },
+    "BROKERED_PROGRAMMING": {
+      "family": "REMNANT",
+      "logicalFormat": "brokered",
+      "displayDefault": "Brokered / Paid Programming",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1970,
+      "metaClassification": "remnant_inventory",
+      "competitiveRatings": false,
+      "notes": "Future drift: Religious ↔ Ethnic; positioning disabled in gameplay today"
+    },
+    "RELIGIOUS_NETWORK": {
+      "family": "INSTITUTIONAL",
+      "logicalFormat": "religious_network_chr",
+      "displayDefault": "Christian CHR",
+      "implemented": true,
+      "playerSelectable": false,
+      "institutional": true,
+      "fmUnlock": 1985,
+      "metaClassification": "institutional_religious_network",
+      "lifecycleCatalogKey": "CCM",
+      "notes": "Not commercial CHRISTIAN; competes via institutional dial rules"
+    },
+    "FULL_SERVICE": {
+      "family": "ADULT",
+      "logicalFormat": "mor_full_service",
+      "displayDefault": "Full Service",
+      "implemented": false,
+      "playerSelectable": false,
+      "formatSunsetOnly": true,
+      "formatSunset": true,
+      "notes": "FORMAT_SUNSET key only; not in FM{}; MOR inherits full-service behavior"
+    }
+  },
+  "plannedIds": {
+    "ADULT_HITS": {
+      "family": "HITS",
+      "logicalFormat": "adult_hits",
+      "displayDefault": "Adult Hits",
+      "implemented": false,
+      "targetUnlock": 1998,
+      "notes": "Jack-FM style; hit-based gold"
+    },
+    "SOFT_AC": {
+      "family": "ADULT",
+      "logicalFormat": "soft_ac",
+      "displayDefault": "Soft AC",
+      "implemented": false,
+      "targetUnlock": 1980,
+      "notes": "Currently ADULT_CONTEMP drift pole A only"
+    },
+    "CHRISTIAN": {
+      "family": "CHRISTIAN",
+      "logicalFormat": "christian_commercial",
+      "displayDefault": "Christian",
+      "implemented": false,
+      "targetUnlock": 1990,
+      "lifecycleCatalogKey": "CCM",
+      "notes": "Commercial Christian AC/CHR; distinct from RELIGIOUS_NETWORK"
+    },
+    "CLASSIC_COUNTRY": {
+      "family": "COUNTRY",
+      "logicalFormat": "classic_country",
+      "displayDefault": "Classic Country",
+      "implemented": false
+    },
+    "URBAN_AC": {
+      "family": "URBAN",
+      "logicalFormat": "urban_ac",
+      "displayDefault": "Urban AC",
+      "implemented": false
+    },
+    "HIP_HOP": {
+      "family": "URBAN",
+      "logicalFormat": "hip_hop",
+      "displayDefault": "Hip Hop",
+      "implemented": false,
+      "notes": "May remain URBAN_CONTEMP drift through Phase 3"
+    },
+    "SPANISH_CONTEMPORARY": {
+      "family": "SPANISH",
+      "logicalFormat": "spanish_contemporary",
+      "implemented": false
+    },
+    "SPANISH_ADULT_HITS": {
+      "family": "SPANISH",
+      "logicalFormat": "spanish_adult_hits",
+      "implemented": false
+    },
+    "REGIONAL_MEXICAN": {
+      "family": "SPANISH",
+      "logicalFormat": "regional_mexican",
+      "implemented": false
+    },
+    "SPANISH_TROPICAL": {
+      "family": "SPANISH",
+      "logicalFormat": "spanish_tropical",
+      "implemented": false
+    },
+    "SPANISH_NEWS_TALK": {
+      "family": "SPANISH",
+      "logicalFormat": "spanish_news_talk",
+      "implemented": false
+    },
+    "SPANISH_SPORTS": {
+      "family": "SPANISH",
+      "logicalFormat": "spanish_sports",
+      "implemented": false
+    },
+    "SPANISH_RELIGIOUS": {
+      "family": "SPANISH",
+      "logicalFormat": "spanish_religious",
+      "implemented": false
+    }
+  },
+  "lifecycleCatalogMap": {
+    "TOP40": { "legacyId": "TOP40" },
+    "HOT_AC": { "legacyId": "HOT_AC" },
+    "RHYTHMIC": { "legacyId": "RHYTHMIC" },
+    "OLDIES": { "legacyId": "OLDIES" },
+    "CLASSIC_HITS": { "legacyId": "CLASSIC_HITS" },
+    "ADULT_CONTEMP": { "legacyId": "ADULT_CONTEMP" },
+    "ADULT_STANDARDS": { "legacyId": "ADULT_STANDARDS" },
+    "BEAUTIFUL_MUSIC": { "legacyId": "BEAUTIFUL_MUSIC" },
+    "MOR": { "legacyId": "MOR" },
+    "ALBUM_ROCK": { "legacyId": "ALBUM_ROCK" },
+    "CLASSIC_ROCK": { "legacyId": "CLASSIC_ROCK" },
+    "ALT_ROCK": { "legacyId": "ALT_ROCK" },
+    "AAA": { "legacyId": "AAA" },
+    "COUNTRY": { "legacyId": "COUNTRY" },
+    "SOUL_RNB": { "legacyId": "SOUL_RNB" },
+    "URBAN_CONTEMP": { "legacyId": "URBAN_CONTEMP" },
+    "NEWS_TALK": { "legacyId": "NEWS_TALK" },
+    "SPORTS_TALK": { "legacyId": "SPORTS_TALK" },
+    "ALL_NEWS": { "legacyId": "ALL_NEWS" },
+    "PERSONALITY_TALK": { "legacyId": "PERSONALITY_TALK" },
+    "GOSPEL": { "legacyId": "GOSPEL" },
+    "SPANISH": { "legacyId": "SPANISH" },
+    "PUBLIC": {
+      "aggregateLegacyIds": ["PUBLIC_NEWS", "PUBLIC_CLASSICAL", "PUBLIC_ECLECTIC", "PUBLIC_JAZZ"]
+    },
+    "CCM": {
+      "plannedId": "CHRISTIAN",
+      "institutionalProxyLegacyId": "RELIGIOUS_NETWORK",
+      "notes": "Diagnostic CCM row; commercial ID is planned CHRISTIAN"
+    }
+  },
+  "displayLabelRules": {
+    "TOP40": {
+      "type": "hits_lineage",
+      "rules": [
+        { "untilYear": 1978, "label": "Top 40" },
+        { "label": "CHR", "blend": { "fromYear": 1978, "toYear": 1992 } }
+      ],
+      "notes": "Implemented in legacy.js hitsFormatSurfaceLabel / hitsLineageAxisBlendT"
+    },
+    "ALBUM_ROCK": {
+      "type": "era_tranche",
+      "rules": [
+        { "untilYear": 1975, "label": "Progressive Rock" },
+        { "untilYear": 1995, "label": "Album Rock / AOR" },
+        { "label": "Rock" }
+      ],
+      "notes": "Spec display only until fmtLabel wiring in Phase 3"
+    },
+    "ALL_NEWS": {
+      "type": "static_override",
+      "specLabel": "News",
+      "fmLabel": "All-News"
+    }
+  },
+  "lifecycleSuccessors": [
+    {
+      "from": "ALBUM_ROCK",
+      "to": "CLASSIC_ROCK",
+      "kind": "reformat",
+      "activeFromYear": 1985,
+      "notes": "Heritage rock migration as AOR declines"
+    },
+    {
+      "from": "ALBUM_ROCK",
+      "to": "ALT_ROCK",
+      "kind": "reformat",
+      "activeFromYear": 1991
+    },
+    {
+      "from": "ALBUM_ROCK",
+      "to": "AAA",
+      "kind": "reformat",
+      "activeFromYear": 1985
+    },
+    {
+      "from": "MOR",
+      "to": "ADULT_CONTEMP",
+      "kind": "positioning_migration",
+      "condition": "music_leaning_drift",
+      "activeFromYear": 1980
+    },
+    {
+      "from": "MOR",
+      "to": "NEWS_TALK",
+      "kind": "positioning_migration",
+      "condition": "talk_leaning_drift",
+      "activeFromYear": 1988
+    },
+    {
+      "from": "BEAUTIFUL_MUSIC",
+      "to": "ADULT_CONTEMP",
+      "kind": "lifecycle_sunset",
+      "activeUntilYear": 1995
+    },
+    {
+      "from": "OLDIES",
+      "to": "CLASSIC_HITS",
+      "kind": "reformat",
+      "activeFromYear": 1995,
+      "notes": "Broader-library drift + unlock 2005 for Classic Hits ID"
+    },
+    {
+      "from": "SOUL_RNB",
+      "to": "URBAN_CONTEMP",
+      "kind": "reformat",
+      "activeFromYear": 1983
+    },
+    {
+      "from": "TOP40",
+      "to": "HOT_AC",
+      "kind": "lane_fragmentation",
+      "activeFromYear": 2000,
+      "crossTag": "chrPressure"
+    },
+    {
+      "from": "TOP40",
+      "to": "RHYTHMIC",
+      "kind": "lane_fragmentation",
+      "activeFromYear": 2000,
+      "crossTag": "chrPressure"
+    }
+  ],
+  "crossTagDefinitions": {
+    "hitsLineage": "Unified Top 40/CHR lineage (isHitsFormatLineage, hitsLineageEraMult)",
+    "chrPressure": "CHR bucket / modernChrPressure01 / hits-lane diagnostic pressure (may apply across families)"
+  },
+  "launchTimelineSpec": {
+    "SOFT_AC": { "specUnlock": 1980, "implementedVia": "ADULT_CONTEMP", "fmUnlock": 1980 },
+    "CHRISTIAN": { "specUnlock": 1990, "plannedId": "CHRISTIAN", "implemented": false },
+    "SPORTS_TALK": { "specUnlock": 1988, "legacyId": "SPORTS_TALK", "fmUnlock": 1990 },
+    "PERSONALITY_TALK": { "specUnlock": 1995, "legacyId": "PERSONALITY_TALK", "fmUnlock": 1993 }
+  }
+}
