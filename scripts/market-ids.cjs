@@ -22,7 +22,7 @@ const DEV_BENCHMARK_MEGA_MARKET_IDS = Object.freeze(['newyork', 'losangeles', 'c
  * MARKETS rows present for ecology/scaffold harness only — never add to ALL_PLAYABLE_MARKET_IDS or billing.
  * Keep in sync with DIAG_ONLY rows in src/legacy.js MARKETS.
  */
-const DIAG_ONLY_MARKET_IDS = Object.freeze(['phoenix', 'portland']);
+const DIAG_ONLY_MARKET_IDS = Object.freeze(['phoenix', 'portland', 'miami']);
 
 module.exports = {
   ALL_PLAYABLE_MARKET_IDS,

@@ -17,6 +17,12 @@ import {
   expectedFormatLeadershipProfile,
   LEADERSHIP_BUCKET_KEYS,
 } from './expectedFormatLeadershipProfile.mjs';
+import { TRUTH_AUDIT_SPANISH_BOOK_SNIPPET } from './spanishSubtypeHelpers.mjs';
+import {
+  enrichSpanishSubtypeOnRows,
+  formatSpanishSubtypeBlock,
+  meanSpanishSubtypeAcrossRuns,
+} from './spanishSubtypeDiagnostics.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
@@ -388,10 +394,12 @@ const RUN_IIFE = `
       var hhi=0;
       for(var j=0;j<book.length;j++){var sh=book[j].rat.share||0; hhi+=sh*sh;}
       var spanCount=G.stations.filter(function(st){return st&&!st._bpSlotDeferred&&fmtKey(st.format)==='SPANISH';}).length;
+      ${TRUTH_AUDIT_SPANISH_BOOK_SNIPPET}
       return {
         ok:true, bookShares:roster.shares, leaderFmt:book[0]?fmtKey(book[0].format):'',
         hhi:hhi*10000, stationCount:G.stations.filter(function(s){return s&&!s._bpSlotDeferred;}).length,
-        spanishStationCount:spanCount
+        spanishStationCount:spanCount,
+        spanishBookStations:spanishBookStations
       };
     }catch(e){ return {ok:false,err:String(e&&e.message||e)}; }
   }
@@ -463,6 +471,8 @@ function main() {
   const bad = rows.filter((r) => !r.ok);
   if (bad.length) console.error(`Failures: ${bad.length} — ${bad[0]?.err}`);
 
+  enrichSpanishSubtypeOnRows(rows, ctx, { phoenix: PHOENIX_MARKET });
+
   console.log('═══ 1. Pipeline trace @ gen 1985 (chrwar) ═══\n');
   console.log('MARKET_BP_PATCH.phoenix:', JSON.stringify(pipeline.bpPatch));
   console.log(`commercialTarget=${pipeline.commercialTarget} tierTailDeferred=${pipeline.tierTailDeferred.length}`);
@@ -524,6 +534,13 @@ function main() {
     console.log(`  rock #1 wins: ${(y26.leaderConc.rockWins * 100).toFixed(0)}%`);
   }
 
+  console.log('\n═══ 5. Spanish subtype inference (Phase 1 diag) ═══\n');
+  for (const year of BENCHMARK_YEARS) {
+    const list = rows.filter((r) => r.ok && r.year === year);
+    const sub = meanSpanishSubtypeAcrossRuns(list);
+    console.log(`${year}: ${formatSpanishSubtypeBlock(sub, '  ').replace(/\n/g, '\n')}`);
+  }
+
   mkdirSync(path.join(root, 'tmp'), { recursive: true });
   writeFileSync(
     path.join(root, 'tmp', 'phoenix_truth_audit.json'),
@@ -536,6 +553,12 @@ function main() {
         ecology2026: eco,
         ecologyPrior2026: ecoPrior.serialized,
         book: BENCHMARK_YEARS.map((y) => bookByYear[y]),
+        spanishSubtypeByYear: Object.fromEntries(
+          BENCHMARK_YEARS.map((y) => [
+            y,
+            meanSpanishSubtypeAcrossRuns(rows.filter((r) => r.ok && r.year === y)),
+          ]),
+        ),
         diagnosisQuestions: {
           earlySpanishSeeding: 'spanishLaunches start 1994; tier inject may add SPANISH but blocked CHR path dominates',
           weakSpanishAppeal: 'mktFmt uses culture.spanish*0.18; LA gets +0.065, Phoenix does not',

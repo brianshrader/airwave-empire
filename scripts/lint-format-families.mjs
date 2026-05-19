@@ -20,6 +20,7 @@ const root = path.join(__dirname, '..');
 const legacyPath = path.join(root, 'src', 'legacy.js');
 const familiesPath = path.join(root, 'data', 'formatFamilies.v1.json');
 const lifecyclePath = path.join(root, 'data', 'formatLifecycle.v1.json');
+const spanishFormatsPath = path.join(root, 'data', 'spanishFormats.v1.json');
 
 const errors = [];
 const warnings = [];
@@ -334,6 +335,47 @@ function main() {
   // —— Save alias CHR ——
   if (catalog.saveAliases?.CHR !== 'TOP40') {
     err('saveAliases.CHR must map to TOP40');
+  }
+
+  // —— Spanish subtype catalog (Phase 1 diagnostics) ——
+  let spanishCatalog;
+  try {
+    spanishCatalog = JSON.parse(readFileSync(spanishFormatsPath, 'utf8'));
+  } catch (e) {
+    err(`Could not read ${spanishFormatsPath}: ${e.message}`);
+    spanishCatalog = null;
+  }
+  const requiredSpanishSubtypes = [
+    'SPANISH_CONTEMPORARY',
+    'REGIONAL_MEXICAN',
+    'SPANISH_TROPICAL',
+    'SPANISH_NEWS_TALK',
+    'SPANISH_SPORTS_TALK',
+    'SPANISH_ADULT_HITS',
+  ];
+  if (spanishCatalog?.subtypes) {
+    for (const id of requiredSpanishSubtypes) {
+      const st = spanishCatalog.subtypes[id];
+      if (!st) err(`spanishFormats.v1.json missing subtype ${id}`);
+      else {
+        if (st.family !== 'SPANISH') err(`${id}: family must be SPANISH`);
+        if (st.id !== id) err(`${id}: id field mismatch`);
+        if (!st.label || typeof st.launchYear !== 'number') {
+          err(`${id}: requires label and launchYear`);
+        }
+        if (fmKeys.includes(id)) {
+          err(`${id}: Phase 1 subtype must not appear in FM{} yet (diagnostics only)`);
+        }
+      }
+    }
+    if (spanishCatalog.subtypes.SPANISH_RELIGIOUS) {
+      err('spanishFormats: SPANISH_RELIGIOUS removed — use BROKERED_PROGRAMMING');
+    }
+    for (const id of Object.keys(spanishCatalog.subtypes)) {
+      if (!requiredSpanishSubtypes.includes(id)) {
+        warn(`spanishFormats.v1.json unexpected subtype ${id}`);
+      }
+    }
   }
 
   // —— Orphan lifecycle map keys ——

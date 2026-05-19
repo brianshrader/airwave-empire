@@ -1,0 +1,179 @@
+{
+  "version": 1,
+  "description": "Phase 1 Spanish format subtypes — diagnostic metadata only. Runtime gameplay still uses umbrella SPANISH.",
+  "spec": "docs/SPANISH_FORMAT_SPLIT_SPEC.md",
+  "family": "SPANISH",
+  "subtypes": {
+    "SPANISH_CONTEMPORARY": {
+      "id": "SPANISH_CONTEMPORARY",
+      "label": "Spanish Contemporary / Hot AC",
+      "launchYear": 1985,
+      "family": "SPANISH",
+      "demographicTendencies": [
+        "bilingual-young-adult",
+        "18-34",
+        "35-49",
+        "crossover-english-dominant-listeners"
+      ],
+      "preferredMarketTraits": {
+        "rankTier": ["mega", "large"],
+        "hispPop2020Min": 0.12,
+        "cultureSpanishMin": 0.1,
+        "regions": ["West Coast", "Northeast", "Midwest"],
+        "archetypes": ["west_fm_fragmented", "northeast_mega", "midwest_legacy"]
+      },
+      "adjacentSubtypeReformatPaths": [
+        "REGIONAL_MEXICAN",
+        "SPANISH_TROPICAL",
+        "SPANISH_ADULT_HITS"
+      ],
+      "amFmTendencies": {
+        "primary": "FM",
+        "notes": "CHR/Hot AC lane; AM heritage rare post-1990"
+      },
+      "notes": "Mega-market bilingual CHR; LA/NYC/Chicago contemporary clusters. Diagnostic prior only."
+    },
+    "REGIONAL_MEXICAN": {
+      "id": "REGIONAL_MEXICAN",
+      "label": "Regional Mexican",
+      "launchYear": 1978,
+      "family": "SPANISH",
+      "demographicTendencies": [
+        "Mexican-American",
+        "25-54",
+        "Spanish-dominant",
+        "immigrant-and-first-gen"
+      ],
+      "preferredMarketTraits": {
+        "rankTier": ["large", "mega", "medium"],
+        "hispPop2020Min": 0.18,
+        "cultureSpanishMin": 0.1,
+        "regions": ["Southwest", "West Coast", "Midwest"],
+        "archetypes": ["sunbelt_diversified", "midwest_legacy", "west_fm_fragmented"]
+      },
+      "adjacentSubtypeReformatPaths": [
+        "SPANISH_CONTEMPORARY",
+        "SPANISH_TROPICAL",
+        "SPANISH_ADULT_HITS"
+      ],
+      "amFmTendencies": {
+        "primary": "both",
+        "notes": "AM ranchera heritage; FM banda/norteño/modern regional from 1990s"
+      },
+      "notes": "Sunbelt and Texas-shaped markets (Phoenix, Houston, San Antonio, Chicago Mexican core)."
+    },
+    "SPANISH_TROPICAL": {
+      "id": "SPANISH_TROPICAL",
+      "label": "Spanish Tropical / Salsa",
+      "launchYear": 1982,
+      "family": "SPANISH",
+      "demographicTendencies": [
+        "Caribbean-Latino",
+        "18-49",
+        "dance-club",
+        "Puerto Rican and Cuban diaspora"
+      ],
+      "preferredMarketTraits": {
+        "rankTier": ["mega", "large"],
+        "hispPop2020Min": 0.15,
+        "cultureSpanishMin": 0.12,
+        "regions": ["Northeast", "West Coast", "South"],
+        "archetypes": ["northeast_mega", "west_fm_fragmented", "sunbelt_diversified"]
+      },
+      "adjacentSubtypeReformatPaths": [
+        "SPANISH_CONTEMPORARY",
+        "REGIONAL_MEXICAN"
+      ],
+      "amFmTendencies": {
+        "primary": "FM",
+        "notes": "Salsa/merengue/reggaeton lane; Miami and NY/NJ strong"
+      },
+      "notes": "Caribbean-leaning Hispanic markets; LA mix lane; future Miami bias."
+    },
+    "SPANISH_NEWS_TALK": {
+      "id": "SPANISH_NEWS_TALK",
+      "label": "Spanish News / Talk",
+      "launchYear": 1990,
+      "family": "SPANISH",
+      "demographicTendencies": [
+        "35-64",
+        "news-first",
+        "Spanish-dominant",
+        "political-and-community"
+      ],
+      "preferredMarketTraits": {
+        "rankTier": ["mega", "large"],
+        "hispPop2020Min": 0.1,
+        "cultureSpanishMin": 0.08,
+        "spokenWordLean": true,
+        "regions": ["Northeast", "Midwest", "West Coast", "South"],
+        "archetypes": ["northeast_mega", "midwest_legacy", "west_fm_fragmented"]
+      },
+      "adjacentSubtypeReformatPaths": [
+        "SPANISH_SPORTS_TALK",
+        "SPANISH_CONTEMPORARY"
+      ],
+      "amFmTendencies": {
+        "primary": "AM",
+        "notes": "News/talk and personality AM; FM news/talk from 2000s in mega markets"
+      },
+      "notes": "NYC/Chicago/Miami spoken-Spanish lane; pairs with ecology spokenWordStrength."
+    },
+    "SPANISH_SPORTS_TALK": {
+      "id": "SPANISH_SPORTS_TALK",
+      "label": "Spanish Sports Talk",
+      "launchYear": 2005,
+      "family": "SPANISH",
+      "demographicTendencies": [
+        "male-skew",
+        "25-54",
+        "sports-first",
+        "soccer-and-boxing"
+      ],
+      "preferredMarketTraits": {
+        "rankTier": ["mega", "large"],
+        "hispPop2020Min": 0.12,
+        "cultureSpanishMin": 0.08,
+        "sportsLean": true,
+        "regions": ["Northeast", "West Coast", "Southwest"],
+        "archetypes": ["northeast_mega", "west_fm_fragmented", "sunbelt_diversified"]
+      },
+      "adjacentSubtypeReformatPaths": [
+        "SPANISH_NEWS_TALK"
+      ],
+      "amFmTendencies": {
+        "primary": "AM",
+        "notes": "Often AM or HD2; late entrant vs music lanes"
+      },
+      "notes": "Thin but visible in mega markets; secondary to news/talk and contemporary."
+    },
+    "SPANISH_ADULT_HITS": {
+      "id": "SPANISH_ADULT_HITS",
+      "label": "Spanish Adult Hits / Recurrent",
+      "launchYear": 2002,
+      "family": "SPANISH",
+      "demographicTendencies": [
+        "35-54",
+        "recurrent-gold",
+        "workplace-FM",
+        "second-FM-Spanish-station"
+      ],
+      "preferredMarketTraits": {
+        "rankTier": ["mega", "large"],
+        "hispPop2020Min": 0.2,
+        "cultureSpanishMin": 0.12,
+        "regions": ["West Coast", "Northeast", "Southwest", "Midwest"],
+        "archetypes": ["west_fm_fragmented", "northeast_mega", "sunbelt_diversified"]
+      },
+      "adjacentSubtypeReformatPaths": [
+        "SPANISH_CONTEMPORARY",
+        "REGIONAL_MEXICAN"
+      ],
+      "amFmTendencies": {
+        "primary": "FM",
+        "notes": "Second FM Spanish entrant post-fragmentation; moderate/strong signal"
+      },
+      "notes": "2000s+ fragmentation lane; often scheduled via spanishLaunches second FM."
+    }
+  }
+}

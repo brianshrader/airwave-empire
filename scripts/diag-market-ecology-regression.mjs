@@ -15,6 +15,7 @@ import vm from 'vm';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { injectMarketEcologyIife } from './vmInjectMarketEcologyIife.mjs';
+import { injectFormatLifecycleIife } from './vmInjectFormatLifecycleIife.mjs';
 import {
   classifyChrBucketMismatch,
   classifyChrConcentrationMismatch,
@@ -33,6 +34,13 @@ import {
   SPANISH_LANGUAGE_FORMAT_IDS,
   SPANISH_LANGUAGE_FORMAT_PREFIXES,
 } from './spanishLanguageFormats.mjs';
+import { SPANISH_BOOK_STATIONS_SNIPPET } from './spanishSubtypeHelpers.mjs';
+import {
+  describeSpanishSubtypeCatalog,
+  enrichSpanishSubtypeOnRows,
+  formatSpanishSubtypeBlock,
+  meanSpanishSubtypeAcrossRuns,
+} from './spanishSubtypeDiagnostics.mjs';
 import { createRequire } from 'module';
 
 const require = createRequire(import.meta.url);
@@ -266,7 +274,11 @@ function mean(xs) {
 /** Phoenix / Spanish investigation — per-market station + share breakdown. */
 function printSpanishMarketDiagnostics(ctx, okRows, marketIds, years) {
   const MARKETS = vm.runInContext('typeof MARKETS !== "undefined" ? MARKETS : null', ctx);
-  const lines = ['', '=== Spanish format diagnostics (station generation + book share) ==='];
+  const lines = [
+    '',
+    '=== Spanish format diagnostics (station generation + book share) ===',
+    describeSpanishSubtypeCatalog(),
+  ];
   for (const mid of marketIds) {
     const mktRow = MARKETS?.[mid] || {};
     const cult = mktRow.culture || {};
@@ -317,6 +329,8 @@ function printSpanishMarketDiagnostics(ctx, okRows, marketIds, years) {
         .map((k) => `${k}:${(srcAgg[k] / n).toFixed(2)}`)
         .join(' ');
       lines.push(`       Spanish stations by source (mean/run): ${srcMean || '(none)'}`);
+      const subMean = meanSpanishSubtypeAcrossRuns(list);
+      lines.push(formatSpanishSubtypeBlock(subMean));
       if (mid === 'phoenix' && list[0]) {
         const sample = list[Math.floor(list.length / 2)];
         lines.push(`       sample run top5: ${sample.top5mix || '(none)'}`);
@@ -360,6 +374,7 @@ function main() {
   const opts = parseArgs(process.argv.slice(2));
   const ctx = createVmContext();
   injectMarketEcologyIife(ctx);
+  injectFormatLifecycleIife(ctx);
   vm.runInContext(loadLegacySrc(), ctx);
   vm.runInContext(readFileSync(harnessPath, 'utf8'), ctx);
   assertDiagnosticMarkets(ctx, opts.markets);
@@ -488,6 +503,7 @@ function main() {
       for(var t=0;t<Math.min(5,book.length);t++){
         top5.push(String(book[t].format)+':'+(Number(book[t].rat&&book[t].rat.share)||0).toFixed(4));
       }
+      ${SPANISH_BOOK_STATIONS_SNIPPET}
       return {
         ok:true,
         steps:steps,
@@ -510,6 +526,7 @@ function main() {
         spanishFmShare:spanishFmShare,
         spanishLabelHist:spanishLabelHist,
         spanishBySource:spanishBySource,
+        spanishBookStations:spanishBookStations,
         hhi_x10000:hhi*10000,
         gap12:sh1-sh2,
         gap15:sh1-sh5,
@@ -568,6 +585,7 @@ function main() {
               spanishFmShare:r.spanishFmShare,
               spanishLabelHist:r.spanishLabelHist,
               spanishBySource:r.spanishBySource,
+              spanishBookStations:r.spanishBookStations,
               hhi_x10000:r.hhi_x10000,
               gap12:r.gap12,
               gap15:r.gap15,
@@ -595,6 +613,7 @@ function main() {
     if (bad.length === rows.length) throw new Error(`All ${rows.length} samples failed`);
   }
   const okRows = rows.filter((r) => r.ok);
+  enrichSpanishSubtypeOnRows(okRows, ctx);
 
   mkdirSync(path.join(root, 'tmp'), { recursive: true });
 
@@ -880,6 +899,7 @@ function main() {
           meanSpanishShareLegacy: mean(list.map((r) => r.spanishShareLegacy ?? r.spanishShare)),
           meanSpanishLeaderShare: mean(list.map((r) => r.spanishLeaderShare)),
           spanishBySourceMean: srcMean,
+          spanishSubtype: meanSpanishSubtypeAcrossRuns(list),
           runs: list.length,
         };
       }

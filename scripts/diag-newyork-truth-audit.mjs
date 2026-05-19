@@ -18,6 +18,12 @@ import {
   expectedFormatLeadershipProfile,
   LEADERSHIP_BUCKET_KEYS,
 } from './expectedFormatLeadershipProfile.mjs';
+import { TRUTH_AUDIT_SPANISH_BOOK_SNIPPET } from './spanishSubtypeHelpers.mjs';
+import {
+  enrichSpanishSubtypeOnRows,
+  formatSpanishSubtypeBlock,
+  meanSpanishSubtypeAcrossRuns,
+} from './spanishSubtypeDiagnostics.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
@@ -373,9 +379,13 @@ const RUN_IIFE = `
       var roster=rosterByFormat(G.stations,true);
       var hhi=0;
       for(var j=0;j<book.length;j++){var sh=book[j].rat.share||0; hhi+=sh*sh;}
+      var spanCount=G.stations.filter(function(st){return st&&!st._bpSlotDeferred&&fmtKey(st.format)==='SPANISH';}).length;
+      ${TRUTH_AUDIT_SPANISH_BOOK_SNIPPET}
       return {
         ok:true, bookShares:roster.shares, leaderFmt:book[0]?fmtKey(book[0].format):'',
-        hhi:hhi*10000, stationCount:G.stations.filter(function(s){return s&&!s._bpSlotDeferred;}).length
+        hhi:hhi*10000, stationCount:G.stations.filter(function(s){return s&&!s._bpSlotDeferred;}).length,
+        spanishStationCount:spanCount,
+        spanishBookStations:spanishBookStations
       };
     }catch(e){ return {ok:false,err:String(e&&e.message||e)}; }
   }
@@ -450,6 +460,8 @@ function main() {
   const bad = rows.filter((r) => !r.ok);
   if (bad.length) console.error(`Failures: ${bad.length} — ${bad[0]?.err}`);
 
+  enrichSpanishSubtypeOnRows(rows, ctx, { newyork: NYC_MARKET });
+
   console.log('═══ 1. Pipeline trace @ gen 1985 (chrwar) ═══\n');
   console.log('newyork MARKET_BP_PATCH:', JSON.stringify(pipeline.bpPatch));
   console.log(`commercialTarget=${pipeline.commercialTarget} tierTailDeferred=${pipeline.tierTailDeferred.length}`);
@@ -500,6 +512,12 @@ function main() {
     console.log(`  #1 concentration: top format wins ${(y26.leaderConc.topShare * 100).toFixed(0)}% of runs across ${y26.leaderConc.unique} leaders`);
   }
 
+  console.log('\n═══ 4. Spanish subtype inference (Phase 1 diag) ═══\n');
+  for (const year of BENCHMARK_YEARS) {
+    const list = rows.filter((r) => r.ok && r.year === year);
+    console.log(`${year}:\n${formatSpanishSubtypeBlock(meanSpanishSubtypeAcrossRuns(list), '  ')}`);
+  }
+
   const eco = deriveMarketEcology(NYC_MARKET, 'newyork', 2026, null);
   const ecoPrior = expectedFormatLeadershipProfile(eco, 2026);
   console.log('\nEcology trait prior @2026:', ecoPrior.serialized);
@@ -507,7 +525,28 @@ function main() {
   mkdirSync(path.join(root, 'tmp'), { recursive: true });
   writeFileSync(
     path.join(root, 'tmp', 'newyork_truth_audit.json'),
-    `${JSON.stringify({ recordedAt: new Date().toISOString(), runs: RUNS, seed: SEED, pipeline, chicagoPipe, book: BENCHMARK_YEARS.map((y) => ({ year: y, summary: summarizeBookRows(rows, 'newyork', y), truth: NYC_GROUND_TRUTH[y] })) }, null, 2)}\n`,
+    `${JSON.stringify(
+      {
+        recordedAt: new Date().toISOString(),
+        runs: RUNS,
+        seed: SEED,
+        pipeline,
+        chicagoPipe,
+        book: BENCHMARK_YEARS.map((y) => ({
+          year: y,
+          summary: summarizeBookRows(rows, 'newyork', y),
+          truth: NYC_GROUND_TRUTH[y],
+        })),
+        spanishSubtypeByYear: Object.fromEntries(
+          BENCHMARK_YEARS.map((y) => [
+            y,
+            meanSpanishSubtypeAcrossRuns(rows.filter((r) => r.ok && r.year === y)),
+          ]),
+        ),
+      },
+      null,
+      2,
+    )}\n`,
   );
   console.log('\nWrote tmp/newyork_truth_audit.json');
 }

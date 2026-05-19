@@ -61,6 +61,7 @@
     "diag:share-concentration": "node scripts/diag-share-concentration.mjs",
     "diag:tier-concentration-formats": "node scripts/diag-tier-concentration-formats.mjs",
     "diag:market-ecology-regression": "node scripts/diag-market-ecology-regression.mjs",
+    "diag:spanish-subtype-truth-sanity": "node scripts/diag-spanish-subtype-truth-sanity.mjs",
     "diag:format-lifecycle": "node scripts/diag-format-lifecycle.mjs",
     "lint:format-families": "node scripts/lint-format-families.mjs",
     "diag:format-family-buckets": "node scripts/diag-format-family-buckets.mjs",

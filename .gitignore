@@ -15,6 +15,7 @@ ecosystem.config.local.cjs
 data/*
 !data/formatLifecycle.v1.json
 !data/formatFamilies.v1.json
+!data/spanishFormats.v1.json
 audit-output/
 trace-output/
 .env.*

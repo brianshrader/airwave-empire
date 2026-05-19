@@ -1,21 +1,26 @@
 /**
  * Canonical Spanish-language format IDs for QA / ecology regression diagnostics.
- * Gameplay `FM{}` currently exposes only `SPANISH`; tropical/regional/bilingual lanes
- * are sub-axes on that format until split formats ship.
+ * Gameplay `FM{}` currently exposes only `SPANISH`; Phase 1 subtypes live in
+ * data/spanishFormats.v1.json and are inferred in diagnostics only.
+ *
+ * @see docs/SPANISH_FORMAT_SPLIT_SPEC.md
+ * @see data/spanishFormats.v1.json
  */
+
+import { spanishSubtypeIds } from './spanishSubtypeHelpers.mjs';
+
+/** Phase 1 diagnostic subtype IDs (not separate FM{} keys yet). */
+export const SPANISH_SUBTYPE_FORMAT_IDS = Object.freeze(spanishSubtypeIds());
 
 /** Exact format keys that count as Spanish-language listening in diagnostics. */
 export const SPANISH_LANGUAGE_FORMAT_IDS = Object.freeze([
   'SPANISH',
-  // Planned / taxonomy extensions (include before split formats land):
+  ...SPANISH_SUBTYPE_FORMAT_IDS,
+  // Legacy / alternate taxonomy labels (pre-split aliases):
   'SALSA_TROPICAL',
   'BILINGUAL_AC',
-  'SPANISH_NEWS_TALK',
   'SPANISH_CHR',
   'SPANISH_HOT_AC',
-  'SPANISH_GOSPEL',
-  'SPANISH_RELIGIOUS',
-  'SPANISH_SPORTS_TALK',
   'SPANISH_BROKERED',
 ]);
 
