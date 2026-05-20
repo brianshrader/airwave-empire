@@ -273,6 +273,36 @@ function formatUnlockedForYear(f,G){
   const y=G?.year??1970;
   return !!(G?.unlockedFormats?.includes(f)||(FM[f]?.unlock??9999)<=y);
 }
+const SMALL_MARKET_URBAN_RHYTHM_FMTS=['URBAN_CONTEMP','RHYTHMIC'];
+/** Small markets with low Black population and low urbanBonus — no plausible commercial UC/Rhythmic dial. */
+function smallMarketUrbanRhythmicPlausibilityBlocked(marketId){
+  const m=MARKETS[marketId||'']||{};
+  if(m.rankTier!=='small')return false;
+  const bp=typeof m.blackPop==='number'?m.blackPop:0.2;
+  const ub=typeof m.urbanBonus==='number'?m.urbanBonus:0;
+  return bp<0.15&&ub<=0.05;
+}
+/** FM-first substitute when rival/inject wanted UC/Rhythmic in a blocked small market (era + country/midwest lean). */
+function smallMarketUrbanRhythmicSubstituteFmt(marketId,year,preferBand){
+  const m=MARKETS[marketId||'']||{};
+  const y=year??1970;
+  const band=preferBand||'FM';
+  const countryLean=(m.countryBonus||0)>=0.08||/midwest|plains|country|legacy/i.test(String(m.archetypeId||''));
+  const ok=(f)=>{
+    const fd=FM[f];
+    if(!fd||fd.public||fd.institutional)return false;
+    if((fd.unlock??9999)>y)return false;
+    if(band==='FM'&&fd.fm===false)return false;
+    return true;
+  };
+  if(y>=2005&&ok('CLASSIC_HITS'))return 'CLASSIC_HITS';
+  if(y>=1990&&ok('ADULT_CONTEMP'))return 'ADULT_CONTEMP';
+  if(countryLean&&ok('COUNTRY'))return 'COUNTRY';
+  if(ok('ADULT_CONTEMP'))return 'ADULT_CONTEMP';
+  if(band==='AM'&&FM.NEWS_TALK&&!FM.NEWS_TALK.public&&(FM.NEWS_TALK.unlock??9999)<=y)return 'NEWS_TALK';
+  if(ok('TOP40'))return 'TOP40';
+  return countryLean?'COUNTRY':'ADULT_CONTEMP';
+}
 /** Year unlock + optional marketsOnly (restrict format to listed marketIds). */
 function formatAllowedInMarket(fmt,marketId,year){
   const fd=FM[fmt];
@@ -280,6 +310,7 @@ function formatAllowedInMarket(fmt,marketId,year){
   const y=year??1970;
   if((fd.unlock??9999)>y)return false;
   if(fd.marketsOnly&&fd.marketsOnly.length&&!fd.marketsOnly.includes(marketId||''))return false;
+  if(smallMarketUrbanRhythmicPlausibilityBlocked(marketId)&&SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(fmt))return false;
   return true;
 }
 /** Public (NCE), religious network, and future institutional NCE — no commercial terrestrial spot economics / ownership path. */
@@ -10726,8 +10757,13 @@ const TIER_MARKET_INJECT_BP=[
   {type:'AM',fmt:'NEWS_TALK',pw:'10kw',str:'emerging'},
   {type:'FM',fmt:'PERSONALITY_TALK',pw:'25kw',str:'emerging'},
 ];
+function tierMarketInjectBpList(marketId){
+  if(!smallMarketUrbanRhythmicPlausibilityBlocked(marketId))return TIER_MARKET_INJECT_BP;
+  return TIER_MARKET_INJECT_BP.filter(spec=>!SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(spec.fmt));
+}
 function injectTierMarketCommercialExtras(stations,dialCtx,bpYear,commercialTarget){
   if(!stations||!dialCtx||!tierUsesDialScaling(dialCtx.marketId))return;
+  const INJECT=tierMarketInjectBpList(dialCtx.marketId);
   let pi=0;
   for(let guard=0;guard<80;guard++){
     let live=0;
@@ -10737,19 +10773,22 @@ function injectTierMarketCommercialExtras(stations,dialCtx,bpYear,commercialTarg
     }
     if(live>=commercialTarget)break;
     let spec=null;
-    for(let tries=0;tries<TIER_MARKET_INJECT_BP.length;tries++){
-      const cand=TIER_MARKET_INJECT_BP[(pi+tries)%TIER_MARKET_INJECT_BP.length];
+    for(let tries=0;tries<INJECT.length;tries++){
+      const cand=INJECT[(pi+tries)%INJECT.length];
       if(isPhoenixDiagMarket(dialCtx.marketId)&&phoenixDiagTierInjectFormatBlocked(cand.fmt))continue;
       if(formatAllowedInMarket(cand.fmt,dialCtx.marketId,bpYear)){
         spec=cand;
-        pi=(pi+tries+1)%TIER_MARKET_INJECT_BP.length;
+        pi=(pi+tries+1)%INJECT.length;
         break;
       }
     }
     if(!spec)break;
     const freq=nextUnusedCommercialFreq(dialCtx,spec.type);
     if(!freq)break;
-    stations.push(mkStn({type:spec.type,fmt:spec.fmt,pw:spec.pw,str:spec.str},freq,bpYear));
+    let injFmt=spec.fmt;
+    if(smallMarketUrbanRhythmicPlausibilityBlocked(dialCtx.marketId)&&SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(injFmt))
+      injFmt=smallMarketUrbanRhythmicSubstituteFmt(dialCtx.marketId,bpYear,spec.type);
+    stations.push(mkStn({type:spec.type,fmt:injFmt,pw:spec.pw,str:spec.str},freq,bpYear));
   }
 }
 /** Mega fragmentation launches **after** `(startYear,startPeriod)` — avoids double-spawn with tier dial fill at gen. */
@@ -12625,14 +12664,18 @@ function appl(s,coh,G){
     mktFmt*=profileCountryLifecycleMktFmtMult(marketId,year);
   }
   if(['SPANISH','RHYTHMIC','URBAN_CONTEMP'].includes(s.format)){
-    mktFmt+=(cult.spanish||0)*0.18+(mkt.urbanBonus||0)*0.12;
-    if(marketId==='losangeles')mktFmt+=0.065;
-    if(s.format==='SPANISH'&&isHighHispanicMarket(marketId)){
-      const h2020=mkt.hispPop2020??0;
-      const hCult=cult.spanish??0;
-      const hisp01=Math.min(1,h2020/0.45);
-      mktFmt+=0.06+0.14*hisp01+0.08*Math.min(1,hCult/0.24);
+    const urbanRhythmBlocked=smallMarketUrbanRhythmicPlausibilityBlocked(marketId);
+    if(s.format==='SPANISH'||!urbanRhythmBlocked){
+      mktFmt+=(cult.spanish||0)*0.18+(mkt.urbanBonus||0)*0.12;
+      if(marketId==='losangeles')mktFmt+=0.065;
+      if(s.format==='SPANISH'&&isHighHispanicMarket(marketId)){
+        const h2020=mkt.hispPop2020??0;
+        const hCult=cult.spanish??0;
+        const hisp01=Math.min(1,h2020/0.45);
+        mktFmt+=0.06+0.14*hisp01+0.08*Math.min(1,hCult/0.24);
+      }
     }
+    if(urbanRhythmBlocked&&['RHYTHMIC','URBAN_CONTEMP'].includes(s.format))mktFmt*=0.36;
   }
   if((marketId==='newyork'||marketId==='chicago')&&s.sig?.type==='AM'&&['NEWS_TALK','MOR'].includes(s.format))
     mktFmt+=0.028;
@@ -18242,8 +18285,12 @@ function applyEv(G,ev){
     else if(e.startsWith('rival-')){
       // rival-FORMAT-TYPE-POWER-STR
       const[,fmt,type,pw,str]=e.split('-');
-      const mechFmt=canonicalHitsFormatKey(fmt);
+      let mechFmt=canonicalHitsFormatKey(fmt);
       if(!mechFmt||!FM[mechFmt])return;
+      const mktId=G.marketId||ACTIVE_MARKET;
+      if(smallMarketUrbanRhythmicPlausibilityBlocked(mktId)&&SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(mechFmt))
+        mechFmt=smallMarketUrbanRhythmicSubstituteFmt(mktId,G.year,type);
+      if(!formatAllowedInMarket(mechFmt,mktId,G.year))return;
       const freq=nextUnusedCommercialFreq(G,type);
       if(!freq)return;
       const s=mkStn({type,fmt:mechFmt,pw,str},freq,G.year);
@@ -19874,13 +19921,18 @@ function genMarket(scenId){
     preEvents.forEach(ev=>{
       ev.e.split('|').filter(p=>p.startsWith('rival-')).forEach(part=>{
         const [,fmt,type,pw,str]=part.split('-');
-        if(!fmt||!FM[fmt])return;
+        let mechFmt=canonicalHitsFormatKey(fmt);
+        if(!mechFmt||!FM[mechFmt])return;
+        const mktId=ACTIVE_MARKET;
+        if(smallMarketUrbanRhythmicPlausibilityBlocked(mktId)&&SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(mechFmt))
+          mechFmt=smallMarketUrbanRhythmicSubstituteFmt(mktId,startYear,type);
+        if(!formatAllowedInMarket(mechFmt,mktId,startYear))return;
         // Don't add if this format is already represented in market
-        const already=stations.some(s=>s&&!s._bpSlotDeferred&&s.format===fmt&&!s.isPlayer);
+        const already=stations.some(s=>s&&!s._bpSlotDeferred&&s.format===mechFmt&&!s.isPlayer);
         if(already)return;
         const freq=nextUnusedCommercialFreq({stations,marketId:ACTIVE_MARKET},type);
         if(!freq)return;
-        const ns=mkStn({type,fmt,pw,str},freq,startYear);
+        const ns=mkStn({type,fmt:mechFmt,pw,str},freq,startYear);
         ns.color=CLR[stations.length%CLR.length];
         ns.launchPeriod=-999; // treat as established
         stations.push(ns);
