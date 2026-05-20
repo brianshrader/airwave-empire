@@ -1,0 +1,1111 @@
+{
+  "recordedAt": "2026-05-18T01:10:19.678Z",
+  "runs": 8,
+  "seed": 20260515,
+  "pipeline": {
+    "wichita": {
+      "bpYear": 1985,
+      "commercialTarget": 11,
+      "tierDialScaling": true,
+      "tierTailDeferred": [],
+      "nationalBp": [
+        {
+          "idx": 0,
+          "baseFmt": "TOP40",
+          "baseType": "AM",
+          "baseStr": "dominant",
+          "effFmt": "TOP40",
+          "effType": "AM",
+          "effStr": "dominant",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 1,
+          "baseFmt": "TOP40",
+          "baseType": "AM",
+          "baseStr": "strong",
+          "effFmt": "TOP40",
+          "effType": "AM",
+          "effStr": "strong",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 2,
+          "baseFmt": "COUNTRY",
+          "baseType": "AM",
+          "baseStr": "dominant",
+          "effFmt": "COUNTRY",
+          "effType": "AM",
+          "effStr": "dominant",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 3,
+          "baseFmt": "SOUL_RNB",
+          "baseType": "AM",
+          "baseStr": "strong",
+          "effFmt": "COUNTRY",
+          "effType": "FM",
+          "effStr": "moderate",
+          "remapped": true,
+          "patch": false
+        },
+        {
+          "idx": 4,
+          "baseFmt": "MOR",
+          "baseType": "AM",
+          "baseStr": "dominant",
+          "effFmt": "MOR",
+          "effType": "AM",
+          "effStr": "dominant",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 5,
+          "baseFmt": "NEWS_TALK",
+          "baseType": "AM",
+          "baseStr": "emerging",
+          "effFmt": "NEWS_TALK",
+          "effType": "AM",
+          "effStr": "emerging",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 6,
+          "baseFmt": "GOSPEL",
+          "baseType": "AM",
+          "baseStr": "niche",
+          "effFmt": "GOSPEL",
+          "effType": "FM",
+          "effStr": "niche",
+          "remapped": true,
+          "patch": false
+        },
+        {
+          "idx": 7,
+          "baseFmt": "ALBUM_ROCK",
+          "baseType": "FM",
+          "baseStr": "emerging",
+          "effFmt": "ALBUM_ROCK",
+          "effType": "FM",
+          "effStr": "niche",
+          "remapped": false,
+          "patch": true
+        },
+        {
+          "idx": 8,
+          "baseFmt": "ADULT_CONTEMP",
+          "baseType": "FM",
+          "baseStr": "moderate",
+          "effFmt": "ADULT_CONTEMP",
+          "effType": "FM",
+          "effStr": "moderate",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 9,
+          "baseFmt": "ALBUM_ROCK",
+          "baseType": "FM",
+          "baseStr": "moderate",
+          "effFmt": "ALBUM_ROCK",
+          "effType": "FM",
+          "effStr": "niche",
+          "remapped": false,
+          "patch": true
+        },
+        {
+          "idx": 10,
+          "baseFmt": "TOP40",
+          "baseType": "AM",
+          "baseStr": "strong",
+          "effFmt": "CLASSIC_HITS",
+          "effType": "FM",
+          "effStr": "moderate",
+          "remapped": true,
+          "patch": true
+        },
+        {
+          "idx": 11,
+          "baseFmt": "SOUL_RNB",
+          "baseType": "AM",
+          "baseStr": "moderate",
+          "effFmt": "COUNTRY",
+          "effType": "FM",
+          "effStr": "emerging",
+          "remapped": true,
+          "patch": true
+        },
+        {
+          "idx": 12,
+          "baseFmt": "GOSPEL",
+          "baseType": "AM",
+          "baseStr": "niche",
+          "effFmt": "GOSPEL",
+          "effType": "FM",
+          "effStr": "niche",
+          "remapped": true,
+          "patch": false
+        },
+        {
+          "idx": 13,
+          "baseFmt": "COUNTRY",
+          "baseType": "AM",
+          "baseStr": "moderate",
+          "effFmt": "COUNTRY",
+          "effType": "FM",
+          "effStr": "strong",
+          "remapped": true,
+          "patch": false
+        },
+        {
+          "idx": 14,
+          "baseFmt": "BEAUTIFUL_MUSIC",
+          "baseType": "FM",
+          "baseStr": "moderate",
+          "effFmt": "BEAUTIFUL_MUSIC",
+          "effType": "FM",
+          "effStr": "moderate",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 15,
+          "baseFmt": "ALBUM_ROCK",
+          "baseType": "FM",
+          "baseStr": "moderate",
+          "effFmt": "CLASSIC_ROCK",
+          "effType": "FM",
+          "effStr": "emerging",
+          "remapped": false,
+          "patch": true
+        },
+        {
+          "idx": 16,
+          "baseFmt": "COUNTRY",
+          "baseType": "FM",
+          "baseStr": "emerging",
+          "effFmt": "COUNTRY",
+          "effType": "FM",
+          "effStr": "strong",
+          "remapped": false,
+          "patch": true
+        },
+        {
+          "idx": 17,
+          "baseFmt": "GOSPEL",
+          "baseType": "AM",
+          "baseStr": "weak",
+          "effFmt": "GOSPEL",
+          "effType": "FM",
+          "effStr": "weak",
+          "remapped": true,
+          "patch": false
+        },
+        {
+          "idx": 18,
+          "baseFmt": "TOP40",
+          "baseType": "FM",
+          "baseStr": "strong",
+          "effFmt": "TOP40",
+          "effType": "FM",
+          "effStr": "strong",
+          "remapped": false,
+          "patch": false
+        }
+      ],
+      "dialBpAmToFm": {
+        "3": {
+          "fmt": "COUNTRY",
+          "pw": "50kw",
+          "str": "moderate"
+        },
+        "6": {
+          "fmt": "GOSPEL",
+          "pw": "25kw"
+        },
+        "10": {
+          "fmt": "CLASSIC_HITS",
+          "pw": "50kw",
+          "str": "moderate"
+        },
+        "11": {
+          "fmt": "COUNTRY",
+          "pw": "25kw",
+          "str": "emerging"
+        },
+        "12": {
+          "fmt": "GOSPEL",
+          "pw": "25kw"
+        },
+        "13": {
+          "fmt": "COUNTRY",
+          "pw": "50kw",
+          "str": "strong"
+        },
+        "17": {
+          "fmt": "GOSPEL",
+          "pw": "10kw"
+        }
+      },
+      "afterBpRoster": {
+        "counts": {
+          "TOP40": 2,
+          "COUNTRY": 2,
+          "MOR": 1,
+          "NEWS_TALK": 1,
+          "GOSPEL": 1,
+          "ALBUM_ROCK": 2,
+          "ADULT_CONTEMP": 1,
+          "CLASSIC_HITS": 1
+        },
+        "shares": {}
+      },
+      "tierInjectFormats": [],
+      "afterInjectRoster": {
+        "counts": {
+          "TOP40": 2,
+          "COUNTRY": 2,
+          "MOR": 1,
+          "NEWS_TALK": 1,
+          "GOSPEL": 1,
+          "ALBUM_ROCK": 2,
+          "ADULT_CONTEMP": 1,
+          "CLASSIC_HITS": 1
+        },
+        "shares": {}
+      },
+      "preGenRivalFormats": [
+        "CLASSIC_ROCK",
+        "URBAN_CONTEMP"
+      ],
+      "afterRivalRoster": {
+        "counts": {
+          "TOP40": 2,
+          "COUNTRY": 2,
+          "MOR": 1,
+          "NEWS_TALK": 1,
+          "GOSPEL": 1,
+          "ALBUM_ROCK": 2,
+          "ADULT_CONTEMP": 1,
+          "CLASSIC_HITS": 1,
+          "CLASSIC_ROCK": 1,
+          "URBAN_CONTEMP": 1
+        },
+        "shares": {}
+      },
+      "finalGenCount": 13
+    },
+    "nashville": {
+      "bpYear": 1985,
+      "commercialTarget": 19,
+      "tierDialScaling": false,
+      "tierTailDeferred": [],
+      "nationalBp": [
+        {
+          "idx": 0,
+          "baseFmt": "TOP40",
+          "baseType": "AM",
+          "baseStr": "dominant",
+          "effFmt": "TOP40",
+          "effType": "AM",
+          "effStr": "dominant",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 1,
+          "baseFmt": "TOP40",
+          "baseType": "AM",
+          "baseStr": "strong",
+          "effFmt": "TOP40",
+          "effType": "AM",
+          "effStr": "strong",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 2,
+          "baseFmt": "COUNTRY",
+          "baseType": "AM",
+          "baseStr": "dominant",
+          "effFmt": "COUNTRY",
+          "effType": "AM",
+          "effStr": "dominant",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 3,
+          "baseFmt": "SOUL_RNB",
+          "baseType": "AM",
+          "baseStr": "strong",
+          "effFmt": "SOUL_RNB",
+          "effType": "AM",
+          "effStr": "strong",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 4,
+          "baseFmt": "MOR",
+          "baseType": "AM",
+          "baseStr": "dominant",
+          "effFmt": "MOR",
+          "effType": "AM",
+          "effStr": "dominant",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 5,
+          "baseFmt": "NEWS_TALK",
+          "baseType": "AM",
+          "baseStr": "emerging",
+          "effFmt": "NEWS_TALK",
+          "effType": "AM",
+          "effStr": "emerging",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 6,
+          "baseFmt": "GOSPEL",
+          "baseType": "AM",
+          "baseStr": "niche",
+          "effFmt": "GOSPEL",
+          "effType": "AM",
+          "effStr": "niche",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 7,
+          "baseFmt": "ALBUM_ROCK",
+          "baseType": "FM",
+          "baseStr": "emerging",
+          "effFmt": "ALBUM_ROCK",
+          "effType": "FM",
+          "effStr": "emerging",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 8,
+          "baseFmt": "ADULT_CONTEMP",
+          "baseType": "FM",
+          "baseStr": "moderate",
+          "effFmt": "ADULT_CONTEMP",
+          "effType": "FM",
+          "effStr": "moderate",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 9,
+          "baseFmt": "ALBUM_ROCK",
+          "baseType": "FM",
+          "baseStr": "moderate",
+          "effFmt": "ALBUM_ROCK",
+          "effType": "FM",
+          "effStr": "moderate",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 10,
+          "baseFmt": "TOP40",
+          "baseType": "AM",
+          "baseStr": "strong",
+          "effFmt": "TOP40",
+          "effType": "AM",
+          "effStr": "strong",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 11,
+          "baseFmt": "SOUL_RNB",
+          "baseType": "AM",
+          "baseStr": "moderate",
+          "effFmt": "SOUL_RNB",
+          "effType": "AM",
+          "effStr": "moderate",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 12,
+          "baseFmt": "GOSPEL",
+          "baseType": "AM",
+          "baseStr": "niche",
+          "effFmt": "GOSPEL",
+          "effType": "AM",
+          "effStr": "niche",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 13,
+          "baseFmt": "COUNTRY",
+          "baseType": "AM",
+          "baseStr": "moderate",
+          "effFmt": "COUNTRY",
+          "effType": "AM",
+          "effStr": "moderate",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 14,
+          "baseFmt": "BEAUTIFUL_MUSIC",
+          "baseType": "FM",
+          "baseStr": "moderate",
+          "effFmt": "BEAUTIFUL_MUSIC",
+          "effType": "FM",
+          "effStr": "moderate",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 15,
+          "baseFmt": "ALBUM_ROCK",
+          "baseType": "FM",
+          "baseStr": "moderate",
+          "effFmt": "ALBUM_ROCK",
+          "effType": "FM",
+          "effStr": "moderate",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 16,
+          "baseFmt": "COUNTRY",
+          "baseType": "FM",
+          "baseStr": "emerging",
+          "effFmt": "COUNTRY",
+          "effType": "FM",
+          "effStr": "emerging",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 17,
+          "baseFmt": "GOSPEL",
+          "baseType": "AM",
+          "baseStr": "weak",
+          "effFmt": "GOSPEL",
+          "effType": "AM",
+          "effStr": "weak",
+          "remapped": false,
+          "patch": false
+        },
+        {
+          "idx": 18,
+          "baseFmt": "TOP40",
+          "baseType": "FM",
+          "baseStr": "strong",
+          "effFmt": "TOP40",
+          "effType": "FM",
+          "effStr": "strong",
+          "remapped": false,
+          "patch": false
+        }
+      ],
+      "dialBpAmToFm": {},
+      "afterBpRoster": {
+        "counts": {
+          "TOP40": 4,
+          "COUNTRY": 3,
+          "SOUL_RNB": 2,
+          "MOR": 1,
+          "NEWS_TALK": 1,
+          "GOSPEL": 3,
+          "ALBUM_ROCK": 3,
+          "ADULT_CONTEMP": 1,
+          "BEAUTIFUL_MUSIC": 1
+        },
+        "shares": {}
+      },
+      "tierInjectFormats": [],
+      "afterInjectRoster": {
+        "counts": {
+          "TOP40": 4,
+          "COUNTRY": 3,
+          "SOUL_RNB": 2,
+          "MOR": 1,
+          "NEWS_TALK": 1,
+          "GOSPEL": 3,
+          "ALBUM_ROCK": 3,
+          "ADULT_CONTEMP": 1,
+          "BEAUTIFUL_MUSIC": 1
+        },
+        "shares": {}
+      },
+      "preGenRivalFormats": [
+        "CLASSIC_ROCK",
+        "URBAN_CONTEMP"
+      ],
+      "afterRivalRoster": {
+        "counts": {
+          "TOP40": 4,
+          "COUNTRY": 3,
+          "SOUL_RNB": 2,
+          "MOR": 1,
+          "NEWS_TALK": 1,
+          "GOSPEL": 3,
+          "ALBUM_ROCK": 3,
+          "ADULT_CONTEMP": 1,
+          "BEAUTIFUL_MUSIC": 1,
+          "CLASSIC_ROCK": 1,
+          "URBAN_CONTEMP": 1
+        },
+        "shares": {}
+      },
+      "finalGenCount": 21
+    }
+  },
+  "bookResults": {
+    "wichita": {
+      "1975": {
+        "genPath": {
+          "genScen": "under",
+          "genYear": 1970,
+          "note": "gen 1970 → sim to target"
+        },
+        "meanBuckets": {
+          "TOP40_CHR": 0.2861988357984384,
+          "AC_HOT_AC": 0.10902611372292006,
+          "ROCK_ALT_AAA": 0.05781366494645215,
+          "COUNTRY": 0.2677289008424343,
+          "NEWS_TALK_SPORTS": 0.09021906737502017,
+          "PUBLIC_RADIO": 0.0068629024921196494,
+          "URBAN_RHYTHMIC": 0,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.045290631203119526
+        },
+        "meanBucketsPct": {
+          "TOP40_CHR": "28.6",
+          "AC_HOT_AC": "10.9",
+          "ROCK_ALT_AAA": "5.8",
+          "COUNTRY": "26.8",
+          "NEWS_TALK_SPORTS": "9.0",
+          "PUBLIC_RADIO": "0.7",
+          "URBAN_RHYTHMIC": "0.0",
+          "SPANISH": "0.0",
+          "GOSPEL_CCM": "4.5"
+        },
+        "hhi": 1177.5445877388538,
+        "leaderHist": "COUNTRY:7|ADULT_CONTEMP:1",
+        "topFormats": null
+      },
+      "1985": {
+        "genPath": {
+          "genScen": "chrwar",
+          "genYear": 1985,
+          "note": "gen 1985"
+        },
+        "meanBuckets": {
+          "TOP40_CHR": 0.14182941017451153,
+          "AC_HOT_AC": 0.14337211272785486,
+          "ROCK_ALT_AAA": 0.2093460889907701,
+          "COUNTRY": 0.1997499177323895,
+          "NEWS_TALK_SPORTS": 0.13904266267756224,
+          "PUBLIC_RADIO": 0.06901861258828232,
+          "URBAN_RHYTHMIC": 0.07716094633565565,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.02048024877297379
+        },
+        "meanBucketsPct": {
+          "TOP40_CHR": "14.2",
+          "AC_HOT_AC": "14.3",
+          "ROCK_ALT_AAA": "20.9",
+          "COUNTRY": "20.0",
+          "NEWS_TALK_SPORTS": "13.9",
+          "PUBLIC_RADIO": "6.9",
+          "URBAN_RHYTHMIC": "7.7",
+          "SPANISH": "0.0",
+          "GOSPEL_CCM": "2.0"
+        },
+        "hhi": 855.5940423109894,
+        "leaderHist": "ADULT_CONTEMP:8",
+        "topFormats": null
+      },
+      "1995": {
+        "genPath": {
+          "genScen": "chrwar",
+          "genYear": 1985,
+          "note": "gen 1985 → sim to target"
+        },
+        "meanBuckets": {
+          "TOP40_CHR": 0.047571235062212724,
+          "AC_HOT_AC": 0.16101305878665528,
+          "ROCK_ALT_AAA": 0.29015584548842527,
+          "COUNTRY": 0.19505428772001884,
+          "NEWS_TALK_SPORTS": 0.1401366739490766,
+          "PUBLIC_RADIO": 0.038895080039860246,
+          "URBAN_RHYTHMIC": 0.10987468765396768,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.01610350004978339
+        },
+        "meanBucketsPct": {
+          "TOP40_CHR": "4.8",
+          "AC_HOT_AC": "16.1",
+          "ROCK_ALT_AAA": "29.0",
+          "COUNTRY": "19.5",
+          "NEWS_TALK_SPORTS": "14.0",
+          "PUBLIC_RADIO": "3.9",
+          "URBAN_RHYTHMIC": "11.0",
+          "SPANISH": "0.0",
+          "GOSPEL_CCM": "1.6"
+        },
+        "hhi": 986.4426569029015,
+        "leaderHist": "COUNTRY:7|ADULT_CONTEMP:1",
+        "topFormats": null
+      },
+      "2005": {
+        "genPath": {
+          "genScen": "chrwar",
+          "genYear": 1985,
+          "note": "gen 1985 → sim to target"
+        },
+        "meanBuckets": {
+          "TOP40_CHR": 0.017737252512930297,
+          "AC_HOT_AC": 0.15121321944835275,
+          "ROCK_ALT_AAA": 0.3147780715271709,
+          "COUNTRY": 0.15637545616004087,
+          "NEWS_TALK_SPORTS": 0.13757029354828554,
+          "PUBLIC_RADIO": 0.03759287978335757,
+          "URBAN_RHYTHMIC": 0.12147292428381243,
+          "SPANISH": 0.0014280912357190877,
+          "GOSPEL_CCM": 0.05600833320177746
+        },
+        "meanBucketsPct": {
+          "TOP40_CHR": "1.8",
+          "AC_HOT_AC": "15.1",
+          "ROCK_ALT_AAA": "31.5",
+          "COUNTRY": "15.6",
+          "NEWS_TALK_SPORTS": "13.8",
+          "PUBLIC_RADIO": "3.8",
+          "URBAN_RHYTHMIC": "12.1",
+          "SPANISH": "0.1",
+          "GOSPEL_CCM": "5.6"
+        },
+        "hhi": 794.6968266700652,
+        "leaderHist": "ADULT_CONTEMP:4|COUNTRY:4",
+        "topFormats": null
+      },
+      "2026": {
+        "genPath": {
+          "genScen": "chrwar",
+          "genYear": 1985,
+          "note": "gen 1985 → sim to target"
+        },
+        "meanBuckets": {
+          "TOP40_CHR": 0,
+          "AC_HOT_AC": 0.13825774841969982,
+          "ROCK_ALT_AAA": 0.3133420738282995,
+          "COUNTRY": 0.1680254576121713,
+          "NEWS_TALK_SPORTS": 0.09391702689556024,
+          "PUBLIC_RADIO": 0.03904346732808301,
+          "URBAN_RHYTHMIC": 0.13595448624522932,
+          "SPANISH": 0.0014859987351400128,
+          "GOSPEL_CCM": 0.10544147205792795
+        },
+        "meanBucketsPct": {
+          "TOP40_CHR": "0.0",
+          "AC_HOT_AC": "13.8",
+          "ROCK_ALT_AAA": "31.3",
+          "COUNTRY": "16.8",
+          "NEWS_TALK_SPORTS": "9.4",
+          "PUBLIC_RADIO": "3.9",
+          "URBAN_RHYTHMIC": "13.6",
+          "SPANISH": "0.1",
+          "GOSPEL_CCM": "10.5"
+        },
+        "hhi": 759.9065796894412,
+        "leaderHist": "COUNTRY:6|ADULT_CONTEMP:2",
+        "topFormats": null
+      }
+    },
+    "nashville": {
+      "1975": {
+        "genPath": {
+          "genScen": "under",
+          "genYear": 1970,
+          "note": "gen 1970 → sim to target"
+        },
+        "meanBuckets": {
+          "TOP40_CHR": 0.2085526516162795,
+          "AC_HOT_AC": 0.04753114139565232,
+          "ROCK_ALT_AAA": 0.06701986387065283,
+          "COUNTRY": 0.28275227704025313,
+          "NEWS_TALK_SPORTS": 0.04830901018066078,
+          "PUBLIC_RADIO": 0.003217987507024376,
+          "URBAN_RHYTHMIC": 0.15026849038681855,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.021305036289344645
+        },
+        "meanBucketsPct": {
+          "TOP40_CHR": "20.9",
+          "AC_HOT_AC": "4.8",
+          "ROCK_ALT_AAA": "6.7",
+          "COUNTRY": "28.3",
+          "NEWS_TALK_SPORTS": "4.8",
+          "PUBLIC_RADIO": "0.3",
+          "URBAN_RHYTHMIC": "15.0",
+          "SPANISH": "0.0",
+          "GOSPEL_CCM": "2.1"
+        },
+        "hhi": 971.1773382752638,
+        "leaderHist": "COUNTRY:5|MOR:3",
+        "topFormats": null
+      },
+      "1985": {
+        "genPath": {
+          "genScen": "chrwar",
+          "genYear": 1985,
+          "note": "gen 1985"
+        },
+        "meanBuckets": {
+          "TOP40_CHR": 0.1907643276495211,
+          "AC_HOT_AC": 0.10604776957951192,
+          "ROCK_ALT_AAA": 0.1828700063630646,
+          "COUNTRY": 0.1580951311702789,
+          "NEWS_TALK_SPORTS": 0.13663063102386397,
+          "PUBLIC_RADIO": 0.0550212704030142,
+          "URBAN_RHYTHMIC": 0.09282092695272384,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.006157331297487552
+        },
+        "meanBucketsPct": {
+          "TOP40_CHR": "19.1",
+          "AC_HOT_AC": "10.6",
+          "ROCK_ALT_AAA": "18.3",
+          "COUNTRY": "15.8",
+          "NEWS_TALK_SPORTS": "13.7",
+          "PUBLIC_RADIO": "5.5",
+          "URBAN_RHYTHMIC": "9.3",
+          "SPANISH": "0.0",
+          "GOSPEL_CCM": "0.6"
+        },
+        "hhi": 683.1622439123355,
+        "leaderHist": "NEWS_TALK:4|TOP40:3|ADULT_CONTEMP:1",
+        "topFormats": null
+      },
+      "1995": {
+        "genPath": {
+          "genScen": "chrwar",
+          "genYear": 1985,
+          "note": "gen 1985 → sim to target"
+        },
+        "meanBuckets": {
+          "TOP40_CHR": 0.13940889576902799,
+          "AC_HOT_AC": 0.15136450854995176,
+          "ROCK_ALT_AAA": 0.22245262055611842,
+          "COUNTRY": 0.1588889445668259,
+          "NEWS_TALK_SPORTS": 0.1586721471952432,
+          "PUBLIC_RADIO": 0.0454972223794004,
+          "URBAN_RHYTHMIC": 0.0968817485285121,
+          "SPANISH": 0.0006002875,
+          "GOSPEL_CCM": 0.011841836256553554
+        },
+        "meanBucketsPct": {
+          "TOP40_CHR": "13.9",
+          "AC_HOT_AC": "15.1",
+          "ROCK_ALT_AAA": "22.2",
+          "COUNTRY": "15.9",
+          "NEWS_TALK_SPORTS": "15.9",
+          "PUBLIC_RADIO": "4.5",
+          "URBAN_RHYTHMIC": "9.7",
+          "SPANISH": "0.1",
+          "GOSPEL_CCM": "1.2"
+        },
+        "hhi": 901.3475089164417,
+        "leaderHist": "ADULT_CONTEMP:4|COUNTRY:3|TOP40:1",
+        "topFormats": null
+      },
+      "2005": {
+        "genPath": {
+          "genScen": "chrwar",
+          "genYear": 1985,
+          "note": "gen 1985 → sim to target"
+        },
+        "meanBuckets": {
+          "TOP40_CHR": 0.11227304472922262,
+          "AC_HOT_AC": 0.17726005958704197,
+          "ROCK_ALT_AAA": 0.24236988320253525,
+          "COUNTRY": 0.13583010832132442,
+          "NEWS_TALK_SPORTS": 0.18075262198683203,
+          "PUBLIC_RADIO": 0.04230654739799675,
+          "URBAN_RHYTHMIC": 0.08960783354913968,
+          "SPANISH": 0.00336576749695425,
+          "GOSPEL_CCM": 0.004387924968231649
+        },
+        "meanBucketsPct": {
+          "TOP40_CHR": "11.2",
+          "AC_HOT_AC": "17.7",
+          "ROCK_ALT_AAA": "24.2",
+          "COUNTRY": "13.6",
+          "NEWS_TALK_SPORTS": "18.1",
+          "PUBLIC_RADIO": "4.2",
+          "URBAN_RHYTHMIC": "9.0",
+          "SPANISH": "0.3",
+          "GOSPEL_CCM": "0.4"
+        },
+        "hhi": 816.0415825423926,
+        "leaderHist": "ADULT_CONTEMP:3|COUNTRY:3|NEWS_TALK:2",
+        "topFormats": null
+      },
+      "2026": {
+        "genPath": {
+          "genScen": "chrwar",
+          "genYear": 1985,
+          "note": "gen 1985 → sim to target"
+        },
+        "meanBuckets": {
+          "TOP40_CHR": 0.08094570825047988,
+          "AC_HOT_AC": 0.16351969763302032,
+          "ROCK_ALT_AAA": 0.22527908976447547,
+          "COUNTRY": 0.12699688346494134,
+          "NEWS_TALK_SPORTS": 0.11005713534308688,
+          "PUBLIC_RADIO": 0.03933077078283663,
+          "URBAN_RHYTHMIC": 0.08675202883398526,
+          "SPANISH": 0.0054271939627799385,
+          "GOSPEL_CCM": 0.14655493434841177
+        },
+        "meanBucketsPct": {
+          "TOP40_CHR": "8.1",
+          "AC_HOT_AC": "16.4",
+          "ROCK_ALT_AAA": "22.5",
+          "COUNTRY": "12.7",
+          "NEWS_TALK_SPORTS": "11.0",
+          "PUBLIC_RADIO": "3.9",
+          "URBAN_RHYTHMIC": "8.7",
+          "SPANISH": "0.5",
+          "GOSPEL_CCM": "14.7"
+        },
+        "hhi": 742.0953136125135,
+        "leaderHist": "COUNTRY:5|ADULT_CONTEMP:3",
+        "topFormats": null
+      }
+    }
+  },
+  "comparisons": {
+    "1975": {
+      "groundTruthNote": "Duncan mid-70s: AM heritage, country + top40 + MOR, gospel daytimers",
+      "wichitaVsTruthTop": [
+        {
+          "k": "TOP40_CHR",
+          "v": 0.10619883579843842,
+          "abs": 0.10619883579843842
+        },
+        {
+          "k": "GOSPEL_CCM",
+          "v": -0.07470936879688048,
+          "abs": 0.07470936879688048
+        },
+        {
+          "k": "COUNTRY",
+          "v": 0.06772890084243427,
+          "abs": 0.06772890084243427
+        }
+      ],
+      "wichitaVsEcologyTop": [
+        {
+          "k": "TOP40_CHR",
+          "v": 0.19013860550707853,
+          "abs": 0.19013860550707853
+        },
+        {
+          "k": "GOSPEL_CCM",
+          "v": -0.18824336776026132,
+          "abs": 0.18824336776026132
+        },
+        {
+          "k": "URBAN_RHYTHMIC",
+          "v": -0.09005513324009219,
+          "abs": 0.09005513324009219
+        }
+      ],
+      "wichitaCountry": "26.8",
+      "truthCountry": "20.0",
+      "nashvilleCountry": "28.3",
+      "wichitaRock": "5.8",
+      "truthRock": "8.0"
+    },
+    "1985": {
+      "groundTruthNote": "Duncan late-80s: FM country emerging, AOR fights, AM talk pivot begins",
+      "wichitaVsTruthTop": [
+        {
+          "k": "GOSPEL_CCM",
+          "v": -0.07951975122702622,
+          "abs": 0.07951975122702622
+        },
+        {
+          "k": "ROCK_ALT_AAA",
+          "v": 0.04934608899077009,
+          "abs": 0.04934608899077009
+        },
+        {
+          "k": "SPANISH",
+          "v": -0.03,
+          "abs": 0.03
+        }
+      ],
+      "wichitaVsEcologyTop": [
+        {
+          "k": "GOSPEL_CCM",
+          "v": -0.21236845655880682,
+          "abs": 0.21236845655880682
+        },
+        {
+          "k": "ROCK_ALT_AAA",
+          "v": 0.126855364147341,
+          "abs": 0.126855364147341
+        },
+        {
+          "k": "AC_HOT_AC",
+          "v": 0.0816961593719321,
+          "abs": 0.0816961593719321
+        }
+      ],
+      "wichitaCountry": "20.0",
+      "truthCountry": "22.0",
+      "nashvilleCountry": "15.8",
+      "wichitaRock": "20.9",
+      "truthRock": "16.0"
+    },
+    "1995": {
+      "groundTruthNote": "Duncan 90s: FM country + classic rock; AM music dying",
+      "wichitaVsTruthTop": [
+        {
+          "k": "ROCK_ALT_AAA",
+          "v": 0.11015584548842527,
+          "abs": 0.11015584548842527
+        },
+        {
+          "k": "URBAN_RHYTHMIC",
+          "v": 0.06987468765396768,
+          "abs": 0.06987468765396768
+        },
+        {
+          "k": "GOSPEL_CCM",
+          "v": -0.06389649995021661,
+          "abs": 0.06389649995021661
+        }
+      ],
+      "wichitaVsEcologyTop": [
+        {
+          "k": "GOSPEL_CCM",
+          "v": -0.21485282768575126,
+          "abs": 0.21485282768575126
+        },
+        {
+          "k": "ROCK_ALT_AAA",
+          "v": 0.20829735440977287,
+          "abs": 0.20829735440977287
+        },
+        {
+          "k": "AC_HOT_AC",
+          "v": 0.0997897649885707,
+          "abs": 0.0997897649885707
+        }
+      ],
+      "wichitaCountry": "19.5",
+      "truthCountry": "24.0",
+      "nashvilleCountry": "15.9",
+      "wichitaRock": "29.0",
+      "truthRock": "18.0"
+    },
+    "2005": {
+      "groundTruthNote": "Duncan 2000s: country still core; CHR resistance; talk steady",
+      "wichitaVsTruthTop": [
+        {
+          "k": "ROCK_ALT_AAA",
+          "v": 0.1747780715271709,
+          "abs": 0.1747780715271709
+        },
+        {
+          "k": "COUNTRY",
+          "v": -0.10362454383995914,
+          "abs": 0.10362454383995914
+        },
+        {
+          "k": "URBAN_RHYTHMIC",
+          "v": 0.08147292428381242,
+          "abs": 0.08147292428381242
+        }
+      ],
+      "wichitaVsEcologyTop": [
+        {
+          "k": "ROCK_ALT_AAA",
+          "v": 0.23969603220001695,
+          "abs": 0.23969603220001695
+        },
+        {
+          "k": "GOSPEL_CCM",
+          "v": -0.15569486338756466,
+          "abs": 0.15569486338756466
+        },
+        {
+          "k": "TOP40_CHR",
+          "v": -0.11638269917766933,
+          "abs": 0.11638269917766933
+        }
+      ],
+      "wichitaCountry": "15.6",
+      "truthCountry": "26.0",
+      "nashvilleCountry": "13.6",
+      "wichitaRock": "31.5",
+      "truthRock": "14.0"
+    },
+    "2026": {
+      "groundTruthNote": "RadioInsight 2025–26: country #1–#2 cluster; AC/classic hits; thin Spanish; news/talk meaningful",
+      "wichitaVsTruthTop": [
+        {
+          "k": "ROCK_ALT_AAA",
+          "v": 0.1933420738282995,
+          "abs": 0.1933420738282995
+        },
+        {
+          "k": "COUNTRY",
+          "v": -0.11197454238782872,
+          "abs": 0.11197454238782872
+        },
+        {
+          "k": "URBAN_RHYTHMIC",
+          "v": 0.08595448624522932,
+          "abs": 0.08595448624522932
+        }
+      ],
+      "wichitaVsEcologyTop": [
+        {
+          "k": "ROCK_ALT_AAA",
+          "v": 0.23520369954920783,
+          "abs": 0.23520369954920783
+        },
+        {
+          "k": "GOSPEL_CCM",
+          "v": -0.11461572479801044,
+          "abs": 0.11461572479801044
+        },
+        {
+          "k": "TOP40_CHR",
+          "v": -0.08873693164376663,
+          "abs": 0.08873693164376663
+        }
+      ],
+      "wichitaCountry": "16.8",
+      "truthCountry": "28.0",
+      "nashvilleCountry": "12.7",
+      "wichitaRock": "31.3",
+      "truthRock": "12.0"
+    }
+  }
+}

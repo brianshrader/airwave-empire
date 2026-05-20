@@ -1,0 +1,387 @@
+{
+  "recordedAt": "2026-05-17T22:32:13.573Z",
+  "runs": 8,
+  "seed": 20260515,
+  "results": {
+    "A": {
+      "scale": 1,
+      "byMarket": {
+        "wichita": {
+          "2026": {
+            "countryPct": 4.134963875,
+            "rockPct": 30.885003875,
+            "acPct": 16.172040375,
+            "chrPct": 8.893815250000001,
+            "publicPct": 4.763238875,
+            "spanishPct": 0.45227849999999997,
+            "aaaPct": 0.75868475,
+            "hhi": 711.5934991213176,
+            "histStr": "ADULT_CONTEMP:6|ALBUM_ROCK:1|RELIGIOUS_NETWORK:1",
+            "top40Mismatch": null,
+            "chrFlags": "CONCENTRATION_SEVERE"
+          }
+        },
+        "nashville": {
+          "2026": {
+            "countryPct": 14.111502874999998,
+            "rockPct": 24.28658675,
+            "acPct": 12.972507625000002,
+            "chrPct": 8.274597,
+            "publicPct": 3.9444633749999998,
+            "spanishPct": 0.642805125,
+            "aaaPct": 0,
+            "hhi": 721.0712747317741,
+            "histStr": "COUNTRY:7|ADULT_CONTEMP:1",
+            "top40Mismatch": null,
+            "chrFlags": "CONCENTRATION_SEVERE"
+          }
+        },
+        "portland": {
+          "2026": {
+            "countryPct": 14.294777999999997,
+            "rockPct": 20.160294125,
+            "acPct": 16.178596,
+            "chrPct": 11.276537625,
+            "publicPct": 10.2595655,
+            "spanishPct": 1.6489687500000003,
+            "aaaPct": 0.72031175,
+            "hhi": 649.5399733832957,
+            "histStr": "ADULT_CONTEMP:7|COUNTRY:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_MODERATE|CONCENTRATION_MODERATE"
+          }
+        },
+        "miami": {
+          "2026": {
+            "countryPct": 11.067580249999999,
+            "rockPct": 16.1948935,
+            "acPct": 13.030257375000001,
+            "chrPct": 10.783299125000001,
+            "publicPct": 3.16060025,
+            "spanishPct": 18.795023,
+            "aaaPct": 0.9018605,
+            "hhi": 485.2614683902267,
+            "histStr": "SPANISH:8",
+            "top40Mismatch": null,
+            "chrFlags": "CONCENTRATION_MODERATE"
+          }
+        },
+        "phoenix": {
+          "2026": {
+            "countryPct": 11.73923925,
+            "rockPct": 29.271026624999998,
+            "acPct": 13.135538374999998,
+            "chrPct": 8.53268225,
+            "publicPct": 4.076974625000001,
+            "spanishPct": 9.83038475,
+            "aaaPct": 0.362363125,
+            "hhi": 516.6562146905837,
+            "histStr": "CLASSIC_ROCK:5|COUNTRY:2|SPANISH:1",
+            "top40Mismatch": null,
+            "chrFlags": "CONCENTRATION_MODERATE"
+          }
+        },
+        "atlanta": {
+          "2026": {
+            "countryPct": 14.414472874999998,
+            "rockPct": 19.168987625000003,
+            "acPct": 16.30293025,
+            "chrPct": 12.612102624999999,
+            "publicPct": 4.478913124999999,
+            "spanishPct": 1.23016375,
+            "aaaPct": 0.78078125,
+            "hhi": 503.0093116067464,
+            "histStr": "CLASSIC_ROCK:3|RELIGIOUS_NETWORK:3|ADULT_CONTEMP:2",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_MODERATE|CONCENTRATION_MODERATE"
+          }
+        }
+      }
+    },
+    "B": {
+      "scale": 0.75,
+      "byMarket": {
+        "wichita": {
+          "2026": {
+            "countryPct": 2.712962875,
+            "rockPct": 29.9496385,
+            "acPct": 19.032664500000003,
+            "chrPct": 10.491812375,
+            "publicPct": 4.770682875,
+            "spanishPct": 0.497890875,
+            "aaaPct": 0.4255455,
+            "hhi": 750.8843534432987,
+            "histStr": "ADULT_CONTEMP:8",
+            "top40Mismatch": null,
+            "chrFlags": "CONCENTRATION_SEVERE"
+          }
+        },
+        "nashville": {
+          "2026": {
+            "countryPct": 11.76600725,
+            "rockPct": 22.063417875000003,
+            "acPct": 16.14225925,
+            "chrPct": 8.403722875,
+            "publicPct": 3.953779125,
+            "spanishPct": 0.597237875,
+            "aaaPct": 0,
+            "hhi": 726.1102748512866,
+            "histStr": "COUNTRY:6|ADULT_CONTEMP:1|RELIGIOUS_NETWORK:1",
+            "top40Mismatch": null,
+            "chrFlags": "CONCENTRATION_SEVERE"
+          }
+        },
+        "portland": {
+          "2026": {
+            "countryPct": 17.495811125,
+            "rockPct": 19.618795375000005,
+            "acPct": 15.306923625000001,
+            "chrPct": 12.706217125000002,
+            "publicPct": 10.492989000000001,
+            "spanishPct": 0.589322375,
+            "aaaPct": 2.0233513750000003,
+            "hhi": 620.306516222333,
+            "histStr": "ADULT_CONTEMP:4|COUNTRY:3|URBAN_CONTEMP:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_MODERATE|CONCENTRATION_MODERATE"
+          }
+        },
+        "miami": {
+          "2026": {
+            "countryPct": 11.926099625,
+            "rockPct": 15.63181775,
+            "acPct": 15.137265750000001,
+            "chrPct": 13.138377874999998,
+            "publicPct": 3.0797941250000003,
+            "spanishPct": 14.983637875,
+            "aaaPct": 0.7088334999999999,
+            "hhi": 496.87372825802953,
+            "histStr": "SPANISH:5|ADULT_CONTEMP:2|COUNTRY:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_MODERATE|CONCENTRATION_MODERATE"
+          }
+        },
+        "phoenix": {
+          "2026": {
+            "countryPct": 11.347879875000002,
+            "rockPct": 29.643345375000003,
+            "acPct": 12.858697750000001,
+            "chrPct": 11.926459999999999,
+            "publicPct": 4.101430874999999,
+            "spanishPct": 7.088034374999999,
+            "aaaPct": 0.6838971250000001,
+            "hhi": 494.02140156809804,
+            "histStr": "CLASSIC_ROCK:7|COUNTRY:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_MODERATE|CONCENTRATION_MODERATE"
+          }
+        },
+        "atlanta": {
+          "2026": {
+            "countryPct": 10.826591875,
+            "rockPct": 20.563175625,
+            "acPct": 15.780487625000001,
+            "chrPct": 14.059274624999999,
+            "publicPct": 4.590860125,
+            "spanishPct": 1.311641875,
+            "aaaPct": 0.8269787500000001,
+            "hhi": 503.201310611394,
+            "histStr": "CLASSIC_ROCK:4|RELIGIOUS_NETWORK:3|ADULT_CONTEMP:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_SEVERE|CONCENTRATION_MODERATE"
+          }
+        }
+      }
+    },
+    "C": {
+      "scale": 0.5,
+      "byMarket": {
+        "wichita": {
+          "2026": {
+            "countryPct": 1.7740095,
+            "rockPct": 28.378875124999997,
+            "acPct": 18.857421375,
+            "chrPct": 11.836561249999999,
+            "publicPct": 4.754301375,
+            "spanishPct": 0.287663875,
+            "aaaPct": 0.8128744999999999,
+            "hhi": 742.7680972418093,
+            "histStr": "ADULT_CONTEMP:7|TOP40:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_MODERATE|CONCENTRATION_SEVERE"
+          }
+        },
+        "nashville": {
+          "2026": {
+            "countryPct": 11.893723125,
+            "rockPct": 20.848951999999997,
+            "acPct": 16.586892625,
+            "chrPct": 8.738665625,
+            "publicPct": 3.9794261250000003,
+            "spanishPct": 0.806855875,
+            "aaaPct": 0,
+            "hhi": 735.6571827302455,
+            "histStr": "COUNTRY:5|NEWS_TALK:2|ADULT_CONTEMP:1",
+            "top40Mismatch": null,
+            "chrFlags": "CONCENTRATION_SEVERE"
+          }
+        },
+        "portland": {
+          "2026": {
+            "countryPct": 14.831039999999998,
+            "rockPct": 18.88269575,
+            "acPct": 14.970110874999998,
+            "chrPct": 13.379950999999998,
+            "publicPct": 10.32495625,
+            "spanishPct": 2.4451485,
+            "aaaPct": 1.6106058749999999,
+            "hhi": 623.9568743106555,
+            "histStr": "ADULT_CONTEMP:6|NEWS_TALK:1|COUNTRY:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_MODERATE|CONCENTRATION_SEVERE"
+          }
+        },
+        "miami": {
+          "2026": {
+            "countryPct": 13.002427625000001,
+            "rockPct": 16.330050375,
+            "acPct": 13.30905725,
+            "chrPct": 13.313287624999997,
+            "publicPct": 3.1752458750000003,
+            "spanishPct": 16.106787,
+            "aaaPct": 1.277428875,
+            "hhi": 496.207677739709,
+            "histStr": "SPANISH:6|COUNTRY:1|ADULT_CONTEMP:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_MODERATE|CONCENTRATION_MODERATE"
+          }
+        },
+        "phoenix": {
+          "2026": {
+            "countryPct": 9.75859,
+            "rockPct": 26.79585075,
+            "acPct": 14.2117035,
+            "chrPct": 11.435084875000001,
+            "publicPct": 3.9342242499999993,
+            "spanishPct": 7.818740125,
+            "aaaPct": 0.416049,
+            "hhi": 498.90671976688384,
+            "histStr": "CLASSIC_ROCK:7|SPANISH:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_MODERATE|CONCENTRATION_MODERATE"
+          }
+        },
+        "atlanta": {
+          "2026": {
+            "countryPct": 13.198367375,
+            "rockPct": 18.6838785,
+            "acPct": 15.058959249999997,
+            "chrPct": 14.8220325,
+            "publicPct": 4.525311125,
+            "spanishPct": 1.8784712500000003,
+            "aaaPct": 1.87822375,
+            "hhi": 513.7698384474444,
+            "histStr": "CLASSIC_ROCK:4|ADULT_CONTEMP:2|RELIGIOUS_NETWORK:1|SPORTS_TALK:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_SEVERE|CONCENTRATION_MODERATE"
+          }
+        }
+      }
+    },
+    "D": {
+      "scale": 0.25,
+      "byMarket": {
+        "wichita": {
+          "2026": {
+            "countryPct": 2.712659375,
+            "rockPct": 27.675945999999996,
+            "acPct": 17.21637425,
+            "chrPct": 11.885619,
+            "publicPct": 4.93630475,
+            "spanishPct": 0.42790525,
+            "aaaPct": 0,
+            "hhi": 723.1949951695901,
+            "histStr": "ADULT_CONTEMP:6|TOP40:2",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_MODERATE|CONCENTRATION_SEVERE"
+          }
+        },
+        "nashville": {
+          "2026": {
+            "countryPct": 11.676395250000002,
+            "rockPct": 22.619134875,
+            "acPct": 14.238057500000004,
+            "chrPct": 8.6578535,
+            "publicPct": 4.009257750000001,
+            "spanishPct": 0.5363267500000001,
+            "aaaPct": 0,
+            "hhi": 713.4410017838768,
+            "histStr": "COUNTRY:4|RELIGIOUS_NETWORK:2|NEWS_TALK:1|ADULT_CONTEMP:1",
+            "top40Mismatch": null,
+            "chrFlags": "CONCENTRATION_SEVERE"
+          }
+        },
+        "portland": {
+          "2026": {
+            "countryPct": 15.390705124999998,
+            "rockPct": 20.91248525,
+            "acPct": 14.84020725,
+            "chrPct": 14.021206375,
+            "publicPct": 10.395917375,
+            "spanishPct": 0.212689625,
+            "aaaPct": 0.601561375,
+            "hhi": 639.2210605061382,
+            "histStr": "ADULT_CONTEMP:6|COUNTRY:1|NEWS_TALK:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_SEVERE|CONCENTRATION_SEVERE"
+          }
+        },
+        "miami": {
+          "2026": {
+            "countryPct": 11.320601624999998,
+            "rockPct": 16.439794875000004,
+            "acPct": 12.95441525,
+            "chrPct": 14.223075374999999,
+            "publicPct": 3.231374875,
+            "spanishPct": 16.424463000000003,
+            "aaaPct": 1.9023823750000002,
+            "hhi": 479.9201379147432,
+            "histStr": "SPANISH:6|NEWS_TALK:1|SPORTS_TALK:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_SEVERE|CONCENTRATION_MODERATE"
+          }
+        },
+        "phoenix": {
+          "2026": {
+            "countryPct": 10.950627125,
+            "rockPct": 28.85013625,
+            "acPct": 12.329678125000001,
+            "chrPct": 10.457245625,
+            "publicPct": 3.970397875,
+            "spanishPct": 8.069537125,
+            "aaaPct": 0.5027808749999999,
+            "hhi": 489.91332609813287,
+            "histStr": "CLASSIC_ROCK:6|TOP40:1|COUNTRY:1",
+            "top40Mismatch": null,
+            "chrFlags": "CONCENTRATION_SEVERE"
+          }
+        },
+        "atlanta": {
+          "2026": {
+            "countryPct": 12.06249875,
+            "rockPct": 18.920735999999998,
+            "acPct": 14.658195874999999,
+            "chrPct": 14.126865125000002,
+            "publicPct": 4.5569385,
+            "spanishPct": 1.5929430000000002,
+            "aaaPct": 1.395362625,
+            "hhi": 518.5908615958765,
+            "histStr": "CLASSIC_ROCK:3|RELIGIOUS_NETWORK:2|ADULT_CONTEMP:1|TOP40:1|NEWS_TALK:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_SEVERE|CONCENTRATION_SEVERE"
+          }
+        }
+      }
+    }
+  }
+}

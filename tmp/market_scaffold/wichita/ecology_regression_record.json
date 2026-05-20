@@ -1,0 +1,20 @@
+{
+  "marketId": "wichita",
+  "recordedAt": "2026-05-17T21:26:00.000Z",
+  "command": "npm run diag:market-ecology-regression -- --markets=wichita --runs=8",
+  "genEra": "1985",
+  "runsPerCell": 8,
+  "seed": 20260515,
+  "years": [1995, 2000, 2006, 2010, 2020, 2026],
+  "pass": false,
+  "note": "Small midwest_legacy stress-test. 2026: HHI≈712, rock/alt-dominant book (29% bucket), country ~4%, Spanish ~0.5%, ADULT_CONTEMP #1. Concentrated small-market dynamics; country under book vs trait (0.59) — national gen bias. Five-AM gameplay dial honored in scaffold inventory.",
+  "summaryByYear": {
+    "1995": { "hhi": 908, "chrBucketPct": 16.5, "countryPct": 2.5, "spanishPct": 0.0, "publicPct": 5.6, "talkPct": 15.6, "top40Num1WinPct": 0, "flags": ["CONCENTRATION_MODERATE"] },
+    "2000": { "hhi": 854, "chrBucketPct": 14.3, "countryPct": 1.2, "spanishPct": 0.0, "publicPct": 4.9, "talkPct": 16.4, "top40Num1WinPct": 12.5, "flags": ["CONCENTRATION_MODERATE"] },
+    "2006": { "hhi": 757, "chrBucketPct": 12.9, "countryPct": 3.2, "spanishPct": 0.5, "publicPct": 4.3, "talkPct": 15.3, "top40Num1WinPct": 12.5, "flags": ["CONCENTRATION_SEVERE"] },
+    "2010": { "hhi": 754, "chrBucketPct": 13.5, "countryPct": 0.9, "spanishPct": 0.3, "publicPct": 4.3, "talkPct": 15.3, "top40Num1WinPct": 12.5, "flags": ["CONCENTRATION_SEVERE"] },
+    "2020": { "hhi": 739, "chrBucketPct": 10.9, "countryPct": 4.1, "spanishPct": 0.6, "publicPct": 4.8, "talkPct": 13.1, "top40Num1WinPct": 12.5, "flags": ["CONCENTRATION_SEVERE"] },
+    "2026": { "hhi": 712, "chrBucketPct": 8.9, "countryPct": 4.1, "spanishPct": 0.5, "publicPct": 4.8, "talkPct": 12.5, "top40Num1WinPct": 0, "flags": ["CONCENTRATION_SEVERE"] }
+  },
+  "csv": "tmp/market_ecology_regression.csv"
+}

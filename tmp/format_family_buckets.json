@@ -1,0 +1,867 @@
+{
+  "generatedAt": "2026-05-20T17:05:07.902Z",
+  "opts": {
+    "markets": [
+      "wichita",
+      "newyork",
+      "phoenix",
+      "portland"
+    ],
+    "years": [
+      1995,
+      2026
+    ],
+    "period": 1,
+    "runs": 4,
+    "seed": 20260518,
+    "maxSteps": 240,
+    "era": "1985"
+  },
+  "catalogVersion": 1,
+  "summaries": [
+    {
+      "marketId": "wichita",
+      "year": 1995,
+      "summary": {
+        "runs": 4,
+        "familySharesMean": {
+          "HITS": 0.16092720000000002,
+          "ROCK": 0.2366422925,
+          "ADULT": 0.18584908,
+          "COUNTRY": 0.19788875250000001,
+          "URBAN": 0,
+          "SPOKEN": 0.1513283225,
+          "CHRISTIAN": 0.02141878,
+          "SPANISH": 0,
+          "PUBLIC": 0.045945572500000004,
+          "REMNANT": 0,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "chrLineageShareMean": 0.05503032,
+        "hitsFamilyShareMean": 0.16092720000000002,
+        "hotAcInAdultNotHits": 0,
+        "leaderFamilyHistogram": {
+          "COUNTRY": 2,
+          "ADULT": 2
+        },
+        "topFormats": [
+          {
+            "format": "COUNTRY",
+            "share": 0.19788875250000001,
+            "family": "COUNTRY",
+            "familyLabel": "Country",
+            "displayLabel": "Country"
+          },
+          {
+            "format": "ADULT_CONTEMP",
+            "share": 0.18584908,
+            "family": "ADULT",
+            "familyLabel": "Adult / AC",
+            "displayLabel": "Adult Contemporary"
+          },
+          {
+            "format": "NEWS_TALK",
+            "share": 0.13502362,
+            "family": "SPOKEN",
+            "familyLabel": "Spoken word",
+            "displayLabel": "News / Talk"
+          },
+          {
+            "format": "CLASSIC_HITS",
+            "share": 0.10589688000000001,
+            "family": "HITS",
+            "familyLabel": "Hits / CHR",
+            "displayLabel": "Classic Hits"
+          },
+          {
+            "format": "ALBUM_ROCK",
+            "share": 0.09063878,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Rock"
+          },
+          {
+            "format": "CLASSIC_ROCK",
+            "share": 0.087758855,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Classic Rock"
+          },
+          {
+            "format": "TOP40",
+            "share": 0.05503032,
+            "family": "HITS",
+            "familyLabel": "Hits / CHR",
+            "displayLabel": "CHR"
+          },
+          {
+            "format": "ALT_ROCK",
+            "share": 0.0414529875,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Alternative Rock"
+          }
+        ],
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.05503032000000001,
+          "AC_HOT_AC": 0.18584908000000003,
+          "ROCK_ALT_AAA": 0.34253917250000004,
+          "COUNTRY": 0.19788875250000004,
+          "NEWS_TALK_SPORTS": 0.15132832250000003,
+          "PUBLIC_RADIO": 0.045945572500000004,
+          "URBAN_RHYTHMIC": 0,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.021418780000000002
+        },
+        "leadershipSerialized": "TOP40_CHR:0.0550|AC_HOT_AC:0.1858|ROCK_ALT_AAA:0.3425|COUNTRY:0.1979|NEWS_TALK_SPORTS:0.1513|PUBLIC_RADIO:0.0459|URBAN_RHYTHMIC:0.0000|SPANISH:0.0000|GOSPEL_CCM:0.0214",
+        "unmappedFormats": [],
+        "sampleLeader": {
+          "format": "ADULT_CONTEMP",
+          "share": 0.17977162,
+          "family": "ADULT"
+        }
+      },
+      "failCount": 0
+    },
+    {
+      "marketId": "wichita",
+      "year": 2026,
+      "summary": {
+        "runs": 4,
+        "familySharesMean": {
+          "HITS": 0.0817175025,
+          "ROCK": 0.3145731925,
+          "ADULT": 0.1473444925,
+          "COUNTRY": 0.20027958999999998,
+          "URBAN": 0,
+          "SPOKEN": 0.089808555,
+          "CHRISTIAN": 0.01782158,
+          "SPANISH": 0,
+          "PUBLIC": 0.041689475000000004,
+          "REMNANT": 0.003,
+          "INSTITUTIONAL": 0.10147115000000001,
+          "UNMAPPED": 0
+        },
+        "chrLineageShareMean": 0,
+        "hitsFamilyShareMean": 0.0817175025,
+        "hotAcInAdultNotHits": 0,
+        "leaderFamilyHistogram": {
+          "COUNTRY": 3,
+          "ADULT": 1
+        },
+        "topFormats": [
+          {
+            "format": "COUNTRY",
+            "share": 0.20027958999999998,
+            "family": "COUNTRY",
+            "familyLabel": "Country",
+            "displayLabel": "Country"
+          },
+          {
+            "format": "ADULT_CONTEMP",
+            "share": 0.14515669250000002,
+            "family": "ADULT",
+            "familyLabel": "Adult / AC",
+            "displayLabel": "Adult Contemporary"
+          },
+          {
+            "format": "CLASSIC_ROCK",
+            "share": 0.11229969249999999,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Classic Rock"
+          },
+          {
+            "format": "RELIGIOUS_NETWORK",
+            "share": 0.10147115000000001,
+            "family": "INSTITUTIONAL",
+            "familyLabel": "Institutional religious network",
+            "displayLabel": "Christian CHR"
+          },
+          {
+            "format": "ALT_ROCK",
+            "share": 0.09751746000000001,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Alternative Rock"
+          },
+          {
+            "format": "ALBUM_ROCK",
+            "share": 0.08738672,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Rock"
+          },
+          {
+            "format": "CLASSIC_HITS",
+            "share": 0.0817175025,
+            "family": "HITS",
+            "familyLabel": "Hits / CHR",
+            "displayLabel": "Classic Hits"
+          },
+          {
+            "format": "NEWS_TALK",
+            "share": 0.05791578,
+            "family": "SPOKEN",
+            "familyLabel": "Spoken word",
+            "displayLabel": "News / Talk"
+          }
+        ],
+        "leadershipBuckets": {
+          "TOP40_CHR": 0,
+          "AC_HOT_AC": 0.14549051503084398,
+          "ROCK_ALT_AAA": 0.3972020602321254,
+          "COUNTRY": 0.2007401808171281,
+          "NEWS_TALK_SPORTS": 0.09001509125131021,
+          "PUBLIC_RADIO": 0.04178534991843723,
+          "URBAN_RHYTHMIC": 0,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.11956707216331353
+        },
+        "leadershipSerialized": "TOP40_CHR:0.0000|AC_HOT_AC:0.1455|ROCK_ALT_AAA:0.3972|COUNTRY:0.2007|NEWS_TALK_SPORTS:0.0900|PUBLIC_RADIO:0.0418|URBAN_RHYTHMIC:0.0000|SPANISH:0.0000|GOSPEL_CCM:0.1196|OTHER:0.0052",
+        "unmappedFormats": [],
+        "sampleLeader": {
+          "format": "COUNTRY",
+          "share": 0.17043537,
+          "family": "COUNTRY"
+        }
+      },
+      "failCount": 0
+    },
+    {
+      "marketId": "newyork",
+      "year": 1995,
+      "summary": {
+        "runs": 4,
+        "familySharesMean": {
+          "HITS": 0.14558095999999998,
+          "ROCK": 0.238549895,
+          "ADULT": 0.2102623075,
+          "COUNTRY": 0.0547981275,
+          "URBAN": 0.140093085,
+          "SPOKEN": 0.1358756425,
+          "CHRISTIAN": 0.003539595,
+          "SPANISH": 0.010697235,
+          "PUBLIC": 0.04553243,
+          "REMNANT": 0.014232660000000001,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "chrLineageShareMean": 0.12677510250000001,
+        "hitsFamilyShareMean": 0.14558095999999998,
+        "hotAcInAdultNotHits": 0,
+        "leaderFamilyHistogram": {
+          "ADULT": 2,
+          "HITS": 1,
+          "SPOKEN": 1
+        },
+        "topFormats": [
+          {
+            "format": "ADULT_CONTEMP",
+            "share": 0.18729616,
+            "family": "ADULT",
+            "familyLabel": "Adult / AC",
+            "displayLabel": "Adult Contemporary"
+          },
+          {
+            "format": "TOP40",
+            "share": 0.12677510250000001,
+            "family": "HITS",
+            "familyLabel": "Hits / CHR",
+            "displayLabel": "CHR"
+          },
+          {
+            "format": "URBAN_CONTEMP",
+            "share": 0.126460805,
+            "family": "URBAN",
+            "familyLabel": "Urban",
+            "displayLabel": "Urban Contemporary"
+          },
+          {
+            "format": "CLASSIC_ROCK",
+            "share": 0.121892015,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Classic Rock"
+          },
+          {
+            "format": "NEWS_TALK",
+            "share": 0.119730225,
+            "family": "SPOKEN",
+            "familyLabel": "Spoken word",
+            "displayLabel": "News / Talk"
+          },
+          {
+            "format": "ALBUM_ROCK",
+            "share": 0.08504561,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Rock"
+          },
+          {
+            "format": "COUNTRY",
+            "share": 0.0547981275,
+            "family": "COUNTRY",
+            "familyLabel": "Country",
+            "displayLabel": "Country"
+          },
+          {
+            "format": "ALT_ROCK",
+            "share": 0.026162660000000004,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Alternative Rock"
+          }
+        ],
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.12688143707435814,
+          "AC_HOT_AC": 0.18745325754565184,
+          "ROCK_ALT_AAA": 0.2575716136104314,
+          "COUNTRY": 0.05484409027540643,
+          "NEWS_TALK_SPORTS": 0.13598961029277595,
+          "PUBLIC_RADIO": 0.045570621028585764,
+          "URBAN_RHYTHMIC": 0.14021059023778115,
+          "SPANISH": 0.010706207470998663,
+          "GOSPEL_CCM": 0.003542563889950021
+        },
+        "leadershipSerialized": "TOP40_CHR:0.1269|AC_HOT_AC:0.1875|ROCK_ALT_AAA:0.2576|COUNTRY:0.0548|NEWS_TALK_SPORTS:0.1360|PUBLIC_RADIO:0.0456|URBAN_RHYTHMIC:0.1402|SPANISH:0.0107|GOSPEL_CCM:0.0035|OTHER:0.0372",
+        "unmappedFormats": [],
+        "sampleLeader": {
+          "format": "ADULT_CONTEMP",
+          "share": 0.08907699,
+          "family": "ADULT"
+        }
+      },
+      "failCount": 0
+    },
+    {
+      "marketId": "newyork",
+      "year": 2026,
+      "summary": {
+        "runs": 4,
+        "familySharesMean": {
+          "HITS": 0.09243676,
+          "ROCK": 0.15010419999999997,
+          "ADULT": 0.1446837225,
+          "COUNTRY": 0.06489183,
+          "URBAN": 0.158759635,
+          "SPOKEN": 0.1793442825,
+          "CHRISTIAN": 0.00286915,
+          "SPANISH": 0.11544476000000001,
+          "PUBLIC": 0.06847248,
+          "REMNANT": 0.015449967499999998,
+          "INSTITUTIONAL": 0.006965405000000001,
+          "UNMAPPED": 0
+        },
+        "chrLineageShareMean": 0.08378146250000001,
+        "hitsFamilyShareMean": 0.09243676,
+        "hotAcInAdultNotHits": 0.003467385,
+        "leaderFamilyHistogram": {
+          "SPOKEN": 2,
+          "SPANISH": 2
+        },
+        "topFormats": [
+          {
+            "format": "NEWS_TALK",
+            "share": 0.128753265,
+            "family": "SPOKEN",
+            "familyLabel": "Spoken word",
+            "displayLabel": "News / Talk"
+          },
+          {
+            "format": "ADULT_CONTEMP",
+            "share": 0.1283610725,
+            "family": "ADULT",
+            "familyLabel": "Adult / AC",
+            "displayLabel": "Adult Contemporary"
+          },
+          {
+            "format": "SPANISH",
+            "share": 0.11544476000000001,
+            "family": "SPANISH",
+            "familyLabel": "Spanish",
+            "displayLabel": "Spanish / Latin"
+          },
+          {
+            "format": "CLASSIC_ROCK",
+            "share": 0.0988907275,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Classic Rock"
+          },
+          {
+            "format": "URBAN_CONTEMP",
+            "share": 0.0959771625,
+            "family": "URBAN",
+            "familyLabel": "Urban",
+            "displayLabel": "Urban Contemporary"
+          },
+          {
+            "format": "TOP40",
+            "share": 0.08031407750000001,
+            "family": "HITS",
+            "familyLabel": "Hits / CHR",
+            "displayLabel": "CHR"
+          },
+          {
+            "format": "COUNTRY",
+            "share": 0.06489183,
+            "family": "COUNTRY",
+            "familyLabel": "Country",
+            "displayLabel": "Country"
+          },
+          {
+            "format": "SOUL_RNB",
+            "share": 0.06278247249999999,
+            "family": "URBAN",
+            "familyLabel": "Urban",
+            "displayLabel": "Soul / R&B"
+          }
+        ],
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.0803605104056162,
+          "AC_HOT_AC": 0.13190467300934985,
+          "ROCK_ALT_AAA": 0.16232067260203453,
+          "COUNTRY": 0.06492934666347225,
+          "NEWS_TALK_SPORTS": 0.17944796888227996,
+          "PUBLIC_RADIO": 0.06851206678602947,
+          "URBAN_RHYTHMIC": 0.15885142054217494,
+          "SPANISH": 0.11551150341300832,
+          "GOSPEL_CCM": 0.009840240764915777
+        },
+        "leadershipSerialized": "TOP40_CHR:0.0804|AC_HOT_AC:0.1319|ROCK_ALT_AAA:0.1623|COUNTRY:0.0649|NEWS_TALK_SPORTS:0.1794|PUBLIC_RADIO:0.0685|URBAN_RHYTHMIC:0.1589|SPANISH:0.1155|GOSPEL_CCM:0.0098|OTHER:0.0283",
+        "unmappedFormats": [],
+        "sampleLeader": {
+          "format": "SPANISH",
+          "share": 0.11320322,
+          "family": "SPANISH"
+        }
+      },
+      "failCount": 0
+    },
+    {
+      "marketId": "phoenix",
+      "year": 1995,
+      "summary": {
+        "runs": 4,
+        "familySharesMean": {
+          "HITS": 0.1193519175,
+          "ROCK": 0.408092365,
+          "ADULT": 0.1615906525,
+          "COUNTRY": 0.08583465750000001,
+          "URBAN": 0.0911566275,
+          "SPOKEN": 0.0812478375,
+          "CHRISTIAN": 0.002973865,
+          "SPANISH": 0.00358262,
+          "PUBLIC": 0.042587005,
+          "REMNANT": 0.0035824525,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "chrLineageShareMean": 0.11768722999999999,
+        "hitsFamilyShareMean": 0.1193519175,
+        "hotAcInAdultNotHits": 0,
+        "leaderFamilyHistogram": {
+          "ROCK": 2,
+          "HITS": 1,
+          "COUNTRY": 1
+        },
+        "topFormats": [
+          {
+            "format": "CLASSIC_ROCK",
+            "share": 0.26932977250000006,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Classic Rock"
+          },
+          {
+            "format": "ADULT_CONTEMP",
+            "share": 0.1471680575,
+            "family": "ADULT",
+            "familyLabel": "Adult / AC",
+            "displayLabel": "Adult Contemporary"
+          },
+          {
+            "format": "TOP40",
+            "share": 0.11768722999999999,
+            "family": "HITS",
+            "familyLabel": "Hits / CHR",
+            "displayLabel": "CHR"
+          },
+          {
+            "format": "ALBUM_ROCK",
+            "share": 0.1108797575,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Rock"
+          },
+          {
+            "format": "COUNTRY",
+            "share": 0.08583465750000001,
+            "family": "COUNTRY",
+            "familyLabel": "Country",
+            "displayLabel": "Country"
+          },
+          {
+            "format": "URBAN_CONTEMP",
+            "share": 0.085292625,
+            "family": "URBAN",
+            "familyLabel": "Urban",
+            "displayLabel": "Urban Contemporary"
+          },
+          {
+            "format": "NEWS_TALK",
+            "share": 0.07122508250000001,
+            "family": "SPOKEN",
+            "familyLabel": "Spoken word",
+            "displayLabel": "News / Talk"
+          },
+          {
+            "format": "PUBLIC_NEWS",
+            "share": 0.020386172499999997,
+            "family": "PUBLIC",
+            "familyLabel": "Public radio",
+            "displayLabel": "Public News / Talk"
+          }
+        ],
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.11768723,
+          "AC_HOT_AC": 0.14716805750000003,
+          "ROCK_ALT_AAA": 0.4097570525000001,
+          "COUNTRY": 0.08583465750000002,
+          "NEWS_TALK_SPORTS": 0.08124783750000002,
+          "PUBLIC_RADIO": 0.042587005000000004,
+          "URBAN_RHYTHMIC": 0.09115662750000002,
+          "SPANISH": 0.0035826200000000003,
+          "GOSPEL_CCM": 0.0029738650000000004
+        },
+        "leadershipSerialized": "TOP40_CHR:0.1177|AC_HOT_AC:0.1472|ROCK_ALT_AAA:0.4098|COUNTRY:0.0858|NEWS_TALK_SPORTS:0.0812|PUBLIC_RADIO:0.0426|URBAN_RHYTHMIC:0.0912|SPANISH:0.0036|GOSPEL_CCM:0.0030|OTHER:0.0180",
+        "unmappedFormats": [],
+        "sampleLeader": {
+          "format": "CLASSIC_ROCK",
+          "share": 0.11271198,
+          "family": "ROCK"
+        }
+      },
+      "failCount": 0
+    },
+    {
+      "marketId": "phoenix",
+      "year": 2026,
+      "summary": {
+        "runs": 4,
+        "familySharesMean": {
+          "HITS": 0.1040837225,
+          "ROCK": 0.2753738825,
+          "ADULT": 0.11333597,
+          "COUNTRY": 0.12776059250000002,
+          "URBAN": 0.0840650375,
+          "SPOKEN": 0.0857222425,
+          "CHRISTIAN": 0.00079298,
+          "SPANISH": 0.12055474999999999,
+          "PUBLIC": 0.04049978,
+          "REMNANT": 0.0016843,
+          "INSTITUTIONAL": 0.04612675,
+          "UNMAPPED": 0
+        },
+        "chrLineageShareMean": 0.1014933225,
+        "hitsFamilyShareMean": 0.1040837225,
+        "hotAcInAdultNotHits": 0,
+        "leaderFamilyHistogram": {
+          "ROCK": 1,
+          "SPANISH": 2,
+          "URBAN": 1
+        },
+        "topFormats": [
+          {
+            "format": "CLASSIC_ROCK",
+            "share": 0.2268105025,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Classic Rock"
+          },
+          {
+            "format": "COUNTRY",
+            "share": 0.12776059250000002,
+            "family": "COUNTRY",
+            "familyLabel": "Country",
+            "displayLabel": "Country"
+          },
+          {
+            "format": "SPANISH",
+            "share": 0.12055474999999999,
+            "family": "SPANISH",
+            "familyLabel": "Spanish",
+            "displayLabel": "Spanish / Latin"
+          },
+          {
+            "format": "ADULT_CONTEMP",
+            "share": 0.11333597,
+            "family": "ADULT",
+            "familyLabel": "Adult / AC",
+            "displayLabel": "Adult Contemporary"
+          },
+          {
+            "format": "TOP40",
+            "share": 0.1014933225,
+            "family": "HITS",
+            "familyLabel": "Hits / CHR",
+            "displayLabel": "CHR"
+          },
+          {
+            "format": "URBAN_CONTEMP",
+            "share": 0.0795911175,
+            "family": "URBAN",
+            "familyLabel": "Urban",
+            "displayLabel": "Urban Contemporary"
+          },
+          {
+            "format": "RELIGIOUS_NETWORK",
+            "share": 0.04612675,
+            "family": "INSTITUTIONAL",
+            "familyLabel": "Institutional religious network",
+            "displayLabel": "Christian CHR"
+          },
+          {
+            "format": "ALBUM_ROCK",
+            "share": 0.034702415,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Rock"
+          }
+        ],
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.10149332173880006,
+          "AC_HOT_AC": 0.1133359691499802,
+          "ROCK_ALT_AAA": 0.27796428041526783,
+          "COUNTRY": 0.12776059154179556,
+          "NEWS_TALK_SPORTS": 0.08572224185708317,
+          "PUBLIC_RADIO": 0.040499779696251646,
+          "URBAN_RHYTHMIC": 0.08406503686951222,
+          "SPANISH": 0.12055474909583935,
+          "GOSPEL_CCM": 0.04691972964810202
+        },
+        "leadershipSerialized": "TOP40_CHR:0.1015|AC_HOT_AC:0.1133|ROCK_ALT_AAA:0.2780|COUNTRY:0.1278|NEWS_TALK_SPORTS:0.0857|PUBLIC_RADIO:0.0405|URBAN_RHYTHMIC:0.0841|SPANISH:0.1206|GOSPEL_CCM:0.0469|OTHER:0.0017",
+        "unmappedFormats": [],
+        "sampleLeader": {
+          "format": "URBAN_CONTEMP",
+          "share": 0.08834117,
+          "family": "URBAN"
+        }
+      },
+      "failCount": 0
+    },
+    {
+      "marketId": "portland",
+      "year": 1995,
+      "summary": {
+        "runs": 4,
+        "familySharesMean": {
+          "HITS": 0.1753938525,
+          "ROCK": 0.22940939500000002,
+          "ADULT": 0.190549025,
+          "COUNTRY": 0.09348504,
+          "URBAN": 0.1200858275,
+          "SPOKEN": 0.11545765,
+          "CHRISTIAN": 0.00162737,
+          "SPANISH": 0.0037474575,
+          "PUBLIC": 0.06912132,
+          "REMNANT": 0.001123065,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "chrLineageShareMean": 0.174346995,
+        "hitsFamilyShareMean": 0.1753938525,
+        "hotAcInAdultNotHits": 0,
+        "leaderFamilyHistogram": {
+          "ADULT": 3,
+          "SPOKEN": 1
+        },
+        "topFormats": [
+          {
+            "format": "ADULT_CONTEMP",
+            "share": 0.1846360775,
+            "family": "ADULT",
+            "familyLabel": "Adult / AC",
+            "displayLabel": "Adult Contemporary"
+          },
+          {
+            "format": "TOP40",
+            "share": 0.174346995,
+            "family": "HITS",
+            "familyLabel": "Hits / CHR",
+            "displayLabel": "CHR"
+          },
+          {
+            "format": "ALBUM_ROCK",
+            "share": 0.1345134025,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Rock"
+          },
+          {
+            "format": "URBAN_CONTEMP",
+            "share": 0.1075119275,
+            "family": "URBAN",
+            "familyLabel": "Urban",
+            "displayLabel": "Urban Contemporary"
+          },
+          {
+            "format": "COUNTRY",
+            "share": 0.09348504,
+            "family": "COUNTRY",
+            "familyLabel": "Country",
+            "displayLabel": "Country"
+          },
+          {
+            "format": "NEWS_TALK",
+            "share": 0.08943385,
+            "family": "SPOKEN",
+            "familyLabel": "Spoken word",
+            "displayLabel": "News / Talk"
+          },
+          {
+            "format": "CLASSIC_ROCK",
+            "share": 0.058868777500000004,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Classic Rock"
+          },
+          {
+            "format": "PUBLIC_NEWS",
+            "share": 0.04379989,
+            "family": "PUBLIC",
+            "familyLabel": "Public radio",
+            "displayLabel": "Public News / Talk"
+          }
+        ],
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.17434699456413252,
+          "AC_HOT_AC": 0.1846360770384098,
+          "ROCK_ALT_AAA": 0.23045625192385935,
+          "COUNTRY": 0.0934850397662874,
+          "NEWS_TALK_SPORTS": 0.11545764971135587,
+          "PUBLIC_RADIO": 0.0691213198271967,
+          "URBAN_RHYTHMIC": 0.12008582719978544,
+          "SPANISH": 0.0037474574906313563,
+          "GOSPEL_CCM": 0.0016273699959315749
+        },
+        "leadershipSerialized": "TOP40_CHR:0.1743|AC_HOT_AC:0.1846|ROCK_ALT_AAA:0.2305|COUNTRY:0.0935|NEWS_TALK_SPORTS:0.1155|PUBLIC_RADIO:0.0691|URBAN_RHYTHMIC:0.1201|SPANISH:0.0037|GOSPEL_CCM:0.0016|OTHER:0.0070",
+        "unmappedFormats": [],
+        "sampleLeader": {
+          "format": "ADULT_CONTEMP",
+          "share": 0.12988402,
+          "family": "ADULT"
+        }
+      },
+      "failCount": 0
+    },
+    {
+      "marketId": "portland",
+      "year": 2026,
+      "summary": {
+        "runs": 4,
+        "familySharesMean": {
+          "HITS": 0.09550191499999999,
+          "ROCK": 0.19096709750000002,
+          "ADULT": 0.1513331175,
+          "COUNTRY": 0.12764033,
+          "URBAN": 0.1668561525,
+          "SPOKEN": 0.0975876975,
+          "CHRISTIAN": 0,
+          "SPANISH": 0.040946695000000005,
+          "PUBLIC": 0.1048606725,
+          "REMNANT": 0.0069115125000000005,
+          "INSTITUTIONAL": 0.01739481,
+          "UNMAPPED": 0
+        },
+        "chrLineageShareMean": 0.09179461249999998,
+        "hitsFamilyShareMean": 0.09550191499999999,
+        "hotAcInAdultNotHits": 0,
+        "leaderFamilyHistogram": {
+          "ADULT": 3,
+          "COUNTRY": 1
+        },
+        "topFormats": [
+          {
+            "format": "URBAN_CONTEMP",
+            "share": 0.1538931225,
+            "family": "URBAN",
+            "familyLabel": "Urban",
+            "displayLabel": "Urban Contemporary"
+          },
+          {
+            "format": "ADULT_CONTEMP",
+            "share": 0.14801620999999998,
+            "family": "ADULT",
+            "familyLabel": "Adult / AC",
+            "displayLabel": "Adult Contemporary"
+          },
+          {
+            "format": "COUNTRY",
+            "share": 0.12764033,
+            "family": "COUNTRY",
+            "familyLabel": "Country",
+            "displayLabel": "Country"
+          },
+          {
+            "format": "TOP40",
+            "share": 0.09179461249999998,
+            "family": "HITS",
+            "familyLabel": "Hits / CHR",
+            "displayLabel": "CHR"
+          },
+          {
+            "format": "ALBUM_ROCK",
+            "share": 0.090483205,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Rock"
+          },
+          {
+            "format": "PUBLIC_NEWS",
+            "share": 0.078244245,
+            "family": "PUBLIC",
+            "familyLabel": "Public radio",
+            "displayLabel": "Public News / Talk"
+          },
+          {
+            "format": "NEWS_TALK",
+            "share": 0.0700409475,
+            "family": "SPOKEN",
+            "familyLabel": "Spoken word",
+            "displayLabel": "News / Talk"
+          },
+          {
+            "format": "CLASSIC_ROCK",
+            "share": 0.050433955,
+            "family": "ROCK",
+            "familyLabel": "Rock",
+            "displayLabel": "Classic Rock"
+          }
+        ],
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.09179461249999998,
+          "AC_HOT_AC": 0.14801620999999998,
+          "ROCK_ALT_AAA": 0.1946744,
+          "COUNTRY": 0.12764033,
+          "NEWS_TALK_SPORTS": 0.0975876975,
+          "PUBLIC_RADIO": 0.1048606725,
+          "URBAN_RHYTHMIC": 0.16685615250000002,
+          "SPANISH": 0.040946695000000005,
+          "GOSPEL_CCM": 0.01739481
+        },
+        "leadershipSerialized": "TOP40_CHR:0.0918|AC_HOT_AC:0.1480|ROCK_ALT_AAA:0.1947|COUNTRY:0.1276|NEWS_TALK_SPORTS:0.0976|PUBLIC_RADIO:0.1049|URBAN_RHYTHMIC:0.1669|SPANISH:0.0409|GOSPEL_CCM:0.0174|OTHER:0.0102",
+        "unmappedFormats": [],
+        "sampleLeader": {
+          "format": "ADULT_CONTEMP",
+          "share": 0.10130906,
+          "family": "ADULT"
+        }
+      },
+      "failCount": 0
+    }
+  ],
+  "allUnmappedFormats": []
+}

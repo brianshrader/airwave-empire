@@ -6,7 +6,7 @@
 ## Readiness (last check)
 
 **State:** `PLAYTEST_READY`  
-**Checked:** 2026-05-17T18:45:31.410Z
+**Checked:** 2026-05-17T20:45:15.703Z
 
 | Result | Count |
 |--------|-------|

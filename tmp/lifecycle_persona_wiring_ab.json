@@ -1,0 +1,2183 @@
+{
+  "recordedAt": "2026-05-19T15:44:32.998Z",
+  "profileBundle": {
+    "national": {
+      "lane": "country",
+      "emergence": 1960,
+      "peak": 2005,
+      "plateauEnd": 2015,
+      "declineEnd": 2026,
+      "modernRetention": 0.8,
+      "declineSteepness": 0.25,
+      "floor": 0.18,
+      "notes": "Second peak 1990s-2000s; national stickiness high; local coastal variance"
+    },
+    "portland": {
+      "modernRetention": 0.38
+    },
+    "nashville": {
+      "modernRetention": 0.92
+    },
+    "phoenix": {
+      "modernRetention": 0.62
+    }
+  },
+  "markets": [
+    "portland",
+    "seattle",
+    "phoenix",
+    "atlanta",
+    "nashville",
+    "wichita"
+  ],
+  "years": [
+    1995,
+    2005,
+    2026
+  ],
+  "runs": 12,
+  "seed": 20260519,
+  "era": "1970",
+  "variants": {
+    "A": "off",
+    "B": "portland",
+    "C": "all_profiles",
+    "D": "portland"
+  },
+  "results": {
+    "A": {
+      "portland": {
+        "1995": {
+          "runs": 12,
+          "hhi": 769.7610136294479,
+          "countryPct": 13.614557499999998,
+          "countryNum1Wins": 2,
+          "familyShares": {
+            "HITS": 0.21390602499999994,
+            "ROCK": 0.23706695,
+            "ADULT": 0.15446609750000004,
+            "COUNTRY": 0.136145575,
+            "URBAN": 0.07364025333333334,
+            "SPOKEN": 0.11184784583333335,
+            "CHRISTIAN": 0.0041501141666666665,
+            "SPANISH": 0.0012486441666666665,
+            "PUBLIC": 0.06752849749999999,
+            "REMNANT": 0,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 10,
+            "COUNTRY": 2
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 10,
+            "COUNTRY": 2
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 627.9034759587278,
+          "countryPct": 12.553566083333331,
+          "countryNum1Wins": 8,
+          "familyShares": {
+            "HITS": 0.18138776750000002,
+            "ROCK": 0.23923748333333333,
+            "ADULT": 0.16091075916666664,
+            "COUNTRY": 0.1255356608333333,
+            "URBAN": 0.07430354166666667,
+            "SPOKEN": 0.12262742333333333,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.014617650833333334,
+            "PUBLIC": 0.07652937083333333,
+            "REMNANT": 0.0034781133333333333,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 8,
+            "SPANISH": 1,
+            "TOP40": 3
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 8,
+            "SPANISH": 1,
+            "HITS": 3
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 623.0502212885257,
+          "countryPct": 16.08482075,
+          "countryNum1Wins": 9,
+          "familyShares": {
+            "HITS": 0.14888036416666667,
+            "ROCK": 0.22362845916666663,
+            "ADULT": 0.16006295666666667,
+            "COUNTRY": 0.16084820749999998,
+            "URBAN": 0.09315469166666666,
+            "SPOKEN": 0.09116654749999999,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.005373830833333333,
+            "PUBLIC": 0.10892870999999998,
+            "REMNANT": 0.006816021666666667,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "ADULT_CONTEMP": 1,
+            "TOP40": 1,
+            "COUNTRY": 9,
+            "ALBUM_ROCK": 1
+          },
+          "leaderFamilyHistogram": {
+            "ADULT": 1,
+            "HITS": 1,
+            "COUNTRY": 9,
+            "ROCK": 1
+          }
+        }
+      },
+      "seattle": {
+        "1995": {
+          "runs": 12,
+          "hhi": 830.1877333254523,
+          "countryPct": 12.315834583333336,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.26261689416666667,
+            "ROCK": 0.20571701499999998,
+            "ADULT": 0.17736044083333333,
+            "COUNTRY": 0.12315834583333336,
+            "URBAN": 0.05791203666666666,
+            "SPOKEN": 0.12327708083333332,
+            "CHRISTIAN": 0.0025452916666666666,
+            "SPANISH": 0,
+            "PUBLIC": 0.04741289666666666,
+            "REMNANT": 0,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 12
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 12
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 652.7118070838899,
+          "countryPct": 11.993264916666668,
+          "countryNum1Wins": 6,
+          "familyShares": {
+            "HITS": 0.20810686916666665,
+            "ROCK": 0.2000399741666667,
+            "ADULT": 0.19470625583333334,
+            "COUNTRY": 0.11993264916666668,
+            "URBAN": 0.0851182675,
+            "SPOKEN": 0.13566279666666667,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.0030405283333333334,
+            "PUBLIC": 0.050321737500000005,
+            "REMNANT": 0.0026629724999999997,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 6,
+            "COUNTRY": 6
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 6,
+            "COUNTRY": 6
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 603.2288581532281,
+          "countryPct": 16.25343883333333,
+          "countryNum1Wins": 8,
+          "familyShares": {
+            "HITS": 0.19664362833333332,
+            "ROCK": 0.173898905,
+            "ADULT": 0.17176716916666665,
+            "COUNTRY": 0.1625343883333333,
+            "URBAN": 0.08479233833333334,
+            "SPOKEN": 0.11055274916666666,
+            "CHRISTIAN": 0.0006026233333333333,
+            "SPANISH": 0.006663357499999999,
+            "PUBLIC": 0.06390650083333334,
+            "REMNANT": 0.005417371666666667,
+            "INSTITUTIONAL": 0.022440769166666666,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 8,
+            "TOP40": 3,
+            "NEWS_TALK": 1
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 8,
+            "HITS": 3,
+            "SPOKEN": 1
+          }
+        }
+      },
+      "phoenix": {
+        "1995": {
+          "runs": 12,
+          "hhi": 626.6541587727652,
+          "countryPct": 1.6417422500000005,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.15491834416666667,
+            "ROCK": 0.4124024733333333,
+            "ADULT": 0.19159154166666664,
+            "COUNTRY": 0.016417422500000004,
+            "URBAN": 0.05975443916666666,
+            "SPOKEN": 0.09712205166666665,
+            "CHRISTIAN": 0.0032022858333333334,
+            "SPANISH": 0.026058017500000002,
+            "PUBLIC": 0.03678966583333333,
+            "REMNANT": 0.0017437566666666665,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 10,
+            "CLASSIC_ROCK": 2
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 10,
+            "ROCK": 2
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 576.2194324623622,
+          "countryPct": 2.0910885000000006,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.17151794166666665,
+            "ROCK": 0.33348241333333334,
+            "ADULT": 0.14327966833333333,
+            "COUNTRY": 0.020910885000000004,
+            "URBAN": 0.06564034166666667,
+            "SPOKEN": 0.10710166583333333,
+            "CHRISTIAN": 0.0005571175,
+            "SPANISH": 0.10386277250000003,
+            "PUBLIC": 0.03414332916666667,
+            "REMNANT": 0.005279004166666667,
+            "INSTITUTIONAL": 0.01367739,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "NEWS_TALK": 1,
+            "SPANISH": 8,
+            "TOP40": 1,
+            "CLASSIC_ROCK": 2
+          },
+          "leaderFamilyHistogram": {
+            "SPOKEN": 1,
+            "SPANISH": 8,
+            "HITS": 1,
+            "ROCK": 2
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 584.150771355603,
+          "countryPct": 5.217836166666667,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.13358582916666667,
+            "ROCK": 0.28788614416666664,
+            "ADULT": 0.13977735833333332,
+            "COUNTRY": 0.05217836166666667,
+            "URBAN": 0.05221179583333333,
+            "SPOKEN": 0.0778563175,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.13663963499999998,
+            "PUBLIC": 0.03932976916666667,
+            "REMNANT": 0.005105789166666667,
+            "INSTITUTIONAL": 0.07542001250000001,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "SPANISH": 8,
+            "CLASSIC_ROCK": 4
+          },
+          "leaderFamilyHistogram": {
+            "SPANISH": 8,
+            "ROCK": 4
+          }
+        }
+      },
+      "atlanta": {
+        "1995": {
+          "runs": 12,
+          "hhi": 791.711794072195,
+          "countryPct": 9.072848249999998,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.24164021916666664,
+            "ROCK": 0.20028058499999998,
+            "ADULT": 0.22015196416666666,
+            "COUNTRY": 0.09072848249999999,
+            "URBAN": 0.07380465333333333,
+            "SPOKEN": 0.12154879333333335,
+            "CHRISTIAN": 0.006745890000000001,
+            "SPANISH": 0.0007825875,
+            "PUBLIC": 0.0435286275,
+            "REMNANT": 0.0007881941666666666,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 10,
+            "ADULT_CONTEMP": 2
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 10,
+            "ADULT": 2
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 637.5907259685031,
+          "countryPct": 9.3009525,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.20732016249999996,
+            "ROCK": 0.19875096499999997,
+            "ADULT": 0.20795490499999997,
+            "COUNTRY": 0.093009525,
+            "URBAN": 0.0640143225,
+            "SPOKEN": 0.13059076166666667,
+            "CHRISTIAN": 0.00682565,
+            "SPANISH": 0.005793041666666666,
+            "PUBLIC": 0.05020779166666666,
+            "REMNANT": 0.0023935325,
+            "INSTITUTIONAL": 0.031272214166666666,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 5,
+            "ADULT_CONTEMP": 7
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 5,
+            "ADULT": 7
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 597.6892487330969,
+          "countryPct": 9.546439750000001,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.21073185583333337,
+            "ROCK": 0.16664083083333336,
+            "ADULT": 0.1846887341666667,
+            "COUNTRY": 0.0954643975,
+            "URBAN": 0.05856421916666667,
+            "SPOKEN": 0.10554673916666668,
+            "CHRISTIAN": 0.010674837500000001,
+            "SPANISH": 0.003807759166666666,
+            "PUBLIC": 0.053992754166666664,
+            "REMNANT": 0.006536948333333334,
+            "INSTITUTIONAL": 0.102295095,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "RELIGIOUS_NETWORK": 9,
+            "ADULT_CONTEMP": 3
+          },
+          "leaderFamilyHistogram": {
+            "INSTITUTIONAL": 9,
+            "ADULT": 3
+          }
+        }
+      },
+      "nashville": {
+        "1995": {
+          "runs": 12,
+          "hhi": 859.7789123548645,
+          "countryPct": 18.31717066666667,
+          "countryNum1Wins": 7,
+          "familyShares": {
+            "HITS": 0.10312842583333331,
+            "ROCK": 0.2298174016666667,
+            "ADULT": 0.28407006416666664,
+            "COUNTRY": 0.18317170666666668,
+            "URBAN": 0.041198389166666675,
+            "SPOKEN": 0.11480918500000001,
+            "CHRISTIAN": 0.0029159308333333335,
+            "SPANISH": 0.0005939133333333333,
+            "PUBLIC": 0.04005161666666667,
+            "REMNANT": 0.00024337,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "ADULT_CONTEMP": 5,
+            "COUNTRY": 7
+          },
+          "leaderFamilyHistogram": {
+            "ADULT": 5,
+            "COUNTRY": 7
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 815.3876544896111,
+          "countryPct": 15.598037750000001,
+          "countryNum1Wins": 8,
+          "familyShares": {
+            "HITS": 0.08862066916666668,
+            "ROCK": 0.2362302,
+            "ADULT": 0.2715246608333333,
+            "COUNTRY": 0.15598037750000002,
+            "URBAN": 0.04613705833333333,
+            "SPOKEN": 0.14240593833333334,
+            "CHRISTIAN": 0.0035763008333333335,
+            "SPANISH": 0.006113919166666668,
+            "PUBLIC": 0.041195392500000004,
+            "REMNANT": 0.006748729999999999,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 8,
+            "ADULT_CONTEMP": 3,
+            "URBAN_CONTEMP": 1
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 8,
+            "ADULT": 3,
+            "URBAN": 1
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 775.0961402599764,
+          "countryPct": 14.540513833333332,
+          "countryNum1Wins": 6,
+          "familyShares": {
+            "HITS": 0.08511145499999999,
+            "ROCK": 0.19648267833333333,
+            "ADULT": 0.2208405333333333,
+            "COUNTRY": 0.14540513833333332,
+            "URBAN": 0.04719852833333334,
+            "SPOKEN": 0.09869838083333332,
+            "CHRISTIAN": 0.0005925425,
+            "SPANISH": 0.0027683416666666664,
+            "PUBLIC": 0.04068036666666667,
+            "REMNANT": 0.006193361666666667,
+            "INSTITUTIONAL": 0.15435288,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "RELIGIOUS_NETWORK": 1,
+            "ADULT_CONTEMP": 5,
+            "COUNTRY": 6
+          },
+          "leaderFamilyHistogram": {
+            "INSTITUTIONAL": 1,
+            "ADULT": 5,
+            "COUNTRY": 6
+          }
+        }
+      },
+      "wichita": {
+        "1995": {
+          "runs": 12,
+          "hhi": 866.1364278423166,
+          "countryPct": 25.081306083333327,
+          "countryNum1Wins": 10,
+          "familyShares": {
+            "HITS": 0.23752561583333331,
+            "ROCK": 0.12847574833333333,
+            "ADULT": 0.19273640583333337,
+            "COUNTRY": 0.25081306083333327,
+            "URBAN": 0.05896884916666667,
+            "SPOKEN": 0.09136362999999999,
+            "CHRISTIAN": 0.005897623333333333,
+            "SPANISH": 0.0007992466666666667,
+            "PUBLIC": 0.030676559166666666,
+            "REMNANT": 0.0024456616666666668,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 10,
+            "TOP40": 2
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 10,
+            "HITS": 2
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 794.5306366051245,
+          "countryPct": 24.539139750000004,
+          "countryNum1Wins": 9,
+          "familyShares": {
+            "HITS": 0.23056447,
+            "ROCK": 0.13545108583333332,
+            "ADULT": 0.18385773583333337,
+            "COUNTRY": 0.24539139750000002,
+            "URBAN": 0.06303219916666666,
+            "SPOKEN": 0.10164581583333333,
+            "CHRISTIAN": 0.0032312091666666667,
+            "SPANISH": 0.004677060833333333,
+            "PUBLIC": 0.030329312499999997,
+            "REMNANT": 0.0018197141666666666,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 9,
+            "TOP40": 3
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 9,
+            "HITS": 3
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 743.5670504897981,
+          "countryPct": 25.26031091666667,
+          "countryNum1Wins": 10,
+          "familyShares": {
+            "HITS": 0.18594264166666669,
+            "ROCK": 0.14569477333333336,
+            "ADULT": 0.16417569999999998,
+            "COUNTRY": 0.2526031091666667,
+            "URBAN": 0.072906525,
+            "SPOKEN": 0.05793547666666666,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.0056200975,
+            "PUBLIC": 0.034283306666666666,
+            "REMNANT": 0.007534194166666667,
+            "INSTITUTIONAL": 0.07124394333333332,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 10,
+            "ADULT_CONTEMP": 2
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 10,
+            "ADULT": 2
+          }
+        }
+      }
+    },
+    "B": {
+      "portland": {
+        "1995": {
+          "runs": 12,
+          "hhi": 769.7610136294479,
+          "countryPct": 13.614557499999998,
+          "countryNum1Wins": 2,
+          "familyShares": {
+            "HITS": 0.21390602499999994,
+            "ROCK": 0.23706695,
+            "ADULT": 0.15446609750000004,
+            "COUNTRY": 0.136145575,
+            "URBAN": 0.07364025333333334,
+            "SPOKEN": 0.11184784583333335,
+            "CHRISTIAN": 0.0041501141666666665,
+            "SPANISH": 0.0012486441666666665,
+            "PUBLIC": 0.06752849749999999,
+            "REMNANT": 0,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 10,
+            "COUNTRY": 2
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 10,
+            "COUNTRY": 2
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 627.9034759587278,
+          "countryPct": 12.553566083333331,
+          "countryNum1Wins": 8,
+          "familyShares": {
+            "HITS": 0.18138776750000002,
+            "ROCK": 0.23923748333333333,
+            "ADULT": 0.16091075916666664,
+            "COUNTRY": 0.1255356608333333,
+            "URBAN": 0.07430354166666667,
+            "SPOKEN": 0.12262742333333333,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.014617650833333334,
+            "PUBLIC": 0.07652937083333333,
+            "REMNANT": 0.0034781133333333333,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 8,
+            "SPANISH": 1,
+            "TOP40": 3
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 8,
+            "SPANISH": 1,
+            "HITS": 3
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 609.9962540693814,
+          "countryPct": 12.714720666666668,
+          "countryNum1Wins": 4,
+          "familyShares": {
+            "HITS": 0.15812529416666665,
+            "ROCK": 0.22467933,
+            "ADULT": 0.16464221749999997,
+            "COUNTRY": 0.12714720666666668,
+            "URBAN": 0.10913483416666667,
+            "SPOKEN": 0.08991983,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.004120695,
+            "PUBLIC": 0.11520975333333332,
+            "REMNANT": 0.0063347575,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "ADULT_CONTEMP": 5,
+            "PUBLIC_NEWS": 1,
+            "URBAN_CONTEMP": 1,
+            "COUNTRY": 4,
+            "RHYTHMIC": 1
+          },
+          "leaderFamilyHistogram": {
+            "ADULT": 5,
+            "PUBLIC": 1,
+            "URBAN": 1,
+            "COUNTRY": 4,
+            "HITS": 1
+          }
+        }
+      },
+      "seattle": {
+        "1995": {
+          "runs": 12,
+          "hhi": 830.1877333254523,
+          "countryPct": 12.315834583333336,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.26261689416666667,
+            "ROCK": 0.20571701499999998,
+            "ADULT": 0.17736044083333333,
+            "COUNTRY": 0.12315834583333336,
+            "URBAN": 0.05791203666666666,
+            "SPOKEN": 0.12327708083333332,
+            "CHRISTIAN": 0.0025452916666666666,
+            "SPANISH": 0,
+            "PUBLIC": 0.04741289666666666,
+            "REMNANT": 0,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 12
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 12
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 652.7118070838899,
+          "countryPct": 11.993264916666668,
+          "countryNum1Wins": 6,
+          "familyShares": {
+            "HITS": 0.20810686916666665,
+            "ROCK": 0.2000399741666667,
+            "ADULT": 0.19470625583333334,
+            "COUNTRY": 0.11993264916666668,
+            "URBAN": 0.0851182675,
+            "SPOKEN": 0.13566279666666667,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.0030405283333333334,
+            "PUBLIC": 0.050321737500000005,
+            "REMNANT": 0.0026629724999999997,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 6,
+            "COUNTRY": 6
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 6,
+            "COUNTRY": 6
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 603.2288581532281,
+          "countryPct": 16.25343883333333,
+          "countryNum1Wins": 8,
+          "familyShares": {
+            "HITS": 0.19664362833333332,
+            "ROCK": 0.173898905,
+            "ADULT": 0.17176716916666665,
+            "COUNTRY": 0.1625343883333333,
+            "URBAN": 0.08479233833333334,
+            "SPOKEN": 0.11055274916666666,
+            "CHRISTIAN": 0.0006026233333333333,
+            "SPANISH": 0.006663357499999999,
+            "PUBLIC": 0.06390650083333334,
+            "REMNANT": 0.005417371666666667,
+            "INSTITUTIONAL": 0.022440769166666666,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 8,
+            "TOP40": 3,
+            "NEWS_TALK": 1
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 8,
+            "HITS": 3,
+            "SPOKEN": 1
+          }
+        }
+      },
+      "phoenix": {
+        "1995": {
+          "runs": 12,
+          "hhi": 626.6541587727652,
+          "countryPct": 1.6417422500000005,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.15491834416666667,
+            "ROCK": 0.4124024733333333,
+            "ADULT": 0.19159154166666664,
+            "COUNTRY": 0.016417422500000004,
+            "URBAN": 0.05975443916666666,
+            "SPOKEN": 0.09712205166666665,
+            "CHRISTIAN": 0.0032022858333333334,
+            "SPANISH": 0.026058017500000002,
+            "PUBLIC": 0.03678966583333333,
+            "REMNANT": 0.0017437566666666665,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 10,
+            "CLASSIC_ROCK": 2
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 10,
+            "ROCK": 2
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 576.2194324623622,
+          "countryPct": 2.0910885000000006,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.17151794166666665,
+            "ROCK": 0.33348241333333334,
+            "ADULT": 0.14327966833333333,
+            "COUNTRY": 0.020910885000000004,
+            "URBAN": 0.06564034166666667,
+            "SPOKEN": 0.10710166583333333,
+            "CHRISTIAN": 0.0005571175,
+            "SPANISH": 0.10386277250000003,
+            "PUBLIC": 0.03414332916666667,
+            "REMNANT": 0.005279004166666667,
+            "INSTITUTIONAL": 0.01367739,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "NEWS_TALK": 1,
+            "SPANISH": 8,
+            "TOP40": 1,
+            "CLASSIC_ROCK": 2
+          },
+          "leaderFamilyHistogram": {
+            "SPOKEN": 1,
+            "SPANISH": 8,
+            "HITS": 1,
+            "ROCK": 2
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 584.150771355603,
+          "countryPct": 5.217836166666667,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.13358582916666667,
+            "ROCK": 0.28788614416666664,
+            "ADULT": 0.13977735833333332,
+            "COUNTRY": 0.05217836166666667,
+            "URBAN": 0.05221179583333333,
+            "SPOKEN": 0.0778563175,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.13663963499999998,
+            "PUBLIC": 0.03932976916666667,
+            "REMNANT": 0.005105789166666667,
+            "INSTITUTIONAL": 0.07542001250000001,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "SPANISH": 8,
+            "CLASSIC_ROCK": 4
+          },
+          "leaderFamilyHistogram": {
+            "SPANISH": 8,
+            "ROCK": 4
+          }
+        }
+      },
+      "atlanta": {
+        "1995": {
+          "runs": 12,
+          "hhi": 791.711794072195,
+          "countryPct": 9.072848249999998,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.24164021916666664,
+            "ROCK": 0.20028058499999998,
+            "ADULT": 0.22015196416666666,
+            "COUNTRY": 0.09072848249999999,
+            "URBAN": 0.07380465333333333,
+            "SPOKEN": 0.12154879333333335,
+            "CHRISTIAN": 0.006745890000000001,
+            "SPANISH": 0.0007825875,
+            "PUBLIC": 0.0435286275,
+            "REMNANT": 0.0007881941666666666,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 10,
+            "ADULT_CONTEMP": 2
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 10,
+            "ADULT": 2
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 637.5907259685031,
+          "countryPct": 9.3009525,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.20732016249999996,
+            "ROCK": 0.19875096499999997,
+            "ADULT": 0.20795490499999997,
+            "COUNTRY": 0.093009525,
+            "URBAN": 0.0640143225,
+            "SPOKEN": 0.13059076166666667,
+            "CHRISTIAN": 0.00682565,
+            "SPANISH": 0.005793041666666666,
+            "PUBLIC": 0.05020779166666666,
+            "REMNANT": 0.0023935325,
+            "INSTITUTIONAL": 0.031272214166666666,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 5,
+            "ADULT_CONTEMP": 7
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 5,
+            "ADULT": 7
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 597.6892487330969,
+          "countryPct": 9.546439750000001,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.21073185583333337,
+            "ROCK": 0.16664083083333336,
+            "ADULT": 0.1846887341666667,
+            "COUNTRY": 0.0954643975,
+            "URBAN": 0.05856421916666667,
+            "SPOKEN": 0.10554673916666668,
+            "CHRISTIAN": 0.010674837500000001,
+            "SPANISH": 0.003807759166666666,
+            "PUBLIC": 0.053992754166666664,
+            "REMNANT": 0.006536948333333334,
+            "INSTITUTIONAL": 0.102295095,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "RELIGIOUS_NETWORK": 9,
+            "ADULT_CONTEMP": 3
+          },
+          "leaderFamilyHistogram": {
+            "INSTITUTIONAL": 9,
+            "ADULT": 3
+          }
+        }
+      },
+      "nashville": {
+        "1995": {
+          "runs": 12,
+          "hhi": 859.7789123548645,
+          "countryPct": 18.31717066666667,
+          "countryNum1Wins": 7,
+          "familyShares": {
+            "HITS": 0.10312842583333331,
+            "ROCK": 0.2298174016666667,
+            "ADULT": 0.28407006416666664,
+            "COUNTRY": 0.18317170666666668,
+            "URBAN": 0.041198389166666675,
+            "SPOKEN": 0.11480918500000001,
+            "CHRISTIAN": 0.0029159308333333335,
+            "SPANISH": 0.0005939133333333333,
+            "PUBLIC": 0.04005161666666667,
+            "REMNANT": 0.00024337,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "ADULT_CONTEMP": 5,
+            "COUNTRY": 7
+          },
+          "leaderFamilyHistogram": {
+            "ADULT": 5,
+            "COUNTRY": 7
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 815.3876544896111,
+          "countryPct": 15.598037750000001,
+          "countryNum1Wins": 8,
+          "familyShares": {
+            "HITS": 0.08862066916666668,
+            "ROCK": 0.2362302,
+            "ADULT": 0.2715246608333333,
+            "COUNTRY": 0.15598037750000002,
+            "URBAN": 0.04613705833333333,
+            "SPOKEN": 0.14240593833333334,
+            "CHRISTIAN": 0.0035763008333333335,
+            "SPANISH": 0.006113919166666668,
+            "PUBLIC": 0.041195392500000004,
+            "REMNANT": 0.006748729999999999,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 8,
+            "ADULT_CONTEMP": 3,
+            "URBAN_CONTEMP": 1
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 8,
+            "ADULT": 3,
+            "URBAN": 1
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 775.0961402599764,
+          "countryPct": 14.540513833333332,
+          "countryNum1Wins": 6,
+          "familyShares": {
+            "HITS": 0.08511145499999999,
+            "ROCK": 0.19648267833333333,
+            "ADULT": 0.2208405333333333,
+            "COUNTRY": 0.14540513833333332,
+            "URBAN": 0.04719852833333334,
+            "SPOKEN": 0.09869838083333332,
+            "CHRISTIAN": 0.0005925425,
+            "SPANISH": 0.0027683416666666664,
+            "PUBLIC": 0.04068036666666667,
+            "REMNANT": 0.006193361666666667,
+            "INSTITUTIONAL": 0.15435288,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "RELIGIOUS_NETWORK": 1,
+            "ADULT_CONTEMP": 5,
+            "COUNTRY": 6
+          },
+          "leaderFamilyHistogram": {
+            "INSTITUTIONAL": 1,
+            "ADULT": 5,
+            "COUNTRY": 6
+          }
+        }
+      },
+      "wichita": {
+        "1995": {
+          "runs": 12,
+          "hhi": 866.1364278423166,
+          "countryPct": 25.081306083333327,
+          "countryNum1Wins": 10,
+          "familyShares": {
+            "HITS": 0.23752561583333331,
+            "ROCK": 0.12847574833333333,
+            "ADULT": 0.19273640583333337,
+            "COUNTRY": 0.25081306083333327,
+            "URBAN": 0.05896884916666667,
+            "SPOKEN": 0.09136362999999999,
+            "CHRISTIAN": 0.005897623333333333,
+            "SPANISH": 0.0007992466666666667,
+            "PUBLIC": 0.030676559166666666,
+            "REMNANT": 0.0024456616666666668,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 10,
+            "TOP40": 2
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 10,
+            "HITS": 2
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 794.5306366051245,
+          "countryPct": 24.539139750000004,
+          "countryNum1Wins": 9,
+          "familyShares": {
+            "HITS": 0.23056447,
+            "ROCK": 0.13545108583333332,
+            "ADULT": 0.18385773583333337,
+            "COUNTRY": 0.24539139750000002,
+            "URBAN": 0.06303219916666666,
+            "SPOKEN": 0.10164581583333333,
+            "CHRISTIAN": 0.0032312091666666667,
+            "SPANISH": 0.004677060833333333,
+            "PUBLIC": 0.030329312499999997,
+            "REMNANT": 0.0018197141666666666,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 9,
+            "TOP40": 3
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 9,
+            "HITS": 3
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 743.5670504897981,
+          "countryPct": 25.26031091666667,
+          "countryNum1Wins": 10,
+          "familyShares": {
+            "HITS": 0.18594264166666669,
+            "ROCK": 0.14569477333333336,
+            "ADULT": 0.16417569999999998,
+            "COUNTRY": 0.2526031091666667,
+            "URBAN": 0.072906525,
+            "SPOKEN": 0.05793547666666666,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.0056200975,
+            "PUBLIC": 0.034283306666666666,
+            "REMNANT": 0.007534194166666667,
+            "INSTITUTIONAL": 0.07124394333333332,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 10,
+            "ADULT_CONTEMP": 2
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 10,
+            "ADULT": 2
+          }
+        }
+      }
+    },
+    "C": {
+      "portland": {
+        "1995": {
+          "runs": 12,
+          "hhi": 769.7610136294479,
+          "countryPct": 13.614557499999998,
+          "countryNum1Wins": 2,
+          "familyShares": {
+            "HITS": 0.21390602499999994,
+            "ROCK": 0.23706695,
+            "ADULT": 0.15446609750000004,
+            "COUNTRY": 0.136145575,
+            "URBAN": 0.07364025333333334,
+            "SPOKEN": 0.11184784583333335,
+            "CHRISTIAN": 0.0041501141666666665,
+            "SPANISH": 0.0012486441666666665,
+            "PUBLIC": 0.06752849749999999,
+            "REMNANT": 0,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 10,
+            "COUNTRY": 2
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 10,
+            "COUNTRY": 2
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 627.9034759587278,
+          "countryPct": 12.553566083333331,
+          "countryNum1Wins": 8,
+          "familyShares": {
+            "HITS": 0.18138776750000002,
+            "ROCK": 0.23923748333333333,
+            "ADULT": 0.16091075916666664,
+            "COUNTRY": 0.1255356608333333,
+            "URBAN": 0.07430354166666667,
+            "SPOKEN": 0.12262742333333333,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.014617650833333334,
+            "PUBLIC": 0.07652937083333333,
+            "REMNANT": 0.0034781133333333333,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 8,
+            "SPANISH": 1,
+            "TOP40": 3
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 8,
+            "SPANISH": 1,
+            "HITS": 3
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 609.9962540693814,
+          "countryPct": 12.714720666666668,
+          "countryNum1Wins": 4,
+          "familyShares": {
+            "HITS": 0.15812529416666665,
+            "ROCK": 0.22467933,
+            "ADULT": 0.16464221749999997,
+            "COUNTRY": 0.12714720666666668,
+            "URBAN": 0.10913483416666667,
+            "SPOKEN": 0.08991983,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.004120695,
+            "PUBLIC": 0.11520975333333332,
+            "REMNANT": 0.0063347575,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "ADULT_CONTEMP": 5,
+            "PUBLIC_NEWS": 1,
+            "URBAN_CONTEMP": 1,
+            "COUNTRY": 4,
+            "RHYTHMIC": 1
+          },
+          "leaderFamilyHistogram": {
+            "ADULT": 5,
+            "PUBLIC": 1,
+            "URBAN": 1,
+            "COUNTRY": 4,
+            "HITS": 1
+          }
+        }
+      },
+      "seattle": {
+        "1995": {
+          "runs": 12,
+          "hhi": 830.1877333254523,
+          "countryPct": 12.315834583333336,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.26261689416666667,
+            "ROCK": 0.20571701499999998,
+            "ADULT": 0.17736044083333333,
+            "COUNTRY": 0.12315834583333336,
+            "URBAN": 0.05791203666666666,
+            "SPOKEN": 0.12327708083333332,
+            "CHRISTIAN": 0.0025452916666666666,
+            "SPANISH": 0,
+            "PUBLIC": 0.04741289666666666,
+            "REMNANT": 0,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 12
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 12
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 652.7118070838899,
+          "countryPct": 11.993264916666668,
+          "countryNum1Wins": 6,
+          "familyShares": {
+            "HITS": 0.20810686916666665,
+            "ROCK": 0.2000399741666667,
+            "ADULT": 0.19470625583333334,
+            "COUNTRY": 0.11993264916666668,
+            "URBAN": 0.0851182675,
+            "SPOKEN": 0.13566279666666667,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.0030405283333333334,
+            "PUBLIC": 0.050321737500000005,
+            "REMNANT": 0.0026629724999999997,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 6,
+            "COUNTRY": 6
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 6,
+            "COUNTRY": 6
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 603.2288581532281,
+          "countryPct": 16.25343883333333,
+          "countryNum1Wins": 8,
+          "familyShares": {
+            "HITS": 0.19664362833333332,
+            "ROCK": 0.173898905,
+            "ADULT": 0.17176716916666665,
+            "COUNTRY": 0.1625343883333333,
+            "URBAN": 0.08479233833333334,
+            "SPOKEN": 0.11055274916666666,
+            "CHRISTIAN": 0.0006026233333333333,
+            "SPANISH": 0.006663357499999999,
+            "PUBLIC": 0.06390650083333334,
+            "REMNANT": 0.005417371666666667,
+            "INSTITUTIONAL": 0.022440769166666666,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 8,
+            "TOP40": 3,
+            "NEWS_TALK": 1
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 8,
+            "HITS": 3,
+            "SPOKEN": 1
+          }
+        }
+      },
+      "phoenix": {
+        "1995": {
+          "runs": 12,
+          "hhi": 626.6541587727652,
+          "countryPct": 1.6417422500000005,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.15491834416666667,
+            "ROCK": 0.4124024733333333,
+            "ADULT": 0.19159154166666664,
+            "COUNTRY": 0.016417422500000004,
+            "URBAN": 0.05975443916666666,
+            "SPOKEN": 0.09712205166666665,
+            "CHRISTIAN": 0.0032022858333333334,
+            "SPANISH": 0.026058017500000002,
+            "PUBLIC": 0.03678966583333333,
+            "REMNANT": 0.0017437566666666665,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 10,
+            "CLASSIC_ROCK": 2
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 10,
+            "ROCK": 2
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 576.2194324623622,
+          "countryPct": 2.0910885000000006,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.17151794166666665,
+            "ROCK": 0.33348241333333334,
+            "ADULT": 0.14327966833333333,
+            "COUNTRY": 0.020910885000000004,
+            "URBAN": 0.06564034166666667,
+            "SPOKEN": 0.10710166583333333,
+            "CHRISTIAN": 0.0005571175,
+            "SPANISH": 0.10386277250000003,
+            "PUBLIC": 0.03414332916666667,
+            "REMNANT": 0.005279004166666667,
+            "INSTITUTIONAL": 0.01367739,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "NEWS_TALK": 1,
+            "SPANISH": 8,
+            "TOP40": 1,
+            "CLASSIC_ROCK": 2
+          },
+          "leaderFamilyHistogram": {
+            "SPOKEN": 1,
+            "SPANISH": 8,
+            "HITS": 1,
+            "ROCK": 2
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 569.8505635463897,
+          "countryPct": 5.152451999999999,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.13609313,
+            "ROCK": 0.29476189750000004,
+            "ADULT": 0.1312954858333333,
+            "COUNTRY": 0.05152451999999999,
+            "URBAN": 0.04671381083333333,
+            "SPOKEN": 0.07899623833333333,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.13200488749999997,
+            "PUBLIC": 0.0386987175,
+            "REMNANT": 0.00625063,
+            "INSTITUTIONAL": 0.08352841583333333,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "SPANISH": 7,
+            "CLASSIC_ROCK": 5
+          },
+          "leaderFamilyHistogram": {
+            "SPANISH": 7,
+            "ROCK": 5
+          }
+        }
+      },
+      "atlanta": {
+        "1995": {
+          "runs": 12,
+          "hhi": 791.711794072195,
+          "countryPct": 9.072848249999998,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.24164021916666664,
+            "ROCK": 0.20028058499999998,
+            "ADULT": 0.22015196416666666,
+            "COUNTRY": 0.09072848249999999,
+            "URBAN": 0.07380465333333333,
+            "SPOKEN": 0.12154879333333335,
+            "CHRISTIAN": 0.006745890000000001,
+            "SPANISH": 0.0007825875,
+            "PUBLIC": 0.0435286275,
+            "REMNANT": 0.0007881941666666666,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 10,
+            "ADULT_CONTEMP": 2
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 10,
+            "ADULT": 2
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 637.5907259685031,
+          "countryPct": 9.3009525,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.20732016249999996,
+            "ROCK": 0.19875096499999997,
+            "ADULT": 0.20795490499999997,
+            "COUNTRY": 0.093009525,
+            "URBAN": 0.0640143225,
+            "SPOKEN": 0.13059076166666667,
+            "CHRISTIAN": 0.00682565,
+            "SPANISH": 0.005793041666666666,
+            "PUBLIC": 0.05020779166666666,
+            "REMNANT": 0.0023935325,
+            "INSTITUTIONAL": 0.031272214166666666,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 5,
+            "ADULT_CONTEMP": 7
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 5,
+            "ADULT": 7
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 597.6892487330969,
+          "countryPct": 9.546439750000001,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.21073185583333337,
+            "ROCK": 0.16664083083333336,
+            "ADULT": 0.1846887341666667,
+            "COUNTRY": 0.0954643975,
+            "URBAN": 0.05856421916666667,
+            "SPOKEN": 0.10554673916666668,
+            "CHRISTIAN": 0.010674837500000001,
+            "SPANISH": 0.003807759166666666,
+            "PUBLIC": 0.053992754166666664,
+            "REMNANT": 0.006536948333333334,
+            "INSTITUTIONAL": 0.102295095,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "RELIGIOUS_NETWORK": 9,
+            "ADULT_CONTEMP": 3
+          },
+          "leaderFamilyHistogram": {
+            "INSTITUTIONAL": 9,
+            "ADULT": 3
+          }
+        }
+      },
+      "nashville": {
+        "1995": {
+          "runs": 12,
+          "hhi": 859.7789123548645,
+          "countryPct": 18.31717066666667,
+          "countryNum1Wins": 7,
+          "familyShares": {
+            "HITS": 0.10312842583333331,
+            "ROCK": 0.2298174016666667,
+            "ADULT": 0.28407006416666664,
+            "COUNTRY": 0.18317170666666668,
+            "URBAN": 0.041198389166666675,
+            "SPOKEN": 0.11480918500000001,
+            "CHRISTIAN": 0.0029159308333333335,
+            "SPANISH": 0.0005939133333333333,
+            "PUBLIC": 0.04005161666666667,
+            "REMNANT": 0.00024337,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "ADULT_CONTEMP": 5,
+            "COUNTRY": 7
+          },
+          "leaderFamilyHistogram": {
+            "ADULT": 5,
+            "COUNTRY": 7
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 815.3876544896111,
+          "countryPct": 15.598037750000001,
+          "countryNum1Wins": 8,
+          "familyShares": {
+            "HITS": 0.08862066916666668,
+            "ROCK": 0.2362302,
+            "ADULT": 0.2715246608333333,
+            "COUNTRY": 0.15598037750000002,
+            "URBAN": 0.04613705833333333,
+            "SPOKEN": 0.14240593833333334,
+            "CHRISTIAN": 0.0035763008333333335,
+            "SPANISH": 0.006113919166666668,
+            "PUBLIC": 0.041195392500000004,
+            "REMNANT": 0.006748729999999999,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 8,
+            "ADULT_CONTEMP": 3,
+            "URBAN_CONTEMP": 1
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 8,
+            "ADULT": 3,
+            "URBAN": 1
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 766.8156661799003,
+          "countryPct": 16.030724083333332,
+          "countryNum1Wins": 9,
+          "familyShares": {
+            "HITS": 0.08257927666666666,
+            "ROCK": 0.180176505,
+            "ADULT": 0.2131693341666667,
+            "COUNTRY": 0.16030724083333334,
+            "URBAN": 0.04557483083333333,
+            "SPOKEN": 0.10084322916666666,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.008110334166666665,
+            "PUBLIC": 0.03975961916666667,
+            "REMNANT": 0.011863665833333334,
+            "INSTITUTIONAL": 0.1542034375,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "RELIGIOUS_NETWORK": 1,
+            "COUNTRY": 9,
+            "ADULT_CONTEMP": 2
+          },
+          "leaderFamilyHistogram": {
+            "INSTITUTIONAL": 1,
+            "COUNTRY": 9,
+            "ADULT": 2
+          }
+        }
+      },
+      "wichita": {
+        "1995": {
+          "runs": 12,
+          "hhi": 866.1364278423166,
+          "countryPct": 25.081306083333327,
+          "countryNum1Wins": 10,
+          "familyShares": {
+            "HITS": 0.23752561583333331,
+            "ROCK": 0.12847574833333333,
+            "ADULT": 0.19273640583333337,
+            "COUNTRY": 0.25081306083333327,
+            "URBAN": 0.05896884916666667,
+            "SPOKEN": 0.09136362999999999,
+            "CHRISTIAN": 0.005897623333333333,
+            "SPANISH": 0.0007992466666666667,
+            "PUBLIC": 0.030676559166666666,
+            "REMNANT": 0.0024456616666666668,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 10,
+            "TOP40": 2
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 10,
+            "HITS": 2
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 794.5306366051245,
+          "countryPct": 24.539139750000004,
+          "countryNum1Wins": 9,
+          "familyShares": {
+            "HITS": 0.23056447,
+            "ROCK": 0.13545108583333332,
+            "ADULT": 0.18385773583333337,
+            "COUNTRY": 0.24539139750000002,
+            "URBAN": 0.06303219916666666,
+            "SPOKEN": 0.10164581583333333,
+            "CHRISTIAN": 0.0032312091666666667,
+            "SPANISH": 0.004677060833333333,
+            "PUBLIC": 0.030329312499999997,
+            "REMNANT": 0.0018197141666666666,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 9,
+            "TOP40": 3
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 9,
+            "HITS": 3
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 743.5670504897981,
+          "countryPct": 25.26031091666667,
+          "countryNum1Wins": 10,
+          "familyShares": {
+            "HITS": 0.18594264166666669,
+            "ROCK": 0.14569477333333336,
+            "ADULT": 0.16417569999999998,
+            "COUNTRY": 0.2526031091666667,
+            "URBAN": 0.072906525,
+            "SPOKEN": 0.05793547666666666,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.0056200975,
+            "PUBLIC": 0.034283306666666666,
+            "REMNANT": 0.007534194166666667,
+            "INSTITUTIONAL": 0.07124394333333332,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 10,
+            "ADULT_CONTEMP": 2
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 10,
+            "ADULT": 2
+          }
+        }
+      }
+    },
+    "D": {
+      "portland": {
+        "1995": {
+          "runs": 12,
+          "hhi": 769.7610136294479,
+          "countryPct": 13.614557499999998,
+          "countryNum1Wins": 2,
+          "familyShares": {
+            "HITS": 0.21390602499999994,
+            "ROCK": 0.23706695,
+            "ADULT": 0.15446609750000004,
+            "COUNTRY": 0.136145575,
+            "URBAN": 0.07364025333333334,
+            "SPOKEN": 0.11184784583333335,
+            "CHRISTIAN": 0.0041501141666666665,
+            "SPANISH": 0.0012486441666666665,
+            "PUBLIC": 0.06752849749999999,
+            "REMNANT": 0,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 10,
+            "COUNTRY": 2
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 10,
+            "COUNTRY": 2
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 627.9034759587278,
+          "countryPct": 12.553566083333331,
+          "countryNum1Wins": 8,
+          "familyShares": {
+            "HITS": 0.18138776750000002,
+            "ROCK": 0.23923748333333333,
+            "ADULT": 0.16091075916666664,
+            "COUNTRY": 0.1255356608333333,
+            "URBAN": 0.07430354166666667,
+            "SPOKEN": 0.12262742333333333,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.014617650833333334,
+            "PUBLIC": 0.07652937083333333,
+            "REMNANT": 0.0034781133333333333,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 8,
+            "SPANISH": 1,
+            "TOP40": 3
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 8,
+            "SPANISH": 1,
+            "HITS": 3
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 609.9962540693814,
+          "countryPct": 12.714720666666668,
+          "countryNum1Wins": 4,
+          "familyShares": {
+            "HITS": 0.15812529416666665,
+            "ROCK": 0.22467933,
+            "ADULT": 0.16464221749999997,
+            "COUNTRY": 0.12714720666666668,
+            "URBAN": 0.10913483416666667,
+            "SPOKEN": 0.08991983,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.004120695,
+            "PUBLIC": 0.11520975333333332,
+            "REMNANT": 0.0063347575,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "ADULT_CONTEMP": 5,
+            "PUBLIC_NEWS": 1,
+            "URBAN_CONTEMP": 1,
+            "COUNTRY": 4,
+            "RHYTHMIC": 1
+          },
+          "leaderFamilyHistogram": {
+            "ADULT": 5,
+            "PUBLIC": 1,
+            "URBAN": 1,
+            "COUNTRY": 4,
+            "HITS": 1
+          }
+        }
+      },
+      "seattle": {
+        "1995": {
+          "runs": 12,
+          "hhi": 830.1877333254523,
+          "countryPct": 12.315834583333336,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.26261689416666667,
+            "ROCK": 0.20571701499999998,
+            "ADULT": 0.17736044083333333,
+            "COUNTRY": 0.12315834583333336,
+            "URBAN": 0.05791203666666666,
+            "SPOKEN": 0.12327708083333332,
+            "CHRISTIAN": 0.0025452916666666666,
+            "SPANISH": 0,
+            "PUBLIC": 0.04741289666666666,
+            "REMNANT": 0,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 12
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 12
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 652.7118070838899,
+          "countryPct": 11.993264916666668,
+          "countryNum1Wins": 6,
+          "familyShares": {
+            "HITS": 0.20810686916666665,
+            "ROCK": 0.2000399741666667,
+            "ADULT": 0.19470625583333334,
+            "COUNTRY": 0.11993264916666668,
+            "URBAN": 0.0851182675,
+            "SPOKEN": 0.13566279666666667,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.0030405283333333334,
+            "PUBLIC": 0.050321737500000005,
+            "REMNANT": 0.0026629724999999997,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 6,
+            "COUNTRY": 6
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 6,
+            "COUNTRY": 6
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 603.2288581532281,
+          "countryPct": 16.25343883333333,
+          "countryNum1Wins": 8,
+          "familyShares": {
+            "HITS": 0.19664362833333332,
+            "ROCK": 0.173898905,
+            "ADULT": 0.17176716916666665,
+            "COUNTRY": 0.1625343883333333,
+            "URBAN": 0.08479233833333334,
+            "SPOKEN": 0.11055274916666666,
+            "CHRISTIAN": 0.0006026233333333333,
+            "SPANISH": 0.006663357499999999,
+            "PUBLIC": 0.06390650083333334,
+            "REMNANT": 0.005417371666666667,
+            "INSTITUTIONAL": 0.022440769166666666,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 8,
+            "TOP40": 3,
+            "NEWS_TALK": 1
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 8,
+            "HITS": 3,
+            "SPOKEN": 1
+          }
+        }
+      },
+      "phoenix": {
+        "1995": {
+          "runs": 12,
+          "hhi": 626.6541587727652,
+          "countryPct": 1.6417422500000005,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.15491834416666667,
+            "ROCK": 0.4124024733333333,
+            "ADULT": 0.19159154166666664,
+            "COUNTRY": 0.016417422500000004,
+            "URBAN": 0.05975443916666666,
+            "SPOKEN": 0.09712205166666665,
+            "CHRISTIAN": 0.0032022858333333334,
+            "SPANISH": 0.026058017500000002,
+            "PUBLIC": 0.03678966583333333,
+            "REMNANT": 0.0017437566666666665,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 10,
+            "CLASSIC_ROCK": 2
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 10,
+            "ROCK": 2
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 576.2194324623622,
+          "countryPct": 2.0910885000000006,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.17151794166666665,
+            "ROCK": 0.33348241333333334,
+            "ADULT": 0.14327966833333333,
+            "COUNTRY": 0.020910885000000004,
+            "URBAN": 0.06564034166666667,
+            "SPOKEN": 0.10710166583333333,
+            "CHRISTIAN": 0.0005571175,
+            "SPANISH": 0.10386277250000003,
+            "PUBLIC": 0.03414332916666667,
+            "REMNANT": 0.005279004166666667,
+            "INSTITUTIONAL": 0.01367739,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "NEWS_TALK": 1,
+            "SPANISH": 8,
+            "TOP40": 1,
+            "CLASSIC_ROCK": 2
+          },
+          "leaderFamilyHistogram": {
+            "SPOKEN": 1,
+            "SPANISH": 8,
+            "HITS": 1,
+            "ROCK": 2
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 584.150771355603,
+          "countryPct": 5.217836166666667,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.13358582916666667,
+            "ROCK": 0.28788614416666664,
+            "ADULT": 0.13977735833333332,
+            "COUNTRY": 0.05217836166666667,
+            "URBAN": 0.05221179583333333,
+            "SPOKEN": 0.0778563175,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.13663963499999998,
+            "PUBLIC": 0.03932976916666667,
+            "REMNANT": 0.005105789166666667,
+            "INSTITUTIONAL": 0.07542001250000001,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "SPANISH": 8,
+            "CLASSIC_ROCK": 4
+          },
+          "leaderFamilyHistogram": {
+            "SPANISH": 8,
+            "ROCK": 4
+          }
+        }
+      },
+      "atlanta": {
+        "1995": {
+          "runs": 12,
+          "hhi": 791.711794072195,
+          "countryPct": 9.072848249999998,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.24164021916666664,
+            "ROCK": 0.20028058499999998,
+            "ADULT": 0.22015196416666666,
+            "COUNTRY": 0.09072848249999999,
+            "URBAN": 0.07380465333333333,
+            "SPOKEN": 0.12154879333333335,
+            "CHRISTIAN": 0.006745890000000001,
+            "SPANISH": 0.0007825875,
+            "PUBLIC": 0.0435286275,
+            "REMNANT": 0.0007881941666666666,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 10,
+            "ADULT_CONTEMP": 2
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 10,
+            "ADULT": 2
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 637.5907259685031,
+          "countryPct": 9.3009525,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.20732016249999996,
+            "ROCK": 0.19875096499999997,
+            "ADULT": 0.20795490499999997,
+            "COUNTRY": 0.093009525,
+            "URBAN": 0.0640143225,
+            "SPOKEN": 0.13059076166666667,
+            "CHRISTIAN": 0.00682565,
+            "SPANISH": 0.005793041666666666,
+            "PUBLIC": 0.05020779166666666,
+            "REMNANT": 0.0023935325,
+            "INSTITUTIONAL": 0.031272214166666666,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "TOP40": 5,
+            "ADULT_CONTEMP": 7
+          },
+          "leaderFamilyHistogram": {
+            "HITS": 5,
+            "ADULT": 7
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 597.6892487330969,
+          "countryPct": 9.546439750000001,
+          "countryNum1Wins": 0,
+          "familyShares": {
+            "HITS": 0.21073185583333337,
+            "ROCK": 0.16664083083333336,
+            "ADULT": 0.1846887341666667,
+            "COUNTRY": 0.0954643975,
+            "URBAN": 0.05856421916666667,
+            "SPOKEN": 0.10554673916666668,
+            "CHRISTIAN": 0.010674837500000001,
+            "SPANISH": 0.003807759166666666,
+            "PUBLIC": 0.053992754166666664,
+            "REMNANT": 0.006536948333333334,
+            "INSTITUTIONAL": 0.102295095,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "RELIGIOUS_NETWORK": 9,
+            "ADULT_CONTEMP": 3
+          },
+          "leaderFamilyHistogram": {
+            "INSTITUTIONAL": 9,
+            "ADULT": 3
+          }
+        }
+      },
+      "nashville": {
+        "1995": {
+          "runs": 12,
+          "hhi": 859.7789123548645,
+          "countryPct": 18.31717066666667,
+          "countryNum1Wins": 7,
+          "familyShares": {
+            "HITS": 0.10312842583333331,
+            "ROCK": 0.2298174016666667,
+            "ADULT": 0.28407006416666664,
+            "COUNTRY": 0.18317170666666668,
+            "URBAN": 0.041198389166666675,
+            "SPOKEN": 0.11480918500000001,
+            "CHRISTIAN": 0.0029159308333333335,
+            "SPANISH": 0.0005939133333333333,
+            "PUBLIC": 0.04005161666666667,
+            "REMNANT": 0.00024337,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "ADULT_CONTEMP": 5,
+            "COUNTRY": 7
+          },
+          "leaderFamilyHistogram": {
+            "ADULT": 5,
+            "COUNTRY": 7
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 815.3876544896111,
+          "countryPct": 15.598037750000001,
+          "countryNum1Wins": 8,
+          "familyShares": {
+            "HITS": 0.08862066916666668,
+            "ROCK": 0.2362302,
+            "ADULT": 0.2715246608333333,
+            "COUNTRY": 0.15598037750000002,
+            "URBAN": 0.04613705833333333,
+            "SPOKEN": 0.14240593833333334,
+            "CHRISTIAN": 0.0035763008333333335,
+            "SPANISH": 0.006113919166666668,
+            "PUBLIC": 0.041195392500000004,
+            "REMNANT": 0.006748729999999999,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 8,
+            "ADULT_CONTEMP": 3,
+            "URBAN_CONTEMP": 1
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 8,
+            "ADULT": 3,
+            "URBAN": 1
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 775.0961402599764,
+          "countryPct": 14.540513833333332,
+          "countryNum1Wins": 6,
+          "familyShares": {
+            "HITS": 0.08511145499999999,
+            "ROCK": 0.19648267833333333,
+            "ADULT": 0.2208405333333333,
+            "COUNTRY": 0.14540513833333332,
+            "URBAN": 0.04719852833333334,
+            "SPOKEN": 0.09869838083333332,
+            "CHRISTIAN": 0.0005925425,
+            "SPANISH": 0.0027683416666666664,
+            "PUBLIC": 0.04068036666666667,
+            "REMNANT": 0.006193361666666667,
+            "INSTITUTIONAL": 0.15435288,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "RELIGIOUS_NETWORK": 1,
+            "ADULT_CONTEMP": 5,
+            "COUNTRY": 6
+          },
+          "leaderFamilyHistogram": {
+            "INSTITUTIONAL": 1,
+            "ADULT": 5,
+            "COUNTRY": 6
+          }
+        }
+      },
+      "wichita": {
+        "1995": {
+          "runs": 12,
+          "hhi": 866.1364278423166,
+          "countryPct": 25.081306083333327,
+          "countryNum1Wins": 10,
+          "familyShares": {
+            "HITS": 0.23752561583333331,
+            "ROCK": 0.12847574833333333,
+            "ADULT": 0.19273640583333337,
+            "COUNTRY": 0.25081306083333327,
+            "URBAN": 0.05896884916666667,
+            "SPOKEN": 0.09136362999999999,
+            "CHRISTIAN": 0.005897623333333333,
+            "SPANISH": 0.0007992466666666667,
+            "PUBLIC": 0.030676559166666666,
+            "REMNANT": 0.0024456616666666668,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 10,
+            "TOP40": 2
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 10,
+            "HITS": 2
+          }
+        },
+        "2005": {
+          "runs": 12,
+          "hhi": 794.5306366051245,
+          "countryPct": 24.539139750000004,
+          "countryNum1Wins": 9,
+          "familyShares": {
+            "HITS": 0.23056447,
+            "ROCK": 0.13545108583333332,
+            "ADULT": 0.18385773583333337,
+            "COUNTRY": 0.24539139750000002,
+            "URBAN": 0.06303219916666666,
+            "SPOKEN": 0.10164581583333333,
+            "CHRISTIAN": 0.0032312091666666667,
+            "SPANISH": 0.004677060833333333,
+            "PUBLIC": 0.030329312499999997,
+            "REMNANT": 0.0018197141666666666,
+            "INSTITUTIONAL": 0,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 9,
+            "TOP40": 3
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 9,
+            "HITS": 3
+          }
+        },
+        "2026": {
+          "runs": 12,
+          "hhi": 743.5670504897981,
+          "countryPct": 25.26031091666667,
+          "countryNum1Wins": 10,
+          "familyShares": {
+            "HITS": 0.18594264166666669,
+            "ROCK": 0.14569477333333336,
+            "ADULT": 0.16417569999999998,
+            "COUNTRY": 0.2526031091666667,
+            "URBAN": 0.072906525,
+            "SPOKEN": 0.05793547666666666,
+            "CHRISTIAN": 0,
+            "SPANISH": 0.0056200975,
+            "PUBLIC": 0.034283306666666666,
+            "REMNANT": 0.007534194166666667,
+            "INSTITUTIONAL": 0.07124394333333332,
+            "UNMAPPED": 0
+          },
+          "leaderFmtHistogram": {
+            "COUNTRY": 10,
+            "ADULT_CONTEMP": 2
+          },
+          "leaderFamilyHistogram": {
+            "COUNTRY": 10,
+            "ADULT": 2
+          }
+        }
+      }
+    }
+  }
+}

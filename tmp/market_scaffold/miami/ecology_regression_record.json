@@ -1,0 +1,20 @@
+{
+  "marketId": "miami",
+  "recordedAt": "2026-05-17T20:56:00.000Z",
+  "command": "npm run diag:market-ecology-regression -- --markets=miami --runs=8",
+  "genEra": "1985",
+  "runsPerCell": 8,
+  "seed": 20260515,
+  "years": [1995, 2000, 2006, 2010, 2020, 2026],
+  "pass": false,
+  "note": "Harness completed (48/48 runs). 2026: HHI≈485, Spanish #1 in 8/8 runs (18.8% book), chr bucket 10.8% (exp 6%), country 11.1%, public 3.2%, gospel 0%, urban bucket ~10%. Identity direction matches (Hispanic-led, modest public, thin gospel) but Spanish book still under trait/Nielsen share; 1995 TOP40 MODERATE mismatch; CHR bucket BUCKET_MODERATE 2000–2020. No miami-specific gameplay hacks — spanishLaunches + fragmentationLaunches only.",
+  "summaryByYear": {
+    "1995": { "hhi": 573, "chrBucketPct": 18.4, "countryPct": 11.9, "spanishPct": 6.2, "publicPct": 3.2, "top40Num1WinPct": 62.5, "flags": ["TOP40_MODERATE"] },
+    "2000": { "hhi": 551, "chrBucketPct": 15.3, "countryPct": 10.7, "spanishPct": 13.6, "publicPct": 2.9, "top40Num1WinPct": 0, "flags": ["BUCKET_MODERATE"] },
+    "2006": { "hhi": 547, "chrBucketPct": 13.5, "countryPct": 13.7, "spanishPct": 16.9, "publicPct": 2.8, "top40Num1WinPct": 0, "flags": [] },
+    "2010": { "hhi": 494, "chrBucketPct": 13.4, "countryPct": 11.6, "spanishPct": 15.7, "publicPct": 2.7, "top40Num1WinPct": 0, "flags": ["BUCKET_MODERATE"] },
+    "2020": { "hhi": 494, "chrBucketPct": 11.5, "countryPct": 12.0, "spanishPct": 14.7, "publicPct": 3.1, "top40Num1WinPct": 0, "flags": ["BUCKET_MODERATE", "CONCENTRATION_MODERATE"] },
+    "2026": { "hhi": 485, "chrBucketPct": 10.8, "countryPct": 11.1, "spanishPct": 18.8, "publicPct": 3.2, "top40Num1WinPct": 0, "flags": ["CONCENTRATION_MODERATE"] }
+  },
+  "csv": "tmp/market_ecology_regression.csv"
+}

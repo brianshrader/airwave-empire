@@ -31,12 +31,15 @@ const { CLERK_PLAN } = require('./aiEntitlements');
 
 const GENERATED_VAN_DIR = path.join(__dirname, '..', 'generated-remote-vans');
 
-/** Grok accepts multiple ratios; default 16:9 matches prior remote-van composition (env can override). */
+/** Bump when pipeline/prompt changes so deploys do not serve old squished PNGs from disk. */
+const REMOTE_VAN_FILE_TAG = 'v2';
+
+/** Grok accepts multiple ratios; 4:3 fits van side views and pairs with letterboxed logo reference. */
 const ALLOWED_VAN_AR = new Set(['16:9', '3:2', '4:3', '1:1']);
 
 function resolveVanAspectRatio() {
-  const raw = String(process.env.GROK_VAN_ASPECT_RATIO || '16:9').trim();
-  return ALLOWED_VAN_AR.has(raw) ? raw : '16:9';
+  const raw = String(process.env.GROK_VAN_ASPECT_RATIO || '4:3').trim();
+  return ALLOWED_VAN_AR.has(raw) ? raw : '4:3';
 }
 
 function ensureVanDir() {
@@ -163,7 +166,7 @@ function mountRemoteVanRoutes(app) {
     const regenerateVan = body.regenerate === true;
     const keyMaterial = cacheKeyParts(body);
     const slug = vanFileSlugFromBody(body, keyMaterial);
-    const vanName = `${slug}-remote-van.png`;
+    const vanName = `${slug}-remote-van-${REMOTE_VAN_FILE_TAG}.png`;
     const vanPath = path.join(GENERATED_VAN_DIR, vanName);
 
     if (!regenerateVan && fs.existsSync(vanPath)) {

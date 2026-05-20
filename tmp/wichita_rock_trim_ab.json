@@ -1,0 +1,655 @@
+{
+  "recordedAt": "2026-05-17T23:22:09.691Z",
+  "runs": 8,
+  "seed": 20260515,
+  "base": "Variant B (MARKET_BP_PATCH.wichita + dialBpAmToFm)",
+  "variants": {
+    "B": "baseline",
+    "E": "BP7/9 ALBUM_ROCK str niche; BP15 CLASSIC_ROCK emerging",
+    "F": "opening OQ ALBUM_ROCK+CLASSIC_ROCK FM ×0.86",
+    "G": "post-1995 driftMod×0.90 + book appeal×0.90 on rock lanes",
+    "H": "E+F+G"
+  },
+  "results": {
+    "B": {
+      "w85_95": {
+        "label": "Wichita 1985→1995",
+        "markets": {
+          "wichita": {
+            "countryPct": 17.963934875,
+            "rockPct": 24.621649875000003,
+            "acPct": 24.448843125,
+            "talkPct": 13.184810249999998,
+            "gospelPct": 1.875676625,
+            "urbanPct": 10.145166374999999,
+            "chrPct": 3.8587212500000003,
+            "hhi": 943.231562350362,
+            "histStr": "COUNTRY:5|ADULT_CONTEMP:3",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "w85_26": {
+        "label": "Wichita 1985→2026",
+        "markets": {
+          "wichita": {
+            "countryPct": 17.317945875000003,
+            "rockPct": 25.706683750000003,
+            "acPct": 21.957320999999997,
+            "talkPct": 9.985924374999998,
+            "gospelPct": 9.29614775,
+            "urbanPct": 10.368936875000001,
+            "chrPct": 0.765941875,
+            "hhi": 746.3234852598778,
+            "histStr": "COUNTRY:5|ADULT_CONTEMP:3",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "w70_75": {
+        "label": "Wichita 1970→1975",
+        "markets": {
+          "wichita": {
+            "countryPct": 27.036930374999997,
+            "rockPct": 6.906434624999999,
+            "acPct": 10.2975805,
+            "talkPct": 8.612940125000002,
+            "gospelPct": 4.68034925,
+            "urbanPct": 0,
+            "chrPct": 28.9423445,
+            "hhi": 1153.757216468446,
+            "histStr": "COUNTRY:8",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "n85_26": {
+        "label": "Nashville 1985→2026",
+        "markets": {
+          "nashville": {
+            "countryPct": 10.990739125000001,
+            "rockPct": 22.428355,
+            "acPct": 18.946661875,
+            "talkPct": 11.44624175,
+            "gospelPct": 15.135082875,
+            "urbanPct": 6.468504375,
+            "chrPct": 8.91947925,
+            "hhi": 716.5189086328278,
+            "histStr": "ADULT_CONTEMP:6|COUNTRY:2",
+            "top40Mismatch": null,
+            "chrFlags": "CONCENTRATION_SEVERE"
+          }
+        }
+      },
+      "n70_75": {
+        "label": "Nashville 1970→1975",
+        "markets": {
+          "nashville": {
+            "countryPct": 28.3786915,
+            "rockPct": 6.9439325,
+            "acPct": 4.988209750000001,
+            "talkPct": 4.3268485,
+            "gospelPct": 2.19161375,
+            "urbanPct": 14.598489,
+            "chrPct": 21.02795625,
+            "hhi": 967.6798587006333,
+            "histStr": "COUNTRY:5|MOR:3",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "a85_26": {
+        "label": "Atlanta 1985→2026",
+        "markets": {
+          "atlanta": {
+            "countryPct": 10.213859749999997,
+            "rockPct": 21.6142395,
+            "acPct": 18.521591375,
+            "talkPct": 9.94671775,
+            "gospelPct": 13.823950875,
+            "urbanPct": 8.67519225,
+            "chrPct": 11.75996525,
+            "hhi": 508.3795943142967,
+            "histStr": "CLASSIC_ROCK:5|NEWS_TALK:2|RELIGIOUS_NETWORK:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_MODERATE|CONCENTRATION_MODERATE"
+          }
+        }
+      },
+      "a70_75": {
+        "label": "Atlanta 1970→1975",
+        "markets": {
+          "atlanta": {
+            "countryPct": 17.42610425,
+            "rockPct": 6.23707875,
+            "acPct": 7.226590125,
+            "talkPct": 7.941101875000001,
+            "gospelPct": 2.996264375,
+            "urbanPct": 16.715490875,
+            "chrPct": 26.923215499999998,
+            "hhi": 1243.2087152502988,
+            "histStr": "COUNTRY:5|TOP40:2|SOUL_RNB:1",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      }
+    },
+    "E": {
+      "w85_95": {
+        "label": "Wichita 1985→1995",
+        "markets": {
+          "wichita": {
+            "countryPct": 19.536441375,
+            "rockPct": 18.60365375,
+            "acPct": 26.867624500000005,
+            "talkPct": 13.659360249999999,
+            "gospelPct": 1.5892114999999998,
+            "urbanPct": 11.09356875,
+            "chrPct": 4.540622625,
+            "hhi": 1016.6133766214081,
+            "histStr": "COUNTRY:7|ADULT_CONTEMP:1",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "w85_26": {
+        "label": "Wichita 1985→2026",
+        "markets": {
+          "wichita": {
+            "countryPct": 18.101504249999998,
+            "rockPct": 21.830264,
+            "acPct": 22.311891375000002,
+            "talkPct": 9.596502625,
+            "gospelPct": 10.332581125,
+            "urbanPct": 11.42643575,
+            "chrPct": 1.1444320000000001,
+            "hhi": 784.513117937257,
+            "histStr": "COUNTRY:6|ADULT_CONTEMP:2",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "w70_75": {
+        "label": "Wichita 1970→1975",
+        "markets": {
+          "wichita": {
+            "countryPct": 27.129462375000003,
+            "rockPct": 5.7107145,
+            "acPct": 10.593831875,
+            "talkPct": 8.96123775,
+            "gospelPct": 4.523282249999999,
+            "urbanPct": 0,
+            "chrPct": 29.366920750000002,
+            "hhi": 1175.9880096357226,
+            "histStr": "COUNTRY:8",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "n85_26": {
+        "label": "Nashville 1985→2026",
+        "markets": {
+          "nashville": {
+            "countryPct": 11.083412375000002,
+            "rockPct": 22.0611335,
+            "acPct": 18.030931625,
+            "talkPct": 12.132684,
+            "gospelPct": 15.356075875,
+            "urbanPct": 6.593785125,
+            "chrPct": 9.053974625,
+            "hhi": 726.1135594095031,
+            "histStr": "ADULT_CONTEMP:6|COUNTRY:2",
+            "top40Mismatch": null,
+            "chrFlags": "CONCENTRATION_SEVERE"
+          }
+        }
+      },
+      "n70_75": {
+        "label": "Nashville 1970→1975",
+        "markets": {
+          "nashville": {
+            "countryPct": 28.3786915,
+            "rockPct": 6.9439325,
+            "acPct": 4.988209750000001,
+            "talkPct": 4.3268485,
+            "gospelPct": 2.19161375,
+            "urbanPct": 14.598489,
+            "chrPct": 21.02795625,
+            "hhi": 967.6798587006333,
+            "histStr": "COUNTRY:5|MOR:3",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "a85_26": {
+        "label": "Atlanta 1985→2026",
+        "markets": {
+          "atlanta": {
+            "countryPct": 10.213859749999997,
+            "rockPct": 21.6142395,
+            "acPct": 18.521591375,
+            "talkPct": 9.94671775,
+            "gospelPct": 13.823950875,
+            "urbanPct": 8.67519225,
+            "chrPct": 11.75996525,
+            "hhi": 508.3795943142967,
+            "histStr": "CLASSIC_ROCK:5|NEWS_TALK:2|RELIGIOUS_NETWORK:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_MODERATE|CONCENTRATION_MODERATE"
+          }
+        }
+      },
+      "a70_75": {
+        "label": "Atlanta 1970→1975",
+        "markets": {
+          "atlanta": {
+            "countryPct": 17.42610425,
+            "rockPct": 6.23707875,
+            "acPct": 7.226590125,
+            "talkPct": 7.941101875000001,
+            "gospelPct": 2.996264375,
+            "urbanPct": 16.715490875,
+            "chrPct": 26.923215499999998,
+            "hhi": 1243.2087152502988,
+            "histStr": "COUNTRY:5|TOP40:2|SOUL_RNB:1",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      }
+    },
+    "F": {
+      "w85_95": {
+        "label": "Wichita 1985→1995",
+        "markets": {
+          "wichita": {
+            "countryPct": 18.1894065,
+            "rockPct": 23.841595375,
+            "acPct": 25.013984999999998,
+            "talkPct": 13.63922525,
+            "gospelPct": 1.24580575,
+            "urbanPct": 10.2539795,
+            "chrPct": 3.912514875,
+            "hhi": 963.1777817375106,
+            "histStr": "COUNTRY:7|ADULT_CONTEMP:1",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "w85_26": {
+        "label": "Wichita 1985→2026",
+        "markets": {
+          "wichita": {
+            "countryPct": 15.92870225,
+            "rockPct": 25.355094750000003,
+            "acPct": 21.580988124999998,
+            "talkPct": 9.369685375,
+            "gospelPct": 9.57691625,
+            "urbanPct": 13.053023875,
+            "chrPct": 0.739218375,
+            "hhi": 769.2912216969703,
+            "histStr": "COUNTRY:4|ADULT_CONTEMP:4",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "w70_75": {
+        "label": "Wichita 1970→1975",
+        "markets": {
+          "wichita": {
+            "countryPct": 27.036930374999997,
+            "rockPct": 6.906434624999999,
+            "acPct": 10.2975805,
+            "talkPct": 8.612940125000002,
+            "gospelPct": 4.68034925,
+            "urbanPct": 0,
+            "chrPct": 28.9423445,
+            "hhi": 1153.757216468446,
+            "histStr": "COUNTRY:8",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "n85_26": {
+        "label": "Nashville 1985→2026",
+        "markets": {
+          "nashville": {
+            "countryPct": 10.990739125000001,
+            "rockPct": 22.428355,
+            "acPct": 18.946661875,
+            "talkPct": 11.44624175,
+            "gospelPct": 15.135082875,
+            "urbanPct": 6.468504375,
+            "chrPct": 8.91947925,
+            "hhi": 716.5189086328278,
+            "histStr": "ADULT_CONTEMP:6|COUNTRY:2",
+            "top40Mismatch": null,
+            "chrFlags": "CONCENTRATION_SEVERE"
+          }
+        }
+      },
+      "n70_75": {
+        "label": "Nashville 1970→1975",
+        "markets": {
+          "nashville": {
+            "countryPct": 28.3786915,
+            "rockPct": 6.9439325,
+            "acPct": 4.988209750000001,
+            "talkPct": 4.3268485,
+            "gospelPct": 2.19161375,
+            "urbanPct": 14.598489,
+            "chrPct": 21.02795625,
+            "hhi": 967.6798587006333,
+            "histStr": "COUNTRY:5|MOR:3",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "a85_26": {
+        "label": "Atlanta 1985→2026",
+        "markets": {
+          "atlanta": {
+            "countryPct": 10.213859749999997,
+            "rockPct": 21.6142395,
+            "acPct": 18.521591375,
+            "talkPct": 9.94671775,
+            "gospelPct": 13.823950875,
+            "urbanPct": 8.67519225,
+            "chrPct": 11.75996525,
+            "hhi": 508.3795943142967,
+            "histStr": "CLASSIC_ROCK:5|NEWS_TALK:2|RELIGIOUS_NETWORK:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_MODERATE|CONCENTRATION_MODERATE"
+          }
+        }
+      },
+      "a70_75": {
+        "label": "Atlanta 1970→1975",
+        "markets": {
+          "atlanta": {
+            "countryPct": 17.42610425,
+            "rockPct": 6.23707875,
+            "acPct": 7.226590125,
+            "talkPct": 7.941101875000001,
+            "gospelPct": 2.996264375,
+            "urbanPct": 16.715490875,
+            "chrPct": 26.923215499999998,
+            "hhi": 1243.2087152502988,
+            "histStr": "COUNTRY:5|TOP40:2|SOUL_RNB:1",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      }
+    },
+    "G": {
+      "w85_95": {
+        "label": "Wichita 1985→1995",
+        "markets": {
+          "wichita": {
+            "countryPct": 17.963934875,
+            "rockPct": 24.621649875000003,
+            "acPct": 24.448843125,
+            "talkPct": 13.184810249999998,
+            "gospelPct": 1.875676625,
+            "urbanPct": 10.145166374999999,
+            "chrPct": 3.8587212500000003,
+            "hhi": 943.231562350362,
+            "histStr": "COUNTRY:5|ADULT_CONTEMP:3",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "w85_26": {
+        "label": "Wichita 1985→2026",
+        "markets": {
+          "wichita": {
+            "countryPct": 17.389241125,
+            "rockPct": 20.459113125000002,
+            "acPct": 21.58858675,
+            "talkPct": 10.351198749999998,
+            "gospelPct": 10.5044105,
+            "urbanPct": 14.132417624999999,
+            "chrPct": 0.830314,
+            "hhi": 766.6666650307204,
+            "histStr": "COUNTRY:6|ADULT_CONTEMP:2",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "w70_75": {
+        "label": "Wichita 1970→1975",
+        "markets": {
+          "wichita": {
+            "countryPct": 27.036930374999997,
+            "rockPct": 6.906434624999999,
+            "acPct": 10.2975805,
+            "talkPct": 8.612940125000002,
+            "gospelPct": 4.68034925,
+            "urbanPct": 0,
+            "chrPct": 28.9423445,
+            "hhi": 1153.757216468446,
+            "histStr": "COUNTRY:8",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "n85_26": {
+        "label": "Nashville 1985→2026",
+        "markets": {
+          "nashville": {
+            "countryPct": 10.990739125000001,
+            "rockPct": 22.428355,
+            "acPct": 18.946661875,
+            "talkPct": 11.44624175,
+            "gospelPct": 15.135082875,
+            "urbanPct": 6.468504375,
+            "chrPct": 8.91947925,
+            "hhi": 716.5189086328278,
+            "histStr": "ADULT_CONTEMP:6|COUNTRY:2",
+            "top40Mismatch": null,
+            "chrFlags": "CONCENTRATION_SEVERE"
+          }
+        }
+      },
+      "n70_75": {
+        "label": "Nashville 1970→1975",
+        "markets": {
+          "nashville": {
+            "countryPct": 28.3786915,
+            "rockPct": 6.9439325,
+            "acPct": 4.988209750000001,
+            "talkPct": 4.3268485,
+            "gospelPct": 2.19161375,
+            "urbanPct": 14.598489,
+            "chrPct": 21.02795625,
+            "hhi": 967.6798587006333,
+            "histStr": "COUNTRY:5|MOR:3",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "a85_26": {
+        "label": "Atlanta 1985→2026",
+        "markets": {
+          "atlanta": {
+            "countryPct": 10.213859749999997,
+            "rockPct": 21.6142395,
+            "acPct": 18.521591375,
+            "talkPct": 9.94671775,
+            "gospelPct": 13.823950875,
+            "urbanPct": 8.67519225,
+            "chrPct": 11.75996525,
+            "hhi": 508.3795943142967,
+            "histStr": "CLASSIC_ROCK:5|NEWS_TALK:2|RELIGIOUS_NETWORK:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_MODERATE|CONCENTRATION_MODERATE"
+          }
+        }
+      },
+      "a70_75": {
+        "label": "Atlanta 1970→1975",
+        "markets": {
+          "atlanta": {
+            "countryPct": 17.42610425,
+            "rockPct": 6.23707875,
+            "acPct": 7.226590125,
+            "talkPct": 7.941101875000001,
+            "gospelPct": 2.996264375,
+            "urbanPct": 16.715490875,
+            "chrPct": 26.923215499999998,
+            "hhi": 1243.2087152502988,
+            "histStr": "COUNTRY:5|TOP40:2|SOUL_RNB:1",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      }
+    },
+    "H": {
+      "w85_95": {
+        "label": "Wichita 1985→1995",
+        "markets": {
+          "wichita": {
+            "countryPct": 19.516341999999998,
+            "rockPct": 19.334834375,
+            "acPct": 26.10024675,
+            "talkPct": 13.449755499999998,
+            "gospelPct": 1.946866375,
+            "urbanPct": 11.169236125000001,
+            "chrPct": 4.500133375,
+            "hhi": 1002.0722440256479,
+            "histStr": "ADULT_CONTEMP:4|COUNTRY:4",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "w85_26": {
+        "label": "Wichita 1985→2026",
+        "markets": {
+          "wichita": {
+            "countryPct": 19.112958374999998,
+            "rockPct": 19.710499875,
+            "acPct": 22.119283874999997,
+            "talkPct": 9.907255249999999,
+            "gospelPct": 11.285869250000001,
+            "urbanPct": 12.355588375,
+            "chrPct": 0.667438625,
+            "hhi": 789.2659176252869,
+            "histStr": "COUNTRY:5|ADULT_CONTEMP:3",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "w70_75": {
+        "label": "Wichita 1970→1975",
+        "markets": {
+          "wichita": {
+            "countryPct": 27.129462375000003,
+            "rockPct": 5.7107145,
+            "acPct": 10.593831875,
+            "talkPct": 8.96123775,
+            "gospelPct": 4.523282249999999,
+            "urbanPct": 0,
+            "chrPct": 29.366920750000002,
+            "hhi": 1175.9880096357226,
+            "histStr": "COUNTRY:8",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "n85_26": {
+        "label": "Nashville 1985→2026",
+        "markets": {
+          "nashville": {
+            "countryPct": 11.083412375000002,
+            "rockPct": 22.0611335,
+            "acPct": 18.030931625,
+            "talkPct": 12.132684,
+            "gospelPct": 15.356075875,
+            "urbanPct": 6.593785125,
+            "chrPct": 9.053974625,
+            "hhi": 726.1135594095031,
+            "histStr": "ADULT_CONTEMP:6|COUNTRY:2",
+            "top40Mismatch": null,
+            "chrFlags": "CONCENTRATION_SEVERE"
+          }
+        }
+      },
+      "n70_75": {
+        "label": "Nashville 1970→1975",
+        "markets": {
+          "nashville": {
+            "countryPct": 28.3786915,
+            "rockPct": 6.9439325,
+            "acPct": 4.988209750000001,
+            "talkPct": 4.3268485,
+            "gospelPct": 2.19161375,
+            "urbanPct": 14.598489,
+            "chrPct": 21.02795625,
+            "hhi": 967.6798587006333,
+            "histStr": "COUNTRY:5|MOR:3",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      },
+      "a85_26": {
+        "label": "Atlanta 1985→2026",
+        "markets": {
+          "atlanta": {
+            "countryPct": 10.213859749999997,
+            "rockPct": 21.6142395,
+            "acPct": 18.521591375,
+            "talkPct": 9.94671775,
+            "gospelPct": 13.823950875,
+            "urbanPct": 8.67519225,
+            "chrPct": 11.75996525,
+            "hhi": 508.3795943142967,
+            "histStr": "CLASSIC_ROCK:5|NEWS_TALK:2|RELIGIOUS_NETWORK:1",
+            "top40Mismatch": null,
+            "chrFlags": "BUCKET_MODERATE|CONCENTRATION_MODERATE"
+          }
+        }
+      },
+      "a70_75": {
+        "label": "Atlanta 1970→1975",
+        "markets": {
+          "atlanta": {
+            "countryPct": 17.42610425,
+            "rockPct": 6.23707875,
+            "acPct": 7.226590125,
+            "talkPct": 7.941101875000001,
+            "gospelPct": 2.996264375,
+            "urbanPct": 16.715490875,
+            "chrPct": 26.923215499999998,
+            "hhi": 1243.2087152502988,
+            "histStr": "COUNTRY:5|TOP40:2|SOUL_RNB:1",
+            "top40Mismatch": null,
+            "chrFlags": null
+          }
+        }
+      }
+    }
+  }
+}

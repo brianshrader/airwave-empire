@@ -1,0 +1,325 @@
+{
+  "recordedAt": "2026-05-18T01:08:03.820Z",
+  "runs": 8,
+  "seed": 20260515,
+  "results": {
+    "A": {
+      "label": "A baseline (9 FM)",
+      "fmCount": 9,
+      "fmFreqs": [
+        "93.1 FM",
+        "94.1 FM",
+        "96.3 FM",
+        "97.9 FM",
+        "100.1 FM",
+        "102.9 FM",
+        "104.5 FM",
+        "105.1 FM",
+        "107.5 FM"
+      ],
+      "byYear": {
+        "1995": {
+          "hhi": 936.5109070901564,
+          "countryPct": 16.74369825,
+          "publicPct": 4.484126750000001,
+          "chrPct": 13.528684624999999,
+          "histKeyStr": "COUNTRY:5|ADULT_CONTEMP:3",
+          "top40WinPct": 0,
+          "mismatchTop40": null,
+          "chrFlags": "CONCENTRATION_MODERATE"
+        },
+        "2000": {
+          "hhi": 860.6430064243575,
+          "countryPct": 12.671179000000002,
+          "publicPct": 4.017813125,
+          "chrPct": 13.23824525,
+          "histKeyStr": "ADULT_CONTEMP:5|NEWS_TALK:1|COUNTRY:1|TOP40:1",
+          "top40WinPct": 12.5,
+          "mismatchTop40": null,
+          "chrFlags": "CONCENTRATION_SEVERE"
+        },
+        "2006": {
+          "hhi": 817.5480849312864,
+          "countryPct": 13.382039625,
+          "publicPct": 4.13376475,
+          "chrPct": 12.397803749999998,
+          "histKeyStr": "ADULT_CONTEMP:4|COUNTRY:3|NEWS_TALK:1",
+          "top40WinPct": 0,
+          "mismatchTop40": null,
+          "chrFlags": "CONCENTRATION_SEVERE"
+        },
+        "2010": {
+          "hhi": 747.4929048211865,
+          "countryPct": 13.556176375000001,
+          "publicPct": 3.8076899999999996,
+          "chrPct": 10.7157905,
+          "histKeyStr": "ADULT_CONTEMP:5|COUNTRY:2|TOP40:1",
+          "top40WinPct": 12.5,
+          "mismatchTop40": null,
+          "chrFlags": "CONCENTRATION_SEVERE"
+        },
+        "2020": {
+          "hhi": 751.3860298820929,
+          "countryPct": 13.094995749999999,
+          "publicPct": 3.9094510000000007,
+          "chrPct": 9.618430125000001,
+          "histKeyStr": "ADULT_CONTEMP:5|COUNTRY:3",
+          "top40WinPct": 0,
+          "mismatchTop40": null,
+          "chrFlags": "CONCENTRATION_SEVERE"
+        },
+        "2026": {
+          "hhi": 744.7915585626946,
+          "countryPct": 12.702242125000001,
+          "publicPct": 3.930859125000001,
+          "chrPct": 8.067207875,
+          "histKeyStr": "COUNTRY:6|ADULT_CONTEMP:2",
+          "top40WinPct": 0,
+          "mismatchTop40": null,
+          "chrFlags": "CONCENTRATION_SEVERE"
+        }
+      }
+    },
+    "B": {
+      "label": "B baseline + NCE only",
+      "fmCount": 12,
+      "fmFreqs": [
+        "88.3 FM",
+        "90.3 FM",
+        "91.1 FM",
+        "93.1 FM",
+        "94.1 FM",
+        "96.3 FM",
+        "97.9 FM",
+        "100.1 FM",
+        "102.9 FM",
+        "104.5 FM",
+        "105.1 FM",
+        "107.5 FM"
+      ],
+      "byYear": {
+        "1995": {
+          "hhi": 930.4169157051534,
+          "countryPct": 14.557348249999999,
+          "publicPct": 4.459963125000001,
+          "chrPct": 13.955598875000003,
+          "histKeyStr": "ADULT_CONTEMP:4|COUNTRY:3|TOP40:1",
+          "top40WinPct": 12.5,
+          "mismatchTop40": null,
+          "chrFlags": "CONCENTRATION_MODERATE"
+        },
+        "2000": {
+          "hhi": 845.5248742304028,
+          "countryPct": 12.495912875,
+          "publicPct": 4.12231475,
+          "chrPct": 12.08016975,
+          "histKeyStr": "ADULT_CONTEMP:4|NEWS_TALK:2|COUNTRY:2",
+          "top40WinPct": 0,
+          "mismatchTop40": null,
+          "chrFlags": "CONCENTRATION_MODERATE"
+        },
+        "2006": {
+          "hhi": 822.7252749533399,
+          "countryPct": 13.548841874999997,
+          "publicPct": 3.7984980000000004,
+          "chrPct": 12.528518499999999,
+          "histKeyStr": "COUNTRY:4|ADULT_CONTEMP:4",
+          "top40WinPct": 0,
+          "mismatchTop40": null,
+          "chrFlags": "CONCENTRATION_SEVERE"
+        },
+        "2010": {
+          "hhi": 757.8242346797338,
+          "countryPct": 13.454464875,
+          "publicPct": 3.859215125,
+          "chrPct": 11.9488515,
+          "histKeyStr": "COUNTRY:4|ADULT_CONTEMP:3|NEWS_TALK:1",
+          "top40WinPct": 0,
+          "mismatchTop40": null,
+          "chrFlags": "CONCENTRATION_SEVERE"
+        },
+        "2020": {
+          "hhi": 747.5447683491989,
+          "countryPct": 12.914055874999999,
+          "publicPct": 3.8744542500000008,
+          "chrPct": 8.5191905,
+          "histKeyStr": "COUNTRY:6|ADULT_CONTEMP:2",
+          "top40WinPct": 0,
+          "mismatchTop40": null,
+          "chrFlags": "CONCENTRATION_SEVERE"
+        },
+        "2026": {
+          "hhi": 721.0712747317741,
+          "countryPct": 14.111502874999998,
+          "publicPct": 3.9444633749999998,
+          "chrPct": 8.274597,
+          "histKeyStr": "COUNTRY:7|ADULT_CONTEMP:1",
+          "top40WinPct": 0,
+          "mismatchTop40": null,
+          "chrFlags": "CONCENTRATION_SEVERE"
+        }
+      }
+    },
+    "C": {
+      "label": "C baseline + commercial only (100.3, 103.3)",
+      "fmCount": 11,
+      "fmFreqs": [
+        "93.1 FM",
+        "94.1 FM",
+        "96.3 FM",
+        "97.9 FM",
+        "100.1 FM",
+        "100.3 FM",
+        "102.9 FM",
+        "103.3 FM",
+        "104.5 FM",
+        "105.1 FM",
+        "107.5 FM"
+      ],
+      "byYear": {
+        "1995": {
+          "hhi": 879.122823872548,
+          "countryPct": 11.392728125,
+          "publicPct": 4.4812312499999996,
+          "chrPct": 16.463882875,
+          "histKeyStr": "TOP40:4|ADULT_CONTEMP:4",
+          "top40WinPct": 50,
+          "mismatchTop40": "MODERATE",
+          "chrFlags": "CONCENTRATION_SEVERE"
+        },
+        "2000": {
+          "hhi": 810.4434383818863,
+          "countryPct": 12.021087,
+          "publicPct": 3.7895135000000004,
+          "chrPct": 15.420181750000001,
+          "histKeyStr": "TOP40:5|ADULT_CONTEMP:3",
+          "top40WinPct": 62.5,
+          "mismatchTop40": "MODERATE",
+          "chrFlags": "CONCENTRATION_SEVERE"
+        },
+        "2006": {
+          "hhi": 779.2979270720407,
+          "countryPct": 8.042036375000002,
+          "publicPct": 4.148193749999999,
+          "chrPct": 14.017640375000001,
+          "histKeyStr": "ADULT_CONTEMP:4|NEWS_TALK:2|TOP40:2",
+          "top40WinPct": 25,
+          "mismatchTop40": null,
+          "chrFlags": "CONCENTRATION_SEVERE"
+        },
+        "2010": {
+          "hhi": 723.8818969164117,
+          "countryPct": 10.537450374999999,
+          "publicPct": 3.660042125,
+          "chrPct": 14.791113250000004,
+          "histKeyStr": "TOP40:4|NEWS_TALK:3|ADULT_CONTEMP:1",
+          "top40WinPct": 50,
+          "mismatchTop40": "MODERATE",
+          "chrFlags": "BUCKET_MODERATE|CONCENTRATION_SEVERE"
+        },
+        "2020": {
+          "hhi": 654.3391617397155,
+          "countryPct": 10.54227325,
+          "publicPct": 3.835300875,
+          "chrPct": 11.72768375,
+          "histKeyStr": "ADULT_CONTEMP:6|TOP40:1|COUNTRY:1",
+          "top40WinPct": 12.5,
+          "mismatchTop40": null,
+          "chrFlags": "CONCENTRATION_SEVERE"
+        },
+        "2026": {
+          "hhi": 654.5475697909575,
+          "countryPct": 10.473764000000001,
+          "publicPct": 4.07881,
+          "chrPct": 11.618655750000002,
+          "histKeyStr": "ADULT_CONTEMP:7|TOP40:1",
+          "top40WinPct": 12.5,
+          "mismatchTop40": null,
+          "chrFlags": "BUCKET_MODERATE|CONCENTRATION_SEVERE"
+        }
+      }
+    },
+    "D": {
+      "label": "D full scaffold (NCE + commercial)",
+      "fmCount": 14,
+      "fmFreqs": [
+        "88.3 FM",
+        "90.3 FM",
+        "91.1 FM",
+        "93.1 FM",
+        "94.1 FM",
+        "96.3 FM",
+        "97.9 FM",
+        "100.1 FM",
+        "100.3 FM",
+        "102.9 FM",
+        "103.3 FM",
+        "104.5 FM",
+        "105.1 FM",
+        "107.5 FM"
+      ],
+      "byYear": {
+        "1995": {
+          "hhi": 869.3884515697358,
+          "countryPct": 11.142847499999998,
+          "publicPct": 4.544132375,
+          "chrPct": 16.854424375,
+          "histKeyStr": "TOP40:5|ADULT_CONTEMP:3",
+          "top40WinPct": 62.5,
+          "mismatchTop40": "MODERATE",
+          "chrFlags": "CONCENTRATION_SEVERE"
+        },
+        "2000": {
+          "hhi": 819.0005363020604,
+          "countryPct": 11.592704000000001,
+          "publicPct": 4.0751233749999995,
+          "chrPct": 16.6906645,
+          "histKeyStr": "TOP40:4|ADULT_CONTEMP:3|NEWS_TALK:1",
+          "top40WinPct": 50,
+          "mismatchTop40": "MODERATE",
+          "chrFlags": "CONCENTRATION_SEVERE"
+        },
+        "2006": {
+          "hhi": 768.5229455098597,
+          "countryPct": 9.498722374999998,
+          "publicPct": 3.9797235,
+          "chrPct": 16.67548875,
+          "histKeyStr": "TOP40:4|ADULT_CONTEMP:3|NEWS_TALK:1",
+          "top40WinPct": 50,
+          "mismatchTop40": "MODERATE",
+          "chrFlags": "BUCKET_MODERATE|CONCENTRATION_SEVERE"
+        },
+        "2010": {
+          "hhi": 710.9753191688422,
+          "countryPct": 11.774086,
+          "publicPct": 3.833259125,
+          "chrPct": 13.95282925,
+          "histKeyStr": "TOP40:8",
+          "top40WinPct": 100,
+          "mismatchTop40": "SEVERE",
+          "chrFlags": "CONCENTRATION_SEVERE"
+        },
+        "2020": {
+          "hhi": 677.7333886495024,
+          "countryPct": 8.591086624999999,
+          "publicPct": 3.6157931249999997,
+          "chrPct": 11.684694,
+          "histKeyStr": "ADULT_CONTEMP:6|NEWS_TALK:2",
+          "top40WinPct": 0,
+          "mismatchTop40": null,
+          "chrFlags": "CONCENTRATION_SEVERE"
+        },
+        "2026": {
+          "hhi": 682.0593796863071,
+          "countryPct": 10.5599135,
+          "publicPct": 4.004431749999999,
+          "chrPct": 10.85081775,
+          "histKeyStr": "ADULT_CONTEMP:6|TOP40:1|RELIGIOUS_NETWORK:1",
+          "top40WinPct": 12.5,
+          "mismatchTop40": null,
+          "chrFlags": "CONCENTRATION_SEVERE"
+        }
+      }
+    }
+  }
+}

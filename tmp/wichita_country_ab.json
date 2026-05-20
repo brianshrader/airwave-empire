@@ -1,0 +1,291 @@
+{
+  "recordedAt": "2026-05-17T22:06:44.951Z",
+  "runs": 8,
+  "seed": 20260515,
+  "results": {
+    "A": {
+      "label": "A baseline runtime",
+      "wichita": {
+        "1995": {
+          "countryPct": 2.40780125,
+          "rockPct": 31.543998374999997,
+          "acPct": 17.143333625,
+          "chrPct": 16.559160000000002,
+          "hhi": 918.2753474543051,
+          "histKeyStr": "ADULT_CONTEMP:8",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_MODERATE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2000": {
+          "countryPct": 1.18372475,
+          "rockPct": 31.945718499999998,
+          "acPct": 17.888118125000002,
+          "chrPct": 14.254318625000002,
+          "hhi": 853.9275918304065,
+          "histKeyStr": "ADULT_CONTEMP:7|TOP40:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2006": {
+          "countryPct": 3.2485932499999994,
+          "rockPct": 30.663876125,
+          "acPct": 15.625053875,
+          "chrPct": 12.9170745,
+          "hhi": 757.1842138396416,
+          "histKeyStr": "ADULT_CONTEMP:7|TOP40:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2010": {
+          "countryPct": 0.9378497499999999,
+          "rockPct": 29.452422375000005,
+          "acPct": 16.743902,
+          "chrPct": 13.503825375,
+          "hhi": 754.2935273582431,
+          "histKeyStr": "ADULT_CONTEMP:7|TOP40:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2020": {
+          "countryPct": 4.0589485000000005,
+          "rockPct": 28.335395874999996,
+          "acPct": 16.404137125000002,
+          "chrPct": 10.8723875,
+          "hhi": 739.3473955193341,
+          "histKeyStr": "ADULT_CONTEMP:7|TOP40:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2026": {
+          "countryPct": 4.134963875,
+          "rockPct": 30.885003875,
+          "acPct": 16.172040375,
+          "chrPct": 8.893815250000001,
+          "hhi": 711.5934991213176,
+          "histKeyStr": "ADULT_CONTEMP:6|ALBUM_ROCK:1|RELIGIOUS_NETWORK:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        }
+      }
+    },
+    "B": {
+      "label": "B dialBpAmToFm only (BP11→COUNTRY moderate, BP13 COUNTRY strong)",
+      "wichita": {
+        "1995": {
+          "countryPct": 2.40780125,
+          "rockPct": 31.543998374999997,
+          "acPct": 17.143333625,
+          "chrPct": 16.559160000000002,
+          "hhi": 918.2753474543051,
+          "histKeyStr": "ADULT_CONTEMP:8",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_MODERATE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2000": {
+          "countryPct": 1.18372475,
+          "rockPct": 31.945718499999998,
+          "acPct": 17.888118125000002,
+          "chrPct": 14.254318625000002,
+          "hhi": 853.9275918304065,
+          "histKeyStr": "ADULT_CONTEMP:7|TOP40:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2006": {
+          "countryPct": 3.2485932499999994,
+          "rockPct": 30.663876125,
+          "acPct": 15.625053875,
+          "chrPct": 12.9170745,
+          "hhi": 757.1842138396416,
+          "histKeyStr": "ADULT_CONTEMP:7|TOP40:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2010": {
+          "countryPct": 0.9378497499999999,
+          "rockPct": 29.452422375000005,
+          "acPct": 16.743902,
+          "chrPct": 13.503825375,
+          "hhi": 754.2935273582431,
+          "histKeyStr": "ADULT_CONTEMP:7|TOP40:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2020": {
+          "countryPct": 4.0589485000000005,
+          "rockPct": 28.335395874999996,
+          "acPct": 16.404137125000002,
+          "chrPct": 10.8723875,
+          "hhi": 739.3473955193341,
+          "histKeyStr": "ADULT_CONTEMP:7|TOP40:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2026": {
+          "countryPct": 4.134963875,
+          "rockPct": 30.885003875,
+          "acPct": 16.172040375,
+          "chrPct": 8.893815250000001,
+          "hhi": 711.5934991213176,
+          "histKeyStr": "ADULT_CONTEMP:6|ALBUM_ROCK:1|RELIGIOUS_NETWORK:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        }
+      }
+    },
+    "C": {
+      "label": "C inject-order only (midwest_legacy or countryStrength≥0.55)",
+      "wichita": {
+        "1995": {
+          "countryPct": 2.40780125,
+          "rockPct": 31.543998374999997,
+          "acPct": 17.143333625,
+          "chrPct": 16.559160000000002,
+          "hhi": 918.2753474543051,
+          "histKeyStr": "ADULT_CONTEMP:8",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_MODERATE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2000": {
+          "countryPct": 1.18372475,
+          "rockPct": 31.945718499999998,
+          "acPct": 17.888118125000002,
+          "chrPct": 14.254318625000002,
+          "hhi": 853.9275918304065,
+          "histKeyStr": "ADULT_CONTEMP:7|TOP40:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2006": {
+          "countryPct": 3.2485932499999994,
+          "rockPct": 30.663876125,
+          "acPct": 15.625053875,
+          "chrPct": 12.9170745,
+          "hhi": 757.1842138396416,
+          "histKeyStr": "ADULT_CONTEMP:7|TOP40:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2010": {
+          "countryPct": 0.9378497499999999,
+          "rockPct": 29.452422375000005,
+          "acPct": 16.743902,
+          "chrPct": 13.503825375,
+          "hhi": 754.2935273582431,
+          "histKeyStr": "ADULT_CONTEMP:7|TOP40:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2020": {
+          "countryPct": 4.0589485000000005,
+          "rockPct": 28.335395874999996,
+          "acPct": 16.404137125000002,
+          "chrPct": 10.8723875,
+          "hhi": 739.3473955193341,
+          "histKeyStr": "ADULT_CONTEMP:7|TOP40:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2026": {
+          "countryPct": 4.134963875,
+          "rockPct": 30.885003875,
+          "acPct": 16.172040375,
+          "chrPct": 8.893815250000001,
+          "hhi": 711.5934991213176,
+          "histKeyStr": "ADULT_CONTEMP:6|ALBUM_ROCK:1|RELIGIOUS_NETWORK:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        }
+      }
+    },
+    "D": {
+      "label": "D combined B+C",
+      "wichita": {
+        "1995": {
+          "countryPct": 2.40780125,
+          "rockPct": 31.543998374999997,
+          "acPct": 17.143333625,
+          "chrPct": 16.559160000000002,
+          "hhi": 918.2753474543051,
+          "histKeyStr": "ADULT_CONTEMP:8",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_MODERATE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2000": {
+          "countryPct": 1.18372475,
+          "rockPct": 31.945718499999998,
+          "acPct": 17.888118125000002,
+          "chrPct": 14.254318625000002,
+          "hhi": 853.9275918304065,
+          "histKeyStr": "ADULT_CONTEMP:7|TOP40:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2006": {
+          "countryPct": 3.2485932499999994,
+          "rockPct": 30.663876125,
+          "acPct": 15.625053875,
+          "chrPct": 12.9170745,
+          "hhi": 757.1842138396416,
+          "histKeyStr": "ADULT_CONTEMP:7|TOP40:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2010": {
+          "countryPct": 0.9378497499999999,
+          "rockPct": 29.452422375000005,
+          "acPct": 16.743902,
+          "chrPct": 13.503825375,
+          "hhi": 754.2935273582431,
+          "histKeyStr": "ADULT_CONTEMP:7|TOP40:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2020": {
+          "countryPct": 4.0589485000000005,
+          "rockPct": 28.335395874999996,
+          "acPct": 16.404137125000002,
+          "chrPct": 10.8723875,
+          "hhi": 739.3473955193341,
+          "histKeyStr": "ADULT_CONTEMP:7|TOP40:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        },
+        "2026": {
+          "countryPct": 4.134963875,
+          "rockPct": 30.885003875,
+          "acPct": 16.172040375,
+          "chrPct": 8.893815250000001,
+          "hhi": 711.5934991213176,
+          "histKeyStr": "ADULT_CONTEMP:6|ALBUM_ROCK:1|RELIGIOUS_NETWORK:1",
+          "top40Mismatch": "",
+          "chrFlags": "CONCENTRATION_SEVERE",
+          "countryStrength": 0.5881818181818181
+        }
+      }
+    }
+  }
+}

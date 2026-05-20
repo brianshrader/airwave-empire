@@ -1,0 +1,2127 @@
+{
+  "recordedAt": "2026-05-17T23:55:54.367Z",
+  "runs": 8,
+  "seed": 20260515,
+  "variantSpec": {
+    "A": "baseline (shipped)",
+    "B": "BP[2] NEWS_TALK strong→emerging",
+    "C": "NY mega frag 1992 SPANISH moderate + 2006 strengthen; opening SPANISH ×1.05",
+    "D": "tier inject skip AOR/CR/ALT for NY; drop 1983 CR + 1991 ALT mega launches; opening rock ×0.88",
+    "E": "B + C + light D (opening rock ×0.90 only)"
+  },
+  "results": {
+    "A": {
+      "1975": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.2274163617123326,
+            "AC_HOT_AC": 0.02807897358159468,
+            "ROCK_ALT_AAA": 0.07655103862169092,
+            "COUNTRY": 0.028727920125448093,
+            "NEWS_TALK_SPORTS": 0.27400664680649595,
+            "PUBLIC_RADIO": 0.00373239413070269,
+            "URBAN_RHYTHMIC": 0.17106688263982261,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.014819149196711217
+          },
+          "talkPct": 27.400664680649594,
+          "spanishPct": 0,
+          "rockPct": 7.655103862169092,
+          "chrPct": 22.74163617123326,
+          "urbanPct": 17.10668826398226,
+          "countryPct": 2.872792012544809,
+          "publicPct": 0.373239413070269,
+          "hhi": 770.8039486824761,
+          "histStr": "NEWS_TALK:5|SOUL_RNB:3",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.625,
+            "talkWins": 0.625
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.21614633033485134,
+            "AC_HOT_AC": 0.03410634395053119,
+            "ROCK_ALT_AAA": 0.07789815344084061,
+            "COUNTRY": 0.03708470209924702,
+            "NEWS_TALK_SPORTS": 0.20179495913588347,
+            "PUBLIC_RADIO": 0.004313242120877072,
+            "URBAN_RHYTHMIC": 0.1670651884282264,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.015286241483100586
+          },
+          "talkPct": 20.179495913588347,
+          "spanishPct": 0,
+          "rockPct": 7.789815344084062,
+          "chrPct": 21.614633033485134,
+          "urbanPct": 16.70651884282264,
+          "countryPct": 3.7084702099247018,
+          "publicPct": 0.4313242120877072,
+          "hhi": 711.2305666597033,
+          "histStr": "MOR:4|SOUL_RNB:4",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.5,
+            "talkWins": 0
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.23770727592725907,
+            "AC_HOT_AC": 0.04036559383347002,
+            "ROCK_ALT_AAA": 0.09994796756045919,
+            "COUNTRY": 0.030598123867559095,
+            "NEWS_TALK_SPORTS": 0.1594853664271472,
+            "PUBLIC_RADIO": 0.003410076252364038,
+            "URBAN_RHYTHMIC": 0.2308705465632937,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.01560966626012664
+          },
+          "talkPct": 15.94853664271472,
+          "spanishPct": 0,
+          "rockPct": 9.994796756045918,
+          "chrPct": 23.77072759272591,
+          "urbanPct": 23.08705465632937,
+          "countryPct": 3.0598123867559095,
+          "publicPct": 0.34100762523640377,
+          "hhi": 682.4833528991687,
+          "histStr": "SOUL_RNB:4|MOR:3|NEWS_TALK:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0.125
+          }
+        }
+      },
+      "1985": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.14306458786223286,
+            "AC_HOT_AC": 0.18469010582321121,
+            "ROCK_ALT_AAA": 0.24785455029771258,
+            "COUNTRY": 0.025396816532092557,
+            "NEWS_TALK_SPORTS": 0.15835083801043784,
+            "PUBLIC_RADIO": 0.06180297070025632,
+            "URBAN_RHYTHMIC": 0.11503094380628462,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.003558850040490613
+          },
+          "talkPct": 15.835083801043783,
+          "spanishPct": 0,
+          "rockPct": 24.78545502977126,
+          "chrPct": 14.306458786223287,
+          "urbanPct": 11.503094380628461,
+          "countryPct": 2.539681653209256,
+          "publicPct": 6.180297070025632,
+          "hhi": 457.6951738120709,
+          "histStr": "NEWS_TALK:4|ADULT_CONTEMP:4",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.5,
+            "talkWins": 0.5
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.13889390305887972,
+            "AC_HOT_AC": 0.1740314304300626,
+            "ROCK_ALT_AAA": 0.28907313349925523,
+            "COUNTRY": 0.03624924230617829,
+            "NEWS_TALK_SPORTS": 0.12077321937951073,
+            "PUBLIC_RADIO": 0.06644892092548323,
+            "URBAN_RHYTHMIC": 0.11330085570490672,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.0036800237326655508
+          },
+          "talkPct": 12.077321937951073,
+          "spanishPct": 0,
+          "rockPct": 28.907313349925523,
+          "chrPct": 13.889390305887972,
+          "urbanPct": 11.330085570490672,
+          "countryPct": 3.6249242306178293,
+          "publicPct": 6.644892092548322,
+          "hhi": 457.55503739338207,
+          "histStr": "CLASSIC_ROCK:5|NEWS_TALK:3",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.625,
+            "talkWins": 0.375
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.13742293233396477,
+            "AC_HOT_AC": 0.18956613098627495,
+            "ROCK_ALT_AAA": 0.3002704384081818,
+            "COUNTRY": 0.02583045869135597,
+            "NEWS_TALK_SPORTS": 0.09839885244312847,
+            "PUBLIC_RADIO": 0.063428463657549,
+            "URBAN_RHYTHMIC": 0.12573523979646567,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.003299811245446738
+          },
+          "talkPct": 9.839885244312848,
+          "spanishPct": 0,
+          "rockPct": 30.02704384081818,
+          "chrPct": 13.742293233396477,
+          "urbanPct": 12.573523979646566,
+          "countryPct": 2.583045869135597,
+          "publicPct": 6.342846365754901,
+          "hhi": 456.39068035048683,
+          "histStr": "CLASSIC_ROCK:4|NEWS_TALK:3|ADULT_CONTEMP:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0.375
+          }
+        }
+      },
+      "1995": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.1390753613425098,
+            "AC_HOT_AC": 0.1826788519961257,
+            "ROCK_ALT_AAA": 0.25864466635649663,
+            "COUNTRY": 0.07544029933512587,
+            "NEWS_TALK_SPORTS": 0.13299144383991338,
+            "PUBLIC_RADIO": 0.04776795581691072,
+            "URBAN_RHYTHMIC": 0.12124810038418968,
+            "SPANISH": 0.009175782350375718,
+            "GOSPEL_CCM": 0.0011562937366567507
+          },
+          "talkPct": 13.299144383991338,
+          "spanishPct": 0.9175782350375719,
+          "rockPct": 25.864466635649663,
+          "chrPct": 13.90753613425098,
+          "urbanPct": 12.124810038418968,
+          "countryPct": 7.544029933512587,
+          "publicPct": 4.776795581691072,
+          "hhi": 476.14217712213286,
+          "histStr": "TOP40:4|NEWS_TALK:2|ADULT_CONTEMP:2",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0.25
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.12497392506235849,
+            "AC_HOT_AC": 0.15399243145159996,
+            "ROCK_ALT_AAA": 0.3042955090932044,
+            "COUNTRY": 0.09637763443250047,
+            "NEWS_TALK_SPORTS": 0.10445469319282438,
+            "PUBLIC_RADIO": 0.049270402949270424,
+            "URBAN_RHYTHMIC": 0.1240573823684765,
+            "SPANISH": 0.007565281226597003,
+            "GOSPEL_CCM": 0.0012496212623183882
+          },
+          "talkPct": 10.445469319282438,
+          "spanishPct": 0.7565281226597004,
+          "rockPct": 30.42955090932044,
+          "chrPct": 12.49739250623585,
+          "urbanPct": 12.405738236847649,
+          "countryPct": 9.637763443250048,
+          "publicPct": 4.927040294927043,
+          "hhi": 521.0979333703431,
+          "histStr": "CLASSIC_ROCK:4|NEWS_TALK:2|TOP40:1|COUNTRY:1",
+          "leaderConc": {
+            "unique": 4,
+            "topShare": 0.5,
+            "talkWins": 0.25
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.15842076142270697,
+            "AC_HOT_AC": 0.1892347535898814,
+            "ROCK_ALT_AAA": 0.2855922059230279,
+            "COUNTRY": 0.06310294361462493,
+            "NEWS_TALK_SPORTS": 0.08220756032141635,
+            "PUBLIC_RADIO": 0.04590966513133447,
+            "URBAN_RHYTHMIC": 0.12436215537278644,
+            "SPANISH": 0.008667555232910601,
+            "GOSPEL_CCM": 0.0006343135048239897
+          },
+          "talkPct": 8.220756032141635,
+          "spanishPct": 0.8667555232910601,
+          "rockPct": 28.559220592302793,
+          "chrPct": 15.842076142270697,
+          "urbanPct": 12.436215537278644,
+          "countryPct": 6.310294361462493,
+          "publicPct": 4.590966513133448,
+          "hhi": 508.9487052315553,
+          "histStr": "TOP40:4|CLASSIC_ROCK:3|ADULT_CONTEMP:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0
+          }
+        }
+      },
+      "2005": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.1127556572238729,
+            "AC_HOT_AC": 0.1334912747894247,
+            "ROCK_ALT_AAA": 0.21183977873353516,
+            "COUNTRY": 0.06853598442746181,
+            "NEWS_TALK_SPORTS": 0.21024360086604355,
+            "PUBLIC_RADIO": 0.04609067228169465,
+            "URBAN_RHYTHMIC": 0.14431517328484628,
+            "SPANISH": 0.03933637443673922,
+            "GOSPEL_CCM": 0.006574044485199831
+          },
+          "talkPct": 21.024360086604354,
+          "spanishPct": 3.933637443673922,
+          "rockPct": 21.183977873353516,
+          "chrPct": 11.27556572238729,
+          "urbanPct": 14.431517328484627,
+          "countryPct": 6.853598442746181,
+          "publicPct": 4.609067228169465,
+          "hhi": 464.1784392053878,
+          "histStr": "NEWS_TALK:6|ADULT_CONTEMP:1|TOP40:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.75,
+            "talkWins": 0.75
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.11338052123416872,
+            "AC_HOT_AC": 0.13261790520408284,
+            "ROCK_ALT_AAA": 0.24444683579166987,
+            "COUNTRY": 0.12174720326663113,
+            "NEWS_TALK_SPORTS": 0.13588193596697645,
+            "PUBLIC_RADIO": 0.05305585823899173,
+            "URBAN_RHYTHMIC": 0.13446111787118062,
+            "SPANISH": 0.027068223136207922,
+            "GOSPEL_CCM": 0.0075670634743818885
+          },
+          "talkPct": 13.588193596697645,
+          "spanishPct": 2.7068223136207923,
+          "rockPct": 24.444683579166988,
+          "chrPct": 11.338052123416873,
+          "urbanPct": 13.446111787118062,
+          "countryPct": 12.174720326663113,
+          "publicPct": 5.305585823899173,
+          "hhi": 441.1681924922647,
+          "histStr": "CLASSIC_ROCK:5|NEWS_TALK:2|TOP40:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.625,
+            "talkWins": 0.25
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.11635775219145392,
+            "AC_HOT_AC": 0.12884116350131725,
+            "ROCK_ALT_AAA": 0.2581732994065577,
+            "COUNTRY": 0.057090388500132136,
+            "NEWS_TALK_SPORTS": 0.13768710202561524,
+            "PUBLIC_RADIO": 0.05075229238375443,
+            "URBAN_RHYTHMIC": 0.16881190705182186,
+            "SPANISH": 0.05040240875366388,
+            "GOSPEL_CCM": 0.004295956256531812
+          },
+          "talkPct": 13.768710202561524,
+          "spanishPct": 5.040240875366388,
+          "rockPct": 25.81732994065577,
+          "chrPct": 11.635775219145392,
+          "urbanPct": 16.881190705182185,
+          "countryPct": 5.709038850013213,
+          "publicPct": 5.075229238375443,
+          "hhi": 442.2836126232844,
+          "histStr": "CLASSIC_ROCK:3|NEWS_TALK:2|ADULT_CONTEMP:1|SPORTS_TALK:1|TOP40:1",
+          "leaderConc": {
+            "unique": 5,
+            "topShare": 0.375,
+            "talkWins": 0.375
+          }
+        }
+      },
+      "2026": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.07834932158846797,
+            "AC_HOT_AC": 0.14081951844485377,
+            "ROCK_ALT_AAA": 0.1991428712650017,
+            "COUNTRY": 0.06379086643488387,
+            "NEWS_TALK_SPORTS": 0.20981980998361877,
+            "PUBLIC_RADIO": 0.06909912535483638,
+            "URBAN_RHYTHMIC": 0.1821839068532521,
+            "SPANISH": 0.02086983238101469,
+            "GOSPEL_CCM": 0.00891481709948426
+          },
+          "talkPct": 20.981980998361877,
+          "spanishPct": 2.086983238101469,
+          "rockPct": 19.91428712650017,
+          "chrPct": 7.834932158846797,
+          "urbanPct": 18.218390685325208,
+          "countryPct": 6.379086643488387,
+          "publicPct": 6.909912535483638,
+          "hhi": 475.8017290894684,
+          "histStr": "NEWS_TALK:6|SPORTS_TALK:1|ADULT_CONTEMP:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.75,
+            "talkWins": 0.875
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.09635144492112695,
+            "AC_HOT_AC": 0.13565676593290166,
+            "ROCK_ALT_AAA": 0.2168571893797439,
+            "COUNTRY": 0.09780971054136174,
+            "NEWS_TALK_SPORTS": 0.12445508983390312,
+            "PUBLIC_RADIO": 0.07449249885344279,
+            "URBAN_RHYTHMIC": 0.1577109094435442,
+            "SPANISH": 0.055409684311831804,
+            "GOSPEL_CCM": 0.023458334145320472
+          },
+          "talkPct": 12.445508983390312,
+          "spanishPct": 5.54096843118318,
+          "rockPct": 21.68571893797439,
+          "chrPct": 9.635144492112694,
+          "urbanPct": 15.771090944354421,
+          "countryPct": 9.780971054136174,
+          "publicPct": 7.44924988534428,
+          "hhi": 459.72207243172437,
+          "histStr": "CLASSIC_ROCK:5|NEWS_TALK:2|SPORTS_TALK:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.625,
+            "talkWins": 0.375
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.10240968338540127,
+            "AC_HOT_AC": 0.1270613442505378,
+            "ROCK_ALT_AAA": 0.20930537619166734,
+            "COUNTRY": 0.0658443930212572,
+            "NEWS_TALK_SPORTS": 0.152731629937492,
+            "PUBLIC_RADIO": 0.07841844357722022,
+            "URBAN_RHYTHMIC": 0.18245450630760962,
+            "SPANISH": 0.047005704418866215,
+            "GOSPEL_CCM": 0.01282320396009509
+          },
+          "talkPct": 15.273162993749201,
+          "spanishPct": 4.700570441886621,
+          "rockPct": 20.930537619166735,
+          "chrPct": 10.240968338540126,
+          "urbanPct": 18.245450630760963,
+          "countryPct": 6.584439302125721,
+          "publicPct": 7.841844357722022,
+          "hhi": 441.7619686557043,
+          "histStr": "CLASSIC_ROCK:3|NEWS_TALK:3|SPORTS_TALK:1|URBAN_CONTEMP:1",
+          "leaderConc": {
+            "unique": 4,
+            "topShare": 0.375,
+            "talkWins": 0.5
+          }
+        }
+      }
+    },
+    "B": {
+      "1975": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.2259353574515634,
+            "AC_HOT_AC": 0.04074224733595256,
+            "ROCK_ALT_AAA": 0.07793894572703076,
+            "COUNTRY": 0.03320622357314428,
+            "NEWS_TALK_SPORTS": 0.23315812083980073,
+            "PUBLIC_RADIO": 0.004130966956963414,
+            "URBAN_RHYTHMIC": 0.18401681183719698,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.015540326907766761
+          },
+          "talkPct": 23.315812083980074,
+          "spanishPct": 0,
+          "rockPct": 7.793894572703077,
+          "chrPct": 22.59353574515634,
+          "urbanPct": 18.4016811837197,
+          "countryPct": 3.320622357314428,
+          "publicPct": 0.4130966956963414,
+          "hhi": 726.7714240537936,
+          "histStr": "MOR:4|SOUL_RNB:4",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.5,
+            "talkWins": 0
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.21614633033485134,
+            "AC_HOT_AC": 0.03410634395053119,
+            "ROCK_ALT_AAA": 0.07789815344084061,
+            "COUNTRY": 0.03708470209924702,
+            "NEWS_TALK_SPORTS": 0.20179495913588347,
+            "PUBLIC_RADIO": 0.004313242120877072,
+            "URBAN_RHYTHMIC": 0.1670651884282264,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.015286241483100586
+          },
+          "talkPct": 20.179495913588347,
+          "spanishPct": 0,
+          "rockPct": 7.789815344084062,
+          "chrPct": 21.614633033485134,
+          "urbanPct": 16.70651884282264,
+          "countryPct": 3.7084702099247018,
+          "publicPct": 0.4313242120877072,
+          "hhi": 711.2305666597033,
+          "histStr": "MOR:4|SOUL_RNB:4",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.5,
+            "talkWins": 0
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.23770727592725907,
+            "AC_HOT_AC": 0.04036559383347002,
+            "ROCK_ALT_AAA": 0.09994796756045919,
+            "COUNTRY": 0.030598123867559095,
+            "NEWS_TALK_SPORTS": 0.1594853664271472,
+            "PUBLIC_RADIO": 0.003410076252364038,
+            "URBAN_RHYTHMIC": 0.2308705465632937,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.01560966626012664
+          },
+          "talkPct": 15.94853664271472,
+          "spanishPct": 0,
+          "rockPct": 9.994796756045918,
+          "chrPct": 23.77072759272591,
+          "urbanPct": 23.08705465632937,
+          "countryPct": 3.0598123867559095,
+          "publicPct": 0.34100762523640377,
+          "hhi": 682.4833528991687,
+          "histStr": "SOUL_RNB:4|MOR:3|NEWS_TALK:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0.125
+          }
+        }
+      },
+      "1985": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.14595780646227488,
+            "AC_HOT_AC": 0.19315869689200385,
+            "ROCK_ALT_AAA": 0.2547945687745775,
+            "COUNTRY": 0.026592407782132114,
+            "NEWS_TALK_SPORTS": 0.1274871200339431,
+            "PUBLIC_RADIO": 0.06560647815098483,
+            "URBAN_RHYTHMIC": 0.1179455249751483,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.0037127512869247884
+          },
+          "talkPct": 12.74871200339431,
+          "spanishPct": 0,
+          "rockPct": 25.47945687745775,
+          "chrPct": 14.595780646227489,
+          "urbanPct": 11.79455249751483,
+          "countryPct": 2.6592407782132113,
+          "publicPct": 6.560647815098483,
+          "hhi": 464.5415871674782,
+          "histStr": "NEWS_TALK:4|ADULT_CONTEMP:4",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.5,
+            "talkWins": 0.5
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.13889390305887972,
+            "AC_HOT_AC": 0.1740314304300626,
+            "ROCK_ALT_AAA": 0.28907313349925523,
+            "COUNTRY": 0.03624924230617829,
+            "NEWS_TALK_SPORTS": 0.12077321937951073,
+            "PUBLIC_RADIO": 0.06644892092548323,
+            "URBAN_RHYTHMIC": 0.11330085570490672,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.0036800237326655508
+          },
+          "talkPct": 12.077321937951073,
+          "spanishPct": 0,
+          "rockPct": 28.907313349925523,
+          "chrPct": 13.889390305887972,
+          "urbanPct": 11.330085570490672,
+          "countryPct": 3.6249242306178293,
+          "publicPct": 6.644892092548322,
+          "hhi": 457.55503739338207,
+          "histStr": "CLASSIC_ROCK:5|NEWS_TALK:3",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.625,
+            "talkWins": 0.375
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.13742293233396477,
+            "AC_HOT_AC": 0.18956613098627495,
+            "ROCK_ALT_AAA": 0.3002704384081818,
+            "COUNTRY": 0.02583045869135597,
+            "NEWS_TALK_SPORTS": 0.09839885244312847,
+            "PUBLIC_RADIO": 0.063428463657549,
+            "URBAN_RHYTHMIC": 0.12573523979646567,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.003299811245446738
+          },
+          "talkPct": 9.839885244312848,
+          "spanishPct": 0,
+          "rockPct": 30.02704384081818,
+          "chrPct": 13.742293233396477,
+          "urbanPct": 12.573523979646566,
+          "countryPct": 2.583045869135597,
+          "publicPct": 6.342846365754901,
+          "hhi": 456.39068035048683,
+          "histStr": "CLASSIC_ROCK:4|NEWS_TALK:3|ADULT_CONTEMP:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0.375
+          }
+        }
+      },
+      "1995": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.1447868191015489,
+            "AC_HOT_AC": 0.17854932258885745,
+            "ROCK_ALT_AAA": 0.2571176775209531,
+            "COUNTRY": 0.07683029435197399,
+            "NEWS_TALK_SPORTS": 0.1304212294034284,
+            "PUBLIC_RADIO": 0.05009155047452722,
+            "URBAN_RHYTHMIC": 0.11821413983574869,
+            "SPANISH": 0.013633038925993733,
+            "GOSPEL_CCM": 0.002112175057715289
+          },
+          "talkPct": 13.042122940342841,
+          "spanishPct": 1.3633038925993732,
+          "rockPct": 25.71176775209531,
+          "chrPct": 14.47868191015489,
+          "urbanPct": 11.82141398357487,
+          "countryPct": 7.6830294351973984,
+          "publicPct": 5.009155047452722,
+          "hhi": 488.17443528111846,
+          "histStr": "TOP40:6|ADULT_CONTEMP:2",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.75,
+            "talkWins": 0
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.12497392506235849,
+            "AC_HOT_AC": 0.15399243145159996,
+            "ROCK_ALT_AAA": 0.3042955090932044,
+            "COUNTRY": 0.09637763443250047,
+            "NEWS_TALK_SPORTS": 0.10445469319282438,
+            "PUBLIC_RADIO": 0.049270402949270424,
+            "URBAN_RHYTHMIC": 0.1240573823684765,
+            "SPANISH": 0.007565281226597003,
+            "GOSPEL_CCM": 0.0012496212623183882
+          },
+          "talkPct": 10.445469319282438,
+          "spanishPct": 0.7565281226597004,
+          "rockPct": 30.42955090932044,
+          "chrPct": 12.49739250623585,
+          "urbanPct": 12.405738236847649,
+          "countryPct": 9.637763443250048,
+          "publicPct": 4.927040294927043,
+          "hhi": 521.0979333703431,
+          "histStr": "CLASSIC_ROCK:4|NEWS_TALK:2|TOP40:1|COUNTRY:1",
+          "leaderConc": {
+            "unique": 4,
+            "topShare": 0.5,
+            "talkWins": 0.25
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.15842076142270697,
+            "AC_HOT_AC": 0.1892347535898814,
+            "ROCK_ALT_AAA": 0.2855922059230279,
+            "COUNTRY": 0.06310294361462493,
+            "NEWS_TALK_SPORTS": 0.08220756032141635,
+            "PUBLIC_RADIO": 0.04590966513133447,
+            "URBAN_RHYTHMIC": 0.12436215537278644,
+            "SPANISH": 0.008667555232910601,
+            "GOSPEL_CCM": 0.0006343135048239897
+          },
+          "talkPct": 8.220756032141635,
+          "spanishPct": 0.8667555232910601,
+          "rockPct": 28.559220592302793,
+          "chrPct": 15.842076142270697,
+          "urbanPct": 12.436215537278644,
+          "countryPct": 6.310294361462493,
+          "publicPct": 4.590966513133448,
+          "hhi": 508.9487052315553,
+          "histStr": "TOP40:4|CLASSIC_ROCK:3|ADULT_CONTEMP:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0
+          }
+        }
+      },
+      "2005": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.1089879689002381,
+            "AC_HOT_AC": 0.1396930065575054,
+            "ROCK_ALT_AAA": 0.2152680716905122,
+            "COUNTRY": 0.07710698425109667,
+            "NEWS_TALK_SPORTS": 0.1832963739440093,
+            "PUBLIC_RADIO": 0.048576192227706746,
+            "URBAN_RHYTHMIC": 0.1573027042538891,
+            "SPANISH": 0.044273027764823704,
+            "GOSPEL_CCM": 0.0009514487648786252
+          },
+          "talkPct": 18.32963739440093,
+          "spanishPct": 4.42730277648237,
+          "rockPct": 21.52680716905122,
+          "chrPct": 10.89879689002381,
+          "urbanPct": 15.730270425388909,
+          "countryPct": 7.710698425109667,
+          "publicPct": 4.8576192227706745,
+          "hhi": 458.74928358350485,
+          "histStr": "NEWS_TALK:4|ADULT_CONTEMP:2|CLASSIC_ROCK:1|SPORTS_TALK:1",
+          "leaderConc": {
+            "unique": 4,
+            "topShare": 0.5,
+            "talkWins": 0.625
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.10983801514850458,
+            "AC_HOT_AC": 0.13659234582004848,
+            "ROCK_ALT_AAA": 0.23240276974626412,
+            "COUNTRY": 0.1230254645063777,
+            "NEWS_TALK_SPORTS": 0.14097581138829,
+            "PUBLIC_RADIO": 0.053259252714923405,
+            "URBAN_RHYTHMIC": 0.13922642107562547,
+            "SPANISH": 0.02538284064847098,
+            "GOSPEL_CCM": 0.010429355326534944
+          },
+          "talkPct": 14.097581138829,
+          "spanishPct": 2.538284064847098,
+          "rockPct": 23.24027697462641,
+          "chrPct": 10.983801514850459,
+          "urbanPct": 13.922642107562547,
+          "countryPct": 12.30254645063777,
+          "publicPct": 5.32592527149234,
+          "hhi": 443.5563515286789,
+          "histStr": "CLASSIC_ROCK:5|NEWS_TALK:2|TOP40:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.625,
+            "talkWins": 0.25
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.11635775219145392,
+            "AC_HOT_AC": 0.12884116350131725,
+            "ROCK_ALT_AAA": 0.2581732994065577,
+            "COUNTRY": 0.057090388500132136,
+            "NEWS_TALK_SPORTS": 0.13768710202561524,
+            "PUBLIC_RADIO": 0.05075229238375443,
+            "URBAN_RHYTHMIC": 0.16881190705182186,
+            "SPANISH": 0.05040240875366388,
+            "GOSPEL_CCM": 0.004295956256531812
+          },
+          "talkPct": 13.768710202561524,
+          "spanishPct": 5.040240875366388,
+          "rockPct": 25.81732994065577,
+          "chrPct": 11.635775219145392,
+          "urbanPct": 16.881190705182185,
+          "countryPct": 5.709038850013213,
+          "publicPct": 5.075229238375443,
+          "hhi": 442.2836126232844,
+          "histStr": "CLASSIC_ROCK:3|NEWS_TALK:2|ADULT_CONTEMP:1|SPORTS_TALK:1|TOP40:1",
+          "leaderConc": {
+            "unique": 5,
+            "topShare": 0.375,
+            "talkWins": 0.375
+          }
+        }
+      },
+      "2026": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.0876301779019012,
+            "AC_HOT_AC": 0.1300740567255415,
+            "ROCK_ALT_AAA": 0.19648886023679005,
+            "COUNTRY": 0.07304881446373288,
+            "NEWS_TALK_SPORTS": 0.19498036250430464,
+            "PUBLIC_RADIO": 0.07275663162383109,
+            "URBAN_RHYTHMIC": 0.17754225987793104,
+            "SPANISH": 0.04177673408634111,
+            "GOSPEL_CCM": 0.008537603802401178
+          },
+          "talkPct": 19.498036250430463,
+          "spanishPct": 4.177673408634111,
+          "rockPct": 19.648886023679005,
+          "chrPct": 8.76301779019012,
+          "urbanPct": 17.754225987793106,
+          "countryPct": 7.304881446373288,
+          "publicPct": 7.2756631623831085,
+          "hhi": 496.510190787425,
+          "histStr": "NEWS_TALK:4|SPORTS_TALK:3|ADULT_CONTEMP:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0.875
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.09480760762530678,
+            "AC_HOT_AC": 0.13147764114234614,
+            "ROCK_ALT_AAA": 0.21767183494038742,
+            "COUNTRY": 0.0929459744928806,
+            "NEWS_TALK_SPORTS": 0.137651209147658,
+            "PUBLIC_RADIO": 0.07477690780709934,
+            "URBAN_RHYTHMIC": 0.15492664861243755,
+            "SPANISH": 0.058015848151526196,
+            "GOSPEL_CCM": 0.020680575395893536
+          },
+          "talkPct": 13.765120914765799,
+          "spanishPct": 5.801584815152619,
+          "rockPct": 21.76718349403874,
+          "chrPct": 9.480760762530679,
+          "urbanPct": 15.492664861243755,
+          "countryPct": 9.29459744928806,
+          "publicPct": 7.477690780709933,
+          "hhi": 465.2773243504939,
+          "histStr": "CLASSIC_ROCK:5|NEWS_TALK:2|SPORTS_TALK:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.625,
+            "talkWins": 0.375
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.10240968338540127,
+            "AC_HOT_AC": 0.1270613442505378,
+            "ROCK_ALT_AAA": 0.20930537619166734,
+            "COUNTRY": 0.0658443930212572,
+            "NEWS_TALK_SPORTS": 0.152731629937492,
+            "PUBLIC_RADIO": 0.07841844357722022,
+            "URBAN_RHYTHMIC": 0.18245450630760962,
+            "SPANISH": 0.047005704418866215,
+            "GOSPEL_CCM": 0.01282320396009509
+          },
+          "talkPct": 15.273162993749201,
+          "spanishPct": 4.700570441886621,
+          "rockPct": 20.930537619166735,
+          "chrPct": 10.240968338540126,
+          "urbanPct": 18.245450630760963,
+          "countryPct": 6.584439302125721,
+          "publicPct": 7.841844357722022,
+          "hhi": 441.7619686557043,
+          "histStr": "CLASSIC_ROCK:3|NEWS_TALK:3|SPORTS_TALK:1|URBAN_CONTEMP:1",
+          "leaderConc": {
+            "unique": 4,
+            "topShare": 0.375,
+            "talkWins": 0.5
+          }
+        }
+      }
+    },
+    "C": {
+      "1975": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.2274163617123326,
+            "AC_HOT_AC": 0.02807897358159468,
+            "ROCK_ALT_AAA": 0.07655103862169092,
+            "COUNTRY": 0.028727920125448093,
+            "NEWS_TALK_SPORTS": 0.27400664680649595,
+            "PUBLIC_RADIO": 0.00373239413070269,
+            "URBAN_RHYTHMIC": 0.17106688263982261,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.014819149196711217
+          },
+          "talkPct": 27.400664680649594,
+          "spanishPct": 0,
+          "rockPct": 7.655103862169092,
+          "chrPct": 22.74163617123326,
+          "urbanPct": 17.10668826398226,
+          "countryPct": 2.872792012544809,
+          "publicPct": 0.373239413070269,
+          "hhi": 770.8039486824761,
+          "histStr": "NEWS_TALK:5|SOUL_RNB:3",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.625,
+            "talkWins": 0.625
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.21614633033485134,
+            "AC_HOT_AC": 0.03410634395053119,
+            "ROCK_ALT_AAA": 0.07789815344084061,
+            "COUNTRY": 0.03708470209924702,
+            "NEWS_TALK_SPORTS": 0.20179495913588347,
+            "PUBLIC_RADIO": 0.004313242120877072,
+            "URBAN_RHYTHMIC": 0.1670651884282264,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.015286241483100586
+          },
+          "talkPct": 20.179495913588347,
+          "spanishPct": 0,
+          "rockPct": 7.789815344084062,
+          "chrPct": 21.614633033485134,
+          "urbanPct": 16.70651884282264,
+          "countryPct": 3.7084702099247018,
+          "publicPct": 0.4313242120877072,
+          "hhi": 711.2305666597033,
+          "histStr": "MOR:4|SOUL_RNB:4",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.5,
+            "talkWins": 0
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.23770727592725907,
+            "AC_HOT_AC": 0.04036559383347002,
+            "ROCK_ALT_AAA": 0.09994796756045919,
+            "COUNTRY": 0.030598123867559095,
+            "NEWS_TALK_SPORTS": 0.1594853664271472,
+            "PUBLIC_RADIO": 0.003410076252364038,
+            "URBAN_RHYTHMIC": 0.2308705465632937,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.01560966626012664
+          },
+          "talkPct": 15.94853664271472,
+          "spanishPct": 0,
+          "rockPct": 9.994796756045918,
+          "chrPct": 23.77072759272591,
+          "urbanPct": 23.08705465632937,
+          "countryPct": 3.0598123867559095,
+          "publicPct": 0.34100762523640377,
+          "hhi": 682.4833528991687,
+          "histStr": "SOUL_RNB:4|MOR:3|NEWS_TALK:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0.125
+          }
+        }
+      },
+      "1985": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.14306458786223286,
+            "AC_HOT_AC": 0.18469010582321121,
+            "ROCK_ALT_AAA": 0.24785455029771258,
+            "COUNTRY": 0.025396816532092557,
+            "NEWS_TALK_SPORTS": 0.15835083801043784,
+            "PUBLIC_RADIO": 0.06180297070025632,
+            "URBAN_RHYTHMIC": 0.11503094380628462,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.003558850040490613
+          },
+          "talkPct": 15.835083801043783,
+          "spanishPct": 0,
+          "rockPct": 24.78545502977126,
+          "chrPct": 14.306458786223287,
+          "urbanPct": 11.503094380628461,
+          "countryPct": 2.539681653209256,
+          "publicPct": 6.180297070025632,
+          "hhi": 457.6951738120709,
+          "histStr": "NEWS_TALK:4|ADULT_CONTEMP:4",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.5,
+            "talkWins": 0.5
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.13889390305887972,
+            "AC_HOT_AC": 0.1740314304300626,
+            "ROCK_ALT_AAA": 0.28907313349925523,
+            "COUNTRY": 0.03624924230617829,
+            "NEWS_TALK_SPORTS": 0.12077321937951073,
+            "PUBLIC_RADIO": 0.06644892092548323,
+            "URBAN_RHYTHMIC": 0.11330085570490672,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.0036800237326655508
+          },
+          "talkPct": 12.077321937951073,
+          "spanishPct": 0,
+          "rockPct": 28.907313349925523,
+          "chrPct": 13.889390305887972,
+          "urbanPct": 11.330085570490672,
+          "countryPct": 3.6249242306178293,
+          "publicPct": 6.644892092548322,
+          "hhi": 457.55503739338207,
+          "histStr": "CLASSIC_ROCK:5|NEWS_TALK:3",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.625,
+            "talkWins": 0.375
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.13742293233396477,
+            "AC_HOT_AC": 0.18956613098627495,
+            "ROCK_ALT_AAA": 0.3002704384081818,
+            "COUNTRY": 0.02583045869135597,
+            "NEWS_TALK_SPORTS": 0.09839885244312847,
+            "PUBLIC_RADIO": 0.063428463657549,
+            "URBAN_RHYTHMIC": 0.12573523979646567,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.003299811245446738
+          },
+          "talkPct": 9.839885244312848,
+          "spanishPct": 0,
+          "rockPct": 30.02704384081818,
+          "chrPct": 13.742293233396477,
+          "urbanPct": 12.573523979646566,
+          "countryPct": 2.583045869135597,
+          "publicPct": 6.342846365754901,
+          "hhi": 456.39068035048683,
+          "histStr": "CLASSIC_ROCK:4|NEWS_TALK:3|ADULT_CONTEMP:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0.375
+          }
+        }
+      },
+      "1995": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.1390753613425098,
+            "AC_HOT_AC": 0.1826788519961257,
+            "ROCK_ALT_AAA": 0.25864466635649663,
+            "COUNTRY": 0.07544029933512587,
+            "NEWS_TALK_SPORTS": 0.13299144383991338,
+            "PUBLIC_RADIO": 0.04776795581691072,
+            "URBAN_RHYTHMIC": 0.12124810038418968,
+            "SPANISH": 0.009175782350375718,
+            "GOSPEL_CCM": 0.0011562937366567507
+          },
+          "talkPct": 13.299144383991338,
+          "spanishPct": 0.9175782350375719,
+          "rockPct": 25.864466635649663,
+          "chrPct": 13.90753613425098,
+          "urbanPct": 12.124810038418968,
+          "countryPct": 7.544029933512587,
+          "publicPct": 4.776795581691072,
+          "hhi": 476.14217712213286,
+          "histStr": "TOP40:4|NEWS_TALK:2|ADULT_CONTEMP:2",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0.25
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.12497392506235849,
+            "AC_HOT_AC": 0.15399243145159996,
+            "ROCK_ALT_AAA": 0.3042955090932044,
+            "COUNTRY": 0.09637763443250047,
+            "NEWS_TALK_SPORTS": 0.10445469319282438,
+            "PUBLIC_RADIO": 0.049270402949270424,
+            "URBAN_RHYTHMIC": 0.1240573823684765,
+            "SPANISH": 0.007565281226597003,
+            "GOSPEL_CCM": 0.0012496212623183882
+          },
+          "talkPct": 10.445469319282438,
+          "spanishPct": 0.7565281226597004,
+          "rockPct": 30.42955090932044,
+          "chrPct": 12.49739250623585,
+          "urbanPct": 12.405738236847649,
+          "countryPct": 9.637763443250048,
+          "publicPct": 4.927040294927043,
+          "hhi": 521.0979333703431,
+          "histStr": "CLASSIC_ROCK:4|NEWS_TALK:2|TOP40:1|COUNTRY:1",
+          "leaderConc": {
+            "unique": 4,
+            "topShare": 0.5,
+            "talkWins": 0.25
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.15842076142270697,
+            "AC_HOT_AC": 0.1892347535898814,
+            "ROCK_ALT_AAA": 0.2855922059230279,
+            "COUNTRY": 0.06310294361462493,
+            "NEWS_TALK_SPORTS": 0.08220756032141635,
+            "PUBLIC_RADIO": 0.04590966513133447,
+            "URBAN_RHYTHMIC": 0.12436215537278644,
+            "SPANISH": 0.008667555232910601,
+            "GOSPEL_CCM": 0.0006343135048239897
+          },
+          "talkPct": 8.220756032141635,
+          "spanishPct": 0.8667555232910601,
+          "rockPct": 28.559220592302793,
+          "chrPct": 15.842076142270697,
+          "urbanPct": 12.436215537278644,
+          "countryPct": 6.310294361462493,
+          "publicPct": 4.590966513133448,
+          "hhi": 508.9487052315553,
+          "histStr": "TOP40:4|CLASSIC_ROCK:3|ADULT_CONTEMP:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0
+          }
+        }
+      },
+      "2005": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.1127556572238729,
+            "AC_HOT_AC": 0.1334912747894247,
+            "ROCK_ALT_AAA": 0.21183977873353516,
+            "COUNTRY": 0.06853598442746181,
+            "NEWS_TALK_SPORTS": 0.21024360086604355,
+            "PUBLIC_RADIO": 0.04609067228169465,
+            "URBAN_RHYTHMIC": 0.14431517328484628,
+            "SPANISH": 0.03933637443673922,
+            "GOSPEL_CCM": 0.006574044485199831
+          },
+          "talkPct": 21.024360086604354,
+          "spanishPct": 3.933637443673922,
+          "rockPct": 21.183977873353516,
+          "chrPct": 11.27556572238729,
+          "urbanPct": 14.431517328484627,
+          "countryPct": 6.853598442746181,
+          "publicPct": 4.609067228169465,
+          "hhi": 464.1784392053878,
+          "histStr": "NEWS_TALK:6|ADULT_CONTEMP:1|TOP40:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.75,
+            "talkWins": 0.75
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.11338052123416872,
+            "AC_HOT_AC": 0.13261790520408284,
+            "ROCK_ALT_AAA": 0.24444683579166987,
+            "COUNTRY": 0.12174720326663113,
+            "NEWS_TALK_SPORTS": 0.13588193596697645,
+            "PUBLIC_RADIO": 0.05305585823899173,
+            "URBAN_RHYTHMIC": 0.13446111787118062,
+            "SPANISH": 0.027068223136207922,
+            "GOSPEL_CCM": 0.0075670634743818885
+          },
+          "talkPct": 13.588193596697645,
+          "spanishPct": 2.7068223136207923,
+          "rockPct": 24.444683579166988,
+          "chrPct": 11.338052123416873,
+          "urbanPct": 13.446111787118062,
+          "countryPct": 12.174720326663113,
+          "publicPct": 5.305585823899173,
+          "hhi": 441.1681924922647,
+          "histStr": "CLASSIC_ROCK:5|NEWS_TALK:2|TOP40:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.625,
+            "talkWins": 0.25
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.11635775219145392,
+            "AC_HOT_AC": 0.12884116350131725,
+            "ROCK_ALT_AAA": 0.2581732994065577,
+            "COUNTRY": 0.057090388500132136,
+            "NEWS_TALK_SPORTS": 0.13768710202561524,
+            "PUBLIC_RADIO": 0.05075229238375443,
+            "URBAN_RHYTHMIC": 0.16881190705182186,
+            "SPANISH": 0.05040240875366388,
+            "GOSPEL_CCM": 0.004295956256531812
+          },
+          "talkPct": 13.768710202561524,
+          "spanishPct": 5.040240875366388,
+          "rockPct": 25.81732994065577,
+          "chrPct": 11.635775219145392,
+          "urbanPct": 16.881190705182185,
+          "countryPct": 5.709038850013213,
+          "publicPct": 5.075229238375443,
+          "hhi": 442.2836126232844,
+          "histStr": "CLASSIC_ROCK:3|NEWS_TALK:2|ADULT_CONTEMP:1|SPORTS_TALK:1|TOP40:1",
+          "leaderConc": {
+            "unique": 5,
+            "topShare": 0.375,
+            "talkWins": 0.375
+          }
+        }
+      },
+      "2026": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.07834932158846797,
+            "AC_HOT_AC": 0.14081951844485377,
+            "ROCK_ALT_AAA": 0.1991428712650017,
+            "COUNTRY": 0.06379086643488387,
+            "NEWS_TALK_SPORTS": 0.20981980998361877,
+            "PUBLIC_RADIO": 0.06909912535483638,
+            "URBAN_RHYTHMIC": 0.1821839068532521,
+            "SPANISH": 0.02086983238101469,
+            "GOSPEL_CCM": 0.00891481709948426
+          },
+          "talkPct": 20.981980998361877,
+          "spanishPct": 2.086983238101469,
+          "rockPct": 19.91428712650017,
+          "chrPct": 7.834932158846797,
+          "urbanPct": 18.218390685325208,
+          "countryPct": 6.379086643488387,
+          "publicPct": 6.909912535483638,
+          "hhi": 475.8017290894684,
+          "histStr": "NEWS_TALK:6|SPORTS_TALK:1|ADULT_CONTEMP:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.75,
+            "talkWins": 0.875
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.09635144492112695,
+            "AC_HOT_AC": 0.13565676593290166,
+            "ROCK_ALT_AAA": 0.2168571893797439,
+            "COUNTRY": 0.09780971054136174,
+            "NEWS_TALK_SPORTS": 0.12445508983390312,
+            "PUBLIC_RADIO": 0.07449249885344279,
+            "URBAN_RHYTHMIC": 0.1577109094435442,
+            "SPANISH": 0.055409684311831804,
+            "GOSPEL_CCM": 0.023458334145320472
+          },
+          "talkPct": 12.445508983390312,
+          "spanishPct": 5.54096843118318,
+          "rockPct": 21.68571893797439,
+          "chrPct": 9.635144492112694,
+          "urbanPct": 15.771090944354421,
+          "countryPct": 9.780971054136174,
+          "publicPct": 7.44924988534428,
+          "hhi": 459.72207243172437,
+          "histStr": "CLASSIC_ROCK:5|NEWS_TALK:2|SPORTS_TALK:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.625,
+            "talkWins": 0.375
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.10240968338540127,
+            "AC_HOT_AC": 0.1270613442505378,
+            "ROCK_ALT_AAA": 0.20930537619166734,
+            "COUNTRY": 0.0658443930212572,
+            "NEWS_TALK_SPORTS": 0.152731629937492,
+            "PUBLIC_RADIO": 0.07841844357722022,
+            "URBAN_RHYTHMIC": 0.18245450630760962,
+            "SPANISH": 0.047005704418866215,
+            "GOSPEL_CCM": 0.01282320396009509
+          },
+          "talkPct": 15.273162993749201,
+          "spanishPct": 4.700570441886621,
+          "rockPct": 20.930537619166735,
+          "chrPct": 10.240968338540126,
+          "urbanPct": 18.245450630760963,
+          "countryPct": 6.584439302125721,
+          "publicPct": 7.841844357722022,
+          "hhi": 441.7619686557043,
+          "histStr": "CLASSIC_ROCK:3|NEWS_TALK:3|SPORTS_TALK:1|URBAN_CONTEMP:1",
+          "leaderConc": {
+            "unique": 4,
+            "topShare": 0.375,
+            "talkWins": 0.5
+          }
+        }
+      }
+    },
+    "D": {
+      "1975": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.2139993026844289,
+            "AC_HOT_AC": 0.03189015595079907,
+            "ROCK_ALT_AAA": 0.05626382165426429,
+            "COUNTRY": 0.045380982563927995,
+            "NEWS_TALK_SPORTS": 0.27207600506208107,
+            "PUBLIC_RADIO": 0.00349103933779199,
+            "URBAN_RHYTHMIC": 0.1730551156794414,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.01526318866823466
+          },
+          "talkPct": 27.207600506208106,
+          "spanishPct": 0,
+          "rockPct": 5.6263821654264285,
+          "chrPct": 21.39993026844289,
+          "urbanPct": 17.30551156794414,
+          "countryPct": 4.538098256392799,
+          "publicPct": 0.349103933779199,
+          "hhi": 734.7514068212764,
+          "histStr": "SOUL_RNB:4|MOR:2|NEWS_TALK:2",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0.25
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.21614633033485134,
+            "AC_HOT_AC": 0.03410634395053119,
+            "ROCK_ALT_AAA": 0.07789815344084061,
+            "COUNTRY": 0.03708470209924702,
+            "NEWS_TALK_SPORTS": 0.20179495913588347,
+            "PUBLIC_RADIO": 0.004313242120877072,
+            "URBAN_RHYTHMIC": 0.1670651884282264,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.015286241483100586
+          },
+          "talkPct": 20.179495913588347,
+          "spanishPct": 0,
+          "rockPct": 7.789815344084062,
+          "chrPct": 21.614633033485134,
+          "urbanPct": 16.70651884282264,
+          "countryPct": 3.7084702099247018,
+          "publicPct": 0.4313242120877072,
+          "hhi": 711.2305666597033,
+          "histStr": "MOR:4|SOUL_RNB:4",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.5,
+            "talkWins": 0
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.23770727592725907,
+            "AC_HOT_AC": 0.04036559383347002,
+            "ROCK_ALT_AAA": 0.09994796756045919,
+            "COUNTRY": 0.030598123867559095,
+            "NEWS_TALK_SPORTS": 0.1594853664271472,
+            "PUBLIC_RADIO": 0.003410076252364038,
+            "URBAN_RHYTHMIC": 0.2308705465632937,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.01560966626012664
+          },
+          "talkPct": 15.94853664271472,
+          "spanishPct": 0,
+          "rockPct": 9.994796756045918,
+          "chrPct": 23.77072759272591,
+          "urbanPct": 23.08705465632937,
+          "countryPct": 3.0598123867559095,
+          "publicPct": 0.34100762523640377,
+          "hhi": 682.4833528991687,
+          "histStr": "SOUL_RNB:4|MOR:3|NEWS_TALK:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0.125
+          }
+        }
+      },
+      "1985": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.15429299891565548,
+            "AC_HOT_AC": 0.2507008415819155,
+            "ROCK_ALT_AAA": 0.1517443601992467,
+            "COUNTRY": 0.03943638005606806,
+            "NEWS_TALK_SPORTS": 0.13809905141571643,
+            "PUBLIC_RADIO": 0.06421436257317661,
+            "URBAN_RHYTHMIC": 0.13756548895095527,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.0038473125034586254
+          },
+          "talkPct": 13.809905141571644,
+          "spanishPct": 0,
+          "rockPct": 15.17443601992467,
+          "chrPct": 15.429299891565549,
+          "urbanPct": 13.756548895095527,
+          "countryPct": 3.943638005606806,
+          "publicPct": 6.421436257317661,
+          "hhi": 450.5726490738536,
+          "histStr": "ADULT_CONTEMP:8",
+          "leaderConc": {
+            "unique": 1,
+            "topShare": 1,
+            "talkWins": 0
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.13889401198074666,
+            "AC_HOT_AC": 0.1740315668989781,
+            "ROCK_ALT_AAA": 0.2890733551016128,
+            "COUNTRY": 0.03624926859907094,
+            "NEWS_TALK_SPORTS": 0.12077254955647705,
+            "PUBLIC_RADIO": 0.06644896975601318,
+            "URBAN_RHYTHMIC": 0.11330093833840338,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.003680024987234726
+          },
+          "talkPct": 12.077254955647705,
+          "spanishPct": 0,
+          "rockPct": 28.907335510161282,
+          "chrPct": 13.889401198074665,
+          "urbanPct": 11.330093833840337,
+          "countryPct": 3.624926859907094,
+          "publicPct": 6.644896975601318,
+          "hhi": 457.55457488408814,
+          "histStr": "CLASSIC_ROCK:5|NEWS_TALK:3",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.625,
+            "talkWins": 0.375
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.13742293233396477,
+            "AC_HOT_AC": 0.18956613098627495,
+            "ROCK_ALT_AAA": 0.3002704384081818,
+            "COUNTRY": 0.02583045869135597,
+            "NEWS_TALK_SPORTS": 0.09839885244312847,
+            "PUBLIC_RADIO": 0.063428463657549,
+            "URBAN_RHYTHMIC": 0.12573523979646567,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.003299811245446738
+          },
+          "talkPct": 9.839885244312848,
+          "spanishPct": 0,
+          "rockPct": 30.02704384081818,
+          "chrPct": 13.742293233396477,
+          "urbanPct": 12.573523979646566,
+          "countryPct": 2.583045869135597,
+          "publicPct": 6.342846365754901,
+          "hhi": 456.39068035048683,
+          "histStr": "CLASSIC_ROCK:4|NEWS_TALK:3|ADULT_CONTEMP:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0.375
+          }
+        }
+      },
+      "1995": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.13586308166863106,
+            "AC_HOT_AC": 0.20007648156336752,
+            "ROCK_ALT_AAA": 0.21313345738910788,
+            "COUNTRY": 0.05733355167955838,
+            "NEWS_TALK_SPORTS": 0.1486523065248021,
+            "PUBLIC_RADIO": 0.04534596194503476,
+            "URBAN_RHYTHMIC": 0.1545654868808566,
+            "SPANISH": 0.009817562983376727,
+            "GOSPEL_CCM": 0.005009114899690626
+          },
+          "talkPct": 14.86523065248021,
+          "spanishPct": 0.9817562983376728,
+          "rockPct": 21.313345738910787,
+          "chrPct": 13.586308166863107,
+          "urbanPct": 15.456548688085661,
+          "countryPct": 5.733355167955838,
+          "publicPct": 4.534596194503476,
+          "hhi": 478.76852915916095,
+          "histStr": "TOP40:3|ADULT_CONTEMP:2|NEWS_TALK:2|URBAN_CONTEMP:1",
+          "leaderConc": {
+            "unique": 4,
+            "topShare": 0.375,
+            "talkWins": 0.25
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.12497392506235849,
+            "AC_HOT_AC": 0.15399243145159996,
+            "ROCK_ALT_AAA": 0.3042955090932044,
+            "COUNTRY": 0.09637763443250047,
+            "NEWS_TALK_SPORTS": 0.10445469319282438,
+            "PUBLIC_RADIO": 0.049270402949270424,
+            "URBAN_RHYTHMIC": 0.1240573823684765,
+            "SPANISH": 0.007565281226597003,
+            "GOSPEL_CCM": 0.0012496212623183882
+          },
+          "talkPct": 10.445469319282438,
+          "spanishPct": 0.7565281226597004,
+          "rockPct": 30.42955090932044,
+          "chrPct": 12.49739250623585,
+          "urbanPct": 12.405738236847649,
+          "countryPct": 9.637763443250048,
+          "publicPct": 4.927040294927043,
+          "hhi": 521.0979333703431,
+          "histStr": "CLASSIC_ROCK:4|NEWS_TALK:2|TOP40:1|COUNTRY:1",
+          "leaderConc": {
+            "unique": 4,
+            "topShare": 0.5,
+            "talkWins": 0.25
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.15842076142270697,
+            "AC_HOT_AC": 0.1892347535898814,
+            "ROCK_ALT_AAA": 0.2855922059230279,
+            "COUNTRY": 0.06310294361462493,
+            "NEWS_TALK_SPORTS": 0.08220756032141635,
+            "PUBLIC_RADIO": 0.04590966513133447,
+            "URBAN_RHYTHMIC": 0.12436215537278644,
+            "SPANISH": 0.008667555232910601,
+            "GOSPEL_CCM": 0.0006343135048239897
+          },
+          "talkPct": 8.220756032141635,
+          "spanishPct": 0.8667555232910601,
+          "rockPct": 28.559220592302793,
+          "chrPct": 15.842076142270697,
+          "urbanPct": 12.436215537278644,
+          "countryPct": 6.310294361462493,
+          "publicPct": 4.590966513133448,
+          "hhi": 508.9487052315553,
+          "histStr": "TOP40:4|CLASSIC_ROCK:3|ADULT_CONTEMP:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0
+          }
+        }
+      },
+      "2005": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.11177339037640714,
+            "AC_HOT_AC": 0.1515780161512133,
+            "ROCK_ALT_AAA": 0.20906016001040817,
+            "COUNTRY": 0.05944042576097201,
+            "NEWS_TALK_SPORTS": 0.18887377655763224,
+            "PUBLIC_RADIO": 0.04438201691120032,
+            "URBAN_RHYTHMIC": 0.1587475833573274,
+            "SPANISH": 0.046112028777191276,
+            "GOSPEL_CCM": 0.004183568650244067
+          },
+          "talkPct": 18.887377655763224,
+          "spanishPct": 4.611202877719127,
+          "rockPct": 20.90601600104082,
+          "chrPct": 11.177339037640714,
+          "urbanPct": 15.87475833573274,
+          "countryPct": 5.9440425760972015,
+          "publicPct": 4.438201691120032,
+          "hhi": 446.26294457725135,
+          "histStr": "NEWS_TALK:4|SPORTS_TALK:2|URBAN_CONTEMP:2",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0.75
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.10983801514850458,
+            "AC_HOT_AC": 0.13659234582004848,
+            "ROCK_ALT_AAA": 0.23240276974626412,
+            "COUNTRY": 0.1230254645063777,
+            "NEWS_TALK_SPORTS": 0.14097581138829,
+            "PUBLIC_RADIO": 0.053259252714923405,
+            "URBAN_RHYTHMIC": 0.13922642107562547,
+            "SPANISH": 0.02538284064847098,
+            "GOSPEL_CCM": 0.010429355326534944
+          },
+          "talkPct": 14.097581138829,
+          "spanishPct": 2.538284064847098,
+          "rockPct": 23.24027697462641,
+          "chrPct": 10.983801514850459,
+          "urbanPct": 13.922642107562547,
+          "countryPct": 12.30254645063777,
+          "publicPct": 5.32592527149234,
+          "hhi": 443.5563515286789,
+          "histStr": "CLASSIC_ROCK:5|NEWS_TALK:2|TOP40:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.625,
+            "talkWins": 0.25
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.11635775219145392,
+            "AC_HOT_AC": 0.12884116350131725,
+            "ROCK_ALT_AAA": 0.2581732994065577,
+            "COUNTRY": 0.057090388500132136,
+            "NEWS_TALK_SPORTS": 0.13768710202561524,
+            "PUBLIC_RADIO": 0.05075229238375443,
+            "URBAN_RHYTHMIC": 0.16881190705182186,
+            "SPANISH": 0.05040240875366388,
+            "GOSPEL_CCM": 0.004295956256531812
+          },
+          "talkPct": 13.768710202561524,
+          "spanishPct": 5.040240875366388,
+          "rockPct": 25.81732994065577,
+          "chrPct": 11.635775219145392,
+          "urbanPct": 16.881190705182185,
+          "countryPct": 5.709038850013213,
+          "publicPct": 5.075229238375443,
+          "hhi": 442.2836126232844,
+          "histStr": "CLASSIC_ROCK:3|NEWS_TALK:2|ADULT_CONTEMP:1|SPORTS_TALK:1|TOP40:1",
+          "leaderConc": {
+            "unique": 5,
+            "topShare": 0.375,
+            "talkWins": 0.375
+          }
+        }
+      },
+      "2026": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.08494224557051186,
+            "AC_HOT_AC": 0.15356491932692917,
+            "ROCK_ALT_AAA": 0.17772129730673886,
+            "COUNTRY": 0.05566333234861038,
+            "NEWS_TALK_SPORTS": 0.2022540024565086,
+            "PUBLIC_RADIO": 0.07101871573860458,
+            "URBAN_RHYTHMIC": 0.17637766902763413,
+            "SPANISH": 0.03793369977499339,
+            "GOSPEL_CCM": 0.01549214114044563
+          },
+          "talkPct": 20.22540024565086,
+          "spanishPct": 3.793369977499339,
+          "rockPct": 17.772129730673885,
+          "chrPct": 8.494224557051187,
+          "urbanPct": 17.637766902763413,
+          "countryPct": 5.566333234861038,
+          "publicPct": 7.101871573860458,
+          "hhi": 475.7242623198317,
+          "histStr": "NEWS_TALK:4|SPORTS_TALK:2|URBAN_CONTEMP:1|ADULT_CONTEMP:1",
+          "leaderConc": {
+            "unique": 4,
+            "topShare": 0.5,
+            "talkWins": 0.75
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.09480760762530678,
+            "AC_HOT_AC": 0.13147764114234614,
+            "ROCK_ALT_AAA": 0.21767183494038742,
+            "COUNTRY": 0.0929459744928806,
+            "NEWS_TALK_SPORTS": 0.137651209147658,
+            "PUBLIC_RADIO": 0.07477690780709934,
+            "URBAN_RHYTHMIC": 0.15492664861243755,
+            "SPANISH": 0.058015848151526196,
+            "GOSPEL_CCM": 0.020680575395893536
+          },
+          "talkPct": 13.765120914765799,
+          "spanishPct": 5.801584815152619,
+          "rockPct": 21.76718349403874,
+          "chrPct": 9.480760762530679,
+          "urbanPct": 15.492664861243755,
+          "countryPct": 9.29459744928806,
+          "publicPct": 7.477690780709933,
+          "hhi": 465.2773243504939,
+          "histStr": "CLASSIC_ROCK:5|NEWS_TALK:2|SPORTS_TALK:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.625,
+            "talkWins": 0.375
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.10240968338540127,
+            "AC_HOT_AC": 0.1270613442505378,
+            "ROCK_ALT_AAA": 0.20930537619166734,
+            "COUNTRY": 0.0658443930212572,
+            "NEWS_TALK_SPORTS": 0.152731629937492,
+            "PUBLIC_RADIO": 0.07841844357722022,
+            "URBAN_RHYTHMIC": 0.18245450630760962,
+            "SPANISH": 0.047005704418866215,
+            "GOSPEL_CCM": 0.01282320396009509
+          },
+          "talkPct": 15.273162993749201,
+          "spanishPct": 4.700570441886621,
+          "rockPct": 20.930537619166735,
+          "chrPct": 10.240968338540126,
+          "urbanPct": 18.245450630760963,
+          "countryPct": 6.584439302125721,
+          "publicPct": 7.841844357722022,
+          "hhi": 441.7619686557043,
+          "histStr": "CLASSIC_ROCK:3|NEWS_TALK:3|SPORTS_TALK:1|URBAN_CONTEMP:1",
+          "leaderConc": {
+            "unique": 4,
+            "topShare": 0.375,
+            "talkWins": 0.5
+          }
+        }
+      }
+    },
+    "E": {
+      "1975": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.23561264372159624,
+            "AC_HOT_AC": 0.03848446841091606,
+            "ROCK_ALT_AAA": 0.07859877346874086,
+            "COUNTRY": 0.03806332862068394,
+            "NEWS_TALK_SPORTS": 0.2308715886266939,
+            "PUBLIC_RADIO": 0.004118644007389345,
+            "URBAN_RHYTHMIC": 0.18078513234112198,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.015306180707600286
+          },
+          "talkPct": 23.08715886266939,
+          "spanishPct": 0,
+          "rockPct": 7.859877346874086,
+          "chrPct": 23.561264372159624,
+          "urbanPct": 18.078513234112197,
+          "countryPct": 3.8063328620683943,
+          "publicPct": 0.4118644007389345,
+          "hhi": 730.7818913494539,
+          "histStr": "MOR:4|SOUL_RNB:4",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.5,
+            "talkWins": 0
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.21614633033485134,
+            "AC_HOT_AC": 0.03410634395053119,
+            "ROCK_ALT_AAA": 0.07789815344084061,
+            "COUNTRY": 0.03708470209924702,
+            "NEWS_TALK_SPORTS": 0.20179495913588347,
+            "PUBLIC_RADIO": 0.004313242120877072,
+            "URBAN_RHYTHMIC": 0.1670651884282264,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.015286241483100586
+          },
+          "talkPct": 20.179495913588347,
+          "spanishPct": 0,
+          "rockPct": 7.789815344084062,
+          "chrPct": 21.614633033485134,
+          "urbanPct": 16.70651884282264,
+          "countryPct": 3.7084702099247018,
+          "publicPct": 0.4313242120877072,
+          "hhi": 711.2305666597033,
+          "histStr": "MOR:4|SOUL_RNB:4",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.5,
+            "talkWins": 0
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.23770727592725907,
+            "AC_HOT_AC": 0.04036559383347002,
+            "ROCK_ALT_AAA": 0.09994796756045919,
+            "COUNTRY": 0.030598123867559095,
+            "NEWS_TALK_SPORTS": 0.1594853664271472,
+            "PUBLIC_RADIO": 0.003410076252364038,
+            "URBAN_RHYTHMIC": 0.2308705465632937,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.01560966626012664
+          },
+          "talkPct": 15.94853664271472,
+          "spanishPct": 0,
+          "rockPct": 9.994796756045918,
+          "chrPct": 23.77072759272591,
+          "urbanPct": 23.08705465632937,
+          "countryPct": 3.0598123867559095,
+          "publicPct": 0.34100762523640377,
+          "hhi": 682.4833528991687,
+          "histStr": "SOUL_RNB:4|MOR:3|NEWS_TALK:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0.125
+          }
+        }
+      },
+      "1985": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.15020570126075564,
+            "AC_HOT_AC": 0.19801380753953124,
+            "ROCK_ALT_AAA": 0.2362603638168255,
+            "COUNTRY": 0.027273963772219297,
+            "NEWS_TALK_SPORTS": 0.12995105855225958,
+            "PUBLIC_RADIO": 0.06687341626803947,
+            "URBAN_RHYTHMIC": 0.12172773003178163,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.003807637500903813
+          },
+          "talkPct": 12.995105855225958,
+          "spanishPct": 0,
+          "rockPct": 23.62603638168255,
+          "chrPct": 15.020570126075564,
+          "urbanPct": 12.172773003178163,
+          "countryPct": 2.72739637722193,
+          "publicPct": 6.687341626803947,
+          "hhi": 464.21446673851545,
+          "histStr": "NEWS_TALK:4|ADULT_CONTEMP:4",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.5,
+            "talkWins": 0.5
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.13889390305887972,
+            "AC_HOT_AC": 0.1740314304300626,
+            "ROCK_ALT_AAA": 0.28907313349925523,
+            "COUNTRY": 0.03624924230617829,
+            "NEWS_TALK_SPORTS": 0.12077321937951073,
+            "PUBLIC_RADIO": 0.06644892092548323,
+            "URBAN_RHYTHMIC": 0.11330085570490672,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.0036800237326655508
+          },
+          "talkPct": 12.077321937951073,
+          "spanishPct": 0,
+          "rockPct": 28.907313349925523,
+          "chrPct": 13.889390305887972,
+          "urbanPct": 11.330085570490672,
+          "countryPct": 3.6249242306178293,
+          "publicPct": 6.644892092548322,
+          "hhi": 457.55503739338207,
+          "histStr": "CLASSIC_ROCK:5|NEWS_TALK:3",
+          "leaderConc": {
+            "unique": 2,
+            "topShare": 0.625,
+            "talkWins": 0.375
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.13742293233396477,
+            "AC_HOT_AC": 0.18956613098627495,
+            "ROCK_ALT_AAA": 0.3002704384081818,
+            "COUNTRY": 0.02583045869135597,
+            "NEWS_TALK_SPORTS": 0.09839885244312847,
+            "PUBLIC_RADIO": 0.063428463657549,
+            "URBAN_RHYTHMIC": 0.12573523979646567,
+            "SPANISH": 0,
+            "GOSPEL_CCM": 0.003299811245446738
+          },
+          "talkPct": 9.839885244312848,
+          "spanishPct": 0,
+          "rockPct": 30.02704384081818,
+          "chrPct": 13.742293233396477,
+          "urbanPct": 12.573523979646566,
+          "countryPct": 2.583045869135597,
+          "publicPct": 6.342846365754901,
+          "hhi": 456.39068035048683,
+          "histStr": "CLASSIC_ROCK:4|NEWS_TALK:3|ADULT_CONTEMP:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0.375
+          }
+        }
+      },
+      "1995": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.12915286253290045,
+            "AC_HOT_AC": 0.1679468872343007,
+            "ROCK_ALT_AAA": 0.24936376996874435,
+            "COUNTRY": 0.07929035380834706,
+            "NEWS_TALK_SPORTS": 0.15599450813426036,
+            "PUBLIC_RADIO": 0.04803676871923803,
+            "URBAN_RHYTHMIC": 0.11688400096656842,
+            "SPANISH": 0.009791126239213226,
+            "GOSPEL_CCM": 0.0015189587431002126
+          },
+          "talkPct": 15.599450813426035,
+          "spanishPct": 0.9791126239213226,
+          "rockPct": 24.936376996874436,
+          "chrPct": 12.915286253290045,
+          "urbanPct": 11.688400096656842,
+          "countryPct": 7.929035380834707,
+          "publicPct": 4.803676871923803,
+          "hhi": 490.3620370481276,
+          "histStr": "TOP40:4|NEWS_TALK:2|ADULT_CONTEMP:2",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0.25
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.12497392506235849,
+            "AC_HOT_AC": 0.15399243145159996,
+            "ROCK_ALT_AAA": 0.3042955090932044,
+            "COUNTRY": 0.09637763443250047,
+            "NEWS_TALK_SPORTS": 0.10445469319282438,
+            "PUBLIC_RADIO": 0.049270402949270424,
+            "URBAN_RHYTHMIC": 0.1240573823684765,
+            "SPANISH": 0.007565281226597003,
+            "GOSPEL_CCM": 0.0012496212623183882
+          },
+          "talkPct": 10.445469319282438,
+          "spanishPct": 0.7565281226597004,
+          "rockPct": 30.42955090932044,
+          "chrPct": 12.49739250623585,
+          "urbanPct": 12.405738236847649,
+          "countryPct": 9.637763443250048,
+          "publicPct": 4.927040294927043,
+          "hhi": 521.0979333703431,
+          "histStr": "CLASSIC_ROCK:4|NEWS_TALK:2|TOP40:1|COUNTRY:1",
+          "leaderConc": {
+            "unique": 4,
+            "topShare": 0.5,
+            "talkWins": 0.25
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.15842076142270697,
+            "AC_HOT_AC": 0.1892347535898814,
+            "ROCK_ALT_AAA": 0.2855922059230279,
+            "COUNTRY": 0.06310294361462493,
+            "NEWS_TALK_SPORTS": 0.08220756032141635,
+            "PUBLIC_RADIO": 0.04590966513133447,
+            "URBAN_RHYTHMIC": 0.12436215537278644,
+            "SPANISH": 0.008667555232910601,
+            "GOSPEL_CCM": 0.0006343135048239897
+          },
+          "talkPct": 8.220756032141635,
+          "spanishPct": 0.8667555232910601,
+          "rockPct": 28.559220592302793,
+          "chrPct": 15.842076142270697,
+          "urbanPct": 12.436215537278644,
+          "countryPct": 6.310294361462493,
+          "publicPct": 4.590966513133448,
+          "hhi": 508.9487052315553,
+          "histStr": "TOP40:4|CLASSIC_ROCK:3|ADULT_CONTEMP:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.5,
+            "talkWins": 0
+          }
+        }
+      },
+      "2005": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.11014667026542597,
+            "AC_HOT_AC": 0.1452378276048823,
+            "ROCK_ALT_AAA": 0.20325782230081219,
+            "COUNTRY": 0.07115265530107961,
+            "NEWS_TALK_SPORTS": 0.18343070920052754,
+            "PUBLIC_RADIO": 0.048170867283032576,
+            "URBAN_RHYTHMIC": 0.1749843321812074,
+            "SPANISH": 0.03001972482726383,
+            "GOSPEL_CCM": 0.0061249474633151635
+          },
+          "talkPct": 18.343070920052753,
+          "spanishPct": 3.001972482726383,
+          "rockPct": 20.32578223008122,
+          "chrPct": 11.014667026542597,
+          "urbanPct": 17.49843321812074,
+          "countryPct": 7.115265530107962,
+          "publicPct": 4.8170867283032575,
+          "hhi": 445.49055833643666,
+          "histStr": "NEWS_TALK:4|ADULT_CONTEMP:2|CLASSIC_ROCK:1|SPORTS_TALK:1",
+          "leaderConc": {
+            "unique": 4,
+            "topShare": 0.5,
+            "talkWins": 0.625
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.10983801514850458,
+            "AC_HOT_AC": 0.13659234582004848,
+            "ROCK_ALT_AAA": 0.23240276974626412,
+            "COUNTRY": 0.1230254645063777,
+            "NEWS_TALK_SPORTS": 0.14097581138829,
+            "PUBLIC_RADIO": 0.053259252714923405,
+            "URBAN_RHYTHMIC": 0.13922642107562547,
+            "SPANISH": 0.02538284064847098,
+            "GOSPEL_CCM": 0.010429355326534944
+          },
+          "talkPct": 14.097581138829,
+          "spanishPct": 2.538284064847098,
+          "rockPct": 23.24027697462641,
+          "chrPct": 10.983801514850459,
+          "urbanPct": 13.922642107562547,
+          "countryPct": 12.30254645063777,
+          "publicPct": 5.32592527149234,
+          "hhi": 443.5563515286789,
+          "histStr": "CLASSIC_ROCK:5|NEWS_TALK:2|TOP40:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.625,
+            "talkWins": 0.25
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.11635775219145392,
+            "AC_HOT_AC": 0.12884116350131725,
+            "ROCK_ALT_AAA": 0.2581732994065577,
+            "COUNTRY": 0.057090388500132136,
+            "NEWS_TALK_SPORTS": 0.13768710202561524,
+            "PUBLIC_RADIO": 0.05075229238375443,
+            "URBAN_RHYTHMIC": 0.16881190705182186,
+            "SPANISH": 0.05040240875366388,
+            "GOSPEL_CCM": 0.004295956256531812
+          },
+          "talkPct": 13.768710202561524,
+          "spanishPct": 5.040240875366388,
+          "rockPct": 25.81732994065577,
+          "chrPct": 11.635775219145392,
+          "urbanPct": 16.881190705182185,
+          "countryPct": 5.709038850013213,
+          "publicPct": 5.075229238375443,
+          "hhi": 442.2836126232844,
+          "histStr": "CLASSIC_ROCK:3|NEWS_TALK:2|ADULT_CONTEMP:1|SPORTS_TALK:1|TOP40:1",
+          "leaderConc": {
+            "unique": 5,
+            "topShare": 0.375,
+            "talkWins": 0.375
+          }
+        }
+      },
+      "2026": {
+        "newyork": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.09813462726004803,
+            "AC_HOT_AC": 0.12815728343470267,
+            "ROCK_ALT_AAA": 0.2063961587320312,
+            "COUNTRY": 0.07149399249771346,
+            "NEWS_TALK_SPORTS": 0.17115048953305895,
+            "PUBLIC_RADIO": 0.07440707181967324,
+            "URBAN_RHYTHMIC": 0.15743241969271268,
+            "SPANISH": 0.05148280102663848,
+            "GOSPEL_CCM": 0.01722134715012301
+          },
+          "talkPct": 17.115048953305894,
+          "spanishPct": 5.148280102663848,
+          "rockPct": 20.63961587320312,
+          "chrPct": 9.813462726004802,
+          "urbanPct": 15.743241969271269,
+          "countryPct": 7.149399249771346,
+          "publicPct": 7.440707181967324,
+          "hhi": 447.43934257813606,
+          "histStr": "NEWS_TALK:3|SPORTS_TALK:2|ADULT_CONTEMP:1|CLASSIC_ROCK:1|URBAN_CONTEMP:1",
+          "leaderConc": {
+            "unique": 5,
+            "topShare": 0.375,
+            "talkWins": 0.625
+          }
+        },
+        "chicago": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.09480760762530678,
+            "AC_HOT_AC": 0.13147764114234614,
+            "ROCK_ALT_AAA": 0.21767183494038742,
+            "COUNTRY": 0.0929459744928806,
+            "NEWS_TALK_SPORTS": 0.137651209147658,
+            "PUBLIC_RADIO": 0.07477690780709934,
+            "URBAN_RHYTHMIC": 0.15492664861243755,
+            "SPANISH": 0.058015848151526196,
+            "GOSPEL_CCM": 0.020680575395893536
+          },
+          "talkPct": 13.765120914765799,
+          "spanishPct": 5.801584815152619,
+          "rockPct": 21.76718349403874,
+          "chrPct": 9.480760762530679,
+          "urbanPct": 15.492664861243755,
+          "countryPct": 9.29459744928806,
+          "publicPct": 7.477690780709933,
+          "hhi": 465.2773243504939,
+          "histStr": "CLASSIC_ROCK:5|NEWS_TALK:2|SPORTS_TALK:1",
+          "leaderConc": {
+            "unique": 3,
+            "topShare": 0.625,
+            "talkWins": 0.375
+          }
+        },
+        "losangeles": {
+          "meanBuckets": {
+            "TOP40_CHR": 0.10240968338540127,
+            "AC_HOT_AC": 0.1270613442505378,
+            "ROCK_ALT_AAA": 0.20930537619166734,
+            "COUNTRY": 0.0658443930212572,
+            "NEWS_TALK_SPORTS": 0.152731629937492,
+            "PUBLIC_RADIO": 0.07841844357722022,
+            "URBAN_RHYTHMIC": 0.18245450630760962,
+            "SPANISH": 0.047005704418866215,
+            "GOSPEL_CCM": 0.01282320396009509
+          },
+          "talkPct": 15.273162993749201,
+          "spanishPct": 4.700570441886621,
+          "rockPct": 20.930537619166735,
+          "chrPct": 10.240968338540126,
+          "urbanPct": 18.245450630760963,
+          "countryPct": 6.584439302125721,
+          "publicPct": 7.841844357722022,
+          "hhi": 441.7619686557043,
+          "histStr": "CLASSIC_ROCK:3|NEWS_TALK:3|SPORTS_TALK:1|URBAN_CONTEMP:1",
+          "leaderConc": {
+            "unique": 4,
+            "topShare": 0.375,
+            "talkWins": 0.5
+          }
+        }
+      }
+    }
+  },
+  "baseline2026": {
+    "meanBuckets": {
+      "TOP40_CHR": 0.07834932158846797,
+      "AC_HOT_AC": 0.14081951844485377,
+      "ROCK_ALT_AAA": 0.1991428712650017,
+      "COUNTRY": 0.06379086643488387,
+      "NEWS_TALK_SPORTS": 0.20981980998361877,
+      "PUBLIC_RADIO": 0.06909912535483638,
+      "URBAN_RHYTHMIC": 0.1821839068532521,
+      "SPANISH": 0.02086983238101469,
+      "GOSPEL_CCM": 0.00891481709948426
+    },
+    "talkPct": 20.981980998361877,
+    "spanishPct": 2.086983238101469,
+    "rockPct": 19.91428712650017,
+    "chrPct": 7.834932158846797,
+    "urbanPct": 18.218390685325208,
+    "countryPct": 6.379086643488387,
+    "publicPct": 6.909912535483638,
+    "hhi": 475.8017290894684,
+    "histStr": "NEWS_TALK:6|SPORTS_TALK:1|ADULT_CONTEMP:1",
+    "leaderConc": {
+      "unique": 3,
+      "topShare": 0.75,
+      "talkWins": 0.875
+    }
+  },
+  "controlsStable": true
+}

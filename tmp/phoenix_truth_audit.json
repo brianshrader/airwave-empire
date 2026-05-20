@@ -1,0 +1,501 @@
+{
+  "recordedAt": "2026-05-19T16:34:41.156Z",
+  "runs": 8,
+  "seed": 20260515,
+  "pipeline": {
+    "bpYear": 1985,
+    "commercialTarget": 25,
+    "bpPatch": {
+      "0": {
+        "fmt": "MOR",
+        "str": "strong"
+      },
+      "1": {
+        "fmt": "NEWS_TALK",
+        "str": "moderate"
+      },
+      "10": {
+        "fmt": "ADULT_STANDARDS",
+        "str": "moderate"
+      },
+      "15": {
+        "fmt": "CLASSIC_ROCK",
+        "str": "strong"
+      },
+      "16": {
+        "fmt": "ALBUM_ROCK",
+        "str": "moderate"
+      },
+      "18": {
+        "fmt": "CLASSIC_ROCK",
+        "str": "moderate"
+      }
+    },
+    "patchedSlots": [
+      {
+        "idx": 0,
+        "baseFmt": "TOP40",
+        "effFmt": "MOR",
+        "patched": true
+      },
+      {
+        "idx": 1,
+        "baseFmt": "TOP40",
+        "effFmt": "NEWS_TALK",
+        "patched": true
+      },
+      {
+        "idx": 10,
+        "baseFmt": "TOP40",
+        "effFmt": "ADULT_STANDARDS",
+        "patched": true
+      },
+      {
+        "idx": 15,
+        "baseFmt": "ALBUM_ROCK",
+        "effFmt": "CLASSIC_ROCK",
+        "patched": true
+      },
+      {
+        "idx": 16,
+        "baseFmt": "COUNTRY",
+        "effFmt": "ALBUM_ROCK",
+        "patched": true
+      },
+      {
+        "idx": 18,
+        "baseFmt": "TOP40",
+        "effFmt": "CLASSIC_ROCK",
+        "patched": true
+      }
+    ],
+    "nationalBpNote": "18-slot BP; Phoenix uses MARKET_BP_PATCH + phoenixDiag tier block (TOP40/HOT_AC/RHYTHMIC/URBAN)",
+    "afterBpRoster": {
+      "MOR": 2,
+      "NEWS_TALK": 2,
+      "COUNTRY": 2,
+      "SOUL_RNB": 2,
+      "GOSPEL": 3,
+      "ALBUM_ROCK": 3,
+      "ADULT_CONTEMP": 1,
+      "ADULT_STANDARDS": 1,
+      "BEAUTIFUL_MUSIC": 1,
+      "CLASSIC_ROCK": 2
+    },
+    "tierInjectBlocked": [
+      "TOP40",
+      "HOT_AC",
+      "RHYTHMIC",
+      "URBAN_CONTEMP"
+    ],
+    "tierInject": [
+      "CLASSIC_ROCK",
+      "ADULT_CONTEMP",
+      "ALBUM_ROCK",
+      "COUNTRY"
+    ],
+    "afterInjectRoster": {
+      "MOR": 2,
+      "NEWS_TALK": 2,
+      "COUNTRY": 3,
+      "SOUL_RNB": 2,
+      "GOSPEL": 3,
+      "ALBUM_ROCK": 4,
+      "ADULT_CONTEMP": 2,
+      "ADULT_STANDARDS": 1,
+      "BEAUTIFUL_MUSIC": 1,
+      "CLASSIC_ROCK": 3
+    },
+    "spanishLaunchSchedule": [
+      "1994:SPANISH:moderate",
+      "2002:SPANISH:moderate"
+    ],
+    "fragmentationSchedule": [
+      "1986:CLASSIC_ROCK:moderate",
+      "1988:ADULT_CONTEMP:moderate",
+      "1991:CLASSIC_ROCK:strong",
+      "1993:OLDIES:moderate"
+    ],
+    "tierTailDeferred": []
+  },
+  "ecology2026": {
+    "version": 1,
+    "marketId": "phoenix",
+    "year": 2026,
+    "publicRadioStrength": 0.17793333333333322,
+    "spanishLanguageStrength": 0.45652,
+    "blackMusicStrength": 0.2604728571428571,
+    "urbanContemporaryStrength": 0.2004324,
+    "gospelStrength": 0.5553185714285714,
+    "ccmStrength": 0.7162857142857143,
+    "countryStrength": 0.4985064935064935,
+    "aaaAlternativeStrength": 0.22750000000000015,
+    "spokenWordStrength": 0.40435278545812936,
+    "sportsStrength": 0.2761337689549087,
+    "chrResistance": 0.2732036975542162,
+    "marketFragmentation": 0.5477362734581296,
+    "amResilience": 0.56,
+    "modernMusicSubstitution": 0.41313978391408934,
+    "rankTier": "large",
+    "archetypeId": "sunbelt_diversified",
+    "region": ""
+  },
+  "ecologyPrior2026": "TOP40_CHR:0.0567|AC_HOT_AC:0.1005|ROCK_ALT_AAA:0.1025|COUNTRY:0.1349|NEWS_TALK_SPORTS:0.1429|PUBLIC_RADIO:0.0524|URBAN_RHYTHMIC:0.0782|SPANISH:0.0968|GOSPEL_CCM:0.2351",
+  "book": [
+    {
+      "summary": {
+        "meanBuckets": {
+          "TOP40_CHR": 0,
+          "AC_HOT_AC": 0.06406653399428733,
+          "ROCK_ALT_AAA": 0.13953126436322394,
+          "COUNTRY": 0.17464698573036494,
+          "NEWS_TALK_SPORTS": 0.1276734407507704,
+          "PUBLIC_RADIO": 0.004186138767141925,
+          "URBAN_RHYTHMIC": 0.14571753185251857,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.02959395138550195
+        },
+        "hhi": 1232.5324438739376,
+        "histStr": "MOR:4|COUNTRY:4",
+        "leaderConc": {
+          "unique": 2,
+          "topShare": 0.5,
+          "spanishWins": 0,
+          "rockWins": 0
+        },
+        "stations": 15,
+        "spanishStations": 0
+      },
+      "truth": {
+        "label": "1975: AM country/MOR/TOP40; Spanish minimal; pre-boom",
+        "buckets": {
+          "TOP40_CHR": 0.22,
+          "AC_HOT_AC": 0.18,
+          "ROCK_ALT_AAA": 0.08,
+          "COUNTRY": 0.14,
+          "NEWS_TALK_SPORTS": 0.08,
+          "GOSPEL_CCM": 0.1,
+          "URBAN_RHYTHMIC": 0.08,
+          "SPANISH": 0.04,
+          "PUBLIC_RADIO": 0.04
+        }
+      }
+    },
+    {
+      "summary": {
+        "meanBuckets": {
+          "TOP40_CHR": 0.11264697218695842,
+          "AC_HOT_AC": 0.14286359090776043,
+          "ROCK_ALT_AAA": 0.4068329890093297,
+          "COUNTRY": 0.0890997947769708,
+          "NEWS_TALK_SPORTS": 0.08194595105657168,
+          "PUBLIC_RADIO": 0.04484171238625974,
+          "URBAN_RHYTHMIC": 0.07389087354908701,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.003568458741542975
+        },
+        "hhi": 625.0443097531919,
+        "histStr": "CLASSIC_ROCK:8",
+        "leaderConc": {
+          "unique": 1,
+          "topShare": 1,
+          "spanishWins": 0,
+          "rockWins": 1
+        },
+        "stations": 28,
+        "spanishStations": 0
+      },
+      "truth": {
+        "label": "1985: FM growth; country + AC; Spanish emerging",
+        "buckets": {
+          "TOP40_CHR": 0.16,
+          "AC_HOT_AC": 0.14,
+          "ROCK_ALT_AAA": 0.12,
+          "COUNTRY": 0.12,
+          "NEWS_TALK_SPORTS": 0.1,
+          "GOSPEL_CCM": 0.08,
+          "URBAN_RHYTHMIC": 0.08,
+          "SPANISH": 0.08,
+          "PUBLIC_RADIO": 0.05
+        }
+      }
+    },
+    {
+      "summary": {
+        "meanBuckets": {
+          "TOP40_CHR": 0.11810925571315997,
+          "AC_HOT_AC": 0.1604029282181427,
+          "ROCK_ALT_AAA": 0.39071271987736433,
+          "COUNTRY": 0.0890914848239052,
+          "NEWS_TALK_SPORTS": 0.09808062451713843,
+          "PUBLIC_RADIO": 0.04033671357215531,
+          "URBAN_RHYTHMIC": 0.07672667710571628,
+          "SPANISH": 0.0029068937170836882,
+          "GOSPEL_CCM": 0.004441837485227276
+        },
+        "hhi": 579.6547078161751,
+        "histStr": "TOP40:3|CLASSIC_ROCK:3|COUNTRY:2",
+        "leaderConc": {
+          "unique": 3,
+          "topShare": 0.375,
+          "spanishWins": 0,
+          "rockWins": 0.375
+        },
+        "stations": 33.375,
+        "spanishStations": 0.625
+      },
+      "truth": {
+        "label": "1995: fragmented; Spanish meaningful; CHR viable",
+        "buckets": {
+          "TOP40_CHR": 0.12,
+          "AC_HOT_AC": 0.12,
+          "ROCK_ALT_AAA": 0.1,
+          "COUNTRY": 0.1,
+          "NEWS_TALK_SPORTS": 0.1,
+          "GOSPEL_CCM": 0.08,
+          "URBAN_RHYTHMIC": 0.1,
+          "SPANISH": 0.14,
+          "PUBLIC_RADIO": 0.05
+        }
+      }
+    },
+    {
+      "summary": {
+        "meanBuckets": {
+          "TOP40_CHR": 0.10825099722704998,
+          "AC_HOT_AC": 0.14822777510166563,
+          "ROCK_ALT_AAA": 0.3302074053636007,
+          "COUNTRY": 0.07489770047740021,
+          "NEWS_TALK_SPORTS": 0.12772919017088066,
+          "PUBLIC_RADIO": 0.03694474908159361,
+          "URBAN_RHYTHMIC": 0.06654065678858075,
+          "SPANISH": 0.09090531166461557,
+          "GOSPEL_CCM": 0
+        },
+        "hhi": 525.6210231399643,
+        "histStr": "NEWS_TALK:3|SPANISH:3|TOP40:2",
+        "leaderConc": {
+          "unique": 3,
+          "topShare": 0.375,
+          "spanishWins": 0.375,
+          "rockWins": 0
+        },
+        "stations": 30.75,
+        "spanishStations": 2.375
+      },
+      "truth": {
+        "label": "2005: Spanish top-tier lane; country present not dominant",
+        "buckets": {
+          "TOP40_CHR": 0.1,
+          "AC_HOT_AC": 0.1,
+          "ROCK_ALT_AAA": 0.1,
+          "COUNTRY": 0.08,
+          "NEWS_TALK_SPORTS": 0.1,
+          "GOSPEL_CCM": 0.08,
+          "URBAN_RHYTHMIC": 0.1,
+          "SPANISH": 0.18,
+          "PUBLIC_RADIO": 0.05
+        }
+      }
+    },
+    {
+      "summary": {
+        "meanBuckets": {
+          "TOP40_CHR": 0.0913639791759643,
+          "AC_HOT_AC": 0.1239487189647974,
+          "ROCK_ALT_AAA": 0.2914126991106262,
+          "COUNTRY": 0.13847223021124616,
+          "NEWS_TALK_SPORTS": 0.09380259793706845,
+          "PUBLIC_RADIO": 0.03876299472134057,
+          "URBAN_RHYTHMIC": 0.09101357972226382,
+          "SPANISH": 0.0785921705869869,
+          "GOSPEL_CCM": 0.04617491341623177
+        },
+        "hhi": 502.8597827367057,
+        "histStr": "CLASSIC_ROCK:6|TOP40:1|SPANISH:1",
+        "leaderConc": {
+          "unique": 3,
+          "topShare": 0.75,
+          "spanishWins": 0.125,
+          "rockWins": 0.75
+        },
+        "stations": 28.25,
+        "spanishStations": 2.125
+      },
+      "truth": {
+        "label": "2026: strong Spanish ecosystem; CHR viable; rock present not defining; country modest",
+        "buckets": {
+          "TOP40_CHR": 0.1,
+          "AC_HOT_AC": 0.1,
+          "ROCK_ALT_AAA": 0.1,
+          "COUNTRY": 0.08,
+          "NEWS_TALK_SPORTS": 0.1,
+          "GOSPEL_CCM": 0.08,
+          "URBAN_RHYTHMIC": 0.1,
+          "SPANISH": 0.22,
+          "PUBLIC_RADIO": 0.06
+        }
+      }
+    }
+  ],
+  "spanishSubtypeByYear": {
+    "1975": {
+      "runs": 8,
+      "meanSubtypeCounts": {
+        "SPANISH_CONTEMPORARY": 0,
+        "REGIONAL_MEXICAN": 0,
+        "SPANISH_TROPICAL": 0,
+        "SPANISH_NEWS_TALK": 0,
+        "SPANISH_SPORTS_TALK": 0,
+        "SPANISH_ADULT_HITS": 0
+      },
+      "meanSubtypeSharePct": {
+        "SPANISH_CONTEMPORARY": 0,
+        "REGIONAL_MEXICAN": 0,
+        "SPANISH_TROPICAL": 0,
+        "SPANISH_NEWS_TALK": 0,
+        "SPANISH_SPORTS_TALK": 0,
+        "SPANISH_ADULT_HITS": 0
+      },
+      "meanMarketAffinityPrior": {
+        "SPANISH_CONTEMPORARY": -1.48695,
+        "REGIONAL_MEXICAN": -0.91615,
+        "SPANISH_TROPICAL": -1.9625000000000001,
+        "SPANISH_NEWS_TALK": -1.636082493087684,
+        "SPANISH_SPORTS_TALK": -1.7652862963883273,
+        "SPANISH_ADULT_HITS": -2.3000000000000003
+      },
+      "leadershipWinsBySubtype": {},
+      "meanTotalSpanishStations": 0
+    },
+    "1985": {
+      "runs": 8,
+      "meanSubtypeCounts": {
+        "SPANISH_CONTEMPORARY": 0,
+        "REGIONAL_MEXICAN": 0,
+        "SPANISH_TROPICAL": 0,
+        "SPANISH_NEWS_TALK": 0,
+        "SPANISH_SPORTS_TALK": 0,
+        "SPANISH_ADULT_HITS": 0
+      },
+      "meanSubtypeSharePct": {
+        "SPANISH_CONTEMPORARY": 0,
+        "REGIONAL_MEXICAN": 0,
+        "SPANISH_TROPICAL": 0,
+        "SPANISH_NEWS_TALK": 0,
+        "SPANISH_SPORTS_TALK": 0,
+        "SPANISH_ADULT_HITS": 0
+      },
+      "meanMarketAffinityPrior": {
+        "SPANISH_CONTEMPORARY": 0.5130499999999999,
+        "REGIONAL_MEXICAN": 1.08385,
+        "SPANISH_TROPICAL": 0.0375,
+        "SPANISH_NEWS_TALK": -1.636082493087684,
+        "SPANISH_SPORTS_TALK": -1.7652862963883273,
+        "SPANISH_ADULT_HITS": -2.3000000000000003
+      },
+      "leadershipWinsBySubtype": {},
+      "meanTotalSpanishStations": 0
+    },
+    "1995": {
+      "runs": 8,
+      "meanSubtypeCounts": {
+        "SPANISH_CONTEMPORARY": 0,
+        "REGIONAL_MEXICAN": 0.625,
+        "SPANISH_TROPICAL": 0,
+        "SPANISH_NEWS_TALK": 0,
+        "SPANISH_SPORTS_TALK": 0,
+        "SPANISH_ADULT_HITS": 0
+      },
+      "meanSubtypeSharePct": {
+        "SPANISH_CONTEMPORARY": 0,
+        "REGIONAL_MEXICAN": 0.625,
+        "SPANISH_TROPICAL": 0,
+        "SPANISH_NEWS_TALK": 0,
+        "SPANISH_SPORTS_TALK": 0,
+        "SPANISH_ADULT_HITS": 0
+      },
+      "meanMarketAffinityPrior": {
+        "SPANISH_CONTEMPORARY": 0.5130499999999999,
+        "REGIONAL_MEXICAN": 1.08385,
+        "SPANISH_TROPICAL": 0.0375,
+        "SPANISH_NEWS_TALK": 0.5639175069123165,
+        "SPANISH_SPORTS_TALK": -1.7652862963883273,
+        "SPANISH_ADULT_HITS": -2.3000000000000003
+      },
+      "leadershipWinsBySubtype": {
+        "REGIONAL_MEXICAN": 5
+      },
+      "meanTotalSpanishStations": 0.625
+    },
+    "2005": {
+      "runs": 8,
+      "meanSubtypeCounts": {
+        "SPANISH_CONTEMPORARY": 0,
+        "REGIONAL_MEXICAN": 2.375,
+        "SPANISH_TROPICAL": 0,
+        "SPANISH_NEWS_TALK": 0,
+        "SPANISH_SPORTS_TALK": 0,
+        "SPANISH_ADULT_HITS": 0
+      },
+      "meanSubtypeSharePct": {
+        "SPANISH_CONTEMPORARY": 0,
+        "REGIONAL_MEXICAN": 1,
+        "SPANISH_TROPICAL": 0,
+        "SPANISH_NEWS_TALK": 0,
+        "SPANISH_SPORTS_TALK": 0,
+        "SPANISH_ADULT_HITS": 0
+      },
+      "meanMarketAffinityPrior": {
+        "SPANISH_CONTEMPORARY": 0.5130499999999999,
+        "REGIONAL_MEXICAN": 1.08385,
+        "SPANISH_TROPICAL": 0.0375,
+        "SPANISH_NEWS_TALK": 0.5639175069123165,
+        "SPANISH_SPORTS_TALK": 0.38471370361167245,
+        "SPANISH_ADULT_HITS": 0.5499999999999999
+      },
+      "leadershipWinsBySubtype": {
+        "REGIONAL_MEXICAN": 8
+      },
+      "meanTotalSpanishStations": 2.375
+    },
+    "2026": {
+      "runs": 8,
+      "meanSubtypeCounts": {
+        "SPANISH_CONTEMPORARY": 0,
+        "REGIONAL_MEXICAN": 2.125,
+        "SPANISH_TROPICAL": 0,
+        "SPANISH_NEWS_TALK": 0,
+        "SPANISH_SPORTS_TALK": 0,
+        "SPANISH_ADULT_HITS": 0
+      },
+      "meanSubtypeSharePct": {
+        "SPANISH_CONTEMPORARY": 0,
+        "REGIONAL_MEXICAN": 0.875,
+        "SPANISH_TROPICAL": 0,
+        "SPANISH_NEWS_TALK": 0,
+        "SPANISH_SPORTS_TALK": 0,
+        "SPANISH_ADULT_HITS": 0
+      },
+      "meanMarketAffinityPrior": {
+        "SPANISH_CONTEMPORARY": 0.5130499999999999,
+        "REGIONAL_MEXICAN": 1.08385,
+        "SPANISH_TROPICAL": 0.0375,
+        "SPANISH_NEWS_TALK": 0.5639175069123165,
+        "SPANISH_SPORTS_TALK": 0.38471370361167245,
+        "SPANISH_ADULT_HITS": 0.5499999999999999
+      },
+      "leadershipWinsBySubtype": {
+        "REGIONAL_MEXICAN": 7
+      },
+      "meanTotalSpanishStations": 2.125
+    }
+  },
+  "diagnosisQuestions": {
+    "earlySpanishSeeding": "spanishLaunches start 1994; tier inject may add SPANISH but blocked CHR path dominates",
+    "weakSpanishAppeal": "mktFmt uses culture.spanish*0.18; LA gets +0.065, Phoenix does not",
+    "rockInertia": "fragmentationLaunches: 2x CLASSIC_ROCK (1986,1991 strong); phoenixDiagOpeningOqMult FM rock ×1.1",
+    "countryCarryover": "ecology countryStrength 0.50; BP patch + countryBonus 0.09",
+    "demographicInfluence": "hispPop2020 0.301 vs spanish book ~10% — launch/appeal gap"
+  }
+}

@@ -1,0 +1,133 @@
+{
+  "readiness": "PLAYTEST_READY",
+  "checkedAt": "2026-05-17T21:26:18.015Z",
+  "counts": {
+    "PASS": 17,
+    "WARN": 3,
+    "FAIL": 0
+  },
+  "lines": [
+    "[PASS] callPrefix=K",
+    "[PASS] rankTier=small",
+    "[PASS] revScale=0.32",
+    "[PASS] timezone=America/Chicago",
+    "[PASS] region=Midwest",
+    "[WARN] _scaffold.dialReviewed is not true — confirm dial is sourced",
+    "[PASS] pop cohorts present",
+    "[PASS] culture fields present",
+    "[PASS] selectBlurb present",
+    "[PASS] teams count=1",
+    "[PASS] All core ecology traits present (2026)",
+    "[PASS] ecology_regression_record.json present",
+    "[WARN] _scaffold.dataReviewed is not true",
+    "[PASS] signalProfile present (AM=5, FM=20)",
+    "[WARN] _scaffold.signalReviewed is not true — human signal-tier review required",
+    "[PASS] Band constraints OK",
+    "[PASS] signalInventory explicit (viable1983=12, measurable2026=20)",
+    "[PASS] signalProfile tier counts match per-frequency metadata",
+    "[PASS] 1975 inventory: 5 AM + 3 FM = 8 total (viable 7)",
+    "[PASS] small-tier targets: viable 10–14 (in), measurable 16–24 (in)"
+  ],
+  "items": [
+    {
+      "level": "PASS",
+      "code": "call_prefix",
+      "message": "callPrefix=K"
+    },
+    {
+      "level": "PASS",
+      "code": "rank_tier",
+      "message": "rankTier=small"
+    },
+    {
+      "level": "PASS",
+      "code": "rev_scale",
+      "message": "revScale=0.32"
+    },
+    {
+      "level": "PASS",
+      "code": "timezone",
+      "message": "timezone=America/Chicago"
+    },
+    {
+      "level": "PASS",
+      "code": "region",
+      "message": "region=Midwest"
+    },
+    {
+      "level": "WARN",
+      "code": "dial_unreviewed",
+      "message": "_scaffold.dialReviewed is not true — confirm dial is sourced"
+    },
+    {
+      "level": "PASS",
+      "code": "pop_cohorts",
+      "message": "pop cohorts present"
+    },
+    {
+      "level": "PASS",
+      "code": "culture",
+      "message": "culture fields present"
+    },
+    {
+      "level": "PASS",
+      "code": "select_blurb",
+      "message": "selectBlurb present"
+    },
+    {
+      "level": "PASS",
+      "code": "teams",
+      "message": "teams count=1"
+    },
+    {
+      "level": "PASS",
+      "code": "ecology_traits",
+      "message": "All core ecology traits present (2026)"
+    },
+    {
+      "level": "PASS",
+      "code": "regression_file",
+      "message": "ecology_regression_record.json present"
+    },
+    {
+      "level": "WARN",
+      "code": "data_unreviewed",
+      "message": "_scaffold.dataReviewed is not true"
+    },
+    {
+      "level": "PASS",
+      "code": "signal_profile",
+      "message": "signalProfile present (AM=5, FM=20)"
+    },
+    {
+      "level": "WARN",
+      "code": "signal_unreviewed",
+      "message": "_scaffold.signalReviewed is not true — human signal-tier review required"
+    },
+    {
+      "level": "PASS",
+      "code": "signal_constraints_ok",
+      "message": "Band constraints OK"
+    },
+    {
+      "level": "PASS",
+      "code": "inventory_explicit",
+      "message": "signalInventory explicit (viable1983=12, measurable2026=20)"
+    },
+    {
+      "level": "PASS",
+      "code": "profile_metadata_match",
+      "message": "signalProfile tier counts match per-frequency metadata"
+    },
+    {
+      "level": "PASS",
+      "code": "inventory_1975",
+      "message": "1975 inventory: 5 AM + 3 FM = 8 total (viable 7)"
+    },
+    {
+      "level": "PASS",
+      "code": "inventory_tier_targets",
+      "message": "small-tier targets: viable 10–14 (in), measurable 16–24 (in)"
+    }
+  ]
+}

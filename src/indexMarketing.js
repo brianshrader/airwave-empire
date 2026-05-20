@@ -120,7 +120,7 @@ function trackLandingView() {
   } catch (_e) {}
 }
 
-/** Top-nav gold CTA: pricing for guests, Play when signed in (returning players). */
+/** Top-nav gold CTA: play free for guests, Play when signed in (returning players). */
 function updateIndexNavPrimaryCta(clerk) {
   const el = document.getElementById('wl-nav-primary-cta');
   if (!el) return;
@@ -130,9 +130,9 @@ function updateIndexNavPrimaryCta(clerk) {
     el.textContent = 'Play now';
     el.setAttribute('data-wl-cta-label', 'play_now');
   } else {
-    el.setAttribute('href', '#pricing');
-    el.innerHTML = 'Plans &amp; trial';
-    el.setAttribute('data-wl-cta-label', 'plans_and_trial');
+    el.setAttribute('href', '/play-guest.html');
+    el.textContent = 'Play free';
+    el.setAttribute('data-wl-cta-label', 'play_free_now');
   }
 }
 

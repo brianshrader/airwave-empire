@@ -1,6 +1,6 @@
 {
   "readiness": "PLAYTEST_READY",
-  "checkedAt": "2026-05-17T18:45:31.410Z",
+  "checkedAt": "2026-05-17T20:45:15.703Z",
   "counts": {
     "PASS": 17,
     "WARN": 3,

@@ -1,0 +1,20 @@
+{
+  "marketId": "newyork",
+  "recordedAt": "2026-05-17T21:26:00.000Z",
+  "command": "npm run diag:market-ecology-regression -- --markets=newyork --runs=8",
+  "genEra": "1985",
+  "runsPerCell": 8,
+  "seed": 20260515,
+  "years": [1995, 2000, 2006, 2010, 2020, 2026],
+  "pass": false,
+  "note": "Mega stress-test (playable MARKETS row). 2026: HHI≈461, talk 20%, public 7.3%, country 7.4%, Spanish 6%, #1 NEWS_TALK-heavy. 1995 TOP40 MODERATE. Fragmented rock/AC book; low country vs Nashville. No bespoke NY hacks.",
+  "summaryByYear": {
+    "1995": { "hhi": 479, "chrBucketPct": 14.0, "countryPct": 6.1, "spanishPct": 0.3, "publicPct": 5.1, "talkPct": 12.0, "top40Num1WinPct": 50.0, "flags": ["TOP40_MODERATE"] },
+    "2000": { "hhi": 462, "chrBucketPct": 12.8, "countryPct": 6.3, "spanishPct": 3.1, "publicPct": 4.6, "talkPct": 15.0, "top40Num1WinPct": 37.5, "flags": ["CONCENTRATION_MODERATE"] },
+    "2006": { "hhi": 469, "chrBucketPct": 10.9, "countryPct": 8.1, "spanishPct": 3.4, "publicPct": 4.9, "talkPct": 20.6, "top40Num1WinPct": 0, "flags": [] },
+    "2010": { "hhi": 491, "chrBucketPct": 10.1, "countryPct": 8.0, "spanishPct": 3.5, "publicPct": 4.9, "talkPct": 25.6, "top40Num1WinPct": 12.5, "flags": [] },
+    "2020": { "hhi": 463, "chrBucketPct": 10.2, "countryPct": 5.8, "spanishPct": 3.0, "publicPct": 6.7, "talkPct": 20.5, "top40Num1WinPct": 0, "flags": [] },
+    "2026": { "hhi": 461, "chrBucketPct": 9.1, "countryPct": 7.4, "spanishPct": 6.0, "publicPct": 7.3, "talkPct": 20.0, "top40Num1WinPct": 0, "flags": [] }
+  },
+  "csv": "tmp/market_ecology_regression.csv"
+}

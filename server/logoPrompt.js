@@ -123,7 +123,8 @@ function remoteVanVehicleNotes(year) {
 }
 
 /**
- * Prompt for Grok image *edit*: reference must be the station logo; output is a remote van scene.
+ * Prompt for Grok image *edit*: reference = station logo; output = remote van scene.
+ * Short scene baseline + year-specific vehicle + light custom-livery (no camera/distortion block).
  * @param {{
  *   stationName: string,
  *   format: string,
@@ -143,14 +144,14 @@ function buildRemoteVanPrompt(meta) {
   const vehicleNotes = remoteVanVehicleNotes(year);
 
   return [
-    'Reference image = official station logo. Full-body custom livery: match reference colors, shapes, and lettering; wrap stripes and color blocks around panels and wheel wells like factory paint — same lockup, no invented callsign.',
-    'Paint reads as real clearcoat: logo follows door curvature and light; one cohesive vehicle surface (no floating graphic, no sticker halo, no UI paste).',
-    `Context (no extra on-image text beyond the logo): "${stationName}", ${format}, year ${year}, ${bandNote}.`,
-    tone ? `Scene mood (not text): ${tone}.` : '',
+    'The attached reference image is the official station logo. Use this exact lockup on the van — same colors, shapes, and lettering; do not invent a different callsign.',
+    'Custom broadcast livery: extend the logo palette into accent stripes and color blocks on the doors and lower panels, wrapped naturally around the body like factory fleet paint — logo as hero, not a plain white van with one decal.',
+    'The logo and accents read as real automotive paint and clearcoat (follows panel curves and daylight); cohesive vehicle surface, not a floating sticker or pasted graphic.',
+    `Station identity (scene context only — no extra readable text beyond the logo): "${stationName}", ${format} format, ${year}, ${bandNote}.`,
+    tone ? `Mood for the scene (not as on-image text): ${tone}.` : '',
     vehicleNotes,
-    `Photoreal three-quarter side view, ${eraLabel} US setting, one remote van at a fair, stadium lot, or street event — mast, cables, sandbags or chairs; optional engineer silhouette. Entire vehicle visible in frame. Integrated station branding painted on the side panels, proportional to the vehicle — clear and readable, but not oversized.`,
-    'Camera: ~50mm documentary, rectilinear, square pixels — no anamorphic squeeze. Normal wheelbase and roof height; wheels circular in the final image (not elliptical). No stretched, squashed, or compressed body. No giant logo covering most of the vehicle; natural fleet-van proportions like a real parked Sprinter / E-Series / Transit class.',
-    'Light: daylight, shallow DOF, light grain. Credible news-remote photograph.',
+    `Photorealistic wide shot of a ${eraLabel} American radio remote broadcast van at a live street fair, concert gate, stadium lot, or county fair parking lot. Mast antenna, coiled cables, sandbags or folding chairs; engineer silhouette optional. Show the reference logo prominently on one side panel; natural fleet-van proportions.`,
+    'Natural daylight, documentary news photography, shallow depth of field. No CGI sheen, holograms, or duplicate logos on every surface.',
   ]
     .filter(Boolean)
     .join(' ');

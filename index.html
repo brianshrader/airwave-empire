@@ -95,28 +95,60 @@
     body {
       overflow-x: hidden;
     }
+    /* Hero visual — newhero.png (3:2 cinematic collage, clickable) */
+    .wl-hero-visual-link {
+      display: block;
+      min-width: 0;
+      text-decoration: none;
+      color: inherit;
+      cursor: pointer;
+      transition: box-shadow 0.2s ease, transform 0.15s ease;
+    }
+    .wl-hero-visual-link:hover {
+      box-shadow:
+        0 0 0 1px rgba(216, 155, 43, 0.35),
+        0 12px 40px -8px rgba(0, 0, 0, 0.55),
+        0 0 32px rgba(216, 155, 43, 0.1);
+    }
+    .wl-hero-visual-link:focus-visible {
+      outline: 2px solid rgba(216, 155, 43, 0.7);
+      outline-offset: 3px;
+    }
+    @media (min-width: 1024px) {
+      .wl-hero-visual__frame {
+        max-height: 920px;
+      }
+    }
+    .wl-hero-visual__frame {
+      position: relative;
+      aspect-ratio: 3 / 2;
+      max-height: min(90vw, 880px);
+      overflow: hidden;
+      border-radius: 0.625rem;
+      background: #0a0a0a;
+      box-shadow: inset 0 0 0 1px rgba(216, 155, 43, 0.12);
+    }
+    .wl-hero-visual-link:hover .wl-hero-visual__frame img {
+      filter: brightness(1.05);
+    }
+    .wl-hero-visual__frame img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      transition: filter 0.2s ease;
+    }
+    .wl-hero-cta-sub {
+      margin-top: 0.65rem;
+      font-size: 0.875rem;
+      line-height: 1.45;
+      color: rgba(214, 211, 209, 0.88);
+      max-width: 22rem;
+    }
   </style>
 </head>
 <body class="antialiased">
-  <!-- Best on larger screens — shown on phone-sized viewports only -->
-  <div
-    id="wl-mobile-screen-notice"
-    class="md:hidden border-b gridline bg-stone-950/90 px-4 py-3 text-center"
-    role="status"
-  >
-    <p class="text-[13px] leading-snug text-stone-300">
-      For the <strong class="text-stone-100 font-semibold">best experience</strong>, play on a
-      <strong class="text-stone-100 font-semibold">desktop, laptop, or tablet</strong>.
-      This game is designed for larger screens.
-    </p>
-    <button
-      type="button"
-      id="wl-dismiss-mobile-screen-notice"
-      class="mt-2 text-[12px] uppercase tracking-[0.14em] text-amber-600/90 hover:text-amber-400"
-    >
-      Dismiss
-    </button>
-  </div>
   <header class="border-b gridline">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex items-center justify-between flex-wrap gap-4 min-w-0">
       <div class="wordmark text-3xl sm:text-4xl md:text-5xl font-normal tracking-[0.12em] sm:tracking-[0.18em] md:tracking-[0.22em] uppercase gold min-w-0">
@@ -128,67 +160,94 @@
         <a href="#pricing" class="hover:text-white hidden sm:inline">Pricing</a>
         <a href="#faq" class="hover:text-white hidden sm:inline">FAQ</a>
         <a href="/account" class="hover:text-white hidden sm:inline" data-wl-cta data-wl-cta-location="nav" data-wl-cta-label="account">Account</a>
-        <a href="#pricing" id="wl-nav-primary-cta" class="gold-bg px-5 py-2.5 rounded-md font-bold uppercase tracking-[0.14em] text-stone-900 hover:opacity-95" data-wl-cta data-wl-cta-location="nav" data-wl-cta-label="plans_and_trial">Plans &amp; trial</a>
+        <a href="/play-guest.html" id="wl-nav-primary-cta" class="gold-bg px-5 py-2.5 rounded-md font-bold uppercase tracking-[0.14em] text-stone-900 hover:opacity-95" data-wl-cta data-wl-cta-location="nav" data-wl-cta-label="play_free_now">Play free</a>
       </nav>
     </div>
   </header>
 
   <main class="min-w-0 max-w-full">
-    <!-- Section 1 — Hero -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 py-14 md:py-16 min-w-0">
-      <div class="grid lg:grid-cols-2 gap-10 lg:gap-12 items-center min-w-0">
-        <div>
-          <h1 class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase leading-[1.02] tracking-tight">
-            Run a Radio Station.
+    <!-- Section 1 — Hero (wl-hero-copy: edit headline / subhead / CTA text below for paid-traffic tests) -->
+    <section id="wl-hero" class="max-w-7xl mx-auto px-4 sm:px-6 py-10 md:py-16 min-w-0">
+      <div class="grid lg:grid-cols-[5fr_8fr] gap-8 lg:gap-10 items-center min-w-0">
+        <div class="min-w-0 lg:max-w-md">
+          <!-- wl-hero-headline A/B: alt — Can you save this radio empire? -->
+          <h1 id="wl-hero-headline" class="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black uppercase leading-[1.02] tracking-tight">
+            Can you win the ratings war?
           </h1>
-          <p class="mt-8 text-xl md:text-2xl text-stone-300 max-w-xl leading-relaxed font-medium">
-            Build your station. Chase ratings. Survive the industry.
+          <!-- wl-hero-subhead A/B: alt — Build your stations. Beat your rivals. Survive the changing radio business. -->
+          <p id="wl-hero-subhead" class="mt-5 md:mt-8 text-lg sm:text-xl md:text-2xl text-stone-300 max-w-xl leading-relaxed font-medium">
+            Build radio stations. Fight for listeners. Crush the competition.
           </p>
-          <div class="mt-10 flex flex-col sm:flex-row gap-4 sm:gap-6 sm:items-center flex-wrap">
+          <div class="mt-6 md:mt-10">
             <a
+              id="wl-hero-cta"
               href="/play-guest.html"
-              class="text-center gold-bg rounded-xl px-8 py-4 md:px-10 md:py-5 text-lg md:text-xl font-black uppercase tracking-[0.12em] text-stone-900 hover:brightness-110 transition-[filter,transform] active:translate-y-[1px] shadow-md shadow-black/30 min-w-[min(100%,280px)]"
+              class="inline-flex items-center justify-center text-center gold-bg rounded-xl px-8 py-4 md:px-10 md:py-5 text-lg md:text-xl font-black uppercase tracking-[0.12em] text-stone-900 hover:brightness-110 transition-[filter,transform] active:translate-y-[1px] shadow-md shadow-black/30 min-w-[min(100%,280px)]"
               data-wl-cta
               data-wl-cta-location="hero"
-              data-wl-cta-label="play_free_no_signup"
+              data-wl-cta-label="play_free_now"
             >
-              Play free — no signup required
+              Play free now
             </a>
-            <div class="flex flex-col sm:flex-row gap-4 sm:items-center">
+            <p id="wl-hero-cta-sub" class="wl-hero-cta-sub">
+              No signup. No download. Start playing instantly.
+            </p>
+            <div class="hidden" aria-hidden="true">
               <a
                 href="/play-signin.html"
-                class="text-center text-sm uppercase tracking-[0.18em] text-amber-200/95 hover:text-amber-50 border border-amber-700/45 rounded-md px-5 py-2.5 transition-colors"
                 data-wl-cta
                 data-wl-cta-location="hero"
                 data-wl-cta-label="sign_in_full_library"
-              >
-                Sign in — full game
-              </a>
+              >Sign in — full game</a>
               <a
                 href="#gameplay"
-                class="text-center text-sm uppercase tracking-[0.18em] text-stone-500 hover:text-stone-300 transition-colors"
                 data-wl-cta
                 data-wl-cta-location="hero"
                 data-wl-cta-label="how_it_works"
-              >
-                How it works
-              </a>
+              >How it works</a>
             </div>
           </div>
-          <p class="mt-4 text-sm text-stone-500 max-w-xl">
-            Try the guided tutorial instantly in your browser. Create an account anytime for saves, multiplayer, and every scenario.
-          </p>
         </div>
 
-        <div class="panel rounded-2xl p-4 lg:p-5">
-          <img
-            src="/landing-images/overview.png"
-            alt="Airwave Empire gameplay screenshot"
-            class="rounded-xl w-full h-auto object-cover"
-          />
-        </div>
+        <a
+          href="/play-guest.html"
+          class="wl-hero-visual-link panel rounded-2xl p-2 lg:p-3"
+          data-wl-cta
+          data-wl-cta-location="hero_image"
+          data-wl-cta-label="hero_image_clicked"
+          aria-label="Play Airwave Empire free — open the tutorial"
+        >
+          <div class="wl-hero-visual__frame">
+            <img
+              src="/landing-images/newhero.png"
+              alt="Airwave Empire gameplay collage showing ratings, station management, and radio broadcast scenes."
+              width="1536"
+              height="1024"
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+        </a>
       </div>
     </section>
+
+    <!-- Mobile note — below hero so paid traffic sees value prop + CTA first -->
+    <div
+      id="wl-mobile-screen-notice"
+      class="md:hidden border-y gridline bg-stone-950/80 px-4 py-2.5 text-center max-w-7xl mx-auto"
+      role="status"
+    >
+      <p class="text-[12px] leading-snug text-stone-400">
+        Best on tablet or desktop, but playable in your browser.
+      </p>
+      <button
+        type="button"
+        id="wl-dismiss-mobile-screen-notice"
+        class="mt-1 text-[11px] uppercase tracking-[0.14em] text-amber-600/80 hover:text-amber-400"
+      >
+        Dismiss
+      </button>
+    </div>
 
     <section class="border-t gridline border-b">
       <div class="max-w-7xl mx-auto px-4 sm:px-6 py-12 md:py-14 grid md:grid-cols-4 gap-6 min-w-0">

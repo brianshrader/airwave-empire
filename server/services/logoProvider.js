@@ -39,8 +39,11 @@ const OUTPUT_SIZE = 512;
 /** @type {import('sharp').ResizeOptions} */
 const RESIZE_OPTS = { width: OUTPUT_SIZE, height: OUTPUT_SIZE, fit: 'cover', position: 'centre' };
 
-/** Remote van art: max width for cache + UI (xAI may return 1k–2k wide). Height scales proportionally — never force a square box, which has caused horizontally “squished” vans with some PNGs. */
+/** Remote van art: cap longest edge for cache + UI (xAI may return 1k–2k). */
 const VAN_MAX_EDGE = 1680;
+
+/** Reference canvas width for letterboxed logo sent to Grok edit (input AR should match output AR). */
+const VAN_REFERENCE_CANVAS_W = 1024;
 
 const POLL_MS = 1500;
 const POLL_MAX_MS = 120000;
@@ -578,12 +581,93 @@ async function generateGrokImage({ prompt, aspect_ratio = '1:1' }) {
   return { buffer, ext: 'png' };
 }
 
+/** @param {string} aspectRatio e.g. "4:3" */
+function parseAspectRatioPair(aspectRatio) {
+  const parts = String(aspectRatio || '4:3')
+    .trim()
+    .split(':');
+  const w = Math.max(1, Number(parts[0]) || 4);
+  const h = Math.max(1, Number(parts[1]) || 3);
+  return { w, h };
+}
+
+/**
+ * xAI single-image edit tends to honor the reference aspect ratio. Square logos on a
+ * landscape canvas reduce “squeezed” fleet vans when output is 4:3 / 16:9.
+ * @param {Buffer} logoBuffer
+ * @param {string} aspectRatio
+ * @returns {Promise<Buffer>}
+ */
+async function letterboxLogoForVanEdit(logoBuffer, aspectRatio) {
+  const { w: arW, h: arH } = parseAspectRatioPair(aspectRatio);
+  const canvasW = VAN_REFERENCE_CANVAS_W;
+  const canvasH = Math.round((canvasW * arH) / arW);
+
+  const logoResized = await sharp(logoBuffer, { failOn: 'none', unlimited: true })
+    .rotate()
+    .resize({
+      width: Math.round(canvasW * 0.44),
+      height: Math.round(canvasH * 0.52),
+      fit: 'inside',
+    })
+    .png()
+    .toBuffer();
+
+  const lm = await sharp(logoResized).metadata();
+  const lw = lm.width || 1;
+  const lh = lm.height || 1;
+
+  return sharp({
+    create: {
+      width: canvasW,
+      height: canvasH,
+      channels: 3,
+      background: { r: 235, g: 236, b: 234 },
+    },
+  })
+    .composite([
+      {
+        input: logoResized,
+        left: Math.max(0, Math.round((canvasW - lw) / 2)),
+        top: Math.max(0, Math.round((canvasH - lh) / 2)),
+      },
+    ])
+    .png()
+    .toBuffer();
+}
+
+/**
+ * @param {Buffer} buffer
+ * @returns {Promise<Buffer>}
+ */
+async function capVanOutputPng(buffer) {
+  const pipeline = sharp(buffer, { failOn: 'none', unlimited: true }).rotate();
+  const meta = await pipeline.metadata();
+  const w = meta.width || 1;
+  const h = meta.height || 1;
+  if (w <= VAN_MAX_EDGE && h <= VAN_MAX_EDGE) {
+    return pipeline.png().toBuffer();
+  }
+  if (w >= h) {
+    return sharp(buffer, { failOn: 'none', unlimited: true })
+      .rotate()
+      .resize({ width: VAN_MAX_EDGE, withoutEnlargement: true })
+      .png()
+      .toBuffer();
+  }
+  return sharp(buffer, { failOn: 'none', unlimited: true })
+    .rotate()
+    .resize({ height: VAN_MAX_EDGE, withoutEnlargement: true })
+    .png()
+    .toBuffer();
+}
+
 /**
  * Grok Imagine: edit / compose from a source image (reference logo → scene).
  * @param {{ prompt: string, sourcePngBuffer: Buffer, aspect_ratio?: string, resolution?: string }} args
  * @returns {Promise<{ buffer: Buffer, ext: string }>}
  */
-async function generateGrokImageEdit({ prompt, sourcePngBuffer, aspect_ratio = '16:9', resolution = '1k' }) {
+async function generateGrokImageEdit({ prompt, sourcePngBuffer, aspect_ratio = '4:3', resolution = '1k' }) {
   const apiKey = process.env.GROK_API_KEY;
   if (!apiKey) {
     const err = new Error('GROK_API_KEY is not set');
@@ -596,7 +680,20 @@ async function generateGrokImageEdit({ prompt, sourcePngBuffer, aspect_ratio = '
     throw err;
   }
 
-  const dataUri = `data:image/png;base64,${sourcePngBuffer.toString('base64')}`;
+  const refBuffer = await letterboxLogoForVanEdit(sourcePngBuffer, aspect_ratio);
+  if (process.env.LOG_REMOTE_VAN_PROMPT === '1') {
+    try {
+      const refMeta = await sharp(refBuffer, { failOn: 'none', unlimited: true }).metadata();
+      console.log('[remote-van-prompt]', {
+        reference_px: refMeta.width && refMeta.height ? { width: refMeta.width, height: refMeta.height } : null,
+        reference_aspect_ratio: aspect_ratio,
+      });
+    } catch (_e) {
+      /* optional log */
+    }
+  }
+
+  const dataUri = `data:image/png;base64,${refBuffer.toString('base64')}`;
   const body = {
     model: 'grok-imagine-image',
     prompt,
@@ -648,14 +745,7 @@ async function generateGrokImageEdit({ prompt, sourcePngBuffer, aspect_ratio = '
   }
 
   try {
-    buffer = await sharp(buffer, { failOn: 'none', unlimited: true })
-      .rotate()
-      .resize({
-        width: VAN_MAX_EDGE,
-        withoutEnlargement: true,
-      })
-      .png()
-      .toBuffer();
+    buffer = await capVanOutputPng(buffer);
   } catch (e) {
     const wrap = new Error(e.message || String(e));
     wrap.status = 502;
@@ -695,6 +785,7 @@ module.exports = {
   generateShortapiImage,
   generateGrokImage,
   generateGrokImageEdit,
+  letterboxLogoForVanEdit,
   grokImageEditConfigured,
   resolveImageProvider,
   imageGenerationConfigured,

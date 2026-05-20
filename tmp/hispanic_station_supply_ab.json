@@ -1,0 +1,546 @@
+{
+  "recordedAt": "2026-05-18T00:38:31.803Z",
+  "runs": 8,
+  "seed": 20260515,
+  "miamiInMarkets": false,
+  "variantSpec": {
+    "A": "current runtime (promoted C2 appeal only)",
+    "B": "high-Hispanic large/mega: supplemental 1994 SPANISH FM launch",
+    "C": "high-Hispanic large/mega: supplemental 2003 SPANISH FM launch",
+    "D": "tier inject: SPANISH priority at front of rotation",
+    "E": "B + C combined (depth + earlier FM)"
+  },
+  "results": {
+    "A": {
+      "1995": {
+        "phoenix": {
+          "spanishStations": 0.625,
+          "spanishPct": 0.21217612412644374,
+          "spanishNum1": 0,
+          "rockPct": 38.96250684294207,
+          "chrPct": 11.789719974907321,
+          "countryPct": 9.651647996323472,
+          "hhi": 584.8451449846629,
+          "histStr": "CLASSIC_ROCK:4|TOP40:2|COUNTRY:2"
+        },
+        "losangeles": {
+          "spanishStations": 1.625,
+          "spanishPct": 0.9637652342273347,
+          "spanishNum1": 0,
+          "rockPct": 29.673093949646095,
+          "chrPct": 12.624218519615246,
+          "countryPct": 5.597930871882611,
+          "hhi": 518.0200346201192,
+          "histStr": "CLASSIC_ROCK:3|ADULT_CONTEMP:2|NEWS_TALK:1|URBAN_CONTEMP:1|TOP40:1"
+        },
+        "newyork": {
+          "spanishStations": 1.125,
+          "spanishPct": 0.5464059190532881,
+          "spanishNum1": 0,
+          "rockPct": 25.61480252061097,
+          "chrPct": 13.725431416513398,
+          "countryPct": 5.899774210609468,
+          "hhi": 484.98414552330297,
+          "histStr": "TOP40:4|NEWS_TALK:2|ADULT_CONTEMP:2"
+        },
+        "atlanta": {
+          "spanishStations": 0.625,
+          "spanishPct": 0.344195877996035,
+          "spanishNum1": 0,
+          "rockPct": 22.567437961247634,
+          "chrPct": 21.417773811461405,
+          "countryPct": 11.842991383528753,
+          "hhi": 716.5719574860934,
+          "histStr": "TOP40:3|NEWS_TALK:2|ADULT_CONTEMP:1|CLASSIC_ROCK:1|COUNTRY:1"
+        },
+        "nashville": {
+          "spanishStations": 0.125,
+          "spanishPct": 0.2962191279621913,
+          "spanishNum1": 0,
+          "rockPct": 23.332314820702518,
+          "chrPct": 14.297370876009685,
+          "countryPct": 16.235052639608956,
+          "hhi": 935.9150308620665,
+          "histStr": "COUNTRY:4|ADULT_CONTEMP:3|NEWS_TALK:1"
+        }
+      },
+      "2026": {
+        "phoenix": {
+          "spanishStations": 2.25,
+          "spanishPct": 9.732077600827148,
+          "spanishNum1": 0.125,
+          "rockPct": 29.475619432639277,
+          "chrPct": 9.463445355974208,
+          "countryPct": 12.730005709094055,
+          "hhi": 509.315366701255,
+          "histStr": "CLASSIC_ROCK:7|SPANISH:1"
+        },
+        "losangeles": {
+          "spanishStations": 2.25,
+          "spanishPct": 6.464416380126147,
+          "spanishNum1": 0,
+          "rockPct": 20.60569170163792,
+          "chrPct": 8.752760848399783,
+          "countryPct": 6.6987261743684385,
+          "hhi": 456.31726428407194,
+          "histStr": "NEWS_TALK:3|SPORTS_TALK:2|URBAN_CONTEMP:1|ALL_NEWS:1|ADULT_CONTEMP:1"
+        },
+        "newyork": {
+          "spanishStations": 2.375,
+          "spanishPct": 5.875266580448439,
+          "spanishNum1": 0,
+          "rockPct": 19.68294339127799,
+          "chrPct": 8.22243187636444,
+          "countryPct": 6.397021659217226,
+          "hhi": 471.8006469184087,
+          "histStr": "NEWS_TALK:7|ADULT_CONTEMP:1"
+        },
+        "atlanta": {
+          "spanishStations": 0,
+          "spanishPct": 0,
+          "spanishNum1": 0,
+          "rockPct": 21.78855885413143,
+          "chrPct": 14.214368995684074,
+          "countryPct": 11.94549990637176,
+          "hhi": 503.9488910159608,
+          "histStr": "RELIGIOUS_NETWORK:3|ADULT_CONTEMP:2|COUNTRY:2|CLASSIC_ROCK:1"
+        },
+        "nashville": {
+          "spanishStations": 0.5,
+          "spanishPct": 0.42775078024076846,
+          "spanishNum1": 0,
+          "rockPct": 20.28669509624453,
+          "chrPct": 8.144503221956256,
+          "countryPct": 12.854771204060656,
+          "hhi": 726.6544848345825,
+          "histStr": "COUNTRY:4|ADULT_CONTEMP:4"
+        }
+      }
+    },
+    "B": {
+      "1995": {
+        "phoenix": {
+          "spanishStations": 0.625,
+          "spanishPct": 0.21217612412644374,
+          "spanishNum1": 0,
+          "rockPct": 38.96250684294207,
+          "chrPct": 11.789719974907321,
+          "countryPct": 9.651647996323472,
+          "hhi": 584.8451449846629,
+          "histStr": "CLASSIC_ROCK:4|TOP40:2|COUNTRY:2"
+        },
+        "losangeles": {
+          "spanishStations": 2.625,
+          "spanishPct": 2.802295695133779,
+          "spanishNum1": 0,
+          "rockPct": 29.55876376670121,
+          "chrPct": 12.476939696472424,
+          "countryPct": 6.064819570549256,
+          "hhi": 503.89716072849143,
+          "histStr": "CLASSIC_ROCK:3|TOP40:2|NEWS_TALK:1|URBAN_CONTEMP:1|ADULT_CONTEMP:1"
+        },
+        "newyork": {
+          "spanishStations": 1.125,
+          "spanishPct": 0.4733453781614839,
+          "spanishNum1": 0,
+          "rockPct": 25.33164626075485,
+          "chrPct": 14.219214099412126,
+          "countryPct": 6.152882916307726,
+          "hhi": 483.17334809808193,
+          "histStr": "TOP40:4|NEWS_TALK:3|ADULT_CONTEMP:1"
+        },
+        "atlanta": {
+          "spanishStations": 0.625,
+          "spanishPct": 0.344195877996035,
+          "spanishNum1": 0,
+          "rockPct": 22.567437961247634,
+          "chrPct": 21.417773811461405,
+          "countryPct": 11.842991383528753,
+          "hhi": 716.5719574860934,
+          "histStr": "TOP40:3|NEWS_TALK:2|ADULT_CONTEMP:1|CLASSIC_ROCK:1|COUNTRY:1"
+        },
+        "nashville": {
+          "spanishStations": 0.125,
+          "spanishPct": 0.2962191279621913,
+          "spanishNum1": 0,
+          "rockPct": 23.332314820702518,
+          "chrPct": 14.297370876009685,
+          "countryPct": 16.235052639608956,
+          "hhi": 935.9150308620665,
+          "histStr": "COUNTRY:4|ADULT_CONTEMP:3|NEWS_TALK:1"
+        }
+      },
+      "2026": {
+        "phoenix": {
+          "spanishStations": 2.25,
+          "spanishPct": 9.732077600827148,
+          "spanishNum1": 0.125,
+          "rockPct": 29.475619432639277,
+          "chrPct": 9.463445355974208,
+          "countryPct": 12.730005709094055,
+          "hhi": 509.315366701255,
+          "histStr": "CLASSIC_ROCK:7|SPANISH:1"
+        },
+        "losangeles": {
+          "spanishStations": 2.75,
+          "spanishPct": 12.601382314548568,
+          "spanishNum1": 0.25,
+          "rockPct": 21.82091010911861,
+          "chrPct": 7.8666806424019144,
+          "countryPct": 6.163691411135416,
+          "hhi": 478.3818463477073,
+          "histStr": "SPORTS_TALK:2|SPANISH:2|URBAN_CONTEMP:1|NEWS_TALK:1|CLASSIC_ROCK:1|ADULT_CONTEMP:1"
+        },
+        "newyork": {
+          "spanishStations": 2.75,
+          "spanishPct": 10.885645280929804,
+          "spanishNum1": 0,
+          "rockPct": 16.749974948454714,
+          "chrPct": 7.705787031285966,
+          "countryPct": 7.083197108676038,
+          "hhi": 483.3506248226861,
+          "histStr": "NEWS_TALK:5|SPORTS_TALK:2|ADULT_CONTEMP:1"
+        },
+        "atlanta": {
+          "spanishStations": 0,
+          "spanishPct": 0,
+          "spanishNum1": 0,
+          "rockPct": 21.78855885413143,
+          "chrPct": 14.214368995684074,
+          "countryPct": 11.94549990637176,
+          "hhi": 503.9488910159608,
+          "histStr": "RELIGIOUS_NETWORK:3|ADULT_CONTEMP:2|COUNTRY:2|CLASSIC_ROCK:1"
+        },
+        "nashville": {
+          "spanishStations": 0.5,
+          "spanishPct": 0.42775078024076846,
+          "spanishNum1": 0,
+          "rockPct": 20.28669509624453,
+          "chrPct": 8.144503221956256,
+          "countryPct": 12.854771204060656,
+          "hhi": 726.6544848345825,
+          "histStr": "COUNTRY:4|ADULT_CONTEMP:4"
+        }
+      }
+    },
+    "C": {
+      "1995": {
+        "phoenix": {
+          "spanishStations": 0.625,
+          "spanishPct": 0.21217612412644374,
+          "spanishNum1": 0,
+          "rockPct": 38.96250684294207,
+          "chrPct": 11.789719974907321,
+          "countryPct": 9.651647996323472,
+          "hhi": 584.8451449846629,
+          "histStr": "CLASSIC_ROCK:4|TOP40:2|COUNTRY:2"
+        },
+        "losangeles": {
+          "spanishStations": 1.625,
+          "spanishPct": 0.9637652342273347,
+          "spanishNum1": 0,
+          "rockPct": 29.673093949646095,
+          "chrPct": 12.624218519615246,
+          "countryPct": 5.597930871882611,
+          "hhi": 518.0200346201192,
+          "histStr": "CLASSIC_ROCK:3|ADULT_CONTEMP:2|NEWS_TALK:1|URBAN_CONTEMP:1|TOP40:1"
+        },
+        "newyork": {
+          "spanishStations": 1.125,
+          "spanishPct": 0.5464059190532881,
+          "spanishNum1": 0,
+          "rockPct": 25.61480252061097,
+          "chrPct": 13.725431416513398,
+          "countryPct": 5.899774210609468,
+          "hhi": 484.98414552330297,
+          "histStr": "TOP40:4|NEWS_TALK:2|ADULT_CONTEMP:2"
+        },
+        "atlanta": {
+          "spanishStations": 0.625,
+          "spanishPct": 0.344195877996035,
+          "spanishNum1": 0,
+          "rockPct": 22.567437961247634,
+          "chrPct": 21.417773811461405,
+          "countryPct": 11.842991383528753,
+          "hhi": 716.5719574860934,
+          "histStr": "TOP40:3|NEWS_TALK:2|ADULT_CONTEMP:1|CLASSIC_ROCK:1|COUNTRY:1"
+        },
+        "nashville": {
+          "spanishStations": 0.125,
+          "spanishPct": 0.2962191279621913,
+          "spanishNum1": 0,
+          "rockPct": 23.332314820702518,
+          "chrPct": 14.297370876009685,
+          "countryPct": 16.235052639608956,
+          "hhi": 935.9150308620665,
+          "histStr": "COUNTRY:4|ADULT_CONTEMP:3|NEWS_TALK:1"
+        }
+      },
+      "2026": {
+        "phoenix": {
+          "spanishStations": 2.25,
+          "spanishPct": 9.732077600827148,
+          "spanishNum1": 0.125,
+          "rockPct": 29.475619432639277,
+          "chrPct": 9.463445355974208,
+          "countryPct": 12.730005709094055,
+          "hhi": 509.315366701255,
+          "histStr": "CLASSIC_ROCK:7|SPANISH:1"
+        },
+        "losangeles": {
+          "spanishStations": 2.75,
+          "spanishPct": 12.53771081513729,
+          "spanishNum1": 0.5,
+          "rockPct": 18.653949620684628,
+          "chrPct": 7.726272507077161,
+          "countryPct": 7.017532646680625,
+          "hhi": 501.15211557715503,
+          "histStr": "SPANISH:4|URBAN_CONTEMP:2|NEWS_TALK:2"
+        },
+        "newyork": {
+          "spanishStations": 2.375,
+          "spanishPct": 10.939504154788422,
+          "spanishNum1": 0.5,
+          "rockPct": 20.11569504669517,
+          "chrPct": 6.802708285364993,
+          "countryPct": 5.76436532192596,
+          "hhi": 495.5018839146605,
+          "histStr": "SPANISH:4|NEWS_TALK:2|ADULT_CONTEMP:1|SPORTS_TALK:1"
+        },
+        "atlanta": {
+          "spanishStations": 0,
+          "spanishPct": 0,
+          "spanishNum1": 0,
+          "rockPct": 21.78855885413143,
+          "chrPct": 14.214368995684074,
+          "countryPct": 11.94549990637176,
+          "hhi": 503.9488910159608,
+          "histStr": "RELIGIOUS_NETWORK:3|ADULT_CONTEMP:2|COUNTRY:2|CLASSIC_ROCK:1"
+        },
+        "nashville": {
+          "spanishStations": 0.5,
+          "spanishPct": 0.42775078024076846,
+          "spanishNum1": 0,
+          "rockPct": 20.28669509624453,
+          "chrPct": 8.144503221956256,
+          "countryPct": 12.854771204060656,
+          "hhi": 726.6544848345825,
+          "histStr": "COUNTRY:4|ADULT_CONTEMP:4"
+        }
+      }
+    },
+    "D": {
+      "1995": {
+        "phoenix": {
+          "spanishStations": 0.625,
+          "spanishPct": 0.21217612412644374,
+          "spanishNum1": 0,
+          "rockPct": 38.96250684294207,
+          "chrPct": 11.789719974907321,
+          "countryPct": 9.651647996323472,
+          "hhi": 584.8451449846629,
+          "histStr": "CLASSIC_ROCK:4|TOP40:2|COUNTRY:2"
+        },
+        "losangeles": {
+          "spanishStations": 1.625,
+          "spanishPct": 0.9637652342273347,
+          "spanishNum1": 0,
+          "rockPct": 29.673093949646095,
+          "chrPct": 12.624218519615246,
+          "countryPct": 5.597930871882611,
+          "hhi": 518.0200346201192,
+          "histStr": "CLASSIC_ROCK:3|ADULT_CONTEMP:2|NEWS_TALK:1|URBAN_CONTEMP:1|TOP40:1"
+        },
+        "newyork": {
+          "spanishStations": 1.125,
+          "spanishPct": 0.5464059190532881,
+          "spanishNum1": 0,
+          "rockPct": 25.61480252061097,
+          "chrPct": 13.725431416513398,
+          "countryPct": 5.899774210609468,
+          "hhi": 484.98414552330297,
+          "histStr": "TOP40:4|NEWS_TALK:2|ADULT_CONTEMP:2"
+        },
+        "atlanta": {
+          "spanishStations": 0.625,
+          "spanishPct": 0.344195877996035,
+          "spanishNum1": 0,
+          "rockPct": 22.567437961247634,
+          "chrPct": 21.417773811461405,
+          "countryPct": 11.842991383528753,
+          "hhi": 716.5719574860934,
+          "histStr": "TOP40:3|NEWS_TALK:2|ADULT_CONTEMP:1|CLASSIC_ROCK:1|COUNTRY:1"
+        },
+        "nashville": {
+          "spanishStations": 0.125,
+          "spanishPct": 0.2962191279621913,
+          "spanishNum1": 0,
+          "rockPct": 23.332314820702518,
+          "chrPct": 14.297370876009685,
+          "countryPct": 16.235052639608956,
+          "hhi": 935.9150308620665,
+          "histStr": "COUNTRY:4|ADULT_CONTEMP:3|NEWS_TALK:1"
+        }
+      },
+      "2026": {
+        "phoenix": {
+          "spanishStations": 2.25,
+          "spanishPct": 9.732077600827148,
+          "spanishNum1": 0.125,
+          "rockPct": 29.475619432639277,
+          "chrPct": 9.463445355974208,
+          "countryPct": 12.730005709094055,
+          "hhi": 509.315366701255,
+          "histStr": "CLASSIC_ROCK:7|SPANISH:1"
+        },
+        "losangeles": {
+          "spanishStations": 2.25,
+          "spanishPct": 6.464416380126147,
+          "spanishNum1": 0,
+          "rockPct": 20.60569170163792,
+          "chrPct": 8.752760848399783,
+          "countryPct": 6.6987261743684385,
+          "hhi": 456.31726428407194,
+          "histStr": "NEWS_TALK:3|SPORTS_TALK:2|URBAN_CONTEMP:1|ALL_NEWS:1|ADULT_CONTEMP:1"
+        },
+        "newyork": {
+          "spanishStations": 2.375,
+          "spanishPct": 5.875266580448439,
+          "spanishNum1": 0,
+          "rockPct": 19.68294339127799,
+          "chrPct": 8.22243187636444,
+          "countryPct": 6.397021659217226,
+          "hhi": 471.8006469184087,
+          "histStr": "NEWS_TALK:7|ADULT_CONTEMP:1"
+        },
+        "atlanta": {
+          "spanishStations": 0,
+          "spanishPct": 0,
+          "spanishNum1": 0,
+          "rockPct": 21.78855885413143,
+          "chrPct": 14.214368995684074,
+          "countryPct": 11.94549990637176,
+          "hhi": 503.9488910159608,
+          "histStr": "RELIGIOUS_NETWORK:3|ADULT_CONTEMP:2|COUNTRY:2|CLASSIC_ROCK:1"
+        },
+        "nashville": {
+          "spanishStations": 0.5,
+          "spanishPct": 0.42775078024076846,
+          "spanishNum1": 0,
+          "rockPct": 20.28669509624453,
+          "chrPct": 8.144503221956256,
+          "countryPct": 12.854771204060656,
+          "hhi": 726.6544848345825,
+          "histStr": "COUNTRY:4|ADULT_CONTEMP:4"
+        }
+      }
+    },
+    "E": {
+      "1995": {
+        "phoenix": {
+          "spanishStations": 0.625,
+          "spanishPct": 0.21217612412644374,
+          "spanishNum1": 0,
+          "rockPct": 38.96250684294207,
+          "chrPct": 11.789719974907321,
+          "countryPct": 9.651647996323472,
+          "hhi": 584.8451449846629,
+          "histStr": "CLASSIC_ROCK:4|TOP40:2|COUNTRY:2"
+        },
+        "losangeles": {
+          "spanishStations": 2.625,
+          "spanishPct": 2.802295695133779,
+          "spanishNum1": 0,
+          "rockPct": 29.55876376670121,
+          "chrPct": 12.476939696472424,
+          "countryPct": 6.064819570549256,
+          "hhi": 503.89716072849143,
+          "histStr": "CLASSIC_ROCK:3|TOP40:2|NEWS_TALK:1|URBAN_CONTEMP:1|ADULT_CONTEMP:1"
+        },
+        "newyork": {
+          "spanishStations": 1.125,
+          "spanishPct": 0.4733453781614839,
+          "spanishNum1": 0,
+          "rockPct": 25.33164626075485,
+          "chrPct": 14.219214099412126,
+          "countryPct": 6.152882916307726,
+          "hhi": 483.17334809808193,
+          "histStr": "TOP40:4|NEWS_TALK:3|ADULT_CONTEMP:1"
+        },
+        "atlanta": {
+          "spanishStations": 0.625,
+          "spanishPct": 0.344195877996035,
+          "spanishNum1": 0,
+          "rockPct": 22.567437961247634,
+          "chrPct": 21.417773811461405,
+          "countryPct": 11.842991383528753,
+          "hhi": 716.5719574860934,
+          "histStr": "TOP40:3|NEWS_TALK:2|ADULT_CONTEMP:1|CLASSIC_ROCK:1|COUNTRY:1"
+        },
+        "nashville": {
+          "spanishStations": 0.125,
+          "spanishPct": 0.2962191279621913,
+          "spanishNum1": 0,
+          "rockPct": 23.332314820702518,
+          "chrPct": 14.297370876009685,
+          "countryPct": 16.235052639608956,
+          "hhi": 935.9150308620665,
+          "histStr": "COUNTRY:4|ADULT_CONTEMP:3|NEWS_TALK:1"
+        }
+      },
+      "2026": {
+        "phoenix": {
+          "spanishStations": 2.25,
+          "spanishPct": 9.732077600827148,
+          "spanishNum1": 0.125,
+          "rockPct": 29.475619432639277,
+          "chrPct": 9.463445355974208,
+          "countryPct": 12.730005709094055,
+          "hhi": 509.315366701255,
+          "histStr": "CLASSIC_ROCK:7|SPANISH:1"
+        },
+        "losangeles": {
+          "spanishStations": 2.875,
+          "spanishPct": 13.963778751347874,
+          "spanishNum1": 0.25,
+          "rockPct": 21.423574991209616,
+          "chrPct": 7.54043544547174,
+          "countryPct": 6.2706640639702504,
+          "hhi": 478.0879802652891,
+          "histStr": "NEWS_TALK:2|SPORTS_TALK:2|SPANISH:2|CLASSIC_ROCK:1|ADULT_CONTEMP:1"
+        },
+        "newyork": {
+          "spanishStations": 3,
+          "spanishPct": 13.310210105121744,
+          "spanishNum1": 0.25,
+          "rockPct": 16.35228157371938,
+          "chrPct": 7.283447979765964,
+          "countryPct": 7.000235133540094,
+          "hhi": 485.36188238978485,
+          "histStr": "NEWS_TALK:5|SPANISH:2|ADULT_CONTEMP:1"
+        },
+        "atlanta": {
+          "spanishStations": 0,
+          "spanishPct": 0,
+          "spanishNum1": 0,
+          "rockPct": 21.78855885413143,
+          "chrPct": 14.214368995684074,
+          "countryPct": 11.94549990637176,
+          "hhi": 503.9488910159608,
+          "histStr": "RELIGIOUS_NETWORK:3|ADULT_CONTEMP:2|COUNTRY:2|CLASSIC_ROCK:1"
+        },
+        "nashville": {
+          "spanishStations": 0.5,
+          "spanishPct": 0.42775078024076846,
+          "spanishNum1": 0,
+          "rockPct": 20.28669509624453,
+          "chrPct": 8.144503221956256,
+          "countryPct": 12.854771204060656,
+          "hhi": 726.6544848345825,
+          "histStr": "COUNTRY:4|ADULT_CONTEMP:4"
+        }
+      }
+    }
+  },
+  "controlsStable": true
+}

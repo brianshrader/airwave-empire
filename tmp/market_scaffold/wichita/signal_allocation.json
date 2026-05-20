@@ -1,0 +1,598 @@
+{
+  "marketId": "wichita",
+  "generatedAt": "2026-05-17T21:26:18.016Z",
+  "constraintSchemaVersion": 2,
+  "signalProfile": {
+    "am": {
+      "big": 1,
+      "medium": 2,
+      "small": 2
+    },
+    "fm": {
+      "major": 3,
+      "medium": 13,
+      "rimshot": 4
+    }
+  },
+  "summary": {
+    "am": {
+      "big": 1,
+      "medium": 2,
+      "small": 2,
+      "profileTotal": 5,
+      "dialListed": 5,
+      "clear": 1,
+      "regional": 2,
+      "local": 2,
+      "graveyard": 1
+    },
+    "fm": {
+      "major": 3,
+      "medium": 13,
+      "rimshot": 4,
+      "profileTotal": 20,
+      "dialListed": 20,
+      "reservedBand": 2,
+      "commercialBand": 18
+    },
+    "totalAmSignals": 5,
+    "totalFmSignals": 20,
+    "grandTotal": 25
+  },
+  "bandClassification": {
+    "am": [
+      {
+        "freq": "900 AM",
+        "khz": 900,
+        "graveyard": false,
+        "band": "am",
+        "tierVocabulary": "regional",
+        "signalTier": "medium",
+        "amClassHint": "regional",
+        "dayPowerKw": 25,
+        "nightPowerKw": 10,
+        "directionalDay": null,
+        "directionalNight": null,
+        "graveyardOverride": false
+      },
+      {
+        "freq": "1070 AM",
+        "khz": 1070,
+        "graveyard": false,
+        "band": "am",
+        "tierVocabulary": "clear / big-stick",
+        "signalTier": "big",
+        "amClassHint": "clear",
+        "dayPowerKw": 50,
+        "nightPowerKw": 50,
+        "directionalDay": null,
+        "directionalNight": null,
+        "graveyardOverride": false
+      },
+      {
+        "freq": "1240 AM",
+        "khz": 1240,
+        "graveyard": true,
+        "band": "am",
+        "tierVocabulary": "local",
+        "signalTier": "small",
+        "amClassHint": "local",
+        "dayPowerKw": 10,
+        "nightPowerKw": 1,
+        "directionalDay": null,
+        "directionalNight": null,
+        "graveyardOverride": true
+      },
+      {
+        "freq": "1330 AM",
+        "khz": 1330,
+        "graveyard": false,
+        "band": "am",
+        "tierVocabulary": "regional",
+        "signalTier": "medium",
+        "amClassHint": "regional",
+        "dayPowerKw": 25,
+        "nightPowerKw": 10,
+        "directionalDay": null,
+        "directionalNight": true,
+        "graveyardOverride": false
+      },
+      {
+        "freq": "1410 AM",
+        "khz": 1410,
+        "graveyard": false,
+        "band": "am",
+        "tierVocabulary": "local",
+        "signalTier": "small",
+        "amClassHint": "local",
+        "dayPowerKw": 5,
+        "nightPowerKw": 1,
+        "directionalDay": null,
+        "directionalNight": null,
+        "graveyardOverride": true
+      }
+    ],
+    "fm": [
+      {
+        "freq": "88.7 FM",
+        "mhz": 88.7,
+        "band": "fm",
+        "bandZone": "nce_reserved",
+        "nceEligible": true,
+        "reservedBand": true,
+        "commercialBand": false,
+        "signalTier": "medium",
+        "classHint": "C1",
+        "erpKw": 25,
+        "haatM": null,
+        "formatHint": "CCM",
+        "commercialOverride": false
+      },
+      {
+        "freq": "91.5 FM",
+        "mhz": 91.5,
+        "band": "fm",
+        "bandZone": "nce_reserved",
+        "nceEligible": true,
+        "reservedBand": true,
+        "commercialBand": false,
+        "signalTier": "medium",
+        "classHint": "C1",
+        "erpKw": 100,
+        "haatM": null,
+        "formatHint": "PUBLIC_NEWS",
+        "commercialOverride": false
+      },
+      {
+        "freq": "92.3 FM",
+        "mhz": 92.3,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "medium",
+        "classHint": "C1",
+        "erpKw": 50,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      },
+      {
+        "freq": "93.9 FM",
+        "mhz": 93.9,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "medium",
+        "classHint": "C1",
+        "erpKw": 50,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      },
+      {
+        "freq": "94.5 FM",
+        "mhz": 94.5,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "medium",
+        "classHint": "C1",
+        "erpKw": 50,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      },
+      {
+        "freq": "95.1 FM",
+        "mhz": 95.1,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "major",
+        "classHint": "C0",
+        "erpKw": 100,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      },
+      {
+        "freq": "96.7 FM",
+        "mhz": 96.7,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "medium",
+        "classHint": "C1",
+        "erpKw": 50,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      },
+      {
+        "freq": "97.3 FM",
+        "mhz": 97.3,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "medium",
+        "classHint": "C1",
+        "erpKw": 50,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      },
+      {
+        "freq": "98.1 FM",
+        "mhz": 98.1,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "medium",
+        "classHint": "C1",
+        "erpKw": 50,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      },
+      {
+        "freq": "99.9 FM",
+        "mhz": 99.9,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "major",
+        "classHint": "C0",
+        "erpKw": 100,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      },
+      {
+        "freq": "100.1 FM",
+        "mhz": 100.1,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "medium",
+        "classHint": "C1",
+        "erpKw": 50,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      },
+      {
+        "freq": "101.9 FM",
+        "mhz": 101.9,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "medium",
+        "classHint": "C1",
+        "erpKw": 50,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      },
+      {
+        "freq": "102.7 FM",
+        "mhz": 102.7,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "medium",
+        "classHint": "C1",
+        "erpKw": 50,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      },
+      {
+        "freq": "103.1 FM",
+        "mhz": 103.1,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "rimshot",
+        "classHint": "C1",
+        "erpKw": 50,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      },
+      {
+        "freq": "104.5 FM",
+        "mhz": 104.5,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "medium",
+        "classHint": "C1",
+        "erpKw": 50,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      },
+      {
+        "freq": "105.3 FM",
+        "mhz": 105.3,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "rimshot",
+        "classHint": "C1",
+        "erpKw": 50,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      },
+      {
+        "freq": "105.9 FM",
+        "mhz": 105.9,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "major",
+        "classHint": "C0",
+        "erpKw": 100,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      },
+      {
+        "freq": "106.5 FM",
+        "mhz": 106.5,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "medium",
+        "classHint": "C1",
+        "erpKw": 50,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      },
+      {
+        "freq": "107.1 FM",
+        "mhz": 107.1,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "rimshot",
+        "classHint": "C1",
+        "erpKw": 50,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      },
+      {
+        "freq": "107.9 FM",
+        "mhz": 107.9,
+        "band": "fm",
+        "bandZone": "commercial",
+        "nceEligible": false,
+        "reservedBand": false,
+        "commercialBand": true,
+        "signalTier": "rimshot",
+        "classHint": "C1",
+        "erpKw": 50,
+        "haatM": null,
+        "formatHint": null,
+        "commercialOverride": false
+      }
+    ]
+  },
+  "bandConstraintCounts": {
+    "amClear": 1,
+    "amRegional": 2,
+    "amLocal": 2,
+    "amGraveyard": 1,
+    "amGraveyardOnDial": 1,
+    "fmReservedBand": 2,
+    "fmCommercialBand": 18,
+    "fmOutOfBand": 0,
+    "fmMajor": 3,
+    "fmMedium": 13,
+    "fmRimshot": 4,
+    "nceFormatOnCommercial": 0
+  },
+  "constraintFailures": [],
+  "constraintWarnings": [],
+  "constraintInfo": [],
+  "reservedBandCapacity": {
+    "listed": 2,
+    "ecologyExpectsCapacity": true,
+    "plausibleRange": [
+      2,
+      6
+    ],
+    "assessment": "plausible"
+  },
+  "hasConstraintFailures": false,
+  "signalReviewed": false,
+  "warnings": [
+    {
+      "code": "signal_unreviewed",
+      "level": "warn",
+      "message": "_scaffold.signalReviewed is not true — human signal-tier review required before merge"
+    }
+  ],
+  "suggestedDialTierPlaceholders": [],
+  "tierVocabularyNote": "AM tiers map to gameplay vocabulary: big=clear/big-stick, medium=regional, small=local. Not exact FCC class modeling.",
+  "nceCapacityNote": "Reserved-band (87.9–91.9 MHz) entries are capacity slots; public, university, jazz, classical, CCM, religious, and ethnic NCE formats compete for them — no fixed occupant count.",
+  "ccmHdNote": "Commercial-band CCM/K-Love/Air1 via HD-fed translators is deferred until the HD radio/subchannel layer exists.",
+  "signalInventory": {
+    "schemaVersion": 2,
+    "rankTier": "small",
+    "targets": {
+      "viable1983": [
+        10,
+        14
+      ],
+      "measurable2026": [
+        16,
+        24
+      ]
+    },
+    "anchors": {
+      "wichita": {
+        "rankTier": "small",
+        "viable1983": 12,
+        "measurable2026": 20
+      },
+      "phoenix": {
+        "rankTier": "large",
+        "viable1983": 22,
+        "measurable2026": 38
+      },
+      "newyork": {
+        "rankTier": "mega",
+        "viable1983": 30,
+        "measurable2026": 48,
+        "inventory1975": {
+          "am1975": 11,
+          "fm1975": 9,
+          "total1975": 20,
+          "viable1975": 20
+        }
+      },
+      "neworleans": {
+        "rankTier": "large",
+        "inventory1975": {
+          "am1975": 9,
+          "fm1975": 7,
+          "total1975": 16,
+          "viable1975": 16
+        },
+        "total1985": 20,
+        "measurable2026": 20
+      }
+    },
+    "anchorNote": "Anchor wichita (small); ~12 viable (1983); ~20 measurable (2026)",
+    "primaryFullPower": {
+      "am": 5,
+      "fm": 20,
+      "total": 25,
+      "excluded": 0,
+      "excludedFreqs": [],
+      "dialListed": 25
+    },
+    "dialListedTotal": 25,
+    "profileGrandTotal": 25,
+    "viable1983": 12,
+    "measurable2026": 20,
+    "inventory1975": {
+      "am1975": 5,
+      "fm1975": 3,
+      "viable1975": 7,
+      "total1975": 8,
+      "sumBands": 8,
+      "explicit": {
+        "am1975": true,
+        "fm1975": true,
+        "viable1975": true,
+        "total1975": true
+      },
+      "hasAny1975": true,
+      "hasBandTotals": true,
+      "eraNote": "1970s market starts should use historical AM/FM availability at scenario start — not the full modern 2026 dial list."
+    },
+    "sources": {},
+    "explicit": {
+      "viable1983": true,
+      "measurable2026": true,
+      "am1975": true,
+      "fm1975": true,
+      "viable1975": true,
+      "total1975": true
+    },
+    "inventoryExplained": true,
+    "notes": "Small Wichita anchor: 5 AM / 3 FM in 1975 (matches gameplay five-AM constraint); viable1983 12; measurable2026 20. Dial 5 AM + 20 FM incl. 2 reserved-band.",
+    "warnings": [],
+    "reviewFailures1975": [],
+    "missingExplicit": {
+      "viable1983": false,
+      "measurable2026": false
+    },
+    "inventoryNote": "Primary full-power count excludes translatorFed/hdSubchannel/hdFed dial rows unless includeInPrimaryInventory is set. Not FCC-perfect.",
+    "inventory1975Note": "1970s starts: document signalInventory.am1975, fm1975, total1975 (and optional viable1975) from historical dial — not modern 2026 amFreqs/fmFreqs length."
+  },
+  "profileMetadataConsistency": {
+    "profileCounts": {
+      "am": {
+        "big": 1,
+        "medium": 2,
+        "small": 2
+      },
+      "fm": {
+        "major": 3,
+        "medium": 13,
+        "rimshot": 4
+      }
+    },
+    "metadataCounts": {
+      "am": {
+        "big": 1,
+        "medium": 2,
+        "small": 2
+      },
+      "fm": {
+        "major": 3,
+        "medium": 13,
+        "rimshot": 4
+      }
+    },
+    "mismatches": {
+      "am": [],
+      "fm": []
+    },
+    "am": {
+      "metadataComplete": true,
+      "metadataTagged": 5,
+      "dialListed": 5,
+      "missingTierFreqs": []
+    },
+    "fm": {
+      "metadataComplete": true,
+      "metadataTagged": 20,
+      "dialListed": 20,
+      "missingTierFreqs": []
+    },
+    "hasMismatch": false,
+    "note": "signalProfile tier totals are draft estimates until _scaffold.signalReviewed is true; metadataCounts come from explicit per-frequency signalTier (and AM amClassHint when signalTier is omitted)."
+  },
+  "note": "signalProfile is a gameplay abstraction for competitive signal strength — not FCC engineering data."
+}

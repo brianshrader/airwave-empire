@@ -1,0 +1,85 @@
+{
+  "marketId": "miami",
+  "recordedAt": "2026-05-17T21:15:03.707Z",
+  "byYear": {
+    "1995": {
+      "meanSpanishStationCount": 2.25,
+      "meanSpanishStationCountAll": 2.25,
+      "meanSpanishLanguageShare": 0.061668723749999994,
+      "meanSpanishShareLegacy": 0.061668723749999994,
+      "meanSpanishLeaderShare": 0.03246753375,
+      "spanishBySourceMean": {
+        "launch:miami_spanish_1986_fm": 1,
+        "launch:miami_spanish_1994_fm": 1,
+        "timeline_or_other": 0.25
+      },
+      "runs": 8
+    },
+    "2000": {
+      "meanSpanishStationCount": 3.125,
+      "meanSpanishStationCountAll": 3.125,
+      "meanSpanishLanguageShare": 0.13619512125,
+      "meanSpanishShareLegacy": 0.13619512125,
+      "meanSpanishLeaderShare": 0.08104090999999998,
+      "spanishBySourceMean": {
+        "timeline_or_other": 1.125,
+        "launch:miami_spanish_1986_fm": 1,
+        "launch:miami_spanish_1994_fm": 1
+      },
+      "runs": 8
+    },
+    "2006": {
+      "meanSpanishStationCount": 3.125,
+      "meanSpanishStationCountAll": 3.125,
+      "meanSpanishLanguageShare": 0.16880959999999998,
+      "meanSpanishShareLegacy": 0.16880959999999998,
+      "meanSpanishLeaderShare": 0.0918982675,
+      "spanishBySourceMean": {
+        "timeline_or_other": 1.125,
+        "launch:miami_spanish_1986_fm": 1,
+        "launch:miami_spanish_1994_fm": 1
+      },
+      "runs": 8
+    },
+    "2010": {
+      "meanSpanishStationCount": 3.125,
+      "meanSpanishStationCountAll": 3.125,
+      "meanSpanishLanguageShare": 0.1566508425,
+      "meanSpanishShareLegacy": 0.1566508425,
+      "meanSpanishLeaderShare": 0.09240663875,
+      "spanishBySourceMean": {
+        "timeline_or_other": 1.25,
+        "launch:miami_spanish_1994_fm": 1,
+        "launch:miami_spanish_1986_fm": 0.875
+      },
+      "runs": 8
+    },
+    "2020": {
+      "meanSpanishStationCount": 2.75,
+      "meanSpanishStationCountAll": 2.75,
+      "meanSpanishLanguageShare": 0.14686396875,
+      "meanSpanishShareLegacy": 0.14686396875,
+      "meanSpanishLeaderShare": 0.09295150625,
+      "spanishBySourceMean": {
+        "timeline_or_other": 1,
+        "launch:miami_spanish_1986_fm": 0.75,
+        "launch:miami_spanish_1994_fm": 1
+      },
+      "runs": 8
+    },
+    "2026": {
+      "meanSpanishStationCount": 3.25,
+      "meanSpanishStationCountAll": 3.25,
+      "meanSpanishLanguageShare": 0.18795023,
+      "meanSpanishShareLegacy": 0.18795023,
+      "meanSpanishLeaderShare": 0.089724485,
+      "spanishBySourceMean": {
+        "launch:miami_spanish_1986_fm": 1,
+        "launch:miami_spanish_1994_fm": 1,
+        "timeline_or_other": 1.125,
+        "launch:miami_spanish_2002_fm": 0.125
+      },
+      "runs": 8
+    }
+  }
+}

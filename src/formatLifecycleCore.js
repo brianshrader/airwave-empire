@@ -1,5 +1,5 @@
 /**
- * Format Lifecycle Layer v1 — diagnostic math only (no gameplay wiring).
+ * Format Lifecycle Layer v1 — diagnostic math + narrow runtime bridge (Portland COUNTRY mktFmt).
  *
  * Three layers:
  *   A) nationalLifecycle(format, year)     — data/formatLifecycle.v1.json
@@ -13,6 +13,7 @@ import { readFileSync } from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { deriveMarketEcology } from './marketEcology.js';
+import { profileCountryLifecycleMktFmtMult as profileCountryLifecycleMktFmtMultCore } from './formatLifecycleProfileRuntime.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_CATALOG_PATH = path.join(__dirname, '..', 'data', 'formatLifecycle.v1.json');
@@ -340,6 +341,14 @@ export function assessDiagnosticPlausibility(marketId, market, year, snapshot) {
   }
 
   return warnings;
+}
+
+/**
+ * Portland-only COUNTRY mktFmt multiplier from marketProfiles (Node / tests).
+ * Browser gameplay uses `formatLifecycleProfileRuntime.iife.js` global hook.
+ */
+export function profileCountryLifecycleMktFmtMult(marketId, year, catalog = loadFormatLifecycleCatalog()) {
+  return profileCountryLifecycleMktFmtMultCore(marketId, year, catalog);
 }
 
 /**

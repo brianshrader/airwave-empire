@@ -1,0 +1,20 @@
+{
+  "marketId": "nashville",
+  "recordedAt": "2026-05-17T21:26:00.000Z",
+  "command": "npm run diag:market-ecology-regression -- --markets=nashville --runs=8",
+  "genEra": "1985",
+  "runsPerCell": 8,
+  "seed": 20260515,
+  "years": [1995, 2000, 2006, 2010, 2020, 2026],
+  "pass": false,
+  "note": "Medium southern_country stress-test. 2026: HHI≈745 (concentrated), country #1 6/8, country book ~12.7%, gospel/CCM bucket heavy, Spanish ~0.5%. CONCENTRATION_SEVERE on CHR leader across era. Believable Opry country identity without market-specific hacks.",
+  "summaryByYear": {
+    "1995": { "hhi": 920, "chrBucketPct": 13.6, "countryPct": 16.7, "spanishPct": 0.0, "publicPct": 4.4, "talkPct": 16.1, "top40Num1WinPct": 0, "flags": ["CONCENTRATION_MODERATE"] },
+    "2000": { "hhi": 861, "chrBucketPct": 13.2, "countryPct": 12.7, "spanishPct": 0.2, "publicPct": 4.0, "talkPct": 16.5, "top40Num1WinPct": 12.5, "flags": ["CONCENTRATION_MODERATE"] },
+    "2006": { "hhi": 818, "chrBucketPct": 12.4, "countryPct": 13.4, "spanishPct": 0.5, "publicPct": 4.1, "talkPct": 17.2, "top40Num1WinPct": 0, "flags": ["CONCENTRATION_SEVERE"] },
+    "2010": { "hhi": 747, "chrBucketPct": 10.7, "countryPct": 13.6, "spanishPct": 0.5, "publicPct": 3.8, "talkPct": 15.4, "top40Num1WinPct": 12.5, "flags": ["CONCENTRATION_SEVERE"] },
+    "2020": { "hhi": 751, "chrBucketPct": 9.6, "countryPct": 13.1, "spanishPct": 0.3, "publicPct": 3.9, "talkPct": 12.3, "top40Num1WinPct": 0, "flags": ["CONCENTRATION_SEVERE"] },
+    "2026": { "hhi": 745, "chrBucketPct": 8.1, "countryPct": 12.7, "spanishPct": 0.5, "publicPct": 3.9, "talkPct": 10.8, "top40Num1WinPct": 0, "flags": ["CONCENTRATION_SEVERE"] }
+  },
+  "csv": "tmp/market_ecology_regression.csv"
+}

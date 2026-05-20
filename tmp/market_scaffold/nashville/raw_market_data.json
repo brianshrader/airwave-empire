@@ -1,0 +1,320 @@
+{
+  "id": "nashville",
+  "label": "Nashville",
+  "archetypeId": "southern_country",
+  "region": "South",
+  "callPrefix": "W",
+  "rankTier": "medium",
+  "revScale": 0.5,
+  "adxBonus": 0.03,
+  "timezone": "America/Chicago",
+  "pop": {
+    "12-17": 95,
+    "18-24": 110,
+    "25-34": 120,
+    "35-49": 150,
+    "50-64": 125,
+    "65+": 75
+  },
+  "blackPop": 0.18,
+  "hispPop1970": 0.008,
+  "hispPop2000": 0.045,
+  "hispPop2020": 0.095,
+  "churchGoing": 0.58,
+  "countryBonus": 0.18,
+  "urbanBonus": 0.02,
+  "culture": {
+    "country": 0.26,
+    "urban": 0.03,
+    "newsTalk": 0.04,
+    "religion": 0.1,
+    "spanish": 0.02
+  },
+  "eduIndex": 0.88,
+  "publicCivicIndex": 0.96,
+  "fmPenBias": -0.058,
+  "fmMusicFragMult": 0.96,
+  "spokenWordAmResilience": 1,
+  "heritageAmResilience": 1.06,
+  "countryAmHoldout": 1.2,
+  "sportsMarketIndex": 0.92,
+  "commuterStressIndex": 0.85,
+  "amFreqs": [
+    "650 AM",
+    "760 AM",
+    "800 AM",
+    "1000 AM",
+    "1040 AM",
+    "1160 AM",
+    "1240 AM",
+    "1300 AM",
+    "1400 AM",
+    "1470 AM",
+    "1510 AM",
+    "1560 AM"
+  ],
+  "fmFreqs": [
+    "88.3 FM",
+    "90.3 FM",
+    "91.1 FM",
+    "93.1 FM",
+    "94.1 FM",
+    "96.3 FM",
+    "97.9 FM",
+    "100.1 FM",
+    "100.3 FM",
+    "102.9 FM",
+    "103.3 FM",
+    "104.5 FM",
+    "105.1 FM",
+    "107.5 FM"
+  ],
+  "signalProfile": {
+    "am": {
+      "big": 3,
+      "medium": 5,
+      "small": 4
+    },
+    "fm": {
+      "major": 4,
+      "medium": 7,
+      "rimshot": 3
+    }
+  },
+  "signalInventory": {
+    "am1975": 10,
+    "fm1975": 4,
+    "total1975": 14,
+    "viable1975": 12,
+    "viable1983": 16,
+    "measurable2026": 28,
+    "inventoryExplained": true,
+    "notes": "Medium Nashville anchor: 10 AM / 4 FM in 1975; viable1983 ~16; measurable2026 ~28. Dial 12 AM + 14 FM (3 reserved-band). Gameplay MARKETS row uses thinner 9-FM dial — scaffold is ecology-depth superset."
+  },
+  "amSignalByFreq": {
+    "650 AM": {
+      "amClassHint": "clear",
+      "signalTier": "big",
+      "dayPowerKw": 50,
+      "nightPowerKw": 50
+    },
+    "760 AM": {
+      "amClassHint": "local",
+      "signalTier": "small",
+      "dayPowerKw": 5,
+      "nightPowerKw": 5
+    },
+    "800 AM": {
+      "amClassHint": "regional",
+      "signalTier": "medium",
+      "dayPowerKw": 25,
+      "nightPowerKw": 10
+    },
+    "1000 AM": {
+      "amClassHint": "clear",
+      "signalTier": "big",
+      "dayPowerKw": 50,
+      "nightPowerKw": 50
+    },
+    "1040 AM": {
+      "amClassHint": "clear",
+      "signalTier": "big",
+      "dayPowerKw": 50,
+      "nightPowerKw": 50
+    },
+    "1160 AM": {
+      "amClassHint": "regional",
+      "signalTier": "medium",
+      "dayPowerKw": 25,
+      "nightPowerKw": 10
+    },
+    "1240 AM": {
+      "amClassHint": "local",
+      "signalTier": "small",
+      "dayPowerKw": 5,
+      "nightPowerKw": 1,
+      "graveyardOverride": true
+    },
+    "1300 AM": {
+      "amClassHint": "regional",
+      "signalTier": "medium",
+      "dayPowerKw": 25,
+      "nightPowerKw": 10
+    },
+    "1400 AM": {
+      "amClassHint": "local",
+      "signalTier": "small",
+      "dayPowerKw": 5,
+      "nightPowerKw": 1,
+      "graveyardOverride": true
+    },
+    "1470 AM": {
+      "amClassHint": "local",
+      "signalTier": "small",
+      "dayPowerKw": 5,
+      "nightPowerKw": 5,
+      "directionalNight": true
+    },
+    "1510 AM": {
+      "amClassHint": "local",
+      "signalTier": "small",
+      "dayPowerKw": 5,
+      "nightPowerKw": 5
+    },
+    "1560 AM": {
+      "amClassHint": "local",
+      "signalTier": "small",
+      "dayPowerKw": 5,
+      "nightPowerKw": 5,
+      "directionalNight": true
+    }
+  },
+  "fmSignalByFreq": {
+    "88.3 FM": {
+      "reservedBand": true,
+      "nceEligible": true,
+      "formatHint": "CCM",
+      "signalTier": "medium",
+      "erpKw": 25,
+      "classHint": "C1"
+    },
+    "90.3 FM": {
+      "reservedBand": true,
+      "nceEligible": true,
+      "formatHint": "PUBLIC_ECLECTIC",
+      "signalTier": "medium",
+      "erpKw": 25,
+      "classHint": "C1"
+    },
+    "91.1 FM": {
+      "reservedBand": true,
+      "nceEligible": true,
+      "formatHint": "PUBLIC_NEWS",
+      "signalTier": "medium",
+      "erpKw": 25,
+      "classHint": "C1"
+    },
+    "93.1 FM": {
+      "signalTier": "major",
+      "erpKw": 100,
+      "classHint": "C0"
+    },
+    "94.1 FM": {
+      "signalTier": "major",
+      "erpKw": 100,
+      "classHint": "C0"
+    },
+    "96.3 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "97.9 FM": {
+      "signalTier": "major",
+      "erpKw": 100,
+      "classHint": "C0"
+    },
+    "100.1 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "100.3 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "102.9 FM": {
+      "signalTier": "major",
+      "erpKw": 100,
+      "classHint": "C0"
+    },
+    "103.3 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "104.5 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "105.1 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "107.5 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    }
+  },
+  "fmFacilityByFreq": {
+    "88.3 FM": "50kw",
+    "90.3 FM": "50kw",
+    "91.1 FM": "50kw",
+    "93.1 FM": "100kw",
+    "94.1 FM": "100kw",
+    "96.3 FM": "50kw",
+    "97.9 FM": "100kw",
+    "100.1 FM": "50kw",
+    "100.3 FM": "50kw",
+    "102.9 FM": "100kw",
+    "103.3 FM": "50kw",
+    "104.5 FM": "50kw",
+    "105.1 FM": "50kw",
+    "107.5 FM": "50kw"
+  },
+  "teams": [
+    {
+      "id": "sounds",
+      "name": "Nashville Hot Chicken",
+      "sport": "PRO_BASEBALL",
+      "introduced": 1978,
+      "baseFee": 28000,
+      "baseBonus": 0.006,
+      "contractYrs": 3
+    },
+    {
+      "id": "predators",
+      "name": "Nashville Catfish Rodeo",
+      "sport": "PRO_HOCKEY",
+      "introduced": 1998,
+      "baseFee": 115000,
+      "baseBonus": 0.014,
+      "contractYrs": 3
+    },
+    {
+      "id": "titans",
+      "name": "Tennessee Titan-Ups",
+      "sport": "PRO_FOOTBALL",
+      "introduced": 1997,
+      "baseFee": 340000,
+      "baseBonus": 0.028,
+      "contractYrs": 4
+    }
+  ],
+  "selectBlurb": "Grand Ole Opry country loyalty on AM and FM, gospel and CCM lanes stronger than coastal markets, thin Spanish, and medium-market dial depth without mega fragmentation.",
+  "ecologyNotes": "Medium southern_country stress-test: countryStrength and countryAmHoldout 1.2 dominate; low Hispanic and Spanish culture; modest FM fragmentation vs mega markets. Expanded reserved-band NCE vs legacy 9-FM row for medium-tier inventory targets.",
+  "sourceNotes": {
+    "rankTier": "medium tier scaffold stress-test",
+    "template": "southern_country",
+    "gameplay": "MARKETS.nashville playable row exists — scaffold draft for QA only"
+  },
+  "_scaffold": {
+    "version": 2,
+    "template": "southern_country",
+    "status": "draft",
+    "generatedAt": "2026-05-17T21:23:51.681Z",
+    "dialReviewed": false,
+    "signalReviewed": false,
+    "dataReviewed": false,
+    "ecologyRegressionRecorded": false,
+    "warnings": [
+      "DIAG_ONLY scaffold draft — do not change playable/billing/picker.",
+      "Dial/inventory tuned for tier stress-test; may exceed thin gameplay MARKETS dial where noted.",
+      "Set review flags after human FCC pass."
+    ]
+  }
+}

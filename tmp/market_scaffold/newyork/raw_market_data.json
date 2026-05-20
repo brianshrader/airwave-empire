@@ -1,0 +1,473 @@
+{
+  "id": "newyork",
+  "label": "New York",
+  "archetypeId": "northeast_mega",
+  "region": "Northeast",
+  "callPrefix": "W",
+  "rankTier": "mega",
+  "revScale": 6.8,
+  "adxBonus": 0.05,
+  "timezone": "America/New_York",
+  "pop": {
+    "12-17": 1050,
+    "18-24": 1000,
+    "25-34": 1100,
+    "35-49": 1400,
+    "50-64": 1200,
+    "65+": 750
+  },
+  "blackPop": 0.21,
+  "hispPop1970": 0.12,
+  "hispPop2000": 0.22,
+  "hispPop2020": 0.26,
+  "churchGoing": 0.42,
+  "countryBonus": 0,
+  "urbanBonus": 0.14,
+  "culture": {
+    "country": 0.008,
+    "urban": 0.16,
+    "newsTalk": 0.12,
+    "religion": 0.06,
+    "spanish": 0.14
+  },
+  "eduIndex": 1.22,
+  "publicCivicIndex": 1.08,
+  "fmPenBias": 0.055,
+  "fmMusicFragMult": 1.06,
+  "spokenWordAmResilience": 1.11,
+  "heritageAmResilience": 1.08,
+  "countryAmHoldout": 0.76,
+  "sportsMarketIndex": 1.05,
+  "commuterStressIndex": 1.08,
+  "amFreqs": [
+    "660 AM",
+    "710 AM",
+    "770 AM",
+    "880 AM",
+    "1000 AM",
+    "1010 AM",
+    "1050 AM",
+    "1130 AM",
+    "1200 AM",
+    "1280 AM",
+    "1380 AM",
+    "1500 AM",
+    "1560 AM",
+    "1600 AM"
+  ],
+  "fmFreqs": [
+    "88.1 FM",
+    "89.3 FM",
+    "90.3 FM",
+    "91.5 FM",
+    "92.1 FM",
+    "92.3 FM",
+    "92.5 FM",
+    "93.1 FM",
+    "93.5 FM",
+    "93.9 FM",
+    "94.1 FM",
+    "94.7 FM",
+    "95.1 FM",
+    "95.5 FM",
+    "95.9 FM",
+    "96.3 FM",
+    "97.1 FM",
+    "97.5 FM",
+    "98.1 FM",
+    "98.7 FM",
+    "99.1 FM",
+    "100.3 FM",
+    "101.1 FM",
+    "102.7 FM",
+    "103.5 FM",
+    "104.3 FM",
+    "105.1 FM",
+    "106.7 FM",
+    "107.1 FM",
+    "107.9 FM"
+  ],
+  "signalProfile": {
+    "am": {
+      "big": 4,
+      "medium": 6,
+      "small": 4
+    },
+    "fm": {
+      "major": 9,
+      "medium": 14,
+      "rimshot": 7
+    }
+  },
+  "signalInventory": {
+    "am1975": 11,
+    "fm1975": 9,
+    "total1975": 20,
+    "viable1975": 18,
+    "viable1983": 30,
+    "measurable2026": 48,
+    "inventoryExplained": true,
+    "notes": "Mega NYC anchor: 11 AM / 9 FM in 1975 (20 total); ~30 viable early-1980s; ~48 measurable 2026. Dial lists 14 AM + 30 FM (4 reserved-band 88.1–91.5). Aligns with gameplay MARKETS.newyork."
+  },
+  "amSignalByFreq": {
+    "660 AM": {
+      "amClassHint": "clear",
+      "signalTier": "big",
+      "dayPowerKw": 50,
+      "nightPowerKw": 50
+    },
+    "710 AM": {
+      "amClassHint": "local",
+      "signalTier": "small",
+      "dayPowerKw": 5,
+      "nightPowerKw": 5
+    },
+    "770 AM": {
+      "amClassHint": "regional",
+      "signalTier": "medium",
+      "dayPowerKw": 25,
+      "nightPowerKw": 10
+    },
+    "880 AM": {
+      "amClassHint": "clear",
+      "signalTier": "big",
+      "dayPowerKw": 50,
+      "nightPowerKw": 50
+    },
+    "1000 AM": {
+      "amClassHint": "regional",
+      "signalTier": "medium",
+      "dayPowerKw": 25,
+      "nightPowerKw": 10
+    },
+    "1010 AM": {
+      "amClassHint": "clear",
+      "signalTier": "big",
+      "dayPowerKw": 50,
+      "nightPowerKw": 50
+    },
+    "1050 AM": {
+      "amClassHint": "regional",
+      "signalTier": "medium",
+      "dayPowerKw": 25,
+      "nightPowerKw": 10
+    },
+    "1130 AM": {
+      "amClassHint": "regional",
+      "signalTier": "medium",
+      "dayPowerKw": 25,
+      "nightPowerKw": 10
+    },
+    "1200 AM": {
+      "amClassHint": "regional",
+      "signalTier": "medium",
+      "dayPowerKw": 25,
+      "nightPowerKw": 10
+    },
+    "1280 AM": {
+      "amClassHint": "regional",
+      "signalTier": "medium",
+      "dayPowerKw": 25,
+      "nightPowerKw": 10
+    },
+    "1380 AM": {
+      "amClassHint": "local",
+      "signalTier": "small",
+      "dayPowerKw": 5,
+      "nightPowerKw": 5
+    },
+    "1500 AM": {
+      "amClassHint": "clear",
+      "signalTier": "big",
+      "dayPowerKw": 50,
+      "nightPowerKw": 50
+    },
+    "1560 AM": {
+      "amClassHint": "local",
+      "signalTier": "small",
+      "dayPowerKw": 5,
+      "nightPowerKw": 5,
+      "directionalNight": true
+    },
+    "1600 AM": {
+      "amClassHint": "local",
+      "signalTier": "small",
+      "dayPowerKw": 5,
+      "nightPowerKw": 5
+    }
+  },
+  "fmSignalByFreq": {
+    "88.1 FM": {
+      "reservedBand": true,
+      "nceEligible": true,
+      "formatHint": "PUBLIC_NEWS",
+      "signalTier": "medium",
+      "erpKw": 25,
+      "classHint": "C1"
+    },
+    "89.3 FM": {
+      "reservedBand": true,
+      "nceEligible": true,
+      "formatHint": "PUBLIC_CLASSICAL",
+      "signalTier": "medium",
+      "erpKw": 25,
+      "classHint": "C1"
+    },
+    "90.3 FM": {
+      "reservedBand": true,
+      "nceEligible": true,
+      "formatHint": "PUBLIC_ECLECTIC",
+      "signalTier": "medium",
+      "erpKw": 25,
+      "classHint": "C1"
+    },
+    "91.5 FM": {
+      "reservedBand": true,
+      "nceEligible": true,
+      "formatHint": "PUBLIC_NEWS",
+      "signalTier": "medium",
+      "erpKw": 100,
+      "classHint": "C1"
+    },
+    "92.1 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "92.3 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "92.5 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "93.1 FM": {
+      "signalTier": "major",
+      "erpKw": 100,
+      "classHint": "C0"
+    },
+    "93.5 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "93.9 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "94.1 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "94.7 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "95.1 FM": {
+      "signalTier": "major",
+      "erpKw": 100,
+      "classHint": "C0"
+    },
+    "95.5 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "95.9 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "96.3 FM": {
+      "signalTier": "major",
+      "erpKw": 100,
+      "classHint": "C0"
+    },
+    "97.1 FM": {
+      "signalTier": "major",
+      "erpKw": 100,
+      "classHint": "C0"
+    },
+    "97.5 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "98.1 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "98.7 FM": {
+      "signalTier": "major",
+      "erpKw": 100,
+      "classHint": "C0"
+    },
+    "99.1 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "100.3 FM": {
+      "signalTier": "major",
+      "erpKw": 100,
+      "classHint": "C0"
+    },
+    "101.1 FM": {
+      "signalTier": "major",
+      "erpKw": 100,
+      "classHint": "C0"
+    },
+    "102.7 FM": {
+      "signalTier": "major",
+      "erpKw": 100,
+      "classHint": "C0"
+    },
+    "103.5 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "104.3 FM": {
+      "signalTier": "major",
+      "erpKw": 100,
+      "classHint": "C0"
+    },
+    "105.1 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "106.7 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "107.1 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "107.9 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 50,
+      "classHint": "C1"
+    }
+  },
+  "fmFacilityByFreq": {
+    "88.1 FM": "50kw",
+    "89.3 FM": "50kw",
+    "90.3 FM": "50kw",
+    "91.5 FM": "50kw",
+    "92.1 FM": "50kw",
+    "92.3 FM": "50kw",
+    "92.5 FM": "50kw",
+    "93.1 FM": "100kw",
+    "93.5 FM": "50kw",
+    "93.9 FM": "50kw",
+    "94.1 FM": "50kw",
+    "94.7 FM": "50kw",
+    "95.1 FM": "100kw",
+    "95.5 FM": "50kw",
+    "95.9 FM": "50kw",
+    "96.3 FM": "100kw",
+    "97.1 FM": "100kw",
+    "97.5 FM": "50kw",
+    "98.1 FM": "50kw",
+    "98.7 FM": "100kw",
+    "99.1 FM": "50kw",
+    "100.3 FM": "100kw",
+    "101.1 FM": "100kw",
+    "102.7 FM": "100kw",
+    "103.5 FM": "100kw",
+    "104.3 FM": "100kw",
+    "105.1 FM": "100kw",
+    "106.7 FM": "100kw",
+    "107.1 FM": "100kw",
+    "107.9 FM": "50kw"
+  },
+  "teams": [
+    {
+      "id": "yankees",
+      "name": "New York Cows",
+      "sport": "PRO_BASEBALL",
+      "introduced": 1970,
+      "baseFee": 520000,
+      "baseBonus": 0.03,
+      "contractYrs": 4
+    },
+    {
+      "id": "mets",
+      "name": "New York Pigeon Lords",
+      "sport": "PRO_BASEBALL",
+      "introduced": 1970,
+      "baseFee": 240000,
+      "baseBonus": 0.018,
+      "contractYrs": 3
+    },
+    {
+      "id": "giants_ny",
+      "name": "New York Commuter Rage",
+      "sport": "PRO_FOOTBALL",
+      "introduced": 1970,
+      "baseFee": 580000,
+      "baseBonus": 0.032,
+      "contractYrs": 4
+    },
+    {
+      "id": "jets",
+      "name": "New York Bodega Cats",
+      "sport": "PRO_FOOTBALL",
+      "introduced": 1970,
+      "baseFee": 380000,
+      "baseBonus": 0.026,
+      "contractYrs": 4
+    },
+    {
+      "id": "knicks",
+      "name": "New York Pizza Rats",
+      "sport": "PRO_BASKETBALL",
+      "introduced": 1970,
+      "baseFee": 220000,
+      "baseBonus": 0.02,
+      "contractYrs": 3
+    },
+    {
+      "id": "rangers",
+      "name": "New York Frost Giants",
+      "sport": "PRO_HOCKEY",
+      "introduced": 1970,
+      "baseFee": 180000,
+      "baseBonus": 0.016,
+      "contractYrs": 3
+    }
+  ],
+  "selectBlurb": "The #1 radio market — fragmented FM, talk-heavy AM heritage, modest country, strong urban and Spanish lanes, and deep public/NCE capacity without coastal-west secular shape.",
+  "ecologyNotes": "Mega northeast_mega stress-test: high fragmentation (fmMusicFragMult 1.06), strong spoken-word AM resilience, low countryStrength vs Nashville, urban + Spanish culture without Miami-level Hispanic dominance. Inventory anchors match scaffold SIGNAL_INVENTORY_ANCHORS (1975: 11+9, 1983: ~30, 2026: ~48).",
+  "sourceNotes": {
+    "rankTier": "mega tier scaffold stress-test",
+    "template": "northeast_mega",
+    "gameplay": "MARKETS.newyork playable row exists — scaffold draft for QA only"
+  },
+  "_scaffold": {
+    "version": 2,
+    "template": "northeast_mega",
+    "status": "draft",
+    "generatedAt": "2026-05-17T21:23:51.679Z",
+    "dialReviewed": false,
+    "signalReviewed": false,
+    "dataReviewed": false,
+    "ecologyRegressionRecorded": false,
+    "warnings": [
+      "DIAG_ONLY scaffold draft — do not change playable/billing/picker.",
+      "Dial/inventory tuned for tier stress-test; may exceed thin gameplay MARKETS dial where noted.",
+      "Set review flags after human FCC pass."
+    ]
+  }
+}

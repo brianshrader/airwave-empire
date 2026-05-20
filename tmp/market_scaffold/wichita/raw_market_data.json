@@ -1,0 +1,291 @@
+{
+  "id": "wichita",
+  "label": "Wichita",
+  "archetypeId": "midwest_legacy",
+  "region": "Midwest",
+  "callPrefix": "K",
+  "rankTier": "small",
+  "revScale": 0.32,
+  "adxBonus": 0.025,
+  "timezone": "America/Chicago",
+  "pop": {
+    "12-17": 52,
+    "18-24": 60,
+    "25-34": 66,
+    "35-49": 82,
+    "50-64": 68,
+    "65+": 42
+  },
+  "blackPop": 0.11,
+  "hispPop1970": 0.02,
+  "hispPop2000": 0.08,
+  "hispPop2020": 0.16,
+  "churchGoing": 0.52,
+  "countryBonus": 0.1,
+  "urbanBonus": 0.03,
+  "culture": {
+    "country": 0.14,
+    "urban": 0.04,
+    "newsTalk": 0.05,
+    "religion": 0.09,
+    "spanish": 0.04
+  },
+  "eduIndex": 0.9,
+  "publicCivicIndex": 0.94,
+  "fmPenBias": -0.04,
+  "fmMusicFragMult": 0.98,
+  "spokenWordAmResilience": 1.02,
+  "heritageAmResilience": 1.04,
+  "countryAmHoldout": 1.05,
+  "sportsMarketIndex": 0.72,
+  "commuterStressIndex": 0.78,
+  "amFreqs": [
+    "900 AM",
+    "1070 AM",
+    "1240 AM",
+    "1330 AM",
+    "1410 AM"
+  ],
+  "fmFreqs": [
+    "88.7 FM",
+    "91.5 FM",
+    "92.3 FM",
+    "93.9 FM",
+    "94.5 FM",
+    "95.1 FM",
+    "96.7 FM",
+    "97.3 FM",
+    "98.1 FM",
+    "99.9 FM",
+    "100.1 FM",
+    "101.9 FM",
+    "102.7 FM",
+    "103.1 FM",
+    "104.5 FM",
+    "105.3 FM",
+    "105.9 FM",
+    "106.5 FM",
+    "107.1 FM",
+    "107.9 FM"
+  ],
+  "signalProfile": {
+    "am": {
+      "big": 1,
+      "medium": 2,
+      "small": 2
+    },
+    "fm": {
+      "major": 3,
+      "medium": 13,
+      "rimshot": 4
+    }
+  },
+  "signalInventory": {
+    "am1975": 5,
+    "fm1975": 3,
+    "total1975": 8,
+    "viable1975": 7,
+    "viable1983": 12,
+    "measurable2026": 20,
+    "inventoryExplained": true,
+    "notes": "Small Wichita anchor: 5 AM / 3 FM in 1975 (matches gameplay five-AM constraint); viable1983 12; measurable2026 20. Dial 5 AM + 20 FM incl. 2 reserved-band."
+  },
+  "amSignalByFreq": {
+    "900 AM": {
+      "amClassHint": "regional",
+      "signalTier": "medium",
+      "dayPowerKw": 25,
+      "nightPowerKw": 10
+    },
+    "1070 AM": {
+      "amClassHint": "clear",
+      "signalTier": "big",
+      "dayPowerKw": 50,
+      "nightPowerKw": 50
+    },
+    "1240 AM": {
+      "amClassHint": "local",
+      "signalTier": "small",
+      "dayPowerKw": 10,
+      "nightPowerKw": 1,
+      "graveyardOverride": true
+    },
+    "1330 AM": {
+      "amClassHint": "regional",
+      "signalTier": "medium",
+      "dayPowerKw": 25,
+      "nightPowerKw": 10,
+      "directionalNight": true
+    },
+    "1410 AM": {
+      "amClassHint": "local",
+      "signalTier": "small",
+      "dayPowerKw": 5,
+      "nightPowerKw": 1,
+      "graveyardOverride": true
+    }
+  },
+  "fmSignalByFreq": {
+    "88.7 FM": {
+      "reservedBand": true,
+      "nceEligible": true,
+      "formatHint": "CCM",
+      "signalTier": "medium",
+      "erpKw": 25,
+      "classHint": "C1"
+    },
+    "91.5 FM": {
+      "reservedBand": true,
+      "nceEligible": true,
+      "formatHint": "PUBLIC_NEWS",
+      "signalTier": "medium",
+      "erpKw": 100,
+      "classHint": "C1"
+    },
+    "92.3 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "93.9 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "94.5 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "95.1 FM": {
+      "signalTier": "major",
+      "erpKw": 100,
+      "classHint": "C0"
+    },
+    "96.7 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "97.3 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "98.1 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "99.9 FM": {
+      "signalTier": "major",
+      "erpKw": 100,
+      "classHint": "C0"
+    },
+    "100.1 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "101.9 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "102.7 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "103.1 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "104.5 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "105.3 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "105.9 FM": {
+      "signalTier": "major",
+      "erpKw": 100,
+      "classHint": "C0"
+    },
+    "106.5 FM": {
+      "signalTier": "medium",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "107.1 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 50,
+      "classHint": "C1"
+    },
+    "107.9 FM": {
+      "signalTier": "rimshot",
+      "erpKw": 50,
+      "classHint": "C1"
+    }
+  },
+  "fmFacilityByFreq": {
+    "88.7 FM": "50kw",
+    "91.5 FM": "50kw",
+    "92.3 FM": "50kw",
+    "93.9 FM": "50kw",
+    "94.5 FM": "50kw",
+    "95.1 FM": "100kw",
+    "96.7 FM": "50kw",
+    "97.3 FM": "50kw",
+    "98.1 FM": "50kw",
+    "99.9 FM": "100kw",
+    "100.1 FM": "50kw",
+    "101.9 FM": "50kw",
+    "102.7 FM": "50kw",
+    "103.1 FM": "50kw",
+    "104.5 FM": "50kw",
+    "105.3 FM": "50kw",
+    "105.9 FM": "100kw",
+    "106.5 FM": "50kw",
+    "107.1 FM": "50kw",
+    "107.9 FM": "50kw"
+  },
+  "teams": [
+    {
+      "id": "wingnuts",
+      "name": "Wichita Wind Socks",
+      "sport": "PRO_BASEBALL",
+      "introduced": 1970,
+      "baseFee": 12000,
+      "baseBonus": 0.004,
+      "contractYrs": 3
+    }
+  ],
+  "selectBlurb": "Small Great Plains market — country and classic rock on AM heritage, thin Spanish, modest public/NCE, and AM-to-FM blueprint shifts on a tight five-stick AM dial.",
+  "ecologyNotes": "Small midwest_legacy stress-test: country-dominant culture, low fragmentation, AM holdout strong. Matches gameplay MARKETS.wichita five-AM dial with dialBpAmToFm FM depth. Inventory anchors: viable1983 12, measurable2026 20.",
+  "sourceNotes": {
+    "rankTier": "small tier scaffold stress-test",
+    "template": "midwest_legacy",
+    "gameplay": "MARKETS.wichita playable row exists — scaffold draft for QA only"
+  },
+  "_scaffold": {
+    "version": 2,
+    "template": "midwest_legacy",
+    "status": "draft",
+    "generatedAt": "2026-05-17T21:23:51.681Z",
+    "dialReviewed": false,
+    "signalReviewed": false,
+    "dataReviewed": false,
+    "ecologyRegressionRecorded": false,
+    "warnings": [
+      "DIAG_ONLY scaffold draft — do not change playable/billing/picker.",
+      "Dial/inventory tuned for tier stress-test; may exceed thin gameplay MARKETS dial where noted.",
+      "Set review flags after human FCC pass."
+    ]
+  }
+}
