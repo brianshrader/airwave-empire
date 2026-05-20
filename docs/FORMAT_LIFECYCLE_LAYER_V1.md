@@ -268,6 +268,7 @@ Market-specific overrides (optional, v1.1):
 | **2 — Alignment** | Tune **national JSON only** until CHR/Country/Public priors match Duncan anchors ± tolerance | None |
 | **3 — Opt-in shadow** | `MARKETS[id].formatLifecycleProfile` or `ecologyFlags.useFormatLifecycleV1` — compute prior alongside `appl`, log delta | None (logging) |
 | **4 — Appeal wiring** | Replace scattered sunset/CHR gates **per format family** behind flag | Controlled rollout |
+| **4a — Portland bridge (shipped)** | `formatLifecycleProfileRuntime.iife.js` → `profileCountryLifecycleMktFmtMult` on COUNTRY `mktFmt` for `marketId==='portland'` only; damp when profile `modernRetention` &lt; national | DIAG_ONLY market; no playable-list change |
 | **5 — Gen / AI** | Dial generation & AI format pick use priors | Full migration |
 
 **Harness commands (v1):**

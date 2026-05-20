@@ -772,6 +772,22 @@ function marketEcologySnapshotForGameplay(marketId,mkt,year,G){
     return null;
   }
 }
+/**
+ * Portland-only: formatLifecycle.v1.json COUNTRY.modernRetention damp in national decline phase.
+ * Requires `formatLifecycleProfileRuntime.iife.js` before legacy (sets __wlProfileCountryLifecycleMktFmtMult).
+ * Damp-only — no boost when profile retention >= national.
+ */
+function profileCountryLifecycleMktFmtMult(marketId,year){
+  const gl=typeof globalThis!=='undefined'?globalThis:typeof window!=='undefined'?window:null;
+  if(!gl||typeof gl.__wlProfileCountryLifecycleMktFmtMult!=='function')return 1;
+  const y=Math.round(Number(year))||1970;
+  try{
+    const m=Number(gl.__wlProfileCountryLifecycleMktFmtMult(String(marketId||''),y));
+    return Number.isFinite(m)&&m>0?m:1;
+  }catch(_e){
+    return 1;
+  }
+}
 function isChrLineageFormat(fmt){
   const f=String(fmt||'');
   if(f==='RHYTHMIC'||f==='HOT_AC'||f==='CHR')return true;
@@ -12606,6 +12622,7 @@ function appl(s,coh,G){
     if(marketId==='losangeles')mktFmt-=0.17;
     if(marketId==='newyork')mktFmt-=0.125;
     if(marketId==='chicago')mktFmt-=0.035;
+    mktFmt*=profileCountryLifecycleMktFmtMult(marketId,year);
   }
   if(['SPANISH','RHYTHMIC','URBAN_CONTEMP'].includes(s.format)){
     mktFmt+=(cult.spanish||0)*0.18+(mkt.urbanBonus||0)*0.12;

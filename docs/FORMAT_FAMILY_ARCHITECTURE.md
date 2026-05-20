@@ -147,8 +147,8 @@ The simulation currently encodes formats as **flat string IDs** (`station.format
 
 | Phase | Representation |
 |-------|----------------|
-| **Phase 1** | Single `SPANISH` umbrella |
-| **Future** | `SPANISH_CONTEMPORARY`, `REGIONAL_MEXICAN`, `SPANISH_ADULT_HITS`, `SPANISH_TROPICAL`, `SPANISH_NEWS_TALK`, `SPANISH_SPORTS`, `SPANISH_RELIGIOUS` *(IDs TBD; prefix convention in `scripts/spanishLanguageFormats.mjs`)* |
+| **Phase 1** | Single `SPANISH` umbrella in gameplay; **six diagnostic subtypes** in [`data/spanishFormats.v1.json`](../data/spanishFormats.v1.json) |
+| **Future** | See **[`docs/SPANISH_FORMAT_SPLIT_SPEC.md`](SPANISH_FORMAT_SPLIT_SPEC.md)** — split `FM{}` keys; religious → `BROKERED_PROGRAMMING` (not a Spanish subtype) |
 
 #### PUBLIC
 
@@ -560,7 +560,7 @@ flowchart LR
 | `URBAN_AC` | URBAN | Soul/UC bridge insufficient |
 | `HIP_HOP` | URBAN | 2015+ youth share failure mode |
 | `SOFT_AC` | ADULT | Only if pole split insufficient |
-| `SPANISH_*` | SPANISH | Miami/Phoenix scaffold sign-off |
+| `SPANISH_*` | SPANISH | [`SPANISH_FORMAT_SPLIT_SPEC.md`](SPANISH_FORMAT_SPLIT_SPEC.md) Phase 1–2 diag sign-off |
 
 **Save rules:** New IDs optional; old saves keep working via aliases in `migrateSave`.
 
@@ -580,14 +580,54 @@ flowchart LR
 
 ---
 
-## 9. Recommended artifacts (Phase 0 completion checklist)
+## 9. Phase 1 — Family bucket diagnostics (read-only)
+
+**Status:** Diagnostic harness only — does **not** change gameplay, appeal, AI, or station `format` fields.
+
+### What family buckets are
+
+A **family bucket** rolls up simulated **book share** (Spring book, period 1) from per-station `format` IDs into the canonical families in `data/formatFamilies.v1.json` (e.g. HITS, ADULT, URBAN). This is a **reporting layer** for market audits, not Nielsen targets or `appl()` priors.
+
+Important distinctions the harness prints side-by-side:
+
+| Metric | Meaning |
+|--------|---------|
+| **Family share** | Sum of shares for stations mapped via `formatFamilies.v1.json` (HOT_AC → **ADULT**, not HITS) |
+| **CHR-lineage share** | Gameplay bucket: TOP40 + CHR + RHYTHMIC + **HOT_AC** (`isChrLineageFormat`) |
+| **Leadership buckets** | Legacy QA buckets from `expectedFormatLeadershipProfile.mjs` (format-level, coarser) |
+
+### How to run
+
+```bash
+npm run lint:format-families
+npm run diag:format-family-buckets -- --markets=wichita,newyork,phoenix,portland --years=1995,2026 --runs=4
+```
+
+Options: `--markets=`, `--years=`, `--runs=`, `--seed=`, `--era=1970|1978|1985`, `--maxSteps=`, `--period=1`.
+
+Output:
+
+- Console report per market/year (family shares, #1-family histogram, top formats with family labels)
+- `tmp/format_family_buckets.json` (machine-readable aggregate)
+
+Helpers: `scripts/formatFamilyHelpers.mjs` (`familyForFormat`, `canonicalDisplayLabel`, `aggregateFmtSumToFamilyShares`, …).
+
+### Warning
+
+Family buckets are **diagnostic metadata**. Until Phase 3+ wiring, ecology regression, lifecycle priors, and AI may still use format IDs or legacy buckets (CHR bucket, leadership buckets) that disagree with taxonomy — especially **HOT_AC** (ADULT family vs CHR-lineage gameplay).
+
+---
+
+## 10. Recommended artifacts (Phase 0 completion checklist)
 
 - [x] `docs/FORMAT_FAMILY_ARCHITECTURE.md` (this file)
 - [x] `data/formatFamilies.v1.json` — machine-readable registry
 - [x] `scripts/lint-format-families.mjs` — FM{} / DRIFT / sunset / lifecycle coverage (`npm run lint:format-families`)
 - [x] Phase 1 lifecycle-family reconciliation — OLDIES, SOUL_RNB, PERSONALITY_TALK rows; HOT_AC cross-family lane documented
+- [x] `scripts/formatFamilyHelpers.mjs` + `npm run diag:format-family-buckets`
 - [x] Update `FORMAT_LIFECYCLE_LAYER_V1.md` §2.2 table with Phase 1 formats
-- [ ] Update `scripts/spanishLanguageFormats.mjs` header to point at this spec
+- [x] [`docs/SPANISH_FORMAT_SPLIT_SPEC.md`](SPANISH_FORMAT_SPLIT_SPEC.md) — Spanish split architecture (Phase 0)
+- [ ] Update `scripts/spanishLanguageFormats.mjs` header to point at Spanish split spec
 
 ---
 
