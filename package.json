@@ -66,6 +66,7 @@
     "lint:format-families": "node scripts/lint-format-families.mjs",
     "diag:format-family-buckets": "node scripts/diag-format-family-buckets.mjs",
     "diag:wichita-urban-overstatement": "node scripts/diag-wichita-urban-overstatement.mjs",
+    "diag:portland-urban-overstatement": "node scripts/diag-portland-urban-overstatement.mjs",
     "diag:portland-leadership-correction": "node scripts/diag-portland-leadership-correction.mjs",
     "diag:lifecycle-persona-wiring": "node scripts/diag-lifecycle-persona-wiring.mjs",
     "scaffold:market": "node scripts/scaffold-market.mjs",
