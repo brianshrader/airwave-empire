@@ -893,6 +893,11 @@ const PHOENIX_DIAG_TIER_INJECT_BLOCK_FMTS=['TOP40','HOT_AC','RHYTHMIC','URBAN_CO
 function phoenixDiagTierInjectFormatBlocked(fmt){
   return PHOENIX_DIAG_TIER_INJECT_BLOCK_FMTS.includes(fmt);
 }
+/** Phoenix diag — tier dial fill must not re-seed Classic Rock / Album Rock (Variant E rock trim). */
+const PHOENIX_DIAG_TIER_INJECT_SKIP_ROCK_FMTS=['CLASSIC_ROCK','ALBUM_ROCK'];
+function phoenixDiagTierInjectRockBlocked(fmt){
+  return PHOENIX_DIAG_TIER_INJECT_SKIP_ROCK_FMTS.includes(fmt);
+}
 /**
  * Opening OQ nudge at genMarket — Atlanta-shaped BP over-weights hits; boost adult FM / AM talk.
  * Works with `MARKET_BP_PATCH.phoenix` (fewer AM Top 40 anchors) and scheduled fragmentation launches.
@@ -905,8 +910,9 @@ function phoenixDiagOpeningOqMult(station){
     if(sig.type==='FM')return 0.84;
     if(sig.type==='AM')return 0.9;
   }
-  if(['CLASSIC_ROCK','ADULT_CONTEMP','ALBUM_ROCK','OLDIES','CLASSIC_HITS'].includes(station.format)&&sig.type==='FM'){
-    return 1.1;
+  if(station.format==='CLASSIC_ROCK'&&sig.type==='FM')return 0.88;
+  if(['ADULT_CONTEMP','ALBUM_ROCK','OLDIES','CLASSIC_HITS'].includes(station.format)&&sig.type==='FM'){
+    return 0.96;
   }
   if(station.format==='NEWS_TALK'&&sig.type==='AM')return 1.04;
   return 1;
@@ -4978,20 +4984,21 @@ const MARKETS={
     ],
     /**
      * Spanish launch realism — trait `spanishLanguageStrength` ≠ Nielsen share; gen inject alone
-     * leaves ~1–2 stations. Scheduled FM entrants build ~2.5 stations / ~9–10% book by 2026 (frozen tuning).
+     * leaves thin book. 1988+1994+2002 FM queue targets ~16–22% leadership bucket @2026 (diag tuning).
      */
     spanishLaunches:[
-      {id:'phoenix_spanish_1994_fm',y:1994,p:1,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
-      {id:'phoenix_spanish_2002_fm',y:2002,p:2,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'emerging'}},
+      {id:'phoenix_spanish_1988_fm',y:1988,p:1,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
+      {id:'phoenix_spanish_1994_fm',y:1994,p:1,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'strong'}},
+      {id:'phoenix_spanish_2002_fm',y:2002,p:2,bp:{type:'FM',fmt:'SPANISH',pw:'100kw',str:'moderate'}},
     ],
     /**
-     * 1990s fragmentation — adult FM (AC / classic rock / oldies) before 1995 book; dial often full
-     * by 1994 so late slots may not sign on (see `phoenixDiagTop40*` CHR correction helpers).
+     * 1990s fragmentation — adult FM (AC / classic rock / oldies) before 1995 book; 1991 slot is
+     * Spanish (not second strong CR) for Sunbelt Hispanic dial realism (see `phoenixDiagTop40*`).
      */
     fragmentationLaunches:[
       {id:'phoenix_frag_cr_1986',y:1986,p:1,bp:{type:'FM',fmt:'CLASSIC_ROCK',pw:'50kw',str:'moderate'}},
       {id:'phoenix_frag_ac_1988',y:1988,p:2,bp:{type:'FM',fmt:'ADULT_CONTEMP',pw:'50kw',str:'moderate'}},
-      {id:'phoenix_frag_cr2_1991',y:1991,p:1,bp:{type:'FM',fmt:'CLASSIC_ROCK',pw:'50kw',str:'strong'}},
+      {id:'phoenix_frag_spanish_1991',y:1991,p:1,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
       {id:'phoenix_frag_oldies_1993',y:1993,p:2,bp:{type:'FM',fmt:'OLDIES',pw:'50kw',str:'moderate'}},
     ],
   },
@@ -10514,14 +10521,14 @@ const MARKET_BP_PATCH={
     15:{fmt:'CLASSIC_ROCK',str:'emerging'},
     16:{fmt:'COUNTRY',str:'strong'},
   },
-  /** Phoenix diag — Duncan-style dial: fewer AM Top 40 anchors, more adult FM (see `phoenixDiagOpeningOqMult`). */
+  /** Phoenix diag — fewer AM Top 40 anchors; slot 15 AC; slot 18 HOT_AC not CR; tier inject skips CR/AOR (see `phoenixDiagOpeningOqMult`). */
   phoenix:{
     0:{fmt:'MOR',str:'strong'},
     1:{fmt:'NEWS_TALK',str:'moderate'},
     10:{fmt:'ADULT_STANDARDS',str:'moderate'},
-    15:{fmt:'CLASSIC_ROCK',str:'strong'},
+    15:{fmt:'ADULT_CONTEMP',str:'moderate'},
     16:{fmt:'ALBUM_ROCK',str:'moderate'},
-    18:{fmt:'CLASSIC_ROCK',str:'moderate'},
+    18:{fmt:'HOT_AC',str:'moderate'},
   },
 };
 function effectiveBpForMarket(bpIndex,marketId){
@@ -10815,6 +10822,7 @@ function injectTierMarketCommercialExtras(stations,dialCtx,bpYear,commercialTarg
     for(let tries=0;tries<INJECT.length;tries++){
       const cand=INJECT[(pi+tries)%INJECT.length];
       if(isPhoenixDiagMarket(dialCtx.marketId)&&phoenixDiagTierInjectFormatBlocked(cand.fmt))continue;
+      if(isPhoenixDiagMarket(dialCtx.marketId)&&phoenixDiagTierInjectRockBlocked(cand.fmt))continue;
       if(formatAllowedInMarket(cand.fmt,dialCtx.marketId,bpYear)){
         spec=cand;
         pi=(pi+tries+1)%INJECT.length;
@@ -12707,6 +12715,11 @@ function appl(s,coh,G){
     if(s.format==='SPANISH'||!urbanRhythmBlocked){
       mktFmt+=(cult.spanish||0)*0.18+(mkt.urbanBonus||0)*0.12;
       if(marketId==='losangeles')mktFmt+=0.065;
+      if(s.format==='SPANISH'&&isPhoenixDiagMarket(marketId)){
+        const h2020=mkt.hispPop2020??0;
+        const hCult=cult.spanish??0;
+        mktFmt+=0.03+0.04*Math.min(1,h2020/0.35)+0.03*Math.min(1,hCult/0.18);
+      }
       if(s.format==='SPANISH'&&isHighHispanicMarket(marketId)){
         const h2020=mkt.hispPop2020??0;
         const hCult=cult.spanish??0;
