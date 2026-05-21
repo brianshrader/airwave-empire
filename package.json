@@ -68,6 +68,7 @@
     "diag:wichita-urban-overstatement": "node scripts/diag-wichita-urban-overstatement.mjs",
     "diag:portland-urban-overstatement": "node scripts/diag-portland-urban-overstatement.mjs",
     "diag:portland-leadership-correction": "node scripts/diag-portland-leadership-correction.mjs",
+    "diag:phoenix-internal-playtest": "node scripts/diag-phoenix-internal-playtest-harness.mjs",
     "diag:lifecycle-persona-wiring": "node scripts/diag-lifecycle-persona-wiring.mjs",
     "scaffold:market": "node scripts/scaffold-market.mjs",
     "scaffold:market:check": "node scripts/scaffold-market.mjs --check",
