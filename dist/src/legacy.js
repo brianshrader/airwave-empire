@@ -282,6 +282,45 @@ function smallMarketUrbanRhythmicPlausibilityBlocked(marketId){
   const ub=typeof m.urbanBonus==='number'?m.urbanBonus:0;
   return bp<0.15&&ub<=0.05;
 }
+/** PNW / west_fm_fragmented markets with low Black pop — UC/Rhythmic not a credible commercial lane (Portland, Seattle). */
+function westFmFragmentedUrbanRhythmicPlausibilityBlocked(marketId){
+  const m=MARKETS[marketId||'']||{};
+  if(String(m.archetypeId||'')!=='west_fm_fragmented')return false;
+  const bp=typeof m.blackPop==='number'?m.blackPop:0.2;
+  const ub=typeof m.urbanBonus==='number'?m.urbanBonus:0;
+  return bp<0.15&&ub<=0.06;
+}
+function marketUrbanRhythmicPlausibilityBlocked(marketId){
+  return smallMarketUrbanRhythmicPlausibilityBlocked(marketId)||westFmFragmentedUrbanRhythmicPlausibilityBlocked(marketId);
+}
+/** FM-first substitute when rival/inject wanted UC/Rhythmic in a blocked west_fm_fragmented market (AAA/AC/Alt — not country/gospel). */
+function westFmFragmentedUrbanRhythmicSubstituteFmt(marketId,year,preferBand){
+  const y=year??1970;
+  const band=preferBand||'FM';
+  const ok=(f)=>{
+    const fd=FM[f];
+    if(!fd||fd.public||fd.institutional)return false;
+    if((fd.unlock??9999)>y)return false;
+    if(band==='FM'&&fd.fm===false)return false;
+    return true;
+  };
+  if(y>=2005&&ok('CLASSIC_HITS'))return 'CLASSIC_HITS';
+  if(y>=1991&&ok('ALT_ROCK'))return 'ALT_ROCK';
+  if(y>=1990&&ok('ADULT_CONTEMP'))return 'ADULT_CONTEMP';
+  if(y>=1985&&ok('AAA'))return 'AAA';
+  if(band==='AM'&&ok('NEWS_TALK'))return 'NEWS_TALK';
+  if(ok('ADULT_CONTEMP'))return 'ADULT_CONTEMP';
+  if(ok('AAA'))return 'AAA';
+  if(ok('ALT_ROCK'))return 'ALT_ROCK';
+  return 'ADULT_CONTEMP';
+}
+function marketUrbanRhythmicSubstituteFmt(marketId,year,preferBand){
+  if(smallMarketUrbanRhythmicPlausibilityBlocked(marketId))
+    return smallMarketUrbanRhythmicSubstituteFmt(marketId,year,preferBand);
+  if(westFmFragmentedUrbanRhythmicPlausibilityBlocked(marketId))
+    return westFmFragmentedUrbanRhythmicSubstituteFmt(marketId,year,preferBand);
+  return 'ADULT_CONTEMP';
+}
 /** FM-first substitute when rival/inject wanted UC/Rhythmic in a blocked small market (era + country/midwest lean). */
 function smallMarketUrbanRhythmicSubstituteFmt(marketId,year,preferBand){
   const m=MARKETS[marketId||'']||{};
@@ -310,7 +349,7 @@ function formatAllowedInMarket(fmt,marketId,year){
   const y=year??1970;
   if((fd.unlock??9999)>y)return false;
   if(fd.marketsOnly&&fd.marketsOnly.length&&!fd.marketsOnly.includes(marketId||''))return false;
-  if(smallMarketUrbanRhythmicPlausibilityBlocked(marketId)&&SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(fmt))return false;
+  if(marketUrbanRhythmicPlausibilityBlocked(marketId)&&SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(fmt))return false;
   return true;
 }
 /** Public (NCE), religious network, and future institutional NCE — no commercial terrestrial spot economics / ownership path. */
@@ -10758,7 +10797,7 @@ const TIER_MARKET_INJECT_BP=[
   {type:'FM',fmt:'PERSONALITY_TALK',pw:'25kw',str:'emerging'},
 ];
 function tierMarketInjectBpList(marketId){
-  if(!smallMarketUrbanRhythmicPlausibilityBlocked(marketId))return TIER_MARKET_INJECT_BP;
+  if(!marketUrbanRhythmicPlausibilityBlocked(marketId))return TIER_MARKET_INJECT_BP;
   return TIER_MARKET_INJECT_BP.filter(spec=>!SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(spec.fmt));
 }
 function injectTierMarketCommercialExtras(stations,dialCtx,bpYear,commercialTarget){
@@ -10786,8 +10825,8 @@ function injectTierMarketCommercialExtras(stations,dialCtx,bpYear,commercialTarg
     const freq=nextUnusedCommercialFreq(dialCtx,spec.type);
     if(!freq)break;
     let injFmt=spec.fmt;
-    if(smallMarketUrbanRhythmicPlausibilityBlocked(dialCtx.marketId)&&SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(injFmt))
-      injFmt=smallMarketUrbanRhythmicSubstituteFmt(dialCtx.marketId,bpYear,spec.type);
+    if(marketUrbanRhythmicPlausibilityBlocked(dialCtx.marketId)&&SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(injFmt))
+      injFmt=marketUrbanRhythmicSubstituteFmt(dialCtx.marketId,bpYear,spec.type);
     stations.push(mkStn({type:spec.type,fmt:injFmt,pw:spec.pw,str:spec.str},freq,bpYear));
   }
 }
@@ -12664,7 +12703,7 @@ function appl(s,coh,G){
     mktFmt*=profileCountryLifecycleMktFmtMult(marketId,year);
   }
   if(['SPANISH','RHYTHMIC','URBAN_CONTEMP'].includes(s.format)){
-    const urbanRhythmBlocked=smallMarketUrbanRhythmicPlausibilityBlocked(marketId);
+    const urbanRhythmBlocked=marketUrbanRhythmicPlausibilityBlocked(marketId);
     if(s.format==='SPANISH'||!urbanRhythmBlocked){
       mktFmt+=(cult.spanish||0)*0.18+(mkt.urbanBonus||0)*0.12;
       if(marketId==='losangeles')mktFmt+=0.065;
@@ -18288,8 +18327,8 @@ function applyEv(G,ev){
       let mechFmt=canonicalHitsFormatKey(fmt);
       if(!mechFmt||!FM[mechFmt])return;
       const mktId=G.marketId||ACTIVE_MARKET;
-      if(smallMarketUrbanRhythmicPlausibilityBlocked(mktId)&&SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(mechFmt))
-        mechFmt=smallMarketUrbanRhythmicSubstituteFmt(mktId,G.year,type);
+      if(marketUrbanRhythmicPlausibilityBlocked(mktId)&&SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(mechFmt))
+        mechFmt=marketUrbanRhythmicSubstituteFmt(mktId,G.year,type);
       if(!formatAllowedInMarket(mechFmt,mktId,G.year))return;
       const freq=nextUnusedCommercialFreq(G,type);
       if(!freq)return;
@@ -19924,8 +19963,8 @@ function genMarket(scenId){
         let mechFmt=canonicalHitsFormatKey(fmt);
         if(!mechFmt||!FM[mechFmt])return;
         const mktId=ACTIVE_MARKET;
-        if(smallMarketUrbanRhythmicPlausibilityBlocked(mktId)&&SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(mechFmt))
-          mechFmt=smallMarketUrbanRhythmicSubstituteFmt(mktId,startYear,type);
+        if(marketUrbanRhythmicPlausibilityBlocked(mktId)&&SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(mechFmt))
+          mechFmt=marketUrbanRhythmicSubstituteFmt(mktId,startYear,type);
         if(!formatAllowedInMarket(mechFmt,mktId,startYear))return;
         // Don't add if this format is already represented in market
         const already=stations.some(s=>s&&!s._bpSlotDeferred&&s.format===mechFmt&&!s.isPlayer);
