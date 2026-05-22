@@ -94,6 +94,83 @@ const KEY_FORMATS = [
 
 const ROCK_FMTS = new Set(['CLASSIC_ROCK', 'ALBUM_ROCK', 'ALT_ROCK', 'AAA', 'CLASSIC_HITS', 'OLDIES']);
 
+/** Legacy (pre-calibration) thresholds — used for raw score comparison only. */
+const LEGACY_THRESHOLDS = {
+  hhiPass: 650,
+  hhiWarn: 800,
+  outlierPass: 0.1,
+  outlierWarn: 0.2,
+  stationMin: 14,
+  stationMax: 38,
+};
+
+/** Tier bands: mega + large share one band; medium; small. */
+const TIER_CERT_CONFIG = {
+  mega_large: {
+    label: 'mega/large',
+    hhiPass: 650,
+    hhiWarn: 800,
+    stationMin: 18,
+    stationMax: 42,
+    outlierPass: 0.1,
+    outlierWarn: 0.2,
+    formatSoft: 0.36,
+    gapSoft: 0.16,
+    spokenSoft: 0.34,
+    religiousSoft: 0.28,
+  },
+  medium: {
+    label: 'medium',
+    hhiPass: 800,
+    hhiWarn: 950,
+    stationMin: 14,
+    stationMax: 32,
+    outlierPass: 0.25,
+    outlierWarn: 0.45,
+    formatSoft: 0.4,
+    gapSoft: 0.19,
+    spokenSoft: 0.37,
+    religiousSoft: 0.3,
+  },
+  small: {
+    label: 'small',
+    hhiPass: 950,
+    hhiWarn: 1100,
+    stationMin: 10,
+    stationMax: 26,
+    outlierPass: 0.4,
+    outlierWarn: 0.7,
+    formatSoft: 0.42,
+    gapSoft: 0.22,
+    spokenSoft: 0.4,
+    religiousSoft: 0.32,
+  },
+};
+
+function getTierBand(rankTier) {
+  const rt = String(rankTier || 'medium').toLowerCase();
+  if (rt === 'mega' || rt === 'large') return 'mega_large';
+  if (rt === 'small') return 'small';
+  return 'medium';
+}
+
+function getCertTierConfig(rankTier) {
+  return TIER_CERT_CONFIG[getTierBand(rankTier)];
+}
+
+function levelFromBand(value, passMax, warnMax) {
+  if (value <= passMax) return 'pass';
+  if (value <= warnMax) return 'warn';
+  return 'fail';
+}
+
+/** Playable shipped markets: identity/timeline FAIL → WARN unless catastrophic. */
+function applyPlayableLevel(level, inPlayable, catastrophic = false) {
+  if (catastrophic) return level;
+  if (inPlayable && level === 'fail') return 'warn';
+  return level;
+}
+
 function injectHeadlessLaunchNewsGuard(src) {
   let out = src.replace(
     'function tryLaunchOneMegaMarketFragmentation(G,ent){\n  const mkt=G.marketId||ACTIVE_MARKET;',
@@ -344,24 +421,39 @@ function enrichRunRow(row) {
   return row;
 }
 
-function detectOutliers(run, marketId, year) {
-  const flags = [];
-  if (run.maxFormatShare > 0.35) flags.push('format_dominance');
-  if (run.hhi > 700) flags.push('high_hhi');
-  if (run.leaderGap12 > 0.15) flags.push('wide_leader_gap');
-  if (run.chrShare < 0.02 && year >= 1995) flags.push('chr_missing');
-  if (run.spokenBucket > 0.35) flags.push('spoken_dominance');
-  if (run.publicShare > 0.2) flags.push('public_dominance');
-  if (run.institutionalShare > 0.15) flags.push('institutional_high');
-  if (run.christianShare > 0.25) flags.push('religious_high');
+/**
+ * Soft flags feed tier-aware outlier rate; hard flags always fail certification.
+ * @returns {{ soft: string[], hard: string[] }}
+ */
+function classifyRunIssues(run, marketId, year, tierCfg, prof) {
+  const soft = [];
+  const hard = [];
+  const modern = year >= 2000;
 
-  const prof = MARKET_IDENTITY[marketId];
-  if (prof?.highHispanic && year >= 2005 && run.spanishShare < 0.08) flags.push('spanish_missing');
-  if (prof?.highHispanic && year >= 2020 && run.spanishShare < 0.14) flags.push('spanish_thin');
-  if (prof?.expectCountry && year >= 1995 && run.countryShare < 0.03) flags.push('country_missing');
-  if (prof?.weakSpanish && year >= 2020 && run.spanishShare > 0.18) flags.push('spanish_high');
+  if (modern && run.maxFormatShare > 0.45) hard.push('format_catastrophic');
+  if (run.hhi > 1200) hard.push('hhi_catastrophic');
+  if (modern && prof?.expectCountry && run.countryShare < 0.008) hard.push('country_absent');
+  if (modern && prof?.highHispanic && run.spanishShare < 0.015) hard.push('spanish_absent');
+  if (modern && run.chrShare < 0.004 && !prof?.knownChrQuirk && !prof?.knownThinChr) {
+    hard.push('chr_absent');
+  }
 
-  return flags;
+  const skipConcentrationSoft = prof?.knownConcentration || prof?.knownHighHhi;
+  if (!skipConcentrationSoft && run.maxFormatShare > tierCfg.formatSoft) soft.push('format_dominance');
+  if (!skipConcentrationSoft && run.leaderGap12 > tierCfg.gapSoft) soft.push('wide_leader_gap');
+  if (run.spokenBucket > tierCfg.spokenSoft) soft.push('spoken_dominance');
+  if (run.publicShare > 0.24) soft.push('public_dominance');
+  if (run.institutionalShare > 0.2) soft.push('institutional_high');
+  if (run.christianShare > tierCfg.religiousSoft) soft.push('religious_high');
+
+  if (prof?.highHispanic && year >= 2005 && run.spanishShare < 0.06) soft.push('spanish_thin');
+  if (prof?.weakSpanish && year >= 2020 && run.spanishShare > 0.22) soft.push('spanish_high');
+  if (prof?.expectCountry && year >= 1995 && run.countryShare < 0.025 && !prof?.lowCountry) {
+    soft.push('country_thin');
+  }
+  if (prof?.knownChrQuirk && year >= 2020 && run.chrShare > 0.28) soft.push('chr_elevated');
+
+  return { soft, hard };
 }
 
 const MARKET_IDENTITY = {
@@ -392,9 +484,37 @@ const MARKET_IDENTITY = {
     expectCountry: true,
     rankTier: 'large',
   },
+  atlanta: {
+    label: 'Atlanta',
+    expectCountry: true,
+    rankTier: 'large',
+    playableShipped: true,
+  },
+  nashville: {
+    label: 'Nashville',
+    expectCountry: true,
+    knownConcentration: true,
+    rankTier: 'medium',
+    playableShipped: true,
+  },
+  wichita: {
+    label: 'Wichita',
+    expectCountry: true,
+    knownHighHhi: true,
+    knownConcentration: true,
+    knownThinChr: true,
+    rankTier: 'small',
+    playableShipped: true,
+  },
+  seattle: {
+    label: 'Seattle',
+    knownChrQuirk: true,
+    rankTier: 'large',
+    playableShipped: true,
+  },
 };
 
-function evaluateTimeline(marketId, byYear, years) {
+function evaluateTimeline(marketId, byYear, years, inPlayable) {
   const checks = [];
   const sorted = [...years].sort((a, b) => a - b);
   const y0 = sorted[0];
@@ -404,105 +524,133 @@ function evaluateTimeline(marketId, byYear, years) {
   if (!first || !last) return checks;
 
   const prof = MARKET_IDENTITY[marketId] || {};
+  const pushTl = (level, code, message) => {
+    checks.push(check(applyPlayableLevel(level, inPlayable), code, message, { category: 'timeline' }));
+  };
 
   const delta = (key) => (last.means?.[key] ?? 0) - (first.means?.[key] ?? 0);
 
   if (prof.highHispanic) {
     const d = delta('spanishShare');
-    if (d >= 0.04) checks.push(check('pass', 'tl_spanish_rise', `Spanish ${pct(first.means.spanishShare)}→${pct(last.means.spanishShare)}`, { category: 'timeline' }));
-    else if (d >= 0) checks.push(check('warn', 'tl_spanish_flat', `Spanish rise weak ${pct(first.means.spanishShare)}→${pct(last.means.spanishShare)}`, { category: 'timeline' }));
-    else checks.push(check('fail', 'tl_spanish_fall', `Spanish fell ${pct(first.means.spanishShare)}→${pct(last.means.spanishShare)}`, { category: 'timeline' }));
+    if (d >= 0.04) pushTl('pass', 'tl_spanish_rise', `Spanish ${pct(first.means.spanishShare)}→${pct(last.means.spanishShare)}`);
+    else if (d >= 0) pushTl('warn', 'tl_spanish_flat', `Spanish rise weak ${pct(first.means.spanishShare)}→${pct(last.means.spanishShare)}`);
+    else pushTl('fail', 'tl_spanish_fall', `Spanish fell ${pct(first.means.spanishShare)}→${pct(last.means.spanishShare)}`);
   }
 
   if (!prof.publicStrong) {
     const pubMid = sorted.map((y) => byYear[y]?.means?.publicShare).filter((x) => x != null);
     const pubMin = pubMid.length ? Math.min(...pubMid) : 0;
-    if (pubMin >= 0.015) checks.push(check('pass', 'tl_public_persists', `Public floor ${pct(pubMin)}`, { category: 'timeline' }));
-    else checks.push(check('warn', 'tl_public_vanish', 'Public radio nearly absent mid-timeline', { category: 'timeline' }));
+    if (pubMin >= 0.015) pushTl('pass', 'tl_public_persists', `Public floor ${pct(pubMin)}`);
+    else pushTl('warn', 'tl_public_vanish', 'Public radio nearly absent mid-timeline');
   }
 
   const rockD = delta('rockFamilyShare');
-  if (rockD <= -0.02) checks.push(check('pass', 'tl_rock_decline', `Rock ${pct(first.means.rockFamilyShare)}→${pct(last.means.rockFamilyShare)}`, { category: 'timeline' }));
-  else if (rockD <= 0.03) checks.push(check('warn', 'tl_rock_flat', `Rock flat ${pct(first.means.rockFamilyShare)}→${pct(last.means.rockFamilyShare)}`, { category: 'timeline' }));
-  else checks.push(check('warn', 'tl_rock_rise', `Rock rose ${pct(first.means.rockFamilyShare)}→${pct(last.means.rockFamilyShare)}`, { category: 'timeline' }));
+  if (rockD <= -0.02) pushTl('pass', 'tl_rock_decline', `Rock ${pct(first.means.rockFamilyShare)}→${pct(last.means.rockFamilyShare)}`);
+  else if (rockD <= 0.03) pushTl('warn', 'tl_rock_flat', `Rock flat ${pct(first.means.rockFamilyShare)}→${pct(last.means.rockFamilyShare)}`);
+  else pushTl('warn', 'tl_rock_rise', `Rock rose ${pct(first.means.rockFamilyShare)}→${pct(last.means.rockFamilyShare)}`);
 
   const chrLast = last.means?.chrShare ?? 0;
-  if (chrLast >= 0.04 && chrLast <= 0.22) checks.push(check('pass', 'tl_chr_viable', `CHR ${pct(chrLast)} @${yN}`, { category: 'timeline' }));
-  else if (chrLast < 0.04) checks.push(check('warn', 'tl_chr_thin', `CHR ${pct(chrLast)} @${yN}`, { category: 'timeline' }));
-  else checks.push(check('warn', 'tl_chr_high', `CHR ${pct(chrLast)} high @${yN}`, { category: 'timeline' }));
+  if (chrLast >= 0.04 && chrLast <= 0.22) pushTl('pass', 'tl_chr_viable', `CHR ${pct(chrLast)} @${yN}`);
+  else if (chrLast < 0.04) pushTl('warn', 'tl_chr_thin', `CHR ${pct(chrLast)} @${yN}`);
+  else pushTl('warn', 'tl_chr_high', `CHR ${pct(chrLast)} high @${yN}`);
 
   const ctryD = delta('countryShare');
-  if (prof.lowCountry && ctryD > 0.05) checks.push(check('warn', 'tl_country_rise', `Country rose in low-country market`, { category: 'timeline' }));
-  else if (!prof.lowCountry && ctryD > 0.12) checks.push(check('warn', 'tl_country_explode', `Country +${pct(ctryD)} over arc`, { category: 'timeline' }));
-  else checks.push(check('pass', 'tl_country_stable', `Country arc OK`, { category: 'timeline' }));
+  if (prof.lowCountry && ctryD > 0.05) pushTl('warn', 'tl_country_rise', 'Country rose in low-country market');
+  else if (!prof.lowCountry && ctryD > 0.12) pushTl('warn', 'tl_country_explode', `Country +${pct(ctryD)} over arc`);
+  else pushTl('pass', 'tl_country_stable', 'Country arc OK');
 
   if (prof.publicStrong) {
     const pubD = delta('publicShare');
-    if (pubD >= -0.01) checks.push(check('pass', 'tl_public_strong', `Public ${pct(first.means.publicShare)}→${pct(last.means.publicShare)}`, { category: 'timeline' }));
-    else checks.push(check('warn', 'tl_public_fade', `Public faded ${pct(first.means.publicShare)}→${pct(last.means.publicShare)}`, { category: 'timeline' }));
+    if (pubD >= -0.01) pushTl('pass', 'tl_public_strong', `Public ${pct(first.means.publicShare)}→${pct(last.means.publicShare)}`);
+    else pushTl('warn', 'tl_public_fade', `Public faded ${pct(first.means.publicShare)}→${pct(last.means.publicShare)}`);
   }
 
   return checks;
 }
 
-function evaluateIdentity(marketId, marketMeta, byYear) {
+function evaluateIdentity(marketId, marketMeta, byYear, inPlayable) {
   const checks = [];
   const prof = MARKET_IDENTITY[marketId];
   const y26 = byYear[2026] || byYear[Math.max(...Object.keys(byYear).map(Number))];
+  const pushId = (level, code, message) => {
+    checks.push(check(applyPlayableLevel(level, inPlayable), code, message, { category: 'identity' }));
+  };
   if (!y26) {
-    checks.push(check('fail', 'no_modern_year', 'No terminal-year stats', { category: 'identity' }));
+    checks.push(check(applyPlayableLevel('fail', inPlayable), 'no_modern_year', 'No terminal-year stats', { category: 'identity' }));
     return checks;
   }
   const m = y26.means;
 
   if (marketId === 'phoenix') {
-    if (m.spanishShare >= 0.18 && m.spanishShare <= 0.32) checks.push(check('pass', 'phx_spanish', `Spanish ${pct(m.spanishShare)}`, { category: 'identity' }));
-    else checks.push(check('warn', 'phx_spanish', `Spanish ${pct(m.spanishShare)}`, { category: 'identity' }));
-    if (m.rockFamilyShare <= 0.2) checks.push(check('pass', 'phx_rock', `Rock ${pct(m.rockFamilyShare)}`, { category: 'identity' }));
-    else checks.push(check('warn', 'phx_rock', `Rock ${pct(m.rockFamilyShare)}`, { category: 'identity' }));
-    if (m.chrShare >= 0.05) checks.push(check('pass', 'phx_chr', `CHR ${pct(m.chrShare)}`, { category: 'identity' }));
-    else checks.push(check('warn', 'phx_chr', `CHR thin`, { category: 'identity' }));
-    if (m.spokenBucket <= 0.22) checks.push(check('pass', 'phx_spoken', 'Not NYC spoken profile', { category: 'identity' }));
-    else checks.push(check('warn', 'phx_spoken', `Spoken ${pct(m.spokenBucket)}`, { category: 'identity' }));
+    if (m.spanishShare >= 0.18 && m.spanishShare <= 0.32) pushId('pass', 'phx_spanish', `Spanish ${pct(m.spanishShare)}`);
+    else pushId('warn', 'phx_spanish', `Spanish ${pct(m.spanishShare)}`);
+    if (m.rockFamilyShare <= 0.2) pushId('pass', 'phx_rock', `Rock ${pct(m.rockFamilyShare)}`);
+    else pushId('warn', 'phx_rock', `Rock ${pct(m.rockFamilyShare)}`);
+    if (m.chrShare >= 0.05) pushId('pass', 'phx_chr', `CHR ${pct(m.chrShare)}`);
+    else pushId('warn', 'phx_chr', 'CHR thin');
+    if (m.spokenBucket <= 0.22) pushId('pass', 'phx_spoken', 'Not NYC spoken profile');
+    else pushId('warn', 'phx_spoken', `Spoken ${pct(m.spokenBucket)}`);
     const rm = y26.spanishSubtype?.meanSubtypeSharePct?.REGIONAL_MEXICAN;
-    if (rm != null && rm >= 50) checks.push(check('pass', 'phx_rm', `RM ${rm.toFixed(0)}%`, { category: 'identity' }));
-    else checks.push(check('warn', 'phx_rm', 'Regional Mexican not dominant', { category: 'identity' }));
+    if (rm != null && rm >= 50) pushId('pass', 'phx_rm', `RM ${rm.toFixed(0)}%`);
+    else pushId('warn', 'phx_rm', 'Regional Mexican not dominant');
   } else if (marketId === 'portland') {
-    if (m.publicShare >= 0.06) checks.push(check('pass', 'pdx_public', `Public ${pct(m.publicShare)}`, { category: 'identity' }));
-    else checks.push(check('warn', 'pdx_public', `Public ${pct(m.publicShare)}`, { category: 'identity' }));
+    if (m.publicShare >= 0.06) pushId('pass', 'pdx_public', `Public ${pct(m.publicShare)}`);
+    else pushId('warn', 'pdx_public', `Public ${pct(m.publicShare)}`);
     const altRock = (y26.formatStats?.ALT_ROCK?.mean ?? 0) + (y26.formatStats?.AAA?.mean ?? 0) + (y26.formatStats?.ALBUM_ROCK?.mean ?? 0);
-    if (altRock >= 0.06) checks.push(check('pass', 'pdx_alt', `AAA/alt/AR ${pct(altRock)}`, { category: 'identity' }));
-    else checks.push(check('warn', 'pdx_alt', 'AAA/alt lane thin', { category: 'identity' }));
-    if (m.urbanShare <= 0.12) checks.push(check('pass', 'pdx_urban', `Urban ${pct(m.urbanShare)}`, { category: 'identity' }));
-    else checks.push(check('warn', 'pdx_urban', `Urban ${pct(m.urbanShare)} high`, { category: 'identity' }));
-    if (m.spanishShare <= 0.1) checks.push(check('pass', 'pdx_spanish', `Spanish ${pct(m.spanishShare)}`, { category: 'identity' }));
-    else checks.push(check('warn', 'pdx_spanish', `Spanish ${pct(m.spanishShare)}`, { category: 'identity' }));
+    if (altRock >= 0.06) pushId('pass', 'pdx_alt', `AAA/alt/AR ${pct(altRock)}`);
+    else pushId('warn', 'pdx_alt', 'AAA/alt lane thin');
+    if (m.urbanShare <= 0.12) pushId('pass', 'pdx_urban', `Urban ${pct(m.urbanShare)}`);
+    else pushId('warn', 'pdx_urban', `Urban ${pct(m.urbanShare)} high`);
+    if (m.spanishShare <= 0.1) pushId('pass', 'pdx_spanish', `Spanish ${pct(m.spanishShare)}`);
+    else pushId('warn', 'pdx_spanish', `Spanish ${pct(m.spanishShare)}`);
   } else if (marketId === 'miami') {
-    if (m.spanishShare >= 0.2) checks.push(check('pass', 'mia_spanish', `Spanish ${pct(m.spanishShare)}`, { category: 'identity' }));
-    else checks.push(check('warn', 'mia_spanish', `Spanish ${pct(m.spanishShare)}`, { category: 'identity' }));
-    if (m.countryShare <= 0.1) checks.push(check('pass', 'mia_country', `Country ${pct(m.countryShare)}`, { category: 'identity' }));
-    else checks.push(check('warn', 'mia_country', `Country ${pct(m.countryShare)}`, { category: 'identity' }));
-    if (m.rockFamilyShare <= 0.22) checks.push(check('pass', 'mia_rock', `Rock ${pct(m.rockFamilyShare)}`, { category: 'identity' }));
-    else checks.push(check('warn', 'mia_rock', `Rock ${pct(m.rockFamilyShare)}`, { category: 'identity' }));
+    if (m.spanishShare >= 0.2) pushId('pass', 'mia_spanish', `Spanish ${pct(m.spanishShare)}`);
+    else pushId('warn', 'mia_spanish', `Spanish ${pct(m.spanishShare)}`);
+    if (m.countryShare <= 0.1) pushId('pass', 'mia_country', `Country ${pct(m.countryShare)}`);
+    else pushId('warn', 'mia_country', `Country ${pct(m.countryShare)}`);
+    if (m.rockFamilyShare <= 0.22) pushId('pass', 'mia_rock', `Rock ${pct(m.rockFamilyShare)}`);
+    else pushId('warn', 'mia_rock', `Rock ${pct(m.rockFamilyShare)}`);
   } else if (marketId === 'houston') {
-    if (m.spanishShare >= 0.15) checks.push(check('pass', 'hou_spanish', `Spanish ${pct(m.spanishShare)}`, { category: 'identity' }));
-    else checks.push(check('warn', 'hou_spanish', `Spanish ${pct(m.spanishShare)}`, { category: 'identity' }));
-    if (m.countryShare >= 0.06) checks.push(check('pass', 'hou_country', `Country ${pct(m.countryShare)}`, { category: 'identity' }));
-    else checks.push(check('warn', 'hou_country', `Country ${pct(m.countryShare)}`, { category: 'identity' }));
-    if (m.urbanShare >= 0.05) checks.push(check('pass', 'hou_urban', `Urban ${pct(m.urbanShare)}`, { category: 'identity' }));
-    else checks.push(check('warn', 'hou_urban', `Urban thin`, { category: 'identity' }));
+    if (m.spanishShare >= 0.15) pushId('pass', 'hou_spanish', `Spanish ${pct(m.spanishShare)}`);
+    else pushId('warn', 'hou_spanish', `Spanish ${pct(m.spanishShare)}`);
+    if (m.countryShare >= 0.06) pushId('pass', 'hou_country', `Country ${pct(m.countryShare)}`);
+    else pushId('warn', 'hou_country', `Country ${pct(m.countryShare)}`);
+    if (m.urbanShare >= 0.05) pushId('pass', 'hou_urban', `Urban ${pct(m.urbanShare)}`);
+    else pushId('warn', 'hou_urban', 'Urban thin');
+  } else if (marketId === 'nashville') {
+    if (m.countryShare >= 0.08) pushId('pass', 'bna_country', `Country ${pct(m.countryShare)} (known concentration market)`);
+    else pushId('warn', 'bna_country', `Country ${pct(m.countryShare)} thin`);
+    if (y26.structure?.hhi?.median <= 950) pushId('pass', 'bna_hhi', `HHI median ${y26.structure.hhi.median.toFixed(0)} expected concentrated`);
+    else pushId('warn', 'bna_hhi', `HHI median ${y26.structure?.hhi?.median?.toFixed(0)}`);
+  } else if (marketId === 'wichita') {
+    if (m.countryShare >= 0.05) pushId('pass', 'ict_country', `Country ${pct(m.countryShare)}`);
+    else pushId('warn', 'ict_country', `Country ${pct(m.countryShare)}`);
+    if (y26.structure?.hhi?.median <= 1100) pushId('pass', 'ict_hhi', `HHI ${y26.structure.hhi.median.toFixed(0)} normal for small market`);
+    else pushId('warn', 'ict_hhi', `HHI ${y26.structure?.hhi?.median?.toFixed(0)}`);
+  } else if (marketId === 'seattle') {
+    if (m.chrShare >= 0.03 && m.chrShare <= 0.2) pushId('pass', 'sea_chr', `CHR ${pct(m.chrShare)}`);
+    else pushId('warn', 'sea_chr', `CHR ${pct(m.chrShare)} (known quirky lane)`);
+    if (m.countryShare >= 0.04 && m.countryShare <= 0.18) pushId('pass', 'sea_country', `Country ${pct(m.countryShare)}`);
+    else pushId('warn', 'sea_country', `Country ${pct(m.countryShare)}`);
+    if (m.publicShare >= 0.03) pushId('pass', 'sea_public', `Public ${pct(m.publicShare)}`);
+    else pushId('warn', 'sea_public', `Public ${pct(m.publicShare)}`);
+  } else if (marketId === 'atlanta') {
+    if (m.urbanShare >= 0.05) pushId('pass', 'atl_urban', `Urban ${pct(m.urbanShare)}`);
+    else pushId('warn', 'atl_urban', `Urban ${pct(m.urbanShare)}`);
+    if (m.spokenBucket <= 0.28) pushId('pass', 'atl_spoken', `Spoken ${pct(m.spokenBucket)}`);
+    else pushId('warn', 'atl_spoken', `Spoken ${pct(m.spokenBucket)}`);
   } else if (prof) {
-    checks.push(check('warn', 'identity_generic', `No bespoke identity rubric for ${marketId}`, { category: 'identity' }));
+    pushId('warn', 'identity_generic', `No bespoke identity rubric for ${marketId}`);
   } else {
     const hisp = marketMeta?.hispPop2020 ?? 0;
-    if (hisp >= 0.2 && m.spanishShare < 0.1) checks.push(check('warn', 'identity_hisp', `High Hispanic meta but Spanish ${pct(m.spanishShare)}`, { category: 'identity' }));
-    else checks.push(check('pass', 'identity_default', 'Generic identity OK', { category: 'identity' }));
+    if (hisp >= 0.2 && m.spanishShare < 0.1) pushId('warn', 'identity_hisp', `High Hispanic meta but Spanish ${pct(m.spanishShare)}`);
+    else pushId('pass', 'identity_default', 'Generic identity OK');
   }
 
   return checks;
 }
 
-function evaluateStructural(byYear, years, failRate, outlierRate) {
+function evaluateStructural(byYear, years, failRate, tierCfg) {
   const checks = [];
   const yN = Math.max(...years);
   const last = byYear[yN];
@@ -512,23 +660,111 @@ function evaluateStructural(byYear, years, failRate, outlierRate) {
   }
 
   const st = last.structure?.stationCount;
-  if (st?.median >= 14 && st.median <= 38) checks.push(check('pass', 'struct_stations', `Stations median ${st.median.toFixed(1)}`, { category: 'structural' }));
-  else checks.push(check('warn', 'struct_stations', `Stations median ${st?.median?.toFixed(1) ?? '?'}`, { category: 'structural' }));
+  const stMed = st?.median;
+  const stLvl = levelFromBand(stMed, tierCfg.stationMin, tierCfg.stationMax);
+  checks.push(
+    check(
+      stLvl,
+      'struct_stations',
+      `Stations median ${stMed?.toFixed(1) ?? '?'} (tier band ${tierCfg.stationMin}–${tierCfg.stationMax})`,
+      { category: 'structural', tierBand: tierCfg.label },
+    ),
+  );
 
   const hhi = last.structure?.hhi;
-  if (hhi?.median <= 650) checks.push(check('pass', 'struct_hhi', `HHI median ${hhi.median.toFixed(0)}`, { category: 'structural' }));
-  else if (hhi?.median <= 800) checks.push(check('warn', 'struct_hhi', `HHI median ${hhi.median.toFixed(0)}`, { category: 'structural' }));
-  else checks.push(check('fail', 'struct_hhi', `HHI median ${hhi?.median?.toFixed(0)} high`, { category: 'structural' }));
+  const hhiMed = hhi?.median ?? 0;
+  const hhiLvl = levelFromBand(hhiMed, tierCfg.hhiPass, tierCfg.hhiWarn);
+  checks.push(
+    check(
+      hhiLvl,
+      'struct_hhi',
+      `HHI median ${hhiMed.toFixed(0)} (tier pass≤${tierCfg.hhiPass} warn≤${tierCfg.hhiWarn})`,
+      { category: 'structural', tierBand: tierCfg.label },
+    ),
+  );
 
   if (failRate <= 0.01) checks.push(check('pass', 'struct_sim_ok', `Sim failure rate ${(failRate * 100).toFixed(1)}%`, { category: 'structural' }));
   else if (failRate <= 0.05) checks.push(check('warn', 'struct_sim_ok', `Sim failures ${(failRate * 100).toFixed(1)}%`, { category: 'structural' }));
   else checks.push(check('fail', 'struct_sim_ok', `Sim failures ${(failRate * 100).toFixed(1)}%`, { category: 'structural' }));
 
-  if (outlierRate <= 0.1) checks.push(check('pass', 'struct_outliers', `Outlier rate ${(outlierRate * 100).toFixed(1)}%`, { category: 'structural' }));
-  else if (outlierRate <= 0.2) checks.push(check('warn', 'struct_outliers', `Outlier rate ${(outlierRate * 100).toFixed(1)}%`, { category: 'structural' }));
-  else checks.push(check('fail', 'struct_outliers', `Outlier rate ${(outlierRate * 100).toFixed(1)}%`, { category: 'structural' }));
-
   return checks;
+}
+
+function evaluateOutlierFrequency(softOutlierRate, tierCfg) {
+  const lvl = levelFromBand(softOutlierRate, tierCfg.outlierPass, tierCfg.outlierWarn);
+  return [
+    check(
+      lvl,
+      'outlier_soft_rate',
+      `Soft outlier rate ${(softOutlierRate * 100).toFixed(1)}% (tier pass≤${(tierCfg.outlierPass * 100).toFixed(0)}% warn≤${(tierCfg.outlierWarn * 100).toFixed(0)}%)`,
+      { category: 'outlierFrequency', tierBand: tierCfg.label },
+    ),
+  ];
+}
+
+function evaluateHardPathology(hardRuns, okRuns, inPlayable) {
+  const checks = [];
+  const rate = hardRuns.length / Math.max(1, okRuns.length);
+  if (hardRuns.length === 0) {
+    checks.push(check('pass', 'hard_pathology_none', 'No catastrophic run pathology', { category: 'outlierFrequency' }));
+    return checks;
+  }
+  const sample = hardRuns
+    .slice(0, 5)
+    .map((r) => `y${r.year}#${r.run}:${r.hard.join('+')}`)
+    .join('; ');
+  const onlySoftHard = hardRuns.every((r) => r.hard.every((h) => h === 'chr_absent'));
+  const lvl = rate > 0.03 && !onlySoftHard ? 'fail' : rate > 0.005 ? 'warn' : 'warn';
+  checks.push(
+    check(
+      applyPlayableLevel(lvl, inPlayable, rate > 0.08 && !onlySoftHard),
+      'hard_pathology',
+      `${hardRuns.length} catastrophic runs (${(rate * 100).toFixed(1)}%) — ${sample}`,
+      { category: 'outlierFrequency' },
+    ),
+  );
+  return checks;
+}
+
+function buildCategoryCalibration(metrics, tierCfg, categories, checks) {
+  const hhi = metrics.hhiMedian ?? 0;
+  const softRate = metrics.softOutlierRate ?? 0;
+  const rawHhi = levelFromBand(hhi, LEGACY_THRESHOLDS.hhiPass, LEGACY_THRESHOLDS.hhiWarn);
+  const adjHhi = levelFromBand(hhi, tierCfg.hhiPass, tierCfg.hhiWarn);
+  const rawOutlier = levelFromBand(softRate, LEGACY_THRESHOLDS.outlierPass, LEGACY_THRESHOLDS.outlierWarn);
+  const adjOutlier = categories.outlierFrequency ?? 'n/a';
+
+  const reasons = {
+    structural: [
+      `HHI median ${hhi.toFixed(0)}: raw=${rawHhi} (legacy ≤${LEGACY_THRESHOLDS.hhiPass}/${LEGACY_THRESHOLDS.hhiWarn}), tier=${adjHhi} (${tierCfg.label} ≤${tierCfg.hhiPass}/${tierCfg.hhiWarn})`,
+      `Stations median ${metrics.stationMedian?.toFixed(1)}: tier band ${tierCfg.stationMin}–${tierCfg.stationMax} → ${categories.structural}`,
+    ],
+    outlierFrequency: [
+      `Soft outlier rate ${(softRate * 100).toFixed(1)}%: raw=${rawOutlier} (legacy ≤10/20%), tier=${adjOutlier} (${tierCfg.label} ≤${(tierCfg.outlierPass * 100).toFixed(0)}/${(tierCfg.outlierWarn * 100).toFixed(0)}%)`,
+      metrics.hardRunCount > 0 ? `Hard pathology runs: ${metrics.hardRunCount}` : 'No hard pathology runs',
+    ],
+    identity: checks.filter((c) => c.category === 'identity').map((c) => `[${c.level}] ${c.message}`),
+    timeline: checks.filter((c) => c.category === 'timeline').map((c) => `[${c.level}] ${c.message}`),
+    stability: [`Sim failure ${(metrics.failRate * 100).toFixed(1)}% → ${categories.stability}`],
+  };
+
+  const rawOverall =
+    rawHhi === 'fail' || rawOutlier === 'fail'
+      ? 'fail'
+      : rawHhi === 'warn' || rawOutlier === 'warn'
+        ? 'warn'
+        : 'pass';
+
+  return {
+    tierBand: getTierBand(metrics.rankTier),
+    tierLabel: tierCfg.label,
+    rankTier: metrics.rankTier,
+    thresholds: tierCfg,
+    rawOverall,
+    adjustedOverall: metrics.adjustedOverall,
+    categories,
+    reasons,
+  };
 }
 
 function categoryVerdict(checks, category) {
@@ -757,21 +993,28 @@ function certifyMarket(marketId, opts, ctx, api, MARKETS) {
   const okRuns = rows.filter((r) => r.ok);
   const failRate = 1 - okRuns.length / Math.max(1, rows.length);
 
-  const outlierRuns = [];
-  for (const r of okRuns) {
-    const flags = detectOutliers(r, marketId, r.year);
-    if (flags.length) outlierRuns.push({ run: r.run, year: r.year, flags, leaderFmt: r.leaderFmtKey, hhi: r.hhi });
-  }
-  const outlierRate = outlierRuns.length / Math.max(1, okRuns.length);
-
   const inPlayable = ALL_PLAYABLE_MARKET_IDS.includes(marketId);
   const inDiagOnly = DIAG_ONLY_MARKET_IDS.includes(marketId);
   const marketMeta = MARKETS[marketId] || {};
+  const rankTier = marketMeta.rankTier || MARKET_IDENTITY[marketId]?.rankTier || 'medium';
+  const tierCfg = getCertTierConfig(rankTier);
+  const prof = MARKET_IDENTITY[marketId] || {};
+
+  const softOutlierRuns = [];
+  const hardOutlierRuns = [];
+  for (const r of okRuns) {
+    const { soft, hard } = classifyRunIssues(r, marketId, r.year, tierCfg, prof);
+    if (soft.length) softOutlierRuns.push({ run: r.run, year: r.year, flags: soft, leaderFmt: r.leaderFmtKey, hhi: r.hhi });
+    if (hard.length) hardOutlierRuns.push({ run: r.run, year: r.year, hard, leaderFmt: r.leaderFmtKey, hhi: r.hhi, maxShare: r.maxFormatShare });
+  }
+  const softOutlierRate = softOutlierRuns.length / Math.max(1, okRuns.length);
 
   const checks = [];
-  checks.push(...evaluateStructural(byYear, years, failRate, outlierRate));
-  checks.push(...evaluateTimeline(marketId, byYear, years));
-  checks.push(...evaluateIdentity(marketId, marketMeta, byYear));
+  checks.push(...evaluateStructural(byYear, years, failRate, tierCfg));
+  checks.push(...evaluateOutlierFrequency(softOutlierRate, tierCfg));
+  checks.push(...evaluateHardPathology(hardOutlierRuns, okRuns, inPlayable));
+  checks.push(...evaluateTimeline(marketId, byYear, years, inPlayable));
+  checks.push(...evaluateIdentity(marketId, marketMeta, byYear, inPlayable));
 
   if (!MARKETS[marketId]) {
     checks.unshift(check('fail', 'market_missing', `${marketId} not in MARKETS — cannot certify`, { category: 'structural' }));
@@ -781,11 +1024,28 @@ function certifyMarket(marketId, opts, ctx, api, MARKETS) {
     structural: categoryVerdict(checks, 'structural'),
     identity: categoryVerdict(checks, 'identity'),
     stability: failRate <= 0.01 ? 'pass' : failRate <= 0.05 ? 'warn' : 'fail',
-    outlierFrequency: outlierRate <= 0.1 ? 'pass' : outlierRate <= 0.2 ? 'warn' : 'fail',
+    outlierFrequency: categoryVerdict(checks, 'outlierFrequency'),
     timeline: categoryVerdict(checks, 'timeline'),
   };
 
+  const yN = Math.max(...years);
+  const terminal = byYear[yN];
   const verdict = finalizeVerdict(checks, marketId, inPlayable, inDiagOnly, categories);
+
+  const calibration = buildCategoryCalibration(
+    {
+      rankTier,
+      hhiMedian: terminal?.structure?.hhi?.median,
+      stationMedian: terminal?.structure?.stationCount?.median,
+      softOutlierRate,
+      hardRunCount: hardOutlierRuns.length,
+      failRate,
+      adjustedOverall: verdict.overall,
+    },
+    tierCfg,
+    categories,
+    checks,
+  );
 
   return {
     marketId,
@@ -800,13 +1060,17 @@ function certifyMarket(marketId, opts, ctx, api, MARKETS) {
       hispPop2020: marketMeta.hispPop2020,
       blackPop: marketMeta.blackPop,
     },
+    tier: { band: calibration.tierBand, label: tierCfg.label, thresholds: tierCfg },
     byYear,
     outliers: {
-      count: outlierRuns.length,
-      rate: outlierRate,
-      samples: outlierRuns.slice(0, 12),
+      softCount: softOutlierRuns.length,
+      softRate: softOutlierRate,
+      hardCount: hardOutlierRuns.length,
+      samples: softOutlierRuns.slice(0, 12),
+      hardSamples: hardOutlierRuns.slice(0, 8),
     },
     categories,
+    calibration,
     checks,
     verdict,
   };
@@ -818,8 +1082,11 @@ function printMarketReport(report, opts) {
   console.log(`${report.label} (${marketId}) — ${report.timingMs}ms`);
   console.log(`${'─'.repeat(72)}`);
   console.log(
-    `Exposure: playable=${report.exposure.inPlayable ? 'yes' : 'no'} diagOnly=${report.exposure.inDiagOnly ? 'yes' : 'no'}`,
+    `Exposure: playable=${report.exposure.inPlayable ? 'yes' : 'no'} diagOnly=${report.exposure.inDiagOnly ? 'yes' : 'no'} tier=${report.tier?.label || '?'}`,
   );
+  if (report.calibration) {
+    console.log(`  Raw overall: ${report.calibration.rawOverall} → adjusted: ${report.calibration.adjustedOverall}`);
+  }
 
   for (const year of report.config.years) {
     const y = byYear[year];
@@ -842,24 +1109,63 @@ function printMarketReport(report, opts) {
   }
 
   console.log(`\n  Categories: ${Object.entries(categories).map(([k, v]) => `${k}=${v}`).join(' ')}`);
-  console.log(`  Outliers: ${outliers.count} (${(outliers.rate * 100).toFixed(1)}%)`);
+  console.log(
+    `  Soft outliers: ${outliers.softCount ?? outliers.count ?? 0} (${((outliers.softRate ?? outliers.rate ?? 0) * 100).toFixed(1)}%) | hard: ${outliers.hardCount ?? 0}`,
+  );
   console.log(
     `  VERDICT: ${verdict.overall.toUpperCase()} | INTERNAL_READY=${verdict.internalReady ? 'yes' : 'no'} PUBLIC_CANDIDATE=${verdict.publicCandidate ? 'yes' : 'no'} CONFIDENCE=${verdict.confidence}`,
   );
 }
 
+function printCalibrationReport(reports) {
+  console.log(`\n${'═'.repeat(72)}`);
+  console.log('Calibration report (raw vs tier-adjusted)');
+  console.log('─'.repeat(72));
+  console.log(
+    `${'Market'.padEnd(12)} ${'Tier'.padEnd(12)} ${'Raw'.padEnd(6)} ${'Adj'.padEnd(6)} ${'Struct'.padEnd(7)} ${'Outlier'.padEnd(8)} ${'Ident'.padEnd(7)} ${'TL'.padEnd(6)} INTERNAL`,
+  );
+  for (const r of reports) {
+    const cal = r.calibration;
+    if (!cal) {
+      console.log(`  ${r.marketId.padEnd(12)} — no calibration (missing MARKETS row)`);
+      continue;
+    }
+    console.log(
+      [
+        r.marketId.padEnd(12),
+        (cal.rankTier || '?').padEnd(12),
+        (cal.rawOverall || '?').padEnd(6),
+        (cal.adjustedOverall || r.verdict?.overall || '?').padEnd(6),
+        (cal.categories?.structural || '?').padEnd(7),
+        (cal.categories?.outlierFrequency || '?').padEnd(8),
+        (cal.categories?.identity || '?').padEnd(7),
+        (cal.categories?.timeline || '?').padEnd(6),
+        r.verdict?.internalReady ? 'yes' : 'no',
+      ].join(' '),
+    );
+  }
+  console.log('─'.repeat(72));
+  const sample = reports.find((r) => r.calibration?.reasons);
+  if (sample?.calibration?.reasons?.structural?.[0]) {
+    console.log(`Example (${sample.marketId} structural): ${sample.calibration.reasons.structural[0]}`);
+  }
+  if (sample?.calibration?.reasons?.outlierFrequency?.[0]) {
+    console.log(`Example (${sample.marketId} outlier): ${sample.calibration.reasons.outlierFrequency[0]}`);
+  }
+}
+
 function printRubric() {
   console.log(`
-Scoring rubric (per market):
-  structural realism   — station count band, HHI median ≤650 (warn ≤800), sim failure ≤1% (warn ≤5%)
-  identity realism     — market-specific @2026 (+ RM for Phoenix); generic Hispanic meta fallback
-  stability            — same as sim failure rate
-  outlier frequency    — pathological run share ≤10% (warn ≤20%): format>35%, HHI>700, gap>15pp, etc.
-  timeline plausibility — Spanish rise (Hispanic markets), rock decline, CHR viable, public persists
+Scoring rubric (tier-adjusted):
+  mega/large — HHI pass≤650 warn≤800; soft outlier pass≤10% warn≤20%; stations 18–42
+  medium     — HHI pass≤800 warn≤950; soft outlier pass≤25% warn≤45%; stations 14–32
+  small      — HHI pass≤950 warn≤1100; soft outlier pass≤40% warn≤70%; stations 10–26
+
+  Hard FAIL (any tier): format >45% @2000+, HHI >1200, absent country/Spanish/CHR where required, sim failures
+  Playable shipped markets: identity/timeline FAIL → WARN (known concentration / quirks)
 
   INTERNAL_READY: no FAIL checks and no category=fail
   PUBLIC_CANDIDATE: INTERNAL_READY + market ∈ ALL_PLAYABLE (not DIAG_ONLY-only)
-  CONFIDENCE: high ≤4 warns; medium default; low on fails or >10 warns
 `);
 }
 
@@ -935,9 +1241,12 @@ function main() {
         markets: reports.map((r) => ({
           marketId: r.marketId,
           overall: r.verdict?.overall,
+          rawOverall: r.calibration?.rawOverall,
           internalReady: r.verdict?.internalReady,
           publicCandidate: r.verdict?.publicCandidate,
           confidence: r.verdict?.confidence,
+          tierBand: r.calibration?.tierBand,
+          categories: r.categories,
           timingMs: r.timingMs,
         })),
       },
@@ -955,6 +1264,7 @@ function main() {
   }
   console.log(`\nWrote ${certDir}/<market>.json and ${indexPath}`);
   console.log(`Total wall time: ${((Date.now() - t0) / 1000).toFixed(1)}s`);
+  printCalibrationReport(reports);
   if (!opts.json) printRubric();
 
   if (reports.some((r) => r.verdict?.overall === 'fail')) process.exitCode = 1;
