@@ -888,8 +888,8 @@ function phoenixDiagMid90sEra(year){
   const y=Math.round(Number(year))||1970;
   return y>=1990&&y<=1999;
 }
-/** Tier dial fill at gen: skip national CHR injects; adult lanes come from `fragmentationLaunches` + BP patch. */
-const PHOENIX_DIAG_TIER_INJECT_BLOCK_FMTS=['TOP40','HOT_AC','RHYTHMIC','URBAN_CONTEMP'];
+/** Tier dial fill at gen: block HOT_AC/RHYTHMIC/URBAN; TOP40 allowed (CHR recovery K). */
+const PHOENIX_DIAG_TIER_INJECT_BLOCK_FMTS=['HOT_AC','RHYTHMIC','URBAN_CONTEMP'];
 function phoenixDiagTierInjectFormatBlocked(fmt){
   return PHOENIX_DIAG_TIER_INJECT_BLOCK_FMTS.includes(fmt);
 }
@@ -917,10 +917,10 @@ function phoenixDiagOpeningOqMult(station){
   if(station.format==='NEWS_TALK'&&sig.type==='AM')return 1.04;
   return 1;
 }
-/** appl() TOP40 appeal taper — mid-90s CHR bucket was ~2× Duncan; pairs with leader peakability trim below. */
+/** Phoenix TOP40 appeal — no mid-90s −18% taper (CHR recovery K; was over-suppressing post-1970 BP fix). */
 function phoenixDiagTop40HitsAppealMult(marketId,year){
-  if(!isPhoenixDiagMarket(marketId)||!phoenixDiagMid90sEra(year))return 1;
-  return 1-_smoothstep(1990,1996,Math.round(Number(year))||1970)*0.18;
+  if(!isPhoenixDiagMarket(marketId))return 1;
+  return 1;
 }
 /**
  * Post-recalc TOP40 leader trim profile — Phoenix uses 1990–1999; national mega/large path starts at 2000.
@@ -930,9 +930,7 @@ function phoenixDiagTop40LeaderTrimProfile(marketId,year){
   if(!isPhoenixDiagMarket(marketId)||!phoenixDiagMid90sEra(year)){
     return {active:false,bypassTraitGate:false,eraGate:0,maxTrimCap:0.11,extraTrimTerm:0};
   }
-  const y=Math.round(Number(year))||1970;
-  const eraGate=_smoothstep(1990,1996,y);
-  return {active:true,bypassTraitGate:true,eraGate,maxTrimCap:0.17,extraTrimTerm:0.028*eraGate};
+  return {active:false,bypassTraitGate:false,eraGate:0,maxTrimCap:0.11,extraTrimTerm:0};
 }
 
 /** Scale cohort listening shares + headline `rat.share` (preserves AQH consistency). */
@@ -965,7 +963,7 @@ function scaleStationListeningShares(s,G,station,factor,engageWeightedPop,habitD
 /**
  * Phase 3B-b: soften single-station TOP40 peak when ecology expects lower leader concentration.
  * Trims leader only; redistributes mass to other commercial stations (CHR bucket total ~unchanged).
- * Phoenix diag: `phoenixDiagTop40LeaderTrimProfile` enables this path in 1990–1999 (CHR over-dominance fix).
+ * Phoenix diag: `phoenixDiagTop40LeaderTrimProfile` inactive 1990–1999 (CHR recovery K; trim was over-suppressing).
  */
 function applyModernTop40LeaderPeakabilityTrim(stations,G,activeIx,engageWeightedPop,habitDenom){
   const y=Math.round(Number(G?.year))||1970;
@@ -4999,6 +4997,7 @@ const MARKETS={
       {id:'phoenix_frag_cr_1986',y:1986,p:1,bp:{type:'FM',fmt:'CLASSIC_ROCK',pw:'50kw',str:'moderate'}},
       {id:'phoenix_frag_ac_1988',y:1988,p:2,bp:{type:'FM',fmt:'ADULT_CONTEMP',pw:'50kw',str:'moderate'}},
       {id:'phoenix_frag_spanish_1991',y:1991,p:1,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
+      {id:'phoenix_frag_top40_1992',y:1992,p:2,bp:{type:'FM',fmt:'TOP40',pw:'50kw',str:'emerging'}},
       {id:'phoenix_frag_oldies_1993',y:1993,p:2,bp:{type:'FM',fmt:'OLDIES',pw:'50kw',str:'moderate'}},
     ],
   },
@@ -5078,12 +5077,42 @@ const ALL_PLAYABLE_MARKET_IDS=Object.freeze([
   'newyork','losangeles','chicago','seattle','sanfrancisco','atlanta','nashville','wichita',
 ]);
 const PHASE1_MARKET_IDS=ALL_PLAYABLE_MARKET_IDS;
+/** Dev/local playtest — MARKETS rows only; never add to ALL_PLAYABLE_MARKET_IDS or billing. */
+const DEV_PLAYTEST_MARKET_IDS=Object.freeze(['phoenix']);
 /** Mega markets only — benchmarks, ecology quick mode, mega-scoped FM rules. */
 const DEV_BENCHMARK_MEGA_MARKET_IDS=Object.freeze(['newyork','losangeles','chicago']);
+/** True on Vite dev (`main.js`) or localhost — unlocks DEV_PLAYTEST_MARKET_IDS in scenario picker. */
+function wlIsDevPlayEnvironment(){
+  try{
+    if(typeof window==='undefined')return false;
+    if(window.__WL_DEV_PLAYTEST_MARKETS__===true)return true;
+    const h=String(window.location?.hostname||'');
+    return h==='localhost'||h==='127.0.0.1';
+  }catch(_e){return false;}
+}
+function wlIsDevPlaytestMarketId(id){
+  return DEV_PLAYTEST_MARKET_IDS.includes(String(id||'').trim());
+}
+/** Scenario picker + solo MP host list (production = PHASE1 only). */
+function wlUiMarketIds(){
+  if(!wlIsDevPlayEnvironment())return Array.from(PHASE1_MARKET_IDS);
+  const extra=DEV_PLAYTEST_MARKET_IDS.filter(id=>MARKETS[id]&&!PHASE1_MARKET_IDS.includes(id));
+  return [...PHASE1_MARKET_IDS,...extra];
+}
+function wlIsPlayableMarketId(id){
+  const m=String(id||'').trim();
+  if(!m||!MARKETS[m])return false;
+  if(PHASE1_MARKET_IDS.includes(m))return true;
+  return wlIsDevPlayEnvironment()&&wlIsDevPlaytestMarketId(m);
+}
 if(typeof window!=='undefined'){
   window.ALL_PLAYABLE_MARKET_IDS=ALL_PLAYABLE_MARKET_IDS;
   window.PHASE1_MARKET_IDS=PHASE1_MARKET_IDS;
+  window.DEV_PLAYTEST_MARKET_IDS=DEV_PLAYTEST_MARKET_IDS;
   window.DEV_BENCHMARK_MEGA_MARKET_IDS=DEV_BENCHMARK_MEGA_MARKET_IDS;
+  window.wlIsDevPlayEnvironment=wlIsDevPlayEnvironment;
+  window.wlUiMarketIds=wlUiMarketIds;
+  window.wlIsPlayableMarketId=wlIsPlayableMarketId;
 }
 /**
  * Plan-only Phase-1 ids (billing). Use for multiplayer host market list — not trial solo commitment.
@@ -5106,10 +5135,17 @@ function wlGetAllowedPhase1MarketIds(){
     if(slug!=='trial_user')return base;
     const kind=wlTrialLockKind();
     const lock=typeof window!=='undefined'?String(window.__WL_TRIAL_LOCKED_MARKET_ID||'').trim():'';
-    if(kind==='solo'&&lock&&PHASE1_MARKET_IDS.includes(lock))return[lock];
+    if(kind==='solo'&&lock&&wlIsPlayableMarketId(lock))return[lock];
     if(kind==='tutorial')return['atlanta'];
     if(kind==='campaign')return[];
   }catch(_e){}
+  if(wlIsDevPlayEnvironment()){
+    const out=[...base];
+    for(const id of DEV_PLAYTEST_MARKET_IDS){
+      if(MARKETS[id]&&!out.includes(id))out.push(id);
+    }
+    return out;
+  }
   return base;
 }
 if(typeof window!=='undefined')window.wlGetAllowedPhase1MarketIds=wlGetAllowedPhase1MarketIds;
@@ -5148,8 +5184,8 @@ function wlMpRefreshMarketSelect(){
     const allow=new Set(allowed);
     const prev=sel.value;
     sel.innerHTML='';
-    PHASE1_MARKET_IDS.forEach(id=>{
-      if(!allow.has(id))return;
+    wlUiMarketIds().forEach(id=>{
+      if(!allow.has(id)&&!(wlIsDevPlayEnvironment()&&wlIsDevPlaytestMarketId(id)))return;
       const m=MARKETS[id];
       if(!m)return;
       const opt=document.createElement('option');
@@ -5720,7 +5756,7 @@ async function wlEnsureTrialMarketLockBeforeNewGame(scenId){
       body={kind:'tutorial'};
     }else{
       const mid=typeof _selectedMarket!=='undefined'&&_selectedMarket?_selectedMarket:(typeof ACTIVE_MARKET!=='undefined'?ACTIVE_MARKET:'atlanta');
-      if(!PHASE1_MARKET_IDS.includes(mid))return {ok:false,message:'Invalid market.'};
+      if(!wlIsPlayableMarketId(mid))return {ok:false,message:'Invalid market.'};
       const locked=typeof window!=='undefined'?String(window.__WL_TRIAL_LOCKED_MARKET_ID||'').trim():'';
       if(commitK==='solo'&&locked&&locked!==mid){
         return {ok:false,message:'Your signup trial is locked to one market. Resume your save for that city, or subscribe to play anywhere.'};
@@ -5771,7 +5807,7 @@ function wlTrialSaveResumeAllowed(payload){
   if(!k)return true;
   const G=payload&&payload.G;
   if(!G)return false;
-  const mid=(G.marketId&&PHASE1_MARKET_IDS.includes(G.marketId))?G.marketId:'atlanta';
+  const mid=(G.marketId&&wlIsPlayableMarketId(G.marketId))?G.marketId:'atlanta';
   const camp=payload&&payload.campaign;
   if(k==='solo'){
     const lock=String(window.__WL_TRIAL_LOCKED_MARKET_ID||'').trim();
@@ -6178,8 +6214,9 @@ function scaledScenarioCash(scBaseCash,marketId,startYearOpt){
   return Math.round((Number.isFinite(base)?base:0)*mktMult*eraMult);
 }
 function pickMarketPhase1(id){
-  if(!PHASE1_MARKET_IDS.includes(id))return;
-  if(!wlGetAllowedPhase1MarketIds().includes(id))return;
+  if(!wlIsPlayableMarketId(id))return;
+  const devOk=wlIsDevPlayEnvironment()&&wlIsDevPlaytestMarketId(id);
+  if(!wlGetAllowedPhase1MarketIds().includes(id)&&!devOk)return;
   _pendingScenId=null;
   _selectedMarket=id;
   ACTIVE_MARKET=id;
@@ -6192,12 +6229,13 @@ function pickMarketPhase1(id){
  * so assigning only `window.ACTIVE_MARKET` leaves genMarket() using whatever city the player last picked on the scenario screen.
  */
 function wlSetActiveMarket(id){
-  if(!id||!PHASE1_MARKET_IDS.includes(id))return;
+  if(!id||!wlIsPlayableMarketId(id))return;
   const allowed=wlGetAllowedPhase1MarketIds();
+  const devOk=wlIsDevPlayEnvironment()&&wlIsDevPlaytestMarketId(id);
   const campaignBypass=
     (typeof window!=='undefined'&&window._wlCampaignStarting)||
     (typeof G!=='undefined'&&G&&G.careerCampaign&&G.campaignAssignment&&G.campaignAssignment.marketId===id);
-  if(!allowed.includes(id)&&!campaignBypass)return;
+  if(!allowed.includes(id)&&!campaignBypass&&!devOk)return;
   _pendingScenId=null;
   _selectedMarket=id;
   ACTIVE_MARKET=id;
@@ -9479,7 +9517,7 @@ function mpStartGame() {
   const mSel = document.getElementById('mp-market');
   const _allowMp=typeof wlGetPlanPhase1MarketIds==='function'?wlGetPlanPhase1MarketIds():['atlanta'];
   let mid =
-    mSel && mSel.value && typeof PHASE1_MARKET_IDS !== 'undefined' && PHASE1_MARKET_IDS.includes(mSel.value)
+    mSel && mSel.value && typeof wlIsPlayableMarketId === 'function' && wlIsPlayableMarketId(mSel.value)
       ? mSel.value
       : 'atlanta';
   if(!_allowMp.includes(mid))mid=_allowMp[0]||'atlanta';
@@ -10521,10 +10559,11 @@ const MARKET_BP_PATCH={
     15:{fmt:'CLASSIC_ROCK',str:'emerging'},
     16:{fmt:'COUNTRY',str:'strong'},
   },
-  /** Phoenix diag — fewer AM Top 40 anchors; slot 15 AC; slot 18 HOT_AC not CR; tier inject skips CR/AOR (see `phoenixDiagOpeningOqMult`). */
+  /** Phoenix diag — AM Top 40 anchor (slot 0); softened second MOR (slot 4); slot 15 AC; slot 18 HOT_AC not CR; tier inject skips CR/AOR (see `phoenixDiagOpeningOqMult`). */
   phoenix:{
-    0:{fmt:'MOR',str:'strong'},
+    0:{fmt:'TOP40',str:'strong'},
     1:{fmt:'NEWS_TALK',str:'moderate'},
+    4:{fmt:'MOR',str:'moderate'},
     10:{fmt:'ADULT_STANDARDS',str:'moderate'},
     15:{fmt:'ADULT_CONTEMP',str:'moderate'},
     16:{fmt:'ALBUM_ROCK',str:'moderate'},
@@ -23440,7 +23479,7 @@ function initCore(){
     console.log('[Airwave Empire] hasSoloState:', hasSoloState);
     if(hasSoloState){
       const sm=g.marketId;
-      let mid=(sm&&PHASE1_MARKET_IDS.includes(sm))?sm:'atlanta';
+      let mid=(sm&&wlIsPlayableMarketId(sm))?sm:'atlanta';
       const planPick=wlGetPlanPhase1MarketIds();
       if(!planPick.includes(mid))mid=planPick.length?planPick[0]:'atlanta';
       _selectedMarket=mid;
@@ -23486,7 +23525,7 @@ function wlGoToScenarioSelectFromLogo(){
       try{_wlModalStack.length=0;}catch(_e){}
       syncModalBodyScrollLock();
       await wlMaybeConsumeSignupTrialWhenLeavingToMenu();
-      if(G?.marketId&&PHASE1_MARKET_IDS.includes(G.marketId)){
+      if(G?.marketId&&wlIsPlayableMarketId(G.marketId)){
         let mid=G.marketId;
         const plan=wlGetPlanPhase1MarketIds();
         if(!plan.includes(mid))mid=plan.length?plan[0]:'atlanta';
@@ -23518,11 +23557,11 @@ function openScenSelect(localSave, opts){
   const _allowMkt=wlGetAllowedPhase1MarketIds();
   const _allowMktSet=new Set(_allowMkt);
   const _fallbackMkt=_allowMkt.length?_allowMkt[0]:(_planMkt.length?_planMkt[0]:'atlanta');
-  if(!_selectedMarket||!PHASE1_MARKET_IDS.includes(_selectedMarket)){
+  if(!_selectedMarket||!wlIsPlayableMarketId(_selectedMarket)){
     _selectedMarket=_fallbackMkt;
     ACTIVE_MARKET=_fallbackMkt;
     syncMarketPopToMarket(_fallbackMkt);
-  }else if(!_allowMktSet.has(_selectedMarket)){
+  }else if(!_allowMktSet.has(_selectedMarket)&&!(wlIsDevPlayEnvironment()&&wlIsDevPlaytestMarketId(_selectedMarket))){
     _selectedMarket=_fallbackMkt;
     ACTIVE_MARKET=_fallbackMkt;
     syncMarketPopToMarket(_fallbackMkt);
@@ -23537,7 +23576,7 @@ function openScenSelect(localSave, opts){
   const saveLabel=localSave?.label||'';
   const saveScen=SC.find(s=>s.id===localSave?.G?.sc?.id);
   const rawSaveMkt=localSave?.G?.marketId;
-  const saveMarketId=(rawSaveMkt&&PHASE1_MARKET_IDS.includes(rawSaveMkt))?rawSaveMkt:'atlanta';
+  const saveMarketId=(rawSaveMkt&&wlIsPlayableMarketId(rawSaveMkt))?rawSaveMkt:'atlanta';
 
   const allowed=new Set(scenarioIdsForMarket(_selectedMarket));
   const mktLabel=(MARKETS[_selectedMarket]||MARKETS.atlanta).label;
@@ -23594,11 +23633,12 @@ function openScenSelect(localSave, opts){
     </div>`;
   }).join('');
 
-  const marketPicker=PHASE1_MARKET_IDS.map(id=>{
+  const marketPicker=wlUiMarketIds().map(id=>{
     const sel=_selectedMarket===id?' scen-mkt-on':'';
     const m=MARKETS[id];
-    if(_allowMktSet.has(id))
-      return `<button type="button" class="abt${sel}" style="font-size:13px;padding:6px 12px;letter-spacing:1px" onclick="pickMarketPhase1('${id}')">${m.label}</button>`;
+    const devTag=wlIsDevPlaytestMarketId(id)?' <span style="font-size:10px;color:var(--amb);letter-spacing:0.5px" title="Dev playtest market">DEV</span>':'';
+    if(_allowMktSet.has(id)||(wlIsDevPlayEnvironment()&&wlIsDevPlaytestMarketId(id)))
+      return `<button type="button" class="abt${sel}" style="font-size:13px;padding:6px 12px;letter-spacing:1px" onclick="pickMarketPhase1('${id}')">${m.label}${devTag}</button>`;
     let lockTitle=wlMarketPlanLockTitle(id,_planSlugScen);
     const _trialLock=typeof window!=='undefined'?String(window.__WL_TRIAL_LOCKED_MARKET_ID||'').trim():'';
     if(_planSlugScen==='trial_user'&&wlTrialLockKind()==='campaign')
