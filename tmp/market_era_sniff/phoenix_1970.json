@@ -1,0 +1,200 @@
+{
+  "recordedAt": "2026-05-31T19:01:33.101Z",
+  "marketId": "phoenix",
+  "label": "Phoenix",
+  "year": 1970,
+  "runs": 25,
+  "seed": 20260523,
+  "timingMs": 117,
+  "genPlan": {
+    "scenId": "under",
+    "startYear": 1970,
+    "needsSim": false
+  },
+  "mode": "gen_only",
+  "stats": {
+    "hitsPresenceRate": 1,
+    "morShareMedian": 0.16692087,
+    "top2Median": 0.43263505,
+    "musicShareMedian": 0.8466359199999999,
+    "spokenShareMedian": 0.12645809,
+    "hitLeaderRunnerUpRate": 0.52,
+    "leaderShareMedian": 0.2257635,
+    "commercialAmMedian": 7,
+    "commercialFmMedian": 1,
+    "nceMedian": 3,
+    "stationCountMedian": 11
+  },
+  "formatPresenceRates": {
+    "TOP40": 1,
+    "CHR": 0,
+    "HOT_AC": 0,
+    "ADULT_CONTEMP": 1,
+    "COUNTRY": 1,
+    "SOUL_RNB": 1,
+    "NEWS_TALK": 1,
+    "MOR": 1
+  },
+  "meanFormatShares": {
+    "TOP40": 0.19281052320000003,
+    "CHR": 0,
+    "HOT_AC": 0,
+    "ADULT_CONTEMP": 0.04189403800000001,
+    "COUNTRY": 0.217061706,
+    "SOUL_RNB": 0.19886009079999997,
+    "NEWS_TALK": 0.14763971239999998,
+    "MOR": 0.15094837240000003
+  },
+  "leaderFmtHistogram": {
+    "TOP40": 13,
+    "COUNTRY": 12
+  },
+  "checks": [
+    {
+      "level": "pass",
+      "code": "hits_present",
+      "message": "TOP40/CHR present in 100.0% of runs"
+    },
+    {
+      "level": "pass",
+      "code": "mor_share",
+      "message": "Median combined MOR share 16.7%"
+    },
+    {
+      "level": "pass",
+      "code": "top2_conc",
+      "message": "Median top-2 concentration 43.3%"
+    },
+    {
+      "level": "pass",
+      "code": "music_share",
+      "message": "Median music share 84.7%"
+    },
+    {
+      "level": "pass",
+      "code": "hit_leader",
+      "message": "Hit-radio #1/#2 in 52.0% of runs"
+    }
+  ],
+  "verdict": "pass",
+  "heuristics": {
+    "hitsPresencePass": 0.7,
+    "hitsPresenceWarn": 0.4,
+    "morCombinedPass": 0.35,
+    "morCombinedWarn": 0.5,
+    "top2Pass": 0.45,
+    "top2Warn": 0.6,
+    "musicPass": 0.6,
+    "musicWarn": 0.5,
+    "hitLeaderRunnerUpPass": 0.5,
+    "hitLeaderRunnerUpWarn": 0.3
+  },
+  "sampleFailures": [],
+  "sampleRuns": [
+    {
+      "run": 0,
+      "leaderFmt": "TOP40",
+      "leaderShare": 0.2257313,
+      "secondFmt": "COUNTRY",
+      "secondShare": 0.20688071,
+      "morShare": 0.16707955,
+      "hitsPresent": true,
+      "fmtSum": {
+        "TOP40": 0.2257313,
+        "COUNTRY": 0.20688071,
+        "SOUL_RNB": 0.18816137,
+        "MOR": 0.16707955,
+        "NEWS_TALK": 0.12645809,
+        "ADULT_CONTEMP": 0.03520745,
+        "GOSPEL": 0.02357554,
+        "PUBLIC_NEWS": 0.01123817,
+        "PUBLIC_ECLECTIC": 0.00925303,
+        "PUBLIC_CLASSICAL": 0.00641478
+      }
+    },
+    {
+      "run": 1,
+      "leaderFmt": "COUNTRY",
+      "leaderShare": 0.22971964,
+      "secondFmt": "SOUL_RNB",
+      "secondShare": 0.20980817,
+      "morShare": 0.12446031,
+      "hitsPresent": true,
+      "fmtSum": {
+        "COUNTRY": 0.22971964,
+        "SOUL_RNB": 0.20980817,
+        "TOP40": 0.15925528,
+        "MOR": 0.12446031,
+        "NEWS_TALK": 0.1848141,
+        "ADULT_CONTEMP": 0.03730895,
+        "GOSPEL": 0.02692511,
+        "PUBLIC_NEWS": 0.01240595,
+        "PUBLIC_ECLECTIC": 0.00896289,
+        "PUBLIC_CLASSICAL": 0.00633961
+      }
+    },
+    {
+      "run": 2,
+      "leaderFmt": "TOP40",
+      "leaderShare": 0.22077332,
+      "secondFmt": "COUNTRY",
+      "secondShare": 0.20452186,
+      "morShare": 0.18875697,
+      "hitsPresent": true,
+      "fmtSum": {
+        "TOP40": 0.22077332,
+        "COUNTRY": 0.20452186,
+        "MOR": 0.18875697,
+        "SOUL_RNB": 0.18809199,
+        "NEWS_TALK": 0.11127871,
+        "ADULT_CONTEMP": 0.03881212,
+        "GOSPEL": 0.02131179,
+        "PUBLIC_NEWS": 0.01119112,
+        "PUBLIC_ECLECTIC": 0.00882315,
+        "PUBLIC_CLASSICAL": 0.00643895
+      }
+    },
+    {
+      "run": 3,
+      "leaderFmt": "COUNTRY",
+      "leaderShare": 0.22994165,
+      "secondFmt": "SOUL_RNB",
+      "secondShare": 0.21139679,
+      "morShare": 0.11735959,
+      "hitsPresent": true,
+      "fmtSum": {
+        "COUNTRY": 0.22994165,
+        "SOUL_RNB": 0.21139679,
+        "TOP40": 0.16198031,
+        "MOR": 0.11735959,
+        "NEWS_TALK": 0.17315828,
+        "ADULT_CONTEMP": 0.04936178,
+        "GOSPEL": 0.02507294,
+        "PUBLIC_NEWS": 0.01334792,
+        "PUBLIC_ECLECTIC": 0.01083151,
+        "PUBLIC_CLASSICAL": 0.00754923
+      }
+    },
+    {
+      "run": 4,
+      "leaderFmt": "TOP40",
+      "leaderShare": 0.22128389,
+      "secondFmt": "COUNTRY",
+      "secondShare": 0.20597844,
+      "morShare": 0.17406076,
+      "hitsPresent": true,
+      "fmtSum": {
+        "TOP40": 0.22128389,
+        "COUNTRY": 0.20597844,
+        "SOUL_RNB": 0.18724273,
+        "MOR": 0.17406076,
+        "NEWS_TALK": 0.12440379,
+        "ADULT_CONTEMP": 0.03885985,
+        "GOSPEL": 0.02301535,
+        "PUBLIC_NEWS": 0.01019275,
+        "PUBLIC_ECLECTIC": 0.00893499,
+        "PUBLIC_CLASSICAL": 0.00602744
+      }
+    }
+  ]
+}

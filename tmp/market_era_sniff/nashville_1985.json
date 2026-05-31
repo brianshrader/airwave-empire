@@ -1,0 +1,180 @@
+{
+  "recordedAt": "2026-05-31T19:04:06.302Z",
+  "marketId": "nashville",
+  "label": "Nashville",
+  "year": 1985,
+  "runs": 25,
+  "seed": 20260523,
+  "timingMs": 439,
+  "genPlan": {
+    "scenId": "under",
+    "startYear": 1970,
+    "needsSim": false
+  },
+  "mode": "gen_only",
+  "stats": {
+    "hitsPresenceRate": 1,
+    "morShareMedian": 0,
+    "top2Median": 0.24218652000000002,
+    "musicShareMedian": 0.7916976200000001,
+    "spokenShareMedian": 0.1528599,
+    "hitLeaderRunnerUpRate": 0.92,
+    "leaderShareMedian": 0.12986369,
+    "commercialAmMedian": 12,
+    "commercialFmMedian": 9,
+    "nceMedian": 2,
+    "stationCountMedian": 23
+  },
+  "formatPresenceRates": {
+    "TOP40": 1,
+    "CHR": 0,
+    "HOT_AC": 0,
+    "ADULT_CONTEMP": 1,
+    "COUNTRY": 1,
+    "SOUL_RNB": 1,
+    "NEWS_TALK": 1,
+    "MOR": 0
+  },
+  "meanFormatShares": {
+    "TOP40": 0.18987786040000004,
+    "CHR": 0,
+    "HOT_AC": 0,
+    "ADULT_CONTEMP": 0.10278582,
+    "COUNTRY": 0.15604841919999998,
+    "SOUL_RNB": 0.04766862839999999,
+    "NEWS_TALK": 0.13716313080000003,
+    "MOR": 0
+  },
+  "leaderFmtHistogram": {
+    "NEWS_TALK": 13,
+    "TOP40": 11,
+    "ADULT_CONTEMP": 1
+  },
+  "checks": [
+    {
+      "level": "warn",
+      "code": "no_heuristics",
+      "message": "No era sniff rubric for this market/year (reporting metrics only)"
+    }
+  ],
+  "verdict": "warn",
+  "heuristics": null,
+  "sampleFailures": [],
+  "sampleRuns": [
+    {
+      "run": 0,
+      "leaderFmt": "NEWS_TALK",
+      "leaderShare": 0.13279392,
+      "secondFmt": "ADULT_CONTEMP",
+      "secondShare": 0.11006454,
+      "morShare": 0,
+      "hitsPresent": true,
+      "fmtSum": {
+        "NEWS_TALK": 0.15783947,
+        "ADULT_CONTEMP": 0.11006454,
+        "TOP40": 0.16855562999999998,
+        "BEAUTIFUL_MUSIC": 0.08347488,
+        "COUNTRY": 0.14131744000000002,
+        "ALBUM_ROCK": 0.1391248,
+        "URBAN_CONTEMP": 0.0516661,
+        "CLASSIC_ROCK": 0.04051759,
+        "PUBLIC_NEWS": 0.03721318,
+        "SOUL_RNB": 0.04663229,
+        "PUBLIC_CLASSICAL": 0.01686174,
+        "GOSPEL": 0.00673234
+      }
+    },
+    {
+      "run": 1,
+      "leaderFmt": "TOP40",
+      "leaderShare": 0.12068267,
+      "secondFmt": "ADULT_CONTEMP",
+      "secondShare": 0.09433492,
+      "morShare": 0,
+      "hitsPresent": true,
+      "fmtSum": {
+        "TOP40": 0.21436358,
+        "ADULT_CONTEMP": 0.09433492,
+        "NEWS_TALK": 0.10875454999999999,
+        "BEAUTIFUL_MUSIC": 0.07792208,
+        "COUNTRY": 0.16397272,
+        "ALBUM_ROCK": 0.13890186999999998,
+        "URBAN_CONTEMP": 0.04587499,
+        "CLASSIC_ROCK": 0.04332119,
+        "PUBLIC_NEWS": 0.03911676,
+        "SOUL_RNB": 0.049331959999999994,
+        "PUBLIC_CLASSICAL": 0.01803233,
+        "GOSPEL": 0.00607306
+      }
+    },
+    {
+      "run": 2,
+      "leaderFmt": "NEWS_TALK",
+      "leaderShare": 0.13353999,
+      "secondFmt": "TOP40",
+      "secondShare": 0.1133602,
+      "morShare": 0,
+      "hitsPresent": true,
+      "fmtSum": {
+        "NEWS_TALK": 0.1600124,
+        "TOP40": 0.17396156,
+        "ADULT_CONTEMP": 0.09897706,
+        "COUNTRY": 0.15086795,
+        "BEAUTIFUL_MUSIC": 0.07290763,
+        "ALBUM_ROCK": 0.13877867,
+        "URBAN_CONTEMP": 0.05055797,
+        "CLASSIC_ROCK": 0.04820211,
+        "PUBLIC_NEWS": 0.03707378,
+        "SOUL_RNB": 0.044792320000000004,
+        "PUBLIC_CLASSICAL": 0.01717297,
+        "GOSPEL": 0.0066956
+      }
+    },
+    {
+      "run": 3,
+      "leaderFmt": "ADULT_CONTEMP",
+      "leaderShare": 0.1153534,
+      "secondFmt": "TOP40",
+      "secondShare": 0.10842283,
+      "morShare": 0,
+      "hitsPresent": true,
+      "fmtSum": {
+        "ADULT_CONTEMP": 0.1153534,
+        "TOP40": 0.20189187,
+        "NEWS_TALK": 0.11348027,
+        "COUNTRY": 0.15756119000000002,
+        "BEAUTIFUL_MUSIC": 0.06921204,
+        "ALBUM_ROCK": 0.14067183,
+        "URBAN_CONTEMP": 0.05210415,
+        "CLASSIC_ROCK": 0.04177073,
+        "PUBLIC_NEWS": 0.03802448,
+        "SOUL_RNB": 0.046297450000000004,
+        "PUBLIC_CLASSICAL": 0.01717033,
+        "GOSPEL": 0.00646228
+      }
+    },
+    {
+      "run": 4,
+      "leaderFmt": "NEWS_TALK",
+      "leaderShare": 0.14451533,
+      "secondFmt": "TOP40",
+      "secondShare": 0.10459001,
+      "morShare": 0,
+      "hitsPresent": true,
+      "fmtSum": {
+        "NEWS_TALK": 0.17221099,
+        "TOP40": 0.16660961,
+        "ADULT_CONTEMP": 0.09167574,
+        "COUNTRY": 0.15366422999999998,
+        "BEAUTIFUL_MUSIC": 0.07088844,
+        "ALBUM_ROCK": 0.14015871,
+        "CLASSIC_ROCK": 0.04730045,
+        "URBAN_CONTEMP": 0.04580675,
+        "PUBLIC_NEWS": 0.03805819,
+        "SOUL_RNB": 0.04982106,
+        "PUBLIC_CLASSICAL": 0.01748872,
+        "GOSPEL": 0.0063171
+      }
+    }
+  ]
+}

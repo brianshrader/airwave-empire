@@ -1,0 +1,1399 @@
+{
+  "marketId": "atlanta",
+  "label": "Atlanta",
+  "timingMs": 10129,
+  "config": {
+    "runs": 10,
+    "years": [
+      1985,
+      1995,
+      2026
+    ],
+    "seed": 20260522
+  },
+  "exposure": {
+    "inPlayable": true,
+    "inDiagOnly": false
+  },
+  "marketMeta": {
+    "rankTier": "large",
+    "archetypeId": "sunbelt_diversified",
+    "region": "Southeast",
+    "hispPop2020": 0.115,
+    "blackPop": 0.358
+  },
+  "tier": {
+    "band": "mega_large",
+    "label": "mega/large",
+    "thresholds": {
+      "label": "mega/large",
+      "hhiPass": 650,
+      "hhiWarn": 800,
+      "stationMin": 18,
+      "stationMax": 42,
+      "outlierPass": 0.1,
+      "outlierWarn": 0.2,
+      "formatSoft": 0.36,
+      "gapSoft": 0.16,
+      "spokenSoft": 0.34,
+      "religiousSoft": 0.28
+    }
+  },
+  "byYear": {
+    "1985": {
+      "nRuns": 10,
+      "structure": {
+        "stationCount": {
+          "p10": 28,
+          "median": 28,
+          "p90": 28,
+          "mean": 28,
+          "stdev": 0,
+          "n": 10
+        },
+        "commercialAm": {
+          "p10": 12,
+          "median": 12,
+          "p90": 12,
+          "mean": 12,
+          "stdev": 0,
+          "n": 10
+        },
+        "commercialFm": {
+          "p10": 13,
+          "median": 13,
+          "p90": 13,
+          "mean": 13,
+          "stdev": 0,
+          "n": 10
+        },
+        "nceCount": {
+          "p10": 3,
+          "median": 3,
+          "p90": 3,
+          "mean": 3,
+          "stdev": 0,
+          "n": 10
+        },
+        "hhi": {
+          "p10": 549.0725745582093,
+          "median": 561.6902285765959,
+          "p90": 582.861209723015,
+          "mean": 562.8688002724498,
+          "stdev": 15.93013585450461,
+          "n": 10
+        },
+        "leaderGap12": {
+          "p10": 0.001243521000000003,
+          "median": 0.005701514999999997,
+          "p90": 0.02045984599999999,
+          "mean": 0.009709480999999999,
+          "stdev": 0.008156383755141059,
+          "n": 10
+        }
+      },
+      "means": {
+        "stationCount": 28,
+        "commercialAm": 12,
+        "commercialFm": 13,
+        "nceCount": 3,
+        "hhi": 562.8688002724498,
+        "leaderGap12": 0.009709480999999999,
+        "spanishShare": 0,
+        "rockFamilyShare": 0.22782764699999997,
+        "chrShare": 0.18775512179195325,
+        "countryShare": 0.11735876786998045,
+        "publicShare": 0.057717315939810096,
+        "urbanShare": 0.07265333592879263,
+        "spokenBucket": 0.10648993396389586
+      },
+      "families": {
+        "HITS": {
+          "p10": 0.181983929,
+          "median": 0.188786945,
+          "p90": 0.19304748800000002,
+          "mean": 0.18775512200000002,
+          "stdev": 0.005005820599513738,
+          "n": 10
+        },
+        "ROCK": {
+          "p10": 0.22033628000000002,
+          "median": 0.228007315,
+          "p90": 0.235935754,
+          "mean": 0.22782764699999997,
+          "stdev": 0.007233525225693274,
+          "n": 10
+        },
+        "ADULT": {
+          "p10": 0.215854224,
+          "median": 0.22415140500000003,
+          "p90": 0.236372283,
+          "mean": 0.22549555300000002,
+          "stdev": 0.008855099862285058,
+          "n": 10
+        },
+        "COUNTRY": {
+          "p10": 0.11257257500000001,
+          "median": 0.11705893,
+          "p90": 0.123720065,
+          "mean": 0.117358768,
+          "stdev": 0.004856341639736232,
+          "n": 10
+        },
+        "URBAN": {
+          "p10": 0.068655786,
+          "median": 0.07292568499999999,
+          "p90": 0.076054792,
+          "mean": 0.07265333599999999,
+          "stdev": 0.0031042377131308752,
+          "n": 10
+        },
+        "SPOKEN": {
+          "p10": 0.088552062,
+          "median": 0.10556478500000001,
+          "p90": 0.12787842100000002,
+          "mean": 0.106489934,
+          "stdev": 0.01616352713538428,
+          "n": 10
+        },
+        "SPANISH": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0,
+          "mean": 0,
+          "stdev": 0,
+          "n": 10
+        },
+        "PUBLIC": {
+          "p10": 0.056440645,
+          "median": 0.05712244,
+          "p90": 0.059584806000000004,
+          "mean": 0.057717316,
+          "stdev": 0.0014211309277768903,
+          "n": 10
+        },
+        "CHRISTIAN": {
+          "p10": 0.004370988,
+          "median": 0.00466635,
+          "p90": 0.00513779,
+          "mean": 0.0047023249999999985,
+          "stdev": 0.00028183547804525966,
+          "n": 10
+        },
+        "INSTITUTIONAL": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0,
+          "mean": 0,
+          "stdev": 0,
+          "n": 10
+        },
+        "OTHER": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0,
+          "mean": 0,
+          "stdev": 0,
+          "n": 10
+        }
+      },
+      "formatStats": {
+        "TOP40": {
+          "p10": 0.181983929,
+          "median": 0.188786945,
+          "p90": 0.19304748800000002,
+          "mean": 0.18775512200000002,
+          "stdev": 0.005005820599513738,
+          "n": 10
+        },
+        "HOT_AC": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0,
+          "mean": 0,
+          "stdev": 0,
+          "n": 10
+        },
+        "ADULT_CONTEMP": {
+          "p10": 0.1510034,
+          "median": 0.16030742,
+          "p90": 0.17474563499999998,
+          "mean": 0.16209999699999997,
+          "stdev": 0.009119024301479896,
+          "n": 10
+        },
+        "COUNTRY": {
+          "p10": 0.11257257500000001,
+          "median": 0.11705893,
+          "p90": 0.123720065,
+          "mean": 0.117358768,
+          "stdev": 0.004856341639736232,
+          "n": 10
+        },
+        "CLASSIC_ROCK": {
+          "p10": 0.081002715,
+          "median": 0.084729115,
+          "p90": 0.09038179,
+          "mean": 0.084877488,
+          "stdev": 0.005290882932159433,
+          "n": 10
+        },
+        "ALBUM_ROCK": {
+          "p10": 0.136591632,
+          "median": 0.14231422999999999,
+          "p90": 0.151230963,
+          "mean": 0.14295015900000002,
+          "stdev": 0.005272265856311591,
+          "n": 10
+        },
+        "ALT_ROCK": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0,
+          "mean": 0,
+          "stdev": 0,
+          "n": 10
+        },
+        "AAA": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0,
+          "mean": 0,
+          "stdev": 0,
+          "n": 10
+        },
+        "NEWS_TALK": {
+          "p10": 0.088552062,
+          "median": 0.10556478500000001,
+          "p90": 0.12787842100000002,
+          "mean": 0.106489934,
+          "stdev": 0.01616352713538428,
+          "n": 10
+        },
+        "SPORTS_TALK": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0,
+          "mean": 0,
+          "stdev": 0,
+          "n": 10
+        },
+        "SPANISH": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0,
+          "mean": 0,
+          "stdev": 0,
+          "n": 10
+        },
+        "RELIGIOUS_NETWORK": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0,
+          "mean": 0,
+          "stdev": 0,
+          "n": 10
+        },
+        "GOSPEL": {
+          "p10": 0.004370988,
+          "median": 0.00466635,
+          "p90": 0.00513779,
+          "mean": 0.0047023249999999985,
+          "stdev": 0.00028183547804525966,
+          "n": 10
+        },
+        "URBAN_CONTEMP": {
+          "p10": 0.035262604,
+          "median": 0.038981724999999995,
+          "p90": 0.040826792,
+          "mean": 0.038414479,
+          "stdev": 0.00208790194523809,
+          "n": 10
+        },
+        "SOUL_RNB": {
+          "p10": 0.032894121,
+          "median": 0.033722409999999994,
+          "p90": 0.035485413,
+          "mean": 0.034238857000000004,
+          "stdev": 0.0019468094374953606,
+          "n": 10
+        },
+        "MOR": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0,
+          "mean": 0,
+          "stdev": 0,
+          "n": 10
+        },
+        "OLDIES": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0,
+          "mean": 0,
+          "stdev": 0,
+          "n": 10
+        },
+        "CLASSIC_HITS": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0,
+          "mean": 0,
+          "stdev": 0,
+          "n": 10
+        }
+      },
+      "topFormatsMean": [
+        {
+          "fmt": "TOP40",
+          "share": 0.18775512200000002
+        },
+        {
+          "fmt": "ADULT_CONTEMP",
+          "share": 0.162099997
+        },
+        {
+          "fmt": "ALBUM_ROCK",
+          "share": 0.14295015900000002
+        },
+        {
+          "fmt": "COUNTRY",
+          "share": 0.11735876800000003
+        },
+        {
+          "fmt": "NEWS_TALK",
+          "share": 0.106489934
+        },
+        {
+          "fmt": "CLASSIC_ROCK",
+          "share": 0.08487748800000001
+        },
+        {
+          "fmt": "BEAUTIFUL_MUSIC",
+          "share": 0.06339555599999999
+        },
+        {
+          "fmt": "URBAN_CONTEMP",
+          "share": 0.038414479
+        },
+        {
+          "fmt": "SOUL_RNB",
+          "share": 0.034238857
+        },
+        {
+          "fmt": "PUBLIC_NEWS",
+          "share": 0.032834250999999995
+        }
+      ],
+      "histograms": {
+        "leaderFmt": {
+          "NEWS_TALK": 5,
+          "CLASSIC_ROCK": 3,
+          "ADULT_CONTEMP": 2
+        },
+        "leaderFamily": {
+          "SPOKEN": 5,
+          "ROCK": 3,
+          "ADULT": 2
+        }
+      },
+      "spanishSubtype": {
+        "runs": 10,
+        "meanSubtypeCounts": {
+          "SPANISH_CONTEMPORARY": 0,
+          "REGIONAL_MEXICAN": 0,
+          "SPANISH_TROPICAL": 0,
+          "SPANISH_NEWS_TALK": 0,
+          "SPANISH_SPORTS_TALK": 0,
+          "SPANISH_ADULT_HITS": 0
+        },
+        "meanSubtypeSharePct": {
+          "SPANISH_CONTEMPORARY": 0,
+          "REGIONAL_MEXICAN": 0,
+          "SPANISH_TROPICAL": 0,
+          "SPANISH_NEWS_TALK": 0,
+          "SPANISH_SPORTS_TALK": 0,
+          "SPANISH_ADULT_HITS": 0
+        },
+        "meanMarketAffinityPrior": {
+          "SPANISH_CONTEMPORARY": 0.32625,
+          "REGIONAL_MEXICAN": 0.72225,
+          "SPANISH_TROPICAL": 0.004999999999999999,
+          "SPANISH_NEWS_TALK": -1.6358767788019688,
+          "SPANISH_SPORTS_TALK": -1.470619629721661,
+          "SPANISH_ADULT_HITS": -2.5
+        },
+        "leadershipWinsBySubtype": {},
+        "meanTotalSpanishStations": 0
+      }
+    },
+    "1995": {
+      "nRuns": 10,
+      "structure": {
+        "stationCount": {
+          "p10": 29.9,
+          "median": 30.5,
+          "p90": 31,
+          "mean": 30.4,
+          "stdev": 0.66332495807108,
+          "n": 10
+        },
+        "commercialAm": {
+          "p10": 10.9,
+          "median": 12,
+          "p90": 12,
+          "mean": 11.6,
+          "stdev": 0.6633249580710798,
+          "n": 10
+        },
+        "commercialFm": {
+          "p10": 15,
+          "median": 16,
+          "p90": 16,
+          "mean": 15.8,
+          "stdev": 0.40000000000000013,
+          "n": 10
+        },
+        "nceCount": {
+          "p10": 3,
+          "median": 3,
+          "p90": 3,
+          "mean": 3,
+          "stdev": 0,
+          "n": 10
+        },
+        "hhi": {
+          "p10": 680.5215784252632,
+          "median": 706.9237823732694,
+          "p90": 734.3783562756678,
+          "mean": 709.8810516207392,
+          "stdev": 28.17448303944511,
+          "n": 10
+        },
+        "leaderGap12": {
+          "p10": 0.002078417000000001,
+          "median": 0.0043055400000000035,
+          "p90": 0.008296930000000001,
+          "mean": 0.0053613229999999994,
+          "stdev": 0.004111193286755198,
+          "n": 10
+        }
+      },
+      "means": {
+        "stationCount": 30.4,
+        "commercialAm": 11.6,
+        "commercialFm": 15.8,
+        "nceCount": 3,
+        "hhi": 709.8810516207391,
+        "leaderGap12": 0.0053613229999999994,
+        "spanishShare": 0.0049306519802314,
+        "rockFamilyShare": 0.227384379,
+        "chrShare": 0.2086549126000455,
+        "countryShare": 0.10750086279144855,
+        "publicShare": 0.040220268922903736,
+        "urbanShare": 0.052018722993615076,
+        "spokenBucket": 0.11531853565269871
+      },
+      "families": {
+        "HITS": {
+          "p10": 0.19084489300000002,
+          "median": 0.2079665,
+          "p90": 0.232812506,
+          "mean": 0.21110554599999998,
+          "stdev": 0.01965474193543085,
+          "n": 10
+        },
+        "ROCK": {
+          "p10": 0.192060206,
+          "median": 0.230601815,
+          "p90": 0.26059636700000005,
+          "mean": 0.227384379,
+          "stdev": 0.03292212606164293,
+          "n": 10
+        },
+        "ADULT": {
+          "p10": 0.20805023100000003,
+          "median": 0.234776525,
+          "p90": 0.248746046,
+          "mean": 0.229534425,
+          "stdev": 0.016324008680114237,
+          "n": 10
+        },
+        "COUNTRY": {
+          "p10": 0.08235260400000001,
+          "median": 0.097469325,
+          "p90": 0.143071924,
+          "mean": 0.10750086300000002,
+          "stdev": 0.02365613542836152,
+          "n": 10
+        },
+        "URBAN": {
+          "p10": 0.019785182000000002,
+          "median": 0.059068945,
+          "p90": 0.070119699,
+          "mean": 0.05201872299999999,
+          "stdev": 0.021443377037257936,
+          "n": 10
+        },
+        "SPOKEN": {
+          "p10": 0.081916483,
+          "median": 0.121441355,
+          "p90": 0.13411815600000002,
+          "mean": 0.11531853600000001,
+          "stdev": 0.02093383080921129,
+          "n": 10
+        },
+        "SPANISH": {
+          "p10": 0,
+          "median": 0.0036095,
+          "p90": 0.012448954999999996,
+          "mean": 0.004930652,
+          "stdev": 0.006898490640397796,
+          "n": 10
+        },
+        "PUBLIC": {
+          "p10": 0.036579924,
+          "median": 0.039164875,
+          "p90": 0.044527277,
+          "mean": 0.04022026899999999,
+          "stdev": 0.003142187372412567,
+          "n": 10
+        },
+        "CHRISTIAN": {
+          "p10": 0.003241053,
+          "median": 0.00632789,
+          "p90": 0.012569453,
+          "mean": 0.007286848,
+          "stdev": 0.004154193820480215,
+          "n": 10
+        },
+        "INSTITUTIONAL": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0,
+          "mean": 0,
+          "stdev": 0,
+          "n": 10
+        },
+        "OTHER": {
+          "p10": 0,
+          "median": 0.004215450000000001,
+          "p90": 0.009926534999999998,
+          "mean": 0.004699760999999999,
+          "stdev": 0.004343431961795763,
+          "n": 10
+        }
+      },
+      "formatStats": {
+        "TOP40": {
+          "p10": 0.19084489300000002,
+          "median": 0.20722464000000002,
+          "p90": 0.231398389,
+          "mean": 0.208654913,
+          "stdev": 0.01727624189017742,
+          "n": 10
+        },
+        "HOT_AC": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0,
+          "mean": 0,
+          "stdev": 0,
+          "n": 10
+        },
+        "ADULT_CONTEMP": {
+          "p10": 0.193491348,
+          "median": 0.214830205,
+          "p90": 0.228270675,
+          "mean": 0.21345410300000003,
+          "stdev": 0.013555761712978029,
+          "n": 10
+        },
+        "COUNTRY": {
+          "p10": 0.08235260400000001,
+          "median": 0.097469325,
+          "p90": 0.143071924,
+          "mean": 0.10750086300000002,
+          "stdev": 0.02365613542836152,
+          "n": 10
+        },
+        "CLASSIC_ROCK": {
+          "p10": 0.06922924800000001,
+          "median": 0.12528881,
+          "p90": 0.129898255,
+          "mean": 0.105214188,
+          "stdev": 0.028941571322686956,
+          "n": 10
+        },
+        "ALBUM_ROCK": {
+          "p10": 0.074369158,
+          "median": 0.098390805,
+          "p90": 0.11097867099999999,
+          "mean": 0.097445282,
+          "stdev": 0.01739442925435083,
+          "n": 10
+        },
+        "ALT_ROCK": {
+          "p10": 0.013173408000000001,
+          "median": 0.015373830000000002,
+          "p90": 0.016527315,
+          "mean": 0.014153760000000001,
+          "stdev": 0.0048226139714972,
+          "n": 10
+        },
+        "AAA": {
+          "p10": 0.009459717999999999,
+          "median": 0.010099460000000001,
+          "p90": 0.012337519,
+          "mean": 0.010571148999999998,
+          "stdev": 0.0013844933957260326,
+          "n": 10
+        },
+        "NEWS_TALK": {
+          "p10": 0.071802215,
+          "median": 0.1012283,
+          "p90": 0.116846728,
+          "mean": 0.09590660899999999,
+          "stdev": 0.022519039711645098,
+          "n": 10
+        },
+        "SPORTS_TALK": {
+          "p10": 0,
+          "median": 0.005205385,
+          "p90": 0.029556281999999996,
+          "mean": 0.010877566000000002,
+          "stdev": 0.012980978811807067,
+          "n": 10
+        },
+        "SPANISH": {
+          "p10": 0,
+          "median": 0.0036095,
+          "p90": 0.012448954999999996,
+          "mean": 0.004930652,
+          "stdev": 0.006898490640397796,
+          "n": 10
+        },
+        "RELIGIOUS_NETWORK": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0,
+          "mean": 0,
+          "stdev": 0,
+          "n": 10
+        },
+        "GOSPEL": {
+          "p10": 0.003241053,
+          "median": 0.00632789,
+          "p90": 0.012569453,
+          "mean": 0.007286848,
+          "stdev": 0.004154193820480215,
+          "n": 10
+        },
+        "URBAN_CONTEMP": {
+          "p10": 0,
+          "median": 0.054283045,
+          "p90": 0.070119699,
+          "mean": 0.047748171,
+          "stdev": 0.02542450759637773,
+          "n": 10
+        },
+        "SOUL_RNB": {
+          "p10": 0,
+          "median": 0.001811815,
+          "p90": 0.010196242999999995,
+          "mean": 0.004270552,
+          "stdev": 0.006432378441029104,
+          "n": 10
+        },
+        "MOR": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0.005682817999999999,
+          "mean": 0.001792906,
+          "stdev": 0.0027785681837961076,
+          "n": 10
+        },
+        "OLDIES": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0.007470225999999997,
+          "mean": 0.002450633,
+          "stdev": 0.004454411637518585,
+          "n": 10
+        },
+        "CLASSIC_HITS": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0,
+          "mean": 0,
+          "stdev": 0,
+          "n": 10
+        }
+      },
+      "topFormatsMean": [
+        {
+          "fmt": "ADULT_CONTEMP",
+          "share": 0.21345410300000003
+        },
+        {
+          "fmt": "TOP40",
+          "share": 0.20865491300000003
+        },
+        {
+          "fmt": "COUNTRY",
+          "share": 0.10750086299999999
+        },
+        {
+          "fmt": "CLASSIC_ROCK",
+          "share": 0.105214188
+        },
+        {
+          "fmt": "ALBUM_ROCK",
+          "share": 0.097445282
+        },
+        {
+          "fmt": "NEWS_TALK",
+          "share": 0.095906609
+        },
+        {
+          "fmt": "URBAN_CONTEMP",
+          "share": 0.047748171
+        },
+        {
+          "fmt": "PUBLIC_NEWS",
+          "share": 0.021204867
+        },
+        {
+          "fmt": "ALT_ROCK",
+          "share": 0.014153760000000001
+        },
+        {
+          "fmt": "PUBLIC_CLASSICAL",
+          "share": 0.012353115
+        }
+      ],
+      "histograms": {
+        "leaderFmt": {
+          "ADULT_CONTEMP": 3,
+          "CLASSIC_ROCK": 4,
+          "NEWS_TALK": 1,
+          "TOP40": 1,
+          "COUNTRY": 1
+        },
+        "leaderFamily": {
+          "ADULT": 3,
+          "ROCK": 4,
+          "SPOKEN": 1,
+          "HITS": 1,
+          "COUNTRY": 1
+        }
+      },
+      "spanishSubtype": {
+        "runs": 10,
+        "meanSubtypeCounts": {
+          "SPANISH_CONTEMPORARY": 0,
+          "REGIONAL_MEXICAN": 0.5,
+          "SPANISH_TROPICAL": 0,
+          "SPANISH_NEWS_TALK": 0.2,
+          "SPANISH_SPORTS_TALK": 0,
+          "SPANISH_ADULT_HITS": 0
+        },
+        "meanSubtypeSharePct": {
+          "SPANISH_CONTEMPORARY": 0,
+          "REGIONAL_MEXICAN": 0.484675338351511,
+          "SPANISH_TROPICAL": 0,
+          "SPANISH_NEWS_TALK": 0.11532466164848905,
+          "SPANISH_SPORTS_TALK": 0,
+          "SPANISH_ADULT_HITS": 0
+        },
+        "meanMarketAffinityPrior": {
+          "SPANISH_CONTEMPORARY": 0.32625,
+          "REGIONAL_MEXICAN": 0.72225,
+          "SPANISH_TROPICAL": 0.004999999999999999,
+          "SPANISH_NEWS_TALK": 0.5641232211980308,
+          "SPANISH_SPORTS_TALK": -1.470619629721661,
+          "SPANISH_ADULT_HITS": -2.5
+        },
+        "leadershipWinsBySubtype": {
+          "REGIONAL_MEXICAN": 5,
+          "SPANISH_NEWS_TALK": 1
+        },
+        "meanTotalSpanishStations": 0.7
+      }
+    },
+    "2026": {
+      "nRuns": 10,
+      "structure": {
+        "stationCount": {
+          "p10": 27.9,
+          "median": 29,
+          "p90": 31,
+          "mean": 29.2,
+          "stdev": 1.2489995996796797,
+          "n": 10
+        },
+        "commercialAm": {
+          "p10": 5,
+          "median": 6,
+          "p90": 8,
+          "mean": 6.3,
+          "stdev": 1.1,
+          "n": 10
+        },
+        "commercialFm": {
+          "p10": 19.9,
+          "median": 20,
+          "p90": 20,
+          "mean": 19.9,
+          "stdev": 0.2999999999999999,
+          "n": 10
+        },
+        "nceCount": {
+          "p10": 3,
+          "median": 3,
+          "p90": 3,
+          "mean": 3,
+          "stdev": 0,
+          "n": 10
+        },
+        "hhi": {
+          "p10": 494.6044999861869,
+          "median": 515.9775908713835,
+          "p90": 563.6986807134347,
+          "mean": 528.260560903131,
+          "stdev": 47.938191839774156,
+          "n": 10
+        },
+        "leaderGap12": {
+          "p10": 0.0031913379999999993,
+          "median": 0.01356131,
+          "p90": 0.034349315,
+          "mean": 0.016288209,
+          "stdev": 0.012268076152426225,
+          "n": 10
+        }
+      },
+      "means": {
+        "stationCount": 29.2,
+        "commercialAm": 6.3,
+        "commercialFm": 19.9,
+        "nceCount": 3,
+        "hhi": 528.260560903131,
+        "leaderGap12": 0.016288209,
+        "spanishShare": 0.005359599992058431,
+        "rockFamilyShare": 0.22844024599999999,
+        "chrShare": 0.11864559752345036,
+        "countryShare": 0.1272533908194008,
+        "publicShare": 0.0467790248567783,
+        "urbanShare": 0.08048705204751933,
+        "spokenBucket": 0.09669329565462528
+      },
+      "families": {
+        "HITS": {
+          "p10": 0.09988510199999999,
+          "median": 0.132683845,
+          "p90": 0.15343477599999997,
+          "mean": 0.131911659,
+          "stdev": 0.02485635100232391,
+          "n": 10
+        },
+        "ROCK": {
+          "p10": 0.190180319,
+          "median": 0.20660665,
+          "p90": 0.297849572,
+          "mean": 0.22844024599999999,
+          "stdev": 0.04961989336455335,
+          "n": 10
+        },
+        "ADULT": {
+          "p10": 0.11760935,
+          "median": 0.15345473,
+          "p90": 0.177956516,
+          "mean": 0.147292158,
+          "stdev": 0.037734481338738135,
+          "n": 10
+        },
+        "COUNTRY": {
+          "p10": 0.049899555000000005,
+          "median": 0.1285317,
+          "p90": 0.18337978299999996,
+          "mean": 0.12725339100000002,
+          "stdev": 0.0659155266466787,
+          "n": 10
+        },
+        "URBAN": {
+          "p10": 0.007799304000000001,
+          "median": 0.10222042499999999,
+          "p90": 0.13265878899999997,
+          "mean": 0.08048705199999999,
+          "stdev": 0.050097434054359666,
+          "n": 10
+        },
+        "SPOKEN": {
+          "p10": 0.070510823,
+          "median": 0.08921564,
+          "p90": 0.125041034,
+          "mean": 0.096693296,
+          "stdev": 0.02779791566267126,
+          "n": 10
+        },
+        "SPANISH": {
+          "p10": 0,
+          "median": 0.004436195,
+          "p90": 0.010749812999999997,
+          "mean": 0.0053596,
+          "stdev": 0.005627014803023004,
+          "n": 10
+        },
+        "PUBLIC": {
+          "p10": 0.041735897,
+          "median": 0.045366035,
+          "p90": 0.057035166,
+          "mean": 0.046779024999999995,
+          "stdev": 0.005601694429172749,
+          "n": 10
+        },
+        "CHRISTIAN": {
+          "p10": 0,
+          "median": 0.0031914,
+          "p90": 0.015497643999999998,
+          "mean": 0.004788036,
+          "stdev": 0.006468867192169275,
+          "n": 10
+        },
+        "INSTITUTIONAL": {
+          "p10": 0.112314997,
+          "median": 0.126779145,
+          "p90": 0.144038613,
+          "mean": 0.12607994699999997,
+          "stdev": 0.013409265952254843,
+          "n": 10
+        },
+        "OTHER": {
+          "p10": 0,
+          "median": 0.00624056,
+          "p90": 0.009478151,
+          "mean": 0.004915593,
+          "stdev": 0.004223403653083731,
+          "n": 10
+        }
+      },
+      "formatStats": {
+        "TOP40": {
+          "p10": 0.07718338,
+          "median": 0.102758305,
+          "p90": 0.151459243,
+          "mean": 0.107985964,
+          "stdev": 0.0313944503945319,
+          "n": 10
+        },
+        "HOT_AC": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0.004130113999999985,
+          "mean": 0.004130114,
+          "stdev": 0.012390342,
+          "n": 10
+        },
+        "ADULT_CONTEMP": {
+          "p10": 0.10208989900000001,
+          "median": 0.14863571,
+          "p90": 0.16330372,
+          "mean": 0.132476256,
+          "stdev": 0.044752297582254075,
+          "n": 10
+        },
+        "COUNTRY": {
+          "p10": 0.049899555000000005,
+          "median": 0.1285317,
+          "p90": 0.18337978299999996,
+          "mean": 0.12725339100000002,
+          "stdev": 0.0659155266466787,
+          "n": 10
+        },
+        "CLASSIC_ROCK": {
+          "p10": 0.11147589599999999,
+          "median": 0.13271238000000002,
+          "p90": 0.162863672,
+          "mean": 0.134560227,
+          "stdev": 0.023741708665189636,
+          "n": 10
+        },
+        "ALBUM_ROCK": {
+          "p10": 0.030983020000000003,
+          "median": 0.07220988,
+          "p90": 0.10603537399999999,
+          "mean": 0.06727087200000001,
+          "stdev": 0.03042174693487565,
+          "n": 10
+        },
+        "ALT_ROCK": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0.03392582799999999,
+          "mean": 0.0099801,
+          "stdev": 0.016745031478742584,
+          "n": 10
+        },
+        "AAA": {
+          "p10": 0,
+          "median": 0.01342784,
+          "p90": 0.043545077999999994,
+          "mean": 0.016629047,
+          "stdev": 0.01900205435852821,
+          "n": 10
+        },
+        "NEWS_TALK": {
+          "p10": 0.046476919000000005,
+          "median": 0.060716610000000004,
+          "p90": 0.100458286,
+          "mean": 0.068085306,
+          "stdev": 0.023211321472876207,
+          "n": 10
+        },
+        "SPORTS_TALK": {
+          "p10": 0,
+          "median": 0.00960599,
+          "p90": 0.02204851299999999,
+          "mean": 0.012028617,
+          "stdev": 0.013482830579606827,
+          "n": 10
+        },
+        "SPANISH": {
+          "p10": 0,
+          "median": 0.004436195,
+          "p90": 0.010749812999999997,
+          "mean": 0.0053596,
+          "stdev": 0.005627014803023004,
+          "n": 10
+        },
+        "RELIGIOUS_NETWORK": {
+          "p10": 0.112314997,
+          "median": 0.126779145,
+          "p90": 0.144038613,
+          "mean": 0.12607994699999997,
+          "stdev": 0.013409265952254843,
+          "n": 10
+        },
+        "GOSPEL": {
+          "p10": 0,
+          "median": 0.0031914,
+          "p90": 0.015497643999999998,
+          "mean": 0.004788036,
+          "stdev": 0.006468867192169275,
+          "n": 10
+        },
+        "URBAN_CONTEMP": {
+          "p10": 0,
+          "median": 0.04264822,
+          "p90": 0.124749178,
+          "mean": 0.06266357900000001,
+          "stdev": 0.04719924756538021,
+          "n": 10
+        },
+        "SOUL_RNB": {
+          "p10": 0,
+          "median": 0.0031347600000000003,
+          "p90": 0.06446919899999999,
+          "mean": 0.017823473,
+          "stdev": 0.029119931912784426,
+          "n": 10
+        },
+        "MOR": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0,
+          "mean": 0,
+          "stdev": 0,
+          "n": 10
+        },
+        "OLDIES": {
+          "p10": 0,
+          "median": 0,
+          "p90": 0.0007116029999999974,
+          "mean": 0.000711603,
+          "stdev": 0.002134809,
+          "n": 10
+        },
+        "CLASSIC_HITS": {
+          "p10": 0,
+          "median": 0.00520665,
+          "p90": 0.029664217999999996,
+          "mean": 0.012554458000000001,
+          "stdev": 0.014461695431214004,
+          "n": 10
+        }
+      },
+      "topFormatsMean": [
+        {
+          "fmt": "CLASSIC_ROCK",
+          "share": 0.13456022699999998
+        },
+        {
+          "fmt": "ADULT_CONTEMP",
+          "share": 0.13247625600000001
+        },
+        {
+          "fmt": "COUNTRY",
+          "share": 0.127253391
+        },
+        {
+          "fmt": "RELIGIOUS_NETWORK",
+          "share": 0.12607994699999997
+        },
+        {
+          "fmt": "TOP40",
+          "share": 0.107985964
+        },
+        {
+          "fmt": "NEWS_TALK",
+          "share": 0.068085306
+        },
+        {
+          "fmt": "ALBUM_ROCK",
+          "share": 0.06727087200000001
+        },
+        {
+          "fmt": "URBAN_CONTEMP",
+          "share": 0.062663579
+        },
+        {
+          "fmt": "PUBLIC_NEWS",
+          "share": 0.024062896
+        },
+        {
+          "fmt": "SOUL_RNB",
+          "share": 0.017823473
+        }
+      ],
+      "histograms": {
+        "leaderFmt": {
+          "ADULT_CONTEMP": 1,
+          "COUNTRY": 1,
+          "NEWS_TALK": 2,
+          "CLASSIC_ROCK": 4,
+          "RELIGIOUS_NETWORK": 2
+        },
+        "leaderFamily": {
+          "ADULT": 1,
+          "COUNTRY": 1,
+          "SPOKEN": 2,
+          "ROCK": 4,
+          "INSTITUTIONAL": 2
+        }
+      },
+      "spanishSubtype": {
+        "runs": 10,
+        "meanSubtypeCounts": {
+          "SPANISH_CONTEMPORARY": 0,
+          "REGIONAL_MEXICAN": 0.1,
+          "SPANISH_TROPICAL": 0,
+          "SPANISH_NEWS_TALK": 0.3,
+          "SPANISH_SPORTS_TALK": 0.3,
+          "SPANISH_ADULT_HITS": 0
+        },
+        "meanSubtypeSharePct": {
+          "SPANISH_CONTEMPORARY": 0,
+          "REGIONAL_MEXICAN": 0.1,
+          "SPANISH_TROPICAL": 0,
+          "SPANISH_NEWS_TALK": 0.3,
+          "SPANISH_SPORTS_TALK": 0.3,
+          "SPANISH_ADULT_HITS": 0
+        },
+        "meanMarketAffinityPrior": {
+          "SPANISH_CONTEMPORARY": 0.32625,
+          "REGIONAL_MEXICAN": 0.72225,
+          "SPANISH_TROPICAL": 0.004999999999999999,
+          "SPANISH_NEWS_TALK": 0.5641232211980308,
+          "SPANISH_SPORTS_TALK": 0.679380370278339,
+          "SPANISH_ADULT_HITS": 0.35000000000000003
+        },
+        "leadershipWinsBySubtype": {
+          "SPANISH_NEWS_TALK": 3,
+          "SPANISH_SPORTS_TALK": 3,
+          "REGIONAL_MEXICAN": 1
+        },
+        "meanTotalSpanishStations": 0.7
+      }
+    }
+  },
+  "outliers": {
+    "softCount": 0,
+    "softRate": 0,
+    "hardCount": 0,
+    "samples": [],
+    "hardSamples": []
+  },
+  "categories": {
+    "structural": "warn",
+    "identity": "pass",
+    "stability": "pass",
+    "outlierFrequency": "pass",
+    "timeline": "warn"
+  },
+  "calibration": {
+    "tierBand": "mega_large",
+    "tierLabel": "mega/large",
+    "rankTier": "large",
+    "thresholds": {
+      "label": "mega/large",
+      "hhiPass": 650,
+      "hhiWarn": 800,
+      "stationMin": 18,
+      "stationMax": 42,
+      "outlierPass": 0.1,
+      "outlierWarn": 0.2,
+      "formatSoft": 0.36,
+      "gapSoft": 0.16,
+      "spokenSoft": 0.34,
+      "religiousSoft": 0.28
+    },
+    "rawOverall": "pass",
+    "adjustedOverall": "warn",
+    "categories": {
+      "structural": "warn",
+      "identity": "pass",
+      "stability": "pass",
+      "outlierFrequency": "pass",
+      "timeline": "warn"
+    },
+    "reasons": {
+      "structural": [
+        "HHI median 516: raw=pass (legacy ≤650/800), tier=pass (mega/large ≤650/800)",
+        "Stations median 29.0: tier band 18–42 → warn"
+      ],
+      "outlierFrequency": [
+        "Soft outlier rate 0.0%: raw=pass (legacy ≤10/20%), tier=pass (mega/large ≤10/20%)",
+        "No hard pathology runs"
+      ],
+      "identity": [
+        "[pass] Urban 8.0%",
+        "[pass] Spoken 9.7%"
+      ],
+      "timeline": [
+        "[pass] Public floor 4.0%",
+        "[warn] Rock flat 22.8%→22.8%",
+        "[pass] CHR 11.9% @2026",
+        "[pass] Country arc OK"
+      ],
+      "stability": [
+        "Sim failure 0.0% → pass"
+      ]
+    }
+  },
+  "checks": [
+    {
+      "level": "warn",
+      "code": "struct_stations",
+      "message": "Stations median 29.0 (tier band 18–42)",
+      "detail": {
+        "category": "structural",
+        "tierBand": "mega/large"
+      },
+      "category": "structural"
+    },
+    {
+      "level": "pass",
+      "code": "struct_hhi",
+      "message": "HHI median 516 (tier pass≤650 warn≤800)",
+      "detail": {
+        "category": "structural",
+        "tierBand": "mega/large"
+      },
+      "category": "structural"
+    },
+    {
+      "level": "pass",
+      "code": "struct_sim_ok",
+      "message": "Sim failure rate 0.0%",
+      "detail": {
+        "category": "structural"
+      },
+      "category": "structural"
+    },
+    {
+      "level": "pass",
+      "code": "outlier_soft_rate",
+      "message": "Soft outlier rate 0.0% (tier pass≤10% warn≤20%)",
+      "detail": {
+        "category": "outlierFrequency",
+        "tierBand": "mega/large"
+      },
+      "category": "outlierFrequency"
+    },
+    {
+      "level": "pass",
+      "code": "hard_pathology_none",
+      "message": "No catastrophic run pathology",
+      "detail": {
+        "category": "outlierFrequency"
+      },
+      "category": "outlierFrequency"
+    },
+    {
+      "level": "pass",
+      "code": "tl_public_persists",
+      "message": "Public floor 4.0%",
+      "detail": {
+        "category": "timeline"
+      },
+      "category": "timeline"
+    },
+    {
+      "level": "warn",
+      "code": "tl_rock_flat",
+      "message": "Rock flat 22.8%→22.8%",
+      "detail": {
+        "category": "timeline"
+      },
+      "category": "timeline"
+    },
+    {
+      "level": "pass",
+      "code": "tl_chr_viable",
+      "message": "CHR 11.9% @2026",
+      "detail": {
+        "category": "timeline"
+      },
+      "category": "timeline"
+    },
+    {
+      "level": "pass",
+      "code": "tl_country_stable",
+      "message": "Country arc OK",
+      "detail": {
+        "category": "timeline"
+      },
+      "category": "timeline"
+    },
+    {
+      "level": "pass",
+      "code": "atl_urban",
+      "message": "Urban 8.0%",
+      "detail": {
+        "category": "identity"
+      },
+      "category": "identity"
+    },
+    {
+      "level": "pass",
+      "code": "atl_spoken",
+      "message": "Spoken 9.7%",
+      "detail": {
+        "category": "identity"
+      },
+      "category": "identity"
+    }
+  ],
+  "verdict": {
+    "internalReady": true,
+    "publicCandidate": true,
+    "confidence": "high",
+    "overall": "warn",
+    "counts": {
+      "pass": 9,
+      "warn": 2,
+      "fail": 0
+    }
+  }
+}

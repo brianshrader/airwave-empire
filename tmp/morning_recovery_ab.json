@@ -1,0 +1,2781 @@
+{
+  "generatedAt": "2026-05-31T20:06:54.447Z",
+  "elapsedSec": 166,
+  "config": {
+    "runs": 2,
+    "seed": 20260601,
+    "markets": [
+      "newyork",
+      "losangeles",
+      "chicago",
+      "seattle",
+      "sanfrancisco",
+      "atlanta",
+      "nashville",
+      "wichita"
+    ],
+    "startYears": [
+      1970,
+      1985,
+      2000
+    ],
+    "variants": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+    ]
+  },
+  "targets": {
+    "pctFullyRecoverQuality": {
+      "lo": 55,
+      "hi": 65,
+      "ideal": 60
+    },
+    "pctExceedPriorQuality": {
+      "lo": 25,
+      "hi": 35,
+      "ideal": 30
+    },
+    "medianYearsToRecoverQuality": {
+      "lo": 1.5,
+      "hi": 2.5,
+      "ideal": 2
+    },
+    "pct9599": {
+      "lo": 0,
+      "hi": 12,
+      "ideal": 10
+    }
+  },
+  "variantDefinitions": {
+    "A": "Baseline — current shipped behavior",
+    "B": "Major morning loss recovery drag (4–8 period shock, −35% morning prog growth, modest appeal drag)",
+    "C": "Harder quality reset (replacement slot closer to talent/baseline, reduced chemistry carryover)",
+    "D": "Combined B + C (mild)",
+    "E": "Combined B + C (stronger)"
+  },
+  "recommendedVariant": "E",
+  "recommendationAction": "tune",
+  "recommendationRationale": "Baseline (A): 84.67% recover, 41.4% exceed, median 0.5y; 95–99 bucket 21.58%. Best-scoring variant E: 74.19% recover, 40.22% exceed, median 2y; 95–99 15.59%; score 65.19. Closest variant needs parameter tuning before shipping.",
+  "comparisonTable": {
+    "headers": [
+      "Variant",
+      "Major deps",
+      "Recover Q%",
+      "Exceed Q%",
+      "Med yrs Q",
+      "Rev recover%",
+      "Med yrs rev",
+      "Mean OQ",
+      "Pct>90",
+      "Pct 95-99",
+      "Score",
+      "Verdict"
+    ],
+    "rows": [
+      [
+        "A",
+        "5990",
+        "84.67%",
+        "41.4%",
+        "0.50",
+        "82.37%",
+        "0.00",
+        "67.3",
+        "32.03%",
+        "21.58%",
+        "114.89",
+        "baseline"
+      ],
+      [
+        "B",
+        "5749",
+        "83.77%",
+        "39.35%",
+        "0.50",
+        "81.01%",
+        "0.00",
+        "67.2",
+        "31.79%",
+        "23.47%",
+        "114.74",
+        "leave_alone"
+      ],
+      [
+        "C",
+        "4539",
+        "77.09%",
+        "43.03%",
+        "1.50",
+        "81.21%",
+        "0.00",
+        "65.0",
+        "25.68%",
+        "19.39%",
+        "85.7",
+        "leave_alone"
+      ],
+      [
+        "D",
+        "4393",
+        "75.23%",
+        "40.97%",
+        "1.50",
+        "80.49%",
+        "0.00",
+        "64.4",
+        "24.94%",
+        "18.68%",
+        "77.12",
+        "tune"
+      ],
+      [
+        "E",
+        "4378",
+        "74.19%",
+        "40.22%",
+        "2.00",
+        "80.74%",
+        "0.00",
+        "64.2",
+        "23.18%",
+        "15.59%",
+        "65.19",
+        "tune"
+      ]
+    ]
+  },
+  "variants": [
+    {
+      "variant": "A",
+      "runs": {
+        "total": 48,
+        "ok": 48,
+        "failed": 0
+      },
+      "majorMorningDepartures": 5990,
+      "allMorningDepartures": 11173,
+      "recovery": {
+        "allCommercial": {
+          "label": "all_commercial",
+          "departures": 11173,
+          "avgDepartingSlotQ": 75.0003580059071,
+          "avgReplacementSlotQ": 67.66141591336257,
+          "avgImmediateSlotQDrop": 7.338942092544527,
+          "pctFullyRecoverQuality": 81.71,
+          "pctExceedPriorQuality": 57.47,
+          "avgYearsToRecoverQuality": 1.923430824843904,
+          "medianYearsToRecoverQuality": 0.5,
+          "pctRecoverRevenue": 83.86,
+          "avgYearsToRecoverRevenue": 0.907897545357524,
+          "medianYearsToRecoverRevenue": 0,
+          "neverRecoveredQuality": 2044
+        },
+        "majorOnly": {
+          "label": "major_only",
+          "departures": 5990,
+          "avgDepartingSlotQ": 92.42554257095159,
+          "avgReplacementSlotQ": 82.20050083472454,
+          "avgImmediateSlotQDrop": 10.225041736227045,
+          "pctFullyRecoverQuality": 84.67,
+          "pctExceedPriorQuality": 41.4,
+          "avgYearsToRecoverQuality": 1.3889984227129337,
+          "medianYearsToRecoverQuality": 0.5,
+          "pctRecoverRevenue": 82.37,
+          "avgYearsToRecoverRevenue": 0.9160924199432509,
+          "medianYearsToRecoverRevenue": 0,
+          "neverRecoveredQuality": 918
+        }
+      },
+      "oq2020": {
+        "commercialSnapshots": 1205,
+        "meanOqAcrossRuns": 67.33,
+        "pctAbove90": 32.03,
+        "pct9599": 21.58,
+        "bucketCounts": {
+          "lt50": 385,
+          "50-59": 98,
+          "60-69": 89,
+          "70-79": 109,
+          "80-89": 138,
+          "90-94": 126,
+          "95-99": 260
+        },
+        "bucketPct": {
+          "lt50": 31.95,
+          "50-59": 8.13,
+          "60-69": 7.39,
+          "70-79": 9.05,
+          "80-89": 11.45,
+          "90-94": 10.46,
+          "95-99": 21.58
+        }
+      },
+      "playerSideEffects": {
+        "playerMorningDepartures": 26,
+        "playerStationsAt2020": 35,
+        "playerStationsAbove95At2020": 0,
+        "playerMajorDepartures": 11,
+        "playerMajorRecovery": {
+          "label": "player_major",
+          "departures": 0,
+          "avgDepartingSlotQ": null,
+          "avgReplacementSlotQ": null,
+          "avgImmediateSlotQDrop": null,
+          "pctFullyRecoverQuality": 0,
+          "pctExceedPriorQuality": 0,
+          "avgYearsToRecoverQuality": null,
+          "medianYearsToRecoverQuality": null,
+          "pctRecoverRevenue": 0,
+          "avgYearsToRecoverRevenue": null,
+          "medianYearsToRecoverRevenue": null,
+          "neverRecoveredQuality": 0
+        }
+      },
+      "breakdowns": {
+        "byMarketSize": {
+          "mega": {
+            "label": "mega",
+            "departures": 2837,
+            "avgDepartingSlotQ": 92.24004229820233,
+            "avgReplacementSlotQ": 81.72717659499472,
+            "avgImmediateSlotQDrop": 10.512865703207614,
+            "pctFullyRecoverQuality": 83.22,
+            "pctExceedPriorQuality": 39.02,
+            "avgYearsToRecoverQuality": 1.3650995340957222,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 80.16,
+            "avgYearsToRecoverRevenue": 0.9964819700967458,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 476
+          },
+          "large": {
+            "label": "large",
+            "departures": 2026,
+            "avgDepartingSlotQ": 92.04935834155972,
+            "avgReplacementSlotQ": 81.95705824284305,
+            "avgImmediateSlotQDrop": 10.092300098716683,
+            "pctFullyRecoverQuality": 86.08,
+            "pctExceedPriorQuality": 43.39,
+            "avgYearsToRecoverQuality": 1.4016628440366972,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 84.01,
+            "avgYearsToRecoverRevenue": 0.8954171562867215,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 282
+          },
+          "medium": {
+            "label": "medium",
+            "departures": 617,
+            "avgDepartingSlotQ": 93.39546191247975,
+            "avgReplacementSlotQ": 84.72123176661265,
+            "avgImmediateSlotQDrop": 8.6742301458671,
+            "pctFullyRecoverQuality": 85.74,
+            "pctExceedPriorQuality": 48.14,
+            "avgYearsToRecoverQuality": 1.2901701323251418,
+            "medianYearsToRecoverQuality": 0,
+            "pctRecoverRevenue": 83.95,
+            "avgYearsToRecoverRevenue": 0.7355212355212355,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 88
+          },
+          "small": {
+            "label": "small",
+            "departures": 510,
+            "avgDepartingSlotQ": 93.77843137254902,
+            "avgReplacementSlotQ": 82.75098039215686,
+            "avgImmediateSlotQDrop": 11.027450980392157,
+            "pctFullyRecoverQuality": 85.88,
+            "pctExceedPriorQuality": 38.63,
+            "avgYearsToRecoverQuality": 1.58675799086758,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 86.27,
+            "avgYearsToRecoverRevenue": 0.7931818181818182,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 72
+          }
+        },
+        "byOwnership": {
+          "independent": {
+            "label": "independent",
+            "departures": 4938,
+            "avgDepartingSlotQ": 93.09052247873633,
+            "avgReplacementSlotQ": 82.60307816929931,
+            "avgImmediateSlotQDrop": 10.487444309437018,
+            "pctFullyRecoverQuality": 86.59,
+            "pctExceedPriorQuality": 43.03,
+            "avgYearsToRecoverQuality": 1.3779232927970066,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 82.89,
+            "avgYearsToRecoverRevenue": 0.9405081847055949,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 662
+          },
+          "corporate": {
+            "label": "corporate",
+            "departures": 1052,
+            "avgDepartingSlotQ": 89.30418250950571,
+            "avgReplacementSlotQ": 80.31083650190114,
+            "avgImmediateSlotQDrop": 8.993346007604563,
+            "pctFullyRecoverQuality": 75.67,
+            "pctExceedPriorQuality": 33.75,
+            "avgYearsToRecoverQuality": 1.4484924623115578,
+            "medianYearsToRecoverQuality": 0,
+            "pctRecoverRevenue": 79.94,
+            "avgYearsToRecoverRevenue": 0.7972651605231866,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 256
+          },
+          "player": {
+            "label": "player",
+            "departures": 0,
+            "avgDepartingSlotQ": null,
+            "avgReplacementSlotQ": null,
+            "avgImmediateSlotQDrop": null,
+            "pctFullyRecoverQuality": 0,
+            "pctExceedPriorQuality": 0,
+            "avgYearsToRecoverQuality": null,
+            "medianYearsToRecoverQuality": null,
+            "pctRecoverRevenue": 0,
+            "avgYearsToRecoverRevenue": null,
+            "medianYearsToRecoverRevenue": null,
+            "neverRecoveredQuality": 0
+          }
+        },
+        "byDepartSlotTier": {
+          "lt70": {
+            "label": "lt70",
+            "departures": 498,
+            "avgDepartingSlotQ": 50.626506024096386,
+            "avgReplacementSlotQ": 42.640562248995984,
+            "avgImmediateSlotQDrop": 7.985943775100401,
+            "pctFullyRecoverQuality": 60.24,
+            "pctExceedPriorQuality": 57.43,
+            "avgYearsToRecoverQuality": 4.426666666666667,
+            "medianYearsToRecoverQuality": 2.5,
+            "pctRecoverRevenue": 84.34,
+            "avgYearsToRecoverRevenue": 0.9583333333333334,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 198
+          },
+          "70-84": {
+            "label": "70-84",
+            "departures": 156,
+            "avgDepartingSlotQ": 75.35897435897436,
+            "avgReplacementSlotQ": 67.9423076923077,
+            "avgImmediateSlotQDrop": 7.416666666666667,
+            "pctFullyRecoverQuality": 57.69,
+            "pctExceedPriorQuality": 54.49,
+            "avgYearsToRecoverQuality": 3.1944444444444446,
+            "medianYearsToRecoverQuality": 1,
+            "pctRecoverRevenue": 81.41,
+            "avgYearsToRecoverRevenue": 0.8661417322834646,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 66
+          },
+          "85-94": {
+            "label": "85-94",
+            "departures": 684,
+            "avgDepartingSlotQ": 89.33771929824562,
+            "avgReplacementSlotQ": 77.69736842105263,
+            "avgImmediateSlotQDrop": 11.640350877192983,
+            "pctFullyRecoverQuality": 77.49,
+            "pctExceedPriorQuality": 76.61,
+            "avgYearsToRecoverQuality": 1.8518867924528302,
+            "medianYearsToRecoverQuality": 1,
+            "pctRecoverRevenue": 86.7,
+            "avgYearsToRecoverRevenue": 0.6770657672849916,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 154
+          },
+          "95+": {
+            "label": "95+",
+            "departures": 4652,
+            "avgDepartingSlotQ": 97.92648323301806,
+            "avgReplacementSlotQ": 87.57566638005159,
+            "avgImmediateSlotQDrop": 10.350816852966465,
+            "pctFullyRecoverQuality": 89.25,
+            "pctExceedPriorQuality": 34.07,
+            "avgYearsToRecoverQuality": 1.071290944123314,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 81.56,
+            "avgYearsToRecoverRevenue": 0.9504480759093306,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 500
+          }
+        },
+        "byFormatFamily": {
+          "SPOKEN": {
+            "label": "SPOKEN",
+            "departures": 1246,
+            "avgDepartingSlotQ": 94.32905296950241,
+            "avgReplacementSlotQ": 86.73354735152488,
+            "avgImmediateSlotQDrop": 7.595505617977528,
+            "pctFullyRecoverQuality": 87.56,
+            "pctExceedPriorQuality": 48.8,
+            "avgYearsToRecoverQuality": 1.1049495875343722,
+            "medianYearsToRecoverQuality": 0,
+            "pctRecoverRevenue": 82.34,
+            "avgYearsToRecoverRevenue": 1.2758284600389864,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 155
+          },
+          "ADULT": {
+            "label": "ADULT",
+            "departures": 1126,
+            "avgDepartingSlotQ": 92.48312611012433,
+            "avgReplacementSlotQ": 83.72557726465364,
+            "avgImmediateSlotQDrop": 8.757548845470692,
+            "pctFullyRecoverQuality": 85.52,
+            "pctExceedPriorQuality": 43.16,
+            "avgYearsToRecoverQuality": 1.195742471443406,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 80.82,
+            "avgYearsToRecoverRevenue": 1.037912087912088,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 163
+          },
+          "ROCK": {
+            "label": "ROCK",
+            "departures": 1246,
+            "avgDepartingSlotQ": 92.20304975922953,
+            "avgReplacementSlotQ": 78.87720706260032,
+            "avgImmediateSlotQDrop": 13.325842696629213,
+            "pctFullyRecoverQuality": 83.87,
+            "pctExceedPriorQuality": 33.71,
+            "avgYearsToRecoverQuality": 1.7665071770334928,
+            "medianYearsToRecoverQuality": 1,
+            "pctRecoverRevenue": 84.43,
+            "avgYearsToRecoverRevenue": 0.7362167300380228,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 201
+          },
+          "HITS": {
+            "label": "HITS",
+            "departures": 774,
+            "avgDepartingSlotQ": 92.94702842377261,
+            "avgReplacementSlotQ": 82.5749354005168,
+            "avgImmediateSlotQDrop": 10.372093023255815,
+            "pctFullyRecoverQuality": 86.18,
+            "pctExceedPriorQuality": 43.02,
+            "avgYearsToRecoverQuality": 1.353823088455772,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 80.75,
+            "avgYearsToRecoverRevenue": 0.9344,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 107
+          },
+          "URBAN": {
+            "label": "URBAN",
+            "departures": 582,
+            "avgDepartingSlotQ": 93.11855670103093,
+            "avgReplacementSlotQ": 81.2405498281787,
+            "avgImmediateSlotQDrop": 11.878006872852234,
+            "pctFullyRecoverQuality": 84.36,
+            "pctExceedPriorQuality": 32.65,
+            "avgYearsToRecoverQuality": 1.5580448065173116,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 82.3,
+            "avgYearsToRecoverRevenue": 0.732776617954071,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 91
+          },
+          "CHRISTIAN": {
+            "label": "CHRISTIAN",
+            "departures": 57,
+            "avgDepartingSlotQ": 56.70175438596491,
+            "avgReplacementSlotQ": 44.85964912280702,
+            "avgImmediateSlotQDrop": 11.842105263157896,
+            "pctFullyRecoverQuality": 61.4,
+            "pctExceedPriorQuality": 50.88,
+            "avgYearsToRecoverQuality": 5.7,
+            "medianYearsToRecoverQuality": 4,
+            "pctRecoverRevenue": 92.98,
+            "avgYearsToRecoverRevenue": 0.8207547169811321,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 22
+          },
+          "COUNTRY": {
+            "label": "COUNTRY",
+            "departures": 723,
+            "avgDepartingSlotQ": 93.0359612724758,
+            "avgReplacementSlotQ": 83.20470262793914,
+            "avgImmediateSlotQDrop": 9.831258644536653,
+            "pctFullyRecoverQuality": 84.51,
+            "pctExceedPriorQuality": 44.81,
+            "avgYearsToRecoverQuality": 1.1759410801963994,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 83.82,
+            "avgYearsToRecoverRevenue": 0.594059405940594,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 112
+          },
+          "SPANISH": {
+            "label": "SPANISH",
+            "departures": 167,
+            "avgDepartingSlotQ": 90.16167664670658,
+            "avgReplacementSlotQ": 79.65269461077844,
+            "avgImmediateSlotQDrop": 10.508982035928144,
+            "pctFullyRecoverQuality": 79.04,
+            "pctExceedPriorQuality": 38.32,
+            "avgYearsToRecoverQuality": 1.1401515151515151,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 75.45,
+            "avgYearsToRecoverRevenue": 1.1388888888888888,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 35
+          },
+          "REMNANT": {
+            "label": "REMNANT",
+            "departures": 69,
+            "avgDepartingSlotQ": 78.02898550724638,
+            "avgReplacementSlotQ": 65.85507246376811,
+            "avgImmediateSlotQDrop": 12.173913043478262,
+            "pctFullyRecoverQuality": 53.62,
+            "pctExceedPriorQuality": 37.68,
+            "avgYearsToRecoverQuality": 2.8513513513513513,
+            "medianYearsToRecoverQuality": 1,
+            "pctRecoverRevenue": 82.61,
+            "avgYearsToRecoverRevenue": 0.17543859649122806,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 32
+          }
+        }
+      },
+      "certProxy": {
+        "newyork": {
+          "runs": 6,
+          "meanOq": 64.65166666666667,
+          "pct9599": 16.351666666666667,
+          "formatFamilyShareMean": {
+            "SPANISH": 0.08461914175452094,
+            "SPOKEN": 0.1152767615962015,
+            "REMNANT": 0.0422880575697431,
+            "ADULT": 0.1644522830873678,
+            "URBAN": 0.11465575072851131,
+            "ROCK": 0.2593067030971893,
+            "HITS": 0.13027973248152533,
+            "COUNTRY": 0.08912156968494074
+          }
+        },
+        "losangeles": {
+          "runs": 6,
+          "meanOq": 63.51333333333333,
+          "pct9599": 13.953333333333333,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.11286277180673732,
+            "ROCK": 0.23779699706423849,
+            "URBAN": 0.12763332213763248,
+            "ADULT": 0.1610769020251779,
+            "COUNTRY": 0.07637753769219287,
+            "HITS": 0.1550951323580634,
+            "CHRISTIAN": 0.02857142857142857,
+            "SPANISH": 0.09336872418768971,
+            "REMNANT": 0.03723204955963577
+          }
+        },
+        "chicago": {
+          "runs": 6,
+          "meanOq": 62.21666666666667,
+          "pct9599": 20.086666666666666,
+          "formatFamilyShareMean": {
+            "HITS": 0.15363242071021957,
+            "ROCK": 0.19525917894039335,
+            "SPOKEN": 0.1680973464654679,
+            "COUNTRY": 0.08639047016656125,
+            "SPANISH": 0.0857760308424445,
+            "URBAN": 0.10708713592964066,
+            "ADULT": 0.1389114785699226,
+            "REMNANT": 0.0719327731092437,
+            "CHRISTIAN": 0.029411764705882353
+          }
+        },
+        "seattle": {
+          "runs": 6,
+          "meanOq": 69.81333333333333,
+          "pct9599": 30.870000000000005,
+          "formatFamilyShareMean": {
+            "URBAN": 0.06431159420289854,
+            "HITS": 0.1629826212434908,
+            "SPOKEN": 0.1610742518351214,
+            "ADULT": 0.1911969069577765,
+            "ROCK": 0.2727506430767301,
+            "COUNTRY": 0.12603315766359244,
+            "SPANISH": 0.06954106280193237,
+            "REMNANT": 0.05950937950937951
+          }
+        },
+        "sanfrancisco": {
+          "runs": 6,
+          "meanOq": 67.285,
+          "pct9599": 24.785000000000007,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.12724088713219148,
+            "HITS": 0.1414833113746157,
+            "SPANISH": 0.07548221343873518,
+            "ADULT": 0.17082564778216955,
+            "ROCK": 0.24877250768555118,
+            "COUNTRY": 0.09941480017566974,
+            "URBAN": 0.0994905577514273,
+            "REMNANT": 0.04987044356609574
+          }
+        },
+        "atlanta": {
+          "runs": 6,
+          "meanOq": 68.85666666666667,
+          "pct9599": 16.856666666666666,
+          "formatFamilyShareMean": {
+            "ROCK": 0.22474747474747472,
+            "HITS": 0.13446969696969696,
+            "SPOKEN": 0.16224747474747475,
+            "ADULT": 0.1691919191919192,
+            "COUNTRY": 0.11994949494949496,
+            "REMNANT": 0.04242424242424242,
+            "URBAN": 0.0909090909090909,
+            "SPANISH": 0.05075757575757576,
+            "CHRISTIAN": 0.0625
+          }
+        },
+        "nashville": {
+          "runs": 6,
+          "meanOq": 66.64833333333334,
+          "pct9599": 28.781666666666666,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.2091617933723197,
+            "HITS": 0.07821637426900585,
+            "ADULT": 0.19020467836257307,
+            "COUNTRY": 0.1314327485380117,
+            "ROCK": 0.23552631578947367,
+            "URBAN": 0.06333333333333332,
+            "REMNANT": 0.06163742690058479,
+            "SPANISH": 0.05131578947368421,
+            "CHRISTIAN": 0.06842105263157895
+          }
+        },
+        "wichita": {
+          "runs": 6,
+          "meanOq": 75.68833333333335,
+          "pct9599": 31.288333333333338,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.1543859649122807,
+            "HITS": 0.15204678362573099,
+            "COUNTRY": 0.1473684210526316,
+            "URBAN": 0.15789473684210525,
+            "ROCK": 0.2953216374269006,
+            "ADULT": 0.14736842105263157,
+            "REMNANT": 0.06666666666666667,
+            "CHRISTIAN": 0.05964912280701754
+          }
+        }
+      },
+      "_baselineMeanOq": 67.33,
+      "_score": 114.89,
+      "_verdict": "baseline"
+    },
+    {
+      "variant": "B",
+      "runs": {
+        "total": 48,
+        "ok": 48,
+        "failed": 0
+      },
+      "majorMorningDepartures": 5749,
+      "allMorningDepartures": 11193,
+      "recovery": {
+        "allCommercial": {
+          "label": "all_commercial",
+          "departures": 11193,
+          "avgDepartingSlotQ": 74.13660323416421,
+          "avgReplacementSlotQ": 66.70177789689984,
+          "avgImmediateSlotQDrop": 7.434825337264361,
+          "pctFullyRecoverQuality": 81.66,
+          "pctExceedPriorQuality": 57.8,
+          "avgYearsToRecoverQuality": 1.9846827133479212,
+          "medianYearsToRecoverQuality": 0.5,
+          "pctRecoverRevenue": 82.68,
+          "avgYearsToRecoverRevenue": 0.8889129025286363,
+          "medianYearsToRecoverRevenue": 0,
+          "neverRecoveredQuality": 2053
+        },
+        "majorOnly": {
+          "label": "major_only",
+          "departures": 5749,
+          "avgDepartingSlotQ": 92.09375543572796,
+          "avgReplacementSlotQ": 81.23621499391199,
+          "avgImmediateSlotQDrop": 10.857540441815967,
+          "pctFullyRecoverQuality": 83.77,
+          "pctExceedPriorQuality": 39.35,
+          "avgYearsToRecoverQuality": 1.534156976744186,
+          "medianYearsToRecoverQuality": 0.5,
+          "pctRecoverRevenue": 81.01,
+          "avgYearsToRecoverRevenue": 0.8651492377066781,
+          "medianYearsToRecoverRevenue": 0,
+          "neverRecoveredQuality": 933
+        }
+      },
+      "oq2020": {
+        "commercialSnapshots": 1189,
+        "meanOqAcrossRuns": 67.18,
+        "pctAbove90": 31.79,
+        "pct9599": 23.47,
+        "bucketCounts": {
+          "lt50": 397,
+          "50-59": 108,
+          "60-69": 66,
+          "70-79": 89,
+          "80-89": 151,
+          "90-94": 99,
+          "95-99": 279
+        },
+        "bucketPct": {
+          "lt50": 33.39,
+          "50-59": 9.08,
+          "60-69": 5.55,
+          "70-79": 7.49,
+          "80-89": 12.7,
+          "90-94": 8.33,
+          "95-99": 23.47
+        }
+      },
+      "playerSideEffects": {
+        "playerMorningDepartures": 24,
+        "playerStationsAt2020": 37,
+        "playerStationsAbove95At2020": 0,
+        "playerMajorDepartures": 9,
+        "playerMajorRecovery": {
+          "label": "player_major",
+          "departures": 0,
+          "avgDepartingSlotQ": null,
+          "avgReplacementSlotQ": null,
+          "avgImmediateSlotQDrop": null,
+          "pctFullyRecoverQuality": 0,
+          "pctExceedPriorQuality": 0,
+          "avgYearsToRecoverQuality": null,
+          "medianYearsToRecoverQuality": null,
+          "pctRecoverRevenue": 0,
+          "avgYearsToRecoverRevenue": null,
+          "medianYearsToRecoverRevenue": null,
+          "neverRecoveredQuality": 0
+        }
+      },
+      "breakdowns": {
+        "byMarketSize": {
+          "mega": {
+            "label": "mega",
+            "departures": 2675,
+            "avgDepartingSlotQ": 91.49906542056075,
+            "avgReplacementSlotQ": 80.6007476635514,
+            "avgImmediateSlotQDrop": 10.898317757009346,
+            "pctFullyRecoverQuality": 82.39,
+            "pctExceedPriorQuality": 37.2,
+            "avgYearsToRecoverQuality": 1.5258620689655173,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 79.07,
+            "avgYearsToRecoverRevenue": 0.9394799054373523,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 471
+          },
+          "large": {
+            "label": "large",
+            "departures": 1979,
+            "avgDepartingSlotQ": 92.3122789287519,
+            "avgReplacementSlotQ": 81.11116725619,
+            "avgImmediateSlotQDrop": 11.2011116725619,
+            "pctFullyRecoverQuality": 84.39,
+            "pctExceedPriorQuality": 39.67,
+            "avgYearsToRecoverQuality": 1.5895209580838323,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 81.35,
+            "avgYearsToRecoverRevenue": 0.8372670807453416,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 309
+          },
+          "medium": {
+            "label": "medium",
+            "departures": 561,
+            "avgDepartingSlotQ": 92.12299465240642,
+            "avgReplacementSlotQ": 81.73083778966132,
+            "avgImmediateSlotQDrop": 10.392156862745098,
+            "pctFullyRecoverQuality": 83.6,
+            "pctExceedPriorQuality": 42.6,
+            "avgYearsToRecoverQuality": 1.4168443496801706,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 86.1,
+            "avgYearsToRecoverRevenue": 0.9202898550724637,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 92
+          },
+          "small": {
+            "label": "small",
+            "departures": 534,
+            "avgDepartingSlotQ": 94.23220973782772,
+            "avgReplacementSlotQ": 84.3632958801498,
+            "avgImmediateSlotQDrop": 9.868913857677903,
+            "pctFullyRecoverQuality": 88.58,
+            "pctExceedPriorQuality": 45.51,
+            "avgYearsToRecoverQuality": 1.4936575052854122,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 84.08,
+            "avgYearsToRecoverRevenue": 0.5556792873051225,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 61
+          }
+        },
+        "byOwnership": {
+          "independent": {
+            "label": "independent",
+            "departures": 4751,
+            "avgDepartingSlotQ": 92.72153230898758,
+            "avgReplacementSlotQ": 81.5948221427068,
+            "avgImmediateSlotQDrop": 11.126710166280782,
+            "pctFullyRecoverQuality": 85.94,
+            "pctExceedPriorQuality": 40.2,
+            "avgYearsToRecoverQuality": 1.544575067352437,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 81.77,
+            "avgYearsToRecoverRevenue": 0.8994851994851994,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 668
+          },
+          "corporate": {
+            "label": "corporate",
+            "departures": 998,
+            "avgDepartingSlotQ": 89.10521042084169,
+            "avgReplacementSlotQ": 79.52905811623246,
+            "avgImmediateSlotQDrop": 9.576152304609218,
+            "pctFullyRecoverQuality": 73.45,
+            "pctExceedPriorQuality": 35.27,
+            "avgYearsToRecoverQuality": 1.47612551159618,
+            "medianYearsToRecoverQuality": 0,
+            "pctRecoverRevenue": 77.35,
+            "avgYearsToRecoverRevenue": 0.6923575129533679,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 265
+          },
+          "player": {
+            "label": "player",
+            "departures": 0,
+            "avgDepartingSlotQ": null,
+            "avgReplacementSlotQ": null,
+            "avgImmediateSlotQDrop": null,
+            "pctFullyRecoverQuality": 0,
+            "pctExceedPriorQuality": 0,
+            "avgYearsToRecoverQuality": null,
+            "medianYearsToRecoverQuality": null,
+            "pctRecoverRevenue": 0,
+            "avgYearsToRecoverRevenue": null,
+            "medianYearsToRecoverRevenue": null,
+            "neverRecoveredQuality": 0
+          }
+        },
+        "byDepartSlotTier": {
+          "lt70": {
+            "label": "lt70",
+            "departures": 498,
+            "avgDepartingSlotQ": 50.41967871485944,
+            "avgReplacementSlotQ": 42.46586345381526,
+            "avgImmediateSlotQDrop": 7.953815261044177,
+            "pctFullyRecoverQuality": 62.65,
+            "pctExceedPriorQuality": 59.44,
+            "avgYearsToRecoverQuality": 4.049679487179487,
+            "medianYearsToRecoverQuality": 2.5,
+            "pctRecoverRevenue": 82.73,
+            "avgYearsToRecoverRevenue": 0.8944174757281553,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 186
+          },
+          "70-84": {
+            "label": "70-84",
+            "departures": 154,
+            "avgDepartingSlotQ": 76.27922077922078,
+            "avgReplacementSlotQ": 64.48051948051948,
+            "avgImmediateSlotQDrop": 11.7987012987013,
+            "pctFullyRecoverQuality": 49.35,
+            "pctExceedPriorQuality": 47.4,
+            "avgYearsToRecoverQuality": 3.401315789473684,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 83.77,
+            "avgYearsToRecoverRevenue": 1.1627906976744187,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 78
+          },
+          "85-94": {
+            "label": "85-94",
+            "departures": 750,
+            "avgDepartingSlotQ": 89.29066666666667,
+            "avgReplacementSlotQ": 77.93733333333333,
+            "avgImmediateSlotQDrop": 11.353333333333333,
+            "pctFullyRecoverQuality": 77.33,
+            "pctExceedPriorQuality": 76.93,
+            "avgYearsToRecoverQuality": 2.0612068965517243,
+            "medianYearsToRecoverQuality": 1,
+            "pctRecoverRevenue": 81.33,
+            "avgYearsToRecoverRevenue": 0.7172131147540983,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 170
+          },
+          "95+": {
+            "label": "95+",
+            "departures": 4347,
+            "avgDepartingSlotQ": 97.91189325971935,
+            "avgReplacementSlotQ": 86.84057971014492,
+            "avgImmediateSlotQDrop": 11.07131354957442,
+            "pctFullyRecoverQuality": 88.52,
+            "pctExceedPriorQuality": 30.27,
+            "avgYearsToRecoverQuality": 1.213877338877339,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 80.65,
+            "avgYearsToRecoverRevenue": 0.876497432972048,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 499
+          }
+        },
+        "byFormatFamily": {
+          "SPOKEN": {
+            "label": "SPOKEN",
+            "departures": 1089,
+            "avgDepartingSlotQ": 94.0633608815427,
+            "avgReplacementSlotQ": 85.3783287419651,
+            "avgImmediateSlotQDrop": 8.685032139577594,
+            "pctFullyRecoverQuality": 86.87,
+            "pctExceedPriorQuality": 45.64,
+            "avgYearsToRecoverQuality": 1.27061310782241,
+            "medianYearsToRecoverQuality": 0,
+            "pctRecoverRevenue": 82.46,
+            "avgYearsToRecoverRevenue": 1.1024498886414253,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 143
+          },
+          "HITS": {
+            "label": "HITS",
+            "departures": 773,
+            "avgDepartingSlotQ": 93.30530401034929,
+            "avgReplacementSlotQ": 83.28460543337646,
+            "avgImmediateSlotQDrop": 10.020698576972833,
+            "pctFullyRecoverQuality": 85.51,
+            "pctExceedPriorQuality": 41.01,
+            "avgYearsToRecoverQuality": 1.285930408472012,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 81.37,
+            "avgYearsToRecoverRevenue": 0.8608903020667726,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 112
+          },
+          "URBAN": {
+            "label": "URBAN",
+            "departures": 546,
+            "avgDepartingSlotQ": 92.84615384615384,
+            "avgReplacementSlotQ": 79.65201465201466,
+            "avgImmediateSlotQDrop": 13.194139194139193,
+            "pctFullyRecoverQuality": 82.42,
+            "pctExceedPriorQuality": 32.05,
+            "avgYearsToRecoverQuality": 1.7677777777777777,
+            "medianYearsToRecoverQuality": 1,
+            "pctRecoverRevenue": 75.64,
+            "avgYearsToRecoverRevenue": 0.698547215496368,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 96
+          },
+          "ADULT": {
+            "label": "ADULT",
+            "departures": 1106,
+            "avgDepartingSlotQ": 92.1130198915009,
+            "avgReplacementSlotQ": 83.13562386980108,
+            "avgImmediateSlotQDrop": 8.97739602169982,
+            "pctFullyRecoverQuality": 85.08,
+            "pctExceedPriorQuality": 43.76,
+            "avgYearsToRecoverQuality": 1.230605738575983,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 80.92,
+            "avgYearsToRecoverRevenue": 1.0072625698324023,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 165
+          },
+          "ROCK": {
+            "label": "ROCK",
+            "departures": 1247,
+            "avgDepartingSlotQ": 91.88853247794707,
+            "avgReplacementSlotQ": 78.31836407377706,
+            "avgImmediateSlotQDrop": 13.570168404170008,
+            "pctFullyRecoverQuality": 83.96,
+            "pctExceedPriorQuality": 32,
+            "avgYearsToRecoverQuality": 1.9188156638013372,
+            "medianYearsToRecoverQuality": 1,
+            "pctRecoverRevenue": 83.64,
+            "avgYearsToRecoverRevenue": 0.7464046021093,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 200
+          },
+          "REMNANT": {
+            "label": "REMNANT",
+            "departures": 84,
+            "avgDepartingSlotQ": 75.76190476190476,
+            "avgReplacementSlotQ": 66,
+            "avgImmediateSlotQDrop": 9.761904761904763,
+            "pctFullyRecoverQuality": 58.33,
+            "pctExceedPriorQuality": 45.24,
+            "avgYearsToRecoverQuality": 3.2244897959183674,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 86.9,
+            "avgYearsToRecoverRevenue": 0.19863013698630136,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 35
+          },
+          "COUNTRY": {
+            "label": "COUNTRY",
+            "departures": 678,
+            "avgDepartingSlotQ": 92.71386430678466,
+            "avgReplacementSlotQ": 81.29498525073747,
+            "avgImmediateSlotQDrop": 11.418879056047198,
+            "pctFullyRecoverQuality": 81.12,
+            "pctExceedPriorQuality": 39.53,
+            "avgYearsToRecoverQuality": 1.549090909090909,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 79.35,
+            "avgYearsToRecoverRevenue": 0.671003717472119,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 128
+          },
+          "SPANISH": {
+            "label": "SPANISH",
+            "departures": 182,
+            "avgDepartingSlotQ": 88.35164835164835,
+            "avgReplacementSlotQ": 77.42307692307692,
+            "avgImmediateSlotQDrop": 10.928571428571429,
+            "pctFullyRecoverQuality": 80.22,
+            "pctExceedPriorQuality": 34.62,
+            "avgYearsToRecoverQuality": 1.3150684931506849,
+            "medianYearsToRecoverQuality": 0.5,
+            "pctRecoverRevenue": 72.53,
+            "avgYearsToRecoverRevenue": 0.8939393939393939,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 36
+          },
+          "CHRISTIAN": {
+            "label": "CHRISTIAN",
+            "departures": 44,
+            "avgDepartingSlotQ": 55.15909090909091,
+            "avgReplacementSlotQ": 41.29545454545455,
+            "avgImmediateSlotQDrop": 13.863636363636363,
+            "pctFullyRecoverQuality": 59.09,
+            "pctExceedPriorQuality": 47.73,
+            "avgYearsToRecoverQuality": 6.615384615384615,
+            "medianYearsToRecoverQuality": 4,
+            "pctRecoverRevenue": 81.82,
+            "avgYearsToRecoverRevenue": 0.9861111111111112,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 18
+          }
+        }
+      },
+      "certProxy": {
+        "newyork": {
+          "runs": 6,
+          "meanOq": 63.88833333333333,
+          "pct9599": 21.62166666666667,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.16801893289084938,
+            "COUNTRY": 0.08913243816588218,
+            "ADULT": 0.16183896090205388,
+            "ROCK": 0.1774160519535282,
+            "REMNANT": 0.04600323083778966,
+            "SPANISH": 0.08992608895953297,
+            "URBAN": 0.10183933910807724,
+            "HITS": 0.1811593674615496
+          }
+        },
+        "losangeles": {
+          "runs": 6,
+          "meanOq": 64.18666666666667,
+          "pct9599": 19.631666666666668,
+          "formatFamilyShareMean": {
+            "ROCK": 0.22294079794079794,
+            "REMNANT": 0.037369691119691115,
+            "HITS": 0.12617438867438865,
+            "SPOKEN": 0.11830625268125268,
+            "ADULT": 0.1747546653796654,
+            "SPANISH": 0.08866232303732303,
+            "COUNTRY": 0.07710478335478334,
+            "URBAN": 0.1609153796653797
+          }
+        },
+        "chicago": {
+          "runs": 6,
+          "meanOq": 62.43166666666667,
+          "pct9599": 17.918333333333333,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.11578344721727074,
+            "ADULT": 0.17523890869479106,
+            "COUNTRY": 0.0790903314187628,
+            "SPANISH": 0.09016513170924938,
+            "ROCK": 0.20657060804119629,
+            "HITS": 0.17770206146431636,
+            "REMNANT": 0.050471132897603486,
+            "URBAN": 0.10328922393873374,
+            "CHRISTIAN": 0.06060606060606061
+          }
+        },
+        "seattle": {
+          "runs": 6,
+          "meanOq": 69.28333333333335,
+          "pct9599": 24.603333333333335,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.18180688876341053,
+            "HITS": 0.17170336909467343,
+            "SPANISH": 0.08496047430830041,
+            "COUNTRY": 0.11792019574628271,
+            "ROCK": 0.25928728276554364,
+            "ADULT": 0.1772401028922768,
+            "URBAN": 0.044466403162055336,
+            "REMNANT": 0.06173913043478261
+          }
+        },
+        "sanfrancisco": {
+          "runs": 6,
+          "meanOq": 67.27333333333333,
+          "pct9599": 23.286666666666665,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.15199806232414928,
+            "HITS": 0.15574069650156608,
+            "ROCK": 0.23472089504698201,
+            "COUNTRY": 0.13208711578276797,
+            "REMNANT": 0.041937410415671283,
+            "ADULT": 0.15978858098423315,
+            "SPANISH": 0.06382385730211818,
+            "URBAN": 0.07753025959547698
+          }
+        },
+        "atlanta": {
+          "runs": 6,
+          "meanOq": 69.37166666666667,
+          "pct9599": 26.573333333333334,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.1326698663655185,
+            "HITS": 0.12443142606186085,
+            "COUNTRY": 0.14024562394127613,
+            "ADULT": 0.1913859087772131,
+            "SPANISH": 0.05910424116945856,
+            "ROCK": 0.22839026915113872,
+            "CHRISTIAN": 0.06719367588932806,
+            "URBAN": 0.08619188782232261,
+            "REMNANT": 0.045548654244306416
+          }
+        },
+        "nashville": {
+          "runs": 6,
+          "meanOq": 66.21666666666667,
+          "pct9599": 27.698333333333334,
+          "formatFamilyShareMean": {
+            "ADULT": 0.22404540763673889,
+            "HITS": 0.07969556243550052,
+            "ROCK": 0.25198658410732716,
+            "SPOKEN": 0.19419504643962848,
+            "REMNANT": 0.05381836945304438,
+            "COUNTRY": 0.1512125902992776,
+            "SPANISH": 0.05381836945304438,
+            "URBAN": 0.05588235294117647,
+            "CHRISTIAN": 0.05131578947368421
+          }
+        },
+        "wichita": {
+          "runs": 6,
+          "meanOq": 74.81500000000001,
+          "pct9599": 36.14,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.1631578947368421,
+            "HITS": 0.1497076023391813,
+            "COUNTRY": 0.18947368421052632,
+            "ROCK": 0.27543859649122804,
+            "ADULT": 0.16491228070175437,
+            "URBAN": 0.05263157894736842,
+            "CHRISTIAN": 0.06198830409356725,
+            "REMNANT": 0.05263157894736842
+          }
+        }
+      },
+      "_baselineMeanOq": 67.33,
+      "_score": 114.74,
+      "_verdict": "leave_alone"
+    },
+    {
+      "variant": "C",
+      "runs": {
+        "total": 48,
+        "ok": 48,
+        "failed": 0
+      },
+      "majorMorningDepartures": 4539,
+      "allMorningDepartures": 11040,
+      "recovery": {
+        "allCommercial": {
+          "label": "all_commercial",
+          "departures": 11040,
+          "avgDepartingSlotQ": 68.56648550724638,
+          "avgReplacementSlotQ": 54.12409420289855,
+          "avgImmediateSlotQDrop": 14.442391304347826,
+          "pctFullyRecoverQuality": 80.74,
+          "pctExceedPriorQuality": 65.79,
+          "avgYearsToRecoverQuality": 2.196152120260265,
+          "medianYearsToRecoverQuality": 1,
+          "pctRecoverRevenue": 82.62,
+          "avgYearsToRecoverRevenue": 0.9698497971713628,
+          "medianYearsToRecoverRevenue": 0,
+          "neverRecoveredQuality": 2126
+        },
+        "majorOnly": {
+          "label": "major_only",
+          "departures": 4539,
+          "avgDepartingSlotQ": 90.28486450760079,
+          "avgReplacementSlotQ": 54.42938973342146,
+          "avgImmediateSlotQDrop": 35.855474774179335,
+          "pctFullyRecoverQuality": 77.09,
+          "pctExceedPriorQuality": 43.03,
+          "avgYearsToRecoverQuality": 2.5703058016576166,
+          "medianYearsToRecoverQuality": 1.5,
+          "pctRecoverRevenue": 81.21,
+          "avgYearsToRecoverRevenue": 1.0031199131850244,
+          "medianYearsToRecoverRevenue": 0,
+          "neverRecoveredQuality": 1040
+        }
+      },
+      "oq2020": {
+        "commercialSnapshots": 1207,
+        "meanOqAcrossRuns": 65.01,
+        "pctAbove90": 25.68,
+        "pct9599": 19.39,
+        "bucketCounts": {
+          "lt50": 404,
+          "50-59": 113,
+          "60-69": 115,
+          "70-79": 129,
+          "80-89": 136,
+          "90-94": 76,
+          "95-99": 234
+        },
+        "bucketPct": {
+          "lt50": 33.47,
+          "50-59": 9.36,
+          "60-69": 9.53,
+          "70-79": 10.69,
+          "80-89": 11.27,
+          "90-94": 6.3,
+          "95-99": 19.39
+        }
+      },
+      "playerSideEffects": {
+        "playerMorningDepartures": 26,
+        "playerStationsAt2020": 37,
+        "playerStationsAbove95At2020": 0,
+        "playerMajorDepartures": 15,
+        "playerMajorRecovery": {
+          "label": "player_major",
+          "departures": 0,
+          "avgDepartingSlotQ": null,
+          "avgReplacementSlotQ": null,
+          "avgImmediateSlotQDrop": null,
+          "pctFullyRecoverQuality": 0,
+          "pctExceedPriorQuality": 0,
+          "avgYearsToRecoverQuality": null,
+          "medianYearsToRecoverQuality": null,
+          "pctRecoverRevenue": 0,
+          "avgYearsToRecoverRevenue": null,
+          "medianYearsToRecoverRevenue": null,
+          "neverRecoveredQuality": 0
+        }
+      },
+      "breakdowns": {
+        "byMarketSize": {
+          "mega": {
+            "label": "mega",
+            "departures": 2104,
+            "avgDepartingSlotQ": 89.88593155893535,
+            "avgReplacementSlotQ": 54.273288973384034,
+            "avgImmediateSlotQDrop": 35.61264258555133,
+            "pctFullyRecoverQuality": 73.67,
+            "pctExceedPriorQuality": 38.97,
+            "avgYearsToRecoverQuality": 2.654193548387097,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 80.32,
+            "avgYearsToRecoverRevenue": 1.0852071005917159,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 554
+          },
+          "large": {
+            "label": "large",
+            "departures": 1508,
+            "avgDepartingSlotQ": 90.03846153846153,
+            "avgReplacementSlotQ": 53.69164456233422,
+            "avgImmediateSlotQDrop": 36.34681697612732,
+            "pctFullyRecoverQuality": 79.84,
+            "pctExceedPriorQuality": 47.15,
+            "avgYearsToRecoverQuality": 2.624169435215947,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 82.1,
+            "avgYearsToRecoverRevenue": 0.8578352180936996,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 304
+          },
+          "medium": {
+            "label": "medium",
+            "departures": 511,
+            "avgDepartingSlotQ": 90.8825831702544,
+            "avgReplacementSlotQ": 55.55772994129158,
+            "avgImmediateSlotQDrop": 35.324853228962816,
+            "pctFullyRecoverQuality": 79.06,
+            "pctExceedPriorQuality": 48.14,
+            "avgYearsToRecoverQuality": 2.3502475247524752,
+            "medianYearsToRecoverQuality": 1,
+            "pctRecoverRevenue": 82.19,
+            "avgYearsToRecoverRevenue": 1.1202380952380953,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 107
+          },
+          "small": {
+            "label": "small",
+            "departures": 416,
+            "avgDepartingSlotQ": 92.46153846153847,
+            "avgReplacementSlotQ": 56.50721153846154,
+            "avgImmediateSlotQDrop": 35.95432692307692,
+            "pctFullyRecoverQuality": 81.97,
+            "pctExceedPriorQuality": 42.31,
+            "avgYearsToRecoverQuality": 2.2595307917888565,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 81.25,
+            "avgYearsToRecoverRevenue": 0.9792899408284024,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 75
+          }
+        },
+        "byOwnership": {
+          "independent": {
+            "label": "independent",
+            "departures": 3791,
+            "avgDepartingSlotQ": 91.14560801899235,
+            "avgReplacementSlotQ": 54.34581904510683,
+            "avgImmediateSlotQDrop": 36.79978897388552,
+            "pctFullyRecoverQuality": 80.22,
+            "pctExceedPriorQuality": 44.37,
+            "avgYearsToRecoverQuality": 2.4814205853337716,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 82.19,
+            "avgYearsToRecoverRevenue": 1.0101091142490373,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 750
+          },
+          "corporate": {
+            "label": "corporate",
+            "departures": 748,
+            "avgDepartingSlotQ": 85.92245989304813,
+            "avgReplacementSlotQ": 54.85294117647059,
+            "avgImmediateSlotQDrop": 31.06951871657754,
+            "pctFullyRecoverQuality": 61.23,
+            "pctExceedPriorQuality": 36.23,
+            "avgYearsToRecoverQuality": 3.160480349344978,
+            "medianYearsToRecoverQuality": 2.5,
+            "pctRecoverRevenue": 76.2,
+            "avgYearsToRecoverRevenue": 0.9649122807017544,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 290
+          },
+          "player": {
+            "label": "player",
+            "departures": 0,
+            "avgDepartingSlotQ": null,
+            "avgReplacementSlotQ": null,
+            "avgImmediateSlotQDrop": null,
+            "pctFullyRecoverQuality": 0,
+            "pctExceedPriorQuality": 0,
+            "avgYearsToRecoverQuality": null,
+            "medianYearsToRecoverQuality": null,
+            "pctRecoverRevenue": 0,
+            "avgYearsToRecoverRevenue": null,
+            "medianYearsToRecoverRevenue": null,
+            "neverRecoveredQuality": 0
+          }
+        },
+        "byDepartSlotTier": {
+          "lt70": {
+            "label": "lt70",
+            "departures": 561,
+            "avgDepartingSlotQ": 51.288770053475936,
+            "avgReplacementSlotQ": 39.51158645276292,
+            "avgImmediateSlotQDrop": 11.777183600713013,
+            "pctFullyRecoverQuality": 60.25,
+            "pctExceedPriorQuality": 58.82,
+            "avgYearsToRecoverQuality": 4.708579881656805,
+            "medianYearsToRecoverQuality": 3,
+            "pctRecoverRevenue": 83.42,
+            "avgYearsToRecoverRevenue": 1.1303418803418803,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 223
+          },
+          "70-84": {
+            "label": "70-84",
+            "departures": 156,
+            "avgDepartingSlotQ": 77.0576923076923,
+            "avgReplacementSlotQ": 52.416666666666664,
+            "avgImmediateSlotQDrop": 24.641025641025642,
+            "pctFullyRecoverQuality": 46.79,
+            "pctExceedPriorQuality": 45.51,
+            "avgYearsToRecoverQuality": 5.2534246575342465,
+            "medianYearsToRecoverQuality": 3.5,
+            "pctRecoverRevenue": 78.85,
+            "avgYearsToRecoverRevenue": 1.3902439024390243,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 83
+          },
+          "85-94": {
+            "label": "85-94",
+            "departures": 616,
+            "avgDepartingSlotQ": 89.26298701298701,
+            "avgReplacementSlotQ": 55.782467532467535,
+            "avgImmediateSlotQDrop": 33.48051948051948,
+            "pctFullyRecoverQuality": 70.78,
+            "pctExceedPriorQuality": 68.83,
+            "avgYearsToRecoverQuality": 3.322247706422018,
+            "medianYearsToRecoverQuality": 2.5,
+            "pctRecoverRevenue": 84.74,
+            "avgYearsToRecoverRevenue": 0.789272030651341,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 180
+          },
+          "95+": {
+            "label": "95+",
+            "departures": 3206,
+            "avgDepartingSlotQ": 97.94853399875234,
+            "avgReplacementSlotQ": 56.877729257641924,
+            "avgImmediateSlotQDrop": 41.070804741110415,
+            "pctFullyRecoverQuality": 82.72,
+            "pctExceedPriorQuality": 35.18,
+            "avgYearsToRecoverQuality": 2.1003016591251886,
+            "medianYearsToRecoverQuality": 1,
+            "pctRecoverRevenue": 80.26,
+            "avgYearsToRecoverRevenue": 1.004858142246405,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 554
+          }
+        },
+        "byFormatFamily": {
+          "URBAN": {
+            "label": "URBAN",
+            "departures": 410,
+            "avgDepartingSlotQ": 91.72195121951219,
+            "avgReplacementSlotQ": 53.80731707317073,
+            "avgImmediateSlotQDrop": 37.91463414634146,
+            "pctFullyRecoverQuality": 72.44,
+            "pctExceedPriorQuality": 30.73,
+            "avgYearsToRecoverQuality": 2.887205387205387,
+            "medianYearsToRecoverQuality": 2,
+            "pctRecoverRevenue": 77.56,
+            "avgYearsToRecoverRevenue": 0.7091194968553459,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 113
+          },
+          "SPOKEN": {
+            "label": "SPOKEN",
+            "departures": 860,
+            "avgDepartingSlotQ": 93.24302325581395,
+            "avgReplacementSlotQ": 58.00116279069768,
+            "avgImmediateSlotQDrop": 35.24186046511628,
+            "pctFullyRecoverQuality": 81.63,
+            "pctExceedPriorQuality": 52.21,
+            "avgYearsToRecoverQuality": 2.0904558404558404,
+            "medianYearsToRecoverQuality": 1,
+            "pctRecoverRevenue": 83.72,
+            "avgYearsToRecoverRevenue": 1.2854166666666667,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 158
+          },
+          "HITS": {
+            "label": "HITS",
+            "departures": 615,
+            "avgDepartingSlotQ": 92.71219512195123,
+            "avgReplacementSlotQ": 54.28943089430894,
+            "avgImmediateSlotQDrop": 38.422764227642276,
+            "pctFullyRecoverQuality": 81.14,
+            "pctExceedPriorQuality": 46.67,
+            "avgYearsToRecoverQuality": 2.3517034068136273,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 81.14,
+            "avgYearsToRecoverRevenue": 1.0440881763527055,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 116
+          },
+          "ADULT": {
+            "label": "ADULT",
+            "departures": 886,
+            "avgDepartingSlotQ": 91.04063205417607,
+            "avgReplacementSlotQ": 54.276523702031604,
+            "avgImmediateSlotQDrop": 36.76410835214447,
+            "pctFullyRecoverQuality": 80.93,
+            "pctExceedPriorQuality": 44.47,
+            "avgYearsToRecoverQuality": 2.1555090655509064,
+            "medianYearsToRecoverQuality": 1,
+            "pctRecoverRevenue": 81.15,
+            "avgYearsToRecoverRevenue": 1.2440890125173854,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 169
+          },
+          "ROCK": {
+            "label": "ROCK",
+            "departures": 985,
+            "avgDepartingSlotQ": 88.71979695431472,
+            "avgReplacementSlotQ": 53.65786802030457,
+            "avgImmediateSlotQDrop": 35.061928934010155,
+            "pctFullyRecoverQuality": 74.42,
+            "pctExceedPriorQuality": 36.45,
+            "avgYearsToRecoverQuality": 3.329467939972715,
+            "medianYearsToRecoverQuality": 2,
+            "pctRecoverRevenue": 81.52,
+            "avgYearsToRecoverRevenue": 0.7216687422166874,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 252
+          },
+          "COUNTRY": {
+            "label": "COUNTRY",
+            "departures": 517,
+            "avgDepartingSlotQ": 90.87427466150871,
+            "avgReplacementSlotQ": 54.500967117988395,
+            "avgImmediateSlotQDrop": 36.37330754352031,
+            "pctFullyRecoverQuality": 76.02,
+            "pctExceedPriorQuality": 43.91,
+            "avgYearsToRecoverQuality": 2.3829516539440205,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 82.4,
+            "avgYearsToRecoverRevenue": 0.8556338028169014,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 124
+          },
+          "REMNANT": {
+            "label": "REMNANT",
+            "departures": 62,
+            "avgDepartingSlotQ": 73.61290322580645,
+            "avgReplacementSlotQ": 50.62903225806452,
+            "avgImmediateSlotQDrop": 22.983870967741936,
+            "pctFullyRecoverQuality": 43.55,
+            "pctExceedPriorQuality": 38.71,
+            "avgYearsToRecoverQuality": 4.944444444444445,
+            "medianYearsToRecoverQuality": 4,
+            "pctRecoverRevenue": 70.97,
+            "avgYearsToRecoverRevenue": 0.18181818181818182,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 35
+          },
+          "SPANISH": {
+            "label": "SPANISH",
+            "departures": 150,
+            "avgDepartingSlotQ": 84.60666666666667,
+            "avgReplacementSlotQ": 49.85333333333333,
+            "avgImmediateSlotQDrop": 34.75333333333333,
+            "pctFullyRecoverQuality": 64,
+            "pctExceedPriorQuality": 34.67,
+            "avgYearsToRecoverQuality": 2.421875,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 73.33,
+            "avgYearsToRecoverRevenue": 1.2363636363636363,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 54
+          },
+          "CHRISTIAN": {
+            "label": "CHRISTIAN",
+            "departures": 54,
+            "avgDepartingSlotQ": 50.03703703703704,
+            "avgReplacementSlotQ": 36.833333333333336,
+            "avgImmediateSlotQDrop": 13.203703703703704,
+            "pctFullyRecoverQuality": 64.81,
+            "pctExceedPriorQuality": 64.81,
+            "avgYearsToRecoverQuality": 5.9,
+            "medianYearsToRecoverQuality": 4,
+            "pctRecoverRevenue": 87.04,
+            "avgYearsToRecoverRevenue": 0.9148936170212766,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 19
+          }
+        }
+      },
+      "certProxy": {
+        "newyork": {
+          "runs": 6,
+          "meanOq": 62.55333333333334,
+          "pct9599": 15.811666666666666,
+          "formatFamilyShareMean": {
+            "ROCK": 0.2189057917888563,
+            "HITS": 0.12042094330400784,
+            "REMNANT": 0.05702794069729553,
+            "ADULT": 0.15630091234929944,
+            "COUNTRY": 0.07738778918214402,
+            "SPOKEN": 0.13575166992505702,
+            "URBAN": 0.1354584147930922,
+            "SPANISH": 0.09874653796024764
+          }
+        },
+        "losangeles": {
+          "runs": 6,
+          "meanOq": 62.24,
+          "pct9599": 16.123333333333335,
+          "formatFamilyShareMean": {
+            "SPANISH": 0.08301204646081307,
+            "ADULT": 0.17211985845168956,
+            "ROCK": 0.2295340741379641,
+            "SPOKEN": 0.10954947961589327,
+            "URBAN": 0.13518726161041153,
+            "COUNTRY": 0.08360340837214651,
+            "HITS": 0.13562079523891668,
+            "REMNANT": 0.05576533839342188,
+            "CHRISTIAN": 0.029411764705882353
+          }
+        },
+        "chicago": {
+          "runs": 6,
+          "meanOq": 60.154999999999994,
+          "pct9599": 13.771666666666667,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.12765788044917634,
+            "ADULT": 0.17146167699560358,
+            "CHRISTIAN": 0.03125,
+            "SPANISH": 0.07460736797499867,
+            "COUNTRY": 0.09605514063244876,
+            "URBAN": 0.15342112929710258,
+            "ROCK": 0.20198683060543463,
+            "HITS": 0.14715192806822394,
+            "REMNANT": 0.05172413793103448
+          }
+        },
+        "seattle": {
+          "runs": 6,
+          "meanOq": 63.86666666666667,
+          "pct9599": 18.923333333333336,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.18537040889443637,
+            "HITS": 0.143903104269237,
+            "ADULT": 0.19857460955859127,
+            "SPANISH": 0.073408879026728,
+            "ROCK": 0.21835752644677128,
+            "COUNTRY": 0.11532676112767648,
+            "REMNANT": 0.06973711947853825,
+            "URBAN": 0.041666666666666664
+          }
+        },
+        "sanfrancisco": {
+          "runs": 6,
+          "meanOq": 63.626666666666665,
+          "pct9599": 25.478333333333335,
+          "formatFamilyShareMean": {
+            "COUNTRY": 0.11234582647626125,
+            "HITS": 0.16239507942406492,
+            "REMNANT": 0.06988971173753783,
+            "SPOKEN": 0.11634475293895585,
+            "ROCK": 0.223207871033958,
+            "ADULT": 0.1676759097048952,
+            "SPANISH": 0.06126550583072323,
+            "URBAN": 0.110171913432783
+          }
+        },
+        "atlanta": {
+          "runs": 6,
+          "meanOq": 67.23166666666667,
+          "pct9599": 24.41333333333333,
+          "formatFamilyShareMean": {
+            "COUNTRY": 0.12038140201183678,
+            "HITS": 0.13322090818467627,
+            "SPOKEN": 0.1554269053544416,
+            "ADULT": 0.16366815149423844,
+            "ROCK": 0.2474323810918014,
+            "REMNANT": 0.04196020243846331,
+            "URBAN": 0.09320864964343226,
+            "SPANISH": 0.05149246084028693,
+            "CHRISTIAN": 0.06580246913580247
+          }
+        },
+        "nashville": {
+          "runs": 6,
+          "meanOq": 67.485,
+          "pct9599": 23.018333333333334,
+          "formatFamilyShareMean": {
+            "REMNANT": 0.07083333333333335,
+            "HITS": 0.1038864522417154,
+            "ADULT": 0.2100633528265107,
+            "ROCK": 0.24848927875243665,
+            "SPOKEN": 0.18626949317738792,
+            "SPANISH": 0.07219785575048733,
+            "COUNTRY": 0.10738304093567252,
+            "URBAN": 0.05625,
+            "CHRISTIAN": 0.10526315789473684
+          }
+        },
+        "wichita": {
+          "runs": 6,
+          "meanOq": 72.94166666666666,
+          "pct9599": 24.680000000000003,
+          "formatFamilyShareMean": {
+            "ADULT": 0.14736842105263157,
+            "HITS": 0.1608187134502924,
+            "SPOKEN": 0.19824561403508775,
+            "COUNTRY": 0.15614035087719294,
+            "SPANISH": 0.05263157894736842,
+            "ROCK": 0.25789473684210523,
+            "REMNANT": 0.06198830409356725,
+            "CHRISTIAN": 0.06198830409356725
+          }
+        }
+      },
+      "_baselineMeanOq": 67.33,
+      "_score": 85.7,
+      "_verdict": "leave_alone"
+    },
+    {
+      "variant": "D",
+      "runs": {
+        "total": 48,
+        "ok": 48,
+        "failed": 0
+      },
+      "majorMorningDepartures": 4393,
+      "allMorningDepartures": 11262,
+      "recovery": {
+        "allCommercial": {
+          "label": "all_commercial",
+          "departures": 11262,
+          "avgDepartingSlotQ": 67.42052921328361,
+          "avgReplacementSlotQ": 53.88696501509501,
+          "avgImmediateSlotQDrop": 13.533564198188598,
+          "pctFullyRecoverQuality": 80.94,
+          "pctExceedPriorQuality": 66.6,
+          "avgYearsToRecoverQuality": 2.2699396599012616,
+          "medianYearsToRecoverQuality": 1,
+          "pctRecoverRevenue": 82.85,
+          "avgYearsToRecoverRevenue": 0.9807630479048334,
+          "medianYearsToRecoverRevenue": 0,
+          "neverRecoveredQuality": 2147
+        },
+        "majorOnly": {
+          "label": "major_only",
+          "departures": 4393,
+          "avgDepartingSlotQ": 89.55520145686319,
+          "avgReplacementSlotQ": 54.28659230594127,
+          "avgImmediateSlotQDrop": 35.26860915092192,
+          "pctFullyRecoverQuality": 75.23,
+          "pctExceedPriorQuality": 40.97,
+          "avgYearsToRecoverQuality": 2.793494704992436,
+          "medianYearsToRecoverQuality": 1.5,
+          "pctRecoverRevenue": 80.49,
+          "avgYearsToRecoverRevenue": 1.0151300904977376,
+          "medianYearsToRecoverRevenue": 0,
+          "neverRecoveredQuality": 1088
+        }
+      },
+      "oq2020": {
+        "commercialSnapshots": 1199,
+        "meanOqAcrossRuns": 64.37,
+        "pctAbove90": 24.94,
+        "pct9599": 18.68,
+        "bucketCounts": {
+          "lt50": 421,
+          "50-59": 109,
+          "60-69": 95,
+          "70-79": 137,
+          "80-89": 138,
+          "90-94": 75,
+          "95-99": 224
+        },
+        "bucketPct": {
+          "lt50": 35.11,
+          "50-59": 9.09,
+          "60-69": 7.92,
+          "70-79": 11.43,
+          "80-89": 11.51,
+          "90-94": 6.26,
+          "95-99": 18.68
+        }
+      },
+      "playerSideEffects": {
+        "playerMorningDepartures": 27,
+        "playerStationsAt2020": 36,
+        "playerStationsAbove95At2020": 0,
+        "playerMajorDepartures": 14,
+        "playerMajorRecovery": {
+          "label": "player_major",
+          "departures": 0,
+          "avgDepartingSlotQ": null,
+          "avgReplacementSlotQ": null,
+          "avgImmediateSlotQDrop": null,
+          "pctFullyRecoverQuality": 0,
+          "pctExceedPriorQuality": 0,
+          "avgYearsToRecoverQuality": null,
+          "medianYearsToRecoverQuality": null,
+          "pctRecoverRevenue": 0,
+          "avgYearsToRecoverRevenue": null,
+          "medianYearsToRecoverRevenue": null,
+          "neverRecoveredQuality": 0
+        }
+      },
+      "breakdowns": {
+        "byMarketSize": {
+          "mega": {
+            "label": "mega",
+            "departures": 2100,
+            "avgDepartingSlotQ": 89.53714285714285,
+            "avgReplacementSlotQ": 53.833333333333336,
+            "avgImmediateSlotQDrop": 35.703809523809525,
+            "pctFullyRecoverQuality": 72.95,
+            "pctExceedPriorQuality": 37.14,
+            "avgYearsToRecoverQuality": 2.9598563968668405,
+            "medianYearsToRecoverQuality": 2,
+            "pctRecoverRevenue": 78.81,
+            "avgYearsToRecoverRevenue": 1.039274924471299,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 568
+          },
+          "large": {
+            "label": "large",
+            "departures": 1430,
+            "avgDepartingSlotQ": 88.93566433566434,
+            "avgReplacementSlotQ": 53.876223776223775,
+            "avgImmediateSlotQDrop": 35.05944055944056,
+            "pctFullyRecoverQuality": 76.64,
+            "pctExceedPriorQuality": 42.87,
+            "avgYearsToRecoverQuality": 2.6427919708029197,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 81.12,
+            "avgYearsToRecoverRevenue": 0.9538793103448275,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 334
+          },
+          "medium": {
+            "label": "medium",
+            "departures": 473,
+            "avgDepartingSlotQ": 89.8985200845666,
+            "avgReplacementSlotQ": 56.503171247357294,
+            "avgImmediateSlotQDrop": 33.395348837209305,
+            "pctFullyRecoverQuality": 78.86,
+            "pctExceedPriorQuality": 49.05,
+            "avgYearsToRecoverQuality": 2.5,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 82.45,
+            "avgYearsToRecoverRevenue": 0.9871794871794872,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 100
+          },
+          "small": {
+            "label": "small",
+            "departures": 390,
+            "avgDepartingSlotQ": 91.50769230769231,
+            "avgReplacementSlotQ": 55.54358974358974,
+            "avgImmediateSlotQDrop": 35.96410256410256,
+            "pctFullyRecoverQuality": 77.95,
+            "pctExceedPriorQuality": 44.87,
+            "avgYearsToRecoverQuality": 2.8585526315789473,
+            "medianYearsToRecoverQuality": 2,
+            "pctRecoverRevenue": 84.87,
+            "avgYearsToRecoverRevenue": 1.1419939577039275,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 86
+          }
+        },
+        "byOwnership": {
+          "independent": {
+            "label": "independent",
+            "departures": 3611,
+            "avgDepartingSlotQ": 90.45887565771254,
+            "avgReplacementSlotQ": 54.16283577956245,
+            "avgImmediateSlotQDrop": 36.2960398781501,
+            "pctFullyRecoverQuality": 78.01,
+            "pctExceedPriorQuality": 41.82,
+            "avgYearsToRecoverQuality": 2.7396166134185305,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 81.2,
+            "avgYearsToRecoverRevenue": 1.0523533424283766,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 794
+          },
+          "corporate": {
+            "label": "corporate",
+            "departures": 782,
+            "avgDepartingSlotQ": 85.38235294117646,
+            "avgReplacementSlotQ": 54.85805626598466,
+            "avgImmediateSlotQDrop": 30.524296675191817,
+            "pctFullyRecoverQuality": 62.4,
+            "pctExceedPriorQuality": 37.08,
+            "avgYearsToRecoverQuality": 3.1045081967213113,
+            "medianYearsToRecoverQuality": 2,
+            "pctRecoverRevenue": 77.24,
+            "avgYearsToRecoverRevenue": 0.8344370860927153,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 294
+          },
+          "player": {
+            "label": "player",
+            "departures": 0,
+            "avgDepartingSlotQ": null,
+            "avgReplacementSlotQ": null,
+            "avgImmediateSlotQDrop": null,
+            "pctFullyRecoverQuality": 0,
+            "pctExceedPriorQuality": 0,
+            "avgYearsToRecoverQuality": null,
+            "medianYearsToRecoverQuality": null,
+            "pctRecoverRevenue": 0,
+            "avgYearsToRecoverRevenue": null,
+            "medianYearsToRecoverRevenue": null,
+            "neverRecoveredQuality": 0
+          }
+        },
+        "byDepartSlotTier": {
+          "lt70": {
+            "label": "lt70",
+            "departures": 585,
+            "avgDepartingSlotQ": 51.090598290598294,
+            "avgReplacementSlotQ": 38.878632478632476,
+            "avgImmediateSlotQDrop": 12.211965811965811,
+            "pctFullyRecoverQuality": 57.61,
+            "pctExceedPriorQuality": 54.36,
+            "avgYearsToRecoverQuality": 4.4955489614243325,
+            "medianYearsToRecoverQuality": 2.5,
+            "pctRecoverRevenue": 81.54,
+            "avgYearsToRecoverRevenue": 1.0062893081761006,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 248
+          },
+          "70-84": {
+            "label": "70-84",
+            "departures": 186,
+            "avgDepartingSlotQ": 76.27956989247312,
+            "avgReplacementSlotQ": 49.795698924731184,
+            "avgImmediateSlotQDrop": 26.483870967741936,
+            "pctFullyRecoverQuality": 45.7,
+            "pctExceedPriorQuality": 44.62,
+            "avgYearsToRecoverQuality": 4.852941176470588,
+            "medianYearsToRecoverQuality": 4,
+            "pctRecoverRevenue": 81.72,
+            "avgYearsToRecoverRevenue": 1.069078947368421,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 101
+          },
+          "85-94": {
+            "label": "85-94",
+            "departures": 622,
+            "avgDepartingSlotQ": 89.2652733118971,
+            "avgReplacementSlotQ": 56.459807073954984,
+            "avgImmediateSlotQDrop": 32.80546623794212,
+            "pctFullyRecoverQuality": 69.45,
+            "pctExceedPriorQuality": 68.17,
+            "avgYearsToRecoverQuality": 3.5590277777777777,
+            "medianYearsToRecoverQuality": 2.5,
+            "pctRecoverRevenue": 84.89,
+            "avgYearsToRecoverRevenue": 1.0426136363636365,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 190
+          },
+          "95+": {
+            "label": "95+",
+            "departures": 3000,
+            "avgDepartingSlotQ": 97.939,
+            "avgReplacementSlotQ": 57.119,
+            "avgImmediateSlotQDrop": 40.82,
+            "pctFullyRecoverQuality": 81.7,
+            "pctExceedPriorQuality": 32.5,
+            "avgYearsToRecoverQuality": 2.3531211750305996,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 79.3,
+            "avgYearsToRecoverRevenue": 1.0073560319461958,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 549
+          }
+        },
+        "byFormatFamily": {
+          "URBAN": {
+            "label": "URBAN",
+            "departures": 414,
+            "avgDepartingSlotQ": 89.45652173913044,
+            "avgReplacementSlotQ": 52.405797101449274,
+            "avgImmediateSlotQDrop": 37.05072463768116,
+            "pctFullyRecoverQuality": 70.05,
+            "pctExceedPriorQuality": 37.68,
+            "avgYearsToRecoverQuality": 2.918965517241379,
+            "medianYearsToRecoverQuality": 2,
+            "pctRecoverRevenue": 78.02,
+            "avgYearsToRecoverRevenue": 0.7368421052631579,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 124
+          },
+          "SPOKEN": {
+            "label": "SPOKEN",
+            "departures": 816,
+            "avgDepartingSlotQ": 92.35906862745098,
+            "avgReplacementSlotQ": 56.604166666666664,
+            "avgImmediateSlotQDrop": 35.754901960784316,
+            "pctFullyRecoverQuality": 78.8,
+            "pctExceedPriorQuality": 45.59,
+            "avgYearsToRecoverQuality": 2.4222395023328147,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 81.86,
+            "avgYearsToRecoverRevenue": 1.2552395209580838,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 173
+          },
+          "HITS": {
+            "label": "HITS",
+            "departures": 615,
+            "avgDepartingSlotQ": 92.71219512195123,
+            "avgReplacementSlotQ": 54.61951219512195,
+            "avgImmediateSlotQDrop": 38.09268292682927,
+            "pctFullyRecoverQuality": 79.35,
+            "pctExceedPriorQuality": 43.58,
+            "avgYearsToRecoverQuality": 2.3709016393442623,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 77.56,
+            "avgYearsToRecoverRevenue": 0.8584905660377359,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 127
+          },
+          "ADULT": {
+            "label": "ADULT",
+            "departures": 841,
+            "avgDepartingSlotQ": 90.04280618311535,
+            "avgReplacementSlotQ": 55.87514863258026,
+            "avgImmediateSlotQDrop": 34.167657550535075,
+            "pctFullyRecoverQuality": 78.48,
+            "pctExceedPriorQuality": 43.04,
+            "avgYearsToRecoverQuality": 2.610606060606061,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 80.02,
+            "avgYearsToRecoverRevenue": 1.3313521545319464,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 181
+          },
+          "ROCK": {
+            "label": "ROCK",
+            "departures": 923,
+            "avgDepartingSlotQ": 88.38244853737811,
+            "avgReplacementSlotQ": 53.269772481040086,
+            "avgImmediateSlotQDrop": 35.11267605633803,
+            "pctFullyRecoverQuality": 73.89,
+            "pctExceedPriorQuality": 35.43,
+            "avgYearsToRecoverQuality": 3.5249266862170088,
+            "medianYearsToRecoverQuality": 2.5,
+            "pctRecoverRevenue": 81.91,
+            "avgYearsToRecoverRevenue": 0.8346560846560847,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 241
+          },
+          "REMNANT": {
+            "label": "REMNANT",
+            "departures": 55,
+            "avgDepartingSlotQ": 69.21818181818182,
+            "avgReplacementSlotQ": 45.72727272727273,
+            "avgImmediateSlotQDrop": 23.490909090909092,
+            "pctFullyRecoverQuality": 41.82,
+            "pctExceedPriorQuality": 38.18,
+            "avgYearsToRecoverQuality": 2.891304347826087,
+            "medianYearsToRecoverQuality": 2.5,
+            "pctRecoverRevenue": 85.45,
+            "avgYearsToRecoverRevenue": 0.5425531914893617,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 32
+          },
+          "COUNTRY": {
+            "label": "COUNTRY",
+            "departures": 513,
+            "avgDepartingSlotQ": 89.30409356725146,
+            "avgReplacementSlotQ": 54.653021442495124,
+            "avgImmediateSlotQDrop": 34.65107212475633,
+            "pctFullyRecoverQuality": 73.88,
+            "pctExceedPriorQuality": 41.52,
+            "avgYearsToRecoverQuality": 2.7994722955145117,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 81.48,
+            "avgYearsToRecoverRevenue": 0.965311004784689,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 134
+          },
+          "CHRISTIAN": {
+            "label": "CHRISTIAN",
+            "departures": 47,
+            "avgDepartingSlotQ": 55.5531914893617,
+            "avgReplacementSlotQ": 39.97872340425532,
+            "avgImmediateSlotQDrop": 15.574468085106384,
+            "pctFullyRecoverQuality": 59.57,
+            "pctExceedPriorQuality": 48.94,
+            "avgYearsToRecoverQuality": 6.375,
+            "medianYearsToRecoverQuality": 5.5,
+            "pctRecoverRevenue": 91.49,
+            "avgYearsToRecoverRevenue": 1.5,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 19
+          },
+          "SPANISH": {
+            "label": "SPANISH",
+            "departures": 169,
+            "avgDepartingSlotQ": 85.58579881656804,
+            "avgReplacementSlotQ": 49.79289940828402,
+            "avgImmediateSlotQDrop": 35.79289940828402,
+            "pctFullyRecoverQuality": 66.27,
+            "pctExceedPriorQuality": 34.32,
+            "avgYearsToRecoverQuality": 2.1294642857142856,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 77.51,
+            "avgYearsToRecoverRevenue": 0.6335877862595419,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 57
+          }
+        }
+      },
+      "certProxy": {
+        "newyork": {
+          "runs": 6,
+          "meanOq": 63.44166666666666,
+          "pct9599": 12.423333333333334,
+          "formatFamilyShareMean": {
+            "REMNANT": 0.06429771505376344,
+            "SPOKEN": 0.13500224014336917,
+            "SPANISH": 0.086581541218638,
+            "ROCK": 0.2328629032258064,
+            "ADULT": 0.15720206093189962,
+            "COUNTRY": 0.08156362007168459,
+            "URBAN": 0.09699820788530465,
+            "HITS": 0.15599238351254477,
+            "CHRISTIAN": 0.03279569892473118
+          }
+        },
+        "losangeles": {
+          "runs": 6,
+          "meanOq": 60.80833333333334,
+          "pct9599": 10.668333333333335,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.11260122779519331,
+            "ADULT": 0.18417845325172913,
+            "ROCK": 0.21605961088719708,
+            "REMNANT": 0.05483623177588695,
+            "SPANISH": 0.09266075160471711,
+            "COUNTRY": 0.07658932303328855,
+            "URBAN": 0.1252974635517739,
+            "HITS": 0.1330150333383092,
+            "CHRISTIAN": 0.02857142857142857
+          }
+        },
+        "chicago": {
+          "runs": 6,
+          "meanOq": 60.73833333333334,
+          "pct9599": 15.073333333333332,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.15321267457669016,
+            "REMNANT": 0.06589729328883945,
+            "ADULT": 0.1542667006550488,
+            "SPANISH": 0.09400336793968606,
+            "ROCK": 0.1977053979730565,
+            "HITS": 0.12091984921517734,
+            "URBAN": 0.12630855271289088,
+            "COUNTRY": 0.11888070077864295,
+            "CHRISTIAN": 0.031754032258064516
+          }
+        },
+        "seattle": {
+          "runs": 6,
+          "meanOq": 64.90666666666667,
+          "pct9599": 24.138333333333332,
+          "formatFamilyShareMean": {
+            "SPANISH": 0.05784632296854668,
+            "HITS": 0.16010889620392918,
+            "ROCK": 0.24115846511963082,
+            "REMNANT": 0.044444126620900075,
+            "SPOKEN": 0.1680991636651887,
+            "ADULT": 0.18273109340816973,
+            "COUNTRY": 0.12531091640594938,
+            "URBAN": 0.08951355661881977
+          }
+        },
+        "sanfrancisco": {
+          "runs": 6,
+          "meanOq": 62.81666666666667,
+          "pct9599": 21.698333333333334,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.1509750481901906,
+            "HITS": 0.18009513100592564,
+            "ADULT": 0.19463625330192047,
+            "ROCK": 0.23676358249446705,
+            "COUNTRY": 0.0897103234097237,
+            "URBAN": 0.08782287427714713,
+            "REMNANT": 0.04125615763546798,
+            "SPANISH": 0.05905306275433711
+          }
+        },
+        "atlanta": {
+          "runs": 6,
+          "meanOq": 64.75166666666667,
+          "pct9599": 20.5,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.14271894355852377,
+            "HITS": 0.13847106749655475,
+            "REMNANT": 0.03990692153923038,
+            "URBAN": 0.10801046446473732,
+            "SPANISH": 0.05393610013175231,
+            "COUNTRY": 0.13541766995290236,
+            "ROCK": 0.22774090227613467,
+            "ADULT": 0.16508938712461949,
+            "CHRISTIAN": 0.0399791013584117
+          }
+        },
+        "nashville": {
+          "runs": 6,
+          "meanOq": 64.97333333333334,
+          "pct9599": 31.236666666666665,
+          "formatFamilyShareMean": {
+            "COUNTRY": 0.1252436647173489,
+            "HITS": 0.11598440545808968,
+            "REMNANT": 0.05360623781676413,
+            "SPOKEN": 0.21442495126705655,
+            "ROCK": 0.24122807017543857,
+            "ADULT": 0.16959064327485382,
+            "URBAN": 0.06652046783625731,
+            "CHRISTIAN": 0.05263157894736842,
+            "SPANISH": 0.06725146198830409
+          }
+        },
+        "wichita": {
+          "runs": 6,
+          "meanOq": 72.48666666666666,
+          "pct9599": 25.978333333333335,
+          "formatFamilyShareMean": {
+            "ADULT": 0.1764304552230249,
+            "HITS": 0.15323357413140695,
+            "COUNTRY": 0.1694702442380461,
+            "SPOKEN": 0.16537667698658412,
+            "CHRISTIAN": 0.07312521499828001,
+            "ROCK": 0.24828001375988995,
+            "SPANISH": 0.05937392500859993,
+            "REMNANT": 0.05263157894736842
+          }
+        }
+      },
+      "_baselineMeanOq": 67.33,
+      "_score": 77.12,
+      "_verdict": "tune"
+    },
+    {
+      "variant": "E",
+      "runs": {
+        "total": 48,
+        "ok": 48,
+        "failed": 0
+      },
+      "majorMorningDepartures": 4378,
+      "allMorningDepartures": 11350,
+      "recovery": {
+        "allCommercial": {
+          "label": "all_commercial",
+          "departures": 11350,
+          "avgDepartingSlotQ": 67.55356828193833,
+          "avgReplacementSlotQ": 54.2263436123348,
+          "avgImmediateSlotQDrop": 13.327224669603524,
+          "pctFullyRecoverQuality": 80.3,
+          "pctExceedPriorQuality": 66.2,
+          "avgYearsToRecoverQuality": 2.351163045863507,
+          "medianYearsToRecoverQuality": 1,
+          "pctRecoverRevenue": 82.93,
+          "avgYearsToRecoverRevenue": 1.0057367470519494,
+          "medianYearsToRecoverRevenue": 0,
+          "neverRecoveredQuality": 2236
+        },
+        "majorOnly": {
+          "label": "major_only",
+          "departures": 4378,
+          "avgDepartingSlotQ": 89.46345363179535,
+          "avgReplacementSlotQ": 55.936500685244404,
+          "avgImmediateSlotQDrop": 33.526952946550935,
+          "pctFullyRecoverQuality": 74.19,
+          "pctExceedPriorQuality": 40.22,
+          "avgYearsToRecoverQuality": 2.9661330049261085,
+          "medianYearsToRecoverQuality": 2,
+          "pctRecoverRevenue": 80.74,
+          "avgYearsToRecoverRevenue": 1.0190947666195191,
+          "medianYearsToRecoverRevenue": 0,
+          "neverRecoveredQuality": 1130
+        }
+      },
+      "oq2020": {
+        "commercialSnapshots": 1225,
+        "meanOqAcrossRuns": 64.16,
+        "pctAbove90": 23.18,
+        "pct9599": 15.59,
+        "bucketCounts": {
+          "lt50": 423,
+          "50-59": 116,
+          "60-69": 111,
+          "70-79": 142,
+          "80-89": 149,
+          "90-94": 92,
+          "95-99": 192
+        },
+        "bucketPct": {
+          "lt50": 34.53,
+          "50-59": 9.47,
+          "60-69": 9.06,
+          "70-79": 11.59,
+          "80-89": 12.16,
+          "90-94": 7.51,
+          "95-99": 15.67
+        }
+      },
+      "playerSideEffects": {
+        "playerMorningDepartures": 25,
+        "playerStationsAt2020": 35,
+        "playerStationsAbove95At2020": 0,
+        "playerMajorDepartures": 13,
+        "playerMajorRecovery": {
+          "label": "player_major",
+          "departures": 0,
+          "avgDepartingSlotQ": null,
+          "avgReplacementSlotQ": null,
+          "avgImmediateSlotQDrop": null,
+          "pctFullyRecoverQuality": 0,
+          "pctExceedPriorQuality": 0,
+          "avgYearsToRecoverQuality": null,
+          "medianYearsToRecoverQuality": null,
+          "pctRecoverRevenue": 0,
+          "avgYearsToRecoverRevenue": null,
+          "medianYearsToRecoverRevenue": null,
+          "neverRecoveredQuality": 0
+        }
+      },
+      "breakdowns": {
+        "byMarketSize": {
+          "mega": {
+            "label": "mega",
+            "departures": 2033,
+            "avgDepartingSlotQ": 89.0486965076242,
+            "avgReplacementSlotQ": 55.203148057058534,
+            "avgImmediateSlotQDrop": 33.845548450565666,
+            "pctFullyRecoverQuality": 71.91,
+            "pctExceedPriorQuality": 35.86,
+            "avgYearsToRecoverQuality": 3.045143638850889,
+            "medianYearsToRecoverQuality": 2,
+            "pctRecoverRevenue": 78.11,
+            "avgYearsToRecoverRevenue": 1.151133501259446,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 571
+          },
+          "large": {
+            "label": "large",
+            "departures": 1448,
+            "avgDepartingSlotQ": 89.35013812154696,
+            "avgReplacementSlotQ": 56.379834254143645,
+            "avgImmediateSlotQDrop": 32.97030386740332,
+            "pctFullyRecoverQuality": 74.72,
+            "pctExceedPriorQuality": 42.33,
+            "avgYearsToRecoverQuality": 2.9681146025878005,
+            "medianYearsToRecoverQuality": 2,
+            "pctRecoverRevenue": 82.46,
+            "avgYearsToRecoverRevenue": 0.9325795644891123,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 366
+          },
+          "medium": {
+            "label": "medium",
+            "departures": 456,
+            "avgDepartingSlotQ": 90.25877192982456,
+            "avgReplacementSlotQ": 55.81359649122807,
+            "avgImmediateSlotQDrop": 34.44517543859649,
+            "pctFullyRecoverQuality": 77.85,
+            "pctExceedPriorQuality": 41.67,
+            "avgYearsToRecoverQuality": 2.7859154929577463,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 82.89,
+            "avgYearsToRecoverRevenue": 0.9695767195767195,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 101
+          },
+          "small": {
+            "label": "small",
+            "departures": 441,
+            "avgDepartingSlotQ": 90.92517006802721,
+            "avgReplacementSlotQ": 57.98866213151928,
+            "avgImmediateSlotQDrop": 32.93650793650794,
+            "pctFullyRecoverQuality": 79.14,
+            "pctExceedPriorQuality": 51.93,
+            "avgYearsToRecoverQuality": 2.812320916905444,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 85.03,
+            "avgYearsToRecoverRevenue": 0.7853333333333333,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 92
+          }
+        },
+        "byOwnership": {
+          "independent": {
+            "label": "independent",
+            "departures": 3612,
+            "avgDepartingSlotQ": 90.62596899224806,
+            "avgReplacementSlotQ": 55.96290143964563,
+            "avgImmediateSlotQDrop": 34.663067552602435,
+            "pctFullyRecoverQuality": 77.55,
+            "pctExceedPriorQuality": 41.09,
+            "avgYearsToRecoverQuality": 2.8786147804355586,
+            "medianYearsToRecoverQuality": 2,
+            "pctRecoverRevenue": 81.34,
+            "avgYearsToRecoverRevenue": 1.0408441116405718,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 811
+          },
+          "corporate": {
+            "label": "corporate",
+            "departures": 766,
+            "avgDepartingSlotQ": 83.9817232375979,
+            "avgReplacementSlotQ": 55.81201044386423,
+            "avgImmediateSlotQDrop": 28.16971279373368,
+            "pctFullyRecoverQuality": 58.36,
+            "pctExceedPriorQuality": 36.16,
+            "avgYearsToRecoverQuality": 3.5145413870246087,
+            "medianYearsToRecoverQuality": 2.5,
+            "pctRecoverRevenue": 77.94,
+            "avgYearsToRecoverRevenue": 0.9120603015075377,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 319
+          },
+          "player": {
+            "label": "player",
+            "departures": 0,
+            "avgDepartingSlotQ": null,
+            "avgReplacementSlotQ": null,
+            "avgImmediateSlotQDrop": null,
+            "pctFullyRecoverQuality": 0,
+            "pctExceedPriorQuality": 0,
+            "avgYearsToRecoverQuality": null,
+            "medianYearsToRecoverQuality": null,
+            "pctRecoverRevenue": 0,
+            "avgYearsToRecoverRevenue": null,
+            "medianYearsToRecoverRevenue": null,
+            "neverRecoveredQuality": 0
+          }
+        },
+        "byDepartSlotTier": {
+          "lt70": {
+            "label": "lt70",
+            "departures": 586,
+            "avgDepartingSlotQ": 51.960750853242324,
+            "avgReplacementSlotQ": 40.98122866894198,
+            "avgImmediateSlotQDrop": 10.979522184300341,
+            "pctFullyRecoverQuality": 60.07,
+            "pctExceedPriorQuality": 56.31,
+            "avgYearsToRecoverQuality": 4.161931818181818,
+            "medianYearsToRecoverQuality": 2.5,
+            "pctRecoverRevenue": 83.62,
+            "avgYearsToRecoverRevenue": 1.0030612244897958,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 234
+          },
+          "70-84": {
+            "label": "70-84",
+            "departures": 184,
+            "avgDepartingSlotQ": 76.01086956521739,
+            "avgReplacementSlotQ": 51.75,
+            "avgImmediateSlotQDrop": 24.26086956521739,
+            "pctFullyRecoverQuality": 45.65,
+            "pctExceedPriorQuality": 44.02,
+            "avgYearsToRecoverQuality": 4.380952380952381,
+            "medianYearsToRecoverQuality": 4,
+            "pctRecoverRevenue": 79.89,
+            "avgYearsToRecoverRevenue": 1.0680272108843538,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 100
+          },
+          "85-94": {
+            "label": "85-94",
+            "departures": 698,
+            "avgDepartingSlotQ": 89.20916905444126,
+            "avgReplacementSlotQ": 56.79942693409742,
+            "avgImmediateSlotQDrop": 32.40974212034384,
+            "pctFullyRecoverQuality": 68.77,
+            "pctExceedPriorQuality": 67.77,
+            "avgYearsToRecoverQuality": 3.861458333333333,
+            "medianYearsToRecoverQuality": 3,
+            "pctRecoverRevenue": 85.82,
+            "avgYearsToRecoverRevenue": 0.7312186978297162,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 218
+          },
+          "95+": {
+            "label": "95+",
+            "departures": 2910,
+            "avgDepartingSlotQ": 97.92714776632302,
+            "avgReplacementSlotQ": 59.005841924398624,
+            "avgImmediateSlotQDrop": 38.9213058419244,
+            "pctFullyRecoverQuality": 80.14,
+            "pctExceedPriorQuality": 30.14,
+            "avgYearsToRecoverQuality": 2.550385934819897,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 79,
+            "avgYearsToRecoverRevenue": 1.094388864723793,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 578
+          }
+        },
+        "byFormatFamily": {
+          "URBAN": {
+            "label": "URBAN",
+            "departures": 362,
+            "avgDepartingSlotQ": 88.55801104972376,
+            "avgReplacementSlotQ": 53.70718232044199,
+            "avgImmediateSlotQDrop": 34.850828729281766,
+            "pctFullyRecoverQuality": 67.68,
+            "pctExceedPriorQuality": 29.56,
+            "avgYearsToRecoverQuality": 3.453061224489796,
+            "medianYearsToRecoverQuality": 2.5,
+            "pctRecoverRevenue": 75.97,
+            "avgYearsToRecoverRevenue": 0.9818181818181818,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 117
+          },
+          "SPOKEN": {
+            "label": "SPOKEN",
+            "departures": 852,
+            "avgDepartingSlotQ": 92.10211267605634,
+            "avgReplacementSlotQ": 58.07276995305164,
+            "avgImmediateSlotQDrop": 34.029342723004696,
+            "pctFullyRecoverQuality": 81.1,
+            "pctExceedPriorQuality": 50.82,
+            "avgYearsToRecoverQuality": 2.499276410998553,
+            "medianYearsToRecoverQuality": 1,
+            "pctRecoverRevenue": 82.39,
+            "avgYearsToRecoverRevenue": 1.2478632478632479,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 161
+          },
+          "HITS": {
+            "label": "HITS",
+            "departures": 600,
+            "avgDepartingSlotQ": 91.385,
+            "avgReplacementSlotQ": 57.205,
+            "avgImmediateSlotQDrop": 34.18,
+            "pctFullyRecoverQuality": 74.83,
+            "pctExceedPriorQuality": 42,
+            "avgYearsToRecoverQuality": 2.5011135857461024,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 79,
+            "avgYearsToRecoverRevenue": 0.8428270042194093,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 151
+          },
+          "ADULT": {
+            "label": "ADULT",
+            "departures": 883,
+            "avgDepartingSlotQ": 90.88788221970555,
+            "avgReplacementSlotQ": 57.409966024915065,
+            "avgImmediateSlotQDrop": 33.47791619479049,
+            "pctFullyRecoverQuality": 78.14,
+            "pctExceedPriorQuality": 41.68,
+            "avgYearsToRecoverQuality": 2.6043478260869564,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 81.2,
+            "avgYearsToRecoverRevenue": 1.2322175732217573,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 193
+          },
+          "ROCK": {
+            "label": "ROCK",
+            "departures": 939,
+            "avgDepartingSlotQ": 88.63791267305645,
+            "avgReplacementSlotQ": 54.43450479233227,
+            "avgImmediateSlotQDrop": 34.20340788072417,
+            "pctFullyRecoverQuality": 71.99,
+            "pctExceedPriorQuality": 33.65,
+            "avgYearsToRecoverQuality": 4.045118343195266,
+            "medianYearsToRecoverQuality": 3,
+            "pctRecoverRevenue": 82.75,
+            "avgYearsToRecoverRevenue": 0.8359073359073359,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 263
+          },
+          "REMNANT": {
+            "label": "REMNANT",
+            "departures": 69,
+            "avgDepartingSlotQ": 70.31884057971014,
+            "avgReplacementSlotQ": 47.56521739130435,
+            "avgImmediateSlotQDrop": 22.753623188405797,
+            "pctFullyRecoverQuality": 42.03,
+            "pctExceedPriorQuality": 37.68,
+            "avgYearsToRecoverQuality": 4.172413793103448,
+            "medianYearsToRecoverQuality": 4,
+            "pctRecoverRevenue": 82.61,
+            "avgYearsToRecoverRevenue": 0.956140350877193,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 40
+          },
+          "SPANISH": {
+            "label": "SPANISH",
+            "departures": 138,
+            "avgDepartingSlotQ": 83.16666666666667,
+            "avgReplacementSlotQ": 52.84057971014493,
+            "avgImmediateSlotQDrop": 30.32608695652174,
+            "pctFullyRecoverQuality": 61.59,
+            "pctExceedPriorQuality": 24.64,
+            "avgYearsToRecoverQuality": 2.864705882352941,
+            "medianYearsToRecoverQuality": 2,
+            "pctRecoverRevenue": 73.19,
+            "avgYearsToRecoverRevenue": 1.306930693069307,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 53
+          },
+          "COUNTRY": {
+            "label": "COUNTRY",
+            "departures": 494,
+            "avgDepartingSlotQ": 89.42914979757084,
+            "avgReplacementSlotQ": 55.99595141700405,
+            "avgImmediateSlotQDrop": 33.4331983805668,
+            "pctFullyRecoverQuality": 72.67,
+            "pctExceedPriorQuality": 40.89,
+            "avgYearsToRecoverQuality": 2.614206128133705,
+            "medianYearsToRecoverQuality": 1.5,
+            "pctRecoverRevenue": 79.55,
+            "avgYearsToRecoverRevenue": 0.7582697201017812,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 135
+          },
+          "CHRISTIAN": {
+            "label": "CHRISTIAN",
+            "departures": 41,
+            "avgDepartingSlotQ": 56.5609756097561,
+            "avgReplacementSlotQ": 39.1219512195122,
+            "avgImmediateSlotQDrop": 17.4390243902439,
+            "pctFullyRecoverQuality": 58.54,
+            "pctExceedPriorQuality": 56.1,
+            "avgYearsToRecoverQuality": 4.3125,
+            "medianYearsToRecoverQuality": 3.75,
+            "pctRecoverRevenue": 95.12,
+            "avgYearsToRecoverRevenue": 1.0128205128205128,
+            "medianYearsToRecoverRevenue": 0,
+            "neverRecoveredQuality": 17
+          }
+        }
+      },
+      "certProxy": {
+        "newyork": {
+          "runs": 6,
+          "meanOq": 62.81833333333333,
+          "pct9599": 15.061666666666667,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.12139467038374323,
+            "REMNANT": 0.062119368123424924,
+            "ADULT": 0.16995053591598774,
+            "ROCK": 0.22584313328931535,
+            "URBAN": 0.14813167994807727,
+            "HITS": 0.14305050769422947,
+            "SPANISH": 0.07817539393146278,
+            "COUNTRY": 0.06168793873433016
+          }
+        },
+        "losangeles": {
+          "runs": 6,
+          "meanOq": 60.71333333333334,
+          "pct9599": 10.135,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.1270909944297041,
+            "SPANISH": 0.08098292836196062,
+            "ADULT": 0.1441571533305404,
+            "ROCK": 0.1968988560722432,
+            "CHRISTIAN": 0.027777777777777776,
+            "HITS": 0.14522655510558735,
+            "COUNTRY": 0.09650872201275427,
+            "REMNANT": 0.06228403466306692,
+            "URBAN": 0.14222112639451348
+          }
+        },
+        "chicago": {
+          "runs": 6,
+          "meanOq": 59.61500000000001,
+          "pct9599": 14.058333333333335,
+          "formatFamilyShareMean": {
+            "COUNTRY": 0.09351580319322254,
+            "SPOKEN": 0.12512218963831867,
+            "REMNANT": 0.07803844900619093,
+            "HITS": 0.13587487781036167,
+            "ADULT": 0.15640273704789834,
+            "ROCK": 0.20283479960899317,
+            "URBAN": 0.1241446725317693,
+            "SPANISH": 0.07363962202671881,
+            "CHRISTIAN": 0.03128054740957967
+          }
+        },
+        "seattle": {
+          "runs": 6,
+          "meanOq": 64.99166666666666,
+          "pct9599": 16.641666666666666,
+          "formatFamilyShareMean": {
+            "URBAN": 0.06948714195091006,
+            "HITS": 0.1993001965828053,
+            "SPOKEN": 0.14454979400631573,
+            "COUNTRY": 0.12870422653031346,
+            "ROCK": 0.251487441704833,
+            "ADULT": 0.1781122125325024,
+            "REMNANT": 0.04491341991341991,
+            "SPANISH": 0.06096877156659765
+          }
+        },
+        "sanfrancisco": {
+          "runs": 6,
+          "meanOq": 62.14166666666667,
+          "pct9599": 13.141666666666667,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.16032980304719435,
+            "HITS": 0.15396506874767746,
+            "COUNTRY": 0.12474730583426237,
+            "ROCK": 0.25750743218134525,
+            "ADULT": 0.17312894834633963,
+            "URBAN": 0.07601820884429582,
+            "SPANISH": 0.07183946488294315,
+            "REMNANT": 0.038461538461538464
+          }
+        },
+        "atlanta": {
+          "runs": 6,
+          "meanOq": 67.07833333333333,
+          "pct9599": 16.935,
+          "formatFamilyShareMean": {
+            "SPOKEN": 0.14921387790953008,
+            "HITS": 0.12226943346508566,
+            "REMNANT": 0.04297760210803689,
+            "CHRISTIAN": 0.0521969696969697,
+            "ROCK": 0.24847826086956523,
+            "ADULT": 0.18461572244180938,
+            "COUNTRY": 0.14163812033377252,
+            "URBAN": 0.07600900307422047,
+            "SPANISH": 0.04297760210803689
+          }
+        },
+        "nashville": {
+          "runs": 6,
+          "meanOq": 63.10333333333333,
+          "pct9599": 19.43,
+          "formatFamilyShareMean": {
+            "ADULT": 0.1978328173374613,
+            "HITS": 0.08611971104231166,
+            "COUNTRY": 0.14592363261093913,
+            "SPOKEN": 0.19886480908152734,
+            "ROCK": 0.22577399380804955,
+            "URBAN": 0.07565789473684212,
+            "SPANISH": 0.05229102167182662,
+            "REMNANT": 0.061764705882352944
+          }
+        },
+        "wichita": {
+          "runs": 6,
+          "meanOq": 72.83833333333332,
+          "pct9599": 25.156666666666666,
+          "formatFamilyShareMean": {
+            "HITS": 0.17339181286549707,
+            "COUNTRY": 0.15760233918128652,
+            "SPOKEN": 0.16130604288499026,
+            "ADULT": 0.17748538011695905,
+            "ROCK": 0.25292397660818705,
+            "SPANISH": 0.16666666666666666,
+            "URBAN": 0.1111111111111111,
+            "CHRISTIAN": 0.06198830409356725
+          }
+        }
+      },
+      "_baselineMeanOq": 67.33,
+      "_score": 65.19,
+      "_verdict": "tune"
+    }
+  ]
+}

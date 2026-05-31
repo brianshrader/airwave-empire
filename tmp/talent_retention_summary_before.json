@@ -1,0 +1,89 @@
+{
+  "generatedAt": "2026-05-31T17:28:31.759Z",
+  "config": {
+    "runs": 20,
+    "years": 25,
+    "seed": 20260530,
+    "markets": [
+      "newyork",
+      "losangeles",
+      "chicago",
+      "seattle",
+      "sanfrancisco",
+      "atlanta",
+      "nashville",
+      "wichita"
+    ],
+    "startYears": [
+      1970,
+      1985,
+      2000
+    ]
+  },
+  "runs": {
+    "total": 480,
+    "ok": 480,
+    "failed": 0
+  },
+  "stationYears": 12000,
+  "totalExits": 1440,
+  "retentionExits": 1140,
+  "stationDispositionExits": 300,
+  "exitsByCause": {
+    "dissatisfaction": 39,
+    "life_career": 246,
+    "market_ambition": 0,
+    "retirement": 802,
+    "burnout": 0,
+    "poaching": 53,
+    "let_expire": 0,
+    "station_disposition": 300,
+    "unknown": 0
+  },
+  "ratesPer10StationYears": {
+    "allRetentionExits": 0.95,
+    "dissatisfaction": 0.0325,
+    "lifeCareer": 0.205,
+    "marketAmbition": 0,
+    "retirement": 0.6683333333333333,
+    "burnout": 0,
+    "poaching": 0.04416666666666667,
+    "letExpire": 0,
+    "unknown": 0
+  },
+  "successfulStationLosses": {
+    "top3Exits": 0,
+    "rank1Exits": 0,
+    "bottomHalfExits": 756,
+    "decliningTrendExits": 21,
+    "highMoraleOrSatExits": 926,
+    "top3Dissatisfaction": 0,
+    "top3LifeOrAmbition": 0
+  },
+  "dissatisfactionProfile": {
+    "count": 39,
+    "avgSatisfaction": 37.282051282051285,
+    "avgMorale": 59.92307692307692,
+    "avgRank": 11.717948717948717,
+    "avgDeclineStreak": 0.23076923076923078,
+    "pctAtTop3": 0,
+    "pctAtHealthySat": 0
+  },
+  "lifeCareerProfile": {
+    "lifeCareerCount": 246,
+    "marketAmbitionCount": 0,
+    "per10StationYearsLife": 0.205,
+    "per10StationYearsAmbition": 0,
+    "highQualitySmallMarketAmbition": 0,
+    "clusteringCoefficient": 1.4206631124026095
+  },
+  "deathSpirals": {
+    "events": 163,
+    "runsWithSpiral": 163,
+    "pctRunsWithSpiral": 33.958333333333336,
+    "recoveredCount": 163,
+    "recoveryRate": 100
+  },
+  "warningFlags": [],
+  "failedRuns": []
+}

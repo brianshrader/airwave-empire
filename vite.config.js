@@ -150,6 +150,7 @@ export default defineConfig(({ command, mode }) => {
         copy('legacy.js');
         copy('marketEcologyCore.iife.js');
         copy('formatLifecycleProfileRuntime.iife.js');
+        copy('talentRetention.js');
         copy('gmMode.js');
         copy('campaignMode.js');
         // index.html loads these as classic scripts (before legacy.js). Must exist in dist or production 404s and wlStationLogoSvg never mounts.

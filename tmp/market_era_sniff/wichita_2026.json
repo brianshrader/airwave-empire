@@ -1,0 +1,185 @@
+{
+  "recordedAt": "2026-05-31T19:04:16.282Z",
+  "marketId": "wichita",
+  "label": "Wichita",
+  "year": 2026,
+  "runs": 25,
+  "seed": 20260523,
+  "timingMs": 9955,
+  "genPlan": {
+    "scenId": "under",
+    "startYear": 1970,
+    "needsSim": false
+  },
+  "mode": "gen_only",
+  "stats": {
+    "hitsPresenceRate": 0.12,
+    "morShareMedian": 0,
+    "top2Median": 0.2696326,
+    "musicShareMedian": 0.8508495300000002,
+    "spokenShareMedian": 0.10783387,
+    "hitLeaderRunnerUpRate": 0,
+    "leaderShareMedian": 0.14078008,
+    "commercialAmMedian": 5,
+    "commercialFmMedian": 11,
+    "nceMedian": 2,
+    "stationCountMedian": 18
+  },
+  "formatPresenceRates": {
+    "TOP40": 0.12,
+    "CHR": 0,
+    "HOT_AC": 0,
+    "ADULT_CONTEMP": 1,
+    "COUNTRY": 1,
+    "SOUL_RNB": 0,
+    "NEWS_TALK": 1,
+    "MOR": 0
+  },
+  "meanFormatShares": {
+    "TOP40": 0.0072937392,
+    "CHR": 0,
+    "HOT_AC": 0,
+    "ADULT_CONTEMP": 0.1472335592,
+    "COUNTRY": 0.1903536636,
+    "SOUL_RNB": 0,
+    "NEWS_TALK": 0.08231118080000002,
+    "MOR": 0
+  },
+  "leaderFmtHistogram": {
+    "COUNTRY": 11,
+    "ADULT_CONTEMP": 10,
+    "RELIGIOUS_NETWORK": 3,
+    "CLASSIC_ROCK": 1
+  },
+  "checks": [
+    {
+      "level": "warn",
+      "code": "no_heuristics",
+      "message": "No era sniff rubric for this market/year (reporting metrics only)"
+    }
+  ],
+  "verdict": "warn",
+  "heuristics": null,
+  "sampleFailures": [],
+  "sampleRuns": [
+    {
+      "run": 0,
+      "leaderFmt": "COUNTRY",
+      "leaderShare": 0.19614425,
+      "secondFmt": "RELIGIOUS_NETWORK",
+      "secondShare": 0.11162751,
+      "morShare": 0,
+      "hitsPresent": false,
+      "fmtSum": {
+        "COUNTRY": 0.19614425,
+        "RELIGIOUS_NETWORK": 0.11162751,
+        "ALT_ROCK": 0.09923401,
+        "CLASSIC_HITS": 0.09183234,
+        "ADULT_CONTEMP": 0.12083656,
+        "NEWS_TALK": 0.06523797,
+        "ALBUM_ROCK": 0.10388157,
+        "AAA": 0.03718048,
+        "GOSPEL": 0.03528703,
+        "CLASSIC_ROCK": 0.0348567,
+        "ALL_NEWS": 0.03201652,
+        "PUBLIC_NEWS": 0.02943455,
+        "SPORTS_TALK": 0.02031156,
+        "PUBLIC_CLASSICAL": 0.01230743,
+        "BROKERED_PROGRAMMING": 0.00679921,
+        "SPANISH": 0.00301231
+      }
+    },
+    {
+      "run": 1,
+      "leaderFmt": "ADULT_CONTEMP",
+      "leaderShare": 0.1412405,
+      "secondFmt": "COUNTRY",
+      "secondShare": 0.13182446,
+      "morShare": 0,
+      "hitsPresent": false,
+      "fmtSum": {
+        "ADULT_CONTEMP": 0.15290256,
+        "COUNTRY": 0.25380097,
+        "RELIGIOUS_NETWORK": 0.11100553,
+        "CLASSIC_HITS": 0.08405321,
+        "CLASSIC_ROCK": 0.08871803,
+        "ALT_ROCK": 0.06625777,
+        "NEWS_TALK": 0.07826538,
+        "ALBUM_ROCK": 0.11264685,
+        "PUBLIC_NEWS": 0.02893918,
+        "PUBLIC_CLASSICAL": 0.01192122,
+        "SPANISH": 0.01148929
+      }
+    },
+    {
+      "run": 2,
+      "leaderFmt": "ADULT_CONTEMP",
+      "leaderShare": 0.13299166,
+      "secondFmt": "COUNTRY",
+      "secondShare": 0.1209173,
+      "morShare": 0,
+      "hitsPresent": true,
+      "fmtSum": {
+        "ADULT_CONTEMP": 0.13299166,
+        "COUNTRY": 0.25347463000000003,
+        "RELIGIOUS_NETWORK": 0.10067755,
+        "ALT_ROCK": 0.08686588,
+        "CLASSIC_HITS": 0.09468381,
+        "NEWS_TALK": 0.09233843,
+        "CLASSIC_ROCK": 0.08842947,
+        "ALBUM_ROCK": 0.04586518,
+        "TOP40": 0.03483322,
+        "GOSPEL": 0.03187978,
+        "PUBLIC_NEWS": 0.02692842,
+        "PUBLIC_CLASSICAL": 0.01103197
+      }
+    },
+    {
+      "run": 3,
+      "leaderFmt": "COUNTRY",
+      "leaderShare": 0.16158036,
+      "secondFmt": "ADULT_CONTEMP",
+      "secondShare": 0.15993775,
+      "morShare": 0,
+      "hitsPresent": false,
+      "fmtSum": {
+        "COUNTRY": 0.17264632000000002,
+        "ADULT_CONTEMP": 0.20895651,
+        "RELIGIOUS_NETWORK": 0.12414628,
+        "CLASSIC_ROCK": 0.10841186,
+        "NEWS_TALK": 0.06466672,
+        "ALBUM_ROCK": 0.11359902999999999,
+        "CLASSIC_HITS": 0.04409095,
+        "GOSPEL": 0.03829861,
+        "ALT_ROCK": 0.03821216,
+        "PUBLIC_NEWS": 0.03345725,
+        "SPORTS_TALK": 0.0214403,
+        "SPANISH": 0.01806864,
+        "PUBLIC_CLASSICAL": 0.01400536
+      }
+    },
+    {
+      "run": 4,
+      "leaderFmt": "COUNTRY",
+      "leaderShare": 0.13902892,
+      "secondFmt": "ADULT_CONTEMP",
+      "secondShare": 0.13098081,
+      "morShare": 0,
+      "hitsPresent": false,
+      "fmtSum": {
+        "COUNTRY": 0.24630760000000002,
+        "ADULT_CONTEMP": 0.15317945000000002,
+        "RELIGIOUS_NETWORK": 0.1071018,
+        "CLASSIC_HITS": 0.09074025,
+        "ALT_ROCK": 0.0830459,
+        "CLASSIC_ROCK": 0.07234457,
+        "NEWS_TALK": 0.05545237,
+        "ALBUM_ROCK": 0.10542142,
+        "GOSPEL": 0.03334218,
+        "PUBLIC_NEWS": 0.02945078,
+        "PUBLIC_CLASSICAL": 0.01211639,
+        "ADULT_STANDARDS": 0.0114973
+      }
+    }
+  ]
+}

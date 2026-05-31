@@ -117,6 +117,9 @@ export function trackMetaFromAppEvent(eventName, props) {
     case 'tutorial_completed':
       metaName = 'TutorialCompleted';
       break;
+    case 'tutorial_finished':
+      metaName = 'TutorialFinished';
+      break;
     case 'paywall_viewed':
       metaName = 'PaywallViewed';
       break;

@@ -24,8 +24,12 @@ const DEV_BENCHMARK_MEGA_MARKET_IDS = Object.freeze(['newyork', 'losangeles', 'c
  */
 const DIAG_ONLY_MARKET_IDS = Object.freeze(['phoenix', 'portland', 'miami']);
 
+/** Browser dev/local playtest only — keep in sync with DEV_PLAYTEST_MARKET_IDS in src/legacy.js */
+const DEV_PLAYTEST_MARKET_IDS = Object.freeze(['phoenix']);
+
 module.exports = {
   ALL_PLAYABLE_MARKET_IDS,
   DEV_BENCHMARK_MEGA_MARKET_IDS,
   DIAG_ONLY_MARKET_IDS,
+  DEV_PLAYTEST_MARKET_IDS,
 };

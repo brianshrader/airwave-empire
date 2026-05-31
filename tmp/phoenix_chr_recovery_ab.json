@@ -1,0 +1,777 @@
+{
+  "recordedAt": "2026-05-22T17:05:51.141Z",
+  "seed": 20260521,
+  "timingMs": 140362,
+  "variants": {
+    "A": {
+      "description": "Shipped baseline (BP 0/4 Top40 + mid-90s CHR suppression)",
+      "opening": {
+        "n": 50,
+        "hitsPresenceRate": 1,
+        "morShareMedian": 0.15508515,
+        "top2Median": 0.43073040500000004,
+        "hitLeaderRunnerUpRate": 0.5,
+        "top40Share": 0.19044470999999993,
+        "hitsStationCount": 1,
+        "leaderHist": {
+          "TOP40": 25,
+          "COUNTRY": 25
+        },
+        "variant": "A",
+        "pass": true
+      },
+      "byYear": {
+        "1985": {
+          "n": 12,
+          "chrBucket": 0.04339361416666668,
+          "top40Share": 0.04339361416666668,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.075031905,
+          "acBucket": 0.30184033083333334,
+          "spanishShare": 0,
+          "rockShare": 0.23519452083333336,
+          "countryShare": 0.10880509249999999,
+          "hitsStationCount": 2,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "ADULT_CONTEMP": 12
+          }
+        },
+        "1995": {
+          "n": 12,
+          "chrBucket": 0.012862085833333333,
+          "top40Share": 0.012862085833333333,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.07088153000000001,
+          "acBucket": 0.28195183416666664,
+          "spanishShare": 0.0868624075,
+          "rockShare": 0.28236619916666666,
+          "countryShare": 0.07339341666666667,
+          "hitsStationCount": 2.1666666666666665,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2.1666666666666665,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "URBAN_CONTEMP": 3,
+            "ADULT_CONTEMP": 5,
+            "NEWS_TALK": 1,
+            "HOT_AC": 2,
+            "COUNTRY": 1
+          }
+        },
+        "2005": {
+          "n": 12,
+          "chrBucket": 0.010020966666666667,
+          "top40Share": 0.009571949166666666,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.0476659975,
+          "acBucket": 0.207869575,
+          "spanishShare": 0.24323844249999996,
+          "rockShare": 0.2083011191666667,
+          "countryShare": 0.0964995675,
+          "hitsStationCount": 2.0833333333333335,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2.0833333333333335,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 11,
+            "ADULT_CONTEMP": 1
+          }
+        },
+        "2026": {
+          "n": 12,
+          "chrBucket": 0.020488150833333333,
+          "top40Share": 0.020488150833333333,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.05905926916666666,
+          "acBucket": 0.19620569999999996,
+          "spanishShare": 0.2667527275,
+          "rockShare": 0.17233978833333338,
+          "countryShare": 0.08689339916666666,
+          "hitsStationCount": 2.1666666666666665,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2.1666666666666665,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 12
+          }
+        }
+      },
+      "controls": {
+        "la1970": {
+          "hitsPresenceRate": 1
+        },
+        "nashville1985": {
+          "leaderFmt": "NEWS_TALK",
+          "chrBucket": 0.173489974
+        }
+      },
+      "score": 88
+    },
+    "B": {
+      "description": "Allow TOP40 tier inject at gen (HOT_AC still blocked)",
+      "opening": {
+        "n": 50,
+        "hitsPresenceRate": 1,
+        "morShareMedian": 0.15202661,
+        "top2Median": 0.42811715,
+        "hitLeaderRunnerUpRate": 0.5,
+        "top40Share": 0.18993391879999993,
+        "hitsStationCount": 1,
+        "leaderHist": {
+          "TOP40": 25,
+          "COUNTRY": 25
+        },
+        "variant": "B",
+        "pass": true
+      },
+      "byYear": {
+        "1985": {
+          "n": 12,
+          "chrBucket": 0.11351716916666667,
+          "top40Share": 0.11351716916666667,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.06412737333333333,
+          "acBucket": 0.28200437083333335,
+          "spanishShare": 0,
+          "rockShare": 0.19355033750000003,
+          "countryShare": 0.11893665999999999,
+          "hitsStationCount": 3,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 3,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "ADULT_CONTEMP": 11,
+            "TOP40": 1
+          }
+        },
+        "1995": {
+          "n": 12,
+          "chrBucket": 0.08336097416666666,
+          "top40Share": 0.08336097416666666,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.04935003583333334,
+          "acBucket": 0.2699789108333333,
+          "spanishShare": 0.0773912275,
+          "rockShare": 0.251748915,
+          "countryShare": 0.09287752583333332,
+          "hitsStationCount": 3.0833333333333335,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 3.0833333333333335,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "COUNTRY": 6,
+            "ADULT_CONTEMP": 5,
+            "NEWS_TALK": 1
+          }
+        },
+        "2005": {
+          "n": 12,
+          "chrBucket": 0.05514130166666666,
+          "top40Share": 0.05514130166666666,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.05102294666666666,
+          "acBucket": 0.21872257916666668,
+          "spanishShare": 0.2382427083333334,
+          "rockShare": 0.1869580441666667,
+          "countryShare": 0.09118408916666666,
+          "hitsStationCount": 2.4166666666666665,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2.4166666666666665,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 10,
+            "COUNTRY": 1,
+            "ADULT_CONTEMP": 1
+          }
+        },
+        "2026": {
+          "n": 12,
+          "chrBucket": 0.05233352083333334,
+          "top40Share": 0.049629962500000006,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.035029360833333335,
+          "acBucket": 0.17298169166666666,
+          "spanishShare": 0.25462064500000003,
+          "rockShare": 0.13988529333333333,
+          "countryShare": 0.10210443333333331,
+          "hitsStationCount": 2.5,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2.5,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 12
+          }
+        }
+      },
+      "controls": {
+        "la1970": {
+          "hitsPresenceRate": 1
+        },
+        "nashville1985": {
+          "leaderFmt": "NEWS_TALK",
+          "chrBucket": 0.173489974
+        }
+      },
+      "score": 122
+    },
+    "C": {
+      "description": "Allow HOT_AC tier inject at gen (TOP40 still blocked)",
+      "opening": {
+        "n": 50,
+        "hitsPresenceRate": 1,
+        "morShareMedian": 0.15019337500000002,
+        "top2Median": 0.42995793,
+        "hitLeaderRunnerUpRate": 0.5,
+        "top40Share": 0.19054308179999996,
+        "hitsStationCount": 1,
+        "leaderHist": {
+          "TOP40": 25,
+          "COUNTRY": 25
+        },
+        "variant": "C",
+        "pass": true
+      },
+      "byYear": {
+        "1985": {
+          "n": 12,
+          "chrBucket": 0.04401618499999999,
+          "top40Share": 0.04401618499999999,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.07565658166666667,
+          "acBucket": 0.3033842533333333,
+          "spanishShare": 0,
+          "rockShare": 0.23344496083333335,
+          "countryShare": 0.10922793083333332,
+          "hitsStationCount": 2,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "HOT_AC": 2,
+            "ADULT_CONTEMP": 10
+          }
+        },
+        "1995": {
+          "n": 12,
+          "chrBucket": 0.0106058225,
+          "top40Share": 0.0106058225,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.07173382166666667,
+          "acBucket": 0.28715404916666665,
+          "spanishShare": 0.09874421000000001,
+          "rockShare": 0.2770080283333333,
+          "countryShare": 0.07189346666666667,
+          "hitsStationCount": 1.9166666666666667,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 1.9166666666666667,
+          "crLeaderRate": 0.08333333333333333,
+          "leaderHist": {
+            "ADULT_CONTEMP": 4,
+            "SPANISH": 1,
+            "URBAN_CONTEMP": 2,
+            "CLASSIC_ROCK": 1,
+            "HOT_AC": 2,
+            "NEWS_TALK": 1,
+            "COUNTRY": 1
+          }
+        },
+        "2005": {
+          "n": 12,
+          "chrBucket": 0.01613086,
+          "top40Share": 0.01613086,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.04944342583333333,
+          "acBucket": 0.19988555166666666,
+          "spanishShare": 0.2448856083333333,
+          "rockShare": 0.20303923833333337,
+          "countryShare": 0.061718515,
+          "hitsStationCount": 2.3333333333333335,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2.3333333333333335,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 12
+          }
+        },
+        "2026": {
+          "n": 12,
+          "chrBucket": 0.02861012333333333,
+          "top40Share": 0.02861012333333333,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.04748298166666667,
+          "acBucket": 0.19271356083333335,
+          "spanishShare": 0.23444241166666666,
+          "rockShare": 0.165943665,
+          "countryShare": 0.08866886583333333,
+          "hitsStationCount": 2.3333333333333335,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2.3333333333333335,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 12
+          }
+        }
+      },
+      "controls": {
+        "la1970": {
+          "hitsPresenceRate": 1
+        },
+        "nashville1985": {
+          "leaderFmt": "NEWS_TALK",
+          "chrBucket": 0.173489974
+        }
+      },
+      "score": 87
+    },
+    "D": {
+      "description": "Add FM TOP40 fragmentation launch @1992",
+      "opening": {
+        "n": 50,
+        "hitsPresenceRate": 1,
+        "morShareMedian": 0.14799271,
+        "top2Median": 0.431778695,
+        "hitLeaderRunnerUpRate": 0.5,
+        "top40Share": 0.19032625700000008,
+        "hitsStationCount": 1,
+        "leaderHist": {
+          "TOP40": 25,
+          "COUNTRY": 25
+        },
+        "variant": "D",
+        "pass": true
+      },
+      "byYear": {
+        "1985": {
+          "n": 12,
+          "chrBucket": 0.04367828333333334,
+          "top40Share": 0.04367828333333334,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.07472704499999999,
+          "acBucket": 0.297741595,
+          "spanishShare": 0,
+          "rockShare": 0.24026283083333336,
+          "countryShare": 0.10809424166666666,
+          "hitsStationCount": 2,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "ADULT_CONTEMP": 12
+          }
+        },
+        "1995": {
+          "n": 12,
+          "chrBucket": 0.03425427166666666,
+          "top40Share": 0.03425427166666666,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.060583165,
+          "acBucket": 0.2841016,
+          "spanishShare": 0.08956896916666668,
+          "rockShare": 0.28932173333333333,
+          "countryShare": 0.07770392916666664,
+          "hitsStationCount": 2.75,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2.75,
+          "crLeaderRate": 0.08333333333333333,
+          "leaderHist": {
+            "ADULT_CONTEMP": 5,
+            "URBAN_CONTEMP": 3,
+            "NEWS_TALK": 1,
+            "HOT_AC": 1,
+            "CLASSIC_ROCK": 1,
+            "COUNTRY": 1
+          }
+        },
+        "2005": {
+          "n": 12,
+          "chrBucket": 0.05194716916666667,
+          "top40Share": 0.05194716916666667,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.04647604583333333,
+          "acBucket": 0.200328845,
+          "spanishShare": 0.217930285,
+          "rockShare": 0.19413275666666666,
+          "countryShare": 0.07395072833333334,
+          "hitsStationCount": 2.5,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2.5,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 11,
+            "TOP40": 1
+          }
+        },
+        "2026": {
+          "n": 12,
+          "chrBucket": 0.04533013250000001,
+          "top40Share": 0.04533013250000001,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.04571659416666667,
+          "acBucket": 0.18360835583333335,
+          "spanishShare": 0.26282152083333327,
+          "rockShare": 0.14748536833333334,
+          "countryShare": 0.0985573,
+          "hitsStationCount": 2.4166666666666665,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2.4166666666666665,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 12
+          }
+        }
+      },
+      "controls": {
+        "la1970": {
+          "hitsPresenceRate": 1
+        },
+        "nashville1985": {
+          "leaderFmt": "NEWS_TALK",
+          "chrBucket": 0.173489974
+        }
+      },
+      "score": 96
+    },
+    "E": {
+      "description": "Runtime FM hits boost ×0.95/0.84 after 1985 + disable mid-90s appeal taper",
+      "opening": {
+        "n": 50,
+        "hitsPresenceRate": 1,
+        "morShareMedian": 0.153908605,
+        "top2Median": 0.42881081499999996,
+        "hitLeaderRunnerUpRate": 0.5,
+        "top40Share": 0.18985711859999996,
+        "hitsStationCount": 1,
+        "leaderHist": {
+          "TOP40": 25,
+          "COUNTRY": 25
+        },
+        "variant": "E",
+        "pass": true
+      },
+      "byYear": {
+        "1985": {
+          "n": 12,
+          "chrBucket": 0.0438652075,
+          "top40Share": 0.0438652075,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.07610017833333334,
+          "acBucket": 0.3030972708333333,
+          "spanishShare": 0,
+          "rockShare": 0.2334934491666667,
+          "countryShare": 0.10852726083333335,
+          "hitsStationCount": 2,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "ADULT_CONTEMP": 12
+          }
+        },
+        "1995": {
+          "n": 12,
+          "chrBucket": 0.014220091666666665,
+          "top40Share": 0.014220091666666665,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.06734046333333332,
+          "acBucket": 0.2818567891666666,
+          "spanishShare": 0.09746033916666667,
+          "rockShare": 0.27419833666666665,
+          "countryShare": 0.07734656749999999,
+          "hitsStationCount": 2.1666666666666665,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2.1666666666666665,
+          "crLeaderRate": 0.3333333333333333,
+          "leaderHist": {
+            "CLASSIC_ROCK": 4,
+            "COUNTRY": 1,
+            "URBAN_CONTEMP": 4,
+            "ADULT_CONTEMP": 2,
+            "HOT_AC": 1
+          }
+        },
+        "2005": {
+          "n": 12,
+          "chrBucket": 0.0120819275,
+          "top40Share": 0.0120819275,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.05027311,
+          "acBucket": 0.19999611916666668,
+          "spanishShare": 0.23897355916666665,
+          "rockShare": 0.20654411333333333,
+          "countryShare": 0.06259728750000002,
+          "hitsStationCount": 1.9166666666666667,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 1.9166666666666667,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 12
+          }
+        },
+        "2026": {
+          "n": 12,
+          "chrBucket": 0.032489394166666664,
+          "top40Share": 0.030491707499999996,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.04370589833333333,
+          "acBucket": 0.16517469166666668,
+          "spanishShare": 0.2719875883333333,
+          "rockShare": 0.14858615249999998,
+          "countryShare": 0.09105532166666667,
+          "hitsStationCount": 2.0833333333333335,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2.0833333333333335,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 12
+          }
+        }
+      },
+      "controls": {
+        "la1970": {
+          "hitsPresenceRate": 1
+        },
+        "nashville1985": {
+          "leaderFmt": "NEWS_TALK",
+          "chrBucket": 0.173489974
+        }
+      },
+      "score": 85
+    },
+    "F": {
+      "description": "D + B + appeal taper off + leader trim off (combined)",
+      "opening": {
+        "n": 50,
+        "hitsPresenceRate": 1,
+        "morShareMedian": 0.14865646,
+        "top2Median": 0.42861228500000004,
+        "hitLeaderRunnerUpRate": 0.5,
+        "top40Share": 0.19011250039999988,
+        "hitsStationCount": 1,
+        "leaderHist": {
+          "TOP40": 25,
+          "COUNTRY": 25
+        },
+        "variant": "F",
+        "pass": true
+      },
+      "byYear": {
+        "1985": {
+          "n": 12,
+          "chrBucket": 0.12291099083333334,
+          "top40Share": 0.12291099083333334,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.06400933166666667,
+          "acBucket": 0.2790970908333333,
+          "spanishShare": 0,
+          "rockShare": 0.19646282333333331,
+          "countryShare": 0.11375767916666667,
+          "hitsStationCount": 3,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 3,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "TOP40": 7,
+            "ADULT_CONTEMP": 5
+          }
+        },
+        "1995": {
+          "n": 12,
+          "chrBucket": 0.09598087250000002,
+          "top40Share": 0.09598087250000002,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.04488245416666666,
+          "acBucket": 0.25678077416666667,
+          "spanishShare": 0.08047396333333333,
+          "rockShare": 0.23865209333333337,
+          "countryShare": 0.08193158333333332,
+          "hitsStationCount": 3.5833333333333335,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 3.5833333333333335,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "COUNTRY": 4,
+            "TOP40": 2,
+            "ADULT_CONTEMP": 4,
+            "NEWS_TALK": 2
+          }
+        },
+        "2005": {
+          "n": 12,
+          "chrBucket": 0.10217482333333333,
+          "top40Share": 0.10217482333333333,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.03410415,
+          "acBucket": 0.20958027333333332,
+          "spanishShare": 0.17908368833333332,
+          "rockShare": 0.1744885625,
+          "countryShare": 0.08797659166666666,
+          "hitsStationCount": 2.9166666666666665,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2.9166666666666665,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 10,
+            "TOP40": 1,
+            "ADULT_CONTEMP": 1
+          }
+        },
+        "2026": {
+          "n": 12,
+          "chrBucket": 0.1002673383333333,
+          "top40Share": 0.1002673383333333,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.0166281925,
+          "acBucket": 0.1718869775,
+          "spanishShare": 0.18091576833333334,
+          "rockShare": 0.15029703,
+          "countryShare": 0.1140130525,
+          "hitsStationCount": 3.0833333333333335,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 3.0833333333333335,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 11,
+            "COUNTRY": 1
+          }
+        }
+      },
+      "controls": {
+        "la1970": {
+          "hitsPresenceRate": 1
+        },
+        "nashville1985": {
+          "leaderFmt": "NEWS_TALK",
+          "chrBucket": 0.173489974
+        }
+      },
+      "score": 128
+    },
+    "G": {
+      "description": "D + appeal taper off + leader trim off (no tier-inject change)",
+      "opening": {
+        "n": 50,
+        "hitsPresenceRate": 1,
+        "morShareMedian": 0.1489781,
+        "top2Median": 0.430725445,
+        "hitLeaderRunnerUpRate": 0.5,
+        "top40Share": 0.19006530240000002,
+        "hitsStationCount": 1,
+        "leaderHist": {
+          "TOP40": 25,
+          "COUNTRY": 25
+        },
+        "variant": "G",
+        "pass": true
+      },
+      "byYear": {
+        "1985": {
+          "n": 12,
+          "chrBucket": 0.04448752166666667,
+          "top40Share": 0.04448752166666667,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.0761145525,
+          "acBucket": 0.30175445249999994,
+          "spanishShare": 0,
+          "rockShare": 0.2338603091666667,
+          "countryShare": 0.109920165,
+          "hitsStationCount": 2,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "ADULT_CONTEMP": 11,
+            "HOT_AC": 1
+          }
+        },
+        "1995": {
+          "n": 12,
+          "chrBucket": 0.039715235833333334,
+          "top40Share": 0.039715235833333334,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.059737345,
+          "acBucket": 0.28240044583333335,
+          "spanishShare": 0.08654802166666668,
+          "rockShare": 0.27073411,
+          "countryShare": 0.08064527166666668,
+          "hitsStationCount": 2.8333333333333335,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2.8333333333333335,
+          "crLeaderRate": 0.16666666666666666,
+          "leaderHist": {
+            "ADULT_CONTEMP": 9,
+            "CLASSIC_ROCK": 2,
+            "COUNTRY": 1
+          }
+        },
+        "2005": {
+          "n": 12,
+          "chrBucket": 0.04543644833333333,
+          "top40Share": 0.04543644833333333,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.03737046333333334,
+          "acBucket": 0.20944050333333333,
+          "spanishShare": 0.24368119999999996,
+          "rockShare": 0.20029009333333334,
+          "countryShare": 0.053561573333333334,
+          "hitsStationCount": 2.1666666666666665,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2.1666666666666665,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 10,
+            "NEWS_TALK": 2
+          }
+        },
+        "2026": {
+          "n": 12,
+          "chrBucket": 0.04772502083333333,
+          "top40Share": 0.045288796666666666,
+          "chrFmtShare": 0,
+          "hotAcShare": 0.0393208225,
+          "acBucket": 0.19193377333333336,
+          "spanishShare": 0.2595854341666667,
+          "rockShare": 0.15707506333333335,
+          "countryShare": 0.08266961416666667,
+          "hitsStationCount": 2.4166666666666665,
+          "hitsBpSlots": 0,
+          "hitsNonBp": 2.4166666666666665,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 12
+          }
+        }
+      },
+      "controls": {
+        "la1970": {
+          "hitsPresenceRate": 1
+        },
+        "nashville1985": {
+          "leaderFmt": "NEWS_TALK",
+          "chrBucket": 0.173489974
+        }
+      },
+      "score": 98
+    }
+  },
+  "trace": null,
+  "rootCause": {
+    "summary": "Under chrwar path: few hits stations (~2.6) survive to 2026; tier inject blocks TOP40/HOT_AC at chrwar gen; fragmentation has no hits FM until 1992 (variant D); phoenixDiagTop40HitsAppealMult (−18% appeal 1990–99) and leader trim suppress mid-90s CHR; BP slot 0 TOP40 anchors 1970 under only.",
+    "mechanisms": [
+      "MARKET_BP_PATCH slot 0 = AM TOP40 (1970 fix) — often only hits station early",
+      "phoenixDiagTierInjectFormatBlocked: TOP40, HOT_AC, RHYTHMIC, URBAN_CONTEMP",
+      "fragmentationLaunches: no TOP40/HOT_AC until variant D",
+      "phoenixDiagTop40HitsAppealMult + phoenixDiagTop40LeaderTrimProfile (1990–1999)",
+      "phoenixDiagOpeningOqMult FM hits ×0.84 at gen (persistent oq, not year-gated)"
+    ]
+  },
+  "simPathNote": "1985+ uses genMarket(chrwar) + advTurn (matches diag-phoenix-internal-playtest / certification). 1970 opening uses genMarket(under) only.",
+  "recommendation": {
+    "variant": "F",
+    "description": "D + B + appeal taper off + leader trim off (combined)",
+    "shipReady": true,
+    "productionPatch": "D + B + appeal taper off + leader trim off (too broad — prefer G below)"
+  }
+}

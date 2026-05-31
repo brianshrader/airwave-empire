@@ -7,7 +7,13 @@ const crypto = require('crypto');
  * Format: base64url(payloadJson).base64url(hmacSha256)
  */
 function guestJwtSecret() {
-  return String(process.env.GUEST_JWT_SECRET || process.env.CLERK_SECRET_KEY || '').trim();
+  const fromEnv = String(process.env.GUEST_JWT_SECRET || process.env.CLERK_SECRET_KEY || '').trim();
+  if (fromEnv) return fromEnv;
+  /** Local dev with MP auth bypass — mint guest tokens without Clerk dashboard secrets. */
+  if (process.env.NODE_ENV !== 'production' && process.env.WL_ALLOW_MP_AUTH_BYPASS === '1') {
+    return 'wl-dev-guest-jwt-not-for-production';
+  }
+  return '';
 }
 
 function signGuestToken(guestId) {

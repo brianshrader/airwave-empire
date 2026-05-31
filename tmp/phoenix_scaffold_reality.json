@@ -1,0 +1,425 @@
+{
+  "recordedAt": "2026-05-21T16:38:27.670Z",
+  "marketId": "phoenix",
+  "diagOnly": {
+    "inDiagOnly": true,
+    "inPlayable": false,
+    "billingLists": {
+      "allPlayableOrdered": false,
+      "starter": false,
+      "proOnly": false,
+      "free": false,
+      "starterPlan": false,
+      "proPlan": false,
+      "trialPlan": false
+    }
+  },
+  "scaffoldPaths": {
+    "raw": "/Users/brianshrader/Documents/Games/Cursor/Frequencies/tmp/market_scaffold/phoenix/raw_market_data.json",
+    "signalAllocation": "/Users/brianshrader/Documents/Games/Cursor/Frequencies/tmp/market_scaffold/phoenix/signal_allocation.json",
+    "readiness": "/Users/brianshrader/Documents/Games/Cursor/Frequencies/tmp/market_scaffold/phoenix/readiness.json"
+  },
+  "exposure": {
+    "checks": [
+      {
+        "level": "pass",
+        "code": "diag_only",
+        "message": "phoenix ∈ DIAG_ONLY_MARKET_IDS",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "not_playable",
+        "message": "phoenix ∉ ALL_PLAYABLE_MARKET_IDS",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "billing_safe",
+        "message": "phoenix absent from all billing/plan market lists",
+        "detail": {}
+      }
+    ],
+    "status": "pass",
+    "inDiag": true,
+    "inPlayable": false,
+    "billingLists": {
+      "allPlayableOrdered": false,
+      "starter": false,
+      "proOnly": false,
+      "free": false,
+      "starterPlan": false,
+      "proPlan": false,
+      "trialPlan": false
+    }
+  },
+  "dial": {
+    "report": {
+      "scaffold": {
+        "amCommercial": 12,
+        "fmCommercial": 20,
+        "fmNce": 3,
+        "totalStations": 35,
+        "duplicateFreqs": [],
+        "minFmSpacingMhz": 0.3999999999999915
+      },
+      "runtime": {
+        "amCommercial": 12,
+        "fmCommercial": 20,
+        "fmNce": 0,
+        "totalStations": 32,
+        "duplicateFreqs": [],
+        "minFmSpacingMhz": 0.3999999999999915
+      },
+      "drift": {
+        "scaffoldOnlyFm": [
+          "88.3 FM",
+          "89.5 FM",
+          "91.5 FM"
+        ],
+        "runtimeOnlyFm": [],
+        "scaffoldOnlyAm": [],
+        "runtimeOnlyAm": [],
+        "amMatch": true,
+        "fmCommercialMatch": true
+      }
+    },
+    "flags": [],
+    "checks": [
+      {
+        "level": "pass",
+        "code": "dial_dup_scaffold",
+        "message": "No duplicate scaffold frequencies",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "dial_dup_runtime",
+        "message": "No duplicate runtime frequencies",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "dial_size",
+        "message": "Scaffold total 35 within large-market band",
+        "detail": {}
+      },
+      {
+        "level": "warn",
+        "code": "fm_spacing",
+        "message": "Tightest commercial FM spacing 0.40 MHz (<0.55)",
+        "detail": {}
+      },
+      {
+        "level": "warn",
+        "code": "runtime_omits_nce",
+        "message": "Runtime omits 3 scaffold NCE/reserved FM (88.3 FM, 89.5 FM, 91.5 FM) — public dial is commercial-only",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "am_match",
+        "message": "Scaffold AM matches runtime AM dial",
+        "detail": {}
+      }
+    ]
+  },
+  "signals": {
+    "report": {
+      "fm100kwCount": 6,
+      "fmMajorCount": 6,
+      "fmRimshotCount": 5,
+      "nceCount": 3,
+      "nce100kwCount": 2,
+      "amBigNightWeak": 0,
+      "signalProfile": {
+        "am": {
+          "big": 3,
+          "medium": 5,
+          "small": 4
+        },
+        "fm": {
+          "major": 6,
+          "medium": 12,
+          "rimshot": 5
+        }
+      },
+      "summary": {
+        "am": {
+          "big": 3,
+          "medium": 5,
+          "small": 4,
+          "profileTotal": 12,
+          "dialListed": 12,
+          "clear": 3,
+          "regional": 5,
+          "local": 4,
+          "graveyard": 1
+        },
+        "fm": {
+          "major": 6,
+          "medium": 12,
+          "rimshot": 5,
+          "profileTotal": 23,
+          "dialListed": 23,
+          "reservedBand": 3,
+          "commercialBand": 20
+        },
+        "totalAmSignals": 12,
+        "totalFmSignals": 23,
+        "grandTotal": 35
+      }
+    },
+    "flags": [
+      "NCE_SIGNAL_ODD"
+    ],
+    "checks": [
+      {
+        "level": "pass",
+        "code": "fm_100kw",
+        "message": "FM 100kW count 6 plausible for large Sunbelt",
+        "detail": {}
+      },
+      {
+        "level": "warn",
+        "code": "nce_power",
+        "message": "Some NCE channels lack 50–100kW-class metadata",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "am_survival",
+        "message": "AM big-stick night power plausible",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "am_graveyard",
+        "message": "Graveyard AM present (1)",
+        "detail": {}
+      },
+      {
+        "level": "warn",
+        "code": "signal_unreviewed",
+        "message": "_scaffold.signalReviewed is not true — human signal-tier review pending",
+        "detail": {}
+      }
+    ]
+  },
+  "identity": {
+    "meta": {
+      "rankTier": "large",
+      "archetypeId": "sunbelt_diversified",
+      "blackPop": 0.071,
+      "hispPop2020": 0.301,
+      "urbanBonus": 0.03,
+      "culture": {
+        "country": 0.09,
+        "urban": 0.03,
+        "newsTalk": 0.07,
+        "religion": 0.09,
+        "spanish": 0.15
+      },
+      "spanishLaunches": 3,
+      "fragmentationLaunches": 4,
+      "marketBpPatchSlots": 6,
+      "marketBpPatch": {
+        "0": {
+          "fmt": "MOR",
+          "str": "strong"
+        },
+        "1": {
+          "fmt": "NEWS_TALK",
+          "str": "moderate"
+        },
+        "10": {
+          "fmt": "ADULT_STANDARDS",
+          "str": "moderate"
+        },
+        "15": {
+          "fmt": "ADULT_CONTEMP",
+          "str": "moderate"
+        },
+        "16": {
+          "fmt": "ALBUM_ROCK",
+          "str": "moderate"
+        },
+        "18": {
+          "fmt": "HOT_AC",
+          "str": "moderate"
+        }
+      },
+      "selectBlurb": "A fast-growing Southwest market where Spanish-language and country lanes matter more than coastal AAA or Deep South gosp",
+      "region": "Southwest",
+      "revScale": 1.18
+    },
+    "flags": [],
+    "checks": [
+      {
+        "level": "pass",
+        "code": "archetype",
+        "message": "archetypeId=sunbelt_diversified",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "hispanic",
+        "message": "hispPop2020=0.301 — strong Sunbelt Hispanic",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "culture_spanish",
+        "message": "culture.spanish=0.15",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "culture_talk",
+        "message": "newsTalk not NYC-dominant",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "spanish_launches",
+        "message": "3 spanishLaunches scheduled",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "frag_launches",
+        "message": "4 fragmentationLaunches",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "bp_patch",
+        "message": "MARKET_BP_PATCH.phoenix has 6 slots",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "bp_slot18",
+        "message": "BP slot 18 = HOT_AC (rock trim wired)",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "trait_spanish",
+        "message": "spanishLanguageStrength@2026=0.457",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "trait_spoken",
+        "message": "spokenWordStrength not mega-dominant",
+        "detail": {}
+      },
+      {
+        "level": "warn",
+        "code": "dial_unreviewed",
+        "message": "_scaffold.dialReviewed is not true",
+        "detail": {}
+      }
+    ]
+  },
+  "playtest": {
+    "present": true,
+    "checks": [
+      {
+        "level": "pass",
+        "code": "sim_spanish",
+        "message": "Sim Spanish 25.6% aligns with Sunbelt scaffold",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "sim_rock",
+        "message": "Rock family 14.0% — meaningful but not dominant",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "sim_leader",
+        "message": "#1 family SPANISH:12",
+        "detail": {}
+      },
+      {
+        "level": "pass",
+        "code": "harness_verdict",
+        "message": "Internal playtest harness overall PASS",
+        "detail": {}
+      }
+    ],
+    "flags": [],
+    "summary": {
+      "spanish": 0.2555627522776867,
+      "rock": 0.13964049,
+      "chr": 0.06758286246180031,
+      "country": 0.0971058400315018,
+      "leaderFamilyHist": "SPANISH:12",
+      "leaderFmtHist": "SPANISH:12",
+      "hhi": 548.8343349790051,
+      "stationCount": 29.833333333333332
+    }
+  },
+  "flags": [
+    "NCE_SIGNAL_ODD"
+  ],
+  "humanChecklist": [
+    {
+      "item": "Spanish feels strong but not absurd",
+      "hint": "25.6% sim / hispPop2020 0.301"
+    },
+    {
+      "item": "Regional Mexican dominates Spanish",
+      "hint": "RM dominant in harness subtype block"
+    },
+    {
+      "item": "Rock remains meaningful",
+      "hint": "14.0% rock family"
+    },
+    {
+      "item": "CHR viable",
+      "hint": "6.8% CHR bucket"
+    },
+    {
+      "item": "country viable",
+      "hint": "9.7% country"
+    },
+    {
+      "item": "spoken not absurd",
+      "hint": "newsTalk culture 0.07"
+    },
+    {
+      "item": "public/NCE presence believable",
+      "hint": "0.0%"
+    },
+    {
+      "item": "AM doesn't feel dead too early",
+      "hint": "12 AM tokens"
+    },
+    {
+      "item": "no bizarre station clusters",
+      "hint": "min FM spacing 0.40 MHz"
+    }
+  ],
+  "verdict": {
+    "internalPlaytestReady": true,
+    "publicReady": false,
+    "confidence": "medium",
+    "counts": {
+      "pass": 24,
+      "warn": 5,
+      "fail": 0
+    }
+  },
+  "blockers": [],
+  "warnings": [
+    "Tightest commercial FM spacing 0.40 MHz (<0.55)",
+    "Runtime omits 3 scaffold NCE/reserved FM (88.3 FM, 89.5 FM, 91.5 FM) — public dial is commercial-only",
+    "Some NCE channels lack 50–100kW-class metadata",
+    "_scaffold.signalReviewed is not true — human signal-tier review pending",
+    "_scaffold.dialReviewed is not true"
+  ]
+}

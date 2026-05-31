@@ -1,64 +1,22 @@
 {
   "marketId": "phoenix",
-  "recordedAt": "2026-05-20T16:10:22.441Z",
+  "recordedAt": "2026-05-21T13:35:25.749Z",
   "byYear": {
     "1995": {
-      "meanSpanishStationCount": 0.625,
-      "meanSpanishStationCountAll": 0.625,
-      "meanSpanishLanguageShare": 0.00212959375,
-      "meanSpanishShareLegacy": 0.00212959375,
-      "meanSpanishLeaderShare": 0.00212959375,
+      "meanSpanishStationCount": 2.75,
+      "meanSpanishStationCountAll": 2.75,
+      "meanSpanishLanguageShare": 0.082178535,
+      "meanSpanishShareLegacy": 0.082178535,
+      "meanSpanishLeaderShare": 0.04236528500000001,
       "spanishBySourceMean": {
-        "timeline_or_other": 0.625
+        "launch:phoenix_spanish_1988_fm": 1,
+        "timeline_or_other": 1.75
       },
       "spanishSubtype": {
         "runs": 8,
         "meanSubtypeCounts": {
           "SPANISH_CONTEMPORARY": 0,
-          "REGIONAL_MEXICAN": 0.625,
-          "SPANISH_TROPICAL": 0,
-          "SPANISH_NEWS_TALK": 0,
-          "SPANISH_SPORTS_TALK": 0,
-          "SPANISH_ADULT_HITS": 0
-        },
-        "meanSubtypeSharePct": {
-          "SPANISH_CONTEMPORARY": 0,
-          "REGIONAL_MEXICAN": 0.625,
-          "SPANISH_TROPICAL": 0,
-          "SPANISH_NEWS_TALK": 0,
-          "SPANISH_SPORTS_TALK": 0,
-          "SPANISH_ADULT_HITS": 0
-        },
-        "meanMarketAffinityPrior": {
-          "SPANISH_CONTEMPORARY": 0.5130499999999999,
-          "REGIONAL_MEXICAN": 1.08385,
-          "SPANISH_TROPICAL": 0.0375,
-          "SPANISH_NEWS_TALK": 0.5792122989480446,
-          "SPANISH_SPORTS_TALK": -1.4594572344032708,
-          "SPANISH_ADULT_HITS": -2.3000000000000003
-        },
-        "leadershipWinsBySubtype": {
-          "REGIONAL_MEXICAN": 5
-        },
-        "meanTotalSpanishStations": 0.625
-      },
-      "runs": 8
-    },
-    "2000": {
-      "meanSpanishStationCount": 1.5,
-      "meanSpanishStationCountAll": 1.5,
-      "meanSpanishLanguageShare": 0.03160462125,
-      "meanSpanishShareLegacy": 0.03160462125,
-      "meanSpanishLeaderShare": 0.028553494999999998,
-      "spanishBySourceMean": {
-        "timeline_or_other": 0.75,
-        "launch:phoenix_spanish_1994_fm": 0.75
-      },
-      "spanishSubtype": {
-        "runs": 8,
-        "meanSubtypeCounts": {
-          "SPANISH_CONTEMPORARY": 0,
-          "REGIONAL_MEXICAN": 1.5,
+          "REGIONAL_MEXICAN": 2.75,
           "SPANISH_TROPICAL": 0,
           "SPANISH_NEWS_TALK": 0,
           "SPANISH_SPORTS_TALK": 0,
@@ -83,123 +41,39 @@
         "leadershipWinsBySubtype": {
           "REGIONAL_MEXICAN": 8
         },
-        "meanTotalSpanishStations": 1.5
-      },
-      "runs": 8
-    },
-    "2006": {
-      "meanSpanishStationCount": 2.5,
-      "meanSpanishStationCountAll": 2.5,
-      "meanSpanishLanguageShare": 0.08000012249999999,
-      "meanSpanishShareLegacy": 0.08000012249999999,
-      "meanSpanishLeaderShare": 0.06838201625,
-      "spanishBySourceMean": {
-        "timeline_or_other": 1.625,
-        "launch:phoenix_spanish_1994_fm": 0.875
-      },
-      "spanishSubtype": {
-        "runs": 8,
-        "meanSubtypeCounts": {
-          "SPANISH_CONTEMPORARY": 0,
-          "REGIONAL_MEXICAN": 2,
-          "SPANISH_TROPICAL": 0,
-          "SPANISH_NEWS_TALK": 0,
-          "SPANISH_SPORTS_TALK": 0,
-          "SPANISH_ADULT_HITS": 0.5
-        },
-        "meanSubtypeSharePct": {
-          "SPANISH_CONTEMPORARY": 0,
-          "REGIONAL_MEXICAN": 0.9695484513903613,
-          "SPANISH_TROPICAL": 0,
-          "SPANISH_NEWS_TALK": 0,
-          "SPANISH_SPORTS_TALK": 0,
-          "SPANISH_ADULT_HITS": 0.03045154860963875
-        },
-        "meanMarketAffinityPrior": {
-          "SPANISH_CONTEMPORARY": 0.5130499999999999,
-          "REGIONAL_MEXICAN": 1.08385,
-          "SPANISH_TROPICAL": 0.0375,
-          "SPANISH_NEWS_TALK": 0.5792122989480446,
-          "SPANISH_SPORTS_TALK": 0.6905427655967291,
-          "SPANISH_ADULT_HITS": 0.5499999999999999
-        },
-        "leadershipWinsBySubtype": {
-          "REGIONAL_MEXICAN": 8
-        },
-        "meanTotalSpanishStations": 2.5
-      },
-      "runs": 8
-    },
-    "2010": {
-      "meanSpanishStationCount": 2.75,
-      "meanSpanishStationCountAll": 2.75,
-      "meanSpanishLanguageShare": 0.129161825,
-      "meanSpanishShareLegacy": 0.129161825,
-      "meanSpanishLeaderShare": 0.0810904825,
-      "spanishBySourceMean": {
-        "timeline_or_other": 1.875,
-        "launch:phoenix_spanish_1994_fm": 0.875
-      },
-      "spanishSubtype": {
-        "runs": 8,
-        "meanSubtypeCounts": {
-          "SPANISH_CONTEMPORARY": 0,
-          "REGIONAL_MEXICAN": 2,
-          "SPANISH_TROPICAL": 0,
-          "SPANISH_NEWS_TALK": 0,
-          "SPANISH_SPORTS_TALK": 0,
-          "SPANISH_ADULT_HITS": 0.75
-        },
-        "meanSubtypeSharePct": {
-          "SPANISH_CONTEMPORARY": 0,
-          "REGIONAL_MEXICAN": 0.9409969031919173,
-          "SPANISH_TROPICAL": 0,
-          "SPANISH_NEWS_TALK": 0,
-          "SPANISH_SPORTS_TALK": 0,
-          "SPANISH_ADULT_HITS": 0.05900309680808269
-        },
-        "meanMarketAffinityPrior": {
-          "SPANISH_CONTEMPORARY": 0.5130499999999999,
-          "REGIONAL_MEXICAN": 1.08385,
-          "SPANISH_TROPICAL": 0.0375,
-          "SPANISH_NEWS_TALK": 0.5792122989480446,
-          "SPANISH_SPORTS_TALK": 0.6905427655967291,
-          "SPANISH_ADULT_HITS": 0.5499999999999999
-        },
-        "leadershipWinsBySubtype": {
-          "REGIONAL_MEXICAN": 8
-        },
         "meanTotalSpanishStations": 2.75
       },
       "runs": 8
     },
-    "2020": {
-      "meanSpanishStationCount": 2.75,
-      "meanSpanishStationCountAll": 2.75,
-      "meanSpanishLanguageShare": 0.12552559125,
-      "meanSpanishShareLegacy": 0.12552559125,
-      "meanSpanishLeaderShare": 0.0939288275,
+    "2005": {
+      "meanSpanishStationCount": 3.875,
+      "meanSpanishStationCountAll": 3.875,
+      "meanSpanishLanguageShare": 0.23007461000000004,
+      "meanSpanishShareLegacy": 0.23007461000000004,
+      "meanSpanishLeaderShare": 0.09161580625,
       "spanishBySourceMean": {
         "timeline_or_other": 1.75,
-        "launch:phoenix_spanish_1994_fm": 1
+        "launch:phoenix_spanish_1988_fm": 1,
+        "launch:phoenix_spanish_1994_fm": 1,
+        "launch:phoenix_spanish_2002_fm": 0.125
       },
       "spanishSubtype": {
         "runs": 8,
         "meanSubtypeCounts": {
           "SPANISH_CONTEMPORARY": 0,
-          "REGIONAL_MEXICAN": 1.875,
+          "REGIONAL_MEXICAN": 2,
           "SPANISH_TROPICAL": 0,
           "SPANISH_NEWS_TALK": 0,
           "SPANISH_SPORTS_TALK": 0,
-          "SPANISH_ADULT_HITS": 0.875
+          "SPANISH_ADULT_HITS": 1.875
         },
         "meanSubtypeSharePct": {
           "SPANISH_CONTEMPORARY": 0,
-          "REGIONAL_MEXICAN": 0.9558441982595004,
+          "REGIONAL_MEXICAN": 0.7308834745735344,
           "SPANISH_TROPICAL": 0,
           "SPANISH_NEWS_TALK": 0,
           "SPANISH_SPORTS_TALK": 0,
-          "SPANISH_ADULT_HITS": 0.0441558017404996
+          "SPANISH_ADULT_HITS": 0.2691165254264655
         },
         "meanMarketAffinityPrior": {
           "SPANISH_CONTEMPORARY": 0.5130499999999999,
@@ -212,37 +86,38 @@
         "leadershipWinsBySubtype": {
           "REGIONAL_MEXICAN": 8
         },
-        "meanTotalSpanishStations": 2.75
+        "meanTotalSpanishStations": 3.875
       },
       "runs": 8
     },
     "2026": {
-      "meanSpanishStationCount": 2.125,
-      "meanSpanishStationCountAll": 2.125,
-      "meanSpanishLanguageShare": 0.07859217125,
-      "meanSpanishShareLegacy": 0.07859217125,
-      "meanSpanishLeaderShare": 0.050229146249999995,
+      "meanSpanishStationCount": 3.5,
+      "meanSpanishStationCountAll": 3.5,
+      "meanSpanishLanguageShare": 0.2540867325,
+      "meanSpanishShareLegacy": 0.2540867325,
+      "meanSpanishLeaderShare": 0.13554749124999999,
       "spanishBySourceMean": {
-        "timeline_or_other": 1.25,
-        "launch:phoenix_spanish_1994_fm": 0.875
+        "launch:phoenix_spanish_1988_fm": 0.75,
+        "launch:phoenix_spanish_1994_fm": 1,
+        "timeline_or_other": 1.75
       },
       "spanishSubtype": {
         "runs": 8,
         "meanSubtypeCounts": {
           "SPANISH_CONTEMPORARY": 0,
-          "REGIONAL_MEXICAN": 1.625,
+          "REGIONAL_MEXICAN": 2,
           "SPANISH_TROPICAL": 0,
           "SPANISH_NEWS_TALK": 0,
           "SPANISH_SPORTS_TALK": 0,
-          "SPANISH_ADULT_HITS": 0.5
+          "SPANISH_ADULT_HITS": 1.5
         },
         "meanSubtypeSharePct": {
           "SPANISH_CONTEMPORARY": 0,
-          "REGIONAL_MEXICAN": 0.851174169389137,
+          "REGIONAL_MEXICAN": 0.8274476193519644,
           "SPANISH_TROPICAL": 0,
           "SPANISH_NEWS_TALK": 0,
           "SPANISH_SPORTS_TALK": 0,
-          "SPANISH_ADULT_HITS": 0.023825830610862967
+          "SPANISH_ADULT_HITS": 0.17255238064803563
         },
         "meanMarketAffinityPrior": {
           "SPANISH_CONTEMPORARY": 0.5130499999999999,
@@ -253,9 +128,9 @@
           "SPANISH_ADULT_HITS": 0.5499999999999999
         },
         "leadershipWinsBySubtype": {
-          "REGIONAL_MEXICAN": 7
+          "REGIONAL_MEXICAN": 8
         },
-        "meanTotalSpanishStations": 2.125
+        "meanTotalSpanishStations": 3.5
       },
       "runs": 8
     }

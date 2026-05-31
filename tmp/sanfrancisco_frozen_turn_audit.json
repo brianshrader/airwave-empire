@@ -1,0 +1,4540 @@
+{
+  "generatedAt": "2026-05-31T00:56:07.888Z",
+  "options": {
+    "markets": [
+      "sanfrancisco",
+      "losangeles",
+      "seattle"
+    ],
+    "runs": 25,
+    "startYear": 2010,
+    "endYear": 2022,
+    "seed": 20260530,
+    "includeControls": false
+  },
+  "repro": {
+    "sanFranciscoFrozenTurnsObserved": true,
+    "sanFranciscoMultiPeriodStreaks": 0,
+    "sanFranciscoFrozenShareTurns": 6,
+    "sanFranciscoFrozenRevTurns": 0,
+    "maxStaleStreakByMarket": {
+      "sanfrancisco": 1,
+      "losangeles": 1,
+      "seattle": 2
+    },
+    "sampleEvents": [
+      {
+        "kind": "frozen_turn",
+        "seed": 20292021,
+        "market": "sanfrancisco",
+        "turn": 15,
+        "beforeY": 2016,
+        "beforeP": 2,
+        "afterY": 2017,
+        "afterP": 2,
+        "closedY": 2017,
+        "closedP": 1,
+        "snapY": 2017,
+        "snapP": 1,
+        "snapLag": 1,
+        "streak": 1,
+        "shareSigMatch": true,
+        "revSigMatch": false,
+        "sharesUnchangedPct": 1,
+        "revsUnchangedPct": 0,
+        "shFrozen": true,
+        "revFrozen": false,
+        "snapBehind": false,
+        "snapMulti": false,
+        "advErr": false,
+        "nanOrUndef": 0,
+        "topBefore": [
+          {
+            "id": "gwcrxoh4",
+            "call": "",
+            "format": "TOP40",
+            "share": 0.06140113,
+            "rev": 5427546
+          },
+          {
+            "id": "16ty7t3a",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.05805822,
+            "rev": 11642042
+          },
+          {
+            "id": "1vl09v12",
+            "call": "",
+            "format": "CLASSIC_ROCK",
+            "share": 0.0569921,
+            "rev": 6693567
+          },
+          {
+            "id": "4lalrrj7",
+            "call": "",
+            "format": "ALBUM_ROCK",
+            "share": 0.05594406,
+            "rev": 4068482
+          },
+          {
+            "id": "v8fj5rou",
+            "call": "",
+            "format": "NEWS_TALK",
+            "share": 0.05527547,
+            "rev": 12339372
+          }
+        ],
+        "topAfter": [
+          {
+            "id": "gwcrxoh4",
+            "call": "",
+            "format": "TOP40",
+            "share": 0.06140113,
+            "rev": 0
+          },
+          {
+            "id": "16ty7t3a",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.05805822,
+            "rev": 0
+          },
+          {
+            "id": "1vl09v12",
+            "call": "",
+            "format": "CLASSIC_ROCK",
+            "share": 0.0569921,
+            "rev": 0
+          },
+          {
+            "id": "4lalrrj7",
+            "call": "",
+            "format": "ALBUM_ROCK",
+            "share": 0.05594406,
+            "rev": 0
+          },
+          {
+            "id": "v8fj5rou",
+            "call": "",
+            "format": "NEWS_TALK",
+            "share": 0.05527547,
+            "rev": 0
+          }
+        ]
+      },
+      {
+        "kind": "frozen_turn",
+        "seed": 20301994,
+        "market": "sanfrancisco",
+        "turn": 2,
+        "beforeY": 2010,
+        "beforeP": 1,
+        "afterY": 2011,
+        "afterP": 1,
+        "closedY": 2010,
+        "closedP": 2,
+        "snapY": 2010,
+        "snapP": 2,
+        "snapLag": 1,
+        "streak": 1,
+        "shareSigMatch": true,
+        "revSigMatch": false,
+        "sharesUnchangedPct": 1,
+        "revsUnchangedPct": 0,
+        "shFrozen": true,
+        "revFrozen": false,
+        "snapBehind": false,
+        "snapMulti": false,
+        "advErr": false,
+        "nanOrUndef": 0,
+        "topBefore": [
+          {
+            "id": "n1xjoc1t",
+            "call": "",
+            "format": "NEWS_TALK",
+            "share": 0.10066394,
+            "rev": 25583151
+          },
+          {
+            "id": "jsh6pnex",
+            "call": "",
+            "format": "CLASSIC_ROCK",
+            "share": 0.07155198,
+            "rev": 7237152
+          },
+          {
+            "id": "2vae876j",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.05875457,
+            "rev": 6259912
+          },
+          {
+            "id": "trre0lzl",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.05840902,
+            "rev": 8006802
+          },
+          {
+            "id": "47vadefz",
+            "call": "",
+            "format": "ALBUM_ROCK",
+            "share": 0.05707622,
+            "rev": 2857191
+          }
+        ],
+        "topAfter": [
+          {
+            "id": "n1xjoc1t",
+            "call": "",
+            "format": "NEWS_TALK",
+            "share": 0.10066394,
+            "rev": 0
+          },
+          {
+            "id": "jsh6pnex",
+            "call": "",
+            "format": "CLASSIC_ROCK",
+            "share": 0.07155198,
+            "rev": 0
+          },
+          {
+            "id": "2vae876j",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.05875457,
+            "rev": 0
+          },
+          {
+            "id": "trre0lzl",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.05840902,
+            "rev": 0
+          },
+          {
+            "id": "47vadefz",
+            "call": "",
+            "format": "ALBUM_ROCK",
+            "share": 0.05707622,
+            "rev": 0
+          }
+        ]
+      },
+      {
+        "kind": "frozen_turn",
+        "seed": 20321940,
+        "market": "sanfrancisco",
+        "turn": 15,
+        "beforeY": 2016,
+        "beforeP": 2,
+        "afterY": 2017,
+        "afterP": 2,
+        "closedY": 2017,
+        "closedP": 1,
+        "snapY": 2017,
+        "snapP": 1,
+        "snapLag": 1,
+        "streak": 1,
+        "shareSigMatch": true,
+        "revSigMatch": false,
+        "sharesUnchangedPct": 1,
+        "revsUnchangedPct": 0,
+        "shFrozen": true,
+        "revFrozen": false,
+        "snapBehind": false,
+        "snapMulti": false,
+        "advErr": false,
+        "nanOrUndef": 0,
+        "topBefore": [
+          {
+            "id": "6oyif8wk",
+            "call": "",
+            "format": "NEWS_TALK",
+            "share": 0.06778182,
+            "rev": 17287978
+          },
+          {
+            "id": "mahaboj5",
+            "call": "",
+            "format": "CLASSIC_ROCK",
+            "share": 0.06600043,
+            "rev": 8612539
+          },
+          {
+            "id": "cnh50glc",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.05630968,
+            "rev": 10101383
+          },
+          {
+            "id": "20222q1h",
+            "call": "",
+            "format": "TOP40",
+            "share": 0.0540295,
+            "rev": 3462795
+          },
+          {
+            "id": "6qrok55l",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.05258658,
+            "rev": 6981910
+          }
+        ],
+        "topAfter": [
+          {
+            "id": "6oyif8wk",
+            "call": "",
+            "format": "NEWS_TALK",
+            "share": 0.06778182,
+            "rev": 0
+          },
+          {
+            "id": "mahaboj5",
+            "call": "",
+            "format": "CLASSIC_ROCK",
+            "share": 0.06600043,
+            "rev": 0
+          },
+          {
+            "id": "cnh50glc",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.05630968,
+            "rev": 0
+          },
+          {
+            "id": "20222q1h",
+            "call": "",
+            "format": "TOP40",
+            "share": 0.0540295,
+            "rev": 0
+          },
+          {
+            "id": "6qrok55l",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.05258658,
+            "rev": 0
+          }
+        ]
+      },
+      {
+        "kind": "frozen_turn",
+        "seed": 20341886,
+        "market": "sanfrancisco",
+        "turn": 10,
+        "beforeY": 2014,
+        "beforeP": 1,
+        "afterY": 2015,
+        "afterP": 1,
+        "closedY": 2014,
+        "closedP": 2,
+        "snapY": 2014,
+        "snapP": 2,
+        "snapLag": 1,
+        "streak": 1,
+        "shareSigMatch": true,
+        "revSigMatch": false,
+        "sharesUnchangedPct": 1,
+        "revsUnchangedPct": 0,
+        "shFrozen": true,
+        "revFrozen": false,
+        "snapBehind": false,
+        "snapMulti": false,
+        "advErr": false,
+        "nanOrUndef": 0,
+        "topBefore": [
+          {
+            "id": "8gr01quw",
+            "call": "",
+            "format": "NEWS_TALK",
+            "share": 0.11456278,
+            "rev": 27018717
+          },
+          {
+            "id": "eq50dsl8",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.05668269,
+            "rev": 8039472
+          },
+          {
+            "id": "ycg5u7of",
+            "call": "",
+            "format": "TOP40",
+            "share": 0.05432161,
+            "rev": 2716546
+          },
+          {
+            "id": "mfrcc1vw",
+            "call": "",
+            "format": "ALBUM_ROCK",
+            "share": 0.0531748,
+            "rev": 2709948
+          },
+          {
+            "id": "gze3uqdq",
+            "call": "",
+            "format": "CLASSIC_ROCK",
+            "share": 0.05261826,
+            "rev": 3936609
+          }
+        ],
+        "topAfter": [
+          {
+            "id": "8gr01quw",
+            "call": "",
+            "format": "NEWS_TALK",
+            "share": 0.11456278,
+            "rev": 0
+          },
+          {
+            "id": "eq50dsl8",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.05668269,
+            "rev": 0
+          },
+          {
+            "id": "ycg5u7of",
+            "call": "",
+            "format": "TOP40",
+            "share": 0.05432161,
+            "rev": 0
+          },
+          {
+            "id": "mfrcc1vw",
+            "call": "",
+            "format": "ALBUM_ROCK",
+            "share": 0.0531748,
+            "rev": 0
+          },
+          {
+            "id": "gze3uqdq",
+            "call": "",
+            "format": "CLASSIC_ROCK",
+            "share": 0.05261826,
+            "rev": 0
+          }
+        ]
+      },
+      {
+        "kind": "frozen_turn",
+        "seed": 20411697,
+        "market": "sanfrancisco",
+        "turn": 5,
+        "beforeY": 2011,
+        "beforeP": 2,
+        "afterY": 2012,
+        "afterP": 2,
+        "closedY": 2012,
+        "closedP": 1,
+        "snapY": 2012,
+        "snapP": 1,
+        "snapLag": 1,
+        "streak": 1,
+        "shareSigMatch": true,
+        "revSigMatch": false,
+        "sharesUnchangedPct": 1,
+        "revsUnchangedPct": 0,
+        "shFrozen": true,
+        "revFrozen": false,
+        "snapBehind": false,
+        "snapMulti": false,
+        "advErr": false,
+        "nanOrUndef": 0,
+        "topBefore": [
+          {
+            "id": "6wg7uu65",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.0650232,
+            "rev": 14664218
+          },
+          {
+            "id": "emqaqhjv",
+            "call": "",
+            "format": "COUNTRY",
+            "share": 0.06162982,
+            "rev": 6728515
+          },
+          {
+            "id": "jt3fssbn",
+            "call": "",
+            "format": "CLASSIC_ROCK",
+            "share": 0.06136367,
+            "rev": 7723087
+          },
+          {
+            "id": "7mda2sti",
+            "call": "",
+            "format": "TOP40",
+            "share": 0.06036562,
+            "rev": 4233415
+          },
+          {
+            "id": "yqi6cfmi",
+            "call": "",
+            "format": "NEWS_TALK",
+            "share": 0.05988323,
+            "rev": 12449365
+          }
+        ],
+        "topAfter": [
+          {
+            "id": "6wg7uu65",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.0650232,
+            "rev": 0
+          },
+          {
+            "id": "emqaqhjv",
+            "call": "",
+            "format": "COUNTRY",
+            "share": 0.06162982,
+            "rev": 0
+          },
+          {
+            "id": "jt3fssbn",
+            "call": "",
+            "format": "CLASSIC_ROCK",
+            "share": 0.06136367,
+            "rev": 0
+          },
+          {
+            "id": "7mda2sti",
+            "call": "",
+            "format": "TOP40",
+            "share": 0.06036562,
+            "rev": 0
+          },
+          {
+            "id": "yqi6cfmi",
+            "call": "",
+            "format": "NEWS_TALK",
+            "share": 0.05988323,
+            "rev": 0
+          }
+        ]
+      },
+      {
+        "kind": "frozen_turn",
+        "seed": 20491481,
+        "market": "sanfrancisco",
+        "turn": 18,
+        "beforeY": 2018,
+        "beforeP": 1,
+        "afterY": 2019,
+        "afterP": 1,
+        "closedY": 2018,
+        "closedP": 2,
+        "snapY": 2018,
+        "snapP": 2,
+        "snapLag": 1,
+        "streak": 1,
+        "shareSigMatch": true,
+        "revSigMatch": false,
+        "sharesUnchangedPct": 1,
+        "revsUnchangedPct": 0,
+        "shFrozen": true,
+        "revFrozen": false,
+        "snapBehind": false,
+        "snapMulti": false,
+        "advErr": false,
+        "nanOrUndef": 0,
+        "topBefore": [
+          {
+            "id": "7dvq4oq7",
+            "call": "",
+            "format": "CLASSIC_ROCK",
+            "share": 0.0618765,
+            "rev": 8111431
+          },
+          {
+            "id": "2ro96uvo",
+            "call": "",
+            "format": "TOP40",
+            "share": 0.05931485,
+            "rev": 4034185
+          },
+          {
+            "id": "ma5j1rjr",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.05597749,
+            "rev": 9822838
+          },
+          {
+            "id": "hndbocnv",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.05323544,
+            "rev": 7215939
+          },
+          {
+            "id": "9tz8rlbe",
+            "call": "",
+            "format": "ALBUM_ROCK",
+            "share": 0.04971768,
+            "rev": 3119919
+          }
+        ],
+        "topAfter": [
+          {
+            "id": "7dvq4oq7",
+            "call": "",
+            "format": "CLASSIC_ROCK",
+            "share": 0.0618765,
+            "rev": 0
+          },
+          {
+            "id": "2ro96uvo",
+            "call": "",
+            "format": "TOP40",
+            "share": 0.05931485,
+            "rev": 0
+          },
+          {
+            "id": "ma5j1rjr",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.05597749,
+            "rev": 0
+          },
+          {
+            "id": "hndbocnv",
+            "call": "",
+            "format": "ADULT_CONTEMP",
+            "share": 0.05323544,
+            "rev": 0
+          },
+          {
+            "id": "9tz8rlbe",
+            "call": "",
+            "format": "ALBUM_ROCK",
+            "share": 0.04971768,
+            "rev": 0
+          }
+        ]
+      }
+    ],
+    "sampleStreaks": [],
+    "interpretation": "Occasional single-period flat book in SF; controls similar — likely not SF-specific engine freeze."
+  },
+  "totals": {
+    "runs": 75,
+    "frozenShareTurns": 25,
+    "frozenRevTurns": 0,
+    "eventsLogged": 25
+  },
+  "byMarket": {
+    "sanfrancisco": {
+      "runs": [
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20262102,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20272075,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20282048,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20292021,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20292021,
+              "market": "sanfrancisco",
+              "turn": 15,
+              "beforeY": 2016,
+              "beforeP": 2,
+              "afterY": 2017,
+              "afterP": 2,
+              "closedY": 2017,
+              "closedP": 1,
+              "snapY": 2017,
+              "snapP": 1,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "gwcrxoh4",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.06140113,
+                  "rev": 5427546
+                },
+                {
+                  "id": "16ty7t3a",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05805822,
+                  "rev": 11642042
+                },
+                {
+                  "id": "1vl09v12",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.0569921,
+                  "rev": 6693567
+                },
+                {
+                  "id": "4lalrrj7",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.05594406,
+                  "rev": 4068482
+                },
+                {
+                  "id": "v8fj5rou",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.05527547,
+                  "rev": 12339372
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "gwcrxoh4",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.06140113,
+                  "rev": 0
+                },
+                {
+                  "id": "16ty7t3a",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05805822,
+                  "rev": 0
+                },
+                {
+                  "id": "1vl09v12",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.0569921,
+                  "rev": 0
+                },
+                {
+                  "id": "4lalrrj7",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.05594406,
+                  "rev": 0
+                },
+                {
+                  "id": "v8fj5rou",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.05527547,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20301994,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20301994,
+              "market": "sanfrancisco",
+              "turn": 2,
+              "beforeY": 2010,
+              "beforeP": 1,
+              "afterY": 2011,
+              "afterP": 1,
+              "closedY": 2010,
+              "closedP": 2,
+              "snapY": 2010,
+              "snapP": 2,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "n1xjoc1t",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.10066394,
+                  "rev": 25583151
+                },
+                {
+                  "id": "jsh6pnex",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.07155198,
+                  "rev": 7237152
+                },
+                {
+                  "id": "2vae876j",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05875457,
+                  "rev": 6259912
+                },
+                {
+                  "id": "trre0lzl",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05840902,
+                  "rev": 8006802
+                },
+                {
+                  "id": "47vadefz",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.05707622,
+                  "rev": 2857191
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "n1xjoc1t",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.10066394,
+                  "rev": 0
+                },
+                {
+                  "id": "jsh6pnex",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.07155198,
+                  "rev": 0
+                },
+                {
+                  "id": "2vae876j",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05875457,
+                  "rev": 0
+                },
+                {
+                  "id": "trre0lzl",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05840902,
+                  "rev": 0
+                },
+                {
+                  "id": "47vadefz",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.05707622,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20311967,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20321940,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20321940,
+              "market": "sanfrancisco",
+              "turn": 15,
+              "beforeY": 2016,
+              "beforeP": 2,
+              "afterY": 2017,
+              "afterP": 2,
+              "closedY": 2017,
+              "closedP": 1,
+              "snapY": 2017,
+              "snapP": 1,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "6oyif8wk",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.06778182,
+                  "rev": 17287978
+                },
+                {
+                  "id": "mahaboj5",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.06600043,
+                  "rev": 8612539
+                },
+                {
+                  "id": "cnh50glc",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05630968,
+                  "rev": 10101383
+                },
+                {
+                  "id": "20222q1h",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.0540295,
+                  "rev": 3462795
+                },
+                {
+                  "id": "6qrok55l",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05258658,
+                  "rev": 6981910
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "6oyif8wk",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.06778182,
+                  "rev": 0
+                },
+                {
+                  "id": "mahaboj5",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.06600043,
+                  "rev": 0
+                },
+                {
+                  "id": "cnh50glc",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05630968,
+                  "rev": 0
+                },
+                {
+                  "id": "20222q1h",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.0540295,
+                  "rev": 0
+                },
+                {
+                  "id": "6qrok55l",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05258658,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20331913,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20341886,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20341886,
+              "market": "sanfrancisco",
+              "turn": 10,
+              "beforeY": 2014,
+              "beforeP": 1,
+              "afterY": 2015,
+              "afterP": 1,
+              "closedY": 2014,
+              "closedP": 2,
+              "snapY": 2014,
+              "snapP": 2,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "8gr01quw",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.11456278,
+                  "rev": 27018717
+                },
+                {
+                  "id": "eq50dsl8",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05668269,
+                  "rev": 8039472
+                },
+                {
+                  "id": "ycg5u7of",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05432161,
+                  "rev": 2716546
+                },
+                {
+                  "id": "mfrcc1vw",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.0531748,
+                  "rev": 2709948
+                },
+                {
+                  "id": "gze3uqdq",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05261826,
+                  "rev": 3936609
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "8gr01quw",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.11456278,
+                  "rev": 0
+                },
+                {
+                  "id": "eq50dsl8",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05668269,
+                  "rev": 0
+                },
+                {
+                  "id": "ycg5u7of",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05432161,
+                  "rev": 0
+                },
+                {
+                  "id": "mfrcc1vw",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.0531748,
+                  "rev": 0
+                },
+                {
+                  "id": "gze3uqdq",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05261826,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20351859,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20361832,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20371805,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20381778,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20391751,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20401724,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20411697,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20411697,
+              "market": "sanfrancisco",
+              "turn": 5,
+              "beforeY": 2011,
+              "beforeP": 2,
+              "afterY": 2012,
+              "afterP": 2,
+              "closedY": 2012,
+              "closedP": 1,
+              "snapY": 2012,
+              "snapP": 1,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "6wg7uu65",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.0650232,
+                  "rev": 14664218
+                },
+                {
+                  "id": "emqaqhjv",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.06162982,
+                  "rev": 6728515
+                },
+                {
+                  "id": "jt3fssbn",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.06136367,
+                  "rev": 7723087
+                },
+                {
+                  "id": "7mda2sti",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.06036562,
+                  "rev": 4233415
+                },
+                {
+                  "id": "yqi6cfmi",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.05988323,
+                  "rev": 12449365
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "6wg7uu65",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.0650232,
+                  "rev": 0
+                },
+                {
+                  "id": "emqaqhjv",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.06162982,
+                  "rev": 0
+                },
+                {
+                  "id": "jt3fssbn",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.06136367,
+                  "rev": 0
+                },
+                {
+                  "id": "7mda2sti",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.06036562,
+                  "rev": 0
+                },
+                {
+                  "id": "yqi6cfmi",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.05988323,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20421670,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20431643,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20441616,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20451589,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20461562,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20471535,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20481508,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20491481,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20491481,
+              "market": "sanfrancisco",
+              "turn": 18,
+              "beforeY": 2018,
+              "beforeP": 1,
+              "afterY": 2019,
+              "afterP": 1,
+              "closedY": 2018,
+              "closedP": 2,
+              "snapY": 2018,
+              "snapP": 2,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "7dvq4oq7",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.0618765,
+                  "rev": 8111431
+                },
+                {
+                  "id": "2ro96uvo",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05931485,
+                  "rev": 4034185
+                },
+                {
+                  "id": "ma5j1rjr",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05597749,
+                  "rev": 9822838
+                },
+                {
+                  "id": "hndbocnv",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05323544,
+                  "rev": 7215939
+                },
+                {
+                  "id": "9tz8rlbe",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.04971768,
+                  "rev": 3119919
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "7dvq4oq7",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.0618765,
+                  "rev": 0
+                },
+                {
+                  "id": "2ro96uvo",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05931485,
+                  "rev": 0
+                },
+                {
+                  "id": "ma5j1rjr",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05597749,
+                  "rev": 0
+                },
+                {
+                  "id": "hndbocnv",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05323544,
+                  "rev": 0
+                },
+                {
+                  "id": "9tz8rlbe",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.04971768,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "sanfrancisco",
+          "seed": 20501454,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        }
+      ],
+      "summary": {
+        "runs": 25,
+        "totalFrozenShareTurns": 6,
+        "totalFrozenRevTurns": 0,
+        "runsWithAnyFrozen": 6
+      }
+    },
+    "losangeles": {
+      "runs": [
+        {
+          "marketId": "losangeles",
+          "seed": 20261840,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20261840,
+              "market": "losangeles",
+              "turn": 6,
+              "beforeY": 2012,
+              "beforeP": 1,
+              "afterY": 2013,
+              "afterP": 1,
+              "closedY": 2012,
+              "closedP": 2,
+              "snapY": 2012,
+              "snapP": 2,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0.024390243902439025,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "v646nsfj",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.06270856,
+                  "rev": 18852423
+                },
+                {
+                  "id": "1whptc6i",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05745262,
+                  "rev": 14719609
+                },
+                {
+                  "id": "xbbu1y98",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.0492093,
+                  "rev": 16043049
+                },
+                {
+                  "id": "1jl9umxv",
+                  "call": "",
+                  "format": "URBAN_CONTEMP",
+                  "share": 0.04728366,
+                  "rev": 9029829
+                },
+                {
+                  "id": "ns64dfos",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.04454688,
+                  "rev": 13717420
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "v646nsfj",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.06270856,
+                  "rev": 0
+                },
+                {
+                  "id": "1whptc6i",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05745262,
+                  "rev": 0
+                },
+                {
+                  "id": "xbbu1y98",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.0492093,
+                  "rev": 0
+                },
+                {
+                  "id": "1jl9umxv",
+                  "call": "",
+                  "format": "URBAN_CONTEMP",
+                  "share": 0.04728366,
+                  "rev": 0
+                },
+                {
+                  "id": "ns64dfos",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.04454688,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20271813,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20271813,
+              "market": "losangeles",
+              "turn": 12,
+              "beforeY": 2015,
+              "beforeP": 1,
+              "afterY": 2016,
+              "afterP": 1,
+              "closedY": 2015,
+              "closedP": 2,
+              "snapY": 2015,
+              "snapP": 2,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0.047619047619047616,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "r1ogecwr",
+                  "call": "",
+                  "format": "SPANISH",
+                  "share": 0.06464219,
+                  "rev": 16286520
+                },
+                {
+                  "id": "r4flqz0w",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.0590978,
+                  "rev": 15223044
+                },
+                {
+                  "id": "tpya1rk1",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05813141,
+                  "rev": 14614974
+                },
+                {
+                  "id": "relnet_losangeles|2010|0_xsbk50",
+                  "call": "",
+                  "format": "RELIGIOUS_NETWORK",
+                  "share": 0.04739534,
+                  "rev": 0
+                },
+                {
+                  "id": "vlrtpjjf",
+                  "call": "",
+                  "format": "URBAN_CONTEMP",
+                  "share": 0.04599866,
+                  "rev": 8981238
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "r1ogecwr",
+                  "call": "",
+                  "format": "SPANISH",
+                  "share": 0.06464219,
+                  "rev": 0
+                },
+                {
+                  "id": "r4flqz0w",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.0590978,
+                  "rev": 0
+                },
+                {
+                  "id": "tpya1rk1",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05813141,
+                  "rev": 0
+                },
+                {
+                  "id": "relnet_losangeles|2010|0_xsbk50",
+                  "call": "",
+                  "format": "RELIGIOUS_NETWORK",
+                  "share": 0.04739534,
+                  "rev": 0
+                },
+                {
+                  "id": "vlrtpjjf",
+                  "call": "",
+                  "format": "URBAN_CONTEMP",
+                  "share": 0.04599866,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20281786,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20291759,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20301732,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20311705,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20321678,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20331651,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20331651,
+              "market": "losangeles",
+              "turn": 16,
+              "beforeY": 2017,
+              "beforeP": 1,
+              "afterY": 2018,
+              "afterP": 1,
+              "closedY": 2017,
+              "closedP": 2,
+              "snapY": 2017,
+              "snapP": 2,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0.047619047619047616,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "7b0zu0tm",
+                  "call": "",
+                  "format": "SPANISH",
+                  "share": 0.05938366,
+                  "rev": 14629393
+                },
+                {
+                  "id": "relnet_losangeles|2010|0_xsbk50",
+                  "call": "",
+                  "format": "RELIGIOUS_NETWORK",
+                  "share": 0.05506433,
+                  "rev": 0
+                },
+                {
+                  "id": "7xnwbinz",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05162851,
+                  "rev": 14680542
+                },
+                {
+                  "id": "1wo1i0uw",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05148827,
+                  "rev": 14128287
+                },
+                {
+                  "id": "o7npsjjl",
+                  "call": "",
+                  "format": "URBAN_CONTEMP",
+                  "share": 0.04617326,
+                  "rev": 10017598
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "7b0zu0tm",
+                  "call": "",
+                  "format": "SPANISH",
+                  "share": 0.05938366,
+                  "rev": 0
+                },
+                {
+                  "id": "relnet_losangeles|2010|0_xsbk50",
+                  "call": "",
+                  "format": "RELIGIOUS_NETWORK",
+                  "share": 0.05506433,
+                  "rev": 0
+                },
+                {
+                  "id": "7xnwbinz",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05162851,
+                  "rev": 0
+                },
+                {
+                  "id": "1wo1i0uw",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05148827,
+                  "rev": 0
+                },
+                {
+                  "id": "o7npsjjl",
+                  "call": "",
+                  "format": "URBAN_CONTEMP",
+                  "share": 0.04617326,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20341624,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20351597,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20361570,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20371543,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20371543,
+              "market": "losangeles",
+              "turn": 23,
+              "beforeY": 2020,
+              "beforeP": 2,
+              "afterY": 2021,
+              "afterP": 2,
+              "closedY": 2021,
+              "closedP": 1,
+              "snapY": 2021,
+              "snapP": 1,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0.047619047619047616,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "relnet_losangeles|2010|0_xsbk50",
+                  "call": "",
+                  "format": "RELIGIOUS_NETWORK",
+                  "share": 0.07213982,
+                  "rev": 0
+                },
+                {
+                  "id": "3objuq59",
+                  "call": "",
+                  "format": "SPANISH",
+                  "share": 0.05612337,
+                  "rev": 16175801
+                },
+                {
+                  "id": "7em9x68w",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05034138,
+                  "rev": 16645192
+                },
+                {
+                  "id": "mewcsqtp",
+                  "call": "",
+                  "format": "URBAN_CONTEMP",
+                  "share": 0.04844406,
+                  "rev": 12591109
+                },
+                {
+                  "id": "7abn1rhp",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.04816708,
+                  "rev": 15156715
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "relnet_losangeles|2010|0_xsbk50",
+                  "call": "",
+                  "format": "RELIGIOUS_NETWORK",
+                  "share": 0.07213982,
+                  "rev": 0
+                },
+                {
+                  "id": "3objuq59",
+                  "call": "",
+                  "format": "SPANISH",
+                  "share": 0.05612337,
+                  "rev": 0
+                },
+                {
+                  "id": "7em9x68w",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05034138,
+                  "rev": 0
+                },
+                {
+                  "id": "mewcsqtp",
+                  "call": "",
+                  "format": "URBAN_CONTEMP",
+                  "share": 0.04844406,
+                  "rev": 0
+                },
+                {
+                  "id": "7abn1rhp",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.04816708,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20381516,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20381516,
+              "market": "losangeles",
+              "turn": 20,
+              "beforeY": 2019,
+              "beforeP": 1,
+              "afterY": 2020,
+              "afterP": 1,
+              "closedY": 2019,
+              "closedP": 2,
+              "snapY": 2019,
+              "snapP": 2,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0.047619047619047616,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "relnet_losangeles|2010|0_xsbk50",
+                  "call": "",
+                  "format": "RELIGIOUS_NETWORK",
+                  "share": 0.06238052,
+                  "rev": 0
+                },
+                {
+                  "id": "rz1cb5mu",
+                  "call": "",
+                  "format": "SPANISH",
+                  "share": 0.05916008,
+                  "rev": 14947546
+                },
+                {
+                  "id": "odjpt8kc",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05226698,
+                  "rev": 15290044
+                },
+                {
+                  "id": "k3b9qw5c",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.04592889,
+                  "rev": 12848429
+                },
+                {
+                  "id": "mob57dkc",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.04032396,
+                  "rev": 14549534
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "relnet_losangeles|2010|0_xsbk50",
+                  "call": "",
+                  "format": "RELIGIOUS_NETWORK",
+                  "share": 0.06238052,
+                  "rev": 0
+                },
+                {
+                  "id": "rz1cb5mu",
+                  "call": "",
+                  "format": "SPANISH",
+                  "share": 0.05916008,
+                  "rev": 0
+                },
+                {
+                  "id": "odjpt8kc",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05226698,
+                  "rev": 0
+                },
+                {
+                  "id": "k3b9qw5c",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.04592889,
+                  "rev": 0
+                },
+                {
+                  "id": "mob57dkc",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.04032396,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20391489,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20401462,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20411435,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20421408,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20421408,
+              "market": "losangeles",
+              "turn": 14,
+              "beforeY": 2016,
+              "beforeP": 1,
+              "afterY": 2017,
+              "afterP": 1,
+              "closedY": 2016,
+              "closedP": 2,
+              "snapY": 2016,
+              "snapP": 2,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0.047619047619047616,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "dpz45chp",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05668527,
+                  "rev": 15675571
+                },
+                {
+                  "id": "hh4ztn1o",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05273049,
+                  "rev": 14213809
+                },
+                {
+                  "id": "relnet_losangeles|2010|0_xsbk50",
+                  "call": "",
+                  "format": "RELIGIOUS_NETWORK",
+                  "share": 0.05111772,
+                  "rev": 0
+                },
+                {
+                  "id": "660axp05",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.04857936,
+                  "rev": 16779536
+                },
+                {
+                  "id": "uu28ph1h",
+                  "call": "",
+                  "format": "URBAN_CONTEMP",
+                  "share": 0.0433554,
+                  "rev": 8767326
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "dpz45chp",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05668527,
+                  "rev": 0
+                },
+                {
+                  "id": "hh4ztn1o",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05273049,
+                  "rev": 0
+                },
+                {
+                  "id": "relnet_losangeles|2010|0_xsbk50",
+                  "call": "",
+                  "format": "RELIGIOUS_NETWORK",
+                  "share": 0.05111772,
+                  "rev": 0
+                },
+                {
+                  "id": "660axp05",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.04857936,
+                  "rev": 0
+                },
+                {
+                  "id": "uu28ph1h",
+                  "call": "",
+                  "format": "URBAN_CONTEMP",
+                  "share": 0.0433554,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20431381,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20441354,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20451327,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20461300,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20471273,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20481246,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20481246,
+              "market": "losangeles",
+              "turn": 15,
+              "beforeY": 2016,
+              "beforeP": 2,
+              "afterY": 2017,
+              "afterP": 2,
+              "closedY": 2017,
+              "closedP": 1,
+              "snapY": 2017,
+              "snapP": 1,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0.047619047619047616,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "elgvzvok",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.06259546,
+                  "rev": 22270393
+                },
+                {
+                  "id": "r90wzfh5",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05460112,
+                  "rev": 16704033
+                },
+                {
+                  "id": "relnet_losangeles|2010|0_xsbk50",
+                  "call": "",
+                  "format": "RELIGIOUS_NETWORK",
+                  "share": 0.05369029,
+                  "rev": 0
+                },
+                {
+                  "id": "knq41l01",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.04526155,
+                  "rev": 17537230
+                },
+                {
+                  "id": "plm0rpp1",
+                  "call": "",
+                  "format": "URBAN_CONTEMP",
+                  "share": 0.0448762,
+                  "rev": 10446518
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "elgvzvok",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.06259546,
+                  "rev": 0
+                },
+                {
+                  "id": "r90wzfh5",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05460112,
+                  "rev": 0
+                },
+                {
+                  "id": "relnet_losangeles|2010|0_xsbk50",
+                  "call": "",
+                  "format": "RELIGIOUS_NETWORK",
+                  "share": 0.05369029,
+                  "rev": 0
+                },
+                {
+                  "id": "knq41l01",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.04526155,
+                  "rev": 0
+                },
+                {
+                  "id": "plm0rpp1",
+                  "call": "",
+                  "format": "URBAN_CONTEMP",
+                  "share": 0.0448762,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20491219,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "losangeles",
+          "seed": 20501192,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        }
+      ],
+      "summary": {
+        "runs": 25,
+        "totalFrozenShareTurns": 7,
+        "totalFrozenRevTurns": 0,
+        "runsWithAnyFrozen": 7
+      }
+    },
+    "seattle": {
+      "runs": [
+        {
+          "marketId": "seattle",
+          "seed": 20261447,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20271420,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20281393,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20291366,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20301339,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20311312,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20321285,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20331258,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20341231,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20351204,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 2,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20351204,
+              "market": "seattle",
+              "turn": 9,
+              "beforeY": 2013,
+              "beforeP": 2,
+              "afterY": 2014,
+              "afterP": 2,
+              "closedY": 2014,
+              "closedP": 1,
+              "snapY": 2014,
+              "snapP": 1,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "1nftpijo",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.06348,
+                  "rev": 14728504
+                },
+                {
+                  "id": "ml82923d",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.0627356,
+                  "rev": 5658773
+                },
+                {
+                  "id": "kyjv1a5v",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.0626564,
+                  "rev": 8023577
+                },
+                {
+                  "id": "yl29jf7w",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.0615794,
+                  "rev": 4508407
+                },
+                {
+                  "id": "x9ia4r0t",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.05869682,
+                  "rev": 12325220
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "1nftpijo",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.06348,
+                  "rev": 0
+                },
+                {
+                  "id": "ml82923d",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.0627356,
+                  "rev": 0
+                },
+                {
+                  "id": "kyjv1a5v",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.0626564,
+                  "rev": 0
+                },
+                {
+                  "id": "yl29jf7w",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.0615794,
+                  "rev": 0
+                },
+                {
+                  "id": "x9ia4r0t",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.05869682,
+                  "rev": 0
+                }
+              ]
+            },
+            {
+              "kind": "frozen_turn",
+              "seed": 20351204,
+              "market": "seattle",
+              "turn": 24,
+              "beforeY": 2021,
+              "beforeP": 1,
+              "afterY": 2022,
+              "afterP": 1,
+              "closedY": 2021,
+              "closedP": 2,
+              "snapY": 2021,
+              "snapP": 2,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "kyjv1a5v",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.06334879,
+                  "rev": 8593514
+                },
+                {
+                  "id": "ml82923d",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.06228396,
+                  "rev": 5455917
+                },
+                {
+                  "id": "1nftpijo",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.0605311,
+                  "rev": 12399889
+                },
+                {
+                  "id": "yl29jf7w",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05386367,
+                  "rev": 3376769
+                },
+                {
+                  "id": "vltfxwbk",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.05232377,
+                  "rev": 4351612
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "kyjv1a5v",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.06334879,
+                  "rev": 0
+                },
+                {
+                  "id": "ml82923d",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.06228396,
+                  "rev": 0
+                },
+                {
+                  "id": "1nftpijo",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.0605311,
+                  "rev": 0
+                },
+                {
+                  "id": "yl29jf7w",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05386367,
+                  "rev": 0
+                },
+                {
+                  "id": "vltfxwbk",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.05232377,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20361177,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 3,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 2,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20361177,
+              "market": "seattle",
+              "turn": 8,
+              "beforeY": 2013,
+              "beforeP": 1,
+              "afterY": 2014,
+              "afterP": 1,
+              "closedY": 2013,
+              "closedP": 2,
+              "snapY": 2013,
+              "snapP": 2,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "aeqio6lw",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.08356917,
+                  "rev": 20684509
+                },
+                {
+                  "id": "lbyhddk6",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.0646617,
+                  "rev": 6283493
+                },
+                {
+                  "id": "rju1lsev",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05881813,
+                  "rev": 9438757
+                },
+                {
+                  "id": "gjmom01u",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05578926,
+                  "rev": 5128950
+                },
+                {
+                  "id": "jzo8agbz",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05465726,
+                  "rev": 2874430
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "aeqio6lw",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.08356917,
+                  "rev": 0
+                },
+                {
+                  "id": "lbyhddk6",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.0646617,
+                  "rev": 0
+                },
+                {
+                  "id": "rju1lsev",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05881813,
+                  "rev": 0
+                },
+                {
+                  "id": "gjmom01u",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05578926,
+                  "rev": 0
+                },
+                {
+                  "id": "jzo8agbz",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05465726,
+                  "rev": 0
+                }
+              ]
+            },
+            {
+              "kind": "frozen_turn",
+              "seed": 20361177,
+              "market": "seattle",
+              "turn": 11,
+              "beforeY": 2014,
+              "beforeP": 2,
+              "afterY": 2015,
+              "afterP": 2,
+              "closedY": 2015,
+              "closedP": 1,
+              "snapY": 2015,
+              "snapP": 1,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "aeqio6lw",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.08017755,
+                  "rev": 22562792
+                },
+                {
+                  "id": "lbyhddk6",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.06467384,
+                  "rev": 7007853
+                },
+                {
+                  "id": "rju1lsev",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05881975,
+                  "rev": 10454843
+                },
+                {
+                  "id": "gjmom01u",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.0562894,
+                  "rev": 5728972
+                },
+                {
+                  "id": "jzo8agbz",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05474546,
+                  "rev": 3220847
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "aeqio6lw",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.08017755,
+                  "rev": 0
+                },
+                {
+                  "id": "lbyhddk6",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.06467384,
+                  "rev": 0
+                },
+                {
+                  "id": "rju1lsev",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05881975,
+                  "rev": 0
+                },
+                {
+                  "id": "gjmom01u",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.0562894,
+                  "rev": 0
+                },
+                {
+                  "id": "jzo8agbz",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05474546,
+                  "rev": 0
+                }
+              ]
+            },
+            {
+              "kind": "frozen_turn",
+              "seed": 20361177,
+              "market": "seattle",
+              "turn": 12,
+              "beforeY": 2015,
+              "beforeP": 1,
+              "afterY": 2016,
+              "afterP": 1,
+              "closedY": 2015,
+              "closedP": 2,
+              "snapY": 2015,
+              "snapP": 2,
+              "snapLag": 1,
+              "streak": 2,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 1,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "aeqio6lw",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.08017755,
+                  "rev": 0
+                },
+                {
+                  "id": "lbyhddk6",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.06467384,
+                  "rev": 0
+                },
+                {
+                  "id": "rju1lsev",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05881975,
+                  "rev": 0
+                },
+                {
+                  "id": "gjmom01u",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.0562894,
+                  "rev": 0
+                },
+                {
+                  "id": "jzo8agbz",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05474546,
+                  "rev": 0
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "aeqio6lw",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.08017755,
+                  "rev": 0
+                },
+                {
+                  "id": "lbyhddk6",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.06467384,
+                  "rev": 0
+                },
+                {
+                  "id": "rju1lsev",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05881975,
+                  "rev": 0
+                },
+                {
+                  "id": "gjmom01u",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.0562894,
+                  "rev": 0
+                },
+                {
+                  "id": "jzo8agbz",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05474546,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20371150,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20381123,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20381123,
+              "market": "seattle",
+              "turn": 16,
+              "beforeY": 2017,
+              "beforeP": 1,
+              "afterY": 2018,
+              "afterP": 1,
+              "closedY": 2017,
+              "closedP": 2,
+              "snapY": 2017,
+              "snapP": 2,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "nd0hjph3",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.07219778,
+                  "rev": 17241322
+                },
+                {
+                  "id": "ldoykc9y",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05992479,
+                  "rev": 10509972
+                },
+                {
+                  "id": "f8ihr5z6",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.05899672,
+                  "rev": 4009463
+                },
+                {
+                  "id": "1dvnrvz0",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05790863,
+                  "rev": 5608081
+                },
+                {
+                  "id": "wtu9ziyq",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.05584447,
+                  "rev": 4286043
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "nd0hjph3",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.07219778,
+                  "rev": 0
+                },
+                {
+                  "id": "ldoykc9y",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05992479,
+                  "rev": 0
+                },
+                {
+                  "id": "f8ihr5z6",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.05899672,
+                  "rev": 0
+                },
+                {
+                  "id": "1dvnrvz0",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05790863,
+                  "rev": 0
+                },
+                {
+                  "id": "wtu9ziyq",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.05584447,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20391096,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20391096,
+              "market": "seattle",
+              "turn": 18,
+              "beforeY": 2018,
+              "beforeP": 1,
+              "afterY": 2019,
+              "afterP": 1,
+              "closedY": 2018,
+              "closedP": 2,
+              "snapY": 2018,
+              "snapP": 2,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "z61521b2",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.06443506,
+                  "rev": 8559807
+                },
+                {
+                  "id": "3qx5fceh",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.06343314,
+                  "rev": 4948347
+                },
+                {
+                  "id": "8ea5xev1",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.05806218,
+                  "rev": 12728044
+                },
+                {
+                  "id": "zw5fpryi",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.05714239,
+                  "rev": 3899744
+                },
+                {
+                  "id": "8v7dqmew",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.05487575,
+                  "rev": 4509715
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "z61521b2",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.06443506,
+                  "rev": 0
+                },
+                {
+                  "id": "3qx5fceh",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.06343314,
+                  "rev": 0
+                },
+                {
+                  "id": "8ea5xev1",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.05806218,
+                  "rev": 0
+                },
+                {
+                  "id": "zw5fpryi",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.05714239,
+                  "rev": 0
+                },
+                {
+                  "id": "8v7dqmew",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.05487575,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20401069,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20401069,
+              "market": "seattle",
+              "turn": 5,
+              "beforeY": 2011,
+              "beforeP": 2,
+              "afterY": 2012,
+              "afterP": 2,
+              "closedY": 2012,
+              "closedP": 1,
+              "snapY": 2012,
+              "snapP": 1,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "qgno6jy2",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.11342077,
+                  "rev": 31630681
+                },
+                {
+                  "id": "h65mn2fi",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.062475,
+                  "rev": 11043618
+                },
+                {
+                  "id": "luyj6pg8",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05886051,
+                  "rev": 3077689
+                },
+                {
+                  "id": "fdv58apr",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.05777473,
+                  "rev": 4231043
+                },
+                {
+                  "id": "s3qrnwbs",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.0570604,
+                  "rev": 4746091
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "qgno6jy2",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.11342077,
+                  "rev": 0
+                },
+                {
+                  "id": "h65mn2fi",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.062475,
+                  "rev": 0
+                },
+                {
+                  "id": "luyj6pg8",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05886051,
+                  "rev": 0
+                },
+                {
+                  "id": "fdv58apr",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.05777473,
+                  "rev": 0
+                },
+                {
+                  "id": "s3qrnwbs",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.0570604,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20411042,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20421015,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20430988,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20440961,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20440961,
+              "market": "seattle",
+              "turn": 13,
+              "beforeY": 2015,
+              "beforeP": 2,
+              "afterY": 2016,
+              "afterP": 2,
+              "closedY": 2016,
+              "closedP": 1,
+              "snapY": 2016,
+              "snapP": 1,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "humpv4hu",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.09842163,
+                  "rev": 27017452
+                },
+                {
+                  "id": "d88su98o",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05874355,
+                  "rev": 6171084
+                },
+                {
+                  "id": "pgtkf8rt",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.05833724,
+                  "rev": 3951720
+                },
+                {
+                  "id": "61hql606",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05739959,
+                  "rev": 3362544
+                },
+                {
+                  "id": "ewcdt4o5",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.05629005,
+                  "rev": 4365150
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "humpv4hu",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.09842163,
+                  "rev": 0
+                },
+                {
+                  "id": "d88su98o",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05874355,
+                  "rev": 0
+                },
+                {
+                  "id": "pgtkf8rt",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.05833724,
+                  "rev": 0
+                },
+                {
+                  "id": "61hql606",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05739959,
+                  "rev": 0
+                },
+                {
+                  "id": "ewcdt4o5",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.05629005,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20450934,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20450934,
+              "market": "seattle",
+              "turn": 23,
+              "beforeY": 2020,
+              "beforeP": 2,
+              "afterY": 2021,
+              "afterP": 2,
+              "closedY": 2021,
+              "closedP": 1,
+              "snapY": 2021,
+              "snapP": 1,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "sjdzv3f1",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.06924553,
+                  "rev": 10881683
+                },
+                {
+                  "id": "634we557",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.05710583,
+                  "rev": 5006500
+                },
+                {
+                  "id": "uvdciajp",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.0563512,
+                  "rev": 4302825
+                },
+                {
+                  "id": "jz0i6z8s",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.05475991,
+                  "rev": 5498857
+                },
+                {
+                  "id": "dlvqijpj",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.04888692,
+                  "rev": 7257946
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "sjdzv3f1",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.06924553,
+                  "rev": 0
+                },
+                {
+                  "id": "634we557",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.05710583,
+                  "rev": 0
+                },
+                {
+                  "id": "uvdciajp",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.0563512,
+                  "rev": 0
+                },
+                {
+                  "id": "jz0i6z8s",
+                  "call": "",
+                  "format": "COUNTRY",
+                  "share": 0.05475991,
+                  "rev": 0
+                },
+                {
+                  "id": "dlvqijpj",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.04888692,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20460907,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20460907,
+              "market": "seattle",
+              "turn": 17,
+              "beforeY": 2017,
+              "beforeP": 2,
+              "afterY": 2018,
+              "afterP": 2,
+              "closedY": 2018,
+              "closedP": 1,
+              "snapY": 2018,
+              "snapP": 1,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "9eknjnut",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.08553165,
+                  "rev": 23212031
+                },
+                {
+                  "id": "nsw4trdv",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.06091685,
+                  "rev": 7195403
+                },
+                {
+                  "id": "k83u6dt4",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.06023311,
+                  "rev": 4593069
+                },
+                {
+                  "id": "idneexh3",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.0554469,
+                  "rev": 3223744
+                },
+                {
+                  "id": "1097y4c3",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05446103,
+                  "rev": 8108226
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "9eknjnut",
+                  "call": "",
+                  "format": "NEWS_TALK",
+                  "share": 0.08553165,
+                  "rev": 0
+                },
+                {
+                  "id": "nsw4trdv",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.06091685,
+                  "rev": 0
+                },
+                {
+                  "id": "k83u6dt4",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.06023311,
+                  "rev": 0
+                },
+                {
+                  "id": "idneexh3",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.0554469,
+                  "rev": 0
+                },
+                {
+                  "id": "1097y4c3",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05446103,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20470880,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20480853,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20490826,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 1,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 1,
+          "streakEvents": [],
+          "events": [
+            {
+              "kind": "frozen_turn",
+              "seed": 20490826,
+              "market": "seattle",
+              "turn": 24,
+              "beforeY": 2021,
+              "beforeP": 1,
+              "afterY": 2022,
+              "afterP": 1,
+              "closedY": 2021,
+              "closedP": 2,
+              "snapY": 2021,
+              "snapP": 2,
+              "snapLag": 1,
+              "streak": 1,
+              "shareSigMatch": true,
+              "revSigMatch": false,
+              "sharesUnchangedPct": 1,
+              "revsUnchangedPct": 0,
+              "shFrozen": true,
+              "revFrozen": false,
+              "snapBehind": false,
+              "snapMulti": false,
+              "advErr": false,
+              "nanOrUndef": 0,
+              "topBefore": [
+                {
+                  "id": "1gm0n594",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.06198205,
+                  "rev": 14672494
+                },
+                {
+                  "id": "89dyh999",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.05937279,
+                  "rev": 4776390
+                },
+                {
+                  "id": "x63465ev",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05830612,
+                  "rev": 6613577
+                },
+                {
+                  "id": "0mfb9hua",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05771535,
+                  "rev": 3884465
+                },
+                {
+                  "id": "ennlz57z",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05207017,
+                  "rev": 7192587
+                }
+              ],
+              "topAfter": [
+                {
+                  "id": "1gm0n594",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.06198205,
+                  "rev": 0
+                },
+                {
+                  "id": "89dyh999",
+                  "call": "",
+                  "format": "ALBUM_ROCK",
+                  "share": 0.05937279,
+                  "rev": 0
+                },
+                {
+                  "id": "x63465ev",
+                  "call": "",
+                  "format": "CLASSIC_ROCK",
+                  "share": 0.05830612,
+                  "rev": 0
+                },
+                {
+                  "id": "0mfb9hua",
+                  "call": "",
+                  "format": "TOP40",
+                  "share": 0.05771535,
+                  "rev": 0
+                },
+                {
+                  "id": "ennlz57z",
+                  "call": "",
+                  "format": "ADULT_CONTEMP",
+                  "share": 0.05207017,
+                  "rev": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "marketId": "seattle",
+          "seed": 20500799,
+          "startYear": 2010,
+          "endYear": 2022,
+          "finalYear": 2022,
+          "finalPeriod": 2,
+          "turns": 25,
+          "advTurnErrors": 0,
+          "frozenShareTurns": 0,
+          "frozenRevTurns": 0,
+          "snapStaleTurns": 0,
+          "snapMultiLagTurns": 0,
+          "nanTurns": 0,
+          "maxStaleStreak": 0,
+          "streakEvents": [],
+          "events": []
+        }
+      ],
+      "summary": {
+        "runs": 25,
+        "totalFrozenShareTurns": 12,
+        "totalFrozenRevTurns": 0,
+        "runsWithAnyFrozen": 9
+      }
+    }
+  }
+}

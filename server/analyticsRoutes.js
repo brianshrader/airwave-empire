@@ -45,6 +45,30 @@ function nIntSigned(v, def, min, max) {
   return Math.max(min, Math.min(max, n));
 }
 
+function nInt(v, def, max) {
+  const n = Number(v);
+  if (!Number.isFinite(n)) return def;
+  return Math.max(0, Math.min(max, Math.round(n)));
+}
+
+function sanitizeStationsTop10(raw) {
+  if (!Array.isArray(raw)) return [];
+  const out = [];
+  for (const row of raw.slice(0, 10)) {
+    if (!row || typeof row !== 'object') continue;
+    out.push({
+      id: safeStr(row.id, 64) || 'unknown',
+      call: safeStr(row.call, 24),
+      format: safeStr(row.format, 32),
+      share: typeof row.share === 'number' && Number.isFinite(row.share)
+        ? Math.round(row.share * 1e8) / 1e8
+        : 0,
+      rev: nIntSigned(row.rev, 0, -1e12, 1e12),
+    });
+  }
+  return out;
+}
+
 function sanitizeStationsTop5(raw) {
   if (!Array.isArray(raw)) return [];
   const out = [];
@@ -87,6 +111,53 @@ function writeSeedrevZeroRawPoolSnapshot(body, props) {
     fs.writeFileSync(path.join(SEEDREV_SNAPSHOT_DIR, fname), JSON.stringify(snapshot), 'utf8');
   } catch (e) {
     console.error('[analytics] seedrev snapshot write failed:', e && e.message ? e.message : e);
+  }
+}
+
+/** Local JSON for book_stale_across_turns (frozen book / period advance desync). */
+function writeBookStaleAcrossTurnsSnapshot(body, props) {
+  try {
+    fs.mkdirSync(SEEDREV_SNAPSHOT_DIR, { recursive: true });
+    const snapshot = {
+      timestamp: new Date().toISOString(),
+      phase: 'book_stale_across_turns',
+      market_id: props.market_id,
+      scenario_id: props.scenario_id,
+      mp_mode: props.mp_mode,
+      year: props.year,
+      period: props.period,
+      turn: props.turn,
+      before_year: nIntSigned(body.before_year, 0, 1970, 2100),
+      before_period: nIntSigned(body.before_period, 0, 1, 2),
+      after_year: nIntSigned(body.after_year, 0, 1970, 2100),
+      after_period: nIntSigned(body.after_period, 0, 1, 2),
+      closed_year: nIntSigned(body.closed_year, 0, 1970, 2100),
+      closed_period: nIntSigned(body.closed_period, 0, 1, 2),
+      snap_year: body.snap_year != null ? nIntSigned(body.snap_year, 0, 1970, 2100) : null,
+      snap_period: body.snap_period != null ? nIntSigned(body.snap_period, 0, 1, 2) : null,
+      snap_lag_periods: nIntSigned(body.snap_lag_periods, 0, -20, 20),
+      n_stations: nInt(body.n_stations, 0, 500),
+      shares_unchanged_pct: typeof body.shares_unchanged_pct === 'number' && Number.isFinite(body.shares_unchanged_pct)
+        ? Math.round(body.shares_unchanged_pct * 1e4) / 1e4
+        : null,
+      revs_unchanged_pct: typeof body.revs_unchanged_pct === 'number' && Number.isFinite(body.revs_unchanged_pct)
+        ? Math.round(body.revs_unchanged_pct * 1e4) / 1e4
+        : null,
+      all_shares_frozen: !!body.all_shares_frozen,
+      all_revs_frozen: !!body.all_revs_frozen,
+      snap_behind_closed: !!body.snap_behind_closed,
+      snap_multi_period_lag: !!body.snap_multi_period_lag,
+      adv_turn_error: !!body.adv_turn_error,
+      gm_mode: !!body.gm_mode,
+      stations_top10_before: sanitizeStationsTop10(body.stations_top10_before),
+      stations_top10_after: sanitizeStationsTop10(body.stations_top10_after),
+      last_news: Array.isArray(body.last_news) ? body.last_news.slice(0, 3) : [],
+      active_overlays: Array.isArray(body.active_overlays) ? body.active_overlays.slice(0, 8) : [],
+    };
+    const fname = `book-stale-${Date.now()}-${crypto.randomBytes(4).toString('hex')}.json`;
+    fs.writeFileSync(path.join(SEEDREV_SNAPSHOT_DIR, fname), JSON.stringify(snapshot), 'utf8');
+  } catch (e) {
+    console.error('[analytics] book-stale snapshot write failed:', e && e.message ? e.message : e);
   }
 }
 
@@ -189,6 +260,9 @@ function mountAnalytics(app) {
 
     if (phase === 'seedrev_zero_raw_pool') {
       writeSeedrevZeroRawPoolSnapshot(body, props);
+    }
+    if (phase === 'book_stale_across_turns') {
+      writeBookStaleAcrossTurnsSnapshot(body, props);
     }
 
     posthog.capture({

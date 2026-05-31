@@ -1555,12 +1555,14 @@ function vacantLabelDisplay(fmt, slot, s) {
 function cyrStatusDisplay(c) {
   if (!c) return '';
   if (c === 'MOVED') return 'Moved';
+  if (c === 'OUT') return 'Out';
   if (c === 'EXP') return 'Exp';
   if (c === 'EXP⬆') return 'Exp soon';
   return c;
 }
 /** Mobile lineup: sentence after pay amount (desktop still uses the Contract column). `kind` maps to .sl-pay-verbose--* for color. */
-function lineupContractVerboseUi(slotRen,cyr,poachHere){
+function lineupContractVerboseUi(slotRen,cyr,poachHere,wantsExit){
+  if(wantsExit)return{text:'Won\'t re-sign · leaving',kind:'expired'};
   if(slotRen)return{text:'Moved (renegotiate)',kind:'moved'};
   const c=Number(cyr);
   if(Number.isFinite(c)&&c<=0)return{text:'Contract expired',kind:'expired'};
@@ -1568,7 +1570,8 @@ function lineupContractVerboseUi(slotRen,cyr,poachHere){
   if(poachHere)return{text:'Rival offer — open contract',kind:'poach'};
   return{text:'',kind:''};
 }
-function lineupCoHostContractVerboseUi(chCyr){
+function lineupCoHostContractVerboseUi(chCyr,wantsExit){
+  if(wantsExit)return{text:'Co-host won\'t re-sign',kind:'expired'};
   const x=Number(chCyr);
   if(!Number.isFinite(x))return{text:'',kind:''};
   if(x<=0)return{text:'Co-host contract expired',kind:'expired'};
@@ -2267,24 +2270,92 @@ function refreshAllStationOQ(G){
 }
 
 // ── TALENT TROUBLE (Phase 1: FCC / sponsor / DUI decision events) ─
+const TROUBLE_FCC_FINES={fcc_language:15000,fcc_indecency:50000};
+function troubleScenarioIsFcc(scenarioId){
+  return scenarioId==='fcc_language'||scenarioId==='fcc_indecency';
+}
+function troubleMandatoryFccFine(scenarioId){
+  return TROUBLE_FCC_FINES[scenarioId]||0;
+}
+function troubleScenarioOptions(scenario,pending){
+  if(!scenario)return[];
+  if(pending?.isFranchise&&scenario.franchiseOptions?.length)return scenario.franchiseOptions;
+  return scenario.options||[];
+}
+function troubleOptionDisplayLabel(opt,nm){
+  return String(opt?.label||'').replace(/{name}/g,nm||'');
+}
+function troubleFccAudienceShareDelta(s,t,baseDelta){
+  if(typeof baseDelta!=='number'||!s||baseDelta===0)return baseDelta;
+  if(baseDelta>0){
+    const id=(s.identity||0)/100;
+    const fmt=COMMUNITY_IDENTITY[s.format]||0.5;
+    const pull=t?(t.superstar?1.12:Math.min(1.08,1+(t.periodsAtStation||0)/60)):1;
+    return baseDelta*(0.35+id*fmt*pull);
+  }
+  if(baseDelta<0&&t?.superstar)return baseDelta*1.12;
+  return baseDelta;
+}
+function troubleApplyStationShareDelta(s,delta){
+  if(!s||typeof delta!=='number'||!delta)return;
+  COH.forEach(c=>{if(s.mom?.[c])s.mom[c].tgt=Math.max(0.001,s.mom[c].tgt+delta);});
+}
+function troubleApplySellDelta(s,delta){
+  if(!s||typeof delta!=='number'||!delta)return;
+  s.ops.sell=Math.max(0.20,Math.min(0.96,(s.ops.sell||0.65)+delta));
+}
+/** Drop syndicated franchise after FCC/conduct incident — clears holder; optional relationship/share penalties. */
+function releaseFranchiseForCause(franchiseId,stationId,G,opts){
+  const f=NATIONAL_FRANCHISES.find(x=>x.id===franchiseId);
+  const r=G.franchiseRights?.[franchiseId];
+  const s=G.stations.find(st=>st.id===stationId);
+  if(!f||!r||!s||r.holderId!==stationId)return false;
+  if(!opts?.skipEffects){
+    if(!r.relationship)r.relationship={};
+    const relPen=opts?.relationshipPenalty??25;
+    r.relationship[s.id]=Math.max(0,(r.relationship[s.id]||0)-relPen);
+    const sharePen=opts?.sharePenalty??0.004;
+    troubleApplyStationShareDelta(s,-Math.abs(sharePen));
+    troubleApplySellDelta(s,opts?.sellDelta||0);
+    if(typeof opts?.identityDelta==='number')
+      s.identity=Math.max(0,Math.min(100,(s.identity||0)+opts.identityDelta));
+  }
+  r.holderId=null;
+  r.holderName='—';
+  const sd=s.prog?.[f.slot];
+  if(sd)sd.quality=Math.max(10,Math.round((sd.quality||20)*0.72));
+  refreshStationOQ(s,G);
+  try{logHistory(s,'FRANCHISE',`Dropped "${f.name}" after FCC incident — ${SL[f.slot]}`,G);}catch(_e){}
+  return true;
+}
 const TROUBLE_SCENARIOS=[
   {id:'fcc_language',tier:'minor',
    title:'FCC Language Violation',
    desc:'{name} dropped an expletive live on air. The FCC is investigating.',
    flavor:'It was a slip during an emotional sports argument. Or maybe not.',
    options:[
-     {label:'Pay fine + public apology',cost:'fine',effect:{morale:-8,fine:15000},outcome:'Fine paid. {name} is embarrassed but grateful. Audience mostly forgets within a period.'},
-     {label:'Suspend for one period',cost:'none',effect:{morale:-18,quality:-3,suspendPeriods:1},outcome:'{name} suspended. Listeners notice the absence. Some respect the accountability.'},
-     {label:'Fire immediately',cost:'buyout',effect:{stationShare:-0.003},outcome:'Clean break. {name} exits with some bitterness. Rival stations are already calling them.'},
+     {label:'Pay fine + public apology',cost:'fine',effect:{morale:-5,sell:-0.02,stationShare:0.001},outcome:'Fine paid. {name} is embarrassed but grateful. Advertisers are wary; loyal listeners mostly stay.'},
+     {label:'Suspend for one period',cost:'none',effect:{morale:-15,quality:-3,suspendPeriods:1,sell:-0.01},outcome:'{name} suspended. Listeners notice the absence. Some respect the accountability.'},
+     {label:'Fire immediately',cost:'forCause',forCause:true,effect:{stationShare:-0.003,identity:+3,sell:+0.015},outcome:'For-cause termination under the conduct clause — no buyout. {name} exits immediately. Rivals are already calling them.'},
+   ],
+   franchiseOptions:[
+     {label:'Stand by the show',cost:'fine',effect:{sell:-0.02,stationShare:0.001},outcome:'You keep "{name}" on the air. Advertisers pull back slightly; core listeners mostly stay.'},
+     {label:'Distance station from show',cost:'none',effect:{sell:-0.01,franchiseRel:-10},outcome:'On-air disclaimers and tighter standards. Syndicator is unhappy; ad risk eases a little.'},
+     {label:'Drop the franchise',cost:'forCause',forCause:true,dropFranchise:true,effect:{stationShare:-0.004,identity:+4,sell:+0.02,franchiseRel:-25},outcome:'Conduct clause invoked — franchise dropped immediately, no termination fee. The daypart goes dark until you replace it.'},
    ]},
   {id:'fcc_indecency',tier:'major',
    title:'FCC Indecency Complaint',
    desc:'{name} crossed the line on a morning segment. Three listener complaints filed. The FCC is reviewing.',
    flavor:'A joke that went too far. Or satire that nobody understood. Either way, the phones are ringing.',
    options:[
-     {label:'Fight the complaint ($25K legal)',cost:25000,effect:{morale:+5},outcome:'Legal team files response. 60% chance the fine is reduced or dismissed.'},
-     {label:'Settle: pay max fine',cost:'fine',effect:{morale:-10,fine:50000},outcome:'Quick resolution. {name} survives but is on thin ice. One more incident and the FCC flags the station.'},
-     {label:'Fire + issue statement',cost:'buyout',effect:{stationShare:-0.005,identity:+5},outcome:'Bold accountability move. Community responds positively. Rivals notice your standards.'},
+     {label:'Fight the complaint ($25K legal)',cost:25000,effect:{morale:+5,sell:-0.03,stationShare:0.001},outcome:'Legal team files response. 60% chance the fine is reduced or dismissed.'},
+     {label:'Settle: pay max fine',cost:'fine',effect:{morale:-10,sell:-0.025},outcome:'Quick resolution. {name} survives but is on thin ice. One more incident and the FCC flags the station.'},
+     {label:'Fire + issue statement',cost:'forCause',forCause:true,effect:{stationShare:-0.005,identity:+5,sell:+0.02},outcome:'For-cause termination — no buyout. Bold accountability move. Community responds positively. Rivals notice your standards.'},
+   ],
+   franchiseOptions:[
+     {label:'Stand by the show',cost:25000,effect:{sell:-0.03,stationShare:0.001},outcome:'Legal team fights the complaint. 60% chance the FCC fine is reduced or dismissed. Advertisers are nervous.'},
+     {label:'Distance station from show',cost:'fine',effect:{sell:-0.015,franchiseRel:-15},outcome:'You settle with the FCC and tighten station oversight. Syndicator relationship suffers; ad pressure eases.'},
+     {label:'Drop the franchise',cost:'forCause',forCause:true,dropFranchise:true,effect:{stationShare:-0.005,identity:+5,sell:+0.025,franchiseRel:-30},outcome:'Conduct clause invoked — franchise dropped immediately, no termination fee. Programming hole until you fill the slot.'},
    ]},
   {id:'sponsor_boycott',tier:'major',
    title:'Sponsor Boycott',
@@ -2309,11 +2380,15 @@ const TROUBLE_SCENARIOS=[
 
 const TROUBLE_MAJOR_DAYPARTS=['morningDrive','afternoonDrive','midday','evening'];
 
-/** True when a trouble option removes the on-air host (and co-host) from the slot — not benched. */
+/** @returns {'talent'|'franchise'|false} */
 function troubleOptionRemovesFromAir(opt){
-  if(!opt || typeof opt.label !== 'string') return false;
-  const l = opt.label.toLowerCase();
-  return l.includes('fire') || l.includes('terminate') || (l.includes('buy out') && l.includes('contract'));
+  if(!opt)return false;
+  if(opt.dropFranchise)return'franchise';
+  if(opt.forCause||opt.cost==='forCause')return'talent';
+  if(typeof opt.label!=='string')return false;
+  const l=opt.label.toLowerCase();
+  if(l.includes('fire')||l.includes('terminate')||(l.includes('buy out')&&l.includes('contract')))return'talent';
+  return false;
 }
 
 function triggerTalentTrouble(G){
@@ -2405,28 +2480,28 @@ function showTalentTroubleModal(){
     const desc=scenario.desc.replace(/{name}/g,nm).replace(/{rivalStation}/g,pending.rivalStation||'');
     const ownerPid=pending.ownerId!=null?pending.ownerId:MP.playerId;
     const ownerCash=MP.mode==='live'?(G._playerCash?.[ownerPid]??G.cash):G.cash;
-    const fineAmt=scenario.id==='fcc_language'?15000:scenario.id==='fcc_indecency'?50000:0;
-    const optRows=scenario.options.map((opt,i)=>{
+    const mandatoryFine=troubleMandatoryFccFine(scenario.id);
+    const opts=troubleScenarioOptions(scenario,pending);
+    const optRows=opts.map((opt,i)=>{
       let costLabel='',costColor='var(--off)',canAfford=true;
-      const isFcc=scenario.id==='fcc_language'||scenario.id==='fcc_indecency';
-      const mandatoryFine=isFcc?fineAmt:0;
       if(opt.cost==='fine'){
         costLabel=` — Mandatory FCC fine: ${f$(mandatoryFine)}`;
         costColor='var(--red)';
         canAfford=ownerCash>=mandatoryFine;
-      }else if(opt.cost==='buyout'){
-        costLabel=mandatoryFine>0?` — FCC fine: ${f$(mandatoryFine)}`:' — Drop / replace franchise';
+      }else if(opt.cost==='forCause'||opt.forCause||opt.dropFranchise){
+        costLabel=mandatoryFine>0?` — FCC fine: ${f$(mandatoryFine)} (conduct clause — no termination fee)`:' — Drop franchise (no termination fee)';
+        costColor=mandatoryFine>0?'var(--red)':'var(--amb)';
         canAfford=ownerCash>=mandatoryFine;
       }else if(opt.cost==='none'||opt.cost==='leave'){
         costLabel=mandatoryFine>0?` — Mandatory FCC fine: ${f$(mandatoryFine)}`:(opt.cost==='leave'?' — 1 period suspension (syndicated slot dark)':'No cash cost');
         canAfford=ownerCash>=mandatoryFine;
       }else if(typeof opt.cost==='number'){
         const totalNeed=mandatoryFine+opt.cost;
-        costLabel=mandatoryFine>0?` — FCC fine: ${f$(mandatoryFine)} + legal`:` — ${f$(opt.cost)}`;
+        costLabel=mandatoryFine>0?` — FCC fine: ${f$(mandatoryFine)} + ${f$(opt.cost)} legal`:` — ${f$(opt.cost)}`;
         canAfford=ownerCash>=totalNeed;
       }
       return `<button type="button" class="to${canAfford?'':' nope'}" data-wl-trouble-opt="${i}" data-wl-trouble-afford="${canAfford?'1':'0'}" style="display:block;width:100%;text-align:left;padding:10px 14px;margin-bottom:6px;cursor:${canAfford?'pointer':'not-allowed'}">
-      <div style="font-family:var(--fd);font-size:15px;color:var(--wht)">${opt.label.replace(/{name}/g,nm)}</div>
+      <div style="font-family:var(--fd);font-size:15px;color:var(--wht)">${troubleOptionDisplayLabel(opt,nm)}</div>
       <div style="font-size:13px;color:${costColor};margin-top:2px">${costLabel||'No cost'}</div>
     </button>`;
     }).join('');
@@ -2453,16 +2528,22 @@ function showTalentTroubleModal(){
   const ownerCash=MP.mode==='live'?(G._playerCash?.[ownerPid]??G.cash):G.cash;
   const cyr=t.cyr||0;
   const buyout=cyr>0.1?Math.round(t.salary*cyr*0.60/500)*500:0;
-  const fineAmt=scenario.id==='fcc_language'?15000:scenario.id==='fcc_indecency'?50000:0;
+  const mandatoryFine=troubleMandatoryFccFine(scenario.id);
   const raiseAmt=Math.round(t.salary*0.15/500)*500;
   const desc=scenario.desc.replace(/{name}/g,t.name).replace(/{rivalStation}/g,pending.rivalStation);
-  const optRows=scenario.options.map((opt,i)=>{
+  const opts=troubleScenarioOptions(scenario,pending);
+  const optRows=opts.map((opt,i)=>{
     let costLabel='',costColor='var(--off)',canAfford=true;
-    const isFcc = scenario.id==='fcc_language' || scenario.id==='fcc_indecency';
-    const mandatoryFine = isFcc ? fineAmt : 0;
     if(opt.cost==='fine'){
       costLabel=` — Mandatory FCC fine: ${f$(mandatoryFine)}`;
       costColor='var(--red)';
+      canAfford=ownerCash>=mandatoryFine;
+    }
+    else if(opt.cost==='forCause'||opt.forCause){
+      costLabel=mandatoryFine>0
+        ?` — FCC fine: ${f$(mandatoryFine)} (for cause — no buyout)`
+        :'For-cause termination — no buyout';
+      costColor=mandatoryFine>0?'var(--red)':'var(--amb)';
       canAfford=ownerCash>=mandatoryFine;
     }
     else if(opt.cost==='buyout'){
@@ -2492,7 +2573,7 @@ function showTalentTroubleModal(){
       canAfford=ownerCash>=totalNeed;
     }
     return `<button type="button" class="to${canAfford?'':' nope'}" data-wl-trouble-opt="${i}" data-wl-trouble-afford="${canAfford?'1':'0'}" style="display:block;width:100%;text-align:left;padding:10px 14px;margin-bottom:6px;cursor:${canAfford?'pointer':'not-allowed'}">
-      <div style="font-family:var(--fd);font-size:15px;color:var(--wht)">${opt.label.replace(/{name}/g,t.name)}</div>
+      <div style="font-family:var(--fd);font-size:15px;color:var(--wht)">${troubleOptionDisplayLabel(opt,t.name)}</div>
       <div style="font-size:13px;color:${costColor};margin-top:2px">${costLabel||'No cost'}</div>
     </button>`;
   }).join('');
@@ -2516,42 +2597,10 @@ function applyTroubleResolution(sid,slot,optionIdx,appealRemote){
   const pending=G.pendingDecisionEvent;
   if(!pending||pending.stationId!==sid||pending.slot!==slot)return;
   const s=G.stations.find(st=>st.id===sid);
-  if(pending.isFranchise){
-    const scenario=TROUBLE_SCENARIOS.find(sc=>sc.id===pending.scenarioId);
-    if(!scenario)return;
-    const opt=scenario.options[optionIdx];
-    if(!opt)return;
-    const eff=opt.effect||{};
-    const ownerPid=pending.ownerId!=null?pending.ownerId:MP.playerId;
-    const tCash=d=>{
-      if(MP.mode!=='live'){G.cash+=d;return;}
-      if(!G._playerCash)G._playerCash={};
-      G._playerCash[ownerPid]=(G._playerCash[ownerPid]||0)+d;
-      if(MP.playerId===ownerPid)G.cash=G._playerCash[ownerPid];
-      MP.emit('player_cash_update',{playerId:ownerPid,cash:G._playerCash[ownerPid]});
-    };
-    const fineAmt=pending.scenarioId==='fcc_language'?15000:pending.scenarioId==='fcc_indecency'?50000:0;
-    let costPaid=0;
-    const mandatoryFine=(pending.scenarioId==='fcc_language'||pending.scenarioId==='fcc_indecency')?fineAmt:0;
-    if(mandatoryFine>0){tCash(-mandatoryFine);costPaid+=mandatoryFine;}
-    if(typeof opt.cost==='number'){tCash(-opt.cost);costPaid+=opt.cost;}
-    if(eff.sell&&s)s.ops.sell=Math.max(0.20,Math.min(0.96,(s.ops.sell||0.65)+eff.sell));
-    if(eff.stationShare&&s){COH.forEach(c=>{if(s.mom?.[c])s.mom[c].tgt=Math.max(0.001,s.mom[c].tgt+eff.stationShare);});}
-    if(eff.identity&&s)s.identity=Math.max(0,Math.min(100,(s.identity||0)+eff.identity));
-    if(eff.fine){tCash(-eff.fine);costPaid+=eff.fine;}
-    const nm=pending.talentName||'Franchise';
-    const outcome=(opt.outcome||'Resolved.').replace(/{name}/g,nm);
-    G.news.unshift({v:'MEDIUM',t:`📋 ${scenario.title}: ${outcome}${costPaid>0?' Cost: '+f$(costPaid)+'.':''}`,y:G.year,p:G.period,iy:true});
-    G.pendingDecisionEvent=null;
-    refreshStationOQ(s,G);
-    return;
-  }
-  const sd=s?.prog?.[slot];
-  const t=sd?.talent;
-  if(!t)return;
   const scenario=TROUBLE_SCENARIOS.find(sc=>sc.id===pending.scenarioId);
   if(!scenario)return;
-  const opt=scenario.options[optionIdx];
+  const opts=troubleScenarioOptions(scenario,pending);
+  const opt=opts[optionIdx];
   if(!opt)return;
   const eff=opt.effect||{};
   const ownerPid=pending.ownerId!=null?pending.ownerId:MP.playerId;
@@ -2562,25 +2611,79 @@ function applyTroubleResolution(sid,slot,optionIdx,appealRemote){
     if(MP.playerId===ownerPid)G.cash=G._playerCash[ownerPid];
     MP.emit('player_cash_update',{playerId:ownerPid,cash:G._playerCash[ownerPid]});
   };
-  const cyr=t.cyr||0;
-  const buyout=cyr>0.1?Math.round(t.salary*cyr*0.60/500)*500:0;
-  const fineAmt=pending.scenarioId==='fcc_language'?15000:pending.scenarioId==='fcc_indecency'?50000:0;
-  const raiseAmt=Math.round(t.salary*0.15/500)*500;
+  const isFcc=troubleScenarioIsFcc(pending.scenarioId);
+  const mandatoryFine=isFcc?troubleMandatoryFccFine(pending.scenarioId):0;
   let costPaid=0;
-  const isFcc = pending.scenarioId==='fcc_language' || pending.scenarioId==='fcc_indecency';
-  const mandatoryFine = isFcc ? fineAmt : 0;
-  if(mandatoryFine>0){
-    tCash(-mandatoryFine);
-    costPaid+=mandatoryFine;
+  if(mandatoryFine>0){tCash(-mandatoryFine);costPaid+=mandatoryFine;}
+  if(typeof opt.cost==='number'){tCash(-opt.cost);costPaid+=opt.cost;}
+  let troubleOutcomeNote='';
+  if(pending.isFranchise){
+    if(isFcc&&pending.scenarioId==='fcc_indecency'&&optionIdx===0){
+      const fineAmt=mandatoryFine;
+      let refund=0;
+      if(appealRemote!=null&&typeof appealRemote.refund==='number'){
+        refund=appealRemote.refund;
+        troubleOutcomeNote=appealRemote.note||'';
+      }else{
+        const roll=Math.random();
+        if(roll<0.60){
+          refund=roll<0.25?fineAmt:Math.round(fineAmt*0.5);
+          troubleOutcomeNote=refund>=fineAmt
+            ?' Legal appeal succeeds — the FCC fine is dismissed.'
+            :` Legal appeal partially succeeds — ${f$(refund)} of the FCC fine is recovered.`;
+        }else{
+          troubleOutcomeNote=' Legal appeal fails — the FCC fine stands.';
+        }
+      }
+      if(refund>0){tCash(refund);costPaid-=refund;}
+    }
+    if(eff.sell)troubleApplySellDelta(s,eff.sell);
+    if(eff.stationShare&&s){
+      const fr=NATIONAL_FRANCHISES.find(x=>x.id===pending.franchiseId);
+      let d=eff.stationShare;
+      if(isFcc&&d>0){
+        const id=(s.identity||0)/100;
+        const fmt=COMMUNITY_IDENTITY[s.format]||0.5;
+        const pull=fr?Math.min(1.15,0.85+(fr.troubleMod||1)*0.06):1;
+        d=d*(0.35+id*fmt*pull);
+      }
+      troubleApplyStationShareDelta(s,d);
+    }
+    if(eff.identity&&s)s.identity=Math.max(0,Math.min(100,(s.identity||0)+eff.identity));
+    const rights=G.franchiseRights?.[pending.franchiseId];
+    if(rights&&typeof eff.franchiseRel==='number'){
+      if(!rights.relationship)rights.relationship={};
+      rights.relationship[s.id]=Math.max(0,(rights.relationship[s.id]||0)+eff.franchiseRel);
+    }
+    if(opt.dropFranchise){
+      const fr=NATIONAL_FRANCHISES.find(x=>x.id===pending.franchiseId);
+      releaseFranchiseForCause(pending.franchiseId,sid,G,{
+        relationshipPenalty:Math.abs(eff.franchiseRel||25),
+        sharePenalty:Math.abs(eff.stationShare||0.004),
+        identityDelta:0,
+        sellDelta:0,
+        skipEffects:true,
+      });
+    }
+    const nm=pending.talentName||'Franchise';
+    const outcome=(opt.outcome||'Resolved.').replace(/{name}/g,nm);
+    G.news.unshift({v:'MEDIUM',t:`📋 ${scenario.title}: ${outcome}${costPaid>0?' Cost: '+f$(costPaid)+'.':''}${troubleOutcomeNote}`,y:G.year,p:G.period,iy:true});
+    G.pendingDecisionEvent=null;
+    refreshStationOQ(s,G);
+    return;
   }
+  const sd=s?.prog?.[slot];
+  const t=sd?.talent;
+  if(!t)return;
   if(opt.cost==='fine'){
     // already paid via mandatoryFine for FCC
   }
-  else if(opt.cost==='buyout'&&buyout>0){
-    tCash(-buyout);
-    costPaid+=buyout;
+  else if(opt.cost==='buyout'&&!opt.forCause){
+    const buyout=talentFireBuyout(t);
+    if(buyout>0){tCash(-buyout);costPaid+=buyout;}
   }
   else if(opt.cost==='raise'){
+    const raiseAmt=Math.round(t.salary*0.15/500)*500;
     t.salary=Math.round((t.salary+raiseAmt)/500)*500;
     t.cyr=Math.max(t.cyr||2,(t.cyr||2)+2);
     t.morale=Math.min(100,(t.morale||65)+5);
@@ -2589,27 +2692,24 @@ function applyTroubleResolution(sid,slot,optionIdx,appealRemote){
     // effect.suspendPeriods handles suspension
   }
   else if(typeof opt.cost==='number'){tCash(-opt.cost);costPaid+=opt.cost;}
-  let troubleOutcomeNote='';
-  if(pending.scenarioId==='fcc_indecency' && optionIdx===0){
+  if(isFcc&&pending.scenarioId==='fcc_indecency'&&optionIdx===0){
+    const fineAmt=mandatoryFine;
     let refund=0;
-    if(appealRemote!=null && typeof appealRemote.refund==='number'){
+    if(appealRemote!=null&&typeof appealRemote.refund==='number'){
       refund=appealRemote.refund;
       troubleOutcomeNote=appealRemote.note||'';
-    } else {
+    }else{
       const roll=Math.random();
       if(roll<0.60){
-        refund = roll<0.25 ? fineAmt : Math.round(fineAmt*0.5);
-        troubleOutcomeNote = refund>=fineAmt
-          ? ' Legal appeal succeeds — the FCC fine is dismissed.'
-          : ` Legal appeal partially succeeds — ${f$(refund)} of the FCC fine is recovered.`;
-      } else {
-        troubleOutcomeNote = ' Legal appeal fails — the FCC fine stands.';
+        refund=roll<0.25?fineAmt:Math.round(fineAmt*0.5);
+        troubleOutcomeNote=refund>=fineAmt
+          ?' Legal appeal succeeds — the FCC fine is dismissed.'
+          :` Legal appeal partially succeeds — ${f$(refund)} of the FCC fine is recovered.`;
+      }else{
+        troubleOutcomeNote=' Legal appeal fails — the FCC fine stands.';
       }
     }
-    if(refund>0){
-      tCash(refund);
-      costPaid-=refund;
-    }
+    if(refund>0){tCash(refund);costPaid-=refund;}
   }
   if(eff.morale)t.morale=Math.max(20,Math.min(100,(t.morale||65)+eff.morale));
   if(eff.quality){
@@ -2619,11 +2719,11 @@ function applyTroubleResolution(sid,slot,optionIdx,appealRemote){
   }
   if(eff.loyalty)t._poachResist=(t._poachResist||0)+eff.loyalty/100;
   if(eff.suspendPeriods){t._suspended=(t._suspended||0)+eff.suspendPeriods;t._preSuspendQuality=t.quality;}
-  if(eff.sell&&s)s.ops.sell=Math.max(0.20,Math.min(0.96,(s.ops.sell||0.65)+eff.sell));
-  if(eff.stationShare&&s){COH.forEach(c=>{if(s.mom?.[c])s.mom[c].tgt=Math.max(0.001,s.mom[c].tgt+eff.stationShare);});}
+  troubleApplySellDelta(s,eff.sell);
+  if(eff.stationShare&&s)troubleApplyStationShareDelta(s,troubleFccAudienceShareDelta(s,t,eff.stationShare));
   if(eff.identity&&s)s.identity=Math.max(0,Math.min(100,(s.identity||0)+eff.identity));
-  if(eff.fine){tCash(-eff.fine);}
-  const fireOpt=troubleOptionRemovesFromAir(opt);
+  if(eff.fine&&!isFcc){tCash(-eff.fine);costPaid+=eff.fine;}
+  const fireOpt=troubleOptionRemovesFromAir(opt)==='talent';
   if(fireOpt){
     if(s&&sd){
       const nm=t.name;
@@ -2639,7 +2739,8 @@ function applyTroubleResolution(sid,slot,optionIdx,appealRemote){
         logHistory(s,'TALENT',`${nm} released after incident — ${SL[slot]} (not benched).`,G);
       }catch(_e){}
       try{
-        showToast(`${nm} is off the roster — not benched. You can hire a new host for ${SL[slot]} when ready.`,'info',5600);
+        const causeNote=opt.forCause?' (for-cause termination — no buyout)':'';
+        showToast(`${nm} is off the roster — not benched.${causeNote} You can hire a new host for ${SL[slot]} when ready.`,'info',5600);
       }catch(_e){}
     }
   }
@@ -2661,21 +2762,22 @@ function resolveTrouble(sid,slot,optionIdx){
   const pending=G.pendingDecisionEvent;
   const scenario=TROUBLE_SCENARIOS.find(sc=>sc.id===pending.scenarioId);
   if(!scenario)return;
-  const opt=scenario.options[optionIdx];
+  const opts=troubleScenarioOptions(scenario,pending);
+  const opt=opts[optionIdx];
   if(!opt)return;
   const runResolve=()=>{
     let appealRemote=null;
-    if(pending.scenarioId==='fcc_indecency' && optionIdx===0){
-      const fineAmt=50000;
+    if(troubleScenarioIsFcc(pending.scenarioId)&&pending.scenarioId==='fcc_indecency'&&optionIdx===0){
+      const fineAmt=troubleMandatoryFccFine('fcc_indecency');
       const roll=Math.random();
       let refund=0,note='';
       if(roll<0.60){
-        refund = roll<0.25 ? fineAmt : Math.round(fineAmt*0.5);
-        note = refund>=fineAmt
-          ? ' Legal appeal succeeds — the FCC fine is dismissed.'
-          : ` Legal appeal partially succeeds — ${f$(refund)} of the FCC fine is recovered.`;
-      } else {
-        note = ' Legal appeal fails — the FCC fine stands.';
+        refund=roll<0.25?fineAmt:Math.round(fineAmt*0.5);
+        note=refund>=fineAmt
+          ?' Legal appeal succeeds — the FCC fine is dismissed.'
+          :` Legal appeal partially succeeds — ${f$(refund)} of the FCC fine is recovered.`;
+      }else{
+        note=' Legal appeal fails — the FCC fine stands.';
       }
       appealRemote={refund,note};
     }
@@ -2684,32 +2786,50 @@ function resolveTrouble(sid,slot,optionIdx){
     cm('m-talent-trouble');
     renderAll();
   };
-  if(!troubleOptionRemovesFromAir(opt)){
+  const removeKind=troubleOptionRemovesFromAir(opt);
+  if(!removeKind){
     runResolve();
     return;
   }
   const s=G.stations.find(st=>st.id===sid);
+  const mandatoryFine=troubleScenarioIsFcc(pending.scenarioId)?troubleMandatoryFccFine(pending.scenarioId):0;
+  const troubleOverlay=document.getElementById('m-talent-trouble');
+  const troubleWasOpen=!!(troubleOverlay&&troubleOverlay.classList.contains('on'));
+  if(troubleWasOpen)cm('m-talent-trouble',{wlTutorialSuppress:true});
+  if(removeKind==='franchise'&&pending.isFranchise){
+    const fr=NATIONAL_FRANCHISES.find(x=>x.id===pending.franchiseId);
+    const frName=fr?.name||pending.talentName||'syndicated show';
+    const costLine=mandatoryFine>0?` You pay ${f$(mandatoryFine)} FCC fine — no termination fee under the conduct clause.`:' No termination fee under the conduct clause.';
+    openGameConfirm(
+      {title:'CONFIRM FRANCHISE DROP',message:`Drop "${frName}" from ${callDisplay(s)} ${SL[slot]}?${costLine} The daypart goes dark until you replace programming.`,confirmLabel:'YES — DROP FRANCHISE',danger:true},
+      ok=>{
+        if(!ok){
+          if(troubleWasOpen&&G?.pendingDecisionEvent)showTalentTroubleModal();
+          return;
+        }
+        runResolve();
+      },
+    );
+    return;
+  }
   const sd=s?.prog?.[slot];
   const t=sd?.talent;
   if(!t){
     runResolve();
     return;
   }
-  const buyout=talentFireBuyout(t);
-  const fineAmt=pending.scenarioId==='fcc_language'?15000:pending.scenarioId==='fcc_indecency'?50000:0;
-  const isFcc=pending.scenarioId==='fcc_language'||pending.scenarioId==='fcc_indecency';
+  const buyout=opt.forCause||opt.cost==='forCause'?0:talentFireBuyout(t);
   const parts=[];
-  if(isFcc)parts.push(`${f$(fineAmt)} FCC fine`);
+  if(mandatoryFine>0)parts.push(`${f$(mandatoryFine)} FCC fine`);
   if(opt.cost==='buyout'&&buyout>0)parts.push(`${f$(buyout)} buyout`);
   const costLine=parts.length?` If you confirm, you pay: ${parts.join(' + ')}.`:'';
-  const msg=`Remove ${t.name} from ${callDisplay(s)} ${SL[slot]} immediately? They will not go on your talent bench — they leave the company.${costLine}`;
-  /* Second `.ov` on the stack can sit above #m-game-confirm in some stacks; close trouble first, restore on cancel. */
-  const troubleOverlay=document.getElementById('m-talent-trouble');
-  const troubleWasOpen=!!(troubleOverlay&&troubleOverlay.classList.contains('on'));
-  if(troubleWasOpen)cm('m-talent-trouble',{wlTutorialSuppress:true});
+  const causeLine=opt.forCause||opt.cost==='forCause'
+    ?' Termination is for cause under the conduct clause — no contract buyout.'
+    :' They will not go on your talent bench — they leave the company.';
+  const msg=`Remove ${t.name} from ${callDisplay(s)} ${SL[slot]} immediately?${causeLine}${costLine}`;
   openGameConfirm(
-    {title:'CONFIRM RELEASE',message:msg,confirmLabel:'YES — REMOVE FROM STATION',danger:true},
-    (ok)=>{
+    {title:opt.forCause||opt.cost==='forCause'?'CONFIRM FOR-CAUSE TERMINATION':'CONFIRM RELEASE',message:msg,confirmLabel:'YES — REMOVE FROM STATION',danger:true},
+    ok=>{
       if(!ok){
         if(troubleWasOpen&&G?.pendingDecisionEvent)showTalentTroubleModal();
         return;
@@ -2726,11 +2846,23 @@ try{
 window._mpApply_trouble_resolve=function({sid,slot,optionIdx,appealRefund,appealNote}){
   const p=G.pendingDecisionEvent;
   let ar=null;
-  if(p?.scenarioId==='fcc_indecency'&&optionIdx===0){
+  if(p&&troubleScenarioIsFcc(p.scenarioId)&&p.scenarioId==='fcc_indecency'&&optionIdx===0){
     ar={refund:typeof appealRefund==='number'?appealRefund:0,note:appealNote||''};
   }
   applyTroubleResolution(sid,slot,optionIdx,ar);
 };
+try{
+  window.__wlTroubleTestHooks={
+    applyTroubleResolution,
+    releaseFranchiseForCause,
+    troubleMandatoryFccFine,
+    troubleScenarioOptions,
+    troubleScenarioIsFcc,
+    talentFireBuyout,
+    getStationFranchise,
+    TROUBLE_SCENARIOS,
+  };
+}catch(_e){}
 window._mpApply_sports_bid=function({teamId,stationId,amount}){
   if(!G.sportsRights?.[teamId])return;
   G.sportsRights[teamId].bids=G.sportsRights[teamId].bids||{};
@@ -4661,7 +4793,7 @@ function mkTal(slot,fmt,tier='mid',year=1970,nameCtx,talOpts){
   }
   if(nameCtx?.usedFullNames)nameCtx.usedFullNames.add(normTalentNameKey(name));
 
-  return{
+  const tal={
     id:Math.random().toString(36).substr(2,8),
     name,
     gender,
@@ -4680,6 +4812,8 @@ function mkTal(slot,fmt,tier='mid',year=1970,nameCtx,talOpts){
     _portraitFirstHireYear:year,
     superstar:false
   };
+  try{if(typeof wlTalentRetention!=='undefined'&&typeof G!=='undefined'&&G)wlTalentRetention.ensurePersonality(tal,G);}catch(_e){}
+  return tal;
 }
 
 function shuffleTalentPoolInPlace(pool){
@@ -6645,6 +6779,10 @@ function syndicationHaloAppliesToStation(s,holderId,G){
   }
   return false;
 }
+/** True if this license (or its simulcast cluster) holds sports/franchise rights recorded on holderId. */
+function stationHoldsSyndicationRights(s,holderId,G){
+  return !!(s&&holderId&&syndicationHaloAppliesToStation(s,holderId,G));
+}
 /** Weighted pick for initial rights holder — favors SPORTS/NEWS/PERSONALITY_TALK via SPORTS_FORMAT_FIT. */
 function pickInitialSportsRightsHolder(G){
   const list=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!stationIsNoncommercialInstitutional(s));
@@ -7163,14 +7301,19 @@ function resolveFranchiseAuction(franchise,rights,G,acts){
     if(winner.isPlayer&&winner._mpOwner!==undefined)frMp.push(winner._mpOwner);
     if(prev&&prev.isPlayer&&prev._mpOwner!==undefined&&(!winner.isPlayer||prev._mpOwner!==winner._mpOwner))frMp.push(prev._mpOwner);
   }
+  const playerHighBidLost=Object.entries(rights.bids||{}).some(([sid,bid])=>{
+    const st=G.stations.find(x=>x.id===sid);
+    return st&&st.isPlayer&&bid>(winnerBid||0)&&sid!==winner.id;
+  });
+  const bidNote=playerHighBidLost?' Your bid was higher in dollars, but the auction weighs relationship, format fit, and incumbent status.':'';
   if(franchise.exclusive&&prev&&prev.id!==winner.id){
     acts.push({v:prev.isPlayer?'HIGH':'LOW',
-      t:`📻 "${franchise.name}" moves from ${prev.callLetters} to ${winner.callLetters} — ${f$(winnerBid)}/yr.`,
+      t:`📻 "${franchise.name}" moves from ${prev.callLetters} to ${winner.callLetters} — ${f$(winnerBid)}/yr.${bidNote}`,
       y:G.year,p:G.period,iy:prev.isPlayer||winner.isPlayer,
       mpForPids:frMp&&frMp.length?frMp:undefined});
   }else{
     acts.push({v:winner.isPlayer?'HIGH':'LOW',
-      t:`📻 "${franchise.name}" secured by ${winner.callLetters} — ${f$(winnerBid)}/yr for ${franchise.contractYrs} years.`,
+      t:`📻 "${franchise.name}" secured by ${winner.callLetters} — ${f$(winnerBid)}/yr for ${franchise.contractYrs} years.${bidNote}`,
       y:G.year,p:G.period,iy:winner.isPlayer,
       mpForPids:frMp&&frMp.length?frMp:undefined});
   }
@@ -8307,6 +8450,34 @@ function wlAnalyticsMarketingSignupTryViewed(src){
   wlAnalyticsSessionTryOnce('wl_mk_sub_seen_'+source,()=>wlAnalyticsCapture('marketing_subscribe_viewed',{source}));
 }
 
+function wlAnalyticsIsGuest(){
+  return typeof window!=='undefined'&&!!window.__WL_GUEST_ONBOARDING;
+}
+
+/** Canonical tutorial completion — fires when the grad modal ("Now It's Up to You") is shown. */
+function wlEmitTutorialFinished(screenId){
+  if(!G)return;
+  if(G._wlTutorialFinishedAnalyticsSent)return;
+  G._wlTutorialFinishedAnalyticsSent=true;
+  try{
+    const screen=String(screenId||'m-tutorial-turnaround').slice(0,48);
+    wlAnalyticsCapture('tutorial_finished',{
+      scenario_id:'tutorial_turnaround',
+      market_id:String(G.marketId||ACTIVE_MARKET||'atlanta').slice(0,32),
+      year:G.year|0,
+      period:G.period|0,
+      is_guest:wlAnalyticsIsGuest(),
+      source:'tutorial',
+      screen,
+      path:screen,
+    });
+  }catch(_e){}
+}
+
+/**
+ * Legacy tutorial completion — gameplay act finished (before grad modal / marketing).
+ * Prefer `tutorial_finished` for funnel completion metrics; kept for backward-compatible dashboards.
+ */
 function wlEmitTutorialCompleted(reason){
   if(!G)return;
   if(G._wlTutorialCompletedAnalyticsSent)return;
@@ -8503,6 +8674,149 @@ function wlAnalyticsApiError(endpoint_group,status,context){
     context:String(context||'').slice(0,80),
   });
 }
+/** Calendar index for stale-book lag checks (spring=0, fall=1 per year). */
+function wlSimCalendarPeriodIndex(year,period){
+  const y=Number(year)||0;
+  const p=Number(period)===2?1:0;
+  return y*2+p;
+}
+/** Fingerprint commercial book stations for stale-turn detection (headless + production). */
+function wlBookStaleStationFingerprint(G){
+  if(!G?.stations?.length)return{stationCount:0,stations:[],snapYear:null,snapPeriod:null,snapTurn:null};
+  const snap=G._mktRankBookSnap;
+  const list=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPublic&&s.fin);
+  list.sort((a,b)=>(Number(b.rat?.share)||0)-(Number(a.rat?.share)||0)||String(a.id).localeCompare(String(b.id)));
+  const stations=list.slice(0,64).map(s=>({
+    id:String(s.id||''),
+    call:String(s.call||'').slice(0,24),
+    format:String(s.format||'').slice(0,32),
+    share:typeof s.rat?.share==='number'&&Number.isFinite(s.rat.share)?Math.round(s.rat.share*1e8)/1e8:0,
+    rev:Math.round(Number(s.fin?.rev)||0),
+  }));
+  return{
+    stationCount:list.length,
+    stations,
+    snapYear:snap&&Number.isFinite(Number(snap.year))?Number(snap.year):null,
+    snapPeriod:snap&&Number.isFinite(Number(snap.period))?Number(snap.period):null,
+    snapTurn:snap&&Number.isFinite(Number(snap.turn))?Number(snap.turn):null,
+  };
+}
+function wlBookStaleProbeSharesRevsUnchanged(before,after){
+  const bMap=Object.create(null);
+  (before?.stations||[]).forEach(r=>{ if(r&&r.id)bMap[r.id]=r; });
+  let n=0,shSame=0,revSame=0,bad=0;
+  for(const a of after?.stations||[]){
+    if(!a||!a.id)continue;
+    const b=bMap[a.id];
+    if(!b)continue;
+    n++;
+    if(Math.abs((a.share||0)-(b.share||0))<1e-9)shSame++;
+    if((a.rev||0)===(b.rev||0))revSame++;
+    if(!Number.isFinite(a.share)||!Number.isFinite(a.rev)||a.share==null||a.rev==null)bad++;
+  }
+  return{nCompared:n,sharesUnchanged:n?shSame/n:0,revsUnchanged:n?revSame/n:0,nanOrUndef:bad};
+}
+/** Closed-period book signature (snap shares + commercial rev totals) for cross-turn stale checks. */
+function wlBookStaleClosedPeriodSignature(wasYear,wasPeriod){
+  const snap=G?._mktRankBookSnap;
+  const snapRows=Array.isArray(snap?.rows)?snap.rows:[];
+  const shareParts=snapRows.slice(0,32).map(r=>`${r.key}:${Math.round((r.share||0)*1e6)}`);
+  let revSum=0,revN=0;
+  (G?.stations||[]).forEach(s=>{
+    if(!s||s._bpSlotDeferred||s.isPublic||!s.fin)return;
+    const rv=Math.round(Number(s.fin?.rev)||0);
+    revSum+=rv;
+    revN++;
+  });
+  return{
+    closedYear:Number(wasYear)||0,
+    closedPeriod:Number(wasPeriod)||0,
+    snapYear:snap&&Number.isFinite(Number(snap.year))?Number(snap.year):null,
+    snapPeriod:snap&&Number.isFinite(Number(snap.period))?Number(snap.period):null,
+    shareSig:shareParts.join('|'),
+    revSum,
+    revN,
+    fp:wlBookStaleStationFingerprint(G),
+  };
+}
+function wlCaptureBookStaleProbeBeforeAdvTurn(){
+  if(!G)return;
+  G._wlBookStaleProbeBefore={
+    year:Number(G.year)||0,
+    period:Number(G.period)||0,
+    turn:Number(G.turn)||0,
+  };
+}
+/**
+ * After advTurn clock advance: detect calendar moved but closed book matches prior period (stale book).
+ */
+function wlMaybeTrackBookStaleAcrossTurns(wasYear,wasPeriod,advTurnThrew){
+  try{
+    if(!G)return;
+    G._wlBookStaleProbeBefore=null;
+    const afterY=Number(G.year)||0,afterP=Number(G.period)||0;
+    const closedSig=wlBookStaleClosedPeriodSignature(wasYear,wasPeriod);
+    const prev=G._wlBookStaleLastClosedSig;
+    G._wlBookStaleLastClosedSig=closedSig;
+    const calendarAdvanced=prev&&(
+      afterY>prev.closedYear||(afterY===prev.closedYear&&afterP!==prev.closedPeriod)
+    );
+    if(!calendarAdvanced||!prev)return;
+    const cmp=wlBookStaleProbeSharesRevsUnchanged(prev.fp,closedSig.fp);
+    const snapY=closedSig.snapYear,snapP=closedSig.snapPeriod;
+    const closedIdx=wlSimCalendarPeriodIndex(wasYear,wasPeriod);
+    const snapIdx=snapY!=null&&snapP!=null?wlSimCalendarPeriodIndex(snapY,snapP):null;
+    const gIdx=wlSimCalendarPeriodIndex(afterY,afterP);
+    const snapLagPeriods=snapIdx!=null?gIdx-snapIdx:0;
+    const snapBehindClosed=snapIdx!=null&&snapIdx<closedIdx;
+    const snapMultiPeriodLag=snapLagPeriods>=2;
+    const shareSigMatch=prev.shareSig&&prev.shareSig===closedSig.shareSig;
+    const revSigMatch=prev.revN>=3&&prev.revSum===closedSig.revSum&&prev.revSum>0;
+    const allSharesFrozen=cmp.nCompared>=3&&cmp.sharesUnchanged>=0.98;
+    const allRevsFrozen=cmp.nCompared>=3&&cmp.revsUnchanged>=0.98&&prev.revSum>0&&closedSig.revSum>0;
+    const snapNotClosedBook=snapBehindClosed||snapMultiPeriodLag;
+    G._wlBookStaleStreak=(shareSigMatch||allSharesFrozen||revSigMatch||allRevsFrozen)?(G._wlBookStaleStreak||0)+1:0;
+    const streak=G._wlBookStaleStreak||0;
+    const staleTurn=shareSigMatch||revSigMatch||allSharesFrozen||allRevsFrozen||snapNotClosedBook;
+    if(!staleTurn)return;
+    const topBefore=(prev.fp?.stations||[]).slice(0,10);
+    const topAfter=(closedSig.fp?.stations||[]).slice(0,10);
+    const news=(G.news||[]).slice(0,3).map(n=>({v:n?.v,t:String(n?.t||'').slice(0,120),y:n?.y,p:n?.p}));
+    const overlays=[];
+    if(G.pendingDecisionEvent)overlays.push('pendingDecision');
+    if(G._wlCampaignEndModalPending)overlays.push('campaignEnd');
+    if(G._gm?.fired)overlays.push('gmFired');
+    wlTrackSimInvariant({
+      phase:'book_stale_across_turns',
+      before_year:prev.closedYear,
+      before_period:prev.closedPeriod,
+      after_year:afterY,
+      after_period:afterP,
+      closed_year:Number(wasYear)||0,
+      closed_period:Number(wasPeriod)||0,
+      snap_year:snapY,
+      snap_period:snapP,
+      snap_lag_periods:snapLagPeriods,
+      stale_streak:streak,
+      n_stations:closedSig.fp.stationCount,
+      shares_unchanged_pct:cmp.sharesUnchanged,
+      revs_unchanged_pct:cmp.revsUnchanged,
+      nan_or_undef:cmp.nanOrUndef,
+      share_sig_match:shareSigMatch,
+      rev_sig_match:revSigMatch,
+      all_shares_frozen:allSharesFrozen,
+      all_revs_frozen:allRevsFrozen,
+      snap_behind_closed:snapBehindClosed,
+      snap_multi_period_lag:snapMultiPeriodLag,
+      adv_turn_error:!!advTurnThrew,
+      gm_mode:!!(G.sc?.gmMode||G.sc?.id==='gm_under'),
+      stations_top10_before:topBefore,
+      stations_top10_after:topAfter,
+      last_news:news,
+      active_overlays:overlays,
+    });
+  }catch(_e){}
+}
 /**
  * Production telemetry: ratings/revenue book invariant (cohort AQH vs headline share, $0 rev pool).
  * Fire-and-forget; safe numeric + ids only. Works in solo and multiplayer.
@@ -8533,6 +8847,43 @@ function wlTrackSimInvariant(payload){
         aqh:Math.max(0,Math.min(1e9,Math.round(Number(r?.aqh)||0))),
         rev:Math.max(-1e12,Math.min(1e12,Math.round(Number(r?.rev)||0))),
       }));
+    }
+    const mapTop10=(arr)=>arr.slice(0,10).map(r=>({
+      id:String(r?.id||'').slice(0,64),
+      call:String(r?.call||'').slice(0,24),
+      format:String(r?.format||'').slice(0,32),
+      share:typeof r?.share==='number'&&Number.isFinite(r.share)?Math.round(r.share*1e8)/1e8:0,
+      rev:Math.max(-1e12,Math.min(1e12,Math.round(Number(r?.rev)||0))),
+    }));
+    if(phase==='book_stale_across_turns'){
+      body.before_year=Math.max(1970,Math.min(2100,Number(payload?.before_year)||0));
+      body.before_period=Math.max(1,Math.min(2,Number(payload?.before_period)||0));
+      body.after_year=Math.max(1970,Math.min(2100,Number(payload?.after_year)||body.year));
+      body.after_period=Math.max(1,Math.min(2,Number(payload?.after_period)||body.period));
+      body.closed_year=Math.max(1970,Math.min(2100,Number(payload?.closed_year)||0));
+      body.closed_period=Math.max(1,Math.min(2,Number(payload?.closed_period)||0));
+      if(payload?.snap_year!=null)body.snap_year=Math.max(1970,Math.min(2100,Number(payload.snap_year)));
+      if(payload?.snap_period!=null)body.snap_period=Math.max(1,Math.min(2,Number(payload.snap_period)));
+      body.snap_lag_periods=Math.max(-20,Math.min(20,Math.round(Number(payload?.snap_lag_periods)||0)));
+      body.stale_streak=Math.max(0,Math.min(100,Math.round(Number(payload?.stale_streak)||0)));
+      body.n_stations=Math.max(0,Math.min(500,Number(payload?.n_stations)||0));
+      body.share_sig_match=!!payload?.share_sig_match;
+      body.rev_sig_match=!!payload?.rev_sig_match;
+      if(typeof payload?.shares_unchanged_pct==='number'&&Number.isFinite(payload.shares_unchanged_pct))
+        body.shares_unchanged_pct=Math.round(payload.shares_unchanged_pct*1e4)/1e4;
+      if(typeof payload?.revs_unchanged_pct==='number'&&Number.isFinite(payload.revs_unchanged_pct))
+        body.revs_unchanged_pct=Math.round(payload.revs_unchanged_pct*1e4)/1e4;
+      body.nan_or_undef=Math.max(0,Math.min(500,Number(payload?.nan_or_undef)||0));
+      body.all_shares_frozen=!!payload?.all_shares_frozen;
+      body.all_revs_frozen=!!payload?.all_revs_frozen;
+      body.snap_behind_closed=!!payload?.snap_behind_closed;
+      body.snap_multi_period_lag=!!payload?.snap_multi_period_lag;
+      body.adv_turn_error=!!payload?.adv_turn_error;
+      body.gm_mode=!!payload?.gm_mode;
+      if(Array.isArray(payload?.stations_top10_before))body.stations_top10_before=mapTop10(payload.stations_top10_before);
+      if(Array.isArray(payload?.stations_top10_after))body.stations_top10_after=mapTop10(payload.stations_top10_after);
+      if(Array.isArray(payload?.last_news))body.last_news=payload.last_news.slice(0,3);
+      if(Array.isArray(payload?.active_overlays))body.active_overlays=payload.active_overlays.slice(0,8).map(s=>String(s).slice(0,32));
     }
     const cuid=wlClerkUserIdForAnalytics();
     if(cuid)body.clerk_user_id=cuid;
@@ -10334,6 +10685,7 @@ window._mpApply_extend = function({ sid, slot, years, newSalary, talentRole, ext
   const s = G.stations.find(st=>st.id===sid); if(!s) return;
   const sd = s.prog[slot]; if(!sd) return;
   const t = talentRole==='cohost' ? slotTalentB(sd) : sd.talent; if(!t) return;
+  if(wlTalentHasExitIntent(t)) return;
   const prevSal=Number(t.salary)||0;
   t.salary = newSalary; t.cyr = years; t.morale = Math.min(100,(t.morale||50)+10);
   if(t._budgetHire&&newSalary>=Math.round(prevSal*1.14/500)*500)delete t._budgetHire;
@@ -13102,12 +13454,39 @@ function stitchCollapsedMarketRatingsFromHistory(stations,G){
   }
   if(G)G._wlRatingsStitchUsed=(G._wlRatingsStitchUsed||0)+1;
 }
+/** Sum cohort AQH for a station (billable listening mass for {@link calcRev}). */
+function wlStationCohortAqhSum(s){
+  if(!s?.rat?.cur)return 0;
+  return COH.reduce((a,coh)=>a+(s.rat.cur[coh]?.aqh||0),0);
+}
+/**
+ * When every station has collapsed AQH, estimate market-wide listening mass from headline shares
+ * so per-station repair can scale cohort AQH to match book % (not just a minimum of 1).
+ */
+function wlMarketActiveAqhMassEstimate(stations,G){
+  let live=0;
+  const comm=[];
+  (stations||[]).forEach(st=>{
+    if(!st||st._bpSlotDeferred||!st.rat)return;
+    const a=Number(st.rat.aqh)||0;
+    if(a>0)live+=a;
+    if(!stationIsNoncommercialInstitutional(st))comm.push(st);
+  });
+  if(live>=1)return live;
+  const sumSh=comm.reduce((a,st)=>a+(Number(st.rat.share)||0),0);
+  if(sumSh>1e-6){
+    const tier=(MARKETS[G?.marketId||ACTIVE_MARKET]||MARKETS.atlanta).rankTier||'medium';
+    const perUnit=tier==='mega'?92000:tier==='large'?72000:tier==='small'?40000:58000;
+    return Math.max(2000,Math.round(sumSh*perUnit));
+  }
+  return 58000;
+}
 /**
  * Headline `rat.share` can remain positive while every `rat.cur[*].aqh` is 0 (degenerate recalc / stale save).
  * Then `calcRev` zeros terrestrial revenue for the whole market. Rebuild cohort rows from the headline book
  * using the same per-station spread as {@link stitchCollapsedMarketRatingsFromHistory}.
  * @param {{silent?:boolean}} [opts] Pass `{ silent: true }` on bulk load to omit per-station `console.warn`.
- * @returns {boolean} true if this station was repaired
+ * @returns {boolean} true if cohort AQH is restored (sum >= 1) for this station
  */
 function repairRatCurFromHeadlineShareIfAqhCollapsed(s,stations,G,opts){
   // Public stations have no spot revenue in calcRev, but cohort AQH still drives books/listeners UI.
@@ -13115,8 +13494,7 @@ function repairRatCurFromHeadlineShareIfAqhCollapsed(s,stations,G,opts){
   if(!s.rat.cur||typeof s.rat.cur!=='object')s.rat.cur={};
   const ps=Number(s.rat.share);
   if(!(ps>1e-8))return false;
-  const sumAqh=COH.reduce((a,coh)=>a+(s.rat.cur[coh]?.aqh||0),0);
-  if(sumAqh>=1)return false;
+  if(wlStationCohortAqhSum(s)>=1)return false;
   const d=Math.max(publicRadioWeightedListeningDenominator(stations,G),1e-12);
   const H=publicNewsHabitEngageMult(s,G);
   const W=COH.reduce((a,coh)=>{
@@ -13125,25 +13503,55 @@ function repairRatCurFromHeadlineShareIfAqhCollapsed(s,stations,G,opts){
     return a+pop*engage;
   },0);
   const per=ps*d/Math.max(W,1e-12);
-  COH.forEach(coh=>{
+  const mktAqh=wlMarketActiveAqhMassEstimate(stations,G);
+  const targetAqh=Math.max(1,Math.round(ps*mktAqh));
+  const weightRows=COH.map(coh=>{
     const pop=(POP.cohorts[coh]?.t||0)*effUniverse(s);
     const engage=(AQH_ENGAGE[coh]||0.060)*H;
-    const sh=Math.round(per*10000)/10000;
-    if(!s.rat.cur[coh])s.rat.cur[coh]={share:0,aqh:0};
-    s.rat.cur[coh].share=sh;
-    s.rat.cur[coh].aqh=Math.round(sh*pop*engage);
-    if(s.mom[coh]){
-      s.mom[coh].cur=sh;
-      s.mom[coh].tgt=Math.max(s.mom[coh].tgt||0,sh);
+    return{coh,pop,engage,w:pop*engage,sh:Math.round(per*10000)/10000};
+  });
+  const wTot=weightRows.reduce((a,r)=>a+r.w,0)||1;
+  let assigned=0;
+  weightRows.forEach((row,i)=>{
+    const isLast=i===weightRows.length-1;
+    let aqh=isLast?targetAqh-assigned:Math.round(targetAqh*row.w/wTot);
+    if(!isLast)aqh=Math.max(0,Math.min(targetAqh-assigned,aqh));
+    else aqh=Math.max(1,targetAqh-assigned);
+    assigned+=aqh;
+    if(!s.rat.cur[row.coh])s.rat.cur[row.coh]={share:0,aqh:0};
+    s.rat.cur[row.coh].share=row.sh;
+    s.rat.cur[row.coh].aqh=aqh;
+    if(s.mom[row.coh]){
+      s.mom[row.coh].cur=row.sh;
+      s.mom[row.coh].tgt=Math.max(s.mom[row.coh].tgt||0,row.sh);
     }
   });
-  s.rat.aqh=COH.reduce((sum,coh)=>sum+(s.rat.cur[coh]?.aqh||0),0);
+  if(assigned<targetAqh){
+    const bump=targetAqh-assigned;
+    const pick=weightRows.reduce((best,r)=>r.w>best.w?r:best,weightRows[0]);
+    s.rat.cur[pick.coh].aqh=(s.rat.cur[pick.coh].aqh||0)+bump;
+    assigned+=bump;
+  }
+  s.rat.aqh=wlStationCohortAqhSum(s);
   s.rat.share=Math.round(ps*1e8)/1e8;
+  if(s.rat.aqh<1)return false;
   if(!opts?.silent&&typeof console!=='undefined'&&console.warn){
     console.warn('[recalc] repaired rat.cur/aqh from headline share for',s.callLetters,'@',G.year,G.period);
   }
   if(G)G._wlRatingsCurRepairCount=(G._wlRatingsCurRepairCount||0)+1;
   return true;
+}
+/** After listening-hours share pass / trims: restore billable AQH for any commercial station with headline share. */
+function wlEnsureCommercialRatingsHaveAqhMass(stations,G){
+  if(!G)return 0;
+  let n=0;
+  (stations||[]).forEach(s=>{
+    if(!s||s._bpSlotDeferred||!s.rat||stationIsNoncommercialInstitutional(s))return;
+    if((Number(s.rat.share)||0)<=1e-8)return;
+    if(wlStationCohortAqhSum(s)>=1)return;
+    if(repairRatCurFromHeadlineShareIfAqhCollapsed(s,stations,G,{silent:true}))n++;
+  });
+  return n;
 }
 /**
  * Sanitize `rat.share` for ranking and display (finite, non-negative).
@@ -13190,6 +13598,7 @@ function applyListeningHoursShareFromAqh(stations,G){
       for(const s of rated){
         repairRatCurFromHeadlineShareIfAqhCollapsed(s,stations,G,{silent:true});
       }
+      wlEnsureCommercialRatingsHaveAqhMass(stations,G);
       total=0;
       for(const s of rated){
         const a=Number(s.rat?.aqh);
@@ -14693,6 +15102,7 @@ function recalc(stations,G){
     applyModernTop40LeaderPeakabilityTrim(stations,G,activeIx,engageWeightedPop,postAqhDenom);
     applyHighHispanicSpanishLeaderBoost(stations,G,activeIx,engageWeightedPop,postAqhDenom);
     applyListeningHoursShareFromAqh(stations,G);
+    wlEnsureCommercialRatingsHaveAqhMass(stations,G);
   }
   {
     const rated=(stations||[]).filter(s=>s&&!s._bpSlotDeferred&&s.rat);
@@ -16368,6 +16778,7 @@ function decay(s,year,period){
         }
       }
       sd.talent.periodsAtStation=(sd.talent.periodsAtStation||0)+1;
+      if(s.isPlayer){try{if(typeof wlTalentRetention!=='undefined')wlTalentRetention.applyDecayMorale(s,sd,sl,G);}catch(_e){}}
       applyTalentPerformanceRevealDecayStep(sd,vtLd);
       const chairB=slotTalentB(sd);
       if(chairB){
@@ -17483,6 +17894,9 @@ function wlMarkTalentPoachCourtingTurn(t, G) {
   if (!t || !G) return;
   t._poachLastCourtingTurn = G.turn | 0;
 }
+
+/** Talent retention / exit intent — see src/talentRetention.js (wlTalentHasExitIntent, effectiveTalentMorale, …). */
+
 /** Periods of on-air sit-out for a host poached mid-contract (non-compete style); uses existing _suspended in decay(). */
 function wlPoachSitoutPeriodsForDepartingTalent(t) {
   if (!t) return 1;
@@ -22272,11 +22686,12 @@ function wlTuTurnaroundLayoutStep(){
   if(act===4&&contractOpen&&G._tutorialAct4ContractTipDone&&G._tutorialAct4ContractGutterDone&&(G._tutorialAct4BenchCoachStep|0)!==1&&(G._tutorialAct4BenchCoachStep|0)!==2){if(_wlTuTr.root)_wlTuTr.root.style.display='none';return;}
   if(act===4&&fireOpen&&replaceView&&G._tutorialTalentExplainerDismissed&&G._tutorialHireListCoachDismissed){if(_wlTuTr.root)_wlTuTr.root.style.display='none';return;}
   if(act===4&&tutEx>=1&&tutEx<=3&&(driftOpen||leanOpen)){
-    if(driftOpen&&tutEx===1&&(G._tutorialDriftCoachDismissed|0)!==1){
+    // om('m-drift'|'m-lean') bumps _tutorialProgExtraStep on open (1→2, 2→3) before coach layout runs.
+    if(driftOpen&&tutEx===2&&(G._tutorialDriftCoachDismissed|0)!==1){
       wlTuTurnaroundForceDriftCoach();
       return;
     }
-    if(leanOpen&&tutEx===2&&(G._tutorialLeanCoachDismissed|0)!==1){
+    if(leanOpen&&tutEx===3&&(G._tutorialLeanCoachDismissed|0)!==1){
       wlTuTurnaroundForceLeanCoach();
       return;
     }
@@ -22964,6 +23379,20 @@ function tutorialTurnaroundShowIntroModal(){
   if(foot)foot.innerHTML='<button type="button" class="cfm" style="width:100%" onclick="cm(\'m-tutorial-turnaround\')">OK — SHOW ME</button>';
   om('m-tutorial-turnaround');
 }
+function tutorialTurnaroundGradNewScenario(){
+  try{
+    wlAnalyticsCapture('tutorial_new_scenario_clicked',{
+      scenario_id:'tutorial_turnaround',
+      market_id:String(G?.marketId||ACTIVE_MARKET||'atlanta').slice(0,32),
+      year:G?.year|0,
+      period:G?.period|0,
+      is_guest:wlAnalyticsIsGuest(),
+      source:'tutorial_finished_screen',
+    });
+  }catch(_e){}
+  try{cm('m-tutorial-turnaround');}catch(_e){}
+  try{openScenSelect(null);}catch(_e){}
+}
 function tutorialTurnaroundShowGradModal(){
   tutorialTurnaroundCoachStop();
   const ov=document.getElementById('m-tutorial-turnaround');
@@ -22975,8 +23404,9 @@ function tutorialTurnaroundShowGradModal(){
     <p class="di" style="margin:0;line-height:1.55;color:var(--mut)">Normal competition and events apply — keep running periods and refining your station.</p>`;
   const foot=document.getElementById('m-tut-tr-foot');
   if(foot)foot.innerHTML=`<button type="button" class="cfm" style="width:100%;margin-bottom:8px" onclick="cm('m-tutorial-turnaround')">CONTINUE GAME</button>
-    <button type="button" class="cnl" style="width:100%" onclick="cm('m-tutorial-turnaround');openScenSelect(null)">START NEW SCENARIO</button>`;
+    <button type="button" class="cnl" style="width:100%" onclick="tutorialTurnaroundGradNewScenario()">START NEW SCENARIO</button>`;
   om('m-tutorial-turnaround');
+  try{wlEmitTutorialFinished('m-tutorial-turnaround');}catch(_e){}
 }
 /**
  * Act 5 → 6: advance only after the player dismisses two period summaries (see m-sum close),
@@ -23056,11 +23486,12 @@ function tutorialTurnaroundOnAdvTurnComplete(){
         try{if(typeof wlAnalyticsCapture==='function')wlAnalyticsCapture('guest_tutorial_completed',{});}catch(_e){}
         try{if(typeof wlAnalyticsCapture==='function')wlAnalyticsCapture('guest_signup_prompt_shown',{});}catch(_e){}
         tutorialTurnaroundCoachStop();
+        try{wlEmitTutorialFinished('m-guest-conversion');}catch(_e){}
         try{wlShowGuestConversionModal();}catch(_e){}
       }else{
-        try{wlShowEmailSignupOverlay('tutorial_completion');}catch(_e){}
         tutorialTurnaroundCoachStop();
         tutorialTurnaroundShowGradModal();
+        try{wlShowEmailSignupOverlay('tutorial_completion');}catch(_e){}
       }
     }
   }
@@ -23394,6 +23825,61 @@ function scenSetView(v){
   if(v!=='solo')_pendingScenId=null;
   openScenSelect(_lastScenSelectLocal,{onlyRefresh:true});
 }
+function wlParseGuestEntryQuery(){
+  try{
+    const q=new URLSearchParams(typeof location!=='undefined'?location.search:'');
+    return {
+      scenario:String(q.get('scenario')||'').trim(),
+      autostart:q.get('autostart')==='1'||q.get('autostart')==='true',
+    };
+  }catch(_e){
+    return {scenario:'',autostart:false};
+  }
+}
+function wlGuestShouldAutostartTutorial(){
+  const q=wlParseGuestEntryQuery();
+  if(!q.autostart)return false;
+  if(!q.scenario||q.scenario==='tutorial_turnaround')return true;
+  return false;
+}
+async function wlGuestLaunchTutorialTurnaround(opts){
+  const o=opts||{};
+  const source=String(o.source||'guest').slice(0,32);
+  const autostart=!!o.autostart;
+  try{
+    if(typeof wlAnalyticsCapture==='function')wlAnalyticsCapture('guest_tutorial_entered',{
+      entry_source:source,
+      autostart,
+    });
+  }catch(_e){}
+  _selectedMarket='atlanta';
+  ACTIVE_MARKET='atlanta';
+  syncMarketPopToMarket('atlanta');
+  try{
+    wlAnalyticsEmitScenarioSelected({
+      scenario_id:'tutorial_turnaround',
+      picked_mode:'tutorial',
+      market:'atlanta',
+    });
+  }catch(_e){}
+  if(autostart){
+    try{
+      await startPlayAsync('tutorial_turnaround');
+      if(typeof G==='undefined'||!G?.sc||G.sc.id!=='tutorial_turnaround'){
+        throw new Error('game_not_started');
+      }
+      return;
+    }catch(err){
+      console.warn('[guest] tutorial autostart failed',err);
+      try{
+        if(typeof wlAnalyticsCapture==='function')wlAnalyticsCapture('guest_tutorial_autostart_failed',{
+          reason:String(err?.message||err||'unknown').slice(0,120),
+        });
+      }catch(_e2){}
+    }
+  }
+  openOnboarding('tutorial_turnaround');
+}
 function scenStartTutorialFromMenu(){
   if(!Array.isArray(SC))return;
   if(!SC.find(s=>s.id==='tutorial_turnaround')){
@@ -23438,6 +23924,15 @@ function init(){
   if (window.__WL_AI_BENCHMARK_PAGE__) return;
   /** Headless / tooling pages (e.g. inspect-shares.html) load legacy without scenario UI. */
   if (window.__WL_SHARE_INSPECT_ONLY) return;
+  /** Guest HTML mints session in main.js — do not resume local autosave until that finishes. */
+  const guestBoot=typeof window !== 'undefined' && window.__WL_GUEST_BOOT_PROMISE;
+  if(guestBoot && typeof guestBoot.then==='function'){
+    guestBoot.then(()=>{
+      if(window.__WL_GUEST_BOOT_FAILED)return;
+      initCore();
+    });
+    return;
+  }
   if(typeof window !== 'undefined' && window.__WL_GUEST_BOOT_FAILED)return;
   if(!window.__WL_REQUIRE_CLERK){
     initCore();
@@ -23455,13 +23950,10 @@ function initCore(){
   console.log('[Airwave Empire] initCore() called');
   try{
     if(typeof window !== 'undefined' && window.__WL_GUEST_ONBOARDING){
-      try{
-        if(typeof wlAnalyticsCapture==='function')wlAnalyticsCapture('guest_tutorial_entered',{});
-      }catch(_e){}
-      _selectedMarket='atlanta';
-      ACTIVE_MARKET='atlanta';
-      syncMarketPopToMarket('atlanta');
-      openOnboarding('tutorial_turnaround');
+      void wlGuestLaunchTutorialTurnaround({
+        autostart:wlGuestShouldAutostartTutorial(),
+        source:wlGuestShouldAutostartTutorial()?'landing_autostart':'guest_onboard_screen',
+      });
       return;
     }
     const local=getLocalSave();
@@ -24726,8 +25218,11 @@ function buildMarketRankRowsForDisplay(G){
   for(const sr of snap.rows){
     const live=liveByKey.get(sr.key);
     if(live){
-      const liveSh=typeof live.share==='number'&&!Number.isNaN(live.share)?live.share:sr.share;
-      out.push({row:live,displayRank:sr.rank,displayShare:liveSh});
+      // Book rank order comes from the period-end snap; use snap share for display so mid-period
+      // recalcs (logo, promo, talent) do not scramble rank vs share until Next Period.
+      const bookSh=typeof sr.share==='number'&&!Number.isNaN(sr.share)?sr.share:live.share;
+      const liveSh=typeof live.share==='number'&&!Number.isNaN(live.share)?live.share:bookSh;
+      out.push({row:live,displayRank:sr.rank,displayShare:bookSh});
       used.add(sr.key);
     }
   }
@@ -25281,15 +25776,8 @@ function wlRenderRatingsDigestBody(body,payload,articleText,insightsTier){
   const bodyHtml=paras.length
     ? paras.map(p=>'<p style="margin:0 0 14px;font-size:15px;line-height:1.55;color:var(--off);text-align:left">'+wlEscapeHtml(p).replace(/\n/g,'<br/>')+'</p>').join('')
     : '<p class="enote">Empty response.</p>';
-  const tierNote=
-    tier==='elite'
-      ? ' · Pro insights — extended Desk notes &amp; competitive snapshot'
-      : tier==='advanced'
-        ? ' · Advanced insights (trial / Starter)'
-        : ' · Standard column (free tier or not signed in)';
   body.innerHTML=
     '<div style="font-family:var(--fd);font-size:22px;color:var(--amb);letter-spacing:.06em;text-align:center;margin:0 0 10px;line-height:1.25">'+wlEscapeHtml(headline)+'</div>'+
-    '<div class="ibox" style="margin-bottom:14px;font-family:var(--ft);font-size:12px;color:var(--mut);line-height:1.45;text-align:center">'+wlEscapeHtml(payload.periodLabel+' · '+payload.market)+' · AI flavor text from simulation data only'+tierNote+'</div>'+
     bodyHtml+
     '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;align-items:center;justify-content:flex-start">'+
     '<button type="button" class="cnl" onclick="wlExportRatingsDigestFromModal()">EXPORT .TXT</button>'+
@@ -26029,7 +26517,6 @@ function talentEvents(G){
     Object.entries(s.prog).forEach(([slot,sd])=>{
       if(!sd?.talent)return;
       const t=sd.talent;
-      // Co-host: graceful non-renewal (independent of primary; process before lead leaves this slot)
       const b0=slotTalentB(sd);
       if(b0&&b0._letExpire&&(b0.cyr||0)<=0){
         const cnm=b0.name;
@@ -26038,21 +26525,24 @@ function talentEvents(G){
         refreshStationOQ(s,G);
         G.news.unshift({v:'MEDIUM',t:`${cnm} (co-host) departs ${s.callLetters} ${SL[slot]} — contract not renewed.`,y:G.year,p:G.period,iy:true});
       }
-      // Tenure: single increment per period in decay() — do not mutate here (avoids double-count with talentEvents+decay).
-      const age=(t.periodsAtStation||0)+1; // projected end-of-period tenure for event odds (decay runs later)
-      if(!t._hireYear)t._hireYear=G.year;
-      if(!t._careerStartYear)t._careerStartYear=t._hireYear;
-
-      // GRACEFUL NON-RENEWAL: player chose not to renew
       if(t._letExpire&&(t.cyr||0)<=0){
         const name=t.name;
         sd.talent=null;
         G.news.unshift({v:'MEDIUM',t:`${name} departs ${s.callLetters} ${SL[slot]} — contract not renewed.`,y:G.year,p:G.period,iy:true});
-        return;
       }
+    });
+  });
+  try{if(typeof wlTalentRetention!=='undefined')wlTalentRetention.runPeriod(G);}catch(_e){}
+  G.ps.filter(s=>!s.isPublic).forEach(s=>{
+    Object.entries(s.prog).forEach(([slot,sd])=>{
+      if(!sd?.talent)return;
+      const t=sd.talent;
+      const age=(t.periodsAtStation||0)+1;
+      if(!t._hireYear)t._hireYear=G.year;
+      if(!t._careerStartYear)t._careerStartYear=t._hireYear;
 
       // CONTRACT EXPIRY WARNING: give player one period heads-up
-      if((t.cyr||0)<=0.5&&(t.cyr||0)>0&&!t._letExpire&&!t._warnedExpiry){
+      if((t.cyr||0)<=0.5&&(t.cyr||0)>0&&!t._letExpire&&!t._warnedExpiry&&!t._wantsExit){
         t._warnedExpiry=true;
         G.news.unshift({v:'MEDIUM',t:`📋 ${t.name}'s contract at ${s.callLetters} expires next period — click their name to negotiate.`,y:G.year,p:G.period,iy:true});
       }
@@ -26090,8 +26580,9 @@ function talentEvents(G){
         return;
       }
 
-      // BURNOUT: low morale — sudden quit.
-      const burnoutChance=t.morale<35?0.15:t.morale<50?0.07:0;
+      // BURNOUT: low morale — sudden quit (uses structural + short-term morale).
+      const effMor=typeof effectiveTalentMorale==='function'?effectiveTalentMorale(t):(t.morale|0);
+      const burnoutChance=effMor<35?0.15:effMor<50?0.07:0;
       if(Math.random()<burnoutChance){
         const name=t.name;
         sd.talent=null;
@@ -26105,7 +26596,8 @@ function talentEvents(G){
         if(rivals.length&&!s._rivalPoachPending&&wlTalentCanReceivePoachCourtingThisTurn(t,G)&&wlTalentMidContractPoachSeriousOfferRolls(t)){
           const rival=pick(rivals);
           const name=t.name;
-          const poachResist=(t.morale/100)*0.5+Math.min(1,(t.cyr||0)/2)*0.5;
+          const sat=t._satisfaction|0;
+          const poachResist=(effMor/100)*0.42+Math.min(1,(t.cyr||0)/2)*0.38+(sat/100)*0.2;
           if(Math.random()<poachResist){
             wlMarkTalentPoachCourtingTurn(t,G);
             G.news.unshift({v:'MEDIUM',t:`🎙 ${rival.callLetters} approached ${name} — they stayed loyal to ${s.callLetters}. Consider a renewal.`,y:G.year,p:G.period});
@@ -28036,6 +28528,7 @@ function advTurn(mpCoalesceSeq){
         G._cashBridgeDebtBeforeAdvTurn=typeof debtPrincipalForPid==='function'?debtPrincipalForPid(G,loanPidForGame()):0;
         wlCashBridgeAuditPush('BEFORE_ADVANCE',{year:G.year,period:G.period});
       }
+      wlCaptureBookStaleProbeBeforeAdvTurn();
       // Solo: snapshot wallet before revenue phase — franchise/sports resolution & other pre-seedRev hooks can move cash;
       // finHistory + harness verify use this with EBITDA/LMA/interest/pressure for a closed cash identity.
       if(MP.mode!=='live') G._advTurnCashStartOfTurn=G.cash||0;
@@ -28244,6 +28737,7 @@ function advTurn(mpCoalesceSeq){
       G._hitsChrTransitionNewsShown=true;
     }
     G.turn=(G.turn||0)+1;
+    try{wlMaybeTrackBookStaleAcrossTurns(wasYear,wasPeriod,false);}catch(_e){}
     try{wlMaybeTrackTurnMilestoneAfterAdvance();}catch(_e){}
     tutorialTurnaroundOnAdvTurnComplete();
     if(!simQuiet)maybeRollStationListingOfferForPlayer(G);
@@ -28350,6 +28844,10 @@ function advTurn(mpCoalesceSeq){
     if(MILESTONE_Q.length)setTimeout(flushMilestones,900);
     }catch(err){
       console.error('advTurn error:',err);
+      try{
+        const b=G&&G._wlBookStaleProbeBefore;
+        if(b)wlMaybeTrackBookStaleAcrossTurns(b.year,b.period,true);
+      }catch(_e){}
       btn.disabled=false;btn.textContent='▶ NEXT PERIOD';
     }
   },450);
@@ -29042,20 +29540,24 @@ function manageTalentDaypartRailContractUi(s, sl, _simSrc) {
   const slotRen = t._slotPromotionPendingRenewal === true;
   const cyrH = t.cyr || 0;
   const chCyr = ch ? ch.cyr || 0 : 0;
+  const hostWantsOut = wlTalentHasExitIntent(t);
   let hostLbl = '';
-  if (slotRen) hostLbl = 'MOVED';
+  if (hostWantsOut) hostLbl = 'OUT';
+  else if (slotRen) hostLbl = 'MOVED';
   else if (cyrH <= 0) hostLbl = 'EXP';
   else if (cyrH <= 0.5) hostLbl = 'EXP⬆';
   let chLbl = '';
   if (ch) {
-    if (chCyr <= 0) chLbl = 'EXP';
+    if (wlTalentHasExitIntent(ch)) chLbl = 'OUT';
+    else if (chCyr <= 0) chLbl = 'EXP';
     else if (chCyr <= 0.5) chLbl = 'EXP⬆';
   }
   const badges = [];
   if (hostLbl) {
     const hostCls = hostLbl === 'EXP' ? 'cyr-exp' : 'cyr-warn';
     let hostTitle = '';
-    if (hostLbl === 'MOVED') hostTitle = 'Moved dayparts — new deal needed for this slot.';
+    if (hostLbl === 'OUT') hostTitle = 'Won\'t re-sign — planning to leave; extensions declined.';
+    else if (hostLbl === 'MOVED') hostTitle = 'Moved dayparts — new deal needed for this slot.';
     else if (hostLbl === 'EXP') hostTitle = 'Contract expired — use Contract & pay below to extend.';
     else if (chLbl === 'EXP⬆') hostTitle = 'Host and co-host contracts expire next period.';
     else if (chLbl === 'EXP') hostTitle = 'Co-host contract expired — host deal expires next period.';
@@ -29072,7 +29574,9 @@ function manageTalentDaypartRailContractUi(s, sl, _simSrc) {
     if (!bothExp && !bothSoon) {
       const chCls = chLbl === 'EXP' ? 'cyr-exp' : 'cyr-warn';
       const chTitle =
-        chLbl === 'EXP'
+        chLbl === 'OUT'
+          ? 'Co-host won\'t re-sign — planning to leave.'
+          : chLbl === 'EXP'
           ? 'Co-host contract expired — extend co-host deal below.'
           : 'Co-host contract expires next period.';
       const txt =
@@ -31849,7 +32353,8 @@ function openSports(sid){
     const tierLabel={dynasty:'Dynasty',playoff:'Playoff Contender',competitive:'Competitive',mediocre:'Mediocre',rebuilding:'Rebuilding'}[tier];
     const season=SPORT_SEASONS[team.sport]||{p1:0.5,p2:0.5};
     const seasonNote=team.sport==='PRO_FOOTBALL'?'Fall-heavy':team.sport==='PRO_BASEBALL'?'Year-round':team.sport==='PRO_BASKETBALL'?'Spring-heavy':'Spring-heavy';
-    const holding=rights.holderId===s.id;
+    const holding=stationHoldsSyndicationRights(s,rights.holderId,G);
+    const holdViaCluster=holding&&rights.holderId!==s.id;
     const fmtFit=SPORTS_FORMAT_FIT[s.format]||0.3;
     const fmtFitPct=Math.round(fmtFit*100);
     const rel=rights.relationship?.[s.id]||0;
@@ -31900,7 +32405,7 @@ function openSports(sid){
     return `<div style="background:var(--crd);border:1px solid var(--bdh);border-radius:6px;padding:12px 14px;margin-bottom:10px;${holding?'border-color:var(--grn)':''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:6px">
         <div>
-          <div style="font-family:var(--fd);font-size:16px;color:var(--wht)">${sportTeamEmoji(team.sport)} ${team.name} ${holding?'<span style="color:var(--grn);font-size:14px">◆ YOU HOLD</span>':''}</div>
+          <div style="font-family:var(--fd);font-size:16px;color:var(--wht)">${sportTeamEmoji(team.sport)} ${team.name} ${holding?`<span style="color:var(--grn);font-size:14px">◆ YOU HOLD${holdViaCluster?' (cluster)':''}</span>`:''}</div>
           <div style="font-size:14px;color:var(--mut);margin-top:2px">${SPORT_LABEL[team.sport]||team.sport} · ${seasonNote} · Format fit: ${fmtFitPct}%</div>
         </div>
         <div style="text-align:right">
@@ -31929,8 +32434,9 @@ function openFranchise(sid){
   document.getElementById('franchise-title').textContent=`📻 NATIONAL FRANCHISES — ${s.callLetters}`;
   const rows=eligible.map(f=>{
     const r=G.franchiseRights?.[f.id];
-    const holding=r?.holderId===s.id;
-    const heldByOther=f.exclusive&&r?.holderId&&r.holderId!==s.id;
+    const holding=stationHoldsSyndicationRights(s,r?.holderId,G);
+    const holdViaCluster=holding&&r?.holderId!==s.id;
+    const heldByOther=f.exclusive&&r?.holderId&&!holding;
     const otherHolder=heldByOther?G.stations.find(st=>st.id===r.holderId):null;
     const rel=r?.relationship?.[s.id]||0;
     const expiresIn=(r?.contractEnd||G.year)-G.year;
@@ -31939,7 +32445,7 @@ function openFranchise(sid){
     const fitHint=f.id==='wild_card'?franchiseFormatFit(f,s.format,s):1;
     const sugBid=Math.round(f.baseFee*(1.0+(rel/100)*0.2)*fitHint/1000)*1000;
     const statusColor=holding?'var(--grn)':heldByOther?'var(--red)':'var(--mut)';
-    const statusLabel=holding?'◆ YOU HOLD':heldByOther?`Held by ${otherHolder?.callLetters||'rival'}`:f.exclusive?'Available':'Multiple stations can hold';
+    const statusLabel=holding?`◆ YOU HOLD${holdViaCluster?' (cluster)':''}`:heldByOther?`Held by ${otherHolder?.callLetters||'rival'}`:f.exclusive?'Available':'Multiple stations can hold';
     const troubleLabel=f.troubleMod>=3?'⚠ High FCC risk':f.troubleMod>=1.5?'⚠ Moderate risk':f.troubleMod<=0.3?'✓ Low risk':'';
     const troubleCol=f.troubleMod>=3?'var(--red)':f.troubleMod>=1.5?'var(--amb)':'var(--grn)';
     let bidSection='';
@@ -33391,6 +33897,7 @@ function doFmt(keepSim){
   s.brand=gbBrandForStationReplace(s,nf);
   // Reset format age — community roots tied to the OLD format
   s._formatAge=0;
+  try{if(typeof wlTalentRetention!=='undefined')wlTalentRetention.onFormatFlip(s);}catch(_e){}
   s.budgetStress=0;
   // Reset sellout rate — new format starts with a fresh advertiser relationship.
   // A News/Talk station that flips to Album Rock can't keep its talk-format sell premium.
@@ -33636,6 +34143,7 @@ function benchmarkSoloPlayerReformat(G,s,newFmt){
   s.format=newFmt;
   s.brand=gbBrandForStationReplace(s,newFmt);
   s._formatAge=0;
+  try{if(typeof wlTalentRetention!=='undefined')wlTalentRetention.onFormatFlip(s);}catch(_e){}
   const _talkFmts=['NEWS_TALK','SPORTS_TALK','PERSONALITY_TALK','ALL_NEWS'];
   s.ops.sell=_talkFmts.includes(newFmt)?0.60:0.55;
   if(preFlipIdentity>0){
@@ -36656,9 +37164,9 @@ function _wlModalAfterClose(id,opts){
       G.tutorialAct=0;
       G._tutorialAct7Phase=0;
       G._tutorialRankerCoachDismissed=false;
-      try{wlShowEmailSignupOverlay('tutorial_completion');}catch(_e){}
       tutorialTurnaroundCoachStop();
       tutorialTurnaroundShowGradModal();
+      try{wlShowEmailSignupOverlay('tutorial_completion');}catch(_e){}
     }
     if(id==='m-sales')wlFtTutorialNotifySalesClose();
     if((id==='m-drift'||id==='m-lean'||id==='m-fm')&&isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===4){
@@ -37875,7 +38383,7 @@ function openStationLineupHelp(){
     <h4 style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">NAME</h4>
     <p class="di">Who is scheduled in this slot. Click to open the contract when you employ them.</p>
     <h4 style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">CONTRACT</h4>
-    <p class="di"><strong>MOVED</strong> appears after you move talent to a different daypart, requiring a new contract. <strong>EXP⬆</strong> appears when a talent&apos;s contract is expiring next period. <strong>EXP</strong> appears in red when the talent&apos;s contract has expired. <strong>⚡</strong> appears beside the host when a rival station has approached them.</p>
+    <p class="di"><strong>MOVED</strong> appears after you move talent to a different daypart, requiring a new contract. <strong>EXP⬆</strong> appears when a talent&apos;s contract is expiring next period. <strong>EXP</strong> appears in red when the talent&apos;s contract has expired. <strong>OUT</strong> means they won&apos;t re-sign and plan to leave. <strong>⚡</strong> appears beside the host when a rival station has approached them.</p>
     <h4 style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">MORALE</h4>
     <p class="di">How happy the host is in this role. Low morale can drag programming quality and salary asks; bonuses and fair contracts help. Voice-tracking responsibilities can diminish morale.</p>
     <h4 style="font-family:var(--fd);color:var(--amb);margin:16px 0 8px;font-size:14px;letter-spacing:0.12em">PAY / YR</h4>
@@ -38056,14 +38564,31 @@ function buildContractEconObject(s, slot, t, isCoHost, primaryHost){
   const bonusCost=Math.round(t.salary*rnd(0.08,0.15)/500)*500;
   const cyr=Math.round((t.cyr||0)*10)/10;
   const cyrRemStr=Number.isInteger(cyr)?String(cyr):cyr.toFixed(1);
-  const r1=Math.round((ext1Annual/t.salary-1)*100);
-  const r2=Math.round((ext2Annual/t.salary-1)*100);
-  const r3=ext3Cost?Math.round((ext3Annual/t.salary-1)*100):null;
   const trJs=isCoHost?'cohost':'host';
   const poach1yrMatchLabel=!isCoHost&&rpp&&rpp.slot===slot&&rpp.talentId===primaryHost.id
     ?'<div class="contract-ext-btn__match">MATCH OFFER</div>'
     :'';
-  return{ext1Cost,ext1Annual,ext2Cost,ext2Annual,ext3Cost,ext3Annual,bonusCost,cyrRemStr,trJs,r1,r2,r3,poach1yrMatchLabel,rawCyr:cyr,renewalLeverage};
+  let retentionRefuse3yr=false;
+  try{
+    if(typeof wlTalentRetention!=='undefined'&&s?.isPlayer){
+      const rm=wlTalentRetention.contractModifiers(s,t,isCoHost);
+      retentionRefuse3yr=!!rm.refuse3yr;
+      const dm=rm.demandMult||1;
+      if(dm!==1){
+        ext1Cost=Math.round(ext1Cost*dm/500)*500;
+        ext2Cost=Math.round(ext2Cost*dm/500)*500;
+        if(ext3Cost!=null)ext3Cost=Math.round(ext3Cost*dm/500)*500;
+        ext1Annual=ext1Cost;
+        ext2Annual=ext2Cost;
+        if(ext3Cost!=null)ext3Annual=ext3Cost;
+      }
+      if(rm.refuse3yr)ext3Cost=null;
+    }
+  }catch(_e){}
+  const r1b=Math.round((ext1Annual/t.salary-1)*100);
+  const r2b=Math.round((ext2Annual/t.salary-1)*100);
+  const r3b=ext3Cost?Math.round((ext3Annual/t.salary-1)*100):null;
+  return{ext1Cost,ext1Annual,ext2Cost,ext2Annual,ext3Cost,ext3Annual,bonusCost,cyrRemStr,trJs,r1:r1b,r2:r2b,r3:r3b,poach1yrMatchLabel,rawCyr:cyr,renewalLeverage,retentionRefuse3yr};
 }
 function contractExtensionAndCtaBlockHtml(sid, slot, t, isCoHost, ce, forManageTalent){
   const $salK=(n)=>`$${Math.round(n/1000)}K`;
@@ -38113,7 +38638,13 @@ function contractExtensionAndCtaBlockHtml(sid, slot, t, isCoHost, ce, forManageT
   const bonusBtn = bonusPaidThisAccrual
     ? `<button type="button" class="abt contract-cta-bonus contract-cta-bonus--paid" disabled title="You already paid a morale bonus this accrual period. You can pay again after the next period."><span class="contract-cta-bonus__l1">morale bonus</span><span class="contract-cta-bonus__l2"><span class="contract-cta-bonus__l2-paid">Paid this period</span></span></button>`
     : `<button type="button" class="abt contract-cta-bonus" style="width:100%;box-sizing:border-box" onclick="doBonus('${sid}','${slot}',${ce.bonusCost},'${ce.trJs}'${mtf2})" ${G.cash < ce.bonusCost ? 'disabled' : ''} title="One-time cash. Morale +15 to +20. No change to contract years."><span class="contract-cta-bonus__l1">morale bonus</span><span class="contract-cta-bonus__l2"><span class="contract-cta-bonus__l2-amount">+${f$(ce.bonusCost)}</span><span class="contract-cta-bonus__l2-note">(optional)</span></span></button>`;
-  const extendTiles=extendUsedThisPeriod
+  const refusesRenew=wlTalentHasExitIntent(t);
+  const extendTiles=refusesRenew
+    ?(()=>{
+      const stn=G.stations.find(st=>st.id===sid);
+      return `<div class="contract-extend-used-msg ibox" style="margin:0;border-color:rgba(240,88,88,.35);font-size:13px;line-height:1.45;color:var(--off)"><strong style="color:var(--red)">Won't re-sign</strong> — ${rosterHtmlEsc(t.name)} is done at ${rosterHtmlEsc(callDisplay(stn||{callLetters:''}))}. Extension offers are off the table; they'll leave when the deal ends${(t.cyr||0)<=0?' (this period)':''} unless you fire them first.</div>`;
+    })()
+    :extendUsedThisPeriod
     ?`<div class="contract-extend-used-msg ibox" style="margin:0;border-color:rgba(125,211,252,.35);font-size:13px;line-height:1.45;color:var(--off)">You already extended this contract this period. You can negotiate another extension <strong>next period</strong>.</div>`
     :`<div class="contract-extend-compact" role="group" aria-label="Sign new deal">
         <button type="button" class="cfm contract-ext-btn" onclick="doExtend('${sid}','${slot}',1,${ce.ext1Cost},'${ce.trJs}'${mtf2})" ${G.cash<ce.ext1Cost/2?'disabled':''}>
@@ -38130,7 +38661,7 @@ function contractExtensionAndCtaBlockHtml(sid, slot, t, isCoHost, ce, forManageT
         <button type="button" class="cfm contract-ext-btn" onclick="doExtend('${sid}','${slot}',3,${ce.ext3Cost||0},'${ce.trJs}'${mtf2})" ${(!ce.ext3Cost||G.cash<(ce.ext3Cost||0)/2)?'disabled':''}>
           <div class="contract-ext-btn__line1">SIGN 3 YR</div>
           <div class="contract-ext-btn__line2">${ce.ext3Cost?$salK(ce.ext3Annual):'N/A'}/YR</div>
-          <div class="contract-ext-btn__line3${ce.ext3Cost?'':' contract-ext-btn__line3--sub'}">${ce.ext3Cost?'Raise +'+ce.r3+'%':'Morale too low'}</div>
+          <div class="contract-ext-btn__line3${ce.ext3Cost?'':' contract-ext-btn__line3--sub'}">${ce.ext3Cost?'Raise +'+ce.r3+'%':(ce.retentionRefuse3yr?'Won\'t sign 3 yr':'Morale too low')}</div>
         </button>
       </div>`;
   const leverageRenewHint=extendUsedThisPeriod||typeof ce.renewalLeverage!=='number'||ce.renewalLeverage<0.42
@@ -38434,7 +38965,9 @@ function openContract(sid, slot, talentRole){
   const careerLenColor=retYrsIn<=1?'var(--red)':retYrsIn<=3?'var(--amb)':'var(--mut)';
   const careerLenText=carYrsInRadio+` yr total`+(retYrsIn<=3?` · <strong>retires in ${retYrsIn} yr${retYrsIn!==1?'s':''}</strong>`:'');
   const sevBuyoutNow=talentFireBuyout(t);
-  const contractStatus=cyr<=0
+  const contractStatus=wlTalentHasExitIntent(t)
+    ?`<span style="color:var(--red);font-family:var(--ft);font-size:15px">⚠ WON'T RE-SIGN — ${rosterHtmlEsc(t.name)} plans to leave; new deals are off the table</span>`
+    :cyr<=0
     ?`<span style="color:var(--red);font-family:var(--ft);font-size:15px">⚠ CONTRACT EXPIRED — negotiate now or risk losing them</span>`
     :cyr<=0.5
     ?`<span style="color:var(--amb);font-family:var(--ft);font-size:15px">⚠ ~${cyrRemStr} yr left on the deal (ends this accrual) — extend now to lock in this talent</span>`
@@ -38485,6 +39018,7 @@ function openContract(sid, slot, talentRole){
     <div class="contract-dp-body">
     <div class="msh" style="margin-bottom:12px">${contractTitle}</div>
     ${seatSwitcherHtml}
+    ${(()=>{try{return typeof wlTalentRetention!=='undefined'?wlTalentRetention.contractUiExtras(t,s):'';}catch(_e){return'';}})()}
     ${(()=>{if(isCoHost)return'';const rp=s._rivalPoachPending;if(!rp||rp.slot!==slot||rp.talentId!==primaryHost.id)return'';const riv=G.stations.find(st=>st.id===rp.rivalId);const minM=Math.round(rp.offerSalary*0.95/500)*500;return`<div class="ibox" style="border-color:var(--amb);margin-bottom:12px"><strong style="color:var(--amb)">⚡ RIVAL OFFER / COUNTER-POACH</strong><br><span style="font-size:14px;color:var(--off)"><strong>${riv?riv.callLetters:'Rival'}</strong> offered <strong>${f$(rp.offerSalary)}</strong>/yr. Sign at <strong>≥${f$(minM)}</strong>/yr to retain ${primaryHost.name} before the next 6-mo accrual.</span></div>`;})()}
     ${!isCoHost&&primaryHost._slotPromotionPendingRenewal?`<div class="ibox" style="border-color:var(--amb);margin-bottom:12px;line-height:1.5"><strong style="color:var(--amb)">Daypart change — not a “duplicate” renewal</strong><br><span style="font-size:14px;color:var(--off)">${primaryHost.name} is now in <strong>${SL[slot]}</strong>${primaryHost._promotionFromSlot?` (moved from <strong>${SL[primaryHost._promotionFromSlot]}</strong>)`:''}. That’s a higher-profile shift, so the old paycheck doesn’t carry — you&apos;ll need a <strong>new contract priced for this daypart</strong>. It&apos;s normal to negotiate again soon after extending them.</span></div>`:''}
     ${(()=>{const sh=s.rat?.share||0;const q=t.quality||50;if(sh>0.12&&q>75)return`<div style="background:rgba(245,166,35,.10);border:1px solid var(--amb);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--amb)">📈 Strong station + top talent — expect a stiff renewal number.</div>`;if(sh>0.08&&q>65)return`<div style="background:rgba(245,166,35,.07);border:1px solid rgba(245,166,35,.3);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--off)">📊 Solid book — they will push harder on money.</div>`;if(t.morale<50)return`<div style="background:rgba(220,50,50,.10);border:1px solid var(--red);border-radius:4px;padding:8px 12px;margin-bottom:12px;font-size:14px;color:var(--red)">⚠ Low morale — they're unhappy and may ask for extra just to stay.</div>`;return''})()}
@@ -38538,6 +39072,10 @@ function doExtend(sid, slot, years, newSalary, talentRole, fromManageTalent){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const sd=s.prog[slot];if(!sd)return;
   const t=role==='cohost'?slotTalentB(sd):sd.talent;if(!t)return;
+  if(wlTalentHasExitIntent(t)){
+    showToast(`${t.name} isn't interested in a new deal — they'll leave when the current arrangement ends (or sooner if morale collapses).`,'warn',9500);
+    return;
+  }
   if(t._contractExtendY===G.year&&t._contractExtendP===G.period){
     showToast('You already extended this contract this period — try again next period.','warn');
     return;
@@ -38582,6 +39120,7 @@ function doBonus(sid, slot, amount, talentRole, fromManageTalent){
   if(MP.mode==='live'){if(!G._playerCash)G._playerCash={};G._playerCash[MP.playerId]=G.cash;MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash});}
   const boost=Math.round(rnd(15,20));
   t.morale=Math.min(100,t.morale+boost);
+  try{if(typeof wlTalentRetention!=='undefined')wlTalentRetention.applyBonus(t,boost);}catch(_e){}
   const roleBit=role==='cohost'?' (co-host)':'';
   G.news.unshift({v:'LOW',t:`💰 ${t.name} receives ${f$(amount)} bonus${roleBit} at ${s.callLetters} — morale up ${boost} pts.`,y:G.year,p:G.period});
   MP.action('bonus',{sid,slot,amount,boost,talentRole:role==='cohost'?'cohost':undefined,bonusYear:G.year,bonusPeriod:G.period});
@@ -38767,9 +39306,11 @@ function maybeShowPendingTroubleModal(){
 function wlContractAttentionExpiringAndReneg(){
   const expiring=myPS().flatMap(s=>Object.entries(s.prog).flatMap(([sl,sd])=>{
     const bits=[];
-    if(sd?.talent&&(sd.talent.cyr||0)<=0)bits.push(`${s.callLetters} ${SL[sl]} (${sd.talent.name})`);
+    if(sd?.talent&&wlTalentHasExitIntent(sd.talent))bits.push(`${s.callLetters} ${SL[sl]} (${sd.talent.name}) — won't re-sign`);
+    else if(sd?.talent&&(sd.talent.cyr||0)<=0)bits.push(`${s.callLetters} ${SL[sl]} (${sd.talent.name})`);
     const chEx=slotTalentB(sd);
-    if(chEx&&(chEx.cyr||0)<=0)bits.push(`${s.callLetters} ${SL[sl]} co-host (${chEx.name})`);
+    if(chEx&&wlTalentHasExitIntent(chEx))bits.push(`${s.callLetters} ${SL[sl]} co-host (${chEx.name}) — won't re-sign`);
+    else if(chEx&&(chEx.cyr||0)<=0)bits.push(`${s.callLetters} ${SL[sl]} co-host (${chEx.name})`);
     return bits;
   }));
   const daypartReneg=myPS().flatMap(s=>Object.entries(s.prog)
@@ -39013,10 +39554,11 @@ function rStns(){
       const poachHere=rp&&rp.slot===k&&rp.talentId===t.id;
       const rivPo=poachHere?G.stations.find(st=>st.id===rp.rivalId):null;
       const poachTitle=poachHere?`${rivPo?rivPo.callLetters:'Rival'} offered ${f$(rp.offerSalary)}/yr — open Contract to match or they may leave next period.`:'';
-      const cyrCls=slotRen?'cyr-warn':cyr<=0?'cyr-exp':cyr<=0.5?'cyr-warn':'cyr-ok';
-      const cyrLbl=slotRen?'MOVED':cyr<=0?'EXP':cyr<=0.5?'EXP⬆':'';
+      const wantsOut=wlTalentHasExitIntent(t);
+      const cyrCls=wantsOut?'cyr-exp':slotRen?'cyr-warn':cyr<=0?'cyr-exp':cyr<=0.5?'cyr-warn':'cyr-ok';
+      const cyrLbl=wantsOut?'OUT':slotRen?'MOVED':cyr<=0?'EXP':cyr<=0.5?'EXP⬆':'';
       const cyrLblUi=cyrStatusDisplay(cyrLbl);
-      let cyrTitle=slotRen?`Moved dayparts — salary must match ${lblUi} (new deal required)`:(cyr<=0?'Contract expired — click name to negotiate now':cyr<=0.5?'Contract expires next period — click name to extend':'');
+      let cyrTitle=wantsOut?'Won\'t re-sign — open Contract to see options (fire or let them finish the run)':slotRen?`Moved dayparts — salary must match ${lblUi} (new deal required)`:(cyr<=0?'Contract expired — click name to negotiate now':cyr<=0.5?'Contract expires next period — click name to extend':'');
       if(poachHere&&cyrTitle)cyrTitle+=' · '+poachTitle;
       else if(poachHere)cyrTitle=poachTitle;
       const mor=t.morale||65;
@@ -39029,7 +39571,7 @@ function rStns(){
         :'<span class="sl-cell-cyr" aria-hidden="true"></span>';
       const _hostRowTip=rosterHtmlEsc(callDisplay(s)+' · '+lblUi+': click the host or Contract to manage pay, renewals, morale, and moves.');
       const payPd=`${f$Pd(t.salary)}/yr`;
-      const payV=lineupContractVerboseUi(slotRen,cyr,poachHere);
+      const payV=lineupContractVerboseUi(slotRen,cyr,poachHere,wantsOut);
       const payVerbCls=payV.kind?` sl-pay-verbose--${payV.kind}`:'';
       /* Verbose contract line is a grid sibling on mobile (see #wl-play .sl-pay-verbose) — not nested under .sl-cell-pay, so we avoid display:contents (Safari grid bugs). */
       const payBlock=payV.text
@@ -39042,13 +39584,14 @@ function rStns(){
       const chMor=ch.morale||65;
       const chTalR=Math.round(ch.quality||0);
       const chStar=ch.superstar===true?'★ ':'';
-      const chCyrCls=chCyr<=0?'cyr-exp':chCyr<=0.5?'cyr-warn':'cyr-ok';
-      const chCyrLbl=chCyr<=0?'EXP':chCyr<=0.5?'EXP⬆':'';
-      const chCyrTitle=chCyr<=0?'Co-host contract expired — extend or they may leave.':chCyr<=0.5?'Co-host contract expires next period.':'';
+      const chWantsOut=wlTalentHasExitIntent(ch);
+      const chCyrCls=chWantsOut?'cyr-exp':chCyr<=0?'cyr-exp':chCyr<=0.5?'cyr-warn':'cyr-ok';
+      const chCyrLbl=chWantsOut?'OUT':chCyr<=0?'EXP':chCyr<=0.5?'EXP⬆':'';
+      const chCyrTitle=chWantsOut?'Co-host won\'t re-sign — planning to leave.':chCyr<=0?'Co-host contract expired — extend or they may leave.':chCyr<=0.5?'Co-host contract expires next period.':'';
       const chCyrCell=chCyrLbl?`<span class="sl-cell-cyr ${chCyrCls}" title="${rosterHtmlEsc(chCyrTitle)}">${cyrStatusDisplay(chCyrLbl)}</span>`:'<span class="sl-cell-cyr" aria-hidden="true"></span>';
       const _chRowTip=rosterHtmlEsc(lblUi+' — co-host: second mic in the same day part. Click to open the co-host deal.');
       const chPayPd=`${f$Pd(ch.salary)}/yr`;
-      const chPayV=lineupCoHostContractVerboseUi(chCyr);
+      const chPayV=lineupCoHostContractVerboseUi(chCyr,chWantsOut);
       const chPayVerbCls=chPayV.kind?` sl-pay-verbose--${chPayV.kind}`:'';
       const chPayBlock=chPayV.text
         ?`<span class="sl-cell-pay slsal sl-cell-pay--split"><span class="sl-pay-amt">${chPayPd}</span></span><span class="sl-pay-verbose${chPayVerbCls}">${chPayV.text}</span>`

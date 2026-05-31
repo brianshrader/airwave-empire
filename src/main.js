@@ -12,9 +12,14 @@ import {
 } from './clerkClientInit.js';
 import { marketIdsForClerkPlanSlug, syncPlanMarkets, PRO_ONLY_MARKET_IDS } from './billingEntitlements.js';
 import { BILLING_PRICE_SUMMARY_LINE } from './billingPriceLabels.js';
+import { gameServerApiUrl } from './gameServerApiOrigin.js';
 
 if (typeof window !== 'undefined') {
   window.__WL_BILLING_PRICE_SUMMARY_LINE = BILLING_PRICE_SUMMARY_LINE;
+}
+/** Vite dev: expose DIAG_ONLY playtest markets (e.g. Phoenix) in scenario picker — see legacy.js `DEV_PLAYTEST_MARKET_IDS`. */
+if (import.meta.env.DEV && typeof window !== 'undefined') {
+  window.__WL_DEV_PLAYTEST_MARKETS__ = true;
 }
 
 initAnalyticsClient();
@@ -139,10 +144,16 @@ function showGuestSessionFailedGate() {
   const msg = document.getElementById('wl-beta-auth-msg');
   const title = document.getElementById('wl-beta-auth-title');
   const solo = document.getElementById('wl-solo-clerk-mount');
+  const failCode = window.__WL_GUEST_BOOT_FAIL_CODE;
   if (title) title.textContent = 'Could not start instant play';
   if (msg) {
+    const devHint =
+      failCode === 'guest_unconfigured'
+        ? 'Guest sessions need <code style="color:var(--amb)">GUEST_JWT_SECRET</code> or <code style="color:var(--amb)">CLERK_SECRET_KEY</code> in your server <code>.env</code> (or use <code style="color:var(--amb)">WL_ALLOW_MP_AUTH_BYPASS=1</code> for local dev).<br><br>'
+        : 'Local dev: run <code style="color:var(--amb)">npm run dev</code> (Node on :3000) alongside <code style="color:var(--amb)">npm run client:dev</code> (Vite on :5173), then refresh. Production: set <code style="color:var(--amb)">VITE_GAME_SERVER_URL</code> or <code style="color:var(--amb)">wl-game-server-url</code> to your API origin.<br><br>';
     msg.innerHTML =
-      'The server could not issue a guest session. Check that <code style="color:var(--amb)">VITE_GAME_SERVER_URL</code> / <code style="color:var(--amb)">wl-game-server-url</code> points at your Node API, then refresh.<br><br>' +
+      'The server could not issue a guest session. ' +
+      devHint +
       '<span style="color:var(--mut);font-size:14px">Or continue with a free account:</span>';
   }
   if (solo) {
@@ -157,14 +168,9 @@ function showGuestSessionFailedGate() {
 /** Guest HTML mints session before Clerk loads so legacy never boots without a bearer token for AI routes. */
 let guestSessionReady = false;
 if (typeof window !== 'undefined' && wlGuestOnboardingMeta()) {
-  const base = (gameServerUrl || '').replace(/\/$/, '');
   window.__WL_GUEST_BOOT_PROMISE = (async () => {
-    if (!base) {
-      console.warn('[guest] Set VITE_GAME_SERVER_URL or wl-game-server-url meta so /api/guest/session can be reached.');
-      return false;
-    }
     try {
-      const r = await fetch(`${base}/api/guest/session`, {
+      const r = await fetch(gameServerApiUrl('/api/guest/session'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: '{}',
@@ -172,6 +178,7 @@ if (typeof window !== 'undefined' && wlGuestOnboardingMeta()) {
       const j = await r.json().catch(() => ({}));
       if (!r.ok || !j.token) {
         console.warn('[guest] Session mint failed:', j);
+        if (j.code) window.__WL_GUEST_BOOT_FAIL_CODE = j.code;
         return false;
       }
       try {

@@ -16,6 +16,8 @@ import { effectivePriceLabelForKey } from './billingPriceLabels.js';
 
 const publishableKey = import.meta.env?.VITE_CLERK_PUBLISHABLE_KEY?.trim?.() ?? '';
 
+const WL_GUEST_TUTORIAL_AUTOSTART_URL = '/play-guest.html?scenario=tutorial_turnaround&autostart=1';
+
 initAnalyticsClient();
 initMetaPixel();
 
@@ -130,9 +132,14 @@ function updateIndexNavPrimaryCta(clerk) {
     el.textContent = 'Play now';
     el.setAttribute('data-wl-cta-label', 'play_now');
   } else {
-    el.setAttribute('href', '/play-guest.html');
+    el.setAttribute('href', WL_GUEST_TUTORIAL_AUTOSTART_URL);
     el.textContent = 'Play free';
-    el.setAttribute('data-wl-cta-label', 'play_free_now');
+    el.setAttribute('data-wl-cta-label', 'Play Free Now');
+    el.setAttribute('data-wl-cta-id', 'header_play_free');
+    el.setAttribute('data-wl-cta-placement', 'landing_header');
+    el.setAttribute('data-wl-cta-dest', 'guest_tutorial_turnaround');
+    el.setAttribute('data-wl-funnel', 'guest_tutorial');
+    el.setAttribute('data-wl-no-signup', 'true');
   }
 }
 
@@ -141,10 +148,20 @@ function wireLandingCtas() {
     el.addEventListener('click', () => {
       try {
         const locationId = el.getAttribute('data-wl-cta-location') || 'unknown';
-        const label = el.getAttribute('data-wl-cta-label') || el.textContent?.trim?.() || 'cta';
+        const ctaLabel = el.getAttribute('data-wl-cta-label') || el.textContent?.trim?.() || 'cta';
         let destination = el.getAttribute('href') || el.getAttribute('data-wl-cta-dest') || '';
         if (destination.length > 120) destination = destination.slice(0, 120);
-        captureEvent('cta_clicked', { location: locationId, label: label.slice(0, 80), destination });
+        captureEvent('cta_clicked', {
+          location: locationId,
+          label: ctaLabel.slice(0, 80),
+          destination,
+          cta_id: (el.getAttribute('data-wl-cta-id') || '').slice(0, 48),
+          cta_label: ctaLabel.slice(0, 80),
+          cta_placement: (el.getAttribute('data-wl-cta-placement') || locationId).slice(0, 48),
+          cta_destination: (el.getAttribute('data-wl-cta-dest') || destination).slice(0, 120),
+          funnel: (el.getAttribute('data-wl-funnel') || '').slice(0, 32),
+          no_signup: el.getAttribute('data-wl-no-signup') === 'true',
+        });
       } catch (_e) {}
     });
   });

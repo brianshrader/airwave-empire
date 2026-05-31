@@ -1,0 +1,821 @@
+{
+  "recordedAt": "2026-05-22T13:37:49.451Z",
+  "openingRuns": 100,
+  "regressionRuns": 25,
+  "seed": 20260523,
+  "timingMs": 203162,
+  "variants": {
+    "A": {
+      "description": "Baseline (production MARKET_BP_PATCH + phoenixDiagOpeningOqMult)",
+      "opening": {
+        "n": 100,
+        "hitsPresenceRate": 0,
+        "morShareMedian": 0.430193315,
+        "top2Median": 0.457117665,
+        "musicShareMedian": 0.863089805,
+        "countryShareMean": 0.20589166930000008,
+        "soulShareMean": 0.16889090369999998,
+        "newsShareMean": 0.11708214069999996,
+        "hitLeaderRunnerUpRate": 0,
+        "leaderHist": {
+          "COUNTRY": 50,
+          "MOR": 50
+        },
+        "verdict": "FAIL"
+      },
+      "regression": {
+        "1985": {
+          "n": 25,
+          "spanishShare": 0,
+          "rockShare": 0.2033204944,
+          "chrShare": 0.16107850459999998,
+          "countryShare": 0.0947196016,
+          "spokenShare": 0.09862256400000001,
+          "leaderHist": {
+            "TOP40": 25
+          }
+        },
+        "1995": {
+          "n": 25,
+          "spanishShare": 0.07977110879999999,
+          "rockShare": 0.26586288680000003,
+          "chrShare": 0.12741279500000002,
+          "countryShare": 0.06930499120000003,
+          "spokenShare": 0.09093504680000003,
+          "leaderHist": {
+            "NEWS_TALK": 2,
+            "TOP40": 17,
+            "URBAN_CONTEMP": 1,
+            "CLASSIC_ROCK": 2,
+            "ADULT_CONTEMP": 3
+          }
+        },
+        "2005": {
+          "n": 25,
+          "spanishShare": 0.2163965936,
+          "rockShare": 0.19026597119999994,
+          "chrShare": 0.102662491,
+          "countryShare": 0.0742794312,
+          "spokenShare": 0.11210647959999999,
+          "leaderHist": {
+            "SPANISH": 20,
+            "NEWS_TALK": 4,
+            "ADULT_CONTEMP": 1
+          }
+        },
+        "2026": {
+          "n": 25,
+          "spanishShare": 0.24545419600000007,
+          "rockShare": 0.13881347719999998,
+          "chrShare": 0.0862599568,
+          "countryShare": 0.09578876840000002,
+          "spokenShare": 0.07449811079999999,
+          "leaderHist": {
+            "SPANISH": 24,
+            "ADULT_CONTEMP": 1
+          }
+        }
+      },
+      "controls": {
+        "losangeles1970": {
+          "n": 50,
+          "hitsPresenceRate": 1,
+          "morShareMedian": 0.1087092,
+          "top2Median": 0.25664556,
+          "musicShareMedian": 0.911056345,
+          "countryShareMean": 0.0079728266,
+          "soulShareMean": 0.2482859328,
+          "newsShareMean": 0.07533443399999999,
+          "hitLeaderRunnerUpRate": 1,
+          "leaderHist": {
+            "TOP40": 32,
+            "SOUL_RNB": 18
+          },
+          "verdict": null
+        },
+        "nashville1985": {
+          "n": 50,
+          "spanishShare": 0,
+          "rockShare": 0.18471328319999994,
+          "chrShare": 0.17423599139999996,
+          "countryShare": 0.14509234959999998,
+          "spokenShare": 0.1628356868,
+          "leaderHist": {
+            "NEWS_TALK": 50
+          }
+        }
+      }
+    },
+    "B": {
+      "description": "BP slot 0: MOR→TOP40 strong (keep other Phoenix patches)",
+      "opening": {
+        "n": 100,
+        "hitsPresenceRate": 1,
+        "morShareMedian": 0.20540317,
+        "top2Median": 0.438985325,
+        "musicShareMedian": 0.846556845,
+        "countryShareMean": 0.2122758923999999,
+        "soulShareMean": 0.19175666480000003,
+        "newsShareMean": 0.1312082196,
+        "hitLeaderRunnerUpRate": 0.5,
+        "leaderHist": {
+          "MOR": 50,
+          "COUNTRY": 50
+        },
+        "verdict": "PASS"
+      },
+      "regression": {
+        "1985": {
+          "n": 25,
+          "spanishShare": 0,
+          "rockShare": 0.22971077719999994,
+          "chrShare": 0.0810310756,
+          "countryShare": 0.10381616519999999,
+          "spokenShare": 0.1202133804,
+          "leaderHist": {
+            "NEWS_TALK": 12,
+            "ADULT_CONTEMP": 11,
+            "HOT_AC": 2
+          }
+        },
+        "1995": {
+          "n": 25,
+          "spanishShare": 0.08859258440000001,
+          "rockShare": 0.28232317199999996,
+          "chrShare": 0.0464052648,
+          "countryShare": 0.07000698400000002,
+          "spokenShare": 0.097701,
+          "leaderHist": {
+            "URBAN_CONTEMP": 6,
+            "NEWS_TALK": 6,
+            "ADULT_CONTEMP": 9,
+            "HOT_AC": 2,
+            "COUNTRY": 1,
+            "CLASSIC_ROCK": 1
+          }
+        },
+        "2005": {
+          "n": 25,
+          "spanishShare": 0.23257329640000005,
+          "rockShare": 0.20960119919999992,
+          "chrShare": 0.036197485999999994,
+          "countryShare": 0.0635118612,
+          "spokenShare": 0.10354516720000001,
+          "leaderHist": {
+            "SPANISH": 20,
+            "NEWS_TALK": 4,
+            "URBAN_CONTEMP": 1
+          }
+        },
+        "2026": {
+          "n": 25,
+          "spanishShare": 0.25880712400000006,
+          "rockShare": 0.16168495600000005,
+          "chrShare": 0.0414519486,
+          "countryShare": 0.08602981080000001,
+          "spokenShare": 0.07320410840000002,
+          "leaderHist": {
+            "SPANISH": 25
+          }
+        }
+      },
+      "controls": {
+        "losangeles1970": {
+          "n": 50,
+          "hitsPresenceRate": 1,
+          "morShareMedian": 0.10874845999999999,
+          "top2Median": 0.25742899,
+          "musicShareMedian": 0.9114237349999998,
+          "countryShareMean": 0.0081745886,
+          "soulShareMean": 0.24953138220000004,
+          "newsShareMean": 0.07534307680000002,
+          "hitLeaderRunnerUpRate": 1,
+          "leaderHist": {
+            "SOUL_RNB": 22,
+            "TOP40": 28
+          },
+          "verdict": null
+        },
+        "nashville1985": {
+          "n": 50,
+          "spanishShare": 0,
+          "rockShare": 0.1854165868,
+          "chrShare": 0.1739038306,
+          "countryShare": 0.1444486516,
+          "spokenShare": 0.1615978368,
+          "leaderHist": {
+            "NEWS_TALK": 50
+          }
+        }
+      }
+    },
+    "C": {
+      "description": "Opening shape 1970–78: boost hits AM/FM, trim MOR AM",
+      "opening": {
+        "n": 100,
+        "hitsPresenceRate": 0,
+        "morShareMedian": 0.40432132,
+        "top2Median": 0.4382836,
+        "musicShareMedian": 0.84916869,
+        "countryShareMean": 0.20687083350000005,
+        "soulShareMean": 0.1719713104,
+        "newsShareMean": 0.12646709920000007,
+        "hitLeaderRunnerUpRate": 0,
+        "leaderHist": {
+          "MOR": 50,
+          "COUNTRY": 50
+        },
+        "verdict": "FAIL"
+      },
+      "regression": {
+        "1985": {
+          "n": 25,
+          "spanishShare": 0,
+          "rockShare": 0.20113626120000003,
+          "chrShare": 0.16099378720000004,
+          "countryShare": 0.097120424,
+          "spokenShare": 0.09709182479999999,
+          "leaderHist": {
+            "TOP40": 25
+          }
+        },
+        "1995": {
+          "n": 25,
+          "spanishShare": 0.08300128920000001,
+          "rockShare": 0.25559181,
+          "chrShare": 0.1258640734,
+          "countryShare": 0.06782465559999999,
+          "spokenShare": 0.10032458200000002,
+          "leaderHist": {
+            "TOP40": 15,
+            "NEWS_TALK": 3,
+            "ADULT_CONTEMP": 5,
+            "CLASSIC_ROCK": 1,
+            "COUNTRY": 1
+          }
+        },
+        "2005": {
+          "n": 25,
+          "spanishShare": 0.2074207996,
+          "rockShare": 0.19800840960000002,
+          "chrShare": 0.1022365888,
+          "countryShare": 0.07137642679999999,
+          "spokenShare": 0.10620508,
+          "leaderHist": {
+            "SPANISH": 19,
+            "NEWS_TALK": 5,
+            "TOP40": 1
+          }
+        },
+        "2026": {
+          "n": 25,
+          "spanishShare": 0.24889914559999998,
+          "rockShare": 0.1449693128,
+          "chrShare": 0.0902243992,
+          "countryShare": 0.0923695276,
+          "spokenShare": 0.06391253440000001,
+          "leaderHist": {
+            "SPANISH": 25
+          }
+        }
+      },
+      "controls": {
+        "losangeles1970": {
+          "n": 50,
+          "hitsPresenceRate": 1,
+          "morShareMedian": 0.10785633,
+          "top2Median": 0.253406275,
+          "musicShareMedian": 0.91226564,
+          "countryShareMean": 0.007886482199999998,
+          "soulShareMean": 0.25119299200000006,
+          "newsShareMean": 0.07480194540000001,
+          "hitLeaderRunnerUpRate": 1,
+          "leaderHist": {
+            "SOUL_RNB": 23,
+            "TOP40": 27
+          },
+          "verdict": null
+        },
+        "nashville1985": {
+          "n": 50,
+          "spanishShare": 0,
+          "rockShare": 0.1851883322,
+          "chrShare": 0.175732182,
+          "countryShare": 0.14325004639999997,
+          "spokenShare": 0.1622470946,
+          "leaderHist": {
+            "NEWS_TALK": 50
+          }
+        }
+      }
+    },
+    "D": {
+      "description": "BP slot 0 TOP40 strong + slot 4 MOR dominant→moderate",
+      "opening": {
+        "n": 100,
+        "hitsPresenceRate": 1,
+        "morShareMedian": 0.15123796,
+        "top2Median": 0.428816285,
+        "musicShareMedian": 0.82016291,
+        "countryShareMean": 0.2161728655000001,
+        "soulShareMean": 0.19769723080000012,
+        "newsShareMean": 0.15023269159999994,
+        "hitLeaderRunnerUpRate": 0.5,
+        "leaderHist": {
+          "TOP40": 50,
+          "COUNTRY": 50
+        },
+        "verdict": "PASS"
+      },
+      "regression": {
+        "1985": {
+          "n": 25,
+          "spanishShare": 0,
+          "rockShare": 0.23588911999999998,
+          "chrShare": 0.0822971124,
+          "countryShare": 0.10531798839999999,
+          "spokenShare": 0.08446858679999998,
+          "leaderHist": {
+            "ADULT_CONTEMP": 25
+          }
+        },
+        "1995": {
+          "n": 25,
+          "spanishShare": 0.0936154964,
+          "rockShare": 0.2756725496,
+          "chrShare": 0.0460830684,
+          "countryShare": 0.073077582,
+          "spokenShare": 0.0782483108,
+          "leaderHist": {
+            "URBAN_CONTEMP": 2,
+            "ADULT_CONTEMP": 14,
+            "CLASSIC_ROCK": 5,
+            "COUNTRY": 1,
+            "NEWS_TALK": 1,
+            "HOT_AC": 2
+          }
+        },
+        "2005": {
+          "n": 25,
+          "spanishShare": 0.2316765944,
+          "rockShare": 0.21209398120000003,
+          "chrShare": 0.038516356999999994,
+          "countryShare": 0.0671316176,
+          "spokenShare": 0.09505793000000001,
+          "leaderHist": {
+            "SPANISH": 24,
+            "NEWS_TALK": 1
+          }
+        },
+        "2026": {
+          "n": 25,
+          "spanishShare": 0.24769007759999997,
+          "rockShare": 0.16784682039999999,
+          "chrShare": 0.043785599599999996,
+          "countryShare": 0.07598992920000003,
+          "spokenShare": 0.054225333199999996,
+          "leaderHist": {
+            "SPANISH": 24,
+            "ADULT_CONTEMP": 1
+          }
+        }
+      },
+      "controls": {
+        "losangeles1970": {
+          "n": 50,
+          "hitsPresenceRate": 1,
+          "morShareMedian": 0.108023145,
+          "top2Median": 0.257360525,
+          "musicShareMedian": 0.910781795,
+          "countryShareMean": 0.007781652999999999,
+          "soulShareMean": 0.24824197419999997,
+          "newsShareMean": 0.07639010759999999,
+          "hitLeaderRunnerUpRate": 1,
+          "leaderHist": {
+            "TOP40": 27,
+            "SOUL_RNB": 23
+          },
+          "verdict": null
+        },
+        "nashville1985": {
+          "n": 50,
+          "spanishShare": 0,
+          "rockShare": 0.18386214900000003,
+          "chrShare": 0.17523098219999997,
+          "countryShare": 0.14555864980000002,
+          "spokenShare": 0.1613512042,
+          "leaderHist": {
+            "NEWS_TALK": 50
+          }
+        }
+      }
+    },
+    "E": {
+      "description": "Combined D + C (minimal dual patch)",
+      "opening": {
+        "n": 100,
+        "hitsPresenceRate": 1,
+        "morShareMedian": 0.133120695,
+        "top2Median": 0.440204765,
+        "musicShareMedian": 0.820792615,
+        "countryShareMean": 0.219581141,
+        "soulShareMean": 0.20121344890000004,
+        "newsShareMean": 0.1522076085,
+        "hitLeaderRunnerUpRate": 0.5,
+        "leaderHist": {
+          "TOP40": 50,
+          "COUNTRY": 50
+        },
+        "verdict": "PASS"
+      },
+      "regression": {
+        "1985": {
+          "n": 25,
+          "spanishShare": 0,
+          "rockShare": 0.23378561399999995,
+          "chrShare": 0.0830322256,
+          "countryShare": 0.10927354480000001,
+          "spokenShare": 0.0842837044,
+          "leaderHist": {
+            "ADULT_CONTEMP": 24,
+            "HOT_AC": 1
+          }
+        },
+        "1995": {
+          "n": 25,
+          "spanishShare": 0.09172174319999998,
+          "rockShare": 0.2785902779999999,
+          "chrShare": 0.0482038666,
+          "countryShare": 0.0669769876,
+          "spokenShare": 0.07749507119999999,
+          "leaderHist": {
+            "HOT_AC": 6,
+            "ADULT_CONTEMP": 7,
+            "CLASSIC_ROCK": 2,
+            "URBAN_CONTEMP": 8,
+            "NEWS_TALK": 2
+          }
+        },
+        "2005": {
+          "n": 25,
+          "spanishShare": 0.2320956548,
+          "rockShare": 0.22012140440000003,
+          "chrShare": 0.0405568092,
+          "countryShare": 0.05575229240000001,
+          "spokenShare": 0.083124334,
+          "leaderHist": {
+            "SPANISH": 21,
+            "NEWS_TALK": 1,
+            "ADULT_CONTEMP": 3
+          }
+        },
+        "2026": {
+          "n": 25,
+          "spanishShare": 0.27063362440000005,
+          "rockShare": 0.15768269559999998,
+          "chrShare": 0.043992410800000006,
+          "countryShare": 0.07504166720000001,
+          "spokenShare": 0.06416363080000002,
+          "leaderHist": {
+            "SPANISH": 25
+          }
+        }
+      },
+      "controls": {
+        "losangeles1970": {
+          "n": 50,
+          "hitsPresenceRate": 1,
+          "morShareMedian": 0.107847535,
+          "top2Median": 0.25516216,
+          "musicShareMedian": 0.9102987550000001,
+          "countryShareMean": 0.0083717088,
+          "soulShareMean": 0.24967349699999997,
+          "newsShareMean": 0.07492926140000002,
+          "hitLeaderRunnerUpRate": 1,
+          "leaderHist": {
+            "TOP40": 28,
+            "SOUL_RNB": 22
+          },
+          "verdict": null
+        },
+        "nashville1985": {
+          "n": 50,
+          "spanishShare": 0,
+          "rockShare": 0.18600886339999995,
+          "chrShare": 0.17350614099999995,
+          "countryShare": 0.14544242440000002,
+          "spokenShare": 0.1618493684,
+          "leaderHist": {
+            "NEWS_TALK": 50
+          }
+        }
+      }
+    }
+  },
+  "trace": {
+    "effectiveBp": [
+      {
+        "idx": 0,
+        "spec": {
+          "type": "AM",
+          "fmt": "MOR",
+          "pw": "50kw",
+          "str": "strong"
+        }
+      },
+      {
+        "idx": 1,
+        "spec": {
+          "type": "AM",
+          "fmt": "NEWS_TALK",
+          "pw": "50kw",
+          "str": "moderate"
+        }
+      },
+      {
+        "idx": 2,
+        "spec": {
+          "type": "AM",
+          "fmt": "COUNTRY",
+          "pw": "50kw",
+          "str": "dominant"
+        }
+      },
+      {
+        "idx": 3,
+        "spec": {
+          "type": "AM",
+          "fmt": "SOUL_RNB",
+          "pw": "10kw",
+          "str": "strong"
+        }
+      },
+      {
+        "idx": 4,
+        "spec": {
+          "type": "AM",
+          "fmt": "MOR",
+          "pw": "50kw",
+          "str": "dominant"
+        }
+      },
+      {
+        "idx": 5,
+        "spec": {
+          "type": "AM",
+          "fmt": "NEWS_TALK",
+          "pw": "50kw",
+          "str": "emerging"
+        }
+      },
+      {
+        "idx": 6,
+        "spec": {
+          "type": "AM",
+          "fmt": "GOSPEL",
+          "pw": "5kw",
+          "str": "niche"
+        }
+      },
+      {
+        "idx": 7,
+        "spec": {
+          "type": "FM",
+          "fmt": "ALBUM_ROCK",
+          "pw": "100kw",
+          "str": "emerging"
+        }
+      },
+      {
+        "idx": 8,
+        "spec": {
+          "type": "FM",
+          "fmt": "ADULT_CONTEMP",
+          "pw": "50kw",
+          "str": "moderate"
+        }
+      },
+      {
+        "idx": 9,
+        "spec": {
+          "type": "FM",
+          "fmt": "ALBUM_ROCK",
+          "pw": "25kw",
+          "str": "moderate"
+        }
+      },
+      {
+        "idx": 10,
+        "spec": {
+          "type": "AM",
+          "fmt": "ADULT_STANDARDS",
+          "pw": "50kw",
+          "str": "moderate"
+        }
+      },
+      {
+        "idx": 11,
+        "spec": {
+          "type": "AM",
+          "fmt": "SOUL_RNB",
+          "pw": "5kw",
+          "str": "moderate"
+        }
+      },
+      {
+        "idx": 12,
+        "spec": {
+          "type": "AM",
+          "fmt": "GOSPEL",
+          "pw": "5kw",
+          "str": "niche"
+        }
+      },
+      {
+        "idx": 13,
+        "spec": {
+          "type": "AM",
+          "fmt": "COUNTRY",
+          "pw": "DA",
+          "str": "moderate"
+        }
+      },
+      {
+        "idx": 14,
+        "spec": {
+          "type": "FM",
+          "fmt": "BEAUTIFUL_MUSIC",
+          "pw": "50kw",
+          "str": "moderate"
+        }
+      },
+      {
+        "idx": 15,
+        "spec": {
+          "type": "FM",
+          "fmt": "ADULT_CONTEMP",
+          "pw": "50kw",
+          "str": "moderate"
+        }
+      },
+      {
+        "idx": 16,
+        "spec": {
+          "type": "FM",
+          "fmt": "ALBUM_ROCK",
+          "pw": "50kw",
+          "str": "moderate"
+        }
+      },
+      {
+        "idx": 17,
+        "spec": {
+          "type": "AM",
+          "fmt": "GOSPEL",
+          "pw": "DA",
+          "str": "weak"
+        }
+      },
+      {
+        "idx": 18,
+        "spec": {
+          "type": "FM",
+          "fmt": "HOT_AC",
+          "pw": "50kw",
+          "str": "moderate"
+        }
+      }
+    ],
+    "topBook": [
+      {
+        "rank": 1,
+        "call": "",
+        "band": "AM",
+        "fmt": "MOR",
+        "share": 0.27295791,
+        "str": "dominant",
+        "oq": 69
+      },
+      {
+        "rank": 2,
+        "call": "",
+        "band": "AM",
+        "fmt": "MOR",
+        "share": 0.21421344,
+        "str": "strong",
+        "oq": 53
+      },
+      {
+        "rank": 3,
+        "call": "",
+        "band": "AM",
+        "fmt": "COUNTRY",
+        "share": 0.19042873,
+        "str": "dominant",
+        "oq": 68
+      },
+      {
+        "rank": 4,
+        "call": "",
+        "band": "AM",
+        "fmt": "SOUL_RNB",
+        "share": 0.15616364,
+        "str": "strong",
+        "oq": 57
+      },
+      {
+        "rank": 5,
+        "call": "",
+        "band": "AM",
+        "fmt": "NEWS_TALK",
+        "share": 0.05188843,
+        "str": "moderate",
+        "oq": 51
+      },
+      {
+        "rank": 6,
+        "call": "",
+        "band": "AM",
+        "fmt": "NEWS_TALK",
+        "share": 0.04595358,
+        "str": "emerging",
+        "oq": 38
+      },
+      {
+        "rank": 7,
+        "call": "",
+        "band": "FM",
+        "fmt": "ADULT_CONTEMP",
+        "share": 0.02961386,
+        "str": "moderate",
+        "oq": 38
+      },
+      {
+        "rank": 8,
+        "call": "",
+        "band": "AM",
+        "fmt": "GOSPEL",
+        "share": 0.01815189,
+        "str": "niche",
+        "oq": 30
+      },
+      {
+        "rank": 9,
+        "call": "",
+        "band": "FM",
+        "fmt": "PUBLIC_ECLECTIC",
+        "share": 0.00815476,
+        "str": "moderate",
+        "oq": 70
+      },
+      {
+        "rank": 10,
+        "call": "",
+        "band": "FM",
+        "fmt": "PUBLIC_NEWS",
+        "share": 0.00807925,
+        "str": "moderate",
+        "oq": 72
+      },
+      {
+        "rank": 11,
+        "call": "",
+        "band": "FM",
+        "fmt": "PUBLIC_CLASSICAL",
+        "share": 0.00439451,
+        "str": "moderate",
+        "oq": 68
+      }
+    ],
+    "fmtCounts": {
+      "MOR": 2,
+      "NEWS_TALK": 2,
+      "COUNTRY": 1,
+      "SOUL_RNB": 1,
+      "GOSPEL": 1,
+      "ADULT_CONTEMP": 1,
+      "PUBLIC_NEWS": 1,
+      "PUBLIC_CLASSICAL": 1,
+      "PUBLIC_ECLECTIC": 1
+    }
+  },
+  "rootCause": {
+    "summary": "Phoenix MARKET_BP_PATCH replaces national AM Top 40 anchors (BP 0–1) with MOR+NEWS_TALK; national BP 4 remains MOR dominant; FM Top 40 (BP 18) deferred; tier inject blocks TOP40/HOT_AC; phoenixDiagOpeningOqMult penalizes hits (AM×0.9, FM×0.84).",
+    "paths": [
+      "MARKET_BP_PATCH.phoenix[0]=MOR strong (was AM TOP40 dominant)",
+      "MARKET_BP_PATCH.phoenix[1]=NEWS_TALK moderate (was AM TOP40 strong)",
+      "BP[4] national AM MOR dominant (unpatched)",
+      "phoenixDiagTierInjectFormatBlocked: TOP40,HOT_AC,...",
+      "phoenixDiagOpeningOqMult hits penalty",
+      "ATLANTA_1970_DEFERRED: FM TOP40 bp 18 off-air at open"
+    ]
+  },
+  "recommendation": {
+    "variant": "B",
+    "description": "BP slot 0: MOR→TOP40 strong (keep other Phoenix patches)",
+    "shipReady": true,
+    "filesIfShipped": [
+      "src/legacy.js — MARKET_BP_PATCH.phoenix"
+    ]
+  }
+}

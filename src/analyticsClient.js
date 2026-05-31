@@ -181,7 +181,8 @@ export function initAnalyticsClient() {
       api_host: host,
       persistence: 'localStorage+cookie',
       autocapture: false,
-      capture_pageview: false,
+      /** PostHog-recommended defaults: automatic $pageview (history API on SPAs, load on static pages). */
+      defaults: '2026-01-30',
       capture_pageleave: false,
       disable_session_recording: true,
     });

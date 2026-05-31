@@ -1,0 +1,383 @@
+{
+  "generatedAt": "2026-05-31T19:33:13.685Z",
+  "config": {
+    "runs": 4,
+    "seed": 20260531,
+    "markets": [
+      "newyork",
+      "losangeles",
+      "chicago",
+      "seattle",
+      "sanfrancisco",
+      "atlanta",
+      "nashville",
+      "wichita"
+    ],
+    "startYears": [
+      1970,
+      1985,
+      2000
+    ]
+  },
+  "runs": {
+    "total": 192,
+    "ok": 192,
+    "failed": 0,
+    "failures": []
+  },
+  "commercialQualityByDecade": {
+    "1980": {
+      "pctAbove90": 43.187054173896286,
+      "pctAbove95": 38.58076682089841,
+      "pctAbove98": 0.28466599190283404,
+      "meanOq": 67.46798064873722,
+      "avgStationCount": 19.25,
+      "samples": 32
+    },
+    "1990": {
+      "pctAbove90": 25.268310667159355,
+      "pctAbove95": 19.442499418795844,
+      "pctAbove98": 0.05787037037037037,
+      "meanOq": 60.40808914194894,
+      "avgStationCount": 26.0625,
+      "samples": 64
+    },
+    "2000": {
+      "pctAbove90": 29.820834026531077,
+      "pctAbove95": 24.512802988569465,
+      "pctAbove98": 0.10473901098901099,
+      "meanOq": 61.54640090023112,
+      "avgStationCount": 26.421875,
+      "samples": 64
+    },
+    "2010": {
+      "pctAbove90": 27.08070202271884,
+      "pctAbove95": 16.611305782313124,
+      "pctAbove98": 0.06318933823529412,
+      "meanOq": 63.91734336040712,
+      "avgStationCount": 26.34375,
+      "samples": 96
+    },
+    "2020": {
+      "pctAbove90": 33.1303158842281,
+      "pctAbove95": 21.47390743683195,
+      "pctAbove98": 0.1507936507936508,
+      "meanOq": 67.50214916192088,
+      "avgStationCount": 24.895833333333332,
+      "samples": 96
+    }
+  },
+  "playerOwnedAbove95By2020": {
+    "meanPlayerStationsAbove95": 0,
+    "median": 0,
+    "samples": 96,
+    "perRunCounts": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ]
+  },
+  "programmingBudgetToClimb": {
+    "60→70": {
+      "avgBudgetPerPeriod": 58478.666666666664,
+      "avgPeriodsToTarget": 24,
+      "avgTotalSpend": 1403488,
+      "avgPctOfCap": 6.833333333333333,
+      "samples": 3,
+      "byMarket": [
+        {
+          "market": "wichita",
+          "year": 2000,
+          "budgetPerPeriod": 17393,
+          "periods": 24,
+          "totalSpend": 417432,
+          "pctOfCap": 6.9
+        },
+        {
+          "market": "atlanta",
+          "year": 1990,
+          "budgetPerPeriod": 40408,
+          "periods": 24,
+          "totalSpend": 969792,
+          "pctOfCap": 6.8
+        },
+        {
+          "market": "newyork",
+          "year": 2010,
+          "budgetPerPeriod": 117635,
+          "periods": 24,
+          "totalSpend": 2823240,
+          "pctOfCap": 6.8
+        }
+      ]
+    },
+    "70→80": {
+      "avgBudgetPerPeriod": 68114.66666666667,
+      "avgPeriodsToTarget": 18,
+      "avgTotalSpend": 1434229.3333333333,
+      "avgPctOfCap": 8.4,
+      "samples": 3,
+      "byMarket": [
+        {
+          "market": "wichita",
+          "year": 2000,
+          "budgetPerPeriod": 23160,
+          "periods": 13,
+          "totalSpend": 301080,
+          "pctOfCap": 9.1
+        },
+        {
+          "market": "atlanta",
+          "year": 1990,
+          "budgetPerPeriod": 49544,
+          "periods": 17,
+          "totalSpend": 842248,
+          "pctOfCap": 8.4
+        },
+        {
+          "market": "newyork",
+          "year": 2010,
+          "budgetPerPeriod": 131640,
+          "periods": 24,
+          "totalSpend": 3159360,
+          "pctOfCap": 7.7
+        }
+      ]
+    },
+    "80→90": {
+      "avgBudgetPerPeriod": 76389,
+      "avgPeriodsToTarget": 22.666666666666668,
+      "avgTotalSpend": 1802456,
+      "avgPctOfCap": 8.966666666666667,
+      "samples": 3,
+      "byMarket": [
+        {
+          "market": "wichita",
+          "year": 2000,
+          "budgetPerPeriod": 23160,
+          "periods": 20,
+          "totalSpend": 463200,
+          "pctOfCap": 9.1
+        },
+        {
+          "market": "atlanta",
+          "year": 1990,
+          "budgetPerPeriod": 52762,
+          "periods": 24,
+          "totalSpend": 1266288,
+          "pctOfCap": 8.9
+        },
+        {
+          "market": "newyork",
+          "year": 2010,
+          "budgetPerPeriod": 153245,
+          "periods": 24,
+          "totalSpend": 3677880,
+          "pctOfCap": 8.9
+        }
+      ]
+    },
+    "90→95": {
+      "avgBudgetPerPeriod": 89129.33333333333,
+      "avgPeriodsToTarget": 8,
+      "avgTotalSpend": 713034.6666666666,
+      "avgPctOfCap": 10.4,
+      "samples": 3,
+      "byMarket": [
+        {
+          "market": "wichita",
+          "year": 2000,
+          "budgetPerPeriod": 26494,
+          "periods": 8,
+          "totalSpend": 211952,
+          "pctOfCap": 10.4
+        },
+        {
+          "market": "atlanta",
+          "year": 1990,
+          "budgetPerPeriod": 61641,
+          "periods": 8,
+          "totalSpend": 493128,
+          "pctOfCap": 10.4
+        },
+        {
+          "market": "newyork",
+          "year": 2010,
+          "budgetPerPeriod": 179253,
+          "periods": 8,
+          "totalSpend": 1434024,
+          "pctOfCap": 10.4
+        }
+      ]
+    },
+    "95→99": {
+      "avgBudgetPerPeriod": 845030.3333333334,
+      "avgPeriodsToTarget": 25,
+      "avgTotalSpend": 21125758.333333332,
+      "avgPctOfCap": 109.96666666666665,
+      "samples": 3,
+      "byMarket": [
+        {
+          "market": "wichita",
+          "year": 2000,
+          "budgetPerPeriod": 369111,
+          "periods": 25,
+          "totalSpend": 9227775,
+          "pctOfCap": 145.5
+        },
+        {
+          "market": "atlanta",
+          "year": 1990,
+          "budgetPerPeriod": 527100,
+          "periods": 25,
+          "totalSpend": 13177500,
+          "pctOfCap": 89.1
+        },
+        {
+          "market": "newyork",
+          "year": 2010,
+          "budgetPerPeriod": 1638880,
+          "periods": 25,
+          "totalSpend": 40972000,
+          "pctOfCap": 95.3
+        }
+      ]
+    }
+  },
+  "naturalInflationControl": {
+    "normalMeanOqDelta": 13.192843999557155,
+    "frozenMeanOqDelta": -22.22525728689943,
+    "inflationFromManagement": 35.41810128645659,
+    "normalSamples": 96,
+    "frozenSamples": 96
+  },
+  "morningHostDepartureImpact": {
+    "samples": 2,
+    "avgShareDelta": -0.01704056,
+    "avgShareDeltaPct": -46.77170620240719,
+    "avgRevDelta": -252828.5,
+    "avgRevDeltaPct": -62.77872236451347,
+    "avgAqhDelta": -275.5,
+    "avgAqhDeltaPct": -52.520751419833985,
+    "avgOqDelta": -22,
+    "byMarket": [
+      {
+        "market": "wichita",
+        "call": "KOSG",
+        "preShare": 0.03790513,
+        "postShare": 0.02027505,
+        "shareDeltaPct": -46.51106591640763,
+        "revDeltaPct": -55.63728995135524,
+        "oqDelta": -21
+      },
+      {
+        "market": "wichita",
+        "call": "KFAR",
+        "preShare": 0.03497814,
+        "postShare": 0.0185271,
+        "shareDeltaPct": -47.03234648840675,
+        "revDeltaPct": -69.9201547776717,
+        "oqDelta": -23
+      }
+    ]
+  },
+  "notes": [
+    "Commercial % uses station.oq (overall programming quality) at decade boundary years.",
+    "noProgInvest control zeros AI progInvestment and AI random quality micro-bumps.",
+    "Budget climb isolates one player station via decay() with uniform slot quality.",
+    "Morning departure: 96-quality host replaced with 70-quality entry hire after settle."
+  ]
+}

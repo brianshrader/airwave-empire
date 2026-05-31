@@ -1,0 +1,697 @@
+{
+  "generatedAt": "2026-05-31T18:45:03.552Z",
+  "verdict": "FAIL",
+  "failuresByType": {
+    "clock_stuck": 2
+  },
+  "failures": [
+    {
+      "type": "clock_stuck",
+      "severity": "fail",
+      "marketId": "sanfrancisco",
+      "scenarioId": "gm_under",
+      "seed": 20292158,
+      "turn": 113,
+      "before": {
+        "year": 2026,
+        "period": 1,
+        "turn": 112,
+        "nComm": 8,
+        "sumShare": 0.36694361,
+        "sumCohortAqh": 21686,
+        "sumRatAqh": 21686,
+        "sumRev": 73486904,
+        "nanInvalid": 0,
+        "top10": [
+          {
+            "id": "iepsgbbc",
+            "call": "KLVN",
+            "share": 0.19941116,
+            "aqh": 11785,
+            "cohortAqh": 11785,
+            "rev": 60029919
+          },
+          {
+            "id": "lw2nsrb9",
+            "call": "KSHP",
+            "share": 0.04071135,
+            "aqh": 2406,
+            "cohortAqh": 2406,
+            "rev": 7732564
+          },
+          {
+            "id": "otqlera2",
+            "call": "KQYU",
+            "share": 0.02883298,
+            "aqh": 1704,
+            "cohortAqh": 1704,
+            "rev": 1771655
+          },
+          {
+            "id": "g0g2hhj6",
+            "call": "KDGD",
+            "share": 0.02876529,
+            "aqh": 1700,
+            "cohortAqh": 1700,
+            "rev": 1678821
+          },
+          {
+            "id": "84jyrz84",
+            "call": "KXLJ",
+            "share": 0.02802078,
+            "aqh": 1656,
+            "cohortAqh": 1656,
+            "rev": 1164147
+          },
+          {
+            "id": "dh3fexsr",
+            "call": "KTHT",
+            "share": 0.02566879,
+            "aqh": 1517,
+            "cohortAqh": 1517,
+            "rev": 934013
+          },
+          {
+            "id": "5nglbq2c",
+            "call": "KMJ",
+            "share": 0.00835886,
+            "aqh": 494,
+            "cohortAqh": 494,
+            "rev": 104213
+          },
+          {
+            "id": "vcl46c71",
+            "call": "KSPL",
+            "share": 0.0071744,
+            "aqh": 424,
+            "cohortAqh": 424,
+            "rev": 71572
+          }
+        ],
+        "snapYear": 2025,
+        "snapPeriod": 2,
+        "snapTurn": 111,
+        "repairCount": 21,
+        "stitchCount": 2,
+        "closedSig": {
+          "closedYear": 2026,
+          "closedPeriod": 1,
+          "snapYear": 2025,
+          "snapPeriod": 2,
+          "shareSig": "s:6nshp4eb:281968|s:relnet_sanfrancisco|1970|0_15lyylf:255605|s:iepsgbbc:199411|s:supqcb4n:95484|s:lw2nsrb9:40711|s:otqlera2:28833|s:g0g2hhj6:28765|s:84jyrz84:28021|s:dh3fexsr:25669|s:5nglbq2c:8359|s:vcl46c71:7174",
+          "revSum": 73486904,
+          "revN": 9,
+          "fp": {
+            "stationCount": 9,
+            "stations": [
+              {
+                "id": "relnet_sanfrancisco|1970|0_15lyylf",
+                "call": "",
+                "format": "RELIGIOUS_NETWORK",
+                "share": 0.255605,
+                "rev": 0
+              },
+              {
+                "id": "iepsgbbc",
+                "call": "",
+                "format": "ADULT_CONTEMP",
+                "share": 0.19941116,
+                "rev": 60029919
+              },
+              {
+                "id": "lw2nsrb9",
+                "call": "",
+                "format": "NEWS_TALK",
+                "share": 0.04071135,
+                "rev": 7732564
+              },
+              {
+                "id": "otqlera2",
+                "call": "",
+                "format": "SOUL_RNB",
+                "share": 0.02883298,
+                "rev": 1771655
+              },
+              {
+                "id": "g0g2hhj6",
+                "call": "",
+                "format": "TOP40",
+                "share": 0.02876529,
+                "rev": 1678821
+              },
+              {
+                "id": "84jyrz84",
+                "call": "",
+                "format": "COUNTRY",
+                "share": 0.02802078,
+                "rev": 1164147
+              },
+              {
+                "id": "dh3fexsr",
+                "call": "",
+                "format": "TOP40",
+                "share": 0.02566879,
+                "rev": 934013
+              },
+              {
+                "id": "5nglbq2c",
+                "call": "",
+                "format": "MOR",
+                "share": 0.00835886,
+                "rev": 104213
+              },
+              {
+                "id": "vcl46c71",
+                "call": "",
+                "format": "GOSPEL",
+                "share": 0.0071744,
+                "rev": 71572
+              }
+            ],
+            "snapYear": 2025,
+            "snapPeriod": 2,
+            "snapTurn": 111
+          }
+        }
+      },
+      "after": {
+        "year": 2026,
+        "period": 1,
+        "turn": 112,
+        "nComm": 8,
+        "sumShare": 0.36694361,
+        "sumCohortAqh": 21686,
+        "sumRatAqh": 21686,
+        "sumRev": 73486904,
+        "nanInvalid": 0,
+        "top10": [
+          {
+            "id": "iepsgbbc",
+            "call": "KLVN",
+            "share": 0.19941116,
+            "aqh": 11785,
+            "cohortAqh": 11785,
+            "rev": 60029919
+          },
+          {
+            "id": "lw2nsrb9",
+            "call": "KSHP",
+            "share": 0.04071135,
+            "aqh": 2406,
+            "cohortAqh": 2406,
+            "rev": 7732564
+          },
+          {
+            "id": "otqlera2",
+            "call": "KQYU",
+            "share": 0.02883298,
+            "aqh": 1704,
+            "cohortAqh": 1704,
+            "rev": 1771655
+          },
+          {
+            "id": "g0g2hhj6",
+            "call": "KDGD",
+            "share": 0.02876529,
+            "aqh": 1700,
+            "cohortAqh": 1700,
+            "rev": 1678821
+          },
+          {
+            "id": "84jyrz84",
+            "call": "KXLJ",
+            "share": 0.02802078,
+            "aqh": 1656,
+            "cohortAqh": 1656,
+            "rev": 1164147
+          },
+          {
+            "id": "dh3fexsr",
+            "call": "KTHT",
+            "share": 0.02566879,
+            "aqh": 1517,
+            "cohortAqh": 1517,
+            "rev": 934013
+          },
+          {
+            "id": "5nglbq2c",
+            "call": "KMJ",
+            "share": 0.00835886,
+            "aqh": 494,
+            "cohortAqh": 494,
+            "rev": 104213
+          },
+          {
+            "id": "vcl46c71",
+            "call": "KSPL",
+            "share": 0.0071744,
+            "aqh": 424,
+            "cohortAqh": 424,
+            "rev": 71572
+          }
+        ],
+        "snapYear": 2025,
+        "snapPeriod": 2,
+        "snapTurn": 111,
+        "repairCount": 21,
+        "stitchCount": 2,
+        "closedSig": {
+          "closedYear": 2026,
+          "closedPeriod": 1,
+          "snapYear": 2025,
+          "snapPeriod": 2,
+          "shareSig": "s:6nshp4eb:281968|s:relnet_sanfrancisco|1970|0_15lyylf:255605|s:iepsgbbc:199411|s:supqcb4n:95484|s:lw2nsrb9:40711|s:otqlera2:28833|s:g0g2hhj6:28765|s:84jyrz84:28021|s:dh3fexsr:25669|s:5nglbq2c:8359|s:vcl46c71:7174",
+          "revSum": 73486904,
+          "revN": 9,
+          "fp": {
+            "stationCount": 9,
+            "stations": [
+              {
+                "id": "relnet_sanfrancisco|1970|0_15lyylf",
+                "call": "",
+                "format": "RELIGIOUS_NETWORK",
+                "share": 0.255605,
+                "rev": 0
+              },
+              {
+                "id": "iepsgbbc",
+                "call": "",
+                "format": "ADULT_CONTEMP",
+                "share": 0.19941116,
+                "rev": 60029919
+              },
+              {
+                "id": "lw2nsrb9",
+                "call": "",
+                "format": "NEWS_TALK",
+                "share": 0.04071135,
+                "rev": 7732564
+              },
+              {
+                "id": "otqlera2",
+                "call": "",
+                "format": "SOUL_RNB",
+                "share": 0.02883298,
+                "rev": 1771655
+              },
+              {
+                "id": "g0g2hhj6",
+                "call": "",
+                "format": "TOP40",
+                "share": 0.02876529,
+                "rev": 1678821
+              },
+              {
+                "id": "84jyrz84",
+                "call": "",
+                "format": "COUNTRY",
+                "share": 0.02802078,
+                "rev": 1164147
+              },
+              {
+                "id": "dh3fexsr",
+                "call": "",
+                "format": "TOP40",
+                "share": 0.02566879,
+                "rev": 934013
+              },
+              {
+                "id": "5nglbq2c",
+                "call": "",
+                "format": "MOR",
+                "share": 0.00835886,
+                "rev": 104213
+              },
+              {
+                "id": "vcl46c71",
+                "call": "",
+                "format": "GOSPEL",
+                "share": 0.0071744,
+                "rev": 71572
+              }
+            ],
+            "snapYear": 2025,
+            "snapPeriod": 2,
+            "snapTurn": 111
+          }
+        }
+      },
+      "calendarAdvanced": false,
+      "advTurnThrew": false,
+      "advTurnError": null,
+      "repairDelta": 0,
+      "stitchDelta": 0,
+      "snapLag": 1,
+      "snapBehind": true,
+      "frozenStreak": 0,
+      "extra": {
+        "afterY": 2026,
+        "afterP": 1
+      }
+    },
+    {
+      "type": "clock_stuck",
+      "severity": "fail",
+      "marketId": "sanfrancisco",
+      "scenarioId": "gm_under",
+      "seed": 20371942,
+      "turn": 113,
+      "before": {
+        "year": 2026,
+        "period": 1,
+        "turn": 112,
+        "nComm": 8,
+        "sumShare": 0.36469767,
+        "sumCohortAqh": 21461,
+        "sumRatAqh": 21461,
+        "sumRev": 73486903,
+        "nanInvalid": 0,
+        "top10": [
+          {
+            "id": "2wrz5529",
+            "call": "KRRU",
+            "share": 0.19234952,
+            "aqh": 11319,
+            "cohortAqh": 11319,
+            "rev": 59013768
+          },
+          {
+            "id": "qn2qr7i5",
+            "call": "KYIQ",
+            "share": 0.04336743,
+            "aqh": 2552,
+            "cohortAqh": 2552,
+            "rev": 8510536
+          },
+          {
+            "id": "y5a1ul5v",
+            "call": "KKRZ",
+            "share": 0.0301125,
+            "aqh": 1772,
+            "cohortAqh": 1772,
+            "rev": 2037705
+          },
+          {
+            "id": "r2l5513r",
+            "call": "KJPO",
+            "share": 0.02990857,
+            "aqh": 1760,
+            "cohortAqh": 1760,
+            "rev": 1605584
+          },
+          {
+            "id": "kvuurt8g",
+            "call": "KDKF",
+            "share": 0.02786935,
+            "aqh": 1640,
+            "cohortAqh": 1640,
+            "rev": 1186842
+          },
+          {
+            "id": "0i9afskb",
+            "call": "KNNV",
+            "share": 0.02559222,
+            "aqh": 1506,
+            "cohortAqh": 1506,
+            "rev": 952956
+          },
+          {
+            "id": "t249szuh",
+            "call": "KAY",
+            "share": 0.00832682,
+            "aqh": 490,
+            "cohortAqh": 490,
+            "rev": 106241
+          },
+          {
+            "id": "nqgap4pu",
+            "call": "KGOI",
+            "share": 0.00717126,
+            "aqh": 422,
+            "cohortAqh": 422,
+            "rev": 73271
+          }
+        ],
+        "snapYear": 2025,
+        "snapPeriod": 2,
+        "snapTurn": 111,
+        "repairCount": 0,
+        "stitchCount": 0,
+        "closedSig": {
+          "closedYear": 2026,
+          "closedPeriod": 1,
+          "snapYear": 2025,
+          "snapPeriod": 2,
+          "shareSig": "s:4j0tcedx:283027|s:relnet_sanfrancisco|1970|0_15lyylf:256585|s:2wrz5529:192350|s:959tlhld:95690|s:qn2qr7i5:43367|s:y5a1ul5v:30113|s:r2l5513r:29909|s:kvuurt8g:27869|s:0i9afskb:25592|s:t249szuh:8327|s:nqgap4pu:7171",
+          "revSum": 73486903,
+          "revN": 9,
+          "fp": {
+            "stationCount": 9,
+            "stations": [
+              {
+                "id": "relnet_sanfrancisco|1970|0_15lyylf",
+                "call": "",
+                "format": "RELIGIOUS_NETWORK",
+                "share": 0.25658498,
+                "rev": 0
+              },
+              {
+                "id": "2wrz5529",
+                "call": "",
+                "format": "ADULT_CONTEMP",
+                "share": 0.19234952,
+                "rev": 59013768
+              },
+              {
+                "id": "qn2qr7i5",
+                "call": "",
+                "format": "NEWS_TALK",
+                "share": 0.04336743,
+                "rev": 8510536
+              },
+              {
+                "id": "y5a1ul5v",
+                "call": "",
+                "format": "TOP40",
+                "share": 0.0301125,
+                "rev": 2037705
+              },
+              {
+                "id": "r2l5513r",
+                "call": "",
+                "format": "SOUL_RNB",
+                "share": 0.02990857,
+                "rev": 1605584
+              },
+              {
+                "id": "kvuurt8g",
+                "call": "",
+                "format": "COUNTRY",
+                "share": 0.02786935,
+                "rev": 1186842
+              },
+              {
+                "id": "0i9afskb",
+                "call": "",
+                "format": "TOP40",
+                "share": 0.02559222,
+                "rev": 952956
+              },
+              {
+                "id": "t249szuh",
+                "call": "",
+                "format": "MOR",
+                "share": 0.00832682,
+                "rev": 106241
+              },
+              {
+                "id": "nqgap4pu",
+                "call": "",
+                "format": "GOSPEL",
+                "share": 0.00717126,
+                "rev": 73271
+              }
+            ],
+            "snapYear": 2025,
+            "snapPeriod": 2,
+            "snapTurn": 111
+          }
+        }
+      },
+      "after": {
+        "year": 2026,
+        "period": 1,
+        "turn": 112,
+        "nComm": 8,
+        "sumShare": 0.36469767,
+        "sumCohortAqh": 21461,
+        "sumRatAqh": 21461,
+        "sumRev": 73486903,
+        "nanInvalid": 0,
+        "top10": [
+          {
+            "id": "2wrz5529",
+            "call": "KRRU",
+            "share": 0.19234952,
+            "aqh": 11319,
+            "cohortAqh": 11319,
+            "rev": 59013768
+          },
+          {
+            "id": "qn2qr7i5",
+            "call": "KYIQ",
+            "share": 0.04336743,
+            "aqh": 2552,
+            "cohortAqh": 2552,
+            "rev": 8510536
+          },
+          {
+            "id": "y5a1ul5v",
+            "call": "KKRZ",
+            "share": 0.0301125,
+            "aqh": 1772,
+            "cohortAqh": 1772,
+            "rev": 2037705
+          },
+          {
+            "id": "r2l5513r",
+            "call": "KJPO",
+            "share": 0.02990857,
+            "aqh": 1760,
+            "cohortAqh": 1760,
+            "rev": 1605584
+          },
+          {
+            "id": "kvuurt8g",
+            "call": "KDKF",
+            "share": 0.02786935,
+            "aqh": 1640,
+            "cohortAqh": 1640,
+            "rev": 1186842
+          },
+          {
+            "id": "0i9afskb",
+            "call": "KNNV",
+            "share": 0.02559222,
+            "aqh": 1506,
+            "cohortAqh": 1506,
+            "rev": 952956
+          },
+          {
+            "id": "t249szuh",
+            "call": "KAY",
+            "share": 0.00832682,
+            "aqh": 490,
+            "cohortAqh": 490,
+            "rev": 106241
+          },
+          {
+            "id": "nqgap4pu",
+            "call": "KGOI",
+            "share": 0.00717126,
+            "aqh": 422,
+            "cohortAqh": 422,
+            "rev": 73271
+          }
+        ],
+        "snapYear": 2025,
+        "snapPeriod": 2,
+        "snapTurn": 111,
+        "repairCount": 0,
+        "stitchCount": 0,
+        "closedSig": {
+          "closedYear": 2026,
+          "closedPeriod": 1,
+          "snapYear": 2025,
+          "snapPeriod": 2,
+          "shareSig": "s:4j0tcedx:283027|s:relnet_sanfrancisco|1970|0_15lyylf:256585|s:2wrz5529:192350|s:959tlhld:95690|s:qn2qr7i5:43367|s:y5a1ul5v:30113|s:r2l5513r:29909|s:kvuurt8g:27869|s:0i9afskb:25592|s:t249szuh:8327|s:nqgap4pu:7171",
+          "revSum": 73486903,
+          "revN": 9,
+          "fp": {
+            "stationCount": 9,
+            "stations": [
+              {
+                "id": "relnet_sanfrancisco|1970|0_15lyylf",
+                "call": "",
+                "format": "RELIGIOUS_NETWORK",
+                "share": 0.25658498,
+                "rev": 0
+              },
+              {
+                "id": "2wrz5529",
+                "call": "",
+                "format": "ADULT_CONTEMP",
+                "share": 0.19234952,
+                "rev": 59013768
+              },
+              {
+                "id": "qn2qr7i5",
+                "call": "",
+                "format": "NEWS_TALK",
+                "share": 0.04336743,
+                "rev": 8510536
+              },
+              {
+                "id": "y5a1ul5v",
+                "call": "",
+                "format": "TOP40",
+                "share": 0.0301125,
+                "rev": 2037705
+              },
+              {
+                "id": "r2l5513r",
+                "call": "",
+                "format": "SOUL_RNB",
+                "share": 0.02990857,
+                "rev": 1605584
+              },
+              {
+                "id": "kvuurt8g",
+                "call": "",
+                "format": "COUNTRY",
+                "share": 0.02786935,
+                "rev": 1186842
+              },
+              {
+                "id": "0i9afskb",
+                "call": "",
+                "format": "TOP40",
+                "share": 0.02559222,
+                "rev": 952956
+              },
+              {
+                "id": "t249szuh",
+                "call": "",
+                "format": "MOR",
+                "share": 0.00832682,
+                "rev": 106241
+              },
+              {
+                "id": "nqgap4pu",
+                "call": "",
+                "format": "GOSPEL",
+                "share": 0.00717126,
+                "rev": 73271
+              }
+            ],
+            "snapYear": 2025,
+            "snapPeriod": 2,
+            "snapTurn": 111
+          }
+        }
+      },
+      "calendarAdvanced": false,
+      "advTurnThrew": false,
+      "advTurnError": null,
+      "repairDelta": 0,
+      "stitchDelta": 0,
+      "snapLag": 1,
+      "snapBehind": true,
+      "frozenStreak": 0,
+      "extra": {
+        "afterY": 2026,
+        "afterP": 1
+      }
+    }
+  ]
+}

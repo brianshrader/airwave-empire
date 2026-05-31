@@ -1,0 +1,162 @@
+{
+  "recordedAt": "2026-05-31T19:03:58.582Z",
+  "timingMs": 87541,
+  "config": {
+    "markets": [
+      "newyork",
+      "losangeles",
+      "chicago",
+      "atlanta",
+      "nashville",
+      "wichita",
+      "seattle",
+      "sanfrancisco"
+    ],
+    "years": [
+      1985,
+      1995,
+      2026
+    ],
+    "runs": 10,
+    "seed": 20260522,
+    "json": true
+  },
+  "markets": [
+    {
+      "marketId": "newyork",
+      "overall": "warn",
+      "rawOverall": "pass",
+      "internalReady": true,
+      "publicCandidate": true,
+      "confidence": "high",
+      "tierBand": "mega_large",
+      "categories": {
+        "structural": "warn",
+        "identity": "pass",
+        "stability": "pass",
+        "outlierFrequency": "pass",
+        "timeline": "pass"
+      },
+      "timingMs": 15328
+    },
+    {
+      "marketId": "losangeles",
+      "overall": "warn",
+      "rawOverall": "pass",
+      "internalReady": true,
+      "publicCandidate": true,
+      "confidence": "high",
+      "tierBand": "mega_large",
+      "categories": {
+        "structural": "warn",
+        "identity": "pass",
+        "stability": "pass",
+        "outlierFrequency": "warn",
+        "timeline": "pass"
+      },
+      "timingMs": 15302
+    },
+    {
+      "marketId": "chicago",
+      "overall": "warn",
+      "rawOverall": "pass",
+      "internalReady": true,
+      "publicCandidate": true,
+      "confidence": "high",
+      "tierBand": "mega_large",
+      "categories": {
+        "structural": "warn",
+        "identity": "warn",
+        "stability": "pass",
+        "outlierFrequency": "pass",
+        "timeline": "pass"
+      },
+      "timingMs": 15049
+    },
+    {
+      "marketId": "atlanta",
+      "overall": "warn",
+      "rawOverall": "pass",
+      "internalReady": true,
+      "publicCandidate": true,
+      "confidence": "high",
+      "tierBand": "mega_large",
+      "categories": {
+        "structural": "warn",
+        "identity": "pass",
+        "stability": "pass",
+        "outlierFrequency": "pass",
+        "timeline": "warn"
+      },
+      "timingMs": 10129
+    },
+    {
+      "marketId": "nashville",
+      "overall": "warn",
+      "rawOverall": "warn",
+      "internalReady": true,
+      "publicCandidate": true,
+      "confidence": "high",
+      "tierBand": "medium",
+      "categories": {
+        "structural": "warn",
+        "identity": "pass",
+        "stability": "pass",
+        "outlierFrequency": "pass",
+        "timeline": "warn"
+      },
+      "timingMs": 6775
+    },
+    {
+      "marketId": "wichita",
+      "overall": "warn",
+      "rawOverall": "fail",
+      "internalReady": true,
+      "publicCandidate": true,
+      "confidence": "high",
+      "tierBand": "small",
+      "categories": {
+        "structural": "warn",
+        "identity": "pass",
+        "stability": "pass",
+        "outlierFrequency": "warn",
+        "timeline": "warn"
+      },
+      "timingMs": 4730
+    },
+    {
+      "marketId": "seattle",
+      "overall": "warn",
+      "rawOverall": "pass",
+      "internalReady": true,
+      "publicCandidate": true,
+      "confidence": "high",
+      "tierBand": "mega_large",
+      "categories": {
+        "structural": "warn",
+        "identity": "pass",
+        "stability": "pass",
+        "outlierFrequency": "pass",
+        "timeline": "warn"
+      },
+      "timingMs": 9963
+    },
+    {
+      "marketId": "sanfrancisco",
+      "overall": "warn",
+      "rawOverall": "pass",
+      "internalReady": true,
+      "publicCandidate": true,
+      "confidence": "high",
+      "tierBand": "mega_large",
+      "categories": {
+        "structural": "warn",
+        "identity": "warn",
+        "stability": "pass",
+        "outlierFrequency": "pass",
+        "timeline": "pass"
+      },
+      "timingMs": 10225
+    }
+  ]
+}

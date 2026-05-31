@@ -1,0 +1,89 @@
+{
+  "generatedAt": "2026-05-31T19:05:07.056Z",
+  "options": {
+    "markets": [
+      "sanfrancisco"
+    ],
+    "scenarios": [
+      "under",
+      "fmrev",
+      "chrwar",
+      "gm_under"
+    ],
+    "runs": 5,
+    "endYear": 2026,
+    "endPeriod": 2,
+    "seed": 20260531,
+    "maxTurns": 420,
+    "quiet": true
+  },
+  "totals": {
+    "gamesSimulated": 5,
+    "periodsSimulated": 519
+  },
+  "failuresByType": {},
+  "verdict": "PASS",
+  "firstFailure": null,
+  "runs": [
+    {
+      "marketId": "sanfrancisco",
+      "scenarioId": "under",
+      "label": "default",
+      "seed": 20262188,
+      "finalYear": 2026,
+      "finalPeriod": 2,
+      "periods": 113,
+      "advTurnErrors": 0,
+      "failureCounts": {},
+      "verdict": "PASS"
+    },
+    {
+      "marketId": "sanfrancisco",
+      "scenarioId": "fmrev",
+      "label": "default",
+      "seed": 20272161,
+      "finalYear": 2026,
+      "finalPeriod": 2,
+      "periods": 97,
+      "advTurnErrors": 0,
+      "failureCounts": {},
+      "verdict": "PASS"
+    },
+    {
+      "marketId": "sanfrancisco",
+      "scenarioId": "chrwar",
+      "label": "default",
+      "seed": 20282151,
+      "finalYear": 2026,
+      "finalPeriod": 2,
+      "periods": 83,
+      "advTurnErrors": 0,
+      "failureCounts": {},
+      "verdict": "PASS"
+    },
+    {
+      "marketId": "sanfrancisco",
+      "scenarioId": "gm_under",
+      "label": "default",
+      "seed": 20292158,
+      "finalYear": 2026,
+      "finalPeriod": 1,
+      "periods": 113,
+      "advTurnErrors": 0,
+      "failureCounts": {},
+      "verdict": "PASS"
+    },
+    {
+      "marketId": "sanfrancisco",
+      "scenarioId": "under",
+      "label": "default",
+      "seed": 20302080,
+      "finalYear": 2026,
+      "finalPeriod": 2,
+      "periods": 113,
+      "advTurnErrors": 0,
+      "failureCounts": {},
+      "verdict": "PASS"
+    }
+  ]
+}

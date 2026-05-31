@@ -1,1 +1,0 @@
-const n=Object.freeze({starter_monthly:"$4.99/mo",starter_annual:"$49.99/yr",pro_monthly:"$9.99/mo",pro_annual:"$79.99/yr"}),a="Launch pricing — more than 2 months free vs paying monthly.";function e(t,r){return r!=null&&String(r).trim()?String(r).trim():n[t]||""}const L="Starter $4.99/mo or $49.99/yr · Pro $9.99/mo or $79.99/yr annual (Launch pricing)";export{a as B,L as a,e};

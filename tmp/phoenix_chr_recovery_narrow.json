@@ -1,0 +1,442 @@
+{
+  "recordedAt": "2026-05-23T13:43:17.186Z",
+  "timingMs": 198588,
+  "variants": {
+    "A": {
+      "description": "Shipped baseline (1970 BP Top40 + chrwar suppression)",
+      "opening": {
+        "hitsPresenceRate": 1,
+        "morShareMedian": 0.15408470000000002,
+        "hitLeaderRunnerUpRate": 0.5,
+        "pass": true
+      },
+      "byYear": {
+        "1985": {
+          "n": 25,
+          "chrBucket": 0.1157169272,
+          "top40Share": 0.1157169272,
+          "hotAcShare": 0.06484835000000001,
+          "spanishShare": 0,
+          "rockShare": 0.1965205192,
+          "hitsStationCount": 3,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "TOP40": 5,
+            "ADULT_CONTEMP": 20
+          }
+        },
+        "1995": {
+          "n": 25,
+          "chrBucket": 0.07759440640000001,
+          "top40Share": 0.07759440640000001,
+          "hotAcShare": 0.048637757600000005,
+          "spanishShare": 0.0801287496,
+          "rockShare": 0.243570516,
+          "hitsStationCount": 3.08,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "COUNTRY": 13,
+            "ADULT_CONTEMP": 6,
+            "NEWS_TALK": 3,
+            "TOP40": 3
+          }
+        },
+        "2005": {
+          "n": 25,
+          "chrBucket": 0.061266127200000006,
+          "top40Share": 0.061266127200000006,
+          "hotAcShare": 0.0423693588,
+          "spanishShare": 0.20172330119999998,
+          "rockShare": 0.19792941000000006,
+          "hitsStationCount": 2.72,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 22,
+            "COUNTRY": 2,
+            "NEWS_TALK": 1
+          }
+        },
+        "2026": {
+          "n": 25,
+          "chrBucket": 0.04979566839999999,
+          "top40Share": 0.04979566839999999,
+          "hotAcShare": 0.04155806,
+          "spanishShare": 0.20771074000000006,
+          "rockShare": 0.15872157400000003,
+          "hitsStationCount": 2.44,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 25
+          }
+        }
+      },
+      "acceptance": {
+        "open1970": true,
+        "chr1995": true,
+        "chr2005": true,
+        "chr2026": false,
+        "span2026Ideal": true,
+        "span2026Min": true,
+        "rock2026": true,
+        "noCr1": true,
+        "noChrDom": true,
+        "allCore": false,
+        "allIdeal": false
+      },
+      "productionPatch": "none"
+    },
+    "H": {
+      "description": "B + appeal off + trim off (no 1992 frag)",
+      "opening": {
+        "hitsPresenceRate": 1,
+        "morShareMedian": 0.150671635,
+        "hitLeaderRunnerUpRate": 0.5,
+        "pass": true
+      },
+      "byYear": {
+        "1985": {
+          "n": 25,
+          "chrBucket": 0.11635416039999999,
+          "top40Share": 0.11635416039999999,
+          "hotAcShare": 0.0652084972,
+          "spanishShare": 0,
+          "rockShare": 0.19664491600000006,
+          "hitsStationCount": 3,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "TOP40": 6,
+            "ADULT_CONTEMP": 19
+          }
+        },
+        "1995": {
+          "n": 25,
+          "chrBucket": 0.0799008728,
+          "top40Share": 0.0799008728,
+          "hotAcShare": 0.045847098399999994,
+          "spanishShare": 0.08071013200000003,
+          "rockShare": 0.2433153492,
+          "hitsStationCount": 3.28,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "COUNTRY": 16,
+            "ADULT_CONTEMP": 4,
+            "TOP40": 4,
+            "URBAN_CONTEMP": 1
+          }
+        },
+        "2005": {
+          "n": 25,
+          "chrBucket": 0.058946179599999995,
+          "top40Share": 0.058946179599999995,
+          "hotAcShare": 0.0460845912,
+          "spanishShare": 0.19668578120000008,
+          "rockShare": 0.19066379599999994,
+          "hitsStationCount": 2.64,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 22,
+            "NEWS_TALK": 1,
+            "COUNTRY": 2
+          }
+        },
+        "2026": {
+          "n": 25,
+          "chrBucket": 0.0376086272,
+          "top40Share": 0.0376086272,
+          "hotAcShare": 0.04934957919999999,
+          "spanishShare": 0.21849929159999992,
+          "rockShare": 0.1500433096,
+          "hitsStationCount": 2.2,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 24,
+            "COUNTRY": 1
+          }
+        }
+      },
+      "acceptance": {
+        "open1970": true,
+        "chr1995": true,
+        "chr2005": false,
+        "chr2026": false,
+        "span2026Ideal": true,
+        "span2026Min": true,
+        "rock2026": true,
+        "noCr1": true,
+        "noChrDom": true,
+        "allCore": false,
+        "allIdeal": false
+      },
+      "productionPatch": "phoenixDiagTierInjectFormatBlocked: allow TOP40 (remove from block list); phoenixDiagTop40HitsAppealMult → return 1; phoenixDiagTop40LeaderTrimProfile → inactive in 1990–99"
+    },
+    "I": {
+      "description": "B + appeal off only",
+      "opening": {
+        "hitsPresenceRate": 1,
+        "morShareMedian": 0.15265980499999998,
+        "hitLeaderRunnerUpRate": 0.5,
+        "pass": true
+      },
+      "byYear": {
+        "1985": {
+          "n": 25,
+          "chrBucket": 0.1170443,
+          "top40Share": 0.1170443,
+          "hotAcShare": 0.0650685524,
+          "spanishShare": 0,
+          "rockShare": 0.19650232959999997,
+          "hitsStationCount": 3,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "TOP40": 3,
+            "ADULT_CONTEMP": 22
+          }
+        },
+        "1995": {
+          "n": 25,
+          "chrBucket": 0.07509832679999999,
+          "top40Share": 0.07509832679999999,
+          "hotAcShare": 0.051410031599999996,
+          "spanishShare": 0.081036594,
+          "rockShare": 0.24669052680000003,
+          "hitsStationCount": 3.04,
+          "crLeaderRate": 0.04,
+          "leaderHist": {
+            "COUNTRY": 16,
+            "NEWS_TALK": 3,
+            "TOP40": 2,
+            "CLASSIC_ROCK": 1,
+            "ADULT_CONTEMP": 3
+          }
+        },
+        "2005": {
+          "n": 25,
+          "chrBucket": 0.0587772072,
+          "top40Share": 0.0587772072,
+          "hotAcShare": 0.0408877512,
+          "spanishShare": 0.20779686319999996,
+          "rockShare": 0.18662365320000002,
+          "hitsStationCount": 2.44,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 25
+          }
+        },
+        "2026": {
+          "n": 25,
+          "chrBucket": 0.05110245119999999,
+          "top40Share": 0.05110245119999999,
+          "hotAcShare": 0.045173806799999994,
+          "spanishShare": 0.2071047936,
+          "rockShare": 0.15798927960000003,
+          "hitsStationCount": 2.68,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 23,
+            "ADULT_CONTEMP": 2
+          }
+        }
+      },
+      "acceptance": {
+        "open1970": true,
+        "chr1995": true,
+        "chr2005": false,
+        "chr2026": true,
+        "span2026Ideal": true,
+        "span2026Min": true,
+        "rock2026": true,
+        "noCr1": true,
+        "noChrDom": true,
+        "allCore": false,
+        "allIdeal": false
+      },
+      "productionPatch": "phoenixDiagTierInjectFormatBlocked: allow TOP40 (remove from block list); phoenixDiagTop40HitsAppealMult → return 1"
+    },
+    "J": {
+      "description": "B + trim off only",
+      "opening": {
+        "hitsPresenceRate": 1,
+        "morShareMedian": 0.151406105,
+        "hitLeaderRunnerUpRate": 0.5,
+        "pass": true
+      },
+      "byYear": {
+        "1985": {
+          "n": 25,
+          "chrBucket": 0.1153499416,
+          "top40Share": 0.1153499416,
+          "hotAcShare": 0.0654400488,
+          "spanishShare": 0,
+          "rockShare": 0.19543872399999998,
+          "hitsStationCount": 3,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "ADULT_CONTEMP": 19,
+            "TOP40": 6
+          }
+        },
+        "1995": {
+          "n": 25,
+          "chrBucket": 0.079657354,
+          "top40Share": 0.079657354,
+          "hotAcShare": 0.049949160799999996,
+          "spanishShare": 0.07715282920000001,
+          "rockShare": 0.2384114316,
+          "hitsStationCount": 3.08,
+          "crLeaderRate": 0.04,
+          "leaderHist": {
+            "COUNTRY": 18,
+            "ADULT_CONTEMP": 4,
+            "TOP40": 1,
+            "NEWS_TALK": 1,
+            "CLASSIC_ROCK": 1
+          }
+        },
+        "2005": {
+          "n": 25,
+          "chrBucket": 0.06327800960000002,
+          "top40Share": 0.06327800960000002,
+          "hotAcShare": 0.0455801336,
+          "spanishShare": 0.19180028080000003,
+          "rockShare": 0.18034576080000003,
+          "hitsStationCount": 2.68,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 24,
+            "NEWS_TALK": 1
+          }
+        },
+        "2026": {
+          "n": 25,
+          "chrBucket": 0.0493898556,
+          "top40Share": 0.0493898556,
+          "hotAcShare": 0.0433267708,
+          "spanishShare": 0.20361182239999998,
+          "rockShare": 0.15714491479999998,
+          "hitsStationCount": 2.48,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 24,
+            "ADULT_CONTEMP": 1
+          }
+        }
+      },
+      "acceptance": {
+        "open1970": true,
+        "chr1995": true,
+        "chr2005": true,
+        "chr2026": false,
+        "span2026Ideal": true,
+        "span2026Min": true,
+        "rock2026": true,
+        "noCr1": true,
+        "noChrDom": true,
+        "allCore": false,
+        "allIdeal": false
+      },
+      "productionPatch": "phoenixDiagTierInjectFormatBlocked: allow TOP40 (remove from block list); phoenixDiagTop40LeaderTrimProfile → inactive in 1990–99"
+    },
+    "K": {
+      "description": "H + 1992 FM TOP40 emerging frag",
+      "opening": {
+        "hitsPresenceRate": 1,
+        "morShareMedian": 0.14849472,
+        "hitLeaderRunnerUpRate": 0.5,
+        "pass": true
+      },
+      "byYear": {
+        "1985": {
+          "n": 25,
+          "chrBucket": 0.11548410519999999,
+          "top40Share": 0.11548410519999999,
+          "hotAcShare": 0.0647414936,
+          "spanishShare": 0,
+          "rockShare": 0.1996975352,
+          "hitsStationCount": 3,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "ADULT_CONTEMP": 19,
+            "TOP40": 6
+          }
+        },
+        "1995": {
+          "n": 25,
+          "chrBucket": 0.0784343,
+          "top40Share": 0.0784343,
+          "hotAcShare": 0.051217173199999994,
+          "spanishShare": 0.081214312,
+          "rockShare": 0.2524398312,
+          "hitsStationCount": 3.04,
+          "crLeaderRate": 0.04,
+          "leaderHist": {
+            "ADULT_CONTEMP": 4,
+            "COUNTRY": 12,
+            "TOP40": 5,
+            "NEWS_TALK": 3,
+            "CLASSIC_ROCK": 1
+          }
+        },
+        "2005": {
+          "n": 25,
+          "chrBucket": 0.06371789520000001,
+          "top40Share": 0.06346225000000003,
+          "hotAcShare": 0.042425994,
+          "spanishShare": 0.19173413920000001,
+          "rockShare": 0.1962934992,
+          "hitsStationCount": 2.6,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "SPANISH": 19,
+            "COUNTRY": 4,
+            "NEWS_TALK": 1,
+            "TOP40": 1
+          }
+        },
+        "2026": {
+          "n": 25,
+          "chrBucket": 0.05879664240000002,
+          "top40Share": 0.05879664240000002,
+          "hotAcShare": 0.036545028800000004,
+          "spanishShare": 0.21735457280000003,
+          "rockShare": 0.14175938919999997,
+          "hitsStationCount": 2.64,
+          "crLeaderRate": 0,
+          "leaderHist": {
+            "ADULT_CONTEMP": 2,
+            "SPANISH": 23
+          }
+        }
+      },
+      "acceptance": {
+        "open1970": true,
+        "chr1995": true,
+        "chr2005": true,
+        "chr2026": true,
+        "span2026Ideal": true,
+        "span2026Min": true,
+        "rock2026": true,
+        "noCr1": true,
+        "noChrDom": true,
+        "allCore": true,
+        "allIdeal": true
+      },
+      "productionPatch": "phoenixDiagTierInjectFormatBlocked: allow TOP40 (remove from block list); phoenixDiagTop40HitsAppealMult → return 1; phoenixDiagTop40LeaderTrimProfile → inactive in 1990–99; fragmentationLaunches: phoenix_frag_top40_1992 FM emerging @1992p2"
+    }
+  },
+  "priorF": {
+    "label": "Prior full F (from diag-phoenix-chr-recovery-ab)",
+    "chr2026": 0.1,
+    "spanish2026": 0.181,
+    "note": "F = B + moderate 1992 frag + appeal off + trim off"
+  },
+  "seed": 20260521,
+  "recommendation": {
+    "variant": "K",
+    "description": "H + 1992 FM TOP40 emerging frag",
+    "productionPatch": "phoenixDiagTierInjectFormatBlocked: allow TOP40 (remove from block list); phoenixDiagTop40HitsAppealMult → return 1; phoenixDiagTop40LeaderTrimProfile → inactive in 1990–99; fragmentationLaunches: phoenix_frag_top40_1992 FM emerging @1992p2",
+    "hMeetsCore": false,
+    "hMeetsIdeal": false,
+    "fullFNecessary": true,
+    "ship": true
+  }
+}

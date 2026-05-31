@@ -1,0 +1,2727 @@
+{
+  "recordedAt": "2026-05-23T13:44:34.089Z",
+  "runs": 8,
+  "seed": 20260521,
+  "years": [
+    1975,
+    1985,
+    1995,
+    2005,
+    2026
+  ],
+  "diagOnly": {
+    "phoenixInPlayable": false,
+    "phoenixInDiagOnly": true,
+    "allPlayableMarketIds": [
+      "newyork",
+      "losangeles",
+      "chicago",
+      "seattle",
+      "sanfrancisco",
+      "atlanta",
+      "nashville",
+      "wichita"
+    ],
+    "diagOnlyMarketIds": [
+      "phoenix",
+      "portland",
+      "miami"
+    ]
+  },
+  "phoenixByYear": {
+    "1975": {
+      "nRuns": 8,
+      "stationCount": 15,
+      "hhi": 1260.976128453971,
+      "leaderGap12": 0.012859144999999999,
+      "topFormats": [
+        {
+          "fmt": "COUNTRY",
+          "share": 0.18794348874999997
+        },
+        {
+          "fmt": "SOUL_RNB",
+          "share": 0.16647244375
+        },
+        {
+          "fmt": "TOP40",
+          "share": 0.15162417125
+        },
+        {
+          "fmt": "NEWS_TALK",
+          "share": 0.15096631625
+        },
+        {
+          "fmt": "MOR",
+          "share": 0.129977555
+        },
+        {
+          "fmt": "ADULT_CONTEMP",
+          "share": 0.10469833499999999
+        },
+        {
+          "fmt": "ALBUM_ROCK",
+          "share": 0.04397014875000001
+        },
+        {
+          "fmt": "GOSPEL",
+          "share": 0.03260625375
+        },
+        {
+          "fmt": "HOT_AC",
+          "share": 0.026691277499999996
+        },
+        {
+          "fmt": "PUBLIC_NEWS",
+          "share": 0.0023733537499999995
+        }
+      ],
+      "familyShares": {
+        "HITS": 0.15162417125,
+        "ROCK": 0.04397014875000001,
+        "ADULT": 0.2613671675,
+        "COUNTRY": 0.18794348874999997,
+        "URBAN": 0.16647244375,
+        "SPOKEN": 0.15096631625,
+        "CHRISTIAN": 0.03260625375,
+        "SPANISH": 0,
+        "PUBLIC": 0.005050005,
+        "REMNANT": 0,
+        "INSTITUTIONAL": 0,
+        "UNMAPPED": 0
+      },
+      "familySharesDisplay": {
+        "HITS": 0.15162417125,
+        "ROCK": 0.04397014875000001,
+        "ADULT": 0.2613671675,
+        "COUNTRY": 0.18794348874999997,
+        "URBAN": 0.16647244375,
+        "SPOKEN": 0.15096631625,
+        "CHRISTIAN": 0.03260625375,
+        "PUBLIC": 0.005050005
+      },
+      "leadershipBuckets": {
+        "TOP40_CHR": 0.15162417195022782,
+        "AC_HOT_AC": 0.1313896132104076,
+        "ROCK_ALT_AAA": 0.04397014896507468,
+        "COUNTRY": 0.18794348971918354,
+        "NEWS_TALK_SPORTS": 0.15096631700194593,
+        "PUBLIC_RADIO": 0.005050005027955814,
+        "URBAN_RHYTHMIC": 0.16647244462019725,
+        "SPANISH": 0,
+        "GOSPEL_CCM": 0.03260625391849979
+      },
+      "leaderFmtHist": "COUNTRY:7|TOP40:1",
+      "leaderFamilyHist": "COUNTRY:7|HITS:1",
+      "spanishShare": 0,
+      "spanishStations": 0,
+      "classicRockShare": 0,
+      "rockFamilyShare": 0.04397014875000001,
+      "countryShare": 0.18794348971918354,
+      "chrShare": 0.15162417195022782,
+      "acHotAcShare": 0.1313896132104076,
+      "publicShare": 0.005050005027955814,
+      "urbanShare": 0.16647244462019725,
+      "spanishSubtype": {
+        "runs": 8,
+        "meanSubtypeCounts": {
+          "SPANISH_CONTEMPORARY": 0,
+          "REGIONAL_MEXICAN": 0,
+          "SPANISH_TROPICAL": 0,
+          "SPANISH_NEWS_TALK": 0,
+          "SPANISH_SPORTS_TALK": 0,
+          "SPANISH_ADULT_HITS": 0
+        },
+        "meanSubtypeSharePct": {
+          "SPANISH_CONTEMPORARY": 0,
+          "REGIONAL_MEXICAN": 0,
+          "SPANISH_TROPICAL": 0,
+          "SPANISH_NEWS_TALK": 0,
+          "SPANISH_SPORTS_TALK": 0,
+          "SPANISH_ADULT_HITS": 0
+        },
+        "meanMarketAffinityPrior": {
+          "SPANISH_CONTEMPORARY": -1.48695,
+          "REGIONAL_MEXICAN": -0.91615,
+          "SPANISH_TROPICAL": -1.9625000000000001,
+          "SPANISH_NEWS_TALK": -1.6207877010519556,
+          "SPANISH_SPORTS_TALK": -1.4594572344032708,
+          "SPANISH_ADULT_HITS": -2.3000000000000003
+        },
+        "leadershipWinsBySubtype": {},
+        "meanTotalSpanishStations": 0
+      },
+      "crWins": 0,
+      "spanishFamilyWins": 0
+    },
+    "1985": {
+      "nRuns": 8,
+      "stationCount": 27,
+      "hhi": 528.5955942765547,
+      "leaderGap12": 0.010247385,
+      "topFormats": [
+        {
+          "fmt": "ADULT_CONTEMP",
+          "share": 0.217498
+        },
+        {
+          "fmt": "ALBUM_ROCK",
+          "share": 0.15290645
+        },
+        {
+          "fmt": "COUNTRY",
+          "share": 0.115601285
+        },
+        {
+          "fmt": "TOP40",
+          "share": 0.1140794275
+        },
+        {
+          "fmt": "NEWS_TALK",
+          "share": 0.07874851249999999
+        },
+        {
+          "fmt": "HOT_AC",
+          "share": 0.06630882874999999
+        },
+        {
+          "fmt": "URBAN_CONTEMP",
+          "share": 0.04977677875
+        },
+        {
+          "fmt": "BEAUTIFUL_MUSIC",
+          "share": 0.04838749125
+        },
+        {
+          "fmt": "CLASSIC_ROCK",
+          "share": 0.045259036249999995
+        },
+        {
+          "fmt": "SOUL_RNB",
+          "share": 0.04093479375
+        }
+      ],
+      "familyShares": {
+        "HITS": 0.1140794275,
+        "ROCK": 0.19816548625,
+        "ADULT": 0.33816590625,
+        "COUNTRY": 0.115601285,
+        "URBAN": 0.09071157250000002,
+        "SPOKEN": 0.07874851249999999,
+        "CHRISTIAN": 0.00454296375,
+        "SPANISH": 0,
+        "PUBLIC": 0.059984831249999995,
+        "REMNANT": 0,
+        "INSTITUTIONAL": 0,
+        "UNMAPPED": 0
+      },
+      "familySharesDisplay": {
+        "HITS": 0.1140794275,
+        "ROCK": 0.19816548625,
+        "ADULT": 0.33816590625,
+        "COUNTRY": 0.115601285,
+        "URBAN": 0.09071157250000002,
+        "SPOKEN": 0.07874851249999999,
+        "CHRISTIAN": 0.00454296375,
+        "PUBLIC": 0.059984831249999995
+      },
+      "leadershipBuckets": {
+        "TOP40_CHR": 0.11407942920207097,
+        "AC_HOT_AC": 0.2838068330708797,
+        "ROCK_ALT_AAA": 0.19816548922802785,
+        "COUNTRY": 0.11560128669727848,
+        "NEWS_TALK_SPORTS": 0.07874851365657513,
+        "PUBLIC_RADIO": 0.05998483216471341,
+        "URBAN_RHYTHMIC": 0.0907115738595619,
+        "SPANISH": 0,
+        "GOSPEL_CCM": 0.0045429638177902154
+      },
+      "leaderFmtHist": "ADULT_CONTEMP:7|TOP40:1",
+      "leaderFamilyHist": "ADULT:7|HITS:1",
+      "spanishShare": 0,
+      "spanishStations": 0,
+      "classicRockShare": 0.045259036249999995,
+      "rockFamilyShare": 0.19816548625,
+      "countryShare": 0.11560128669727848,
+      "chrShare": 0.11407942920207097,
+      "acHotAcShare": 0.2838068330708797,
+      "publicShare": 0.05998483216471341,
+      "urbanShare": 0.0907115738595619,
+      "spanishSubtype": {
+        "runs": 8,
+        "meanSubtypeCounts": {
+          "SPANISH_CONTEMPORARY": 0,
+          "REGIONAL_MEXICAN": 0,
+          "SPANISH_TROPICAL": 0,
+          "SPANISH_NEWS_TALK": 0,
+          "SPANISH_SPORTS_TALK": 0,
+          "SPANISH_ADULT_HITS": 0
+        },
+        "meanSubtypeSharePct": {
+          "SPANISH_CONTEMPORARY": 0,
+          "REGIONAL_MEXICAN": 0,
+          "SPANISH_TROPICAL": 0,
+          "SPANISH_NEWS_TALK": 0,
+          "SPANISH_SPORTS_TALK": 0,
+          "SPANISH_ADULT_HITS": 0
+        },
+        "meanMarketAffinityPrior": {
+          "SPANISH_CONTEMPORARY": 0.5130499999999999,
+          "REGIONAL_MEXICAN": 1.08385,
+          "SPANISH_TROPICAL": 0.0375,
+          "SPANISH_NEWS_TALK": -1.6207877010519556,
+          "SPANISH_SPORTS_TALK": -1.4594572344032708,
+          "SPANISH_ADULT_HITS": -2.3000000000000003
+        },
+        "leadershipWinsBySubtype": {},
+        "meanTotalSpanishStations": 0
+      },
+      "crWins": 0,
+      "spanishFamilyWins": 0
+    },
+    "1995": {
+      "nRuns": 8,
+      "stationCount": 33.625,
+      "hhi": 531.2084358173921,
+      "leaderGap12": 0.013786959999999997,
+      "topFormats": [
+        {
+          "fmt": "ADULT_CONTEMP",
+          "share": 0.2011021375
+        },
+        {
+          "fmt": "COUNTRY",
+          "share": 0.119667045
+        },
+        {
+          "fmt": "CLASSIC_ROCK",
+          "share": 0.11019942375
+        },
+        {
+          "fmt": "ALBUM_ROCK",
+          "share": 0.10454991375000001
+        },
+        {
+          "fmt": "TOP40",
+          "share": 0.080997855
+        },
+        {
+          "fmt": "URBAN_CONTEMP",
+          "share": 0.08007961875
+        },
+        {
+          "fmt": "SPANISH",
+          "share": 0.07762499999999999
+        },
+        {
+          "fmt": "NEWS_TALK",
+          "share": 0.07163907750000001
+        },
+        {
+          "fmt": "HOT_AC",
+          "share": 0.0423931725
+        },
+        {
+          "fmt": "PUBLIC_NEWS",
+          "share": 0.01883179875
+        }
+      ],
+      "familyShares": {
+        "HITS": 0.080997855,
+        "ROCK": 0.23889265125,
+        "ADULT": 0.25342878375,
+        "COUNTRY": 0.119667045,
+        "URBAN": 0.088904655,
+        "SPOKEN": 0.0890538275,
+        "CHRISTIAN": 0.0041172475,
+        "SPANISH": 0.07762499999999999,
+        "PUBLIC": 0.0414042975,
+        "REMNANT": 0.005908640000000001,
+        "INSTITUTIONAL": 0,
+        "UNMAPPED": 0
+      },
+      "familySharesDisplay": {
+        "HITS": 0.080997855,
+        "ROCK": 0.23889265125,
+        "ADULT": 0.25342878375,
+        "COUNTRY": 0.119667045,
+        "URBAN": 0.088904655,
+        "SPOKEN": 0.0890538275,
+        "CHRISTIAN": 0.0041172475,
+        "SPANISH": 0.07762499999999999,
+        "PUBLIC": 0.0414042975,
+        "REMNANT": 0.005908640000000001
+      },
+      "leadershipBuckets": {
+        "TOP40_CHR": 0.08099785492865166,
+        "AC_HOT_AC": 0.24349530946138362,
+        "ROCK_ALT_AAA": 0.23889265069918367,
+        "COUNTRY": 0.11966704465440657,
+        "NEWS_TALK_SPORTS": 0.08905382720593275,
+        "PUBLIC_RADIO": 0.041404297387542345,
+        "URBAN_RHYTHMIC": 0.08890465466502702,
+        "SPANISH": 0.07762499983463321,
+        "GOSPEL_CCM": 0.004117247492682339
+      },
+      "leaderFmtHist": "COUNTRY:7|TOP40:1",
+      "leaderFamilyHist": "COUNTRY:7|HITS:1",
+      "spanishShare": 0.07762499983463321,
+      "spanishStations": 3,
+      "classicRockShare": 0.11019942375,
+      "rockFamilyShare": 0.23889265125,
+      "countryShare": 0.11966704465440657,
+      "chrShare": 0.08099785492865166,
+      "acHotAcShare": 0.24349530946138362,
+      "publicShare": 0.041404297387542345,
+      "urbanShare": 0.08890465466502702,
+      "spanishSubtype": {
+        "runs": 8,
+        "meanSubtypeCounts": {
+          "SPANISH_CONTEMPORARY": 0.5,
+          "REGIONAL_MEXICAN": 2.5,
+          "SPANISH_TROPICAL": 0,
+          "SPANISH_NEWS_TALK": 0,
+          "SPANISH_SPORTS_TALK": 0,
+          "SPANISH_ADULT_HITS": 0
+        },
+        "meanSubtypeSharePct": {
+          "SPANISH_CONTEMPORARY": 0.06760244054145888,
+          "REGIONAL_MEXICAN": 0.9323975594585411,
+          "SPANISH_TROPICAL": 0,
+          "SPANISH_NEWS_TALK": 0,
+          "SPANISH_SPORTS_TALK": 0,
+          "SPANISH_ADULT_HITS": 0
+        },
+        "meanMarketAffinityPrior": {
+          "SPANISH_CONTEMPORARY": 0.5130499999999999,
+          "REGIONAL_MEXICAN": 1.08385,
+          "SPANISH_TROPICAL": 0.0375,
+          "SPANISH_NEWS_TALK": 0.5792122989480446,
+          "SPANISH_SPORTS_TALK": -1.4594572344032708,
+          "SPANISH_ADULT_HITS": -2.3000000000000003
+        },
+        "leadershipWinsBySubtype": {
+          "REGIONAL_MEXICAN": 8
+        },
+        "meanTotalSpanishStations": 3
+      },
+      "crWins": 0,
+      "spanishFamilyWins": 0
+    },
+    "2005": {
+      "nRuns": 8,
+      "stationCount": 31.875,
+      "hhi": 528.3450040691164,
+      "leaderGap12": 0.006537671249999998,
+      "topFormats": [
+        {
+          "fmt": "SPANISH",
+          "share": 0.21267956
+        },
+        {
+          "fmt": "ADULT_CONTEMP",
+          "share": 0.16158663749999996
+        },
+        {
+          "fmt": "COUNTRY",
+          "share": 0.09640713125
+        },
+        {
+          "fmt": "ALBUM_ROCK",
+          "share": 0.09574995124999999
+        },
+        {
+          "fmt": "CLASSIC_ROCK",
+          "share": 0.09114116625
+        },
+        {
+          "fmt": "NEWS_TALK",
+          "share": 0.088204955
+        },
+        {
+          "fmt": "TOP40",
+          "share": 0.06285401375
+        },
+        {
+          "fmt": "URBAN_CONTEMP",
+          "share": 0.052024163750000005
+        },
+        {
+          "fmt": "HOT_AC",
+          "share": 0.03495222
+        },
+        {
+          "fmt": "PUBLIC_NEWS",
+          "share": 0.01825670125
+        }
+      ],
+      "familyShares": {
+        "HITS": 0.0748454125,
+        "ROCK": 0.20469041500000001,
+        "ADULT": 0.20233246874999997,
+        "COUNTRY": 0.09640713125,
+        "URBAN": 0.054422831250000005,
+        "SPOKEN": 0.10779169749999999,
+        "CHRISTIAN": 0,
+        "SPANISH": 0.21267956,
+        "PUBLIC": 0.042327995,
+        "REMNANT": 0.0045024875,
+        "INSTITUTIONAL": 0,
+        "UNMAPPED": 0
+      },
+      "familySharesDisplay": {
+        "HITS": 0.0748454125,
+        "ROCK": 0.20469041500000001,
+        "ADULT": 0.20233246874999997,
+        "COUNTRY": 0.09640713125,
+        "URBAN": 0.054422831250000005,
+        "SPOKEN": 0.10779169749999999,
+        "SPANISH": 0.21267956,
+        "PUBLIC": 0.042327995,
+        "REMNANT": 0.0045024875
+      },
+      "leadershipBuckets": {
+        "TOP40_CHR": 0.06285401390908835,
+        "AC_HOT_AC": 0.1965388576851945,
+        "ROCK_ALT_AAA": 0.216681813980602,
+        "COUNTRY": 0.09640713129517303,
+        "NEWS_TALK_SPORTS": 0.10779169777144554,
+        "PUBLIC_RADIO": 0.04232799505635233,
+        "URBAN_RHYTHMIC": 0.054422831177502295,
+        "SPANISH": 0.21267956035500257,
+        "GOSPEL_CCM": 0
+      },
+      "leaderFmtHist": "SPANISH:6|ADULT_CONTEMP:1|NEWS_TALK:1",
+      "leaderFamilyHist": "SPANISH:6|ADULT:1|SPOKEN:1",
+      "spanishShare": 0.21267956035500257,
+      "spanishStations": 3.5,
+      "classicRockShare": 0.09114116625,
+      "rockFamilyShare": 0.20469041500000001,
+      "countryShare": 0.09640713129517303,
+      "chrShare": 0.06285401390908835,
+      "acHotAcShare": 0.1965388576851945,
+      "publicShare": 0.04232799505635233,
+      "urbanShare": 0.054422831177502295,
+      "spanishSubtype": {
+        "runs": 8,
+        "meanSubtypeCounts": {
+          "SPANISH_CONTEMPORARY": 0,
+          "REGIONAL_MEXICAN": 2,
+          "SPANISH_TROPICAL": 0,
+          "SPANISH_NEWS_TALK": 0,
+          "SPANISH_SPORTS_TALK": 0,
+          "SPANISH_ADULT_HITS": 1.5
+        },
+        "meanSubtypeSharePct": {
+          "SPANISH_CONTEMPORARY": 0,
+          "REGIONAL_MEXICAN": 0.8545160878445064,
+          "SPANISH_TROPICAL": 0,
+          "SPANISH_NEWS_TALK": 0,
+          "SPANISH_SPORTS_TALK": 0,
+          "SPANISH_ADULT_HITS": 0.1454839121554935
+        },
+        "meanMarketAffinityPrior": {
+          "SPANISH_CONTEMPORARY": 0.5130499999999999,
+          "REGIONAL_MEXICAN": 1.08385,
+          "SPANISH_TROPICAL": 0.0375,
+          "SPANISH_NEWS_TALK": 0.5792122989480446,
+          "SPANISH_SPORTS_TALK": 0.6905427655967291,
+          "SPANISH_ADULT_HITS": 0.5499999999999999
+        },
+        "leadershipWinsBySubtype": {
+          "REGIONAL_MEXICAN": 8
+        },
+        "meanTotalSpanishStations": 3.5
+      },
+      "crWins": 0,
+      "spanishFamilyWins": 0.75
+    },
+    "2026": {
+      "nRuns": 8,
+      "stationCount": 30.125,
+      "hhi": 511.5080551359846,
+      "leaderGap12": 0.028975658750000004,
+      "topFormats": [
+        {
+          "fmt": "SPANISH",
+          "share": 0.2096558425
+        },
+        {
+          "fmt": "ADULT_CONTEMP",
+          "share": 0.15597588750000002
+        },
+        {
+          "fmt": "COUNTRY",
+          "share": 0.13561319
+        },
+        {
+          "fmt": "URBAN_CONTEMP",
+          "share": 0.07465640625
+        },
+        {
+          "fmt": "ALBUM_ROCK",
+          "share": 0.06846559125000001
+        },
+        {
+          "fmt": "CLASSIC_ROCK",
+          "share": 0.06798964625000001
+        },
+        {
+          "fmt": "TOP40",
+          "share": 0.05413697
+        },
+        {
+          "fmt": "RELIGIOUS_NETWORK",
+          "share": 0.05155813375
+        },
+        {
+          "fmt": "NEWS_TALK",
+          "share": 0.037090910000000005
+        },
+        {
+          "fmt": "HOT_AC",
+          "share": 0.027431871249999996
+        }
+      ],
+      "familyShares": {
+        "HITS": 0.064076305,
+        "ROCK": 0.14681237125,
+        "ADULT": 0.18554135000000002,
+        "COUNTRY": 0.13561319,
+        "URBAN": 0.08165987875,
+        "SPOKEN": 0.07092861875000002,
+        "CHRISTIAN": 0,
+        "SPANISH": 0.2096558425,
+        "PUBLIC": 0.04677400625,
+        "REMNANT": 0.00692697875,
+        "INSTITUTIONAL": 0.05155813375,
+        "UNMAPPED": 0
+      },
+      "familySharesDisplay": {
+        "HITS": 0.064076305,
+        "ROCK": 0.14681237125,
+        "ADULT": 0.18554135000000002,
+        "COUNTRY": 0.13561319,
+        "URBAN": 0.08165987875,
+        "SPOKEN": 0.07092861875000002,
+        "SPANISH": 0.2096558425,
+        "PUBLIC": 0.04677400625,
+        "REMNANT": 0.00692697875,
+        "INSTITUTIONAL": 0.05155813375
+      },
+      "leadershipBuckets": {
+        "TOP40_CHR": 0.05416938232656142,
+        "AC_HOT_AC": 0.18349431331914012,
+        "ROCK_ALT_AAA": 0.15682088178158748,
+        "COUNTRY": 0.1356606703181519,
+        "NEWS_TALK_SPORTS": 0.07097087640850905,
+        "PUBLIC_RADIO": 0.04679732805643269,
+        "URBAN_RHYTHMIC": 0.08170714737496411,
+        "SPANISH": 0.20972190488282058,
+        "GOSPEL_CCM": 0.051584992720435964
+      },
+      "leaderFmtHist": "SPANISH:8",
+      "leaderFamilyHist": "SPANISH:8",
+      "spanishShare": 0.20972190488282058,
+      "spanishStations": 3.375,
+      "classicRockShare": 0.06798964625000001,
+      "rockFamilyShare": 0.14681237125,
+      "countryShare": 0.1356606703181519,
+      "chrShare": 0.05416938232656142,
+      "acHotAcShare": 0.18349431331914012,
+      "publicShare": 0.04679732805643269,
+      "urbanShare": 0.08170714737496411,
+      "spanishSubtype": {
+        "runs": 8,
+        "meanSubtypeCounts": {
+          "SPANISH_CONTEMPORARY": 0,
+          "REGIONAL_MEXICAN": 2,
+          "SPANISH_TROPICAL": 0,
+          "SPANISH_NEWS_TALK": 0,
+          "SPANISH_SPORTS_TALK": 0,
+          "SPANISH_ADULT_HITS": 1.375
+        },
+        "meanSubtypeSharePct": {
+          "SPANISH_CONTEMPORARY": 0,
+          "REGIONAL_MEXICAN": 0.8611820567993412,
+          "SPANISH_TROPICAL": 0,
+          "SPANISH_NEWS_TALK": 0,
+          "SPANISH_SPORTS_TALK": 0,
+          "SPANISH_ADULT_HITS": 0.1388179432006587
+        },
+        "meanMarketAffinityPrior": {
+          "SPANISH_CONTEMPORARY": 0.5130499999999999,
+          "REGIONAL_MEXICAN": 1.08385,
+          "SPANISH_TROPICAL": 0.0375,
+          "SPANISH_NEWS_TALK": 0.5792122989480446,
+          "SPANISH_SPORTS_TALK": 0.6905427655967291,
+          "SPANISH_ADULT_HITS": 0.5499999999999999
+        },
+        "leadershipWinsBySubtype": {
+          "REGIONAL_MEXICAN": 8
+        },
+        "meanTotalSpanishStations": 3.375
+      },
+      "crWins": 0,
+      "spanishFamilyWins": 1
+    }
+  },
+  "controlsByYear": {
+    "losangeles": {
+      "1975": {
+        "nRuns": 8,
+        "stationCount": 26,
+        "hhi": 668.4343411603701,
+        "leaderGap12": 0.022321126249999997,
+        "topFormats": [
+          {
+            "fmt": "TOP40",
+            "share": 0.25595597625
+          },
+          {
+            "fmt": "SOUL_RNB",
+            "share": 0.22317133375
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.14635339749999998
+          },
+          {
+            "fmt": "MOR",
+            "share": 0.14235664250000002
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.09264928750000001
+          },
+          {
+            "fmt": "BEAUTIFUL_MUSIC",
+            "share": 0.04594354125
+          },
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.03676066125
+          },
+          {
+            "fmt": "COUNTRY",
+            "share": 0.0255051
+          },
+          {
+            "fmt": "GOSPEL",
+            "share": 0.015073761249999998
+          },
+          {
+            "fmt": "ALL_NEWS",
+            "share": 0.0115910775
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.25595597625,
+          "ROCK": 0.09264928750000001,
+          "ADULT": 0.22506084499999998,
+          "COUNTRY": 0.0255051,
+          "URBAN": 0.22317133375,
+          "SPOKEN": 0.157944475,
+          "CHRISTIAN": 0.015073761249999998,
+          "SPANISH": 0,
+          "PUBLIC": 0.0033241012499999997,
+          "REMNANT": 0.00131511625,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.25595597625,
+          "ROCK": 0.09264928750000001,
+          "ADULT": 0.22506084499999998,
+          "COUNTRY": 0.0255051,
+          "URBAN": 0.22317133375,
+          "SPOKEN": 0.157944475,
+          "CHRISTIAN": 0.015073761249999998,
+          "PUBLIC": 0.0033241012499999997,
+          "REMNANT": 0.00131511625
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.25595597736691794,
+          "AC_HOT_AC": 0.03676066126465597,
+          "ROCK_ALT_AAA": 0.09264928784132938,
+          "COUNTRY": 0.025505100169666544,
+          "NEWS_TALK_SPORTS": 0.15794447571917272,
+          "PUBLIC_RADIO": 0.0033241012610761133,
+          "URBAN_RHYTHMIC": 0.22317133457258942,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.015073761310306053
+        },
+        "leaderFmtHist": "SOUL_RNB:4|MOR:4",
+        "leaderFamilyHist": "URBAN:4|ADULT:4",
+        "spanishShare": 0,
+        "spanishStations": 0,
+        "classicRockShare": 0,
+        "rockFamilyShare": 0.09264928750000001,
+        "countryShare": 0.025505100169666544,
+        "chrShare": 0.25595597736691794,
+        "acHotAcShare": 0.03676066126465597,
+        "publicShare": 0.0033241012610761133,
+        "urbanShare": 0.22317133457258942,
+        "spanishSubtype": null,
+        "crWins": 0,
+        "spanishFamilyWins": 0
+      },
+      "1985": {
+        "nRuns": 8,
+        "stationCount": 35,
+        "hhi": 456.8846573457916,
+        "leaderGap12": 0.0050645025,
+        "topFormats": [
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.19079323625
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.15901616375000002
+          },
+          {
+            "fmt": "TOP40",
+            "share": 0.1362913025
+          },
+          {
+            "fmt": "CLASSIC_ROCK",
+            "share": 0.12926527875000002
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.09970368499999999
+          },
+          {
+            "fmt": "URBAN_CONTEMP",
+            "share": 0.08741421500000002
+          },
+          {
+            "fmt": "BEAUTIFUL_MUSIC",
+            "share": 0.056906941249999995
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.0400224575
+          },
+          {
+            "fmt": "SOUL_RNB",
+            "share": 0.037371974999999995
+          },
+          {
+            "fmt": "COUNTRY",
+            "share": 0.0287074925
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.143107355,
+          "ROCK": 0.2882814425,
+          "ADULT": 0.24969290000000002,
+          "COUNTRY": 0.0287074925,
+          "URBAN": 0.12478619,
+          "SPOKEN": 0.09970368499999999,
+          "CHRISTIAN": 0.0032310425,
+          "SPANISH": 0,
+          "PUBLIC": 0.06248989375000001,
+          "REMNANT": 0,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.143107355,
+          "ROCK": 0.2882814425,
+          "ADULT": 0.24969290000000002,
+          "COUNTRY": 0.0287074925,
+          "URBAN": 0.12478619,
+          "SPOKEN": 0.09970368499999999,
+          "CHRISTIAN": 0.0032310425,
+          "PUBLIC": 0.06248989375000001
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.13629130233709386,
+          "AC_HOT_AC": 0.19079323602242765,
+          "ROCK_ALT_AAA": 0.29509749457096346,
+          "COUNTRY": 0.028707492461470856,
+          "NEWS_TALK_SPORTS": 0.0997036849012075,
+          "PUBLIC_RADIO": 0.06248989367312266,
+          "URBAN_RHYTHMIC": 0.12478618985728648,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.0032310424956331876
+        },
+        "leaderFmtHist": "ADULT_CONTEMP:3|NEWS_TALK:3|CLASSIC_ROCK:2",
+        "leaderFamilyHist": "ADULT:3|SPOKEN:3|ROCK:2",
+        "spanishShare": 0,
+        "spanishStations": 0,
+        "classicRockShare": 0.12926527875000002,
+        "rockFamilyShare": 0.2882814425,
+        "countryShare": 0.028707492461470856,
+        "chrShare": 0.13629130233709386,
+        "acHotAcShare": 0.19079323602242765,
+        "publicShare": 0.06248989367312266,
+        "urbanShare": 0.12478618985728648,
+        "spanishSubtype": null,
+        "crWins": 0.25,
+        "spanishFamilyWins": 0
+      },
+      "1995": {
+        "nRuns": 8,
+        "stationCount": 42.25,
+        "hhi": 502.5209326909975,
+        "leaderGap12": 0.00477124625,
+        "topFormats": [
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.18504008875
+          },
+          {
+            "fmt": "CLASSIC_ROCK",
+            "share": 0.15864633874999998
+          },
+          {
+            "fmt": "TOP40",
+            "share": 0.15087730875
+          },
+          {
+            "fmt": "URBAN_CONTEMP",
+            "share": 0.10008115375
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.09733339625000001
+          },
+          {
+            "fmt": "COUNTRY",
+            "share": 0.06489008125
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.052542183750000006
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.029063413750000003
+          },
+          {
+            "fmt": "ALT_ROCK",
+            "share": 0.028586155
+          },
+          {
+            "fmt": "SPANISH",
+            "share": 0.02705056
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.15735388875,
+          "ROCK": 0.2914293575,
+          "ADULT": 0.210226525,
+          "COUNTRY": 0.06489008125,
+          "URBAN": 0.10948613874999999,
+          "SPOKEN": 0.07944201249999999,
+          "CHRISTIAN": 0.00096522375,
+          "SPANISH": 0.02705056,
+          "PUBLIC": 0.046873736250000006,
+          "REMNANT": 0.011889628749999999,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.15735388875,
+          "ROCK": 0.2914293575,
+          "ADULT": 0.210226525,
+          "COUNTRY": 0.06489008125,
+          "URBAN": 0.10948613874999999,
+          "SPOKEN": 0.07944201249999999,
+          "CHRISTIAN": 0.00096522375,
+          "SPANISH": 0.02705056,
+          "PUBLIC": 0.046873736250000006,
+          "REMNANT": 0.011889628749999999
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.15095526428279832,
+          "AC_HOT_AC": 0.18512326265287463,
+          "ROCK_ALT_AAA": 0.2980012252981905,
+          "COUNTRY": 0.0649108068482037,
+          "NEWS_TALK_SPORTS": 0.07947558737595863,
+          "PUBLIC_RADIO": 0.04689087836561159,
+          "URBAN_RHYTHMIC": 0.10952280127741093,
+          "SPANISH": 0.027062290916822076,
+          "GOSPEL_CCM": 0.0009652237502743377
+        },
+        "leaderFmtHist": "TOP40:4|CLASSIC_ROCK:3|ADULT_CONTEMP:1",
+        "leaderFamilyHist": "HITS:4|ROCK:3|ADULT:1",
+        "spanishShare": 0.027062290916822076,
+        "spanishStations": 2.75,
+        "classicRockShare": 0.15864633874999998,
+        "rockFamilyShare": 0.2914293575,
+        "countryShare": 0.0649108068482037,
+        "chrShare": 0.15095526428279832,
+        "acHotAcShare": 0.18512326265287463,
+        "publicShare": 0.04689087836561159,
+        "urbanShare": 0.10952280127741093,
+        "spanishSubtype": null,
+        "crWins": 0.375,
+        "spanishFamilyWins": 0
+      },
+      "2005": {
+        "nRuns": 8,
+        "stationCount": 38.75,
+        "hhi": 438.8236863163306,
+        "leaderGap12": 0.013031029999999999,
+        "topFormats": [
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.129203075
+          },
+          {
+            "fmt": "CLASSIC_ROCK",
+            "share": 0.1238405425
+          },
+          {
+            "fmt": "URBAN_CONTEMP",
+            "share": 0.12280372750000002
+          },
+          {
+            "fmt": "SPANISH",
+            "share": 0.11632319
+          },
+          {
+            "fmt": "TOP40",
+            "share": 0.09740206125
+          },
+          {
+            "fmt": "COUNTRY",
+            "share": 0.07648785875
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.07150052375
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.0556915525
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.02691230875
+          },
+          {
+            "fmt": "SPORTS_TALK",
+            "share": 0.02583888125
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.13232234999999998,
+          "ROCK": 0.20516692875,
+          "ADULT": 0.14402952875,
+          "COUNTRY": 0.07648785875,
+          "URBAN": 0.14115450625,
+          "SPOKEN": 0.11550739374999999,
+          "CHRISTIAN": 0.00172189625,
+          "SPANISH": 0.11632319,
+          "PUBLIC": 0.04801412625,
+          "REMNANT": 0.018942875,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.13232234999999998,
+          "ROCK": 0.20516692875,
+          "ADULT": 0.14402952875,
+          "COUNTRY": 0.07648785875,
+          "URBAN": 0.14115450625,
+          "SPOKEN": 0.11550739374999999,
+          "CHRISTIAN": 0.00172189625,
+          "SPANISH": 0.11632319,
+          "PUBLIC": 0.04801412625,
+          "REMNANT": 0.018942875
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.11330967339829166,
+          "AC_HOT_AC": 0.13076540321924413,
+          "ROCK_ALT_AAA": 0.22430032563955857,
+          "COUNTRY": 0.07651881355881966,
+          "NEWS_TALK_SPORTS": 0.11554473850898803,
+          "PUBLIC_RADIO": 0.04803044920789888,
+          "URBAN_RHYTHMIC": 0.1411949262158488,
+          "SPANISH": 0.11633995414374859,
+          "GOSPEL_CCM": 0.00172189623796935
+        },
+        "leaderFmtHist": "SPANISH:4|NEWS_TALK:2|CLASSIC_ROCK:2",
+        "leaderFamilyHist": "SPANISH:4|SPOKEN:2|ROCK:2",
+        "spanishShare": 0.11633995414374859,
+        "spanishStations": 3,
+        "classicRockShare": 0.1238405425,
+        "rockFamilyShare": 0.20516692875,
+        "countryShare": 0.07651881355881966,
+        "chrShare": 0.11330967339829166,
+        "acHotAcShare": 0.13076540321924413,
+        "publicShare": 0.04803044920789888,
+        "urbanShare": 0.1411949262158488,
+        "spanishSubtype": null,
+        "crWins": 0.25,
+        "spanishFamilyWins": 0.5
+      },
+      "2026": {
+        "nRuns": 8,
+        "stationCount": 37.875,
+        "hhi": 466.77825603639764,
+        "leaderGap12": 0.023785819999999996,
+        "topFormats": [
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.128808145
+          },
+          {
+            "fmt": "CLASSIC_ROCK",
+            "share": 0.12545941
+          },
+          {
+            "fmt": "SPANISH",
+            "share": 0.124771295
+          },
+          {
+            "fmt": "URBAN_CONTEMP",
+            "share": 0.106481185
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.08041791
+          },
+          {
+            "fmt": "TOP40",
+            "share": 0.06805378374999999
+          },
+          {
+            "fmt": "COUNTRY",
+            "share": 0.055993445
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.05295748625
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.0517212775
+          },
+          {
+            "fmt": "SOUL_RNB",
+            "share": 0.042698943749999996
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.09756874125000001,
+          "ROCK": 0.20450286,
+          "ADULT": 0.14726956000000002,
+          "COUNTRY": 0.055993445,
+          "URBAN": 0.14918012875,
+          "SPOKEN": 0.1294353425,
+          "CHRISTIAN": 0.000823175,
+          "SPANISH": 0.124771295,
+          "PUBLIC": 0.075945045,
+          "REMNANT": 0.00462828375,
+          "INSTITUTIONAL": 0.009254135,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.09756874125000001,
+          "ROCK": 0.20450286,
+          "ADULT": 0.14726956000000002,
+          "COUNTRY": 0.055993445,
+          "URBAN": 0.14918012875,
+          "SPOKEN": 0.1294353425,
+          "CHRISTIAN": 0.000823175,
+          "SPANISH": 0.124771295,
+          "PUBLIC": 0.075945045,
+          "REMNANT": 0.00462828375,
+          "INSTITUTIONAL": 0.009254135
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.07943059386236127,
+          "AC_HOT_AC": 0.13184968315015644,
+          "ROCK_ALT_AAA": 0.22281519311555628,
+          "COUNTRY": 0.0560143765689784,
+          "NEWS_TALK_SPORTS": 0.12953579127919604,
+          "PUBLIC_RADIO": 0.07599105324917305,
+          "URBAN_RHYTHMIC": 0.14928788029241094,
+          "SPANISH": 0.12485639481719563,
+          "GOSPEL_CCM": 0.010087692339982106
+        },
+        "leaderFmtHist": "SPANISH:5|NEWS_TALK:3",
+        "leaderFamilyHist": "SPANISH:5|SPOKEN:3",
+        "spanishShare": 0.12485639481719563,
+        "spanishStations": 2.875,
+        "classicRockShare": 0.12545941,
+        "rockFamilyShare": 0.20450286,
+        "countryShare": 0.0560143765689784,
+        "chrShare": 0.07943059386236127,
+        "acHotAcShare": 0.13184968315015644,
+        "publicShare": 0.07599105324917305,
+        "urbanShare": 0.14928788029241094,
+        "spanishSubtype": null,
+        "crWins": 0,
+        "spanishFamilyWins": 0.625
+      }
+    },
+    "atlanta": {
+      "1975": {
+        "nRuns": 8,
+        "stationCount": 15,
+        "hhi": 1243.7201562098016,
+        "leaderGap12": 0.008898886250000008,
+        "topFormats": [
+          {
+            "fmt": "TOP40",
+            "share": 0.26100229124999996
+          },
+          {
+            "fmt": "COUNTRY",
+            "share": 0.17576124125
+          },
+          {
+            "fmt": "SOUL_RNB",
+            "share": 0.16382605125
+          },
+          {
+            "fmt": "MOR",
+            "share": 0.1450689625
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.08788781875
+          },
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.07809538125
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.06054551874999999
+          },
+          {
+            "fmt": "GOSPEL",
+            "share": 0.022269612499999997
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.00276884
+          },
+          {
+            "fmt": "PUBLIC_CLASSICAL",
+            "share": 0.00189942875
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.26100229124999996,
+          "ROCK": 0.06054551874999999,
+          "ADULT": 0.22316434375,
+          "COUNTRY": 0.17576124125,
+          "URBAN": 0.16382605125,
+          "SPOKEN": 0.08788781875,
+          "CHRISTIAN": 0.022269612499999997,
+          "SPANISH": 0,
+          "PUBLIC": 0.0055431225,
+          "REMNANT": 0,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.26100229124999996,
+          "ROCK": 0.06054551874999999,
+          "ADULT": 0.22316434375,
+          "COUNTRY": 0.17576124125,
+          "URBAN": 0.16382605125,
+          "SPOKEN": 0.08788781875,
+          "CHRISTIAN": 0.022269612499999997,
+          "PUBLIC": 0.0055431225
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.26100229124859653,
+          "AC_HOT_AC": 0.07809538120710727,
+          "ROCK_ALT_AAA": 0.06054551875663047,
+          "COUNTRY": 0.17576124126015097,
+          "NEWS_TALK_SPORTS": 0.08788781881482385,
+          "PUBLIC_RADIO": 0.005543122500517113,
+          "URBAN_RHYTHMIC": 0.16382605127676714,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.022269612483431837
+        },
+        "leaderFmtHist": "COUNTRY:4|TOP40:3|MOR:1",
+        "leaderFamilyHist": "COUNTRY:4|HITS:3|ADULT:1",
+        "spanishShare": 0,
+        "spanishStations": 0,
+        "classicRockShare": 0,
+        "rockFamilyShare": 0.06054551874999999,
+        "countryShare": 0.17576124126015097,
+        "chrShare": 0.26100229124859653,
+        "acHotAcShare": 0.07809538120710727,
+        "publicShare": 0.005543122500517113,
+        "urbanShare": 0.16382605127676714,
+        "spanishSubtype": null,
+        "crWins": 0,
+        "spanishFamilyWins": 0
+      },
+      "1985": {
+        "nRuns": 8,
+        "stationCount": 28,
+        "hhi": 562.7006538452885,
+        "leaderGap12": 0.014116327499999996,
+        "topFormats": [
+          {
+            "fmt": "TOP40",
+            "share": 0.18711327125
+          },
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.16320862625
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.14367517124999998
+          },
+          {
+            "fmt": "COUNTRY",
+            "share": 0.11853988875
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.1057582225
+          },
+          {
+            "fmt": "CLASSIC_ROCK",
+            "share": 0.08640381125
+          },
+          {
+            "fmt": "BEAUTIFUL_MUSIC",
+            "share": 0.06193084874999999
+          },
+          {
+            "fmt": "URBAN_CONTEMP",
+            "share": 0.035927756250000005
+          },
+          {
+            "fmt": "SOUL_RNB",
+            "share": 0.0348277725
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.032892765
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.18711327125,
+          "ROCK": 0.2300789825,
+          "ADULT": 0.22513947499999998,
+          "COUNTRY": 0.11853988875,
+          "URBAN": 0.07075552874999999,
+          "SPOKEN": 0.1057582225,
+          "CHRISTIAN": 0.004857662499999999,
+          "SPANISH": 0,
+          "PUBLIC": 0.05775695875,
+          "REMNANT": 0,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.18711327125,
+          "ROCK": 0.2300789825,
+          "ADULT": 0.22513947499999998,
+          "COUNTRY": 0.11853988875,
+          "URBAN": 0.07075552874999999,
+          "SPOKEN": 0.1057582225,
+          "CHRISTIAN": 0.004857662499999999,
+          "PUBLIC": 0.05775695875
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.1871132731186881,
+          "AC_HOT_AC": 0.16320862782598616,
+          "ROCK_ALT_AAA": 0.230078984789616,
+          "COUNTRY": 0.1185398899475325,
+          "NEWS_TALK_SPORTS": 0.10575822364985177,
+          "PUBLIC_RADIO": 0.05775695932537853,
+          "URBAN_RHYTHMIC": 0.07075552944431028,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.004857662545817926
+        },
+        "leaderFmtHist": "NEWS_TALK:4|ADULT_CONTEMP:3|CLASSIC_ROCK:1",
+        "leaderFamilyHist": "SPOKEN:4|ADULT:3|ROCK:1",
+        "spanishShare": 0,
+        "spanishStations": 0,
+        "classicRockShare": 0.08640381125,
+        "rockFamilyShare": 0.2300789825,
+        "countryShare": 0.1185398899475325,
+        "chrShare": 0.1871132731186881,
+        "acHotAcShare": 0.16320862782598616,
+        "publicShare": 0.05775695932537853,
+        "urbanShare": 0.07075552944431028,
+        "spanishSubtype": null,
+        "crWins": 0.125,
+        "spanishFamilyWins": 0
+      },
+      "1995": {
+        "nRuns": 8,
+        "stationCount": 30.875,
+        "hhi": 717.455147983332,
+        "leaderGap12": 0.0076422500000000015,
+        "topFormats": [
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.20657922499999998
+          },
+          {
+            "fmt": "TOP40",
+            "share": 0.19409625499999997
+          },
+          {
+            "fmt": "COUNTRY",
+            "share": 0.12548372
+          },
+          {
+            "fmt": "CLASSIC_ROCK",
+            "share": 0.11383531875000001
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.09049767249999999
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.079348735
+          },
+          {
+            "fmt": "URBAN_CONTEMP",
+            "share": 0.0545979675
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.02071679875
+          },
+          {
+            "fmt": "ALT_ROCK",
+            "share": 0.018990355
+          },
+          {
+            "fmt": "PUBLIC_CLASSICAL",
+            "share": 0.012115337499999998
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.20023630874999998,
+          "ROCK": 0.23324570625,
+          "ADULT": 0.21826188499999996,
+          "COUNTRY": 0.12548372,
+          "URBAN": 0.063315215,
+          "SPOKEN": 0.10369840625,
+          "CHRISTIAN": 0.0044336887499999995,
+          "SPANISH": 0.004695738749999999,
+          "PUBLIC": 0.039467699999999994,
+          "REMNANT": 0.006842795,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.20023630874999998,
+          "ROCK": 0.23324570625,
+          "ADULT": 0.21826188499999996,
+          "COUNTRY": 0.12548372,
+          "URBAN": 0.063315215,
+          "SPOKEN": 0.10369840625,
+          "CHRISTIAN": 0.0044336887499999995,
+          "SPANISH": 0.004695738749999999,
+          "PUBLIC": 0.039467699999999994,
+          "REMNANT": 0.006842795
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.1941508763812892,
+          "AC_HOT_AC": 0.20665090523460258,
+          "ROCK_ALT_AAA": 0.23946591114104926,
+          "COUNTRY": 0.125532149861973,
+          "NEWS_TALK_SPORTS": 0.10372785891474946,
+          "PUBLIC_RADIO": 0.03948000241022161,
+          "URBAN_RHYTHMIC": 0.06332554799262197,
+          "SPANISH": 0.004696364655680229,
+          "GOSPEL_CCM": 0.004435660860886985
+        },
+        "leaderFmtHist": "CLASSIC_ROCK:3|ADULT_CONTEMP:2|TOP40:2|NEWS_TALK:1",
+        "leaderFamilyHist": "ROCK:3|ADULT:2|HITS:2|SPOKEN:1",
+        "spanishShare": 0.004696364655680229,
+        "spanishStations": 0.75,
+        "classicRockShare": 0.11383531875000001,
+        "rockFamilyShare": 0.23324570625,
+        "countryShare": 0.125532149861973,
+        "chrShare": 0.1941508763812892,
+        "acHotAcShare": 0.20665090523460258,
+        "publicShare": 0.03948000241022161,
+        "urbanShare": 0.06332554799262197,
+        "spanishSubtype": null,
+        "crWins": 0.375,
+        "spanishFamilyWins": 0
+      },
+      "2005": {
+        "nRuns": 8,
+        "stationCount": 29.25,
+        "hhi": 605.9747464448577,
+        "leaderGap12": 0.008393415000000001,
+        "topFormats": [
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.19475421
+          },
+          {
+            "fmt": "TOP40",
+            "share": 0.14402011374999998
+          },
+          {
+            "fmt": "COUNTRY",
+            "share": 0.1318768075
+          },
+          {
+            "fmt": "CLASSIC_ROCK",
+            "share": 0.11315079
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.10638605000000001
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.08903223499999999
+          },
+          {
+            "fmt": "URBAN_CONTEMP",
+            "share": 0.059467704999999996
+          },
+          {
+            "fmt": "SOUL_RNB",
+            "share": 0.02343671875
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.02110386
+          },
+          {
+            "fmt": "ALL_NEWS",
+            "share": 0.01521420125
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.15704016125,
+          "ROCK": 0.23177622125,
+          "ADULT": 0.21378287375,
+          "COUNTRY": 0.1318768075,
+          "URBAN": 0.08290442375,
+          "SPOKEN": 0.12024959000000002,
+          "CHRISTIAN": 0.0048926225,
+          "SPANISH": 0.00271929125,
+          "PUBLIC": 0.0462361425,
+          "REMNANT": 0.00852187125,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.15704016125,
+          "ROCK": 0.23177622125,
+          "ADULT": 0.21378287375,
+          "COUNTRY": 0.1318768075,
+          "URBAN": 0.08290442375,
+          "SPOKEN": 0.12024959000000002,
+          "CHRISTIAN": 0.0048926225,
+          "SPANISH": 0.00271929125,
+          "PUBLIC": 0.0462361425,
+          "REMNANT": 0.00852187125
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.15161276182676703,
+          "AC_HOT_AC": 0.20341189645538726,
+          "ROCK_ALT_AAA": 0.2372036187991882,
+          "COUNTRY": 0.13187680672922716,
+          "NEWS_TALK_SPORTS": 0.12024958940748913,
+          "PUBLIC_RADIO": 0.04623614227436883,
+          "URBAN_RHYTHMIC": 0.08290442347824357,
+          "SPANISH": 0.0027192912438171518,
+          "GOSPEL_CCM": 0.004892622410130153
+        },
+        "leaderFmtHist": "CLASSIC_ROCK:4|NEWS_TALK:3|ADULT_CONTEMP:1",
+        "leaderFamilyHist": "ROCK:4|SPOKEN:3|ADULT:1",
+        "spanishShare": 0.0027192912438171518,
+        "spanishStations": 0.625,
+        "classicRockShare": 0.11315079,
+        "rockFamilyShare": 0.23177622125,
+        "countryShare": 0.13187680672922716,
+        "chrShare": 0.15161276182676703,
+        "acHotAcShare": 0.20341189645538726,
+        "publicShare": 0.04623614227436883,
+        "urbanShare": 0.08290442347824357,
+        "spanishSubtype": null,
+        "crWins": 0.5,
+        "spanishFamilyWins": 0
+      },
+      "2026": {
+        "nRuns": 8,
+        "stationCount": 28.875,
+        "hhi": 503.18849163893515,
+        "leaderGap12": 0.008921051250000003,
+        "topFormats": [
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.1486530675
+          },
+          {
+            "fmt": "COUNTRY",
+            "share": 0.13885006
+          },
+          {
+            "fmt": "RELIGIOUS_NETWORK",
+            "share": 0.11984351125000002
+          },
+          {
+            "fmt": "TOP40",
+            "share": 0.1142634025
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.08568130125000001
+          },
+          {
+            "fmt": "CLASSIC_ROCK",
+            "share": 0.07932393
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.0711697025
+          },
+          {
+            "fmt": "URBAN_CONTEMP",
+            "share": 0.053574294999999994
+          },
+          {
+            "fmt": "SPANISH",
+            "share": 0.03084068375
+          },
+          {
+            "fmt": "SOUL_RNB",
+            "share": 0.029230874999999996
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.13041835875,
+          "ROCK": 0.17379997374999998,
+          "ADULT": 0.15675071,
+          "COUNTRY": 0.13885006,
+          "URBAN": 0.08280517000000001,
+          "SPOKEN": 0.11538026375,
+          "CHRISTIAN": 0.00417487875,
+          "SPANISH": 0.03084068375,
+          "PUBLIC": 0.04521998625,
+          "REMNANT": 0.0019164087500000001,
+          "INSTITUTIONAL": 0.11984351125000002,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.13041835875,
+          "ROCK": 0.17379997374999998,
+          "ADULT": 0.15675071,
+          "COUNTRY": 0.13885006,
+          "URBAN": 0.08280517000000001,
+          "SPOKEN": 0.11538026375,
+          "CHRISTIAN": 0.00417487875,
+          "SPANISH": 0.03084068375,
+          "PUBLIC": 0.04521998625,
+          "REMNANT": 0.0019164087500000001,
+          "INSTITUTIONAL": 0.11984351125000002
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.1203243819273718,
+          "AC_HOT_AC": 0.1523842120470537,
+          "ROCK_ALT_AAA": 0.18389394917407964,
+          "COUNTRY": 0.1388500592980849,
+          "NEWS_TALK_SPORTS": 0.11538026281878981,
+          "PUBLIC_RADIO": 0.04521998601481733,
+          "URBAN_RHYTHMIC": 0.08280516924451783,
+          "SPANISH": 0.030840684031792104,
+          "GOSPEL_CCM": 0.1240183892545927
+        },
+        "leaderFmtHist": "ADULT_CONTEMP:3|NEWS_TALK:2|RELIGIOUS_NETWORK:2|SPORTS_TALK:1",
+        "leaderFamilyHist": "ADULT:3|SPOKEN:3|INSTITUTIONAL:2",
+        "spanishShare": 0.030840684031792104,
+        "spanishStations": 1,
+        "classicRockShare": 0.07932393,
+        "rockFamilyShare": 0.17379997374999998,
+        "countryShare": 0.1388500592980849,
+        "chrShare": 0.1203243819273718,
+        "acHotAcShare": 0.1523842120470537,
+        "publicShare": 0.04521998601481733,
+        "urbanShare": 0.08280516924451783,
+        "spanishSubtype": null,
+        "crWins": 0,
+        "spanishFamilyWins": 0
+      }
+    },
+    "seattle": {
+      "1975": {
+        "nRuns": 8,
+        "stationCount": 14,
+        "hhi": 1244.1035160833412,
+        "leaderGap12": 0.0056539412500000025,
+        "topFormats": [
+          {
+            "fmt": "TOP40",
+            "share": 0.27712248
+          },
+          {
+            "fmt": "COUNTRY",
+            "share": 0.17651386375
+          },
+          {
+            "fmt": "SOUL_RNB",
+            "share": 0.16633445625
+          },
+          {
+            "fmt": "MOR",
+            "share": 0.14034792749999997
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.08081206500000002
+          },
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.0630246025
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.06110188
+          },
+          {
+            "fmt": "GOSPEL",
+            "share": 0.027568978749999997
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.0035658825
+          },
+          {
+            "fmt": "PUBLIC_CLASSICAL",
+            "share": 0.002112795
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.27712248,
+          "ROCK": 0.06110188,
+          "ADULT": 0.20337253000000002,
+          "COUNTRY": 0.17651386375,
+          "URBAN": 0.16633445625,
+          "SPOKEN": 0.08230713125000001,
+          "CHRISTIAN": 0.027568978749999997,
+          "SPANISH": 0,
+          "PUBLIC": 0.0056786775,
+          "REMNANT": 0,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.27712248,
+          "ROCK": 0.06110188,
+          "ADULT": 0.20337253000000002,
+          "COUNTRY": 0.17651386375,
+          "URBAN": 0.16633445625,
+          "SPOKEN": 0.08230713125000001,
+          "CHRISTIAN": 0.027568978749999997,
+          "PUBLIC": 0.0056786775
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.2771224806930805,
+          "AC_HOT_AC": 0.06302460270856644,
+          "ROCK_ALT_AAA": 0.061101880142850354,
+          "COUNTRY": 0.1765138641572745,
+          "NEWS_TALK_SPORTS": 0.08230713143391044,
+          "PUBLIC_RADIO": 0.005678677513462813,
+          "URBAN_RHYTHMIC": 0.16633445663587157,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.02756897880084279
+        },
+        "leaderFmtHist": "COUNTRY:6|TOP40:2",
+        "leaderFamilyHist": "COUNTRY:6|HITS:2",
+        "spanishShare": 0,
+        "spanishStations": 0,
+        "classicRockShare": 0,
+        "rockFamilyShare": 0.06110188,
+        "countryShare": 0.1765138641572745,
+        "chrShare": 0.2771224806930805,
+        "acHotAcShare": 0.06302460270856644,
+        "publicShare": 0.005678677513462813,
+        "urbanShare": 0.16633445663587157,
+        "spanishSubtype": null,
+        "crWins": 0,
+        "spanishFamilyWins": 0
+      },
+      "1985": {
+        "nRuns": 8,
+        "stationCount": 28,
+        "hhi": 574.5420400473281,
+        "leaderGap12": 0.0236284225,
+        "topFormats": [
+          {
+            "fmt": "TOP40",
+            "share": 0.22129068000000002
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.15173762125
+          },
+          {
+            "fmt": "COUNTRY",
+            "share": 0.13838551
+          },
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.13354145875
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.11200479624999998
+          },
+          {
+            "fmt": "CLASSIC_ROCK",
+            "share": 0.06512049875
+          },
+          {
+            "fmt": "BEAUTIFUL_MUSIC",
+            "share": 0.06487825
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.03969364625
+          },
+          {
+            "fmt": "SOUL_RNB",
+            "share": 0.033474044999999994
+          },
+          {
+            "fmt": "PUBLIC_CLASSICAL",
+            "share": 0.0150399
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.22129068000000002,
+          "ROCK": 0.22888977375,
+          "ADULT": 0.19841970875,
+          "COUNTRY": 0.13838551,
+          "URBAN": 0.033474044999999994,
+          "SPOKEN": 0.11200479624999998,
+          "CHRISTIAN": 0.0040516425,
+          "SPANISH": 0,
+          "PUBLIC": 0.0634838425,
+          "REMNANT": 0,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.22129068000000002,
+          "ROCK": 0.22888977375,
+          "ADULT": 0.19841970875,
+          "COUNTRY": 0.13838551,
+          "URBAN": 0.033474044999999994,
+          "SPOKEN": 0.11200479624999998,
+          "CHRISTIAN": 0.0040516425,
+          "PUBLIC": 0.0634838425
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.22129068026200552,
+          "AC_HOT_AC": 0.1335414589450557,
+          "ROCK_ALT_AAA": 0.22888977399716637,
+          "COUNTRY": 0.1383855101995034,
+          "NEWS_TALK_SPORTS": 0.11200479644129571,
+          "PUBLIC_RADIO": 0.06348384256292713,
+          "URBAN_RHYTHMIC": 0.033474045039967135,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.0040516425036337764
+        },
+        "leaderFmtHist": "NEWS_TALK:4|TOP40:4",
+        "leaderFamilyHist": "SPOKEN:4|HITS:4",
+        "spanishShare": 0,
+        "spanishStations": 0,
+        "classicRockShare": 0.06512049875,
+        "rockFamilyShare": 0.22888977375,
+        "countryShare": 0.1383855101995034,
+        "chrShare": 0.22129068026200552,
+        "acHotAcShare": 0.1335414589450557,
+        "publicShare": 0.06348384256292713,
+        "urbanShare": 0.033474045039967135,
+        "spanishSubtype": null,
+        "crWins": 0,
+        "spanishFamilyWins": 0
+      },
+      "1995": {
+        "nRuns": 8,
+        "stationCount": 30.75,
+        "hhi": 744.8595025123188,
+        "leaderGap12": 0.017067948750000003,
+        "topFormats": [
+          {
+            "fmt": "TOP40",
+            "share": 0.24787739500000003
+          },
+          {
+            "fmt": "COUNTRY",
+            "share": 0.16996973624999998
+          },
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.16377525375000002
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.11021534500000002
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.076600655
+          },
+          {
+            "fmt": "CLASSIC_ROCK",
+            "share": 0.07623046249999998
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.026700555
+          },
+          {
+            "fmt": "ALT_ROCK",
+            "share": 0.02324737375
+          },
+          {
+            "fmt": "AAA",
+            "share": 0.022438029999999998
+          },
+          {
+            "fmt": "PUBLIC_CLASSICAL",
+            "share": 0.01352205375
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.25281823000000003,
+          "ROCK": 0.23213121124999997,
+          "ADULT": 0.1788231625,
+          "COUNTRY": 0.16996973624999998,
+          "URBAN": 0.0058305675,
+          "SPOKEN": 0.09954454124999998,
+          "CHRISTIAN": 0.0027575962499999996,
+          "SPANISH": 0.0036144550000000004,
+          "PUBLIC": 0.0458457975,
+          "REMNANT": 0.00771393625,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.25281823000000003,
+          "ROCK": 0.23213121124999997,
+          "ADULT": 0.1788231625,
+          "COUNTRY": 0.16996973624999998,
+          "URBAN": 0.0058305675,
+          "SPOKEN": 0.09954454124999998,
+          "CHRISTIAN": 0.0027575962499999996,
+          "SPANISH": 0.0036144550000000004,
+          "PUBLIC": 0.0458457975,
+          "REMNANT": 0.00771393625
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.24812370840580028,
+          "AC_HOT_AC": 0.1639527202019412,
+          "ROCK_ALT_AAA": 0.23727268521981015,
+          "COUNTRY": 0.17011695193698537,
+          "NEWS_TALK_SPORTS": 0.09964169445139595,
+          "PUBLIC_RADIO": 0.04589425673419548,
+          "URBAN_RHYTHMIC": 0.0058321005967044365,
+          "SPANISH": 0.0036266138482719357,
+          "GOSPEL_CCM": 0.002757596279252902
+        },
+        "leaderFmtHist": "TOP40:8",
+        "leaderFamilyHist": "HITS:8",
+        "spanishShare": 0.0036266138482719357,
+        "spanishStations": 0.5,
+        "classicRockShare": 0.07623046249999998,
+        "rockFamilyShare": 0.23213121124999997,
+        "countryShare": 0.17011695193698537,
+        "chrShare": 0.24812370840580028,
+        "acHotAcShare": 0.1639527202019412,
+        "publicShare": 0.04589425673419548,
+        "urbanShare": 0.0058321005967044365,
+        "spanishSubtype": null,
+        "crWins": 0,
+        "spanishFamilyWins": 0
+      },
+      "2005": {
+        "nRuns": 8,
+        "stationCount": 30.125,
+        "hhi": 605.5402041649716,
+        "leaderGap12": 0.023340797500000003,
+        "topFormats": [
+          {
+            "fmt": "COUNTRY",
+            "share": 0.16857709625000003
+          },
+          {
+            "fmt": "TOP40",
+            "share": 0.16701491875
+          },
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.1363439075
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.11612499250000001
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.1105007075
+          },
+          {
+            "fmt": "CLASSIC_ROCK",
+            "share": 0.08919609
+          },
+          {
+            "fmt": "ALT_ROCK",
+            "share": 0.038385748750000004
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.02710591125
+          },
+          {
+            "fmt": "SOUL_RNB",
+            "share": 0.02415377625
+          },
+          {
+            "fmt": "SPANISH",
+            "share": 0.015870338749999997
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.174372335,
+          "ROCK": 0.24501815250000003,
+          "ADULT": 0.16181256374999997,
+          "COUNTRY": 0.16857709625000003,
+          "URBAN": 0.02415377625,
+          "SPOKEN": 0.14948434,
+          "CHRISTIAN": 0,
+          "SPANISH": 0.015870338749999997,
+          "PUBLIC": 0.05058729875,
+          "REMNANT": 0.0038511587499999995,
+          "INSTITUTIONAL": 0.006062606250000001,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.174372335,
+          "ROCK": 0.24501815250000003,
+          "ADULT": 0.16181256374999997,
+          "COUNTRY": 0.16857709625000003,
+          "URBAN": 0.02415377625,
+          "SPOKEN": 0.14948434,
+          "SPANISH": 0.015870338749999997,
+          "PUBLIC": 0.05058729875,
+          "REMNANT": 0.0038511587499999995,
+          "INSTITUTIONAL": 0.006062606250000001
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.1670501605847794,
+          "AC_HOT_AC": 0.14917204577643006,
+          "ROCK_ALT_AAA": 0.2524239736810631,
+          "COUNTRY": 0.16861671951667057,
+          "NEWS_TALK_SPORTS": 0.14952018412266133,
+          "PUBLIC_RADIO": 0.05059788440386531,
+          "URBAN_RHYTHMIC": 0.024153776305394885,
+          "SPANISH": 0.015871109900526138,
+          "GOSPEL_CCM": 0.006064004046369247
+        },
+        "leaderFmtHist": "NEWS_TALK:6|COUNTRY:2",
+        "leaderFamilyHist": "SPOKEN:6|COUNTRY:2",
+        "spanishShare": 0.015871109900526138,
+        "spanishStations": 1.25,
+        "classicRockShare": 0.08919609,
+        "rockFamilyShare": 0.24501815250000003,
+        "countryShare": 0.16861671951667057,
+        "chrShare": 0.1670501605847794,
+        "acHotAcShare": 0.14917204577643006,
+        "publicShare": 0.05059788440386531,
+        "urbanShare": 0.024153776305394885,
+        "spanishSubtype": null,
+        "crWins": 0,
+        "spanishFamilyWins": 0
+      },
+      "2026": {
+        "nRuns": 8,
+        "stationCount": 27.875,
+        "hhi": 540.2359663688168,
+        "leaderGap12": 0.0078422425,
+        "topFormats": [
+          {
+            "fmt": "COUNTRY",
+            "share": 0.17780618875
+          },
+          {
+            "fmt": "TOP40",
+            "share": 0.1675626825
+          },
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.14975702875
+          },
+          {
+            "fmt": "CLASSIC_ROCK",
+            "share": 0.1007906175
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.08207159250000001
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.071754
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.04365018875
+          },
+          {
+            "fmt": "ALT_ROCK",
+            "share": 0.028638833750000002
+          },
+          {
+            "fmt": "AAA",
+            "share": 0.0284542375
+          },
+          {
+            "fmt": "SPORTS_TALK",
+            "share": 0.026511782499999997
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.17828632625000002,
+          "ROCK": 0.23995528125,
+          "ADULT": 0.1589284775,
+          "COUNTRY": 0.17780618875,
+          "URBAN": 0.01395941,
+          "SPOKEN": 0.12312973374999998,
+          "CHRISTIAN": 0,
+          "SPANISH": 0.016876948750000002,
+          "PUBLIC": 0.06889510875,
+          "REMNANT": 0.00753489,
+          "INSTITUTIONAL": 0.0141699775,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.17828632625000002,
+          "ROCK": 0.23995528125,
+          "ADULT": 0.1589284775,
+          "COUNTRY": 0.17780618875,
+          "URBAN": 0.01395941,
+          "SPOKEN": 0.12312973374999998,
+          "SPANISH": 0.016876948750000002,
+          "PUBLIC": 0.06889510875,
+          "REMNANT": 0.00753489,
+          "INSTITUTIONAL": 0.0141699775
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.1676440175928085,
+          "AC_HOT_AC": 0.15496612754944591,
+          "ROCK_ALT_AAA": 0.250759947967003,
+          "COUNTRY": 0.1779072062880876,
+          "NEWS_TALK_SPORTS": 0.12319320511707645,
+          "PUBLIC_RADIO": 0.06892467131485826,
+          "URBAN_RHYTHMIC": 0.013974166217836297,
+          "SPANISH": 0.01687694908794328,
+          "GOSPEL_CCM": 0.01417772846530587
+        },
+        "leaderFmtHist": "COUNTRY:3|TOP40:2|SPORTS_TALK:1|CLASSIC_ROCK:1|NEWS_TALK:1",
+        "leaderFamilyHist": "COUNTRY:3|SPOKEN:2|HITS:2|ROCK:1",
+        "spanishShare": 0.01687694908794328,
+        "spanishStations": 1,
+        "classicRockShare": 0.1007906175,
+        "rockFamilyShare": 0.23995528125,
+        "countryShare": 0.1779072062880876,
+        "chrShare": 0.1676440175928085,
+        "acHotAcShare": 0.15496612754944591,
+        "publicShare": 0.06892467131485826,
+        "urbanShare": 0.013974166217836297,
+        "spanishSubtype": null,
+        "crWins": 0.125,
+        "spanishFamilyWins": 0
+      }
+    },
+    "wichita": {
+      "1975": {
+        "nRuns": 8,
+        "stationCount": 14,
+        "hhi": 1178.4806531968525,
+        "leaderGap12": 0.05446916624999999,
+        "topFormats": [
+          {
+            "fmt": "TOP40",
+            "share": 0.28722705875
+          },
+          {
+            "fmt": "COUNTRY",
+            "share": 0.26670292874999996
+          },
+          {
+            "fmt": "MOR",
+            "share": 0.13746513625
+          },
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.10657177125
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.09019035
+          },
+          {
+            "fmt": "GOSPEL",
+            "share": 0.0468551925
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.030249929999999998
+          },
+          {
+            "fmt": "CLASSIC_ROCK",
+            "share": 0.027735160000000002
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.004060775
+          },
+          {
+            "fmt": "PUBLIC_CLASSICAL",
+            "share": 0.0029416925000000003
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.28722705875,
+          "ROCK": 0.057985089999999996,
+          "ADULT": 0.24403690749999998,
+          "COUNTRY": 0.26670292874999996,
+          "URBAN": 0,
+          "SPOKEN": 0.09019035,
+          "CHRISTIAN": 0.0468551925,
+          "SPANISH": 0,
+          "PUBLIC": 0.0070024675,
+          "REMNANT": 0,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.28722705875,
+          "ROCK": 0.057985089999999996,
+          "ADULT": 0.24403690749999998,
+          "COUNTRY": 0.26670292874999996,
+          "SPOKEN": 0.09019035,
+          "CHRISTIAN": 0.0468551925,
+          "PUBLIC": 0.0070024675
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.2872270602491304,
+          "AC_HOT_AC": 0.10657177170231347,
+          "ROCK_ALT_AAA": 0.05798509028692296,
+          "COUNTRY": 0.2667029301314275,
+          "NEWS_TALK_SPORTS": 0.09019035044868734,
+          "PUBLIC_RADIO": 0.00700246753714739,
+          "URBAN_RHYTHMIC": 0,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.046855192736868514
+        },
+        "leaderFmtHist": "COUNTRY:7|MOR:1",
+        "leaderFamilyHist": "COUNTRY:7|ADULT:1",
+        "spanishShare": 0,
+        "spanishStations": 0,
+        "classicRockShare": 0.027735160000000002,
+        "rockFamilyShare": 0.057985089999999996,
+        "countryShare": 0.2667029301314275,
+        "chrShare": 0.2872270602491304,
+        "acHotAcShare": 0.10657177170231347,
+        "publicShare": 0.00700246753714739,
+        "urbanShare": 0,
+        "spanishSubtype": null,
+        "crWins": 0,
+        "spanishFamilyWins": 0
+      },
+      "1985": {
+        "nRuns": 8,
+        "stationCount": 14,
+        "hhi": 937.7624646229375,
+        "leaderGap12": 0.026869127500000003,
+        "topFormats": [
+          {
+            "fmt": "COUNTRY",
+            "share": 0.21429647249999997
+          },
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.15919257875
+          },
+          {
+            "fmt": "TOP40",
+            "share": 0.15737221499999998
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.14248710625
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.08095277249999999
+          },
+          {
+            "fmt": "CLASSIC_HITS",
+            "share": 0.08076958625
+          },
+          {
+            "fmt": "CLASSIC_ROCK",
+            "share": 0.070299765
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.0494373575
+          },
+          {
+            "fmt": "GOSPEL",
+            "share": 0.022672065
+          },
+          {
+            "fmt": "PUBLIC_CLASSICAL",
+            "share": 0.02252008625
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.23814180124999998,
+          "ROCK": 0.15125253749999998,
+          "ADULT": 0.15919257875,
+          "COUNTRY": 0.21429647249999997,
+          "URBAN": 0,
+          "SPOKEN": 0.14248710625,
+          "CHRISTIAN": 0.022672065,
+          "SPANISH": 0,
+          "PUBLIC": 0.07195744375,
+          "REMNANT": 0,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.23814180124999998,
+          "ROCK": 0.15125253749999998,
+          "ADULT": 0.15919257875,
+          "COUNTRY": 0.21429647249999997,
+          "SPOKEN": 0.14248710625,
+          "CHRISTIAN": 0.022672065,
+          "PUBLIC": 0.07195744375
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.1573722142255361,
+          "AC_HOT_AC": 0.15919257796240807,
+          "ROCK_ALT_AAA": 0.2320221225794205,
+          "COUNTRY": 0.21429647143275118,
+          "NEWS_TALK_SPORTS": 0.14248710551940263,
+          "PUBLIC_RADIO": 0.07195744338914947,
+          "URBAN_RHYTHMIC": 0,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.02267206489133209
+        },
+        "leaderFmtHist": "ADULT_CONTEMP:8",
+        "leaderFamilyHist": "ADULT:8",
+        "spanishShare": 0,
+        "spanishStations": 0,
+        "classicRockShare": 0.070299765,
+        "rockFamilyShare": 0.15125253749999998,
+        "countryShare": 0.21429647143275118,
+        "chrShare": 0.1573722142255361,
+        "acHotAcShare": 0.15919257796240807,
+        "publicShare": 0.07195744338914947,
+        "urbanShare": 0,
+        "spanishSubtype": null,
+        "crWins": 0,
+        "spanishFamilyWins": 0
+      },
+      "1995": {
+        "nRuns": 8,
+        "stationCount": 17,
+        "hhi": 1016.5203348827163,
+        "leaderGap12": 0.040098315,
+        "topFormats": [
+          {
+            "fmt": "COUNTRY",
+            "share": 0.18715468375000002
+          },
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.17442387499999998
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.14997909375000001
+          },
+          {
+            "fmt": "CLASSIC_HITS",
+            "share": 0.10724492625000001
+          },
+          {
+            "fmt": "CLASSIC_ROCK",
+            "share": 0.08724876625
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.07753256
+          },
+          {
+            "fmt": "TOP40",
+            "share": 0.06200432125
+          },
+          {
+            "fmt": "ALT_ROCK",
+            "share": 0.04457522875
+          },
+          {
+            "fmt": "GOSPEL",
+            "share": 0.030546041250000003
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.027666272500000002
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.1692492475,
+          "ROCK": 0.22941034624999998,
+          "ADULT": 0.17442387499999998,
+          "COUNTRY": 0.18715468375000002,
+          "URBAN": 0,
+          "SPOKEN": 0.16514437750000002,
+          "CHRISTIAN": 0.030546041250000003,
+          "SPANISH": 0,
+          "PUBLIC": 0.04407143375,
+          "REMNANT": 0,
+          "INSTITUTIONAL": 0,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.1692492475,
+          "ROCK": 0.22941034624999998,
+          "ADULT": 0.17442387499999998,
+          "COUNTRY": 0.18715468375000002,
+          "SPOKEN": 0.16514437750000002,
+          "CHRISTIAN": 0.030546041250000003,
+          "PUBLIC": 0.04407143375
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.06200432099265509,
+          "AC_HOT_AC": 0.17442387408865329,
+          "ROCK_ALT_AAA": 0.3366552707471805,
+          "COUNTRY": 0.18715468272395097,
+          "NEWS_TALK_SPORTS": 0.16514437677252872,
+          "PUBLIC_RADIO": 0.04407143355999187,
+          "URBAN_RHYTHMIC": 0,
+          "SPANISH": 0,
+          "GOSPEL_CCM": 0.030546041115039606
+        },
+        "leaderFmtHist": "COUNTRY:5|ADULT_CONTEMP:3",
+        "leaderFamilyHist": "COUNTRY:5|ADULT:3",
+        "spanishShare": 0,
+        "spanishStations": 0,
+        "classicRockShare": 0.08724876625,
+        "rockFamilyShare": 0.22941034624999998,
+        "countryShare": 0.18715468272395097,
+        "chrShare": 0.06200432099265509,
+        "acHotAcShare": 0.17442387408865329,
+        "publicShare": 0.04407143355999187,
+        "urbanShare": 0,
+        "spanishSubtype": null,
+        "crWins": 0,
+        "spanishFamilyWins": 0
+      },
+      "2005": {
+        "nRuns": 8,
+        "stationCount": 18,
+        "hhi": 870.9029411685829,
+        "leaderGap12": 0.0441984325,
+        "topFormats": [
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.1769356825
+          },
+          {
+            "fmt": "COUNTRY",
+            "share": 0.15725130125
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.11916047999999999
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.10623794375000001
+          },
+          {
+            "fmt": "ALT_ROCK",
+            "share": 0.09369637125
+          },
+          {
+            "fmt": "CLASSIC_HITS",
+            "share": 0.08665036999999999
+          },
+          {
+            "fmt": "CLASSIC_ROCK",
+            "share": 0.079546245
+          },
+          {
+            "fmt": "RELIGIOUS_NETWORK",
+            "share": 0.053920272500000005
+          },
+          {
+            "fmt": "GOSPEL",
+            "share": 0.026795364999999998
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.026575228749999995
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.09213144499999999,
+          "ROCK": 0.28720964625,
+          "ADULT": 0.17989290125000001,
+          "COUNTRY": 0.15725130125,
+          "URBAN": 0,
+          "SPOKEN": 0.15667727125,
+          "CHRISTIAN": 0.026795364999999998,
+          "SPANISH": 0.001273255,
+          "PUBLIC": 0.03997573375,
+          "REMNANT": 0.003,
+          "INSTITUTIONAL": 0.053920272500000005,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.09213144499999999,
+          "ROCK": 0.28720964625,
+          "ADULT": 0.17989290125000001,
+          "COUNTRY": 0.15725130125,
+          "SPOKEN": 0.15667727125,
+          "CHRISTIAN": 0.026795364999999998,
+          "SPANISH": 0.001273255,
+          "PUBLIC": 0.03997573375,
+          "REMNANT": 0.003,
+          "INSTITUTIONAL": 0.053920272500000005
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.00548107494518925,
+          "AC_HOT_AC": 0.177263612425665,
+          "ROCK_ALT_AAA": 0.37458557792781877,
+          "COUNTRY": 0.15758389453540791,
+          "NEWS_TALK_SPORTS": 0.15696582555938401,
+          "PUBLIC_RADIO": 0.04004270004100703,
+          "URBAN_RHYTHMIC": 0,
+          "SPANISH": 0.001273255,
+          "GOSPEL_CCM": 0.08081335452656
+        },
+        "leaderFmtHist": "COUNTRY:4|ADULT_CONTEMP:4",
+        "leaderFamilyHist": "COUNTRY:4|ADULT:4",
+        "spanishShare": 0.001273255,
+        "spanishStations": 0.125,
+        "classicRockShare": 0.079546245,
+        "rockFamilyShare": 0.28720964625,
+        "countryShare": 0.15758389453540791,
+        "chrShare": 0.00548107494518925,
+        "acHotAcShare": 0.177263612425665,
+        "publicShare": 0.04004270004100703,
+        "urbanShare": 0,
+        "spanishSubtype": null,
+        "crWins": 0,
+        "spanishFamilyWins": 0
+      },
+      "2026": {
+        "nRuns": 8,
+        "stationCount": 18,
+        "hhi": 855.5384231772922,
+        "leaderGap12": 0.0411223475,
+        "topFormats": [
+          {
+            "fmt": "ADULT_CONTEMP",
+            "share": 0.16109738125
+          },
+          {
+            "fmt": "COUNTRY",
+            "share": 0.13871366875
+          },
+          {
+            "fmt": "RELIGIOUS_NETWORK",
+            "share": 0.1091428375
+          },
+          {
+            "fmt": "CLASSIC_ROCK",
+            "share": 0.10585970625000002
+          },
+          {
+            "fmt": "ALBUM_ROCK",
+            "share": 0.1003941275
+          },
+          {
+            "fmt": "ALT_ROCK",
+            "share": 0.09108797
+          },
+          {
+            "fmt": "CLASSIC_HITS",
+            "share": 0.07923087374999999
+          },
+          {
+            "fmt": "NEWS_TALK",
+            "share": 0.07893017625
+          },
+          {
+            "fmt": "PUBLIC_NEWS",
+            "share": 0.03066598875
+          },
+          {
+            "fmt": "GOSPEL",
+            "share": 0.0241804325
+          }
+        ],
+        "familyShares": {
+          "HITS": 0.09272751499999998,
+          "ROCK": 0.31481964875,
+          "ADULT": 0.16252028624999998,
+          "COUNTRY": 0.13871366875,
+          "URBAN": 0,
+          "SPOKEN": 0.11140774375,
+          "CHRISTIAN": 0.0241804325,
+          "SPANISH": 0.00291152125,
+          "PUBLIC": 0.043576342500000004,
+          "REMNANT": 0,
+          "INSTITUTIONAL": 0.1091428375,
+          "UNMAPPED": 0
+        },
+        "familySharesDisplay": {
+          "HITS": 0.09272751499999998,
+          "ROCK": 0.31481964875,
+          "ADULT": 0.16252028624999998,
+          "COUNTRY": 0.13871366875,
+          "SPOKEN": 0.11140774375,
+          "CHRISTIAN": 0.0241804325,
+          "SPANISH": 0.00291152125,
+          "PUBLIC": 0.043576342500000004,
+          "INSTITUTIONAL": 0.1091428375
+        },
+        "leadershipBuckets": {
+          "TOP40_CHR": 0.01349664111503359,
+          "AC_HOT_AC": 0.1610973818892229,
+          "ROCK_ALT_AAA": 0.3940505238622463,
+          "COUNTRY": 0.13871366939110757,
+          "NEWS_TALK_SPORTS": 0.1114077442589673,
+          "PUBLIC_RADIO": 0.04357634267782112,
+          "URBAN_RHYTHMIC": 0,
+          "SPANISH": 0.0029115213248774273,
+          "GOSPEL_CCM": 0.13332327049495282
+        },
+        "leaderFmtHist": "ADULT_CONTEMP:5|COUNTRY:3",
+        "leaderFamilyHist": "ADULT:5|COUNTRY:3",
+        "spanishShare": 0.0029115213248774273,
+        "spanishStations": 0.25,
+        "classicRockShare": 0.10585970625000002,
+        "rockFamilyShare": 0.31481964875,
+        "countryShare": 0.13871366939110757,
+        "chrShare": 0.01349664111503359,
+        "acHotAcShare": 0.1610973818892229,
+        "publicShare": 0.04357634267782112,
+        "urbanShare": 0,
+        "spanishSubtype": null,
+        "crWins": 0,
+        "spanishFamilyWins": 0
+      }
+    }
+  },
+  "checks": [
+    {
+      "level": "pass",
+      "code": "spanish_2026_band",
+      "message": "Spanish 21.0% in 18–28% band",
+      "detail": {}
+    },
+    {
+      "level": "pass",
+      "code": "rm_dominant_2026",
+      "message": "Regional Mexican 86.1% mass, 100% run leadership",
+      "detail": {}
+    },
+    {
+      "level": "pass",
+      "code": "rock_2026_ideal",
+      "message": "Rock family 14.7% ≤18%",
+      "detail": {}
+    },
+    {
+      "level": "pass",
+      "code": "country_2026",
+      "message": "Country 13.6% in 6.0%–14.0%",
+      "detail": {}
+    },
+    {
+      "level": "warn",
+      "code": "chr_2026_warn",
+      "message": "CHR 5.4% near band",
+      "detail": {}
+    },
+    {
+      "level": "pass",
+      "code": "public_2026",
+      "message": "Public 4.7% in 2.0%–7.0%",
+      "detail": {}
+    },
+    {
+      "level": "pass",
+      "code": "urban_2026",
+      "message": "Urban 8.2% in 3.0%–10.0%",
+      "detail": {}
+    },
+    {
+      "level": "pass",
+      "code": "cr_not_dominant_2026",
+      "message": "CLASSIC_ROCK #1 in 0% of runs",
+      "detail": {}
+    },
+    {
+      "level": "pass",
+      "code": "spanish_family_leader_2026",
+      "message": "SPANISH #1 family 100% of runs",
+      "detail": {}
+    },
+    {
+      "level": "pass",
+      "code": "spanish_1995_emerge",
+      "message": "Spanish 7.8% @1995",
+      "detail": {}
+    },
+    {
+      "level": "pass",
+      "code": "spanish_2005_serious",
+      "message": "Spanish 21.3% @2005",
+      "detail": {}
+    },
+    {
+      "level": "pass",
+      "code": "rock_decline_arc",
+      "message": "Rock 23.9% @1995 → 14.7% @2026",
+      "detail": {}
+    },
+    {
+      "level": "pass",
+      "code": "sim_stability",
+      "message": "All Phoenix sim runs completed",
+      "detail": {}
+    }
+  ],
+  "verdict": {
+    "status": "warn",
+    "fail": 0,
+    "warn": 1
+  },
+  "playtestReady": true,
+  "publicReady": false
+}

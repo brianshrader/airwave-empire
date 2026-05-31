@@ -1,0 +1,91 @@
+{
+  "generatedAt": "2026-05-31T17:38:17.872Z",
+  "config": {
+    "runs": 20,
+    "years": 25,
+    "seed": 20260530,
+    "markets": [
+      "newyork",
+      "losangeles",
+      "chicago",
+      "seattle",
+      "sanfrancisco",
+      "atlanta",
+      "nashville",
+      "wichita"
+    ],
+    "startYears": [
+      1970,
+      1985,
+      2000
+    ]
+  },
+  "runs": {
+    "total": 480,
+    "ok": 480,
+    "failed": 0
+  },
+  "stationYears": 12000,
+  "totalExits": 1472,
+  "retentionExits": 1261,
+  "stationDispositionExits": 211,
+  "exitsByCause": {
+    "dissatisfaction": 181,
+    "life_career": 241,
+    "market_ambition": 14,
+    "retirement": 660,
+    "burnout": 8,
+    "poaching": 157,
+    "let_expire": 0,
+    "station_disposition": 211,
+    "unknown": 0
+  },
+  "ratesPer10StationYears": {
+    "allRetentionExits": 1.0508333333333333,
+    "dissatisfaction": 0.15083333333333335,
+    "lifeCareer": 0.20083333333333334,
+    "marketAmbition": 0.011666666666666667,
+    "retirement": 0.55,
+    "burnout": 0.006666666666666667,
+    "poaching": 0.13083333333333333,
+    "letExpire": 0,
+    "unknown": 0
+  },
+  "successfulStationLosses": {
+    "top3Exits": 0,
+    "rank1Exits": 0,
+    "bottomHalfExits": 757,
+    "decliningTrendExits": 25,
+    "highMoraleOrSatExits": 892,
+    "top3Dissatisfaction": 0,
+    "top3LifeOrAmbition": 0
+  },
+  "dissatisfactionProfile": {
+    "count": 181,
+    "avgSatisfaction": 36.90055248618785,
+    "avgMorale": 59.40331491712707,
+    "avgRank": 12.624309392265193,
+    "avgDeclineStreak": 0.0718232044198895,
+    "pctAtTop3": 0,
+    "pctAtHealthySat": 0.5524861878453039
+  },
+  "lifeCareerProfile": {
+    "lifeCareerCount": 241,
+    "marketAmbitionCount": 14,
+    "per10StationYearsLife": 0.20083333333333334,
+    "per10StationYearsAmbition": 0.011666666666666667,
+    "highQualitySmallMarketAmbition": 0,
+    "clusteringCoefficient": 1.3748499745110794
+  },
+  "deathSpirals": {
+    "events": 205,
+    "runsWithSpiral": 205,
+    "pctRunsWithSpiral": 42.708333333333336,
+    "recoveredCount": 205,
+    "recoveryRate": 100
+  },
+  "warningFlags": [
+    "DEATH_SPIRAL_TOO_COMMON"
+  ],
+  "failedRuns": []
+}

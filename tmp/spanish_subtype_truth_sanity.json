@@ -1,6 +1,6 @@
 {
-  "recordedAt": "2026-05-20T17:03:15.817Z",
-  "runs": 8,
+  "recordedAt": "2026-05-31T19:04:16.350Z",
+  "runs": 4,
   "years": [
     1995,
     2005,
@@ -11,12 +11,12 @@
       "1995": {
         "marketId": "phoenix",
         "year": 1995,
-        "meanSpanishStations": 1,
+        "meanSpanishStations": 2.25,
         "subtype": {
-          "runs": 8,
+          "runs": 4,
           "meanSubtypeCounts": {
             "SPANISH_CONTEMPORARY": 0,
-            "REGIONAL_MEXICAN": 1,
+            "REGIONAL_MEXICAN": 2.25,
             "SPANISH_TROPICAL": 0,
             "SPANISH_NEWS_TALK": 0,
             "SPANISH_SPORTS_TALK": 0,
@@ -31,127 +31,78 @@
             "SPANISH_ADULT_HITS": 0
           },
           "meanMarketAffinityPrior": {
-            "SPANISH_CONTEMPORARY": 0.5130499999999999,
+            "SPANISH_CONTEMPORARY": 0.51305,
             "REGIONAL_MEXICAN": 1.08385,
             "SPANISH_TROPICAL": 0.0375,
             "SPANISH_NEWS_TALK": 0.5792122989480446,
             "SPANISH_SPORTS_TALK": -1.4594572344032708,
-            "SPANISH_ADULT_HITS": -2.3000000000000003
+            "SPANISH_ADULT_HITS": -2.3
           },
           "leadershipWinsBySubtype": {
-            "REGIONAL_MEXICAN": 8
+            "REGIONAL_MEXICAN": 4
           },
-          "meanTotalSpanishStations": 1
+          "meanTotalSpanishStations": 2.25
         },
         "topSubtype": "REGIONAL_MEXICAN",
         "topSubtypeSharePct": 1,
         "amFmSkew": {
-          "amN": 0,
+          "amN": 1,
           "fmN": 8,
-          "amMusicPct": null,
-          "amTalkPct": null,
+          "amMusicPct": 1,
+          "amTalkPct": 1,
           "fmMusicPct": 1,
           "fmTalkPct": 0
         },
-        "flags": [],
+        "flags": [
+          "EARLY_LOW_DIVERSITY"
+        ],
         "identity": "Regional Mexican dominant",
         "leadershipWins": {
-          "REGIONAL_MEXICAN": 8
+          "REGIONAL_MEXICAN": 4
         }
       },
       "2005": {
         "marketId": "phoenix",
         "year": 2005,
-        "meanSpanishStations": 2,
+        "meanSpanishStations": 3,
         "subtype": {
-          "runs": 8,
-          "meanSubtypeCounts": {
-            "SPANISH_CONTEMPORARY": 0,
-            "REGIONAL_MEXICAN": 1.625,
-            "SPANISH_TROPICAL": 0,
-            "SPANISH_NEWS_TALK": 0,
-            "SPANISH_SPORTS_TALK": 0,
-            "SPANISH_ADULT_HITS": 0.375
-          },
-          "meanSubtypeSharePct": {
-            "SPANISH_CONTEMPORARY": 0,
-            "REGIONAL_MEXICAN": 0.8464435506975458,
-            "SPANISH_TROPICAL": 0,
-            "SPANISH_NEWS_TALK": 0,
-            "SPANISH_SPORTS_TALK": 0,
-            "SPANISH_ADULT_HITS": 0.02855644930245417
-          },
-          "meanMarketAffinityPrior": {
-            "SPANISH_CONTEMPORARY": 0.5130499999999999,
-            "REGIONAL_MEXICAN": 1.08385,
-            "SPANISH_TROPICAL": 0.0375,
-            "SPANISH_NEWS_TALK": 0.5792122989480446,
-            "SPANISH_SPORTS_TALK": 0.6905427655967291,
-            "SPANISH_ADULT_HITS": 0.5499999999999999
-          },
-          "leadershipWinsBySubtype": {
-            "REGIONAL_MEXICAN": 7
-          },
-          "meanTotalSpanishStations": 2
-        },
-        "topSubtype": "REGIONAL_MEXICAN",
-        "topSubtypeSharePct": 0.8464435506975458,
-        "amFmSkew": {
-          "amN": 5,
-          "fmN": 11,
-          "amMusicPct": 1,
-          "amTalkPct": 0.6,
-          "fmMusicPct": 1,
-          "fmTalkPct": 0
-        },
-        "flags": [],
-        "identity": "Regional Mexican dominant",
-        "leadershipWins": {
-          "REGIONAL_MEXICAN": 7
-        }
-      },
-      "2026": {
-        "marketId": "phoenix",
-        "year": 2026,
-        "meanSpanishStations": 2.625,
-        "subtype": {
-          "runs": 8,
+          "runs": 4,
           "meanSubtypeCounts": {
             "SPANISH_CONTEMPORARY": 0,
             "REGIONAL_MEXICAN": 2,
             "SPANISH_TROPICAL": 0,
             "SPANISH_NEWS_TALK": 0,
             "SPANISH_SPORTS_TALK": 0,
-            "SPANISH_ADULT_HITS": 0.625
+            "SPANISH_ADULT_HITS": 1
           },
           "meanSubtypeSharePct": {
             "SPANISH_CONTEMPORARY": 0,
-            "REGIONAL_MEXICAN": 0.9741028874284673,
+            "REGIONAL_MEXICAN": 0.8837219267301719,
             "SPANISH_TROPICAL": 0,
             "SPANISH_NEWS_TALK": 0,
             "SPANISH_SPORTS_TALK": 0,
-            "SPANISH_ADULT_HITS": 0.02589711257153276
+            "SPANISH_ADULT_HITS": 0.11627807326982806
           },
           "meanMarketAffinityPrior": {
-            "SPANISH_CONTEMPORARY": 0.5130499999999999,
+            "SPANISH_CONTEMPORARY": 0.51305,
             "REGIONAL_MEXICAN": 1.08385,
             "SPANISH_TROPICAL": 0.0375,
             "SPANISH_NEWS_TALK": 0.5792122989480446,
-            "SPANISH_SPORTS_TALK": 0.6905427655967291,
-            "SPANISH_ADULT_HITS": 0.5499999999999999
+            "SPANISH_SPORTS_TALK": 0.6905427655967292,
+            "SPANISH_ADULT_HITS": 0.55
           },
           "leadershipWinsBySubtype": {
-            "REGIONAL_MEXICAN": 8
+            "REGIONAL_MEXICAN": 4
           },
-          "meanTotalSpanishStations": 2.625
+          "meanTotalSpanishStations": 3
         },
         "topSubtype": "REGIONAL_MEXICAN",
-        "topSubtypeSharePct": 0.9741028874284673,
+        "topSubtypeSharePct": 0.8837219267301719,
         "amFmSkew": {
-          "amN": 7,
-          "fmN": 14,
+          "amN": 2,
+          "fmN": 10,
           "amMusicPct": 1,
-          "amTalkPct": 0.2857142857142857,
+          "amTalkPct": 0,
           "fmMusicPct": 1,
           "fmTalkPct": 0
         },
@@ -160,7 +111,60 @@
         ],
         "identity": "Regional Mexican dominant",
         "leadershipWins": {
-          "REGIONAL_MEXICAN": 8
+          "REGIONAL_MEXICAN": 4
+        }
+      },
+      "2026": {
+        "marketId": "phoenix",
+        "year": 2026,
+        "meanSpanishStations": 3.25,
+        "subtype": {
+          "runs": 4,
+          "meanSubtypeCounts": {
+            "SPANISH_CONTEMPORARY": 0,
+            "REGIONAL_MEXICAN": 2,
+            "SPANISH_TROPICAL": 0,
+            "SPANISH_NEWS_TALK": 0,
+            "SPANISH_SPORTS_TALK": 0,
+            "SPANISH_ADULT_HITS": 1.25
+          },
+          "meanSubtypeSharePct": {
+            "SPANISH_CONTEMPORARY": 0,
+            "REGIONAL_MEXICAN": 0.8508234405906852,
+            "SPANISH_TROPICAL": 0,
+            "SPANISH_NEWS_TALK": 0,
+            "SPANISH_SPORTS_TALK": 0,
+            "SPANISH_ADULT_HITS": 0.14917655940931498
+          },
+          "meanMarketAffinityPrior": {
+            "SPANISH_CONTEMPORARY": 0.51305,
+            "REGIONAL_MEXICAN": 1.08385,
+            "SPANISH_TROPICAL": 0.0375,
+            "SPANISH_NEWS_TALK": 0.5792122989480446,
+            "SPANISH_SPORTS_TALK": 0.6905427655967292,
+            "SPANISH_ADULT_HITS": 0.55
+          },
+          "leadershipWinsBySubtype": {
+            "REGIONAL_MEXICAN": 4
+          },
+          "meanTotalSpanishStations": 3.25
+        },
+        "topSubtype": "REGIONAL_MEXICAN",
+        "topSubtypeSharePct": 0.8508234405906852,
+        "amFmSkew": {
+          "amN": 2,
+          "fmN": 11,
+          "amMusicPct": 1,
+          "amTalkPct": 0,
+          "fmMusicPct": 1,
+          "fmTalkPct": 0
+        },
+        "flags": [
+          "AM_TALK_LIGHT"
+        ],
+        "identity": "Regional Mexican dominant",
+        "leadershipWins": {
+          "REGIONAL_MEXICAN": 4
         }
       }
     },
@@ -168,21 +172,21 @@
       "1995": {
         "marketId": "losangeles",
         "year": 1995,
-        "meanSpanishStations": 2.5,
+        "meanSpanishStations": 1.75,
         "subtype": {
-          "runs": 8,
+          "runs": 4,
           "meanSubtypeCounts": {
             "SPANISH_CONTEMPORARY": 0.5,
-            "REGIONAL_MEXICAN": 1.875,
-            "SPANISH_TROPICAL": 0.125,
+            "REGIONAL_MEXICAN": 1.25,
+            "SPANISH_TROPICAL": 0,
             "SPANISH_NEWS_TALK": 0,
             "SPANISH_SPORTS_TALK": 0,
             "SPANISH_ADULT_HITS": 0
           },
           "meanSubtypeSharePct": {
-            "SPANISH_CONTEMPORARY": 0.16643732638642078,
-            "REGIONAL_MEXICAN": 0.7085626736135792,
-            "SPANISH_TROPICAL": 0.125,
+            "SPANISH_CONTEMPORARY": 0.3491794170163406,
+            "REGIONAL_MEXICAN": 0.6508205829836594,
+            "SPANISH_TROPICAL": 0,
             "SPANISH_NEWS_TALK": 0,
             "SPANISH_SPORTS_TALK": 0,
             "SPANISH_ADULT_HITS": 0
@@ -193,126 +197,19 @@
             "SPANISH_TROPICAL": 1.115,
             "SPANISH_NEWS_TALK": 0.7364153750098632,
             "SPANISH_SPORTS_TALK": -1.0983664134515063,
-            "SPANISH_ADULT_HITS": -2.0500000000000003
+            "SPANISH_ADULT_HITS": -2.05
           },
           "leadershipWinsBySubtype": {
-            "REGIONAL_MEXICAN": 7,
-            "SPANISH_TROPICAL": 1
-          },
-          "meanTotalSpanishStations": 2.5
-        },
-        "topSubtype": "REGIONAL_MEXICAN",
-        "topSubtypeSharePct": 0.7085626736135792,
-        "amFmSkew": {
-          "amN": 8,
-          "fmN": 12,
-          "amMusicPct": 1,
-          "amTalkPct": 1,
-          "fmMusicPct": 1,
-          "fmTalkPct": 0
-        },
-        "flags": [
-          "MISSING_SPANISH_TROPICAL"
-        ],
-        "identity": "RM + Contemporary + Tropical/Adult Hits mix",
-        "leadershipWins": {
-          "REGIONAL_MEXICAN": 7,
-          "SPANISH_TROPICAL": 1
-        }
-      },
-      "2005": {
-        "marketId": "losangeles",
-        "year": 2005,
-        "meanSpanishStations": 2.75,
-        "subtype": {
-          "runs": 8,
-          "meanSubtypeCounts": {
-            "SPANISH_CONTEMPORARY": 0.875,
-            "REGIONAL_MEXICAN": 1.875,
-            "SPANISH_TROPICAL": 0,
-            "SPANISH_NEWS_TALK": 0,
-            "SPANISH_SPORTS_TALK": 0,
-            "SPANISH_ADULT_HITS": 0
-          },
-          "meanSubtypeSharePct": {
-            "SPANISH_CONTEMPORARY": 0.24025243011350644,
-            "REGIONAL_MEXICAN": 0.7597475698864936,
-            "SPANISH_TROPICAL": 0,
-            "SPANISH_NEWS_TALK": 0,
-            "SPANISH_SPORTS_TALK": 0,
-            "SPANISH_ADULT_HITS": 0
-          },
-          "meanMarketAffinityPrior": {
-            "SPANISH_CONTEMPORARY": 1.2405,
-            "REGIONAL_MEXICAN": 1.1444999999999999,
-            "SPANISH_TROPICAL": 1.115,
-            "SPANISH_NEWS_TALK": 0.7364153750098632,
-            "SPANISH_SPORTS_TALK": 1.0516335865484938,
-            "SPANISH_ADULT_HITS": 0.7999999999999999
-          },
-          "leadershipWinsBySubtype": {
-            "REGIONAL_MEXICAN": 8
-          },
-          "meanTotalSpanishStations": 2.75
-        },
-        "topSubtype": "REGIONAL_MEXICAN",
-        "topSubtypeSharePct": 0.7597475698864936,
-        "amFmSkew": {
-          "amN": 7,
-          "fmN": 15,
-          "amMusicPct": 1,
-          "amTalkPct": 1,
-          "fmMusicPct": 1,
-          "fmTalkPct": 0
-        },
-        "flags": [
-          "MISSING_SPANISH_TROPICAL"
-        ],
-        "identity": "RM + Contemporary + Tropical/Adult Hits mix",
-        "leadershipWins": {
-          "REGIONAL_MEXICAN": 8
-        }
-      },
-      "2026": {
-        "marketId": "losangeles",
-        "year": 2026,
-        "meanSpanishStations": 2.75,
-        "subtype": {
-          "runs": 8,
-          "meanSubtypeCounts": {
             "SPANISH_CONTEMPORARY": 1,
-            "REGIONAL_MEXICAN": 1.25,
-            "SPANISH_TROPICAL": 0.5,
-            "SPANISH_NEWS_TALK": 0,
-            "SPANISH_SPORTS_TALK": 0,
-            "SPANISH_ADULT_HITS": 0
+            "REGIONAL_MEXICAN": 3
           },
-          "meanSubtypeSharePct": {
-            "SPANISH_CONTEMPORARY": 0.27031055921231145,
-            "REGIONAL_MEXICAN": 0.6653766351890725,
-            "SPANISH_TROPICAL": 0.06431280559861599,
-            "SPANISH_NEWS_TALK": 0,
-            "SPANISH_SPORTS_TALK": 0,
-            "SPANISH_ADULT_HITS": 0
-          },
-          "meanMarketAffinityPrior": {
-            "SPANISH_CONTEMPORARY": 1.2405,
-            "REGIONAL_MEXICAN": 1.1444999999999999,
-            "SPANISH_TROPICAL": 1.115,
-            "SPANISH_NEWS_TALK": 0.7364153750098632,
-            "SPANISH_SPORTS_TALK": 1.0516335865484938,
-            "SPANISH_ADULT_HITS": 0.7999999999999999
-          },
-          "leadershipWinsBySubtype": {
-            "REGIONAL_MEXICAN": 8
-          },
-          "meanTotalSpanishStations": 2.75
+          "meanTotalSpanishStations": 1.75
         },
         "topSubtype": "REGIONAL_MEXICAN",
-        "topSubtypeSharePct": 0.6653766351890725,
+        "topSubtypeSharePct": 0.6508205829836594,
         "amFmSkew": {
           "amN": 2,
-          "fmN": 20,
+          "fmN": 5,
           "amMusicPct": 1,
           "amTalkPct": 1,
           "fmMusicPct": 1,
@@ -321,7 +218,112 @@
         "flags": [],
         "identity": "RM + Contemporary + Tropical/Adult Hits mix",
         "leadershipWins": {
-          "REGIONAL_MEXICAN": 8
+          "SPANISH_CONTEMPORARY": 1,
+          "REGIONAL_MEXICAN": 3
+        }
+      },
+      "2005": {
+        "marketId": "losangeles",
+        "year": 2005,
+        "meanSpanishStations": 2.75,
+        "subtype": {
+          "runs": 4,
+          "meanSubtypeCounts": {
+            "SPANISH_CONTEMPORARY": 0.75,
+            "REGIONAL_MEXICAN": 2,
+            "SPANISH_TROPICAL": 0,
+            "SPANISH_NEWS_TALK": 0,
+            "SPANISH_SPORTS_TALK": 0,
+            "SPANISH_ADULT_HITS": 0
+          },
+          "meanSubtypeSharePct": {
+            "SPANISH_CONTEMPORARY": 0.20966977229526962,
+            "REGIONAL_MEXICAN": 0.7903302277047304,
+            "SPANISH_TROPICAL": 0,
+            "SPANISH_NEWS_TALK": 0,
+            "SPANISH_SPORTS_TALK": 0,
+            "SPANISH_ADULT_HITS": 0
+          },
+          "meanMarketAffinityPrior": {
+            "SPANISH_CONTEMPORARY": 1.2405,
+            "REGIONAL_MEXICAN": 1.1444999999999999,
+            "SPANISH_TROPICAL": 1.115,
+            "SPANISH_NEWS_TALK": 0.7364153750098632,
+            "SPANISH_SPORTS_TALK": 1.0516335865484936,
+            "SPANISH_ADULT_HITS": 0.8
+          },
+          "leadershipWinsBySubtype": {
+            "REGIONAL_MEXICAN": 4
+          },
+          "meanTotalSpanishStations": 2.75
+        },
+        "topSubtype": "REGIONAL_MEXICAN",
+        "topSubtypeSharePct": 0.7903302277047304,
+        "amFmSkew": {
+          "amN": 4,
+          "fmN": 7,
+          "amMusicPct": 1,
+          "amTalkPct": 1,
+          "fmMusicPct": 1,
+          "fmTalkPct": 0
+        },
+        "flags": [
+          "MISSING_SPANISH_TROPICAL"
+        ],
+        "identity": "RM + Contemporary + Tropical/Adult Hits mix",
+        "leadershipWins": {
+          "REGIONAL_MEXICAN": 4
+        }
+      },
+      "2026": {
+        "marketId": "losangeles",
+        "year": 2026,
+        "meanSpanishStations": 3,
+        "subtype": {
+          "runs": 4,
+          "meanSubtypeCounts": {
+            "SPANISH_CONTEMPORARY": 1,
+            "REGIONAL_MEXICAN": 1.25,
+            "SPANISH_TROPICAL": 0.75,
+            "SPANISH_NEWS_TALK": 0,
+            "SPANISH_SPORTS_TALK": 0,
+            "SPANISH_ADULT_HITS": 0
+          },
+          "meanSubtypeSharePct": {
+            "SPANISH_CONTEMPORARY": 0.2465583826462001,
+            "REGIONAL_MEXICAN": 0.6564518029338061,
+            "SPANISH_TROPICAL": 0.09698981441999378,
+            "SPANISH_NEWS_TALK": 0,
+            "SPANISH_SPORTS_TALK": 0,
+            "SPANISH_ADULT_HITS": 0
+          },
+          "meanMarketAffinityPrior": {
+            "SPANISH_CONTEMPORARY": 1.2405,
+            "REGIONAL_MEXICAN": 1.1444999999999999,
+            "SPANISH_TROPICAL": 1.115,
+            "SPANISH_NEWS_TALK": 0.7364153750098632,
+            "SPANISH_SPORTS_TALK": 1.0516335865484936,
+            "SPANISH_ADULT_HITS": 0.8
+          },
+          "leadershipWinsBySubtype": {
+            "REGIONAL_MEXICAN": 4
+          },
+          "meanTotalSpanishStations": 3
+        },
+        "topSubtype": "REGIONAL_MEXICAN",
+        "topSubtypeSharePct": 0.6564518029338061,
+        "amFmSkew": {
+          "amN": 1,
+          "fmN": 11,
+          "amMusicPct": 1,
+          "amTalkPct": 1,
+          "fmMusicPct": 1,
+          "fmTalkPct": 0
+        },
+        "flags": [],
+        "identity": "RM + Contemporary + Tropical/Adult Hits mix",
+        "leadershipWins": {
+          "REGIONAL_MEXICAN": 4
         }
       }
     },
@@ -331,7 +333,7 @@
         "year": 1995,
         "meanSpanishStations": 1.75,
         "subtype": {
-          "runs": 8,
+          "runs": 4,
           "meanSubtypeCounts": {
             "SPANISH_CONTEMPORARY": 0,
             "REGIONAL_MEXICAN": 0,
@@ -349,142 +351,139 @@
             "SPANISH_ADULT_HITS": 0
           },
           "meanMarketAffinityPrior": {
-            "SPANISH_CONTEMPORARY": 1.164,
+            "SPANISH_CONTEMPORARY": 1.1640000000000001,
             "REGIONAL_MEXICAN": 0.32000000000000006,
             "SPANISH_TROPICAL": 1.035,
-            "SPANISH_NEWS_TALK": 1.45350891186038,
+            "SPANISH_NEWS_TALK": 1.4535089118603797,
             "SPANISH_SPORTS_TALK": -1.0066078588770493,
             "SPANISH_ADULT_HITS": -2.25
           },
           "leadershipWinsBySubtype": {
-            "SPANISH_NEWS_TALK": 8
+            "SPANISH_NEWS_TALK": 4
           },
           "meanTotalSpanishStations": 1.75
         },
         "topSubtype": "SPANISH_NEWS_TALK",
         "topSubtypeSharePct": 1,
         "amFmSkew": {
-          "amN": 10,
-          "fmN": 4,
+          "amN": 5,
+          "fmN": 2,
           "amMusicPct": 0,
           "amTalkPct": 1,
           "fmMusicPct": 0,
           "fmTalkPct": 1
         },
-        "flags": [
-          "FM_TALK_HEAVY"
-        ],
+        "flags": [],
         "identity": "News/Talk + Tropical + Contemporary",
         "leadershipWins": {
-          "SPANISH_NEWS_TALK": 8
+          "SPANISH_NEWS_TALK": 4
         }
       },
       "2005": {
         "marketId": "newyork",
         "year": 2005,
-        "meanSpanishStations": 2.75,
+        "meanSpanishStations": 2.5,
         "subtype": {
-          "runs": 8,
-          "meanSubtypeCounts": {
-            "SPANISH_CONTEMPORARY": 0.625,
-            "REGIONAL_MEXICAN": 0,
-            "SPANISH_TROPICAL": 0.125,
-            "SPANISH_NEWS_TALK": 2,
-            "SPANISH_SPORTS_TALK": 0,
-            "SPANISH_ADULT_HITS": 0
-          },
-          "meanSubtypeSharePct": {
-            "SPANISH_CONTEMPORARY": 0.21680946067867482,
-            "REGIONAL_MEXICAN": 0,
-            "SPANISH_TROPICAL": 0.030064605578560815,
-            "SPANISH_NEWS_TALK": 0.7531259337427644,
-            "SPANISH_SPORTS_TALK": 0,
-            "SPANISH_ADULT_HITS": 0
-          },
-          "meanMarketAffinityPrior": {
-            "SPANISH_CONTEMPORARY": 1.164,
-            "REGIONAL_MEXICAN": 0.32000000000000006,
-            "SPANISH_TROPICAL": 1.035,
-            "SPANISH_NEWS_TALK": 1.45350891186038,
-            "SPANISH_SPORTS_TALK": 1.1433921411229504,
-            "SPANISH_ADULT_HITS": 0.6
-          },
-          "leadershipWinsBySubtype": {
-            "SPANISH_NEWS_TALK": 8
-          },
-          "meanTotalSpanishStations": 2.75
-        },
-        "topSubtype": "SPANISH_NEWS_TALK",
-        "topSubtypeSharePct": 0.7531259337427644,
-        "amFmSkew": {
-          "amN": 8,
-          "fmN": 14,
-          "amMusicPct": 0,
-          "amTalkPct": 1,
-          "fmMusicPct": 0.42857142857142855,
-          "fmTalkPct": 0.5714285714285714
-        },
-        "flags": [
-          "MONO_SPANISH_NEWS_TALK",
-          "MISSING_SPANISH_TROPICAL",
-          "FM_TALK_HEAVY"
-        ],
-        "identity": "News/Talk + Tropical + Contemporary",
-        "leadershipWins": {
-          "SPANISH_NEWS_TALK": 8
-        }
-      },
-      "2026": {
-        "marketId": "newyork",
-        "year": 2026,
-        "meanSpanishStations": 2.625,
-        "subtype": {
-          "runs": 8,
+          "runs": 4,
           "meanSubtypeCounts": {
             "SPANISH_CONTEMPORARY": 0.75,
             "REGIONAL_MEXICAN": 0,
-            "SPANISH_TROPICAL": 0.375,
+            "SPANISH_TROPICAL": 0.25,
             "SPANISH_NEWS_TALK": 1.5,
             "SPANISH_SPORTS_TALK": 0,
             "SPANISH_ADULT_HITS": 0
           },
           "meanSubtypeSharePct": {
-            "SPANISH_CONTEMPORARY": 0.20684456667768442,
+            "SPANISH_CONTEMPORARY": 0.25201716683366715,
             "REGIONAL_MEXICAN": 0,
-            "SPANISH_TROPICAL": 0.06941211252097157,
-            "SPANISH_NEWS_TALK": 0.723743320801344,
+            "SPANISH_TROPICAL": 0.06012921115712163,
+            "SPANISH_NEWS_TALK": 0.6878536220092113,
             "SPANISH_SPORTS_TALK": 0,
             "SPANISH_ADULT_HITS": 0
           },
           "meanMarketAffinityPrior": {
-            "SPANISH_CONTEMPORARY": 1.164,
+            "SPANISH_CONTEMPORARY": 1.1640000000000001,
             "REGIONAL_MEXICAN": 0.32000000000000006,
             "SPANISH_TROPICAL": 1.035,
-            "SPANISH_NEWS_TALK": 1.45350891186038,
-            "SPANISH_SPORTS_TALK": 1.1433921411229504,
+            "SPANISH_NEWS_TALK": 1.4535089118603797,
+            "SPANISH_SPORTS_TALK": 1.1433921411229506,
             "SPANISH_ADULT_HITS": 0.6
           },
           "leadershipWinsBySubtype": {
-            "SPANISH_NEWS_TALK": 8
+            "SPANISH_NEWS_TALK": 4
           },
-          "meanTotalSpanishStations": 2.625
+          "meanTotalSpanishStations": 2.5
         },
         "topSubtype": "SPANISH_NEWS_TALK",
-        "topSubtypeSharePct": 0.723743320801344,
+        "topSubtypeSharePct": 0.6878536220092113,
         "amFmSkew": {
-          "amN": 5,
-          "fmN": 16,
+          "amN": 2,
+          "fmN": 8,
           "amMusicPct": 0,
           "amTalkPct": 1,
-          "fmMusicPct": 0.5625,
-          "fmTalkPct": 0.4375
+          "fmMusicPct": 0.5,
+          "fmTalkPct": 0.5
+        },
+        "flags": [
+          "MISSING_SPANISH_TROPICAL",
+          "FM_TALK_HEAVY"
+        ],
+        "identity": "News/Talk + Tropical + Contemporary",
+        "leadershipWins": {
+          "SPANISH_NEWS_TALK": 4
+        }
+      },
+      "2026": {
+        "marketId": "newyork",
+        "year": 2026,
+        "meanSpanishStations": 1.75,
+        "subtype": {
+          "runs": 4,
+          "meanSubtypeCounts": {
+            "SPANISH_CONTEMPORARY": 0.5,
+            "REGIONAL_MEXICAN": 0,
+            "SPANISH_TROPICAL": 0.25,
+            "SPANISH_NEWS_TALK": 1,
+            "SPANISH_SPORTS_TALK": 0,
+            "SPANISH_ADULT_HITS": 0
+          },
+          "meanSubtypeSharePct": {
+            "SPANISH_CONTEMPORARY": 0.09608360671169208,
+            "REGIONAL_MEXICAN": 0,
+            "SPANISH_TROPICAL": 0.05964471687638157,
+            "SPANISH_NEWS_TALK": 0.8442716764119262,
+            "SPANISH_SPORTS_TALK": 0,
+            "SPANISH_ADULT_HITS": 0
+          },
+          "meanMarketAffinityPrior": {
+            "SPANISH_CONTEMPORARY": 1.1640000000000001,
+            "REGIONAL_MEXICAN": 0.32000000000000006,
+            "SPANISH_TROPICAL": 1.035,
+            "SPANISH_NEWS_TALK": 1.4535089118603797,
+            "SPANISH_SPORTS_TALK": 1.1433921411229506,
+            "SPANISH_ADULT_HITS": 0.6
+          },
+          "leadershipWinsBySubtype": {
+            "SPANISH_NEWS_TALK": 4
+          },
+          "meanTotalSpanishStations": 1.75
+        },
+        "topSubtype": "SPANISH_NEWS_TALK",
+        "topSubtypeSharePct": 0.8442716764119262,
+        "amFmSkew": {
+          "amN": 2,
+          "fmN": 5,
+          "amMusicPct": 0,
+          "amTalkPct": 1,
+          "fmMusicPct": 0.6,
+          "fmTalkPct": 0.4
         },
         "flags": [
           "FM_TALK_HEAVY"
         ],
         "identity": "News/Talk + Tropical + Contemporary",
         "leadershipWins": {
-          "SPANISH_NEWS_TALK": 8
+          "SPANISH_NEWS_TALK": 4
         }
       }
     },
@@ -494,7 +493,7 @@
         "year": 1995,
         "meanSpanishStations": 2.5,
         "subtype": {
-          "runs": 8,
+          "runs": 4,
           "meanSubtypeCounts": {
             "SPANISH_CONTEMPORARY": 0,
             "REGIONAL_MEXICAN": 1,
@@ -505,141 +504,34 @@
           },
           "meanSubtypeSharePct": {
             "SPANISH_CONTEMPORARY": 0,
-            "REGIONAL_MEXICAN": 0.6831054164050507,
+            "REGIONAL_MEXICAN": 0.6634948320880223,
             "SPANISH_TROPICAL": 0,
-            "SPANISH_NEWS_TALK": 0.3168945835949493,
+            "SPANISH_NEWS_TALK": 0.3365051679119777,
             "SPANISH_SPORTS_TALK": 0,
             "SPANISH_ADULT_HITS": 0
           },
           "meanMarketAffinityPrior": {
-            "SPANISH_CONTEMPORARY": 0.8689999999999999,
-            "REGIONAL_MEXICAN": 1.2989999999999997,
+            "SPANISH_CONTEMPORARY": 0.869,
+            "REGIONAL_MEXICAN": 1.299,
             "SPANISH_TROPICAL": 0.03,
             "SPANISH_NEWS_TALK": 1.132565787220963,
             "SPANISH_SPORTS_TALK": -1.140114797612867,
             "SPANISH_ADULT_HITS": -2.25
           },
           "leadershipWinsBySubtype": {
-            "REGIONAL_MEXICAN": 8
+            "REGIONAL_MEXICAN": 4
           },
           "meanTotalSpanishStations": 2.5
         },
         "topSubtype": "REGIONAL_MEXICAN",
-        "topSubtypeSharePct": 0.6831054164050507,
+        "topSubtypeSharePct": 0.6634948320880223,
         "amFmSkew": {
-          "amN": 8,
-          "fmN": 12,
+          "amN": 3,
+          "fmN": 7,
           "amMusicPct": 0,
           "amTalkPct": 1,
-          "fmMusicPct": 0.6666666666666666,
-          "fmTalkPct": 0.3333333333333333
-        },
-        "flags": [
-          "MISSING_SPANISH_CONTEMPORARY"
-        ],
-        "identity": "Regional Mexican + News/Talk + Contemporary",
-        "leadershipWins": {
-          "REGIONAL_MEXICAN": 8
-        }
-      },
-      "2005": {
-        "marketId": "chicago",
-        "year": 2005,
-        "meanSpanishStations": 3.125,
-        "subtype": {
-          "runs": 8,
-          "meanSubtypeCounts": {
-            "SPANISH_CONTEMPORARY": 0.375,
-            "REGIONAL_MEXICAN": 1.375,
-            "SPANISH_TROPICAL": 0,
-            "SPANISH_NEWS_TALK": 1.375,
-            "SPANISH_SPORTS_TALK": 0,
-            "SPANISH_ADULT_HITS": 0
-          },
-          "meanSubtypeSharePct": {
-            "SPANISH_CONTEMPORARY": 0.07240247759199378,
-            "REGIONAL_MEXICAN": 0.6745478335333308,
-            "SPANISH_TROPICAL": 0,
-            "SPANISH_NEWS_TALK": 0.2530496888746754,
-            "SPANISH_SPORTS_TALK": 0,
-            "SPANISH_ADULT_HITS": 0
-          },
-          "meanMarketAffinityPrior": {
-            "SPANISH_CONTEMPORARY": 0.8689999999999999,
-            "REGIONAL_MEXICAN": 1.2989999999999997,
-            "SPANISH_TROPICAL": 0.03,
-            "SPANISH_NEWS_TALK": 1.132565787220963,
-            "SPANISH_SPORTS_TALK": 1.0098852023871332,
-            "SPANISH_ADULT_HITS": 0.6
-          },
-          "leadershipWinsBySubtype": {
-            "REGIONAL_MEXICAN": 7,
-            "SPANISH_NEWS_TALK": 1
-          },
-          "meanTotalSpanishStations": 3.125
-        },
-        "topSubtype": "REGIONAL_MEXICAN",
-        "topSubtypeSharePct": 0.6745478335333308,
-        "amFmSkew": {
-          "amN": 9,
-          "fmN": 16,
-          "amMusicPct": 0.3333333333333333,
-          "amTalkPct": 1,
-          "fmMusicPct": 0.6875,
-          "fmTalkPct": 0.3125
-        },
-        "flags": [],
-        "identity": "Regional Mexican + News/Talk + Contemporary",
-        "leadershipWins": {
-          "REGIONAL_MEXICAN": 7,
-          "SPANISH_NEWS_TALK": 1
-        }
-      },
-      "2026": {
-        "marketId": "chicago",
-        "year": 2026,
-        "meanSpanishStations": 2.625,
-        "subtype": {
-          "runs": 8,
-          "meanSubtypeCounts": {
-            "SPANISH_CONTEMPORARY": 0.25,
-            "REGIONAL_MEXICAN": 1.125,
-            "SPANISH_TROPICAL": 0,
-            "SPANISH_NEWS_TALK": 1.25,
-            "SPANISH_SPORTS_TALK": 0,
-            "SPANISH_ADULT_HITS": 0
-          },
-          "meanSubtypeSharePct": {
-            "SPANISH_CONTEMPORARY": 0.048137430146501105,
-            "REGIONAL_MEXICAN": 0.5678758222623497,
-            "SPANISH_TROPICAL": 0,
-            "SPANISH_NEWS_TALK": 0.38398674759114926,
-            "SPANISH_SPORTS_TALK": 0,
-            "SPANISH_ADULT_HITS": 0
-          },
-          "meanMarketAffinityPrior": {
-            "SPANISH_CONTEMPORARY": 0.8689999999999999,
-            "REGIONAL_MEXICAN": 1.2989999999999997,
-            "SPANISH_TROPICAL": 0.03,
-            "SPANISH_NEWS_TALK": 1.132565787220963,
-            "SPANISH_SPORTS_TALK": 1.0098852023871332,
-            "SPANISH_ADULT_HITS": 0.6
-          },
-          "leadershipWinsBySubtype": {
-            "SPANISH_NEWS_TALK": 1,
-            "REGIONAL_MEXICAN": 7
-          },
-          "meanTotalSpanishStations": 2.625
-        },
-        "topSubtype": "REGIONAL_MEXICAN",
-        "topSubtypeSharePct": 0.5678758222623497,
-        "amFmSkew": {
-          "amN": 6,
-          "fmN": 15,
-          "amMusicPct": 0.3333333333333333,
-          "amTalkPct": 1,
-          "fmMusicPct": 0.6,
-          "fmTalkPct": 0.4
+          "fmMusicPct": 0.5714285714285714,
+          "fmTalkPct": 0.42857142857142855
         },
         "flags": [
           "MISSING_SPANISH_CONTEMPORARY",
@@ -647,8 +539,112 @@
         ],
         "identity": "Regional Mexican + News/Talk + Contemporary",
         "leadershipWins": {
-          "SPANISH_NEWS_TALK": 1,
-          "REGIONAL_MEXICAN": 7
+          "REGIONAL_MEXICAN": 4
+        }
+      },
+      "2005": {
+        "marketId": "chicago",
+        "year": 2005,
+        "meanSpanishStations": 3.5,
+        "subtype": {
+          "runs": 4,
+          "meanSubtypeCounts": {
+            "SPANISH_CONTEMPORARY": 0.5,
+            "REGIONAL_MEXICAN": 1.5,
+            "SPANISH_TROPICAL": 0,
+            "SPANISH_NEWS_TALK": 1.5,
+            "SPANISH_SPORTS_TALK": 0,
+            "SPANISH_ADULT_HITS": 0
+          },
+          "meanSubtypeSharePct": {
+            "SPANISH_CONTEMPORARY": 0.11243201946392178,
+            "REGIONAL_MEXICAN": 0.6534739161013092,
+            "SPANISH_TROPICAL": 0,
+            "SPANISH_NEWS_TALK": 0.23409406443476885,
+            "SPANISH_SPORTS_TALK": 0,
+            "SPANISH_ADULT_HITS": 0
+          },
+          "meanMarketAffinityPrior": {
+            "SPANISH_CONTEMPORARY": 0.869,
+            "REGIONAL_MEXICAN": 1.299,
+            "SPANISH_TROPICAL": 0.03,
+            "SPANISH_NEWS_TALK": 1.132565787220963,
+            "SPANISH_SPORTS_TALK": 1.0098852023871332,
+            "SPANISH_ADULT_HITS": 0.6
+          },
+          "leadershipWinsBySubtype": {
+            "REGIONAL_MEXICAN": 4
+          },
+          "meanTotalSpanishStations": 3.5
+        },
+        "topSubtype": "REGIONAL_MEXICAN",
+        "topSubtypeSharePct": 0.6534739161013092,
+        "amFmSkew": {
+          "amN": 6,
+          "fmN": 8,
+          "amMusicPct": 0.3333333333333333,
+          "amTalkPct": 1,
+          "fmMusicPct": 0.75,
+          "fmTalkPct": 0.25
+        },
+        "flags": [],
+        "identity": "Regional Mexican + News/Talk + Contemporary",
+        "leadershipWins": {
+          "REGIONAL_MEXICAN": 4
+        }
+      },
+      "2026": {
+        "marketId": "chicago",
+        "year": 2026,
+        "meanSpanishStations": 2.5,
+        "subtype": {
+          "runs": 4,
+          "meanSubtypeCounts": {
+            "SPANISH_CONTEMPORARY": 0.25,
+            "REGIONAL_MEXICAN": 1,
+            "SPANISH_TROPICAL": 0,
+            "SPANISH_NEWS_TALK": 1.25,
+            "SPANISH_SPORTS_TALK": 0,
+            "SPANISH_ADULT_HITS": 0
+          },
+          "meanSubtypeSharePct": {
+            "SPANISH_CONTEMPORARY": 0.011578668314465565,
+            "REGIONAL_MEXICAN": 0.7718842521167031,
+            "SPANISH_TROPICAL": 0,
+            "SPANISH_NEWS_TALK": 0.2165370795688314,
+            "SPANISH_SPORTS_TALK": 0,
+            "SPANISH_ADULT_HITS": 0
+          },
+          "meanMarketAffinityPrior": {
+            "SPANISH_CONTEMPORARY": 0.869,
+            "REGIONAL_MEXICAN": 1.299,
+            "SPANISH_TROPICAL": 0.03,
+            "SPANISH_NEWS_TALK": 1.132565787220963,
+            "SPANISH_SPORTS_TALK": 1.0098852023871332,
+            "SPANISH_ADULT_HITS": 0.6
+          },
+          "leadershipWinsBySubtype": {
+            "REGIONAL_MEXICAN": 4
+          },
+          "meanTotalSpanishStations": 2.5
+        },
+        "topSubtype": "REGIONAL_MEXICAN",
+        "topSubtypeSharePct": 0.7718842521167031,
+        "amFmSkew": {
+          "amN": 3,
+          "fmN": 7,
+          "amMusicPct": 0.3333333333333333,
+          "amTalkPct": 1,
+          "fmMusicPct": 0.5714285714285714,
+          "fmTalkPct": 0.42857142857142855
+        },
+        "flags": [
+          "MISSING_SPANISH_CONTEMPORARY",
+          "FM_TALK_HEAVY"
+        ],
+        "identity": "Regional Mexican + News/Talk + Contemporary",
+        "leadershipWins": {
+          "REGIONAL_MEXICAN": 4
         }
       }
     },
@@ -656,22 +652,22 @@
       "1995": {
         "marketId": "miami",
         "year": 1995,
-        "meanSpanishStations": 1.25,
+        "meanSpanishStations": 1,
         "subtype": {
-          "runs": 8,
+          "runs": 4,
           "meanSubtypeCounts": {
             "SPANISH_CONTEMPORARY": 0,
             "REGIONAL_MEXICAN": 0,
             "SPANISH_TROPICAL": 1,
-            "SPANISH_NEWS_TALK": 0.25,
+            "SPANISH_NEWS_TALK": 0,
             "SPANISH_SPORTS_TALK": 0,
             "SPANISH_ADULT_HITS": 0
           },
           "meanSubtypeSharePct": {
             "SPANISH_CONTEMPORARY": 0,
             "REGIONAL_MEXICAN": 0,
-            "SPANISH_TROPICAL": 0.9662870885089166,
-            "SPANISH_NEWS_TALK": 0.033712911491083325,
+            "SPANISH_TROPICAL": 1,
+            "SPANISH_NEWS_TALK": 0,
             "SPANISH_SPORTS_TALK": 0,
             "SPANISH_ADULT_HITS": 0
           },
@@ -679,50 +675,50 @@
             "SPANISH_CONTEMPORARY": 0.69325,
             "REGIONAL_MEXICAN": 0.5792500000000002,
             "SPANISH_TROPICAL": 1.57,
-            "SPANISH_NEWS_TALK": 0.8282314246711027,
-            "SPANISH_SPORTS_TALK": -1.4469711150781086,
-            "SPANISH_ADULT_HITS": -2.3000000000000003
+            "SPANISH_NEWS_TALK": 0.8282314246711029,
+            "SPANISH_SPORTS_TALK": -1.4469711150781088,
+            "SPANISH_ADULT_HITS": -2.3
           },
           "leadershipWinsBySubtype": {
-            "SPANISH_TROPICAL": 8
+            "SPANISH_TROPICAL": 4
           },
-          "meanTotalSpanishStations": 1.25
+          "meanTotalSpanishStations": 1
         },
         "topSubtype": "SPANISH_TROPICAL",
-        "topSubtypeSharePct": 0.9662870885089166,
+        "topSubtypeSharePct": 1,
         "amFmSkew": {
-          "amN": 1,
-          "fmN": 9,
-          "amMusicPct": 0,
-          "amTalkPct": 1,
-          "fmMusicPct": 0.8888888888888888,
-          "fmTalkPct": 0.1111111111111111
+          "amN": 0,
+          "fmN": 4,
+          "amMusicPct": null,
+          "amTalkPct": null,
+          "fmMusicPct": 1,
+          "fmTalkPct": 0
         },
         "flags": [],
         "identity": "Tropical + News/Talk + Contemporary",
         "leadershipWins": {
-          "SPANISH_TROPICAL": 8
+          "SPANISH_TROPICAL": 4
         }
       },
       "2005": {
         "marketId": "miami",
         "year": 2005,
-        "meanSpanishStations": 3.25,
+        "meanSpanishStations": 3.5,
         "subtype": {
-          "runs": 8,
+          "runs": 4,
           "meanSubtypeCounts": {
-            "SPANISH_CONTEMPORARY": 0.375,
+            "SPANISH_CONTEMPORARY": 0.75,
             "REGIONAL_MEXICAN": 0,
-            "SPANISH_TROPICAL": 1,
-            "SPANISH_NEWS_TALK": 1.875,
+            "SPANISH_TROPICAL": 0.75,
+            "SPANISH_NEWS_TALK": 2,
             "SPANISH_SPORTS_TALK": 0,
             "SPANISH_ADULT_HITS": 0
           },
           "meanSubtypeSharePct": {
-            "SPANISH_CONTEMPORARY": 0.049200692854435235,
+            "SPANISH_CONTEMPORARY": 0.09268516191764836,
             "REGIONAL_MEXICAN": 0,
-            "SPANISH_TROPICAL": 0.57764953321448,
-            "SPANISH_NEWS_TALK": 0.3731497739310846,
+            "SPANISH_TROPICAL": 0.4473373157103743,
+            "SPANISH_NEWS_TALK": 0.4599775223719773,
             "SPANISH_SPORTS_TALK": 0,
             "SPANISH_ADULT_HITS": 0
           },
@@ -730,32 +726,32 @@
             "SPANISH_CONTEMPORARY": 0.69325,
             "REGIONAL_MEXICAN": 0.5792500000000002,
             "SPANISH_TROPICAL": 1.57,
-            "SPANISH_NEWS_TALK": 0.8282314246711027,
+            "SPANISH_NEWS_TALK": 0.8282314246711029,
             "SPANISH_SPORTS_TALK": 0.7030288849218911,
-            "SPANISH_ADULT_HITS": 0.5499999999999999
+            "SPANISH_ADULT_HITS": 0.55
           },
           "leadershipWinsBySubtype": {
-            "SPANISH_TROPICAL": 7,
+            "SPANISH_TROPICAL": 3,
             "SPANISH_NEWS_TALK": 1
           },
-          "meanTotalSpanishStations": 3.25
+          "meanTotalSpanishStations": 3.5
         },
-        "topSubtype": "SPANISH_TROPICAL",
-        "topSubtypeSharePct": 0.57764953321448,
+        "topSubtype": "SPANISH_NEWS_TALK",
+        "topSubtypeSharePct": 0.4599775223719773,
         "amFmSkew": {
-          "amN": 7,
-          "fmN": 19,
+          "amN": 4,
+          "fmN": 10,
           "amMusicPct": 0,
           "amTalkPct": 1,
-          "fmMusicPct": 0.5789473684210527,
-          "fmTalkPct": 0.42105263157894735
+          "fmMusicPct": 0.6,
+          "fmTalkPct": 0.4
         },
         "flags": [
           "FM_TALK_HEAVY"
         ],
         "identity": "Tropical + News/Talk + Contemporary",
         "leadershipWins": {
-          "SPANISH_TROPICAL": 7,
+          "SPANISH_TROPICAL": 3,
           "SPANISH_NEWS_TALK": 1
         }
       },
@@ -764,20 +760,20 @@
         "year": 2026,
         "meanSpanishStations": 2.75,
         "subtype": {
-          "runs": 8,
+          "runs": 4,
           "meanSubtypeCounts": {
-            "SPANISH_CONTEMPORARY": 0.25,
+            "SPANISH_CONTEMPORARY": 0,
             "REGIONAL_MEXICAN": 0,
             "SPANISH_TROPICAL": 1,
-            "SPANISH_NEWS_TALK": 1.5,
+            "SPANISH_NEWS_TALK": 1.75,
             "SPANISH_SPORTS_TALK": 0,
             "SPANISH_ADULT_HITS": 0
           },
           "meanSubtypeSharePct": {
-            "SPANISH_CONTEMPORARY": 0.03543303107042373,
+            "SPANISH_CONTEMPORARY": 0,
             "REGIONAL_MEXICAN": 0,
-            "SPANISH_TROPICAL": 0.5843259585269919,
-            "SPANISH_NEWS_TALK": 0.3802410104025844,
+            "SPANISH_TROPICAL": 0.5611419088967138,
+            "SPANISH_NEWS_TALK": 0.43885809110328616,
             "SPANISH_SPORTS_TALK": 0,
             "SPANISH_ADULT_HITS": 0
           },
@@ -785,24 +781,25 @@
             "SPANISH_CONTEMPORARY": 0.69325,
             "REGIONAL_MEXICAN": 0.5792500000000002,
             "SPANISH_TROPICAL": 1.57,
-            "SPANISH_NEWS_TALK": 0.8282314246711027,
+            "SPANISH_NEWS_TALK": 0.8282314246711029,
             "SPANISH_SPORTS_TALK": 0.7030288849218911,
-            "SPANISH_ADULT_HITS": 0.5499999999999999
+            "SPANISH_ADULT_HITS": 0.55
           },
           "leadershipWinsBySubtype": {
-            "SPANISH_TROPICAL": 8
+            "SPANISH_TROPICAL": 3,
+            "SPANISH_NEWS_TALK": 1
           },
           "meanTotalSpanishStations": 2.75
         },
         "topSubtype": "SPANISH_TROPICAL",
-        "topSubtypeSharePct": 0.5843259585269919,
+        "topSubtypeSharePct": 0.5611419088967138,
         "amFmSkew": {
-          "amN": 4,
-          "fmN": 18,
+          "amN": 3,
+          "fmN": 8,
           "amMusicPct": 0,
           "amTalkPct": 1,
-          "fmMusicPct": 0.5555555555555556,
-          "fmTalkPct": 0.4444444444444444
+          "fmMusicPct": 0.5,
+          "fmTalkPct": 0.5
         },
         "flags": [
           "MISSING_SPANISH_CONTEMPORARY",
@@ -810,7 +807,8 @@
         ],
         "identity": "Tropical + News/Talk + Contemporary",
         "leadershipWins": {
-          "SPANISH_TROPICAL": 8
+          "SPANISH_TROPICAL": 3,
+          "SPANISH_NEWS_TALK": 1
         }
       }
     },
@@ -869,15 +867,15 @@
   },
   "recommendations": {
     "answers": [
-      "LA Contemporary share 27% with RM/Tropical present — mix looks plausible.",
-      "Phoenix Regional Mexican dominance (97%) — matches Sunbelt identity.",
-      "NYC news/talk 72% — high vs expected three-lane mix.",
-      "AM skew flags on 1 cells — review AM bonus for news/regional vs FM music.",
+      "LA Contemporary share 25% with RM/Tropical present — mix looks plausible.",
+      "Phoenix Regional Mexican dominance (85%) — matches Sunbelt identity.",
+      "NYC news/talk 84% — high vs expected three-lane mix.",
+      "AM skew flags on 2 cells — review AM bonus for news/regional vs FM music.",
       "Miami (scaffold): MISSING_SPANISH_CONTEMPORARY, FM_TALK_HEAVY — verify after MARKETS merge.",
       "Houston stub prior: Regional Mexican #1 — aligned for future market."
     ],
     "tweaks": [
-      "No mandatory heuristic changes; re-run after MARKETS adds Miami/Houston/San Antonio."
+      "NYC: bump tropical when caribbeanLean + 3+ Spanish stations (dial slot 2–3)."
     ]
   }
 }
