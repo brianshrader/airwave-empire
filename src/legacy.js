@@ -1656,6 +1656,35 @@ function talkSyndicatedFillHalfPeriodCost(s,G){
   if(wSum<=0)return 0;
   return Math.round(base*0.24*wSum);
 }
+/**
+ * ESPN / Fox Sports Radio–style affiliate: network sports talk fill, no local hosts, no national
+ * franchise daypart (those are premium "The Blitz"–class deals with separate rights fees).
+ */
+function isNetworkSportsAffiliateStation(s,G){
+  if(!s||s.format!=='SPORTS_TALK'||s._bpSlotDeferred)return false;
+  if(stationAnyTalentOnAir(s)>0)return false;
+  if(!G)return false;
+  for(let i=0;i<DAYPART_SLOTS.length;i++){
+    const sl=DAYPART_SLOTS[i];
+    if(getStationFranchise(s,sl,G))return false;
+    if(s.prog?.[sl]?.staffingMode==='paid')return false;
+  }
+  return stationAutomationScore(s,G)>=0.30;
+}
+/** Lean fixed / ops / promo baselines for network sports affiliates (half-period multipliers). */
+function networkSportsAffiliateEconomicsPolicy(s,G){
+  if(!isNetworkSportsAffiliateStation(s,G))return null;
+  const y=G?.year||1970;
+  const era=0.72+0.28*_smoothstep(1990,2005,y);
+  return{
+    fixedMult:0.58*era+0.42*(1-era),
+    opsMult:0.54*era+0.46*(1-era),
+    salesAdminMult:0.76,
+    promoBaselineMult:0.32,
+    appealAutoPenaltyMult:0.55,
+    terRevMult:1.06+0.08*_smoothstep(1992,2010,y),
+  };
+}
 /** Half-period cash from paid programming blocks (player-chosen only). */
 function talkPaidProgrammingHalfPeriodRev(s,G){
   const exp=talkPaidProgrammingWeightedExposure(s);
@@ -2051,6 +2080,8 @@ function staffingAutomationAppealTradeoffMult(s,G){
     m=Math.max(0.865,1-Math.min(0.12,pen*0.11));
   }
   if(TALK_FMTS.includes(s.format)){
+    const nsa=networkSportsAffiliateEconomicsPolicy(s,G);
+    if(nsa)fmt*=nsa.appealAutoPenaltyMult;
     const synE=talkSyndicatedVacantWeightedExposure(s);
     if(synE>0.008)m*=Math.max(0.93,1-Math.min(0.055,synE*0.034*fmt));
     const paidX=talkPaidProgrammingWeightedExposure(s);
@@ -2264,6 +2295,16 @@ function refreshStationOQ(s,G){
   const cap=stationOverallQualitySoftCap(s);
   if(oq>cap)oq=cap;
   s.oq=oq;
+  if(s._simulcastSource===true&&G){
+    simulcastGroupReceivers(s.id,G).forEach(r=>{
+      if(!r||r._bpSlotDeferred)return;
+      r.oq=oq;
+      DAYPART_SLOTS.forEach(sl=>{
+        const ss=s.prog?.[sl],rd=r.prog?.[sl];
+        if(ss&&rd&&!rd.talent)rd.quality=ss.quality;
+      });
+    });
+  }
 }
 function refreshAllStationOQ(G){
   (G.stations||[]).forEach(s=>refreshStationOQ(s,G));
@@ -4542,6 +4583,58 @@ function eliteTalentIncumbentPremiumMults(t,sl,stShare){
   return[capM,floorM];
 }
 /**
+ * Incumbent annual salary floor ($/yr) — quality-positioned point in SAL band, not 60% of band minimum.
+ * Uses hidden trueQ for tiering; optional tenure / elite multipliers applied by caller (decay Fall + hard floor).
+ * @param {object} [opts] — opts.variant: 'v1' (production), 'v2a'|'v2b'|'v2c' (softer calibrations for tuning)
+ */
+const INCUMBENT_FLOOR_VARIANTS={
+  v1:{posBase:0.28,posSpan:0.42,ft:0.72,drive:0.74,overnight:0.62,book:0.42},
+  v2a:{posBase:0.28,posSpan:0.42,ft:0.65,drive:0.68,overnight:0.62,book:0.30},
+  v2b:{posBase:0.22,posSpan:0.35,ft:0.72,drive:0.74,overnight:0.62,book:0.42},
+  v2c:{posBase:0.22,posSpan:0.35,ft:0.65,drive:0.68,overnight:0.62,book:0.30},
+};
+function incumbentSalaryFloorAnnual(slot,trueQ,marketId,year,st,opts){
+  opts=opts||{};
+  const variant=opts.variant&&INCUMBENT_FLOOR_VARIANTS[opts.variant]?opts.variant:'v1';
+  const cal=INCUMBENT_FLOOR_VARIANTS[variant];
+  const sl=typeof slot==='string'&&slot?slot:(typeof opts.slot==='string'?opts.slot:'midday');
+  const y=Number.isFinite(Number(year))?Number(year):(typeof G!=='undefined'&&G?.year)||1970;
+  const mkt=marketId||(typeof G!=='undefined'&&G?.marketId)||ACTIVE_MARKET||'atlanta';
+  let tq=Number(trueQ);
+  if(!Number.isFinite(tq))tq=30;
+  tq=Math.max(0,Math.min(100,Math.round(tq)));
+  const tier=tq<42?'entry':tq<68?'mid':'star';
+  const band=(SAL[sl]&&SAL[sl][tier])||(SAL.midday&&SAL.midday.mid)||[11000,28000];
+  const lo=Number(band[0]),hi=Number(band[1]);
+  const span=(Number.isFinite(hi)&&Number.isFinite(lo)&&hi>lo)?hi-lo:17000;
+  const q01=Math.max(0,Math.min(1,(tq-42)/46));
+  const pos1970=lo+span*(cal.posBase+cal.posSpan*q01);
+  let floorBase=salInfl(pos1970,y);
+  let factor=cal.ft;
+  if(sl==='overnight')factor=cal.overnight;
+  else if(sl==='morningDrive'||sl==='afternoonDrive')factor=cal.drive;
+  const flBoost=1+(marketRankTierOnAirPayMult(mkt)-1)*0.58;
+  floorBase=Math.round(floorBase*factor*flBoost/500)*500;
+  const bookM=(st&&typeof stationBookStrengthPayMult==='function')?stationBookStrengthPayMult(st,sl):1;
+  const bookPart=Number.isFinite(bookM)?1+Math.max(0,bookM-1)*cal.book:1;
+  floorBase=Math.round(floorBase*bookPart/500)*500;
+  return Math.max(3500,floorBase);
+}
+/** Softer incumbent floor (Option C: reduced factors + lower band position). Production via decay(). */
+function incumbentSalaryFloorAnnual_v2(slot,trueQ,marketId,year,st,opts){
+  return incumbentSalaryFloorAnnual(slot,trueQ,marketId,year,st,{...(opts||{}),variant:'v2c'});
+}
+/** Alias for decay() — production incumbent floor. */
+function incumbentSalaryFloorProduction(slot,trueQ,marketId,year,st,opts){
+  return incumbentSalaryFloorAnnual_v2(slot,trueQ,marketId,year,st,opts);
+}
+try{
+  globalThis.incumbentSalaryFloorAnnual=incumbentSalaryFloorAnnual;
+  globalThis.incumbentSalaryFloorAnnual_v2=incumbentSalaryFloorAnnual_v2;
+  globalThis.incumbentSalaryFloorProduction=incumbentSalaryFloorProduction;
+  globalThis.INCUMBENT_FLOOR_VARIANTS=INCUMBENT_FLOOR_VARIANTS;
+}catch(_e){}
+/**
  * Minimum plausible renewal annual ($) for elite drive hosts — anchors extensions without huge mandatory jumps.
  * Uses existing salInfl + marketTalentMult + slot tier band (not new SAL ranges).
  */
@@ -6617,6 +6710,8 @@ function playerCompetitiveBaselinePromoProg(s,G,totalRev,promoCap,progCap){
   if(year>=1996)eraK*=1+0.08*Math.min(1,(year-1996)/12);
   let baselineTotal=Math.round(totalRev*tierCorePct*shareK*eraK);
   if(staffingAutomationEconomicsActive(s,G))baselineTotal=Math.round(baselineTotal*(1-0.18*stationAutomationScore(s,G)));
+  const _nsa=networkSportsAffiliateEconomicsPolicy(s,G);
+  if(_nsa)baselineTotal=Math.round(baselineTotal*_nsa.promoBaselineMult);
   if(stationBrokeredEconomicsActive(s,G))baselineTotal=Math.round(baselineTotal*0.22);
   const rawPromo=Math.round(baselineTotal*PLAYER_BASELINE_PROMO_SHARE);
   const rawProg=Math.max(0,baselineTotal-rawPromo);
@@ -8454,6 +8549,29 @@ function wlAnalyticsIsGuest(){
   return typeof window!=='undefined'&&!!window.__WL_GUEST_ONBOARDING;
 }
 
+/** Temporary tutorial funnel diagnostics — once per checkpoint per game run; no gameplay effect. */
+function wlEmitTutorialCheckpoint(checkpointId,extraProps){
+  if(!G||G.sc?.id!=='tutorial_turnaround')return;
+  if(typeof MP!=='undefined'&&MP.mode==='live')return;
+  const id=String(checkpointId||'').trim();
+  if(!id)return;
+  const flagKey='_wlTutorialCk_'+id;
+  if(G[flagKey])return;
+  G[flagKey]=true;
+  const base={
+    source:'tutorial_diagnostic',
+    scenario_id:'tutorial_turnaround',
+    market_id:String(G.marketId||ACTIVE_MARKET||'atlanta').slice(0,32),
+    year:G.year|0,
+    period:G.period|0,
+    is_guest:wlAnalyticsIsGuest(),
+    tutorial_act:G.tutorialAct|0,
+  };
+  try{
+    wlAnalyticsCapture('tutorial_checkpoint_'+id,Object.assign({},base,extraProps||{}));
+  }catch(_e){}
+}
+
 /** Canonical tutorial completion — fires when the grad modal ("Now It's Up to You") is shown. */
 function wlEmitTutorialFinished(screenId){
   if(!G)return;
@@ -10268,6 +10386,7 @@ function removeTalentToBenchInternal(sid, slot){
     // Replace coach has no OK — flag stays false until now; clear so bench/CLOSE steps aren’t pre-empted on return.
     G._tutorialAct4ReplaceCoachDone=true;
   }
+  if(slot==='morningDrive')wlMorningNoteSlotClear(s,slot);
   sd.talent=null;
   clearPairingChemistryOnly(sd);
   promoteSlotChairBtoAIfNeeded(sd,slot);
@@ -10455,6 +10574,7 @@ function applyTalentSameStationSwapFull(sid, fromSlot, toSlot) {
   const leadFrom=fromSd?.talent, coFrom=slotTalentB(fromSd);
   const leadTo=toSd?.talent, coTo=slotTalentB(toSd);
   if (!leadFrom || !leadTo) return false;
+  if (fromSlot === 'morningDrive' || toSlot === 'morningDrive') wlMorningNoteSlotClear(s, 'morningDrive');
   clearPairingChemistryOnly(fromSd);
   clearPairingChemistryOnly(toSd);
   const fmt = s.format;
@@ -10475,6 +10595,10 @@ function applyTalentSameStationSwapFull(sid, fromSlot, toSlot) {
   applyDaypartPromotionEconomics(leadTo, toSlot, fromSlot);
   applyDaypartPromotionEconomics(leadFrom, fromSlot, toSlot);
   refreshStationOQ(s, G);
+  if (fromSlot === 'morningDrive' || toSlot === 'morningDrive') {
+    const priorSlot = fromSlot === 'morningDrive' ? toSlot : fromSlot;
+    wlMorningOnSlotFill(s, 'morningDrive', { priorSlot, replacementType: 'internal' });
+  }
   G.news.unshift({ v: 'LOW', t: `Swapped ${leadFrom.name} and ${leadTo.name} between ${SL[fromSlot]} and ${SL[toSlot]} on ${callDisplay(s)}.`, y: G.year, p: G.period });
   logHistory(s, 'TALENT', `Swap: ${leadFrom.name} ↔ ${leadTo.name} (${SL[fromSlot]} ↔ ${SL[toSlot]})`, G);
   return true;
@@ -10525,6 +10649,7 @@ window._mpApply_shuffle = function({ sid, fromSlot, toSlot }) {
   if (!fromSd?.talent) return;
   const talA = fromSd.talent;
   let displacedName = null;
+  if (fromSlot === 'morningDrive') wlMorningNoteSlotClear(s, fromSlot);
   if (toSd?.talent) {
     displacedName = toSd.talent.name;
     if (!removeTalentToBenchInternal(sid, toSlot)) return;
@@ -10546,6 +10671,7 @@ window._mpApply_shuffle = function({ sid, fromSlot, toSlot }) {
   toSd2.quality = Math.min(100, Math.max(10, Math.round((toSd2.quality || 30) * (1 - adjDip))) + boost(talA));
   initTalentPerformanceReveal(toSd2, talA, s.format, 'xfer');
   applyDaypartPromotionEconomics(talA, fromSlot, toSlot);
+  if (toSlot === 'morningDrive') wlMorningOnSlotFill(s, 'morningDrive', { priorSlot: fromSlot, replacementType: 'internal' });
   fromSd.talent = null;
   clearPairingChemistryOnly(fromSd);
   promoteSlotChairBtoAIfNeeded(fromSd,fromSlot);
@@ -12701,13 +12827,13 @@ function stationIntelActualAudienceSummary(st){
   let label, detail;
   if(cellTied&&bandTight){
     label='Broad adult — no sharp age skew';
-    detail=`Book cells are nearly even (about ${shn(topCell.sh)}–${shn(runner.sh)} rating points in the strongest ages). Weighted listening tilts ${topBand.label} (${(topBand.pct*100).toFixed(0)}%).`;
+    detail=`Book ratings by age band are nearly even (about ${shn(topCell.sh)}–${shn(runner.sh)} in the strongest ages). Weighted listening tilts ${topBand.label} (${(topBand.pct*100).toFixed(0)}%).`;
   }else if(cellTied){
     label=topBand.label;
-    detail=`Per-age cells are close in the book; weighted listening centers on ${topBand.label} (${(topBand.pct*100).toFixed(0)}%). Largest cell: ${INTEL_AUDIENCE_COH_LABELS[topCell.c]||topCell.c} (${shn(topCell.sh)}).`;
+    detail=`Ratings by age band are close in the book; weighted listening centers on ${topBand.label} (${(topBand.pct*100).toFixed(0)}%). Strongest age band: ${INTEL_AUDIENCE_COH_LABELS[topCell.c]||topCell.c} (${shn(topCell.sh)}).`;
   }else{
     label=topBand.label;
-    detail=`Weighted listening: ${topBand.label} (${(topBand.pct*100).toFixed(0)}%). Largest single age cell: ${INTEL_AUDIENCE_COH_LABELS[topCell.c]||topCell.c} (${shn(topCell.sh)}).`;
+    detail=`Weighted listening: ${topBand.label} (${(topBand.pct*100).toFixed(0)}%). Strongest age band: ${INTEL_AUDIENCE_COH_LABELS[topCell.c]||topCell.c} (${shn(topCell.sh)}).`;
   }
   return {label,detail,comp,topCell};
 }
@@ -12717,7 +12843,7 @@ function stationIntelAudienceDemoRowsHtml(st){
   return COH.map(c=>{
     const cell=shn(st.rat?.cur?.[c]?.share||0);
     const wt=(comp[c]*100).toFixed(0);
-    return `<div class="sr"><span class="lb">${c}</span><span class="vl" style="font-size:13px;color:var(--mut)">${cell} cell · ${wt}% of listening</span></div>`;
+    return `<div class="sr"><span class="lb">${c}</span><span class="vl" style="font-size:13px;color:var(--mut)">${cell} book rating · ${wt}% of listening</span></div>`;
   }).join('');
 }
 function stationResearchDriftOneLiner(st){
@@ -12759,7 +12885,7 @@ function stationResearchAudienceSectionHtml(st){
   const driftLn=stationResearchDriftOneLiner(op);
   const body=`<p style="margin:0 0 8px"><strong>Target:</strong> ${target}${driftLn?` · ${driftLn}`:''} <span style="color:var(--mut)">(demo targeting + format positioning slider)</span></p>`+
     `<p style="margin:0 0 10px"><strong>Actual (book):</strong> ${actual.label} — ${actual.detail}</p>`+
-    `<p class="di" style="margin:0 0 8px;font-size:12px;line-height:1.45">Cell = rating points within that age group in the book. “% of listening” = your AQH mix (same weighting as headline share). Market demo breakdown uses the same cells.</p>`+
+    `<p class="di" style="margin:0 0 8px;font-size:12px;line-height:1.45"><strong>Book rating</strong> = your rating in that age band (how the diary ranks you with listeners that age). <strong>% of listening</strong> = your AQH mix — same weighting as headline share. Market demo breakdown uses the same age bands.</p>`+
     stationIntelAudienceDemoRowsHtml(op);
   return consultantMemoSection('TARGET / ACTUAL AUDIENCE',body);
 }
@@ -12769,7 +12895,7 @@ function stationResearchSimulcastAmFmAudienceHtml(amLeg,fmLeg,progSrc){
   const driftLn=stationResearchDriftOneLiner(progSrc);
   const body=`<p style="margin:0 0 8px"><strong>Shared target</strong> (one programming feed): ${target}${driftLn?` · ${driftLn}`:''}</p>`+
     `<p style="margin:0 0 10px;font-size:13px;color:var(--off);line-height:1.45"><strong>Programming hub:</strong> ${callDisplay(progSrc)}. <strong>Combined book profile</strong> (deduped same-feed listeners): ${combined.label} — ${combined.detail}</p>`+
-    `<p class="di" style="margin:0 0 4px;font-size:12px">Each license still has its own diary cells in the book — compare AM vs FM below.</p>`+
+    `<p class="di" style="margin:0 0 4px;font-size:12px">Each license still has its own book ratings by age band — compare AM vs FM below.</p>`+
     stationResearchAudienceLegBlockHtml(amLeg,'AM — '+callDisplay(amLeg))+
     stationResearchAudienceLegBlockHtml(fmLeg,'FM — '+callDisplay(fmLeg));
   return consultantMemoSection('TARGET / ACTUAL AUDIENCE (SIMULCAST)',body);
@@ -12930,7 +13056,8 @@ function appl(s,coh,G){
   let aff=baseAff*leanMult(coh,s.demoLean||0);
   if(aff<.01)return 0;
 
-  const q=s.oq/65;
+  const feed=programmingFeedStationForEconomics(s,G);
+  const q=(feed.oq||s.oq||20)/65;
 
   // Signal reach: FM stations benefit from FM penetration growth
   const pen=s.sig.type==='FM'?fmp:.99;
@@ -12998,8 +13125,13 @@ function appl(s,coh,G){
   const effectiveDrag=Math.max(0,streamDrag-offset);
   const strm=cohIdx<=1?1-effectiveDrag*.8:cohIdx<=3?1-effectiveDrag*.4:1-effectiveDrag*.1;
 
-  // Simulcast bonus
-  const simBonus=stationHasSimulcastLeg(s,G)?1.15:1;
+  // Simulcast bonus — co-owned FM same-feed star groups (translator + full FM) get a touch more than legacy 1.15.
+  let simBonus=stationHasSimulcastLeg(s,G)?1.15:1;
+  if(G&&stationHasSimulcastLeg(s,G)){
+    const grp=simulcastGroupForClusterEconomics(s,G);
+    if(grp&&grp.length>=2&&resolveCoownedStarFmSameFeedSimulcastGroup(grp[0],grp.slice(1),G))
+      simBonus=Math.max(simBonus,1.22);
+  }
 
   // Format drift modifier
   const dr=getDrift(s);
@@ -14515,6 +14647,59 @@ function resolveCoownedAmFmSimulcastGroup(lead,recvs,G){
   }
   return{am,fms};
 }
+/** Co-owned star-model group: identical format, FM-class legs only (translator + full FM), not AM/FM non-dup. */
+function resolveCoownedStarFmSameFeedSimulcastGroup(lead,recvs,G){
+  const receivers=(recvs||[]).filter(Boolean);
+  if(!lead||lead._simulcastSource!==true||!receivers.length)return null;
+  const fmt=lead.format;
+  if(!fmt)return null;
+  const all=[lead,...receivers];
+  for(let i=0;i<all.length;i++){
+    const st=all[i];
+    if(!st||st._bpSlotDeferred||st.format!==fmt)return null;
+    if(st.sig?.type!=='FM'&&!st.fmBooster)return null;
+    if(i>0&&!stationsSameOwnershipCluster(lead,st,G))return null;
+  }
+  if(resolveCoownedAmFmSimulcastGroup(lead,receivers,G))return null;
+  return{lead,receivers};
+}
+/** Deduped AQH for co-owned FM star simulcast (100% same programming feed). */
+function coownedStarFmSameFeedDedupedCombinedAqh(lead,receivers,G){
+  const g=resolveCoownedStarFmSameFeedSimulcastGroup(lead,receivers,G);
+  if(!g)return null;
+  const inc=SIMULCAST_SAME_FEED_AUDIENCE_INCREMENT;
+  const legs=[g.lead,...g.receivers].map(s=>Math.max(0,Number(s.rat?.aqh)||0));
+  const mx=Math.max.apply(null,legs);
+  const sum=legs.reduce((a,b)=>a+b,0);
+  return mx+(sum-mx)*inc;
+}
+/** Player/AI cluster peers in the same star simulcast group (for shared fixed-cost rank). */
+function simulcastGroupForClusterEconomics(s,G){
+  if(!s||s._bpSlotDeferred)return null;
+  let lead=null;
+  if(s._simulcastSource===true)lead=s;
+  else if(s.simulcastSourceStationId){
+    const L=(G.stations||[]).find(t=>t.id===s.simulcastSourceStationId);
+    if(L&&L._simulcastSource===true)lead=L;
+  }
+  if(!lead)return null;
+  const recvs=simulcastGroupReceivers(lead.id,G).filter(r=>r&&!r._bpSlotDeferred&&stationsSameOwnershipCluster(lead,r,G));
+  if(!recvs.length)return null;
+  return[lead,...recvs];
+}
+/** Prior-period revenue used to rank a station inside its ownership cluster (simulcast group = one biller). */
+function clusterPeerEffectiveRevForFixedCostRank(st,G){
+  const grp=simulcastGroupForClusterEconomics(st,G);
+  if(grp&&grp.length>=2)return grp.reduce((a,x)=>a+(Number(x.fin?.rev)||0),0);
+  return Number(st.fin?.rev)||0;
+}
+/** FM translator programming hub with ≥1 co-owned receiver — lean ops (STL/repeater, not second newsroom). */
+function simulcastFmBoosterHubExpensePolicy(s,G){
+  if(!s||!G||s._simulcastSource!==true||!s.fmBooster)return null;
+  const recvs=simulcastGroupReceivers(s.id,G).filter(r=>r&&stationsSameOwnershipCluster(s,r,G));
+  if(!recvs.length)return null;
+  return{opsFloorMult:0.42,salesAdminMult:0.82};
+}
 /** AQH mass for display/rank after same-feed overlap rules; null if not a modeled AM/FM co-owned simulcast group. */
 function coownedAmFmSimulcastGroupDedupedCombinedAqh(am,fms,G){
   if(!am||!fms||!fms.length)return null;
@@ -14753,9 +14938,9 @@ function recalc(stations,G){
   const top40SubstBleedExtra=pTop40ModBleed>0?Math.min(2.5,top40ModernSubstitutionBleedExtra01(G,stations,activeIx,pTop40ModBleed)):0;
   const talentPmById=new Map();
   const talentPmFor=s=>{
-    if(!s?.id)return talentFranchiseRatingsEffect(s,G);
+    if(!s?.id)return talentFranchiseRatingsEffect(programmingFeedStationForEconomics(s,G),G);
     if(talentPmById.has(s.id))return talentPmById.get(s.id);
-    const tpm=talentFranchiseRatingsEffect(s,G);
+    const tpm=talentFranchiseRatingsEffect(programmingFeedStationForEconomics(s,G),G);
     talentPmById.set(s.id,tpm);
     if(typeof window!=='undefined'&&window.DEBUG_TALENT){
       const coDiag=[];
@@ -15324,6 +15509,11 @@ function isSimulcastProgrammingReceiver(s,G){
   const src=simulcastProgrammingSourceStation(s,G);
   return !!(src&&src.id!==s.id);
 }
+/** Same on-air product for ratings/talent math: simulcast receivers use the programming source. */
+function programmingFeedStationForEconomics(s,G){
+  const src=simulcastProgrammingSourceStation(s,G);
+  return src&&src.id!==s.id?src:s;
+}
 /** Progressive sales/G&A load index used for simulcast receiver sales trim (matches calcRev big-biller ramp). */
 function simulcastReceiverSalesAdminCostMult(totalRev){
   const bigK=_smoothstep(140000,900000,totalRev||0);
@@ -15335,12 +15525,15 @@ function simulcastReceiverSalesAdminCostMult(totalRev){
  */
 function simulcastReceiverExpensePolicy(s,G){
   if(!s||!G||!isSimulcastProgrammingReceiver(s,G))return null;
+  const src=simulcastProgrammingSourceStation(s,G);
+  const promoSynced=!!(src&&src.ops&&s.ops&&Math.round(s.ops.promo||0)===Math.round(src.ops.promo||0));
+  const progSynced=!!(src&&src.ops&&s.ops&&Math.round(s.ops.progBudget||0)===Math.round(src.ops.progBudget||0));
   return{
     staffFacEfficiencyMult:0.38,
     groupOverheadMult:0.58,
     opsFloorMult:0.30,
-    effPromoMult:0.24,
-    effProgMult:0.24,
+    effPromoMult:promoSynced?0:0.24,
+    effProgMult:progSynced?0:0.24,
     identityPnlMult:0.20,
     salesAdminMultForRev:simulcastReceiverSalesAdminCostMult,
   };
@@ -16006,6 +16199,8 @@ function calcRev(s,G){
   const amTalkSmMult=earlyEraAmTalkSmallMarketSupport(s.format,year,G.marketId||ACTIVE_MARKET,s.sig?.type||'');
   rev=Math.round(rev*amTalkSmMult);
   if(stationBrokeredEconomicsActive(s,G))rev=brokeredProgrammingTerrestrialRev(s,G,rev);
+  const _nsaPol=networkSportsAffiliateEconomicsPolicy(s,G);
+  if(_nsaPol)rev=Math.round(rev*_nsaPol.terRevMult);
   const terrDrag=stationDigitalTerrestrialDrag(s,G);
   rev=Math.round(rev*terrDrag);
   rev=Math.round(rev*lateEraTerrestrialCommoditizationMult(s,G));
@@ -16047,6 +16242,7 @@ function calcRev(s,G){
   const progSrcStation=simulcastProgrammingSourceStation(s,G);
   const isProgReceiver=isSimulcastProgrammingReceiver(s,G);
   const _simPol=simulcastReceiverExpensePolicy(s,G);
+  const _hubPol=simulcastFmBoosterHubExpensePolicy(s,G);
   const legacySimPair=playerPaired&&simPartner&&s._simulcastSource!==true&&simPartner._simulcastSource!==true;
   let efficiencyMult;
   if(isProgReceiver){
@@ -16060,7 +16256,7 @@ function calcRev(s,G){
     // Pre-1990: modest sharing discount (physical combo operations, one building, shared admin).
     // 1990-1996: growing consolidation makes cluster ops more systematic.
     // Post-1996 Telecom Act: full cluster efficiency as groups formalize shared services.
-    const sortedByRev=[...clusterPeers].sort((a,b)=>(b.fin?.rev||0)-(a.fin?.rev||0));
+    const sortedByRev=[...clusterPeers].sort((a,b)=>clusterPeerEffectiveRevForFixedCostRank(b,G)-clusterPeerEffectiveRevForFixedCostRank(a,G));
     const stationRank=sortedByRev.findIndex(st=>st.id===s.id);
     // Cluster efficiency: even in 1970, two co-owned stations in the same market
     // shared a building, engineering staff, and often sales. The discount was real
@@ -16376,6 +16572,16 @@ function calcRev(s,G){
   if(_simPol){
     salesAdminCost=Math.round(salesAdminCost*_simPol.salesAdminMultForRev(totalRev));
     opsFloor=Math.round(opsFloor*_simPol.opsFloorMult);
+  }
+  if(_hubPol){
+    opsFloor=Math.round(opsFloor*_hubPol.opsFloorMult);
+    salesAdminCost=Math.round(salesAdminCost*_hubPol.salesAdminMult);
+  }
+  const _nsaEcon=networkSportsAffiliateEconomicsPolicy(s,G);
+  if(_nsaEcon){
+    fixedCost=Math.round(fixedCost*_nsaEcon.fixedMult);
+    opsFloor=Math.round(opsFloor*_nsaEcon.opsMult);
+    salesAdminCost=Math.round(salesAdminCost*_nsaEcon.salesAdminMult);
   }
   // Very low realized billing (pre–seedRev): taper fixed footprint for early FM music so weak sticks aren’t crushed by market-scaled overhead alone.
   if(year<1980&&s.sig.type==='FM'&&!TALK_FMTS.includes(s.format)&&totalRev<120000){
@@ -16712,7 +16918,9 @@ window.debugRevenueTrace=debugRevenueTrace;
 // ── DECAY ─────────────────────────────────────────────────────────
 function decay(s,year,period){
   if(!s||s._bpSlotDeferred)return;
-  const D={morningDrive:.035,afternoonDrive:.030,midday:.040,evening:.044,overnight:.050};
+  // afternoonDrive was .030 — raised to .035 to match morning and reduce 98–99 cap-saturation
+  // after runAI maintenance bumps repeatedly hit 100.
+  const D={morningDrive:.035,afternoonDrive:.035,midday:.040,evening:.044,overnight:.050};
   // Programming budget: recurring (progBudget) plus any residual one-shot (progInvestment)
   const progCap=progBudgetCapForPeriod(G);
   const cappedProg=Math.min(s.ops?.progBudget||0,progCap);
@@ -16867,15 +17075,10 @@ function decay(s,year,period){
         const vtSal=Math.min(0.028,vtLd*0.021);
         sd.talent.salary=Math.round(sd.talent.salary*(1+baseInflation+merit+perfPressure+moraleMod+vtSal+levSal)/500)*500;
         const [capElHost,floorElHost]=eliteTalentIncumbentPremiumMults(sd.talent,sl,stShare);
-        // Salary floor: 75% of market rate (up from 55%) — long-tenured talent never drifts low
-        {const tier=tqMerit<42?'entry':tqMerit<68?'mid':'star';
-         // Floor = 100% of entry-tier minimum (was 75%) so no one earns poverty wages
-         const flBoost=1+(marketRankTierOnAirPayMult(G.marketId||ACTIVE_MARKET)-1)*0.58;
-         const baseFl=Math.round(salInfl((SAL[sl]?.[tier]?.[0]||5000),G.year)*0.60*flBoost/500)*500;
-         // Tenure premium: each year over 5 adds 2% to floor, up to +40% at 25 years
-         const tenureYrs=G.year-(sd.talent._hireYear||G.year);
+        {const tenureYrs=G.year-(sd.talent._hireYear||G.year);
          const tenurePrem=Math.min(0.10, Math.max(0, tenureYrs-10)*0.01);
-         const floor=Math.round(baseFl*(1+tenurePrem)*floorElHost/500)*500;
+         const flCore=incumbentSalaryFloorAnnual_v2(sl,tqMerit,G.marketId||ACTIVE_MARKET,G.year,s);
+         const floor=Math.round(flCore*(1+tenurePrem)*floorElHost/500)*500;
          if(sd.talent.salary<floor)sd.talent.salary=floor;}
         // Tenure cap: salary can float up to 1.8x market rate for very long-tenured stars
         const slotBx=Math.round(slotStarMaxBaseForDaypart(sd.talent.slot||sl)*marketRankTierOnAirPayMult(G.marketId||ACTIVE_MARKET));
@@ -16886,13 +17089,11 @@ function decay(s,year,period){
       }
       // Universal floor (applies every period, not just Fall — catches legacy saves and new hires)
       {const tqFloor=talentTrueQuality(sd.talent);
-       const tier2=tqFloor<42?'entry':tqFloor<68?'mid':'star';
-       const flBoost2=1+(marketRankTierOnAirPayMult(G.marketId||ACTIVE_MARKET)-1)*0.58;
-       const flBase2=Math.round(salInfl((SAL[sl]?.[tier2]?.[0]||5000),G.year)*0.60*flBoost2/500)*500;
        const tenYrs2=G.year-(sd.talent._hireYear||G.year);
        const tenPrem2=Math.min(0.10, Math.max(0, tenYrs2-10)*0.01);
        const [_ceh,floorElHard]=eliteTalentIncumbentPremiumMults(sd.talent,sl,s.rat?.share||0);
-       const hardFloor=Math.round(flBase2*(1+tenPrem2)*floorElHard/500)*500;
+       const flCore2=incumbentSalaryFloorAnnual_v2(sl,tqFloor,G.marketId||ACTIVE_MARKET,G.year,s);
+       const hardFloor=Math.round(flCore2*(1+tenPrem2)*floorElHard/500)*500;
        if(sd.talent.salary<hardFloor)sd.talent.salary=hardFloor;}
     }
   });
@@ -16901,6 +17102,12 @@ function decay(s,year,period){
     let _oqDecay=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w,0));
     if(_oqDecay>_capOqDecay)_oqDecay=_capOqDecay;
     s.oq=_oqDecay;
+  }
+  if(typeof wlMorningSuccessor!=='undefined'){
+    try{
+      wlMorningSuccessor.stepCeiling(s,G);
+      wlMorningSuccessor.clampMorning(s,G);
+    }catch(_e){}
   }
 
   // ── COMMUNITY IDENTITY ───────────────────────────────────────────
@@ -17896,6 +18103,42 @@ function wlMarkTalentPoachCourtingTurn(t, G) {
 }
 
 /** Talent retention / exit intent — see src/talentRetention.js (wlTalentHasExitIntent, effectiveTalentMorale, …). */
+/** Morning successor ceiling — see src/morningSuccessorCeiling.js */
+function wlMorningSetFillPath(tag){
+  try{if(G&&G._wlCeilingCoverageDiag)G._wlCeilingFillPath=tag;}catch(_e){}
+}
+function wlMorningNoteSlotClear(st,slot){
+  if(slot!=='morningDrive'||typeof wlMorningSuccessor==='undefined')return;
+  try{
+    if(G&&G._wlCeilingCoverageDiag){
+      if(!G._wlCeilingHookLog)G._wlCeilingHookLog=[];
+      G._wlCeilingHookLog.push({type:'noteClear',stationId:st.id,year:G.year,period:G.period,periodIdx:(G.year|0)*2+((G.period|0)===2?1:0),path:G._wlCeilingFillPath||null});
+    }
+    wlMorningSuccessor.noteDeparture(st,G);
+  }catch(_e){}
+}
+function wlMorningOnSlotFill(st,slot,opts){
+  if(slot!=='morningDrive'||typeof wlMorningSuccessor==='undefined')return;
+  try{
+    if(G&&G._wlCeilingCoverageDiag){
+      if(!G._wlCeilingHookLog)G._wlCeilingHookLog=[];
+      G._wlCeilingHookLog.push({
+        type:'onSlotFillWrapper',
+        stationId:st.id,
+        year:G.year,
+        period:G.period,
+        periodIdx:(G.year|0)*2+((G.period|0)===2?1:0),
+        path:G._wlCeilingFillPath||null,
+        opts:opts||{},
+      });
+    }
+    wlMorningSuccessor.onMorningAssign(st,G,{...(opts||{}),via:'wrapper'});
+  }catch(_e){}
+}
+function wlMorningTryAiInternalPromotion(s){
+  if(typeof wlMorningSuccessor==='undefined')return null;
+  try{return wlMorningSuccessor.tryAiInternalMorningPromotion(s,G);}catch(_e){return null;}
+}
 
 /** Periods of on-air sit-out for a host poached mid-contract (non-compete style); uses existing _suspended in decay(). */
 function wlPoachSitoutPeriodsForDepartingTalent(t) {
@@ -17906,6 +18149,54 @@ function wlPoachSitoutPeriodsForDepartingTalent(t) {
   const cyr = Math.min(4, Math.max(0, typeof t.cyr === 'number' && !Number.isNaN(t.cyr) ? t.cyr : 0));
   n += Math.min(2, Math.round(cyr));
   return Math.min(8, n);
+}
+
+// Talent-supported ceiling for AI PM Drive maintenance bumps — prevents runAI from
+// repeatedly pushing afternoonDrive to 100 and decaying into a persistent 98–99 band.
+// Player stations are exempt; decay, reveals, and cohost chemistry are unaffected.
+function aiPmDriveMaintenanceCeiling(s,sd){
+  if(!s||s.isPlayer||!sd)return 100;
+  const t=sd.talent;
+  if(!t)return 86;
+  const trueQ=typeof talentTrueQuality==='function'?talentTrueQuality(t):(t.quality|0);
+  const fit=typeof talentTrueFormatFit==='function'?talentTrueFormatFit(t,s.format):0.55;
+  const tenure=Math.min(28,t.periodsAtStation|0);
+  let chem=0;
+  const co=typeof slotTalentB==='function'?slotTalentB(sd):null;
+  if(co){
+    if(typeof sd._cohostChemActual==='number')chem=Math.max(0,sd._cohostChemActual);
+    else if(typeof sd._cohostChemEstimate==='number')chem=Math.max(0,sd._cohostChemEstimate*0.65);
+  }
+  const ident=Math.max(0,Math.min(100,s.identity|0));
+  let pbBonus=0;
+  try{
+    const cap=typeof progBudgetCapForPeriod==='function'?progBudgetCapForPeriod(G):0;
+    const pb=Math.min(s.ops?.progBudget||0,cap||0);
+    if(cap>0){
+      const pct=pb/cap;
+      if(pct>=0.55)pbBonus=4;
+      else if(pct>=0.34)pbBonus=2;
+    }
+  }catch(_e){}
+  let ceil=66+trueQ*0.32+fit*14;
+  ceil+=Math.min(7,tenure*0.28);
+  ceil+=chem*5;
+  ceil+=ident*0.05;
+  ceil+=pbBonus;
+  if(trueQ>=78&&fit>=0.72&&tenure>=12)ceil+=3;
+  return Math.min(98,Math.max(78,Math.round(ceil)));
+}
+function aiApplyMaintenanceQualityBump(s,sl,sd){
+  if(!sd)return;
+  const cur=sd.quality|0;
+  const bump=rnd(1,4);
+  if(!s.isPlayer&&sl==='afternoonDrive'){
+    const ceil=aiPmDriveMaintenanceCeiling(s,sd);
+    if(cur>=ceil)return;
+    sd.quality=Math.min(ceil,cur+bump);
+    return;
+  }
+  sd.quality=Math.min(100,cur+bump);
 }
 
 // ── COMPETITOR AI ─────────────────────────────────────────────────
@@ -17963,12 +18254,22 @@ function runAI(G){
         } else {
           const nm=sd.talent.name;
           clearCoHostPairingState(sd);
+          wlMorningNoteSlotClear(s,sl);
           sd.talent=null;sd.quality*=sl==='morningDrive'?.68:.80;
           if(sl==='morningDrive')acts.push({v:'MEDIUM',t:`${nm} leaves ${s.callLetters}`});
-          if(Math.random()<p.ag*.7)sd.talent=mkTal(sl,s.format,'entry',G.year);
+          if(Math.random()<p.ag*.7){
+            if(sl==='morningDrive'){
+              wlMorningSetFillPath('ai_internal_promotion');
+              if(!wlMorningTryAiInternalPromotion(s)){
+                wlMorningSetFillPath('ai_contract_external');
+                sd.talent=mkTal(sl,s.format,'entry',G.year);
+                wlMorningOnSlotFill(s,sl,{replacementType:'external'});
+              }
+            }
+          }
         }
       }
-      if(Math.random()<p.ms)sd.quality=Math.min(100,sd.quality+rnd(1,4));
+      if(Math.random()<p.ms)aiApplyMaintenanceQualityBump(s,sl,sd);
     });
 
     // ── TALENT: FILL EMPTY KEY DAYPARTS (aggressive but not suicidal) ─────
@@ -17994,6 +18295,15 @@ function runAI(G){
         for(const sl of empty){
           if(hires>=maxHires)break;
           if(Math.random()>Math.min(0.9,hireProb))continue;
+          if(sl==='morningDrive'){
+            wlMorningSetFillPath('ai_internal_promotion');
+            const promoted=wlMorningTryAiInternalPromotion(s);
+            if(promoted){
+              hires++;
+              acts.push({v:'LOW',t:`${s.callLetters} promotes ${promoted.talent?.name||'in-house host'} to ${SL.morningDrive}`});
+              continue;
+            }
+          }
           const tier=(sl==='morningDrive'||sl==='afternoonDrive')
             ?((p.ag>0.52||s.rat.share<0.045)?'mid':'entry')
             :(p.ag>0.58?'mid':'entry');
@@ -18002,6 +18312,7 @@ function runAI(G){
           if((s.fin?.ebitda||0)<-70000&&sl!=='morningDrive'&&sl!=='afternoonDrive')continue;
           s.prog[sl].talent=tNew;
           s.prog[sl].quality=Math.min(100,Math.round((s.prog[sl].quality||25)*0.52+tNew.quality*0.48));
+          if(sl==='morningDrive'){wlMorningSetFillPath('ai_empty_slot_external');wlMorningOnSlotFill(s,sl,{replacementType:'external'});}
           hires++;
           acts.push({v:'LOW',t:`${s.callLetters} fills ${SL[sl]} (${tier})`});
         }
@@ -18112,8 +18423,11 @@ function runAI(G){
       const ms=s.prog.morningDrive;
       if(ms?.talent&&ms.talent.quality<65){
         const old=ms.talent.name;
+        wlMorningNoteSlotClear(s,'morningDrive');
+        wlMorningSetFillPath('ai_defensive_replace');
         ms.talent=mkTal('morningDrive',s.format,p.ag>.6?'mid':'entry',G.year);
         ms.quality=Math.min(100,ms.quality+ms.talent.quality*.3);
+        wlMorningOnSlotFill(s,'morningDrive',{replacementType:'external'});
         s._aiLastMajorReason='defensive:morning-replace';
         acts.push({v:'MEDIUM',t:`${s.callLetters} replaces morning host (was ${old})`});
       }
@@ -18214,9 +18528,14 @@ function runAI(G){
             }
           } else {
             const nm=best.t.name;
+            wlMorningNoteSlotClear(best.st,'morningDrive');
             best.st.prog.morningDrive.talent=null;best.st.prog.morningDrive.quality*=.72;
+            if(s.prog.morningDrive?.talent)wlMorningNoteSlotClear(s,'morningDrive');
+            wlMorningSetFillPath('ai_poach_instant');
             s.prog.morningDrive.talent={...best.t,salary:Math.round(best.t.salary*rnd(1.30,1.60)/500)*500};
             s.prog.morningDrive.quality=Math.min(100,s.prog.morningDrive.quality+bq*.4);
+            const repType=(s.corpOwner&&best.st.corpOwner&&String(s.corpOwner)===String(best.st.corpOwner))?'cluster':'external';
+            wlMorningOnSlotFill(s,'morningDrive',{fromStationId:best.st.id,fromCorpOwner:best.st.corpOwner,replacementType:repType});
             const iy=G.ps.some(st=>st.callLetters===best.st.callLetters);
             s._aiLastMajorReason='poach:rival-morning';
             acts.push({v:'HIGH',t:`⚡ ${s.callLetters} poaches ${nm} from ${best.st.callLetters}`,iy});
@@ -23425,13 +23744,17 @@ function tutorialTurnaroundMaybeAdvanceFromAct5(){
     G._wlTutorialFirstPayoffCaptured=true;
     try{
       wlAnalyticsCapture('tutorial_first_payoff_seen',{
-        tutorial_act:G.tutorialAct|0,
+        source:'tutorial_diagnostic',
+        scenario_id:'tutorial_turnaround',
+        market_id:String(G.marketId||ACTIVE_MARKET||'atlanta').slice(0,32),
         year:G.year|0,
         period:G.period|0,
-        market:String(G.marketId||ACTIVE_MARKET||'atlanta').slice(0,32),
+        is_guest:wlAnalyticsIsGuest(),
+        tutorial_act:G.tutorialAct|0,
       });
     }catch(_e){}
   }
+  wlEmitTutorialCheckpoint('promotion_section_reached');
   G.tutorialAct=6;
   G._tutorialOpeningPromo=ps.ops?.promo||0;
   G._tutorialBrandExtraStep=0;
@@ -23460,6 +23783,9 @@ function tutorialTurnaroundOnAdvTurnComplete(){
     tutorialTurnaroundToastForAct();
   }else if(a===5&&ps){
     G._tutorialAct5TurnsAdvanced=(G._tutorialAct5TurnsAdvanced|0)+1;
+    const act5Adv=G._tutorialAct5TurnsAdvanced|0;
+    if(act5Adv===1)wlEmitTutorialCheckpoint('first_advance_clicked');
+    else if(act5Adv===2)wlEmitTutorialCheckpoint('second_advance_clicked');
     if(normalizeProgrammingFocus(ps.programmingFocus)==='midday'){
       G._tutorialAct5MiddayTurns=(G._tutorialAct5MiddayTurns||0)+1;
     }
@@ -23512,6 +23838,7 @@ function tutorialTurnaroundAfterResearchClosed(){
   G.tutorialAct=3;
   G._tutorialResearchCoachStep=0;
   G._tutorialResearchReportCoachDone=false;
+  wlEmitTutorialCheckpoint('format_prompt_seen');
   tutorialTurnaroundToastForAct();
 }
 function tutorialTurnaroundOnFormatChanged(s,oldFmt,newFmt){
@@ -23520,7 +23847,9 @@ function tutorialTurnaroundOnFormatChanged(s,oldFmt,newFmt){
   if(!formatUnlockedForYear(newFmt,G))return;
   if(!formatPlausibleOnFacility(s,newFmt))return;
   if(!formatAllowedInMarket(newFmt,G.marketId,G.year))return;
+  wlEmitTutorialCheckpoint('format_changed');
   G.tutorialAct=4;
+  wlEmitTutorialCheckpoint('talent_prompt_seen');
   G._tutorialProgExtraStep=1;
   G._tutorialTalentRosterIntroDone=false;
   G._tutorialAct4ContractTipDone=false;
@@ -23552,6 +23881,7 @@ function tutorialTurnaroundOnTalentAdjusted(slot){
   }
   G._tutorialTalentAdjusted=true;
   G._tutorialDeferredTalentAdjusted=false;
+  wlEmitTutorialCheckpoint('talent_hired');
   G.tutorialAct=5;
   G._tutorialAct5MiddayTurns=0;
   G._tutorialAct5TurnsAdvanced=0;
@@ -24938,6 +25268,8 @@ function simulcastRankRowDedupedCombinedAqh(lead,receivers,G){
   const rec=receivers||[];
   const resolved=resolveCoownedAmFmSimulcastGroup(lead,rec,G);
   if(resolved)return coownedAmFmSimulcastGroupDedupedCombinedAqh(resolved.am,resolved.fms,G);
+  const fmSame=coownedStarFmSameFeedDedupedCombinedAqh(lead,rec,G);
+  if(fmSame!=null)return fmSame;
   return(Math.max(0,Number(lead.rat?.aqh)||0)+rec.reduce((a,r)=>a+Math.max(0,Number(r?.rat?.aqh)||0),0));
 }
 /**
@@ -26486,10 +26818,13 @@ function resolvePendingRivalPoaches(G){
     const prevCyr=typeof t.cyr==='number'&&!Number.isNaN(t.cyr)?t.cyr:0;
     const buyoutEst=prevCyr>0.1?Math.round(t.salary*prevCyr*0.60/500)*500:0;
     const sitN=wlPoachSitoutPeriodsForDepartingTalent(t);
+    wlMorningNoteSlotClear(pStn,slot);
     sd.talent=null;
     sd.quality=Math.round((sd.quality||30)*0.70);
     if(rival&&rival.prog[slot]){
       const susp0=(t._suspended|0)>0?(t._suspended|0):0;
+      if(slot==='morningDrive'&&rival.prog[slot].talent)wlMorningNoteSlotClear(rival,slot);
+      wlMorningSetFillPath('rival_poach_player_deferred');
       rival.prog[slot].talent={
         ...t,
         salary:pend.offerSalary,
@@ -26498,6 +26833,7 @@ function resolvePendingRivalPoaches(G){
         _suspended:Math.max(susp0,sitN),
       };
       rival.prog[slot].quality=Math.min(100,Math.round((rival.prog[slot].quality||30)+t.quality*0.45));
+      if(slot==='morningDrive')wlMorningOnSlotFill(rival,slot,{fromStationId:pStn.id,replacementType:'external'});
     }
     rival&&(rival._poachCooldown=WL_TALENT_POACH.AI_RIVAL_POACH_COOLDOWN_PERIODS);
     if(rival&&rival.prog[slot]&&rival.prog[slot].talent)wlMarkTalentPoachCourtingTurn(rival.prog[slot].talent,G);
@@ -26527,6 +26863,7 @@ function talentEvents(G){
       }
       if(t._letExpire&&(t.cyr||0)<=0){
         const name=t.name;
+        wlMorningNoteSlotClear(s,slot);
         sd.talent=null;
         G.news.unshift({v:'MEDIUM',t:`${name} departs ${s.callLetters} ${SL[slot]} — contract not renewed.`,y:G.year,p:G.period,iy:true});
       }
@@ -26555,6 +26892,7 @@ function talentEvents(G){
       const careerYears = G.year - careerStartYear;
       if(careerYears >= 35){
         const name=t.name;
+        wlMorningNoteSlotClear(s,slot);
         sd.talent=null;
         G.news.unshift({v:'HIGH',t:`🎙 ${name} retires after ${careerYears} years in radio — a true legend of ${s.callLetters} ${SL[slot]}.`,y:G.year,p:G.period,iy:true});
         return;
@@ -26567,6 +26905,7 @@ function talentEvents(G){
       // Late-career retirement (calendar years in radio) — reachable during normal play, not save-migration only
       if(careerYears>=26&&careerYears<35&&Math.random()<0.02+Math.max(0,(careerYears-26))*0.018){
         const name=t.name;
+        wlMorningNoteSlotClear(s,slot);
         sd.talent=null;
         G.news.unshift({v:'MEDIUM',t:`🎙 ${name} retires from ${s.callLetters} ${SL[slot]} after ${careerYears} years in radio.`,y:G.year,p:G.period,iy:true});
         return;
@@ -26575,6 +26914,7 @@ function talentEvents(G){
       const retireChance=careerYears>22?0.10:careerYears>18?0.05:age>16?0.04:age>12?0.02:0;
       if(t.quality>70&&Math.random()<retireChance){
         const name=t.name;
+        wlMorningNoteSlotClear(s,slot);
         sd.talent=null;
         G.news.unshift({v:'MEDIUM',t:`${name} retires from ${s.callLetters} ${SL[slot]} after a legendary run.`,y:G.year,p:G.period,iy:true});
         return;
@@ -26585,6 +26925,7 @@ function talentEvents(G){
       const burnoutChance=effMor<35?0.15:effMor<50?0.07:0;
       if(Math.random()<burnoutChance){
         const name=t.name;
+        wlMorningNoteSlotClear(s,slot);
         sd.talent=null;
         G.news.unshift({v:'HIGH',t:`⚠ ${name} quits ${s.callLetters} ${SL[slot]} — morale collapse. Find a replacement fast.`,y:G.year,p:G.period,iy:true});
         return;
@@ -29323,12 +29664,13 @@ function showCompIntel(sid){
     const val=dr.val||0;
     const poleAName=dr.cfg.poleA?.name||'Conservative';
     const poleBName=dr.cfg.poleB?.name||'Aggressive';
+    // Keep in sync with updDrift() positioning labels (20/40/60/80 bands).
     const distFromMid=Math.abs(val-50);
-    if(distFromMid<15){
+    if(distFromMid<10){
       strategyLine=`<span style="color:var(--off)">Holding center — no strong lean</span>`;
     } else {
       const pole=val>50?poleBName:poleAName;
-      const strength=distFromMid>=75?'strongly leaning':distFromMid>=50?'leaning':'slightly leaning';
+      const strength=distFromMid>=30?'strongly leaning':'leaning';
       strategyLine=`<span style="color:var(--amb)">${strength} toward <strong>${pole}</strong></span>`;
     }
   } else {
@@ -30474,6 +30816,7 @@ function doHire(){
   const fit=talentScoutFormatFit01(t,s.format);
   s.prog[sl].quality=Math.min(100,Math.round(s.prog[sl].quality+(t.quality/100)*fit*35));
   initTalentPerformanceReveal(s.prog[sl],t,s.format,'hire');
+  if(sl==='morningDrive'){wlMorningSetFillPath(hk==='replace'?'player_replace':'player_hire');wlMorningOnSlotFill(s,sl,{replacementType:'external'});}
   s.oq=Math.round(Object.entries(SW).reduce((sum,[sl2,w])=>sum+effSlotQForOq(s.prog[sl2])*w,0));
   G.news.unshift({v:'LOW',t:`You hire ${t.name} for ${s.callLetters} ${SL[sl]}`,y:G.year,p:G.period});
   if(t._budgetHire)showToast('Bargain hire: expect tougher morale and slower coaching lift until they earn a real raise.','info',5200);
@@ -32315,6 +32658,7 @@ function moveBenchedFranchiseTalent(stationId,franchiseId,targetSlot){
   s.prog[targetSlot].talent=t;
   s.prog[targetSlot].quality=Math.max(s.prog[targetSlot].quality||20,Math.round((t.quality||30)*0.88));
   s.prog[sourceSlot].talent=null;
+  if(targetSlot==='morningDrive'){wlMorningSetFillPath('franchise_bench_move');wlMorningOnSlotFill(s,targetSlot,{priorSlot:sourceSlot,replacementType:'internal'});}
   G.news.unshift({v:'LOW',t:`📻 ${t.name} moved from benched ${SL[sourceSlot]} under "${f.name}" to ${s.callLetters} ${SL[targetSlot]}.`,y:G.year,p:G.period,iy:true});
   cm('m-frmove');refreshStationOQ(s,G);renderAll();
 }
@@ -32837,6 +33181,7 @@ function doFire(sid,slot){
 
   if(buyout>0){ G.cash-=buyout; if(MP.mode==='live'){if(!G._playerCash)G._playerCash={};G._playerCash[MP.playerId]=G.cash;MP.emit('player_cash_update',{playerId:MP.playerId,cash:G.cash});}}
   clearCoHostPairingState(sd);
+  wlMorningNoteSlotClear(s,slot);
   sd.talent=null;
   coerceMusicVoiceTrackModesGlobally(G);
 
@@ -33748,6 +34093,9 @@ function openFmt(sid){
   sid=ensureOpsSourceSid(sid);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   FS={sid,chosen:null};rFmt(s);om('m-fm');
+  if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===3){
+    wlEmitTutorialCheckpoint('format_prompt_seen');
+  }
   if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'){
     G._tutorialFmtCoachDismissed=0;
     if((G._tutorialFmtCoachStep|0)===0)G._tutorialFmtCoachStep=1;
@@ -34041,17 +34389,19 @@ function doAcq(){
     // Entry: Q<42, Mid: Q<68, Star: Q>=68
     // Use global SAL table midpoints for quality-appropriate salary floors/caps
     const salMid=(slot,tier)=>{const r=SAL[slot]?.[tier];return r?Math.round((r[0]+r[1])/2):20000;};
-    Object.entries(s.prog).forEach(([sl,sd])=>{
-      if(!sd?.talent)return;
-      const q=sd.talent.quality||30;
+    const normOne=(tal,sl)=>{
+      const q=tal.quality||30;
       const tier=q<42?'entry':q<68?'mid':'star';
       const fair=Math.round(salInfl(salMid(sl,tier),G.year)*talkDisc/500)*500;
-      // Normalize: bring salary to within ±40% of fair market rate for this quality tier
-      if(sd.talent.salary>fair*1.4) sd.talent.salary=fair;
-      if(sd.talent.salary<fair*0.6) sd.talent.salary=fair;
-      // Extend contract — new ownership means fresh 2-period deal
-      sd.talent.cyr=2;
-      sd.talent.morale=Math.max(sd.talent.morale||55, 55); // fresh start, morale floors at 55
+      if(tal.salary>fair*1.4)tal.salary=fair;
+      if(tal.salary<fair*0.6)tal.salary=fair;
+      tal.cyr=2;
+      tal.morale=Math.max(tal.morale||55,55);
+    };
+    Object.entries(s.prog).forEach(([sl,sd])=>{
+      if(sd?.talent)normOne(sd.talent,sl);
+      const co=slotTalentB(sd);
+      if(co)normOne(co,sl);
     });
   })();
 
@@ -34104,15 +34454,19 @@ function benchmarkSoloAcquireStation(G,s){
     const isTalk=TALK_FMTS.includes(s.format);
     const talkDisc=isTalk?0.88:1.0;
     const salMid=(slot,tier)=>{const r=SAL[slot]?.[tier];return r?Math.round((r[0]+r[1])/2):20000;};
-    Object.entries(s.prog).forEach(([sl,sd])=>{
-      if(!sd?.talent)return;
-      const q=sd.talent.quality||30;
+    const normOne=(tal,sl)=>{
+      const q=tal.quality||30;
       const tier=q<42?'entry':q<68?'mid':'star';
       const fair=Math.round(salInfl(salMid(sl,tier),G.year)*talkDisc/500)*500;
-      if(sd.talent.salary>fair*1.4)sd.talent.salary=fair;
-      if(sd.talent.salary<fair*0.6)sd.talent.salary=fair;
-      sd.talent.cyr=2;
-      sd.talent.morale=Math.max(sd.talent.morale||55,55);
+      if(tal.salary>fair*1.4)tal.salary=fair;
+      if(tal.salary<fair*0.6)tal.salary=fair;
+      tal.cyr=2;
+      tal.morale=Math.max(tal.morale||55,55);
+    };
+    Object.entries(s.prog).forEach(([sl,sd])=>{
+      if(sd?.talent)normOne(sd.talent,sl);
+      const co=slotTalentB(sd);
+      if(co)normOne(co,sl);
     });
   })();
   const churnFrac=0.22;
@@ -37202,6 +37556,9 @@ function _wlModalAfterClose(id,opts){
   if(id==='m-sum'&&isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'){
     if((G.tutorialAct|0)===5){
       G._tutorialAct5SummariesSeen=(G._tutorialAct5SummariesSeen|0)+1;
+      const act5Sum=G._tutorialAct5SummariesSeen|0;
+      if(act5Sum===1)wlEmitTutorialCheckpoint('first_summary_seen');
+      else if(act5Sum===2)wlEmitTutorialCheckpoint('second_summary_seen');
       tutorialTurnaroundMaybeAdvanceFromAct5();
     }
     /* Act 6 → 7 after the period summary closes for the book following a promotion raise (deferred from turn-complete). */
@@ -38688,11 +39045,10 @@ function contractExtensionAndCtaBlockHtml(sid, slot, t, isCoHost, ce, forManageT
       </div>
     </div>`;
 }
-function stationCardCoHostLineupVisible(s,slot,_simSrc){
+function stationCardCoHostLineupVisible(lineupStation,slot){
   if(!daypartAllowsCoHostModel(slot))return false;
-  if(daytimerRestrictedSlot(s,slot))return false;
-  if(getStationFranchise(s,slot,G))return false;
-  if(_simSrc&&_simSrc.prog&&_simSrc.prog[slot]?.talent)return false;
+  if(daytimerRestrictedSlot(lineupStation,slot))return false;
+  if(getStationFranchise(lineupStation,slot,G))return false;
   return true;
 }
 function openManageTalentToDaypart(sid,slot){
@@ -39177,6 +39533,7 @@ function doPoach(sid, slot, rivalId){
 
   const name=t.name;
   // Move talent — fire from rival, hire to player
+  if(slot==='morningDrive')wlMorningNoteSlotClear(rival,slot);
   rival.prog[slot].talent=null;
   rival.prog[slot].quality=Math.max(10,Math.round(rival.prog[slot].quality*0.75));
   rival.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(rival.prog[sl])*w,0));
@@ -39184,6 +39541,8 @@ function doPoach(sid, slot, rivalId){
     const buyoutNote=buyout>0?` Buyout paid: ${f$(buyout)}.`:'';
     G.news.unshift({v:'LOW',t:`${oldTal.name} released from ${s.callLetters} to make room for ${name}.${buyoutNote}`,y:G.year,p:G.period});
   }
+  if(slot==='morningDrive'&&oldTal)wlMorningNoteSlotClear(s,slot);
+  if(slot==='morningDrive')wlMorningSetFillPath('player_poach');
   t.salary=offer;
   t.cyr=2; // 1-year deal
   t.morale=Math.min(100,t.morale+8);
@@ -39197,6 +39556,10 @@ function doPoach(sid, slot, rivalId){
   const fit=talentScoutFormatFit01(t,s.format);
   s.prog[slot].quality=Math.min(100,Math.round(s.prog[slot].quality+(t.quality/100)*fit*35));
   initTalentPerformanceReveal(s.prog[slot],t,s.format,'hire');
+  if(slot==='morningDrive'){
+    const repType=(s.corpOwner&&rival.corpOwner&&String(s.corpOwner)===String(rival.corpOwner))?'cluster':'external';
+    wlMorningOnSlotFill(s,slot,{fromStationId:rival.id,fromCorpOwner:rival.corpOwner,replacementType:repType});
+  }
   s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w,0));
   G.news.unshift({v:'HIGH',t:`🎙 SIGNED: ${name} joins ${s.callLetters} from ${rival.callLetters} — ${f$(offer)}/yr.`,y:G.year,p:G.period,iy:true});
   logHistory(s,'TALENT',`Poached ${name} from ${callDisplay(rival)} — ${SL[slot]}`,G);
@@ -39527,30 +39890,57 @@ function rStns(){
     div.className=`sc sc--compact ${stnEbitda>=0?'profit':'loss'}`;
     div.setAttribute('data-wl-station-ids',junior?[s.id,junior.id].sort().join(','):s.id);
     const _simSrc=simulcastProgrammingSource(s);
+    const lineupSt=op;
+    const lineupEcho=lineupSt.id!==s.id;
     const _hdrDaypart=rosterHtmlEsc('Time block in your station clock. Hover a row for that day’s actions.');
     const slotsLegend=`<div class="slots-lineup-stack"><div class="slots-lineup-meta"><span class="slots-legend-title">Lineup</span></div><div class="slots-lineup-hdr slots-lineup-hdr--with-help"><button type="button" class="slots-lineup-q" onclick="openStationLineupHelp()" title="About the lineup grid" aria-label="About the lineup grid">?</button><div class="slots-lineup-grid slots-lineup-grid--hdr"><span title="${_hdrDaypart}">Day part</span><span class="sl-h-pad" aria-hidden="true"></span><span>Name</span><span class="slots-hdr-tal">Talent</span><span class="slots-hdr-mor" title="Morale (green / yellow / red)">Morale</span><span class="slots-hdr-sq">Quality</span><span class="slots-hdr-pay" title="Annual salary (calendar year)">Pay/yr</span><span class="slots-hdr-contract" title="MOVED after moving talent to another daypart (new contract). EXP⬆ expiring next period. EXP in red if expired. ⚡ rival approached — open Contract.">Contract</span></div></div></div>`;
     const slrows=slotsLegend+DAYPART_SLOTS.map(k=>{
       const lbl=SL[k];
       const lblUi=SL_DISPLAY[k]||lbl;
-      const sd=s.prog[k],tn=sd?.talent?.name,q=Math.round(sd?.quality||0),c2=qc(q);
+      const sd=lineupSt.prog[k];
+      const cardSd=s.prog[k];
+      const tn=sd?.talent?.name;
+      const q=Math.round((sd?.quality??cardSd?.quality)||0);
+      const c2=qc(q);
       const vlbl=vacantLabelDisplay(op.format,k,op);
       const srcTal=!tn&&_simSrc?_simSrc.prog[k]?.talent:null;
       if(!tn&&srcTal){
         const sn=callDisplay(_simSrc);
+        const srcSd=_simSrc.prog[k];
         const srcStar=srcTal.superstar===true?'★ ':'';
         const morS=srcTal.morale||65;
         const tqS=Math.round(srcTal.quality||0);
         const _simRowTip=rosterHtmlEsc(lblUi+': simulcast from '+callDisplay(_simSrc)+' — main contract and pay are on the source. Click the host line for the source deal.');
-        return `<div class="slr slots-lineup-grid sc-lineup-row" title="${_simRowTip}"><span class="sl-cell-day sln">${lblUi}</span><span class="sl-cell-thumb">${talentPortraitThumbHtml(srcTal,'tp-sl',`${sn} · ${lblUi} (simulcast)`)}</span><span class="sl-cell-host slt" style="color:var(--off)">◈ ${srcStar}${srcTal.name} <span style="color:var(--mut);font-size:12px">(${sn})</span></span><span class="sl-cell-tal stal">${tqS}</span><span class="sl-cell-mor">${slMorDot(morS,'Morale')}</span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}">${q}</span><span class="sl-cell-pay slsal sl-cell-pay--sim"><span class="sl-pay-amt">${f$Pd(srcTal.salary)}/yr</span><span class="sl-pay-src" style="color:var(--mut);font-size:12px">· source leg</span></span><span class="sl-cell-cyr" aria-hidden="true"></span></div>`;
+        const simHostRow=`<div class="slr slots-lineup-grid sc-lineup-row" title="${_simRowTip}" role="button" tabindex="0" onclick="openContract('${_simSrc.id}','${k}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openContract('${_simSrc.id}','${k}');}"><span class="sl-cell-day sln">${lblUi}</span><span class="sl-cell-thumb">${talentPortraitThumbHtml(srcTal,'tp-sl',`${sn} · ${lblUi} (simulcast)`)}</span><span class="sl-cell-host slt clickable" style="color:var(--off)">◈ ${srcStar}${srcTal.name} <span style="color:var(--mut);font-size:12px">(${sn})</span></span><span class="sl-cell-tal stal">${tqS}</span><span class="sl-cell-mor">${slMorDot(morS,'Morale')}</span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}">${q}</span><span class="sl-cell-pay slsal sl-cell-pay--sim"><span class="sl-pay-amt">${f$Pd(srcTal.salary)}/yr</span><span class="sl-pay-src" style="color:var(--mut);font-size:12px">· source leg</span></span><span class="sl-cell-cyr" aria-hidden="true"></span></div>`;
+        const chSim=slotTalentB(srcSd);
+        if(!chSim||!stationCardCoHostLineupVisible(_simSrc,k))return simHostRow;
+        const chCyr=Math.round((chSim.cyr||0)*10)/10;
+        const chMor=chSim.morale||65;
+        const chTalR=Math.round(chSim.quality||0);
+        const chStar=chSim.superstar===true?'★ ':'';
+        const chWantsOut=wlTalentHasExitIntent(chSim);
+        const chCyrCls=chWantsOut?'cyr-exp':chCyr<=0?'cyr-exp':chCyr<=0.5?'cyr-warn':'cyr-ok';
+        const chCyrLbl=chWantsOut?'OUT':chCyr<=0?'EXP':chCyr<=0.5?'EXP⬆':'';
+        const chCyrTitle=chWantsOut?'Co-host won\'t re-sign — planning to leave.':chCyr<=0?'Co-host contract expired — extend or they may leave.':chCyr<=0.5?'Co-host contract expires next period.':'';
+        const chCyrCell=chCyrLbl?`<span class="sl-cell-cyr ${chCyrCls}" title="${rosterHtmlEsc(chCyrTitle)}">${cyrStatusDisplay(chCyrLbl)}</span>`:'<span class="sl-cell-cyr" aria-hidden="true"></span>';
+        const _chSimTip=rosterHtmlEsc(lblUi+' — co-host on '+sn+' (simulcast source). Click to open the co-host deal.');
+        const chPayPd=`${f$Pd(chSim.salary)}/yr`;
+        const chPayV=lineupCoHostContractVerboseUi(chCyr,chWantsOut);
+        const chPayVerbCls=chPayV.kind?` sl-pay-verbose--${chPayV.kind}`:'';
+        const chPayBlock=chPayV.text
+          ?`<span class="sl-cell-pay slsal sl-cell-pay--split"><span class="sl-pay-amt">${chPayPd}</span></span><span class="sl-pay-verbose${chPayVerbCls}">${chPayV.text}</span>`
+          :`<span class="sl-cell-pay slsal"><span class="sl-pay-amt">${chPayPd}</span></span>`;
+        const chSimRow=`<div class="slr slots-lineup-grid slr--cohost sc-lineup-row" title="${_chSimTip}" role="button" tabindex="0" onclick="openContract('${_simSrc.id}','${k}','cohost')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openContract('${_simSrc.id}','${k}','cohost');}"><span class="sl-cell-day sln"><span class="sc-cohost-mark">Co-host</span></span><span class="sl-cell-thumb">${talentPortraitThumbHtml(chSim,'tp-sl',`${sn} · ${lblUi} · co-host`)}</span><span class="sl-cell-host slt clickable">${chStar}${rosterHtmlEsc(chSim.name)} <span style="color:var(--mut);font-size:12px">(${sn})</span></span><span class="sl-cell-tal stal">${chTalR}</span><span class="sl-cell-mor">${slMorDot(chMor,'Co-host morale')}</span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}">${q}</span>${chPayBlock}${chCyrCell}</div>`;
+        return simHostRow+chSimRow;
       }
       if(!tn){
         const _vacRowTip=rosterHtmlEsc(lblUi+': no host on air. Click to open Manage Talent for this daypart (bench, replace, or hire).');
-        return `<div class="slr slots-lineup-grid sc-lineup-row sc-lineup-row--fill-slot" title="${_vacRowTip}" role="button" tabindex="0" onclick="lineupVacantRowClick('${s.id}','${k}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();lineupVacantRowClick('${s.id}','${k}');}"><span class="sl-cell-day sln">${lblUi}</span><span class="sl-cell-thumb" aria-hidden="true"></span><span class="sl-cell-host slt vac">${vlbl}</span><span class="sl-cell-tal stal" style="color:var(--mut)">—</span><span class="sl-cell-mor"></span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}">${q}</span><span class="sl-cell-pay slsal"></span><span class="sl-cell-cyr"></span></div>`;
+        return `<div class="slr slots-lineup-grid sc-lineup-row sc-lineup-row--fill-slot" title="${_vacRowTip}" role="button" tabindex="0" onclick="lineupVacantRowClick('${lineupSt.id}','${k}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();lineupVacantRowClick('${lineupSt.id}','${k}');}"><span class="sl-cell-day sln">${lblUi}</span><span class="sl-cell-thumb" aria-hidden="true"></span><span class="sl-cell-host slt vac">${vlbl}</span><span class="sl-cell-tal stal" style="color:var(--mut)">—</span><span class="sl-cell-mor"></span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}">${q}</span><span class="sl-cell-pay slsal"></span><span class="sl-cell-cyr"></span></div>`;
       }
       const t=sd.talent;
       const cyr=t.cyr||0;
       const slotRen=t._slotPromotionPendingRenewal===true;
-      const rp=s._rivalPoachPending;
+      const rp=lineupSt._rivalPoachPending;
       const poachHere=rp&&rp.slot===k&&rp.talentId===t.id;
       const rivPo=poachHere?G.stations.find(st=>st.id===rp.rivalId):null;
       const poachTitle=poachHere?`${rivPo?rivPo.callLetters:'Rival'} offered ${f$(rp.offerSalary)}/yr — open Contract to match or they may leave next period.`:'';
@@ -39569,17 +39959,20 @@ function rStns(){
       const cyrCell=cyrLbl
         ?`<span class="sl-cell-cyr ${cyrCls}" title="${rosterHtmlEsc(cyrTitle||poachTitle)}">${cyrLblUi}</span>`
         :'<span class="sl-cell-cyr" aria-hidden="true"></span>';
-      const _hostRowTip=rosterHtmlEsc(callDisplay(s)+' · '+lblUi+': click the host or Contract to manage pay, renewals, morale, and moves.');
+      const lineupCall=callDisplay(lineupSt);
+      const _hostRowTip=rosterHtmlEsc((lineupEcho?lineupCall:callDisplay(s))+' · '+lblUi+': click the host or Contract to manage pay, renewals, morale, and moves.');
       const payPd=`${f$Pd(t.salary)}/yr`;
       const payV=lineupContractVerboseUi(slotRen,cyr,poachHere,wantsOut);
       const payVerbCls=payV.kind?` sl-pay-verbose--${payV.kind}`:'';
-      /* Verbose contract line is a grid sibling on mobile (see #wl-play .sl-pay-verbose) — not nested under .sl-cell-pay, so we avoid display:contents (Safari grid bugs). */
+      const hostNameHtml=lineupEcho
+        ?`${poachIcon}${starT}${tn} <span style="color:var(--mut);font-size:12px">(${lineupCall})</span>`
+        :`${poachIcon}${starT}${tn}`;
       const payBlock=payV.text
         ?`<span class="sl-cell-pay slsal sl-cell-pay--split"><span class="sl-pay-amt">${payPd}</span></span><span class="sl-pay-verbose${payVerbCls}">${payV.text}</span>`
         :`<span class="sl-cell-pay slsal"><span class="sl-pay-amt">${payPd}</span></span>`;
-      const hostRow=`<div class="slr slots-lineup-grid sc-lineup-row${poachRowCls}" title="${_hostRowTip}" role="button" tabindex="0" onclick="openContract('${s.id}','${k}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openContract('${s.id}','${k}');}"><span class="sl-cell-day sln">${lblUi}</span><span class="sl-cell-thumb">${talentPortraitThumbHtml(t,'tp-sl',`${callDisplay(s)} · ${lblUi}`)}</span><span class="sl-cell-host slt clickable">${poachIcon}${starT}${tn}</span><span class="sl-cell-tal stal">${talR}</span><span class="sl-cell-mor">${slMorDot(mor,'Morale')}</span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}">${q}</span>${payBlock}${cyrCell}</div>`;
+      const hostRow=`<div class="slr slots-lineup-grid sc-lineup-row${poachRowCls}" title="${_hostRowTip}" role="button" tabindex="0" onclick="openContract('${lineupSt.id}','${k}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openContract('${lineupSt.id}','${k}');}"><span class="sl-cell-day sln">${lblUi}</span><span class="sl-cell-thumb">${talentPortraitThumbHtml(t,'tp-sl',`${lineupCall} · ${lblUi}`)}</span><span class="sl-cell-host slt clickable">${hostNameHtml}</span><span class="sl-cell-tal stal">${talR}</span><span class="sl-cell-mor">${slMorDot(mor,'Morale')}</span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}">${q}</span>${payBlock}${cyrCell}</div>`;
       const ch=slotTalentB(sd);
-      if(!ch||!stationCardCoHostLineupVisible(s,k,_simSrc))return hostRow;
+      if(!ch||!stationCardCoHostLineupVisible(lineupSt,k))return hostRow;
       const chCyr=Math.round((ch.cyr||0)*10)/10;
       const chMor=ch.morale||65;
       const chTalR=Math.round(ch.quality||0);
@@ -39596,7 +39989,7 @@ function rStns(){
       const chPayBlock=chPayV.text
         ?`<span class="sl-cell-pay slsal sl-cell-pay--split"><span class="sl-pay-amt">${chPayPd}</span></span><span class="sl-pay-verbose${chPayVerbCls}">${chPayV.text}</span>`
         :`<span class="sl-cell-pay slsal"><span class="sl-pay-amt">${chPayPd}</span></span>`;
-      const chRow=`<div class="slr slots-lineup-grid slr--cohost sc-lineup-row" title="${_chRowTip}" role="button" tabindex="0" onclick="openContract('${s.id}','${k}','cohost')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openContract('${s.id}','${k}','cohost');}"><span class="sl-cell-day sln"><span class="sc-cohost-mark">Co-host</span></span><span class="sl-cell-thumb">${talentPortraitThumbHtml(ch,'tp-sl',`${callDisplay(s)} · ${lblUi} · co-host`)}</span><span class="sl-cell-host slt clickable">${chStar}${rosterHtmlEsc(ch.name)}</span><span class="sl-cell-tal stal">${chTalR}</span><span class="sl-cell-mor">${slMorDot(chMor,'Co-host morale')}</span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}">${q}</span>${chPayBlock}${chCyrCell}</div>`;
+      const chRow=`<div class="slr slots-lineup-grid slr--cohost sc-lineup-row" title="${_chRowTip}" role="button" tabindex="0" onclick="openContract('${lineupSt.id}','${k}','cohost')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openContract('${lineupSt.id}','${k}','cohost');}"><span class="sl-cell-day sln"><span class="sc-cohost-mark">Co-host</span></span><span class="sl-cell-thumb">${talentPortraitThumbHtml(ch,'tp-sl',`${lineupCall} · ${lblUi} · co-host`)}</span><span class="sl-cell-host slt clickable">${chStar}${rosterHtmlEsc(ch.name)}</span><span class="sl-cell-tal stal">${chTalR}</span><span class="sl-cell-mor">${slMorDot(chMor,'Co-host morale')}</span><span class="sl-cell-sq slq" style="color:${c2==='good'?'var(--grn)':c2==='warn'?'var(--amb)':'var(--red)'}">${q}</span>${chPayBlock}${chCyrCell}</div>`;
       return hostRow+chRow;
     }).join('');
     const qc2=qc(op.oq);
