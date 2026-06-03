@@ -11233,7 +11233,7 @@ const SMALL_MARKET_TOTAL_STATIONS_ANCHORS=[
  * Large-tier (Atlanta, Seattle): Seattle-scale metro depth.
  */
 const LARGE_MARKET_TOTAL_STATIONS_ANCHORS=[
-  [1975,10],[1980,24],[1985,27],[1990,25],[1995,25],[2000,27],[2005,24],[2026,30],
+  [1975,16],[1980,24],[1985,27],[1990,25],[1995,25],[2000,27],[2005,24],[2026,30],
 ];
 /**
  * Mega-tier (NY / LA / Chicago): heavy dial throughout; slow early growth then sustained fragmentation.
@@ -11352,7 +11352,9 @@ function injectTierMarketCommercialExtras(stations,dialCtx,bpYear,commercialTarg
     let injFmt=spec.fmt;
     if(marketUrbanRhythmicPlausibilityBlocked(dialCtx.marketId)&&SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(injFmt))
       injFmt=marketUrbanRhythmicSubstituteFmt(dialCtx.marketId,bpYear,spec.type);
-    stations.push(mkStn({type:spec.type,fmt:injFmt,pw:spec.pw,str:spec.str},freq,bpYear));
+    const inj=mkStn({type:spec.type,fmt:injFmt,pw:spec.pw,str:spec.str},freq,bpYear);
+    if(bpYear===1970&&isLargeMarketId(dialCtx.marketId))inj._tierMarketInject1970=true;
+    stations.push(inj);
   }
 }
 /** Mega fragmentation launches **after** `(startYear,startPeriod)` — avoids double-spawn with tier dial fill at gen. */
@@ -15446,21 +15448,27 @@ function seedRat(stations,fmpOrYear){
   const mockG={year,satDrag:0,streamDrag:0,marketId:ACTIVE_MARKET};
   const activeIx=stations.map((s,i)=>s&&!s._bpSlotDeferred?i:-1).filter(i=>i>=0);
   const CAP=0.22;
+  const open1970Large=isLargeMarket1970Opening(mockG.marketId||ACTIVE_MARKET,year);
   COH.forEach(coh=>{
     const sc=activeIx.map(i=>{
       const s=stations[i];
       const m=STM[s.str]||{b:.7,v:.12,launchB:.20,ramp:8};
-      // Established stations (launchPeriod=-999) seed at mature b-value, not launchB
-      const seedB=s.launchPeriod===-999?m.b:m.launchB;
+      const seedB=largeMarket1970OpeningSeedB(s,m,year,mockG.marketId||ACTIVE_MARKET);
       const incW=year>=2000&&Number(s._modernColdIncumbentSeedW)>1?Math.min(1.38,Number(s._modernColdIncumbentSeedW)):1;
-      const sv=Math.max(0,appl(s,coh,mockG)*(seedB+rnd(-m.v*.3,m.v*.3))*incW);
+      const openW=largeMarket1970OpeningSeedMult(s,year,mockG.marketId||ACTIVE_MARKET);
+      const sv=Math.max(0,appl(s,coh,mockG)*(seedB+rnd(-m.v*.3,m.v*.3))*incW*openW);
       return Number.isFinite(sv)?sv:0;
     });
     const tot=sc.reduce((a,b)=>a+(Number.isFinite(b)?Math.max(0,b):0),0);
     let raw=Number.isFinite(tot)&&tot>0?sc.map(v=>v/tot):sc.map(()=>0);
     for(let iter=0;iter<5;iter++){
       let excess=0,freeSum=0;
-      raw=raw.map((r,i)=>{if(r>CAP){excess+=r-CAP;return CAP;}freeSum+=r;return r;});
+      raw=raw.map((r,i)=>{
+        const cap=open1970Large&&stations[activeIx[i]]?.isPlayer?0.30:CAP;
+        if(r>cap){excess+=r-cap;return cap;}
+        freeSum+=r;
+        return r;
+      });
       if(excess<0.0001)break;
       raw=raw.map(r=>r<CAP?r+excess*(r/Math.max(freeSum,0.0001)):r);
     }
@@ -20316,6 +20324,47 @@ function checkPressure(G){
   return alerts;
 }
 
+function isLargeMarket1970Opening(marketId,bpYear){
+  const y=Math.round(Number(bpYear))||1970;
+  if(y!==1970)return false;
+  return (MARKETS[marketId||'']||{}).rankTier==='large';
+}
+/** Large-tier 1970 Underdog: inject dial is on-air but books are thin; player keeps incumbent AM habit. Gen-time only. */
+function largeMarket1970OpeningSeedB(s,m,year,marketId){
+  const mature=s.launchPeriod===-999;
+  const base=mature?m.b:m.launchB;
+  if(!isLargeMarket1970Opening(marketId,year))return base;
+  if(s._tierMarketInject1970)return m.launchB*0.82;
+  if(s.isPlayer&&mature)return m.b*1.42;
+  return base;
+}
+function largeMarket1970OpeningSeedMult(s,year,marketId){
+  if(!s||!isLargeMarket1970Opening(marketId,year))return 1;
+  if(s.isPlayer)return 1.1;
+  return 1;
+}
+function applyLargeMarket1970OpeningAllocation(stations,marketId,bpYear){
+  if(!isLargeMarket1970Opening(marketId,bpYear)||!stations)return;
+  stations.forEach(s=>{
+    if(!s||s._bpSlotDeferred)return;
+    if(s._tierMarketInject1970){
+      let f=1;
+      if(['CLASSIC_ROCK','ADULT_CONTEMP','TOP40','ALBUM_ROCK','HOT_AC'].includes(s.format)&&s.sig?.type==='FM')
+        f*=0.9;
+      else if(s.format==='COUNTRY'&&s.sig?.type==='FM')f*=0.93;
+      if(f!==1){
+        s.oq=Math.round(Math.min(90,Math.max(15,s.oq*f)));
+        Object.values(s.prog||{}).forEach(sd=>{
+          if(sd&&sd.quality!=null)sd.quality=Math.round(Math.min(93,sd.quality*Math.sqrt(f)));
+        });
+      }
+      return;
+    }
+    if(!s.isPlayer)return;
+    s.oq=Math.round(Math.min(88,Math.max(44,s.oq+8)));
+    refreshStationOQ(s,{year:bpYear});
+  });
+}
 /** Light OQ nudge so 1970 opening rankers skew market-plausible; variance from mkStn remains. */
 function applyMarketOpeningShape(stations,marketId){
   const m=MARKETS[marketId];
@@ -20653,17 +20702,20 @@ function genMarket(scenId){
     stations[i].color='#f5a623';}});
   // Underdog: morning drive is empty — the scenario says the host just quit
   if(sc.id==='under'||sc.id==='gm_under'){
+    const underMdScale=isLargeMarket1970Opening(ACTIVE_MARKET,bpYear)?0.68:0.52;
     sc.idx.forEach(i=>{
       const st=stations[i];
       if(!st||st._bpSlotDeferred||!st.isPlayer)return;
       const md=st.prog?.morningDrive;
       if(md){
         md.talent=null;
-        md.quality=Math.max(12,Math.round((md.quality||30)*0.52));
+        md.quality=Math.max(12,Math.round((md.quality||30)*underMdScale));
       }
       refreshStationOQ(st,{year:bpYear});
     });
   }
+  if(isLargeMarket1970Opening(ACTIVE_MARKET,bpYear))
+    applyLargeMarket1970OpeningAllocation(stations,ACTIVE_MARKET,bpYear);
   // One old-style 3-letter call (W/K + 2 letters) on the dominant-heritage AM slot (BP idx 4 first); same K/W rule as gc(); only one per market.
   (function applyMarketHeritageSlot(){
     const preferAmIdx=[4,0,2,5,1,10,3,13,6,11,12,17];
