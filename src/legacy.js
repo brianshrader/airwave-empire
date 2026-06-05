@@ -2072,7 +2072,7 @@ function staffingAutomationEconomicsActive(s,G){
 /** appl() — modest appeal trim when key dayparts run without live talent. */
 function staffingAutomationAppealTradeoffMult(s,G){
   const t=stationAutomationScore(s,G);
-  const fmt=staffingAutomationFormatPenaltyMult(s.format);
+  let fmt=staffingAutomationFormatPenaltyMult(s.format);
   const tol=staffingAutomationEffectiveEraTolerance(s,G);
   let m=1;
   if(t>=0.04){
