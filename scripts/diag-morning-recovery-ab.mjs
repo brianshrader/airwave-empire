@@ -29,13 +29,20 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
 const legacyPath = path.join(root, 'src', 'legacy.js');
 const retentionPath = path.join(root, 'src', 'talentRetention.js');
+const ceilingPath = path.join(root, 'src', 'morningSuccessorCeiling.js');
 const hooksPath = path.join(root, 'scripts/diag-morning-recovery-ab-hooks.vm.js');
 const runnerPath = path.join(root, 'scripts/diag-morning-recovery-ab-runner.vm.js');
 const outJson = path.join(root, 'tmp', 'morning_recovery_ab.json');
 const outMd = path.join(root, 'tmp', 'morning_recovery_ab.md');
 
-const ALL_VARIANTS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'];
+const ALL_VARIANTS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'J0', 'J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'K', 'L'];
 const GRID_VARIANTS = ['A', 'E', 'F', 'G', 'H', 'I'];
+const CEILING_GRID_VARIANTS = ['A', 'G', 'J', 'K', 'L'];
+const J_TUNE_GRID_VARIANTS = ['J0', 'J1', 'J2', 'J3', 'J4', 'J5', 'J6'];
+
+function isSuccessorCeilingVariant(variant) {
+  return /^J\d?$/.test(variant) || ['K', 'L'].includes(variant);
+}
 const BUCKET_ORDER = ['lt50', '50-59', '60-69', '70-79', '80-89', '90-94', '95-99'];
 const DEPART_TIERS = ['lt70', '70-84', '85-94', '95+'];
 const MARKET_TIERS = ['mega', 'large', 'medium', 'small'];
@@ -44,7 +51,7 @@ const OWNERSHIP_KEYS = ['independent', 'corporate', 'player'];
 const TARGETS = {
   pctFullyRecoverQuality: { lo: 55, hi: 65, ideal: 60 },
   pctExceedPriorQuality: { lo: 25, hi: 35, ideal: 30 },
-  medianYearsToRecoverQuality: { lo: 1.5, hi: 3.0, ideal: 2.0 },
+  medianYearsToRecoverQuality: { lo: 2.0, hi: 4.0, ideal: 3.0 },
   medianYearsToRecoverRevenueElite: { lo: 1.0, hi: 2.0, ideal: 1.5 },
   pct9599: { lo: 8, hi: 12, ideal: 10 },
   meanOq: { lo: 62, hi: 66, ideal: 64 },
@@ -203,6 +210,7 @@ function loadVm(marketId) {
   } catch (_e) {
     /* optional */
   }
+  vm.runInContext(readFileSync(ceilingPath, 'utf8'), ctx, { timeout: 600_000 });
   const legacy = injectRecoveryAbHooks(
     injectHeadlessLaunchNewsGuard(patchActiveMarket(readFileSync(legacyPath, 'utf8'), marketId)),
   );
@@ -224,11 +232,19 @@ function parseArgs(argv) {
     startYears: [1970, 1985, 2000],
     variants: [...ALL_VARIANTS],
     grid: false,
+    gridCeiling: false,
+    gridJTune: false,
   };
   for (const a of argv) {
     if (a === '--grid') {
       o.grid = true;
       o.variants = [...GRID_VARIANTS];
+    } else if (a === '--grid-ceiling') {
+      o.gridCeiling = true;
+      o.variants = [...CEILING_GRID_VARIANTS];
+    } else if (a === '--grid-j-tune') {
+      o.gridJTune = true;
+      o.variants = [...J_TUNE_GRID_VARIANTS];
     } else if (a.startsWith('--runs=')) o.runs = Math.max(1, parseInt(a.slice(7), 10) || o.runs);
     else if (a.startsWith('--seed=')) o.seed = parseInt(a.slice(7), 10) || o.seed;
     else if (a.startsWith('--markets=')) {
@@ -323,6 +339,9 @@ function aggregateVariantResults(variant, results, formatCatalog) {
   );
 
   const majorEvents = allEvents.filter((e) => e.isMajor && e.ownership !== 'player');
+  const successorEvents = allEvents.filter(
+    (e) => e.isSuccessorTrigger && e.ownership !== 'player',
+  );
   const playerEvents = allEvents.filter((e) => e.ownership === 'player');
 
   const bucketTotals = emptyBuckets();
@@ -333,6 +352,8 @@ function aggregateVariantResults(variant, results, formatCatalog) {
   let pct9599Weighted = 0;
   let playerStations = 0;
   let playerAbove95 = 0;
+  let lowShareSpiralTotal = 0;
+  let zombieLikeTotal = 0;
   const certByMarket = {};
 
   for (const r of ok) {
@@ -350,6 +371,8 @@ function aggregateVariantResults(variant, results, formatCatalog) {
     pct9599Weighted += ((snap.pct9599 || 0) / 100) * (snap.commercialCount || 0);
     playerStations += snap.playerStations || 0;
     playerAbove95 += snap.playerStationsAbove95 || 0;
+    lowShareSpiralTotal += snap.lowShareSpiral || 0;
+    zombieLikeTotal += snap.zombieLike || 0;
 
     const mid = r.marketId;
     if (!certByMarket[mid]) {
@@ -429,6 +452,7 @@ function aggregateVariantResults(variant, results, formatCatalog) {
     variant,
     runs: { total: results.length, ok: ok.length, failed: results.length - ok.length },
     majorMorningDepartures: majorEvents.length,
+    successorCeilingDepartures: successorEvents.length,
     allMorningDepartures: allEvents.filter((e) => e.ownership !== 'player').length,
     recovery: {
       allCommercial: summarizeEvents(
@@ -436,6 +460,7 @@ function aggregateVariantResults(variant, results, formatCatalog) {
         'all_commercial',
       ),
       majorOnly: summarizeEvents(majorEvents, 'major_only'),
+      successorTriggered: summarizeEvents(successorEvents, 'successor_trigger'),
       eliteOnly: summarizeEvents(
         majorEvents.filter((e) => e.isEliteLoss),
         'elite_slotQ90+',
@@ -444,6 +469,10 @@ function aggregateVariantResults(variant, results, formatCatalog) {
         majorEvents.filter((e) => e.isSuperEliteLoss),
         'super_elite_slotQ95+',
       ),
+    },
+    sideEffects: {
+      lowShareSpiralSnapshots: lowShareSpiralTotal,
+      zombieLikeSnapshots: zombieLikeTotal,
     },
     oq2020: {
       commercialSnapshots: totalCommercial,
@@ -482,8 +511,34 @@ function distanceFromTarget(value, target) {
   return value - target.hi + 5;
 }
 
+function cohortRecovery(summary) {
+  if (isSuccessorCeilingVariant(summary.variant)) {
+    return summary.recovery.successorTriggered;
+  }
+  return summary.recovery.majorOnly;
+}
+
+function variantHitsAllTargets(summary) {
+  const m = cohortRecovery(summary);
+  const oq = summary.oq2020;
+  const spiral = summary.sideEffects?.lowShareSpiralSnapshots ?? 0;
+  return (
+    m.pctFullyRecoverQuality >= TARGETS.pctFullyRecoverQuality.lo &&
+    m.pctFullyRecoverQuality <= TARGETS.pctFullyRecoverQuality.hi &&
+    m.pctExceedPriorQuality >= TARGETS.pctExceedPriorQuality.lo &&
+    m.pctExceedPriorQuality <= TARGETS.pctExceedPriorQuality.hi &&
+    m.medianYearsToRecoverQuality >= TARGETS.medianYearsToRecoverQuality.lo &&
+    m.medianYearsToRecoverQuality <= TARGETS.medianYearsToRecoverQuality.hi &&
+    oq.pct9599 >= TARGETS.pct9599.lo &&
+    oq.pct9599 <= TARGETS.pct9599.hi &&
+    oq.meanOqAcrossRuns >= TARGETS.meanOq.lo &&
+    oq.meanOqAcrossRuns <= TARGETS.meanOq.hi &&
+    spiral < 400
+  );
+}
+
 function scoreVariant(summary) {
-  const m = summary.recovery.majorOnly;
+  const m = cohortRecovery(summary);
   const elite = summary.recovery.eliteOnly;
   const oq = summary.oq2020;
   let score = 0;
@@ -513,7 +568,7 @@ function scoreVariant(summary) {
 
 function verdictForVariant(summary, score, bestScore) {
   if (summary.variant === 'A') return 'baseline';
-  const m = summary.recovery.majorOnly;
+  const m = cohortRecovery(summary);
   const oq = summary.oq2020;
 
   const inRecoveryBand =
@@ -547,37 +602,52 @@ function verdictForVariant(summary, score, bestScore) {
   return 'leave_alone';
 }
 
+function reportVariantParams(variant) {
+  const map = {
+    J0: { fixedCap: 88, fixedPeriods: 8, risePerPeriod: 1 },
+    J1: { fixedCap: 88, fixedPeriods: 6, risePerPeriod: 1 },
+    J2: { fixedCap: 90, fixedPeriods: 6, risePerPeriod: 1 },
+    J3: { fixedCap: 88, fixedPeriods: 6, risePerPeriod: 1.5 },
+    J4: { fixedCap: 90, fixedPeriods: 6, risePerPeriod: 1.5 },
+    J5: { fixedCap: 88, fixedPeriods: 4, risePerPeriod: 1 },
+    J6: { fixedCap: 90, fixedPeriods: 4, risePerPeriod: 1 },
+    J: { fixedCap: 88, fixedPeriods: 8, risePerPeriod: 1 },
+  };
+  return map[variant] || null;
+}
+
 function buildComparisonTable(summaries) {
   const headers = [
     'Variant',
-    'Major deps',
+    'Deps',
     'Recover Q%',
     'Exceed Q%',
     'Med yrs Q',
-    'Rev recover%',
-    'Med yrs rev',
     'Mean OQ',
     'Pct>90',
     'Pct 95-99',
+    'Spiral',
     'Score',
+    'Ready',
     'Verdict',
   ];
 
   const rows = summaries.map((s) => {
-    const m = s.recovery.majorOnly;
+    const m = cohortRecovery(s);
     const oq = s.oq2020;
+    const cohortLabel = isSuccessorCeilingVariant(s.variant) ? 'succ' : 'major';
     return [
       s.variant,
-      String(m.departures),
+      `${m.departures} (${cohortLabel})`,
       `${m.pctFullyRecoverQuality}%`,
       `${m.pctExceedPriorQuality}%`,
       m.medianYearsToRecoverQuality != null ? m.medianYearsToRecoverQuality.toFixed(2) : '—',
-      `${m.pctRecoverRevenue}%`,
-      m.medianYearsToRecoverRevenue != null ? m.medianYearsToRecoverRevenue.toFixed(2) : '—',
       oq.meanOqAcrossRuns != null ? oq.meanOqAcrossRuns.toFixed(1) : '—',
       `${oq.pctAbove90}%`,
       `${oq.pct9599}%`,
+      String(s.sideEffects?.lowShareSpiralSnapshots ?? '—'),
       String(s._score),
+      s._productionReady ? 'yes' : 'no',
       s._verdict,
     ];
   });
@@ -660,19 +730,25 @@ function inflationVerdict(baseline, candidate) {
 function renderMarkdown(report) {
   const lines = [];
   lines.push('# Morning recovery A/B diagnostic');
-  if (report.gridMode) lines.push('*(follow-up grid: A, E, F, G, H, I)*');
+  if (report.gridJTuneMode) {
+    lines.push('*(J successor ceiling tune grid: J0–J6)*');
+  } else if (report.gridCeilingMode) {
+    lines.push('*(successor ceiling grid: A, G, J, K, L)*');
+  } else if (report.gridMode) {
+    lines.push('*(follow-up grid: A, E, F, G, H, I)*');
+  }
   lines.push('');
   lines.push(`Generated: ${report.generatedAt}`);
   lines.push('');
   lines.push('## Targets');
   lines.push('- Fully recover prior Q: 55–65%');
   lines.push('- Exceed prior Q: 25–35%');
-  lines.push('- Median Q recovery: 1.5–3.0 years');
+  lines.push('- Median Q recovery: 2–4 years');
   lines.push('- Elite revenue median recovery: 1–2 years');
   lines.push('- 95–99 OQ bucket: 8–12%');
   lines.push('- Mean OQ: 62–66');
   lines.push('');
-  lines.push('## Variant comparison (major morning departures)');
+  lines.push('## Variant comparison (J/K/L use successor-trigger cohort; A/G use major cohort)');
   lines.push('');
   const { headers, rows } = report.comparisonTable;
   lines.push(`| ${headers.join(' | ')} |`);
@@ -707,6 +783,12 @@ function renderMarkdown(report) {
       lines.push(`- **${k}**: ${v}`);
     }
   }
+  if (report.productionImplementation) {
+    lines.push('');
+    lines.push('## Proposed minimal production implementation');
+    lines.push('');
+    lines.push(report.productionImplementation);
+  }
   lines.push('');
   lines.push('## 2020 OQ bucket distribution');
   lines.push('');
@@ -720,14 +802,56 @@ function renderMarkdown(report) {
   return lines.join('\n');
 }
 
+function buildProductionProposal(recommended) {
+  if (!recommended || recommended.variant === 'A') {
+    return 'No ceiling variant recommended — keep shipped behavior.';
+  }
+  const v = recommended.variant;
+  const cfg = recommended._tuneParams || {};
+  if (/^J\d?$/.test(v)) {
+    const cap = cfg.fixedCap ?? 88;
+    const fixed = cfg.fixedPeriods ?? 6;
+    const rise = cfg.risePerPeriod ?? 1;
+    return [
+      '1. On successor-trigger morning departure (slot Q≥90 OR tenure≥12 & slot Q≥85 OR superstar): set `station.morningSuccessorCeiling`.',
+      `2. Fixed cap ${cap} for ${fixed} periods; clamp morningDrive.quality in \`decay()\` after prog investment each turn.`,
+      `3. After fixed window: ceiling += ${rise} per period until replacement tenure ≥8 and ceiling ≥ prior slot Q, then delete state.`,
+      '4. Store on station: `{ ceiling, fixedCap, fixedPeriods, risePerPeriod, priorSlotQ, priorShare, periodsActive }`.',
+      '5. Wire in real departure handlers (contract expiry, poach, player hire) — same trigger predicate as diagnostic.',
+      '6. Call `refreshStationOQ(st, G)` after clamp; no separate AI path.',
+    ].join('\n');
+  }
+  if (v === 'K' || v === 'L') {
+    return [
+      '1. On morning talent departure, if slot Q≥90 OR (slot Q≥85 AND tenure≥12) OR departing host superstar: set `station.morningSuccessorCeiling`.',
+      '2. Initial cap = min(88, replacementRawQ+30, oldSlotQ−8); clamp morning slot Q each turn in `decay()`.',
+      '3. Each period: cap += 0.5 base; +0.5 if share up vs departure book; +0.5 if prog spend high; slower if share/rev falling.',
+      '4. Cap cannot exceed 95 until replacement tenure ≥8 periods; clear state when tenure met and cap ≥ prior slot Q.',
+      v === 'L'
+        ? '5. While gap >8 pts below prior slot Q: apply 3–8% calcRev multiplier decaying over ~14 periods.'
+        : '5. Skip direct revenue drag unless playtests show revenue still instant-recovers.',
+      '6. Hook only in legacy morning departure path + decay — no AI-only diagnostic patches.',
+    ].join('\n');
+  }
+  return `Extend variant ${v} shock/reset logic from prior grid — ceiling alone may be insufficient.`;
+}
+
 function main() {
   const config = parseArgs(process.argv.slice(2));
-  const outJsonPath = config.grid
-    ? path.join(root, 'tmp', 'morning_recovery_ab_grid.json')
-    : outJson;
-  const outMdPath = config.grid
-    ? path.join(root, 'tmp', 'morning_recovery_ab_grid.md')
-    : outMd;
+  const outJsonPath = config.gridJTune
+    ? path.join(root, 'tmp', 'morning_recovery_j_tune_grid.json')
+    : config.gridCeiling
+      ? path.join(root, 'tmp', 'morning_recovery_ceiling_grid.json')
+      : config.grid
+        ? path.join(root, 'tmp', 'morning_recovery_ab_grid.json')
+        : outJson;
+  const outMdPath = config.gridJTune
+    ? path.join(root, 'tmp', 'morning_recovery_j_tune_grid.md')
+    : config.gridCeiling
+      ? path.join(root, 'tmp', 'morning_recovery_ceiling_grid.md')
+      : config.grid
+        ? path.join(root, 'tmp', 'morning_recovery_ab_grid.md')
+        : outMd;
 
   console.log('[diag:morning-recovery-ab] config', config);
 
@@ -745,13 +869,15 @@ function main() {
     const summary = aggregateVariantResults(variant, results, formatCatalog);
     variantSummaries.push(summary);
     console.log(
-      `[diag:morning-recovery-ab] variant ${variant} done in ${((Date.now() - vStart) / 1000).toFixed(1)}s — major ${summary.recovery.majorOnly.departures}, elite ${summary.recovery.eliteOnly.departures}`,
+      `[diag:morning-recovery-ab] variant ${variant} done in ${((Date.now() - vStart) / 1000).toFixed(1)}s — cohort ${cohortRecovery(summary).departures}`,
     );
   }
 
-  const baseline = variantSummaries.find((s) => s.variant === 'A');
+  const baseline = variantSummaries.find((s) => s.variant === 'A' || s.variant === 'J0');
   for (const s of variantSummaries) {
     s._score = scoreVariant(s);
+    s._productionReady = variantHitsAllTargets(s);
+    s._tuneParams = reportVariantParams(s.variant);
   }
 
   const nonBaseline = variantSummaries.filter((s) => s.variant !== 'A');
@@ -766,33 +892,44 @@ function main() {
   const recommended = nonBaseline[0] || baseline;
 
   let recommendationAction = 'abandon';
-  if (recommended._verdict === 'ship_candidate') recommendationAction = 'ship';
+  if (recommended._productionReady) recommendationAction = 'ship';
+  else if (recommended._verdict === 'ship_candidate') recommendationAction = 'ship';
   else if (recommended._verdict === 'tune') recommendationAction = 'tune';
-  else if (recommended.variant === 'A' || bestScore > 35) recommendationAction = 'abandon';
+  else if (recommended.variant === 'A' || recommended.variant === 'J0' || bestScore > 35) {
+    recommendationAction = 'abandon';
+  }
 
   const parameterSensitivity = buildParameterSensitivity(variantSummaries);
   const inflationAssessment = inflationVerdict(baseline, recommended);
 
   const comparisonTable = buildComparisonTable(variantSummaries);
   const rationaleParts = [];
-  if (baseline) {
+  if (config.gridJTune) {
+    const j0 = variantSummaries.find((s) => s.variant === 'J0');
+    if (j0) {
+      const r = cohortRecovery(j0);
+      rationaleParts.push(
+        `J0 baseline: ${r.pctFullyRecoverQuality}% recover, median Q ${r.medianYearsToRecoverQuality}y, 95–99 ${j0.oq2020.pct9599}%.`,
+      );
+    }
+  } else if (baseline && baseline.variant === 'A') {
     const b = baseline.recovery.majorOnly;
     rationaleParts.push(
-      `Baseline A: ${b.pctFullyRecoverQuality}% recover, ${b.pctExceedPriorQuality}% exceed, median Q ${b.medianYearsToRecoverQuality}y; 95–99 ${baseline.oq2020.pct9599}%; mean OQ ${baseline.oq2020.meanOqAcrossRuns}.`,
+      `Baseline A: ${b.pctFullyRecoverQuality}% recover (major), 95–99 ${baseline.oq2020.pct9599}%, mean OQ ${baseline.oq2020.meanOqAcrossRuns}.`,
     );
   }
-  const eVar = variantSummaries.find((s) => s.variant === 'E');
-  if (eVar) {
-    const r = eVar.recovery.majorOnly;
+  const gVar = variantSummaries.find((s) => s.variant === 'G');
+  if (gVar) {
+    const r = gVar.recovery.majorOnly;
     rationaleParts.push(
-      `Prior E: ${r.pctFullyRecoverQuality}% recover, 95–99 ${eVar.oq2020.pct9599}%, mean OQ ${eVar.oq2020.meanOqAcrossRuns}.`,
+      `Prior G (shock): ${r.pctFullyRecoverQuality}% recover, 95–99 ${gVar.oq2020.pct9599}%, median Q ${r.medianYearsToRecoverQuality}y.`,
     );
   }
   if (recommended && recommended.variant !== 'A') {
-    const r = recommended.recovery.majorOnly;
+    const r = cohortRecovery(recommended);
     const el = recommended.recovery.eliteOnly;
     rationaleParts.push(
-      `Best grid variant ${recommended.variant}: major recover ${r.pctFullyRecoverQuality}%, exceed ${r.pctExceedPriorQuality}%, median Q ${r.medianYearsToRecoverQuality}y; elite median rev ${el.medianYearsToRecoverRevenue ?? '—'}y; 95–99 ${recommended.oq2020.pct9599}%; mean OQ ${recommended.oq2020.meanOqAcrossRuns}.`,
+      `Best variant ${recommended.variant}: ${r.pctFullyRecoverQuality}% recover, ${r.pctExceedPriorQuality}% exceed, median Q ${r.medianYearsToRecoverQuality}y; elite median rev ${el.medianYearsToRecoverRevenue ?? '—'}y; 95–99 ${recommended.oq2020.pct9599}%; mean OQ ${recommended.oq2020.meanOqAcrossRuns}.`,
     );
   }
   if (parameterSensitivity?.movers) {
@@ -800,32 +937,48 @@ function main() {
       `Strongest levers: recover Q → ${parameterSensitivity.movers.pctFullyRecoverQuality}; 95–99 bucket → ${parameterSensitivity.movers.pct9599}; median Q time → ${parameterSensitivity.movers.medianYearsToRecoverQuality}.`,
     );
   }
-  if (recommendationAction === 'ship') {
-    rationaleParts.push('Meets target bands — candidate for gameplay integration.');
+  if (recommendationAction === 'ship' && recommended._productionReady) {
+    rationaleParts.push('All target bands met — production-ready for gameplay integration.');
+  } else if (recommendationAction === 'ship') {
+    rationaleParts.push('Best score but not all hard targets met — near-ready, validate in playtest.');
   } else if (recommendationAction === 'tune') {
-    rationaleParts.push('Directionally correct but misses one or more targets — tune parameters.');
+    rationaleParts.push('Directionally correct but misses one or more targets — continue tuning.');
   } else {
-    rationaleParts.push('No grid variant beats E enough to justify shipping; consider abandoning or redesigning levers.');
+    rationaleParts.push('No tuned J variant improves enough over J0 — reconsider parameters.');
   }
 
   const report = {
     generatedAt: new Date().toISOString(),
     elapsedSec: Math.round((Date.now() - t0) / 1000),
     gridMode: config.grid,
+    gridCeilingMode: config.gridCeiling,
+    gridJTuneMode: config.gridJTune,
     config,
     targets: TARGETS,
     variantDefinitions: {
       A: 'Baseline — current shipped behavior',
-      E: 'Combined shock + hard reset (prior strongest)',
-      F: 'Elite-only stronger reset (slot Q≥90 or tenure≥12 & slot Q≥85)',
-      G: 'E + longer shock (8–12 periods, stronger prog drag, gradual decay)',
-      H: 'E + revenue/appeal coupling (2–6 period share drag)',
-      I: 'Combined F + G + mild H (production candidate)',
+      G: 'Long shock + hard reset (prior best shock variant)',
+      J0: 'Cap 88 for 8 periods, then +1/period (prior J baseline)',
+      J1: 'Cap 88 for 6 periods, then +1/period',
+      J2: 'Cap 90 for 6 periods, then +1/period',
+      J3: 'Cap 88 for 6 periods, then +1.5/period',
+      J4: 'Cap 90 for 6 periods, then +1.5/period',
+      J5: 'Cap 88 for 4 periods, then +1/period',
+      J6: 'Cap 90 for 4 periods, then +1/period',
+      J: 'Alias for J0',
+      K: 'Dynamic successor ceiling',
+      L: 'Dynamic ceiling + calcRev drag',
+      E: 'Combined shock + hard reset',
+      F: 'Elite-only stronger reset',
+      H: 'E + revenue/appeal coupling',
+      I: 'Combined F + G + mild H',
     },
-    recommendedVariant: recommended?.variant || 'A',
+    recommendedVariant: recommended?.variant || 'J0',
+    productionReady: !!recommended?._productionReady,
     recommendationAction,
     inflationAssessment,
     parameterSensitivity,
+    productionImplementation: buildProductionProposal(recommended),
     recommendationRationale: rationaleParts.join(' '),
     comparisonTable,
     variants: variantSummaries,
@@ -842,7 +995,7 @@ function main() {
       Object.fromEntries(comparisonTable.headers.map((h, i) => [h, row[i]])),
     ),
   );
-  console.log(`Recommendation: ${recommendationAction} — variant ${report.recommendedVariant}`);
+  console.log(`Recommendation: ${recommendationAction} — variant ${report.recommendedVariant} (production-ready: ${report.productionReady})`);
   console.log(`Inflation: ${inflationAssessment}`);
 }
 

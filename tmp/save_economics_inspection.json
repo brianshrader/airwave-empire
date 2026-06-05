@@ -1,0 +1,507 @@
+{
+  "ok": true,
+  "mode": "full_pipeline",
+  "saveMeta": {
+    "v": 1,
+    "saved": "2026-06-04T16:40:31.981Z",
+    "label": "1981 Spring — KBAY, KSFM"
+  },
+  "game": {
+    "marketId": "sanfrancisco",
+    "year": 1981,
+    "period": 1,
+    "turn": 22,
+    "cash": 18038788,
+    "adx": 0.9871100692976572
+  },
+  "selection": {
+    "stationKey": "KSFM",
+    "autoPicked": false
+  },
+  "uiProfitField": {
+    "source": "legacy.js rStns()",
+    "label": "EBITDA",
+    "formula": "stnEbitda = revUi - costUi (sums both legs for owned simulcast pair on one card)",
+    "matchesFinEbitdaWhenSolo": "fin.ebitda should equal rev-cost for a single leg with no pair"
+  },
+  "savedStation": {
+    "stationId": "a6iazvmk",
+    "callLetters": "KSFM",
+    "brand": "FM 93",
+    "format": "ADULT_CONTEMP",
+    "signal": "FM",
+    "power": "50kw",
+    "coverage": null,
+    "ownerType": "player",
+    "isPlayer": true,
+    "rank": 5,
+    "nCommercial": 23,
+    "share": 0.0698,
+    "aqh": 5990,
+    "sellout": 0.7587,
+    "oq": 61,
+    "identity": 20,
+    "daypartQ": {
+      "morning": 73,
+      "midday": 56,
+      "afternoon": 62,
+      "evening": 44
+    },
+    "staffedDayparts": 4,
+    "vacantDayparts": 1,
+    "automatedDayparts": 0,
+    "talent": [
+      {
+        "slot": "morningDrive",
+        "name": "George Zamora",
+        "salaryAnnual": 47000,
+        "quality": 50,
+        "halfPeriodPay": 23500
+      },
+      {
+        "slot": "midday",
+        "name": "Dominique Ryan",
+        "salaryAnnual": 25500,
+        "quality": 47,
+        "halfPeriodPay": 12750
+      },
+      {
+        "slot": "afternoonDrive",
+        "name": "Carol Yancey",
+        "salaryAnnual": 45500,
+        "quality": 56,
+        "halfPeriodPay": 22750
+      },
+      {
+        "slot": "evening",
+        "name": "Jacqueline Cox",
+        "salaryAnnual": 33500,
+        "quality": 50,
+        "halfPeriodPay": 16750
+      }
+    ],
+    "fin": {
+      "revenue": 3392724,
+      "terrestrial": 3353748,
+      "stream": 0,
+      "digital": 0,
+      "digitalShare": 0,
+      "expenses": 1734161,
+      "ebitda": 1658563,
+      "fixed": 361624,
+      "talent": 75750,
+      "salesAdmin": 1152696,
+      "opsFloor": 97092,
+      "effPromo": 21619,
+      "effProg": 25380,
+      "opsPromo": 11000,
+      "opsProgBudget": 14429,
+      "competitiveBaselinePromo": 21863,
+      "competitiveBaselineProg": 25666,
+      "streamUpkeep": 0,
+      "syndicationRights": 0,
+      "aiLoanInterest": 0,
+      "amHitsContestOpex": 0,
+      "groupOverhead": 0,
+      "identityPnl": 0,
+      "salesAdminRate": 0.3467
+    },
+    "ebitdaMargin": 0.4889,
+    "talentPayrollPctRev": 0.0223,
+    "fixedCostPctRev": 0.1066,
+    "streamActive": false,
+    "harnessPlayerRevMult": null
+  },
+  "savedUiProfit": {
+    "revUi": 3392724,
+    "costUi": 1734161,
+    "stnEbitda": 1658563,
+    "finEbitda": 1658563,
+    "combinedWith": null
+  },
+  "station": {
+    "stationId": "a6iazvmk",
+    "callLetters": "KSFM",
+    "brand": "FM 93",
+    "format": "ADULT_CONTEMP",
+    "signal": "FM",
+    "power": "50kw",
+    "coverage": null,
+    "ownerType": "player",
+    "isPlayer": true,
+    "rank": 4,
+    "nCommercial": 23,
+    "share": 0.0715,
+    "aqh": 6124,
+    "sellout": 0.777,
+    "oq": 61,
+    "identity": 20,
+    "daypartQ": {
+      "morning": 73,
+      "midday": 56,
+      "afternoon": 62,
+      "evening": 44
+    },
+    "staffedDayparts": 4,
+    "vacantDayparts": 1,
+    "automatedDayparts": 0,
+    "talent": [
+      {
+        "slot": "morningDrive",
+        "name": "George Zamora",
+        "salaryAnnual": 47000,
+        "quality": 50,
+        "halfPeriodPay": 23500
+      },
+      {
+        "slot": "midday",
+        "name": "Dominique Ryan",
+        "salaryAnnual": 25500,
+        "quality": 47,
+        "halfPeriodPay": 12750
+      },
+      {
+        "slot": "afternoonDrive",
+        "name": "Carol Yancey",
+        "salaryAnnual": 45500,
+        "quality": 56,
+        "halfPeriodPay": 22750
+      },
+      {
+        "slot": "evening",
+        "name": "Jacqueline Cox",
+        "salaryAnnual": 33500,
+        "quality": 50,
+        "halfPeriodPay": 16750
+      }
+    ],
+    "fin": {
+      "revenue": 3650664,
+      "terrestrial": 3608725,
+      "stream": 0,
+      "digital": 0,
+      "digitalShare": 0,
+      "expenses": 1849501,
+      "ebitda": 1801163,
+      "fixed": 362434,
+      "talent": 75750,
+      "salesAdmin": 1262457,
+      "opsFloor": 98214,
+      "effPromo": 23297,
+      "effProg": 27349,
+      "opsPromo": 11000,
+      "opsProgBudget": 14429,
+      "competitiveBaselinePromo": 23525,
+      "competitiveBaselineProg": 27617,
+      "streamUpkeep": 0,
+      "syndicationRights": 0,
+      "aiLoanInterest": 0,
+      "amHitsContestOpex": 0,
+      "groupOverhead": 0,
+      "identityPnl": 0,
+      "salesAdminRate": 0.3525
+    },
+    "ebitdaMargin": 0.4934,
+    "talentPayrollPctRev": 0.0207,
+    "fixedCostPctRev": 0.0993,
+    "streamActive": false,
+    "harnessPlayerRevMult": null
+  },
+  "pipelineMismatch": {
+    "savedEbitda": 1658563,
+    "pipelineEbitda": 1801163,
+    "savedRev": 3392724,
+    "pipelineRev": 3650664,
+    "ebitdaDelta": 142600,
+    "revDelta": 257940,
+    "note": "Inspector now matches load path (migrateSave→recalc→seedRev, no calcRev). Use --trace-pnl to see calcRev-only drift."
+  },
+  "revenueDecomposition": {
+    "note": "Pre-seedRev calcRev intermediates via G._econDebugIds; pool context from debugRevenueTrace",
+    "totalRev": 3650664,
+    "terrestrialRev": 3608725,
+    "streamRev": 0,
+    "digitalRev": 0,
+    "sellout": 0.777,
+    "spotsPerHour": 16,
+    "shareDecimal": 0.0715,
+    "aqh": 6124,
+    "isPlayer": true,
+    "harnessPlayerRevMult": null,
+    "marketBilling": {
+      "annualMarketBilling": 58987882,
+      "halfPeriodPool": 27949215,
+      "sumAllCommercialRev": 27949216,
+      "poolCheckAbsErr": 1,
+      "billingRevScale": 1.2497,
+      "adxUsed": 0.9871100692976572
+    },
+    "rankInMarket": 4,
+    "monetizationEfficiency": 0.9266,
+    "pctOfHalfPeriodPool": 13.06,
+    "earlyEraDominantMultPreSeed": 1,
+    "playerBaselinePromo": 23525,
+    "playerBaselineProg": 27617,
+    "playerBaselineTotal": 51142
+  },
+  "calcRevDebug": null,
+  "counterfactuals": {
+    "noPlayerFlag": {
+      "revenue": 609904,
+      "terrestrial": 602898,
+      "stream": 0,
+      "digital": 0,
+      "digitalShare": 0,
+      "expenses": 783494,
+      "ebitda": -173590,
+      "fixed": 364289,
+      "talent": 75750,
+      "salesAdmin": 218380,
+      "opsFloor": 99808,
+      "effPromo": 10930,
+      "effProg": 14337,
+      "opsPromo": 11000,
+      "opsProgBudget": 14429,
+      "competitiveBaselinePromo": 0,
+      "competitiveBaselineProg": 0,
+      "streamUpkeep": 0,
+      "syndicationRights": 0,
+      "aiLoanInterest": 0,
+      "amHitsContestOpex": 0,
+      "groupOverhead": 0,
+      "identityPnl": 0,
+      "salesAdminRate": 0.3595
+    },
+    "noPlayerFlagDelta": {
+      "rev": -3154711,
+      "expenses": -1123688,
+      "ebitda": -2031023
+    },
+    "noPlayerBaseline": {
+      "effPromoSaved": 0,
+      "effProgSaved": 0,
+      "expenses": 778144,
+      "ebitda": -176837,
+      "note": "Analytic trim of effPromo/effProg down to ops caps; does not re-run calcRev"
+    },
+    "talentCut": {
+      "slot": "afternoonDrive",
+      "salarySaveAnnual": 45500,
+      "revAfter": 563938,
+      "revDelta": -3086726,
+      "ebitdaAfter": -115891,
+      "ebitdaDelta": -1917054,
+      "netBetter": false
+    },
+    "payrollDoubled": {
+      "revenue": 3842703,
+      "terrestrial": 3798563,
+      "stream": 0,
+      "digital": 0,
+      "digitalShare": 0,
+      "expenses": 2022397,
+      "ebitda": 1820306,
+      "fixed": 363754,
+      "talent": 151500,
+      "salesAdmin": 1354174,
+      "opsFloor": 99532,
+      "effPromo": 24581,
+      "effProg": 28856,
+      "opsPromo": 11000,
+      "opsProgBudget": 14429,
+      "competitiveBaselinePromo": 24763,
+      "competitiveBaselineProg": 29070,
+      "streamUpkeep": 0,
+      "syndicationRights": 0,
+      "aiLoanInterest": 0,
+      "amHitsContestOpex": 0,
+      "groupOverhead": 0,
+      "identityPnl": 0,
+      "salesAdminRate": 0.3587
+    },
+    "payrollDoubledDelta": {
+      "expenses": 115215,
+      "ebitda": -37127
+    },
+    "fixedCostsPlus25Pct": {
+      "fixedWas": 363754,
+      "fixedBump": 90939,
+      "expenses": 869083,
+      "ebitda": -267776,
+      "ebitdaMargin": -0.4453,
+      "note": "Analytic +25% on fin.fix only; other cost lines unchanged"
+    },
+    "fixedCostsPlus25PctDelta": {
+      "ebitda": -90939,
+      "marginDelta": -0.1512
+    }
+  },
+  "analysis": {
+    "answers": [
+      {
+        "q": "Why is revenue ~$3650664/period?",
+        "a": "~13.06% of market half-period billing pool; share 7.1%; sellout 78%; player competitive baseline spend floor ~$51142/period (cost)"
+      },
+      {
+        "q": "Is ~49% EBITDA margin plausible?",
+        "a": "Yes — within plausible range for a high-share FM leader if fixed/talent load is not over-scaled."
+      },
+      {
+        "q": "Would talent cuts materially improve EBITDA?",
+        "a": "Cut afternoonDrive hurts EBITDA by $1917054 — rev loss exceeds payroll save."
+      },
+      {
+        "q": "Profitable under higher overhead?",
+        "a": "Not profitable at +25% fixed costs bump."
+      },
+      {
+        "q": "Vs AI #1 in save (KMLW)",
+        "a": "Player rev $3650664 vs AI $5614614; share 7.1% vs 13.8%."
+      }
+    ],
+    "verdict": "matches_live_sf1980_pattern",
+    "drivers": [
+      "~13.06% of market half-period billing pool",
+      "share 7.1%",
+      "sellout 78%",
+      "player competitive baseline spend floor ~$51142/period (cost)"
+    ]
+  },
+  "playerStationsInSave": [
+    {
+      "id": "pkht6cbh",
+      "callLetters": "KBAY",
+      "format": "NEWS_TALK",
+      "signal": "AM",
+      "rev": 3651051,
+      "margin": 0.3237
+    },
+    {
+      "id": "a6iazvmk",
+      "callLetters": "KSFM",
+      "format": "ADULT_CONTEMP",
+      "signal": "FM",
+      "rev": 3650664,
+      "margin": 0.4934
+    }
+  ],
+  "commercialRankBook": [
+    {
+      "rank": 1,
+      "callLetters": "KMLW",
+      "isPlayer": false,
+      "format": "TOP40",
+      "rev": 5614614,
+      "margin": 0.5237,
+      "share": 0.1377
+    },
+    {
+      "rank": 2,
+      "callLetters": "KCLH",
+      "isPlayer": false,
+      "format": "ALBUM_ROCK",
+      "rev": 2222552,
+      "margin": 0.4332,
+      "share": 0.0859
+    },
+    {
+      "rank": 3,
+      "callLetters": "KXFY",
+      "isPlayer": false,
+      "format": "TOP40",
+      "rev": 2628979,
+      "margin": 0.3687,
+      "share": 0.0772
+    },
+    {
+      "rank": 4,
+      "callLetters": "KSFM",
+      "isPlayer": true,
+      "format": "ADULT_CONTEMP",
+      "rev": 3650664,
+      "margin": 0.4934,
+      "share": 0.0715
+    },
+    {
+      "rank": 5,
+      "callLetters": "KIN",
+      "isPlayer": false,
+      "format": "MOR",
+      "rev": 2386706,
+      "margin": 0.4325,
+      "share": 0.0692
+    },
+    {
+      "rank": 6,
+      "callLetters": "KAXL",
+      "isPlayer": false,
+      "format": "ALBUM_ROCK",
+      "rev": 1183680,
+      "margin": 0.3433,
+      "share": 0.0625
+    },
+    {
+      "rank": 7,
+      "callLetters": "KBAY",
+      "isPlayer": true,
+      "format": "NEWS_TALK",
+      "rev": 3651051,
+      "margin": 0.3237,
+      "share": 0.0613
+    },
+    {
+      "rank": 8,
+      "callLetters": "KVFL",
+      "isPlayer": false,
+      "format": "BEAUTIFUL_MUSIC",
+      "rev": 1492435,
+      "margin": 0.4068,
+      "share": 0.0602
+    },
+    {
+      "rank": 9,
+      "callLetters": "KGZG",
+      "isPlayer": false,
+      "format": "SOUL_RNB",
+      "rev": 1040133,
+      "margin": 0.2176,
+      "share": 0.0478
+    },
+    {
+      "rank": 10,
+      "callLetters": "KZPL",
+      "isPlayer": false,
+      "format": "COUNTRY",
+      "rev": 755802,
+      "margin": 0.1134,
+      "share": 0.0444
+    },
+    {
+      "rank": 11,
+      "callLetters": "KVDY",
+      "isPlayer": false,
+      "format": "NEWS_TALK",
+      "rev": 1118184,
+      "margin": 0.1582,
+      "share": 0.0375
+    },
+    {
+      "rank": 12,
+      "callLetters": "KSGB",
+      "isPlayer": false,
+      "format": "COUNTRY",
+      "rev": 481075,
+      "margin": -0.1156,
+      "share": 0.0321
+    }
+  ],
+  "input": {
+    "file": "/Users/brianshrader/Downloads/airwave-empire-1981-0604.json",
+    "station": "KSFM",
+    "market": null,
+    "year": null,
+    "period": null,
+    "rawOnly": false,
+    "tracePnl": false
+  }
+}

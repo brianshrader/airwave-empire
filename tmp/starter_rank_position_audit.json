@@ -1,0 +1,767 @@
+{
+  "meta": {
+    "seed": 20260611,
+    "runs": 18,
+    "markets": [
+      "seattle",
+      "sanfrancisco",
+      "atlanta"
+    ],
+    "anchors": [
+      10,
+      16,
+      18
+    ],
+    "pinAnchor": 16
+  },
+  "byAnchor": {
+    "10": {
+      "markets": {
+        "seattle": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.3888888888888889,
+            "openShareMed": 0.10285,
+            "openShareRankMed": 5,
+            "shareGapTop1Med": 0.1234,
+            "shareGapTop3Med": 0.1074,
+            "shareGapMedianMed": 0.1026,
+            "revGapTop1Med": 2803939,
+            "revGapMedianMed": 657500,
+            "sharePercentileMed": 50,
+            "stations2000Med": 0,
+            "peakShareMed": 0.0849,
+            "acqTotalMed": 0,
+            "distressSalesMed": 1
+          }
+        },
+        "sanfrancisco": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.8333333333333334,
+            "openShareMed": 0.10785,
+            "openShareRankMed": 5,
+            "shareGapTop1Med": 0.1229,
+            "shareGapTop3Med": 0.1056,
+            "shareGapMedianMed": 0.1001,
+            "revGapTop1Med": 2686020,
+            "revGapMedianMed": 713119,
+            "sharePercentileMed": 50,
+            "stations2000Med": 1,
+            "peakShareMed": 0.0869,
+            "acqTotalMed": 4,
+            "distressSalesMed": 0
+          }
+        },
+        "atlanta": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5555555555555556,
+            "openShareMed": 0.10450000000000001,
+            "openShareRankMed": 5,
+            "shareGapTop1Med": 0.12040000000000001,
+            "shareGapTop3Med": 0.1042,
+            "shareGapMedianMed": 0.09615,
+            "revGapTop1Med": 2102112,
+            "revGapMedianMed": 614697.5,
+            "sharePercentileMed": 37.5,
+            "stations2000Med": 1,
+            "peakShareMed": 0.0848,
+            "acqTotalMed": 0,
+            "distressSalesMed": 0
+          }
+        }
+      },
+      "pooled": {
+        "n": 54,
+        "survivalRate": 0.5925925925925926,
+        "openShareMed": 0.1059,
+        "openShareRankMed": 5,
+        "shareGapTop1Med": 0.1222,
+        "shareGapTop3Med": 0.10545,
+        "shareGapMedianMed": 0.09795,
+        "revGapTop1Med": 2676500,
+        "revGapMedianMed": 643927.5,
+        "sharePercentileMed": 37.5,
+        "stations2000Med": 1,
+        "peakShareMed": 0.08574999999999999,
+        "acqTotalMed": 0,
+        "distressSalesMed": 0
+      },
+      "buckets": {
+        "1-3": {
+          "n": 0,
+          "survivalRate": null,
+          "openShareMed": null,
+          "openShareRankMed": null,
+          "shareGapTop1Med": null,
+          "shareGapTop3Med": null,
+          "shareGapMedianMed": null,
+          "revGapTop1Med": null,
+          "revGapMedianMed": null,
+          "sharePercentileMed": null,
+          "stations2000Med": null,
+          "peakShareMed": null,
+          "acqTotalMed": null,
+          "distressSalesMed": null,
+          "count": 0
+        },
+        "4-5": {
+          "n": 54,
+          "survivalRate": 0.5925925925925926,
+          "openShareMed": 0.1059,
+          "openShareRankMed": 5,
+          "shareGapTop1Med": 0.1222,
+          "shareGapTop3Med": 0.10545,
+          "shareGapMedianMed": 0.09795,
+          "revGapTop1Med": 2676500,
+          "revGapMedianMed": 643927.5,
+          "sharePercentileMed": 37.5,
+          "stations2000Med": 1,
+          "peakShareMed": 0.08574999999999999,
+          "acqTotalMed": 0,
+          "distressSalesMed": 0,
+          "count": 54
+        },
+        "6-7": {
+          "n": 0,
+          "survivalRate": null,
+          "openShareMed": null,
+          "openShareRankMed": null,
+          "shareGapTop1Med": null,
+          "shareGapTop3Med": null,
+          "shareGapMedianMed": null,
+          "revGapTop1Med": null,
+          "revGapMedianMed": null,
+          "sharePercentileMed": null,
+          "stations2000Med": null,
+          "peakShareMed": null,
+          "acqTotalMed": null,
+          "distressSalesMed": null,
+          "count": 0
+        },
+        "8+": {
+          "n": 0,
+          "survivalRate": null,
+          "openShareMed": null,
+          "openShareRankMed": null,
+          "shareGapTop1Med": null,
+          "shareGapTop3Med": null,
+          "shareGapMedianMed": null,
+          "revGapTop1Med": null,
+          "revGapMedianMed": null,
+          "sharePercentileMed": null,
+          "stations2000Med": null,
+          "peakShareMed": null,
+          "acqTotalMed": null,
+          "distressSalesMed": null,
+          "count": 0
+        }
+      }
+    },
+    "16": {
+      "markets": {
+        "seattle": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.1111111111111111,
+            "openShareMed": 0.0766,
+            "openShareRankMed": 6,
+            "shareGapTop1Med": 0.10250000000000001,
+            "shareGapTop3Med": 0.09445,
+            "shareGapMedianMed": -0.0133,
+            "revGapTop1Med": 2249251,
+            "revGapMedianMed": -202441,
+            "sharePercentileMed": 71.4,
+            "stations2000Med": 0,
+            "peakShareMed": 0.06025,
+            "acqTotalMed": 0,
+            "distressSalesMed": 1
+          }
+        },
+        "sanfrancisco": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5555555555555556,
+            "openShareMed": 0.07865,
+            "openShareRankMed": 5,
+            "shareGapTop1Med": 0.10175000000000001,
+            "shareGapTop3Med": 0.0869,
+            "shareGapMedianMed": -0.0095,
+            "revGapTop1Med": 2041383,
+            "revGapMedianMed": -141511,
+            "sharePercentileMed": 64.3,
+            "stations2000Med": 1,
+            "peakShareMed": 0.06440000000000001,
+            "acqTotalMed": 5.5,
+            "distressSalesMed": 0
+          }
+        },
+        "atlanta": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.6666666666666666,
+            "openShareMed": 0.07805000000000001,
+            "openShareRankMed": 5.5,
+            "shareGapTop1Med": 0.10064999999999999,
+            "shareGapTop3Med": 0.08879999999999999,
+            "shareGapMedianMed": -0.00415,
+            "revGapTop1Med": 1781916,
+            "revGapMedianMed": 0,
+            "sharePercentileMed": 64.3,
+            "stations2000Med": 1,
+            "peakShareMed": 0.0643,
+            "acqTotalMed": 9.5,
+            "distressSalesMed": 0
+          }
+        }
+      },
+      "pooled": {
+        "n": 54,
+        "survivalRate": 0.4444444444444444,
+        "openShareMed": 0.07780000000000001,
+        "openShareRankMed": 5,
+        "shareGapTop1Med": 0.101,
+        "shareGapTop3Med": 0.08879999999999999,
+        "shareGapMedianMed": -0.007,
+        "revGapTop1Med": 1930978,
+        "revGapMedianMed": -62552,
+        "sharePercentileMed": 64.3,
+        "stations2000Med": 0,
+        "peakShareMed": 0.0626,
+        "acqTotalMed": 3,
+        "distressSalesMed": 1
+      },
+      "buckets": {
+        "1-3": {
+          "n": 0,
+          "survivalRate": null,
+          "openShareMed": null,
+          "openShareRankMed": null,
+          "shareGapTop1Med": null,
+          "shareGapTop3Med": null,
+          "shareGapMedianMed": null,
+          "revGapTop1Med": null,
+          "revGapMedianMed": null,
+          "sharePercentileMed": null,
+          "stations2000Med": null,
+          "peakShareMed": null,
+          "acqTotalMed": null,
+          "distressSalesMed": null,
+          "count": 0
+        },
+        "4-5": {
+          "n": 30,
+          "survivalRate": 0.6333333333333333,
+          "openShareMed": 0.07905,
+          "openShareRankMed": 5,
+          "shareGapTop1Med": 0.101,
+          "shareGapTop3Med": 0.0886,
+          "shareGapMedianMed": -0.0073,
+          "revGapTop1Med": 1933605,
+          "revGapMedianMed": -69214,
+          "sharePercentileMed": 64.3,
+          "stations2000Med": 1,
+          "peakShareMed": 0.06495000000000001,
+          "acqTotalMed": 12.5,
+          "distressSalesMed": 0,
+          "count": 30
+        },
+        "6-7": {
+          "n": 24,
+          "survivalRate": 0.20833333333333334,
+          "openShareMed": 0.0753,
+          "openShareRankMed": 6,
+          "shareGapTop1Med": 0.101,
+          "shareGapTop3Med": 0.092,
+          "shareGapMedianMed": -0.0054,
+          "revGapTop1Med": 1793375,
+          "revGapMedianMed": 0,
+          "sharePercentileMed": 64.3,
+          "stations2000Med": 0,
+          "peakShareMed": 0.06025,
+          "acqTotalMed": 0,
+          "distressSalesMed": 1,
+          "count": 24
+        },
+        "8+": {
+          "n": 0,
+          "survivalRate": null,
+          "openShareMed": null,
+          "openShareRankMed": null,
+          "shareGapTop1Med": null,
+          "shareGapTop3Med": null,
+          "shareGapMedianMed": null,
+          "revGapTop1Med": null,
+          "revGapMedianMed": null,
+          "sharePercentileMed": null,
+          "stations2000Med": null,
+          "peakShareMed": null,
+          "acqTotalMed": null,
+          "distressSalesMed": null,
+          "count": 0
+        }
+      }
+    },
+    "18": {
+      "markets": {
+        "seattle": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.3333333333333333,
+            "openShareMed": 0.0762,
+            "openShareRankMed": 6,
+            "shareGapTop1Med": 0.1007,
+            "shareGapTop3Med": 0.0921,
+            "shareGapMedianMed": -0.021650000000000003,
+            "revGapTop1Med": 2177220.5,
+            "revGapMedianMed": -147810.5,
+            "sharePercentileMed": 71.9,
+            "stations2000Med": 0,
+            "peakShareMed": 0.0594,
+            "acqTotalMed": 1,
+            "distressSalesMed": 1
+          }
+        },
+        "sanfrancisco": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.3333333333333333,
+            "openShareMed": 0.07875,
+            "openShareRankMed": 5,
+            "shareGapTop1Med": 0.1001,
+            "shareGapTop3Med": 0.08825,
+            "shareGapMedianMed": -0.0325,
+            "revGapTop1Med": 2046184.5,
+            "revGapMedianMed": -258434.5,
+            "sharePercentileMed": 68.8,
+            "stations2000Med": 0,
+            "peakShareMed": 0.06175,
+            "acqTotalMed": 2.5,
+            "distressSalesMed": 1
+          }
+        },
+        "atlanta": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.6111111111111112,
+            "openShareMed": 0.077,
+            "openShareRankMed": 6,
+            "shareGapTop1Med": 0.0991,
+            "shareGapTop3Med": 0.0911,
+            "shareGapMedianMed": -0.0247,
+            "revGapTop1Med": 1639493,
+            "revGapMedianMed": -160301,
+            "sharePercentileMed": 68.8,
+            "stations2000Med": 1,
+            "peakShareMed": 0.06325,
+            "acqTotalMed": 9,
+            "distressSalesMed": 0
+          }
+        }
+      },
+      "pooled": {
+        "n": 54,
+        "survivalRate": 0.42592592592592593,
+        "openShareMed": 0.077,
+        "openShareRankMed": 5.5,
+        "shareGapTop1Med": 0.0995,
+        "shareGapTop3Med": 0.0909,
+        "shareGapMedianMed": -0.0252,
+        "revGapTop1Med": 1798668,
+        "revGapMedianMed": -160766,
+        "sharePercentileMed": 68.8,
+        "stations2000Med": 0,
+        "peakShareMed": 0.0619,
+        "acqTotalMed": 3.5,
+        "distressSalesMed": 1
+      },
+      "buckets": {
+        "1-3": {
+          "n": 0,
+          "survivalRate": null,
+          "openShareMed": null,
+          "openShareRankMed": null,
+          "shareGapTop1Med": null,
+          "shareGapTop3Med": null,
+          "shareGapMedianMed": null,
+          "revGapTop1Med": null,
+          "revGapMedianMed": null,
+          "sharePercentileMed": null,
+          "stations2000Med": null,
+          "peakShareMed": null,
+          "acqTotalMed": null,
+          "distressSalesMed": null,
+          "count": 0
+        },
+        "4-5": {
+          "n": 27,
+          "survivalRate": 0.4074074074074074,
+          "openShareMed": 0.079,
+          "openShareRankMed": 5,
+          "shareGapTop1Med": 0.0996,
+          "shareGapTop3Med": 0.0912,
+          "shareGapMedianMed": -0.0278,
+          "revGapTop1Med": 1792997,
+          "revGapMedianMed": -160301,
+          "sharePercentileMed": 68.8,
+          "stations2000Med": 0,
+          "peakShareMed": 0.061,
+          "acqTotalMed": 3,
+          "distressSalesMed": 1,
+          "count": 27
+        },
+        "6-7": {
+          "n": 27,
+          "survivalRate": 0.4444444444444444,
+          "openShareMed": 0.0751,
+          "openShareRankMed": 6,
+          "shareGapTop1Med": 0.0983,
+          "shareGapTop3Med": 0.08915000000000001,
+          "shareGapMedianMed": -0.022,
+          "revGapTop1Med": 1827647.5,
+          "revGapMedianMed": -162370,
+          "sharePercentileMed": 68.8,
+          "stations2000Med": 0,
+          "peakShareMed": 0.0624,
+          "acqTotalMed": 5,
+          "distressSalesMed": 1,
+          "count": 27
+        },
+        "8+": {
+          "n": 0,
+          "survivalRate": null,
+          "openShareMed": null,
+          "openShareRankMed": null,
+          "shareGapTop1Med": null,
+          "shareGapTop3Med": null,
+          "shareGapMedianMed": null,
+          "revGapTop1Med": null,
+          "revGapMedianMed": null,
+          "sharePercentileMed": null,
+          "stations2000Med": null,
+          "peakShareMed": null,
+          "acqTotalMed": null,
+          "distressSalesMed": null,
+          "count": 0
+        }
+      }
+    }
+  },
+  "rankPinVariants": {
+    "A": {
+      "label": "Current starter (no pin)",
+      "targetRank": null,
+      "markets": {
+        "seattle": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.1111111111111111,
+            "openShareMed": 0.0766,
+            "openShareRankMed": 6,
+            "shareGapTop1Med": 0.10250000000000001,
+            "shareGapTop3Med": 0.09445,
+            "shareGapMedianMed": -0.0133,
+            "revGapTop1Med": 2249251,
+            "revGapMedianMed": -202441,
+            "sharePercentileMed": 71.4,
+            "stations2000Med": 0,
+            "peakShareMed": 0.06025,
+            "acqTotalMed": 0,
+            "distressSalesMed": 1
+          }
+        },
+        "sanfrancisco": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5555555555555556,
+            "openShareMed": 0.07865,
+            "openShareRankMed": 5,
+            "shareGapTop1Med": 0.10175000000000001,
+            "shareGapTop3Med": 0.0869,
+            "shareGapMedianMed": -0.0095,
+            "revGapTop1Med": 2041383,
+            "revGapMedianMed": -141511,
+            "sharePercentileMed": 64.3,
+            "stations2000Med": 1,
+            "peakShareMed": 0.06440000000000001,
+            "acqTotalMed": 5.5,
+            "distressSalesMed": 0
+          }
+        },
+        "atlanta": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.6666666666666666,
+            "openShareMed": 0.07805000000000001,
+            "openShareRankMed": 5.5,
+            "shareGapTop1Med": 0.10064999999999999,
+            "shareGapTop3Med": 0.08879999999999999,
+            "shareGapMedianMed": -0.00415,
+            "revGapTop1Med": 1781916,
+            "revGapMedianMed": 0,
+            "sharePercentileMed": 64.3,
+            "stations2000Med": 1,
+            "peakShareMed": 0.0643,
+            "acqTotalMed": 9.5,
+            "distressSalesMed": 0
+          }
+        }
+      },
+      "pooled": {
+        "n": 54,
+        "survivalRate": 0.4444444444444444,
+        "openShareMed": 0.07780000000000001,
+        "openShareRankMed": 5,
+        "shareGapTop1Med": 0.101,
+        "shareGapTop3Med": 0.08879999999999999,
+        "shareGapMedianMed": -0.007,
+        "revGapTop1Med": 1930978,
+        "revGapMedianMed": -62552,
+        "sharePercentileMed": 64.3,
+        "stations2000Med": 0,
+        "peakShareMed": 0.0626,
+        "acqTotalMed": 3,
+        "distressSalesMed": 1
+      }
+    },
+    "B": {
+      "label": "Lift to opening rank #5",
+      "targetRank": 5,
+      "markets": {
+        "seattle": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.16666666666666666,
+            "openShareMed": 0.0791,
+            "openShareRankMed": 5,
+            "shareGapTop1Med": 0.1011,
+            "shareGapTop3Med": 0.0943,
+            "shareGapMedianMed": -0.0072,
+            "revGapTop1Med": 2103148,
+            "revGapMedianMed": -101441,
+            "sharePercentileMed": 64.3,
+            "stations2000Med": 0,
+            "peakShareMed": 0.06265,
+            "acqTotalMed": 2.5,
+            "distressSalesMed": 1
+          }
+        },
+        "sanfrancisco": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.4444444444444444,
+            "openShareMed": 0.0787,
+            "openShareRankMed": 5,
+            "shareGapTop1Med": 0.10065,
+            "shareGapTop3Med": 0.0868,
+            "shareGapMedianMed": -0.0035,
+            "revGapTop1Med": 2091347,
+            "revGapMedianMed": -42567.5,
+            "sharePercentileMed": 64.3,
+            "stations2000Med": 0,
+            "peakShareMed": 0.06475,
+            "acqTotalMed": 5.5,
+            "distressSalesMed": 1
+          }
+        },
+        "atlanta": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.3333333333333333,
+            "openShareMed": 0.0804,
+            "openShareRankMed": 5,
+            "shareGapTop1Med": 0.10305,
+            "shareGapTop3Med": 0.0878,
+            "shareGapMedianMed": -0.0061,
+            "revGapTop1Med": 1708060,
+            "revGapMedianMed": -60108,
+            "sharePercentileMed": 64.3,
+            "stations2000Med": 0,
+            "peakShareMed": 0.06445000000000001,
+            "acqTotalMed": 5.5,
+            "distressSalesMed": 1
+          }
+        }
+      },
+      "pooled": {
+        "n": 54,
+        "survivalRate": 0.3148148148148148,
+        "openShareMed": 0.0795,
+        "openShareRankMed": 5,
+        "shareGapTop1Med": 0.1011,
+        "shareGapTop3Med": 0.0902,
+        "shareGapMedianMed": -0.0056,
+        "revGapTop1Med": 1954078,
+        "revGapMedianMed": -61611,
+        "sharePercentileMed": 64.3,
+        "stations2000Med": 0,
+        "peakShareMed": 0.06385,
+        "acqTotalMed": 4,
+        "distressSalesMed": 1
+      }
+    },
+    "C": {
+      "label": "Lift to opening rank #4",
+      "targetRank": 4,
+      "markets": {
+        "seattle": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.2777777777777778,
+            "openShareMed": 0.1187,
+            "openShareRankMed": 4,
+            "shareGapTop1Med": 0.0982,
+            "shareGapTop3Med": 0.0894,
+            "shareGapMedianMed": -0.0071,
+            "revGapTop1Med": 2180485,
+            "revGapMedianMed": 158215,
+            "sharePercentileMed": 64.3,
+            "stations2000Med": 0,
+            "peakShareMed": 0.0654,
+            "acqTotalMed": 2.5,
+            "distressSalesMed": 1
+          }
+        },
+        "sanfrancisco": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.7222222222222222,
+            "openShareMed": 0.12415,
+            "openShareRankMed": 4,
+            "shareGapTop1Med": 0.1016,
+            "shareGapTop3Med": 0.0916,
+            "shareGapMedianMed": -0.0106,
+            "revGapTop1Med": 2174646,
+            "revGapMedianMed": -83849,
+            "sharePercentileMed": 64.3,
+            "stations2000Med": 1,
+            "peakShareMed": 0.0685,
+            "acqTotalMed": 12.5,
+            "distressSalesMed": 0
+          }
+        },
+        "atlanta": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.6666666666666666,
+            "openShareMed": 0.1189,
+            "openShareRankMed": 4,
+            "shareGapTop1Med": 0.09875,
+            "shareGapTop3Med": 0.0908,
+            "shareGapMedianMed": -0.00705,
+            "revGapTop1Med": 1618276,
+            "revGapMedianMed": 0,
+            "sharePercentileMed": 64.3,
+            "stations2000Med": 1,
+            "peakShareMed": 0.06665,
+            "acqTotalMed": 11.5,
+            "distressSalesMed": 0
+          }
+        }
+      },
+      "pooled": {
+        "n": 54,
+        "survivalRate": 0.5555555555555556,
+        "openShareMed": 0.12005,
+        "openShareRankMed": 4,
+        "shareGapTop1Med": 0.10005,
+        "shareGapTop3Med": 0.09065000000000001,
+        "shareGapMedianMed": -0.0076,
+        "revGapTop1Med": 1958039,
+        "revGapMedianMed": -37654.5,
+        "sharePercentileMed": 64.3,
+        "stations2000Med": 1,
+        "peakShareMed": 0.0668,
+        "acqTotalMed": 9.5,
+        "distressSalesMed": 0
+      }
+    },
+    "D": {
+      "label": "Lift to opening rank #3",
+      "targetRank": 3,
+      "markets": {
+        "seattle": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "openShareMed": 0.156,
+            "openShareRankMed": 2,
+            "shareGapTop1Med": 0.1016,
+            "shareGapTop3Med": 0.0934,
+            "shareGapMedianMed": -0.0025,
+            "revGapTop1Med": 2253725,
+            "revGapMedianMed": 0,
+            "sharePercentileMed": 64.3,
+            "stations2000Med": 0.5,
+            "peakShareMed": 0.0748,
+            "acqTotalMed": 6,
+            "distressSalesMed": 0.5
+          }
+        },
+        "sanfrancisco": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.3888888888888889,
+            "openShareMed": 0.14784999999999998,
+            "openShareRankMed": 3,
+            "shareGapTop1Med": 0.1023,
+            "shareGapTop3Med": 0.0901,
+            "shareGapMedianMed": -0.0158,
+            "revGapTop1Med": 2074696,
+            "revGapMedianMed": -182369,
+            "sharePercentileMed": 64.3,
+            "stations2000Med": 0,
+            "peakShareMed": 0.07435,
+            "acqTotalMed": 11,
+            "distressSalesMed": 1
+          }
+        },
+        "atlanta": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.4444444444444444,
+            "openShareMed": 0.15365,
+            "openShareRankMed": 2,
+            "shareGapTop1Med": 0.0964,
+            "shareGapTop3Med": 0.08965000000000001,
+            "shareGapMedianMed": -0.003,
+            "revGapTop1Med": 1558570,
+            "revGapMedianMed": -79968,
+            "sharePercentileMed": 64.3,
+            "stations2000Med": 0,
+            "peakShareMed": 0.0747,
+            "acqTotalMed": 4.5,
+            "distressSalesMed": 1
+          }
+        }
+      },
+      "pooled": {
+        "n": 54,
+        "survivalRate": 0.4444444444444444,
+        "openShareMed": 0.15335,
+        "openShareRankMed": 2,
+        "shareGapTop1Med": 0.0992,
+        "shareGapTop3Med": 0.09090000000000001,
+        "shareGapMedianMed": -0.00455,
+        "revGapTop1Med": 2012003.5,
+        "revGapMedianMed": -79968,
+        "sharePercentileMed": 64.3,
+        "stations2000Med": 0,
+        "peakShareMed": 0.0745,
+        "acqTotalMed": 7.5,
+        "distressSalesMed": 1
+      }
+    }
+  },
+  "conclusion": {
+    "anchor10Survival": 0.5925925925925926,
+    "anchor16Survival": 0.4444444444444444,
+    "anchor18Survival": 0.42592592592592593,
+    "rankPinA16": 0.4444444444444444,
+    "rankPinD16": 0.4444444444444444,
+    "survivalLiftDvsA": 0,
+    "isRankPositionProblem": false
+  },
+  "timingMs": 393733
+}

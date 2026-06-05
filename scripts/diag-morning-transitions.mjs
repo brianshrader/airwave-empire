@@ -15,6 +15,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { createRequire } from 'module';
 import { injectMarketEcologyIife } from './vmInjectMarketEcologyIife.mjs';
+import { buildRecoveryReport } from './successorRecoveryMetrics.mjs';
 
 const require = createRequire(import.meta.url);
 const { ALL_PLAYABLE_MARKET_IDS } = require('./market-ids.cjs');
@@ -23,6 +24,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
 const legacyPath = path.join(root, 'src', 'legacy.js');
 const retentionPath = path.join(root, 'src', 'talentRetention.js');
+const ceilingPath = path.join(root, 'src', 'morningSuccessorCeiling.js');
 const runnerPath = path.join(root, 'scripts/diag-morning-transitions-runner.vm.js');
 const outJson = path.join(root, 'tmp', 'morning_transitions_summary.json');
 
@@ -180,6 +182,12 @@ function loadVm(marketId) {
   } catch (_e) {
     /* optional */
   }
+  vm.runInContext(readFileSync(ceilingPath, 'utf8'), ctx, { timeout: 600_000 });
+  vm.runInContext(
+    readFileSync(path.join(__dirname, 'successorRecoveryRunnerHelpers.vm.js'), 'utf8'),
+    ctx,
+    { timeout: 600_000 },
+  );
   vm.runInContext(
     injectHeadlessLaunchNewsGuard(patchActiveMarket(readFileSync(legacyPath, 'utf8'), marketId)),
     ctx,
@@ -309,6 +317,27 @@ function aggregate(results) {
     );
   }
 
+  const successorAi = all.filter((e) => e.isSuccessorDeparture && e.ownership !== 'player');
+  const replacementMix = {
+    internal: successorAi.filter((e) => e.replacementType === 'internal').length,
+    external: successorAi.filter((e) => e.replacementType === 'external').length,
+    cluster: successorAi.filter((e) => e.replacementType === 'cluster').length,
+  };
+
+  const successorRecoveryReport = buildRecoveryReport(
+    successorAi.map((e) => ({
+      ...e,
+      originalPriorSlotQ: e.departingSlotQ,
+      fillTiming: e.fillTiming || (e.periodsVacantBeforeFill > 0 ? 'delayed_fill' : 'same_turn_fill'),
+      filled: e.replacementType !== 'vacant',
+      hasCeilingAfterFill: e.hasCeilingAtFill,
+      immediateRecoverTPlus1: e.immediateRecoverTPlus1,
+      immediateRecoverEndOfFill: e.immediateRecoverEndOfFill,
+      recoveredOriginal: e.recoveredQuality,
+      yearsToRecoverOriginal: e.yearsToRecoverQuality,
+    })),
+  );
+
   return {
     runs: {
       total: results.length,
@@ -316,6 +345,24 @@ function aggregate(results) {
       failed: results.filter((r) => !r.ok).length,
     },
     totalDepartures: all.filter((e) => e.ownership !== 'player').length,
+    successorDepartures: successorAi.length,
+    successorReplacementMix: replacementMix,
+    successorCohort: summarizeEvents(successorAi, 'successor_cohort'),
+    successorRecoveryReport,
+    successorByReplacementType: {
+      internal: summarizeEvents(
+        successorAi.filter((e) => e.replacementType === 'internal'),
+        'internal',
+      ),
+      external: summarizeEvents(
+        successorAi.filter((e) => e.replacementType === 'external'),
+        'external',
+      ),
+      cluster: summarizeEvents(
+        successorAi.filter((e) => e.replacementType === 'cluster'),
+        'cluster',
+      ),
+    },
     overall: summarizeEvents(all, 'overall'),
     byOwnership,
     byMarketSize,

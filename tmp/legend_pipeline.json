@@ -1,0 +1,1645 @@
+{
+  "generatedAt": "2026-06-05T00:31:13.328Z",
+  "config": {
+    "markets": [
+      "wichita",
+      "nashville",
+      "chicago",
+      "sanfrancisco",
+      "newyork",
+      "losangeles"
+    ],
+    "years": 32,
+    "startYear": 1970,
+    "seeds": 2,
+    "seed": 20260607
+  },
+  "methodology": {
+    "tiers": {
+      "ordinary": "All on-air paid talent careers (first appearance with salary > 0)",
+      "star": "trueQ ≥ 75 OR market top-10% trueQ (Fall snapshot)",
+      "elite": "trueQ ≥ 85, morning/afternoon drive, station book rank ≤ 5",
+      "legendCandidate": "Same Fall: tenure ≥ 10yr at station, rank ≤ 3, share ≥ 8%, trueQ ≥ 85",
+      "franchiseLegend": "tenure ≥ 15yr, ≥ 10 calendar years in top-3 (Fall periods/2), max share ≥ 10%, trueQ ≥ 90, ≥ 2 poach courtings OR ≥ 8 Fall periods at cap"
+    },
+    "sim": "Headless genMarket + advTurn; not player saves",
+    "tenure": "Calendar years since talent._hireYear at current station",
+    "poach": "_rivalPoachPending + _poachLastCourtingTurn on talent",
+    "bottleneck": "Talents with max trueQ ≥ 85 and max tenure ≥ 10 who never hit legend candidate — first missing gate at earliest qualifying Fall"
+  },
+  "runs": {
+    "total": 12,
+    "ok": 12
+  },
+  "careerRows": 7436,
+  "trueQCeilingPooled": {
+    "maxObservedAcrossRuns": 81,
+    "meanPctReach85": 0,
+    "samples": [
+      {
+        "maxObserved": 77,
+        "p90": 60,
+        "pctReach75": 0.3,
+        "pctReach85": 0,
+        "pctReach90": 0,
+        "note": "QRG hire bands cap initial _trueQuality (star tier ≤82); Fall growth caps at 94 but churn/decay limits observed max in cold sims."
+      },
+      {
+        "maxObserved": 72,
+        "p90": 61,
+        "pctReach75": 0,
+        "pctReach85": 0,
+        "pctReach90": 0,
+        "note": "QRG hire bands cap initial _trueQuality (star tier ≤82); Fall growth caps at 94 but churn/decay limits observed max in cold sims."
+      },
+      {
+        "maxObserved": 74,
+        "p90": 60,
+        "pctReach75": 0,
+        "pctReach85": 0,
+        "pctReach90": 0,
+        "note": "QRG hire bands cap initial _trueQuality (star tier ≤82); Fall growth caps at 94 but churn/decay limits observed max in cold sims."
+      },
+      {
+        "maxObserved": 79,
+        "p90": 60,
+        "pctReach75": 0.4,
+        "pctReach85": 0,
+        "pctReach90": 0,
+        "note": "QRG hire bands cap initial _trueQuality (star tier ≤82); Fall growth caps at 94 but churn/decay limits observed max in cold sims."
+      },
+      {
+        "maxObserved": 65,
+        "p90": 59,
+        "pctReach75": 0,
+        "pctReach85": 0,
+        "pctReach90": 0,
+        "note": "QRG hire bands cap initial _trueQuality (star tier ≤82); Fall growth caps at 94 but churn/decay limits observed max in cold sims."
+      },
+      {
+        "maxObserved": 77,
+        "p90": 59,
+        "pctReach75": 0.1,
+        "pctReach85": 0,
+        "pctReach90": 0,
+        "note": "QRG hire bands cap initial _trueQuality (star tier ≤82); Fall growth caps at 94 but churn/decay limits observed max in cold sims."
+      },
+      {
+        "maxObserved": 77,
+        "p90": 59,
+        "pctReach75": 0.2,
+        "pctReach85": 0,
+        "pctReach90": 0,
+        "note": "QRG hire bands cap initial _trueQuality (star tier ≤82); Fall growth caps at 94 but churn/decay limits observed max in cold sims."
+      },
+      {
+        "maxObserved": 70,
+        "p90": 59,
+        "pctReach75": 0,
+        "pctReach85": 0,
+        "pctReach90": 0,
+        "note": "QRG hire bands cap initial _trueQuality (star tier ≤82); Fall growth caps at 94 but churn/decay limits observed max in cold sims."
+      },
+      {
+        "maxObserved": 77,
+        "p90": 60,
+        "pctReach75": 0.1,
+        "pctReach85": 0,
+        "pctReach90": 0,
+        "note": "QRG hire bands cap initial _trueQuality (star tier ≤82); Fall growth caps at 94 but churn/decay limits observed max in cold sims."
+      },
+      {
+        "maxObserved": 72,
+        "p90": 59,
+        "pctReach75": 0,
+        "pctReach85": 0,
+        "pctReach90": 0,
+        "note": "QRG hire bands cap initial _trueQuality (star tier ≤82); Fall growth caps at 94 but churn/decay limits observed max in cold sims."
+      },
+      {
+        "maxObserved": 68,
+        "p90": 59,
+        "pctReach75": 0,
+        "pctReach85": 0,
+        "pctReach90": 0,
+        "note": "QRG hire bands cap initial _trueQuality (star tier ≤82); Fall growth caps at 94 but churn/decay limits observed max in cold sims."
+      },
+      {
+        "maxObserved": 81,
+        "p90": 60,
+        "pctReach75": 0.1,
+        "pctReach85": 0,
+        "pctReach90": 0,
+        "note": "QRG hire bands cap initial _trueQuality (star tier ≤82); Fall growth caps at 94 but churn/decay limits observed max in cold sims."
+      }
+    ]
+  },
+  "global": {
+    "label": "all markets pooled",
+    "n": 7436,
+    "pipelineSurvival": {
+      "pctStar": 21.79,
+      "pctElite": 0,
+      "pctLegendCandidate": 0,
+      "pctFranchiseLegend": 0,
+      "counts": {
+        "star": 1620,
+        "elite": 0,
+        "legendCandidate": 0,
+        "franchiseLegend": 0
+      }
+    },
+    "timeToTierMedianYears": {
+      "star": 0,
+      "elite": null,
+      "legendCandidate": null,
+      "franchiseLegend": null
+    },
+    "salaryByTier": {
+      "ordinary": {
+        "n": 7436,
+        "medianSalary": 55000,
+        "p90Salary": 119000,
+        "p99Salary": 178500,
+        "medianMultMkt": 1,
+        "p90MultMkt": 1.88,
+        "medianMultStn": 1,
+        "p90MultStn": 1.76
+      },
+      "star": {
+        "n": 1620,
+        "medianSalary": 73500,
+        "p90Salary": 144500,
+        "p99Salary": 219000,
+        "medianMultMkt": 1,
+        "p90MultMkt": 2.37,
+        "medianMultStn": 1,
+        "p90MultStn": 2.32
+      },
+      "elite": {
+        "n": 0,
+        "medianSalary": null,
+        "p90Salary": null,
+        "p99Salary": null,
+        "medianMultMkt": null,
+        "p90MultMkt": null,
+        "medianMultStn": null,
+        "p90MultStn": null
+      },
+      "legendCandidate": {
+        "n": 0,
+        "medianSalary": null,
+        "p90Salary": null,
+        "p99Salary": null,
+        "medianMultMkt": null,
+        "p90MultMkt": null,
+        "medianMultStn": null,
+        "p90MultStn": null
+      },
+      "franchiseLegend": {
+        "n": 0,
+        "medianSalary": null,
+        "p90Salary": null,
+        "p99Salary": null,
+        "medianMultMkt": null,
+        "p90MultMkt": null,
+        "medianMultStn": null,
+        "p90MultStn": null
+      },
+      "endStateStarNotLegend": {
+        "n": 1620,
+        "medianSalary": 73500,
+        "p90Salary": 144500,
+        "p99Salary": 219000,
+        "medianMultMkt": 1,
+        "p90MultMkt": 2.37,
+        "medianMultStn": 1,
+        "p90MultStn": 2.32
+      }
+    },
+    "stationDependence": {
+      "legendCandidate": null,
+      "franchiseLegend": null
+    },
+    "capInteraction": {
+      "legendCandidate": {
+        "n": 0
+      },
+      "franchiseLegend": {
+        "n": 0
+      }
+    },
+    "poachInteraction": {
+      "legendCandidate": {
+        "n": 0
+      },
+      "franchiseLegend": {
+        "n": 0
+      }
+    },
+    "trueQualityCeiling": {
+      "maxObservedTrueQ": 81,
+      "pctCareersMaxTrueQ75": 0.09,
+      "pctCareersMaxTrueQ85": 0,
+      "pctCareersMaxTrueQ90": 0,
+      "pctCareersMaxDisplayQ85": 0
+    },
+    "bottleneckNearMiss": {
+      "nearMissCount": 0,
+      "pctOfAllCareers": 0,
+      "firstLimiterRanked": [],
+      "starNearMissCount": 89,
+      "starNearMissPct": 1.2,
+      "starFirstLimiterRanked": [
+        {
+          "factor": "quality_trueQ_below_85",
+          "count": 89,
+          "pctOfStarNearMiss": 100
+        }
+      ]
+    },
+    "franchisePromotionBlockers": {
+      "legendCandidatesNotFranchise": 0,
+      "blockerRanked": []
+    },
+    "topFranchiseRows": []
+  },
+  "byMarket": {
+    "wichita": {
+      "label": "wichita",
+      "n": 815,
+      "pipelineSurvival": {
+        "pctStar": 23.44,
+        "pctElite": 0,
+        "pctLegendCandidate": 0,
+        "pctFranchiseLegend": 0,
+        "counts": {
+          "star": 191,
+          "elite": 0,
+          "legendCandidate": 0,
+          "franchiseLegend": 0
+        }
+      },
+      "timeToTierMedianYears": {
+        "star": 0,
+        "elite": null,
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "salaryByTier": {
+        "ordinary": {
+          "n": 815,
+          "medianSalary": 36500,
+          "p90Salary": 72000,
+          "p99Salary": 149000,
+          "medianMultMkt": 1.08,
+          "p90MultMkt": 1.93,
+          "medianMultStn": 1,
+          "p90MultStn": 1.77
+        },
+        "star": {
+          "n": 191,
+          "medianSalary": 50000,
+          "p90Salary": 99500,
+          "p99Salary": 168000,
+          "medianMultMkt": 1.38,
+          "p90MultMkt": 2.64,
+          "medianMultStn": 1.21,
+          "p90MultStn": 2.25
+        },
+        "elite": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "legendCandidate": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "franchiseLegend": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "endStateStarNotLegend": {
+          "n": 191,
+          "medianSalary": 50000,
+          "p90Salary": 99500,
+          "p99Salary": 168000,
+          "medianMultMkt": 1.38,
+          "p90MultMkt": 2.64,
+          "medianMultStn": 1.21,
+          "p90MultStn": 2.25
+        }
+      },
+      "stationDependence": {
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "capInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "poachInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "trueQualityCeiling": {
+        "maxObservedTrueQ": 77,
+        "pctCareersMaxTrueQ75": 0.12,
+        "pctCareersMaxTrueQ85": 0,
+        "pctCareersMaxTrueQ90": 0,
+        "pctCareersMaxDisplayQ85": 0
+      },
+      "bottleneckNearMiss": {
+        "nearMissCount": 0,
+        "pctOfAllCareers": 0,
+        "firstLimiterRanked": [],
+        "starNearMissCount": 12,
+        "starNearMissPct": 1.47,
+        "starFirstLimiterRanked": [
+          {
+            "factor": "quality_trueQ_below_85",
+            "count": 12,
+            "pctOfStarNearMiss": 100
+          }
+        ]
+      },
+      "franchisePromotionBlockers": {
+        "legendCandidatesNotFranchise": 0,
+        "blockerRanked": []
+      },
+      "topFranchiseRows": []
+    },
+    "nashville": {
+      "label": "nashville",
+      "n": 845,
+      "pipelineSurvival": {
+        "pctStar": 22.01,
+        "pctElite": 0,
+        "pctLegendCandidate": 0,
+        "pctFranchiseLegend": 0,
+        "counts": {
+          "star": 186,
+          "elite": 0,
+          "legendCandidate": 0,
+          "franchiseLegend": 0
+        }
+      },
+      "timeToTierMedianYears": {
+        "star": 0,
+        "elite": null,
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "salaryByTier": {
+        "ordinary": {
+          "n": 845,
+          "medianSalary": 39000,
+          "p90Salary": 80500,
+          "p99Salary": 159000,
+          "medianMultMkt": 1.03,
+          "p90MultMkt": 1.89,
+          "medianMultStn": 1,
+          "p90MultStn": 1.63
+        },
+        "star": {
+          "n": 186,
+          "medianSalary": 55000,
+          "p90Salary": 106500,
+          "p99Salary": 190500,
+          "medianMultMkt": 1,
+          "p90MultMkt": 2.86,
+          "medianMultStn": 1,
+          "p90MultStn": 2.69
+        },
+        "elite": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "legendCandidate": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "franchiseLegend": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "endStateStarNotLegend": {
+          "n": 186,
+          "medianSalary": 55000,
+          "p90Salary": 106500,
+          "p99Salary": 190500,
+          "medianMultMkt": 1,
+          "p90MultMkt": 2.86,
+          "medianMultStn": 1,
+          "p90MultStn": 2.69
+        }
+      },
+      "stationDependence": {
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "capInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "poachInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "trueQualityCeiling": {
+        "maxObservedTrueQ": 79,
+        "pctCareersMaxTrueQ75": 0.24,
+        "pctCareersMaxTrueQ85": 0,
+        "pctCareersMaxTrueQ90": 0,
+        "pctCareersMaxDisplayQ85": 0
+      },
+      "bottleneckNearMiss": {
+        "nearMissCount": 0,
+        "pctOfAllCareers": 0,
+        "firstLimiterRanked": [],
+        "starNearMissCount": 12,
+        "starNearMissPct": 1.42,
+        "starFirstLimiterRanked": [
+          {
+            "factor": "quality_trueQ_below_85",
+            "count": 12,
+            "pctOfStarNearMiss": 100
+          }
+        ]
+      },
+      "franchisePromotionBlockers": {
+        "legendCandidatesNotFranchise": 0,
+        "blockerRanked": []
+      },
+      "topFranchiseRows": []
+    },
+    "chicago": {
+      "label": "chicago",
+      "n": 1328,
+      "pipelineSurvival": {
+        "pctStar": 21.69,
+        "pctElite": 0,
+        "pctLegendCandidate": 0,
+        "pctFranchiseLegend": 0,
+        "counts": {
+          "star": 288,
+          "elite": 0,
+          "legendCandidate": 0,
+          "franchiseLegend": 0
+        }
+      },
+      "timeToTierMedianYears": {
+        "star": 0,
+        "elite": null,
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "salaryByTier": {
+        "ordinary": {
+          "n": 1328,
+          "medianSalary": 62000,
+          "p90Salary": 123000,
+          "p99Salary": 181000,
+          "medianMultMkt": 1,
+          "p90MultMkt": 1.86,
+          "medianMultStn": 1,
+          "p90MultStn": 1.68
+        },
+        "star": {
+          "n": 288,
+          "medianSalary": 79000,
+          "p90Salary": 147500,
+          "p99Salary": 269500,
+          "medianMultMkt": 2,
+          "p90MultMkt": 2.41,
+          "medianMultStn": 1,
+          "p90MultStn": 2.19
+        },
+        "elite": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "legendCandidate": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "franchiseLegend": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "endStateStarNotLegend": {
+          "n": 288,
+          "medianSalary": 79000,
+          "p90Salary": 147500,
+          "p99Salary": 269500,
+          "medianMultMkt": 2,
+          "p90MultMkt": 2.41,
+          "medianMultStn": 1,
+          "p90MultStn": 2.19
+        }
+      },
+      "stationDependence": {
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "capInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "poachInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "trueQualityCeiling": {
+        "maxObservedTrueQ": 77,
+        "pctCareersMaxTrueQ75": 0.08,
+        "pctCareersMaxTrueQ85": 0,
+        "pctCareersMaxTrueQ90": 0,
+        "pctCareersMaxDisplayQ85": 0
+      },
+      "bottleneckNearMiss": {
+        "nearMissCount": 0,
+        "pctOfAllCareers": 0,
+        "firstLimiterRanked": [],
+        "starNearMissCount": 12,
+        "starNearMissPct": 0.9,
+        "starFirstLimiterRanked": [
+          {
+            "factor": "quality_trueQ_below_85",
+            "count": 12,
+            "pctOfStarNearMiss": 100
+          }
+        ]
+      },
+      "franchisePromotionBlockers": {
+        "legendCandidatesNotFranchise": 0,
+        "blockerRanked": []
+      },
+      "topFranchiseRows": []
+    },
+    "sanfrancisco": {
+      "label": "sanfrancisco",
+      "n": 1133,
+      "pipelineSurvival": {
+        "pctStar": 22.24,
+        "pctElite": 0,
+        "pctLegendCandidate": 0,
+        "pctFranchiseLegend": 0,
+        "counts": {
+          "star": 252,
+          "elite": 0,
+          "legendCandidate": 0,
+          "franchiseLegend": 0
+        }
+      },
+      "timeToTierMedianYears": {
+        "star": 0,
+        "elite": null,
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "salaryByTier": {
+        "ordinary": {
+          "n": 1133,
+          "medianSalary": 53000,
+          "p90Salary": 107500,
+          "p99Salary": 166000,
+          "medianMultMkt": 1.03,
+          "p90MultMkt": 1.86,
+          "medianMultStn": 1,
+          "p90MultStn": 1.73
+        },
+        "star": {
+          "n": 252,
+          "medianSalary": 76750,
+          "p90Salary": 129000,
+          "p99Salary": 208000,
+          "medianMultMkt": 2,
+          "p90MultMkt": 2.36,
+          "medianMultStn": 1,
+          "p90MultStn": 2.26
+        },
+        "elite": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "legendCandidate": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "franchiseLegend": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "endStateStarNotLegend": {
+          "n": 252,
+          "medianSalary": 76750,
+          "p90Salary": 129000,
+          "p99Salary": 208000,
+          "medianMultMkt": 2,
+          "p90MultMkt": 2.36,
+          "medianMultStn": 1,
+          "p90MultStn": 2.26
+        }
+      },
+      "stationDependence": {
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "capInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "poachInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "trueQualityCeiling": {
+        "maxObservedTrueQ": 77,
+        "pctCareersMaxTrueQ75": 0.09,
+        "pctCareersMaxTrueQ85": 0,
+        "pctCareersMaxTrueQ90": 0,
+        "pctCareersMaxDisplayQ85": 0
+      },
+      "bottleneckNearMiss": {
+        "nearMissCount": 0,
+        "pctOfAllCareers": 0,
+        "firstLimiterRanked": [],
+        "starNearMissCount": 20,
+        "starNearMissPct": 1.77,
+        "starFirstLimiterRanked": [
+          {
+            "factor": "quality_trueQ_below_85",
+            "count": 20,
+            "pctOfStarNearMiss": 100
+          }
+        ]
+      },
+      "franchisePromotionBlockers": {
+        "legendCandidatesNotFranchise": 0,
+        "blockerRanked": []
+      },
+      "topFranchiseRows": []
+    },
+    "newyork": {
+      "label": "newyork",
+      "n": 1608,
+      "pipelineSurvival": {
+        "pctStar": 21.64,
+        "pctElite": 0,
+        "pctLegendCandidate": 0,
+        "pctFranchiseLegend": 0,
+        "counts": {
+          "star": 348,
+          "elite": 0,
+          "legendCandidate": 0,
+          "franchiseLegend": 0
+        }
+      },
+      "timeToTierMedianYears": {
+        "star": 0,
+        "elite": null,
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "salaryByTier": {
+        "ordinary": {
+          "n": 1608,
+          "medianSalary": 65000,
+          "p90Salary": 130000,
+          "p99Salary": 181000,
+          "medianMultMkt": 1,
+          "p90MultMkt": 1.89,
+          "medianMultStn": 1,
+          "p90MultStn": 1.8
+        },
+        "star": {
+          "n": 348,
+          "medianSalary": 87500,
+          "p90Salary": 151500,
+          "p99Salary": 217000,
+          "medianMultMkt": 1,
+          "p90MultMkt": 2.29,
+          "medianMultStn": 1,
+          "p90MultStn": 2.17
+        },
+        "elite": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "legendCandidate": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "franchiseLegend": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "endStateStarNotLegend": {
+          "n": 348,
+          "medianSalary": 87500,
+          "p90Salary": 151500,
+          "p99Salary": 217000,
+          "medianMultMkt": 1,
+          "p90MultMkt": 2.29,
+          "medianMultStn": 1,
+          "p90MultStn": 2.17
+        }
+      },
+      "stationDependence": {
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "capInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "poachInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "trueQualityCeiling": {
+        "maxObservedTrueQ": 77,
+        "pctCareersMaxTrueQ75": 0.06,
+        "pctCareersMaxTrueQ85": 0,
+        "pctCareersMaxTrueQ90": 0,
+        "pctCareersMaxDisplayQ85": 0
+      },
+      "bottleneckNearMiss": {
+        "nearMissCount": 0,
+        "pctOfAllCareers": 0,
+        "firstLimiterRanked": [],
+        "starNearMissCount": 16,
+        "starNearMissPct": 1,
+        "starFirstLimiterRanked": [
+          {
+            "factor": "quality_trueQ_below_85",
+            "count": 16,
+            "pctOfStarNearMiss": 100
+          }
+        ]
+      },
+      "franchisePromotionBlockers": {
+        "legendCandidatesNotFranchise": 0,
+        "blockerRanked": []
+      },
+      "topFranchiseRows": []
+    },
+    "losangeles": {
+      "label": "losangeles",
+      "n": 1707,
+      "pipelineSurvival": {
+        "pctStar": 20.8,
+        "pctElite": 0,
+        "pctLegendCandidate": 0,
+        "pctFranchiseLegend": 0,
+        "counts": {
+          "star": 355,
+          "elite": 0,
+          "legendCandidate": 0,
+          "franchiseLegend": 0
+        }
+      },
+      "timeToTierMedianYears": {
+        "star": 0,
+        "elite": null,
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "salaryByTier": {
+        "ordinary": {
+          "n": 1707,
+          "medianSalary": 66500,
+          "p90Salary": 127500,
+          "p99Salary": 181000,
+          "medianMultMkt": 1.06,
+          "p90MultMkt": 1.86,
+          "medianMultStn": 1,
+          "p90MultStn": 1.79
+        },
+        "star": {
+          "n": 355,
+          "medianSalary": 92000,
+          "p90Salary": 154500,
+          "p99Salary": 221500,
+          "medianMultMkt": 1.54,
+          "p90MultMkt": 2.37,
+          "medianMultStn": 1.24,
+          "p90MultStn": 2.36
+        },
+        "elite": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "legendCandidate": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "franchiseLegend": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "endStateStarNotLegend": {
+          "n": 355,
+          "medianSalary": 92000,
+          "p90Salary": 154500,
+          "p99Salary": 221500,
+          "medianMultMkt": 1.54,
+          "p90MultMkt": 2.37,
+          "medianMultStn": 1.24,
+          "p90MultStn": 2.36
+        }
+      },
+      "stationDependence": {
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "capInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "poachInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "trueQualityCeiling": {
+        "maxObservedTrueQ": 81,
+        "pctCareersMaxTrueQ75": 0.06,
+        "pctCareersMaxTrueQ85": 0,
+        "pctCareersMaxTrueQ90": 0,
+        "pctCareersMaxDisplayQ85": 0
+      },
+      "bottleneckNearMiss": {
+        "nearMissCount": 0,
+        "pctOfAllCareers": 0,
+        "firstLimiterRanked": [],
+        "starNearMissCount": 17,
+        "starNearMissPct": 1,
+        "starFirstLimiterRanked": [
+          {
+            "factor": "quality_trueQ_below_85",
+            "count": 17,
+            "pctOfStarNearMiss": 100
+          }
+        ]
+      },
+      "franchisePromotionBlockers": {
+        "legendCandidatesNotFranchise": 0,
+        "blockerRanked": []
+      },
+      "topFranchiseRows": []
+    }
+  },
+  "byRankTier": {
+    "small": {
+      "label": "small",
+      "n": 815,
+      "pipelineSurvival": {
+        "pctStar": 23.44,
+        "pctElite": 0,
+        "pctLegendCandidate": 0,
+        "pctFranchiseLegend": 0,
+        "counts": {
+          "star": 191,
+          "elite": 0,
+          "legendCandidate": 0,
+          "franchiseLegend": 0
+        }
+      },
+      "timeToTierMedianYears": {
+        "star": 0,
+        "elite": null,
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "salaryByTier": {
+        "ordinary": {
+          "n": 815,
+          "medianSalary": 36500,
+          "p90Salary": 72000,
+          "p99Salary": 149000,
+          "medianMultMkt": 1.08,
+          "p90MultMkt": 1.93,
+          "medianMultStn": 1,
+          "p90MultStn": 1.77
+        },
+        "star": {
+          "n": 191,
+          "medianSalary": 50000,
+          "p90Salary": 99500,
+          "p99Salary": 168000,
+          "medianMultMkt": 1.38,
+          "p90MultMkt": 2.64,
+          "medianMultStn": 1.21,
+          "p90MultStn": 2.25
+        },
+        "elite": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "legendCandidate": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "franchiseLegend": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "endStateStarNotLegend": {
+          "n": 191,
+          "medianSalary": 50000,
+          "p90Salary": 99500,
+          "p99Salary": 168000,
+          "medianMultMkt": 1.38,
+          "p90MultMkt": 2.64,
+          "medianMultStn": 1.21,
+          "p90MultStn": 2.25
+        }
+      },
+      "stationDependence": {
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "capInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "poachInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "trueQualityCeiling": {
+        "maxObservedTrueQ": 77,
+        "pctCareersMaxTrueQ75": 0.12,
+        "pctCareersMaxTrueQ85": 0,
+        "pctCareersMaxTrueQ90": 0,
+        "pctCareersMaxDisplayQ85": 0
+      },
+      "bottleneckNearMiss": {
+        "nearMissCount": 0,
+        "pctOfAllCareers": 0,
+        "firstLimiterRanked": [],
+        "starNearMissCount": 12,
+        "starNearMissPct": 1.47,
+        "starFirstLimiterRanked": [
+          {
+            "factor": "quality_trueQ_below_85",
+            "count": 12,
+            "pctOfStarNearMiss": 100
+          }
+        ]
+      },
+      "franchisePromotionBlockers": {
+        "legendCandidatesNotFranchise": 0,
+        "blockerRanked": []
+      },
+      "topFranchiseRows": []
+    },
+    "medium": {
+      "label": "medium",
+      "n": 845,
+      "pipelineSurvival": {
+        "pctStar": 22.01,
+        "pctElite": 0,
+        "pctLegendCandidate": 0,
+        "pctFranchiseLegend": 0,
+        "counts": {
+          "star": 186,
+          "elite": 0,
+          "legendCandidate": 0,
+          "franchiseLegend": 0
+        }
+      },
+      "timeToTierMedianYears": {
+        "star": 0,
+        "elite": null,
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "salaryByTier": {
+        "ordinary": {
+          "n": 845,
+          "medianSalary": 39000,
+          "p90Salary": 80500,
+          "p99Salary": 159000,
+          "medianMultMkt": 1.03,
+          "p90MultMkt": 1.89,
+          "medianMultStn": 1,
+          "p90MultStn": 1.63
+        },
+        "star": {
+          "n": 186,
+          "medianSalary": 55000,
+          "p90Salary": 106500,
+          "p99Salary": 190500,
+          "medianMultMkt": 1,
+          "p90MultMkt": 2.86,
+          "medianMultStn": 1,
+          "p90MultStn": 2.69
+        },
+        "elite": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "legendCandidate": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "franchiseLegend": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "endStateStarNotLegend": {
+          "n": 186,
+          "medianSalary": 55000,
+          "p90Salary": 106500,
+          "p99Salary": 190500,
+          "medianMultMkt": 1,
+          "p90MultMkt": 2.86,
+          "medianMultStn": 1,
+          "p90MultStn": 2.69
+        }
+      },
+      "stationDependence": {
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "capInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "poachInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "trueQualityCeiling": {
+        "maxObservedTrueQ": 79,
+        "pctCareersMaxTrueQ75": 0.24,
+        "pctCareersMaxTrueQ85": 0,
+        "pctCareersMaxTrueQ90": 0,
+        "pctCareersMaxDisplayQ85": 0
+      },
+      "bottleneckNearMiss": {
+        "nearMissCount": 0,
+        "pctOfAllCareers": 0,
+        "firstLimiterRanked": [],
+        "starNearMissCount": 12,
+        "starNearMissPct": 1.42,
+        "starFirstLimiterRanked": [
+          {
+            "factor": "quality_trueQ_below_85",
+            "count": 12,
+            "pctOfStarNearMiss": 100
+          }
+        ]
+      },
+      "franchisePromotionBlockers": {
+        "legendCandidatesNotFranchise": 0,
+        "blockerRanked": []
+      },
+      "topFranchiseRows": []
+    },
+    "large": {
+      "label": "large",
+      "n": 1133,
+      "pipelineSurvival": {
+        "pctStar": 22.24,
+        "pctElite": 0,
+        "pctLegendCandidate": 0,
+        "pctFranchiseLegend": 0,
+        "counts": {
+          "star": 252,
+          "elite": 0,
+          "legendCandidate": 0,
+          "franchiseLegend": 0
+        }
+      },
+      "timeToTierMedianYears": {
+        "star": 0,
+        "elite": null,
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "salaryByTier": {
+        "ordinary": {
+          "n": 1133,
+          "medianSalary": 53000,
+          "p90Salary": 107500,
+          "p99Salary": 166000,
+          "medianMultMkt": 1.03,
+          "p90MultMkt": 1.86,
+          "medianMultStn": 1,
+          "p90MultStn": 1.73
+        },
+        "star": {
+          "n": 252,
+          "medianSalary": 76750,
+          "p90Salary": 129000,
+          "p99Salary": 208000,
+          "medianMultMkt": 2,
+          "p90MultMkt": 2.36,
+          "medianMultStn": 1,
+          "p90MultStn": 2.26
+        },
+        "elite": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "legendCandidate": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "franchiseLegend": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "endStateStarNotLegend": {
+          "n": 252,
+          "medianSalary": 76750,
+          "p90Salary": 129000,
+          "p99Salary": 208000,
+          "medianMultMkt": 2,
+          "p90MultMkt": 2.36,
+          "medianMultStn": 1,
+          "p90MultStn": 2.26
+        }
+      },
+      "stationDependence": {
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "capInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "poachInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "trueQualityCeiling": {
+        "maxObservedTrueQ": 77,
+        "pctCareersMaxTrueQ75": 0.09,
+        "pctCareersMaxTrueQ85": 0,
+        "pctCareersMaxTrueQ90": 0,
+        "pctCareersMaxDisplayQ85": 0
+      },
+      "bottleneckNearMiss": {
+        "nearMissCount": 0,
+        "pctOfAllCareers": 0,
+        "firstLimiterRanked": [],
+        "starNearMissCount": 20,
+        "starNearMissPct": 1.77,
+        "starFirstLimiterRanked": [
+          {
+            "factor": "quality_trueQ_below_85",
+            "count": 20,
+            "pctOfStarNearMiss": 100
+          }
+        ]
+      },
+      "franchisePromotionBlockers": {
+        "legendCandidatesNotFranchise": 0,
+        "blockerRanked": []
+      },
+      "topFranchiseRows": []
+    },
+    "mega": {
+      "label": "mega",
+      "n": 4643,
+      "pipelineSurvival": {
+        "pctStar": 21.34,
+        "pctElite": 0,
+        "pctLegendCandidate": 0,
+        "pctFranchiseLegend": 0,
+        "counts": {
+          "star": 991,
+          "elite": 0,
+          "legendCandidate": 0,
+          "franchiseLegend": 0
+        }
+      },
+      "timeToTierMedianYears": {
+        "star": 0,
+        "elite": null,
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "salaryByTier": {
+        "ordinary": {
+          "n": 4643,
+          "medianSalary": 65000,
+          "p90Salary": 126500,
+          "p99Salary": 181000,
+          "medianMultMkt": 1.05,
+          "p90MultMkt": 1.87,
+          "medianMultStn": 1,
+          "p90MultStn": 1.77
+        },
+        "star": {
+          "n": 991,
+          "medianSalary": 86000,
+          "p90Salary": 152000,
+          "p99Salary": 243500,
+          "medianMultMkt": 1.5,
+          "p90MultMkt": 2.33,
+          "medianMultStn": 1.15,
+          "p90MultStn": 2.23
+        },
+        "elite": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "legendCandidate": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "franchiseLegend": {
+          "n": 0,
+          "medianSalary": null,
+          "p90Salary": null,
+          "p99Salary": null,
+          "medianMultMkt": null,
+          "p90MultMkt": null,
+          "medianMultStn": null,
+          "p90MultStn": null
+        },
+        "endStateStarNotLegend": {
+          "n": 991,
+          "medianSalary": 86000,
+          "p90Salary": 152000,
+          "p99Salary": 243500,
+          "medianMultMkt": 1.5,
+          "p90MultMkt": 2.33,
+          "medianMultStn": 1.15,
+          "p90MultStn": 2.23
+        }
+      },
+      "stationDependence": {
+        "legendCandidate": null,
+        "franchiseLegend": null
+      },
+      "capInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "poachInteraction": {
+        "legendCandidate": {
+          "n": 0
+        },
+        "franchiseLegend": {
+          "n": 0
+        }
+      },
+      "trueQualityCeiling": {
+        "maxObservedTrueQ": 81,
+        "pctCareersMaxTrueQ75": 0.06,
+        "pctCareersMaxTrueQ85": 0,
+        "pctCareersMaxTrueQ90": 0,
+        "pctCareersMaxDisplayQ85": 0
+      },
+      "bottleneckNearMiss": {
+        "nearMissCount": 0,
+        "pctOfAllCareers": 0,
+        "firstLimiterRanked": [],
+        "starNearMissCount": 45,
+        "starNearMissPct": 0.97,
+        "starFirstLimiterRanked": [
+          {
+            "factor": "quality_trueQ_below_85",
+            "count": 45,
+            "pctOfStarNearMiss": 100
+          }
+        ]
+      },
+      "franchisePromotionBlockers": {
+        "legendCandidatesNotFranchise": 0,
+        "blockerRanked": []
+      },
+      "topFranchiseRows": []
+    }
+  },
+  "megaMarketQuestion": {
+    "byTier": {
+      "small": {
+        "careers": 815,
+        "pctFranchise": 0,
+        "pctLegend": 0,
+        "pctStar": 23.44,
+        "medianSalaryStar": 50000,
+        "medianSalaryLegend": null,
+        "franchiseCount": 0,
+        "legendCount": 0
+      },
+      "medium": {
+        "careers": 845,
+        "pctFranchise": 0,
+        "pctLegend": 0,
+        "pctStar": 22.01,
+        "medianSalaryStar": 55000,
+        "medianSalaryLegend": null,
+        "franchiseCount": 0,
+        "legendCount": 0
+      },
+      "large": {
+        "careers": 1133,
+        "pctFranchise": 0,
+        "pctLegend": 0,
+        "pctStar": 22.24,
+        "medianSalaryStar": 76750,
+        "medianSalaryLegend": null,
+        "franchiseCount": 0,
+        "legendCount": 0
+      },
+      "mega": {
+        "careers": 4643,
+        "pctFranchise": 0,
+        "pctLegend": 0,
+        "pctStar": 21.34,
+        "medianSalaryStar": 86000,
+        "medianSalaryLegend": null,
+        "franchiseCount": 0,
+        "legendCount": 0
+      }
+    },
+    "megaCreatesMoreLegends": false,
+    "megaPaysMoreWithoutMoreLegends": true,
+    "interpretation": "Mega markets chiefly lift star pay; franchise creation rates stay similar or only modestly higher."
+  },
+  "franchiseRateAnswer": {
+    "observedFranchisePct": 0,
+    "headline": "Why does the simulation currently produce only ~0.1–0.2% franchise-tier talent?",
+    "rankedCauses": [
+      {
+        "cause": "Talent generation ceiling: trueQ rarely reaches elite/legend thresholds (85/90)",
+        "metric": "max observed trueQ 81; 0% careers ever ≥85 trueQ (QRG star hire ≤82, Fall cap 94)",
+        "weight": 500
+      },
+      {
+        "cause": "Among stars with 10yr+ tenure (no legend): #1 limiter = quality_trueQ_below_85",
+        "metric": "89 careers (100% of star near-miss)",
+        "weight": 120
+      },
+      {
+        "cause": "Upstream: few careers reach legend-candidate gate (station rank + share + tenure)",
+        "metric": "0% legend candidates vs 21.79% stars",
+        "weight": 100
+      },
+      {
+        "cause": "Franchise definition stack (15yr + 10yr top-3 + 10% share + Q≥90 + poach/cap history)",
+        "metric": "0% franchise vs 0% legend candidate",
+        "weight": 1
+      }
+    ],
+    "diagnosis": "Primarily upstream talent-generation (_trueQuality ceiling) — elite/legend/franchise tier gates are unreachable in cold sims before station-rank or salary-cap constraints matter."
+  }
+}

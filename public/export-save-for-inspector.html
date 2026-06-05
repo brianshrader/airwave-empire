@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Export save for economics inspector</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; }
+    code, pre { background: #1a1a2e; color: #e8e8f0; padding: 0.2em 0.45em; border-radius: 4px; font-size: 0.9em; }
+    pre { padding: 1rem; overflow-x: auto; white-space: pre-wrap; word-break: break-all; }
+    button { margin: 0.5rem 0.5rem 0.5rem 0; padding: 0.5rem 1rem; cursor: pointer; }
+    .ok { color: #22c55e; }
+    .warn { color: #f59e0b; }
+  </style>
+</head>
+<body>
+  <h1>Export game save for inspector</h1>
+  <p>
+    Use this page <strong>while a solo game is running</strong> on <code>play.html</code> (same browser tab session).
+    The inspector runs on your machine: <code>npm run inspect:save-economics -- --file=…</code>
+  </p>
+
+  <h2>Option A — In-game download (recommended)</h2>
+  <ol>
+    <li>Open <strong>Save / Load</strong> from the game menu.</li>
+    <li>Click <strong>Download save file</strong> — saves <code>airwave-empire-YYYY-MMDD.json</code>.</li>
+    <li>Run: <code>npm run inspect:save-economics -- --file=/path/to/that-file.json</code></li>
+  </ol>
+
+  <h2>Option B — Console export (this tab)</h2>
+  <p>With the game loaded in this window, click below or paste the snippet in DevTools console.</p>
+  <button type="button" id="btn-export">Download current G (if game loaded)</button>
+  <button type="button" id="btn-copy-autosave">Copy autosave JSON to clipboard</button>
+  <p id="status"></p>
+  <pre id="snippet">(function () {
+  if (typeof G === 'undefined' || !G || !G.stations) {
+    console.warn('No active G — load a solo game first.');
+    return;
+  }
+  var label = (G.year || '?') + ' P' + (G.period || '?') + ' export';
+  var payload = typeof saveGame === 'function'
+    ? saveGame(label)
+    : { v: 1, saved: new Date().toISOString(), label: label, G: G };
+  var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'airwave-empire-export-' + (G.year || 'game') + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  console.log('Exported', payload.label, 'stations', G.stations.length);
+})();</pre>
+
+  <h2>Option C — Autosave from localStorage</h2>
+  <p>Keys: <code>airwave_empire_autosave</code> (current) or legacy <code>wavelength_autosave</code>.</p>
+  <ol>
+    <li>DevTools → Application → Local Storage → your play origin.</li>
+    <li>Copy the value into <code>autosave.json</code> (valid JSON).</li>
+    <li>Run the inspector on that file.</li>
+  </ol>
+
+  <h2>Inspector flags</h2>
+  <pre>npm run inspect:save-economics -- --file=save.json
+npm run inspect:save-economics -- --file=save.json --station=KXXX
+npm run inspect:save-economics -- --file=save.json --market=sanfrancisco --year=1980 --period=1</pre>
+  <p>Output: <code>tmp/save_economics_inspection.json</code> and <code>.md</code></p>
+
+  <script>
+    const status = document.getElementById('status');
+    document.getElementById('btn-export').addEventListener('click', () => {
+      try {
+        // eslint-disable-next-line no-eval
+        eval(document.getElementById('snippet').textContent);
+        status.textContent = 'If download started, run inspect:save-economics on that file.';
+        status.className = 'ok';
+      } catch (e) {
+        status.textContent = 'Export failed: ' + e.message + ' — open play.html with a loaded game first.';
+        status.className = 'warn';
+      }
+    });
+    document.getElementById('btn-copy-autosave').addEventListener('click', async () => {
+      const raw = localStorage.getItem('airwave_empire_autosave')
+        || localStorage.getItem('wavelength_autosave');
+      if (!raw) {
+        status.textContent = 'No autosave in localStorage on this origin.';
+        status.className = 'warn';
+        return;
+      }
+      try {
+        await navigator.clipboard.writeText(raw);
+        status.textContent = 'Autosave copied. Paste into autosave.json and run the inspector.';
+        status.className = 'ok';
+      } catch (e) {
+        status.textContent = 'Copy failed: ' + e.message;
+        status.className = 'warn';
+      }
+    });
+  </script>
+</body>
+</html>

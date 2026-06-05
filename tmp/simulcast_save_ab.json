@@ -1,0 +1,49 @@
+{
+  "meta": {
+    "source": "synthetic_proxy",
+    "saveLabel": null,
+    "marketId": "chicago",
+    "year": 1971,
+    "period": 2,
+    "label": "Chicago 1971 Fall proxy (AM 3.9% / FM 1.2%)"
+  },
+  "baseline": {
+    "amCall": "WVDQ",
+    "fmCall": "WEVX",
+    "amSharePct": 11.3,
+    "fmSharePct": 1.4,
+    "amRev": 836302,
+    "fmRev": 11047,
+    "amCost": 739434,
+    "fmCost": 111998,
+    "amEbitda": 96868,
+    "fmEbitda": -100951,
+    "combinedEbitda": -4083,
+    "fmRevPctOfAm": 1.3,
+    "fmCostPctOfAm": 15.1,
+    "simulcastAllocatedRev": 0
+  },
+  "production": {
+    "amCall": "WVDQ",
+    "fmCall": "WEVX",
+    "amSharePct": 8.1,
+    "fmSharePct": 1.7,
+    "amRev": 408293,
+    "fmRev": 102680,
+    "amCost": 529091,
+    "fmCost": 121538,
+    "amEbitda": -120798,
+    "fmEbitda": -18858,
+    "combinedEbitda": -139656,
+    "fmRevPctOfAm": 25.1,
+    "fmCostPctOfAm": 23,
+    "simulcastAllocatedRev": 88548
+  },
+  "amOnlyEbitda": 96868,
+  "delta": {
+    "fmRevPctOfAm": 23.8,
+    "fmEbitda": 82093,
+    "combinedEbitda": -135573,
+    "vsAmOnly": -236524
+  }
+}

@@ -1,0 +1,737 @@
+{
+  "generatedAt": "2026-05-31T22:49:47.164Z",
+  "elapsedSec": 35,
+  "config": {
+    "runs": 2,
+    "seed": 20260601,
+    "markets": [
+      "newyork",
+      "losangeles",
+      "chicago",
+      "seattle",
+      "sanfrancisco",
+      "atlanta",
+      "nashville",
+      "wichita"
+    ],
+    "startYears": [
+      1970,
+      1985,
+      2000
+    ],
+    "variants": [
+      "PROD"
+    ]
+  },
+  "targets": {
+    "pctFullyRecoverQuality": {
+      "lo": 55,
+      "hi": 65
+    },
+    "pctExceedPriorQuality": {
+      "lo": 25,
+      "hi": 35
+    },
+    "medianYearsToRecoverQuality": {
+      "lo": 2,
+      "hi": 4
+    },
+    "pct9599": {
+      "lo": 8,
+      "hi": 12
+    },
+    "meanOq": {
+      "lo": 62,
+      "hi": 66
+    }
+  },
+  "variantDefinitions": {
+    "J1": "Control — J1 successor ceiling, no legitimacy bonus",
+    "P1": "Internal trust transfer — 25% of departing-minus-replacement Q gap",
+    "P2": "Tiered ceiling — internal 92, cluster 90, external 88",
+    "P3": "P1 + P2 combined",
+    "P4": "Bench-strength scaled trust + ceiling",
+    "PROD": "Shipped production — J1 ceiling + P1 trust transfer + AI internal promotion"
+  },
+  "recommendedVariant": "PROD",
+  "productionReady": false,
+  "recommendationRationale": "Best variant PROD: 65.29% recover, median 1y, 95–99 11.28%; internal recover 85.98% vs external 54.01%. Does not yet meet all success criteria — tune or combine partial winners.",
+  "comparisonTable": {
+    "headers": [
+      "Variant",
+      "Events",
+      "Recover Q%",
+      "Exceed Q%",
+      "Med yrs Q",
+      "Mean OQ",
+      "95–99%",
+      "Spiral",
+      "Int recover%",
+      "Ext recover%",
+      "Int−Ext med",
+      "Score"
+    ],
+    "rows": [
+      [
+        "PROD",
+        "3596",
+        "65.29%",
+        "18.6%",
+        "1.00",
+        "64.0",
+        "11.28%",
+        "338",
+        "85.98%",
+        "54.01%",
+        "3",
+        "14.58"
+      ]
+    ]
+  },
+  "productionImplementation": "## Production design: successor ceiling + legitimacy\n\n### Trigger (all variants)\nApply `morningSuccessorCeiling` when morning talent departs and:\n- departing slot Q ≥ 90, OR\n- departing slot Q ≥ 85 AND tenure ≥ 12 periods, OR\n- departing host `superstar === true`.\n\n### Replacement classification (at hire/promotion time)\n- **Internal**: new morning talent ID was on another daypart at same station pre-turn.\n- **Cluster**: new talent ID was on another station with same `corpOwner`.\n- **External**: neither.\n\n### J1 base ceiling (all variants)\n- External fixed cap **88** for **6** periods, then **+1**/period.\n- Clear when replacement tenure ≥ 8 and ceiling ≥ prior slot Q.\n- Clamp in `decay()` after prog investment; `refreshStationOQ` after clamp.\n\n### P4: Bench-strength scaled\n- Trust transfer: internal up to 25%, cluster up to 12% scaled by bench score.\n- Initial cap: internal up to 92, cluster up to 90, from tenure/slot Q/talent Q/identity.\n\n### Station state\n```js\nstation.morningSuccessorCeiling = {\n  ceiling, fixedCap, fixedPeriods: 6, risePerPeriod: 1,\n  priorSlotQ, priorShare, periodsActive, replacementType\n};\n```\n\n### Integration points\n1. Morning departure handlers (AI contract, poach, player move).\n2. `decay()` — step ceiling, clamp morning slot Q.\n3. Optional UI: show successor legitimacy tier on talent move.",
+  "diagnosticOverlayNote": "Passive AI always external-hires vacant morning slots. This harness deterministically rewrites a share of successor departures into internal promotions (bench) or cluster transfers so P1–P4 can be measured. J1 uses the same rewritten mix without legitimacy bonuses.",
+  "variants": [
+    {
+      "variant": "PROD",
+      "runs": {
+        "total": 48,
+        "ok": 48,
+        "failed": 0
+      },
+      "successorEvents": 3596,
+      "recoveryReport": {
+        "totalEvents": 3596,
+        "filledCount": 3532,
+        "integrityExcluded": 1498,
+        "impossibleImmediateEndOfFill": 0,
+        "headline": {
+          "label": "headline_clean",
+          "count": 2034,
+          "pctRecovered": 53.59,
+          "medianYears": 2.5,
+          "avgYears": 3.2545871559633026,
+          "pctImmediate": 7.72,
+          "avgOriginalPriorSlotQ": 95.62094395280236,
+          "avgReplacementSlotQ": 81.99459193706981,
+          "avgCeilingAtFill": 88.31809242871189,
+          "integrityFlagged": 0
+        },
+        "rawHeadline": {
+          "label": "raw_all",
+          "count": 3532,
+          "pctRecovered": 66.22,
+          "medianYears": 1,
+          "avgYears": 2.020735356990167,
+          "pctImmediate": 28.11,
+          "avgOriginalPriorSlotQ": 96.10730464326161,
+          "avgReplacementSlotQ": 85.85390713476784,
+          "avgCeilingAtFill": 88.31809242871189,
+          "integrityFlagged": 1498
+        },
+        "byTiming": {
+          "same_turn": {
+            "raw": {
+              "label": "same_turn_raw",
+              "count": 2357,
+              "pctRecovered": 64.23,
+              "medianYears": 0.5,
+              "avgYears": 1.9788639365918097,
+              "pctImmediate": 26.01,
+              "avgOriginalPriorSlotQ": 96.15697921086127,
+              "avgReplacementSlotQ": 86.6537971998303,
+              "avgCeilingAtFill": 88.40717432347388,
+              "integrityFlagged": 768
+            },
+            "clean": {
+              "label": "same_turn_clean",
+              "count": 1589,
+              "pctRecovered": 53.43,
+              "medianYears": 2.5,
+              "avgYears": 3.2261484098939928,
+              "pctImmediate": 9.31,
+              "avgOriginalPriorSlotQ": 95.57268722466961,
+              "avgReplacementSlotQ": 83.47136563876651,
+              "avgCeilingAtFill": 88.40717432347388,
+              "integrityFlagged": 0
+            }
+          },
+          "delayed": {
+            "raw": {
+              "label": "delayed_raw",
+              "count": 1175,
+              "pctRecovered": 70.21,
+              "medianYears": 1,
+              "avgYears": 2.0975757575757576,
+              "pctImmediate": 32.34,
+              "avgOriginalPriorSlotQ": 96.00765957446808,
+              "avgReplacementSlotQ": 84.24936170212766,
+              "avgCeilingAtFill": 88,
+              "integrityFlagged": 730
+            },
+            "clean": {
+              "label": "delayed_clean",
+              "count": 445,
+              "pctRecovered": 54.16,
+              "medianYears": 2,
+              "avgYears": 3.354771784232365,
+              "pctImmediate": 2.02,
+              "avgOriginalPriorSlotQ": 95.79325842696629,
+              "avgReplacementSlotQ": 76.72134831460674,
+              "avgCeilingAtFill": 88,
+              "integrityFlagged": 0
+            }
+          },
+          "open": {
+            "raw": {
+              "label": "open_raw",
+              "count": 0,
+              "pctRecovered": 0,
+              "medianYears": null,
+              "avgYears": null,
+              "pctImmediate": 0,
+              "avgOriginalPriorSlotQ": null,
+              "avgReplacementSlotQ": null,
+              "avgCeilingAtFill": null,
+              "integrityFlagged": 0
+            },
+            "clean": {
+              "label": "open_clean",
+              "count": 0,
+              "pctRecovered": 0,
+              "medianYears": null,
+              "avgYears": null,
+              "pctImmediate": 0,
+              "avgOriginalPriorSlotQ": null,
+              "avgReplacementSlotQ": null,
+              "avgCeilingAtFill": null,
+              "integrityFlagged": 0
+            }
+          }
+        },
+        "byPriorBucket": {
+          "85-89": {
+            "raw": {
+              "label": "85-89_raw",
+              "count": 213,
+              "pctRecovered": 81.22,
+              "medianYears": 0.5,
+              "avgYears": 1.73121387283237,
+              "pctImmediate": 42.25,
+              "avgOriginalPriorSlotQ": 87.65727699530517,
+              "avgReplacementSlotQ": 79.26291079812206,
+              "avgCeilingAtFill": 88.06748466257669,
+              "integrityFlagged": 50
+            },
+            "clean": {
+              "label": "85-89_clean",
+              "count": 163,
+              "pctRecovered": 82.21,
+              "medianYears": 0.5,
+              "avgYears": 1.6007462686567164,
+              "pctImmediate": 44.17,
+              "avgOriginalPriorSlotQ": 87.71165644171779,
+              "avgReplacementSlotQ": 78.31901840490798,
+              "avgCeilingAtFill": 88.06748466257669,
+              "integrityFlagged": 0
+            }
+          },
+          "90-93": {
+            "raw": {
+              "label": "90-93_raw",
+              "count": 537,
+              "pctRecovered": 71.69,
+              "medianYears": 1.5,
+              "avgYears": 2.4506493506493507,
+              "pctImmediate": 24.58,
+              "avgOriginalPriorSlotQ": 91.17690875232775,
+              "avgReplacementSlotQ": 82.7243947858473,
+              "avgCeilingAtFill": 88.92572944297082,
+              "integrityFlagged": 160
+            },
+            "clean": {
+              "label": "90-93_clean",
+              "count": 377,
+              "pctRecovered": 69.23,
+              "medianYears": 2.5,
+              "avgYears": 2.7624521072796937,
+              "pctImmediate": 16.45,
+              "avgOriginalPriorSlotQ": 91.12732095490716,
+              "avgReplacementSlotQ": 81.84084880636605,
+              "avgCeilingAtFill": 88.92572944297082,
+              "integrityFlagged": 0
+            }
+          },
+          "94+": {
+            "raw": {
+              "label": "94+_raw",
+              "count": 2782,
+              "pctRecovered": 64.02,
+              "medianYears": 1,
+              "avgYears": 1.9559236384053902,
+              "pctImmediate": 27.71,
+              "avgOriginalPriorSlotQ": 97.705966930266,
+              "avgReplacementSlotQ": 86.96261682242991,
+              "avgCeilingAtFill": 88.19210174029452,
+              "integrityFlagged": 1288
+            },
+            "clean": {
+              "label": "94+_clean",
+              "count": 1494,
+              "pctRecovered": 46.52,
+              "medianYears": 3,
+              "avgYears": 3.758273381294964,
+              "pctImmediate": 1.54,
+              "avgOriginalPriorSlotQ": 97.61780455153949,
+              "avgReplacementSlotQ": 82.43440428380187,
+              "avgCeilingAtFill": 88.19210174029452,
+              "integrityFlagged": 0
+            }
+          }
+        },
+        "byTypeAndTiming": {
+          "internal": {
+            "same_turn": {
+              "label": "internal_same_turn",
+              "count": 145,
+              "pctRecovered": 95.86,
+              "medianYears": 0,
+              "avgYears": 0.26258992805755393,
+              "pctImmediate": 77.93,
+              "avgOriginalPriorSlotQ": 91.15862068965517,
+              "avgReplacementSlotQ": 89.62758620689655,
+              "avgCeilingAtFill": 91.84827586206896,
+              "integrityFlagged": 0
+            },
+            "delayed": {
+              "label": "internal_delayed",
+              "count": 0,
+              "pctRecovered": 0,
+              "medianYears": null,
+              "avgYears": null,
+              "pctImmediate": 0,
+              "avgOriginalPriorSlotQ": null,
+              "avgReplacementSlotQ": null,
+              "avgCeilingAtFill": null,
+              "integrityFlagged": 0
+            },
+            "open": {
+              "label": "internal_open",
+              "count": 0,
+              "pctRecovered": 0,
+              "medianYears": null,
+              "avgYears": null,
+              "pctImmediate": 0,
+              "avgOriginalPriorSlotQ": null,
+              "avgReplacementSlotQ": null,
+              "avgCeilingAtFill": null,
+              "integrityFlagged": 0
+            },
+            "all": {
+              "label": "internal",
+              "count": 145,
+              "pctRecovered": 95.86,
+              "medianYears": 0,
+              "avgYears": 0.26258992805755393,
+              "pctImmediate": 77.93,
+              "avgOriginalPriorSlotQ": 91.15862068965517,
+              "avgReplacementSlotQ": 89.62758620689655,
+              "avgCeilingAtFill": 91.84827586206896,
+              "integrityFlagged": 0
+            }
+          },
+          "external": {
+            "same_turn": {
+              "label": "external_same_turn",
+              "count": 1433,
+              "pctRecovered": 49.13,
+              "medianYears": 3.5,
+              "avgYears": 3.8259943181818183,
+              "pctImmediate": 2.37,
+              "avgOriginalPriorSlotQ": 96.00907187718074,
+              "avgReplacementSlotQ": 82.81367759944173,
+              "avgCeilingAtFill": 88.06210746685275,
+              "integrityFlagged": 0
+            },
+            "delayed": {
+              "label": "external_delayed",
+              "count": 444,
+              "pctRecovered": 54.05,
+              "medianYears": 1.75,
+              "avgYears": 3.316666666666667,
+              "pctImmediate": 2.03,
+              "avgOriginalPriorSlotQ": 95.78828828828829,
+              "avgReplacementSlotQ": 76.69594594594595,
+              "avgCeilingAtFill": 88,
+              "integrityFlagged": 0
+            },
+            "open": {
+              "label": "external_open",
+              "count": 0,
+              "pctRecovered": 0,
+              "medianYears": null,
+              "avgYears": null,
+              "pctImmediate": 0,
+              "avgOriginalPriorSlotQ": null,
+              "avgReplacementSlotQ": null,
+              "avgCeilingAtFill": null,
+              "integrityFlagged": 0
+            },
+            "all": {
+              "label": "external",
+              "count": 1877,
+              "pctRecovered": 50.29,
+              "medianYears": 3,
+              "avgYears": 3.6965042372881354,
+              "pctImmediate": 2.29,
+              "avgOriginalPriorSlotQ": 95.95684603090038,
+              "avgReplacementSlotQ": 81.36654235482152,
+              "avgCeilingAtFill": 88.04741608950452,
+              "integrityFlagged": 0
+            }
+          },
+          "cluster": {
+            "same_turn": {
+              "label": "cluster_same_turn",
+              "count": 11,
+              "pctRecovered": 54.55,
+              "medianYears": 1.75,
+              "avgYears": 1.5,
+              "pctImmediate": 9.09,
+              "avgOriginalPriorSlotQ": 96.9090909090909,
+              "avgReplacementSlotQ": 88,
+              "avgCeilingAtFill": 88,
+              "integrityFlagged": 0
+            },
+            "delayed": {
+              "label": "cluster_delayed",
+              "count": 1,
+              "pctRecovered": 100,
+              "medianYears": 12.5,
+              "avgYears": 12.5,
+              "pctImmediate": 0,
+              "avgOriginalPriorSlotQ": 98,
+              "avgReplacementSlotQ": 88,
+              "avgCeilingAtFill": 88,
+              "integrityFlagged": 0
+            },
+            "open": {
+              "label": "cluster_open",
+              "count": 0,
+              "pctRecovered": 0,
+              "medianYears": null,
+              "avgYears": null,
+              "pctImmediate": 0,
+              "avgOriginalPriorSlotQ": null,
+              "avgReplacementSlotQ": null,
+              "avgCeilingAtFill": null,
+              "integrityFlagged": 0
+            },
+            "all": {
+              "label": "cluster",
+              "count": 12,
+              "pctRecovered": 58.33,
+              "medianYears": 2,
+              "avgYears": 3.0714285714285716,
+              "pctImmediate": 8.33,
+              "avgOriginalPriorSlotQ": 97,
+              "avgReplacementSlotQ": 88,
+              "avgCeilingAtFill": 88,
+              "integrityFlagged": 0
+            }
+          }
+        },
+        "applesToApplesSameTurn": {
+          "filter": "same_turn, prior 90+, integrity-clean",
+          "internal": {
+            "label": "apples_internal",
+            "count": 105,
+            "pctRecovered": 94.29,
+            "medianYears": 0,
+            "avgYears": 0.30808080808080807,
+            "pctImmediate": 76.19,
+            "avgOriginalPriorSlotQ": 92.33333333333333,
+            "avgReplacementSlotQ": 90.65714285714286,
+            "avgCeilingAtFill": 93.20952380952382,
+            "integrityFlagged": 0
+          },
+          "external": {
+            "label": "apples_external",
+            "count": 1350,
+            "pctRecovered": 47.41,
+            "medianYears": 3.5,
+            "avgYears": 4.05546875,
+            "pctImmediate": 0.37,
+            "avgOriginalPriorSlotQ": 96.51481481481481,
+            "avgReplacementSlotQ": 83.08888888888889,
+            "avgCeilingAtFill": 88.06592592592592,
+            "integrityFlagged": 0
+          },
+          "internalAdvantagePct": 46.88
+        },
+        "integrityBreakdown": {
+          "no_ceiling_after_fill": 1498,
+          "repl_above_ceiling": 0,
+          "immediate_while_capped": 0
+        }
+      },
+      "overall": {
+        "label": "overall",
+        "departures": 3596,
+        "pctFullyRecoverQuality": 65.29,
+        "pctExceedPriorQuality": 18.6,
+        "avgYearsToRecoverQuality": 2.01618398637138,
+        "medianYearsToRecoverQuality": 1,
+        "pctRecoverRevenue": 53.42,
+        "medianYearsToRecoverRevenue": 0.5,
+        "avgImmediateSlotQDrop": 11.768075639599555
+      },
+      "overallRecoveryClean": {
+        "label": "headline_clean",
+        "count": 2034,
+        "pctRecovered": 53.59,
+        "medianYears": 2.5,
+        "avgYears": 3.2545871559633026,
+        "pctImmediate": 7.72,
+        "avgOriginalPriorSlotQ": 95.62094395280236,
+        "avgReplacementSlotQ": 81.99459193706981,
+        "avgCeilingAtFill": 88.31809242871189,
+        "integrityFlagged": 0
+      },
+      "byReplacementType": {
+        "external": {
+          "label": "external",
+          "departures": 2170,
+          "pctFullyRecoverQuality": 54.01,
+          "pctExceedPriorQuality": 21.75,
+          "avgYearsToRecoverQuality": 3.3447098976109215,
+          "medianYearsToRecoverQuality": 2.5,
+          "pctRecoverRevenue": 67.24,
+          "medianYearsToRecoverRevenue": 0.5,
+          "avgImmediateSlotQDrop": 14.772350230414746
+        },
+        "internal": {
+          "label": "internal",
+          "departures": 1348,
+          "pctFullyRecoverQuality": 85.98,
+          "pctExceedPriorQuality": 14.32,
+          "avgYearsToRecoverQuality": 0.6729939603106126,
+          "medianYearsToRecoverQuality": 0.5,
+          "pctRecoverRevenue": 32.49,
+          "medianYearsToRecoverRevenue": 0.5,
+          "avgImmediateSlotQDrop": 2.994807121661721
+        },
+        "cluster": {
+          "label": "cluster",
+          "departures": 14,
+          "pctFullyRecoverQuality": 57.14,
+          "pctExceedPriorQuality": 0,
+          "avgYearsToRecoverQuality": 3.3125,
+          "medianYearsToRecoverQuality": 2,
+          "pctRecoverRevenue": 57.14,
+          "medianYearsToRecoverRevenue": 0.5,
+          "avgImmediateSlotQDrop": 8.714285714285714
+        }
+      },
+      "byReplacementTypeRecoveryClean": {
+        "internal": {
+          "label": "internal",
+          "count": 145,
+          "pctRecovered": 95.86,
+          "medianYears": 0,
+          "avgYears": 0.26258992805755393,
+          "pctImmediate": 77.93,
+          "avgOriginalPriorSlotQ": 91.15862068965517,
+          "avgReplacementSlotQ": 89.62758620689655,
+          "avgCeilingAtFill": 91.84827586206896,
+          "integrityFlagged": 0
+        },
+        "external": {
+          "label": "external",
+          "count": 1877,
+          "pctRecovered": 50.29,
+          "medianYears": 3,
+          "avgYears": 3.6965042372881354,
+          "pctImmediate": 2.29,
+          "avgOriginalPriorSlotQ": 95.95684603090038,
+          "avgReplacementSlotQ": 81.36654235482152,
+          "avgCeilingAtFill": 88.04741608950452,
+          "integrityFlagged": 0
+        },
+        "cluster": {
+          "label": "cluster",
+          "count": 12,
+          "pctRecovered": 58.33,
+          "medianYears": 2,
+          "avgYears": 3.0714285714285716,
+          "pctImmediate": 8.33,
+          "avgOriginalPriorSlotQ": 97,
+          "avgReplacementSlotQ": 88,
+          "avgCeilingAtFill": 88,
+          "integrityFlagged": 0
+        }
+      },
+      "byBenchDepth": {
+        "deep": {
+          "label": "deep",
+          "departures": 0,
+          "pctFullyRecoverQuality": 0,
+          "pctExceedPriorQuality": 0,
+          "avgYearsToRecoverQuality": null,
+          "medianYearsToRecoverQuality": null,
+          "pctRecoverRevenue": 0,
+          "medianYearsToRecoverRevenue": null,
+          "avgImmediateSlotQDrop": null
+        },
+        "moderate": {
+          "label": "moderate",
+          "departures": 0,
+          "pctFullyRecoverQuality": 0,
+          "pctExceedPriorQuality": 0,
+          "avgYearsToRecoverQuality": null,
+          "medianYearsToRecoverQuality": null,
+          "pctRecoverRevenue": 0,
+          "medianYearsToRecoverRevenue": null,
+          "avgImmediateSlotQDrop": null
+        },
+        "thin": {
+          "label": "thin",
+          "departures": 0,
+          "pctFullyRecoverQuality": 0,
+          "pctExceedPriorQuality": 0,
+          "avgYearsToRecoverQuality": null,
+          "medianYearsToRecoverQuality": null,
+          "pctRecoverRevenue": 0,
+          "medianYearsToRecoverRevenue": null,
+          "avgImmediateSlotQDrop": null
+        }
+      },
+      "benchComparison": {
+        "withStrongBench": {
+          "label": "with_strong_bench",
+          "departures": 0,
+          "pctFullyRecoverQuality": 0,
+          "pctExceedPriorQuality": 0,
+          "avgYearsToRecoverQuality": null,
+          "medianYearsToRecoverQuality": null,
+          "pctRecoverRevenue": 0,
+          "medianYearsToRecoverRevenue": null,
+          "avgImmediateSlotQDrop": null
+        },
+        "withoutStrongBench": {
+          "label": "without_strong_bench",
+          "departures": 0,
+          "pctFullyRecoverQuality": 0,
+          "pctExceedPriorQuality": 0,
+          "avgYearsToRecoverQuality": null,
+          "medianYearsToRecoverQuality": null,
+          "pctRecoverRevenue": 0,
+          "medianYearsToRecoverRevenue": null,
+          "avgImmediateSlotQDrop": null
+        }
+      },
+      "replacementMix": {
+        "external": 2170,
+        "internal": 1348,
+        "cluster": 14,
+        "vacant": 0
+      },
+      "classificationMix": {
+        "native": 3519,
+        "diagnostic_bench_promotion": 0,
+        "diagnostic_cluster_transfer": 0,
+        "diagnostic_external_retained": 0
+      },
+      "diagnosticOverlay": "Passive AI external-hires into morning vacancies; successor cohort rewrites a deterministic share into internal/cluster moves from pre-turn bench maps.",
+      "benchAnalysis": {
+        "stationsWithStrongBenchAtLoss": 0,
+        "pctInternalOfSuccessor": 37.49,
+        "pctExternalOfSuccessor": 60.34,
+        "pctClusterOfSuccessor": 0.39,
+        "internalVsExternalRecoverGap": 45.57,
+        "internalVsExternalMedianGap": 3,
+        "internalVsExternalRecoverGapLegacy": 31.970000000000006
+      },
+      "elite": {
+        "label": "elite",
+        "departures": 0,
+        "pctFullyRecoverQuality": 0,
+        "pctExceedPriorQuality": 0,
+        "avgYearsToRecoverQuality": null,
+        "medianYearsToRecoverQuality": null,
+        "pctRecoverRevenue": 0,
+        "medianYearsToRecoverRevenue": null,
+        "avgImmediateSlotQDrop": null
+      },
+      "superElite": {
+        "label": "super_elite",
+        "departures": 0,
+        "pctFullyRecoverQuality": 0,
+        "pctExceedPriorQuality": 0,
+        "avgYearsToRecoverQuality": null,
+        "medianYearsToRecoverQuality": null,
+        "pctRecoverRevenue": 0,
+        "medianYearsToRecoverRevenue": null,
+        "avgImmediateSlotQDrop": null
+      },
+      "oq2020": {
+        "commercialSnapshots": 1214,
+        "meanOqAcrossRuns": 64.01,
+        "pctAbove90": 24.05,
+        "pct9599": 11.28
+      },
+      "sideEffects": {
+        "lowShareSpiralSnapshots": 338,
+        "zombieLikeSnapshots": 236
+      },
+      "certProxy": {
+        "newyork": {
+          "runs": 6,
+          "meanOq": 63.419999999999995,
+          "pct9599": 7.556666666666666
+        },
+        "losangeles": {
+          "runs": 6,
+          "meanOq": 59.053333333333335,
+          "pct9599": 8.283333333333333
+        },
+        "chicago": {
+          "runs": 6,
+          "meanOq": 59.12166666666667,
+          "pct9599": 8.131666666666666
+        },
+        "seattle": {
+          "runs": 6,
+          "meanOq": 65.515,
+          "pct9599": 12.051666666666668
+        },
+        "sanfrancisco": {
+          "runs": 6,
+          "meanOq": 62.870000000000005,
+          "pct9599": 13.281666666666668
+        },
+        "atlanta": {
+          "runs": 6,
+          "meanOq": 66.16666666666666,
+          "pct9599": 16.651666666666667
+        },
+        "nashville": {
+          "runs": 6,
+          "meanOq": 64.42333333333333,
+          "pct9599": 13.596666666666666
+        },
+        "wichita": {
+          "runs": 6,
+          "meanOq": 71.53833333333333,
+          "pct9599": 15.613333333333332
+        }
+      },
+      "_score": 14.58
+    }
+  ],
+  "answers": {
+    "internalPromotionImprovesRealismWithoutInflation": true,
+    "strongBenchStrategicallyValuable": false,
+    "deepBenchRecoversFaster": false,
+    "bestReflectsBroadcastSuccession": "PROD"
+  }
+}

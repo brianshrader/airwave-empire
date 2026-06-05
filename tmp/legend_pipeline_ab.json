@@ -1,0 +1,342 @@
+{
+  "generatedAt": "2026-06-05T04:05:23.569Z",
+  "config": {
+    "markets": [
+      "wichita",
+      "nashville",
+      "seattle",
+      "sanfrancisco",
+      "chicago",
+      "newyork"
+    ],
+    "startYears": [
+      1970,
+      1985,
+      2000
+    ],
+    "years": 35,
+    "seeds": 4,
+    "seed": 20260608,
+    "variants": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E"
+    ]
+  },
+  "variantDefs": {
+    "A": "Baseline — current production behavior",
+    "B": "Rare high-ceiling generation — trueQ 85–92 at hire, market-tier scaled",
+    "C": "Career breakout path — gradual trueQ lift after tenure + station success",
+    "D": "B mild + C mild combined",
+    "E": "B strong + C strong combined"
+  },
+  "targets": {
+    "pctTrueQ85": {
+      "lo": 1,
+      "hi": 3
+    },
+    "pctTrueQ90": {
+      "lo": 0.2,
+      "hi": 0.8
+    },
+    "pctFranchise": {
+      "lo": 0.3,
+      "hi": 1
+    },
+    "pctGte5x": {
+      "lo": 1,
+      "hi": 3
+    },
+    "medianTrueQDrift": {
+      "max": 3
+    },
+    "meanOqDrift": {
+      "max": 4
+    },
+    "pct9599Drift": {
+      "max": 3
+    }
+  },
+  "runs": {
+    "total": 360,
+    "ok": 360
+  },
+  "pooledByVariant": {
+    "A": {
+      "runs": 72,
+      "ok": 72,
+      "talentDistribution": {
+        "medianTrueQ": 45,
+        "p90TrueQ": 60,
+        "p99TrueQ": 64,
+        "maxTrueQ": 63,
+        "pctTrueQ75": 0.08,
+        "pctTrueQ85": 0,
+        "pctTrueQ90": 0
+      },
+      "legendPipeline": {
+        "pctStar": 22.53,
+        "pctElite": 0,
+        "pctLegendCandidate": 0,
+        "pctFranchiseLegend": 0,
+        "medianYearsToElite": null,
+        "medianYearsToLegend": null,
+        "medianYearsToFranchise": null
+      },
+      "salaryConcentration": {
+        "marketMedianSalary": 64375,
+        "p90Salary": 122000,
+        "p99Salary": 193500,
+        "maxSalary": 743500,
+        "pctGte2xMedian": 7.89,
+        "pctGte3xMedian": 1.26,
+        "pctGte5xMedian": 0.21,
+        "pctGte10xMedian": 0.01,
+        "pctPinnedAtCap": 23.17,
+        "pctAboveCap": 15.26,
+        "pctHighQEverAtCap": 0
+      },
+      "stationImpact": {
+        "avgShareLiftHighQ": null,
+        "avgReplacementDrop": null,
+        "poachAttemptsHighQ": 0,
+        "pctHighQWithPoach": 0,
+        "medianPoachPremiumHighQ": null
+      },
+      "economyGuardrails": {
+        "meanOq": 61.33,
+        "pct9599": 20.87,
+        "medianEbitdaMargin": -10,
+        "hhi": 579,
+        "zombieLike": 6.15,
+        "spiralLike": 8.24,
+        "soloBankruptRuns": 0
+      },
+      "careerRows": 43484
+    },
+    "B": {
+      "runs": 72,
+      "ok": 72,
+      "talentDistribution": {
+        "medianTrueQ": 45,
+        "p90TrueQ": 60,
+        "p99TrueQ": 85,
+        "maxTrueQ": 86,
+        "pctTrueQ75": 1.46,
+        "pctTrueQ85": 1.08,
+        "pctTrueQ90": 0.19
+      },
+      "legendPipeline": {
+        "pctStar": 21.75,
+        "pctElite": 0.22,
+        "pctLegendCandidate": 0,
+        "pctFranchiseLegend": 0,
+        "medianYearsToElite": 0,
+        "medianYearsToLegend": null,
+        "medianYearsToFranchise": null
+      },
+      "salaryConcentration": {
+        "marketMedianSalary": 62500,
+        "p90Salary": 126250,
+        "p99Salary": 188500,
+        "maxSalary": 876500,
+        "pctGte2xMedian": 8.19,
+        "pctGte3xMedian": 1.34,
+        "pctGte5xMedian": 0.2,
+        "pctGte10xMedian": 0.01,
+        "pctPinnedAtCap": 23.01,
+        "pctAboveCap": 15.41,
+        "pctHighQEverAtCap": 28.7
+      },
+      "stationImpact": {
+        "avgShareLiftHighQ": 0.15,
+        "avgReplacementDrop": 0.74,
+        "poachAttemptsHighQ": 0,
+        "pctHighQWithPoach": 0,
+        "medianPoachPremiumHighQ": null
+      },
+      "economyGuardrails": {
+        "meanOq": 61.53,
+        "pct9599": 21.64,
+        "medianEbitdaMargin": -8,
+        "hhi": 580,
+        "zombieLike": 5.56,
+        "spiralLike": 8.29,
+        "soloBankruptRuns": 0
+      },
+      "careerRows": 42658
+    },
+    "C": {
+      "runs": 72,
+      "ok": 72,
+      "talentDistribution": {
+        "medianTrueQ": 45,
+        "p90TrueQ": 60,
+        "p99TrueQ": 64,
+        "maxTrueQ": 65,
+        "pctTrueQ75": 0.06,
+        "pctTrueQ85": 0,
+        "pctTrueQ90": 0
+      },
+      "legendPipeline": {
+        "pctStar": 22.69,
+        "pctElite": 0,
+        "pctLegendCandidate": 0,
+        "pctFranchiseLegend": 0,
+        "medianYearsToElite": null,
+        "medianYearsToLegend": null,
+        "medianYearsToFranchise": null
+      },
+      "salaryConcentration": {
+        "marketMedianSalary": 62125,
+        "p90Salary": 123750,
+        "p99Salary": 191500,
+        "maxSalary": 759500,
+        "pctGte2xMedian": 7.6,
+        "pctGte3xMedian": 1.3,
+        "pctGte5xMedian": 0.2,
+        "pctGte10xMedian": 0,
+        "pctPinnedAtCap": 22.84,
+        "pctAboveCap": 15.06,
+        "pctHighQEverAtCap": 0
+      },
+      "stationImpact": {
+        "avgShareLiftHighQ": null,
+        "avgReplacementDrop": null,
+        "poachAttemptsHighQ": 0,
+        "pctHighQWithPoach": 0,
+        "medianPoachPremiumHighQ": null
+      },
+      "economyGuardrails": {
+        "meanOq": 61.38,
+        "pct9599": 20.91,
+        "medianEbitdaMargin": -1,
+        "hhi": 607,
+        "zombieLike": 6.1,
+        "spiralLike": 8.71,
+        "soloBankruptRuns": 0
+      },
+      "careerRows": 42324
+    },
+    "D": {
+      "runs": 72,
+      "ok": 72,
+      "talentDistribution": {
+        "medianTrueQ": 46,
+        "p90TrueQ": 60,
+        "p99TrueQ": 84,
+        "maxTrueQ": 90,
+        "pctTrueQ75": 1.36,
+        "pctTrueQ85": 1.03,
+        "pctTrueQ90": 0.17
+      },
+      "legendPipeline": {
+        "pctStar": 22.1,
+        "pctElite": 0.23,
+        "pctLegendCandidate": 0,
+        "pctFranchiseLegend": 0,
+        "medianYearsToElite": 0,
+        "medianYearsToLegend": null,
+        "medianYearsToFranchise": null
+      },
+      "salaryConcentration": {
+        "marketMedianSalary": 65250,
+        "p90Salary": 124500,
+        "p99Salary": 197250,
+        "maxSalary": 980500,
+        "pctGte2xMedian": 7.75,
+        "pctGte3xMedian": 1.28,
+        "pctGte5xMedian": 0.2,
+        "pctGte10xMedian": 0.01,
+        "pctPinnedAtCap": 23.74,
+        "pctAboveCap": 15.63,
+        "pctHighQEverAtCap": 33.74
+      },
+      "stationImpact": {
+        "avgShareLiftHighQ": 0.09,
+        "avgReplacementDrop": 0.69,
+        "poachAttemptsHighQ": 0.03,
+        "pctHighQWithPoach": 0.24,
+        "medianPoachPremiumHighQ": null
+      },
+      "economyGuardrails": {
+        "meanOq": 62.08,
+        "pct9599": 20.99,
+        "medianEbitdaMargin": 0,
+        "hhi": 579,
+        "zombieLike": 5.64,
+        "spiralLike": 7.85,
+        "soloBankruptRuns": 0
+      },
+      "careerRows": 44827
+    },
+    "E": {
+      "runs": 72,
+      "ok": 72,
+      "talentDistribution": {
+        "medianTrueQ": 45,
+        "p90TrueQ": 61,
+        "p99TrueQ": 87,
+        "maxTrueQ": 90,
+        "pctTrueQ75": 2.3,
+        "pctTrueQ85": 1.79,
+        "pctTrueQ90": 0.31
+      },
+      "legendPipeline": {
+        "pctStar": 21.26,
+        "pctElite": 0.47,
+        "pctLegendCandidate": 0,
+        "pctFranchiseLegend": 0,
+        "medianYearsToElite": 0,
+        "medianYearsToLegend": null,
+        "medianYearsToFranchise": null
+      },
+      "salaryConcentration": {
+        "marketMedianSalary": 61250,
+        "p90Salary": 116500,
+        "p99Salary": 188000,
+        "maxSalary": 797500,
+        "pctGte2xMedian": 7.95,
+        "pctGte3xMedian": 1.4,
+        "pctGte5xMedian": 0.2,
+        "pctGte10xMedian": 0.02,
+        "pctPinnedAtCap": 22.51,
+        "pctAboveCap": 15.11,
+        "pctHighQEverAtCap": 25.34
+      },
+      "stationImpact": {
+        "avgShareLiftHighQ": 0.25,
+        "avgReplacementDrop": 0.66,
+        "poachAttemptsHighQ": 0,
+        "pctHighQWithPoach": 0,
+        "medianPoachPremiumHighQ": null
+      },
+      "economyGuardrails": {
+        "meanOq": 61.46,
+        "pct9599": 19.5,
+        "medianEbitdaMargin": -14,
+        "hhi": 594,
+        "zombieLike": 6.01,
+        "spiralLike": 8.42,
+        "soloBankruptRuns": 0
+      },
+      "careerRows": 41736
+    }
+  },
+  "scores": {
+    "A": 40,
+    "B": 65,
+    "C": 40,
+    "D": 65,
+    "E": 80
+  },
+  "recommendation": [
+    "Best balanced variant by guardrail score: **E** (score 80).",
+    "High-ceiling **generation (B)** produces more trueQ≥85 careers than breakout-only (C).",
+    "Salary caps appear to bind a large share of high-trueQ careers — compensation may become the next bottleneck after generation is fixed.",
+    "Station OQ guardrails held — no broad quality inflation detected in the winning variant.",
+    "**Direction (diagnostic only):** pursue upstream trueQ tail creation before salary tuning; prefer the scored variant mechanism mix for a production design spike."
+  ]
+}

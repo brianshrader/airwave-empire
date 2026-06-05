@@ -1,0 +1,6103 @@
+{
+  "anchors": {
+    "10": {
+      "seattle": {
+        "runs": [
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0817,
+            "revGrowth1980": 0.7386168703143248,
+            "ebitda1980": -3941,
+            "cashEnd1980": -1697,
+            "cashGrowth1980": -426955,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5710000000000001,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3529,
+            "cashEnd2000": 1758793,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 15,
+              "poachAttempts": 0,
+              "counterPromo": 21
+            },
+            "periodsLogged": 191,
+            "neverRank1": true,
+            "seed": 24033044
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 33,
+              "detail": [
+                {
+                  "id": "1dzsssss",
+                  "call": "KXNV",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0853,
+            "revGrowth1980": 1.0336352365778463,
+            "ebitda1980": 34157,
+            "cashEnd1980": 274234,
+            "cashGrowth1980": -150186,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.6025,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0842,
+            "playerCluster2000": 0.0842,
+            "marketTop32000": 0.6025,
+            "cashEnd2000": 274234,
+            "ebitda2000": 34157,
+            "rev2000": 409364,
+            "acquisitionsTotal": 11,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 4,
+              "poachAttempts": 0,
+              "counterPromo": 94
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24043017
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0851,
+            "revGrowth1980": 0.7001337898390511,
+            "ebitda1980": -9434,
+            "cashEnd1980": -5273,
+            "cashGrowth1980": -446640,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5739,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3231,
+            "cashEnd2000": 1803627,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 21,
+              "poachAttempts": 1,
+              "counterPromo": 27
+            },
+            "periodsLogged": 261,
+            "neverRank1": true,
+            "seed": 24052990
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0839,
+            "revGrowth1980": 0.7313810538202911,
+            "ebitda1980": -6320,
+            "cashEnd1980": -3952,
+            "cashGrowth1980": -400392,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5698,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3556,
+            "cashEnd2000": 1700330,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 13,
+              "poachAttempts": 0,
+              "counterPromo": 50
+            },
+            "periodsLogged": 180,
+            "neverRank1": true,
+            "seed": 24062963
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0814,
+            "revGrowth1980": 0.7768497531592511,
+            "ebitda1980": -9385,
+            "cashEnd1980": -3794,
+            "cashGrowth1980": -420729,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5766,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.309,
+            "cashEnd2000": 1798416,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 20,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 247,
+            "neverRank1": true,
+            "seed": 24072936
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0857,
+            "revGrowth1980": 0.734817972463129,
+            "ebitda1980": -3550,
+            "cashEnd1980": -2082,
+            "cashGrowth1980": -409617,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5697,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3622,
+            "cashEnd2000": 1797522,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 17,
+              "poachAttempts": 1,
+              "counterPromo": 0
+            },
+            "periodsLogged": 255,
+            "neverRank1": true,
+            "seed": 24082909
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 43,
+              "detail": [
+                {
+                  "id": "l4msssss",
+                  "call": "KAWA",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0851,
+            "revGrowth1980": 0.9922188902109359,
+            "ebitda1980": 20078,
+            "cashEnd1980": 1073530,
+            "cashGrowth1980": 673873,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5831000000000001,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0818,
+            "playerCluster2000": 0.0818,
+            "marketTop32000": 0.5831000000000001,
+            "cashEnd2000": 1073530,
+            "ebitda2000": 20078,
+            "rev2000": 389435,
+            "acquisitionsTotal": 6,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 8,
+              "poachAttempts": 0,
+              "counterPromo": 57
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24092882
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 41,
+              "detail": [
+                {
+                  "id": "thq77777",
+                  "call": "KGRY",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0881,
+            "revGrowth1980": 0.9899369280876803,
+            "ebitda1980": 14828,
+            "cashEnd1980": 250478,
+            "cashGrowth1980": -140228,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5939,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0823,
+            "playerCluster2000": 0.0823,
+            "marketTop32000": 0.5939,
+            "cashEnd2000": 250478,
+            "ebitda2000": 14828,
+            "rev2000": 382967,
+            "acquisitionsTotal": 11,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 10,
+              "poachAttempts": 1,
+              "counterPromo": 62
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24102855
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0834,
+            "revGrowth1980": 0.7643940807063359,
+            "ebitda1980": -3472,
+            "cashEnd1980": -456,
+            "cashGrowth1980": -414226,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5622,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3546,
+            "cashEnd2000": 1763514,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 13,
+              "poachAttempts": 1,
+              "counterPromo": 57
+            },
+            "periodsLogged": 194,
+            "neverRank1": true,
+            "seed": 24112828
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0853,
+            "revGrowth1980": 0.7680425561231018,
+            "ebitda1980": -5934,
+            "cashEnd1980": -1908,
+            "cashGrowth1980": -410414,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5748,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3247,
+            "cashEnd2000": 1862271,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 28,
+              "poachAttempts": 1,
+              "counterPromo": 45
+            },
+            "periodsLogged": 318,
+            "neverRank1": true,
+            "seed": 24122801
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0853,
+            "revGrowth1980": 0.7180351931351541,
+            "ebitda1980": -8730,
+            "cashEnd1980": -4617,
+            "cashGrowth1980": -415163,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5740000000000001,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3628,
+            "cashEnd2000": 1777630,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 15,
+              "poachAttempts": 0,
+              "counterPromo": 43
+            },
+            "periodsLogged": 226,
+            "neverRank1": true,
+            "seed": 24132774
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0852,
+            "revGrowth1980": 0.727877880040521,
+            "ebitda1980": -6802,
+            "cashEnd1980": -2838,
+            "cashGrowth1980": -419659,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5677,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.36860000000000004,
+            "cashEnd2000": 1810064,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 10,
+              "poachAttempts": 0,
+              "counterPromo": 35
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24142747
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0849,
+            "revGrowth1980": 0.7310430986686165,
+            "ebitda1980": -7981,
+            "cashEnd1980": -5299,
+            "cashGrowth1980": -418191,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5769,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3657,
+            "cashEnd2000": 1801830,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 45,
+              "poachAttempts": 1,
+              "counterPromo": 27
+            },
+            "periodsLogged": 282,
+            "neverRank1": true,
+            "seed": 24152720
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0829,
+            "revGrowth1980": 0.7614760811977479,
+            "ebitda1980": -7004,
+            "cashEnd1980": -1430,
+            "cashGrowth1980": -432425,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.579,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3575,
+            "cashEnd2000": 1859666,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 24,
+              "poachAttempts": 0,
+              "counterPromo": 27
+            },
+            "periodsLogged": 229,
+            "neverRank1": true,
+            "seed": 24162693
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 39,
+              "detail": [
+                {
+                  "id": "a8zeeeee",
+                  "call": "KOTD",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0849,
+            "revGrowth1980": 1.0195425455352145,
+            "ebitda1980": 21938,
+            "cashEnd1980": 773600,
+            "cashGrowth1980": 374063,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.587,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0817,
+            "playerCluster2000": 0.0817,
+            "marketTop32000": 0.587,
+            "cashEnd2000": 773600,
+            "ebitda2000": 21938,
+            "rev2000": 395243,
+            "acquisitionsTotal": 10,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 1,
+              "poachAttempts": 1,
+              "counterPromo": 150
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24172666
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0837,
+            "revGrowth1980": 0.7588036341932489,
+            "ebitda1980": -3312,
+            "cashEnd1980": -934,
+            "cashGrowth1980": -402196,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5713,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.32389999999999997,
+            "cashEnd2000": 1772258,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 40,
+              "poachAttempts": 1,
+              "counterPromo": 28
+            },
+            "periodsLogged": 261,
+            "neverRank1": true,
+            "seed": 24182639
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 39,
+              "detail": [
+                {
+                  "id": "9v0sssss",
+                  "call": "KLSK",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0857,
+            "revGrowth1980": 0.7432968580021757,
+            "ebitda1980": -7658,
+            "cashEnd1980": 767045,
+            "cashGrowth1980": 337037,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.585,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0797,
+            "playerCluster2000": 0.0797,
+            "marketTop32000": 0.585,
+            "cashEnd2000": 767045,
+            "ebitda2000": -7658,
+            "rev2000": 302003,
+            "acquisitionsTotal": 8,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 10,
+              "poachAttempts": 0,
+              "counterPromo": 70
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24192612
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0874,
+            "revGrowth1980": 0.6644380541037171,
+            "ebitda1980": -9956,
+            "cashEnd1980": -354,
+            "cashGrowth1980": -434999,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5734999999999999,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.38289999999999996,
+            "cashEnd2000": 1752675,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 11,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 232,
+            "neverRank1": true,
+            "seed": 24202585
+          }
+        ],
+        "aggregate": {
+          "n": 18,
+          "bankruptRate": 0,
+          "timeToRank1": null,
+          "neverRank1Rate": 1,
+          "peakShare1980": null,
+          "revGrowth1980": null,
+          "ebitda1980": null,
+          "cashEnd1980": null,
+          "cashGrowth1980": null,
+          "viableCompetitors1980": null,
+          "marketTop31980": null,
+          "playerStations2000": null,
+          "playerTopShare2000": null,
+          "playerCluster2000": null,
+          "marketTop32000": null,
+          "cashEnd2000": null,
+          "ebitda2000": null,
+          "rev2000": null,
+          "acquisitionsTotal": null,
+          "rivalReformats": 14,
+          "poachAttempts": 0,
+          "zombieEnd": null,
+          "removedEnd": null,
+          "commercialActive2000": null,
+          "acqPool2000": null,
+          "difficulty": 7.3
+        }
+      },
+      "sanfrancisco": {
+        "runs": [
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0883,
+            "revGrowth1980": 0.819850071387819,
+            "ebitda1980": -4950,
+            "cashEnd1980": -1585,
+            "cashGrowth1980": -358458,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5676,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.37179999999999996,
+            "cashEnd2000": 1751988,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 13,
+              "poachAttempts": 0,
+              "counterPromo": 45
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23723916
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 33,
+              "detail": [
+                {
+                  "id": "amk",
+                  "call": "KVUF",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0868,
+            "revGrowth1980": 0.931723120223599,
+            "ebitda1980": 26443,
+            "cashEnd1980": 484658,
+            "cashGrowth1980": 83554,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.585,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0817,
+            "playerCluster2000": 0.0817,
+            "marketTop32000": 0.585,
+            "cashEnd2000": 484658,
+            "ebitda2000": 26443,
+            "rev2000": 381358,
+            "acquisitionsTotal": 11,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 1,
+              "poachAttempts": 0,
+              "counterPromo": 59
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23733889
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0893,
+            "revGrowth1980": 0.845310583155773,
+            "ebitda1980": -8213,
+            "cashEnd1980": -5356,
+            "cashGrowth1980": -361312,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5729,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2917,
+            "cashEnd2000": 1802329,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 23,
+              "poachAttempts": 1,
+              "counterPromo": 28
+            },
+            "periodsLogged": 243,
+            "neverRank1": true,
+            "seed": 23743862
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0882,
+            "revGrowth1980": 0.7835863786579818,
+            "ebitda1980": -7639,
+            "cashEnd1980": -7154,
+            "cashGrowth1980": -380403,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5594,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3001,
+            "cashEnd2000": 1745781,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 12,
+              "poachAttempts": 1,
+              "counterPromo": 35
+            },
+            "periodsLogged": 229,
+            "neverRank1": true,
+            "seed": 23753835
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 28,
+              "detail": [
+                {
+                  "id": "fdb",
+                  "call": "KBEM",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0879,
+            "revGrowth1980": 1.045908673320249,
+            "ebitda1980": 26941,
+            "cashEnd1980": 716353,
+            "cashGrowth1980": 320163,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.6040000000000001,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0857,
+            "playerCluster2000": 0.0857,
+            "marketTop32000": 0.6040000000000001,
+            "cashEnd2000": 716353,
+            "ebitda2000": 26941,
+            "rev2000": 400742,
+            "acquisitionsTotal": 11,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 4,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23763808
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 38,
+              "detail": [
+                {
+                  "id": "7pqsssss",
+                  "call": "KQKR",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0873,
+            "revGrowth1980": 1.0555616528562806,
+            "ebitda1980": -74928,
+            "cashEnd1980": 3012,
+            "cashGrowth1980": -387578,
+            "viableCompetitors1980": 6,
+            "marketTop31980": 0.599,
+            "playerStations2000": 2,
+            "playerTopShare2000": 0.0851,
+            "playerCluster2000": 0.1201,
+            "marketTop32000": 0.599,
+            "cashEnd2000": 3012,
+            "ebitda2000": -74928,
+            "rev2000": 423181,
+            "acquisitionsTotal": 11,
+            "nTop102000": 2,
+            "aiChurn": {
+              "rivalReformats": 10,
+              "poachAttempts": 2,
+              "counterPromo": 104
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23773781
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0866,
+            "revGrowth1980": 0.6835506699716205,
+            "ebitda1980": -5918,
+            "cashEnd1980": 217744,
+            "cashGrowth1980": -190332,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5758,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0792,
+            "playerCluster2000": 0.0792,
+            "marketTop32000": 0.5758,
+            "cashEnd2000": 217744,
+            "ebitda2000": -5918,
+            "rev2000": 285420,
+            "acquisitionsTotal": 0,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 1,
+              "poachAttempts": 0,
+              "counterPromo": 41
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23783754
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0859,
+            "revGrowth1980": 0.7814933379477418,
+            "ebitda1980": -4810,
+            "cashEnd1980": -2095,
+            "cashGrowth1980": -406757,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5694999999999999,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3148,
+            "cashEnd2000": 1828131,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 19,
+              "poachAttempts": 0,
+              "counterPromo": 20
+            },
+            "periodsLogged": 228,
+            "neverRank1": true,
+            "seed": 23793727
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0846,
+            "revGrowth1980": 0.728426511395169,
+            "ebitda1980": -2045,
+            "cashEnd1980": -1703,
+            "cashGrowth1980": -389650,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5776,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2756,
+            "cashEnd2000": 1733000,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 41,
+              "poachAttempts": 0,
+              "counterPromo": 63
+            },
+            "periodsLogged": 322,
+            "neverRank1": true,
+            "seed": 23803700
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0861,
+            "revGrowth1980": 0.6834007566620477,
+            "ebitda1980": -11088,
+            "cashEnd1980": -5348,
+            "cashGrowth1980": -424356,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5605,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.5392,
+            "cashEnd2000": 1673462,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 14,
+              "poachAttempts": 1,
+              "counterPromo": 24
+            },
+            "periodsLogged": 271,
+            "neverRank1": true,
+            "seed": 23813673
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0855,
+            "revGrowth1980": 0.7300423726733082,
+            "ebitda1980": 2619,
+            "cashEnd1980": 543810,
+            "cashGrowth1980": 143052,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5755,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0803,
+            "playerCluster2000": 0.0803,
+            "marketTop32000": 0.5755,
+            "cashEnd2000": 543810,
+            "ebitda2000": 2619,
+            "rev2000": 297374,
+            "acquisitionsTotal": 0,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 12,
+              "poachAttempts": 0,
+              "counterPromo": 58
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23823646
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 40,
+              "detail": [
+                {
+                  "id": "kbbeeeee",
+                  "call": "KKFB",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0859,
+            "revGrowth1980": 0.9684972755581955,
+            "ebitda1980": 13626,
+            "cashEnd1980": 448437,
+            "cashGrowth1980": 65312,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5781000000000001,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0812,
+            "playerCluster2000": 0.0812,
+            "marketTop32000": 0.5781000000000001,
+            "cashEnd2000": 448437,
+            "ebitda2000": 13626,
+            "rev2000": 376636,
+            "acquisitionsTotal": 9,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 1,
+              "poachAttempts": 0,
+              "counterPromo": 145
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23833619
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0873,
+            "revGrowth1980": 0.7129372624260647,
+            "ebitda1980": -978,
+            "cashEnd1980": 284280,
+            "cashGrowth1980": -119033,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5714,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.08,
+            "playerCluster2000": 0.08,
+            "marketTop32000": 0.5714,
+            "cashEnd2000": 284280,
+            "ebitda2000": -978,
+            "rev2000": 296152,
+            "acquisitionsTotal": 0,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 1,
+              "poachAttempts": 0,
+              "counterPromo": 23
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23843592
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0883,
+            "revGrowth1980": 0.8520370295787857,
+            "ebitda1980": -7802,
+            "cashEnd1980": -4031,
+            "cashGrowth1980": -357653,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5651,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.32530000000000003,
+            "cashEnd2000": 1738396,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 16,
+              "poachAttempts": 1,
+              "counterPromo": 68
+            },
+            "periodsLogged": 301,
+            "neverRank1": true,
+            "seed": 23853565
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0893,
+            "revGrowth1980": 0.7584475082542956,
+            "ebitda1980": 3104,
+            "cashEnd1980": 583657,
+            "cashGrowth1980": 196203,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5721,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.08,
+            "playerCluster2000": 0.08,
+            "marketTop32000": 0.5721,
+            "cashEnd2000": 583657,
+            "ebitda2000": 3104,
+            "rev2000": 299316,
+            "acquisitionsTotal": 0,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 1,
+              "poachAttempts": 0,
+              "counterPromo": 22
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23863538
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.085,
+            "revGrowth1980": 0.7438270681938256,
+            "ebitda1980": 5318,
+            "cashEnd1980": 948883,
+            "cashGrowth1980": 552539,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.579,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0811,
+            "playerCluster2000": 0.0811,
+            "marketTop32000": 0.579,
+            "cashEnd2000": 948883,
+            "ebitda2000": 5318,
+            "rev2000": 298474,
+            "acquisitionsTotal": 0,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 9,
+              "poachAttempts": 0,
+              "counterPromo": 46
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23873511
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0867,
+            "revGrowth1980": 0.7272376118837918,
+            "ebitda1980": -2780,
+            "cashEnd1980": -2293,
+            "cashGrowth1980": -405558,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5737,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.34009999999999996,
+            "cashEnd2000": 1700648,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 24,
+              "poachAttempts": 1,
+              "counterPromo": 25
+            },
+            "periodsLogged": 222,
+            "neverRank1": true,
+            "seed": 23883484
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 35,
+              "detail": [
+                {
+                  "id": "1nalllll",
+                  "call": "KWFM",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0908,
+            "revGrowth1980": 0.9426643515717041,
+            "ebitda1980": 23348,
+            "cashEnd1980": 892049,
+            "cashGrowth1980": 497702,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.597,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0822,
+            "playerCluster2000": 0.0822,
+            "marketTop32000": 0.597,
+            "cashEnd2000": 892049,
+            "ebitda2000": 23348,
+            "rev2000": 381665,
+            "acquisitionsTotal": 10,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 1,
+              "poachAttempts": 1,
+              "counterPromo": 57
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23893457
+          }
+        ],
+        "aggregate": {
+          "n": 18,
+          "bankruptRate": 0,
+          "timeToRank1": null,
+          "neverRank1Rate": 1,
+          "peakShare1980": null,
+          "revGrowth1980": null,
+          "ebitda1980": null,
+          "cashEnd1980": null,
+          "cashGrowth1980": null,
+          "viableCompetitors1980": null,
+          "marketTop31980": null,
+          "playerStations2000": null,
+          "playerTopShare2000": null,
+          "playerCluster2000": null,
+          "marketTop32000": null,
+          "cashEnd2000": null,
+          "ebitda2000": null,
+          "rev2000": null,
+          "acquisitionsTotal": null,
+          "rivalReformats": 11,
+          "poachAttempts": 0,
+          "zombieEnd": null,
+          "removedEnd": null,
+          "commercialActive2000": null,
+          "acqPool2000": null,
+          "difficulty": 7.3
+        }
+      },
+      "atlanta": {
+        "runs": [
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0849,
+            "revGrowth1980": 0.7388697408514835,
+            "ebitda1980": -3580,
+            "cashEnd1980": -3580,
+            "cashGrowth1980": -289763,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5698,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3606,
+            "cashEnd2000": 1397355,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 15,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 219,
+            "neverRank1": true,
+            "seed": 22387631
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0834,
+            "revGrowth1980": 0.7450826816912796,
+            "ebitda1980": -2194,
+            "cashEnd1980": 169715,
+            "cashGrowth1980": -119613,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5676,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.079,
+            "playerCluster2000": 0.079,
+            "marketTop32000": 0.5676,
+            "cashEnd2000": 169715,
+            "ebitda2000": -2194,
+            "rev2000": 235920,
+            "acquisitionsTotal": 0,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 1,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22397604
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0876,
+            "revGrowth1980": 0.7287657805027284,
+            "ebitda1980": -10473,
+            "cashEnd1980": -7443,
+            "cashGrowth1980": -292456,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5674,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.334,
+            "cashEnd2000": 1394184,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 13,
+              "poachAttempts": 1,
+              "counterPromo": 19
+            },
+            "periodsLogged": 181,
+            "neverRank1": true,
+            "seed": 22407577
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0845,
+            "revGrowth1980": 0.7107934869783086,
+            "ebitda1980": 171,
+            "cashEnd1980": 213150,
+            "cashGrowth1980": -80669,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5589000000000001,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0788,
+            "playerCluster2000": 0.0788,
+            "marketTop32000": 0.5589000000000001,
+            "cashEnd2000": 213150,
+            "ebitda2000": 171,
+            "rev2000": 228658,
+            "acquisitionsTotal": 0,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 12,
+              "poachAttempts": 0,
+              "counterPromo": 51
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22417550
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0835,
+            "revGrowth1980": 0.7448977523763199,
+            "ebitda1980": -6939,
+            "cashEnd1980": 479422,
+            "cashGrowth1980": 202152,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5599000000000001,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0775,
+            "playerCluster2000": 0.0775,
+            "marketTop32000": 0.5599000000000001,
+            "cashEnd2000": 479422,
+            "ebitda2000": -6939,
+            "rev2000": 220524,
+            "acquisitionsTotal": 0,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 6,
+              "poachAttempts": 0,
+              "counterPromo": 96
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22427523
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 67,
+              "detail": [
+                {
+                  "id": "rll77777",
+                  "call": "WSFM",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0838,
+            "revGrowth1980": 1.001527249079545,
+            "ebitda1980": 13620,
+            "cashEnd1980": 775018,
+            "cashGrowth1980": 481062,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5854999999999999,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0814,
+            "playerCluster2000": 0.0814,
+            "marketTop32000": 0.5854999999999999,
+            "cashEnd2000": 775018,
+            "ebitda2000": 13620,
+            "rev2000": 304934,
+            "acquisitionsTotal": 6,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 1,
+              "poachAttempts": 1,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22437496
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0874,
+            "revGrowth1980": 0.7350957799357198,
+            "ebitda1980": 3283,
+            "cashEnd1980": 735664,
+            "cashGrowth1980": 445141,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.567,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0795,
+            "playerCluster2000": 0.0795,
+            "marketTop32000": 0.567,
+            "cashEnd2000": 735664,
+            "ebitda2000": 3283,
+            "rev2000": 235349,
+            "acquisitionsTotal": 0,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 6,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22447469
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 77,
+              "detail": [
+                {
+                  "id": "2qvlllll",
+                  "call": "WFHM",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0892,
+            "revGrowth1980": 1.150492803480006,
+            "ebitda1980": -42155,
+            "cashEnd1980": 2257,
+            "cashGrowth1980": -290503,
+            "viableCompetitors1980": 6,
+            "marketTop31980": 0.587,
+            "playerStations2000": 2,
+            "playerTopShare2000": 0.0824,
+            "playerCluster2000": 0.1384,
+            "marketTop32000": 0.587,
+            "cashEnd2000": 2257,
+            "ebitda2000": -42155,
+            "rev2000": 369215,
+            "acquisitionsTotal": 5,
+            "nTop102000": 2,
+            "aiChurn": {
+              "rivalReformats": 8,
+              "poachAttempts": 0,
+              "counterPromo": 101
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22457442
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0843,
+            "revGrowth1980": 0.7752602291325695,
+            "ebitda1980": -7461,
+            "cashEnd1980": -4599,
+            "cashGrowth1980": -286404,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5693,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2932,
+            "cashEnd2000": 1400448,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 25,
+              "poachAttempts": 1,
+              "counterPromo": 66
+            },
+            "periodsLogged": 304,
+            "neverRank1": true,
+            "seed": 22467415
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 90,
+              "detail": [
+                {
+                  "id": "22bsssss",
+                  "call": "WNRL",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0856,
+            "revGrowth1980": 1.5143476144873385,
+            "ebitda1980": 18606,
+            "cashEnd1980": 4562266,
+            "cashGrowth1980": 4257177,
+            "viableCompetitors1980": 6,
+            "marketTop31980": 0.5739,
+            "playerStations2000": 2,
+            "playerTopShare2000": 0.0811,
+            "playerCluster2000": 0.159,
+            "marketTop32000": 0.5739,
+            "cashEnd2000": 4562266,
+            "ebitda2000": 18606,
+            "rev2000": 482297,
+            "acquisitionsTotal": 1,
+            "nTop102000": 2,
+            "aiChurn": {
+              "rivalReformats": 3,
+              "poachAttempts": 1,
+              "counterPromo": 63
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22477388
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 43,
+              "detail": [
+                {
+                  "id": "16zeeeee",
+                  "call": "WVXH",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0878,
+            "revGrowth1980": 0.9017611603219011,
+            "ebitda1980": 15685,
+            "cashEnd1980": 418712,
+            "cashGrowth1980": 119248,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.59,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0816,
+            "playerCluster2000": 0.0816,
+            "marketTop32000": 0.59,
+            "cashEnd2000": 418712,
+            "ebitda2000": 15685,
+            "rev2000": 302659,
+            "acquisitionsTotal": 9,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 1,
+              "poachAttempts": 1,
+              "counterPromo": 81
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22487361
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0842,
+            "revGrowth1980": 0.7463974792099792,
+            "ebitda1980": 1986,
+            "cashEnd1980": 204834,
+            "cashGrowth1980": -76665,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5656,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0793,
+            "playerCluster2000": 0.0793,
+            "marketTop32000": 0.5656,
+            "cashEnd2000": 204834,
+            "ebitda2000": 1986,
+            "rev2000": 229771,
+            "acquisitionsTotal": 0,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 17,
+              "poachAttempts": 1,
+              "counterPromo": 86
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22497334
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0859,
+            "revGrowth1980": 0.7333469580254677,
+            "ebitda1980": 1831,
+            "cashEnd1980": 671293,
+            "cashGrowth1980": 381234,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5728,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0791,
+            "playerCluster2000": 0.0791,
+            "marketTop32000": 0.5728,
+            "cashEnd2000": 671293,
+            "ebitda2000": 1831,
+            "rev2000": 233241,
+            "acquisitionsTotal": 0,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 1,
+              "poachAttempts": 1,
+              "counterPromo": 34
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22507307
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 89,
+              "detail": [
+                {
+                  "id": "p9beeeee",
+                  "call": "WIQA",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0842,
+            "revGrowth1980": 1.579998147595476,
+            "ebitda1980": 1731,
+            "cashEnd1980": 2155781,
+            "cashGrowth1980": 1883075,
+            "viableCompetitors1980": 6,
+            "marketTop31980": 0.5711,
+            "playerStations2000": 2,
+            "playerTopShare2000": 0.0806,
+            "playerCluster2000": 0.1595,
+            "marketTop32000": 0.5711,
+            "cashEnd2000": 2155781,
+            "ebitda2000": 1731,
+            "rev2000": 460590,
+            "acquisitionsTotal": 1,
+            "nTop102000": 2,
+            "aiChurn": {
+              "rivalReformats": 9,
+              "poachAttempts": 1,
+              "counterPromo": 132
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22517280
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 49,
+              "detail": [
+                {
+                  "id": "yix77777",
+                  "call": "WVUG",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0868,
+            "revGrowth1980": 0.9710316803934848,
+            "ebitda1980": 23531,
+            "cashEnd1980": 371731,
+            "cashGrowth1980": 67632,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5960000000000001,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0838,
+            "playerCluster2000": 0.0838,
+            "marketTop32000": 0.5960000000000001,
+            "cashEnd2000": 371731,
+            "ebitda2000": 23531,
+            "rev2000": 311137,
+            "acquisitionsTotal": 13,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 3,
+              "poachAttempts": 0,
+              "counterPromo": 60
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22527253
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.083,
+            "revGrowth1980": 0.7641560731395771,
+            "ebitda1980": 2708,
+            "cashEnd1980": 561147,
+            "cashGrowth1980": 275943,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5696,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0792,
+            "playerCluster2000": 0.0792,
+            "marketTop32000": 0.5696,
+            "cashEnd2000": 561147,
+            "ebitda2000": 2708,
+            "rev2000": 237502,
+            "acquisitionsTotal": 0,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 1,
+              "poachAttempts": 0,
+              "counterPromo": 102
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22537226
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.083,
+            "revGrowth1980": 0.7244889704335783,
+            "ebitda1980": -6087,
+            "cashEnd1980": -3655,
+            "cashGrowth1980": -300675,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5685,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3119,
+            "cashEnd2000": 1318698,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 26,
+              "poachAttempts": 0,
+              "counterPromo": 6
+            },
+            "periodsLogged": 162,
+            "neverRank1": true,
+            "seed": 22547199
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0834,
+            "revGrowth1980": 0.6980868044855064,
+            "ebitda1980": -3084,
+            "cashEnd1980": -996,
+            "cashGrowth1980": -290288,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.5594,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.32930000000000004,
+            "cashEnd2000": 1323939,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 15,
+              "poachAttempts": 0,
+              "counterPromo": 69
+            },
+            "periodsLogged": 225,
+            "neverRank1": true,
+            "seed": 22557172
+          }
+        ],
+        "aggregate": {
+          "n": 18,
+          "bankruptRate": 0,
+          "timeToRank1": null,
+          "neverRank1Rate": 1,
+          "peakShare1980": null,
+          "revGrowth1980": null,
+          "ebitda1980": null,
+          "cashEnd1980": null,
+          "cashGrowth1980": null,
+          "viableCompetitors1980": null,
+          "marketTop31980": null,
+          "playerStations2000": null,
+          "playerTopShare2000": null,
+          "playerCluster2000": null,
+          "marketTop32000": null,
+          "cashEnd2000": null,
+          "ebitda2000": null,
+          "rev2000": null,
+          "acquisitionsTotal": null,
+          "rivalReformats": 7,
+          "poachAttempts": 0,
+          "zombieEnd": null,
+          "removedEnd": null,
+          "commercialActive2000": null,
+          "acqPool2000": null,
+          "difficulty": 7.3
+        }
+      }
+    },
+    "16": {
+      "seattle": {
+        "runs": [
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 66,
+              "detail": [
+                {
+                  "id": "7xl77777",
+                  "call": "KOAJ",
+                  "format": "SOUL_RNB",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0649,
+            "revGrowth1980": 1.4541285238502557,
+            "ebitda1980": 3988,
+            "cashEnd1980": -25605,
+            "cashGrowth1980": -330611,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.4701,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3408,
+            "cashEnd2000": 2058617,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 3,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 55,
+              "poachAttempts": 0,
+              "counterPromo": 2
+            },
+            "periodsLogged": 167,
+            "neverRank1": true,
+            "seed": 24039044
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0588,
+            "revGrowth1980": 0.9640033825872262,
+            "ebitda1980": -14682,
+            "cashEnd1980": -6046,
+            "cashGrowth1980": -356605,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4697,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3065,
+            "cashEnd2000": 1493378,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 34,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 84,
+            "neverRank1": true,
+            "seed": 24049017
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 59,
+              "detail": [
+                {
+                  "id": "a4ylllll",
+                  "call": "KIJI",
+                  "format": "ALBUM_ROCK",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0636,
+            "revGrowth1980": 1.1671780252699733,
+            "ebitda1980": -22020,
+            "cashEnd1980": -17918,
+            "cashGrowth1980": -333762,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.48100000000000004,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3286,
+            "cashEnd2000": 1419732,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 3,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 39,
+              "poachAttempts": 1,
+              "counterPromo": 0
+            },
+            "periodsLogged": 187,
+            "neverRank1": true,
+            "seed": 24058990
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0565,
+            "revGrowth1980": 1.056884158724541,
+            "ebitda1980": -11290,
+            "cashEnd1980": -8866,
+            "cashGrowth1980": -345761,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.454,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3347,
+            "cashEnd2000": 1484377,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 21,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 87,
+            "neverRank1": true,
+            "seed": 24068963
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 28,
+              "detail": [
+                {
+                  "id": "2ov77777",
+                  "call": "KXNQ",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.067,
+            "revGrowth1980": 1.039951214935735,
+            "ebitda1980": -16533,
+            "cashEnd1980": -6165,
+            "cashGrowth1980": -346898,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.46810000000000007,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3492,
+            "cashEnd2000": 1634183,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 14,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 71,
+              "poachAttempts": 0,
+              "counterPromo": 26
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24078936
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 125,
+              "detail": [
+                {
+                  "id": "bujzzzzz",
+                  "call": "KQUA",
+                  "format": "SOUL_RNB",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0644,
+            "revGrowth1980": 1.5063252532753408,
+            "ebitda1980": 14522,
+            "cashEnd1980": 439954,
+            "cashGrowth1980": 110749,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.474,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0616,
+            "playerCluster2000": 0.0616,
+            "marketTop32000": 0.474,
+            "cashEnd2000": 439954,
+            "ebitda2000": 14522,
+            "rev2000": 340785,
+            "acquisitionsTotal": 7,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 70,
+              "poachAttempts": 0,
+              "counterPromo": 4
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24088909
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 28,
+              "detail": [
+                {
+                  "id": "maysssss",
+                  "call": "KDQB",
+                  "format": "COUNTRY",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0614,
+            "revGrowth1980": 0.9110594858576951,
+            "ebitda1980": -35787,
+            "cashEnd1980": -11207,
+            "cashGrowth1980": -362620,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4683,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3165,
+            "cashEnd2000": 1539844,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 1,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 66,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 157,
+            "neverRank1": true,
+            "seed": 24098882
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0523,
+            "revGrowth1980": 1.000165982353455,
+            "ebitda1980": -28217,
+            "cashEnd1980": -7216,
+            "cashGrowth1980": -316527,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.466,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2826,
+            "cashEnd2000": 1668974,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 22,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 73,
+            "neverRank1": true,
+            "seed": 24108855
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 28,
+              "detail": [
+                {
+                  "id": "g8r00000",
+                  "call": "KMGL",
+                  "format": "SOUL_RNB",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0672,
+            "revGrowth1980": 1.46416533491729,
+            "ebitda1980": 3827,
+            "cashEnd1980": 534026,
+            "cashGrowth1980": 218173,
+            "viableCompetitors1980": 8,
+            "marketTop31980": 0.46950000000000003,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0614,
+            "playerCluster2000": 0.0614,
+            "marketTop32000": 0.46950000000000003,
+            "cashEnd2000": 534026,
+            "ebitda2000": 3827,
+            "rev2000": 310589,
+            "acquisitionsTotal": 5,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 80,
+              "poachAttempts": 0,
+              "counterPromo": 11
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24118828
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 15,
+              "detail": [
+                {
+                  "id": "3x177777",
+                  "call": "KMRO",
+                  "format": "COUNTRY",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0639,
+            "revGrowth1980": 1.3458829902491873,
+            "ebitda1980": 20124,
+            "cashEnd1980": -26896,
+            "cashGrowth1980": -378043,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.474,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.35860000000000003,
+            "cashEnd2000": 2134358,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 8,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 70,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24128801
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.057,
+            "revGrowth1980": 1.2284949704919599,
+            "ebitda1980": -10415,
+            "cashEnd1980": -1735,
+            "cashGrowth1980": -321417,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4567,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2828,
+            "cashEnd2000": 1519437,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 36,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 95,
+            "neverRank1": true,
+            "seed": 24138774
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0533,
+            "revGrowth1980": 0.9340833669190598,
+            "ebitda1980": -28112,
+            "cashEnd1980": -23137,
+            "cashGrowth1980": -338767,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.45819999999999994,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3141,
+            "cashEnd2000": 1421038,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 57,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 101,
+            "neverRank1": true,
+            "seed": 24148747
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0548,
+            "revGrowth1980": 1.145788242686588,
+            "ebitda1980": -12052,
+            "cashEnd1980": -61,
+            "cashGrowth1980": -313415,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4733,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3577,
+            "cashEnd2000": 1420952,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 29,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 77,
+            "neverRank1": true,
+            "seed": 24158720
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0555,
+            "revGrowth1980": 0.980690510959951,
+            "ebitda1980": -12324,
+            "cashEnd1980": -899,
+            "cashGrowth1980": -336397,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.459,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.31479999999999997,
+            "cashEnd2000": 1538195,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 58,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 107,
+            "neverRank1": true,
+            "seed": 24168693
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0525,
+            "revGrowth1980": 0.791186544367124,
+            "ebitda1980": -35812,
+            "cashEnd1980": -16613,
+            "cashGrowth1980": -345463,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4718,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.29159999999999997,
+            "cashEnd2000": 1124228,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 31,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 78,
+            "neverRank1": true,
+            "seed": 24178666
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 32,
+              "detail": [
+                {
+                  "id": "rtasssss",
+                  "call": "KMQH",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0665,
+            "revGrowth1980": 0.9305843414826639,
+            "ebitda1980": -49443,
+            "cashEnd1980": -38148,
+            "cashGrowth1980": -382391,
+            "viableCompetitors1980": 8,
+            "marketTop31980": 0.4596,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3099,
+            "cashEnd2000": 1301057,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 10,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 77,
+              "poachAttempts": 0,
+              "counterPromo": 8
+            },
+            "periodsLogged": 327,
+            "neverRank1": true,
+            "seed": 24188639
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0589,
+            "revGrowth1980": 1.0173867249063866,
+            "ebitda1980": -5982,
+            "cashEnd1980": -3018,
+            "cashGrowth1980": -334814,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4519000000000001,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.312,
+            "cashEnd2000": 1539283,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 63,
+              "poachAttempts": 1,
+              "counterPromo": 0
+            },
+            "periodsLogged": 138,
+            "neverRank1": true,
+            "seed": 24198612
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 68,
+              "detail": [
+                {
+                  "id": "obl77777",
+                  "call": "KFMF",
+                  "format": "ALL_NEWS",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0612,
+            "revGrowth1980": 1.3555815786309982,
+            "ebitda1980": 8486,
+            "cashEnd1980": 447357,
+            "cashGrowth1980": 118653,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4587,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0585,
+            "playerCluster2000": 0.0585,
+            "marketTop32000": 0.4587,
+            "cashEnd2000": 447357,
+            "ebitda2000": 8486,
+            "rev2000": 304446,
+            "acquisitionsTotal": 2,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 66,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24208585
+          }
+        ],
+        "aggregate": {
+          "n": 18,
+          "bankruptRate": 0,
+          "timeToRank1": null,
+          "neverRank1Rate": 1,
+          "peakShare1980": null,
+          "revGrowth1980": null,
+          "ebitda1980": null,
+          "cashEnd1980": null,
+          "cashGrowth1980": null,
+          "viableCompetitors1980": null,
+          "marketTop31980": null,
+          "playerStations2000": null,
+          "playerTopShare2000": null,
+          "playerCluster2000": null,
+          "marketTop32000": null,
+          "cashEnd2000": null,
+          "ebitda2000": null,
+          "rev2000": null,
+          "acquisitionsTotal": null,
+          "rivalReformats": 57.5,
+          "poachAttempts": 0,
+          "zombieEnd": null,
+          "removedEnd": null,
+          "commercialActive2000": null,
+          "acqPool2000": null,
+          "difficulty": 7.3
+        }
+      },
+      "sanfrancisco": {
+        "runs": [
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 20,
+              "detail": [
+                {
+                  "id": "kpglllll",
+                  "call": "KDGP",
+                  "format": "SOUL_RNB",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0667,
+            "revGrowth1980": 1.2320444727125546,
+            "ebitda1980": 417,
+            "cashEnd1980": 61835,
+            "cashGrowth1980": -245470,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.46019999999999994,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0603,
+            "playerCluster2000": 0.0603,
+            "marketTop32000": 0.46019999999999994,
+            "cashEnd2000": 61835,
+            "ebitda2000": 417,
+            "rev2000": 298310,
+            "acquisitionsTotal": 20,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 67,
+              "poachAttempts": 0,
+              "counterPromo": 40
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23729916
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 13,
+              "detail": [
+                {
+                  "id": "9sxlllll",
+                  "call": "KODD",
+                  "format": "SOUL_RNB",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0685,
+            "revGrowth1980": 1.4146598641920733,
+            "ebitda1980": 46253,
+            "cashEnd1980": 162122,
+            "cashGrowth1980": -164018,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4907,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0651,
+            "playerCluster2000": 0.0651,
+            "marketTop32000": 0.4907,
+            "cashEnd2000": 162122,
+            "ebitda2000": 46253,
+            "rev2000": 390415,
+            "acquisitionsTotal": 22,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 55,
+              "poachAttempts": 1,
+              "counterPromo": 162
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23739889
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0544,
+            "revGrowth1980": 0.8657473543045392,
+            "ebitda1980": -27389,
+            "cashEnd1980": -3385,
+            "cashGrowth1980": -309674,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.46,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2828,
+            "cashEnd2000": 1119194,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 44,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 80,
+            "neverRank1": true,
+            "seed": 23749862
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0557,
+            "revGrowth1980": 0.8266079106951427,
+            "ebitda1980": -25075,
+            "cashEnd1980": -18694,
+            "cashGrowth1980": -333813,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4559,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.26639999999999997,
+            "cashEnd2000": 1391664,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 65,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 132,
+            "neverRank1": true,
+            "seed": 23759835
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 86,
+              "detail": [
+                {
+                  "id": "zrmlllll",
+                  "call": "KXRM",
+                  "format": "ALBUM_ROCK",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.062,
+            "revGrowth1980": 0.9863986739559321,
+            "ebitda1980": -21053,
+            "cashEnd1980": -6809,
+            "cashGrowth1980": -313954,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.44999999999999996,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.29269999999999996,
+            "cashEnd2000": 1337953,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 1,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 62,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 177,
+            "neverRank1": true,
+            "seed": 23769808
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 13,
+              "detail": [
+                {
+                  "id": "2eq77777",
+                  "call": "KOZR",
+                  "format": "ALBUM_ROCK",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0663,
+            "revGrowth1980": 1.0664858870839256,
+            "ebitda1980": 5537,
+            "cashEnd1980": -10657,
+            "cashGrowth1980": -354280,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4729,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3129,
+            "cashEnd2000": 2011917,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 4,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 73,
+              "poachAttempts": 1,
+              "counterPromo": 16
+            },
+            "periodsLogged": 195,
+            "neverRank1": true,
+            "seed": 23779781
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 26,
+              "detail": [
+                {
+                  "id": "fyvsssss",
+                  "call": "KUWH",
+                  "format": "COUNTRY",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0646,
+            "revGrowth1980": 1.0981119338073333,
+            "ebitda1980": -19314,
+            "cashEnd1980": -15742,
+            "cashGrowth1980": -318406,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4639,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2954,
+            "cashEnd2000": 1357568,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 4,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 53,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 157,
+            "neverRank1": true,
+            "seed": 23789754
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0592,
+            "revGrowth1980": 0.887822428789192,
+            "ebitda1980": -17084,
+            "cashEnd1980": -8417,
+            "cashGrowth1980": -329802,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4459,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.29259999999999997,
+            "cashEnd2000": 1407939,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 32,
+              "poachAttempts": 1,
+              "counterPromo": 0
+            },
+            "periodsLogged": 109,
+            "neverRank1": true,
+            "seed": 23799727
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0525,
+            "revGrowth1980": 0.6964325382972839,
+            "ebitda1980": -59203,
+            "cashEnd1980": -18301,
+            "cashGrowth1980": -315368,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4576,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.29410000000000003,
+            "cashEnd2000": 946463,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 68,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 109,
+            "neverRank1": true,
+            "seed": 23809700
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0566,
+            "revGrowth1980": 0.7575073463556894,
+            "ebitda1980": -24501,
+            "cashEnd1980": -19366,
+            "cashGrowth1980": -345420,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4477,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2856,
+            "cashEnd2000": 1208062,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 56,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 92,
+            "neverRank1": true,
+            "seed": 23819673
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 19,
+              "detail": [
+                {
+                  "id": "xh077777",
+                  "call": "KTYN",
+                  "format": "COUNTRY",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0679,
+            "revGrowth1980": 1.5691314377214607,
+            "ebitda1980": 46307,
+            "cashEnd1980": 252544,
+            "cashGrowth1980": -80020,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4755,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0679,
+            "playerCluster2000": 0.0679,
+            "marketTop32000": 0.4755,
+            "cashEnd2000": 252544,
+            "ebitda2000": 46307,
+            "rev2000": 395895,
+            "acquisitionsTotal": 16,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 74,
+              "poachAttempts": 0,
+              "counterPromo": 71
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23829646
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 13,
+              "detail": [
+                {
+                  "id": "3n9lllll",
+                  "call": "KNDF",
+                  "format": "SOUL_RNB",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0727,
+            "revGrowth1980": 1.1658797921902968,
+            "ebitda1980": 31438,
+            "cashEnd1980": 331277,
+            "cashGrowth1980": -23747,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4904,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0665,
+            "playerCluster2000": 0.0665,
+            "marketTop32000": 0.4904,
+            "cashEnd2000": 331277,
+            "ebitda2000": 31438,
+            "rev2000": 373872,
+            "acquisitionsTotal": 27,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 81,
+              "poachAttempts": 0,
+              "counterPromo": 89
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23839619
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 15,
+              "detail": [
+                {
+                  "id": "c2a",
+                  "call": "KTRJ",
+                  "format": "ALBUM_ROCK",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0711,
+            "revGrowth1980": 1.5737607156168467,
+            "ebitda1980": 45427,
+            "cashEnd1980": 254184,
+            "cashGrowth1980": -71203,
+            "viableCompetitors1980": 8,
+            "marketTop31980": 0.4976,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0695,
+            "playerCluster2000": 0.0695,
+            "marketTop32000": 0.4976,
+            "cashEnd2000": 254184,
+            "ebitda2000": 45427,
+            "rev2000": 401128,
+            "acquisitionsTotal": 26,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 61,
+              "poachAttempts": 0,
+              "counterPromo": 142
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23849592
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0588,
+            "revGrowth1980": 0.7671552430785008,
+            "ebitda1980": -32463,
+            "cashEnd1980": -30218,
+            "cashGrowth1980": -353775,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4438,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.29150000000000004,
+            "cashEnd2000": 1208220,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 36,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 74,
+            "neverRank1": true,
+            "seed": 23859565
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 33,
+              "detail": [
+                {
+                  "id": "4l0eeeee",
+                  "call": "KTIR",
+                  "format": "ADULT_CONTEMP",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0665,
+            "revGrowth1980": 1.2768932140702463,
+            "ebitda1980": 12623,
+            "cashEnd1980": 560792,
+            "cashGrowth1980": 236507,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4772,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0635,
+            "playerCluster2000": 0.0635,
+            "marketTop32000": 0.4772,
+            "cashEnd2000": 560792,
+            "ebitda2000": 12623,
+            "rev2000": 340753,
+            "acquisitionsTotal": 9,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 55,
+              "poachAttempts": 0,
+              "counterPromo": 67
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23869538
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0519,
+            "revGrowth1980": 1.0560541250803768,
+            "ebitda1980": -14540,
+            "cashEnd1980": -12785,
+            "cashGrowth1980": -320364,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4577,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2768,
+            "cashEnd2000": 1521619,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 68,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 130,
+            "neverRank1": true,
+            "seed": 23879511
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 26,
+              "detail": [
+                {
+                  "id": "penlllll",
+                  "call": "KOGV",
+                  "format": "BEAUTIFUL_MUSIC",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0679,
+            "revGrowth1980": 1.546563729035516,
+            "ebitda1980": 26500,
+            "cashEnd1980": 467416,
+            "cashGrowth1980": 164386,
+            "viableCompetitors1980": 8,
+            "marketTop31980": 0.4894,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0645,
+            "playerCluster2000": 0.0645,
+            "marketTop32000": 0.4894,
+            "cashEnd2000": 467416,
+            "ebitda2000": 26500,
+            "rev2000": 361384,
+            "acquisitionsTotal": 14,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 66,
+              "poachAttempts": 0,
+              "counterPromo": 2
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23889484
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 36,
+              "detail": [
+                {
+                  "id": "xw6lllll",
+                  "call": "KMUM",
+                  "format": "BEAUTIFUL_MUSIC",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0668,
+            "revGrowth1980": 1.4498955107891653,
+            "ebitda1980": 23722,
+            "cashEnd1980": 438328,
+            "cashGrowth1980": 126720,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4691,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0639,
+            "playerCluster2000": 0.0639,
+            "marketTop32000": 0.4691,
+            "cashEnd2000": 438328,
+            "ebitda2000": 23722,
+            "rev2000": 360083,
+            "acquisitionsTotal": 13,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 74,
+              "poachAttempts": 0,
+              "counterPromo": 30
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23899457
+          }
+        ],
+        "aggregate": {
+          "n": 18,
+          "bankruptRate": 0,
+          "timeToRank1": null,
+          "neverRank1Rate": 1,
+          "peakShare1980": null,
+          "revGrowth1980": null,
+          "ebitda1980": null,
+          "cashEnd1980": null,
+          "cashGrowth1980": null,
+          "viableCompetitors1980": null,
+          "marketTop31980": null,
+          "playerStations2000": null,
+          "playerTopShare2000": null,
+          "playerCluster2000": null,
+          "marketTop32000": null,
+          "cashEnd2000": null,
+          "ebitda2000": null,
+          "rev2000": null,
+          "acquisitionsTotal": null,
+          "rivalReformats": 63.5,
+          "poachAttempts": 0,
+          "zombieEnd": null,
+          "removedEnd": null,
+          "commercialActive2000": null,
+          "acqPool2000": null,
+          "difficulty": 7.3
+        }
+      },
+      "atlanta": {
+        "runs": [
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 139,
+              "detail": [
+                {
+                  "id": "e8klllll",
+                  "call": "WBQD",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0605,
+            "revGrowth1980": 1.298057966842115,
+            "ebitda1980": -1329,
+            "cashEnd1980": 46286,
+            "cashGrowth1980": -165822,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4620000000000001,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0589,
+            "playerCluster2000": 0.0589,
+            "marketTop32000": 0.4620000000000001,
+            "cashEnd2000": 46286,
+            "ebitda2000": -1329,
+            "rev2000": 207405,
+            "acquisitionsTotal": 2,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 47,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22393631
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0512,
+            "revGrowth1980": 0.8659681441786939,
+            "ebitda1980": -27686,
+            "cashEnd1980": -13891,
+            "cashGrowth1980": -226438,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.46920000000000006,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.24370000000000003,
+            "cashEnd2000": 891621,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 43,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 96,
+            "neverRank1": true,
+            "seed": 22403604
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 27,
+              "detail": [
+                {
+                  "id": "m1ieeeee",
+                  "call": "WRLB",
+                  "format": "ALBUM_ROCK",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0649,
+            "revGrowth1980": 1.4209073761540751,
+            "ebitda1980": 26231,
+            "cashEnd1980": 54559,
+            "cashGrowth1980": -186439,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.47119999999999995,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0626,
+            "playerCluster2000": 0.0626,
+            "marketTop32000": 0.47119999999999995,
+            "cashEnd2000": 54559,
+            "ebitda2000": 26231,
+            "rev2000": 286256,
+            "acquisitionsTotal": 14,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 60,
+              "poachAttempts": 0,
+              "counterPromo": 5
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22413577
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 22,
+              "detail": [
+                {
+                  "id": "agz77777",
+                  "call": "WCKX",
+                  "format": "NEWS_TALK",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.065,
+            "revGrowth1980": 1.4540688165249336,
+            "ebitda1980": 22492,
+            "cashEnd1980": 253713,
+            "cashGrowth1980": 19659,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4648,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0623,
+            "playerCluster2000": 0.0623,
+            "marketTop32000": 0.4648,
+            "cashEnd2000": 253713,
+            "ebitda2000": 22492,
+            "rev2000": 285377,
+            "acquisitionsTotal": 15,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 72,
+              "poachAttempts": 1,
+              "counterPromo": 6
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22423550
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 64,
+              "detail": [
+                {
+                  "id": "qpgsssss",
+                  "call": "WIFQ",
+                  "format": "SOUL_RNB",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0637,
+            "revGrowth1980": 1.1062024450713859,
+            "ebitda1980": 348,
+            "cashEnd1980": 257130,
+            "cashGrowth1980": 39332,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.45740000000000003,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.058,
+            "playerCluster2000": 0.058,
+            "marketTop32000": 0.45740000000000003,
+            "cashEnd2000": 257130,
+            "ebitda2000": 348,
+            "rev2000": 207028,
+            "acquisitionsTotal": 8,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 62,
+              "poachAttempts": 0,
+              "counterPromo": 3
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22433523
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 76,
+              "detail": [
+                {
+                  "id": "66jsssss",
+                  "call": "WMRJ",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0659,
+            "revGrowth1980": 1.5567527816856375,
+            "ebitda1980": 26372,
+            "cashEnd1980": 443141,
+            "cashGrowth1980": 211354,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.45909999999999995,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0643,
+            "playerCluster2000": 0.0643,
+            "marketTop32000": 0.45909999999999995,
+            "cashEnd2000": 443141,
+            "ebitda2000": 26372,
+            "rev2000": 292134,
+            "acquisitionsTotal": 10,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 81,
+              "poachAttempts": 0,
+              "counterPromo": 9
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22443496
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 24,
+              "detail": [
+                {
+                  "id": "jnj",
+                  "call": "WUPC",
+                  "format": "ALBUM_ROCK",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0664,
+            "revGrowth1980": 1.393352799467102,
+            "ebitda1980": 22804,
+            "cashEnd1980": 397483,
+            "cashGrowth1980": 170222,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.47909999999999997,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0626,
+            "playerCluster2000": 0.0626,
+            "marketTop32000": 0.47909999999999997,
+            "cashEnd2000": 397483,
+            "ebitda2000": 22804,
+            "rev2000": 278201,
+            "acquisitionsTotal": 14,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 74,
+              "poachAttempts": 0,
+              "counterPromo": 51
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22453469
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0529,
+            "revGrowth1980": 0.8184825831080006,
+            "ebitda1980": -28778,
+            "cashEnd1980": -19436,
+            "cashGrowth1980": -237273,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.45890000000000003,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2835,
+            "cashEnd2000": 905944,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 43,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 89,
+            "neverRank1": true,
+            "seed": 22463442
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 41,
+              "detail": [
+                {
+                  "id": "m9rsssss",
+                  "call": "WHHW",
+                  "format": "BEAUTIFUL_MUSIC",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0652,
+            "revGrowth1980": 1.6007352512108304,
+            "ebitda1980": 14835,
+            "cashEnd1980": 312123,
+            "cashGrowth1980": 90543,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.47130000000000005,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0623,
+            "playerCluster2000": 0.0623,
+            "marketTop32000": 0.47130000000000005,
+            "cashEnd2000": 312123,
+            "ebitda2000": 14835,
+            "rev2000": 274318,
+            "acquisitionsTotal": 9,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 63,
+              "poachAttempts": 0,
+              "counterPromo": 10
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22473415
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 181,
+              "detail": [
+                {
+                  "id": "x7tlllll",
+                  "call": "WRYI",
+                  "format": "SOUL_RNB",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0608,
+            "revGrowth1980": 1.3530897705671272,
+            "ebitda1980": 21726,
+            "cashEnd1980": 539944,
+            "cashGrowth1980": 302361,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4605,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0607,
+            "playerCluster2000": 0.0607,
+            "marketTop32000": 0.4605,
+            "cashEnd2000": 539944,
+            "ebitda2000": 21726,
+            "rev2000": 266215,
+            "acquisitionsTotal": 1,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 68,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22483388
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0536,
+            "revGrowth1980": 0.9056698344954219,
+            "ebitda1980": -13601,
+            "cashEnd1980": -10488,
+            "cashGrowth1980": -238287,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.46040000000000003,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.305,
+            "cashEnd2000": 1105308,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 33,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 84,
+            "neverRank1": true,
+            "seed": 22493361
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 160,
+              "detail": [
+                {
+                  "id": "546eeeee",
+                  "call": "WYQW",
+                  "format": "COUNTRY",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0605,
+            "revGrowth1980": 1.0049449549882303,
+            "ebitda1980": -13864,
+            "cashEnd1980": -2992,
+            "cashGrowth1980": -215585,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.45420000000000005,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.31,
+            "cashEnd2000": 1067432,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 3,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 37,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22503334
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 31,
+              "detail": [
+                {
+                  "id": "c9w77777",
+                  "call": "WWMJ",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0649,
+            "revGrowth1980": 1.5867738192931322,
+            "ebitda1980": 16298,
+            "cashEnd1980": 51811,
+            "cashGrowth1980": -172172,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.47129999999999994,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0619,
+            "playerCluster2000": 0.0619,
+            "marketTop32000": 0.47129999999999994,
+            "cashEnd2000": 51811,
+            "ebitda2000": 16298,
+            "rev2000": 280375,
+            "acquisitionsTotal": 13,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 70,
+              "poachAttempts": 0,
+              "counterPromo": 8
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22513307
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 45,
+              "detail": [
+                {
+                  "id": "9zklllll",
+                  "call": "WSDL",
+                  "format": "SOUL_RNB",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0661,
+            "revGrowth1980": 1.6153219986721705,
+            "ebitda1980": 17742,
+            "cashEnd1980": 146687,
+            "cashGrowth1980": -61564,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4635,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0638,
+            "playerCluster2000": 0.0638,
+            "marketTop32000": 0.4635,
+            "cashEnd2000": 146687,
+            "ebitda2000": 17742,
+            "rev2000": 279798,
+            "acquisitionsTotal": 12,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 58,
+              "poachAttempts": 0,
+              "counterPromo": 27
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22523280
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 247,
+              "detail": [
+                {
+                  "id": "8t4lllll",
+                  "call": "WPRH",
+                  "format": "SOUL_RNB",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0603,
+            "revGrowth1980": 1.1936889257957555,
+            "ebitda1980": -6325,
+            "cashEnd1980": -4451,
+            "cashGrowth1980": -223503,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4588,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.291,
+            "cashEnd2000": 1221842,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 1,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 71,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22533253
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 119,
+              "detail": [
+                {
+                  "id": "dcaeeeee",
+                  "call": "WZFC",
+                  "format": "BEAUTIFUL_MUSIC",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0635,
+            "revGrowth1980": 1.5491679273827534,
+            "ebitda1980": 22489,
+            "cashEnd1980": 393717,
+            "cashGrowth1980": 170749,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.46620000000000006,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0603,
+            "playerCluster2000": 0.0603,
+            "marketTop32000": 0.46620000000000006,
+            "cashEnd2000": 393717,
+            "ebitda2000": 22489,
+            "rev2000": 267264,
+            "acquisitionsTotal": 10,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 57,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22543226
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0501,
+            "revGrowth1980": 0.9317490483110832,
+            "ebitda1980": -30481,
+            "cashEnd1980": -4295,
+            "cashGrowth1980": -222512,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.47340000000000004,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2791,
+            "cashEnd2000": 935247,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 20,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 69,
+            "neverRank1": true,
+            "seed": 22553199
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.054,
+            "revGrowth1980": 0.9291767079819963,
+            "ebitda1980": -14863,
+            "cashEnd1980": -4409,
+            "cashGrowth1980": -228070,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4683,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.28140000000000004,
+            "cashEnd2000": 1044358,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 35,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 80,
+            "neverRank1": true,
+            "seed": 22563172
+          }
+        ],
+        "aggregate": {
+          "n": 18,
+          "bankruptRate": 0,
+          "timeToRank1": null,
+          "neverRank1Rate": 1,
+          "peakShare1980": null,
+          "revGrowth1980": null,
+          "ebitda1980": null,
+          "cashEnd1980": null,
+          "cashGrowth1980": null,
+          "viableCompetitors1980": null,
+          "marketTop31980": null,
+          "playerStations2000": null,
+          "playerTopShare2000": null,
+          "playerCluster2000": null,
+          "marketTop32000": null,
+          "cashEnd2000": null,
+          "ebitda2000": null,
+          "rev2000": null,
+          "acquisitionsTotal": null,
+          "rivalReformats": 59,
+          "poachAttempts": 0,
+          "zombieEnd": null,
+          "removedEnd": null,
+          "commercialActive2000": null,
+          "acqPool2000": null,
+          "difficulty": 7.3
+        }
+      }
+    },
+    "18": {
+      "seattle": {
+        "runs": [
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 52,
+              "detail": [
+                {
+                  "id": "nrusssss",
+                  "call": "KQFP",
+                  "format": "BROKERED_PROGRAMMING",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0606,
+            "revGrowth1980": 1.0844697045769485,
+            "ebitda1980": -31745,
+            "cashEnd1980": -38330,
+            "cashGrowth1980": -368209,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.44170000000000004,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3049,
+            "cashEnd2000": 1522299,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 1,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 107,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 202,
+            "neverRank1": true,
+            "seed": 24041044
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 32,
+              "detail": [
+                {
+                  "id": "9hweeeee",
+                  "call": "KQUQ",
+                  "format": "TOP40",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0661,
+            "revGrowth1980": 1.053681995304498,
+            "ebitda1980": -13732,
+            "cashEnd1980": -12425,
+            "cashGrowth1980": -340052,
+            "viableCompetitors1980": 8,
+            "marketTop31980": 0.49129999999999996,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3653,
+            "cashEnd2000": 1510997,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 17,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 108,
+              "poachAttempts": 0,
+              "counterPromo": 38
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24051017
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 31,
+              "detail": [
+                {
+                  "id": "p9g77777",
+                  "call": "KSLU",
+                  "format": "ALBUM_ROCK",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0634,
+            "revGrowth1980": 1.1270525202434414,
+            "ebitda1980": -34701,
+            "cashEnd1980": -52268,
+            "cashGrowth1980": -369519,
+            "viableCompetitors1980": 8,
+            "marketTop31980": 0.4588,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.31020000000000003,
+            "cashEnd2000": 1430210,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 12,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 114,
+              "poachAttempts": 0,
+              "counterPromo": 9
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24060990
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 101,
+              "detail": [
+                {
+                  "id": "r5qlllll",
+                  "call": "KSTQ",
+                  "format": "BEAUTIFUL_MUSIC",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0604,
+            "revGrowth1980": 1.097143788422034,
+            "ebitda1980": -15264,
+            "cashEnd1980": -23472,
+            "cashGrowth1980": -380055,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.4496,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.34550000000000003,
+            "cashEnd2000": 1680795,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 1,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 60,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 166,
+            "neverRank1": true,
+            "seed": 24070963
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 77,
+              "detail": [
+                {
+                  "id": "u4m",
+                  "call": "KOXW",
+                  "format": "NEWS_TALK",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0572,
+            "revGrowth1980": 1.2293088396227576,
+            "ebitda1980": 3361,
+            "cashEnd1980": -37974,
+            "cashGrowth1980": -369703,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.44470000000000004,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.31300000000000006,
+            "cashEnd2000": 1753414,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 1,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 63,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 147,
+            "neverRank1": true,
+            "seed": 24080936
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 76,
+              "detail": [
+                {
+                  "id": "8tb77777",
+                  "call": "KRMN",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0593,
+            "revGrowth1980": 1.1456326659128966,
+            "ebitda1980": 14048,
+            "cashEnd1980": 160531,
+            "cashGrowth1980": -188685,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4479,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0557,
+            "playerCluster2000": 0.0557,
+            "marketTop32000": 0.4479,
+            "cashEnd2000": 160531,
+            "ebitda2000": 14048,
+            "rev2000": 320186,
+            "acquisitionsTotal": 4,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 93,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24090909
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 21,
+              "detail": [
+                {
+                  "id": "8fzeeeee",
+                  "call": "KNCX",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0639,
+            "revGrowth1980": 0.993181701938474,
+            "ebitda1980": -21607,
+            "cashEnd1980": -1432,
+            "cashGrowth1980": -334463,
+            "viableCompetitors1980": 8,
+            "marketTop31980": 0.44510000000000005,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.4525,
+            "cashEnd2000": 1453040,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 16,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 101,
+              "poachAttempts": 0,
+              "counterPromo": 7
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24100882
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 78,
+              "detail": [
+                {
+                  "id": "xpglllll",
+                  "call": "KYWL",
+                  "format": "BEAUTIFUL_MUSIC",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.061,
+            "revGrowth1980": 1.1900695315867162,
+            "ebitda1980": 4232,
+            "cashEnd1980": 356370,
+            "cashGrowth1980": 21343,
+            "viableCompetitors1980": 8,
+            "marketTop31980": 0.46809999999999996,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0581,
+            "playerCluster2000": 0.0581,
+            "marketTop32000": 0.46809999999999996,
+            "cashEnd2000": 356370,
+            "ebitda2000": 4232,
+            "rev2000": 312016,
+            "acquisitionsTotal": 6,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 103,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24110855
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0537,
+            "revGrowth1980": 1.0307634042519618,
+            "ebitda1980": -3580,
+            "cashEnd1980": -567,
+            "cashGrowth1980": -333601,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4651,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.31470000000000004,
+            "cashEnd2000": 1574572,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 45,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 75,
+            "neverRank1": true,
+            "seed": 24120828
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 74,
+              "detail": [
+                {
+                  "id": "1d9lllll",
+                  "call": "KVGY",
+                  "format": "BEAUTIFUL_MUSIC",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0579,
+            "revGrowth1980": 0.9868766715725839,
+            "ebitda1980": -21125,
+            "cashEnd1980": -9132,
+            "cashGrowth1980": -337930,
+            "viableCompetitors1980": 8,
+            "marketTop31980": 0.45709999999999995,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.45940000000000003,
+            "cashEnd2000": 1443778,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 4,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 104,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24130801
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 43,
+              "detail": [
+                {
+                  "id": "s6llllll",
+                  "call": "KWWI",
+                  "format": "TOP40",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0653,
+            "revGrowth1980": 1.6321636305528924,
+            "ebitda1980": 33689,
+            "cashEnd1980": 486970,
+            "cashGrowth1980": 150742,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.48460000000000003,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0631,
+            "playerCluster2000": 0.0631,
+            "marketTop32000": 0.48460000000000003,
+            "cashEnd2000": 486970,
+            "ebitda2000": 33689,
+            "rev2000": 383028,
+            "acquisitionsTotal": 15,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 86,
+              "poachAttempts": 0,
+              "counterPromo": 27
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24140774
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 112,
+              "detail": [
+                {
+                  "id": "b5g",
+                  "call": "KSQS",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0597,
+            "revGrowth1980": 1.0533332328231184,
+            "ebitda1980": -4018,
+            "cashEnd1980": 259876,
+            "cashGrowth1980": -80230,
+            "viableCompetitors1980": 8,
+            "marketTop31980": 0.47350000000000003,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0576,
+            "playerCluster2000": 0.0576,
+            "marketTop32000": 0.47350000000000003,
+            "cashEnd2000": 259876,
+            "ebitda2000": -4018,
+            "rev2000": 279463,
+            "acquisitionsTotal": 2,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 91,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24150747
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 71,
+              "detail": [
+                {
+                  "id": "mpn77777",
+                  "call": "KBPD",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0639,
+            "revGrowth1980": 1.3855581063896973,
+            "ebitda1980": 4795,
+            "cashEnd1980": 297703,
+            "cashGrowth1980": -37431,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.46249999999999997,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0591,
+            "playerCluster2000": 0.0591,
+            "marketTop32000": 0.46249999999999997,
+            "cashEnd2000": 297703,
+            "ebitda2000": 4795,
+            "rev2000": 324700,
+            "acquisitionsTotal": 7,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 108,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24160720
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0503,
+            "revGrowth1980": 1.1483385107784996,
+            "ebitda1980": -8085,
+            "cashEnd1980": -2743,
+            "cashGrowth1980": -323412,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4527,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.29660000000000003,
+            "cashEnd2000": 1486516,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 36,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 72,
+            "neverRank1": true,
+            "seed": 24170693
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0584,
+            "revGrowth1980": 0.9845589412641061,
+            "ebitda1980": -7065,
+            "cashEnd1980": 302445,
+            "cashGrowth1980": -46585,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.44530000000000003,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0561,
+            "playerCluster2000": 0.0561,
+            "marketTop32000": 0.44530000000000003,
+            "cashEnd2000": 302445,
+            "ebitda2000": -7065,
+            "rev2000": 282850,
+            "acquisitionsTotal": 0,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 104,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24180666
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 121,
+              "detail": [
+                {
+                  "id": "iqz00000",
+                  "call": "KOWC",
+                  "format": "ALL_NEWS",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0602,
+            "revGrowth1980": 1.225004792591391,
+            "ebitda1980": 16589,
+            "cashEnd1980": -35495,
+            "cashGrowth1980": -373838,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4401,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2765,
+            "cashEnd2000": 1969668,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 1,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 72,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 194,
+            "neverRank1": true,
+            "seed": 24190639
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 143,
+              "detail": [
+                {
+                  "id": "fmj",
+                  "call": "KQTX",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0592,
+            "revGrowth1980": 1.026215456943011,
+            "ebitda1980": -2093,
+            "cashEnd1980": 362036,
+            "cashGrowth1980": 14114,
+            "viableCompetitors1980": 8,
+            "marketTop31980": 0.4535,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0556,
+            "playerCluster2000": 0.0556,
+            "marketTop32000": 0.4535,
+            "cashEnd2000": 362036,
+            "ebitda2000": -2093,
+            "rev2000": 286388,
+            "acquisitionsTotal": 2,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 106,
+              "poachAttempts": 1,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 24200612
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0539,
+            "revGrowth1980": 1.1017536499412652,
+            "ebitda1980": -12515,
+            "cashEnd1980": -8403,
+            "cashGrowth1980": -344398,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4497,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.30000000000000004,
+            "cashEnd2000": 1697089,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 37,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 76,
+            "neverRank1": true,
+            "seed": 24210585
+          }
+        ],
+        "aggregate": {
+          "n": 18,
+          "bankruptRate": 0,
+          "timeToRank1": null,
+          "neverRank1Rate": 1,
+          "peakShare1980": null,
+          "revGrowth1980": null,
+          "ebitda1980": null,
+          "cashEnd1980": null,
+          "cashGrowth1980": null,
+          "viableCompetitors1980": null,
+          "marketTop31980": null,
+          "playerStations2000": null,
+          "playerTopShare2000": null,
+          "playerCluster2000": null,
+          "marketTop32000": null,
+          "cashEnd2000": null,
+          "ebitda2000": null,
+          "rev2000": null,
+          "acquisitionsTotal": null,
+          "rivalReformats": 97,
+          "poachAttempts": 0,
+          "zombieEnd": null,
+          "removedEnd": null,
+          "commercialActive2000": null,
+          "acqPool2000": null,
+          "difficulty": 7.3
+        }
+      },
+      "sanfrancisco": {
+        "runs": [
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0545,
+            "revGrowth1980": 0.8616239862857662,
+            "ebitda1980": -19365,
+            "cashEnd1980": -2378,
+            "cashGrowth1980": -324837,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4476,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2978,
+            "cashEnd2000": 1340782,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 44,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 76,
+            "neverRank1": true,
+            "seed": 23731916
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 35,
+              "detail": [
+                {
+                  "id": "x18sssss",
+                  "call": "KRYR",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0662,
+            "revGrowth1980": 1.1041601278283448,
+            "ebitda1980": -271,
+            "cashEnd1980": 37866,
+            "cashGrowth1980": -287647,
+            "viableCompetitors1980": 8,
+            "marketTop31980": 0.4538,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0591,
+            "playerCluster2000": 0.0591,
+            "marketTop32000": 0.4538,
+            "cashEnd2000": 37866,
+            "ebitda2000": -271,
+            "rev2000": 309580,
+            "acquisitionsTotal": 16,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 112,
+              "poachAttempts": 1,
+              "counterPromo": 24
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23741889
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 27,
+              "detail": [
+                {
+                  "id": "tbv77777",
+                  "call": "KBWV",
+                  "format": "ALBUM_ROCK",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.065,
+            "revGrowth1980": 1.0161723418040458,
+            "ebitda1980": -16264,
+            "cashEnd1980": -23438,
+            "cashGrowth1980": -354948,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.45709999999999995,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.31,
+            "cashEnd2000": 1638800,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 3,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 46,
+              "poachAttempts": 0,
+              "counterPromo": 3
+            },
+            "periodsLogged": 128,
+            "neverRank1": true,
+            "seed": 23751862
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 19,
+              "detail": [
+                {
+                  "id": "00hsssss",
+                  "call": "KYOR",
+                  "format": "ALBUM_ROCK",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.065,
+            "revGrowth1980": 1.0974160494314735,
+            "ebitda1980": 3584,
+            "cashEnd1980": -10937,
+            "cashGrowth1980": -349860,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.45730000000000004,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2506,
+            "cashEnd2000": 1842571,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 9,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 102,
+              "poachAttempts": 1,
+              "counterPromo": 8
+            },
+            "periodsLogged": 293,
+            "neverRank1": true,
+            "seed": 23761835
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 28,
+              "detail": [
+                {
+                  "id": "k45sssss",
+                  "call": "KWAK",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0664,
+            "revGrowth1980": 1.0952522806063196,
+            "ebitda1980": -40324,
+            "cashEnd1980": -30897,
+            "cashGrowth1980": -346144,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.4619,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3459,
+            "cashEnd2000": 1431363,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 8,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 162,
+              "poachAttempts": 1,
+              "counterPromo": 5
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23771808
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 95,
+              "detail": [
+                {
+                  "id": "dt8lllll",
+                  "call": "KOAT",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0586,
+            "revGrowth1980": 1.0986446213512961,
+            "ebitda1980": -7662,
+            "cashEnd1980": -29706,
+            "cashGrowth1980": -340289,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4569,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2944,
+            "cashEnd2000": 1560082,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 1,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 71,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 159,
+            "neverRank1": true,
+            "seed": 23781781
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 57,
+              "detail": [
+                {
+                  "id": "w30lllll",
+                  "call": "KMDT",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0608,
+            "revGrowth1980": 1.1578308790661438,
+            "ebitda1980": 407,
+            "cashEnd1980": 87799,
+            "cashGrowth1980": -218377,
+            "viableCompetitors1980": 8,
+            "marketTop31980": 0.459,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0584,
+            "playerCluster2000": 0.0584,
+            "marketTop32000": 0.459,
+            "cashEnd2000": 87799,
+            "ebitda2000": 407,
+            "rev2000": 271971,
+            "acquisitionsTotal": 5,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 107,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23791754
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0528,
+            "revGrowth1980": 0.9740417611082268,
+            "ebitda1980": -19646,
+            "cashEnd1980": -6270,
+            "cashGrowth1980": -325742,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4578,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3036,
+            "cashEnd2000": 1356585,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 27,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 74,
+            "neverRank1": true,
+            "seed": 23801727
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 26,
+              "detail": [
+                {
+                  "id": "vjweeeee",
+                  "call": "KROH",
+                  "format": "COUNTRY",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0651,
+            "revGrowth1980": 0.9532492538750361,
+            "ebitda1980": -15107,
+            "cashEnd1980": -12541,
+            "cashGrowth1980": -331428,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.4659,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.3236,
+            "cashEnd2000": 1440241,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 16,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 103,
+              "poachAttempts": 1,
+              "counterPromo": 13
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23811700
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 12,
+              "detail": [
+                {
+                  "id": "06q00000",
+                  "call": "KUOM",
+                  "format": "BROKERED_PROGRAMMING",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0653,
+            "revGrowth1980": 1.4577460309888939,
+            "ebitda1980": 33517,
+            "cashEnd1980": 348057,
+            "cashGrowth1980": 33557,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.4598,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0628,
+            "playerCluster2000": 0.0628,
+            "marketTop32000": 0.4598,
+            "cashEnd2000": 348057,
+            "ebitda2000": 33517,
+            "rev2000": 366731,
+            "acquisitionsTotal": 22,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 107,
+              "poachAttempts": 0,
+              "counterPromo": 5
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23821673
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 31,
+              "detail": [
+                {
+                  "id": "dzelllll",
+                  "call": "KBLW",
+                  "format": "NEWS_TALK",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0649,
+            "revGrowth1980": 1.2897864369263499,
+            "ebitda1980": 10942,
+            "cashEnd1980": 103423,
+            "cashGrowth1980": -232912,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4548,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0601,
+            "playerCluster2000": 0.0601,
+            "marketTop32000": 0.4548,
+            "cashEnd2000": 103423,
+            "ebitda2000": 10942,
+            "rev2000": 329810,
+            "acquisitionsTotal": 19,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 93,
+              "poachAttempts": 1,
+              "counterPromo": 15
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23831646
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 25,
+              "detail": [
+                {
+                  "id": "ln7sssss",
+                  "call": "KMRC",
+                  "format": "COUNTRY",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0647,
+            "revGrowth1980": 1.3457672835475827,
+            "ebitda1980": 38668,
+            "cashEnd1980": 132789,
+            "cashGrowth1980": -198022,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4656,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0628,
+            "playerCluster2000": 0.0628,
+            "marketTop32000": 0.4656,
+            "cashEnd2000": 132789,
+            "ebitda2000": 38668,
+            "rev2000": 377193,
+            "acquisitionsTotal": 12,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 95,
+              "poachAttempts": 0,
+              "counterPromo": 8
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23841619
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 29,
+              "detail": [
+                {
+                  "id": "72csssss",
+                  "call": "KKXP",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0634,
+            "revGrowth1980": 1.2304737727077908,
+            "ebitda1980": 19172,
+            "cashEnd1980": -42286,
+            "cashGrowth1980": -355719,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.4671,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2851,
+            "cashEnd2000": 1810386,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 5,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 91,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 211,
+            "neverRank1": true,
+            "seed": 23851592
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 68,
+              "detail": [
+                {
+                  "id": "ng977777",
+                  "call": "KEHZ",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0617,
+            "revGrowth1980": 1.3862546162717126,
+            "ebitda1980": 4036,
+            "cashEnd1980": -81586,
+            "cashGrowth1980": -393820,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.44810000000000005,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2752,
+            "cashEnd2000": 1768396,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 4,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 90,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 286,
+            "neverRank1": true,
+            "seed": 23861565
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 153,
+              "detail": [
+                {
+                  "id": "8c6eeeee",
+                  "call": "KDQT",
+                  "format": "COUNTRY",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0607,
+            "revGrowth1980": 0.9894534084562693,
+            "ebitda1980": -10919,
+            "cashEnd1980": -4883,
+            "cashGrowth1980": -326174,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4374,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2468,
+            "cashEnd2000": 1535885,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 1,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 60,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 225,
+            "neverRank1": true,
+            "seed": 23871538
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 86,
+              "detail": [
+                {
+                  "id": "n9klllll",
+                  "call": "KEHS",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0594,
+            "revGrowth1980": 1.2167041804156378,
+            "ebitda1980": -3122,
+            "cashEnd1980": 136237,
+            "cashGrowth1980": -181135,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4548,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0577,
+            "playerCluster2000": 0.0577,
+            "marketTop32000": 0.4548,
+            "cashEnd2000": 136237,
+            "ebitda2000": -3122,
+            "rev2000": 278388,
+            "acquisitionsTotal": 3,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 92,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23881511
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0563,
+            "revGrowth1980": 0.9079352929517978,
+            "ebitda1980": -1845,
+            "cashEnd1980": -973,
+            "cashGrowth1980": -341479,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4394,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.27,
+            "cashEnd2000": 1589446,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 45,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 94,
+            "neverRank1": true,
+            "seed": 23891484
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 29,
+              "detail": [
+                {
+                  "id": "uyveeeee",
+                  "call": "KVRO",
+                  "format": "NEWS_TALK",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0672,
+            "revGrowth1980": 1.3113728251487757,
+            "ebitda1980": 10671,
+            "cashEnd1980": 294742,
+            "cashGrowth1980": -37369,
+            "viableCompetitors1980": 8,
+            "marketTop31980": 0.4732,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0607,
+            "playerCluster2000": 0.0607,
+            "marketTop32000": 0.4732,
+            "cashEnd2000": 294742,
+            "ebitda2000": 10671,
+            "rev2000": 346407,
+            "acquisitionsTotal": 12,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 103,
+              "poachAttempts": 1,
+              "counterPromo": 36
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 23901457
+          }
+        ],
+        "aggregate": {
+          "n": 18,
+          "bankruptRate": 0,
+          "timeToRank1": null,
+          "neverRank1Rate": 1,
+          "peakShare1980": null,
+          "revGrowth1980": null,
+          "ebitda1980": null,
+          "cashEnd1980": null,
+          "cashGrowth1980": null,
+          "viableCompetitors1980": null,
+          "marketTop31980": null,
+          "playerStations2000": null,
+          "playerTopShare2000": null,
+          "playerCluster2000": null,
+          "marketTop32000": null,
+          "cashEnd2000": null,
+          "ebitda2000": null,
+          "rev2000": null,
+          "acquisitionsTotal": null,
+          "rivalReformats": 92.5,
+          "poachAttempts": 0,
+          "zombieEnd": null,
+          "removedEnd": null,
+          "commercialActive2000": null,
+          "acqPool2000": null,
+          "difficulty": 7.3
+        }
+      },
+      "atlanta": {
+        "runs": [
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 43,
+              "detail": [
+                {
+                  "id": "4l9eeeee",
+                  "call": "WWTW",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0631,
+            "revGrowth1980": 1.6735288473281111,
+            "ebitda1980": 29982,
+            "cashEnd1980": 165743,
+            "cashGrowth1980": -57774,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.46330000000000005,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0601,
+            "playerCluster2000": 0.0601,
+            "marketTop32000": 0.46330000000000005,
+            "cashEnd2000": 165743,
+            "ebitda2000": 29982,
+            "rev2000": 287775,
+            "acquisitionsTotal": 10,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 107,
+              "poachAttempts": 0,
+              "counterPromo": 2
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22395631
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 70,
+              "detail": [
+                {
+                  "id": "8splllll",
+                  "call": "WGLB",
+                  "format": "COUNTRY",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.06,
+            "revGrowth1980": 0.9899803554380554,
+            "ebitda1980": 1134,
+            "cashEnd1980": 38273,
+            "cashGrowth1980": -201312,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4505,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0558,
+            "playerCluster2000": 0.0558,
+            "marketTop32000": 0.4505,
+            "cashEnd2000": 38273,
+            "ebitda2000": 1134,
+            "rev2000": 215689,
+            "acquisitionsTotal": 4,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 83,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22405604
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 48,
+              "detail": [
+                {
+                  "id": "6vi77777",
+                  "call": "WLIS",
+                  "format": "SOUL_RNB",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0635,
+            "revGrowth1980": 1.4054444322507234,
+            "ebitda1980": 3070,
+            "cashEnd1980": 491698,
+            "cashGrowth1980": 280257,
+            "viableCompetitors1980": 7,
+            "marketTop31980": 0.4607,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0587,
+            "playerCluster2000": 0.0587,
+            "marketTop32000": 0.4607,
+            "cashEnd2000": 491698,
+            "ebitda2000": 3070,
+            "rev2000": 243326,
+            "acquisitionsTotal": 11,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 70,
+              "poachAttempts": 0,
+              "counterPromo": 6
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22415577
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 190,
+              "detail": [
+                {
+                  "id": "zaseeeee",
+                  "call": "WMPQ",
+                  "format": "NEWS_TALK",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0594,
+            "revGrowth1980": 1.2565422106843807,
+            "ebitda1980": 7994,
+            "cashEnd1980": -7707,
+            "cashGrowth1980": -246393,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.44539999999999996,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2737,
+            "cashEnd2000": 1475468,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 1,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 97,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 254,
+            "neverRank1": true,
+            "seed": 22425550
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0524,
+            "revGrowth1980": 1.0631513250711966,
+            "ebitda1980": -5978,
+            "cashEnd1980": -5040,
+            "cashGrowth1980": -238245,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.43679999999999997,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.24230000000000002,
+            "cashEnd2000": 1216771,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 55,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 114,
+            "neverRank1": true,
+            "seed": 22435523
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0553,
+            "revGrowth1980": 1.1219945899925639,
+            "ebitda1980": -5964,
+            "cashEnd1980": -5616,
+            "cashGrowth1980": -237083,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4432,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2471,
+            "cashEnd2000": 1233434,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 57,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 107,
+            "neverRank1": true,
+            "seed": 22445496
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 102,
+              "detail": [
+                {
+                  "id": "rxxeeeee",
+                  "call": "WNHU",
+                  "format": "SOUL_RNB",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0593,
+            "revGrowth1980": 1.1883552588087525,
+            "ebitda1980": 5432,
+            "cashEnd1980": 310809,
+            "cashGrowth1980": 81352,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.44999999999999996,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0562,
+            "playerCluster2000": 0.0562,
+            "marketTop32000": 0.44999999999999996,
+            "cashEnd2000": 310809,
+            "ebitda2000": 5432,
+            "rev2000": 215715,
+            "acquisitionsTotal": 3,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 65,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22455469
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0497,
+            "revGrowth1980": 0.7162275927524653,
+            "ebitda1980": -36152,
+            "cashEnd1980": -15384,
+            "cashGrowth1980": -248819,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4577,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.29279999999999995,
+            "cashEnd2000": 755176,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 38,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 72,
+            "neverRank1": true,
+            "seed": 22465442
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 99,
+              "detail": [
+                {
+                  "id": "z9qeeeee",
+                  "call": "WWCG",
+                  "format": "ALBUM_ROCK",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0602,
+            "revGrowth1980": 1.4061469868478393,
+            "ebitda1980": 7573,
+            "cashEnd1980": 481034,
+            "cashGrowth1980": 265966,
+            "viableCompetitors1980": 8,
+            "marketTop31980": 0.4544,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.059,
+            "playerCluster2000": 0.059,
+            "marketTop32000": 0.4544,
+            "cashEnd2000": 481034,
+            "ebitda2000": 7573,
+            "rev2000": 251675,
+            "acquisitionsTotal": 3,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 75,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22475415
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 87,
+              "detail": [
+                {
+                  "id": "48blllll",
+                  "call": "WHPH",
+                  "format": "SOUL_RNB",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0627,
+            "revGrowth1980": 1.4335043197804402,
+            "ebitda1980": 52527,
+            "cashEnd1980": 84108,
+            "cashGrowth1980": -153747,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.46,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.06,
+            "playerCluster2000": 0.06,
+            "marketTop32000": 0.46,
+            "cashEnd2000": 84108,
+            "ebitda2000": 52527,
+            "rev2000": 307124,
+            "acquisitionsTotal": 10,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 86,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22485388
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 25,
+              "detail": [
+                {
+                  "id": "7qf",
+                  "call": "WPIM",
+                  "format": "COUNTRY",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0646,
+            "revGrowth1980": 1.1622092940826194,
+            "ebitda1980": 13178,
+            "cashEnd1980": 103964,
+            "cashGrowth1980": -128617,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.46409999999999996,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0591,
+            "playerCluster2000": 0.0591,
+            "marketTop32000": 0.46409999999999996,
+            "cashEnd2000": 103964,
+            "ebitda2000": 13178,
+            "rev2000": 245920,
+            "acquisitionsTotal": 11,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 97,
+              "poachAttempts": 1,
+              "counterPromo": 4
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22495361
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 82,
+              "detail": [
+                {
+                  "id": "96n00000",
+                  "call": "WKVK",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0631,
+            "revGrowth1980": 1.4237832482019919,
+            "ebitda1980": 3855,
+            "cashEnd1980": 92111,
+            "cashGrowth1980": -132350,
+            "viableCompetitors1980": 8,
+            "marketTop31980": 0.46120000000000005,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0595,
+            "playerCluster2000": 0.0595,
+            "marketTop32000": 0.46120000000000005,
+            "cashEnd2000": 92111,
+            "ebitda2000": 3855,
+            "rev2000": 250032,
+            "acquisitionsTotal": 14,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 95,
+              "poachAttempts": 0,
+              "counterPromo": 3
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22505334
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0526,
+            "revGrowth1980": 0.7761912611756492,
+            "ebitda1980": -30207,
+            "cashEnd1980": -21529,
+            "cashGrowth1980": -264127,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.45530000000000004,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2785,
+            "cashEnd2000": 1001252,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 33,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 71,
+            "neverRank1": true,
+            "seed": 22515307
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": null,
+            "peakShare1980": 0.0485,
+            "revGrowth1980": 0.7170107029282026,
+            "ebitda1980": -50240,
+            "cashEnd1980": -3035,
+            "cashGrowth1980": -215909,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4546,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.25680000000000003,
+            "cashEnd2000": 718418,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 0,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 49,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 90,
+            "neverRank1": true,
+            "seed": 22525280
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 124,
+              "detail": [
+                {
+                  "id": "o29lllll",
+                  "call": "WDQV",
+                  "format": "SOUL_RNB",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0587,
+            "revGrowth1980": 1.058712589805474,
+            "ebitda1980": -6801,
+            "cashEnd1980": -23152,
+            "cashGrowth1980": -258496,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4495,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2839,
+            "cashEnd2000": 1304384,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 2,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 99,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 317,
+            "neverRank1": true,
+            "seed": 22535253
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 35,
+              "detail": [
+                {
+                  "id": "ichlllll",
+                  "call": "WDAH",
+                  "format": "SOUL_RNB",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0658,
+            "revGrowth1980": 1.4791405652971787,
+            "ebitda1980": 24330,
+            "cashEnd1980": 273327,
+            "cashGrowth1980": 35048,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4951,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0622,
+            "playerCluster2000": 0.0622,
+            "marketTop32000": 0.4951,
+            "cashEnd2000": 273327,
+            "ebitda2000": 24330,
+            "rev2000": 284526,
+            "acquisitionsTotal": 20,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 99,
+              "poachAttempts": 0,
+              "counterPromo": 42
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22545226
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 56,
+              "detail": [
+                {
+                  "id": "gn1sssss",
+                  "call": "WCLF",
+                  "format": "ALL_NEWS",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.0646,
+            "revGrowth1980": 1.6218241729538583,
+            "ebitda1980": 50456,
+            "cashEnd1980": 538155,
+            "cashGrowth1980": 314226,
+            "viableCompetitors1980": 9,
+            "marketTop31980": 0.4766,
+            "playerStations2000": 1,
+            "playerTopShare2000": 0.0625,
+            "playerCluster2000": 0.0625,
+            "marketTop32000": 0.4766,
+            "cashEnd2000": 538155,
+            "ebitda2000": 50456,
+            "rev2000": 322876,
+            "acquisitionsTotal": 14,
+            "nTop102000": 1,
+            "aiChurn": {
+              "rivalReformats": 61,
+              "poachAttempts": 2,
+              "counterPromo": 3
+            },
+            "periodsLogged": 340,
+            "neverRank1": true,
+            "seed": 22555199
+          },
+          {
+            "bankrupt": false,
+            "timeToRank1HalfYears": null,
+            "firstAcquisition": {
+              "year": 1970,
+              "period": 1,
+              "step": 104,
+              "detail": [
+                {
+                  "id": "kiilllll",
+                  "call": "WHSC",
+                  "format": "MOR",
+                  "isFm": true
+                }
+              ]
+            },
+            "peakShare1980": 0.06,
+            "revGrowth1980": 0.9478578381236135,
+            "ebitda1980": -20603,
+            "cashEnd1980": -16326,
+            "cashGrowth1980": -244238,
+            "viableCompetitors1980": 8,
+            "marketTop31980": 0.45299999999999996,
+            "playerStations2000": 0,
+            "playerTopShare2000": 0,
+            "playerCluster2000": 0,
+            "marketTop32000": 0.2359,
+            "cashEnd2000": 1123278,
+            "ebitda2000": 0,
+            "rev2000": 0,
+            "acquisitionsTotal": 1,
+            "nTop102000": 0,
+            "aiChurn": {
+              "rivalReformats": 68,
+              "poachAttempts": 0,
+              "counterPromo": 0
+            },
+            "periodsLogged": 171,
+            "neverRank1": true,
+            "seed": 22565172
+          }
+        ],
+        "aggregate": {
+          "n": 18,
+          "bankruptRate": 0,
+          "timeToRank1": null,
+          "neverRank1Rate": 1,
+          "peakShare1980": null,
+          "revGrowth1980": null,
+          "ebitda1980": null,
+          "cashEnd1980": null,
+          "cashGrowth1980": null,
+          "viableCompetitors1980": null,
+          "marketTop31980": null,
+          "playerStations2000": null,
+          "playerTopShare2000": null,
+          "playerCluster2000": null,
+          "marketTop32000": null,
+          "cashEnd2000": null,
+          "ebitda2000": null,
+          "rev2000": null,
+          "acquisitionsTotal": null,
+          "rivalReformats": 72.5,
+          "poachAttempts": 0,
+          "zombieEnd": null,
+          "removedEnd": null,
+          "commercialActive2000": null,
+          "acqPool2000": null,
+          "difficulty": 7.3
+        }
+      }
+    }
+  },
+  "meta": {
+    "runs": 18,
+    "seed": 20260604,
+    "policy": "aggressive",
+    "endYear": 2000
+  },
+  "recommendation": {
+    "shipAnchor": 16,
+    "scores": {
+      "10": 4.5,
+      "16": 3,
+      "18": 3
+    }
+  },
+  "timingMs": 165347
+}

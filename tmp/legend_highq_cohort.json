@@ -1,0 +1,467 @@
+{
+  "generatedAt": "2026-06-05T04:11:28.915Z",
+  "config": {
+    "markets": [
+      "wichita",
+      "nashville",
+      "seattle",
+      "sanfrancisco",
+      "chicago",
+      "newyork"
+    ],
+    "startYears": [
+      1970,
+      1985,
+      2000
+    ],
+    "years": 35,
+    "seeds": 4,
+    "seed": 20260609,
+    "variants": [
+      "A",
+      "E"
+    ]
+  },
+  "runs": {
+    "total": 144,
+    "ok": 144
+  },
+  "pooledByVariant": {
+    "A": {
+      "runs": 72,
+      "ok": 72,
+      "cohortSize": 0,
+      "pctOfAllCareers": 0
+    },
+    "E": {
+      "runs": 72,
+      "ok": 72,
+      "cohortSize": 907,
+      "pctOfAllCareers": 2.06,
+      "startingPlatform": {
+        "pctStartDrive": 75.86,
+        "pctStartTop5": 29.06,
+        "pctStartTop10": 54.52,
+        "medianStartSharePct": 4.85,
+        "pctBornHighCeiling": 100
+      },
+      "careerTrajectory": {
+        "medianCareerSpanYrs": 2.42,
+        "pctActiveAtEnd": 14.14,
+        "pctDepartedBefore10yr": 80.05,
+        "pctTenure10Plus": 8.23,
+        "pctTenure15Plus": 2.8,
+        "pctEverTop3Station": 31.76,
+        "pctEverLegendPlatform": 17.77,
+        "medianStationMoves": 0.1,
+        "pctEverElite": 26.12,
+        "pctEverLegendCand": 0,
+        "pctEverFranchise": 0
+      },
+      "platformAlignment": {
+        "pctWithStrongPlatform": 3.75,
+        "pctScatteredWeak": 51.27,
+        "medianStationsWorked": 1.1
+      },
+      "failureRanked": [
+        {
+          "factor": "churned_before_10yr",
+          "count": 534,
+          "pctOfCohort": 58.9
+        },
+        {
+          "factor": "churned_before_10yr_poach_or_move",
+          "count": 202,
+          "pctOfCohort": 22.3
+        },
+        {
+          "factor": "still_active_under_10yr",
+          "count": 112,
+          "pctOfCohort": 12.3
+        },
+        {
+          "factor": "trapped_on_weak_station",
+          "count": 29,
+          "pctOfCohort": 3.2
+        },
+        {
+          "factor": "wrong_daypart_mostly_non_drive",
+          "count": 19,
+          "pctOfCohort": 2.1
+        },
+        {
+          "factor": "station_never_top3_platform",
+          "count": 4,
+          "pctOfCohort": 0.4
+        },
+        {
+          "factor": "retirement",
+          "count": 3,
+          "pctOfCohort": 0.3
+        },
+        {
+          "factor": "insufficient_years_top3",
+          "count": 2,
+          "pctOfCohort": 0.2
+        },
+        {
+          "factor": "station_rank",
+          "count": 1,
+          "pctOfCohort": 0.1
+        },
+        {
+          "factor": "audience_share_gate",
+          "count": 1,
+          "pctOfCohort": 0.1
+        }
+      ],
+      "topSamples": [
+        {
+          "name": "Dianne Wallace",
+          "maxTrueQ": 92,
+          "startCall": "WRAD",
+          "startSlot": "morningDrive",
+          "startRank": 35,
+          "bestRank": 7,
+          "maxSharePct": 4.6,
+          "maxTenureYrs": 2,
+          "stationMoves": 2,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr_poach_or_move",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Patrick Taylor",
+          "maxTrueQ": 91,
+          "startCall": "KEHZ",
+          "startSlot": "midday",
+          "startRank": 1,
+          "bestRank": 1,
+          "maxSharePct": 14.2,
+          "maxTenureYrs": 13,
+          "stationMoves": 0,
+          "everLegendCand": false,
+          "legendFailure": "wrong_daypart_mostly_non_drive",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Naomi Yancey",
+          "maxTrueQ": 91,
+          "startCall": "WILQ",
+          "startSlot": "morningDrive",
+          "startRank": 18,
+          "bestRank": 3,
+          "maxSharePct": 7.2,
+          "maxTenureYrs": 12,
+          "stationMoves": 8,
+          "everLegendCand": false,
+          "legendFailure": "trapped_on_weak_station",
+          "activeAtEnd": false
+        },
+        {
+          "name": "George Nguyen",
+          "maxTrueQ": 91,
+          "startCall": "KZFM",
+          "startSlot": "morningDrive",
+          "startRank": 7,
+          "bestRank": 4,
+          "maxSharePct": 7,
+          "maxTenureYrs": 10,
+          "stationMoves": 2,
+          "everLegendCand": false,
+          "legendFailure": "station_never_top3_platform",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Juanita Suzuki",
+          "maxTrueQ": 91,
+          "startCall": "KMSZ",
+          "startSlot": "midday",
+          "startRank": 5,
+          "bestRank": 5,
+          "maxSharePct": 7.1,
+          "maxTenureYrs": 8,
+          "stationMoves": 0,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Theodore Brown",
+          "maxTrueQ": 91,
+          "startCall": "KPEG",
+          "startSlot": "afternoonDrive",
+          "startRank": 1,
+          "bestRank": 1,
+          "maxSharePct": 16.9,
+          "maxTenureYrs": 7,
+          "stationMoves": 0,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Nancy Woods",
+          "maxTrueQ": 91,
+          "startCall": "WIRG",
+          "startSlot": "afternoonDrive",
+          "startRank": 15,
+          "bestRank": 12,
+          "maxSharePct": 2.4,
+          "maxTenureYrs": 7,
+          "stationMoves": 0,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Al Olsen",
+          "maxTrueQ": 91,
+          "startCall": "WGWA",
+          "startSlot": "evening",
+          "startRank": 1,
+          "bestRank": 1,
+          "maxSharePct": 13.4,
+          "maxTenureYrs": 7,
+          "stationMoves": 0,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Camila Gomez",
+          "maxTrueQ": 91,
+          "startCall": "KGLN",
+          "startSlot": "morningDrive",
+          "startRank": 12,
+          "bestRank": 4,
+          "maxSharePct": 7.4,
+          "maxTenureYrs": 6,
+          "stationMoves": 2,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr_poach_or_move",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Keith Schmidt",
+          "maxTrueQ": 91,
+          "startCall": "WOXP",
+          "startSlot": "morningDrive",
+          "startRank": 8,
+          "bestRank": 3,
+          "maxSharePct": 8,
+          "maxTenureYrs": 5,
+          "stationMoves": 4,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr_poach_or_move",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Dylan Perry",
+          "maxTrueQ": 91,
+          "startCall": "WHTU",
+          "startSlot": "morningDrive",
+          "startRank": 30,
+          "bestRank": 13,
+          "maxSharePct": 2.6,
+          "maxTenureYrs": 5,
+          "stationMoves": 2,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr_poach_or_move",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Joyce Rivera",
+          "maxTrueQ": 91,
+          "startCall": "WWVD",
+          "startSlot": "evening",
+          "startRank": 14,
+          "bestRank": 14,
+          "maxSharePct": 2.7,
+          "maxTenureYrs": 5,
+          "stationMoves": 0,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Debbie Mendoza",
+          "maxTrueQ": 91,
+          "startCall": "WCYU",
+          "startSlot": "morningDrive",
+          "startRank": 33,
+          "bestRank": 10,
+          "maxSharePct": 4.7,
+          "maxTenureYrs": 5,
+          "stationMoves": 4,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr_poach_or_move",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Deborah Sanders",
+          "maxTrueQ": 91,
+          "startCall": "KYIT",
+          "startSlot": "evening",
+          "startRank": 11,
+          "bestRank": 11,
+          "maxSharePct": 3.9,
+          "maxTenureYrs": 4,
+          "stationMoves": 0,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Lynn Willis",
+          "maxTrueQ": 91,
+          "startCall": "KEOO",
+          "startSlot": "afternoonDrive",
+          "startRank": 1,
+          "bestRank": 1,
+          "maxSharePct": 13.1,
+          "maxTenureYrs": 4,
+          "stationMoves": 0,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Maria Gilbert",
+          "maxTrueQ": 91,
+          "startCall": "KBPW",
+          "startSlot": "afternoonDrive",
+          "startRank": 23,
+          "bestRank": 13,
+          "maxSharePct": 3.2,
+          "maxTenureYrs": 4,
+          "stationMoves": 0,
+          "everLegendCand": false,
+          "legendFailure": "still_active_under_10yr",
+          "activeAtEnd": true
+        },
+        {
+          "name": "Darryl Fernandez",
+          "maxTrueQ": 91,
+          "startCall": "WFUT",
+          "startSlot": "evening",
+          "startRank": 8,
+          "bestRank": 4,
+          "maxSharePct": 6.3,
+          "maxTenureYrs": 4,
+          "stationMoves": 0,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Antoine Fuller",
+          "maxTrueQ": 91,
+          "startCall": "WTJD",
+          "startSlot": "morningDrive",
+          "startRank": 14,
+          "bestRank": 4,
+          "maxSharePct": 7.6,
+          "maxTenureYrs": 4,
+          "stationMoves": 3,
+          "everLegendCand": false,
+          "legendFailure": "still_active_under_10yr",
+          "activeAtEnd": true
+        },
+        {
+          "name": "Latoya Edwards",
+          "maxTrueQ": 91,
+          "startCall": "KQKR",
+          "startSlot": "morningDrive",
+          "startRank": 12,
+          "bestRank": 1,
+          "maxSharePct": 8,
+          "maxTenureYrs": 3,
+          "stationMoves": 1,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr_poach_or_move",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Orville Payne",
+          "maxTrueQ": 91,
+          "startCall": "WBI",
+          "startSlot": "overnight",
+          "startRank": 2,
+          "bestRank": 2,
+          "maxSharePct": 7.4,
+          "maxTenureYrs": 3,
+          "stationMoves": 0,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Andy McDonald",
+          "maxTrueQ": 91,
+          "startCall": "WJQM",
+          "startSlot": "afternoonDrive",
+          "startRank": 34,
+          "bestRank": 25,
+          "maxSharePct": 0.7,
+          "maxTenureYrs": 3,
+          "stationMoves": 0,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Nolan Sacco",
+          "maxTrueQ": 91,
+          "startCall": "WASR",
+          "startSlot": "afternoonDrive",
+          "startRank": 16,
+          "bestRank": 14,
+          "maxSharePct": 2.9,
+          "maxTenureYrs": 3,
+          "stationMoves": 0,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Vernon Carter",
+          "maxTrueQ": 91,
+          "startCall": "WDSI",
+          "startSlot": "morningDrive",
+          "startRank": 23,
+          "bestRank": 7,
+          "maxSharePct": 5.8,
+          "maxTenureYrs": 3,
+          "stationMoves": 2,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr_poach_or_move",
+          "activeAtEnd": false
+        },
+        {
+          "name": "Diane Andrews",
+          "maxTrueQ": 91,
+          "startCall": "KOJZ",
+          "startSlot": "midday",
+          "startRank": 8,
+          "bestRank": 6,
+          "maxSharePct": 7.3,
+          "maxTenureYrs": 2,
+          "stationMoves": 0,
+          "everLegendCand": false,
+          "legendFailure": "churned_before_10yr",
+          "activeAtEnd": false
+        }
+      ]
+    }
+  },
+  "gate2Verdict": [
+    "Under **variant E**, **907** high-ceiling careers (2.06% of all rows) vs **0** under baseline A.",
+    "Primary legend failure mode: **churned_before_10yr** (58.9% of high-Q cohort).",
+    "Only **29.06%** start on top-5 stations — rare talent is scattered, not placed on winning platforms.",
+    "**80.05%** exit before 10-year tenure — churn kills legend arcs before station rank/share gates matter.",
+    "**51.27%** spend most high-Q years on weak stations (rank>10 or share<3%) — \"Stern on a bad station\" pattern.",
+    "Franchise tier remains ~0% — Gate 2 is **platform + tenure + station success**, not salary.",
+    "**Diagnostic direction:** concentrate rare generation onto drive dayparts at competitive stations, then measure whether legend rate moves before touching compensation."
+  ]
+}

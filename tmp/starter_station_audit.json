@@ -1,0 +1,6174 @@
+{
+  "meta": {
+    "seed": 20260608,
+    "openingRuns": 1,
+    "snowRuns": 18,
+    "startYears": [
+      1970,
+      1985,
+      2000
+    ],
+    "markets": [
+      "newyork",
+      "losangeles",
+      "chicago",
+      "seattle",
+      "sanfrancisco",
+      "atlanta",
+      "nashville",
+      "wichita"
+    ]
+  },
+  "openingByMarket": {
+    "newyork": {
+      "1970": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "newyork",
+            "targetYear": 1970,
+            "anchor": 10,
+            "genScen": "under",
+            "gYear": 1970,
+            "gPeriod": 1,
+            "commercialCount": 20,
+            "cash": 1300000,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "5sr",
+                "call": "WGHY",
+                "freq": "710 AM",
+                "format": "TOP40",
+                "formatLabel": "Top 40",
+                "band": "AM",
+                "share": 0.0685,
+                "rev": 615810,
+                "ebitda": 184264,
+                "oq": 44,
+                "signalPower": "50kw",
+                "signalReach": 1,
+                "signalMetric": 49,
+                "shareRank": 5,
+                "revRank": 6,
+                "oqRank": 12,
+                "signalRank": 5,
+                "sharePercentile": 80,
+                "revPercentile": 75
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.0493321585,
+                "top": 0.16620802,
+                "median": 0.02260717,
+                "weak": 0.01092893
+              },
+              "rev": {
+                "avg": 1114382,
+                "top": 8500478,
+                "median": 136240,
+                "weak": 31493
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                5
+              ],
+              "revRanks": [
+                6
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 20,
+          "shareMed": 0.0685,
+          "revMed": 615810,
+          "ebitdaMed": 184264,
+          "oqMed": 44,
+          "shareRankMed": 5,
+          "shareRankHist": {
+            "5": 1
+          },
+          "revRankMed": 6,
+          "sharePercentileMed": 80,
+          "playerSample": {
+            "id": "5sr",
+            "call": "WGHY",
+            "freq": "710 AM",
+            "format": "TOP40",
+            "formatLabel": "Top 40",
+            "band": "AM",
+            "share": 0.0685,
+            "rev": 615810,
+            "ebitda": 184264,
+            "oq": 44,
+            "signalPower": "50kw",
+            "signalReach": 1,
+            "signalMetric": 49,
+            "shareRank": 5,
+            "revRank": 6,
+            "oqRank": 12,
+            "signalRank": 5,
+            "sharePercentile": 80,
+            "revPercentile": 75
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      },
+      "1985": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "newyork",
+            "targetYear": 1985,
+            "anchor": 10,
+            "genScen": "chrwar",
+            "gYear": 1985,
+            "gPeriod": 1,
+            "commercialCount": 31,
+            "cash": 19061069,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "o5b77777",
+                "call": "WRVB",
+                "freq": "710 AM",
+                "format": "TOP40",
+                "formatLabel": "CHR",
+                "band": "AM",
+                "share": 0.0091,
+                "rev": 37571,
+                "ebitda": -803904,
+                "oq": 60,
+                "signalPower": "10kw",
+                "signalReach": 1,
+                "signalMetric": 9,
+                "shareRank": 25,
+                "revRank": 30,
+                "oqRank": 5,
+                "signalRank": 19,
+                "sharePercentile": 22.6,
+                "revPercentile": 6.5
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.03059537451612903,
+                "top": 0.08230176,
+                "median": 0.02450473,
+                "weak": 0.00352711
+              },
+              "rev": {
+                "avg": 3201644,
+                "top": 16786364,
+                "median": 273574,
+                "weak": 44785
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                25
+              ],
+              "revRanks": [
+                30
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 31,
+          "shareMed": 0.0091,
+          "revMed": 37571,
+          "ebitdaMed": -803904,
+          "oqMed": 60,
+          "shareRankMed": 25,
+          "shareRankHist": {
+            "25": 1
+          },
+          "revRankMed": 30,
+          "sharePercentileMed": 22.6,
+          "playerSample": {
+            "id": "o5b77777",
+            "call": "WRVB",
+            "freq": "710 AM",
+            "format": "TOP40",
+            "formatLabel": "CHR",
+            "band": "AM",
+            "share": 0.0091,
+            "rev": 37571,
+            "ebitda": -803904,
+            "oq": 60,
+            "signalPower": "10kw",
+            "signalReach": 1,
+            "signalMetric": 9,
+            "shareRank": 25,
+            "revRank": 30,
+            "oqRank": 5,
+            "signalRank": 19,
+            "sharePercentile": 22.6,
+            "revPercentile": 6.5
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      },
+      "2000": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "newyork",
+            "targetYear": 2000,
+            "anchor": 10,
+            "genScen": "harness2000",
+            "gYear": 2000,
+            "gPeriod": 1,
+            "commercialCount": 35,
+            "cash": 3890807,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "8hmlllll",
+                "call": "WRWK",
+                "freq": "710 AM",
+                "format": "TOP40",
+                "formatLabel": "CHR",
+                "band": "AM",
+                "share": 0.0058,
+                "rev": 1218779,
+                "ebitda": -553637,
+                "oq": 56,
+                "signalPower": "50kw",
+                "signalReach": 1,
+                "signalMetric": 49,
+                "shareRank": 6,
+                "revRank": 6,
+                "oqRank": 5,
+                "signalRank": 11,
+                "sharePercentile": 85.7,
+                "revPercentile": 85.7
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.009966777142857144,
+                "top": 0.10465116,
+                "median": 0,
+                "weak": 0
+              },
+              "rev": {
+                "avg": 9377833,
+                "top": 116471410,
+                "median": 0,
+                "weak": 0
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                6
+              ],
+              "revRanks": [
+                6
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 35,
+          "shareMed": 0.0058,
+          "revMed": 1218779,
+          "ebitdaMed": -553637,
+          "oqMed": 56,
+          "shareRankMed": 6,
+          "shareRankHist": {
+            "6": 1
+          },
+          "revRankMed": 6,
+          "sharePercentileMed": 85.7,
+          "playerSample": {
+            "id": "8hmlllll",
+            "call": "WRWK",
+            "freq": "710 AM",
+            "format": "TOP40",
+            "formatLabel": "CHR",
+            "band": "AM",
+            "share": 0.0058,
+            "rev": 1218779,
+            "ebitda": -553637,
+            "oq": 56,
+            "signalPower": "50kw",
+            "signalReach": 1,
+            "signalMetric": 49,
+            "shareRank": 6,
+            "revRank": 6,
+            "oqRank": 5,
+            "signalRank": 11,
+            "sharePercentile": 85.7,
+            "revPercentile": 85.7
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      }
+    },
+    "losangeles": {
+      "1970": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "losangeles",
+            "targetYear": 1970,
+            "anchor": 10,
+            "genScen": "under",
+            "gYear": 1970,
+            "gPeriod": 1,
+            "commercialCount": 20,
+            "cash": 1300000,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "uo7sssss",
+                "call": "KTYO",
+                "freq": "640 AM",
+                "format": "TOP40",
+                "formatLabel": "Top 40",
+                "band": "AM",
+                "share": 0.0524,
+                "rev": 451451,
+                "ebitda": 58999,
+                "oq": 48,
+                "signalPower": "10kw",
+                "signalReach": 1,
+                "signalMetric": 9,
+                "shareRank": 8,
+                "revRank": 10,
+                "oqRank": 8,
+                "signalRank": 11,
+                "sharePercentile": 65,
+                "revPercentile": 55
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.049210651499999994,
+                "top": 0.14715476,
+                "median": 0.0463446,
+                "weak": 0.01542884
+              },
+              "rev": {
+                "avg": 939668,
+                "top": 5807958,
+                "median": 839808,
+                "weak": 52372
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                8
+              ],
+              "revRanks": [
+                10
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 20,
+          "shareMed": 0.0524,
+          "revMed": 451451,
+          "ebitdaMed": 58999,
+          "oqMed": 48,
+          "shareRankMed": 8,
+          "shareRankHist": {
+            "8": 1
+          },
+          "revRankMed": 10,
+          "sharePercentileMed": 65,
+          "playerSample": {
+            "id": "uo7sssss",
+            "call": "KTYO",
+            "freq": "640 AM",
+            "format": "TOP40",
+            "formatLabel": "Top 40",
+            "band": "AM",
+            "share": 0.0524,
+            "rev": 451451,
+            "ebitda": 58999,
+            "oq": 48,
+            "signalPower": "10kw",
+            "signalReach": 1,
+            "signalMetric": 9,
+            "shareRank": 8,
+            "revRank": 10,
+            "oqRank": 8,
+            "signalRank": 11,
+            "sharePercentile": 65,
+            "revPercentile": 55
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      },
+      "1985": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "losangeles",
+            "targetYear": 1985,
+            "anchor": 10,
+            "genScen": "chrwar",
+            "gYear": 1985,
+            "gPeriod": 1,
+            "commercialCount": 32,
+            "cash": 19061069,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "c3u77777",
+                "call": "KJCK",
+                "freq": "640 AM",
+                "format": "TOP40",
+                "formatLabel": "CHR",
+                "band": "AM",
+                "share": 0.0123,
+                "rev": 62234,
+                "ebitda": -1057858,
+                "oq": 62,
+                "signalPower": "50kw",
+                "signalReach": 1,
+                "signalMetric": 49,
+                "shareRank": 25,
+                "revRank": 27,
+                "oqRank": 3,
+                "signalRank": 12,
+                "sharePercentile": 25,
+                "revPercentile": 18.8
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.0297524903125,
+                "top": 0.07891377,
+                "median": 0.02285728,
+                "weak": 0.00314702
+              },
+              "rev": {
+                "avg": 2615324,
+                "top": 11759735,
+                "median": 1364978,
+                "weak": 32040
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                25
+              ],
+              "revRanks": [
+                27
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 32,
+          "shareMed": 0.0123,
+          "revMed": 62234,
+          "ebitdaMed": -1057858,
+          "oqMed": 62,
+          "shareRankMed": 25,
+          "shareRankHist": {
+            "25": 1
+          },
+          "revRankMed": 27,
+          "sharePercentileMed": 25,
+          "playerSample": {
+            "id": "c3u77777",
+            "call": "KJCK",
+            "freq": "640 AM",
+            "format": "TOP40",
+            "formatLabel": "CHR",
+            "band": "AM",
+            "share": 0.0123,
+            "rev": 62234,
+            "ebitda": -1057858,
+            "oq": 62,
+            "signalPower": "50kw",
+            "signalReach": 1,
+            "signalMetric": 49,
+            "shareRank": 25,
+            "revRank": 27,
+            "oqRank": 3,
+            "signalRank": 12,
+            "sharePercentile": 25,
+            "revPercentile": 18.8
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      },
+      "2000": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "losangeles",
+            "targetYear": 2000,
+            "anchor": 10,
+            "genScen": "harness2000",
+            "gYear": 2000,
+            "gPeriod": 1,
+            "commercialCount": 36,
+            "cash": 3890807,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "5rb",
+                "call": "KBKF",
+                "freq": "640 AM",
+                "format": "TOP40",
+                "formatLabel": "CHR",
+                "band": "AM",
+                "share": 0.0037,
+                "rev": 32295,
+                "ebitda": -982592,
+                "oq": 57,
+                "signalPower": "10kw",
+                "signalReach": 1,
+                "signalMetric": 9,
+                "shareRank": 31,
+                "revRank": 35,
+                "oqRank": 6,
+                "signalRank": 23,
+                "sharePercentile": 16.7,
+                "revPercentile": 5.6
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.025463747222222225,
+                "top": 0.07916869,
+                "median": 0.01516678,
+                "weak": 0.00235907
+              },
+              "rev": {
+                "avg": 7687918,
+                "top": 26980270,
+                "median": 1184909,
+                "weak": 90616
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                31
+              ],
+              "revRanks": [
+                35
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 36,
+          "shareMed": 0.0037,
+          "revMed": 32295,
+          "ebitdaMed": -982592,
+          "oqMed": 57,
+          "shareRankMed": 31,
+          "shareRankHist": {
+            "31": 1
+          },
+          "revRankMed": 35,
+          "sharePercentileMed": 16.7,
+          "playerSample": {
+            "id": "5rb",
+            "call": "KBKF",
+            "freq": "640 AM",
+            "format": "TOP40",
+            "formatLabel": "CHR",
+            "band": "AM",
+            "share": 0.0037,
+            "rev": 32295,
+            "ebitda": -982592,
+            "oq": 57,
+            "signalPower": "10kw",
+            "signalReach": 1,
+            "signalMetric": 9,
+            "shareRank": 31,
+            "revRank": 35,
+            "oqRank": 6,
+            "signalRank": 23,
+            "sharePercentile": 16.7,
+            "revPercentile": 5.6
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      }
+    },
+    "chicago": {
+      "1970": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "chicago",
+            "targetYear": 1970,
+            "anchor": 10,
+            "genScen": "under",
+            "gYear": 1970,
+            "gPeriod": 1,
+            "commercialCount": 20,
+            "cash": 997790,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "zr9eeeee",
+                "call": "WGFO",
+                "freq": "720 AM",
+                "format": "TOP40",
+                "formatLabel": "Top 40",
+                "band": "AM",
+                "share": 0.0716,
+                "rev": 460357,
+                "ebitda": 12222,
+                "oq": 45,
+                "signalPower": "50kw",
+                "signalReach": 1,
+                "signalMetric": 49,
+                "shareRank": 4,
+                "revRank": 7,
+                "oqRank": 9,
+                "signalRank": 6,
+                "sharePercentile": 85,
+                "revPercentile": 70
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.049193997499999996,
+                "top": 0.16811691,
+                "median": 0.03451389,
+                "weak": 0.01031005
+              },
+              "rev": {
+                "avg": 629442,
+                "top": 5428849,
+                "median": 345051,
+                "weak": 23394
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                4
+              ],
+              "revRanks": [
+                7
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 20,
+          "shareMed": 0.0716,
+          "revMed": 460357,
+          "ebitdaMed": 12222,
+          "oqMed": 45,
+          "shareRankMed": 4,
+          "shareRankHist": {
+            "4": 1
+          },
+          "revRankMed": 7,
+          "sharePercentileMed": 85,
+          "playerSample": {
+            "id": "zr9eeeee",
+            "call": "WGFO",
+            "freq": "720 AM",
+            "format": "TOP40",
+            "formatLabel": "Top 40",
+            "band": "AM",
+            "share": 0.0716,
+            "rev": 460357,
+            "ebitda": 12222,
+            "oq": 45,
+            "signalPower": "50kw",
+            "signalReach": 1,
+            "signalMetric": 49,
+            "shareRank": 4,
+            "revRank": 7,
+            "oqRank": 9,
+            "signalRank": 6,
+            "sharePercentile": 85,
+            "revPercentile": 70
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      },
+      "1985": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "chicago",
+            "targetYear": 1985,
+            "anchor": 10,
+            "genScen": "chrwar",
+            "gYear": 1985,
+            "gPeriod": 1,
+            "commercialCount": 31,
+            "cash": 14629963,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "c2klllll",
+                "call": "WUNM",
+                "freq": "720 AM",
+                "format": "TOP40",
+                "formatLabel": "CHR",
+                "band": "AM",
+                "share": 0.0082,
+                "rev": 19584,
+                "ebitda": -899076,
+                "oq": 56,
+                "signalPower": "10kw",
+                "signalReach": 1,
+                "signalMetric": 9,
+                "shareRank": 27,
+                "revRank": 31,
+                "oqRank": 5,
+                "signalRank": 19,
+                "sharePercentile": 16.1,
+                "revPercentile": 3.2
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.030602781290322578,
+                "top": 0.08414004,
+                "median": 0.01992867,
+                "weak": 0.00360288
+              },
+              "rev": {
+                "avg": 1808401,
+                "top": 7770170,
+                "median": 102987,
+                "weak": 26309
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                27
+              ],
+              "revRanks": [
+                31
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 31,
+          "shareMed": 0.0082,
+          "revMed": 19584,
+          "ebitdaMed": -899076,
+          "oqMed": 56,
+          "shareRankMed": 27,
+          "shareRankHist": {
+            "27": 1
+          },
+          "revRankMed": 31,
+          "sharePercentileMed": 16.1,
+          "playerSample": {
+            "id": "c2klllll",
+            "call": "WUNM",
+            "freq": "720 AM",
+            "format": "TOP40",
+            "formatLabel": "CHR",
+            "band": "AM",
+            "share": 0.0082,
+            "rev": 19584,
+            "ebitda": -899076,
+            "oq": 56,
+            "signalPower": "10kw",
+            "signalReach": 1,
+            "signalMetric": 9,
+            "shareRank": 27,
+            "revRank": 31,
+            "oqRank": 5,
+            "signalRank": 19,
+            "sharePercentile": 16.1,
+            "revPercentile": 3.2
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      },
+      "2000": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "chicago",
+            "targetYear": 2000,
+            "anchor": 10,
+            "genScen": "harness2000",
+            "gYear": 2000,
+            "gPeriod": 1,
+            "commercialCount": 37,
+            "cash": 2986316,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "3b477777",
+                "call": "WRDB",
+                "freq": "720 AM",
+                "format": "TOP40",
+                "formatLabel": "CHR",
+                "band": "AM",
+                "share": 0.0057,
+                "rev": 38926,
+                "ebitda": -1768838,
+                "oq": 61,
+                "signalPower": "50kw",
+                "signalReach": 1,
+                "signalMetric": 49,
+                "shareRank": 31,
+                "revRank": 34,
+                "oqRank": 4,
+                "signalRank": 14,
+                "sharePercentile": 18.9,
+                "revPercentile": 10.8
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.023828191351351353,
+                "top": 0.08150952,
+                "median": 0.01301174,
+                "weak": 0.00218781
+              },
+              "rev": {
+                "avg": 5010607,
+                "top": 28261574,
+                "median": 180819,
+                "weak": 52961
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                31
+              ],
+              "revRanks": [
+                34
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 37,
+          "shareMed": 0.0057,
+          "revMed": 38926,
+          "ebitdaMed": -1768838,
+          "oqMed": 61,
+          "shareRankMed": 31,
+          "shareRankHist": {
+            "31": 1
+          },
+          "revRankMed": 34,
+          "sharePercentileMed": 18.9,
+          "playerSample": {
+            "id": "3b477777",
+            "call": "WRDB",
+            "freq": "720 AM",
+            "format": "TOP40",
+            "formatLabel": "CHR",
+            "band": "AM",
+            "share": 0.0057,
+            "rev": 38926,
+            "ebitda": -1768838,
+            "oq": 61,
+            "signalPower": "50kw",
+            "signalReach": 1,
+            "signalMetric": 49,
+            "shareRank": 31,
+            "revRank": 34,
+            "oqRank": 4,
+            "signalRank": 14,
+            "sharePercentile": 18.9,
+            "revPercentile": 10.8
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      }
+    },
+    "seattle": {
+      "1970": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "seattle",
+            "targetYear": 1970,
+            "anchor": 10,
+            "genScen": "under",
+            "gYear": 1970,
+            "gPeriod": 1,
+            "commercialCount": 14,
+            "cash": 378302,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "q0c",
+                "call": "KHGO",
+                "freq": "800 AM",
+                "format": "TOP40",
+                "formatLabel": "Top 40",
+                "band": "AM",
+                "share": 0.0863,
+                "rev": 526723,
+                "ebitda": 170496,
+                "oq": 49,
+                "signalPower": "10kw",
+                "signalReach": 1,
+                "signalMetric": 9,
+                "shareRank": 6,
+                "revRank": 6,
+                "oqRank": 6,
+                "signalRank": 6,
+                "sharePercentile": 64.3,
+                "revPercentile": 64.3
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.07058565714285715,
+                "top": 0.16806179,
+                "median": 0.0861037,
+                "weak": 0.01504912
+              },
+              "rev": {
+                "avg": 639977,
+                "top": 2582763,
+                "median": 481176,
+                "weak": 23452
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                6
+              ],
+              "revRanks": [
+                6
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 14,
+          "shareMed": 0.0863,
+          "revMed": 526723,
+          "ebitdaMed": 170496,
+          "oqMed": 49,
+          "shareRankMed": 6,
+          "shareRankHist": {
+            "6": 1
+          },
+          "revRankMed": 6,
+          "sharePercentileMed": 64.3,
+          "playerSample": {
+            "id": "q0c",
+            "call": "KHGO",
+            "freq": "800 AM",
+            "format": "TOP40",
+            "formatLabel": "Top 40",
+            "band": "AM",
+            "share": 0.0863,
+            "rev": 526723,
+            "ebitda": 170496,
+            "oq": 49,
+            "signalPower": "10kw",
+            "signalReach": 1,
+            "signalMetric": 9,
+            "shareRank": 6,
+            "revRank": 6,
+            "oqRank": 6,
+            "signalRank": 6,
+            "sharePercentile": 64.3,
+            "revPercentile": 64.3
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      },
+      "1985": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "seattle",
+            "targetYear": 1985,
+            "anchor": 10,
+            "genScen": "chrwar",
+            "gYear": 1985,
+            "gPeriod": 1,
+            "commercialCount": 25,
+            "cash": 5546801,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "si6lllll",
+                "call": "KSDT",
+                "freq": "800 AM",
+                "format": "TOP40",
+                "formatLabel": "CHR",
+                "band": "AM",
+                "share": 0.0099,
+                "rev": 40299,
+                "ebitda": -503678,
+                "oq": 54,
+                "signalPower": "5kw",
+                "signalReach": 1,
+                "signalMetric": 4,
+                "shareRank": 22,
+                "revRank": 22,
+                "oqRank": 7,
+                "signalRank": 19,
+                "sharePercentile": 16,
+                "revPercentile": 16
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.0380459088,
+                "top": 0.11263877,
+                "median": 0.03183399,
+                "weak": 0.00409901
+              },
+              "rev": {
+                "avg": 1595964,
+                "top": 17018806,
+                "median": 386296,
+                "weak": 14198
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                22
+              ],
+              "revRanks": [
+                22
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 25,
+          "shareMed": 0.0099,
+          "revMed": 40299,
+          "ebitdaMed": -503678,
+          "oqMed": 54,
+          "shareRankMed": 22,
+          "shareRankHist": {
+            "22": 1
+          },
+          "revRankMed": 22,
+          "sharePercentileMed": 16,
+          "playerSample": {
+            "id": "si6lllll",
+            "call": "KSDT",
+            "freq": "800 AM",
+            "format": "TOP40",
+            "formatLabel": "CHR",
+            "band": "AM",
+            "share": 0.0099,
+            "rev": 40299,
+            "ebitda": -503678,
+            "oq": 54,
+            "signalPower": "5kw",
+            "signalReach": 1,
+            "signalMetric": 4,
+            "shareRank": 22,
+            "revRank": 22,
+            "oqRank": 7,
+            "signalRank": 19,
+            "sharePercentile": 16,
+            "revPercentile": 16
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      },
+      "2000": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "seattle",
+            "targetYear": 2000,
+            "anchor": 10,
+            "genScen": "harness2000",
+            "gYear": 2000,
+            "gPeriod": 1,
+            "commercialCount": 27,
+            "cash": 1132231,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "dks77777",
+                "call": "KEWF",
+                "freq": "800 AM",
+                "format": "TOP40",
+                "formatLabel": "CHR",
+                "band": "AM",
+                "share": 0.0072,
+                "rev": 127080,
+                "ebitda": -642273,
+                "oq": 58,
+                "signalPower": "10kw",
+                "signalReach": 1,
+                "signalMetric": 9,
+                "shareRank": 23,
+                "revRank": 24,
+                "oqRank": 5,
+                "signalRank": 17,
+                "sharePercentile": 18.5,
+                "revPercentile": 14.8
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.03411700222222222,
+                "top": 0.09237755,
+                "median": 0.03421992,
+                "weak": 0.00313547
+              },
+              "rev": {
+                "avg": 4886918,
+                "top": 10211513,
+                "median": 2452280,
+                "weak": 50975
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                23
+              ],
+              "revRanks": [
+                24
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 27,
+          "shareMed": 0.0072,
+          "revMed": 127080,
+          "ebitdaMed": -642273,
+          "oqMed": 58,
+          "shareRankMed": 23,
+          "shareRankHist": {
+            "23": 1
+          },
+          "revRankMed": 24,
+          "sharePercentileMed": 18.5,
+          "playerSample": {
+            "id": "dks77777",
+            "call": "KEWF",
+            "freq": "800 AM",
+            "format": "TOP40",
+            "formatLabel": "CHR",
+            "band": "AM",
+            "share": 0.0072,
+            "rev": 127080,
+            "ebitda": -642273,
+            "oq": 58,
+            "signalPower": "10kw",
+            "signalReach": 1,
+            "signalMetric": 9,
+            "shareRank": 23,
+            "revRank": 24,
+            "oqRank": 5,
+            "signalRank": 17,
+            "sharePercentile": 18.5,
+            "revPercentile": 14.8
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      }
+    },
+    "sanfrancisco": {
+      "1970": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "sanfrancisco",
+            "targetYear": 1970,
+            "anchor": 10,
+            "genScen": "under",
+            "gYear": 1970,
+            "gPeriod": 1,
+            "commercialCount": 14,
+            "cash": 356264,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "eau",
+                "call": "KYDH",
+                "freq": "610 AM",
+                "format": "TOP40",
+                "formatLabel": "Top 40",
+                "band": "AM",
+                "share": 0.0493,
+                "rev": 195912,
+                "ebitda": -18301,
+                "oq": 47,
+                "signalPower": "5kw",
+                "signalReach": 1,
+                "signalMetric": 4,
+                "shareRank": 7,
+                "revRank": 9,
+                "oqRank": 9,
+                "signalRank": 10,
+                "sharePercentile": 57.1,
+                "revPercentile": 42.9
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.07060806214285714,
+                "top": 0.17568261,
+                "median": 0.04926461,
+                "weak": 0.01266804
+              },
+              "rev": {
+                "avg": 616673,
+                "top": 2270941,
+                "median": 195912,
+                "weak": 14388
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                7
+              ],
+              "revRanks": [
+                9
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 14,
+          "shareMed": 0.0493,
+          "revMed": 195912,
+          "ebitdaMed": -18301,
+          "oqMed": 47,
+          "shareRankMed": 7,
+          "shareRankHist": {
+            "7": 1
+          },
+          "revRankMed": 9,
+          "sharePercentileMed": 57.1,
+          "playerSample": {
+            "id": "eau",
+            "call": "KYDH",
+            "freq": "610 AM",
+            "format": "TOP40",
+            "formatLabel": "Top 40",
+            "band": "AM",
+            "share": 0.0493,
+            "rev": 195912,
+            "ebitda": -18301,
+            "oq": 47,
+            "signalPower": "5kw",
+            "signalReach": 1,
+            "signalMetric": 4,
+            "shareRank": 7,
+            "revRank": 9,
+            "oqRank": 9,
+            "signalRank": 10,
+            "sharePercentile": 57.1,
+            "revPercentile": 42.9
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      },
+      "1985": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "sanfrancisco",
+            "targetYear": 1985,
+            "anchor": 10,
+            "genScen": "chrwar",
+            "gYear": 1985,
+            "gPeriod": 1,
+            "commercialCount": 26,
+            "cash": 5223664,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "igasssss",
+                "call": "KIYZ",
+                "freq": "610 AM",
+                "format": "TOP40",
+                "formatLabel": "CHR",
+                "band": "AM",
+                "share": 0.0154,
+                "rev": 133153,
+                "ebitda": -531266,
+                "oq": 54,
+                "signalPower": "10kw",
+                "signalReach": 1,
+                "signalMetric": 9,
+                "shareRank": 21,
+                "revRank": 21,
+                "oqRank": 7,
+                "signalRank": 15,
+                "sharePercentile": 23.1,
+                "revPercentile": 23.1
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.036273101538461534,
+                "top": 0.0822953,
+                "median": 0.03327467,
+                "weak": 0.00407163
+              },
+              "rev": {
+                "avg": 1478702,
+                "top": 2620838,
+                "median": 504556,
+                "weak": 19985
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                21
+              ],
+              "revRanks": [
+                21
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 26,
+          "shareMed": 0.0154,
+          "revMed": 133153,
+          "ebitdaMed": -531266,
+          "oqMed": 54,
+          "shareRankMed": 21,
+          "shareRankHist": {
+            "21": 1
+          },
+          "revRankMed": 21,
+          "sharePercentileMed": 23.1,
+          "playerSample": {
+            "id": "igasssss",
+            "call": "KIYZ",
+            "freq": "610 AM",
+            "format": "TOP40",
+            "formatLabel": "CHR",
+            "band": "AM",
+            "share": 0.0154,
+            "rev": 133153,
+            "ebitda": -531266,
+            "oq": 54,
+            "signalPower": "10kw",
+            "signalReach": 1,
+            "signalMetric": 9,
+            "shareRank": 21,
+            "revRank": 21,
+            "oqRank": 7,
+            "signalRank": 15,
+            "sharePercentile": 23.1,
+            "revPercentile": 23.1
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      },
+      "2000": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "sanfrancisco",
+            "targetYear": 2000,
+            "anchor": 10,
+            "genScen": "harness2000",
+            "gYear": 2000,
+            "gPeriod": 1,
+            "commercialCount": 28,
+            "cash": 1066271,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "wyjeeeee",
+                "call": "KXTK",
+                "freq": "610 AM",
+                "format": "TOP40",
+                "formatLabel": "CHR",
+                "band": "AM",
+                "share": 0.0044,
+                "rev": 58639,
+                "ebitda": -588291,
+                "oq": 60,
+                "signalPower": "5kw",
+                "signalReach": 1,
+                "signalMetric": 4,
+                "shareRank": 25,
+                "revRank": 25,
+                "oqRank": 4,
+                "signalRank": 22,
+                "sharePercentile": 14.3,
+                "revPercentile": 14.3
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.03272734821428572,
+                "top": 0.11337963,
+                "median": 0.0296412,
+                "weak": 0.00282407
+              },
+              "rev": {
+                "avg": 4540794,
+                "top": 48479136,
+                "median": 1186440,
+                "weak": 31199
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                25
+              ],
+              "revRanks": [
+                25
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 28,
+          "shareMed": 0.0044,
+          "revMed": 58639,
+          "ebitdaMed": -588291,
+          "oqMed": 60,
+          "shareRankMed": 25,
+          "shareRankHist": {
+            "25": 1
+          },
+          "revRankMed": 25,
+          "sharePercentileMed": 14.3,
+          "playerSample": {
+            "id": "wyjeeeee",
+            "call": "KXTK",
+            "freq": "610 AM",
+            "format": "TOP40",
+            "formatLabel": "CHR",
+            "band": "AM",
+            "share": 0.0044,
+            "rev": 58639,
+            "ebitda": -588291,
+            "oq": 60,
+            "signalPower": "5kw",
+            "signalReach": 1,
+            "signalMetric": 4,
+            "shareRank": 25,
+            "revRank": 25,
+            "oqRank": 4,
+            "signalRank": 22,
+            "sharePercentile": 14.3,
+            "revPercentile": 14.3
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      }
+    },
+    "atlanta": {
+      "1970": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "atlanta",
+            "targetYear": 1970,
+            "anchor": 10,
+            "genScen": "under",
+            "gYear": 1970,
+            "gPeriod": 1,
+            "commercialCount": 14,
+            "cash": 255000,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "xz7eeeee",
+                "call": "WLHY",
+                "freq": "640 AM",
+                "format": "TOP40",
+                "formatLabel": "Top 40",
+                "band": "AM",
+                "share": 0.0813,
+                "rev": 395665,
+                "ebitda": 159791,
+                "oq": 49,
+                "signalPower": "10kw",
+                "signalReach": 1,
+                "signalMetric": 9,
+                "shareRank": 6,
+                "revRank": 6,
+                "oqRank": 6,
+                "signalRank": 6,
+                "sharePercentile": 64.3,
+                "revPercentile": 64.3
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.07047883071428572,
+                "top": 0.16143852,
+                "median": 0.07915081,
+                "weak": 0.01491541
+              },
+              "rev": {
+                "avg": 489600,
+                "top": 1940701,
+                "median": 314457,
+                "weak": 19778
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                6
+              ],
+              "revRanks": [
+                6
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 14,
+          "shareMed": 0.0813,
+          "revMed": 395665,
+          "ebitdaMed": 159791,
+          "oqMed": 49,
+          "shareRankMed": 6,
+          "shareRankHist": {
+            "6": 1
+          },
+          "revRankMed": 6,
+          "sharePercentileMed": 64.3,
+          "playerSample": {
+            "id": "xz7eeeee",
+            "call": "WLHY",
+            "freq": "640 AM",
+            "format": "TOP40",
+            "formatLabel": "Top 40",
+            "band": "AM",
+            "share": 0.0813,
+            "rev": 395665,
+            "ebitda": 159791,
+            "oq": 49,
+            "signalPower": "10kw",
+            "signalReach": 1,
+            "signalMetric": 9,
+            "shareRank": 6,
+            "revRank": 6,
+            "oqRank": 6,
+            "signalRank": 6,
+            "sharePercentile": 64.3,
+            "revPercentile": 64.3
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      },
+      "1985": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "atlanta",
+            "targetYear": 1985,
+            "anchor": 10,
+            "genScen": "chrwar",
+            "gYear": 1985,
+            "gPeriod": 1,
+            "commercialCount": 25,
+            "cash": 3738902,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "qt7lllll",
+                "call": "WOOE",
+                "freq": "640 AM",
+                "format": "TOP40",
+                "formatLabel": "CHR",
+                "band": "AM",
+                "share": 0.0101,
+                "rev": 49872,
+                "ebitda": -317411,
+                "oq": 62,
+                "signalPower": "5kw",
+                "signalReach": 1,
+                "signalMetric": 4,
+                "shareRank": 22,
+                "revRank": 22,
+                "oqRank": 4,
+                "signalRank": 19,
+                "sharePercentile": 16,
+                "revPercentile": 16
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.038340012799999997,
+                "top": 0.10996027,
+                "median": 0.03129825,
+                "weak": 0.00440674
+              },
+              "rev": {
+                "avg": 1220957,
+                "top": 12049250,
+                "median": 342785,
+                "weak": 12380
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                22
+              ],
+              "revRanks": [
+                22
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 25,
+          "shareMed": 0.0101,
+          "revMed": 49872,
+          "ebitdaMed": -317411,
+          "oqMed": 62,
+          "shareRankMed": 22,
+          "shareRankHist": {
+            "22": 1
+          },
+          "revRankMed": 22,
+          "sharePercentileMed": 16,
+          "playerSample": {
+            "id": "qt7lllll",
+            "call": "WOOE",
+            "freq": "640 AM",
+            "format": "TOP40",
+            "formatLabel": "CHR",
+            "band": "AM",
+            "share": 0.0101,
+            "rev": 49872,
+            "ebitda": -317411,
+            "oq": 62,
+            "signalPower": "5kw",
+            "signalReach": 1,
+            "signalMetric": 4,
+            "shareRank": 22,
+            "revRank": 22,
+            "oqRank": 4,
+            "signalRank": 19,
+            "sharePercentile": 16,
+            "revPercentile": 16
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      },
+      "2000": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "atlanta",
+            "targetYear": 2000,
+            "anchor": 10,
+            "genScen": "harness2000",
+            "gYear": 2000,
+            "gPeriod": 1,
+            "commercialCount": 27,
+            "cash": 763197,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "ruxlllll",
+                "call": "WXFN",
+                "freq": "640 AM",
+                "format": "TOP40",
+                "formatLabel": "CHR",
+                "band": "AM",
+                "share": 0.007,
+                "rev": 87477,
+                "ebitda": -555423,
+                "oq": 56,
+                "signalPower": "10kw",
+                "signalReach": 1,
+                "signalMetric": 9,
+                "shareRank": 23,
+                "revRank": 24,
+                "oqRank": 6,
+                "signalRank": 17,
+                "sharePercentile": 18.5,
+                "revPercentile": 14.8
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.03442558370370371,
+                "top": 0.08670024,
+                "median": 0.032867,
+                "weak": 0.00324566
+              },
+              "rev": {
+                "avg": 3738629,
+                "top": 15793747,
+                "median": 1323970,
+                "weak": 33499
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                23
+              ],
+              "revRanks": [
+                24
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 27,
+          "shareMed": 0.007,
+          "revMed": 87477,
+          "ebitdaMed": -555423,
+          "oqMed": 56,
+          "shareRankMed": 23,
+          "shareRankHist": {
+            "23": 1
+          },
+          "revRankMed": 24,
+          "sharePercentileMed": 18.5,
+          "playerSample": {
+            "id": "ruxlllll",
+            "call": "WXFN",
+            "freq": "640 AM",
+            "format": "TOP40",
+            "formatLabel": "CHR",
+            "band": "AM",
+            "share": 0.007,
+            "rev": 87477,
+            "ebitda": -555423,
+            "oq": 56,
+            "signalPower": "10kw",
+            "signalReach": 1,
+            "signalMetric": 9,
+            "shareRank": 23,
+            "revRank": 24,
+            "oqRank": 6,
+            "signalRank": 17,
+            "sharePercentile": 18.5,
+            "revPercentile": 14.8
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      }
+    },
+    "nashville": {
+      "1970": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "nashville",
+            "targetYear": 1970,
+            "anchor": 10,
+            "genScen": "under",
+            "gYear": 1970,
+            "gPeriod": 1,
+            "commercialCount": 13,
+            "cash": 155000,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "amllllll",
+                "call": "WBCQ",
+                "freq": "760 AM",
+                "format": "TOP40",
+                "formatLabel": "Top 40",
+                "band": "AM",
+                "share": 0.049,
+                "rev": 103301,
+                "ebitda": -30978,
+                "oq": 44,
+                "signalPower": "5kw",
+                "signalReach": 1,
+                "signalMetric": 4,
+                "shareRank": 7,
+                "revRank": 8,
+                "oqRank": 9,
+                "signalRank": 8,
+                "sharePercentile": 53.8,
+                "revPercentile": 46.2
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.07612344846153847,
+                "top": 0.19446842,
+                "median": 0.04901115,
+                "weak": 0.01486096
+              },
+              "rev": {
+                "avg": 332769,
+                "top": 1791450,
+                "median": 103301,
+                "weak": 11995
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                7
+              ],
+              "revRanks": [
+                8
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 13,
+          "shareMed": 0.049,
+          "revMed": 103301,
+          "ebitdaMed": -30978,
+          "oqMed": 44,
+          "shareRankMed": 7,
+          "shareRankHist": {
+            "7": 1
+          },
+          "revRankMed": 8,
+          "sharePercentileMed": 53.8,
+          "playerSample": {
+            "id": "amllllll",
+            "call": "WBCQ",
+            "freq": "760 AM",
+            "format": "TOP40",
+            "formatLabel": "Top 40",
+            "band": "AM",
+            "share": 0.049,
+            "rev": 103301,
+            "ebitda": -30978,
+            "oq": 44,
+            "signalPower": "5kw",
+            "signalReach": 1,
+            "signalMetric": 4,
+            "shareRank": 7,
+            "revRank": 8,
+            "oqRank": 9,
+            "signalRank": 8,
+            "sharePercentile": 53.8,
+            "revPercentile": 46.2
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      },
+      "1985": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "nashville",
+            "targetYear": 1985,
+            "anchor": 10,
+            "genScen": "chrwar",
+            "gYear": 1985,
+            "gPeriod": 1,
+            "commercialCount": 21,
+            "cash": 2272666,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "s2oeeeee",
+                "call": "WHPM",
+                "freq": "760 AM",
+                "format": "TOP40",
+                "formatLabel": "CHR",
+                "band": "AM",
+                "share": 0.0253,
+                "rev": 164432,
+                "ebitda": -369717,
+                "oq": 55,
+                "signalPower": "10kw",
+                "signalReach": 1,
+                "signalMetric": 9,
+                "shareRank": 17,
+                "revRank": 17,
+                "oqRank": 5,
+                "signalRank": 11,
+                "sharePercentile": 23.8,
+                "revPercentile": 23.8
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.04559101333333334,
+                "top": 0.1145656,
+                "median": 0.03587602,
+                "weak": 0.0052995
+              },
+              "rev": {
+                "avg": 917356,
+                "top": 4345451,
+                "median": 224936,
+                "weak": 12010
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                17
+              ],
+              "revRanks": [
+                17
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 21,
+          "shareMed": 0.0253,
+          "revMed": 164432,
+          "ebitdaMed": -369717,
+          "oqMed": 55,
+          "shareRankMed": 17,
+          "shareRankHist": {
+            "17": 1
+          },
+          "revRankMed": 17,
+          "sharePercentileMed": 23.8,
+          "playerSample": {
+            "id": "s2oeeeee",
+            "call": "WHPM",
+            "freq": "760 AM",
+            "format": "TOP40",
+            "formatLabel": "CHR",
+            "band": "AM",
+            "share": 0.0253,
+            "rev": 164432,
+            "ebitda": -369717,
+            "oq": 55,
+            "signalPower": "10kw",
+            "signalReach": 1,
+            "signalMetric": 9,
+            "shareRank": 17,
+            "revRank": 17,
+            "oqRank": 5,
+            "signalRank": 11,
+            "sharePercentile": 23.8,
+            "revPercentile": 23.8
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      },
+      "2000": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "nashville",
+            "targetYear": 2000,
+            "anchor": 10,
+            "genScen": "harness2000",
+            "gYear": 2000,
+            "gPeriod": 1,
+            "commercialCount": 21,
+            "cash": 463904,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "gkflllll",
+                "call": "WIGR",
+                "freq": "760 AM",
+                "format": "TOP40",
+                "formatLabel": "CHR",
+                "band": "AM",
+                "share": 0.0071,
+                "rev": 60831,
+                "ebitda": -384446,
+                "oq": 56,
+                "signalPower": "5kw",
+                "signalReach": 1,
+                "signalMetric": 4,
+                "shareRank": 17,
+                "revRank": 16,
+                "oqRank": 7,
+                "signalRank": 14,
+                "sharePercentile": 23.8,
+                "revPercentile": 28.6
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.043718122380952386,
+                "top": 0.145577,
+                "median": 0.03105168,
+                "weak": 0.00314078
+              },
+              "rev": {
+                "avg": 3033709,
+                "top": 27422675,
+                "median": 1164985,
+                "weak": 22083
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                17
+              ],
+              "revRanks": [
+                16
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 21,
+          "shareMed": 0.0071,
+          "revMed": 60831,
+          "ebitdaMed": -384446,
+          "oqMed": 56,
+          "shareRankMed": 17,
+          "shareRankHist": {
+            "17": 1
+          },
+          "revRankMed": 16,
+          "sharePercentileMed": 23.8,
+          "playerSample": {
+            "id": "gkflllll",
+            "call": "WIGR",
+            "freq": "760 AM",
+            "format": "TOP40",
+            "formatLabel": "CHR",
+            "band": "AM",
+            "share": 0.0071,
+            "rev": 60831,
+            "ebitda": -384446,
+            "oq": 56,
+            "signalPower": "5kw",
+            "signalReach": 1,
+            "signalMetric": 4,
+            "shareRank": 17,
+            "revRank": 16,
+            "oqRank": 7,
+            "signalRank": 14,
+            "sharePercentile": 23.8,
+            "revPercentile": 28.6
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      }
+    },
+    "wichita": {
+      "1970": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "wichita",
+            "targetYear": 1970,
+            "anchor": 10,
+            "genScen": "under",
+            "gYear": 1970,
+            "gPeriod": 1,
+            "commercialCount": 8,
+            "cash": 155000,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "adosssss",
+                "call": "KUBX",
+                "freq": "1070 AM",
+                "format": "TOP40",
+                "formatLabel": "Top 40",
+                "band": "AM",
+                "share": 0.1502,
+                "rev": 358829,
+                "ebitda": 133629,
+                "oq": 49,
+                "signalPower": "10kw",
+                "signalReach": 1,
+                "signalMetric": 9,
+                "shareRank": 4,
+                "revRank": 4,
+                "oqRank": 5,
+                "signalRank": 5,
+                "sharePercentile": 62.5,
+                "revPercentile": 62.5
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.1217426725,
+                "top": 0.21254072,
+                "median": 0.15015034,
+                "weak": 0.0318216
+              },
+              "rev": {
+                "avg": 369197,
+                "top": 927380,
+                "median": 358829,
+                "weak": 11522
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                4
+              ],
+              "revRanks": [
+                4
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 8,
+          "shareMed": 0.1502,
+          "revMed": 358829,
+          "ebitdaMed": 133629,
+          "oqMed": 49,
+          "shareRankMed": 4,
+          "shareRankHist": {
+            "4": 1
+          },
+          "revRankMed": 4,
+          "sharePercentileMed": 62.5,
+          "playerSample": {
+            "id": "adosssss",
+            "call": "KUBX",
+            "freq": "1070 AM",
+            "format": "TOP40",
+            "formatLabel": "Top 40",
+            "band": "AM",
+            "share": 0.1502,
+            "rev": 358829,
+            "ebitda": 133629,
+            "oq": 49,
+            "signalPower": "10kw",
+            "signalReach": 1,
+            "signalMetric": 9,
+            "shareRank": 4,
+            "revRank": 4,
+            "oqRank": 5,
+            "signalRank": 5,
+            "sharePercentile": 62.5,
+            "revPercentile": 62.5
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      },
+      "1985": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "wichita",
+            "targetYear": 1985,
+            "anchor": 10,
+            "genScen": "chrwar",
+            "gYear": 1985,
+            "gPeriod": 1,
+            "commercialCount": 12,
+            "cash": 2272666,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "919eeeee",
+                "call": "KOSE",
+                "freq": "1070 AM",
+                "format": "TOP40",
+                "formatLabel": "CHR",
+                "band": "AM",
+                "share": 0.0675,
+                "rev": 463362,
+                "ebitda": -163776,
+                "oq": 60,
+                "signalPower": "10kw",
+                "signalReach": 1,
+                "signalMetric": 9,
+                "shareRank": 8,
+                "revRank": 8,
+                "oqRank": 4,
+                "signalRank": 9,
+                "sharePercentile": 41.7,
+                "revPercentile": 41.7
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.07865119,
+                "top": 0.1487511,
+                "median": 0.08186894,
+                "weak": 0.03120776
+              },
+              "rev": {
+                "avg": 1096068,
+                "top": 3291424,
+                "median": 784417,
+                "weak": 90922
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                8
+              ],
+              "revRanks": [
+                8
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 12,
+          "shareMed": 0.0675,
+          "revMed": 463362,
+          "ebitdaMed": -163776,
+          "oqMed": 60,
+          "shareRankMed": 8,
+          "shareRankHist": {
+            "8": 1
+          },
+          "revRankMed": 8,
+          "sharePercentileMed": 41.7,
+          "playerSample": {
+            "id": "919eeeee",
+            "call": "KOSE",
+            "freq": "1070 AM",
+            "format": "TOP40",
+            "formatLabel": "CHR",
+            "band": "AM",
+            "share": 0.0675,
+            "rev": 463362,
+            "ebitda": -163776,
+            "oq": 60,
+            "signalPower": "10kw",
+            "signalReach": 1,
+            "signalMetric": 9,
+            "shareRank": 8,
+            "revRank": 8,
+            "oqRank": 4,
+            "signalRank": 9,
+            "sharePercentile": 41.7,
+            "revPercentile": 41.7
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      },
+      "2000": {
+        "runs": [
+          {
+            "ok": true,
+            "marketId": "wichita",
+            "targetYear": 2000,
+            "anchor": 10,
+            "genScen": "harness2000",
+            "gYear": 2000,
+            "gPeriod": 1,
+            "commercialCount": 20,
+            "cash": 463904,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "57fzzzzz",
+                "call": "KNGX",
+                "freq": "1070 AM",
+                "format": "TOP40",
+                "formatLabel": "CHR",
+                "band": "AM",
+                "share": 0.0165,
+                "rev": 207380,
+                "ebitda": -446612,
+                "oq": 54,
+                "signalPower": "10kw",
+                "signalReach": 1,
+                "signalMetric": 9,
+                "shareRank": 20,
+                "revRank": 18,
+                "oqRank": 5,
+                "signalRank": 17,
+                "sharePercentile": 5,
+                "revPercentile": 15
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.046929320999999996,
+                "top": 0.12494701,
+                "median": 0.04530313,
+                "weak": 0.01653443
+              },
+              "rev": {
+                "avg": 2174826,
+                "top": 7920430,
+                "median": 870836,
+                "weak": 207380
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                20
+              ],
+              "revRanks": [
+                18
+              ]
+            }
+          }
+        ],
+        "aggregate": {
+          "n": 1,
+          "commercialCountMed": 20,
+          "shareMed": 0.0165,
+          "revMed": 207380,
+          "ebitdaMed": -446612,
+          "oqMed": 54,
+          "shareRankMed": 20,
+          "shareRankHist": {
+            "20": 1
+          },
+          "revRankMed": 18,
+          "sharePercentileMed": 5,
+          "playerSample": {
+            "id": "57fzzzzz",
+            "call": "KNGX",
+            "freq": "1070 AM",
+            "format": "TOP40",
+            "formatLabel": "CHR",
+            "band": "AM",
+            "share": 0.0165,
+            "rev": 207380,
+            "ebitda": -446612,
+            "oq": 54,
+            "signalPower": "10kw",
+            "signalReach": 1,
+            "signalMetric": 9,
+            "shareRank": 20,
+            "revRank": 18,
+            "oqRank": 5,
+            "signalRank": 17,
+            "sharePercentile": 5,
+            "revPercentile": 15
+          },
+          "blueprint": {
+            "bpIndex": 1,
+            "blueprint": {
+              "type": "AM",
+              "fmt": "TOP40",
+              "pw": "50kw",
+              "str": "strong"
+            },
+            "hasBpPatch": false,
+            "bpPatch": null
+          }
+        }
+      }
+    }
+  },
+  "anchorCompare1970": {
+    "seattle": {
+      "sameBlueprintSpec": true,
+      "sameFormat": true,
+      "medianShareDeltaA10minusA16": 0.036,
+      "a10": {
+        "n": 1,
+        "commercialCountMed": 14,
+        "shareMed": 0.0866,
+        "revMed": 529637,
+        "ebitdaMed": 204930,
+        "oqMed": 54,
+        "shareRankMed": 6,
+        "shareRankHist": {
+          "6": 1
+        },
+        "revRankMed": 6,
+        "sharePercentileMed": 64.3,
+        "playerSample": {
+          "id": "8t5eeeee",
+          "call": "KHDK",
+          "freq": "800 AM",
+          "format": "TOP40",
+          "formatLabel": "Top 40",
+          "band": "AM",
+          "share": 0.0866,
+          "rev": 529637,
+          "ebitda": 204930,
+          "oq": 54,
+          "signalPower": "10kw",
+          "signalReach": 1,
+          "signalMetric": 9,
+          "shareRank": 6,
+          "revRank": 6,
+          "oqRank": 6,
+          "signalRank": 6,
+          "sharePercentile": 64.3,
+          "revPercentile": 64.3
+        },
+        "blueprint": {
+          "bpIndex": 1,
+          "blueprint": {
+            "type": "AM",
+            "fmt": "TOP40",
+            "pw": "50kw",
+            "str": "strong"
+          },
+          "hasBpPatch": false,
+          "bpPatch": null
+        }
+      },
+      "a16": {
+        "n": 1,
+        "commercialCountMed": 14,
+        "shareMed": 0.0506,
+        "revMed": 229334,
+        "ebitdaMed": -3751,
+        "oqMed": 51,
+        "shareRankMed": 7,
+        "shareRankHist": {
+          "7": 1
+        },
+        "revRankMed": 8,
+        "sharePercentileMed": 57.1,
+        "playerSample": {
+          "id": "tyi",
+          "call": "KFQP",
+          "freq": "800 AM",
+          "format": "TOP40",
+          "formatLabel": "Top 40",
+          "band": "AM",
+          "share": 0.0506,
+          "rev": 229334,
+          "ebitda": -3751,
+          "oq": 51,
+          "signalPower": "5kw",
+          "signalReach": 1,
+          "signalMetric": 4,
+          "shareRank": 7,
+          "revRank": 8,
+          "oqRank": 6,
+          "signalRank": 10,
+          "sharePercentile": 57.1,
+          "revPercentile": 50
+        },
+        "blueprint": {
+          "bpIndex": 1,
+          "blueprint": {
+            "type": "AM",
+            "fmt": "TOP40",
+            "pw": "50kw",
+            "str": "strong"
+          },
+          "hasBpPatch": false,
+          "bpPatch": null
+        }
+      },
+      "samples": [
+        {
+          "seed": 24465688,
+          "a10": {
+            "ok": true,
+            "marketId": "seattle",
+            "targetYear": 1970,
+            "anchor": 10,
+            "genScen": "under",
+            "gYear": 1970,
+            "gPeriod": 1,
+            "commercialCount": 14,
+            "cash": 378302,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "8t5eeeee",
+                "call": "KHDK",
+                "freq": "800 AM",
+                "format": "TOP40",
+                "formatLabel": "Top 40",
+                "band": "AM",
+                "share": 0.0866,
+                "rev": 529637,
+                "ebitda": 204930,
+                "oq": 54,
+                "signalPower": "10kw",
+                "signalReach": 1,
+                "signalMetric": 9,
+                "shareRank": 6,
+                "revRank": 6,
+                "oqRank": 6,
+                "signalRank": 6,
+                "sharePercentile": 64.3,
+                "revPercentile": 64.3
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.070582375,
+                "top": 0.16734249,
+                "median": 0.0858918,
+                "weak": 0.01367545
+              },
+              "rev": {
+                "avg": 639977,
+                "top": 2605288,
+                "median": 502118,
+                "weak": 24338
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                6
+              ],
+              "revRanks": [
+                6
+              ]
+            }
+          },
+          "a16": {
+            "ok": true,
+            "marketId": "seattle",
+            "targetYear": 1970,
+            "anchor": 16,
+            "genScen": "under",
+            "gYear": 1970,
+            "gPeriod": 1,
+            "commercialCount": 14,
+            "cash": 378302,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "tyi",
+                "call": "KFQP",
+                "freq": "800 AM",
+                "format": "TOP40",
+                "formatLabel": "Top 40",
+                "band": "AM",
+                "share": 0.0506,
+                "rev": 229334,
+                "ebitda": -3751,
+                "oq": 51,
+                "signalPower": "5kw",
+                "signalReach": 1,
+                "signalMetric": 4,
+                "shareRank": 7,
+                "revRank": 8,
+                "oqRank": 6,
+                "signalRank": 10,
+                "sharePercentile": 57.1,
+                "revPercentile": 50
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.07062051357142858,
+                "top": 0.17680612,
+                "median": 0.05058419,
+                "weak": 0.01256388
+              },
+              "rev": {
+                "avg": 639977,
+                "top": 2354636,
+                "median": 229334,
+                "weak": 16907
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                7
+              ],
+              "revRanks": [
+                8
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "sanfrancisco": {
+      "sameBlueprintSpec": true,
+      "sameFormat": true,
+      "medianShareDeltaA10minusA16": -0.036199999999999996,
+      "a10": {
+        "n": 1,
+        "commercialCountMed": 14,
+        "shareMed": 0.0503,
+        "revMed": 217733,
+        "ebitdaMed": 12232,
+        "oqMed": 51,
+        "shareRankMed": 7,
+        "shareRankHist": {
+          "7": 1
+        },
+        "revRankMed": 7,
+        "sharePercentileMed": 57.1,
+        "playerSample": {
+          "id": "vireeeee",
+          "call": "KHSX",
+          "freq": "610 AM",
+          "format": "TOP40",
+          "formatLabel": "Top 40",
+          "band": "AM",
+          "share": 0.0503,
+          "rev": 217733,
+          "ebitda": 12232,
+          "oq": 51,
+          "signalPower": "5kw",
+          "signalReach": 1,
+          "signalMetric": 4,
+          "shareRank": 7,
+          "revRank": 7,
+          "oqRank": 6,
+          "signalRank": 10,
+          "sharePercentile": 57.1,
+          "revPercentile": 57.1
+        },
+        "blueprint": {
+          "bpIndex": 1,
+          "blueprint": {
+            "type": "AM",
+            "fmt": "TOP40",
+            "pw": "50kw",
+            "str": "strong"
+          },
+          "hasBpPatch": false,
+          "bpPatch": null
+        }
+      },
+      "a16": {
+        "n": 1,
+        "commercialCountMed": 14,
+        "shareMed": 0.0865,
+        "revMed": 490308,
+        "ebitdaMed": 161210,
+        "oqMed": 48,
+        "shareRankMed": 7,
+        "shareRankHist": {
+          "7": 1
+        },
+        "revRankMed": 7,
+        "sharePercentileMed": 57.1,
+        "playerSample": {
+          "id": "j1c",
+          "call": "KTHQ",
+          "freq": "610 AM",
+          "format": "TOP40",
+          "formatLabel": "Top 40",
+          "band": "AM",
+          "share": 0.0865,
+          "rev": 490308,
+          "ebitda": 161210,
+          "oq": 48,
+          "signalPower": "10kw",
+          "signalReach": 1,
+          "signalMetric": 9,
+          "shareRank": 7,
+          "revRank": 7,
+          "oqRank": 7,
+          "signalRank": 6,
+          "sharePercentile": 57.1,
+          "revPercentile": 57.1
+        },
+        "blueprint": {
+          "bpIndex": 1,
+          "blueprint": {
+            "type": "AM",
+            "fmt": "TOP40",
+            "pw": "50kw",
+            "str": "strong"
+          },
+          "hasBpPatch": false,
+          "bpPatch": null
+        }
+      },
+      "samples": [
+        {
+          "seed": 24120192,
+          "a10": {
+            "ok": true,
+            "marketId": "sanfrancisco",
+            "targetYear": 1970,
+            "anchor": 10,
+            "genScen": "under",
+            "gYear": 1970,
+            "gPeriod": 1,
+            "commercialCount": 14,
+            "cash": 356264,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "vireeeee",
+                "call": "KHSX",
+                "freq": "610 AM",
+                "format": "TOP40",
+                "formatLabel": "Top 40",
+                "band": "AM",
+                "share": 0.0503,
+                "rev": 217733,
+                "ebitda": 12232,
+                "oq": 51,
+                "signalPower": "5kw",
+                "signalReach": 1,
+                "signalMetric": 4,
+                "shareRank": 7,
+                "revRank": 7,
+                "oqRank": 6,
+                "signalRank": 10,
+                "sharePercentile": 57.1,
+                "revPercentile": 57.1
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.07060250071428571,
+                "top": 0.1823046,
+                "median": 0.05032692,
+                "weak": 0.01295663
+              },
+              "rev": {
+                "avg": 616673,
+                "top": 2428667,
+                "median": 217733,
+                "weak": 14659
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                7
+              ],
+              "revRanks": [
+                7
+              ]
+            }
+          },
+          "a16": {
+            "ok": true,
+            "marketId": "sanfrancisco",
+            "targetYear": 1970,
+            "anchor": 16,
+            "genScen": "under",
+            "gYear": 1970,
+            "gPeriod": 1,
+            "commercialCount": 14,
+            "cash": 356264,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "j1c",
+                "call": "KTHQ",
+                "freq": "610 AM",
+                "format": "TOP40",
+                "formatLabel": "Top 40",
+                "band": "AM",
+                "share": 0.0865,
+                "rev": 490308,
+                "ebitda": 161210,
+                "oq": 48,
+                "signalPower": "10kw",
+                "signalReach": 1,
+                "signalMetric": 9,
+                "shareRank": 7,
+                "revRank": 7,
+                "oqRank": 7,
+                "signalRank": 6,
+                "sharePercentile": 57.1,
+                "revPercentile": 57.1
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.07052430785714285,
+                "top": 0.16047976,
+                "median": 0.08650572,
+                "weak": 0.01408054
+              },
+              "rev": {
+                "avg": 616673,
+                "top": 2394986,
+                "median": 490308,
+                "weak": 25317
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                7
+              ],
+              "revRanks": [
+                7
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "atlanta": {
+      "sameBlueprintSpec": true,
+      "sameFormat": true,
+      "medianShareDeltaA10minusA16": 0.03899999999999999,
+      "a10": {
+        "n": 1,
+        "commercialCountMed": 14,
+        "shareMed": 0.088,
+        "revMed": 408018,
+        "ebitdaMed": 149709,
+        "oqMed": 49,
+        "shareRankMed": 5,
+        "shareRankHist": {
+          "5": 1
+        },
+        "revRankMed": 5,
+        "sharePercentileMed": 71.4,
+        "playerSample": {
+          "id": "bdjsssss",
+          "call": "WZVK",
+          "freq": "640 AM",
+          "format": "TOP40",
+          "formatLabel": "Top 40",
+          "band": "AM",
+          "share": 0.088,
+          "rev": 408018,
+          "ebitda": 149709,
+          "oq": 49,
+          "signalPower": "10kw",
+          "signalReach": 1,
+          "signalMetric": 9,
+          "shareRank": 5,
+          "revRank": 5,
+          "oqRank": 6,
+          "signalRank": 6,
+          "sharePercentile": 71.4,
+          "revPercentile": 71.4
+        },
+        "blueprint": {
+          "bpIndex": 1,
+          "blueprint": {
+            "type": "AM",
+            "fmt": "TOP40",
+            "pw": "50kw",
+            "str": "strong"
+          },
+          "hasBpPatch": false,
+          "bpPatch": null
+        }
+      },
+      "a16": {
+        "n": 1,
+        "commercialCountMed": 14,
+        "shareMed": 0.049,
+        "revMed": 167283,
+        "ebitdaMed": 1695,
+        "oqMed": 52,
+        "shareRankMed": 7,
+        "shareRankHist": {
+          "7": 1
+        },
+        "revRankMed": 7,
+        "sharePercentileMed": 57.1,
+        "playerSample": {
+          "id": "5b577777",
+          "call": "WPYQ",
+          "freq": "640 AM",
+          "format": "TOP40",
+          "formatLabel": "Top 40",
+          "band": "AM",
+          "share": 0.049,
+          "rev": 167283,
+          "ebitda": 1695,
+          "oq": 52,
+          "signalPower": "5kw",
+          "signalReach": 1,
+          "signalMetric": 4,
+          "shareRank": 7,
+          "revRank": 7,
+          "oqRank": 6,
+          "signalRank": 10,
+          "sharePercentile": 57.1,
+          "revPercentile": 57.1
+        },
+        "blueprint": {
+          "bpIndex": 1,
+          "blueprint": {
+            "type": "AM",
+            "fmt": "TOP40",
+            "pw": "50kw",
+            "str": "strong"
+          },
+          "hasBpPatch": false,
+          "bpPatch": null
+        }
+      },
+      "samples": [
+        {
+          "seed": 22626697,
+          "a10": {
+            "ok": true,
+            "marketId": "atlanta",
+            "targetYear": 1970,
+            "anchor": 10,
+            "genScen": "under",
+            "gYear": 1970,
+            "gPeriod": 1,
+            "commercialCount": 14,
+            "cash": 255000,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "bdjsssss",
+                "call": "WZVK",
+                "freq": "640 AM",
+                "format": "TOP40",
+                "formatLabel": "Top 40",
+                "band": "AM",
+                "share": 0.088,
+                "rev": 408018,
+                "ebitda": 149709,
+                "oq": 49,
+                "signalPower": "10kw",
+                "signalReach": 1,
+                "signalMetric": 9,
+                "shareRank": 5,
+                "revRank": 5,
+                "oqRank": 6,
+                "signalRank": 6,
+                "sharePercentile": 71.4,
+                "revPercentile": 71.4
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.07040159285714286,
+                "top": 0.1688672,
+                "median": 0.07739662,
+                "weak": 0.01516747
+              },
+              "rev": {
+                "avg": 489600,
+                "top": 2068997,
+                "median": 328301,
+                "weak": 17731
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                5
+              ],
+              "revRanks": [
+                5
+              ]
+            }
+          },
+          "a16": {
+            "ok": true,
+            "marketId": "atlanta",
+            "targetYear": 1970,
+            "anchor": 16,
+            "genScen": "under",
+            "gYear": 1970,
+            "gPeriod": 1,
+            "commercialCount": 14,
+            "cash": 255000,
+            "blueprint": {
+              "bpIndex": 1,
+              "blueprint": {
+                "type": "AM",
+                "fmt": "TOP40",
+                "pw": "50kw",
+                "str": "strong"
+              },
+              "hasBpPatch": false,
+              "bpPatch": null
+            },
+            "players": [
+              {
+                "id": "5b577777",
+                "call": "WPYQ",
+                "freq": "640 AM",
+                "format": "TOP40",
+                "formatLabel": "Top 40",
+                "band": "AM",
+                "share": 0.049,
+                "rev": 167283,
+                "ebitda": 1695,
+                "oq": 52,
+                "signalPower": "5kw",
+                "signalReach": 1,
+                "signalMetric": 4,
+                "shareRank": 7,
+                "revRank": 7,
+                "oqRank": 6,
+                "signalRank": 10,
+                "sharePercentile": 57.1,
+                "revPercentile": 57.1
+              }
+            ],
+            "marketStats": {
+              "share": {
+                "avg": 0.07056658428571429,
+                "top": 0.17321209,
+                "median": 0.04904803,
+                "weak": 0.0128635
+              },
+              "rev": {
+                "avg": 489600,
+                "top": 1779581,
+                "median": 167283,
+                "weak": 11643
+              }
+            },
+            "rankDistribution": {
+              "shareRanks": [
+                7
+              ],
+              "revRanks": [
+                7
+              ]
+            }
+          }
+        }
+      ]
+    }
+  },
+  "snowball": {
+    "10": {
+      "seattle": {
+        "runs": [
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.0736,
+            "openRev": 418112,
+            "openEbitda": 124981,
+            "openRevPerSt": 418112,
+            "shareRank": 7,
+            "openOq": 48,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 1,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0534,
+              "nStations": 1,
+              "totalRev": 234875,
+              "totalEbitda": -60886,
+              "cashEnd": 317416
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.1292,
+            "openRev": 1113629,
+            "openEbitda": 581823,
+            "openRevPerSt": 1113629,
+            "shareRank": 7,
+            "openOq": 49,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.097,
+              "nStations": 1,
+              "totalRev": 574984,
+              "totalEbitda": 126810,
+              "cashEnd": 505112
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.0794,
+            "openRev": 489422,
+            "openEbitda": 189848,
+            "openRevPerSt": 489422,
+            "shareRank": 7,
+            "openOq": 56,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0563,
+              "nStations": 1,
+              "totalRev": 263187,
+              "totalEbitda": -27775,
+              "cashEnd": 350527
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.1257,
+            "openRev": 1137594,
+            "openEbitda": 589882,
+            "openRevPerSt": 1137594,
+            "shareRank": 6,
+            "openOq": 47,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0951,
+              "nStations": 1,
+              "totalRev": 585726,
+              "totalEbitda": 133975,
+              "cashEnd": 512277
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.0815,
+            "openRev": 527773,
+            "openEbitda": 197672,
+            "openRevPerSt": 527773,
+            "shareRank": 6,
+            "openOq": 54,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0577,
+              "nStations": 1,
+              "totalRev": 279540,
+              "totalEbitda": -30644,
+              "cashEnd": 347658
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.1268,
+            "openRev": 1053239,
+            "openEbitda": 541071,
+            "openRevPerSt": 1053239,
+            "shareRank": 7,
+            "openOq": 47,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0957,
+              "nStations": 1,
+              "totalRev": 566823,
+              "totalEbitda": 119916,
+              "cashEnd": 498218
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.0781,
+            "openRev": 462499,
+            "openEbitda": 151490,
+            "openRevPerSt": 462499,
+            "shareRank": 7,
+            "openOq": 51,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0561,
+              "nStations": 1,
+              "totalRev": 256378,
+              "totalEbitda": -48559,
+              "cashEnd": 329743
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.1315,
+            "openRev": 1141328,
+            "openEbitda": 624476,
+            "openRevPerSt": 1141328,
+            "shareRank": 7,
+            "openOq": 49,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0962,
+              "nStations": 1,
+              "totalRev": 571476,
+              "totalEbitda": 146307,
+              "cashEnd": 524609
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.0774,
+            "openRev": 487160,
+            "openEbitda": 171119,
+            "openRevPerSt": 487160,
+            "shareRank": 7,
+            "openOq": 51,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0552,
+              "nStations": 1,
+              "totalRev": 263865,
+              "totalEbitda": -43454,
+              "cashEnd": 334848
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.1259,
+            "openRev": 1039132,
+            "openEbitda": 530849,
+            "openRevPerSt": 1039132,
+            "shareRank": 7,
+            "openOq": 48,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0899,
+              "nStations": 1,
+              "totalRev": 533559,
+              "totalEbitda": 103724,
+              "cashEnd": 482026
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.0807,
+            "openRev": 513701,
+            "openEbitda": 186485,
+            "openRevPerSt": 513701,
+            "shareRank": 6,
+            "openOq": 53,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0581,
+              "nStations": 1,
+              "totalRev": 268180,
+              "totalEbitda": -45679,
+              "cashEnd": 332623
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.1295,
+            "openRev": 1076218,
+            "openEbitda": 552249,
+            "openRevPerSt": 1076218,
+            "shareRank": 7,
+            "openOq": 49,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0943,
+              "nStations": 1,
+              "totalRev": 556365,
+              "totalEbitda": 117691,
+              "cashEnd": 495993
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.0758,
+            "openRev": 458763,
+            "openEbitda": 168737,
+            "openRevPerSt": 458763,
+            "shareRank": 7,
+            "openOq": 52,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0539,
+              "nStations": 1,
+              "totalRev": 248361,
+              "totalEbitda": -39296,
+              "cashEnd": 339006
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.133,
+            "openRev": 1247563,
+            "openEbitda": 668748,
+            "openRevPerSt": 1247563,
+            "shareRank": 6,
+            "openOq": 53,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0996,
+              "nStations": 1,
+              "totalRev": 624674,
+              "totalEbitda": 163798,
+              "cashEnd": 542100
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.0743,
+            "openRev": 457724,
+            "openEbitda": 170398,
+            "openRevPerSt": 457724,
+            "shareRank": 7,
+            "openOq": 47,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 1,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0524,
+              "nStations": 1,
+              "totalRev": 242966,
+              "totalEbitda": -37167,
+              "cashEnd": 341135
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.133,
+            "openRev": 1281741,
+            "openEbitda": 689373,
+            "openRevPerSt": 1281741,
+            "shareRank": 7,
+            "openOq": 51,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.1,
+              "nStations": 1,
+              "totalRev": 641444,
+              "totalEbitda": 176306,
+              "cashEnd": 554608
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.0735,
+            "openRev": 435641,
+            "openEbitda": 151795,
+            "openRevPerSt": 435641,
+            "shareRank": 7,
+            "openOq": 49,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0517,
+              "nStations": 1,
+              "totalRev": 236494,
+              "totalEbitda": -46110,
+              "cashEnd": 332192
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "seattle",
+            "openShare": 0.1241,
+            "openRev": 1009105,
+            "openEbitda": 511551,
+            "openRevPerSt": 1009105,
+            "shareRank": 7,
+            "openOq": 47,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0908,
+              "nStations": 1,
+              "totalRev": 524039,
+              "totalEbitda": 96386,
+              "cashEnd": 474688
+            },
+            "openFormat": "TOP40"
+          }
+        ],
+        "survivalRate": 0.6111111111111112
+      },
+      "sanfrancisco": {
+        "runs": [
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.0825,
+            "openRev": 513175,
+            "openEbitda": 198166,
+            "openRevPerSt": 513175,
+            "shareRank": 6,
+            "openOq": 52,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0612,
+              "nStations": 1,
+              "totalRev": 312256,
+              "totalEbitda": -7696,
+              "cashEnd": 348568
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.131,
+            "openRev": 1213818,
+            "openEbitda": 659877,
+            "openRevPerSt": 1213818,
+            "shareRank": 7,
+            "openOq": 49,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0976,
+              "nStations": 1,
+              "totalRev": 600564,
+              "totalEbitda": 155620,
+              "cashEnd": 511884
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.0813,
+            "openRev": 558290,
+            "openEbitda": 228260,
+            "openRevPerSt": 558290,
+            "shareRank": 7,
+            "openOq": 52,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0592,
+              "nStations": 1,
+              "totalRev": 287023,
+              "totalEbitda": -20376,
+              "cashEnd": 335888
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.1303,
+            "openRev": 1158657,
+            "openEbitda": 622645,
+            "openRevPerSt": 1158657,
+            "shareRank": 6,
+            "openOq": 48,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0978,
+              "nStations": 1,
+              "totalRev": 602889,
+              "totalEbitda": 158238,
+              "cashEnd": 514502
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.0768,
+            "openRev": 490346,
+            "openEbitda": 197210,
+            "openRevPerSt": 490346,
+            "shareRank": 7,
+            "openOq": 51,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.055,
+              "nStations": 1,
+              "totalRev": 258606,
+              "totalEbitda": -24771,
+              "cashEnd": 331493
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.1346,
+            "openRev": 1195041,
+            "openEbitda": 645776,
+            "openRevPerSt": 1195041,
+            "shareRank": 6,
+            "openOq": 50,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0977,
+              "nStations": 1,
+              "totalRev": 608998,
+              "totalEbitda": 162049,
+              "cashEnd": 518313
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.0777,
+            "openRev": 478779,
+            "openEbitda": 191203,
+            "openRevPerSt": 478779,
+            "shareRank": 7,
+            "openOq": 50,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 1,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0553,
+              "nStations": 1,
+              "totalRev": 250496,
+              "totalEbitda": -27732,
+              "cashEnd": 328532
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.1229,
+            "openRev": 930237,
+            "openEbitda": 495199,
+            "openRevPerSt": 930237,
+            "shareRank": 7,
+            "openOq": 45,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0871,
+              "nStations": 1,
+              "totalRev": 505440,
+              "totalEbitda": 117849,
+              "cashEnd": 474113
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.076,
+            "openRev": 463361,
+            "openEbitda": 181372,
+            "openRevPerSt": 463361,
+            "shareRank": 7,
+            "openOq": 46,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.052,
+              "nStations": 1,
+              "totalRev": 229148,
+              "totalEbitda": -38926,
+              "cashEnd": 317338
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.1377,
+            "openRev": 1362896,
+            "openEbitda": 754181,
+            "openRevPerSt": 1362896,
+            "shareRank": 6,
+            "openOq": 56,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.1011,
+              "nStations": 1,
+              "totalRev": 761123,
+              "totalEbitda": 271155,
+              "cashEnd": 627419
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.0782,
+            "openRev": 487785,
+            "openEbitda": 179154,
+            "openRevPerSt": 487785,
+            "shareRank": 7,
+            "openOq": 49,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 1,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0575,
+              "nStations": 1,
+              "totalRev": 263384,
+              "totalEbitda": -36866,
+              "cashEnd": 319398
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.1317,
+            "openRev": 1113850,
+            "openEbitda": 592540,
+            "openRevPerSt": 1113850,
+            "shareRank": 7,
+            "openOq": 49,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0994,
+              "nStations": 1,
+              "totalRev": 604505,
+              "totalEbitda": 156136,
+              "cashEnd": 512400
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.08,
+            "openRev": 482552,
+            "openEbitda": 192398,
+            "openRevPerSt": 482552,
+            "shareRank": 6,
+            "openOq": 53,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0548,
+              "nStations": 1,
+              "totalRev": 242832,
+              "totalEbitda": -32129,
+              "cashEnd": 324135
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.1358,
+            "openRev": 1205314,
+            "openEbitda": 681956,
+            "openRevPerSt": 1205314,
+            "shareRank": 6,
+            "openOq": 52,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0978,
+              "nStations": 1,
+              "totalRev": 587440,
+              "totalEbitda": 169564,
+              "cashEnd": 525828
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.0793,
+            "openRev": 506138,
+            "openEbitda": 193024,
+            "openRevPerSt": 506138,
+            "shareRank": 7,
+            "openOq": 52,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0567,
+              "nStations": 1,
+              "totalRev": 260777,
+              "totalEbitda": -33706,
+              "cashEnd": 322558
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.1293,
+            "openRev": 1006902,
+            "openEbitda": 519606,
+            "openRevPerSt": 1006902,
+            "shareRank": 6,
+            "openOq": 46,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0953,
+              "nStations": 1,
+              "totalRev": 554885,
+              "totalEbitda": 122373,
+              "cashEnd": 478637
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.0751,
+            "openRev": 492636,
+            "openEbitda": 183737,
+            "openRevPerSt": 492636,
+            "shareRank": 7,
+            "openOq": 47,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 1,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0551,
+              "nStations": 1,
+              "totalRev": 259128,
+              "totalEbitda": -39049,
+              "cashEnd": 317215
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "sanfrancisco",
+            "openShare": 0.1355,
+            "openRev": 1214917,
+            "openEbitda": 660512,
+            "openRevPerSt": 1214917,
+            "shareRank": 6,
+            "openOq": 48,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.1001,
+              "nStations": 1,
+              "totalRev": 668748,
+              "totalEbitda": 203658,
+              "cashEnd": 559922
+            },
+            "openFormat": "TOP40"
+          }
+        ],
+        "survivalRate": 0.6666666666666666
+      },
+      "atlanta": {
+        "runs": [
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.0763,
+            "openRev": 353903,
+            "openEbitda": 129422,
+            "openRevPerSt": 353903,
+            "shareRank": 7,
+            "openOq": 49,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 1,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0553,
+              "nStations": 1,
+              "totalRev": 197946,
+              "totalEbitda": -32323,
+              "cashEnd": 222677
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.1323,
+            "openRev": 1028840,
+            "openEbitda": 595697,
+            "openRevPerSt": 1028840,
+            "shareRank": 6,
+            "openOq": 52,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0967,
+              "nStations": 1,
+              "totalRev": 498824,
+              "totalEbitda": 144033,
+              "cashEnd": 399033
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.0776,
+            "openRev": 388909,
+            "openEbitda": 167893,
+            "openRevPerSt": 388909,
+            "shareRank": 7,
+            "openOq": 50,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0556,
+              "nStations": 1,
+              "totalRev": 201471,
+              "totalEbitda": -17956,
+              "cashEnd": 237044
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.1228,
+            "openRev": 845977,
+            "openEbitda": 486206,
+            "openRevPerSt": 845977,
+            "shareRank": 7,
+            "openOq": 47,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0899,
+              "nStations": 1,
+              "totalRev": 405967,
+              "totalEbitda": 97393,
+              "cashEnd": 352393
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.0721,
+            "openRev": 355332,
+            "openEbitda": 134075,
+            "openRevPerSt": 355332,
+            "shareRank": 7,
+            "openOq": 45,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 1,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0507,
+              "nStations": 1,
+              "totalRev": 177140,
+              "totalEbitda": -40333,
+              "cashEnd": 214667
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.1322,
+            "openRev": 894769,
+            "openEbitda": 503057,
+            "openRevPerSt": 894769,
+            "shareRank": 7,
+            "openOq": 52,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.098,
+              "nStations": 1,
+              "totalRev": 468272,
+              "totalEbitda": 122720,
+              "cashEnd": 377720
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.0734,
+            "openRev": 349970,
+            "openEbitda": 128373,
+            "openRevPerSt": 349970,
+            "shareRank": 7,
+            "openOq": 47,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0533,
+              "nStations": 1,
+              "totalRev": 194176,
+              "totalEbitda": -32704,
+              "cashEnd": 222296
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.1275,
+            "openRev": 802777,
+            "openEbitda": 439595,
+            "openRevPerSt": 802777,
+            "shareRank": 7,
+            "openOq": 47,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.095,
+              "nStations": 1,
+              "totalRev": 423225,
+              "totalEbitda": 92380,
+              "cashEnd": 347380
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.079,
+            "openRev": 382203,
+            "openEbitda": 150515,
+            "openRevPerSt": 382203,
+            "shareRank": 6,
+            "openOq": 52,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 1,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0557,
+              "nStations": 1,
+              "totalRev": 204225,
+              "totalEbitda": -24613,
+              "cashEnd": 230387
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.1326,
+            "openRev": 910135,
+            "openEbitda": 532557,
+            "openRevPerSt": 910135,
+            "shareRank": 6,
+            "openOq": 53,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.096,
+              "nStations": 1,
+              "totalRev": 443509,
+              "totalEbitda": 121318,
+              "cashEnd": 376318
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.0728,
+            "openRev": 363122,
+            "openEbitda": 138480,
+            "openRevPerSt": 363122,
+            "shareRank": 7,
+            "openOq": 46,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 1,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0519,
+              "nStations": 1,
+              "totalRev": 193012,
+              "totalEbitda": -28775,
+              "cashEnd": 226225
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.1318,
+            "openRev": 966032,
+            "openEbitda": 573945,
+            "openRevPerSt": 966032,
+            "shareRank": 7,
+            "openOq": 53,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0941,
+              "nStations": 1,
+              "totalRev": 461138,
+              "totalEbitda": 137928,
+              "cashEnd": 392928
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.0737,
+            "openRev": 366162,
+            "openEbitda": 137907,
+            "openRevPerSt": 366162,
+            "shareRank": 8,
+            "openOq": 45,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.052,
+              "nStations": 1,
+              "totalRev": 179677,
+              "totalEbitda": -42703,
+              "cashEnd": 212297
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.123,
+            "openRev": 871751,
+            "openEbitda": 486956,
+            "openRevPerSt": 871751,
+            "shareRank": 7,
+            "openOq": 45,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0913,
+              "nStations": 1,
+              "totalRev": 446817,
+              "totalEbitda": 109879,
+              "cashEnd": 364879
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.0768,
+            "openRev": 352091,
+            "openEbitda": 142395,
+            "openRevPerSt": 352091,
+            "shareRank": 7,
+            "openOq": 50,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0523,
+              "nStations": 1,
+              "totalRev": 173684,
+              "totalEbitda": -32169,
+              "cashEnd": 222831
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.1355,
+            "openRev": 1038157,
+            "openEbitda": 624935,
+            "openRevPerSt": 1038157,
+            "shareRank": 6,
+            "openOq": 54,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0983,
+              "nStations": 1,
+              "totalRev": 493551,
+              "totalEbitda": 159259,
+              "cashEnd": 414259
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.0751,
+            "openRev": 378163,
+            "openEbitda": 147903,
+            "openRevPerSt": 378163,
+            "shareRank": 7,
+            "openOq": 48,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0535,
+              "nStations": 1,
+              "totalRev": 200098,
+              "totalEbitda": -27115,
+              "cashEnd": 227885
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 10,
+            "marketId": "atlanta",
+            "openShare": 0.1337,
+            "openRev": 922473,
+            "openEbitda": 542202,
+            "openRevPerSt": 922473,
+            "shareRank": 5,
+            "openOq": 54,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0978,
+              "nStations": 1,
+              "totalRev": 445187,
+              "totalEbitda": 126850,
+              "cashEnd": 381850
+            },
+            "openFormat": "TOP40"
+          }
+        ],
+        "survivalRate": 0.7222222222222222
+      }
+    },
+    "16": {
+      "seattle": {
+        "runs": [
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.1229,
+            "openRev": 1128958,
+            "openEbitda": 585765,
+            "openRevPerSt": 1128958,
+            "shareRank": 7,
+            "openOq": 46,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0905,
+              "nStations": 1,
+              "totalRev": 526734,
+              "totalEbitda": 95749,
+              "cashEnd": 474051
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.0748,
+            "openRev": 488122,
+            "openEbitda": 173302,
+            "openRevPerSt": 488122,
+            "shareRank": 7,
+            "openOq": 49,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0539,
+              "nStations": 1,
+              "totalRev": 245688,
+              "totalEbitda": -56101,
+              "cashEnd": 322201
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.1309,
+            "openRev": 1151974,
+            "openEbitda": 598104,
+            "openRevPerSt": 1151974,
+            "shareRank": 6,
+            "openOq": 48,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0979,
+              "nStations": 1,
+              "totalRev": 613380,
+              "totalEbitda": 153099,
+              "cashEnd": 531401
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.0746,
+            "openRev": 460101,
+            "openEbitda": 170961,
+            "openRevPerSt": 460101,
+            "shareRank": 7,
+            "openOq": 48,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0526,
+              "nStations": 1,
+              "totalRev": 246418,
+              "totalEbitda": -36626,
+              "cashEnd": 341676
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.1217,
+            "openRev": 978973,
+            "openEbitda": 512048,
+            "openRevPerSt": 978973,
+            "shareRank": 7,
+            "openOq": 47,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0899,
+              "nStations": 1,
+              "totalRev": 514213,
+              "totalEbitda": 107810,
+              "cashEnd": 486112
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.0737,
+            "openRev": 489024,
+            "openEbitda": 190690,
+            "openRevPerSt": 489024,
+            "shareRank": 7,
+            "openOq": 48,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0525,
+              "nStations": 1,
+              "totalRev": 255605,
+              "totalEbitda": -29537,
+              "cashEnd": 348765
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.1321,
+            "openRev": 1204718,
+            "openEbitda": 663256,
+            "openRevPerSt": 1204718,
+            "shareRank": 6,
+            "openOq": 51,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0924,
+              "nStations": 1,
+              "totalRev": 565749,
+              "totalEbitda": 150388,
+              "cashEnd": 528690
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.074,
+            "openRev": 480392,
+            "openEbitda": 185041,
+            "openRevPerSt": 480392,
+            "shareRank": 7,
+            "openOq": 49,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0525,
+              "nStations": 1,
+              "totalRev": 238298,
+              "totalEbitda": -43854,
+              "cashEnd": 334448
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.1252,
+            "openRev": 1168602,
+            "openEbitda": 640258,
+            "openRevPerSt": 1168602,
+            "shareRank": 6,
+            "openOq": 46,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0897,
+              "nStations": 1,
+              "totalRev": 516328,
+              "totalEbitda": 116664,
+              "cashEnd": 494966
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.0734,
+            "openRev": 473171,
+            "openEbitda": 179087,
+            "openRevPerSt": 473171,
+            "shareRank": 7,
+            "openOq": 48,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0508,
+              "nStations": 1,
+              "totalRev": 227774,
+              "totalEbitda": -48947,
+              "cashEnd": 329355
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.1238,
+            "openRev": 993069,
+            "openEbitda": 525982,
+            "openRevPerSt": 993069,
+            "shareRank": 7,
+            "openOq": 48,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0924,
+              "nStations": 1,
+              "totalRev": 502283,
+              "totalEbitda": 100761,
+              "cashEnd": 479063
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.0777,
+            "openRev": 511652,
+            "openEbitda": 205356,
+            "openRevPerSt": 511652,
+            "shareRank": 7,
+            "openOq": 50,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 1,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0554,
+              "nStations": 1,
+              "totalRev": 269082,
+              "totalEbitda": -24007,
+              "cashEnd": 354295
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.1283,
+            "openRev": 1152900,
+            "openEbitda": 599806,
+            "openRevPerSt": 1152900,
+            "shareRank": 6,
+            "openOq": 48,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.093,
+              "nStations": 1,
+              "totalRev": 530577,
+              "totalEbitda": 96936,
+              "cashEnd": 475238
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.0799,
+            "openRev": 511576,
+            "openEbitda": 186998,
+            "openRevPerSt": 511576,
+            "shareRank": 6,
+            "openOq": 53,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0562,
+              "nStations": 1,
+              "totalRev": 261120,
+              "totalEbitda": -45320,
+              "cashEnd": 332982
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.1347,
+            "openRev": 1348791,
+            "openEbitda": 756388,
+            "openRevPerSt": 1348791,
+            "shareRank": 5,
+            "openOq": 53,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0984,
+              "nStations": 1,
+              "totalRev": 621946,
+              "totalEbitda": 182759,
+              "cashEnd": 561061
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.0729,
+            "openRev": 428188,
+            "openEbitda": 148478,
+            "openRevPerSt": 428188,
+            "shareRank": 7,
+            "openOq": 47,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0515,
+              "nStations": 1,
+              "totalRev": 231559,
+              "totalEbitda": -45967,
+              "cashEnd": 332335
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.1353,
+            "openRev": 1336307,
+            "openEbitda": 723348,
+            "openRevPerSt": 1336307,
+            "shareRank": 5,
+            "openOq": 55,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.101,
+              "nStations": 1,
+              "totalRev": 766684,
+              "totalEbitda": 259875,
+              "cashEnd": 638177
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "seattle",
+            "openShare": 0.0752,
+            "openRev": 464257,
+            "openEbitda": 171776,
+            "openRevPerSt": 464257,
+            "shareRank": 7,
+            "openOq": 50,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0544,
+              "nStations": 1,
+              "totalRev": 253558,
+              "totalEbitda": -36689,
+              "cashEnd": 341613
+            },
+            "openFormat": "TOP40"
+          }
+        ],
+        "survivalRate": 0.5555555555555556
+      },
+      "sanfrancisco": {
+        "runs": [
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.125,
+            "openRev": 1069068,
+            "openEbitda": 586308,
+            "openRevPerSt": 1069068,
+            "shareRank": 7,
+            "openOq": 46,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0888,
+              "nStations": 1,
+              "totalRev": 495552,
+              "totalEbitda": 106022,
+              "cashEnd": 462286
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.0773,
+            "openRev": 473566,
+            "openEbitda": 169070,
+            "openRevPerSt": 473566,
+            "shareRank": 8,
+            "openOq": 48,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0529,
+              "nStations": 1,
+              "totalRev": 237525,
+              "totalEbitda": -49038,
+              "cashEnd": 307226
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.1364,
+            "openRev": 1253543,
+            "openEbitda": 713444,
+            "openRevPerSt": 1253543,
+            "shareRank": 6,
+            "openOq": 54,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.1034,
+              "nStations": 1,
+              "totalRev": 744149,
+              "totalEbitda": 279622,
+              "cashEnd": 635886
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.0802,
+            "openRev": 526372,
+            "openEbitda": 225280,
+            "openRevPerSt": 526372,
+            "shareRank": 7,
+            "openOq": 51,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 1,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0552,
+              "nStations": 1,
+              "totalRev": 239186,
+              "totalEbitda": -32972,
+              "cashEnd": 323292
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.1364,
+            "openRev": 1279032,
+            "openEbitda": 727957,
+            "openRevPerSt": 1279032,
+            "shareRank": 7,
+            "openOq": 52,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0986,
+              "nStations": 1,
+              "totalRev": 616227,
+              "totalEbitda": 189769,
+              "cashEnd": 546033
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.0784,
+            "openRev": 477473,
+            "openEbitda": 173335,
+            "openRevPerSt": 477473,
+            "shareRank": 7,
+            "openOq": 49,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0552,
+              "nStations": 1,
+              "totalRev": 230518,
+              "totalEbitda": -55964,
+              "cashEnd": 300300
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.1381,
+            "openRev": 1148955,
+            "openEbitda": 615345,
+            "openRevPerSt": 1148955,
+            "shareRank": 5,
+            "openOq": 53,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.1041,
+              "nStations": 1,
+              "totalRev": 696912,
+              "totalEbitda": 220028,
+              "cashEnd": 576292
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.0797,
+            "openRev": 499351,
+            "openEbitda": 203731,
+            "openRevPerSt": 499351,
+            "shareRank": 7,
+            "openOq": 51,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0558,
+              "nStations": 1,
+              "totalRev": 252752,
+              "totalEbitda": -29143,
+              "cashEnd": 327121
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.1342,
+            "openRev": 1075163,
+            "openEbitda": 589009,
+            "openRevPerSt": 1075163,
+            "shareRank": 6,
+            "openOq": 52,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0972,
+              "nStations": 1,
+              "totalRev": 568792,
+              "totalEbitda": 155052,
+              "cashEnd": 511316
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.0727,
+            "openRev": 436895,
+            "openEbitda": 145557,
+            "openRevPerSt": 436895,
+            "shareRank": 7,
+            "openOq": 45,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0522,
+              "nStations": 1,
+              "totalRev": 224450,
+              "totalEbitda": -59796,
+              "cashEnd": 296468
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.1322,
+            "openRev": 1160312,
+            "openEbitda": 626381,
+            "openRevPerSt": 1160312,
+            "shareRank": 7,
+            "openOq": 48,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0985,
+              "nStations": 1,
+              "totalRev": 595391,
+              "totalEbitda": 153735,
+              "cashEnd": 509999
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.0792,
+            "openRev": 470539,
+            "openEbitda": 185507,
+            "openRevPerSt": 470539,
+            "shareRank": 7,
+            "openOq": 53,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0552,
+              "nStations": 1,
+              "totalRev": 243726,
+              "totalEbitda": -30707,
+              "cashEnd": 325557
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.1269,
+            "openRev": 1103861,
+            "openEbitda": 582837,
+            "openRevPerSt": 1103861,
+            "shareRank": 6,
+            "openOq": 46,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.096,
+              "nStations": 1,
+              "totalRev": 592159,
+              "totalEbitda": 150431,
+              "cashEnd": 506695
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.0766,
+            "openRev": 510834,
+            "openEbitda": 213857,
+            "openRevPerSt": 510834,
+            "shareRank": 7,
+            "openOq": 49,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.056,
+              "nStations": 1,
+              "totalRev": 265384,
+              "totalEbitda": -18559,
+              "cashEnd": 337705
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.1307,
+            "openRev": 1232878,
+            "openEbitda": 669750,
+            "openRevPerSt": 1232878,
+            "shareRank": 7,
+            "openOq": 47,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0946,
+              "nStations": 1,
+              "totalRev": 600574,
+              "totalEbitda": 158131,
+              "cashEnd": 514395
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.0731,
+            "openRev": 476788,
+            "openEbitda": 172772,
+            "openRevPerSt": 476788,
+            "shareRank": 8,
+            "openOq": 44,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0501,
+              "nStations": 1,
+              "totalRev": 238735,
+              "totalEbitda": -46068,
+              "cashEnd": 310196
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.1361,
+            "openRev": 1294633,
+            "openEbitda": 738296,
+            "openRevPerSt": 1294633,
+            "shareRank": 6,
+            "openOq": 52,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.099,
+              "nStations": 1,
+              "totalRev": 623340,
+              "totalEbitda": 194558,
+              "cashEnd": 550822
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "sanfrancisco",
+            "openShare": 0.076,
+            "openRev": 464448,
+            "openEbitda": 162746,
+            "openRevPerSt": 464448,
+            "shareRank": 7,
+            "openOq": 46,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.053,
+              "nStations": 1,
+              "totalRev": 222278,
+              "totalEbitda": -62603,
+              "cashEnd": 293661
+            },
+            "openFormat": "TOP40"
+          }
+        ],
+        "survivalRate": 0.5555555555555556
+      },
+      "atlanta": {
+        "runs": [
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.1322,
+            "openRev": 1020737,
+            "openEbitda": 609337,
+            "openRevPerSt": 1020737,
+            "shareRank": 7,
+            "openOq": 53,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0955,
+              "nStations": 1,
+              "totalRev": 475990,
+              "totalEbitda": 145254,
+              "cashEnd": 400254
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.0798,
+            "openRev": 407575,
+            "openEbitda": 168764,
+            "openRevPerSt": 407575,
+            "shareRank": 7,
+            "openOq": 51,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 1,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0584,
+              "nStations": 1,
+              "totalRev": 215540,
+              "totalEbitda": -19747,
+              "cashEnd": 235253
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.128,
+            "openRev": 925848,
+            "openEbitda": 524894,
+            "openRevPerSt": 925848,
+            "shareRank": 6,
+            "openOq": 48,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0979,
+              "nStations": 1,
+              "totalRev": 504958,
+              "totalEbitda": 147543,
+              "cashEnd": 402543
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.079,
+            "openRev": 411956,
+            "openEbitda": 172373,
+            "openRevPerSt": 411956,
+            "shareRank": 7,
+            "openOq": 51,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 1,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.056,
+              "nStations": 1,
+              "totalRev": 207515,
+              "totalEbitda": -21925,
+              "cashEnd": 233075
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.1311,
+            "openRev": 876906,
+            "openEbitda": 491186,
+            "openRevPerSt": 876906,
+            "shareRank": 6,
+            "openOq": 51,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0971,
+              "nStations": 1,
+              "totalRev": 448448,
+              "totalEbitda": 108767,
+              "cashEnd": 363767
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.0797,
+            "openRev": 376276,
+            "openEbitda": 158747,
+            "openRevPerSt": 376276,
+            "shareRank": 6,
+            "openOq": 55,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 1,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0557,
+              "nStations": 1,
+              "totalRev": 193430,
+              "totalEbitda": -21193,
+              "cashEnd": 233807
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.1239,
+            "openRev": 829487,
+            "openEbitda": 474629,
+            "openRevPerSt": 829487,
+            "shareRank": 7,
+            "openOq": 48,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0924,
+              "nStations": 1,
+              "totalRev": 430845,
+              "totalEbitda": 113657,
+              "cashEnd": 368657
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.0749,
+            "openRev": 380281,
+            "openEbitda": 148477,
+            "openRevPerSt": 380281,
+            "shareRank": 8,
+            "openOq": 48,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 1,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0537,
+              "nStations": 1,
+              "totalRev": 198135,
+              "totalEbitda": -28632,
+              "cashEnd": 226368
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.1343,
+            "openRev": 995704,
+            "openEbitda": 575297,
+            "openRevPerSt": 995704,
+            "shareRank": 5,
+            "openOq": 52,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0998,
+              "nStations": 1,
+              "totalRev": 484403,
+              "totalEbitda": 134074,
+              "cashEnd": 389074
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.0731,
+            "openRev": 357705,
+            "openEbitda": 147063,
+            "openRevPerSt": 357705,
+            "shareRank": 7,
+            "openOq": 47,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 1,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0515,
+              "nStations": 1,
+              "totalRev": 186424,
+              "totalEbitda": -26006,
+              "cashEnd": 228994
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.1354,
+            "openRev": 948290,
+            "openEbitda": 540170,
+            "openRevPerSt": 948290,
+            "shareRank": 6,
+            "openOq": 53,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.1025,
+              "nStations": 1,
+              "totalRev": 574522,
+              "totalEbitda": 195506,
+              "cashEnd": 450506
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.0718,
+            "openRev": 365772,
+            "openEbitda": 138397,
+            "openRevPerSt": 365772,
+            "shareRank": 7,
+            "openOq": 46,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 1,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0503,
+              "nStations": 1,
+              "totalRev": 180520,
+              "totalEbitda": -39780,
+              "cashEnd": 215220
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.1307,
+            "openRev": 902692,
+            "openEbitda": 508422,
+            "openRevPerSt": 902692,
+            "shareRank": 5,
+            "openOq": 51,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0996,
+              "nStations": 1,
+              "totalRev": 458987,
+              "totalEbitda": 113685,
+              "cashEnd": 368685
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.0707,
+            "openRev": 328847,
+            "openEbitda": 125944,
+            "openRevPerSt": 328847,
+            "shareRank": 8,
+            "openOq": 45,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0503,
+              "nStations": 1,
+              "totalRev": 166896,
+              "totalEbitda": -38298,
+              "cashEnd": 216702
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.1251,
+            "openRev": 838545,
+            "openEbitda": 461965,
+            "openRevPerSt": 838545,
+            "shareRank": 7,
+            "openOq": 47,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0931,
+              "nStations": 1,
+              "totalRev": 431330,
+              "totalEbitda": 98037,
+              "cashEnd": 353037
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.0739,
+            "openRev": 379734,
+            "openEbitda": 162621,
+            "openRevPerSt": 379734,
+            "shareRank": 7,
+            "openOq": 49,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0515,
+              "nStations": 1,
+              "totalRev": 177381,
+              "totalEbitda": -30422,
+              "cashEnd": 224578
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.1321,
+            "openRev": 948763,
+            "openEbitda": 559971,
+            "openRevPerSt": 948763,
+            "shareRank": 7,
+            "openOq": 53,
+            "survived1980": false,
+            "survived2000": true,
+            "endStations": 2,
+            "observerEnd": false,
+            "openRow": {
+              "topShare": 0.0964,
+              "nStations": 1,
+              "totalRev": 477089,
+              "totalEbitda": 148646,
+              "cashEnd": 403646
+            },
+            "openFormat": "TOP40"
+          },
+          {
+            "ok": true,
+            "anchor": 16,
+            "marketId": "atlanta",
+            "openShare": 0.0705,
+            "openRev": 322838,
+            "openEbitda": 122381,
+            "openRevPerSt": 322838,
+            "shareRank": 7,
+            "openOq": 45,
+            "survived1980": false,
+            "survived2000": false,
+            "endStations": 0,
+            "observerEnd": true,
+            "openRow": {
+              "topShare": 0.0494,
+              "nStations": 1,
+              "totalRev": 162874,
+              "totalEbitda": -40228,
+              "cashEnd": 214772
+            },
+            "openFormat": "TOP40"
+          }
+        ],
+        "survivalRate": 0.8333333333333334
+      }
+    }
+  },
+  "correlations": {
+    "pooled": {
+      "n": 108,
+      "pearsonShareVsSurv2000": 0.7135030806653365,
+      "pearsonShareVsSurv1980": null,
+      "pearsonRankVsSurv2000": -0.338813407471338,
+      "pearsonRankVsSurv1980": null
+    },
+    "byAnchor": {
+      "10": {
+        "n": 54,
+        "pearsonShareVsSurv2000": 0.6810834546957376,
+        "pearsonRankVsSurv2000": -0.19460170216420797
+      },
+      "16": {
+        "n": 54,
+        "pearsonShareVsSurv2000": 0.7445884399751441,
+        "pearsonRankVsSurv2000": -0.4495082639101729
+      }
+    }
+  },
+  "thresholds": {
+    "pooled": [
+      {
+        "shareLo": 0.065,
+        "shareHi": 0.08,
+        "n": 48,
+        "survival2000": 0.3333333333333333,
+        "survival1980": 0
+      },
+      {
+        "shareLo": 0.08,
+        "shareHi": 1,
+        "n": 60,
+        "survival2000": 0.9166666666666666,
+        "survival1980": 0
+      }
+    ],
+    "anchor10": [
+      {
+        "shareLo": 0.065,
+        "shareHi": 0.08,
+        "n": 22,
+        "survival2000": 0.4090909090909091,
+        "survival1980": 0
+      },
+      {
+        "shareLo": 0.08,
+        "shareHi": 1,
+        "n": 32,
+        "survival2000": 0.84375,
+        "survival1980": 0
+      }
+    ],
+    "anchor16": [
+      {
+        "shareLo": 0.065,
+        "shareHi": 0.08,
+        "n": 26,
+        "survival2000": 0.2692307692307692,
+        "survival1980": 0
+      },
+      {
+        "shareLo": 0.08,
+        "shareHi": 1,
+        "n": 28,
+        "survival2000": 1,
+        "survival1980": 0
+      }
+    ]
+  },
+  "conclusion": {
+    "primaryQuestion": "Is anchor-16 failure caused by weak starter asset (A), insufficient opening share (B), or other economics (C)?",
+    "anchor16StarterAssetSameAsAnchor10": true,
+    "anchor16ShareDilutionOnly": true,
+    "evidence": {
+      "shareCorrelation2000": 0.7135030806653365,
+      "rankCorrelation2000": -0.338813407471338,
+      "medianOpenShareA10": 0.10265,
+      "medianOpenShareA16": 0.10095,
+      "medianSurvivingShareA16": 0.1283,
+      "medianFailingShareA16": 0.0746,
+      "survivalA10": {
+        "n": 54,
+        "pearsonShareVsSurv2000": 0.6810834546957376,
+        "pearsonRankVsSurv2000": -0.19460170216420797
+      },
+      "survivalA16": {
+        "n": 54,
+        "pearsonShareVsSurv2000": 0.7445884399751441,
+        "pearsonRankVsSurv2000": -0.4495082639101729
+      }
+    },
+    "answer": "B — insufficient opening audience share (competitive dilution), not a different starter station asset. Same BP slot 1 (AM TOP40 50kw strong); anchor 16 adds competitors and cuts share/revenue rank; survival tracks share/rank strongly."
+  },
+  "timingMs": 136643
+}

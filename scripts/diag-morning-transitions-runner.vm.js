@@ -11,6 +11,57 @@
     2000: 'harness2000',
   };
 
+  const BUCKET_ORDER = ['lt50', '50-59', '60-69', '70-79', '80-89', '90-94', '95-99'];
+  const DAYPARTS = ['morningDrive', 'afternoonDrive', 'midday', 'evening', 'overnight'];
+
+  function isSuccessorDeparture(prev) {
+    if (!prev) return false;
+    const slotQ = prev.slotQ | 0;
+    const tenure = prev.tenurePeriods | 0;
+    if (slotQ >= 90) return true;
+    if (slotQ >= 85 && tenure >= 12) return true;
+    if (prev.talentSuperstar === true) return true;
+    return false;
+  }
+
+  function snapStationTalents(st) {
+    const map = new Map();
+    for (const sl of DAYPARTS) {
+      const sd = st.prog?.[sl];
+      if (!sd?.talent || sd.talent.id == null) continue;
+      map.set(String(sd.talent.id), { slot: sl });
+    }
+    return map;
+  }
+
+  function buildClusterTalentIndex(G) {
+    const byOwner = new Map();
+    for (const st of commercialStations(G)) {
+      const owner = st.corpOwner ? String(st.corpOwner) : null;
+      if (!owner) continue;
+      if (!byOwner.has(owner)) byOwner.set(owner, new Map());
+      const ownerMap = byOwner.get(owner);
+      for (const sl of DAYPARTS) {
+        const sd = st.prog?.[sl];
+        if (!sd?.talent || sd.talent.id == null) continue;
+        ownerMap.set(String(sd.talent.id), { stationId: st.id, slot: sl });
+      }
+    }
+    return byOwner;
+  }
+
+  function classifyReplacement(st, curTalentId, stationTalentsBefore, clusterIdx) {
+    if (!curTalentId) return 'vacant';
+    const onStation = stationTalentsBefore.get(curTalentId);
+    if (onStation && onStation.slot !== 'morningDrive') return 'internal';
+    const corp = st.corpOwner ? String(st.corpOwner) : null;
+    if (corp && clusterIdx.has(corp)) {
+      const elsewhere = clusterIdx.get(corp).get(curTalentId);
+      if (elsewhere && elsewhere.stationId !== st.id) return 'cluster';
+    }
+    return 'external';
+  }
+
   function ensureHarnessScenarios() {
     if (typeof SC === 'undefined' || !Array.isArray(SC)) return;
     if (!SC.some((s) => s.id === 'harness2000')) {
@@ -69,7 +120,9 @@
       talentId: sd.talent?.id != null ? String(sd.talent.id) : null,
       talentName: sd.talent?.name || '',
       talentQ: sd.talent ? sd.talent.quality | 0 : null,
+      talentSuperstar: sd.talent?.superstar === true,
       slotQ: Math.round(sd.quality || 0),
+      tenurePeriods: sd.talent ? sd.talent.periodsAtStation | 0 : 0,
       rev: Math.round(st.fin?.rev || 0),
       share: st.rat?.share || 0,
     };
@@ -99,6 +152,11 @@
     Math.random = seededRandom(seed);
 
     const tier = (MARKETS[marketId] || {}).rankTier || 'medium';
+    const helpers = globalThis.__wlSuccessorRecoveryHelpers;
+    const snapFn = helpers ? helpers.snapMorningFull : snapMorning;
+    const tracker = helpers
+      ? helpers.createSuccessorDepartureTracker({ marketId, startYear, seed })
+      : null;
     /** @type {Map<string, object>} prior morning snap before advTurn */
     const priorSnap = new Map();
     /** @type {Map<string, object[]>} active recovery trackers per station */
@@ -124,7 +182,7 @@
         const ev = list[i];
         if (ev._finalized) continue;
 
-        if (!ev.recoveredQuality && cur.slotQ >= ev.departingSlotQ) {
+        if (!ev.recoveredQuality && cur.slotQ >= (ev.originalPriorSlotQ ?? ev.departingSlotQ)) {
           ev.recoveredQuality = true;
           ev.yearsToRecoverQuality = yearsBetween(
             ev.departYear,
@@ -173,9 +231,15 @@
 
       for (let step = 0; step < endPeriods && G.year < endYear; step++) {
         const beforeSnap = new Map();
+        const beforeStationTalents = new Map();
+        const clusterIdx = buildClusterTalentIndex(G);
         commercialStations(G).forEach((st) => {
-          const s = snapMorning(st);
-          if (s) beforeSnap.set(st.id, s);
+          const s = snapFn(st);
+          if (s) {
+            beforeSnap.set(st.id, s);
+            if (tracker) tracker.processTurnStart(st, s);
+          }
+          beforeStationTalents.set(st.id, snapStationTalents(st));
         });
 
         advTurn();
@@ -185,12 +249,35 @@
 
         commercialStations(G).forEach((st) => {
           const prev = beforeSnap.get(st.id);
-          const cur = snapMorning(st);
+          const cur = snapFn(st);
           if (!cur) return;
+
+          const stationTalents = beforeStationTalents.get(st.id) || new Map();
+          if (tracker) {
+            tracker.onDelayedFill(
+              st,
+              prev,
+              cur,
+              idx,
+              tracker.classifyReplacement(st, cur.talentId, stationTalents, clusterIdx),
+              {},
+            );
+          }
 
           updateActiveTrackers(st, cur, idx);
 
           if (prev && prev.talentId && prev.talentId !== cur.talentId) {
+            const replacementType = classifyReplacement(
+              st,
+              cur.talentId,
+              stationTalents,
+              clusterIdx,
+            );
+            const isSuccessor = isSuccessorDeparture(prev);
+            let trackerEv = null;
+            if (isSuccessor && tracker) {
+              trackerEv = tracker.onSuccessorDeparture(st, prev, cur, idx, replacementType, {});
+            }
             eventSeq += 1;
             const owner = ownershipType(st);
             const ev = {
@@ -200,6 +287,18 @@
               ownership: owner,
               stationId: st.id,
               call: st.callLetters || '',
+              isSuccessorDeparture: isSuccessor,
+              replacementType,
+              hadSuccessorCeiling: !!st.morningSuccessorCeiling,
+              originalPriorSlotQ: prev.slotQ,
+              fillTiming: trackerEv?.fillTiming || 'same_turn_fill',
+              periodsVacantBeforeFill: trackerEv?.periodsVacantBeforeFill || 0,
+              hasCeilingAtFill: cur.hasCeiling ?? !!st.morningSuccessorCeiling,
+              ceilingAtFill: cur.ceiling ?? st.morningSuccessorCeiling?.ceiling ?? null,
+              immediateRecoverEndOfFill: trackerEv?.immediateRecoverEndOfFill ?? cur.slotQ >= prev.slotQ,
+              immediateRecoverTPlus1: trackerEv?.immediateRecoverTPlus1 ?? false,
+              integrityFlagged: trackerEv?.integrityFlagged ?? false,
+              integrityFlags: trackerEv?.integrityFlags || [],
               departYear: G.year,
               departPeriod: G.period,
               departPeriodIdx: idx,
@@ -207,18 +306,20 @@
               departingTalentQ: prev.talentQ,
               departingTalentName: prev.talentName,
               replacementSlotQ: cur.slotQ,
+              replacementSlotQAtFill: cur.slotQ,
               replacementTalentQ: cur.talentQ,
               replacementTalentName: cur.talentName || '',
               slotQDeltaImmediate: cur.slotQ - prev.slotQ,
               preDepartureRev: prev.rev,
               preDepartureShare: prev.share,
               postDepartureRevImmediate: cur.rev,
-              recoveredQuality: cur.slotQ >= prev.slotQ,
+              recoveredQuality: trackerEv?.recoveredQuality ?? cur.slotQ >= prev.slotQ,
               exceededQuality: cur.slotQ > prev.slotQ,
               yearsToRecoverQuality:
-                cur.slotQ >= prev.slotQ
+                trackerEv?.yearsToRecoverQuality ??
+                (cur.slotQ >= prev.slotQ
                   ? yearsBetween(G.year, G.period, G.year, G.period)
-                  : null,
+                  : null),
               yearsToExceedQuality:
                 cur.slotQ > prev.slotQ
                   ? yearsBetween(G.year, G.period, G.year, G.period)
@@ -242,6 +343,7 @@
             }
           }
 
+          if (tracker) tracker.processTurnEnd(st, cur, idx);
           priorSnap.set(st.id, cur);
         });
       }
@@ -249,19 +351,25 @@
       while (G.year < endYear) {
         const beforeSnap = new Map();
         commercialStations(G).forEach((st) => {
-          const s = snapMorning(st);
-          if (s) beforeSnap.set(st.id, s);
+          const s = snapFn(st);
+          if (s) {
+            beforeSnap.set(st.id, s);
+            if (tracker) tracker.processTurnStart(st, s);
+          }
         });
         advTurn();
         if ((G.cash || 0) < 150000) G.cash = 400000;
         const idx = periodIndex(G.year, G.period);
         commercialStations(G).forEach((st) => {
-          const cur = snapMorning(st);
+          const cur = snapFn(st);
           if (!cur) return;
           updateActiveTrackers(st, cur, idx);
+          if (tracker) tracker.processTurnEnd(st, cur, idx);
           priorSnap.set(st.id, cur);
         });
       }
+
+      if (tracker) tracker.finalizeAll(periodIndex(G.year, G.period));
 
       const finalIdx = periodIndex(G.year, G.period);
       active.forEach((list) => {

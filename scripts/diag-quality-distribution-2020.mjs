@@ -23,6 +23,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
 const legacyPath = path.join(root, 'src', 'legacy.js');
 const retentionPath = path.join(root, 'src', 'talentRetention.js');
+const ceilingPath = path.join(root, 'src', 'morningSuccessorCeiling.js');
 const runnerPath = path.join(root, 'scripts/diag-quality-distribution-2020-runner.vm.js');
 const outJson = path.join(root, 'tmp', 'quality_distribution_2020.json');
 
@@ -199,6 +200,7 @@ function loadVm(marketId) {
   } catch (_e) {
     /* optional */
   }
+  vm.runInContext(readFileSync(ceilingPath, 'utf8'), ctx, { timeout: 600_000 });
   const legacySrc = injectQualityDiagPatches(
     patchActiveMarket(readFileSync(legacyPath, 'utf8'), marketId),
   );

@@ -1,0 +1,3325 @@
+{
+  "generated": "2026-06-02T17:35:48.794Z",
+  "cfg": {
+    "markets": [
+      "wichita",
+      "atlanta",
+      "newyork"
+    ],
+    "years": [
+      1972,
+      1980,
+      1985,
+      1995,
+      2012,
+      2020
+    ],
+    "json": "tmp/talent_salary_v2_compare.json",
+    "proposed": false,
+    "regression": false,
+    "useLegacyFloor": false,
+    "clusterPayroll": false,
+    "matrix": false,
+    "matrixCompare": true,
+    "floorVariant": "v1",
+    "mode": null,
+    "share": 0.105,
+    "tenureYears": 8
+  },
+  "compareMatrix": [
+    {
+      "marketId": "wichita",
+      "year": 1972,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 6500,
+          "floor": 6500,
+          "actual": 11000,
+          "stressedActual": 10000
+        },
+        "v1": {
+          "floorCore": 10500,
+          "floor": 10500,
+          "actual": 10500,
+          "stressedActual": 10500
+        },
+        "v2a": {
+          "floorCore": 10500,
+          "floor": 10500,
+          "actual": 10500,
+          "stressedActual": 10500
+        },
+        "v2b": {
+          "floorCore": 10000,
+          "floor": 10000,
+          "actual": 11500,
+          "stressedActual": 11000
+        },
+        "v2c": {
+          "floorCore": 10000,
+          "floor": 10000,
+          "actual": 10500,
+          "stressedActual": 10000
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1972,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 7500,
+          "floor": 7500,
+          "actual": 10500,
+          "stressedActual": 9500
+        },
+        "v1": {
+          "floorCore": 16500,
+          "floor": 16500,
+          "actual": 18000,
+          "stressedActual": 18000
+        },
+        "v2a": {
+          "floorCore": 14500,
+          "floor": 14500,
+          "actual": 14500,
+          "stressedActual": 14500
+        },
+        "v2b": {
+          "floorCore": 15500,
+          "floor": 15500,
+          "actual": 17000,
+          "stressedActual": 17000
+        },
+        "v2c": {
+          "floorCore": 13500,
+          "floor": 13500,
+          "actual": 13500,
+          "stressedActual": 13500
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1972,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 12500,
+          "floor": 12500,
+          "actual": 19500,
+          "stressedActual": 21500
+        },
+        "v1": {
+          "floorCore": 28000,
+          "floor": 28000,
+          "actual": 28500,
+          "stressedActual": 28500
+        },
+        "v2a": {
+          "floorCore": 25000,
+          "floor": 25000,
+          "actual": 25500,
+          "stressedActual": 25500
+        },
+        "v2b": {
+          "floorCore": 26000,
+          "floor": 26000,
+          "actual": 26500,
+          "stressedActual": 26500
+        },
+        "v2c": {
+          "floorCore": 23000,
+          "floor": 23000,
+          "actual": 24000,
+          "stressedActual": 24000
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1972,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 22000,
+          "floor": 23500,
+          "actual": 40000,
+          "stressedActual": 24000
+        },
+        "v1": {
+          "floorCore": 57000,
+          "floor": 61000,
+          "actual": 64000,
+          "stressedActual": 64000
+        },
+        "v2a": {
+          "floorCore": 51500,
+          "floor": 55000,
+          "actual": 57500,
+          "stressedActual": 57500
+        },
+        "v2b": {
+          "floorCore": 51500,
+          "floor": 55000,
+          "actual": 59000,
+          "stressedActual": 59000
+        },
+        "v2c": {
+          "floorCore": 46500,
+          "floor": 50000,
+          "actual": 52500,
+          "stressedActual": 52500
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1972,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 155500,
+          "perStation": 51833
+        },
+        "v1": {
+          "total": 263500,
+          "perStation": 87833
+        },
+        "v2a": {
+          "total": 239000,
+          "perStation": 79667
+        },
+        "v2b": {
+          "total": 242000,
+          "perStation": 80667
+        },
+        "v2c": {
+          "total": 219500,
+          "perStation": 73167
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1980,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 9500,
+          "floor": 9500,
+          "actual": 23000,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 15500,
+          "floor": 15500,
+          "actual": 23000,
+          "stressedActual": 22500
+        },
+        "v2a": {
+          "floorCore": 15000,
+          "floor": 15000,
+          "actual": 23000,
+          "stressedActual": 22500
+        },
+        "v2b": {
+          "floorCore": 14500,
+          "floor": 14500,
+          "actual": 23000,
+          "stressedActual": 22500
+        },
+        "v2c": {
+          "floorCore": 14000,
+          "floor": 14000,
+          "actual": 23000,
+          "stressedActual": 22500
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1980,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 11000,
+          "floor": 11000,
+          "actual": 34000,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 24500,
+          "floor": 24500,
+          "actual": 37500,
+          "stressedActual": 24500
+        },
+        "v2a": {
+          "floorCore": 22000,
+          "floor": 22000,
+          "actual": 27500,
+          "stressedActual": 22500
+        },
+        "v2b": {
+          "floorCore": 22500,
+          "floor": 22500,
+          "actual": 34000,
+          "stressedActual": 22500
+        },
+        "v2c": {
+          "floorCore": 20000,
+          "floor": 20000,
+          "actual": 30000,
+          "stressedActual": 22500
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1980,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 18500,
+          "floor": 18500,
+          "actual": 41000,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 42500,
+          "floor": 42500,
+          "actual": 42500,
+          "stressedActual": 42500
+        },
+        "v2a": {
+          "floorCore": 37500,
+          "floor": 37500,
+          "actual": 41000,
+          "stressedActual": 37500
+        },
+        "v2b": {
+          "floorCore": 39000,
+          "floor": 39000,
+          "actual": 41000,
+          "stressedActual": 39000
+        },
+        "v2c": {
+          "floorCore": 34500,
+          "floor": 34500,
+          "actual": 41000,
+          "stressedActual": 34500
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1980,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 32500,
+          "floor": 35000,
+          "actual": 99000,
+          "stressedActual": 35000
+        },
+        "v1": {
+          "floorCore": 84500,
+          "floor": 90500,
+          "actual": 98500,
+          "stressedActual": 90500
+        },
+        "v2a": {
+          "floorCore": 76000,
+          "floor": 81500,
+          "actual": 94000,
+          "stressedActual": 81500
+        },
+        "v2b": {
+          "floorCore": 77000,
+          "floor": 82500,
+          "actual": 99000,
+          "stressedActual": 82500
+        },
+        "v2c": {
+          "floorCore": 69500,
+          "floor": 74500,
+          "actual": 88500,
+          "stressedActual": 74500
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1980,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 236500,
+          "perStation": 78833
+        },
+        "v1": {
+          "total": 391500,
+          "perStation": 130500
+        },
+        "v2a": {
+          "total": 357500,
+          "perStation": 119167
+        },
+        "v2b": {
+          "total": 364000,
+          "perStation": 121333
+        },
+        "v2c": {
+          "total": 336000,
+          "perStation": 112000
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1985,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 11500,
+          "floor": 11500,
+          "actual": 28000,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 18500,
+          "floor": 18500,
+          "actual": 25000,
+          "stressedActual": 22500
+        },
+        "v2a": {
+          "floorCore": 18500,
+          "floor": 18500,
+          "actual": 28000,
+          "stressedActual": 22500
+        },
+        "v2b": {
+          "floorCore": 17500,
+          "floor": 17500,
+          "actual": 28500,
+          "stressedActual": 22500
+        },
+        "v2c": {
+          "floorCore": 17000,
+          "floor": 17000,
+          "actual": 28500,
+          "stressedActual": 22500
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1985,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 13500,
+          "floor": 13500,
+          "actual": 36500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 29000,
+          "floor": 29000,
+          "actual": 46500,
+          "stressedActual": 29000
+        },
+        "v2a": {
+          "floorCore": 26000,
+          "floor": 26000,
+          "actual": 49000,
+          "stressedActual": 26000
+        },
+        "v2b": {
+          "floorCore": 27000,
+          "floor": 27000,
+          "actual": 49000,
+          "stressedActual": 27000
+        },
+        "v2c": {
+          "floorCore": 24000,
+          "floor": 24000,
+          "actual": 36500,
+          "stressedActual": 24000
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1985,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 22000,
+          "floor": 22000,
+          "actual": 53000,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 51000,
+          "floor": 51000,
+          "actual": 51000,
+          "stressedActual": 51000
+        },
+        "v2a": {
+          "floorCore": 45500,
+          "floor": 45500,
+          "actual": 53000,
+          "stressedActual": 45500
+        },
+        "v2b": {
+          "floorCore": 47000,
+          "floor": 47000,
+          "actual": 53000,
+          "stressedActual": 47000
+        },
+        "v2c": {
+          "floorCore": 41500,
+          "floor": 41500,
+          "actual": 53000,
+          "stressedActual": 41500
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1985,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 39500,
+          "floor": 42500,
+          "actual": 123000,
+          "stressedActual": 42500
+        },
+        "v1": {
+          "floorCore": 102500,
+          "floor": 109500,
+          "actual": 130500,
+          "stressedActual": 109500
+        },
+        "v2a": {
+          "floorCore": 91500,
+          "floor": 98000,
+          "actual": 116500,
+          "stressedActual": 98000
+        },
+        "v2b": {
+          "floorCore": 93000,
+          "floor": 99500,
+          "actual": 131500,
+          "stressedActual": 99500
+        },
+        "v2c": {
+          "floorCore": 83500,
+          "floor": 89500,
+          "actual": 131500,
+          "stressedActual": 89500
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1985,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 260000,
+          "perStation": 86667
+        },
+        "v1": {
+          "total": 466500,
+          "perStation": 155500
+        },
+        "v2a": {
+          "total": 426000,
+          "perStation": 142000
+        },
+        "v2b": {
+          "total": 431500,
+          "perStation": 143833
+        },
+        "v2c": {
+          "total": 395000,
+          "perStation": 131667
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1995,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 14000,
+          "floor": 14000,
+          "actual": 38500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 22500,
+          "floor": 22500,
+          "actual": 38500,
+          "stressedActual": 23000
+        },
+        "v2a": {
+          "floorCore": 22000,
+          "floor": 22000,
+          "actual": 38000,
+          "stressedActual": 23000
+        },
+        "v2b": {
+          "floorCore": 20500,
+          "floor": 20500,
+          "actual": 35000,
+          "stressedActual": 22500
+        },
+        "v2c": {
+          "floorCore": 20500,
+          "floor": 20500,
+          "actual": 38500,
+          "stressedActual": 22500
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1995,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 16000,
+          "floor": 16000,
+          "actual": 32500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 35000,
+          "floor": 35000,
+          "actual": 43000,
+          "stressedActual": 37000
+        },
+        "v2a": {
+          "floorCore": 31000,
+          "floor": 31000,
+          "actual": 65500,
+          "stressedActual": 31500
+        },
+        "v2b": {
+          "floorCore": 32000,
+          "floor": 32000,
+          "actual": 49000,
+          "stressedActual": 32500
+        },
+        "v2c": {
+          "floorCore": 28000,
+          "floor": 28000,
+          "actual": 51500,
+          "stressedActual": 29000
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1995,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 26000,
+          "floor": 26000,
+          "actual": 67000,
+          "stressedActual": 27000
+        },
+        "v1": {
+          "floorCore": 60000,
+          "floor": 60000,
+          "actual": 64500,
+          "stressedActual": 64500
+        },
+        "v2a": {
+          "floorCore": 53500,
+          "floor": 53500,
+          "actual": 66000,
+          "stressedActual": 58500
+        },
+        "v2b": {
+          "floorCore": 54500,
+          "floor": 54500,
+          "actual": 67000,
+          "stressedActual": 60000
+        },
+        "v2c": {
+          "floorCore": 48500,
+          "floor": 48500,
+          "actual": 67000,
+          "stressedActual": 52000
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1995,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 46000,
+          "floor": 49000,
+          "actual": 144000,
+          "stressedActual": 55000
+        },
+        "v1": {
+          "floorCore": 120000,
+          "floor": 128500,
+          "actual": 164000,
+          "stressedActual": 141500
+        },
+        "v2a": {
+          "floorCore": 107500,
+          "floor": 115000,
+          "actual": 149000,
+          "stressedActual": 127500
+        },
+        "v2b": {
+          "floorCore": 109000,
+          "floor": 116500,
+          "actual": 139500,
+          "stressedActual": 129500
+        },
+        "v2c": {
+          "floorCore": 97500,
+          "floor": 104500,
+          "actual": 152000,
+          "stressedActual": 115500
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 1995,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 293500,
+          "perStation": 97833
+        },
+        "v1": {
+          "total": 569500,
+          "perStation": 189833
+        },
+        "v2a": {
+          "total": 520000,
+          "perStation": 173333
+        },
+        "v2b": {
+          "total": 526500,
+          "perStation": 175500
+        },
+        "v2c": {
+          "total": 480000,
+          "perStation": 160000
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 2012,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 15500,
+          "floor": 15500,
+          "actual": 44000,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 25500,
+          "floor": 25500,
+          "actual": 44000,
+          "stressedActual": 28000
+        },
+        "v2a": {
+          "floorCore": 25000,
+          "floor": 25000,
+          "actual": 44000,
+          "stressedActual": 27500
+        },
+        "v2b": {
+          "floorCore": 24000,
+          "floor": 24000,
+          "actual": 44000,
+          "stressedActual": 26500
+        },
+        "v2c": {
+          "floorCore": 23500,
+          "floor": 23500,
+          "actual": 44000,
+          "stressedActual": 26000
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 2012,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 18500,
+          "floor": 18500,
+          "actual": 64500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 40000,
+          "floor": 40000,
+          "actual": 68000,
+          "stressedActual": 42000
+        },
+        "v2a": {
+          "floorCore": 35500,
+          "floor": 35500,
+          "actual": 70000,
+          "stressedActual": 37500
+        },
+        "v2b": {
+          "floorCore": 36000,
+          "floor": 36000,
+          "actual": 64500,
+          "stressedActual": 38500
+        },
+        "v2c": {
+          "floorCore": 32500,
+          "floor": 32500,
+          "actual": 57500,
+          "stressedActual": 35000
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 2012,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 29500,
+          "floor": 29500,
+          "actual": 77000,
+          "stressedActual": 32000
+        },
+        "v1": {
+          "floorCore": 69000,
+          "floor": 69000,
+          "actual": 77000,
+          "stressedActual": 77000
+        },
+        "v2a": {
+          "floorCore": 61000,
+          "floor": 61000,
+          "actual": 76500,
+          "stressedActual": 66000
+        },
+        "v2b": {
+          "floorCore": 62500,
+          "floor": 62500,
+          "actual": 77000,
+          "stressedActual": 69000
+        },
+        "v2c": {
+          "floorCore": 56000,
+          "floor": 56000,
+          "actual": 77000,
+          "stressedActual": 61000
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 2012,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 53000,
+          "floor": 56500,
+          "actual": 170500,
+          "stressedActual": 65000
+        },
+        "v1": {
+          "floorCore": 137000,
+          "floor": 146500,
+          "actual": 165000,
+          "stressedActual": 165000
+        },
+        "v2a": {
+          "floorCore": 123500,
+          "floor": 132000,
+          "actual": 188500,
+          "stressedActual": 149000
+        },
+        "v2b": {
+          "floorCore": 124500,
+          "floor": 133000,
+          "actual": 163500,
+          "stressedActual": 152000
+        },
+        "v2c": {
+          "floorCore": 112000,
+          "floor": 120000,
+          "actual": 154000,
+          "stressedActual": 136500
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 2012,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 318000,
+          "perStation": 106000
+        },
+        "v1": {
+          "total": 670000,
+          "perStation": 223333
+        },
+        "v2a": {
+          "total": 608500,
+          "perStation": 202833
+        },
+        "v2b": {
+          "total": 615500,
+          "perStation": 205167
+        },
+        "v2c": {
+          "total": 558500,
+          "perStation": 186167
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 2020,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 16500,
+          "floor": 16500,
+          "actual": 34500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 26500,
+          "floor": 26500,
+          "actual": 46000,
+          "stressedActual": 29000
+        },
+        "v2a": {
+          "floorCore": 26000,
+          "floor": 26000,
+          "actual": 44500,
+          "stressedActual": 28500
+        },
+        "v2b": {
+          "floorCore": 25000,
+          "floor": 25000,
+          "actual": 46000,
+          "stressedActual": 27500
+        },
+        "v2c": {
+          "floorCore": 24500,
+          "floor": 24500,
+          "actual": 38000,
+          "stressedActual": 27000
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 2020,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 19000,
+          "floor": 19000,
+          "actual": 62500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 41500,
+          "floor": 41500,
+          "actual": 58500,
+          "stressedActual": 44000
+        },
+        "v2a": {
+          "floorCore": 36500,
+          "floor": 36500,
+          "actual": 54500,
+          "stressedActual": 39000
+        },
+        "v2b": {
+          "floorCore": 38500,
+          "floor": 38500,
+          "actual": 48000,
+          "stressedActual": 40000
+        },
+        "v2c": {
+          "floorCore": 34000,
+          "floor": 34000,
+          "actual": 48500,
+          "stressedActual": 36000
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 2020,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 31000,
+          "floor": 31000,
+          "actual": 80500,
+          "stressedActual": 33500
+        },
+        "v1": {
+          "floorCore": 72000,
+          "floor": 72000,
+          "actual": 80500,
+          "stressedActual": 79500
+        },
+        "v2a": {
+          "floorCore": 63500,
+          "floor": 63500,
+          "actual": 80500,
+          "stressedActual": 68500
+        },
+        "v2b": {
+          "floorCore": 66000,
+          "floor": 66000,
+          "actual": 80500,
+          "stressedActual": 70500
+        },
+        "v2c": {
+          "floorCore": 58500,
+          "floor": 58500,
+          "actual": 80500,
+          "stressedActual": 63000
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 2020,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 55000,
+          "floor": 59000,
+          "actual": 196500,
+          "stressedActual": 67000
+        },
+        "v1": {
+          "floorCore": 143000,
+          "floor": 153000,
+          "actual": 172000,
+          "stressedActual": 172000
+        },
+        "v2a": {
+          "floorCore": 129000,
+          "floor": 138000,
+          "actual": 154500,
+          "stressedActual": 154500
+        },
+        "v2b": {
+          "floorCore": 130500,
+          "floor": 139500,
+          "actual": 162000,
+          "stressedActual": 156500
+        },
+        "v2c": {
+          "floorCore": 117000,
+          "floor": 125000,
+          "actual": 173500,
+          "stressedActual": 141000
+        }
+      }
+    },
+    {
+      "marketId": "wichita",
+      "year": 2020,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 327500,
+          "perStation": 109167
+        },
+        "v1": {
+          "total": 693500,
+          "perStation": 231167
+        },
+        "v2a": {
+          "total": 627500,
+          "perStation": 209167
+        },
+        "v2b": {
+          "total": 634500,
+          "perStation": 211500
+        },
+        "v2c": {
+          "total": 580000,
+          "perStation": 193333
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1972,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 7000,
+          "floor": 7000,
+          "actual": 19000,
+          "stressedActual": 12000
+        },
+        "v1": {
+          "floorCore": 11500,
+          "floor": 11500,
+          "actual": 11500,
+          "stressedActual": 17500
+        },
+        "v2a": {
+          "floorCore": 11000,
+          "floor": 11000,
+          "actual": 19000,
+          "stressedActual": 11000
+        },
+        "v2b": {
+          "floorCore": 11000,
+          "floor": 11000,
+          "actual": 19000,
+          "stressedActual": 19000
+        },
+        "v2c": {
+          "floorCore": 10500,
+          "floor": 10500,
+          "actual": 18500,
+          "stressedActual": 19000
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1972,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 8000,
+          "floor": 8000,
+          "actual": 20500,
+          "stressedActual": 17500
+        },
+        "v1": {
+          "floorCore": 18000,
+          "floor": 18000,
+          "actual": 19000,
+          "stressedActual": 21000
+        },
+        "v2a": {
+          "floorCore": 16000,
+          "floor": 16000,
+          "actual": 17500,
+          "stressedActual": 22000
+        },
+        "v2b": {
+          "floorCore": 17000,
+          "floor": 17000,
+          "actual": 21000,
+          "stressedActual": 19000
+        },
+        "v2c": {
+          "floorCore": 15000,
+          "floor": 15000,
+          "actual": 22500,
+          "stressedActual": 16000
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1972,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 13000,
+          "floor": 13000,
+          "actual": 25500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 31000,
+          "floor": 31000,
+          "actual": 31500,
+          "stressedActual": 31000
+        },
+        "v2a": {
+          "floorCore": 27000,
+          "floor": 27000,
+          "actual": 30500,
+          "stressedActual": 27500
+        },
+        "v2b": {
+          "floorCore": 28000,
+          "floor": 28000,
+          "actual": 33000,
+          "stressedActual": 28500
+        },
+        "v2c": {
+          "floorCore": 25000,
+          "floor": 25000,
+          "actual": 26000,
+          "stressedActual": 26000
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1972,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 23500,
+          "floor": 25500,
+          "actual": 62500,
+          "stressedActual": 25500
+        },
+        "v1": {
+          "floorCore": 62000,
+          "floor": 67000,
+          "actual": 70000,
+          "stressedActual": 70000
+        },
+        "v2a": {
+          "floorCore": 55500,
+          "floor": 60000,
+          "actual": 62500,
+          "stressedActual": 62500
+        },
+        "v2b": {
+          "floorCore": 56500,
+          "floor": 61000,
+          "actual": 63500,
+          "stressedActual": 63500
+        },
+        "v2c": {
+          "floorCore": 50500,
+          "floor": 54500,
+          "actual": 58000,
+          "stressedActual": 58000
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1972,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 186500,
+          "perStation": 62167
+        },
+        "v1": {
+          "total": 290500,
+          "perStation": 96833
+        },
+        "v2a": {
+          "total": 262000,
+          "perStation": 87333
+        },
+        "v2b": {
+          "total": 260500,
+          "perStation": 86833
+        },
+        "v2c": {
+          "total": 255500,
+          "perStation": 85167
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1980,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 10500,
+          "floor": 10500,
+          "actual": 25000,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 17000,
+          "floor": 17000,
+          "actual": 25000,
+          "stressedActual": 22500
+        },
+        "v2a": {
+          "floorCore": 16500,
+          "floor": 16500,
+          "actual": 25000,
+          "stressedActual": 22500
+        },
+        "v2b": {
+          "floorCore": 15500,
+          "floor": 15500,
+          "actual": 25000,
+          "stressedActual": 22500
+        },
+        "v2c": {
+          "floorCore": 15500,
+          "floor": 15500,
+          "actual": 25000,
+          "stressedActual": 22500
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1980,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 12000,
+          "floor": 12000,
+          "actual": 44500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 26500,
+          "floor": 26500,
+          "actual": 41500,
+          "stressedActual": 26500
+        },
+        "v2a": {
+          "floorCore": 23500,
+          "floor": 23500,
+          "actual": 45000,
+          "stressedActual": 23500
+        },
+        "v2b": {
+          "floorCore": 24500,
+          "floor": 24500,
+          "actual": 45000,
+          "stressedActual": 24500
+        },
+        "v2c": {
+          "floorCore": 21500,
+          "floor": 21500,
+          "actual": 45000,
+          "stressedActual": 22500
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1980,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 19500,
+          "floor": 19500,
+          "actual": 45000,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 46000,
+          "floor": 46000,
+          "actual": 46000,
+          "stressedActual": 46000
+        },
+        "v2a": {
+          "floorCore": 41000,
+          "floor": 41000,
+          "actual": 45000,
+          "stressedActual": 41000
+        },
+        "v2b": {
+          "floorCore": 43000,
+          "floor": 43000,
+          "actual": 45000,
+          "stressedActual": 43000
+        },
+        "v2c": {
+          "floorCore": 37500,
+          "floor": 37500,
+          "actual": 45000,
+          "stressedActual": 37500
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1980,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 35000,
+          "floor": 37500,
+          "actual": 113500,
+          "stressedActual": 37500
+        },
+        "v1": {
+          "floorCore": 92500,
+          "floor": 99500,
+          "actual": 113500,
+          "stressedActual": 99500
+        },
+        "v2a": {
+          "floorCore": 82000,
+          "floor": 88500,
+          "actual": 113500,
+          "stressedActual": 88500
+        },
+        "v2b": {
+          "floorCore": 84000,
+          "floor": 90500,
+          "actual": 113500,
+          "stressedActual": 90500
+        },
+        "v2c": {
+          "floorCore": 75500,
+          "floor": 81500,
+          "actual": 113500,
+          "stressedActual": 81500
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1980,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 243000,
+          "perStation": 81000
+        },
+        "v1": {
+          "total": 420000,
+          "perStation": 140000
+        },
+        "v2a": {
+          "total": 382500,
+          "perStation": 127500
+        },
+        "v2b": {
+          "total": 389500,
+          "perStation": 129833
+        },
+        "v2c": {
+          "total": 357000,
+          "perStation": 119000
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1985,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 12500,
+          "floor": 12500,
+          "actual": 34000,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 20500,
+          "floor": 20500,
+          "actual": 34000,
+          "stressedActual": 22500
+        },
+        "v2a": {
+          "floorCore": 20000,
+          "floor": 20000,
+          "actual": 34000,
+          "stressedActual": 22500
+        },
+        "v2b": {
+          "floorCore": 19000,
+          "floor": 19000,
+          "actual": 34000,
+          "stressedActual": 22500
+        },
+        "v2c": {
+          "floorCore": 18500,
+          "floor": 18500,
+          "actual": 34000,
+          "stressedActual": 22500
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1985,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 14500,
+          "floor": 14500,
+          "actual": 58500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 32000,
+          "floor": 32000,
+          "actual": 58500,
+          "stressedActual": 32500
+        },
+        "v2a": {
+          "floorCore": 28500,
+          "floor": 28500,
+          "actual": 58500,
+          "stressedActual": 28500
+        },
+        "v2b": {
+          "floorCore": 30000,
+          "floor": 30000,
+          "actual": 58500,
+          "stressedActual": 30000
+        },
+        "v2c": {
+          "floorCore": 26000,
+          "floor": 26000,
+          "actual": 58500,
+          "stressedActual": 26000
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1985,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 23500,
+          "floor": 23500,
+          "actual": 59000,
+          "stressedActual": 23500
+        },
+        "v1": {
+          "floorCore": 56000,
+          "floor": 56000,
+          "actual": 59000,
+          "stressedActual": 56000
+        },
+        "v2a": {
+          "floorCore": 49500,
+          "floor": 49500,
+          "actual": 59000,
+          "stressedActual": 49500
+        },
+        "v2b": {
+          "floorCore": 51000,
+          "floor": 51000,
+          "actual": 59000,
+          "stressedActual": 51000
+        },
+        "v2c": {
+          "floorCore": 45000,
+          "floor": 45000,
+          "actual": 59000,
+          "stressedActual": 45000
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1985,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 42000,
+          "floor": 45000,
+          "actual": 151500,
+          "stressedActual": 45500
+        },
+        "v1": {
+          "floorCore": 111500,
+          "floor": 120000,
+          "actual": 151500,
+          "stressedActual": 120000
+        },
+        "v2a": {
+          "floorCore": 99500,
+          "floor": 107000,
+          "actual": 151500,
+          "stressedActual": 107500
+        },
+        "v2b": {
+          "floorCore": 101500,
+          "floor": 109500,
+          "actual": 151500,
+          "stressedActual": 109500
+        },
+        "v2c": {
+          "floorCore": 91000,
+          "floor": 98000,
+          "actual": 151500,
+          "stressedActual": 98000
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1985,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 268000,
+          "perStation": 89333
+        },
+        "v1": {
+          "total": 501000,
+          "perStation": 167000
+        },
+        "v2a": {
+          "total": 456500,
+          "perStation": 152167
+        },
+        "v2b": {
+          "total": 463500,
+          "perStation": 154500
+        },
+        "v2c": {
+          "total": 422500,
+          "perStation": 140833
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1995,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 15000,
+          "floor": 15000,
+          "actual": 43000,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 24000,
+          "floor": 24000,
+          "actual": 43000,
+          "stressedActual": 25000
+        },
+        "v2a": {
+          "floorCore": 23500,
+          "floor": 23500,
+          "actual": 43000,
+          "stressedActual": 24500
+        },
+        "v2b": {
+          "floorCore": 23000,
+          "floor": 23000,
+          "actual": 43000,
+          "stressedActual": 23500
+        },
+        "v2c": {
+          "floorCore": 22500,
+          "floor": 22500,
+          "actual": 43000,
+          "stressedActual": 23000
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1995,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 17000,
+          "floor": 17000,
+          "actual": 75500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 38000,
+          "floor": 38000,
+          "actual": 75500,
+          "stressedActual": 40500
+        },
+        "v2a": {
+          "floorCore": 33500,
+          "floor": 33500,
+          "actual": 63000,
+          "stressedActual": 36500
+        },
+        "v2b": {
+          "floorCore": 34500,
+          "floor": 34500,
+          "actual": 56500,
+          "stressedActual": 38500
+        },
+        "v2c": {
+          "floorCore": 30500,
+          "floor": 30500,
+          "actual": 75500,
+          "stressedActual": 33500
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1995,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 27500,
+          "floor": 27500,
+          "actual": 75500,
+          "stressedActual": 32000
+        },
+        "v1": {
+          "floorCore": 65500,
+          "floor": 65500,
+          "actual": 75500,
+          "stressedActual": 73000
+        },
+        "v2a": {
+          "floorCore": 58000,
+          "floor": 58000,
+          "actual": 75500,
+          "stressedActual": 62500
+        },
+        "v2b": {
+          "floorCore": 59500,
+          "floor": 59500,
+          "actual": 75500,
+          "stressedActual": 64000
+        },
+        "v2c": {
+          "floorCore": 52500,
+          "floor": 52500,
+          "actual": 75500,
+          "stressedActual": 58000
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1995,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 49500,
+          "floor": 53500,
+          "actual": 186500,
+          "stressedActual": 59500
+        },
+        "v1": {
+          "floorCore": 130500,
+          "floor": 140500,
+          "actual": 186500,
+          "stressedActual": 158000
+        },
+        "v2a": {
+          "floorCore": 116500,
+          "floor": 125500,
+          "actual": 186500,
+          "stressedActual": 142000
+        },
+        "v2b": {
+          "floorCore": 118000,
+          "floor": 127000,
+          "actual": 186500,
+          "stressedActual": 143500
+        },
+        "v2c": {
+          "floorCore": 106000,
+          "floor": 114000,
+          "actual": 186500,
+          "stressedActual": 128000
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 1995,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 309000,
+          "perStation": 103000
+        },
+        "v1": {
+          "total": 623000,
+          "perStation": 207667
+        },
+        "v2a": {
+          "total": 564000,
+          "perStation": 188000
+        },
+        "v2b": {
+          "total": 570500,
+          "perStation": 190167
+        },
+        "v2c": {
+          "total": 518000,
+          "perStation": 172667
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 2012,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 16500,
+          "floor": 16500,
+          "actual": 49500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 27500,
+          "floor": 27500,
+          "actual": 49500,
+          "stressedActual": 30000
+        },
+        "v2a": {
+          "floorCore": 27000,
+          "floor": 27000,
+          "actual": 49500,
+          "stressedActual": 29500
+        },
+        "v2b": {
+          "floorCore": 26000,
+          "floor": 26000,
+          "actual": 49500,
+          "stressedActual": 28500
+        },
+        "v2c": {
+          "floorCore": 25500,
+          "floor": 25500,
+          "actual": 49500,
+          "stressedActual": 28000
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 2012,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 19500,
+          "floor": 19500,
+          "actual": 86500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 43500,
+          "floor": 43500,
+          "actual": 86500,
+          "stressedActual": 48500
+        },
+        "v2a": {
+          "floorCore": 38000,
+          "floor": 38000,
+          "actual": 82000,
+          "stressedActual": 42000
+        },
+        "v2b": {
+          "floorCore": 39500,
+          "floor": 39500,
+          "actual": 59000,
+          "stressedActual": 45500
+        },
+        "v2c": {
+          "floorCore": 35000,
+          "floor": 35000,
+          "actual": 76500,
+          "stressedActual": 37500
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 2012,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 32000,
+          "floor": 32000,
+          "actual": 86500,
+          "stressedActual": 34000
+        },
+        "v1": {
+          "floorCore": 75500,
+          "floor": 75500,
+          "actual": 86500,
+          "stressedActual": 83500
+        },
+        "v2a": {
+          "floorCore": 66500,
+          "floor": 66500,
+          "actual": 86500,
+          "stressedActual": 74000
+        },
+        "v2b": {
+          "floorCore": 68500,
+          "floor": 68500,
+          "actual": 86500,
+          "stressedActual": 76500
+        },
+        "v2c": {
+          "floorCore": 60500,
+          "floor": 60500,
+          "actual": 86500,
+          "stressedActual": 69000
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 2012,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 56500,
+          "floor": 61000,
+          "actual": 213500,
+          "stressedActual": 69000
+        },
+        "v1": {
+          "floorCore": 149500,
+          "floor": 161000,
+          "actual": 213500,
+          "stressedActual": 185500
+        },
+        "v2a": {
+          "floorCore": 134000,
+          "floor": 144500,
+          "actual": 213500,
+          "stressedActual": 166000
+        },
+        "v2b": {
+          "floorCore": 136000,
+          "floor": 146500,
+          "actual": 213500,
+          "stressedActual": 169000
+        },
+        "v2c": {
+          "floorCore": 121500,
+          "floor": 131000,
+          "actual": 213500,
+          "stressedActual": 151000
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 2012,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 337500,
+          "perStation": 112500
+        },
+        "v1": {
+          "total": 728000,
+          "perStation": 242667
+        },
+        "v2a": {
+          "total": 662500,
+          "perStation": 220833
+        },
+        "v2b": {
+          "total": 671000,
+          "perStation": 223667
+        },
+        "v2c": {
+          "total": 613500,
+          "perStation": 204500
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 2020,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 17500,
+          "floor": 17500,
+          "actual": 51500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 28500,
+          "floor": 28500,
+          "actual": 51500,
+          "stressedActual": 31000
+        },
+        "v2a": {
+          "floorCore": 28000,
+          "floor": 28000,
+          "actual": 51500,
+          "stressedActual": 30500
+        },
+        "v2b": {
+          "floorCore": 27000,
+          "floor": 27000,
+          "actual": 51500,
+          "stressedActual": 29500
+        },
+        "v2c": {
+          "floorCore": 26500,
+          "floor": 26500,
+          "actual": 51500,
+          "stressedActual": 29000
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 2020,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 20000,
+          "floor": 20000,
+          "actual": 82000,
+          "stressedActual": 23000
+        },
+        "v1": {
+          "floorCore": 45000,
+          "floor": 45000,
+          "actual": 90000,
+          "stressedActual": 51000
+        },
+        "v2a": {
+          "floorCore": 40000,
+          "floor": 40000,
+          "actual": 86000,
+          "stressedActual": 42000
+        },
+        "v2b": {
+          "floorCore": 41500,
+          "floor": 41500,
+          "actual": 90000,
+          "stressedActual": 45000
+        },
+        "v2c": {
+          "floorCore": 37000,
+          "floor": 37000,
+          "actual": 90000,
+          "stressedActual": 39000
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 2020,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 33000,
+          "floor": 33000,
+          "actual": 90000,
+          "stressedActual": 35500
+        },
+        "v1": {
+          "floorCore": 78000,
+          "floor": 78000,
+          "actual": 90000,
+          "stressedActual": 86500
+        },
+        "v2a": {
+          "floorCore": 69000,
+          "floor": 69000,
+          "actual": 90000,
+          "stressedActual": 77500
+        },
+        "v2b": {
+          "floorCore": 71500,
+          "floor": 71500,
+          "actual": 90000,
+          "stressedActual": 79500
+        },
+        "v2c": {
+          "floorCore": 63500,
+          "floor": 63500,
+          "actual": 90000,
+          "stressedActual": 71500
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 2020,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 59000,
+          "floor": 63500,
+          "actual": 222500,
+          "stressedActual": 72500
+        },
+        "v1": {
+          "floorCore": 156500,
+          "floor": 168500,
+          "actual": 222500,
+          "stressedActual": 192000
+        },
+        "v2a": {
+          "floorCore": 140000,
+          "floor": 151000,
+          "actual": 222500,
+          "stressedActual": 172000
+        },
+        "v2b": {
+          "floorCore": 142000,
+          "floor": 153000,
+          "actual": 222500,
+          "stressedActual": 175500
+        },
+        "v2c": {
+          "floorCore": 127000,
+          "floor": 137000,
+          "actual": 222500,
+          "stressedActual": 157000
+        }
+      }
+    },
+    {
+      "marketId": "atlanta",
+      "year": 2020,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 347000,
+          "perStation": 115667
+        },
+        "v1": {
+          "total": 754000,
+          "perStation": 251333
+        },
+        "v2a": {
+          "total": 689500,
+          "perStation": 229833
+        },
+        "v2b": {
+          "total": 695000,
+          "perStation": 231667
+        },
+        "v2c": {
+          "total": 634000,
+          "perStation": 211333
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1972,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 7500,
+          "floor": 7500,
+          "actual": 19500,
+          "stressedActual": 19500
+        },
+        "v1": {
+          "floorCore": 12000,
+          "floor": 12000,
+          "actual": 19500,
+          "stressedActual": 19500
+        },
+        "v2a": {
+          "floorCore": 11500,
+          "floor": 11500,
+          "actual": 19500,
+          "stressedActual": 19500
+        },
+        "v2b": {
+          "floorCore": 11000,
+          "floor": 11000,
+          "actual": 19500,
+          "stressedActual": 19500
+        },
+        "v2c": {
+          "floorCore": 10500,
+          "floor": 10500,
+          "actual": 19500,
+          "stressedActual": 19500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1972,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 8000,
+          "floor": 8000,
+          "actual": 28500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 18500,
+          "floor": 18500,
+          "actual": 26500,
+          "stressedActual": 22500
+        },
+        "v2a": {
+          "floorCore": 16500,
+          "floor": 16500,
+          "actual": 33000,
+          "stressedActual": 22500
+        },
+        "v2b": {
+          "floorCore": 17500,
+          "floor": 17500,
+          "actual": 23500,
+          "stressedActual": 22500
+        },
+        "v2c": {
+          "floorCore": 15500,
+          "floor": 15500,
+          "actual": 20000,
+          "stressedActual": 22500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1972,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 13500,
+          "floor": 13500,
+          "actual": 35000,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 32000,
+          "floor": 32000,
+          "actual": 35000,
+          "stressedActual": 32000
+        },
+        "v2a": {
+          "floorCore": 28000,
+          "floor": 28000,
+          "actual": 35000,
+          "stressedActual": 28000
+        },
+        "v2b": {
+          "floorCore": 29500,
+          "floor": 29500,
+          "actual": 35000,
+          "stressedActual": 29500
+        },
+        "v2c": {
+          "floorCore": 26000,
+          "floor": 26000,
+          "actual": 35000,
+          "stressedActual": 26500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1972,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 24000,
+          "floor": 26000,
+          "actual": 86000,
+          "stressedActual": 26000
+        },
+        "v1": {
+          "floorCore": 63500,
+          "floor": 68500,
+          "actual": 76000,
+          "stressedActual": 74000
+        },
+        "v2a": {
+          "floorCore": 57000,
+          "floor": 61500,
+          "actual": 80500,
+          "stressedActual": 65000
+        },
+        "v2b": {
+          "floorCore": 58000,
+          "floor": 62500,
+          "actual": 85500,
+          "stressedActual": 66500
+        },
+        "v2c": {
+          "floorCore": 51500,
+          "floor": 55500,
+          "actual": 86000,
+          "stressedActual": 59000
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1972,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 208000,
+          "perStation": 69333
+        },
+        "v1": {
+          "total": 314500,
+          "perStation": 104833
+        },
+        "v2a": {
+          "total": 287000,
+          "perStation": 95667
+        },
+        "v2b": {
+          "total": 293500,
+          "perStation": 97833
+        },
+        "v2c": {
+          "total": 279000,
+          "perStation": 93000
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1980,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 10500,
+          "floor": 10500,
+          "actual": 26000,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 17500,
+          "floor": 17500,
+          "actual": 26000,
+          "stressedActual": 22500
+        },
+        "v2a": {
+          "floorCore": 17000,
+          "floor": 17000,
+          "actual": 26000,
+          "stressedActual": 22500
+        },
+        "v2b": {
+          "floorCore": 16500,
+          "floor": 16500,
+          "actual": 26000,
+          "stressedActual": 22500
+        },
+        "v2c": {
+          "floorCore": 16000,
+          "floor": 16000,
+          "actual": 26000,
+          "stressedActual": 22500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1980,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 12000,
+          "floor": 12000,
+          "actual": 46500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 27500,
+          "floor": 27500,
+          "actual": 46500,
+          "stressedActual": 27500
+        },
+        "v2a": {
+          "floorCore": 24500,
+          "floor": 24500,
+          "actual": 46500,
+          "stressedActual": 24500
+        },
+        "v2b": {
+          "floorCore": 25500,
+          "floor": 25500,
+          "actual": 46500,
+          "stressedActual": 25500
+        },
+        "v2c": {
+          "floorCore": 22500,
+          "floor": 22500,
+          "actual": 46500,
+          "stressedActual": 22500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1980,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 20000,
+          "floor": 20000,
+          "actual": 46500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 47500,
+          "floor": 47500,
+          "actual": 47500,
+          "stressedActual": 47500
+        },
+        "v2a": {
+          "floorCore": 42000,
+          "floor": 42000,
+          "actual": 46500,
+          "stressedActual": 42000
+        },
+        "v2b": {
+          "floorCore": 44000,
+          "floor": 44000,
+          "actual": 46500,
+          "stressedActual": 44000
+        },
+        "v2c": {
+          "floorCore": 38500,
+          "floor": 38500,
+          "actual": 46500,
+          "stressedActual": 38500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1980,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 36000,
+          "floor": 39000,
+          "actual": 119500,
+          "stressedActual": 39000
+        },
+        "v1": {
+          "floorCore": 95000,
+          "floor": 102500,
+          "actual": 119500,
+          "stressedActual": 102500
+        },
+        "v2a": {
+          "floorCore": 85000,
+          "floor": 91500,
+          "actual": 119500,
+          "stressedActual": 91500
+        },
+        "v2b": {
+          "floorCore": 86000,
+          "floor": 92500,
+          "actual": 119500,
+          "stressedActual": 92500
+        },
+        "v2c": {
+          "floorCore": 77000,
+          "floor": 83000,
+          "actual": 119500,
+          "stressedActual": 83000
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1980,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 246000,
+          "perStation": 82000
+        },
+        "v1": {
+          "total": 431000,
+          "perStation": 143667
+        },
+        "v2a": {
+          "total": 392500,
+          "perStation": 130833
+        },
+        "v2b": {
+          "total": 398000,
+          "perStation": 132667
+        },
+        "v2c": {
+          "total": 364500,
+          "perStation": 121500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1985,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 13000,
+          "floor": 13000,
+          "actual": 35000,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 21000,
+          "floor": 21000,
+          "actual": 35000,
+          "stressedActual": 22500
+        },
+        "v2a": {
+          "floorCore": 20500,
+          "floor": 20500,
+          "actual": 35000,
+          "stressedActual": 22500
+        },
+        "v2b": {
+          "floorCore": 19500,
+          "floor": 19500,
+          "actual": 35000,
+          "stressedActual": 22500
+        },
+        "v2c": {
+          "floorCore": 19000,
+          "floor": 19000,
+          "actual": 35000,
+          "stressedActual": 22500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1985,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 15000,
+          "floor": 15000,
+          "actual": 60500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 33000,
+          "floor": 33000,
+          "actual": 60500,
+          "stressedActual": 33000
+        },
+        "v2a": {
+          "floorCore": 29000,
+          "floor": 29000,
+          "actual": 60500,
+          "stressedActual": 29500
+        },
+        "v2b": {
+          "floorCore": 30500,
+          "floor": 30500,
+          "actual": 60500,
+          "stressedActual": 31000
+        },
+        "v2c": {
+          "floorCore": 27000,
+          "floor": 27000,
+          "actual": 60500,
+          "stressedActual": 27000
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1985,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 24500,
+          "floor": 24500,
+          "actual": 62000,
+          "stressedActual": 24500
+        },
+        "v1": {
+          "floorCore": 57500,
+          "floor": 57500,
+          "actual": 62000,
+          "stressedActual": 57500
+        },
+        "v2a": {
+          "floorCore": 51000,
+          "floor": 51000,
+          "actual": 62000,
+          "stressedActual": 51000
+        },
+        "v2b": {
+          "floorCore": 52500,
+          "floor": 52500,
+          "actual": 62000,
+          "stressedActual": 52500
+        },
+        "v2c": {
+          "floorCore": 46000,
+          "floor": 46000,
+          "actual": 62000,
+          "stressedActual": 46500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1985,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 43000,
+          "floor": 46500,
+          "actual": 158000,
+          "stressedActual": 46500
+        },
+        "v1": {
+          "floorCore": 114500,
+          "floor": 123500,
+          "actual": 158000,
+          "stressedActual": 123500
+        },
+        "v2a": {
+          "floorCore": 102000,
+          "floor": 110000,
+          "actual": 158000,
+          "stressedActual": 110500
+        },
+        "v2b": {
+          "floorCore": 104500,
+          "floor": 112500,
+          "actual": 158000,
+          "stressedActual": 112500
+        },
+        "v2c": {
+          "floorCore": 93000,
+          "floor": 100000,
+          "actual": 158000,
+          "stressedActual": 100500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1985,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 271500,
+          "perStation": 90500
+        },
+        "v1": {
+          "total": 514000,
+          "perStation": 171333
+        },
+        "v2a": {
+          "total": 467500,
+          "perStation": 155833
+        },
+        "v2b": {
+          "total": 475000,
+          "perStation": 158333
+        },
+        "v2c": {
+          "total": 433000,
+          "perStation": 144333
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1995,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 15000,
+          "floor": 15000,
+          "actual": 45000,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 25000,
+          "floor": 25000,
+          "actual": 45000,
+          "stressedActual": 26000
+        },
+        "v2a": {
+          "floorCore": 24500,
+          "floor": 24500,
+          "actual": 45000,
+          "stressedActual": 25500
+        },
+        "v2b": {
+          "floorCore": 23500,
+          "floor": 23500,
+          "actual": 45000,
+          "stressedActual": 24000
+        },
+        "v2c": {
+          "floorCore": 23000,
+          "floor": 23000,
+          "actual": 45000,
+          "stressedActual": 23500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1995,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 17500,
+          "floor": 17500,
+          "actual": 78500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 39000,
+          "floor": 39000,
+          "actual": 78500,
+          "stressedActual": 42000
+        },
+        "v2a": {
+          "floorCore": 34500,
+          "floor": 34500,
+          "actual": 78500,
+          "stressedActual": 37500
+        },
+        "v2b": {
+          "floorCore": 36000,
+          "floor": 36000,
+          "actual": 78500,
+          "stressedActual": 39000
+        },
+        "v2c": {
+          "floorCore": 31500,
+          "floor": 31500,
+          "actual": 78500,
+          "stressedActual": 35500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1995,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 28500,
+          "floor": 28500,
+          "actual": 78500,
+          "stressedActual": 32500
+        },
+        "v1": {
+          "floorCore": 67000,
+          "floor": 67000,
+          "actual": 78500,
+          "stressedActual": 74500
+        },
+        "v2a": {
+          "floorCore": 59500,
+          "floor": 59500,
+          "actual": 78500,
+          "stressedActual": 66000
+        },
+        "v2b": {
+          "floorCore": 61000,
+          "floor": 61000,
+          "actual": 78500,
+          "stressedActual": 69000
+        },
+        "v2c": {
+          "floorCore": 54000,
+          "floor": 54000,
+          "actual": 78500,
+          "stressedActual": 59500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1995,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 51000,
+          "floor": 55000,
+          "actual": 194500,
+          "stressedActual": 63000
+        },
+        "v1": {
+          "floorCore": 133500,
+          "floor": 144000,
+          "actual": 194500,
+          "stressedActual": 164500
+        },
+        "v2a": {
+          "floorCore": 120000,
+          "floor": 129000,
+          "actual": 194500,
+          "stressedActual": 146500
+        },
+        "v2b": {
+          "floorCore": 121500,
+          "floor": 131000,
+          "actual": 194500,
+          "stressedActual": 149500
+        },
+        "v2c": {
+          "floorCore": 108500,
+          "floor": 117000,
+          "actual": 194500,
+          "stressedActual": 134000
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 1995,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 315500,
+          "perStation": 105167
+        },
+        "v1": {
+          "total": 643500,
+          "perStation": 214500
+        },
+        "v2a": {
+          "total": 584000,
+          "perStation": 194667
+        },
+        "v2b": {
+          "total": 591500,
+          "perStation": 197167
+        },
+        "v2c": {
+          "total": 535000,
+          "perStation": 178333
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 2012,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 17000,
+          "floor": 17000,
+          "actual": 51500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 28000,
+          "floor": 28000,
+          "actual": 51500,
+          "stressedActual": 30500
+        },
+        "v2a": {
+          "floorCore": 27500,
+          "floor": 27500,
+          "actual": 51500,
+          "stressedActual": 30000
+        },
+        "v2b": {
+          "floorCore": 26500,
+          "floor": 26500,
+          "actual": 51500,
+          "stressedActual": 29000
+        },
+        "v2c": {
+          "floorCore": 26000,
+          "floor": 26000,
+          "actual": 51500,
+          "stressedActual": 28500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 2012,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 20000,
+          "floor": 20000,
+          "actual": 90500,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 44500,
+          "floor": 44500,
+          "actual": 90500,
+          "stressedActual": 50000
+        },
+        "v2a": {
+          "floorCore": 39000,
+          "floor": 39000,
+          "actual": 90500,
+          "stressedActual": 44500
+        },
+        "v2b": {
+          "floorCore": 40500,
+          "floor": 40500,
+          "actual": 90500,
+          "stressedActual": 46500
+        },
+        "v2c": {
+          "floorCore": 36000,
+          "floor": 36000,
+          "actual": 90500,
+          "stressedActual": 41500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 2012,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 32500,
+          "floor": 32500,
+          "actual": 90500,
+          "stressedActual": 38500
+        },
+        "v1": {
+          "floorCore": 77000,
+          "floor": 77000,
+          "actual": 90500,
+          "stressedActual": 88500
+        },
+        "v2a": {
+          "floorCore": 68500,
+          "floor": 68500,
+          "actual": 90500,
+          "stressedActual": 76000
+        },
+        "v2b": {
+          "floorCore": 70500,
+          "floor": 70500,
+          "actual": 90500,
+          "stressedActual": 79500
+        },
+        "v2c": {
+          "floorCore": 62000,
+          "floor": 62000,
+          "actual": 90500,
+          "stressedActual": 70500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 2012,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 58000,
+          "floor": 62500,
+          "actual": 223500,
+          "stressedActual": 73500
+        },
+        "v1": {
+          "floorCore": 153500,
+          "floor": 165500,
+          "actual": 223500,
+          "stressedActual": 192500
+        },
+        "v2a": {
+          "floorCore": 137000,
+          "floor": 147500,
+          "actual": 223500,
+          "stressedActual": 172000
+        },
+        "v2b": {
+          "floorCore": 140000,
+          "floor": 151000,
+          "actual": 223500,
+          "stressedActual": 176000
+        },
+        "v2c": {
+          "floorCore": 124500,
+          "floor": 134000,
+          "actual": 223500,
+          "stressedActual": 157500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 2012,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 352000,
+          "perStation": 117333
+        },
+        "v1": {
+          "total": 754000,
+          "perStation": 251333
+        },
+        "v2a": {
+          "total": 682500,
+          "perStation": 227500
+        },
+        "v2b": {
+          "total": 694500,
+          "perStation": 231500
+        },
+        "v2c": {
+          "total": 631500,
+          "perStation": 210500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 2020,
+      "profile": "overnight Q45",
+      "slot": "overnight",
+      "trueQ": 45,
+      "variants": {
+        "legacy": {
+          "floorCore": 18000,
+          "floor": 18000,
+          "actual": 54000,
+          "stressedActual": 22500
+        },
+        "v1": {
+          "floorCore": 29500,
+          "floor": 29500,
+          "actual": 54000,
+          "stressedActual": 31500
+        },
+        "v2a": {
+          "floorCore": 28500,
+          "floor": 28500,
+          "actual": 54000,
+          "stressedActual": 31000
+        },
+        "v2b": {
+          "floorCore": 27500,
+          "floor": 27500,
+          "actual": 54000,
+          "stressedActual": 30000
+        },
+        "v2c": {
+          "floorCore": 27000,
+          "floor": 27000,
+          "actual": 54000,
+          "stressedActual": 29500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 2020,
+      "profile": "midday Q62",
+      "slot": "midday",
+      "trueQ": 62,
+      "variants": {
+        "legacy": {
+          "floorCore": 21000,
+          "floor": 21000,
+          "actual": 94000,
+          "stressedActual": 23500
+        },
+        "v1": {
+          "floorCore": 46000,
+          "floor": 46000,
+          "actual": 94000,
+          "stressedActual": 52000
+        },
+        "v2a": {
+          "floorCore": 41000,
+          "floor": 41000,
+          "actual": 94000,
+          "stressedActual": 47000
+        },
+        "v2b": {
+          "floorCore": 43000,
+          "floor": 43000,
+          "actual": 94000,
+          "stressedActual": 48000
+        },
+        "v2c": {
+          "floorCore": 37500,
+          "floor": 37500,
+          "actual": 94000,
+          "stressedActual": 40500
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 2020,
+      "profile": "midday Q78",
+      "slot": "midday",
+      "trueQ": 78,
+      "variants": {
+        "legacy": {
+          "floorCore": 34000,
+          "floor": 34000,
+          "actual": 94000,
+          "stressedActual": 39000
+        },
+        "v1": {
+          "floorCore": 80000,
+          "floor": 80000,
+          "actual": 94000,
+          "stressedActual": 91000
+        },
+        "v2a": {
+          "floorCore": 71000,
+          "floor": 71000,
+          "actual": 94000,
+          "stressedActual": 79000
+        },
+        "v2b": {
+          "floorCore": 73500,
+          "floor": 73500,
+          "actual": 94000,
+          "stressedActual": 82000
+        },
+        "v2c": {
+          "floorCore": 65000,
+          "floor": 65000,
+          "actual": 94000,
+          "stressedActual": 73000
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 2020,
+      "profile": "morning Q90",
+      "slot": "morningDrive",
+      "trueQ": 90,
+      "variants": {
+        "legacy": {
+          "floorCore": 60500,
+          "floor": 65000,
+          "actual": 233000,
+          "stressedActual": 75500
+        },
+        "v1": {
+          "floorCore": 160000,
+          "floor": 172500,
+          "actual": 233000,
+          "stressedActual": 199500
+        },
+        "v2a": {
+          "floorCore": 143500,
+          "floor": 154500,
+          "actual": 233000,
+          "stressedActual": 178000
+        },
+        "v2b": {
+          "floorCore": 146000,
+          "floor": 157000,
+          "actual": 233000,
+          "stressedActual": 181500
+        },
+        "v2c": {
+          "floorCore": 130500,
+          "floor": 140500,
+          "actual": 233000,
+          "stressedActual": 162000
+        }
+      }
+    },
+    {
+      "marketId": "newyork",
+      "year": 2020,
+      "profile": "__cluster__",
+      "variants": {
+        "legacy": {
+          "total": 361500,
+          "perStation": 120500
+        },
+        "v1": {
+          "total": 779000,
+          "perStation": 259667
+        },
+        "v2a": {
+          "total": 707500,
+          "perStation": 235833
+        },
+        "v2b": {
+          "total": 717000,
+          "perStation": 239000
+        },
+        "v2c": {
+          "total": 655000,
+          "perStation": 218333
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,70 @@
+{
+  "id": "dallas",
+  "label": "Dallas–Fort Worth",
+  "region": "Southwest",
+  "timezone": "America/Chicago",
+  "callPrefix": "K",
+  "rankTier": "large",
+  "archetypeId": "texas_sunbelt",
+  "revScale": 1.32,
+  "adxBonus": 0.028,
+  "pop": {
+    "12-17": 215,
+    "18-24": 245,
+    "25-34": 285,
+    "35-49": 340,
+    "50-64": 255,
+    "65+": 150
+  },
+  "blackPop": 0.14,
+  "hispPop1970": 0.07,
+  "hispPop2000": 0.21,
+  "hispPop2020": 0.29,
+  "churchGoing": 0.51,
+  "countryBonus": 0.13,
+  "urbanBonus": 0.03,
+  "culture": {
+    "country": 0.16,
+    "urban": 0.04,
+    "newsTalk": 0.09,
+    "religion": 0.08,
+    "spanish": 0.14
+  },
+  "eduIndex": 0.94,
+  "publicCivicIndex": 0.93,
+  "fmPenBias": -0.02,
+  "fmMusicFragMult": 1.04,
+  "spokenWordAmResilience": 1.08,
+  "heritageAmResilience": 1.06,
+  "countryAmHoldout": 1.15,
+  "signalInventory": {
+    "am1975": 10,
+    "fm1975": 6,
+    "total1975": 16,
+    "viable1975": 16,
+    "viable1983": 22,
+    "measurable2026": 38
+  },
+  "historicalNotes": {
+    "1970": "Strong AM market; country unusually strong for a top-5 DMA; Top 40 powerhouse stations; MOR presence; limited FM penetration (~6 full-power FM vs 10+ AM).",
+    "1985": "FM ascendant; country remains strong; album rock established; CHR competition; emerging FM fragmentation.",
+    "2000": "Large Spanish presence; consolidation era; strong clusters; multiple successful spoken-word formats.",
+    "2020": "Highly fragmented; major country presence remains; significant Spanish ecosystem; strong spoken-word footprint; ~38 measurable commercial signals."
+  },
+  "billingScaleByDecade": {
+    "1970": 0.55,
+    "1985": 0.72,
+    "2000": 1.0,
+    "2020": 1.32
+  },
+  "selectBlurb": "A booming Texas Sunbelt metro where country heritage runs deeper than most large markets, AM news/talk/sports big sticks ruled the 1970s dial, and Hispanic FM growth reshapes the book from the 1990s onward.",
+  "_scaffold": {
+    "version": 2,
+    "template": "texas_sunbelt",
+    "status": "ecology_ready",
+    "dialReviewed": true,
+    "signalReviewed": true,
+    "dataReviewed": true,
+    "generatedAt": "2026-06-05T00:00:00.000Z"
+  }
+}

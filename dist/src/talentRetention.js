@@ -102,7 +102,18 @@
     if (!t) return;
     const st = typeof t._structMorale === 'number' ? t._structMorale : 65;
     const shortM = typeof t.morale === 'number' ? t.morale : 65;
-    t.morale = Math.round(clamp(Math.min(shortM, st + 18), 20, 100));
+    let cap = st + 18;
+    const Gopt = typeof G !== 'undefined' ? G : null;
+    if (
+      Gopt &&
+      t._moraleBonusAccrualY === Gopt.year &&
+      t._moraleBonusAccrualP === Gopt.period &&
+      typeof t._moraleBonusLift === 'number' &&
+      t._moraleBonusLift > 0
+    ) {
+      cap += t._moraleBonusLift;
+    }
+    t.morale = Math.round(clamp(Math.min(shortM, cap), 20, 100));
   }
 
   function stationContext(s, G) {
@@ -447,10 +458,14 @@
     if (isCoHost) {
       clearCoHostPairingState(sd);
       setSlotTalentB(sd, null);
+      refreshStationOQ(s, G);
+    } else if (typeof clearPrimaryHostPreservingCoHost === 'function') {
+      clearPrimaryHostPreservingCoHost(sd, slot, s, G);
     } else {
       sd.talent = null;
+      if (typeof clearPairingChemistryOnly === 'function') clearPairingChemistryOnly(sd);
+      refreshStationOQ(s, G);
     }
-    refreshStationOQ(s, G);
     recordDeparture(s, kind);
     if (severe) applyCoworkerMoraleHit(s, G, 'severe');
     else if (kind === 'dissatisfaction') applyCoworkerMoraleHit(s, G, 'mild');
@@ -577,6 +592,7 @@
     const st = t._structMorale | 0;
     const gap = Math.max(0, 62 - st);
     t._structMorale = clamp(Math.round(st + gap * rnd(0.22, 0.42)), 15, 100);
+    t._moraleBonusLift = boost;
     t.morale = clamp(Math.round((t.morale | 0) + boost), 20, 100);
     syncMoraleFromStructural(t);
   }
@@ -597,20 +613,40 @@
     rep.stable = clamp(rep.stable - 4, 0, 100);
   }
 
-  function contractUiExtras(t, s) {
-    const sat = t._satisfaction | 0;
-    const st = t._structMorale | 0;
+  function contractUiExtras(t, s, slot) {
+    const Gopt = typeof G !== 'undefined' ? G : null;
+    if (Gopt) ensurePersonality(t, Gopt);
+    let sat =
+      typeof t._satisfaction === 'number' && !Number.isNaN(t._satisfaction) ? Math.round(t._satisfaction) : null;
+    let st =
+      typeof t._structMorale === 'number' && !Number.isNaN(t._structMorale) ? Math.round(t._structMorale) : null;
+    if (Gopt && slot && sat == null) {
+      const ctx = stationContext(s, Gopt);
+      sat = computeSatisfaction(t, s, slot, Gopt, ctx);
+    }
+    if (st == null) st = typeof t._structMorale === 'number' ? Math.round(t._structMorale) : null;
     const p = t._personality;
     const rep = s?._employerRep;
     let html = '';
-    if (sat < 55 || t._wantsExit) {
-      html += `<div class="ibox" style="margin-bottom:12px;border-color:rgba(240,88,88,.3);font-size:14px;line-height:1.5;color:var(--off)"><strong style="color:var(--red)">Satisfaction ${sat}</strong> — structural morale ${st}. `;
+    const showWarn = (sat != null && sat < 55) || t._wantsExit || t._lifeExitPending;
+    if (showWarn) {
+      const satLabel = sat != null ? `${sat}/100` : 'pending';
+      const stLabel = st != null ? `${st}/100` : 'pending';
+      html += `<div class="ibox" style="margin-bottom:12px;border-color:rgba(240,88,88,.3);font-size:14px;line-height:1.55;color:var(--off)">`;
+      html += `<strong style="color:var(--red)">Unhappy at this station</strong>`;
+      html += `<p style="margin:8px 0 0;font-size:13px;line-height:1.5"><strong>Satisfaction ${satLabel}</strong> — how they feel about working <em>here</em> right now (ratings, budget, turnover, contract status, station reputation). `;
+      html += `<strong>Structural morale ${stLabel}</strong> — longer-term wear; drifts down when problems persist. The <strong>Morale</strong> row below is day-to-day mood (bonus-sensitive) but cannot stay high if structural morale is low.</p>`;
       if (t._lifeExitPending) {
-        html += `Planning to leave (${t._lifeExitPending.reasonLine || 'personal reasons'}). `;
+        html += `<p style="margin:8px 0 0;font-size:13px">Planning to leave when the deal ends (${t._lifeExitPending.reasonLine || 'personal reasons'}) — not a programming dispute.</p>`;
       } else if (t._wantsExit) {
-        html += `Not interested in a new deal here. `;
+        html += `<p style="margin:8px 0 0;font-size:13px;color:var(--red)">They do not want a new contract here.</p>`;
+      } else if (sat != null && sat < 40) {
+        html += `<p style="margin:8px 0 0;font-size:13px">Renewals will be harder and salary demands may rise. Fix station-wide issues (book, budget stress, staff turnover) — a morale bonus helps temporarily but does not replace that.</p>`;
+      } else {
+        html += `<p style="margin:8px 0 0;font-size:13px">A morale bonus can lift mood for a while, but lasting improvement usually needs a stronger book, stable staffing, and manageable budget pressure.</p>`;
       }
-      html += `Bonuses help mood but do not erase station-wide problems.</div>`;
+      html += `<p style="margin:8px 0 0;font-size:12px;color:var(--mut)"><button type="button" class="abt" style="padding:2px 8px;font-size:11px;vertical-align:middle" onclick="openTalentMetricsHelp('satisfaction')">Explain satisfaction &amp; morale</button></p>`;
+      html += `</div>`;
     }
     if (p) {
       html += `<p class="di" style="margin:0 0 10px;font-size:13px;color:var(--mut)">Disposition: <strong>${personalityLabel(p)}</strong>${rep?.tag ? ` · Station known as <strong>${rep.tag.replace(/_/g, ' ')}</strong>` : ''}</p>`;

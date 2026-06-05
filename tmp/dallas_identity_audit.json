@@ -1,0 +1,869 @@
+{
+  "recordedAt": "2026-06-05T04:43:08.231Z",
+  "config": {
+    "runs": 40,
+    "seed": 20260605,
+    "years": [
+      1970,
+      1985,
+      2000,
+      2020
+    ],
+    "proximityThreshold": 0.03
+  },
+  "byMarketYear": {
+    "dallas": {
+      "1970": {
+        "label": "Dallas–Fort Worth",
+        "archetypeId": "texas_sunbelt",
+        "failCount": 0,
+        "nRuns": 40,
+        "top3Share": 0.48188095999999997,
+        "hhi": 1197.214510962714,
+        "fmAdoption": 0.2857142857142857,
+        "countryShare": 0.27005058949999994,
+        "spanishShare": 0,
+        "spokenShare": 0.031624271999999995,
+        "rockShare": 0.009722960499999997,
+        "chrShare": 0.33331578500000003,
+        "formatDiversity": 5,
+        "viableCompetitors": 9,
+        "acquisitionTargets": 6,
+        "clusterCount": 4,
+        "leaderShare": 0.18469988999999998,
+        "stationCount": 17
+      },
+      "1985": {
+        "label": "Dallas–Fort Worth",
+        "archetypeId": "texas_sunbelt",
+        "failCount": 0,
+        "nRuns": 40,
+        "top3Share": 0.26169871499999997,
+        "hhi": 556.2019080136614,
+        "fmAdoption": 0.52,
+        "countryShare": 0.14137856,
+        "spanishShare": 0,
+        "spokenShare": 0.11346003825000002,
+        "rockShare": 0.22484476225,
+        "chrShare": 0.19309028199999997,
+        "formatDiversity": 10,
+        "viableCompetitors": 15,
+        "acquisitionTargets": 18.5,
+        "clusterCount": 5,
+        "leaderShare": 0.10321883,
+        "stationCount": 27
+      },
+      "2000": {
+        "label": "Dallas–Fort Worth",
+        "archetypeId": "texas_sunbelt",
+        "failCount": 0,
+        "nRuns": 40,
+        "top3Share": 0.3077344,
+        "hhi": 687.399711593049,
+        "fmAdoption": 0.6153846153846154,
+        "countryShare": 0.14029959200000003,
+        "spanishShare": 0.010498317750000003,
+        "spokenShare": 0.13596932525000005,
+        "rockShare": 0.2087237675,
+        "chrShare": 0.18934957975,
+        "formatDiversity": 8,
+        "viableCompetitors": 12,
+        "acquisitionTargets": 14,
+        "clusterCount": 5,
+        "leaderShare": 0.11404152000000001,
+        "stationCount": 27
+      },
+      "2020": {
+        "label": "Dallas–Fort Worth",
+        "archetypeId": "texas_sunbelt",
+        "failCount": 0,
+        "nRuns": 40,
+        "top3Share": 0.24318672000000002,
+        "hhi": 545.1439502626049,
+        "fmAdoption": 0.7503703703703704,
+        "countryShare": 0.13325638324999997,
+        "spanishShare": 0.026308664499999995,
+        "spokenShare": 0.12235444275000003,
+        "rockShare": 0.19606628425000006,
+        "chrShare": 0.13872713100000003,
+        "formatDiversity": 11,
+        "viableCompetitors": 14.5,
+        "acquisitionTargets": 18,
+        "clusterCount": 4,
+        "leaderShare": 0.09560350000000001,
+        "stationCount": 27.5
+      }
+    },
+    "atlanta": {
+      "1970": {
+        "label": "Atlanta",
+        "archetypeId": "sunbelt_diversified",
+        "failCount": 0,
+        "nRuns": 40,
+        "top3Share": 0.472325215,
+        "hhi": 1156.7471506824636,
+        "fmAdoption": 0.2857142857142857,
+        "countryShare": 0.24029045925000006,
+        "spanishShare": 0,
+        "spokenShare": 0.03200474500000001,
+        "rockShare": 0.013533558000000001,
+        "chrShare": 0.34133220575000006,
+        "formatDiversity": 6,
+        "viableCompetitors": 9,
+        "acquisitionTargets": 7,
+        "clusterCount": 4,
+        "leaderShare": 0.18005865,
+        "stationCount": 17
+      },
+      "1985": {
+        "label": "Atlanta",
+        "archetypeId": "sunbelt_diversified",
+        "failCount": 0,
+        "nRuns": 40,
+        "top3Share": 0.27109901000000003,
+        "hhi": 568.197854022393,
+        "fmAdoption": 0.52,
+        "countryShare": 0.11830021849999997,
+        "spanishShare": 0,
+        "spokenShare": 0.10649117699999996,
+        "rockShare": 0.22633562475000005,
+        "chrShare": 0.18680199774999998,
+        "formatDiversity": 10,
+        "viableCompetitors": 14,
+        "acquisitionTargets": 18,
+        "clusterCount": 4.5,
+        "leaderShare": 0.098135105,
+        "stationCount": 28
+      },
+      "2000": {
+        "label": "Atlanta",
+        "archetypeId": "sunbelt_diversified",
+        "failCount": 0,
+        "nRuns": 40,
+        "top3Share": 0.30584491,
+        "hhi": 675.2204627640313,
+        "fmAdoption": 0.6153846153846154,
+        "countryShare": 0.11872983899999998,
+        "spanishShare": 0.007951114249999999,
+        "spokenShare": 0.11505574625000001,
+        "rockShare": 0.2476867185,
+        "chrShare": 0.18110366175,
+        "formatDiversity": 9,
+        "viableCompetitors": 12,
+        "acquisitionTargets": 14,
+        "clusterCount": 4,
+        "leaderShare": 0.109121275,
+        "stationCount": 28
+      },
+      "2020": {
+        "label": "Atlanta",
+        "archetypeId": "sunbelt_diversified",
+        "failCount": 0,
+        "nRuns": 40,
+        "top3Share": 0.230742605,
+        "hhi": 511.29206401765214,
+        "fmAdoption": 0.7407407407407407,
+        "countryShare": 0.11917851975,
+        "spanishShare": 0.015132701000000004,
+        "spokenShare": 0.10790646000000001,
+        "rockShare": 0.20916004200000002,
+        "chrShare": 0.130669534,
+        "formatDiversity": 11,
+        "viableCompetitors": 15,
+        "acquisitionTargets": 18,
+        "clusterCount": 5,
+        "leaderShare": 0.0827048,
+        "stationCount": 30
+      }
+    },
+    "nashville": {
+      "1970": {
+        "label": "Nashville",
+        "archetypeId": "southern_country",
+        "failCount": 0,
+        "nRuns": 40,
+        "top3Share": 0.45737257500000006,
+        "hhi": 1189.0991827707603,
+        "fmAdoption": 0.23076923076923078,
+        "countryShare": 0.28539123199999994,
+        "spanishShare": 0,
+        "spokenShare": 0.031608368750000004,
+        "rockShare": 0.01037092425,
+        "chrShare": 0.2826846530000001,
+        "formatDiversity": 6,
+        "viableCompetitors": 8,
+        "acquisitionTargets": 6,
+        "clusterCount": 4,
+        "leaderShare": 0.19165429,
+        "stationCount": 15
+      },
+      "1985": {
+        "label": "Nashville",
+        "archetypeId": "southern_country",
+        "failCount": 0,
+        "nRuns": 40,
+        "top3Share": 0.3295941,
+        "hhi": 686.7665040854451,
+        "fmAdoption": 0.42857142857142855,
+        "countryShare": 0.15745560925000004,
+        "spanishShare": 0,
+        "spokenShare": 0.136783175,
+        "rockShare": 0.18131037725000004,
+        "chrShare": 0.19231445949999998,
+        "formatDiversity": 10,
+        "viableCompetitors": 15,
+        "acquisitionTargets": 16,
+        "clusterCount": 5,
+        "leaderShare": 0.12479982,
+        "stationCount": 23
+      },
+      "2000": {
+        "label": "Nashville",
+        "archetypeId": "southern_country",
+        "failCount": 0,
+        "nRuns": 40,
+        "top3Share": 0.39362872,
+        "hhi": 883.0700826553411,
+        "fmAdoption": 0.42857142857142855,
+        "countryShare": 0.15070909674999997,
+        "spanishShare": 0.002712387000000001,
+        "spokenShare": 0.16339340149999998,
+        "rockShare": 0.24036786850000005,
+        "chrShare": 0.12488450800000002,
+        "formatDiversity": 8,
+        "viableCompetitors": 11,
+        "acquisitionTargets": 10,
+        "clusterCount": 5,
+        "leaderShare": 0.14953516,
+        "stationCount": 23
+      },
+      "2020": {
+        "label": "Nashville",
+        "archetypeId": "southern_country",
+        "failCount": 0,
+        "nRuns": 40,
+        "top3Share": 0.34286129499999995,
+        "hhi": 757.8373905004901,
+        "fmAdoption": 0.4782608695652174,
+        "countryShare": 0.12938036975000003,
+        "spanishShare": 0.0060923622499999995,
+        "spokenShare": 0.11460913275,
+        "rockShare": 0.22517530099999988,
+        "chrShare": 0.09409968900000001,
+        "formatDiversity": 10,
+        "viableCompetitors": 12,
+        "acquisitionTargets": 13,
+        "clusterCount": 4,
+        "leaderShare": 0.134209855,
+        "stationCount": 23
+      }
+    },
+    "chicago": {
+      "1970": {
+        "label": "Chicago",
+        "archetypeId": "midwest_legacy",
+        "failCount": 0,
+        "nRuns": 40,
+        "top3Share": 0.42522483,
+        "hhi": 970.2666573577382,
+        "fmAdoption": 0.45,
+        "countryShare": 0.008469241499999999,
+        "spanishShare": 0,
+        "spokenShare": 0.11431455500000001,
+        "rockShare": 0.024547719000000003,
+        "chrShare": 0.42993719075000003,
+        "formatDiversity": 5,
+        "viableCompetitors": 10,
+        "acquisitionTargets": 7.5,
+        "clusterCount": 4,
+        "leaderShare": 0.153653885,
+        "stationCount": 24
+      },
+      "1985": {
+        "label": "Chicago",
+        "archetypeId": "midwest_legacy",
+        "failCount": 0,
+        "nRuns": 40,
+        "top3Share": 0.22889883,
+        "hhi": 459.61073434048905,
+        "fmAdoption": 0.5483870967741935,
+        "countryShare": 0.03611900025000001,
+        "spanishShare": 0,
+        "spokenShare": 0.12074627850000004,
+        "rockShare": 0.29035427475,
+        "chrShare": 0.13760777999999999,
+        "formatDiversity": 10,
+        "viableCompetitors": 14,
+        "acquisitionTargets": 19,
+        "clusterCount": 4,
+        "leaderShare": 0.08204618999999999,
+        "stationCount": 35
+      },
+      "2000": {
+        "label": "Chicago",
+        "archetypeId": "midwest_legacy",
+        "failCount": 0,
+        "nRuns": 40,
+        "top3Share": 0.23414535,
+        "hhi": 471.2089968689246,
+        "fmAdoption": 0.6944444444444444,
+        "countryShare": 0.08663302199999998,
+        "spanishShare": 0.08357452925,
+        "spokenShare": 0.1024745525,
+        "rockShare": 0.25733773325000003,
+        "chrShare": 0.11540883649999997,
+        "formatDiversity": 10,
+        "viableCompetitors": 13,
+        "acquisitionTargets": 16,
+        "clusterCount": 4,
+        "leaderShare": 0.087307665,
+        "stationCount": 39
+      },
+      "2020": {
+        "label": "Chicago",
+        "archetypeId": "midwest_legacy",
+        "failCount": 0,
+        "nRuns": 40,
+        "top3Share": 0.241243095,
+        "hhi": 463.2495078185859,
+        "fmAdoption": 0.7575757575757576,
+        "countryShare": 0.08411661000000001,
+        "spanishShare": 0.10225446575000001,
+        "spokenShare": 0.147171372,
+        "rockShare": 0.2231692135,
+        "chrShare": 0.09122923850000002,
+        "formatDiversity": 11,
+        "viableCompetitors": 14,
+        "acquisitionTargets": 16,
+        "clusterCount": 4,
+        "leaderShare": 0.09584479500000001,
+        "stationCount": 37
+      }
+    }
+  },
+  "proximityFlags": [
+    {
+      "metric": "countryShare",
+      "label": "Country share",
+      "peer": "atlanta",
+      "decades": [
+        {
+          "year": 1970,
+          "dVal": 0.27005058949999994,
+          "pVal": 0.24029045925000006,
+          "dist": 0.029760130249999878
+        },
+        {
+          "year": 1985,
+          "dVal": 0.14137856,
+          "pVal": 0.11830021849999997,
+          "dist": 0.023078341500000016
+        },
+        {
+          "year": 2000,
+          "dVal": 0.14029959200000003,
+          "pVal": 0.11872983899999998,
+          "dist": 0.021569753000000053
+        },
+        {
+          "year": 2020,
+          "dVal": 0.13325638324999997,
+          "pVal": 0.11917851975,
+          "dist": 0.014077863499999968
+        }
+      ],
+      "severity": "identity_collapse"
+    },
+    {
+      "metric": "countryShare",
+      "label": "Country share",
+      "peer": "nashville",
+      "decades": [
+        {
+          "year": 1970,
+          "dVal": 0.27005058949999994,
+          "pVal": 0.28539123199999994,
+          "dist": 0.015340642500000001
+        },
+        {
+          "year": 1985,
+          "dVal": 0.14137856,
+          "pVal": 0.15745560925000004,
+          "dist": 0.01607704925000006
+        },
+        {
+          "year": 2000,
+          "dVal": 0.14029959200000003,
+          "pVal": 0.15070909674999997,
+          "dist": 0.010409504749999937
+        },
+        {
+          "year": 2020,
+          "dVal": 0.13325638324999997,
+          "pVal": 0.12938036975000003,
+          "dist": 0.003876013499999942
+        }
+      ],
+      "severity": "expected_risk"
+    },
+    {
+      "metric": "spanishShare",
+      "label": "Spanish share",
+      "peer": "atlanta",
+      "decades": [
+        {
+          "year": 1970,
+          "dVal": 0,
+          "pVal": 0,
+          "dist": 0
+        },
+        {
+          "year": 1985,
+          "dVal": 0,
+          "pVal": 0,
+          "dist": 0
+        },
+        {
+          "year": 2000,
+          "dVal": 0.010498317750000003,
+          "pVal": 0.007951114249999999,
+          "dist": 0.0025472035000000046
+        },
+        {
+          "year": 2020,
+          "dVal": 0.026308664499999995,
+          "pVal": 0.015132701000000004,
+          "dist": 0.011175963499999992
+        }
+      ],
+      "severity": "identity_collapse"
+    },
+    {
+      "metric": "spanishShare",
+      "label": "Spanish share",
+      "peer": "nashville",
+      "decades": [
+        {
+          "year": 1970,
+          "dVal": 0,
+          "pVal": 0,
+          "dist": 0
+        },
+        {
+          "year": 1985,
+          "dVal": 0,
+          "pVal": 0,
+          "dist": 0
+        },
+        {
+          "year": 2000,
+          "dVal": 0.010498317750000003,
+          "pVal": 0.002712387000000001,
+          "dist": 0.007785930750000002
+        },
+        {
+          "year": 2020,
+          "dVal": 0.026308664499999995,
+          "pVal": 0.0060923622499999995,
+          "dist": 0.020216302249999995
+        }
+      ],
+      "severity": "identity_collapse"
+    },
+    {
+      "metric": "spokenShare",
+      "label": "Spoken-word share",
+      "peer": "atlanta",
+      "decades": [
+        {
+          "year": 1970,
+          "dVal": 0.031624271999999995,
+          "pVal": 0.03200474500000001,
+          "dist": 0.0003804730000000131
+        },
+        {
+          "year": 1985,
+          "dVal": 0.11346003825000002,
+          "pVal": 0.10649117699999996,
+          "dist": 0.006968861250000055
+        },
+        {
+          "year": 2000,
+          "dVal": 0.13596932525000005,
+          "pVal": 0.11505574625000001,
+          "dist": 0.020913579000000043
+        },
+        {
+          "year": 2020,
+          "dVal": 0.12235444275000003,
+          "pVal": 0.10790646000000001,
+          "dist": 0.014447982750000019
+        }
+      ],
+      "severity": "identity_collapse"
+    },
+    {
+      "metric": "spokenShare",
+      "label": "Spoken-word share",
+      "peer": "nashville",
+      "decades": [
+        {
+          "year": 1970,
+          "dVal": 0.031624271999999995,
+          "pVal": 0.031608368750000004,
+          "dist": 0.0000159032499999906
+        },
+        {
+          "year": 1985,
+          "dVal": 0.11346003825000002,
+          "pVal": 0.136783175,
+          "dist": 0.023323136749999987
+        },
+        {
+          "year": 2000,
+          "dVal": 0.13596932525000005,
+          "pVal": 0.16339340149999998,
+          "dist": 0.02742407624999993
+        },
+        {
+          "year": 2020,
+          "dVal": 0.12235444275000003,
+          "pVal": 0.11460913275,
+          "dist": 0.007745310000000033
+        }
+      ],
+      "severity": "identity_collapse"
+    },
+    {
+      "metric": "chrShare",
+      "label": "CHR share",
+      "peer": "atlanta",
+      "decades": [
+        {
+          "year": 1970,
+          "dVal": 0.33331578500000003,
+          "pVal": 0.34133220575000006,
+          "dist": 0.00801642075000003
+        },
+        {
+          "year": 1985,
+          "dVal": 0.19309028199999997,
+          "pVal": 0.18680199774999998,
+          "dist": 0.006288284249999998
+        },
+        {
+          "year": 2000,
+          "dVal": 0.18934957975,
+          "pVal": 0.18110366175,
+          "dist": 0.008245917999999991
+        },
+        {
+          "year": 2020,
+          "dVal": 0.13872713100000003,
+          "pVal": 0.130669534,
+          "dist": 0.008057597000000027
+        }
+      ],
+      "severity": "identity_collapse"
+    },
+    {
+      "metric": "fmAdoption",
+      "label": "FM adoption",
+      "peer": "atlanta",
+      "decades": [
+        {
+          "year": 1970,
+          "dVal": 0.2857142857142857,
+          "pVal": 0.2857142857142857,
+          "dist": 0
+        },
+        {
+          "year": 1985,
+          "dVal": 0.52,
+          "pVal": 0.52,
+          "dist": 0
+        },
+        {
+          "year": 2000,
+          "dVal": 0.6153846153846154,
+          "pVal": 0.6153846153846154,
+          "dist": 0
+        },
+        {
+          "year": 2020,
+          "dVal": 0.7503703703703704,
+          "pVal": 0.7407407407407407,
+          "dist": 0.009629629629629655
+        }
+      ],
+      "severity": "identity_collapse"
+    },
+    {
+      "metric": "top3Share",
+      "label": "Top-3 concentration",
+      "peer": "atlanta",
+      "decades": [
+        {
+          "year": 1970,
+          "dVal": 0.48188095999999997,
+          "pVal": 0.472325215,
+          "dist": 0.009555744999999949
+        },
+        {
+          "year": 1985,
+          "dVal": 0.26169871499999997,
+          "pVal": 0.27109901000000003,
+          "dist": 0.009400295000000058
+        },
+        {
+          "year": 2000,
+          "dVal": 0.3077344,
+          "pVal": 0.30584491,
+          "dist": 0.0018894899999999937
+        },
+        {
+          "year": 2020,
+          "dVal": 0.24318672000000002,
+          "pVal": 0.230742605,
+          "dist": 0.012444115000000033
+        }
+      ],
+      "severity": "identity_collapse"
+    },
+    {
+      "metric": "hhi",
+      "label": "HHI",
+      "peer": "atlanta",
+      "decades": [
+        {
+          "year": 1970,
+          "dVal": 1197.214510962714,
+          "pVal": 1156.7471506824636,
+          "dist": 40.46736028025043
+        },
+        {
+          "year": 1985,
+          "dVal": 556.2019080136614,
+          "pVal": 568.197854022393,
+          "dist": 11.995946008731607
+        },
+        {
+          "year": 2000,
+          "dVal": 687.399711593049,
+          "pVal": 675.2204627640313,
+          "dist": 12.179248829017752
+        },
+        {
+          "year": 2020,
+          "dVal": 545.1439502626049,
+          "pVal": 511.29206401765214,
+          "dist": 33.851886244952766
+        }
+      ],
+      "severity": "identity_collapse"
+    },
+    {
+      "metric": "formatDiversity",
+      "label": "Format diversity (≥2%)",
+      "peer": "atlanta",
+      "decades": [
+        {
+          "year": 1970,
+          "dVal": 5,
+          "pVal": 6,
+          "dist": 1
+        },
+        {
+          "year": 1985,
+          "dVal": 10,
+          "pVal": 10,
+          "dist": 0
+        },
+        {
+          "year": 2000,
+          "dVal": 8,
+          "pVal": 9,
+          "dist": 1
+        },
+        {
+          "year": 2020,
+          "dVal": 11,
+          "pVal": 11,
+          "dist": 0
+        }
+      ],
+      "severity": "identity_collapse"
+    },
+    {
+      "metric": "formatDiversity",
+      "label": "Format diversity (≥2%)",
+      "peer": "nashville",
+      "decades": [
+        {
+          "year": 1970,
+          "dVal": 5,
+          "pVal": 6,
+          "dist": 1
+        },
+        {
+          "year": 1985,
+          "dVal": 10,
+          "pVal": 10,
+          "dist": 0
+        },
+        {
+          "year": 2000,
+          "dVal": 8,
+          "pVal": 8,
+          "dist": 0
+        },
+        {
+          "year": 2020,
+          "dVal": 11,
+          "pVal": 10,
+          "dist": 1
+        }
+      ],
+      "severity": "identity_collapse"
+    }
+  ],
+  "competitiveEcology": {
+    "1970": {
+      "dallas": {
+        "viableCompetitors": 9,
+        "leaderShare": 0.18469988999999998,
+        "formatDiversity": 5,
+        "clusterCount": 4,
+        "acquisitionTargets": 6
+      },
+      "peers": {
+        "atlanta": {
+          "viableCompetitors": 9,
+          "leaderShare": 0.18005865,
+          "formatDiversity": 6,
+          "clusterCount": 4,
+          "acquisitionTargets": 7
+        },
+        "nashville": {
+          "viableCompetitors": 8,
+          "leaderShare": 0.19165429,
+          "formatDiversity": 6,
+          "clusterCount": 4,
+          "acquisitionTargets": 6
+        },
+        "chicago": {
+          "viableCompetitors": 10,
+          "leaderShare": 0.153653885,
+          "formatDiversity": 5,
+          "clusterCount": 4,
+          "acquisitionTargets": 7.5
+        }
+      }
+    },
+    "1985": {
+      "dallas": {
+        "viableCompetitors": 15,
+        "leaderShare": 0.10321883,
+        "formatDiversity": 10,
+        "clusterCount": 5,
+        "acquisitionTargets": 18.5
+      },
+      "peers": {
+        "atlanta": {
+          "viableCompetitors": 14,
+          "leaderShare": 0.098135105,
+          "formatDiversity": 10,
+          "clusterCount": 4.5,
+          "acquisitionTargets": 18
+        },
+        "nashville": {
+          "viableCompetitors": 15,
+          "leaderShare": 0.12479982,
+          "formatDiversity": 10,
+          "clusterCount": 5,
+          "acquisitionTargets": 16
+        },
+        "chicago": {
+          "viableCompetitors": 14,
+          "leaderShare": 0.08204618999999999,
+          "formatDiversity": 10,
+          "clusterCount": 4,
+          "acquisitionTargets": 19
+        }
+      }
+    },
+    "2000": {
+      "dallas": {
+        "viableCompetitors": 12,
+        "leaderShare": 0.11404152000000001,
+        "formatDiversity": 8,
+        "clusterCount": 5,
+        "acquisitionTargets": 14
+      },
+      "peers": {
+        "atlanta": {
+          "viableCompetitors": 12,
+          "leaderShare": 0.109121275,
+          "formatDiversity": 9,
+          "clusterCount": 4,
+          "acquisitionTargets": 14
+        },
+        "nashville": {
+          "viableCompetitors": 11,
+          "leaderShare": 0.14953516,
+          "formatDiversity": 8,
+          "clusterCount": 5,
+          "acquisitionTargets": 10
+        },
+        "chicago": {
+          "viableCompetitors": 13,
+          "leaderShare": 0.087307665,
+          "formatDiversity": 10,
+          "clusterCount": 4,
+          "acquisitionTargets": 16
+        }
+      }
+    },
+    "2020": {
+      "dallas": {
+        "viableCompetitors": 14.5,
+        "leaderShare": 0.09560350000000001,
+        "formatDiversity": 11,
+        "clusterCount": 4,
+        "acquisitionTargets": 18
+      },
+      "peers": {
+        "atlanta": {
+          "viableCompetitors": 15,
+          "leaderShare": 0.0827048,
+          "formatDiversity": 11,
+          "clusterCount": 5,
+          "acquisitionTargets": 18
+        },
+        "nashville": {
+          "viableCompetitors": 12,
+          "leaderShare": 0.134209855,
+          "formatDiversity": 10,
+          "clusterCount": 4,
+          "acquisitionTargets": 13
+        },
+        "chicago": {
+          "viableCompetitors": 14,
+          "leaderShare": 0.09584479500000001,
+          "formatDiversity": 11,
+          "clusterCount": 4,
+          "acquisitionTargets": 16
+        }
+      }
+    }
+  },
+  "recommendations": {
+    "uniqueIdentity": false,
+    "playableReady": false,
+    "nextMarketCandidates": [
+      "houston",
+      "miami"
+    ]
+  },
+  "timingMs": 170134
+}

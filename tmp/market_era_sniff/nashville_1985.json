@@ -1,11 +1,11 @@
 {
-  "recordedAt": "2026-05-31T19:04:06.302Z",
+  "recordedAt": "2026-06-05T05:37:26.691Z",
   "marketId": "nashville",
   "label": "Nashville",
   "year": 1985,
   "runs": 25,
   "seed": 20260523,
-  "timingMs": 439,
+  "timingMs": 419,
   "genPlan": {
     "scenId": "under",
     "startYear": 1970,

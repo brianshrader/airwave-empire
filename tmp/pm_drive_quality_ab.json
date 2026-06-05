@@ -1,0 +1,505 @@
+{
+  "generatedAt": "2026-06-01T04:25:46.875Z",
+  "config": {
+    "runs": 3,
+    "seed": 20260605,
+    "markets": [
+      "newyork",
+      "losangeles",
+      "chicago",
+      "seattle",
+      "sanfrancisco",
+      "atlanta",
+      "nashville",
+      "wichita"
+    ],
+    "startYear": 1970,
+    "endYear": 2021,
+    "variants": [
+      "A",
+      "E",
+      "F"
+    ]
+  },
+  "targets": {
+    "pm98PlusPct": {
+      "hi": 10,
+      "ideal": 5
+    },
+    "pm95PlusPct": {
+      "hi": 25,
+      "ideal": 18
+    },
+    "lowTalentElitePm": {
+      "hi": 3
+    },
+    "meanOq": {
+      "lo": 60,
+      "hi": 68
+    },
+    "pct9599": {
+      "lo": 6,
+      "hi": 14
+    }
+  },
+  "variants": [
+    {
+      "variant": "A",
+      "definition": "Baseline — revert production E (decay .030, uncapped runAI bump)",
+      "runsOk": 24,
+      "runsTotal": 24,
+      "byDecade": {
+        "1980": {
+          "pm": {
+            "pct90Plus": 41.15,
+            "pct95Plus": 39.51,
+            "pct98Plus": 38.48,
+            "denom": 486
+          },
+          "morning": {
+            "pct90Plus": 44.44,
+            "pct95Plus": 42.39,
+            "pct98Plus": 2.47,
+            "denom": 486
+          },
+          "midday": {
+            "pct90Plus": 37.65,
+            "pct95Plus": 35.8,
+            "pct98Plus": 2.26,
+            "denom": 486
+          },
+          "lowTalentElitePm": 74
+        },
+        "1990": {
+          "pm": {
+            "pct90Plus": 32.35,
+            "pct95Plus": 29.25,
+            "pct98Plus": 27.45,
+            "denom": 612
+          },
+          "morning": {
+            "pct90Plus": 32.19,
+            "pct95Plus": 30.39,
+            "pct98Plus": 1.31,
+            "denom": 612
+          },
+          "midday": {
+            "pct90Plus": 31.21,
+            "pct95Plus": 27.94,
+            "pct98Plus": 0.82,
+            "denom": 612
+          },
+          "lowTalentElitePm": 68
+        },
+        "2000": {
+          "pm": {
+            "pct90Plus": 32.47,
+            "pct95Plus": 30.8,
+            "pct98Plus": 29.44,
+            "denom": 659
+          },
+          "morning": {
+            "pct90Plus": 32.93,
+            "pct95Plus": 31.11,
+            "pct98Plus": 0.91,
+            "denom": 659
+          },
+          "midday": {
+            "pct90Plus": 29.29,
+            "pct95Plus": 26.56,
+            "pct98Plus": 0.15,
+            "denom": 659
+          },
+          "lowTalentElitePm": 67
+        },
+        "2010": {
+          "pm": {
+            "pct90Plus": 36.42,
+            "pct95Plus": 33.28,
+            "pct98Plus": 31.08,
+            "denom": 637
+          },
+          "morning": {
+            "pct90Plus": 33.28,
+            "pct95Plus": 30.93,
+            "pct98Plus": 0.78,
+            "denom": 637
+          },
+          "midday": {
+            "pct90Plus": 29.83,
+            "pct95Plus": 26.53,
+            "pct98Plus": 0.16,
+            "denom": 637
+          },
+          "lowTalentElitePm": 74
+        },
+        "2020": {
+          "pm": {
+            "pct90Plus": 41.6,
+            "pct95Plus": 37.77,
+            "pct98Plus": 36.11,
+            "denom": 601
+          },
+          "morning": {
+            "pct90Plus": 35.77,
+            "pct95Plus": 32.11,
+            "pct98Plus": 0.67,
+            "denom": 601
+          },
+          "midday": {
+            "pct90Plus": 34.78,
+            "pct95Plus": 32.45,
+            "pct98Plus": 0.5,
+            "denom": 601
+          },
+          "lowTalentElitePm": 75
+        }
+      },
+      "pm2020Pct98Plus": 36.11,
+      "pm2020Pct95Plus": 37.77,
+      "pm2020Pct90Plus": 41.6,
+      "lowTalentElitePm2020": 75,
+      "auditExact": {
+        "q98": 22554,
+        "q99": 2573,
+        "q100": 9661
+      },
+      "runAi": {
+        "increases": 28145,
+        "to100": 9659
+      },
+      "ecology2020": {
+        "meanOq": 66.91,
+        "pct9599": 18.33,
+        "zombieLike": 134,
+        "lowShareSpiral": 159,
+        "certProxyOkPct": 67.84
+      },
+      "playerPmGe95": 0,
+      "playerPmCount": 0,
+      "hitsPm98Target": false,
+      "hitsMeanOqBand": true
+    },
+    {
+      "variant": "E",
+      "definition": "Production — talent-supported AI PM ceiling + afternoonDrive decay .035",
+      "runsOk": 24,
+      "runsTotal": 24,
+      "byDecade": {
+        "1980": {
+          "pm": {
+            "pct90Plus": 38.68,
+            "pct95Plus": 37.86,
+            "pct98Plus": 2.26,
+            "denom": 486
+          },
+          "morning": {
+            "pct90Plus": 42.59,
+            "pct95Plus": 40.53,
+            "pct98Plus": 1.85,
+            "denom": 486
+          },
+          "midday": {
+            "pct90Plus": 37.65,
+            "pct95Plus": 35.6,
+            "pct98Plus": 1.65,
+            "denom": 486
+          },
+          "lowTalentElitePm": 79
+        },
+        "1990": {
+          "pm": {
+            "pct90Plus": 30.72,
+            "pct95Plus": 28.76,
+            "pct98Plus": 1.63,
+            "denom": 612
+          },
+          "morning": {
+            "pct90Plus": 32.84,
+            "pct95Plus": 30.88,
+            "pct98Plus": 0.65,
+            "denom": 612
+          },
+          "midday": {
+            "pct90Plus": 29.74,
+            "pct95Plus": 27.29,
+            "pct98Plus": 0.65,
+            "denom": 612
+          },
+          "lowTalentElitePm": 71
+        },
+        "2000": {
+          "pm": {
+            "pct90Plus": 31.19,
+            "pct95Plus": 29.05,
+            "pct98Plus": 0.76,
+            "denom": 654
+          },
+          "morning": {
+            "pct90Plus": 32.72,
+            "pct95Plus": 29.97,
+            "pct98Plus": 1.68,
+            "denom": 654
+          },
+          "midday": {
+            "pct90Plus": 30.12,
+            "pct95Plus": 27.52,
+            "pct98Plus": 0.46,
+            "denom": 654
+          },
+          "lowTalentElitePm": 71
+        },
+        "2010": {
+          "pm": {
+            "pct90Plus": 32.18,
+            "pct95Plus": 28.89,
+            "pct98Plus": 0.78,
+            "denom": 637
+          },
+          "morning": {
+            "pct90Plus": 31.87,
+            "pct95Plus": 28.89,
+            "pct98Plus": 0.63,
+            "denom": 637
+          },
+          "midday": {
+            "pct90Plus": 29.04,
+            "pct95Plus": 27.79,
+            "pct98Plus": 0.16,
+            "denom": 637
+          },
+          "lowTalentElitePm": 67
+        },
+        "2020": {
+          "pm": {
+            "pct90Plus": 37.31,
+            "pct95Plus": 34.79,
+            "pct98Plus": 0.84,
+            "denom": 595
+          },
+          "morning": {
+            "pct90Plus": 38.15,
+            "pct95Plus": 35.97,
+            "pct98Plus": 0.84,
+            "denom": 595
+          },
+          "midday": {
+            "pct90Plus": 34.62,
+            "pct95Plus": 31.6,
+            "pct98Plus": 0.5,
+            "denom": 595
+          },
+          "lowTalentElitePm": 82
+        }
+      },
+      "pm2020Pct98Plus": 0.84,
+      "pm2020Pct95Plus": 34.79,
+      "pm2020Pct90Plus": 37.31,
+      "lowTalentElitePm2020": 82,
+      "auditExact": {
+        "q98": 15774,
+        "q99": 943,
+        "q100": 9
+      },
+      "runAi": {
+        "increases": 18570,
+        "to100": 9
+      },
+      "ecology2020": {
+        "meanOq": 66.28,
+        "pct9599": 18.85,
+        "zombieLike": 151,
+        "lowShareSpiral": 170,
+        "certProxyOkPct": 67.4
+      },
+      "playerPmGe95": 0,
+      "playerPmCount": 0,
+      "hitsPm98Target": true,
+      "hitsMeanOqBand": true
+    },
+    {
+      "variant": "F",
+      "definition": "Stronger decay — production ceiling + afternoonDrive decay .040",
+      "runsOk": 24,
+      "runsTotal": 24,
+      "byDecade": {
+        "1980": {
+          "pm": {
+            "pct90Plus": 37.04,
+            "pct95Plus": 35.39,
+            "pct98Plus": 2.47,
+            "denom": 486
+          },
+          "morning": {
+            "pct90Plus": 38.48,
+            "pct95Plus": 37.45,
+            "pct98Plus": 2.67,
+            "denom": 486
+          },
+          "midday": {
+            "pct90Plus": 36.42,
+            "pct95Plus": 33.95,
+            "pct98Plus": 2.06,
+            "denom": 486
+          },
+          "lowTalentElitePm": 97
+        },
+        "1990": {
+          "pm": {
+            "pct90Plus": 28.59,
+            "pct95Plus": 24.67,
+            "pct98Plus": 1.14,
+            "denom": 612
+          },
+          "morning": {
+            "pct90Plus": 32.03,
+            "pct95Plus": 29.25,
+            "pct98Plus": 1.31,
+            "denom": 612
+          },
+          "midday": {
+            "pct90Plus": 28.59,
+            "pct95Plus": 25.65,
+            "pct98Plus": 0.65,
+            "denom": 612
+          },
+          "lowTalentElitePm": 107
+        },
+        "2000": {
+          "pm": {
+            "pct90Plus": 29.97,
+            "pct95Plus": 28.16,
+            "pct98Plus": 1.36,
+            "denom": 664
+          },
+          "morning": {
+            "pct90Plus": 30.72,
+            "pct95Plus": 29.07,
+            "pct98Plus": 1.81,
+            "denom": 664
+          },
+          "midday": {
+            "pct90Plus": 29.97,
+            "pct95Plus": 27.56,
+            "pct98Plus": 0.75,
+            "denom": 664
+          },
+          "lowTalentElitePm": 93
+        },
+        "2010": {
+          "pm": {
+            "pct90Plus": 30.34,
+            "pct95Plus": 28.17,
+            "pct98Plus": 0.62,
+            "denom": 646
+          },
+          "morning": {
+            "pct90Plus": 31.42,
+            "pct95Plus": 27.4,
+            "pct98Plus": 0.15,
+            "denom": 646
+          },
+          "midday": {
+            "pct90Plus": 27.71,
+            "pct95Plus": 25.39,
+            "pct98Plus": 0.31,
+            "denom": 646
+          },
+          "lowTalentElitePm": 119
+        },
+        "2020": {
+          "pm": {
+            "pct90Plus": 33.39,
+            "pct95Plus": 29.79,
+            "pct98Plus": 0.82,
+            "denom": 611
+          },
+          "morning": {
+            "pct90Plus": 35.19,
+            "pct95Plus": 32.08,
+            "pct98Plus": 1.47,
+            "denom": 611
+          },
+          "midday": {
+            "pct90Plus": 30.93,
+            "pct95Plus": 28.15,
+            "pct98Plus": 0.65,
+            "denom": 611
+          },
+          "lowTalentElitePm": 120
+        }
+      },
+      "pm2020Pct98Plus": 0.82,
+      "pm2020Pct95Plus": 29.79,
+      "pm2020Pct90Plus": 33.39,
+      "lowTalentElitePm2020": 120,
+      "auditExact": {
+        "q98": 7592,
+        "q99": 31,
+        "q100": 1
+      },
+      "runAi": {
+        "increases": 18516,
+        "to100": 1
+      },
+      "ecology2020": {
+        "meanOq": 65.2,
+        "pct9599": 18.74,
+        "zombieLike": 138,
+        "lowShareSpiral": 178,
+        "certProxyOkPct": 64.51
+      },
+      "playerPmGe95": 0,
+      "playerPmCount": 0,
+      "hitsPm98Target": true,
+      "hitsMeanOqBand": true
+    }
+  ],
+  "recommendation": {
+    "recommendedVariant": "F",
+    "rationale": "Variant F (B + decay 0.040) if E still leaves PM 98+ elevated; decay-only (C) is insufficient alone per measurements.",
+    "rootCauseConfirmed": true,
+    "rootCauseSummary": "runAI() maintenance bumps (p.ms → +1..4, cap 100) on AI stations saturate afternoonDrive at 100; lower PM decay (0.030 vs 0.035/0.040) and cohost/reveal additive gains sustain 98–99 band. Morning/Midday share runAI bumps but lack PM cohost strength and have equal/higher decay — inflation is PM-specific at 98+.",
+    "morningMiddayLikelyAffected": "Morning/Midday receive the same runAI maintenance bump; audit shows far lower 98+ rates because decay is higher (midday) and PM-only cohost/reveal mechanics are absent. Soft ceiling could be generalized later but is not required for Morning/Midday 98+ saturation today.",
+    "codeLocations": [
+      {
+        "file": "src/legacy.js",
+        "line": "~18031",
+        "mechanism": "runAI maintenance bump: if(Math.random()<p.ms) sd.quality=Math.min(100, sd.quality+rnd(1,4))"
+      },
+      {
+        "file": "src/legacy.js",
+        "line": "~16723",
+        "mechanism": "decay rates: afternoonDrive 0.030 vs morning 0.035 vs midday 0.040"
+      },
+      {
+        "file": "src/legacy.js",
+        "line": "~3616",
+        "mechanism": "COHOST_SLOT_STRENGTH afternoonDrive 0.42 (midday 0)"
+      },
+      {
+        "file": "src/legacy.js",
+        "line": "~3796-3811",
+        "mechanism": "applyCoHostChemistryRevealDecayStep adds slot Q"
+      }
+    ],
+    "productionPatch": {
+      "variant": "F",
+      "description": "Ship wlDiagAiPmSupportCeiling logic (or production-named equivalent) gating only non-player runAI afternoonDrive bumps; optionally pair with afternoonDrive decay 0.035–0.040. Do not gate decay, reveals, or player stations."
+    },
+    "scored": [
+      {
+        "variant": "E",
+        "score": 60
+      },
+      {
+        "variant": "F",
+        "score": 60
+      },
+      {
+        "variant": "A",
+        "score": 30
+      }
+    ]
+  }
+}

@@ -1,0 +1,507 @@
+{
+  "generatedAt": "2026-06-05T04:22:14.828Z",
+  "config": {
+    "markets": [
+      "wichita",
+      "nashville",
+      "seattle",
+      "sanfrancisco",
+      "chicago",
+      "newyork"
+    ],
+    "startYears": [
+      1970,
+      1985,
+      2000
+    ],
+    "years": 35,
+    "seeds": 4,
+    "seed": 20260610,
+    "variants": [
+      "A",
+      "E",
+      "F",
+      "G",
+      "H",
+      "I",
+      "J",
+      "K"
+    ]
+  },
+  "variantDefs": {
+    "A": "Baseline — current production",
+    "E": "Gate 1 — rare high-ceiling generation (strong)",
+    "F": "E + drive-slot bias (high-Q on drive only)",
+    "G": "E + platform placement bias (top-5 stations favored)",
+    "H": "E + retention / lock-in on strong platform",
+    "I": "E + upward poach from weak to top-5 stations",
+    "J": "E + F + G + modest retention",
+    "K": "E + F + G + full retention + upward poach"
+  },
+  "targets": {
+    "pctTrueQ85": {
+      "lo": 1,
+      "hi": 3
+    },
+    "pctLegend": {
+      "lo": 0.3,
+      "hi": 1
+    },
+    "pctFranchise": {
+      "lo": 0.1,
+      "hi": 0.5
+    },
+    "medianCareerSpan": {
+      "lo": 4,
+      "hi": 14
+    },
+    "churnBefore10": {
+      "hi": 60
+    },
+    "trappedWeak": {
+      "hi": 35
+    },
+    "pctGte5x": {
+      "lo": 0.5,
+      "hi": 4
+    }
+  },
+  "runs": {
+    "total": 576,
+    "ok": 576
+  },
+  "pooledByVariant": {
+    "A": {
+      "runs": 72,
+      "ok": 72,
+      "highQCohort": {
+        "size": 0,
+        "pctOfCareers": 0,
+        "medianCareerSpan": null,
+        "pctTenure5Plus": null,
+        "pctTenure10Plus": null,
+        "pctTenure15Plus": null,
+        "pctStartTop5": null,
+        "pctEverTop3": null,
+        "pctLegendPlatform": null,
+        "pctStrongAlignment": null,
+        "pctTrappedWeak": null,
+        "pctChurnBefore10": null,
+        "pctWrongDaypart": null
+      },
+      "legendPipeline": {
+        "pctElite": 0,
+        "pctLegendCand": 0,
+        "pctFranchise": 0,
+        "medianYearsToLegend": null,
+        "medianYearsToFranchise": null
+      },
+      "salary": {
+        "medianSalary": 68000,
+        "p90Salary": 138500,
+        "p99Salary": 211000,
+        "maxSalary": 681500,
+        "pctGte5x": 0.15,
+        "pctGte10x": 0,
+        "pctHighQAtCap": 0
+      },
+      "economy": {
+        "meanOq": 61.85,
+        "pct9599": 20.07,
+        "hhi": 609,
+        "zombieLike": 5.46,
+        "spiralLike": 8,
+        "soloBankruptRuns": 0
+      },
+      "platformDiag": {
+        "retentionSaves": null,
+        "renewalBoosts": null,
+        "upwardPoaches": null,
+        "upwardPoachOffers": null,
+        "highQBorn": null
+      }
+    },
+    "E": {
+      "runs": 72,
+      "ok": 72,
+      "highQCohort": {
+        "size": 805,
+        "pctOfCareers": 1.83,
+        "medianCareerSpan": 2.26,
+        "pctTenure5Plus": 23.01,
+        "pctTenure10Plus": 7.46,
+        "pctTenure15Plus": 3.75,
+        "pctStartTop5": 29.01,
+        "pctEverTop3": 28.4,
+        "pctLegendPlatform": 17.83,
+        "pctStrongAlignment": 4.89,
+        "pctTrappedWeak": 47.28,
+        "pctChurnBefore10": 81.77,
+        "pctWrongDaypart": 24.51
+      },
+      "legendPipeline": {
+        "pctElite": 0.39,
+        "pctLegendCand": 0,
+        "pctFranchise": 0,
+        "medianYearsToLegend": null,
+        "medianYearsToFranchise": null
+      },
+      "salary": {
+        "medianSalary": 68000,
+        "p90Salary": 138000,
+        "p99Salary": 209500,
+        "maxSalary": 631500,
+        "pctGte5x": 0.18,
+        "pctGte10x": 0.01,
+        "pctHighQAtCap": 32.05
+      },
+      "economy": {
+        "meanOq": 60.92,
+        "pct9599": 20.14,
+        "hhi": 589,
+        "zombieLike": 6.5,
+        "spiralLike": 8.53,
+        "soloBankruptRuns": 0
+      },
+      "platformDiag": {
+        "retentionSaves": 0,
+        "renewalBoosts": 0,
+        "upwardPoaches": 0,
+        "upwardPoachOffers": 0,
+        "highQBorn": 15.49
+      }
+    },
+    "F": {
+      "runs": 72,
+      "ok": 72,
+      "highQCohort": {
+        "size": 633,
+        "pctOfCareers": 1.47,
+        "medianCareerSpan": 2.31,
+        "pctTenure5Plus": 24.14,
+        "pctTenure10Plus": 8.01,
+        "pctTenure15Plus": 2.77,
+        "pctStartTop5": 21.56,
+        "pctEverTop3": 25.15,
+        "pctLegendPlatform": 13.09,
+        "pctStrongAlignment": 5.83,
+        "pctTrappedWeak": 60.62,
+        "pctChurnBefore10": 81.14,
+        "pctWrongDaypart": 0
+      },
+      "legendPipeline": {
+        "pctElite": 0.39,
+        "pctLegendCand": 0,
+        "pctFranchise": 0,
+        "medianYearsToLegend": null,
+        "medianYearsToFranchise": null
+      },
+      "salary": {
+        "medianSalary": 68000,
+        "p90Salary": 139000,
+        "p99Salary": 210500,
+        "maxSalary": 1066000,
+        "pctGte5x": 0.21,
+        "pctGte10x": 0.01,
+        "pctHighQAtCap": 28.44
+      },
+      "economy": {
+        "meanOq": 62.46,
+        "pct9599": 21.1,
+        "hhi": 574,
+        "zombieLike": 5.56,
+        "spiralLike": 7.96,
+        "soloBankruptRuns": 0
+      },
+      "platformDiag": {
+        "retentionSaves": 0,
+        "renewalBoosts": 0,
+        "upwardPoaches": 0,
+        "upwardPoachOffers": 0,
+        "highQBorn": 10.15
+      }
+    },
+    "G": {
+      "runs": 72,
+      "ok": 72,
+      "highQCohort": {
+        "size": 883,
+        "pctOfCareers": 2.08,
+        "medianCareerSpan": 2.26,
+        "pctTenure5Plus": 28,
+        "pctTenure10Plus": 5.93,
+        "pctTenure15Plus": 1.91,
+        "pctStartTop5": 46.13,
+        "pctEverTop3": 40.53,
+        "pctLegendPlatform": 27.86,
+        "pctStrongAlignment": 4.72,
+        "pctTrappedWeak": 34.18,
+        "pctChurnBefore10": 83.91,
+        "pctWrongDaypart": 29.54
+      },
+      "legendPipeline": {
+        "pctElite": 0.67,
+        "pctLegendCand": 0,
+        "pctFranchise": 0,
+        "medianYearsToLegend": null,
+        "medianYearsToFranchise": null
+      },
+      "salary": {
+        "medianSalary": 67500,
+        "p90Salary": 138000,
+        "p99Salary": 213000,
+        "maxSalary": 905000,
+        "pctGte5x": 0.15,
+        "pctGte10x": 0.01,
+        "pctHighQAtCap": 33.41
+      },
+      "economy": {
+        "meanOq": 61.25,
+        "pct9599": 20.56,
+        "hhi": 578,
+        "zombieLike": 5.42,
+        "spiralLike": 8.31,
+        "soloBankruptRuns": 0
+      },
+      "platformDiag": {
+        "retentionSaves": 0,
+        "renewalBoosts": 0,
+        "upwardPoaches": 0,
+        "upwardPoachOffers": 0,
+        "highQBorn": 14.96
+      }
+    },
+    "H": {
+      "runs": 72,
+      "ok": 72,
+      "highQCohort": {
+        "size": 857,
+        "pctOfCareers": 2.02,
+        "medianCareerSpan": 2.56,
+        "pctTenure5Plus": 29.52,
+        "pctTenure10Plus": 8.99,
+        "pctTenure15Plus": 4.3,
+        "pctStartTop5": 27.66,
+        "pctEverTop3": 27.74,
+        "pctLegendPlatform": 16.57,
+        "pctStrongAlignment": 4.96,
+        "pctTrappedWeak": 56.04,
+        "pctChurnBefore10": 78.79,
+        "pctWrongDaypart": 23.95
+      },
+      "legendPipeline": {
+        "pctElite": 0.41,
+        "pctLegendCand": 0,
+        "pctFranchise": 0,
+        "medianYearsToLegend": null,
+        "medianYearsToFranchise": null
+      },
+      "salary": {
+        "medianSalary": 68000,
+        "p90Salary": 137500,
+        "p99Salary": 210000,
+        "maxSalary": 1325500,
+        "pctGte5x": 0.15,
+        "pctGte10x": 0.01,
+        "pctHighQAtCap": 34.42
+      },
+      "economy": {
+        "meanOq": 60.55,
+        "pct9599": 18.99,
+        "hhi": 572,
+        "zombieLike": 5.86,
+        "spiralLike": 8.82,
+        "soloBankruptRuns": 0
+      },
+      "platformDiag": {
+        "retentionSaves": 0.13,
+        "renewalBoosts": 1.21,
+        "upwardPoaches": 0,
+        "upwardPoachOffers": 0,
+        "highQBorn": 16.21
+      }
+    },
+    "I": {
+      "runs": 72,
+      "ok": 72,
+      "highQCohort": {
+        "size": 852,
+        "pctOfCareers": 1.97,
+        "medianCareerSpan": 2.03,
+        "pctTenure5Plus": 24.42,
+        "pctTenure10Plus": 5.95,
+        "pctTenure15Plus": 3.01,
+        "pctStartTop5": 30.77,
+        "pctEverTop3": 29.78,
+        "pctLegendPlatform": 17.38,
+        "pctStrongAlignment": 5.54,
+        "pctTrappedWeak": 47.52,
+        "pctChurnBefore10": 79.02,
+        "pctWrongDaypart": 25.13
+      },
+      "legendPipeline": {
+        "pctElite": 0.43,
+        "pctLegendCand": 0,
+        "pctFranchise": 0,
+        "medianYearsToLegend": null,
+        "medianYearsToFranchise": null
+      },
+      "salary": {
+        "medianSalary": 68000,
+        "p90Salary": 138500,
+        "p99Salary": 209000,
+        "maxSalary": 1171000,
+        "pctGte5x": 0.19,
+        "pctGte10x": 0.01,
+        "pctHighQAtCap": 32.16
+      },
+      "economy": {
+        "meanOq": 62.03,
+        "pct9599": 19.63,
+        "hhi": 579,
+        "zombieLike": 6.24,
+        "spiralLike": 8.64,
+        "soloBankruptRuns": 0
+      },
+      "platformDiag": {
+        "retentionSaves": 0,
+        "renewalBoosts": 0,
+        "upwardPoaches": 0.13,
+        "upwardPoachOffers": 0,
+        "highQBorn": 16.39
+      }
+    },
+    "J": {
+      "runs": 72,
+      "ok": 72,
+      "highQCohort": {
+        "size": 662,
+        "pctOfCareers": 1.47,
+        "medianCareerSpan": 2.54,
+        "pctTenure5Plus": 27.57,
+        "pctTenure10Plus": 9.01,
+        "pctTenure15Plus": 3.9,
+        "pctStartTop5": 45.36,
+        "pctEverTop3": 42.09,
+        "pctLegendPlatform": 26.39,
+        "pctStrongAlignment": 10.92,
+        "pctTrappedWeak": 42.92,
+        "pctChurnBefore10": 81.88,
+        "pctWrongDaypart": 0
+      },
+      "legendPipeline": {
+        "pctElite": 0.67,
+        "pctLegendCand": 0,
+        "pctFranchise": 0,
+        "medianYearsToLegend": null,
+        "medianYearsToFranchise": null
+      },
+      "salary": {
+        "medianSalary": 68500,
+        "p90Salary": 140000,
+        "p99Salary": 211500,
+        "maxSalary": 954500,
+        "pctGte5x": 0.14,
+        "pctGte10x": 0.01,
+        "pctHighQAtCap": 29.91
+      },
+      "economy": {
+        "meanOq": 61.45,
+        "pct9599": 20.41,
+        "hhi": 572,
+        "zombieLike": 5.67,
+        "spiralLike": 8.26,
+        "soloBankruptRuns": 0
+      },
+      "platformDiag": {
+        "retentionSaves": 0.41,
+        "renewalBoosts": 2.42,
+        "upwardPoaches": 0,
+        "upwardPoachOffers": 0,
+        "highQBorn": 10.58
+      }
+    },
+    "K": {
+      "runs": 72,
+      "ok": 72,
+      "highQCohort": {
+        "size": 670,
+        "pctOfCareers": 1.56,
+        "medianCareerSpan": 2.36,
+        "pctTenure5Plus": 25.93,
+        "pctTenure10Plus": 8.35,
+        "pctTenure15Plus": 2.53,
+        "pctStartTop5": 40.51,
+        "pctEverTop3": 38.03,
+        "pctLegendPlatform": 24.26,
+        "pctStrongAlignment": 9.54,
+        "pctTrappedWeak": 42,
+        "pctChurnBefore10": 78.76,
+        "pctWrongDaypart": 0
+      },
+      "legendPipeline": {
+        "pctElite": 0.64,
+        "pctLegendCand": 0,
+        "pctFranchise": 0,
+        "medianYearsToLegend": null,
+        "medianYearsToFranchise": null
+      },
+      "salary": {
+        "medianSalary": 68000,
+        "p90Salary": 139000,
+        "p99Salary": 213500,
+        "maxSalary": 820000,
+        "pctGte5x": 0.2,
+        "pctGte10x": 0.01,
+        "pctHighQAtCap": 30
+      },
+      "economy": {
+        "meanOq": 61.09,
+        "pct9599": 20.73,
+        "hhi": 617,
+        "zombieLike": 6.61,
+        "spiralLike": 8.92,
+        "soloBankruptRuns": 0
+      },
+      "platformDiag": {
+        "retentionSaves": 0.25,
+        "renewalBoosts": 2.26,
+        "upwardPoaches": 0.1,
+        "upwardPoachOffers": 0,
+        "highQBorn": 10.28
+      }
+    }
+  },
+  "leverRanking": [
+    {
+      "key": "G",
+      "label": "Top-station placement",
+      "variant": "G",
+      "score": 43.9
+    },
+    {
+      "key": "I",
+      "label": "Upward poaching",
+      "variant": "I",
+      "score": 8.1
+    },
+    {
+      "key": "H",
+      "label": "Retention / lock-in",
+      "variant": "H",
+      "score": 6.9
+    },
+    {
+      "key": "F",
+      "label": "Drive-slot bias",
+      "variant": "F",
+      "score": 1.4
+    }
+  ],
+  "recommendation": [
+    "Strongest Gate 2 package in grid: **H** (legend 0%, franchise 0%).",
+    "Single lever with most Gate 2 movement vs E: **Top-station placement** (G).",
+    "Legend/franchise still near zero — platform levers alone insufficient; station volatility or rank/share gates may need dedicated measurement.",
+    "**Next step (diagnostic only):** validate winning variant on player-flagship saves; do not ship until legend+franchise rates and economy guardrails hold across markets."
+  ]
+}

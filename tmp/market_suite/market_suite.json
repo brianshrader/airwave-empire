@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-05-31T19:05:03.707Z",
-  "verdict": "WARN",
+  "generatedAt": "2026-06-05T05:38:29.482Z",
+  "verdict": "FAIL",
   "mode": "standard",
-  "timingMs": 152693,
+  "timingMs": 159255,
   "config": {
     "markets": [
       "newyork",
@@ -30,10 +30,10 @@
       "cert": "WARN",
       "stability": "PASS",
       "era": "SKIP",
-      "spanish": "WARN",
+      "spanish": "FAIL",
       "exposureAudit": "PASS",
-      "overall": "WARN",
-      "notes": "2005:MISSING_SPANISH_TROPICAL; 2005:FM_TALK_HEAVY; 2026:FM_TALK_HEAVY",
+      "overall": "FAIL",
+      "notes": "2005:MONO_SPANISH_NEWS_TALK; 2005:MISSING_SPANISH_TROPICAL; 2005:FM_TALK_HEAVY; 2026:MONO_SPANISH_NEWS_TALK",
       "audit": {
         "inPlayable": true,
         "inDiagOnly": false,
@@ -55,10 +55,10 @@
       "cert": "WARN",
       "stability": "PASS",
       "era": "PASS",
-      "spanish": "WARN",
+      "spanish": "FAIL",
       "exposureAudit": "PASS",
-      "overall": "WARN",
-      "notes": "1970:PASS · 2005:MISSING_SPANISH_TROPICAL",
+      "overall": "FAIL",
+      "notes": "1970:PASS · 2005:MONO_REGIONAL_MEXICAN; 2005:MISSING_SPANISH_TROPICAL",
       "audit": {
         "inPlayable": true,
         "inDiagOnly": false,
@@ -83,7 +83,7 @@
       "spanish": "WARN",
       "exposureAudit": "PASS",
       "overall": "WARN",
-      "notes": "1995:MISSING_SPANISH_CONTEMPORARY; 1995:FM_TALK_HEAVY; 2026:MISSING_SPANISH_CONTEMPORARY; 2026:FM_TALK_HEAVY",
+      "notes": "2005:FM_TALK_HEAVY; 2026:FM_TALK_HEAVY",
       "audit": {
         "inPlayable": true,
         "inDiagOnly": false,
@@ -229,7 +229,7 @@
     "failuresByType": {},
     "totals": {
       "gamesSimulated": 16,
-      "periodsSimulated": 1292
+      "periodsSimulated": 1152
     }
   }
 }

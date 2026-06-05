@@ -1,0 +1,683 @@
+{
+  "generatedAt": "2026-06-01T00:27:10.418Z",
+  "config": {
+    "runs": 2,
+    "seed": 20260601,
+    "markets": [
+      "newyork",
+      "losangeles",
+      "chicago",
+      "seattle",
+      "sanfrancisco",
+      "atlanta",
+      "nashville",
+      "wichita"
+    ],
+    "startYears": [
+      1970,
+      1985,
+      2000
+    ],
+    "variants": [
+      "A",
+      "B",
+      "C",
+      "D"
+    ]
+  },
+  "targets": {
+    "pct9599": {
+      "lo": 8,
+      "hi": 13
+    },
+    "internal94PlusMedianYears": {
+      "lo": 2,
+      "hi": 4
+    }
+  },
+  "variants": [
+    {
+      "variant": "A",
+      "definition": "Current production — internalPromotionDirect, no wrapper ceiling/trust",
+      "successorEvents": 3581,
+      "replacementMix": {
+        "internal": 1351,
+        "external": 2167,
+        "cluster": 10
+      },
+      "internalRecoveryPct": 97.95,
+      "internalMedianYears": 0,
+      "externalRecoveryPct": 49.81,
+      "externalMedianYears": 3,
+      "internalMinusExternalRecoverPct": 48.14,
+      "internalMinusExternalMedianYears": -3,
+      "sameTurnPrior90Plus": {
+        "label": "same_turn_prior90+",
+        "count": 2226,
+        "pctRecovered": 63.34,
+        "medianYears": 0.5,
+        "pctImmediateTPlus1": 24.93
+      },
+      "prior94Plus": {
+        "label": "prior94+",
+        "count": 2806,
+        "pctRecovered": 63.93,
+        "medianYears": 1,
+        "pctImmediateTPlus1": 27.98
+      },
+      "internal94Plus": {
+        "label": "internal_prior94+",
+        "count": 1101,
+        "pctRecovered": 87.47,
+        "medianYears": 0,
+        "pctImmediateTPlus1": 66.03
+      },
+      "meanOq2020": 64.05,
+      "pct9599": 10.99,
+      "stationSpirals": 336,
+      "impossibleImmediateEndOfFill": 0,
+      "integrityExcluded": 1489,
+      "immediateTPlus1All": {
+        "label": "all_successor",
+        "count": 3581,
+        "pctRecovered": 65.68,
+        "medianYears": 1,
+        "pctImmediateTPlus1": 28.2
+      },
+      "applesSameTurn90Plus": {
+        "filter": "same_turn, prior 90+, integrity-clean",
+        "internal": {
+          "label": "apples_internal",
+          "count": 105,
+          "pctRecovered": 97.14,
+          "medianYears": 0,
+          "avgYears": 0.28431372549019607,
+          "pctImmediate": 78.1,
+          "avgOriginalPriorSlotQ": 92.18095238095238,
+          "avgReplacementSlotQ": 91.37142857142857,
+          "avgCeilingAtFill": 93.06666666666666,
+          "integrityFlagged": 0
+        },
+        "external": {
+          "label": "apples_external",
+          "count": 1366,
+          "pctRecovered": 47.36,
+          "medianYears": 3.5,
+          "avgYears": 3.9690880989180837,
+          "pctImmediate": 0.37,
+          "avgOriginalPriorSlotQ": 96.48462664714495,
+          "avgReplacementSlotQ": 83.06076134699853,
+          "avgCeilingAtFill": 88.06442166910688,
+          "integrityFlagged": 0
+        },
+        "internalAdvantagePct": 49.78
+      },
+      "hits9599Target": true,
+      "internal94MedianInTarget": false
+    },
+    {
+      "variant": "B",
+      "definition": "Original design — 25% trust transfer + J1 cap 88 / 6 periods / +1 rise via wrapper",
+      "successorEvents": 3165,
+      "replacementMix": {
+        "internal": 1151,
+        "external": 1946,
+        "cluster": 14
+      },
+      "internalRecoveryPct": 41.84,
+      "internalMedianYears": 2,
+      "externalRecoveryPct": 53.72,
+      "externalMedianYears": 2.5,
+      "internalMinusExternalRecoverPct": -11.88,
+      "internalMinusExternalMedianYears": -0.5,
+      "sameTurnPrior90Plus": {
+        "label": "same_turn_prior90+",
+        "count": 1739,
+        "pctRecovered": 41.81,
+        "medianYears": 3.5,
+        "pctImmediateTPlus1": 1.15
+      },
+      "prior94Plus": {
+        "label": "prior94+",
+        "count": 2082,
+        "pctRecovered": 44.14,
+        "medianYears": 2,
+        "pctImmediateTPlus1": 4.9
+      },
+      "internal94Plus": {
+        "label": "internal_prior94+",
+        "count": 759,
+        "pctRecovered": 39.26,
+        "medianYears": 1.5,
+        "pctImmediateTPlus1": 7.25
+      },
+      "meanOq2020": 64,
+      "pct9599": 11.3,
+      "stationSpirals": 324,
+      "impossibleImmediateEndOfFill": 0,
+      "integrityExcluded": 499,
+      "immediateTPlus1All": {
+        "label": "all_successor",
+        "count": 3165,
+        "pctRecovered": 53.27,
+        "medianYears": 1.5,
+        "pctImmediateTPlus1": 12.42
+      },
+      "applesSameTurn90Plus": {
+        "filter": "same_turn, prior 90+, integrity-clean",
+        "internal": {
+          "label": "apples_internal",
+          "count": 576,
+          "pctRecovered": 31.6,
+          "medianYears": 4,
+          "avgYears": 4.222527472527473,
+          "pctImmediate": 0.69,
+          "avgOriginalPriorSlotQ": 96.36111111111111,
+          "avgReplacementSlotQ": 87.28819444444444,
+          "avgCeilingAtFill": 88.03645833333333,
+          "integrityFlagged": 0
+        },
+        "external": {
+          "label": "apples_external",
+          "count": 1096,
+          "pctRecovered": 44.98,
+          "medianYears": 3.5,
+          "avgYears": 4.0223123732251524,
+          "pctImmediate": 0.27,
+          "avgOriginalPriorSlotQ": 96.17153284671532,
+          "avgReplacementSlotQ": 82.875,
+          "avgCeilingAtFill": 88.09397810218978,
+          "integrityFlagged": 0
+        },
+        "internalAdvantagePct": -13.38
+      },
+      "hits9599Target": true,
+      "internal94MedianInTarget": false
+    },
+    {
+      "variant": "C",
+      "definition": "Internal-friendly — 25% trust + cap 89 (internal only) / 6 / +1 via wrapper",
+      "successorEvents": 3211,
+      "replacementMix": {
+        "internal": 1145,
+        "external": 1981,
+        "cluster": 16
+      },
+      "internalRecoveryPct": 45.86,
+      "internalMedianYears": 2.5,
+      "externalRecoveryPct": 52.46,
+      "externalMedianYears": 3,
+      "internalMinusExternalRecoverPct": -6.6,
+      "internalMinusExternalMedianYears": -0.5,
+      "sameTurnPrior90Plus": {
+        "label": "same_turn_prior90+",
+        "count": 1781,
+        "pctRecovered": 44.69,
+        "medianYears": 3.5,
+        "pctImmediateTPlus1": 1.52
+      },
+      "prior94Plus": {
+        "label": "prior94+",
+        "count": 2119,
+        "pctRecovered": 44.03,
+        "medianYears": 2.5,
+        "pctImmediateTPlus1": 4.11
+      },
+      "internal94Plus": {
+        "label": "internal_prior94+",
+        "count": 749,
+        "pctRecovered": 39.39,
+        "medianYears": 2,
+        "pctImmediateTPlus1": 6.01
+      },
+      "meanOq2020": 64.02,
+      "pct9599": 10.65,
+      "stationSpirals": 332,
+      "impossibleImmediateEndOfFill": 0,
+      "integrityExcluded": 514,
+      "immediateTPlus1All": {
+        "label": "all_successor",
+        "count": 3211,
+        "pctRecovered": 53.35,
+        "medianYears": 2,
+        "pctImmediateTPlus1": 10.12
+      },
+      "applesSameTurn90Plus": {
+        "filter": "same_turn, prior 90+, integrity-clean",
+        "internal": {
+          "label": "apples_internal",
+          "count": 562,
+          "pctRecovered": 37.37,
+          "medianYears": 4,
+          "avgYears": 4.126190476190477,
+          "pctImmediate": 1.25,
+          "avgOriginalPriorSlotQ": 96.19217081850533,
+          "avgReplacementSlotQ": 88.0373665480427,
+          "avgCeilingAtFill": 89.0355871886121,
+          "integrityFlagged": 0
+        },
+        "external": {
+          "label": "apples_external",
+          "count": 1144,
+          "pctRecovered": 46.59,
+          "medianYears": 3.5,
+          "avgYears": 3.9849906191369606,
+          "pctImmediate": 0.26,
+          "avgOriginalPriorSlotQ": 96.05506993006993,
+          "avgReplacementSlotQ": 82.71678321678321,
+          "avgCeilingAtFill": 88.09965034965035,
+          "integrityFlagged": 0
+        },
+        "internalAdvantagePct": -9.22
+      },
+      "hits9599Target": true,
+      "internal94MedianInTarget": true
+    },
+    {
+      "variant": "D",
+      "definition": "Legacy handoff — 35% trust + cap 88 / 6 / +1 via wrapper",
+      "successorEvents": 3182,
+      "replacementMix": {
+        "internal": 1139,
+        "external": 1976,
+        "cluster": 20
+      },
+      "internalRecoveryPct": 44.81,
+      "internalMedianYears": 2,
+      "externalRecoveryPct": 52.55,
+      "externalMedianYears": 2.5,
+      "internalMinusExternalRecoverPct": -7.74,
+      "internalMinusExternalMedianYears": -0.5,
+      "sameTurnPrior90Plus": {
+        "label": "same_turn_prior90+",
+        "count": 1803,
+        "pctRecovered": 42.93,
+        "medianYears": 3.5,
+        "pctImmediateTPlus1": 1.33
+      },
+      "prior94Plus": {
+        "label": "prior94+",
+        "count": 2094,
+        "pctRecovered": 44.17,
+        "medianYears": 2,
+        "pctImmediateTPlus1": 4.01
+      },
+      "internal94Plus": {
+        "label": "internal_prior94+",
+        "count": 733,
+        "pctRecovered": 39.84,
+        "medianYears": 1.5,
+        "pctImmediateTPlus1": 6.14
+      },
+      "meanOq2020": 63.92,
+      "pct9599": 11.14,
+      "stationSpirals": 319,
+      "impossibleImmediateEndOfFill": 0,
+      "integrityExcluded": 478,
+      "immediateTPlus1All": {
+        "label": "all_successor",
+        "count": 3182,
+        "pctRecovered": 53.43,
+        "medianYears": 1.5,
+        "pctImmediateTPlus1": 11.57
+      },
+      "applesSameTurn90Plus": {
+        "filter": "same_turn, prior 90+, integrity-clean",
+        "internal": {
+          "label": "apples_internal",
+          "count": 559,
+          "pctRecovered": 34.35,
+          "medianYears": 3.5,
+          "avgYears": 4.161458333333333,
+          "pctImmediate": 1.07,
+          "avgOriginalPriorSlotQ": 96.16994633273703,
+          "avgReplacementSlotQ": 87.40608228980322,
+          "avgCeilingAtFill": 88.05008944543829,
+          "integrityFlagged": 0
+        },
+        "external": {
+          "label": "apples_external",
+          "count": 1159,
+          "pctRecovered": 44.69,
+          "medianYears": 3.5,
+          "avgYears": 3.841698841698842,
+          "pctImmediate": 0.17,
+          "avgOriginalPriorSlotQ": 96.20621225194132,
+          "avgReplacementSlotQ": 83.10526315789474,
+          "avgCeilingAtFill": 88.08455565142364,
+          "integrityFlagged": 0
+        },
+        "internalAdvantagePct": -10.34
+      },
+      "hits9599Target": true,
+      "internal94MedianInTarget": false
+    }
+  ],
+  "recommendation": {
+    "action": "implement_internal_specific",
+    "recommendedVariant": "C",
+    "rationale": "Variant C best balances targets (score 75). Prefer implementing as internal-only ceiling/trust parameters rather than blind wrapper routing.",
+    "scored": [
+      {
+        "variant": "C",
+        "definition": "Internal-friendly — 25% trust + cap 89 (internal only) / 6 / +1 via wrapper",
+        "successorEvents": 3211,
+        "replacementMix": {
+          "internal": 1145,
+          "external": 1981,
+          "cluster": 16
+        },
+        "internalRecoveryPct": 45.86,
+        "internalMedianYears": 2.5,
+        "externalRecoveryPct": 52.46,
+        "externalMedianYears": 3,
+        "internalMinusExternalRecoverPct": -6.6,
+        "internalMinusExternalMedianYears": -0.5,
+        "sameTurnPrior90Plus": {
+          "label": "same_turn_prior90+",
+          "count": 1781,
+          "pctRecovered": 44.69,
+          "medianYears": 3.5,
+          "pctImmediateTPlus1": 1.52
+        },
+        "prior94Plus": {
+          "label": "prior94+",
+          "count": 2119,
+          "pctRecovered": 44.03,
+          "medianYears": 2.5,
+          "pctImmediateTPlus1": 4.11
+        },
+        "internal94Plus": {
+          "label": "internal_prior94+",
+          "count": 749,
+          "pctRecovered": 39.39,
+          "medianYears": 2,
+          "pctImmediateTPlus1": 6.01
+        },
+        "meanOq2020": 64.02,
+        "pct9599": 10.65,
+        "stationSpirals": 332,
+        "impossibleImmediateEndOfFill": 0,
+        "integrityExcluded": 514,
+        "immediateTPlus1All": {
+          "label": "all_successor",
+          "count": 3211,
+          "pctRecovered": 53.35,
+          "medianYears": 2,
+          "pctImmediateTPlus1": 10.12
+        },
+        "applesSameTurn90Plus": {
+          "filter": "same_turn, prior 90+, integrity-clean",
+          "internal": {
+            "label": "apples_internal",
+            "count": 562,
+            "pctRecovered": 37.37,
+            "medianYears": 4,
+            "avgYears": 4.126190476190477,
+            "pctImmediate": 1.25,
+            "avgOriginalPriorSlotQ": 96.19217081850533,
+            "avgReplacementSlotQ": 88.0373665480427,
+            "avgCeilingAtFill": 89.0355871886121,
+            "integrityFlagged": 0
+          },
+          "external": {
+            "label": "apples_external",
+            "count": 1144,
+            "pctRecovered": 46.59,
+            "medianYears": 3.5,
+            "avgYears": 3.9849906191369606,
+            "pctImmediate": 0.26,
+            "avgOriginalPriorSlotQ": 96.05506993006993,
+            "avgReplacementSlotQ": 82.71678321678321,
+            "avgCeilingAtFill": 88.09965034965035,
+            "integrityFlagged": 0
+          },
+          "internalAdvantagePct": -9.22
+        },
+        "hits9599Target": true,
+        "internal94MedianInTarget": true,
+        "score": 75
+      },
+      {
+        "variant": "B",
+        "definition": "Original design — 25% trust transfer + J1 cap 88 / 6 periods / +1 rise via wrapper",
+        "successorEvents": 3165,
+        "replacementMix": {
+          "internal": 1151,
+          "external": 1946,
+          "cluster": 14
+        },
+        "internalRecoveryPct": 41.84,
+        "internalMedianYears": 2,
+        "externalRecoveryPct": 53.72,
+        "externalMedianYears": 2.5,
+        "internalMinusExternalRecoverPct": -11.88,
+        "internalMinusExternalMedianYears": -0.5,
+        "sameTurnPrior90Plus": {
+          "label": "same_turn_prior90+",
+          "count": 1739,
+          "pctRecovered": 41.81,
+          "medianYears": 3.5,
+          "pctImmediateTPlus1": 1.15
+        },
+        "prior94Plus": {
+          "label": "prior94+",
+          "count": 2082,
+          "pctRecovered": 44.14,
+          "medianYears": 2,
+          "pctImmediateTPlus1": 4.9
+        },
+        "internal94Plus": {
+          "label": "internal_prior94+",
+          "count": 759,
+          "pctRecovered": 39.26,
+          "medianYears": 1.5,
+          "pctImmediateTPlus1": 7.25
+        },
+        "meanOq2020": 64,
+        "pct9599": 11.3,
+        "stationSpirals": 324,
+        "impossibleImmediateEndOfFill": 0,
+        "integrityExcluded": 499,
+        "immediateTPlus1All": {
+          "label": "all_successor",
+          "count": 3165,
+          "pctRecovered": 53.27,
+          "medianYears": 1.5,
+          "pctImmediateTPlus1": 12.42
+        },
+        "applesSameTurn90Plus": {
+          "filter": "same_turn, prior 90+, integrity-clean",
+          "internal": {
+            "label": "apples_internal",
+            "count": 576,
+            "pctRecovered": 31.6,
+            "medianYears": 4,
+            "avgYears": 4.222527472527473,
+            "pctImmediate": 0.69,
+            "avgOriginalPriorSlotQ": 96.36111111111111,
+            "avgReplacementSlotQ": 87.28819444444444,
+            "avgCeilingAtFill": 88.03645833333333,
+            "integrityFlagged": 0
+          },
+          "external": {
+            "label": "apples_external",
+            "count": 1096,
+            "pctRecovered": 44.98,
+            "medianYears": 3.5,
+            "avgYears": 4.0223123732251524,
+            "pctImmediate": 0.27,
+            "avgOriginalPriorSlotQ": 96.17153284671532,
+            "avgReplacementSlotQ": 82.875,
+            "avgCeilingAtFill": 88.09397810218978,
+            "integrityFlagged": 0
+          },
+          "internalAdvantagePct": -13.38
+        },
+        "hits9599Target": true,
+        "internal94MedianInTarget": false,
+        "score": 63
+      },
+      {
+        "variant": "D",
+        "definition": "Legacy handoff — 35% trust + cap 88 / 6 / +1 via wrapper",
+        "successorEvents": 3182,
+        "replacementMix": {
+          "internal": 1139,
+          "external": 1976,
+          "cluster": 20
+        },
+        "internalRecoveryPct": 44.81,
+        "internalMedianYears": 2,
+        "externalRecoveryPct": 52.55,
+        "externalMedianYears": 2.5,
+        "internalMinusExternalRecoverPct": -7.74,
+        "internalMinusExternalMedianYears": -0.5,
+        "sameTurnPrior90Plus": {
+          "label": "same_turn_prior90+",
+          "count": 1803,
+          "pctRecovered": 42.93,
+          "medianYears": 3.5,
+          "pctImmediateTPlus1": 1.33
+        },
+        "prior94Plus": {
+          "label": "prior94+",
+          "count": 2094,
+          "pctRecovered": 44.17,
+          "medianYears": 2,
+          "pctImmediateTPlus1": 4.01
+        },
+        "internal94Plus": {
+          "label": "internal_prior94+",
+          "count": 733,
+          "pctRecovered": 39.84,
+          "medianYears": 1.5,
+          "pctImmediateTPlus1": 6.14
+        },
+        "meanOq2020": 63.92,
+        "pct9599": 11.14,
+        "stationSpirals": 319,
+        "impossibleImmediateEndOfFill": 0,
+        "integrityExcluded": 478,
+        "immediateTPlus1All": {
+          "label": "all_successor",
+          "count": 3182,
+          "pctRecovered": 53.43,
+          "medianYears": 1.5,
+          "pctImmediateTPlus1": 11.57
+        },
+        "applesSameTurn90Plus": {
+          "filter": "same_turn, prior 90+, integrity-clean",
+          "internal": {
+            "label": "apples_internal",
+            "count": 559,
+            "pctRecovered": 34.35,
+            "medianYears": 3.5,
+            "avgYears": 4.161458333333333,
+            "pctImmediate": 1.07,
+            "avgOriginalPriorSlotQ": 96.16994633273703,
+            "avgReplacementSlotQ": 87.40608228980322,
+            "avgCeilingAtFill": 88.05008944543829,
+            "integrityFlagged": 0
+          },
+          "external": {
+            "label": "apples_external",
+            "count": 1159,
+            "pctRecovered": 44.69,
+            "medianYears": 3.5,
+            "avgYears": 3.841698841698842,
+            "pctImmediate": 0.17,
+            "avgOriginalPriorSlotQ": 96.20621225194132,
+            "avgReplacementSlotQ": 83.10526315789474,
+            "avgCeilingAtFill": 88.08455565142364,
+            "integrityFlagged": 0
+          },
+          "internalAdvantagePct": -10.34
+        },
+        "hits9599Target": true,
+        "internal94MedianInTarget": false,
+        "score": 63
+      },
+      {
+        "variant": "A",
+        "definition": "Current production — internalPromotionDirect, no wrapper ceiling/trust",
+        "successorEvents": 3581,
+        "replacementMix": {
+          "internal": 1351,
+          "external": 2167,
+          "cluster": 10
+        },
+        "internalRecoveryPct": 97.95,
+        "internalMedianYears": 0,
+        "externalRecoveryPct": 49.81,
+        "externalMedianYears": 3,
+        "internalMinusExternalRecoverPct": 48.14,
+        "internalMinusExternalMedianYears": -3,
+        "sameTurnPrior90Plus": {
+          "label": "same_turn_prior90+",
+          "count": 2226,
+          "pctRecovered": 63.34,
+          "medianYears": 0.5,
+          "pctImmediateTPlus1": 24.93
+        },
+        "prior94Plus": {
+          "label": "prior94+",
+          "count": 2806,
+          "pctRecovered": 63.93,
+          "medianYears": 1,
+          "pctImmediateTPlus1": 27.98
+        },
+        "internal94Plus": {
+          "label": "internal_prior94+",
+          "count": 1101,
+          "pctRecovered": 87.47,
+          "medianYears": 0,
+          "pctImmediateTPlus1": 66.03
+        },
+        "meanOq2020": 64.05,
+        "pct9599": 10.99,
+        "stationSpirals": 336,
+        "impossibleImmediateEndOfFill": 0,
+        "integrityExcluded": 1489,
+        "immediateTPlus1All": {
+          "label": "all_successor",
+          "count": 3581,
+          "pctRecovered": 65.68,
+          "medianYears": 1,
+          "pctImmediateTPlus1": 28.2
+        },
+        "applesSameTurn90Plus": {
+          "filter": "same_turn, prior 90+, integrity-clean",
+          "internal": {
+            "label": "apples_internal",
+            "count": 105,
+            "pctRecovered": 97.14,
+            "medianYears": 0,
+            "avgYears": 0.28431372549019607,
+            "pctImmediate": 78.1,
+            "avgOriginalPriorSlotQ": 92.18095238095238,
+            "avgReplacementSlotQ": 91.37142857142857,
+            "avgCeilingAtFill": 93.06666666666666,
+            "integrityFlagged": 0
+          },
+          "external": {
+            "label": "apples_external",
+            "count": 1366,
+            "pctRecovered": 47.36,
+            "medianYears": 3.5,
+            "avgYears": 3.9690880989180837,
+            "pctImmediate": 0.37,
+            "avgOriginalPriorSlotQ": 96.48462664714495,
+            "avgReplacementSlotQ": 83.06076134699853,
+            "avgCeilingAtFill": 88.06442166910688,
+            "integrityFlagged": 0
+          },
+          "internalAdvantagePct": 49.78
+        },
+        "hits9599Target": true,
+        "internal94MedianInTarget": false,
+        "score": 45
+      }
+    ]
+  }
+}

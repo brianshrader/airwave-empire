@@ -1,0 +1,701 @@
+{
+  "generatedAt": "2026-06-04T17:57:25.599Z",
+  "config": {
+    "runs": 4,
+    "seed": 20260604,
+    "markets": [
+      "wichita",
+      "nashville",
+      "chicago",
+      "sanfrancisco",
+      "newyork"
+    ],
+    "startYears": [
+      1970,
+      1985,
+      2000
+    ],
+    "years": 35,
+    "simulateRenewals": true,
+    "playerOnly": false
+  },
+  "definition": {
+    "renewalRaisePct": "(newAnnualSalary / prevAnnualSalary - 1) * 100 at sign/extend moment",
+    "excludes": "Fall COLA / merit bumps (period===2 salary inflation in advTurn)",
+    "playerRenewal": "doExtend via buildContractEconObject (1/2/3 yr offers)",
+    "aiRenewal": "rival cyr<=0 branch: salary * rnd(1.08, 1.22)",
+    "tenureYears": "G.year - talent._hireYear at renewal",
+    "tenureMilestones": "5yr: tenure 4–6, 10yr: 9–11, 20yr: 19–21 calendar years",
+    "stationProfitability": "fin.ebitda / fin.rev buckets",
+    "stationRank": "rankStationsByShareCompetition book rank"
+  },
+  "counts": {
+    "totalRenewals": 58955,
+    "playerExtend": 1757,
+    "aiRival": 57198
+  },
+  "overall": {
+    "all": {
+      "meanRaisePct": 14.71,
+      "n": 58955
+    },
+    "player": {
+      "meanRaisePct": 5.56,
+      "n": 1757
+    },
+    "ai": {
+      "meanRaisePct": 14.99,
+      "n": 57198
+    }
+  },
+  "byDimension": {
+    "marketSize_rankTier": {
+      "all": {
+        "large": {
+          "n": 10873,
+          "meanRaisePct": 14.7,
+          "medianRaisePct": 14.81
+        },
+        "medium": {
+          "n": 8865,
+          "meanRaisePct": 14.59,
+          "medianRaisePct": 14.67
+        },
+        "mega": {
+          "n": 28878,
+          "meanRaisePct": 14.79,
+          "medianRaisePct": 14.84
+        },
+        "small": {
+          "n": 10339,
+          "meanRaisePct": 14.61,
+          "medianRaisePct": 14.73
+        }
+      },
+      "player": {
+        "large": {
+          "n": 357,
+          "meanRaisePct": 4.79,
+          "medianRaisePct": 4.68
+        },
+        "medium": {
+          "n": 384,
+          "meanRaisePct": 6.22,
+          "medianRaisePct": 5.71
+        },
+        "mega": {
+          "n": 667,
+          "meanRaisePct": 5.4,
+          "medianRaisePct": 5
+        },
+        "small": {
+          "n": 349,
+          "meanRaisePct": 5.93,
+          "medianRaisePct": 5
+        }
+      }
+    },
+    "stationRank_bookShare": {
+      "all": {
+        "bottom_third": {
+          "n": 9054,
+          "meanRaisePct": 14.48,
+          "medianRaisePct": 14.73
+        },
+        "mid_pack": {
+          "n": 17478,
+          "meanRaisePct": 14.47,
+          "medianRaisePct": 14.56
+        },
+        "rank6-10": {
+          "n": 15451,
+          "meanRaisePct": 14.81,
+          "medianRaisePct": 14.84
+        },
+        "top3": {
+          "n": 10153,
+          "meanRaisePct": 15,
+          "medianRaisePct": 14.94
+        },
+        "top4-5": {
+          "n": 6819,
+          "meanRaisePct": 15,
+          "medianRaisePct": 15.05
+        }
+      },
+      "player": {
+        "bottom_third": {
+          "n": 524,
+          "meanRaisePct": 4.76,
+          "medianRaisePct": 4.17
+        },
+        "mid_pack": {
+          "n": 870,
+          "meanRaisePct": 5.34,
+          "medianRaisePct": 5
+        },
+        "rank6-10": {
+          "n": 341,
+          "meanRaisePct": 7.07,
+          "medianRaisePct": 6.25
+        },
+        "top4-5": {
+          "n": 22,
+          "meanRaisePct": 9.94,
+          "medianRaisePct": 8.48
+        }
+      }
+    },
+    "talentQuality_trueQ": {
+      "all": {
+        "entry_<42": {
+          "n": 32227,
+          "meanRaisePct": 14.51,
+          "medianRaisePct": 14.61
+        },
+        "mid_42-71": {
+          "n": 26712,
+          "meanRaisePct": 14.96,
+          "medianRaisePct": 15
+        },
+        "strong_72-84": {
+          "n": 16,
+          "meanRaisePct": 13.85,
+          "medianRaisePct": 12.59
+        }
+      },
+      "player": {
+        "entry_<42": {
+          "n": 1581,
+          "meanRaisePct": 5.41,
+          "medianRaisePct": 5
+        },
+        "mid_42-71": {
+          "n": 176,
+          "meanRaisePct": 6.91,
+          "medianRaisePct": 5.99
+        }
+      }
+    },
+    "stationProfitability_ebitdaMargin": {
+      "all": {
+        "high_35pct+": {
+          "n": 23769,
+          "meanRaisePct": 14.99,
+          "medianRaisePct": 15
+        },
+        "loss": {
+          "n": 22749,
+          "meanRaisePct": 14.34,
+          "medianRaisePct": 14.47
+        },
+        "low_0-15pct": {
+          "n": 3960,
+          "meanRaisePct": 14.78,
+          "medianRaisePct": 14.86
+        },
+        "mid_15-35pct": {
+          "n": 8424,
+          "meanRaisePct": 14.92,
+          "medianRaisePct": 14.95
+        },
+        "no_rev": {
+          "n": 53,
+          "meanRaisePct": 13.66,
+          "medianRaisePct": 12.62
+        }
+      },
+      "player": {
+        "high_35pct+": {
+          "n": 56,
+          "meanRaisePct": 7.66,
+          "medianRaisePct": 6.4
+        },
+        "loss": {
+          "n": 1550,
+          "meanRaisePct": 5.38,
+          "medianRaisePct": 4.98
+        },
+        "low_0-15pct": {
+          "n": 89,
+          "meanRaisePct": 6.68,
+          "medianRaisePct": 6.22
+        },
+        "mid_15-35pct": {
+          "n": 60,
+          "meanRaisePct": 6.68,
+          "medianRaisePct": 6.02
+        },
+        "no_rev": {
+          "n": 2,
+          "meanRaisePct": 5.14,
+          "medianRaisePct": 5.14
+        }
+      }
+    },
+    "tenureYearsAtRenewal": {
+      "all": {
+        "0-1yr": {
+          "n": 11092,
+          "meanRaisePct": 14.93,
+          "medianRaisePct": 14.94
+        },
+        "10-14yr": {
+          "n": 4139,
+          "meanRaisePct": 14.18,
+          "medianRaisePct": 14.38
+        },
+        "15-19yr": {
+          "n": 1556,
+          "meanRaisePct": 13.58,
+          "medianRaisePct": 14.15
+        },
+        "2-4yr": {
+          "n": 27409,
+          "meanRaisePct": 14.87,
+          "medianRaisePct": 14.88
+        },
+        "20yr+": {
+          "n": 882,
+          "meanRaisePct": 12.64,
+          "medianRaisePct": 13.35
+        },
+        "5-9yr": {
+          "n": 13877,
+          "meanRaisePct": 14.64,
+          "medianRaisePct": 14.72
+        }
+      },
+      "player": {
+        "0-1yr": {
+          "n": 182,
+          "meanRaisePct": 7.51,
+          "medianRaisePct": 6.4
+        },
+        "10-14yr": {
+          "n": 304,
+          "meanRaisePct": 4.35,
+          "medianRaisePct": 4.2
+        },
+        "15-19yr": {
+          "n": 213,
+          "meanRaisePct": 3.67,
+          "medianRaisePct": 3.13
+        },
+        "2-4yr": {
+          "n": 342,
+          "meanRaisePct": 7.53,
+          "medianRaisePct": 6.35
+        },
+        "20yr+": {
+          "n": 176,
+          "meanRaisePct": 2.96,
+          "medianRaisePct": 2.45
+        },
+        "5-9yr": {
+          "n": 540,
+          "meanRaisePct": 5.93,
+          "medianRaisePct": 5.41
+        }
+      }
+    }
+  },
+  "tenureMilestones": {
+    "5yr": {
+      "all": {
+        "n": 14247,
+        "meanRaisePct": 14.82,
+        "medianRaisePct": 14.85,
+        "byMarketTier": {
+          "large": {
+            "n": 2732,
+            "meanRaisePct": 14.76,
+            "medianRaisePct": 14.75
+          },
+          "medium": {
+            "n": 2124,
+            "meanRaisePct": 14.71,
+            "medianRaisePct": 14.7
+          },
+          "mega": {
+            "n": 6907,
+            "meanRaisePct": 14.92,
+            "medianRaisePct": 14.95
+          },
+          "small": {
+            "n": 2484,
+            "meanRaisePct": 14.68,
+            "medianRaisePct": 14.89
+          }
+        },
+        "byQuality": {
+          "entry_<42": {
+            "n": 8393,
+            "meanRaisePct": 14.71,
+            "medianRaisePct": 14.74
+          },
+          "mid_42-71": {
+            "n": 5852,
+            "meanRaisePct": 14.97,
+            "medianRaisePct": 15.04
+          },
+          "strong_72-84": {
+            "n": 2,
+            "meanRaisePct": 16.95,
+            "medianRaisePct": 16.95
+          }
+        },
+        "byProfitability": {
+          "high_35pct+": {
+            "n": 6005,
+            "meanRaisePct": 15.02,
+            "medianRaisePct": 14.95
+          },
+          "loss": {
+            "n": 5280,
+            "meanRaisePct": 14.51,
+            "medianRaisePct": 14.65
+          },
+          "low_0-15pct": {
+            "n": 935,
+            "meanRaisePct": 14.84,
+            "medianRaisePct": 15
+          },
+          "mid_15-35pct": {
+            "n": 2009,
+            "meanRaisePct": 15.01,
+            "medianRaisePct": 15
+          },
+          "no_rev": {
+            "n": 18,
+            "meanRaisePct": 13.42,
+            "medianRaisePct": 12.57
+          }
+        }
+      },
+      "player": {
+        "n": 326,
+        "meanRaisePct": 6.68,
+        "medianRaisePct": 5.81,
+        "byMarketTier": {
+          "large": {
+            "n": 70,
+            "meanRaisePct": 5.78,
+            "medianRaisePct": 5.29
+          },
+          "medium": {
+            "n": 71,
+            "meanRaisePct": 8.41,
+            "medianRaisePct": 7.14
+          },
+          "mega": {
+            "n": 124,
+            "meanRaisePct": 5.78,
+            "medianRaisePct": 5.28
+          },
+          "small": {
+            "n": 61,
+            "meanRaisePct": 7.55,
+            "medianRaisePct": 5.88
+          }
+        },
+        "byQuality": {
+          "entry_<42": {
+            "n": 297,
+            "meanRaisePct": 6.73,
+            "medianRaisePct": 5.71
+          },
+          "mid_42-71": {
+            "n": 29,
+            "meanRaisePct": 6.25,
+            "medianRaisePct": 6.01
+          }
+        },
+        "byProfitability": {
+          "loss": {
+            "n": 303,
+            "meanRaisePct": 6.82,
+            "medianRaisePct": 5.88
+          },
+          "low_0-15pct": {
+            "n": 17,
+            "meanRaisePct": 5,
+            "medianRaisePct": 4.26
+          },
+          "mid_15-35pct": {
+            "n": 6,
+            "meanRaisePct": 4.82,
+            "medianRaisePct": 4.53
+          }
+        }
+      }
+    },
+    "10yr": {
+      "all": {
+        "n": 3727,
+        "meanRaisePct": 14.27,
+        "medianRaisePct": 14.53,
+        "byMarketTier": {
+          "large": {
+            "n": 637,
+            "meanRaisePct": 14.23,
+            "medianRaisePct": 14.58
+          },
+          "medium": {
+            "n": 630,
+            "meanRaisePct": 14.18,
+            "medianRaisePct": 14.43
+          },
+          "mega": {
+            "n": 1650,
+            "meanRaisePct": 14.33,
+            "medianRaisePct": 14.61
+          },
+          "small": {
+            "n": 810,
+            "meanRaisePct": 14.26,
+            "medianRaisePct": 14.33
+          }
+        },
+        "byQuality": {
+          "entry_<42": {
+            "n": 2817,
+            "meanRaisePct": 14.06,
+            "medianRaisePct": 14.29
+          },
+          "mid_42-71": {
+            "n": 910,
+            "meanRaisePct": 14.93,
+            "medianRaisePct": 15
+          }
+        },
+        "byProfitability": {
+          "high_35pct+": {
+            "n": 1447,
+            "meanRaisePct": 14.91,
+            "medianRaisePct": 14.96
+          },
+          "loss": {
+            "n": 1537,
+            "meanRaisePct": 13.37,
+            "medianRaisePct": 13.78
+          },
+          "low_0-15pct": {
+            "n": 238,
+            "meanRaisePct": 14.82,
+            "medianRaisePct": 15.03
+          },
+          "mid_15-35pct": {
+            "n": 503,
+            "meanRaisePct": 14.95,
+            "medianRaisePct": 15.2
+          },
+          "no_rev": {
+            "n": 2,
+            "meanRaisePct": 14.33,
+            "medianRaisePct": 14.33
+          }
+        }
+      },
+      "player": {
+        "n": 255,
+        "meanRaisePct": 4.65,
+        "medianRaisePct": 4.76,
+        "byMarketTier": {
+          "large": {
+            "n": 49,
+            "meanRaisePct": 3.95,
+            "medianRaisePct": 4.19
+          },
+          "medium": {
+            "n": 57,
+            "meanRaisePct": 5.52,
+            "medianRaisePct": 5.46
+          },
+          "mega": {
+            "n": 97,
+            "meanRaisePct": 4.43,
+            "medianRaisePct": 4.35
+          },
+          "small": {
+            "n": 52,
+            "meanRaisePct": 4.74,
+            "medianRaisePct": 4.87
+          }
+        },
+        "byQuality": {
+          "entry_<42": {
+            "n": 250,
+            "meanRaisePct": 4.64,
+            "medianRaisePct": 4.71
+          },
+          "mid_42-71": {
+            "n": 5,
+            "meanRaisePct": 5.22,
+            "medianRaisePct": 5.5
+          }
+        },
+        "byProfitability": {
+          "loss": {
+            "n": 251,
+            "meanRaisePct": 4.67,
+            "medianRaisePct": 4.76
+          },
+          "low_0-15pct": {
+            "n": 3,
+            "meanRaisePct": 3.88,
+            "medianRaisePct": 3.45
+          },
+          "mid_15-35pct": {
+            "n": 1,
+            "meanRaisePct": 0,
+            "medianRaisePct": 0
+          }
+        }
+      }
+    },
+    "20yr": {
+      "all": {
+        "n": 501,
+        "meanRaisePct": 13.11,
+        "medianRaisePct": 13.55,
+        "byMarketTier": {
+          "large": {
+            "n": 69,
+            "meanRaisePct": 12.68,
+            "medianRaisePct": 14.13
+          },
+          "medium": {
+            "n": 106,
+            "meanRaisePct": 13.02,
+            "medianRaisePct": 13.76
+          },
+          "mega": {
+            "n": 177,
+            "meanRaisePct": 13.17,
+            "medianRaisePct": 13.55
+          },
+          "small": {
+            "n": 149,
+            "meanRaisePct": 13.31,
+            "medianRaisePct": 13.48
+          }
+        },
+        "byQuality": {
+          "entry_<42": {
+            "n": 436,
+            "meanRaisePct": 12.77,
+            "medianRaisePct": 13.22
+          },
+          "mid_42-71": {
+            "n": 65,
+            "meanRaisePct": 15.44,
+            "medianRaisePct": 15.6
+          }
+        },
+        "byProfitability": {
+          "high_35pct+": {
+            "n": 130,
+            "meanRaisePct": 15.03,
+            "medianRaisePct": 14.34
+          },
+          "loss": {
+            "n": 286,
+            "meanRaisePct": 11.81,
+            "medianRaisePct": 12.34
+          },
+          "low_0-15pct": {
+            "n": 28,
+            "meanRaisePct": 14.91,
+            "medianRaisePct": 14.72
+          },
+          "mid_15-35pct": {
+            "n": 56,
+            "meanRaisePct": 14.29,
+            "medianRaisePct": 14.26
+          },
+          "no_rev": {
+            "n": 1,
+            "meanRaisePct": 21.17,
+            "medianRaisePct": 21.17
+          }
+        }
+      },
+      "player": {
+        "n": 79,
+        "meanRaisePct": 3.44,
+        "medianRaisePct": 2.83,
+        "byMarketTier": {
+          "large": {
+            "n": 15,
+            "meanRaisePct": 2.57,
+            "medianRaisePct": 2.29
+          },
+          "medium": {
+            "n": 19,
+            "meanRaisePct": 3.55,
+            "medianRaisePct": 2.76
+          },
+          "mega": {
+            "n": 27,
+            "meanRaisePct": 4.05,
+            "medianRaisePct": 2.94
+          },
+          "small": {
+            "n": 18,
+            "meanRaisePct": 3.13,
+            "medianRaisePct": 2.9
+          }
+        },
+        "byQuality": {
+          "entry_<42": {
+            "n": 79,
+            "meanRaisePct": 3.44,
+            "medianRaisePct": 2.83
+          }
+        },
+        "byProfitability": {
+          "high_35pct+": {
+            "n": 1,
+            "meanRaisePct": 3.16,
+            "medianRaisePct": 3.16
+          },
+          "loss": {
+            "n": 78,
+            "meanRaisePct": 3.45,
+            "medianRaisePct": 2.82
+          }
+        }
+      }
+    }
+  },
+  "runs": {
+    "total": 60,
+    "ok": 60
+  },
+  "simDiagnostics": {
+    "renewalOpportunities": 1860,
+    "simulatedExtendAttempts": 1757,
+    "simulatedExtendErrors": 0,
+    "lastSimErrors": []
+  },
+  "sampleConfig": {
+    "runs": 4,
+    "seed": 20260604,
+    "markets": [
+      "wichita",
+      "nashville",
+      "chicago",
+      "sanfrancisco",
+      "newyork"
+    ],
+    "startYears": [
+      1970,
+      1985,
+      2000
+    ],
+    "years": 35,
+    "simulateRenewals": true,
+    "playerOnly": false
+  }
+}

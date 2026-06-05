@@ -1,6 +1,6 @@
 {
-  "recordedAt": "2026-05-31T19:03:58.582Z",
-  "timingMs": 87541,
+  "recordedAt": "2026-06-05T05:37:18.892Z",
+  "timingMs": 88637,
   "config": {
     "markets": [
       "newyork",
@@ -37,7 +37,7 @@
         "outlierFrequency": "pass",
         "timeline": "pass"
       },
-      "timingMs": 15328
+      "timingMs": 15551
     },
     {
       "marketId": "losangeles",
@@ -51,10 +51,10 @@
         "structural": "warn",
         "identity": "pass",
         "stability": "pass",
-        "outlierFrequency": "warn",
+        "outlierFrequency": "pass",
         "timeline": "pass"
       },
-      "timingMs": 15302
+      "timingMs": 15485
     },
     {
       "marketId": "chicago",
@@ -66,12 +66,12 @@
       "tierBand": "mega_large",
       "categories": {
         "structural": "warn",
-        "identity": "warn",
+        "identity": "pass",
         "stability": "pass",
         "outlierFrequency": "pass",
         "timeline": "pass"
       },
-      "timingMs": 15049
+      "timingMs": 15268
     },
     {
       "marketId": "atlanta",
@@ -86,9 +86,9 @@
         "identity": "pass",
         "stability": "pass",
         "outlierFrequency": "pass",
-        "timeline": "warn"
+        "timeline": "pass"
       },
-      "timingMs": 10129
+      "timingMs": 10107
     },
     {
       "marketId": "nashville",
@@ -102,10 +102,10 @@
         "structural": "warn",
         "identity": "pass",
         "stability": "pass",
-        "outlierFrequency": "pass",
+        "outlierFrequency": "warn",
         "timeline": "warn"
       },
-      "timingMs": 6775
+      "timingMs": 6875
     },
     {
       "marketId": "wichita",
@@ -122,7 +122,7 @@
         "outlierFrequency": "warn",
         "timeline": "warn"
       },
-      "timingMs": 4730
+      "timingMs": 4755
     },
     {
       "marketId": "seattle",
@@ -136,10 +136,10 @@
         "structural": "warn",
         "identity": "pass",
         "stability": "pass",
-        "outlierFrequency": "pass",
+        "outlierFrequency": "warn",
         "timeline": "warn"
       },
-      "timingMs": 9963
+      "timingMs": 10209
     },
     {
       "marketId": "sanfrancisco",
@@ -153,10 +153,10 @@
         "structural": "warn",
         "identity": "warn",
         "stability": "pass",
-        "outlierFrequency": "pass",
+        "outlierFrequency": "warn",
         "timeline": "pass"
       },
-      "timingMs": 10225
+      "timingMs": 10356
     }
   ]
 }

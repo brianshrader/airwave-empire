@@ -1,0 +1,1389 @@
+{
+  "meta": {
+    "anchor": 16,
+    "runs": 18,
+    "seed": 20260610,
+    "markets": [
+      "seattle",
+      "sanfrancisco",
+      "atlanta"
+    ],
+    "variants": [
+      "A",
+      "B",
+      "C",
+      "D",
+      "E",
+      "F",
+      "G",
+      "H"
+    ]
+  },
+  "variants": {
+    "A": {
+      "letter": "A",
+      "label": "Baseline anchor 16",
+      "spec": null,
+      "markets": {
+        "seattle": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.07435,
+            "openShareMed": 0.0655,
+            "revPerStationMed": 229191.125,
+            "ebitdaPerStationMed": -35885.125,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.3665,
+            "observerEnd": 7,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 94864.5,
+              "halfBillingMed": 8959673,
+              "totalRevenueMed": 8741144,
+              "avgRevPerStationMed": 624367.4285714285,
+              "avgSharePerStationMed": 0.07060666892857143,
+              "playerShareMed": 0.06546574499999999,
+              "playerRevMed": 404896,
+              "playerEbitdaMed": 117421,
+              "top3ShareMed": 0.47950000000000004,
+              "top5ShareMed": 0.69265,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.0138,
+              "rockPresentRate": 1
+            }
+          }
+        },
+        "sanfrancisco": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 0.5,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.0736,
+            "openShareMed": 0.0673,
+            "revPerStationMed": 240575.625,
+            "ebitdaPerStationMed": -16559.25,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.36005,
+            "observerEnd": 9,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 84462.5,
+              "halfBillingMed": 8633427,
+              "totalRevenueMed": 8398275,
+              "avgRevPerStationMed": 599876.7857142857,
+              "avgSharePerStationMed": 0.07060755857142856,
+              "playerShareMed": 0.067280985,
+              "playerRevMed": 389161.5,
+              "playerEbitdaMed": 113730,
+              "top3ShareMed": 0.4788,
+              "top5ShareMed": 0.6927,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.013649999999999999,
+              "rockPresentRate": 1
+            }
+          }
+        },
+        "atlanta": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.07655,
+            "openShareMed": 0.06509999999999999,
+            "revPerStationMed": 203503.375,
+            "ebitdaPerStationMed": -56.875,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.365,
+            "observerEnd": 7,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 53146,
+              "halfBillingMed": 6854400,
+              "totalRevenueMed": 6720000,
+              "avgRevPerStationMed": 480000,
+              "avgSharePerStationMed": 0.07036599214285716,
+              "playerShareMed": 0.06508589000000001,
+              "playerRevMed": 306806,
+              "playerEbitdaMed": 93769.5,
+              "top3ShareMed": 0.47265,
+              "top5ShareMed": 0.6887000000000001,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.01335,
+              "rockPresentRate": 1
+            }
+          }
+        }
+      },
+      "pooled": {
+        "n": 54,
+        "survivalRate": 0.5,
+        "stations2000Med": 0.5,
+        "distressSalesMed": 0.5,
+        "peakShareMed": 0.0736,
+        "openShareMed": 0.06620000000000001,
+        "revPerStationMed": 233151.625,
+        "ebitdaPerStationMed": -17746.375,
+        "acqTotalMed": 0.5,
+        "marketTop32000Med": 0.3665,
+        "observerEnd": 23,
+        "opening": {
+          "n": 54,
+          "totalAqhMed": 84462.5,
+          "halfBillingMed": 8633427,
+          "totalRevenueMed": 8398275,
+          "avgRevPerStationMed": 599876.7857142857,
+          "avgSharePerStationMed": 0.07058490357142858,
+          "playerShareMed": 0.06617538,
+          "playerRevMed": 340886,
+          "playerEbitdaMed": 100493,
+          "top3ShareMed": 0.47755000000000003,
+          "top5ShareMed": 0.69205,
+          "fmCommercialPctMed": 0.2857142857142857,
+          "rockShareMed": 0.0137,
+          "rockPresentRate": 1
+        }
+      },
+      "ecologyCheck": {
+        "top3InBand": true,
+        "rockPresent": true,
+        "fmDepth": false
+      }
+    },
+    "B": {
+      "letter": "B",
+      "label": "+15% billing only",
+      "spec": {
+        "billingMult": 1.15
+      },
+      "markets": {
+        "seattle": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.0731,
+            "openShareMed": 0.0655,
+            "revPerStationMed": 226866.125,
+            "ebitdaPerStationMed": -40808.125,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.37329999999999997,
+            "observerEnd": 7,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 94864.5,
+              "halfBillingMed": 10303624,
+              "totalRevenueMed": 8959673,
+              "avgRevPerStationMed": 639976.6428571428,
+              "avgSharePerStationMed": 0.07060666892857143,
+              "playerShareMed": 0.06546574499999999,
+              "playerRevMed": 324383,
+              "playerEbitdaMed": 58888,
+              "top3ShareMed": 0.47950000000000004,
+              "top5ShareMed": 0.69265,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.0138,
+              "rockPresentRate": 1
+            }
+          }
+        },
+        "sanfrancisco": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.0764,
+            "openShareMed": 0.0673,
+            "revPerStationMed": 240114.5,
+            "ebitdaPerStationMed": -11907.875,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.3564,
+            "observerEnd": 8,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 84462.5,
+              "halfBillingMed": 9928441,
+              "totalRevenueMed": 8633426.5,
+              "avgRevPerStationMed": 616673.3214285714,
+              "avgSharePerStationMed": 0.07060755857142856,
+              "playerShareMed": 0.067280985,
+              "playerRevMed": 322839.5,
+              "playerEbitdaMed": 62262,
+              "top3ShareMed": 0.4788,
+              "top5ShareMed": 0.6927,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.013649999999999999,
+              "rockPresentRate": 1
+            }
+          }
+        },
+        "atlanta": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.07525,
+            "openShareMed": 0.06509999999999999,
+            "revPerStationMed": 188101.375,
+            "ebitdaPerStationMed": -13659.375,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.37929999999999997,
+            "observerEnd": 7,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 53146,
+              "halfBillingMed": 7882560,
+              "totalRevenueMed": 6854400,
+              "avgRevPerStationMed": 489600,
+              "avgSharePerStationMed": 0.07036599214285716,
+              "playerShareMed": 0.06508589000000001,
+              "playerRevMed": 244541.5,
+              "playerEbitdaMed": 49371,
+              "top3ShareMed": 0.47265,
+              "top5ShareMed": 0.6887000000000001,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.01335,
+              "rockPresentRate": 1
+            }
+          }
+        }
+      },
+      "pooled": {
+        "n": 54,
+        "survivalRate": 0.5,
+        "stations2000Med": 1,
+        "distressSalesMed": 0.5,
+        "peakShareMed": 0.07375000000000001,
+        "openShareMed": 0.06620000000000001,
+        "revPerStationMed": 210201.875,
+        "ebitdaPerStationMed": -18968.125,
+        "acqTotalMed": 0.5,
+        "marketTop32000Med": 0.37834999999999996,
+        "observerEnd": 22,
+        "opening": {
+          "n": 54,
+          "totalAqhMed": 84462.5,
+          "halfBillingMed": 9928441,
+          "totalRevenueMed": 8633426.5,
+          "avgRevPerStationMed": 616673.3214285714,
+          "avgSharePerStationMed": 0.07058490357142858,
+          "playerShareMed": 0.06617538,
+          "playerRevMed": 271645.5,
+          "playerEbitdaMed": 49371,
+          "top3ShareMed": 0.47755000000000003,
+          "top5ShareMed": 0.69205,
+          "fmCommercialPctMed": 0.2857142857142857,
+          "rockShareMed": 0.0137,
+          "rockPresentRate": 1
+        }
+      },
+      "ecologyCheck": {
+        "top3InBand": true,
+        "rockPresent": true,
+        "fmDepth": false
+      }
+    },
+    "C": {
+      "letter": "C",
+      "label": "+30% billing only",
+      "spec": {
+        "billingMult": 1.3
+      },
+      "markets": {
+        "seattle": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.0731,
+            "openShareMed": 0.0655,
+            "revPerStationMed": 226866.125,
+            "ebitdaPerStationMed": -40808.125,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.37329999999999997,
+            "observerEnd": 7,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 94864.5,
+              "halfBillingMed": 11647575,
+              "totalRevenueMed": 8959673,
+              "avgRevPerStationMed": 639976.6428571428,
+              "avgSharePerStationMed": 0.07060666892857143,
+              "playerShareMed": 0.06546574499999999,
+              "playerRevMed": 324383,
+              "playerEbitdaMed": 58888,
+              "top3ShareMed": 0.47950000000000004,
+              "top5ShareMed": 0.69265,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.0138,
+              "rockPresentRate": 1
+            }
+          }
+        },
+        "sanfrancisco": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.0764,
+            "openShareMed": 0.0673,
+            "revPerStationMed": 240114.5,
+            "ebitdaPerStationMed": -11907.875,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.3564,
+            "observerEnd": 8,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 84462.5,
+              "halfBillingMed": 11223455,
+              "totalRevenueMed": 8633426.5,
+              "avgRevPerStationMed": 616673.3214285714,
+              "avgSharePerStationMed": 0.07060755857142856,
+              "playerShareMed": 0.067280985,
+              "playerRevMed": 322839.5,
+              "playerEbitdaMed": 62262,
+              "top3ShareMed": 0.4788,
+              "top5ShareMed": 0.6927,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.013649999999999999,
+              "rockPresentRate": 1
+            }
+          }
+        },
+        "atlanta": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.07525,
+            "openShareMed": 0.06509999999999999,
+            "revPerStationMed": 188101.375,
+            "ebitdaPerStationMed": -13659.375,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.37929999999999997,
+            "observerEnd": 7,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 53146,
+              "halfBillingMed": 8910720,
+              "totalRevenueMed": 6854400,
+              "avgRevPerStationMed": 489600,
+              "avgSharePerStationMed": 0.07036599214285716,
+              "playerShareMed": 0.06508589000000001,
+              "playerRevMed": 244541.5,
+              "playerEbitdaMed": 49371,
+              "top3ShareMed": 0.47265,
+              "top5ShareMed": 0.6887000000000001,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.01335,
+              "rockPresentRate": 1
+            }
+          }
+        }
+      },
+      "pooled": {
+        "n": 54,
+        "survivalRate": 0.5,
+        "stations2000Med": 1,
+        "distressSalesMed": 0.5,
+        "peakShareMed": 0.07375000000000001,
+        "openShareMed": 0.06620000000000001,
+        "revPerStationMed": 210201.875,
+        "ebitdaPerStationMed": -18968.125,
+        "acqTotalMed": 0.5,
+        "marketTop32000Med": 0.37834999999999996,
+        "observerEnd": 22,
+        "opening": {
+          "n": 54,
+          "totalAqhMed": 84462.5,
+          "halfBillingMed": 11223455,
+          "totalRevenueMed": 8633426.5,
+          "avgRevPerStationMed": 616673.3214285714,
+          "avgSharePerStationMed": 0.07058490357142858,
+          "playerShareMed": 0.06617538,
+          "playerRevMed": 271645.5,
+          "playerEbitdaMed": 49371,
+          "top3ShareMed": 0.47755000000000003,
+          "top5ShareMed": 0.69205,
+          "fmCommercialPctMed": 0.2857142857142857,
+          "rockShareMed": 0.0137,
+          "rockPresentRate": 1
+        }
+      },
+      "ecologyCheck": {
+        "top3InBand": true,
+        "rockPresent": true,
+        "fmDepth": false
+      }
+    },
+    "D": {
+      "letter": "D",
+      "label": "+15% listening only",
+      "spec": {
+        "listeningMult": 1.15
+      },
+      "markets": {
+        "seattle": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.07335,
+            "openShareMed": 0.05445,
+            "revPerStationMed": 216583.375,
+            "ebitdaPerStationMed": -35988.25,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.39285000000000003,
+            "observerEnd": 8,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 91118.5,
+              "halfBillingMed": 8959673,
+              "totalRevenueMed": 8959673,
+              "avgRevPerStationMed": 639976.6428571428,
+              "avgSharePerStationMed": 0.0706064592857143,
+              "playerShareMed": 0.05443445500000001,
+              "playerRevMed": 282317,
+              "playerEbitdaMed": 34164,
+              "top3ShareMed": 0.45189999999999997,
+              "top5ShareMed": 0.6546000000000001,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.0269,
+              "rockPresentRate": 1
+            }
+          }
+        },
+        "sanfrancisco": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.0711,
+            "openShareMed": 0.0562,
+            "revPerStationMed": 223949.75,
+            "ebitdaPerStationMed": -20692.625,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.39335,
+            "observerEnd": 9,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 81011.5,
+              "halfBillingMed": 8633427,
+              "totalRevenueMed": 8633427,
+              "avgRevPerStationMed": 616673.3571428572,
+              "avgSharePerStationMed": 0.07054340107142856,
+              "playerShareMed": 0.05618423,
+              "playerRevMed": 280300,
+              "playerEbitdaMed": 40276,
+              "top3ShareMed": 0.45165,
+              "top5ShareMed": 0.6554500000000001,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.0269,
+              "rockPresentRate": 1
+            }
+          }
+        },
+        "atlanta": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.0739,
+            "openShareMed": 0.0546,
+            "revPerStationMed": 193221,
+            "ebitdaPerStationMed": -4365.875,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.38105,
+            "observerEnd": 5,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 51299,
+              "halfBillingMed": 6854400,
+              "totalRevenueMed": 6854400,
+              "avgRevPerStationMed": 489600,
+              "avgSharePerStationMed": 0.070488085,
+              "playerShareMed": 0.054566865,
+              "playerRevMed": 216254,
+              "playerEbitdaMed": 33324.5,
+              "top3ShareMed": 0.44545,
+              "top5ShareMed": 0.64975,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.027049999999999998,
+              "rockPresentRate": 1
+            }
+          }
+        }
+      },
+      "pooled": {
+        "n": 54,
+        "survivalRate": 0.5,
+        "stations2000Med": 1,
+        "distressSalesMed": 0.5,
+        "peakShareMed": 0.0711,
+        "openShareMed": 0.055499999999999994,
+        "revPerStationMed": 209241.75,
+        "ebitdaPerStationMed": -14336.875,
+        "acqTotalMed": 0.5,
+        "marketTop32000Med": 0.39335,
+        "observerEnd": 22,
+        "opening": {
+          "n": 54,
+          "totalAqhMed": 81011.5,
+          "halfBillingMed": 8633427,
+          "totalRevenueMed": 8633427,
+          "avgRevPerStationMed": 616673.3571428572,
+          "avgSharePerStationMed": 0.07054753285714285,
+          "playerShareMed": 0.055476055,
+          "playerRevMed": 236987.5,
+          "playerEbitdaMed": 33324.5,
+          "top3ShareMed": 0.45055,
+          "top5ShareMed": 0.654,
+          "fmCommercialPctMed": 0.2857142857142857,
+          "rockShareMed": 0.027,
+          "rockPresentRate": 1
+        }
+      },
+      "ecologyCheck": {
+        "top3InBand": false,
+        "rockPresent": true,
+        "fmDepth": false
+      }
+    },
+    "E": {
+      "letter": "E",
+      "label": "+30% listening only",
+      "spec": {
+        "listeningMult": 1.3
+      },
+      "markets": {
+        "seattle": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.07335,
+            "openShareMed": 0.05445,
+            "revPerStationMed": 216583.375,
+            "ebitdaPerStationMed": -35988.25,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.39285000000000003,
+            "observerEnd": 8,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 91118.5,
+              "halfBillingMed": 8959673,
+              "totalRevenueMed": 8959673,
+              "avgRevPerStationMed": 639976.6428571428,
+              "avgSharePerStationMed": 0.0706064592857143,
+              "playerShareMed": 0.05443445500000001,
+              "playerRevMed": 282317,
+              "playerEbitdaMed": 34164,
+              "top3ShareMed": 0.45189999999999997,
+              "top5ShareMed": 0.6546000000000001,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.0269,
+              "rockPresentRate": 1
+            }
+          }
+        },
+        "sanfrancisco": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.0711,
+            "openShareMed": 0.0562,
+            "revPerStationMed": 223949.75,
+            "ebitdaPerStationMed": -20692.625,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.39335,
+            "observerEnd": 9,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 81011.5,
+              "halfBillingMed": 8633427,
+              "totalRevenueMed": 8633427,
+              "avgRevPerStationMed": 616673.3571428572,
+              "avgSharePerStationMed": 0.07054340107142856,
+              "playerShareMed": 0.05618423,
+              "playerRevMed": 280300,
+              "playerEbitdaMed": 40276,
+              "top3ShareMed": 0.45165,
+              "top5ShareMed": 0.6554500000000001,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.0269,
+              "rockPresentRate": 1
+            }
+          }
+        },
+        "atlanta": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.0739,
+            "openShareMed": 0.0546,
+            "revPerStationMed": 193221,
+            "ebitdaPerStationMed": -4365.875,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.38105,
+            "observerEnd": 5,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 51299,
+              "halfBillingMed": 6854400,
+              "totalRevenueMed": 6854400,
+              "avgRevPerStationMed": 489600,
+              "avgSharePerStationMed": 0.070488085,
+              "playerShareMed": 0.054566865,
+              "playerRevMed": 216254,
+              "playerEbitdaMed": 33324.5,
+              "top3ShareMed": 0.44545,
+              "top5ShareMed": 0.64975,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.027049999999999998,
+              "rockPresentRate": 1
+            }
+          }
+        }
+      },
+      "pooled": {
+        "n": 54,
+        "survivalRate": 0.5,
+        "stations2000Med": 1,
+        "distressSalesMed": 0.5,
+        "peakShareMed": 0.0711,
+        "openShareMed": 0.055499999999999994,
+        "revPerStationMed": 209241.75,
+        "ebitdaPerStationMed": -14336.875,
+        "acqTotalMed": 0.5,
+        "marketTop32000Med": 0.39335,
+        "observerEnd": 22,
+        "opening": {
+          "n": 54,
+          "totalAqhMed": 81011.5,
+          "halfBillingMed": 8633427,
+          "totalRevenueMed": 8633427,
+          "avgRevPerStationMed": 616673.3571428572,
+          "avgSharePerStationMed": 0.07054753285714285,
+          "playerShareMed": 0.055476055,
+          "playerRevMed": 236987.5,
+          "playerEbitdaMed": 33324.5,
+          "top3ShareMed": 0.45055,
+          "top5ShareMed": 0.654,
+          "fmCommercialPctMed": 0.2857142857142857,
+          "rockShareMed": 0.027,
+          "rockPresentRate": 1
+        }
+      },
+      "ecologyCheck": {
+        "top3InBand": false,
+        "rockPresent": true,
+        "fmDepth": false
+      }
+    },
+    "F": {
+      "letter": "F",
+      "label": "+15% billing + 15% listening",
+      "spec": {
+        "billingMult": 1.15,
+        "listeningMult": 1.15
+      },
+      "markets": {
+        "seattle": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.07335,
+            "openShareMed": 0.05445,
+            "revPerStationMed": 216583.375,
+            "ebitdaPerStationMed": -35988.25,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.39285000000000003,
+            "observerEnd": 8,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 91118.5,
+              "halfBillingMed": 10303624,
+              "totalRevenueMed": 8959673,
+              "avgRevPerStationMed": 639976.6428571428,
+              "avgSharePerStationMed": 0.0706064592857143,
+              "playerShareMed": 0.05443445500000001,
+              "playerRevMed": 282317,
+              "playerEbitdaMed": 34164,
+              "top3ShareMed": 0.45189999999999997,
+              "top5ShareMed": 0.6546000000000001,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.0269,
+              "rockPresentRate": 1
+            }
+          }
+        },
+        "sanfrancisco": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.0711,
+            "openShareMed": 0.0562,
+            "revPerStationMed": 223949.75,
+            "ebitdaPerStationMed": -20692.625,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.39335,
+            "observerEnd": 9,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 81011.5,
+              "halfBillingMed": 9928441,
+              "totalRevenueMed": 8633427,
+              "avgRevPerStationMed": 616673.3571428572,
+              "avgSharePerStationMed": 0.07054340107142856,
+              "playerShareMed": 0.05618423,
+              "playerRevMed": 280300,
+              "playerEbitdaMed": 40276,
+              "top3ShareMed": 0.45165,
+              "top5ShareMed": 0.6554500000000001,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.0269,
+              "rockPresentRate": 1
+            }
+          }
+        },
+        "atlanta": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.0739,
+            "openShareMed": 0.0546,
+            "revPerStationMed": 193221,
+            "ebitdaPerStationMed": -4365.875,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.38105,
+            "observerEnd": 5,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 51299,
+              "halfBillingMed": 7882560,
+              "totalRevenueMed": 6854400,
+              "avgRevPerStationMed": 489600,
+              "avgSharePerStationMed": 0.070488085,
+              "playerShareMed": 0.054566865,
+              "playerRevMed": 216254,
+              "playerEbitdaMed": 33324.5,
+              "top3ShareMed": 0.44545,
+              "top5ShareMed": 0.64975,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.027049999999999998,
+              "rockPresentRate": 1
+            }
+          }
+        }
+      },
+      "pooled": {
+        "n": 54,
+        "survivalRate": 0.5,
+        "stations2000Med": 1,
+        "distressSalesMed": 0.5,
+        "peakShareMed": 0.0711,
+        "openShareMed": 0.055499999999999994,
+        "revPerStationMed": 209241.75,
+        "ebitdaPerStationMed": -14336.875,
+        "acqTotalMed": 0.5,
+        "marketTop32000Med": 0.39335,
+        "observerEnd": 22,
+        "opening": {
+          "n": 54,
+          "totalAqhMed": 81011.5,
+          "halfBillingMed": 9928441,
+          "totalRevenueMed": 8633427,
+          "avgRevPerStationMed": 616673.3571428572,
+          "avgSharePerStationMed": 0.07054753285714285,
+          "playerShareMed": 0.055476055,
+          "playerRevMed": 236987.5,
+          "playerEbitdaMed": 33324.5,
+          "top3ShareMed": 0.45055,
+          "top5ShareMed": 0.654,
+          "fmCommercialPctMed": 0.2857142857142857,
+          "rockShareMed": 0.027,
+          "rockPresentRate": 1
+        }
+      },
+      "ecologyCheck": {
+        "top3InBand": false,
+        "rockPresent": true,
+        "fmDepth": false
+      }
+    },
+    "G": {
+      "letter": "G",
+      "label": "+30% billing + 15% listening",
+      "spec": {
+        "billingMult": 1.3,
+        "listeningMult": 1.15
+      },
+      "markets": {
+        "seattle": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.07335,
+            "openShareMed": 0.05445,
+            "revPerStationMed": 216583.375,
+            "ebitdaPerStationMed": -35988.25,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.39285000000000003,
+            "observerEnd": 8,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 91118.5,
+              "halfBillingMed": 11647575,
+              "totalRevenueMed": 8959673,
+              "avgRevPerStationMed": 639976.6428571428,
+              "avgSharePerStationMed": 0.0706064592857143,
+              "playerShareMed": 0.05443445500000001,
+              "playerRevMed": 282317,
+              "playerEbitdaMed": 34164,
+              "top3ShareMed": 0.45189999999999997,
+              "top5ShareMed": 0.6546000000000001,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.0269,
+              "rockPresentRate": 1
+            }
+          }
+        },
+        "sanfrancisco": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.0711,
+            "openShareMed": 0.0562,
+            "revPerStationMed": 223949.75,
+            "ebitdaPerStationMed": -20692.625,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.39335,
+            "observerEnd": 9,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 81011.5,
+              "halfBillingMed": 11223455,
+              "totalRevenueMed": 8633427,
+              "avgRevPerStationMed": 616673.3571428572,
+              "avgSharePerStationMed": 0.07054340107142856,
+              "playerShareMed": 0.05618423,
+              "playerRevMed": 280300,
+              "playerEbitdaMed": 40276,
+              "top3ShareMed": 0.45165,
+              "top5ShareMed": 0.6554500000000001,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.0269,
+              "rockPresentRate": 1
+            }
+          }
+        },
+        "atlanta": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.0739,
+            "openShareMed": 0.0546,
+            "revPerStationMed": 193221,
+            "ebitdaPerStationMed": -4365.875,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.38105,
+            "observerEnd": 5,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 51299,
+              "halfBillingMed": 8910720,
+              "totalRevenueMed": 6854400,
+              "avgRevPerStationMed": 489600,
+              "avgSharePerStationMed": 0.070488085,
+              "playerShareMed": 0.054566865,
+              "playerRevMed": 216254,
+              "playerEbitdaMed": 33324.5,
+              "top3ShareMed": 0.44545,
+              "top5ShareMed": 0.64975,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.027049999999999998,
+              "rockPresentRate": 1
+            }
+          }
+        }
+      },
+      "pooled": {
+        "n": 54,
+        "survivalRate": 0.5,
+        "stations2000Med": 1,
+        "distressSalesMed": 0.5,
+        "peakShareMed": 0.0711,
+        "openShareMed": 0.055499999999999994,
+        "revPerStationMed": 209241.75,
+        "ebitdaPerStationMed": -14336.875,
+        "acqTotalMed": 0.5,
+        "marketTop32000Med": 0.39335,
+        "observerEnd": 22,
+        "opening": {
+          "n": 54,
+          "totalAqhMed": 81011.5,
+          "halfBillingMed": 11223455,
+          "totalRevenueMed": 8633427,
+          "avgRevPerStationMed": 616673.3571428572,
+          "avgSharePerStationMed": 0.07054753285714285,
+          "playerShareMed": 0.055476055,
+          "playerRevMed": 236987.5,
+          "playerEbitdaMed": 33324.5,
+          "top3ShareMed": 0.45055,
+          "top5ShareMed": 0.654,
+          "fmCommercialPctMed": 0.2857142857142857,
+          "rockShareMed": 0.027,
+          "rockPresentRate": 1
+        }
+      },
+      "ecologyCheck": {
+        "top3InBand": false,
+        "rockPresent": true,
+        "fmDepth": false
+      }
+    },
+    "H": {
+      "letter": "H",
+      "label": "Elastic (per extra station vs anchor-10 baseline)",
+      "spec": {
+        "mode": "elastic",
+        "baselineComm": 8
+      },
+      "markets": {
+        "seattle": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.07335,
+            "openShareMed": 0.05445,
+            "revPerStationMed": 216583.375,
+            "ebitdaPerStationMed": -35988.25,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.39285000000000003,
+            "observerEnd": 8,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 91118.5,
+              "halfBillingMed": 11109994,
+              "totalRevenueMed": 8959673,
+              "avgRevPerStationMed": 639976.6428571428,
+              "avgSharePerStationMed": 0.0706064592857143,
+              "playerShareMed": 0.05443445500000001,
+              "playerRevMed": 282317,
+              "playerEbitdaMed": 34164,
+              "top3ShareMed": 0.45189999999999997,
+              "top5ShareMed": 0.6546000000000001,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.0269,
+              "rockPresentRate": 1
+            }
+          }
+        },
+        "sanfrancisco": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.0711,
+            "openShareMed": 0.0562,
+            "revPerStationMed": 223949.75,
+            "ebitdaPerStationMed": -20692.625,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.39335,
+            "observerEnd": 9,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 81011.5,
+              "halfBillingMed": 10705449,
+              "totalRevenueMed": 8633427,
+              "avgRevPerStationMed": 616673.3571428572,
+              "avgSharePerStationMed": 0.07054340107142856,
+              "playerShareMed": 0.05618423,
+              "playerRevMed": 280300,
+              "playerEbitdaMed": 40276,
+              "top3ShareMed": 0.45165,
+              "top5ShareMed": 0.6554500000000001,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.0269,
+              "rockPresentRate": 1
+            }
+          }
+        },
+        "atlanta": {
+          "aggregate": {
+            "n": 18,
+            "survivalRate": 0.5,
+            "stations2000Med": 1,
+            "distressSalesMed": 0.5,
+            "peakShareMed": 0.0739,
+            "openShareMed": 0.0546,
+            "revPerStationMed": 193221,
+            "ebitdaPerStationMed": -4365.875,
+            "acqTotalMed": 0.5,
+            "marketTop32000Med": 0.38105,
+            "observerEnd": 5,
+            "opening": {
+              "n": 18,
+              "totalAqhMed": 51299,
+              "halfBillingMed": 8499456,
+              "totalRevenueMed": 6854400,
+              "avgRevPerStationMed": 489600,
+              "avgSharePerStationMed": 0.070488085,
+              "playerShareMed": 0.054566865,
+              "playerRevMed": 216254,
+              "playerEbitdaMed": 33324.5,
+              "top3ShareMed": 0.44545,
+              "top5ShareMed": 0.64975,
+              "fmCommercialPctMed": 0.2857142857142857,
+              "rockShareMed": 0.027049999999999998,
+              "rockPresentRate": 1
+            }
+          }
+        }
+      },
+      "pooled": {
+        "n": 54,
+        "survivalRate": 0.5,
+        "stations2000Med": 1,
+        "distressSalesMed": 0.5,
+        "peakShareMed": 0.0711,
+        "openShareMed": 0.055499999999999994,
+        "revPerStationMed": 209241.75,
+        "ebitdaPerStationMed": -14336.875,
+        "acqTotalMed": 0.5,
+        "marketTop32000Med": 0.39335,
+        "observerEnd": 22,
+        "opening": {
+          "n": 54,
+          "totalAqhMed": 81011.5,
+          "halfBillingMed": 10705449,
+          "totalRevenueMed": 8633427,
+          "avgRevPerStationMed": 616673.3571428572,
+          "avgSharePerStationMed": 0.07054753285714285,
+          "playerShareMed": 0.055476055,
+          "playerRevMed": 236987.5,
+          "playerEbitdaMed": 33324.5,
+          "top3ShareMed": 0.45055,
+          "top5ShareMed": 0.654,
+          "fmCommercialPctMed": 0.2857142857142857,
+          "rockShareMed": 0.027,
+          "rockPresentRate": 1
+        }
+      },
+      "ecologyCheck": {
+        "top3InBand": false,
+        "rockPresent": true,
+        "fmDepth": false
+      }
+    }
+  },
+  "anchor10Reference": {
+    "pooled": {
+      "n": 54,
+      "survivalRate": 0.8148148148148148,
+      "stations2000Med": 2,
+      "distressSalesMed": 0,
+      "peakShareMed": 0.11209999999999999,
+      "openShareMed": 0.1021,
+      "revPerStationMed": 399619.125,
+      "ebitdaPerStationMed": 78924.25,
+      "acqTotalMed": 1,
+      "marketTop32000Med": 0.5441,
+      "observerEnd": 10,
+      "opening": {
+        "n": 54,
+        "totalAqhMed": 84757,
+        "halfBillingMed": 8633427,
+        "totalRevenueMed": 8398274.5,
+        "avgRevPerStationMed": 1049784.3125,
+        "avgSharePerStationMed": 0.1223866275,
+        "playerShareMed": 0.102105805,
+        "playerRevMed": 532448.5,
+        "playerEbitdaMed": 231510.5,
+        "top3ShareMed": 0.6091,
+        "top5ShareMed": 0.8754,
+        "fmCommercialPctMed": 0.125,
+        "rockShareMed": 0,
+        "rockPresentRate": 0
+      }
+    }
+  },
+  "summary": {
+    "anchor16BaselineSurvival": 0.5,
+    "anchor10ReferenceSurvival": 0.8148148148148148,
+    "ranked": [
+      {
+        "id": "A",
+        "letter": "A",
+        "label": "Baseline anchor 16",
+        "survival": 0.5,
+        "deltaVsA": 0,
+        "deltaVsA10": -0.31481481481481477,
+        "opening": {
+          "n": 54,
+          "totalAqhMed": 84462.5,
+          "halfBillingMed": 8633427,
+          "totalRevenueMed": 8398275,
+          "avgRevPerStationMed": 599876.7857142857,
+          "avgSharePerStationMed": 0.07058490357142858,
+          "playerShareMed": 0.06617538,
+          "playerRevMed": 340886,
+          "playerEbitdaMed": 100493,
+          "top3ShareMed": 0.47755000000000003,
+          "top5ShareMed": 0.69205,
+          "fmCommercialPctMed": 0.2857142857142857,
+          "rockShareMed": 0.0137,
+          "rockPresentRate": 1
+        },
+        "ecology": {
+          "top3InBand": true,
+          "rockPresent": true,
+          "fmDepth": false
+        }
+      },
+      {
+        "id": "B",
+        "letter": "B",
+        "label": "+15% billing only",
+        "survival": 0.5,
+        "deltaVsA": 0,
+        "deltaVsA10": -0.31481481481481477,
+        "opening": {
+          "n": 54,
+          "totalAqhMed": 84462.5,
+          "halfBillingMed": 9928441,
+          "totalRevenueMed": 8633426.5,
+          "avgRevPerStationMed": 616673.3214285714,
+          "avgSharePerStationMed": 0.07058490357142858,
+          "playerShareMed": 0.06617538,
+          "playerRevMed": 271645.5,
+          "playerEbitdaMed": 49371,
+          "top3ShareMed": 0.47755000000000003,
+          "top5ShareMed": 0.69205,
+          "fmCommercialPctMed": 0.2857142857142857,
+          "rockShareMed": 0.0137,
+          "rockPresentRate": 1
+        },
+        "ecology": {
+          "top3InBand": true,
+          "rockPresent": true,
+          "fmDepth": false
+        }
+      },
+      {
+        "id": "C",
+        "letter": "C",
+        "label": "+30% billing only",
+        "survival": 0.5,
+        "deltaVsA": 0,
+        "deltaVsA10": -0.31481481481481477,
+        "opening": {
+          "n": 54,
+          "totalAqhMed": 84462.5,
+          "halfBillingMed": 11223455,
+          "totalRevenueMed": 8633426.5,
+          "avgRevPerStationMed": 616673.3214285714,
+          "avgSharePerStationMed": 0.07058490357142858,
+          "playerShareMed": 0.06617538,
+          "playerRevMed": 271645.5,
+          "playerEbitdaMed": 49371,
+          "top3ShareMed": 0.47755000000000003,
+          "top5ShareMed": 0.69205,
+          "fmCommercialPctMed": 0.2857142857142857,
+          "rockShareMed": 0.0137,
+          "rockPresentRate": 1
+        },
+        "ecology": {
+          "top3InBand": true,
+          "rockPresent": true,
+          "fmDepth": false
+        }
+      },
+      {
+        "id": "D",
+        "letter": "D",
+        "label": "+15% listening only",
+        "survival": 0.5,
+        "deltaVsA": 0,
+        "deltaVsA10": -0.31481481481481477,
+        "opening": {
+          "n": 54,
+          "totalAqhMed": 81011.5,
+          "halfBillingMed": 8633427,
+          "totalRevenueMed": 8633427,
+          "avgRevPerStationMed": 616673.3571428572,
+          "avgSharePerStationMed": 0.07054753285714285,
+          "playerShareMed": 0.055476055,
+          "playerRevMed": 236987.5,
+          "playerEbitdaMed": 33324.5,
+          "top3ShareMed": 0.45055,
+          "top5ShareMed": 0.654,
+          "fmCommercialPctMed": 0.2857142857142857,
+          "rockShareMed": 0.027,
+          "rockPresentRate": 1
+        },
+        "ecology": {
+          "top3InBand": false,
+          "rockPresent": true,
+          "fmDepth": false
+        }
+      },
+      {
+        "id": "E",
+        "letter": "E",
+        "label": "+30% listening only",
+        "survival": 0.5,
+        "deltaVsA": 0,
+        "deltaVsA10": -0.31481481481481477,
+        "opening": {
+          "n": 54,
+          "totalAqhMed": 81011.5,
+          "halfBillingMed": 8633427,
+          "totalRevenueMed": 8633427,
+          "avgRevPerStationMed": 616673.3571428572,
+          "avgSharePerStationMed": 0.07054753285714285,
+          "playerShareMed": 0.055476055,
+          "playerRevMed": 236987.5,
+          "playerEbitdaMed": 33324.5,
+          "top3ShareMed": 0.45055,
+          "top5ShareMed": 0.654,
+          "fmCommercialPctMed": 0.2857142857142857,
+          "rockShareMed": 0.027,
+          "rockPresentRate": 1
+        },
+        "ecology": {
+          "top3InBand": false,
+          "rockPresent": true,
+          "fmDepth": false
+        }
+      },
+      {
+        "id": "F",
+        "letter": "F",
+        "label": "+15% billing + 15% listening",
+        "survival": 0.5,
+        "deltaVsA": 0,
+        "deltaVsA10": -0.31481481481481477,
+        "opening": {
+          "n": 54,
+          "totalAqhMed": 81011.5,
+          "halfBillingMed": 9928441,
+          "totalRevenueMed": 8633427,
+          "avgRevPerStationMed": 616673.3571428572,
+          "avgSharePerStationMed": 0.07054753285714285,
+          "playerShareMed": 0.055476055,
+          "playerRevMed": 236987.5,
+          "playerEbitdaMed": 33324.5,
+          "top3ShareMed": 0.45055,
+          "top5ShareMed": 0.654,
+          "fmCommercialPctMed": 0.2857142857142857,
+          "rockShareMed": 0.027,
+          "rockPresentRate": 1
+        },
+        "ecology": {
+          "top3InBand": false,
+          "rockPresent": true,
+          "fmDepth": false
+        }
+      },
+      {
+        "id": "G",
+        "letter": "G",
+        "label": "+30% billing + 15% listening",
+        "survival": 0.5,
+        "deltaVsA": 0,
+        "deltaVsA10": -0.31481481481481477,
+        "opening": {
+          "n": 54,
+          "totalAqhMed": 81011.5,
+          "halfBillingMed": 11223455,
+          "totalRevenueMed": 8633427,
+          "avgRevPerStationMed": 616673.3571428572,
+          "avgSharePerStationMed": 0.07054753285714285,
+          "playerShareMed": 0.055476055,
+          "playerRevMed": 236987.5,
+          "playerEbitdaMed": 33324.5,
+          "top3ShareMed": 0.45055,
+          "top5ShareMed": 0.654,
+          "fmCommercialPctMed": 0.2857142857142857,
+          "rockShareMed": 0.027,
+          "rockPresentRate": 1
+        },
+        "ecology": {
+          "top3InBand": false,
+          "rockPresent": true,
+          "fmDepth": false
+        }
+      },
+      {
+        "id": "H",
+        "letter": "H",
+        "label": "Elastic (per extra station vs anchor-10 baseline)",
+        "survival": 0.5,
+        "deltaVsA": 0,
+        "deltaVsA10": -0.31481481481481477,
+        "opening": {
+          "n": 54,
+          "totalAqhMed": 81011.5,
+          "halfBillingMed": 10705449,
+          "totalRevenueMed": 8633427,
+          "avgRevPerStationMed": 616673.3571428572,
+          "avgSharePerStationMed": 0.07054753285714285,
+          "playerShareMed": 0.055476055,
+          "playerRevMed": 236987.5,
+          "playerEbitdaMed": 33324.5,
+          "top3ShareMed": 0.45055,
+          "top5ShareMed": 0.654,
+          "fmCommercialPctMed": 0.2857142857142857,
+          "rockShareMed": 0.027,
+          "rockPresentRate": 1
+        },
+        "ecology": {
+          "top3InBand": false,
+          "rockPresent": true,
+          "fmDepth": false
+        }
+      }
+    ],
+    "recommended": {
+      "id": "A",
+      "letter": "A",
+      "label": "Baseline anchor 16",
+      "survival": 0.5
+    }
+  },
+  "timingMs": 433465
+}

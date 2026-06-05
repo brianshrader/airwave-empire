@@ -98,6 +98,7 @@
       talentId: sd.talent?.id != null ? String(sd.talent.id) : null,
       talentName: sd.talent?.name || '',
       talentQ: sd.talent ? sd.talent.quality | 0 : null,
+      talentSuperstar: sd.talent?.superstar === true,
       slotQ: Math.round(sd.quality || 0),
       tenurePeriods: sd.talent ? sd.talent.periodsAtStation | 0 : 0,
       rev: Math.round(st.fin?.rev || 0),
@@ -130,10 +131,15 @@
     let bucket9599 = 0;
     let playerAbove95 = 0;
     let playerCount = 0;
+    let lowShareSpiral = 0;
+    let zombieLike = 0;
     const formatCounts = {};
 
     commercialStations(G).forEach((st) => {
       const oq = Math.round(st.oq || 0);
+      const share = st.rat?.share || 0;
+      if (share < 0.015 && oq < 50) lowShareSpiral += 1;
+      if (st.isZombie || st.isNicheSurvival || share < 0.008) zombieLike += 1;
       const b = oqBucket(oq);
       buckets[b] += 1;
       sumOq += oq;
@@ -168,6 +174,8 @@
       buckets,
       playerStations: playerCount,
       playerStationsAbove95: playerAbove95,
+      lowShareSpiral,
+      zombieLike,
       formatCounts,
       rows,
     };
@@ -250,6 +258,10 @@
           : prev.slotQ >= 85 || (prev.tenurePeriods | 0) >= 10;
       const isEliteLoss = (prev.slotQ | 0) >= 90;
       const isSuperEliteLoss = (prev.slotQ | 0) >= 95;
+      const isSuccessorTrigger =
+        typeof wlMorningRecoverySuccessorCeilingTriggers === 'function'
+          ? wlMorningRecoverySuccessorCeilingTriggers(prev)
+          : isEliteLoss || ((prev.tenurePeriods | 0) >= 12 && (prev.slotQ | 0) >= 85);
 
       const ev = {
         eventId: `${marketId}:${startYear}:${seed}:${eventSeq}`,
@@ -277,6 +289,8 @@
         isMajor,
         isEliteLoss,
         isSuperEliteLoss,
+        isSuccessorTrigger,
+        departingTalentSuperstar: prev.talentSuperstar === true,
         departSlotTier: departSlotTier(prev.slotQ),
         recoveredQuality: cur.slotQ >= prev.slotQ,
         exceededQuality: cur.slotQ > prev.slotQ,

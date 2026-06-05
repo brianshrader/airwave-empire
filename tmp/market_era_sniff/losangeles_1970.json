@@ -1,11 +1,11 @@
 {
-  "recordedAt": "2026-05-31T19:04:05.832Z",
+  "recordedAt": "2026-06-05T05:37:26.248Z",
   "marketId": "losangeles",
   "label": "Los Angeles",
   "year": 1970,
   "runs": 25,
   "seed": 20260523,
-  "timingMs": 271,
+  "timingMs": 299,
   "genPlan": {
     "scenId": "under",
     "startYear": 1970,

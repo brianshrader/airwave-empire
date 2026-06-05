@@ -34,5 +34,19 @@ export function injectRecoveryAbHooks(legacySrc) {
     );
   }
 
+  if (!src.includes('wlMorningRecoverySuccessorCeilingStep')) {
+    src = src.replace(
+      '    s._identityPeak=Math.max(s._identityPeak||0,s.identity);\n  }\n}',
+      '    s._identityPeak=Math.max(s._identityPeak||0,s.identity);\n  }\n  if(typeof wlMorningRecoverySuccessorCeilingStep===\'function\')wlMorningRecoverySuccessorCeilingStep(s,G,year,period);\n}',
+    );
+  }
+
+  if (!src.includes('wlMorningRecoveryCalcRevMult')) {
+    src = src.replace(
+      '  s.fin.rev=totalRev;',
+      '  if(typeof wlMorningRecoveryCalcRevMult===\'function\')totalRev=Math.round(totalRev*wlMorningRecoveryCalcRevMult(s));\n  s.fin.rev=totalRev;',
+    );
+  }
+
   return src;
 }
