@@ -22,7 +22,7 @@ const DEV_BENCHMARK_MEGA_MARKET_IDS = Object.freeze(['newyork', 'losangeles', 'c
  * MARKETS rows present for ecology/scaffold harness only — never add to ALL_PLAYABLE_MARKET_IDS or billing.
  * Keep in sync with DIAG_ONLY rows in src/legacy.js MARKETS.
  */
-const DIAG_ONLY_MARKET_IDS = Object.freeze(['phoenix', 'portland', 'miami']);
+const DIAG_ONLY_MARKET_IDS = Object.freeze(['phoenix', 'dallas', 'portland', 'miami']);
 
 /** Browser dev/local playtest only — keep in sync with DEV_PLAYTEST_MARKET_IDS in src/legacy.js */
 const DEV_PLAYTEST_MARKET_IDS = Object.freeze(['phoenix']);

@@ -5135,6 +5135,39 @@ const MARKETS={
       {id:'phoenix_frag_oldies_1993',y:1993,p:2,bp:{type:'FM',fmt:'OLDIES',pw:'50kw',str:'moderate'}},
     ],
   },
+  /** DIAG_ONLY — Dallas–Fort Worth scaffold / ecology harness. Not in ALL_PLAYABLE_MARKET_IDS. */
+  dallas:{
+    id:'dallas', callPrefix:'K', label:'Dallas–Fort Worth', region:'Southwest', rankTier:'large', archetypeId:'texas_sunbelt',
+    pop:{'12-17':215,'18-24':245,'25-34':285,'35-49':340,'50-64':255,'65+':150},
+    revScale:1.32, adxBonus:0.028,
+    amFreqs:['570 AM','620 AM','660 AM','770 AM','820 AM','870 AM','910 AM','980 AM','1080 AM','1140 AM','1270 AM','1540 AM'],
+    fmFreqs:['92.5 FM','93.3 FM','94.1 FM','94.5 FM','95.3 FM','96.3 FM','97.1 FM','97.9 FM','98.7 FM','99.5 FM','100.3 FM','101.1 FM','102.1 FM','102.9 FM','103.7 FM','104.5 FM','105.3 FM','106.1 FM','106.9 FM','107.5 FM','107.9 FM'],
+    fmFacilityByFreq:{
+      '92.5 FM':'100kw','93.3 FM':'50kw','94.1 FM':'50kw','94.5 FM':'100kw','95.3 FM':'50kw','96.3 FM':'100kw','97.1 FM':'50kw','97.9 FM':'100kw','98.7 FM':'50kw','99.5 FM':'100kw',
+      '100.3 FM':'100kw','101.1 FM':'50kw','102.1 FM':'50kw','102.9 FM':'50kw','103.7 FM':'50kw','104.5 FM':'100kw','105.3 FM':'50kw','106.1 FM':'50kw','106.9 FM':'50kw','107.5 FM':'50kw','107.9 FM':'50kw',
+    },
+    blackPop:0.14,hispPop1970:0.07,hispPop2000:0.21,hispPop2020:0.29,churchGoing:0.51,countryBonus:0.13,urbanBonus:0.03,
+    culture:{country:0.16,urban:0.04,newsTalk:0.09,religion:0.08,spanish:0.14},
+    selectBlurb:'A booming Texas Sunbelt metro where country heritage runs deeper than most large markets, AM news/talk/sports big sticks ruled the 1970s dial, and Hispanic FM growth reshapes the book from the 1990s onward. Commercial fragmentation accelerates faster than Deep South gospel clusters — think WBAP/KSCS country lanes, not Atlanta soul dominance.',
+    fmPenBias:-0.02, fmMusicFragMult:1.04, spokenWordAmResilience:1.08, heritageAmResilience:1.06, countryAmHoldout:1.15,
+    eduIndex:0.94,
+    publicCivicIndex:0.93,
+    teams:[
+      {id:'cowboys',name:'Dallas Lone Star Wranglers',sport:'PRO_FOOTBALL',introduced:1970,baseFee:380000,baseBonus:0.027,contractYrs:4},
+      {id:'rangers',name:'Texas Ranger Roundup',sport:'PRO_BASEBALL',introduced:1972,baseFee:210000,baseBonus:0.018,contractYrs:3},
+      {id:'mavericks',name:'Dallas Maverick Mustangs',sport:'PRO_BASKETBALL',introduced:1980,baseFee:145000,baseBonus:0.014,contractYrs:3},
+      {id:'stars',name:'Dallas Lone Star Ice',sport:'PRO_HOCKEY',introduced:1993,baseFee:110000,baseBonus:0.011,contractYrs:3},
+    ],
+    /**
+     * Spanish launch realism — trait `spanishLanguageStrength` ≠ Nielsen share; gen inject alone
+     * leaves thin book @2026 (~3% pre-launches). Two FM entrants (1988+1994) target ~10–16% leadership bucket.
+     * Subtype (Regional Mexican vs Tropical) is set at station level via DRIFT.SPANISH positioning, not launch fmt.
+     */
+    spanishLaunches:[
+      {id:'dallas_spanish_1988_fm',y:1988,p:2,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
+      {id:'dallas_spanish_1994_fm',y:1994,p:1,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
+    ],
+  },
   /** DIAG_ONLY — ecology harness / scaffold QA. Not in ALL_PLAYABLE_MARKET_IDS. */
   portland:{
     id:'portland', callPrefix:'K', label:'Portland', region:'West Coast', rankTier:'large', archetypeId:'west_fm_fragmented',

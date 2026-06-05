@@ -78,6 +78,7 @@
     "diag:portland-leadership-correction": "node scripts/diag-portland-leadership-correction.mjs",
     "diag:phoenix-internal-playtest": "node scripts/diag-phoenix-internal-playtest-harness.mjs",
     "diag:phoenix-scaffold-reality": "node scripts/diag-phoenix-scaffold-reality.mjs",
+    "diag:dallas-certification": "node scripts/diag-dallas-certification.mjs",
     "diag:market-certification": "node scripts/diag-market-certification.mjs",
     "diag:market-era-sniff": "node scripts/diag-market-era-sniff.mjs",
     "diag:market-suite": "node scripts/diag-market-suite.mjs",
