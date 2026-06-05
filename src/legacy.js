@@ -16753,7 +16753,77 @@ function applySimulcastCoownedFmRevenueDedupe(stations,G){
     fm.fin.rev=Math.round((Number(fm.fin.rev)||0)*mult);
     if(fm.fin.terRev!=null)fm.fin.terRev=Math.round((Number(fm.fin.terRev)||0)*mult);
     if(fm.fin.streamRev!=null)fm.fin.streamRev=Math.round((Number(fm.fin.streamRev)||0)*mult);
-    if(fm.fin.digitalRev!=null)fm.fin.digitalRev=Math.round((Number(fm.fin.digitalRev)||0)*mult);
+    if(fm.stream?.active)fm.stream.rev=fm.fin.digitalRev??fm.fin.streamRev??fm.stream.rev;
+  });
+}
+/** Era-scaled FM incremental billing target as % of AM source billings (explicit simulcast cluster allocation). */
+function simulcastClusterFmRevTargetPctOfAm(year){
+  const y=Math.round(Number(year)||1970);
+  const era=Math.max(0,Math.min(1,(y-1970)/18));
+  return Math.min(0.32,0.20+era*0.12);
+}
+const SIMULCAST_CLUSTER_FM_MAX_CLUSTER_SHARE=0.38;
+function scaleStationFinRevComponents(st,oldRev,newRev){
+  if(!st?.fin||oldRev<=0||newRev===oldRev)return;
+  const scale=newRev/oldRev;
+  if(st.fin.terRev!=null)st.fin.terRev=Math.round((Number(st.fin.terRev)||0)*scale);
+  if(st.fin.streamRev!=null)st.fin.streamRev=Math.round((Number(st.fin.streamRev)||0)*scale);
+  if(st.fin.digitalRev!=null)st.fin.digitalRev=Math.round((Number(st.fin.digitalRev)||0)*scale);
+  if(st.stream?.active)st.stream.rev=st.fin.digitalRev??st.fin.streamRev??st.stream.rev;
+}
+function refreshSeedRevSalesAdminAndEbitda(s,G){
+  if(!s?.fin||s.fin.salesAdminRate==null)return;
+  const prevSa=Number(s.fin.salesAdmin)||0;
+  const _rp=simulcastReceiverExpensePolicy(s,G);
+  let sa=Math.round(s.fin.rev*s.fin.salesAdminRate);
+  if(staffingAutomationEconomicsActive(s,G)){
+    const t=stationAutomationScore(s,G);
+    sa=Math.round(sa*(1-0.15*t));
+    const _ls=s._leanAmSurvivalReliefSales;
+    if(typeof _ls==='number'&&_ls>0&&_ls<1)sa=Math.round(sa*_ls);
+  }
+  if(_rp)sa=Math.round(sa*_rp.salesAdminMultForRev(s.fin.rev||0));
+  s.fin.salesAdmin=sa;
+  s.fin.cost=Math.round((Number(s.fin.cost)||0)-prevSa+sa);
+  s.fin.ebitda=s.fin.rev-s.fin.cost;
+}
+/**
+ * Post-{@link seedRev} internal allocation: explicit co-owned FM programming receivers receive
+ * incremental cluster billing (not cold-start standalone FM sale). Preserves pair cluster total;
+ * ratings dedupe unchanged. Set `G._wlDisableSimulcastClusterAlloc` for harness A/B baseline.
+ */
+function applySimulcastClusterRevenueAllocation(stations,G){
+  if(G?._wlDisableSimulcastClusterAlloc)return;
+  const seen=new Set();
+  (stations||[]).forEach(s=>{
+    if(!s||s._bpSlotDeferred||stationIsNoncommercialInstitutional(s))return;
+    if(!isSimulcastProgrammingReceiver(s,G))return;
+    const am=simulcastProgrammingSourceStation(s,G);
+    const fm=s;
+    if(!am||am.id===fm.id||am._bpSlotDeferred)return;
+    if(!stationsSameOwnershipCluster(am,fm,G))return;
+    const ida=String(am.id),idf=String(fm.id);
+    const key=ida<=idf?ida+':'+idf:idf+':'+ida;
+    if(seen.has(key))return;
+    seen.add(key);
+    const amRev=Number(am.fin?.rev)||0;
+    const fmRev=Number(fm.fin?.rev)||0;
+    const clusterRev=amRev+fmRev;
+    if(clusterRev<=0||amRev<=0)return;
+    const targetPct=simulcastClusterFmRevTargetPctOfAm(G?.year);
+    let fmTarget=Math.round(amRev*targetPct);
+    fmTarget=Math.max(fmRev,fmTarget);
+    fmTarget=Math.min(fmTarget,Math.round(clusterRev*SIMULCAST_CLUSTER_FM_MAX_CLUSTER_SHARE));
+    const amTarget=clusterRev-fmTarget;
+    const allocated=Math.max(0,fmTarget-fmRev);
+    if(fm.fin)fm.fin.simulcastAllocatedRev=allocated;
+    if(fmTarget===fmRev&&amTarget===amRev)return;
+    scaleStationFinRevComponents(fm,fmRev,fmTarget);
+    scaleStationFinRevComponents(am,amRev,amTarget);
+    fm.fin.rev=fmTarget;
+    am.fin.rev=amTarget;
+    refreshSeedRevSalesAdminAndEbitda(fm,G);
+    refreshSeedRevSalesAdminAndEbitda(am,G);
   });
 }
 function seedRev(stations,G){
@@ -16846,6 +16916,7 @@ function seedRev(stations,G){
     s.fin.cost=0;
     s.fin.ebitda=fee;
   });
+  applySimulcastClusterRevenueAllocation(stations,G);
   updateTalentFranchiseScores(stations,G);
 }
 
