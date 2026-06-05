@@ -5168,6 +5168,40 @@ const MARKETS={
       {id:'dallas_spanish_1994_fm',y:1994,p:1,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
     ],
   },
+  /** DIAG_ONLY — Houston scaffold / ecology harness. Not in ALL_PLAYABLE_MARKET_IDS. */
+  houston:{
+    id:'houston', callPrefix:'K', label:'Houston', region:'Southwest', rankTier:'large', archetypeId:'texas_sunbelt',
+    pop:{'12-17':225,'18-24':255,'25-34':300,'35-49':360,'50-64':270,'65+':160},
+    revScale:1.40, adxBonus:0.028,
+    amFreqs:['740 AM','790 AM','850 AM','950 AM','1010 AM','1110 AM','1140 AM','1180 AM','1230 AM','1280 AM','1320 AM','1560 AM'],
+    fmFreqs:['88.7 FM','89.3 FM','90.1 FM','92.1 FM','92.9 FM','93.7 FM','94.5 FM','95.7 FM','96.5 FM','97.1 FM','97.9 FM','98.5 FM','99.1 FM','100.3 FM','101.9 FM','102.1 FM','102.9 FM','103.3 FM','104.1 FM','104.9 FM','106.1 FM','106.9 FM','107.5 FM'],
+    fmFacilityByFreq:{
+      '88.7 FM':'25kw','89.3 FM':'6kw','90.1 FM':'100kw','92.1 FM':'100kw','92.9 FM':'50kw','93.7 FM':'50kw','94.5 FM':'100kw','95.7 FM':'50kw','96.5 FM':'100kw','97.1 FM':'50kw','97.9 FM':'100kw','98.5 FM':'50kw','99.1 FM':'100kw',
+      '100.3 FM':'100kw','101.9 FM':'50kw','102.1 FM':'50kw','102.9 FM':'50kw','103.3 FM':'50kw','104.1 FM':'100kw','104.9 FM':'50kw','106.1 FM':'50kw','106.9 FM':'50kw','107.5 FM':'50kw',
+    },
+    blackPop:0.17,hispPop1970:0.11,hispPop2000:0.28,hispPop2020:0.38,churchGoing:0.48,countryBonus:0.08,urbanBonus:0.07,
+    culture:{country:0.10,urban:0.07,newsTalk:0.10,religion:0.07,spanish:0.19},
+    selectBlurb:'A Gulf Coast Texas metro where Hispanic FM depth rivals any Sunbelt market, urban and soul lanes run stronger than DFW country heritage, and AM news/talk/sports big sticks still anchor the book. Less WBAP country dominance — more bilingual fragmentation, rhythmic competition, and commuter talk.',
+    fmPenBias:0.01, fmMusicFragMult:1.05, spokenWordAmResilience:1.10, heritageAmResilience:1.04, countryAmHoldout:1.02,
+    eduIndex:0.93,
+    publicCivicIndex:0.91,
+    teams:[
+      {id:'astros',name:'Houston Space City Astros',sport:'PRO_BASEBALL',introduced:1970,baseFee:220000,baseBonus:0.018,contractYrs:3},
+      {id:'rockets',name:'Houston Rocket Fuel',sport:'PRO_BASKETBALL',introduced:1970,baseFee:155000,baseBonus:0.014,contractYrs:3},
+      {id:'oilers',name:'Houston Oil Patch Roughnecks',sport:'PRO_FOOTBALL',introduced:1970,baseFee:360000,baseBonus:0.026,contractYrs:4},
+      {id:'texans',name:'Houston Bayou Texans',sport:'PRO_FOOTBALL',introduced:2002,baseFee:340000,baseBonus:0.025,contractYrs:4},
+    ],
+    /**
+     * Spanish launch realism — gen inject alone leaves ~3% book @2026 vs ~38% Hispanic meta.
+     * Three FM entrants (1988+1994 strong+2002) target ~20–24% leadership bucket, above Dallas.
+     * Subtype (Regional Mexican vs Tropical) via DRIFT.SPANISH positioning, not launch fmt.
+     */
+    spanishLaunches:[
+      {id:'houston_spanish_1988_fm',y:1988,p:2,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
+      {id:'houston_spanish_1994_fm',y:1994,p:1,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'strong'}},
+      {id:'houston_spanish_2002_fm',y:2002,p:2,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
+    ],
+  },
   /** DIAG_ONLY — ecology harness / scaffold QA. Not in ALL_PLAYABLE_MARKET_IDS. */
   portland:{
     id:'portland', callPrefix:'K', label:'Portland', region:'West Coast', rankTier:'large', archetypeId:'west_fm_fragmented',
