@@ -1,0 +1,2868 @@
+{
+  "recordedAt": "2026-06-05T16:45:59.570Z",
+  "config": {
+    "runs": 40,
+    "seed": 20260605
+  },
+  "marketMeta": {
+    "id": "houston",
+    "label": "Houston",
+    "archetypeId": "texas_sunbelt",
+    "rankTier": "large",
+    "revScale": 1.4,
+    "hispPop1970": 0.11,
+    "hispPop2000": 0.28,
+    "hispPop2020": 0.38,
+    "countryBonus": 0.08,
+    "urbanBonus": 0.07,
+    "blackPop": 0.17,
+    "spanishLaunches": 3
+  },
+  "markets": {
+    "houston": {
+      "id": "houston",
+      "label": "Houston",
+      "archetypeId": "texas_sunbelt",
+      "rankTier": "large",
+      "revScale": 1.4,
+      "hispPop1970": 0.11,
+      "hispPop2000": 0.28,
+      "hispPop2020": 0.38,
+      "countryBonus": 0.08,
+      "urbanBonus": 0.07,
+      "blackPop": 0.17,
+      "spanishLaunches": 3
+    },
+    "dallas": {
+      "id": "dallas",
+      "label": "Dallas–Fort Worth",
+      "archetypeId": "texas_sunbelt",
+      "rankTier": "large",
+      "revScale": 1.32,
+      "hispPop1970": 0.07,
+      "hispPop2000": 0.21,
+      "hispPop2020": 0.29,
+      "countryBonus": 0.13,
+      "urbanBonus": 0.03,
+      "blackPop": 0.14,
+      "spanishLaunches": 2
+    },
+    "atlanta": {
+      "id": "atlanta",
+      "label": "Atlanta",
+      "archetypeId": "sunbelt_diversified",
+      "rankTier": "large",
+      "revScale": 1,
+      "hispPop1970": 0.01,
+      "hispPop2000": 0.08,
+      "hispPop2020": 0.115,
+      "countryBonus": 0,
+      "urbanBonus": 0.05,
+      "blackPop": 0.358,
+      "spanishLaunches": 0
+    },
+    "phoenix": {
+      "id": "phoenix",
+      "label": "Phoenix",
+      "archetypeId": "sunbelt_diversified",
+      "rankTier": "large",
+      "revScale": 1.18,
+      "hispPop1970": 0.085,
+      "hispPop2000": 0.22,
+      "hispPop2020": 0.301,
+      "countryBonus": 0.09,
+      "urbanBonus": 0.03,
+      "blackPop": 0.071,
+      "spanishLaunches": 3
+    },
+    "chicago": {
+      "id": "chicago",
+      "label": "Chicago",
+      "archetypeId": "midwest_legacy",
+      "rankTier": "mega",
+      "revScale": 2.8,
+      "hispPop1970": 0.06,
+      "hispPop2000": 0.18,
+      "hispPop2020": 0.22,
+      "countryBonus": 0.04,
+      "urbanBonus": 0.08,
+      "blackPop": 0.22,
+      "spanishLaunches": 0
+    },
+    "newyork": {
+      "id": "newyork",
+      "label": "New York",
+      "archetypeId": "northeast_mega",
+      "rankTier": "mega",
+      "revScale": 6.8,
+      "hispPop1970": 0.12,
+      "hispPop2000": 0.22,
+      "hispPop2020": 0.26,
+      "countryBonus": 0,
+      "urbanBonus": 0.14,
+      "blackPop": 0.21,
+      "spanishLaunches": 0
+    },
+    "losangeles": {
+      "id": "losangeles",
+      "label": "Los Angeles",
+      "archetypeId": "west_fm_fragmented",
+      "rankTier": "mega",
+      "revScale": 5.2,
+      "hispPop1970": 0.14,
+      "hispPop2000": 0.38,
+      "hispPop2020": 0.45,
+      "countryBonus": 0.02,
+      "urbanBonus": 0.12,
+      "blackPop": 0.14,
+      "spanishLaunches": 0
+    }
+  },
+  "openingEcology": {
+    "houston": {
+      "1970": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 1680.8185308941015,
+          "median": 1678.6268270753885,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.6066561214999998,
+          "median": 0.6078437099999999,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.8780061715,
+          "median": 0.8770279,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.125,
+          "median": 0.125,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 11,
+          "median": 11,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 6.125,
+          "median": 6,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 6,
+          "median": 6,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.2111197742500001,
+          "median": 0.21060558499999998,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.056343097499999995,
+          "median": 0.056350735,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.21127588725000007,
+          "median": 0.21065534000000002,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.3074497594999999,
+          "median": 0.30745258499999994,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "1985": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 546.2025583082684,
+          "median": 544.9730708336787,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.25605382349999994,
+          "median": 0.256189705,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.3879431179999999,
+          "median": 0.38879466500000004,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.5199999999999997,
+          "median": 0.52,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 28,
+          "median": 28,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 14.575,
+          "median": 15,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 11,
+          "median": 11,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.12504894050000004,
+          "median": 0.12589435999999998,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.11207690899999997,
+          "median": 0.11151219000000001,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.09182922525000002,
+          "median": 0.09131623,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.189383208,
+          "median": 0.18870150000000002,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "2000": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 608.4974327309344,
+          "median": 608.2476613947831,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.28700366925000004,
+          "median": 0.2905225,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.43621096900000006,
+          "median": 0.43612705,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.6451760750424542,
+          "median": 0.6428571428571429,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 30.75,
+          "median": 31,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 12.225,
+          "median": 12,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 8.75,
+          "median": 9,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.11451437100000002,
+          "median": 0.11541042999999998,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.18630795700000005,
+          "median": 0.186334555,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.10895906824999999,
+          "median": 0.10635719,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.07828632425,
+          "median": 0.07720017,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.14661371325,
+          "median": 0.15240220999999998,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 1.1,
+          "median": 1,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.8,
+          "median": 1,
+          "n": 40
+        }
+      },
+      "2020": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 576.6864011019827,
+          "median": 575.1628377983264,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.28392900449999997,
+          "median": 0.283377795,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.40639673375,
+          "median": 0.40675514999999995,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.7218395408938889,
+          "median": 0.72,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 28.925,
+          "median": 29,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 13.5,
+          "median": 14,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 9.95,
+          "median": 10,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.10756970849999996,
+          "median": 0.109381225,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.21048821875000004,
+          "median": 0.21300307000000002,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.11818909375,
+          "median": 0.12067293,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.099650802875,
+          "median": 0.1128959,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.11716468375000004,
+          "median": 0.118197455,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0.325,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.1,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "2026": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 646.712517161075,
+          "median": 591.879091890399,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.3036952,
+          "median": 0.290202545,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.4280063820000001,
+          "median": 0.416857975,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.7473776567635266,
+          "median": 0.75,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 28.125,
+          "median": 28,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 13.15,
+          "median": 13,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 10.075,
+          "median": 10,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.11306756600000001,
+          "median": 0.11285712,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.22033838625000005,
+          "median": 0.22212632,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.12428014325,
+          "median": 0.12188217,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.079755374,
+          "median": 0.08280728500000001,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.11564491499999996,
+          "median": 0.11859325500000001,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0.25,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.025,
+          "median": 0,
+          "n": 40
+        }
+      }
+    },
+    "dallas": {
+      "1970": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 1685.1780472780597,
+          "median": 1687.6550463733904,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.6076410925,
+          "median": 0.609256665,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.87965885,
+          "median": 0.8810448399999999,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.125,
+          "median": 0.125,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 11,
+          "median": 11,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 6.2,
+          "median": 6,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 6,
+          "median": 6,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.21295933075000004,
+          "median": 0.213059235,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.055333329,
+          "median": 0.05563835,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.21166385350000003,
+          "median": 0.211362795,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.3079897542499999,
+          "median": 0.30808254,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "1985": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 555.0119307119973,
+          "median": 557.723639467487,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.26035242649999996,
+          "median": 0.26093089,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.39138687225000013,
+          "median": 0.39379303499999996,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.5199999999999997,
+          "median": 0.52,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 27,
+          "median": 27,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 14.85,
+          "median": 15,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 10,
+          "median": 10,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.141135248,
+          "median": 0.140381705,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.11294116375,
+          "median": 0.10795421499999999,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.0917313655,
+          "median": 0.09233406999999999,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.192977197,
+          "median": 0.19293042999999999,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "2000": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 612.0461112806199,
+          "median": 615.3727116492976,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.2779581427500001,
+          "median": 0.281012225,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.43032884175,
+          "median": 0.42933751500000006,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.6488697984646259,
+          "median": 0.6538461538461539,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 28.65,
+          "median": 29,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 12.65,
+          "median": 13,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 8.925,
+          "median": 9,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.11863911175,
+          "median": 0.12038858499999999,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.14604905500000004,
+          "median": 0.14871001,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.11841389350000005,
+          "median": 0.115459435,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.08426095749999998,
+          "median": 0.08577573,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.16044371299999996,
+          "median": 0.16180274,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 1.275,
+          "median": 1,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.925,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "2020": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 543.1566436495098,
+          "median": 513.0872799918684,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.24711188099999998,
+          "median": 0.240096095,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.37282892874999995,
+          "median": 0.36243334000000005,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.7407533579059068,
+          "median": 0.7407407407407407,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 30.1,
+          "median": 30,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 14.6,
+          "median": 15,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 11.35,
+          "median": 11,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.11714038224999997,
+          "median": 0.121941935,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.15848454124999997,
+          "median": 0.15570308500000002,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.11981921799999998,
+          "median": 0.106122645,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.10401571112500001,
+          "median": 0.110735805,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.12045910899999998,
+          "median": 0.12135175000000001,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0.625,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.3,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "2026": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 549.1334880214274,
+          "median": 519.5702013040404,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.24817479424999997,
+          "median": 0.242314425,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.37758873675000004,
+          "median": 0.37507102000000003,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.7703367001633494,
+          "median": 0.7692307692307693,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 29.15,
+          "median": 29.5,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 14.5,
+          "median": 15,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 11.125,
+          "median": 11,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.12752350800000004,
+          "median": 0.12681524500000002,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.16556074550000005,
+          "median": 0.164012585,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.09972632925,
+          "median": 0.10324117999999999,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.10285892700000002,
+          "median": 0.10548974,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.11560687600000001,
+          "median": 0.114993025,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0.25,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.05,
+          "median": 0,
+          "n": 40
+        }
+      }
+    },
+    "atlanta": {
+      "1970": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 1651.2979620651008,
+          "median": 1650.6209039489356,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.5979045610000002,
+          "median": 0.599431325,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.8696835537500001,
+          "median": 0.87013709,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.125,
+          "median": 0.125,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 11,
+          "median": 11,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 7,
+          "median": 7,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 6,
+          "median": 6,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.208255868,
+          "median": 0.206175315,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.054180455500000016,
+          "median": 0.054123055,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.21214621624999994,
+          "median": 0.20994217999999998,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.30333707549999994,
+          "median": 0.303566185,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "1985": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 564.9240889166997,
+          "median": 566.1049843940855,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.266028113,
+          "median": 0.264776145,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.4126688897499998,
+          "median": 0.41209964499999996,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.5199999999999997,
+          "median": 0.52,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 28,
+          "median": 28,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 14,
+          "median": 14,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 10,
+          "median": 10,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.11824910374999997,
+          "median": 0.11823101,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.10647304625000001,
+          "median": 0.10498015999999999,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.07631879825,
+          "median": 0.076177475,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.1869023045,
+          "median": 0.18726695000000002,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "2000": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 668.5868083327773,
+          "median": 667.3412123506967,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.30347229475,
+          "median": 0.30098653,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.47244920225,
+          "median": 0.47574474499999997,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.6025449492134274,
+          "median": 0.6,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 28.3,
+          "median": 28,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 11.95,
+          "median": 12,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 8.8,
+          "median": 9,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.11855929974999999,
+          "median": 0.11505324500000001,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.0076117777500000015,
+          "median": 0.003950145,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.11455749974999999,
+          "median": 0.11163556499999999,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.0737517315,
+          "median": 0.073113385,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.178528651,
+          "median": 0.18264386500000002,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0.925,
+          "median": 1,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.775,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "2020": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 501.13492443078167,
+          "median": 504.372502751105,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.22830693300000005,
+          "median": 0.22803763500000002,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.354982815,
+          "median": 0.355321035,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.7200020540706448,
+          "median": 0.72,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 30.05,
+          "median": 30,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 15.275,
+          "median": 15,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 11.175,
+          "median": 11,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.10928088549999997,
+          "median": 0.11416306000000001,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.0138484375,
+          "median": 0.005260135,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.10584825924999999,
+          "median": 0.10035144,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.09455545562500002,
+          "median": 0.098316725,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.13276478999999997,
+          "median": 0.13268506,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0.575,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.2,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "2026": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 495.967964879407,
+          "median": 499.790066303813,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.23042470825000008,
+          "median": 0.226215565,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.353547072,
+          "median": 0.354951915,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.7415167463373985,
+          "median": 0.7307692307692307,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 29.5,
+          "median": 30,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 14.975,
+          "median": 15,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 10.8,
+          "median": 11,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.11423268975,
+          "median": 0.11439504,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.0217544425,
+          "median": 0.005617175,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.1005429015,
+          "median": 0.096689775,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.09165328537500002,
+          "median": 0.08839784,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.12768385649999997,
+          "median": 0.134413295,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0.325,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.1,
+          "median": 0,
+          "n": 40
+        }
+      }
+    },
+    "phoenix": {
+      "1970": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 1625.1100727661487,
+          "median": 1619.746860562167,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.6060264165,
+          "median": 0.606245315,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.847245776,
+          "median": 0.8483898650000001,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.125,
+          "median": 0.125,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 11,
+          "median": 11,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 7,
+          "median": 7,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 6.85,
+          "median": 7,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.21665484750000003,
+          "median": 0.215134365,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.15026856925,
+          "median": 0.15036169,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.22053306275,
+          "median": 0.22114148500000003,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.19035050500000003,
+          "median": 0.18760039,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "1985": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 529.1607702025159,
+          "median": 528.6685146895735,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.23540998400000004,
+          "median": 0.234383225,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.36149551050000006,
+          "median": 0.35936585,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.5,
+          "median": 0.5,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 27,
+          "median": 27,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 15.95,
+          "median": 16,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 11,
+          "median": 11,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.11399535000000001,
+          "median": 0.11419191000000001,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.08132167949999998,
+          "median": 0.08181386,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.09796817899999999,
+          "median": 0.098409165,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.18117471675000002,
+          "median": 0.182219545,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "2000": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 540.6632888647998,
+          "median": 530.9634670244566,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.2659587742500001,
+          "median": 0.26768911500000003,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.39608182825,
+          "median": 0.39359054000000004,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.6645026853425071,
+          "median": 0.6551724137931034,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 31.6,
+          "median": 32,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 13.85,
+          "median": 14,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 9.55,
+          "median": 10,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.09330754625000001,
+          "median": 0.101480285,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.17029084575,
+          "median": 0.171932675,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.09178731374999997,
+          "median": 0.08852868,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.07176326475000001,
+          "median": 0.07691401,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.11535561925000001,
+          "median": 0.11411231,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0.9,
+          "median": 1,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.5,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "2020": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 599.0188167541771,
+          "median": 520.918376722388,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.275937985,
+          "median": 0.257932845,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.3913279070000001,
+          "median": 0.375304035,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.7365529741997132,
+          "median": 0.7307692307692307,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 30.85,
+          "median": 31,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 13.55,
+          "median": 14,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 11.4,
+          "median": 11,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.10059276350000004,
+          "median": 0.09186732,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.19011881925000002,
+          "median": 0.194688615,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.09393847649999998,
+          "median": 0.07541657500000001,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.0733105815,
+          "median": 0.075529595,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.08875114575000001,
+          "median": 0.093457385,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0.6,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.325,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "2026": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 607.8883406322113,
+          "median": 520.2384201424193,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.27991655400000004,
+          "median": 0.25901497,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.3933393965,
+          "median": 0.37859891,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.7503559351276743,
+          "median": 0.76,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 30.15,
+          "median": 30,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 13.775,
+          "median": 14,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 11.4,
+          "median": 11,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.1100988205,
+          "median": 0.112046195,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.19996611949999996,
+          "median": 0.19794168,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.07463027499999998,
+          "median": 0.06903266,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.08557349849999998,
+          "median": 0.08078676500000001,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.09122245125,
+          "median": 0.08947058,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0.425,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.25,
+          "median": 0,
+          "n": 40
+        }
+      }
+    },
+    "chicago": {
+      "1970": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 974.1063493316678,
+          "median": 968.3346721420885,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.42882213925000007,
+          "median": 0.424851225,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.6395328764999999,
+          "median": 0.63951545,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.4499999999999996,
+          "median": 0.45,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 24,
+          "median": 24,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 9.65,
+          "median": 10,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 5,
+          "median": 5,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.00845098325,
+          "median": 0.008364145,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.11442400275000005,
+          "median": 0.11542514000000001,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.17025742475,
+          "median": 0.167895655,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.42991811024999993,
+          "median": 0.42729137,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "1985": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 459.676393122663,
+          "median": 459.5848136929059,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.23004700274999998,
+          "median": 0.230596305,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.34555875850000006,
+          "median": 0.34750920500000004,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.5483870967741934,
+          "median": 0.5483870967741935,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 35,
+          "median": 35,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 14.05,
+          "median": 14,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 10,
+          "median": 10,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.036068698499999996,
+          "median": 0.036567135,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.1208639845,
+          "median": 0.11936777,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.116211981,
+          "median": 0.11614452,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.13757062950000004,
+          "median": 0.13781475999999998,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "2000": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 473.18437344713175,
+          "median": 468.54973629942003,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.24003562925000002,
+          "median": 0.2405845,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.36994278024999994,
+          "median": 0.37391728500000004,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.6961524309072809,
+          "median": 0.6944444444444444,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 39.05,
+          "median": 39,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 12.625,
+          "median": 13,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 10.225,
+          "median": 10,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.0852311995,
+          "median": 0.08028406499999999,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.08342160575000002,
+          "median": 0.09100317,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.10203822775,
+          "median": 0.10228144,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.13284073999999998,
+          "median": 0.143281465,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.11082445874999998,
+          "median": 0.114493215,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 2.025,
+          "median": 2,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 1.2,
+          "median": 1,
+          "n": 40
+        }
+      },
+      "2020": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 467.8362597100913,
+          "median": 469.2261485245625,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.23789921124999996,
+          "median": 0.234831015,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.35801343450000006,
+          "median": 0.36002594,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.7738224038276692,
+          "median": 0.7704301075268818,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 37.575,
+          "median": 37,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 13.5,
+          "median": 14,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 11.725,
+          "median": 12,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.07684005000000001,
+          "median": 0.077187015,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.10736257625000001,
+          "median": 0.10429659,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.13902713325,
+          "median": 0.14698086999999999,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.1418594935,
+          "median": 0.143914975,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.08736848124999998,
+          "median": 0.087181285,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0.85,
+          "median": 1,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.225,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "2026": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 475.8310873128309,
+          "median": 477.1329836276624,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.2434529312500001,
+          "median": 0.24365408000000002,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.3617232307500001,
+          "median": 0.362311805,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.7884126527126716,
+          "median": 0.7878787878787878,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 36.8,
+          "median": 37,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 13.525,
+          "median": 14,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 11.6,
+          "median": 12,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.08526734699999997,
+          "median": 0.08210838,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.12003095,
+          "median": 0.12966961999999999,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.14374358850000005,
+          "median": 0.14481556,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.14601504425,
+          "median": 0.143251405,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.08098669350000001,
+          "median": 0.08158176,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0.375,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.15,
+          "median": 0,
+          "n": 40
+        }
+      }
+    },
+    "newyork": {
+      "1970": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 1017.7392186982349,
+          "median": 1018.5710400972837,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.42145038225000003,
+          "median": 0.41985283,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.6494913949999999,
+          "median": 0.6491074350000001,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.4499999999999996,
+          "median": 0.45,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 23,
+          "median": 23,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 8.675,
+          "median": 9,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 5.225,
+          "median": 5,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.012867051750000002,
+          "median": 0.012809735,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.1918722645,
+          "median": 0.19078645500000002,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.16882582525,
+          "median": 0.166141315,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.41924499100000007,
+          "median": 0.417960145,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "1985": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 455.9113076172119,
+          "median": 456.582108995379,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.21160708249999996,
+          "median": 0.21092419500000004,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.328190203,
+          "median": 0.32686258,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.5483870967741934,
+          "median": 0.5483870967741935,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 34,
+          "median": 34,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 14.45,
+          "median": 14,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 10,
+          "median": 10,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.024598758499999995,
+          "median": 0.02442956,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.15901515349999998,
+          "median": 0.16051497,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.11842171775000002,
+          "median": 0.11772379,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.14521366025,
+          "median": 0.145167095,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "2000": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 452.3418486718959,
+          "median": 449.05513921695706,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.22152487475,
+          "median": 0.215136335,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.3409256597500001,
+          "median": 0.33532384000000004,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.6923841636960834,
+          "median": 0.6944444444444444,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 38.425,
+          "median": 39,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 13.225,
+          "median": 13.5,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 10.625,
+          "median": 11,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.07606496649999997,
+          "median": 0.07465484,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.043649781250000005,
+          "median": 0.037861479999999996,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.14652489249999998,
+          "median": 0.13725262500000002,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.13184620675000003,
+          "median": 0.129368005,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.13746043425000004,
+          "median": 0.13971414999999998,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 1.675,
+          "median": 1,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.825,
+          "median": 1,
+          "n": 40
+        }
+      },
+      "2020": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 506.3310046298135,
+          "median": 470.66712697534155,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.25032547025,
+          "median": 0.24421047,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.35939713725,
+          "median": 0.35909353499999996,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.760805807984587,
+          "median": 0.7575757575757576,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 37.575,
+          "median": 38,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 14.225,
+          "median": 14,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 11.575,
+          "median": 11,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.06177299375000002,
+          "median": 0.064693825,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.09889245175000001,
+          "median": 0.103982995,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.20256377875000003,
+          "median": 0.210778735,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.153664627,
+          "median": 0.149157935,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.09006645875,
+          "median": 0.0918544,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0.775,
+          "median": 1,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.2,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "2026": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 505.33740755597427,
+          "median": 494.8471943919054,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.25338930575000007,
+          "median": 0.252471485,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.36136404425,
+          "median": 0.35916879500000004,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.7771503291509689,
+          "median": 0.7741935483870968,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 36.425,
+          "median": 36.5,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 14.1,
+          "median": 14,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 11.825,
+          "median": 12,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.0751391935,
+          "median": 0.07520091500000001,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.12068187424999996,
+          "median": 0.125047,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.19814208574999997,
+          "median": 0.21191627000000002,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.14133994975,
+          "median": 0.13941043000000003,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.08264060924999998,
+          "median": 0.08261358499999999,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0.35,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.075,
+          "median": 0,
+          "n": 40
+        }
+      }
+    },
+    "losangeles": {
+      "1970": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 929.1375859768629,
+          "median": 928.4921033284154,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.39469666775,
+          "median": 0.39777392,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.6027745669999999,
+          "median": 0.60437947,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.4499999999999996,
+          "median": 0.45,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 22,
+          "median": 22,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 9.675,
+          "median": 10,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 5.55,
+          "median": 5,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.006993749999999998,
+          "median": 0.006658310000000001,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.07578487824999999,
+          "median": 0.07561008999999999,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.23100559824999994,
+          "median": 0.23028025,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.48802448050000014,
+          "median": 0.4870024150000001,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "1985": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 457.4180554575672,
+          "median": 458.12669462932445,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.22084047724999997,
+          "median": 0.2214202,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.33916715374999995,
+          "median": 0.33867612,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.53125,
+          "median": 0.53125,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 35,
+          "median": 35,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 14.925,
+          "median": 15,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 10,
+          "median": 10,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.0283694765,
+          "median": 0.028648319999999998,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.09954849025000004,
+          "median": 0.099843455,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.12891259175,
+          "median": 0.12972738,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.13679274125000004,
+          "median": 0.13634888,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "2000": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 458.150630238176,
+          "median": 456.9977052857245,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.22463149675000005,
+          "median": 0.226238135,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.3490006407500001,
+          "median": 0.350645365,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.6903291798759098,
+          "median": 0.6944444444444444,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 38.525,
+          "median": 39,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 13.425,
+          "median": 13,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 10.825,
+          "median": 11,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.069822537,
+          "median": 0.074512875,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.09169110924999999,
+          "median": 0.096958195,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.07962426624999999,
+          "median": 0.08175267,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.149258012,
+          "median": 0.144967285,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.13166946249999997,
+          "median": 0.12331076999999999,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 1.975,
+          "median": 2,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 1.225,
+          "median": 1,
+          "n": 40
+        }
+      },
+      "2020": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 475.2379243358805,
+          "median": 464.96936788161105,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.23648546100000006,
+          "median": 0.23526669499999997,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.3485387547499999,
+          "median": 0.35012899499999994,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.77677627667636,
+          "median": 0.78125,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 37.55,
+          "median": 38,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 14.725,
+          "median": 15,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 12,
+          "median": 12,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.07391113249999998,
+          "median": 0.06579421,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.11905748624999998,
+          "median": 0.12886435499999999,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.15454719225,
+          "median": 0.15890249499999998,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.14043128912500003,
+          "median": 0.14162119499999998,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.09005565874999999,
+          "median": 0.09235446,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0.725,
+          "median": 1,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.3,
+          "median": 0,
+          "n": 40
+        }
+      },
+      "2026": {
+        "failCount": 0,
+        "hhi": {
+          "mean": 503.01469284681116,
+          "median": 454.5568341861886,
+          "n": 40
+        },
+        "top3Share": {
+          "mean": 0.23645321099999994,
+          "median": 0.22693644,
+          "n": 40
+        },
+        "top5Share": {
+          "mean": 0.34764301174999995,
+          "median": 0.340106585,
+          "n": 40
+        },
+        "fmAdoption": {
+          "mean": 0.8023019324020437,
+          "median": 0.8064516129032258,
+          "n": 40
+        },
+        "stationCount": {
+          "mean": 37.55,
+          "median": 37,
+          "n": 40
+        },
+        "viableCompetitors": {
+          "mean": 14.625,
+          "median": 15,
+          "n": 40
+        },
+        "clusterCount": {
+          "mean": 0,
+          "median": 0,
+          "n": 40
+        },
+        "formatDiversity": {
+          "mean": 12.075,
+          "median": 12,
+          "n": 40
+        },
+        "countryShare": {
+          "mean": 0.06089351049999999,
+          "median": 0.059164560000000005,
+          "n": 40
+        },
+        "spanishShare": {
+          "mean": 0.11680026549999997,
+          "median": 0.126966375,
+          "n": 40
+        },
+        "spokenShare": {
+          "mean": 0.14081046225,
+          "median": 0.13225719000000002,
+          "n": 40
+        },
+        "urbanRnbShare": {
+          "mean": 0.162088662625,
+          "median": 0.16527838,
+          "n": 40
+        },
+        "chrShare": {
+          "mean": 0.08288885874999999,
+          "median": 0.08454244999999999,
+          "n": 40
+        },
+        "zombieCount": {
+          "mean": 0.45,
+          "median": 0,
+          "n": 40
+        },
+        "spiralCount": {
+          "mean": 0.15,
+          "median": 0,
+          "n": 40
+        }
+      }
+    }
+  },
+  "timingMs": 635581
+}
