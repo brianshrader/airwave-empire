@@ -15187,6 +15187,8 @@ function recalc(stations,G){
     });
   }
 
+  wlTutorialTurnaroundApplyShareBoost(stations,G);
+
   stations.forEach(s=>{
     if(!s||s._bpSlotDeferred||!s.rat)return;
     if(!Array.isArray(s.rat.hist))s.rat.hist=[];
@@ -20334,6 +20336,51 @@ function applyTutorialTurnaroundPostGen(stations,sc,bpYear){
   }
 }
 
+/** Scripted tutorial only: headline share targets (0–1) after coached beats — not used in normal play. */
+const WL_TUTORIAL_TURNAROUND_SHARE_BY_TIER=[0.035,0.050,0.062,0.070,0.078];
+const WL_TUTORIAL_TURNAROUND_COACHED_FORMATS=new Set(['TOP40','CHR','RHYTHMIC','HOT_AC']);
+
+function wlTutorialTurnaroundRatingsBoostActive(){
+  return !!(G&&G.tutorialMode&&G.sc?.id==='tutorial_turnaround'&&MP.mode!=='live'&&(G.tutorialAct|0)<8);
+}
+function wlTutorialTurnaroundShareTier(){
+  return Math.max(0,Math.min(WL_TUTORIAL_TURNAROUND_SHARE_BY_TIER.length-1,G._tutorialShareTier|0));
+}
+/** Pin player commercial share for tutorial theater; rivals scale down (same math as harness pin). */
+function wlTutorialTurnaroundApplyShareBoost(stations,Gctx){
+  if(!wlTutorialTurnaroundRatingsBoostActive())return;
+  const tier=wlTutorialTurnaroundShareTier();
+  const target=WL_TUTORIAL_TURNAROUND_SHARE_BY_TIER[tier];
+  if(!(target>0)||typeof applyWlHarnessPlayerSharePin!=='function')return;
+  const prev=Gctx._wlHarnessPinPlayerShare;
+  Gctx._wlHarnessPinPlayerShare=target;
+  applyWlHarnessPlayerSharePin(stations,Gctx);
+  if(prev!=null)Gctx._wlHarnessPinPlayerShare=prev;
+  else delete Gctx._wlHarnessPinPlayerShare;
+}
+function wlTutorialTurnaroundOnCoachedFormatFlip(s,oldFmt,newFmt){
+  if(!wlTutorialTurnaroundRatingsBoostActive()||!s?.isPlayer)return;
+  if(!WL_TUTORIAL_TURNAROUND_COACHED_FORMATS.has(newFmt))return;
+  G._tutorialCoachedFormatApplied=true;
+  G._tutorialShareTier=Math.max(G._tutorialShareTier|0,1);
+}
+function wlTutorialTurnaroundOnCoachedTalentHire(s,slot){
+  if(!wlTutorialTurnaroundRatingsBoostActive()||!s?.isPlayer||slot!=='midday')return;
+  G._tutorialCoachedTalentApplied=true;
+  G._tutorialShareTier=Math.max(G._tutorialShareTier|0,2);
+  if(typeof recalc==='function'){
+    recalc(G.stations,G);
+    wlTutorialTurnaroundApplyShareBoost(G.stations,G);
+    if(typeof seedRev==='function')seedRev(G.stations,G);
+  }
+}
+function wlTutorialTurnaroundOnAdvTurnForBoost(){
+  if(!wlTutorialTurnaroundRatingsBoostActive()||!G._tutorialCoachedTalentApplied)return;
+  G._tutorialAdvSinceTalent=(G._tutorialAdvSinceTalent|0)+1;
+  if(G._tutorialAdvSinceTalent>=1)G._tutorialShareTier=Math.max(G._tutorialShareTier|0,3);
+  if(G._tutorialAdvSinceTalent>=2)G._tutorialShareTier=Math.max(G._tutorialShareTier|0,4);
+}
+
 // ── GENERATE MARKET ───────────────────────────────────────────────
 function genMarket(scenId){
   UC=new Set();amfIdx=0;fmfIdx=0;
@@ -20694,6 +20741,10 @@ function genMarket(scenId){
       _tutorialAct6SalesIntroPending:0,
       _tutorialSecondStationTipShown:false,
       _tutorialGradTurn:0,
+      _tutorialShareTier:0,
+      _tutorialCoachedFormatApplied:false,
+      _tutorialCoachedTalentApplied:false,
+      _tutorialAdvSinceTalent:0,
     }:{}),
     sportsRights:{},franchiseRights:{},teamRecords:{},
   };
@@ -28623,6 +28674,7 @@ function advTurn(mpCoalesceSeq){
     const franchiseActs=simQuiet?[]:(runFranchiseEvents(G)||[]);
     sportsActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     franchiseActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
+    wlTutorialTurnaroundOnAdvTurnForBoost();
     recalc(G.stations,G);
     snapMarketRankBookDisplay(G);
     unshiftRatingsDigest(G);
@@ -30563,11 +30615,17 @@ function doHire(){
       renderManageTalentStation(s.id);
     }
     renderAll();
-    if(runTurnaroundAfterHire)tutorialTurnaroundOnTalentAdjusted(sl);
+    if(runTurnaroundAfterHire){
+      wlTutorialTurnaroundOnCoachedTalentHire(s,sl);
+      tutorialTurnaroundOnTalentAdjusted(sl);
+    }
     return;
   }
   cm('m-tal');renderAll();
-  if(runTurnaroundAfterHire)tutorialTurnaroundOnTalentAdjusted(sl);
+  if(runTurnaroundAfterHire){
+    wlTutorialTurnaroundOnCoachedTalentHire(s,sl);
+    tutorialTurnaroundOnTalentAdjusted(sl);
+  }
 }
 
 // 2. SPOT LOAD — SS shared with Sales & Inventory modal (openSales)
@@ -33916,7 +33974,10 @@ function pickFmt(f){
 function doFmt(keepSim){
   if(!FS.chosen)return;
   const s=G.stations.find(st=>st.id===FS.sid);
-  const old=s.format,nf=FS.chosen,adj=FADJ[old]?.includes(nf),pen=adj?.30:.55;
+  const old=s.format,nf=FS.chosen,adj=FADJ[old]?.includes(nf);
+  const isTutFmt=!!(G&&G.tutorialMode&&G.sc?.id==='tutorial_turnaround'&&MP.mode!=='live'&&s?.isPlayer);
+  let pen=adj?.30:.55;
+  if(isTutFmt)pen=adj?0.06:0.08;
   const _simPartnerId = s.simulcastWith;
   const _simPartner = _simPartnerId ? G.stations.find(st=>st.id===_simPartnerId) : null;
   // If keepSim=true: reformat partner first (no breakage), then reformat this station.
@@ -33979,9 +34040,19 @@ function doFmt(keepSim){
     const newCeiling=Math.round((COMMUNITY_IDENTITY[nf]||0.3)*100);
     s.identity=Math.min(s.identity,newCeiling);
   }
-  Object.values(s.prog).forEach(sd=>{if(sd)sd.quality=Math.round(sd.quality*(1-pen));});
+  if(!isTutFmt){
+    Object.values(s.prog).forEach(sd=>{if(sd)sd.quality=Math.round(sd.quality*(1-pen));});
+    COH.forEach(c=>{if(s.mom[c])s.mom[c].cur*=(1-pen);});
+  }else{
+    Object.values(s.prog).forEach(sd=>{if(sd)sd.quality=Math.round(sd.quality*(1-pen*0.35));});
+    COH.forEach(c=>{
+      if(!s.mom[c])return;
+      s.mom[c].cur*=(1-pen*0.12);
+      if(s.mom[c].tgt!=null)s.mom[c].tgt=Math.max(s.mom[c].tgt,s.mom[c].cur);
+    });
+    wlTutorialTurnaroundOnCoachedFormatFlip(s,old,nf);
+  }
   s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w,0));
-  COH.forEach(c=>{if(s.mom[c])s.mom[c].cur*=(1-pen);});
   // Random talent churn on format flips adds realism, but breaks the Turnaround tutorial flow
   // (e.g., Midday unexpectedly becomes unstaffed before the guided replace/hire step).
   const isTutTurnaround=isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&s.isPlayer;
