@@ -3238,9 +3238,112 @@ function crowdedLaneAlsoRanPressure(s,G){
   return{active:true,rank,n,extraTicks:n>=5?2:1,laneId:lid};
 }
 
+/** West/coastal large markets only — positive CHR vacancy replacement (not exit blocking). */
+const CHR_LANE_VACANCY_REPLACEMENT_ADJACENT_FMTS=['ADULT_CONTEMP','HOT_AC','ALBUM_ROCK','CLASSIC_ROCK','ALT_ROCK','AAA','RHYTHMIC'];
+function chrLaneVacancyReplacementMarketEligible(G){
+  const mkt=MARKETS[G.marketId||ACTIVE_MARKET]||MARKETS.atlanta;
+  const y=G.year||1970;
+  if(y<1988||y>2005)return false;
+  if((mkt.rankTier||'')!=='large')return false;
+  const ar=mkt.archetypeId||'';
+  return ar==='coastal_secular'||ar==='west_fm_fragmented';
+}
+function chrLaneVacancyReplacementMetrics(G){
+  const peers=formatEcologyLaneCommercialPeers(G,'__lane_chr__');
+  let laneShare=0;
+  peers.forEach(s=>{laneShare+=s.rat?.share||0;});
+  const count=peers.length;
+  return{count,laneShare,sharePerStation:count>0?laneShare/count:0};
+}
+/** High lane demand + thin supply → encourage CHR challenger (SF/Seattle-scale large coastal). */
+function chrLaneVacancyReplacementActive(G){
+  if(!G||G._chrLaneVacancyReplacementOff)return false;
+  if(!chrLaneVacancyReplacementMarketEligible(G))return false;
+  const m=chrLaneVacancyReplacementMetrics(G);
+  return m.count<4&&m.laneShare>0.15&&m.sharePerStation>0.055;
+}
+function chrLaneVacancyReplacementScoreMult(G,fmt){
+  if(!chrLaneVacancyReplacementActive(G))return 1;
+  if(formatEcologyLaneId(fmt)!=='__lane_chr__')return 1;
+  return 2.2;
+}
+function chrLaneVacancyApplyTop40Flip(s,G,prevFmtLbl){
+  const nf='TOP40';
+  s.format=nf;
+  s._aiLastMajorReason='chr_lane_vacancy_replacement:'+fmtLabel(nf);
+  s._lowSharePeriods=0;
+  if(!s.drift)s.drift={};
+  s.drift[nf]=DRIFT[nf]?.default||40;
+  Object.keys(s.mom||{}).forEach(c=>{s.mom[c]={tgt:0.01,cur:0.01};});
+  s.str='emerging';
+  s.launchPeriod=G.turn||0;
+  s._chrLaneVacancyReplacement=true;
+  if(!G.news)G.news=[];
+  G.news.unshift({v:'MEDIUM',t:`📻 ${s.callLetters} flips ${prevFmtLbl} → ${fmtLabel(nf)} — CHR lane vacancy challenger.`,y:G.year,p:G.period});
+}
+function chrLaneVacancyTryAdjacentChallenger(G){
+  if(!chrLaneVacancyReplacementActive(G))return false;
+  const comm=(G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!stationIsNoncommercialInstitutional(s));
+  comm.sort((a,b)=>(b.rat?.share||0)-(a.rat?.share||0));
+  const candidates=[];
+  for(let i=0;i<comm.length;i++){
+    const st=comm[i];
+    const fmt=String(st.format||'');
+    if(formatEcologyLaneId(fmt)==='__lane_chr__')continue;
+    if(!CHR_LANE_VACANCY_REPLACEMENT_ADJACENT_FMTS.includes(fmt))continue;
+    const rank=i+1;
+    const sh=st.rat?.share||0;
+    if(rank<12||sh>0.045)continue;
+    candidates.push(st);
+  }
+  if(!candidates.length||Math.random()>0.28)return false;
+  const pick=candidates[Math.floor(Math.random()*candidates.length)];
+  chrLaneVacancyApplyTop40Flip(pick,G,fmtLabel(pick.format));
+  calcRev(pick,G);
+  if(G._chrRlDiag){G._chrRlDiag.challengerReentries++;G._chrRlDiag.replacementLaunches++;}
+  return true;
+}
+function chrLaneVacancyTryFmLaunch(G){
+  if(!chrLaneVacancyReplacementActive(G))return false;
+  const mkt=G.marketId||ACTIVE_MARKET;
+  if(!G._chrLaneVacancyDue){
+    const y=G.year||1970;
+    G._chrLaneVacancyDue={year:y+1+Math.floor(Math.random()*3),period:1};
+    return false;
+  }
+  const due=G._chrLaneVacancyDue;
+  if(G.year<due.year||(G.year===due.year&&G.period<due.period))return false;
+  if(!formatAllowedInMarket('TOP40',mkt,G.year))return false;
+  if(countMegaFragmentationEligibleCommercial(G.stations)>=countUsableCommercialDialSlots(mkt))return false;
+  const freq=nextUnusedCommercialFreq(G,'FM');
+  if(!freq)return false;
+  const bp={type:'FM',fmt:'TOP40',pw:'50kw',str:'moderate'};
+  const s=mkStn(bp,freq,G.year);
+  s.color=CLR[(G.stations?.length||0)%CLR.length];
+  s.entryTurn={year:G.year,period:G.period};
+  s.launchPeriod=G.turn||0;
+  s._chrLaneVacancyReplacement=true;
+  s._aiLastMajorReason='chr_lane_vacancy_replacement:'+fmtLabel('TOP40');
+  s.oq=Math.min(90,Math.round(s.oq+4));
+  Object.values(s.prog).forEach(sd=>{if(sd&&sd.quality!=null)sd.quality=Math.min(93,Math.round(sd.quality+3));});
+  refreshStationOQ(s,G);
+  G.stations.push(s);
+  seedNewEntry(s,G);
+  calcRev(s,G);
+  if(!G.news)G.news=[];
+  G.news.unshift({v:'MEDIUM',t:`📡 ${s.callLetters} signs on — ${fmtLabel('TOP40')} (${freq}). CHR lane vacancy fill.`,y:G.year,p:G.period});
+  G._chrLaneVacancyDue=null;
+  if(G._chrRlDiag){G._chrRlDiag.vacancyLaunches++;G._chrRlDiag.replacementLaunches++;}
+  return true;
+}
+function tryChrLaneVacancyReplacement(G){
+  if(!chrLaneVacancyReplacementActive(G))return;
+  if(!chrLaneVacancyTryAdjacentChallenger(G))chrLaneVacancyTryFmLaunch(G);
+}
+
 /** Short on-air market tags for "{ABBREV} {FREQ}" patterns (NY 94.7, LA 100.3, …) */
 const MARKET_BRAND_ABBREV={
-  newyork:'NY',losangeles:'LA',chicago:'Chicago',atlanta:'Atlanta',nashville:'Nashville',seattle:'Seattle',sanfrancisco:'SF',wichita:'Wichita',
+  newyork:'NY',losangeles:'LA',chicago:'Chicago',atlanta:'Atlanta',nashville:'Nashville',seattle:'Seattle',sanfrancisco:'SF',dallas:'DFW',houston:'Houston',wichita:'Wichita',
 };
 /**
  * Token for `{AMCHOP}`: AM stations mix full kHz ("680") vs decade chop ("68") like the real dial.
@@ -26893,6 +26996,8 @@ function rivalReformat(G){
           if(laneN>=5)score*=0.05;
           else if(laneN>=4)score*=0.20;
           else if(laneN>=3)score*=0.55;
+          const _chrVacM=chrLaneVacancyReplacementScoreMult(G,f);
+          if(_chrVacM!==1)score*=_chrVacM;
         }else if(laneIdCand==='__lane_spoken_news__'){
           if(laneN>=5)score*=0.15;
           else if(laneN>=4)score*=0.32;
@@ -26984,6 +27089,7 @@ function rivalReformat(G){
       }
     }
   });
+  tryChrLaneVacancyReplacement(G);
 }
 
 /**
