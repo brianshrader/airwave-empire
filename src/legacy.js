@@ -17915,6 +17915,7 @@ function runAI(G){
   G._aiDifficultyTier=resolveAiDifficultyTier(G);
   aiRivalBeginTurn(G);
   const acts=[];
+  if(typeof rivalryProtoDrainNewsQueue==='function')rivalryProtoDrainNewsQueue(G,acts);
   // Pre-compute player station snapshot once — rivals use this for targeting decisions
   const playerStns=G.ps;
   const playerShares=playerStns.map(s=>({id:s.id,fmt:s.format,share:s.rat.share,
@@ -17941,7 +17942,8 @@ function runAI(G){
   G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!stationIsNoncommercialInstitutional(s)).forEach(s=>{
     const p=s.pers;if(!p)return;
     const pr=s.cp;
-    const aiBeh=aiRivalBehaviorLayer(s,G,aiRivalStationBehavior(s,G));
+    let aiBeh=aiRivalBehaviorLayer(s,G,aiRivalStationBehavior(s,G));
+    if(typeof rivalryProtoAdjustAiBeh==='function')aiBeh=rivalryProtoAdjustAiBeh(s,G,aiBeh);
     wlRivalDriftPolicyTryApply(s,G,acts,driftNewsCap);
     const crisis=pr&&pr.d2<-p.pt;
     const notic=pr&&Math.random()<p.rs&&Math.abs(pr.d2)>p.pt*.5;
@@ -17987,6 +17989,7 @@ function runAI(G){
         if(fmMusicAi)hireProb*=(y>=1978?1.20:1.12);
         if(crisis)hireProb*=0.42;
         hireProb*=aiBeh.hireMult;
+        if(typeof rivalryProtoHireMult==='function')hireProb*=rivalryProtoHireMult(s,G,crisis);
         if((s.fin?.ebitda||0)<-(s.fin?.rev||1)*0.38)hireProb*=0.4;
         empty.sort((a,b)=>(wt[b]||1)-(wt[a]||1));
         const maxHires=(understaffed&&p.ag>0.48)?2:1;
@@ -18046,6 +18049,7 @@ function runAI(G){
       const anchorProg=(aiBeh._aiState==='dominant'&&(s.rat?.share||0)>=0.072&&dTier>=1)?1+0.055*(dTier>=2?1.08:1):1;
       const invest=Math.round(baseInvest*Math.max(surgeMult,pressureMult)*trailProg*anchorProg*rnd(0.8,1.2)*aiBeh.spendMult);
       s.progInvestment=(s.progInvestment||0)+invest;
+      if(typeof rivalryProtoApplyProgBoost==='function')rivalryProtoApplyProgBoost(s,G,crisis);
     }
 
     // ── PROMO SPEND — also fires when rival is SURGING near a weak player ──
@@ -18105,6 +18109,7 @@ function runAI(G){
       }
       const promoCap=promoBudgetCapForPeriod(G);
       s.ops.promo=Math.min(promoCap,Math.round((basePromo+pressureBoost+opportunBoost+counterPlayerPromo)*rnd(0.7,1.3)*aiBeh.spendMult));
+      if(typeof rivalryProtoApplyPromoBoost==='function')rivalryProtoApplyPromoBoost(s,G,promoCap,crisis);
     }
 
     // ── TALENT: DEFENSIVE UPGRADE (own house in crisis) ──────
@@ -18128,8 +18133,11 @@ function runAI(G){
     const ppP=G._aiPlayerPressure?.pressure01||0;
     const aiDiffPoach=G._aiDifficultyTier!=null?G._aiDifficultyTier:1;
     const poachDangerBoost=dangerProf.anyDangerousPlayer?Math.min(0.10,(dangerProf.relativePressure01||0)*0.18):0;
-    const poachRoll=Math.min(0.9,poachDangerBoost+p.ag*0.35*(aiDiffPoach>=2&&ppP>0.34?1.14:1)*(aiDiffPoach>=1&&ppP>0.48?1.07:1)*(dangerProf.anyDangerousPlayer&&aiDiffPoach>=1?1.06:1));
-    if(canPoach&&Math.random()<poachRoll){
+    let poachRoll=Math.min(0.9,poachDangerBoost+p.ag*0.35*(aiDiffPoach>=2&&ppP>0.34?1.14:1)*(aiDiffPoach>=1&&ppP>0.48?1.07:1)*(dangerProf.anyDangerousPlayer&&aiDiffPoach>=1?1.06:1));
+    if(typeof rivalryProtoPoachMult==='function')poachRoll=Math.min(0.9,poachRoll*rivalryProtoPoachMult(s,G));
+    if(typeof rivalryProtoTryPoachDominantLeader==='function'&&rivalryProtoTryPoachDominantLeader(s,G,acts)){
+      /* in-lane rivalry poach fired */
+    }else if(canPoach&&Math.random()<poachRoll){
       // Hard / high pressure: occasionally challenge a still-strong player morning show (same or adjacent format)
       if(aiDiffPoach>=2&&(ppP>0.34||dangerProf.anyDangerousPlayer)&&p.ag>=0.56&&Math.random()<0.12+0.22*ppP+(dangerProf.anyDangerousPlayer?0.06:0)){
         const strongMorning=playerShares.find(ps=>{
@@ -28567,6 +28575,7 @@ function advTurn(mpCoalesceSeq){
       G.ps.forEach(s=>{ _rankSnap[s.id]={prev:s._prevRank??null, cur:combinedMarketRankForStation(s,_combinedRows)}; });
     }
     checkRankMilestones(G);
+    if(typeof rivalryProtoRefreshMap==='function')rivalryProtoRefreshMap(G);
     const acts=simQuiet?[]:(runAI(G)||[]);
     aiRivalPersistTurnSnapshot(G);
     seedRev(G.stations,G);
