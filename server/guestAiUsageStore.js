@@ -5,8 +5,9 @@
  */
 const fs = require('fs');
 const path = require('path');
+const { guestAiUsageDir, ensureDir } = require('./runtimePaths');
 
-const ROOT = path.join(__dirname, '..', 'data', 'guest_ai_usage');
+const ROOT = guestAiUsageDir();
 const MUTEX = new Map();
 
 const CAPS = Object.freeze({
@@ -26,7 +27,7 @@ function filePath(guestId) {
 }
 
 function ensureRoot() {
-  if (!fs.existsSync(ROOT)) fs.mkdirSync(ROOT, { recursive: true });
+  ensureDir(ROOT);
 }
 
 function readState(guestId) {

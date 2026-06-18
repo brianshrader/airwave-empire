@@ -18,9 +18,10 @@
 //
 // Spectator TV (read-only rankings, same room code): open /spectate.html?room=CODE
 // Uses socket event spectate_room — updates on each host state_broadcast (every period).
-// Image API: SHORTAPI_KEY (ShortAPI z-image, default) and/or GROK_API_KEY for /api/generate-logo, /api/generate-remote-van (Grok edit + logo reference), and AI portraits.
+// Image API: SHORTAPI_KEY (ShortAPI flux-1.0 or z-image via SHORTAPI_IMAGE_MODEL) and/or GROK_API_KEY for /api/generate-logo, /api/generate-remote-van (Grok edit + logo reference), and AI portraits.
 // Station jingles: POST /api/generate-station-jingle returns { jobId }; client polls GET /api/station-jingle/job/:id — same SHORTAPI_KEY; model suno/suno-v5.5/generate (override SHORTAPI_SUNO_MODEL).
 // IMAGE_GEN_PROVIDER=shortapi | grok | auto — auto prefers SHORTAPI_KEY when set.
+// Logo example: SHORTAPI_IMAGE_MODEL=shortapi/flux-1.0/text-to-image  SHORTAPI_FLUX_PERFORMANCE=dev
 // Trade ratings digest: POST /api/ratings-digest — SHORTAPI_KEY, OPENROUTER_API_KEY, and/or OPENAI_API_KEY; see RATINGS_DIGEST_PROVIDER in .env.example.
 // Stock pool (random assignment before Grok): generated-portraits/library/{male|female}/{era}/
 // Grok output (organized by hire-era bucket + gender): generated-portraits/grok/{male|female|unknown}/{era}/
@@ -111,11 +112,13 @@ const io         = new Server(httpServer, {
 const { attachSocketAuth } = require('./server/mpAuth');
 attachSocketAuth(io);
 
+const { SAVES_DIR, ensureDir } = require('./server/runtimePaths');
+
 const PORT     = process.env.PORT || 3000;
-const SAVE_DIR = path.join(__dirname, 'saves');
+const SAVE_DIR = SAVES_DIR;
 
 // Ensure saves directory exists
-if (!fs.existsSync(SAVE_DIR)) fs.mkdirSync(SAVE_DIR);
+ensureDir(SAVE_DIR);
 
 /**
  * Multiplayer host market — enforced on start_draft only. Mirrors /api/entitlements + planMarkets.js.

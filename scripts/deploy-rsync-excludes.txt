@@ -1,0 +1,34 @@
+# Never sync from laptop → server (runtime / secrets / local-only)
+node_modules/
+.git/
+.env
+.env.*
+keys/
+deploy.zip
+deploy.zip*
+marketing/
+logs/
+.DS_Store
+ecosystem.config.local.cjs
+
+# User state & generated assets — live on server (or WL_PERSIST_ROOT), never from deploy
+data/
+saves/
+generated-logos/
+generated-portraits/
+generated-remote-vans/
+generated-jingles/
+
+# Local / scratch — not production runtime
+tmp/
+archive/
+audit-output/
+trace-output/
+1200
+45%
+*.pkg
+*.mp4
+*.mov
+.claude/
+.agents/
+.cursor/

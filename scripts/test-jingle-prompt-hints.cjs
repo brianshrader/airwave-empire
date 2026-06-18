@@ -25,6 +25,8 @@ const withHints = buildSunoJingleArgs({
 
 const noHints = buildSunoJingleArgs({ ...base });
 
+const CROWD_TRIGGER = /\bcrowd\b|\bcheer|\bapplause\b|\bstadium\b|\bfestival\b|\bfestive\b|\barena\b|\bparty\b|\bsingalong\b|stacked harmon|\brisers?\b|sign-on\b|choir swell|hook stacks?|melodic stack|\banthemic\b/i;
+
 function assert(cond, msg) {
   if (!cond) {
     console.error('FAIL:', msg);
@@ -32,16 +34,18 @@ function assert(cond, msg) {
   }
 }
 
+function assertNoCrowdTriggers(tags, label) {
+  assert(!CROWD_TRIGGER.test(tags), `${label} should not contain crowd/celebration trigger words: ${tags.match(CROWD_TRIGGER)}`);
+}
+
 assert(withHints.tags.length <= 1000, 'tags should stay within 1000 cap');
-assert(
-  withHints.tags.includes('Audience target ADULTS 18–34'),
-  'audience hint should appear in tags',
-);
-assert(
-  withHints.tags.includes('Rock Edge'),
-  'position hint should appear in tags',
-);
+assert(withHints.tags.length < 900, 'tags should leave headroom under 1000 cap');
+assert(!withHints.tags.includes('Audience target'), 'audience hint should be ignored for jingles');
+assert(!withHints.tags.includes('Rock Edge'), 'position hint should be ignored for jingles');
 assert(!noHints.tags.includes('Audience target'), 'no hint when omitted');
+
+assertNoCrowdTriggers(withHints.tags, 'TOP40 with hints');
+assertNoCrowdTriggers(noHints.tags, 'TOP40 base');
 
 assert(sunoJinglePromptConfidenceMessage(base) === '', 'Suno prompt confidence line removed from player UI');
 
@@ -55,8 +59,9 @@ const countrySung = buildSunoJingleArgs({
   band: 'FM',
 });
 assert(!countrySung.lyrics.includes('[Spoken word]'), 'music formats use flat lyrics, not spoken block');
-assert(countrySung.tags.includes('melodic sung ID'), 'country should ask for sung tagline + brand');
+assert(countrySung.tags.includes('sung booth ID'), 'country should ask for sung tagline + brand');
 assert(countrySung.lyrics.includes('Seattle'), 'tagline should appear in lyrics');
+assertNoCrowdTriggers(countrySung.tags, 'country');
 
 const callsNotInBrand = buildSunoJingleArgs({
   brand: '96.5 The River',
@@ -68,10 +73,7 @@ const callsNotInBrand = buildSunoJingleArgs({
   band: 'FM',
   callLetters: 'KRVR',
 });
-assert(
-  !callsNotInBrand.tags.includes('melodic vocal syllables'),
-  'do not add call-letter tags when brand omits those letters',
-);
+assert(!callsNotInBrand.tags.includes('call letters sing'), 'do not add call-letter tags when brand omits those letters');
 assert(!callsNotInBrand.lyrics.includes('K R V R'), 'do not append spaced calls to lyrics');
 
 const callsInBrand = buildSunoJingleArgs({
@@ -84,7 +86,7 @@ const callsInBrand = buildSunoJingleArgs({
   band: 'FM',
   callLetters: 'KRVR',
 });
-assert(callsInBrand.tags.includes('melodic vocal syllables'), 'call-letter tag when brand contains calls');
+assert(callsInBrand.tags.includes('call letters sing'), 'call-letter tag when brand contains calls');
 
 const q96Brand = buildSunoJingleArgs({
   brand: 'Q96',
@@ -106,14 +108,9 @@ const top4075 = buildSunoJingleArgs({
   year: 1975,
   formatId: 'TOP40',
 });
-assert(
-  !top4075.tags.includes('ARP-style analog synth brass'),
-  'TOP40 should not use default 70s ARP brass ladder',
-);
-assert(
-  /CHR|hit-radio/i.test(top4075.tags),
-  'TOP40 should get CHR-specific era bed',
-);
+assert(!top4075.tags.includes('ARP-style analog synth brass'), 'TOP40 should not use default 70s ARP brass ladder');
+assert(/CHR|booth/i.test(top4075.tags), 'TOP40 should get CHR-specific era bed');
+assertNoCrowdTriggers(top4075.tags, '1975 TOP40');
 
 const news75 = buildSunoJingleArgs({
   brand: 'NewsRadio 9',
@@ -124,11 +121,9 @@ const news75 = buildSunoJingleArgs({
   frequency: '600',
   band: 'AM',
 });
-assert(
-  !news75.tags.includes('ARP-style analog synth brass'),
-  'spoken news should not inherit music-format brass ladder',
-);
+assert(!news75.tags.includes('ARP-style analog synth brass'), 'spoken news should not inherit music-format brass ladder');
 assert(/talk|news|booth/i.test(news75.tags), 'news/talk gets VO-forward bed wording');
+assertNoCrowdTriggers(news75.tags, 'news talk');
 
 const oldies90 = buildSunoJingleArgs({
   brand: 'Oldies 105',
@@ -138,10 +133,8 @@ const oldies90 = buildSunoJingleArgs({
   frequency: '105.3',
   band: 'FM',
 });
-assert(
-  /gold|classic hits|retro/i.test(oldies90.tags),
-  'oldies should get gold/classic imaging not generic brass default',
-);
+assert(/gold|classic hits|booth/i.test(oldies90.tags), 'oldies should get gold/classic imaging not generic brass default');
+assertNoCrowdTriggers(oldies90.tags, 'oldies');
 
 const rock76 = buildSunoJingleArgs({
   brand: 'Rock Radio 76',
@@ -153,6 +146,7 @@ const rock76 = buildSunoJingleArgs({
   band: 'AM',
 });
 assert(/\bseventy[\s-]*six\b/i.test(rock76.lyrics), 'isolated 76 in brand should be seventy six for singing');
+assertNoCrowdTriggers(rock76.tags, 'rock');
 
 const dial104 = buildSunoJingleArgs({
   brand: 'The Buzz',
@@ -184,6 +178,44 @@ const top40name = buildSunoJingleArgs({
   band: 'FM',
 });
 assert(/\btop\s+40\b/i.test(top40name.lyrics), 'Top 40 format name should stay as words, not split forty');
+assertNoCrowdTriggers(top40name.tags, '1985 TOP40');
+
+const taglineOrd = buildSunoJingleArgs({
+  brand: 'Hot Hits 98.5',
+  format: 'Top 40',
+  year: 1985,
+  formatId: 'TOP40',
+  tagline: "Atlanta's #1 hits",
+  frequency: '98.5',
+  band: 'FM',
+});
+assert(taglineOrd.lyrics.includes('number one'), '#1 in tagline should verbalize to number one');
+assert(taglineOrd.tags.includes('dry studio outro'), 'outro tag should be present');
+assertNoCrowdTriggers(taglineOrd.tags, 'tagline CHR');
+
+const laTagline = buildSunoJingleArgs({
+  brand: 'Big Country 92.5',
+  format: 'Country',
+  year: 1985,
+  formatId: 'COUNTRY',
+  tagline: "LA's country favorites",
+  frequency: '92.5',
+  band: 'FM',
+});
+assert(laTagline.lyrics.includes("L A's country favorites"), "LA's in tagline should space to L A's for singing");
+assert(!/\bLA's country\b/i.test(laTagline.lyrics), 'raw LA apostrophe form should not remain in lyrics');
+
+const gospel85 = buildSunoJingleArgs({
+  brand: 'Praise 88',
+  format: 'Gospel',
+  year: 1985,
+  formatId: 'GOSPEL',
+  tagline: 'Inspiring faith',
+  frequency: '88.1',
+  band: 'FM',
+});
+assert(gospel85.tags.includes('solo gospel vocal'), 'gospel should prefer solo vocal not choir');
+assertNoCrowdTriggers(gospel85.tags, 'gospel');
 
 console.log('OK — jingle prompt hints');
 console.log('Sample tags (truncated):', withHints.tags.slice(0, 320) + (withHints.tags.length > 320 ? '…' : ''));

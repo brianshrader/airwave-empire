@@ -50,6 +50,17 @@ This document lists **canonical** paths for the Airwave Empire / `airwave-empire
 
 Optional services (AI keys, PostHog, digest providers) are **not** required to boot; they degrade specific routes or features.
 
+## Persistence paths (`server/runtimePaths.js`)
+
+| Env | Default | Purpose |
+|-----|---------|---------|
+| `WL_PERSIST_ROOT` | app root (dev) / `~/airwave-persist` (prod via `server-deploy.sh`) | Base for user state |
+| `WL_DATA_DIR` | `<persist>/data` | Cloud saves, Stripe map, AI quotas |
+| `WL_SAVES_DIR` | `<persist>/saves` | Multiplayer room JSON |
+| `WL_GENERATED_*_DIR` | `<persist>/generated-*` | Player logos, jingles, vans, portraits |
+
+Shipped catalogs (`data/formatLifecycle.v1.json`, etc.) always load from **app root** (`GAME_DATA_DIR`), not persist root.
+
 ## Cloud saves (solo, account-scoped)
 
 - **Implementation:** `server/cloudSaves.js`
@@ -58,7 +69,9 @@ Optional services (AI keys, PostHog, digest providers) are **not** required to b
 
 ### Redeploy / data-loss risk
 
-If the host **replaces the entire app directory** on deploy (clean `git pull`, rsync `--delete`, unzip overwrite) **without** preserving `data/` **outside** the tree or on a volume:
+Deploy is documented in **`docs/DEPLOY.md`**. `deploy.sh` never uses `rsync --delete` on the app root; persistence lives under **`WL_PERSIST_ROOT`** (default `~/airwave-persist` on production) via `server/runtimePaths.js` and symlinks created by `scripts/server-deploy.sh`.
+
+If the host **replaces the entire app directory** without that layout:
 
 - **Cloud saves will be lost** (or reset to empty) because they live under `data/cloud_saves/`.
 - **Room saves** under `./saves/` have the same class of risk if that directory is not persisted.

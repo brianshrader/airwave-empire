@@ -1,76 +1,59 @@
-#!/bin/bash
-set -e
+#!/usr/bin/env bash
+# Canonical deploy — frontend (Amplify staging) + backend (Lightsail API).
+# See docs/DEPLOY.md
+set -Eeuo pipefail
 
-cd /Users/brianshrader/Documents/Games/Cursor/Frequencies
+ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$ROOT_DIR"
 
-if [ ! -f "package.json" ]; then
-  echo "Error: package.json not found. Are you in the right directory?"
-  exit 1
+# shellcheck source=scripts/deploy-config.sh
+source "$ROOT_DIR/scripts/deploy-config.sh"
+# shellcheck source=scripts/deploy-lib.sh
+source "$ROOT_DIR/scripts/deploy-lib.sh"
+
+deploy_require_tools
+
+if [[ "${1:-}" == "--dry-run" ]]; then
+  export DEPLOY_DRY_RUN=1
+  shift
+fi
+if [[ "${1:-}" == "--skip-amplify" ]]; then
+  export DEPLOY_SKIP_AMPLIFY=1
+  shift
+fi
+if [[ "${1:-}" == "--skip-backend" ]]; then
+  export DEPLOY_SKIP_BACKEND=1
+  shift
+fi
+if [[ "${1:-}" == "--yes" ]]; then
+  export DEPLOY_YES=1
+  shift
 fi
 
-echo "Building project..."
-npm run build
+deploy_require_confirm_env
 
-echo "Creating deploy.zip..."
+echo "==> Building production bundle"
+VITE_GAME_SERVER_URL="$DEPLOY_VITE_GAME_SERVER_URL" npm run build
+
+echo "==> Creating deploy.zip (Amplify)"
 rm -f deploy.zip
-cd dist
-zip -r ../deploy.zip .
-cd ..
+(
+  cd dist
+  zip -rq ../deploy.zip .
+)
 
-echo "Deploying frontend ZIP to Amplify..."
+deploy_confirm_or_abort
 
-AMPLIFY_APP_ID="d11e4bu75ja2xt"
-AMPLIFY_BRANCH="staging"
-AWS_REGION="us-east-1"
+deploy_amplify_frontend
 
-DEPLOY_JSON=$(aws amplify create-deployment \
-  --app-id "$AMPLIFY_APP_ID" \
-  --branch-name "$AMPLIFY_BRANCH" \
-  --region "$AWS_REGION")
+if [[ "${DEPLOY_SKIP_BACKEND:-}" == "1" ]]; then
+  echo "==> Skipping backend (DEPLOY_SKIP_BACKEND=1)"
+  echo "Done."
+  exit 0
+fi
 
-JOB_ID=$(echo "$DEPLOY_JSON" | jq -r '.jobId')
-UPLOAD_URL=$(echo "$DEPLOY_JSON" | jq -r '.zipUploadUrl')
-
-curl -T deploy.zip "$UPLOAD_URL"
-
-aws amplify start-deployment \
-  --app-id "$AMPLIFY_APP_ID" \
-  --branch-name "$AMPLIFY_BRANCH" \
-  --job-id "$JOB_ID" \
-  --region "$AWS_REGION"
-
-echo "Amplify deployment started: job $JOB_ID"
-
-echo "Syncing files to server..."
-rsync -avz \
-  --delete \
-  --exclude 'node_modules' \
-  --exclude '.git' \
-  --exclude 'generated-logos' \
-  --exclude 'generated-portraits' \
-  --exclude 'generated-remote-vans' \
-  --exclude 'generated-jingles' \
-  --exclude 'saves' \
-  --exclude 'data/cloud_saves' \
-  --exclude 'data/stripe_customers.json' \
-  --exclude 'logs' \
-  --exclude 'server-deploy.sh' \
-  --exclude 'landing-images' \
-  --exclude '.DS_Store' \
-  --exclude '.env' \
-  --exclude '.env.*' \
-  --exclude 'keys' \
-  --exclude 'deploy.zip' \
-  --exclude 'marketing' \
-  -e "ssh -i /Users/brianshrader/Documents/Games/Cursor/Frequencies/keys/airwaveempirekey.pem" \
-  ./ admin@3.18.148.115:~/airwave-empire/
-
-
-echo "Running server deploy..."
-ssh -i /Users/brianshrader/Documents/Games/Cursor/Frequencies/keys/airwaveempirekey.pem \
-  admin@3.18.148.115 \
-  "cd ~/airwave-empire && ./server-deploy.sh"
+deploy_backup_persistence
+deploy_rsync_backend
+deploy_run_server_deploy
 
 echo "Done."
-
-

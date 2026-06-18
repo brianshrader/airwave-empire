@@ -12,6 +12,14 @@
 
 const fs = require('fs');
 const path = require('path');
+const {
+  SAVES_DIR,
+  cloudSavesDir,
+  GENERATED_LOGOS_DIR,
+  GENERATED_PORTRAITS_DIR,
+  GENERATED_JINGLES_DIR,
+  GENERATED_REMOTE_VANS_DIR,
+} = require('./runtimePaths');
 
 const REPO_ROOT = path.join(__dirname, '..');
 
@@ -97,8 +105,8 @@ function buildPinnedRelativePaths(opts) {
     extractGeneratedRefsFromText(txt).forEach((p) => pinned.add(p));
   };
 
-  collectJsonFilesFlat(path.join(REPO_ROOT, 'saves')).forEach(scanFile);
-  collectJsonFilesRecursive(path.join(REPO_ROOT, 'data', 'cloud_saves')).forEach(scanFile);
+  collectJsonFilesFlat(SAVES_DIR).forEach(scanFile);
+  collectJsonFilesRecursive(cloudSavesDir()).forEach(scanFile);
 
   const mpSaves = path.join(REPO_ROOT, 'multiplayer', 'saves');
   if (fs.existsSync(mpSaves)) collectJsonFilesFlat(mpSaves).forEach(scanFile);
@@ -134,7 +142,12 @@ function shouldSkipGcPortrait(relPosix) {
  */
 function listGcEligibleFiles() {
   const out = [];
-  const roots = ['generated-logos', 'generated-remote-vans', 'generated-jingles', 'generated-portraits'];
+  const roots = [
+    { abs: GENERATED_LOGOS_DIR, rel: 'generated-logos' },
+    { abs: GENERATED_REMOTE_VANS_DIR, rel: 'generated-remote-vans' },
+    { abs: GENERATED_JINGLES_DIR, rel: 'generated-jingles' },
+    { abs: GENERATED_PORTRAITS_DIR, rel: 'generated-portraits' },
+  ];
 
   function walk(absDir, baseRel) {
     if (!fs.existsSync(absDir)) return;
@@ -152,8 +165,8 @@ function listGcEligibleFiles() {
     }
   }
 
-  for (const r of roots) {
-    walk(path.join(REPO_ROOT, r), r);
+  for (const { abs, rel } of roots) {
+    walk(abs, rel);
   }
   return out;
 }

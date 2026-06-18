@@ -8,8 +8,9 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { posthog } = require('./posthog');
+const { simInvariantSnapshotsDir, ensureDir } = require('./runtimePaths');
 
-const SEEDREV_SNAPSHOT_DIR = path.join(__dirname, '..', 'data', 'sim-invariant-snapshots');
+const SEEDREV_SNAPSHOT_DIR = simInvariantSnapshotsDir();
 
 const RATE_WINDOW_MS = 60 * 60 * 1000;
 const RATE_MAX = 120;
@@ -89,7 +90,7 @@ function sanitizeStationsTop5(raw) {
 /** Local JSON only for seedrev_zero_raw_pool (repair miss diagnosis). */
 function writeSeedrevZeroRawPoolSnapshot(body, props) {
   try {
-    fs.mkdirSync(SEEDREV_SNAPSHOT_DIR, { recursive: true });
+    ensureDir(SEEDREV_SNAPSHOT_DIR);
     const top5 = sanitizeStationsTop5(body.stations_top5);
     const sumShare = typeof body.sum_share === 'number' && Number.isFinite(body.sum_share)
       ? Math.round(body.sum_share * 1e6) / 1e6
@@ -117,7 +118,7 @@ function writeSeedrevZeroRawPoolSnapshot(body, props) {
 /** Local JSON for book_stale_across_turns (frozen book / period advance desync). */
 function writeBookStaleAcrossTurnsSnapshot(body, props) {
   try {
-    fs.mkdirSync(SEEDREV_SNAPSHOT_DIR, { recursive: true });
+    ensureDir(SEEDREV_SNAPSHOT_DIR);
     const snapshot = {
       timestamp: new Date().toISOString(),
       phase: 'book_stale_across_turns',

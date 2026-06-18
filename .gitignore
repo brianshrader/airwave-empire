@@ -20,3 +20,7 @@ audit-output/
 trace-output/
 .env.*
 node_modules/
+*.pkg
+*.mp4
+*.mov
+deploy.zip*

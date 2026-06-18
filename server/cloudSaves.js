@@ -9,8 +9,10 @@ const crypto = require('crypto');
 const { verifyClerkBearer } = require('./clerkVerify');
 const { userHasActiveSubscription, subscriptionCheckEnabled } = require('./subscriptionAccess');
 const { posthog } = require('./posthog');
+const { cloudSavesDir, ensureDir: ensureRuntimeDir } = require('./runtimePaths');
 
-const ROOT = path.join(__dirname, '..', 'data', 'cloud_saves');
+const ROOT = cloudSavesDir();
+ensureRuntimeDir(ROOT);
 const MAX_SAVES = Math.min(50, parseInt(process.env.CLOUD_SAVE_MAX_SLOTS || '10', 10) || 10);
 /** Default 12 MiB — late-game JSON can exceed 6 MiB; hard cap 24 MiB. Must stay ≤ server.js express.json (JSON_BODY_LIMIT). */
 const MAX_BYTES = Math.min(
@@ -35,9 +37,8 @@ function savePath(uid, id) {
   return path.join(userRoot(uid), `${id}.json`);
 }
 
-function ensureDir(uid) {
-  const dir = userRoot(uid);
-  if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+function ensureUserDir(uid) {
+  ensureRuntimeDir(userRoot(uid));
 }
 
 function readManifest(uid) {
@@ -53,7 +54,7 @@ function readManifest(uid) {
 }
 
 function writeManifest(uid, man) {
-  ensureDir(uid);
+  ensureUserDir(uid);
   fs.writeFileSync(manifestPath(uid), JSON.stringify(man, null, 2), 'utf8');
 }
 
@@ -174,7 +175,7 @@ function mountCloudSaves(app) {
       return res.status(400).json({ error: 'save_limit', maxSaves: MAX_SAVES });
     }
     const id = `cs_${crypto.randomBytes(12).toString('hex')}`;
-    ensureDir(uid);
+    ensureUserDir(uid);
     fs.writeFileSync(savePath(uid, id), raw, 'utf8');
     const meta = metaFromPayload(id, req.body, Buffer.byteLength(raw, 'utf8'));
     man.saves.unshift(meta);
@@ -204,7 +205,7 @@ function mountCloudSaves(app) {
     const man = readManifest(uid);
     const idx = man.saves.findIndex(s => s.id === id);
     if (idx < 0) return res.status(404).json({ error: 'Not found' });
-    ensureDir(uid);
+    ensureUserDir(uid);
     fs.writeFileSync(savePath(uid, id), raw, 'utf8');
     const meta = metaFromPayload(id, req.body, Buffer.byteLength(raw, 'utf8'));
     man.saves[idx] = meta;

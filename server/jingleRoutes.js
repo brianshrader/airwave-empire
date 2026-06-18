@@ -29,8 +29,9 @@ const {
 } = require('./aiQuotaHttp');
 const { getTrialQuotaSnapshot } = require('./trialQuotaStore');
 const { CLERK_PLAN } = require('./aiEntitlements');
+const { GENERATED_JINGLES_DIR, ensureDir } = require('./runtimePaths');
 
-const GENERATED_DIR = path.join(__dirname, '..', 'generated-jingles');
+const GENERATED_DIR = GENERATED_JINGLES_DIR;
 
 const RATE_WINDOW_MS = 60 * 60 * 1000;
 const jingleRateMap = new Map();
@@ -112,8 +113,8 @@ function jingleRateLimitPerHour() {
   return Math.min(500, n);
 }
 
-function ensureDir() {
-  if (!fs.existsSync(GENERATED_DIR)) fs.mkdirSync(GENERATED_DIR, { recursive: true });
+function ensureJingleDir() {
+  ensureDir(GENERATED_DIR);
 }
 
 function sleep(ms) {
@@ -215,7 +216,7 @@ function sanitizeJingleSonicHint(str, maxLen) {
  * @param {import('express').Express} app
  */
 function mountJingleRoutes(app) {
-  ensureDir();
+  ensureJingleDir();
   const iv = setInterval(pruneJingleJobs, 10 * 60 * 1000);
   if (typeof iv.unref === 'function') iv.unref();
 

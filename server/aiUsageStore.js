@@ -7,8 +7,9 @@
 
 const fs = require('fs');
 const path = require('path');
+const { aiUsageDir, ensureDir } = require('./runtimePaths');
 
-const ROOT = path.join(__dirname, '..', 'data', 'ai_usage');
+const ROOT = aiUsageDir();
 const USER_MUTEX = new Map();
 
 function utcYearMonth() {
@@ -27,7 +28,7 @@ function filePathForUser(uid) {
 }
 
 function ensureRoot() {
-  if (!fs.existsSync(ROOT)) fs.mkdirSync(ROOT, { recursive: true });
+  ensureDir(ROOT);
 }
 
 /**

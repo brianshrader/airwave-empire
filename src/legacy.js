@@ -5124,16 +5124,22 @@ const MARKETS={
       {id:'phoenix_spanish_2002_fm',y:2002,p:2,bp:{type:'FM',fmt:'SPANISH',pw:'100kw',str:'moderate'}},
     ],
     /**
-     * 1990s fragmentation — adult FM (AC / classic rock / oldies) before 1995 book; 1991 slot is
-     * Spanish (not second strong CR) for Sunbelt Hispanic dial realism (see `phoenixDiagTop40*`).
+     * 1990s–2000s fragmentation — adult FM before 1995 book; 1991 slot is Spanish (not second
+     * strong CR). TOP40 @1992 moderate + @2006 emerging keeps CHR bucket above cert floor when
+     * chrwar-era hits flip to AC/HOT_AC (see `phoenixDiagTop40*`).
      */
     fragmentationLaunches:[
       {id:'phoenix_frag_cr_1986',y:1986,p:1,bp:{type:'FM',fmt:'CLASSIC_ROCK',pw:'50kw',str:'moderate'}},
       {id:'phoenix_frag_ac_1988',y:1988,p:2,bp:{type:'FM',fmt:'ADULT_CONTEMP',pw:'50kw',str:'moderate'}},
       {id:'phoenix_frag_spanish_1991',y:1991,p:1,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
-      {id:'phoenix_frag_top40_1992',y:1992,p:2,bp:{type:'FM',fmt:'TOP40',pw:'50kw',str:'emerging'}},
+      {id:'phoenix_frag_top40_1992',y:1992,p:2,bp:{type:'FM',fmt:'TOP40',pw:'50kw',str:'moderate'}},
       {id:'phoenix_frag_oldies_1993',y:1993,p:2,bp:{type:'FM',fmt:'OLDIES',pw:'50kw',str:'moderate'}},
+      {id:'phoenix_frag_top40_2006',y:2006,p:1,bp:{type:'FM',fmt:'TOP40',pw:'50kw',str:'emerging'}},
     ],
+  },
+  /** Playtest / scaffold — west of Mississippi (K calls). Not in ALL_PLAYABLE_MARKET_IDS until certified. */
+  houston:{
+    id:'houston', callPrefix:'K', label:'Houston', region:'Southwest', rankTier:'large', archetypeId:'sunbelt_diversified',
   },
   /** DIAG_ONLY — ecology harness / scaffold QA. Not in ALL_PLAYABLE_MARKET_IDS. */
   portland:{
@@ -5201,10 +5207,24 @@ window.marketRankTierToFccSimulcastTier=marketRankTierToFccSimulcastTier;
 window.getMaxSimulcastPct=getMaxSimulcastPct;
 window.getMaxSimulcastPctForMarket=getMaxSimulcastPctForMarket;
 
-/** FCC-style call area: W east of Mississippi (in-game), K west — per-market hard rule for gc() / rename */
+/** FCC-style call area: W east of Mississippi (in-game), K west — one prefix per market for gc() / rename */
 function getCallPrefixForMarket(marketId){
   const m=MARKETS[marketId||'atlanta']||MARKETS.atlanta;
   return m.callPrefix==='K'?'K':'W';
+}
+function bmCallPrefixFieldHtml(safe,fontPx){
+  const px=fontPx||22;
+  const pref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
+  const boxStyle=`background:var(--crd);border:1px solid var(--bdh);color:var(--amb);font-family:var(--fd);font-size:${px}px;letter-spacing:3px;padding:${px>=28?12:10}px ${px>=28?14:12}px;text-align:center`;
+  return`<input type="hidden" id="bm-rn-prefix-${safe}" value="${pref}">`+
+    `<span style="${boxStyle};border-right:none;min-width:40px;display:inline-block">${pref}</span>`;
+}
+function renameCallPrefixFieldHtml(fontPx){
+  const px=fontPx||28;
+  const pref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
+  const boxStyle=`background:var(--crd);border:1px solid var(--bdh);color:var(--amb);font-family:var(--fd);font-size:${px}px;letter-spacing:4px;padding:12px 14px;min-width:44px;text-align:center`;
+  return`<input type="hidden" id="rn-prefix" value="${pref}">`+
+    `<span style="${boxStyle};border-right:none;display:inline-block">${pref}</span>`;
 }
 /** Phase 1 pilot markets — single registry (Node: scripts/market-ids.cjs). Order = scenario-picker button order. */
 const ALL_PLAYABLE_MARKET_IDS=Object.freeze([
@@ -5566,10 +5586,9 @@ function wlBindPaywallEmailSignup(){
 }
 
 function wlScenarioEmailSignupHtml(){
-  return `<div class="wl-scenario-email-opt-in" role="region" aria-label="Optional email updates">
+  return `<div class="wl-scenario-email-opt-in" role="region" aria-label="Email updates about Airwave Empire">
     <div class="wl-scenario-email-opt-in__inner">
-      <div class="wl-scenario-email-opt-in__kicker">Optional</div>
-      <p class="wl-scenario-email-opt-in__title">Email updates about Airwave Empire</p>
+      <p class="wl-scenario-email-opt-in__title">GET UPDATES ABOUT AIRWAVE EMPIRE</p>
       <p class="wl-scenario-email-opt-in__lead">Occasional notes on balance, strategy, and new markets and features.</p>
       <form id="wl-email-signup-scen-form" class="wl-scenario-email-opt-in__form">
         <input id="wl-email-signup-scen-email" class="mp-inp wl-scenario-email-opt-in__input" type="email" inputmode="email" autocomplete="email" placeholder="you@example.com" />
@@ -12816,45 +12835,9 @@ async function wlPollStationJingleJob(jobId){
   }
   return{ok:false,error:'Jingle generation timed out — try again in a moment.'};
 }
-/** Suno tags only — from demo lean slider (same bands as `leanLabel`). */
-function wlJingleAudienceHintFromLean(lean){
-  const L=Number(lean);
-  const safe=Number.isFinite(L)?Math.max(-1,Math.min(1,L)):0;
-  const label=leanLabel(safe);
-  const v=Math.round(safe*100);
-  let tone='';
-  if(v<=-60)tone='youth-skewed playful energy';
-  else if(v<=-20)tone='young-adult bright catchy';
-  else if(v<=20)tone='broad adult mainstream appeal';
-  else if(v<=60)tone='mature adult warmth';
-  else tone='older-demo clear warm VO';
-  const out=`Audience target ${label}; ${tone}`;
-  return out.slice(0,WL_JINGLE_AUDIENCE_HINT_MAX);
-}
-/** Suno tags only — from format drift slider (`getDrift` poles, year-aware for hits lineage). */
-function wlJinglePositionHintFromDrift(s){
-  const dr=getDrift(s);
-  if(!dr||!dr.cfg)return '';
-  const {cfg,val}=dr;
-  const a=String(cfg.poleA?.name||'A').trim();
-  const b=String(cfg.poleB?.name||'B').trim();
-  const t=(Number(val)||0)/100;
-  let phrase;
-  if(t<0.22)phrase=`strong ${a} side`;
-  else if(t<0.42)phrase=`leans ${a} with ${b} undertones`;
-  else if(t<=0.58)phrase=`balanced ${a} and ${b}`;
-  else if(t<0.78)phrase=`leans ${b} with ${a} undertones`;
-  else phrase=`strong ${b} side`;
-  const out=`Format positioning: ${phrase}`;
-  return out.slice(0,WL_JINGLE_POSITION_HINT_MAX);
-}
-/** Client-built lines appended to Suno `tags` on /api/generate-station-jingle (not lyrics). */
+/** Jingle Suno tags: era/imaging only — demo lean / format drift omitted (they primed celebration tails). */
 function wlBuildJingleSonicHints(s,_G){
-  if(!s)return{audienceHint:'',positionHint:''};
-  return{
-    audienceHint:wlJingleAudienceHintFromLean(s.demoLean),
-    positionHint:wlJinglePositionHintFromDrift(s),
-  };
+  return{audienceHint:'',positionHint:''};
 }
 /**
  * Commercial gospel (Nielsen-style urban/inspirational) — market lift only; clamped inside appl().
@@ -31229,8 +31212,6 @@ function brandMarketingCallLettersOnlyHtml(leg, opts){
   const sid=s.id;
   const safe=bmSafeElId(sid);
   const cur=stripCallBandSuffix(s.callLetters||'');
-  const requiredPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
-  const prefix=requiredPref;
   const suffix=(cur[0]==='W'||cur[0]==='K')?cur.slice(1):cur;
   const groupNote=isFirstLeg?`<div class="ibox" style="margin-bottom:10px">Each license has its own call letters. On-air brand, logo, promotion, and programming budget are shared — set them in the sections below once.</div>`:'';
   const showDialHeader=!!dialLabel;
@@ -31241,8 +31222,7 @@ function brandMarketingCallLettersOnlyHtml(leg, opts){
     <div class="slsec" style="margin-bottom:14px">
       <div class="sll"><span>CALL LETTERS</span><strong id="bm-rn-preview-${safe}">${rosterHtmlEsc(callDisplay(s))}</strong></div>
       <div style="display:flex;align-items:center;gap:0;margin-top:10px">
-        <input type="hidden" id="bm-rn-prefix-${safe}" value="${prefix}">
-        <span style="background:var(--crd);border:1px solid var(--bdh);border-right:none;color:var(--amb);font-family:var(--fd);font-size:22px;letter-spacing:3px;padding:10px 12px;min-width:40px;text-align:center">${prefix}</span>
+        ${bmCallPrefixFieldHtml(safe,22)}
         <input type="text" id="bm-rn-suffix-${safe}" maxlength="3" value="${suffix}"
           style="width:100%;background:var(--crd);border:1px solid var(--bdh);color:var(--wht);font-family:var(--fd);font-size:22px;letter-spacing:4px;padding:10px 14px;outline:none;text-transform:uppercase"
           oninput="bmUpdRenamePreview('${sid}')" onkeydown="if(event.key==='Enter')bmDoRename('${sid}')">
@@ -31287,8 +31267,6 @@ function brandMarketingIdentityBlockHtml(leg, opts){
   const sid=s.id;
   const safe=bmSafeElId(sid);
   const cur=stripCallBandSuffix(s.callLetters||'');
-  const requiredPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
-  const prefix=requiredPref;
   const suffix=(cur[0]==='W'||cur[0]==='K')?cur.slice(1):cur;
   const groupNote=multiLeg&&isFirstLeg?`<div class="ibox" style="margin-bottom:10px">Simulcast group — each facility has its own dial and call letters. Use the blocks below to rename each leg.</div>`:'';
   const partnerNote=!multiLeg&&stationHasSimulcastLeg(s,G)?`<div class="ibox" style="margin-bottom:10px">Simulcast group — each facility keeps its own <strong>-AM</strong> / <strong>-FM</strong> call. Same-band repeaters are <strong>not</strong> forced to identical base letters; rename here if you want distinct IDs.</div>`:'';
@@ -31301,8 +31279,7 @@ function brandMarketingIdentityBlockHtml(leg, opts){
     <div class="slsec" style="margin-bottom:14px">
       <div class="sll"><span>CALL LETTERS</span><strong id="bm-rn-preview-${safe}">${rosterHtmlEsc(callDisplay(s))}</strong></div>
       <div style="display:flex;align-items:center;gap:0;margin-top:10px">
-        <input type="hidden" id="bm-rn-prefix-${safe}" value="${prefix}">
-        <span style="background:var(--crd);border:1px solid var(--bdh);border-right:none;color:var(--amb);font-family:var(--fd);font-size:22px;letter-spacing:3px;padding:10px 12px;min-width:40px;text-align:center">${prefix}</span>
+        ${bmCallPrefixFieldHtml(safe,22)}
         <input type="text" id="bm-rn-suffix-${safe}" maxlength="3" value="${suffix}"
           style="width:100%;background:var(--crd);border:1px solid var(--bdh);color:var(--wht);font-family:var(--fd);font-size:22px;letter-spacing:4px;padding:10px 14px;outline:none;text-transform:uppercase"
           oninput="bmUpdRenamePreview('${sid}')" onkeydown="if(event.key==='Enter')bmDoRename('${sid}')">
@@ -33615,8 +33592,7 @@ function openRename(sid){
   wlCommitUiClear('rn-btn');
   _renameBrandAtOpen=s.brand;
   const cur=stripCallBandSuffix(s.callLetters);
-  const requiredPref=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
-  const prefix=requiredPref;
+  const prefix=getCallPrefixForMarket(G.marketId||ACTIVE_MARKET);
   const suffix=(cur[0]==='W'||cur[0]==='K')?cur.slice(1):cur;
   const partnerNote=stationHasSimulcastLeg(s,G)?`<div class="ibox">This station is in a simulcast group. Each facility can keep its own base call; <strong>${cur}-AM</strong> / <strong>${cur}-FM</strong> suffixes still apply by band.</div>`:'';
 
@@ -33626,8 +33602,7 @@ function openRename(sid){
     <div class="slsec">
       <div class="sll"><span>NEW CALL LETTERS</span><strong id="rn-preview">${callDisplay(s)}</strong></div>
       <div style="display:flex;align-items:center;gap:0;margin-top:10px">
-        <input type="hidden" id="rn-prefix" value="${prefix}">
-        <span style="background:var(--crd);border:1px solid var(--bdh);border-right:none;color:var(--amb);font-family:var(--fd);font-size:28px;letter-spacing:4px;padding:12px 14px;min-width:44px;text-align:center">${prefix}</span>
+        ${renameCallPrefixFieldHtml(28)}
         <input type="text" id="rn-suffix" maxlength="3" value="${suffix}"
           placeholder="RGS"
           style="width:100%;background:var(--crd);border:1px solid var(--bdh);color:var(--wht);font-family:var(--fd);font-size:28px;letter-spacing:6px;padding:12px 16px;outline:none;text-transform:uppercase"

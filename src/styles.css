@@ -2955,11 +2955,11 @@ body#wl-play #main{
   margin:0 0 6px;
 }
 .wl-scenario-email-opt-in__title{
-  font-family:var(--ft);
+  font-family:var(--fd);
   font-size:13px;
   font-weight:600;
-  letter-spacing:0.04em;
-  color:var(--off);
+  letter-spacing:0.12em;
+  color:var(--amb);
   margin:0 0 8px;
   line-height:1.35;
 }

@@ -28,8 +28,9 @@ const {
 } = require('./aiQuotaHttp');
 const { refundTrialImage, getTrialQuotaSnapshot } = require('./trialQuotaStore');
 const { CLERK_PLAN } = require('./aiEntitlements');
+const { GENERATED_REMOTE_VANS_DIR, ensureDir } = require('./runtimePaths');
 
-const GENERATED_VAN_DIR = path.join(__dirname, '..', 'generated-remote-vans');
+const GENERATED_VAN_DIR = GENERATED_REMOTE_VANS_DIR;
 
 /** Bump when pipeline/prompt changes so deploys do not serve old squished PNGs from disk. */
 const REMOTE_VAN_FILE_TAG = 'v2';
@@ -43,7 +44,7 @@ function resolveVanAspectRatio() {
 }
 
 function ensureVanDir() {
-  if (!fs.existsSync(GENERATED_VAN_DIR)) fs.mkdirSync(GENERATED_VAN_DIR, { recursive: true });
+  ensureDir(GENERATED_VAN_DIR);
 }
 
 /** Resolve absolute path to a logo file under generated-logos (client passes /generated-logos/…). */

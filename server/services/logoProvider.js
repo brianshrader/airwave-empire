@@ -10,6 +10,7 @@
  * Logos: resized to 512×512 PNG.
  *
  * ShortAPI z-image: resolution must be exactly "1K" or "1.5K" (API-enforced). Default 1K.
+ * ShortAPI flux-1.0: aspect_ratio, num_images, performance ("dev"|"pro"), safety_checker — see SHORTAPI_IMAGE_MODEL.
  */
 
 const sharp = require('sharp');
@@ -351,6 +352,49 @@ function shortapiPixelSizeForAspect(ar, resLabel) {
   return { w: edge, h: edge };
 }
 
+function shortapiModelUsesFluxArgs(modelSlug) {
+  return /flux/i.test(String(modelSlug || ''));
+}
+
+function shortapiFluxPerformance() {
+  var raw = String(process.env.SHORTAPI_FLUX_PERFORMANCE != null ? process.env.SHORTAPI_FLUX_PERFORMANCE : 'dev')
+    .trim()
+    .toLowerCase();
+  return raw === 'pro' ? 'pro' : 'dev';
+}
+
+function shortapiCreateBodyForImage({ prompt, aspect_ratio }) {
+  var ar = '1:1';
+  if (aspect_ratio === '16:9') ar = '16:9';
+  else if (aspect_ratio === '9:16') ar = '9:16';
+
+  if (shortapiModelUsesFluxArgs(SHORTAPI_MODEL)) {
+    return {
+      model: SHORTAPI_MODEL,
+      args: {
+        prompt,
+        aspect_ratio: ar,
+        num_images: 1,
+        performance: shortapiFluxPerformance(),
+        safety_checker: true,
+      },
+    };
+  }
+
+  var resLabel = normalizeShortapiResolution();
+  var wh = shortapiPixelSizeForAspect(ar, resLabel);
+  return {
+    model: SHORTAPI_MODEL,
+    args: {
+      prompt,
+      aspect_ratio: ar,
+      resolution: resLabel,
+      width: wh.w,
+      height: wh.h,
+    },
+  };
+}
+
 /**
  * Walk the job result, try every https URL then every base64 blob until sharp accepts one.
  * Avoids picking a single wrong "output" string before a real image_url elsewhere in the JSON.
@@ -408,23 +452,7 @@ async function generateShortapiImage({ prompt, aspect_ratio = '1:1' }) {
     throw err;
   }
 
-  var ar = '1:1';
-  if (aspect_ratio === '16:9') ar = '16:9';
-  else if (aspect_ratio === '9:16') ar = '9:16';
-
-  var resLabel = normalizeShortapiResolution();
-  var wh = shortapiPixelSizeForAspect(ar, resLabel);
-
-  const createBody = {
-    model: SHORTAPI_MODEL,
-    args: {
-      prompt,
-      aspect_ratio: ar,
-      resolution: resLabel,
-      width: wh.w,
-      height: wh.h,
-    },
-  };
+  const createBody = shortapiCreateBodyForImage({ prompt, aspect_ratio });
 
   const res = await fetch(SHORTAPI_CREATE_URL, {
     method: 'POST',

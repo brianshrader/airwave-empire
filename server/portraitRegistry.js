@@ -4,17 +4,18 @@
 
 const fs = require('fs');
 const path = require('path');
+const { GENERATED_PORTRAITS_DIR, ensureDir } = require('./runtimePaths');
 
-const PORTRAIT_DIR = path.join(__dirname, '..', 'generated-portraits');
+const PORTRAIT_DIR = GENERATED_PORTRAITS_DIR;
 const REGISTRY_PATH = path.join(PORTRAIT_DIR, 'registry.json');
 
-function ensureDir() {
-  if (!fs.existsSync(PORTRAIT_DIR)) fs.mkdirSync(PORTRAIT_DIR, { recursive: true });
+function ensurePortraitDir() {
+  ensureDir(PORTRAIT_DIR);
 }
 
 /** @returns {{ entries: Object<string, object> }} */
 function readRegistry() {
-  ensureDir();
+  ensurePortraitDir();
   if (!fs.existsSync(REGISTRY_PATH)) return { entries: {} };
   try {
     const data = JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf8'));
@@ -27,7 +28,7 @@ function readRegistry() {
 
 /** @param {{ entries: Object }} reg */
 function writeRegistry(reg) {
-  ensureDir();
+  ensurePortraitDir();
   fs.writeFileSync(REGISTRY_PATH, JSON.stringify(reg, null, 2), 'utf8');
 }
 
@@ -53,5 +54,5 @@ module.exports = {
   writeRegistry,
   setRegistryEntry,
   getRegistryEntry,
-  ensureDir,
+  ensureDir: ensurePortraitDir,
 };

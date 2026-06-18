@@ -23,11 +23,12 @@ const {
 } = require('./aiQuotaHttp');
 const { refundTrialImage, getTrialQuotaSnapshot } = require('./trialQuotaStore');
 const { CLERK_PLAN } = require('./aiEntitlements');
+const { GENERATED_LOGOS_DIR, ensureDir } = require('./runtimePaths');
 
-const GENERATED_DIR = path.join(__dirname, '..', 'generated-logos');
+const GENERATED_DIR = GENERATED_LOGOS_DIR;
 
-function ensureDir() {
-  if (!fs.existsSync(GENERATED_DIR)) fs.mkdirSync(GENERATED_DIR, { recursive: true });
+function ensureDirLocal() {
+  ensureDir(GENERATED_DIR);
 }
 
 /** Slug for filesystem-safe deterministic names. */
@@ -101,7 +102,7 @@ function validateBody(body) {
  * @param {import('express').Express} app
  */
 function mountLogoRoutes(app) {
-  ensureDir();
+  ensureDirLocal();
 
   if (imageGenerationConfigured()) {
     console.log('[logo] Image generation:', getActiveImageProvider());

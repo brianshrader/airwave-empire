@@ -10,8 +10,9 @@ const TRIAL_JINGLE_CAP = 5;
 
 const fs = require('fs');
 const path = require('path');
+const { trialAiDir, ensureDir } = require('./runtimePaths');
 
-const ROOT = path.join(__dirname, '..', 'data', 'trial_ai');
+const ROOT = trialAiDir();
 const USER_MUTEX = new Map();
 
 function safeUid(uid) {
@@ -21,7 +22,7 @@ function safeUid(uid) {
 }
 
 function ensureRoot() {
-  if (!fs.existsSync(ROOT)) fs.mkdirSync(ROOT, { recursive: true });
+  ensureDir(ROOT);
 }
 
 function filePath(userId) {
