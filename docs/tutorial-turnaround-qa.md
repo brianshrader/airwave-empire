@@ -35,6 +35,7 @@ Resize once mid-step on desktop to confirm nothing throws in the console and the
 | **1** | First **Next Period**. |
 | **2** | **Research** → listener/consultant/memo → close research. |
 | **3** | **Programming** → **Format** change. |
+| **3.5** *(early-win experiment only)* | **Next Period** once → celebration modal with share/revenue/rank deltas → continue to Act 4. |
 | **4** | Programming tour (Positioning, Demo Target, Budget, Focus **Midday**) → talent on **Midday** → contract flow as scripted. |
 | **5** | **Next Period** twice (Midday focus); summaries dismissed. |
 | **6** | **Promotion** (tour/budget commit) → advance as coached. |
@@ -117,11 +118,14 @@ Tick per run:
 
 Requires `localStorage.setItem('wlTutorialDev','1')` then reload. See **`wlTutorialDevHelp()`** in console for full text.
 
+**Early-win experiment rollback:** `localStorage.setItem('wlTutorialEarlyWin','0')` or URL `tutorialEarlyWin=0` — see `docs/tutorial-early-win-experiment.md`.
+
 Examples:
 
 ```text
 wlTutorialJump(2)   // Research act
 wlTutorialJump(3)   // Post-research Programming
+wlTutorialJump(35)  // Early-win beat (experiment on)
 wlTutorialJump(5)   // Midday periods segment
 wlTutorialJump(6)   // Promotion
 wlTutorialJump('sales')       // Sales + book
