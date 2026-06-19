@@ -4,12 +4,12 @@
  */
 const fs = require('fs');
 const path = require('path');
-const { DATA_DIR, ensureDir, stripeCustomersFile } = require('./runtimePaths');
 
-const FILE = stripeCustomersFile();
+const DATA_DIR = path.join(__dirname, '..', 'data');
+const FILE = path.join(DATA_DIR, 'stripe_customers.json');
 
 function ensureFile() {
-  ensureDir(DATA_DIR);
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
   if (!fs.existsSync(FILE)) fs.writeFileSync(FILE, '{}', 'utf8');
 }
 

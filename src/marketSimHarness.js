@@ -41,7 +41,7 @@
   function getPlayableMarketIds() {
     return typeof ALL_PLAYABLE_MARKET_IDS !== 'undefined'
       ? ALL_PLAYABLE_MARKET_IDS
-      : ['newyork', 'losangeles', 'chicago', 'seattle', 'sanfrancisco', 'atlanta', 'nashville', 'wichita'];
+      : ['newyork', 'losangeles', 'chicago', 'seattle', 'sanfrancisco', 'atlanta', 'nashville', 'dallas', 'houston', 'wichita'];
   }
   function getMegaBenchmarkMarketIds() {
     return typeof DEV_BENCHMARK_MEGA_MARKET_IDS !== 'undefined'

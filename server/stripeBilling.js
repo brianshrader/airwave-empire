@@ -15,6 +15,10 @@ const {
   clerkUserIdFromCheckoutSession,
 } = require('./stripeCustomerLookup');
 const { fetchClerkPrimaryEmail } = require('./clerkUserEmail');
+const {
+  findOpenSubscriptionForCustomer,
+  createPortalSessionForExistingSubscriber,
+} = require('./stripeSubscriptionHelpers');
 
 /** Stripe mode + optional NODE_ENV snippet for Checkout Session metadata (support traceability). */
 function stripeDeploymentEnvLabel() {
@@ -84,6 +88,38 @@ function mountStripeBilling(app) {
 
     const baseUrl =
       process.env.PUBLIC_APP_URL || `${req.protocol}://${req.get('host')}`;
+
+    const existingSub = await findOpenSubscriptionForCustomer(stripe, customerId);
+    if (existingSub) {
+      const returnUrl = `${baseUrl}/account.html`;
+      const portalSession = await createPortalSessionForExistingSubscriber(stripe, {
+        customerId,
+        returnUrl,
+        requestedPriceId: priceId,
+        existingSub,
+      });
+      console.log('[STRIPE] existing subscription — portal instead of new checkout', {
+        clerkUserId,
+        stripeCustomerId: customerId,
+        stripeSubscriptionId: existingSub.id,
+        requestedPriceId: priceId,
+      });
+      posthog.capture({
+        distinctId: clerkUserId,
+        event: 'billing portal redirect',
+        properties: {
+          reason: 'existing_subscription',
+          stripe_customer_id: customerId,
+          stripe_subscription_id: existingSub.id,
+          requested_price_id: priceId,
+        },
+      });
+      return res.json({
+        url: portalSession.url,
+        redirect: 'portal',
+        reason: 'existing_subscription',
+      });
+    }
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
