@@ -6237,6 +6237,109 @@ if(typeof window!=='undefined'){
   window.wlMarketPlanLockTitle=wlMarketPlanLockTitle;
 }
 
+/** Nielsen-style tier order for scenario picker (mega → small). */
+const WL_SCENARIO_PICKER_TIER_ORDER=Object.freeze(['mega','large','medium','small']);
+const WL_SCENARIO_PICKER_TIER_LABELS=Object.freeze({
+  mega:'Mega markets (#1–3)',
+  large:'Large markets',
+  medium:'Medium markets',
+  small:'Smaller markets',
+});
+/** Keep in sync with STARTER_MARKET_IDS in billingEntitlements.js */
+const WL_STARTER_MARKET_IDS=Object.freeze(['newyork','losangeles','chicago','atlanta','nashville']);
+
+function wlScenarioPickerMarketsByTier(){
+  const ids=wlUiMarketIds().slice();
+  const tierRank=t=>{const i=WL_SCENARIO_PICKER_TIER_ORDER.indexOf(t);return i<0?99:i;};
+  ids.sort((a,b)=>{
+    const ma=MARKETS[a]||{},mb=MARKETS[b]||{};
+    const ta=tierRank(ma.rankTier||'medium'),tb=tierRank(mb.rankTier||'medium');
+    if(ta!==tb)return ta-tb;
+    const ra=Number(ma.revScale)||1,rb=Number(mb.revScale)||1;
+    if(rb!==ra)return rb-ra;
+    return String(ma.label||'').localeCompare(String(mb.label||''));
+  });
+  const byTier=new Map();
+  WL_SCENARIO_PICKER_TIER_ORDER.forEach(t=>byTier.set(t,[]));
+  const dev=[];
+  ids.forEach(id=>{
+    if(wlIsDevPlaytestMarketId(id)&&!PHASE1_MARKET_IDS.includes(id)){dev.push(id);return;}
+    const t=(MARKETS[id]||{}).rankTier||'medium';
+    const bucket=byTier.has(t)?byTier.get(t):byTier.get('medium');
+    bucket.push(id);
+  });
+  return{byTier,dev};
+}
+/** Lock label for scenario picker dropdown options not on the current plan. */
+function wlScenarioPickerMarketOptionTitle(id,planSlug,allowSet){
+  if(allowSet.has(id))return'';
+  let lockTitle=wlMarketPlanLockTitle(id,planSlug);
+  const _trialLock=typeof window!=='undefined'?String(window.__WL_TRIAL_LOCKED_MARKET_ID||'').trim():'';
+  if(planSlug==='trial_user'&&wlTrialLockKind()==='campaign')
+    lockTitle='Your free trial is the GM career — resume from Load game or subscribe for classic solo.';
+  else if(planSlug==='trial_user'&&_trialLock&&_trialLock!==id)
+    lockTitle='Your free trial uses one market — resume that save or subscribe to play other cities.';
+  else if(planSlug!=='pro'&&wlIsProOnlyMarketId(id))
+    lockTitle=wlMarketPlanLockTitle(id,'starter');
+  return lockTitle;
+}
+function wlScenarioPickerMarketLockSuffix(id,planSlug,allowSet){
+  const mId=String(id||'').trim();
+  if(allowSet.has(mId))return{suffix:'',locked:false};
+  if(wlIsDevPlayEnvironment()&&wlIsDevPlaytestMarketId(mId))return{suffix:'',locked:false};
+  if(wlIsProOnlyMarketId(mId))return{suffix:' (PRO ONLY)',locked:true};
+  if(planSlug==='free_user')return{suffix:' (STARTER ONLY)',locked:true};
+  if(planSlug==='starter')return{suffix:' (PRO ONLY)',locked:true};
+  if(planSlug==='trial_user'&&wlTrialLockKind()==='solo'){
+    const lock=typeof window!=='undefined'?String(window.__WL_TRIAL_LOCKED_MARKET_ID||'').trim():'';
+    if(lock&&lock!==mId&&!wlIsProOnlyMarketId(mId))return{suffix:'',locked:true};
+  }
+  return{suffix:' (PRO ONLY)',locked:true};
+}
+function wlScenarioPickerMarketSelectHtml(selectedId,planSlug,allowSet){
+  const{byTier,dev}=wlScenarioPickerMarketsByTier();
+  let html=`<select id="scen-market-select" class="scen-market-select" aria-label="Choose a market" onchange="pickMarketFromScenarioSelect(this)">`;
+  WL_SCENARIO_PICKER_TIER_ORDER.forEach(tier=>{
+    const list=byTier.get(tier)||[];
+    if(!list.length)return;
+    html+=`<optgroup label="${WL_SCENARIO_PICKER_TIER_LABELS[tier]}">`;
+    list.forEach(id=>{
+      const m=MARKETS[id];
+      if(!m)return;
+      const{suffix,locked}=wlScenarioPickerMarketLockSuffix(id,planSlug,allowSet);
+      const sel=id===selectedId?' selected':'';
+      const dis=locked?' disabled':'';
+      const tip=wlScenarioPickerMarketOptionTitle(id,planSlug,allowSet);
+      const title=tip?` title="${rosterHtmlEsc(tip)}"`:'';
+      html+=`<option value="${id}"${sel}${dis}${title}>${m.label}${suffix}</option>`;
+    });
+    html+=`</optgroup>`;
+  });
+  if(dev.length){
+    html+=`<optgroup label="Dev playtest">`;
+    dev.forEach(id=>{
+      const m=MARKETS[id];
+      if(!m)return;
+      const sel=id===selectedId?' selected':'';
+      html+=`<option value="${id}"${sel}>${m.label} (DEV)</option>`;
+    });
+    html+=`</optgroup>`;
+  }
+  html+=`</select>`;
+  return html;
+}
+function pickMarketFromScenarioSelect(sel){
+  const id=String(sel?.value||'').trim();
+  if(!id)return;
+  const devOk=wlIsDevPlayEnvironment()&&wlIsDevPlaytestMarketId(id);
+  if(!wlGetAllowedPhase1MarketIds().includes(id)&&!devOk){
+    if(sel&&_selectedMarket)sel.value=_selectedMarket;
+    return;
+  }
+  pickMarketPhase1(id);
+}
+if(typeof window!=='undefined')window.pickMarketFromScenarioSelect=pickMarketFromScenarioSelect;
+
 /** Multiplayer host market dropdown — options match billing plan (free: Atlanta only; Starter/Pro/trial: full set per planMarkets). */
 function wlMpRefreshMarketSelect(){
   try{
@@ -26689,22 +26792,7 @@ function openScenSelect(localSave, opts){
     </div>`;
   }).join('');
 
-  const marketPicker=wlUiMarketIds().map(id=>{
-    const sel=_selectedMarket===id?' scen-mkt-on':'';
-    const m=MARKETS[id];
-    const devTag=wlIsDevPlaytestMarketId(id)?' <span style="font-size:10px;color:var(--amb);letter-spacing:0.5px" title="Dev playtest market">DEV</span>':'';
-    if(_allowMktSet.has(id)||(wlIsDevPlayEnvironment()&&wlIsDevPlaytestMarketId(id)))
-      return `<button type="button" class="abt${sel}" style="font-size:13px;padding:6px 12px;letter-spacing:1px" onclick="pickMarketPhase1('${id}')">${m.label}${devTag}</button>`;
-    let lockTitle=wlMarketPlanLockTitle(id,_planSlugScen);
-    const _trialLock=typeof window!=='undefined'?String(window.__WL_TRIAL_LOCKED_MARKET_ID||'').trim():'';
-    if(_planSlugScen==='trial_user'&&wlTrialLockKind()==='campaign')
-      lockTitle='Your free trial is the GM career — resume from Load game or subscribe for classic solo.';
-    else if(_planSlugScen==='trial_user'&&_trialLock&&_trialLock!==id)
-      lockTitle='Your free trial uses one market — resume that save or subscribe to play other cities.';
-    else if(_planSlugScen!=='pro'&&wlIsProOnlyMarketId(id))
-      lockTitle=wlMarketPlanLockTitle(id,'starter');
-    return `<button type="button" class="abt${sel} scen-mkt-locked" disabled title="${lockTitle}" style="font-size:13px;padding:6px 12px;letter-spacing:1px;opacity:0.5;cursor:not-allowed" aria-disabled="true">${m.label} <span style="font-size:11px" aria-hidden="true">🔒</span></button>`;
-  }).join('');
+  const marketSelectHtml=wlScenarioPickerMarketSelectHtml(_selectedMarket,_planSlugScen,_allowMktSet);
   const blurb=(MARKETS[_selectedMarket]||MARKETS.atlanta).selectBlurb||'';
   const saveMktLbl=(MARKETS[saveMarketId]||MARKETS.atlanta).label;
   const mismatchNote=hasSave&&_selectedMarket!==saveMarketId
@@ -26813,18 +26901,30 @@ function openScenSelect(localSave, opts){
   </div>`;
   const soloSection=`<div class="scen-pick-section scen-pick-section--solo">
     <button type="button" class="abt" style="margin-bottom:8px" onclick="scenSetView('modes')">← BACK</button>
-    <div class="scen-pick-section__label scen-pick-section__label--solo-head">ALL SCENARIOS</div>
-    <p class="scen-pick-solo-sub">You are a radio station owner. Pick a market, then choose a scenario.</p>
-    <div style="font-family:var(--ft);font-size:12px;color:var(--mut);letter-spacing:2px;margin-bottom:8px">YOUR MARKET</div>
-    <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px">${marketPicker}</div>
-    ${blurb?`<div style="font-size:15px;color:var(--off);line-height:1.55;margin-bottom:14px;border-left:3px solid rgba(245,166,35,.35);padding-left:12px">${blurb}</div>`:''}
-    ${mismatchNote}
-    <div class="scen-pick-solo-hd">
-      <div style="font-family:var(--ft);font-size:15px;color:var(--mut);letter-spacing:2px">SCENARIOS</div>
-      <button type="button" onclick="cm('m-scen');mpOpenLobby()" class="abt" style="font-size:15px;letter-spacing:2px;padding:8px 20px">🎙 MULTIPLAYER</button>
+    <div class="scen-flow-banner" role="presentation">
+      <p class="scen-flow-banner__lead">Start your game in two steps:</p>
+      <ol class="scen-flow-steps" aria-label="New game steps">
+        <li class="scen-flow-steps__item scen-flow-steps__item--active"><span class="scen-flow-steps__num" aria-hidden="true">1</span><strong>Select Market</strong></li>
+        <li class="scen-flow-steps__item scen-flow-steps__item--active"><span class="scen-flow-steps__num" aria-hidden="true">2</span><strong>Select Scenario</strong></li>
+      </ol>
     </div>
-    <div style="display:flex;flex-direction:column;gap:12px">${cards}</div>
-    <button class="cfm" id="scn-start-btn" disabled onclick="confirmScen()" style="width:100%;margin-top:16px;padding:14px;font-size:14px;letter-spacing:3px">SELECT A SCENARIO TO BEGIN</button>
+    <section class="scen-market-step" aria-labelledby="scen-step-market-h">
+      <h3 class="scen-step-title" id="scen-step-market-h"><span class="scen-step-title__kicker">Step 1</span> Choose a market</h3>
+      ${marketSelectHtml}
+      ${blurb
+        ?`<div class="scen-market-blurb" id="scen-market-blurb">${blurb}</div>`
+        :`<p class="scen-market-hint" id="scen-market-hint">Choose a market to see available scenarios.</p>`}
+    </section>
+    ${mismatchNote}
+    <section class="scen-scenario-step" aria-labelledby="scen-step-scenario-h">
+      <div class="scen-pick-solo-hd">
+        <h3 class="scen-step-title scen-step-title--scenario" id="scen-step-scenario-h"><span class="scen-step-title__kicker">Step 2</span> Choose a scenario</h3>
+        <button type="button" onclick="cm('m-scen');mpOpenLobby()" class="abt scen-scenario-mp-btn" style="font-size:15px;letter-spacing:2px;padding:8px 20px">🎙 MULTIPLAYER</button>
+      </div>
+      <p class="scen-scenario-step__sub">Scenarios for <strong>${mktLabel}</strong> — pick one, then press Begin.</p>
+      <div style="display:flex;flex-direction:column;gap:12px">${cards}</div>
+      <button class="cfm" id="scn-start-btn" disabled onclick="confirmScen()" style="width:100%;margin-top:16px;padding:14px;font-size:14px;letter-spacing:3px">SELECT A SCENARIO TO BEGIN</button>
+    </section>
   </div>`;
   const mainPick=_scenView==='entry'?entrySection:_scenView==='modes'?modesSection:soloSection;
 
