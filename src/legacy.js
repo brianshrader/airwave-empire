@@ -5137,9 +5137,62 @@ const MARKETS={
       {id:'phoenix_frag_top40_2006',y:2006,p:1,bp:{type:'FM',fmt:'TOP40',pw:'50kw',str:'emerging'}},
     ],
   },
-  /** Playtest / scaffold — west of Mississippi (K calls). Not in ALL_PLAYABLE_MARKET_IDS until certified. */
+  /** Playable Pro-only — Texas Sunbelt large market (DFW). */
+  dallas:{
+    id:'dallas', callPrefix:'K', label:'Dallas–Fort Worth', region:'Southwest', rankTier:'large', archetypeId:'texas_sunbelt',
+    pop:{'12-17':215,'18-24':245,'25-34':285,'35-49':340,'50-64':255,'65+':150},
+    revScale:1.32, adxBonus:0.028,
+    amFreqs:['570 AM','620 AM','660 AM','770 AM','820 AM','870 AM','910 AM','980 AM','1080 AM','1140 AM','1270 AM','1540 AM'],
+    fmFreqs:['92.5 FM','93.3 FM','94.1 FM','94.5 FM','95.3 FM','96.3 FM','97.1 FM','97.9 FM','98.7 FM','99.5 FM','100.3 FM','101.1 FM','102.1 FM','102.9 FM','103.7 FM','104.5 FM','105.3 FM','106.1 FM','106.9 FM','107.5 FM','107.9 FM'],
+    fmFacilityByFreq:{
+      '92.5 FM':'100kw','93.3 FM':'50kw','94.1 FM':'50kw','94.5 FM':'100kw','95.3 FM':'50kw','96.3 FM':'100kw','97.1 FM':'50kw','97.9 FM':'100kw','98.7 FM':'50kw','99.5 FM':'100kw',
+      '100.3 FM':'100kw','101.1 FM':'50kw','102.1 FM':'50kw','102.9 FM':'50kw','103.7 FM':'50kw','104.5 FM':'100kw','105.3 FM':'50kw','106.1 FM':'50kw','106.9 FM':'50kw','107.5 FM':'50kw','107.9 FM':'50kw',
+    },
+    blackPop:0.14,hispPop1970:0.07,hispPop2000:0.21,hispPop2020:0.29,churchGoing:0.51,countryBonus:0.13,urbanBonus:0.03,
+    culture:{country:0.16,urban:0.04,newsTalk:0.09,religion:0.08,spanish:0.14},
+    selectBlurb:'A booming Texas Sunbelt metro where country heritage runs deeper than most large markets, AM news/talk/sports big sticks ruled the 1970s dial, and Hispanic FM growth reshapes the book from the 1990s onward. Commercial fragmentation accelerates faster than Deep South gospel clusters — think WBAP/KSCS country lanes, not Atlanta soul dominance.',
+    fmPenBias:-0.02, fmMusicFragMult:1.04, spokenWordAmResilience:1.08, heritageAmResilience:1.06, countryAmHoldout:1.15,
+    eduIndex:0.94,
+    publicCivicIndex:0.93,
+    teams:[
+      {id:'cowboys',name:'Dallas Lone Star Wranglers',sport:'PRO_FOOTBALL',introduced:1970,baseFee:380000,baseBonus:0.027,contractYrs:4},
+      {id:'rangers',name:'Texas Ranger Roundup',sport:'PRO_BASEBALL',introduced:1972,baseFee:210000,baseBonus:0.018,contractYrs:3},
+      {id:'mavericks',name:'Dallas Maverick Mustangs',sport:'PRO_BASKETBALL',introduced:1980,baseFee:145000,baseBonus:0.014,contractYrs:3},
+      {id:'stars',name:'Dallas Lone Star Ice',sport:'PRO_HOCKEY',introduced:1993,baseFee:110000,baseBonus:0.011,contractYrs:3},
+    ],
+    spanishLaunches:[
+      {id:'dallas_spanish_1988_fm',y:1988,p:2,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
+      {id:'dallas_spanish_1994_fm',y:1994,p:1,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
+    ],
+  },
+  /** Playable Pro-only — Texas Sunbelt large market (Gulf Coast). */
   houston:{
-    id:'houston', callPrefix:'K', label:'Houston', region:'Southwest', rankTier:'large', archetypeId:'sunbelt_diversified',
+    id:'houston', callPrefix:'K', label:'Houston', region:'Southwest', rankTier:'large', archetypeId:'texas_sunbelt',
+    pop:{'12-17':225,'18-24':255,'25-34':300,'35-49':360,'50-64':270,'65+':160},
+    revScale:1.40, adxBonus:0.028,
+    amFreqs:['740 AM','790 AM','850 AM','950 AM','1010 AM','1110 AM','1140 AM','1180 AM','1230 AM','1280 AM','1320 AM','1560 AM'],
+    fmFreqs:['88.7 FM','89.3 FM','90.1 FM','92.1 FM','92.9 FM','93.7 FM','94.5 FM','95.7 FM','96.5 FM','97.1 FM','97.9 FM','98.5 FM','99.1 FM','100.3 FM','101.9 FM','102.1 FM','102.9 FM','103.3 FM','104.1 FM','104.9 FM','106.1 FM','106.9 FM','107.5 FM'],
+    fmFacilityByFreq:{
+      '88.7 FM':'25kw','89.3 FM':'6kw','90.1 FM':'100kw','92.1 FM':'100kw','92.9 FM':'50kw','93.7 FM':'50kw','94.5 FM':'100kw','95.7 FM':'50kw','96.5 FM':'100kw','97.1 FM':'50kw','97.9 FM':'100kw','98.5 FM':'50kw','99.1 FM':'100kw',
+      '100.3 FM':'100kw','101.9 FM':'50kw','102.1 FM':'50kw','102.9 FM':'50kw','103.3 FM':'50kw','104.1 FM':'100kw','104.9 FM':'50kw','106.1 FM':'50kw','106.9 FM':'50kw','107.5 FM':'50kw',
+    },
+    blackPop:0.17,hispPop1970:0.11,hispPop2000:0.28,hispPop2020:0.38,churchGoing:0.48,countryBonus:0.08,urbanBonus:0.07,
+    culture:{country:0.10,urban:0.07,newsTalk:0.10,religion:0.07,spanish:0.19},
+    selectBlurb:'A Gulf Coast Texas metro where Hispanic FM depth rivals any Sunbelt market, urban and soul lanes run stronger than DFW country heritage, and AM news/talk/sports big sticks still anchor the book. Less WBAP country dominance — more bilingual fragmentation, rhythmic competition, and commuter talk.',
+    fmPenBias:0.01, fmMusicFragMult:1.05, spokenWordAmResilience:1.10, heritageAmResilience:1.04, countryAmHoldout:1.02,
+    eduIndex:0.93,
+    publicCivicIndex:0.91,
+    teams:[
+      {id:'astros',name:'Houston Space City Astros',sport:'PRO_BASEBALL',introduced:1970,baseFee:220000,baseBonus:0.018,contractYrs:3},
+      {id:'rockets',name:'Houston Rocket Fuel',sport:'PRO_BASKETBALL',introduced:1970,baseFee:155000,baseBonus:0.014,contractYrs:3},
+      {id:'oilers',name:'Houston Oil Patch Roughnecks',sport:'PRO_FOOTBALL',introduced:1970,baseFee:360000,baseBonus:0.026,contractYrs:4},
+      {id:'texans',name:'Houston Bayou Texans',sport:'PRO_FOOTBALL',introduced:2002,baseFee:340000,baseBonus:0.025,contractYrs:4},
+    ],
+    spanishLaunches:[
+      {id:'houston_spanish_1988_fm',y:1988,p:2,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
+      {id:'houston_spanish_1994_fm',y:1994,p:1,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'strong'}},
+      {id:'houston_spanish_2002_fm',y:2002,p:2,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
+    ],
   },
   /** DIAG_ONLY — ecology harness / scaffold QA. Not in ALL_PLAYABLE_MARKET_IDS. */
   portland:{
@@ -5228,7 +5281,7 @@ function renameCallPrefixFieldHtml(fontPx){
 }
 /** Phase 1 pilot markets — single registry (Node: scripts/market-ids.cjs). Order = scenario-picker button order. */
 const ALL_PLAYABLE_MARKET_IDS=Object.freeze([
-  'newyork','losangeles','chicago','seattle','sanfrancisco','atlanta','nashville','wichita','phoenix',
+  'newyork','losangeles','chicago','seattle','sanfrancisco','atlanta','nashville','wichita','phoenix','dallas','houston',
 ]);
 const PHASE1_MARKET_IDS=ALL_PLAYABLE_MARKET_IDS;
 /** Dev/local playtest — MARKETS rows only; never add to ALL_PLAYABLE_MARKET_IDS or billing. */
@@ -5306,7 +5359,7 @@ if(typeof window!=='undefined')window.wlGetAllowedPhase1MarketIds=wlGetAllowedPh
 if(typeof window!=='undefined')window.wlGetPlanPhase1MarketIds=wlGetPlanPhase1MarketIds;
 
 /** Pro plan only — keep in sync with server/planMarkets.js and src/billingEntitlements.js */
-const WL_PRO_ONLY_MARKET_IDS=Object.freeze(['seattle','sanfrancisco','wichita','phoenix']);
+const WL_PRO_ONLY_MARKET_IDS=Object.freeze(['seattle','sanfrancisco','wichita','phoenix','dallas','houston']);
 function wlProOnlyMarketIds(){
   if(typeof window!=='undefined'&&Array.isArray(window.__WL_PRO_ONLY_MARKET_IDS)&&window.__WL_PRO_ONLY_MARKET_IDS.length)
     return window.__WL_PRO_ONLY_MARKET_IDS;

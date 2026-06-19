@@ -23,6 +23,8 @@ export const ALL_PLAYABLE_MARKET_IDS_ORDERED = Object.freeze([
   'nashville',
   'wichita',
   'phoenix',
+  'dallas',
+  'houston',
 ]);
 
 /** Starter: NYC, LA, Chicago, Atlanta, Nashville — matches server/planMarkets.js */
@@ -32,7 +34,7 @@ const STARTER_MARKET_IDS = Object.freeze(['newyork', 'losangeles', 'chicago', 'a
 const FREE_USER_MARKET_IDS = Object.freeze(['atlanta']);
 
 /** Pro plan only — keep in sync with server/planMarkets.js */
-export const PRO_ONLY_MARKET_IDS = Object.freeze(['seattle', 'sanfrancisco', 'wichita', 'phoenix']);
+export const PRO_ONLY_MARKET_IDS = Object.freeze(['seattle', 'sanfrancisco', 'wichita', 'phoenix', 'dallas', 'houston']);
 
 const PRO_ONLY_SET = new Set(PRO_ONLY_MARKET_IDS);
 

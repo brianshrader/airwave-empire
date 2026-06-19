@@ -13,13 +13,15 @@ const ALL_PLAYABLE_MARKET_IDS_ORDERED = Object.freeze([
   'nashville',
   'wichita',
   'phoenix',
+  'dallas',
+  'houston',
 ]);
 
 /** Starter: five major markets (no Pro-only cities). */
 const STARTER_MARKET_IDS = Object.freeze(['newyork', 'losangeles', 'chicago', 'atlanta', 'nashville']);
 const FREE_USER_MARKET_IDS = Object.freeze(['atlanta']);
 /** Pro plan only — keep in sync with src/billingEntitlements.js */
-const PRO_ONLY_MARKET_IDS = Object.freeze(['seattle', 'sanfrancisco', 'wichita', 'phoenix']);
+const PRO_ONLY_MARKET_IDS = Object.freeze(['seattle', 'sanfrancisco', 'wichita', 'phoenix', 'dallas', 'houston']);
 const PRO_ONLY_SET = new Set(PRO_ONLY_MARKET_IDS);
 
 /** @param {string} [slug] */

@@ -99,6 +99,7 @@ var WLME = (() => {
     const sunbeltSouthPrairie = /sunbelt|southern|prairie|plains|heartland|country|bible|legacy|midwest_legacy/i.test(arch);
     const southernSunbeltPrairie = /sunbelt|southern|prairie|plains|heartland|country|bible/i.test(arch);
     const coastalSecularOnly = /coastal_secular/i.test(arch);
+    const texasSunbelt = /texas_sunbelt/i.test(arch);
     const eduN = _eduN(m);
     const civN = _civN(m);
     const eduSpread = _educationSpread01(m);
@@ -117,7 +118,7 @@ var WLME = (() => {
     const relNorm = _clamp01(rel / 0.14);
     const urbanNorm = _clamp01(urbanBonus / 0.16);
     const cultUrbanNorm = _clamp01(cultUrban / 0.18);
-    const blackMusicStrength = _clamp01(
+    let blackMusicStrength = _clamp01(
       0.48 * blackPop + 0.22 * urbanNorm + 0.18 * churchNorm + 0.12 * relNorm
     );
     const urbanContemporaryStrength = _clamp01(
@@ -172,9 +173,15 @@ var WLME = (() => {
     const newsTalk = typeof cult.newsTalk === "number" ? cult.newsTalk : 0;
     const newsNorm = _clamp01(newsTalk / 0.14);
     const amResilience = _amResilience01(m);
-    const spokenWordStrength = _clamp01(
+    let spokenWordStrength = _clamp01(
       0.34 * newsNorm + 0.26 * marketScale + 0.22 * civN + 0.18 * amResilience
     );
+    if (texasSunbelt) {
+      countryStrength = _clamp01(countryStrength + 0.08);
+      spokenWordStrength = _clamp01(spokenWordStrength + 0.05);
+      gospelStrength = _clamp01(gospelStrength - 0.05);
+      blackMusicStrength = _clamp01(blackMusicStrength - 0.04);
+    }
     const youthPool = _clamp01(0.5 * spanishLanguageStrength + 0.5 * urbanContemporaryStrength);
     const chrCore = _clamp01(
       0.22 * eduSpread + 0.2 * civN + 0.22 * marketFragmentation + 0.2 * modernMusicSubstitution + 0.16 * aaaAlternativeStrength

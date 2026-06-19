@@ -14,6 +14,8 @@ const ALL_PLAYABLE_MARKET_IDS = Object.freeze([
   'nashville',
   'wichita',
   'phoenix',
+  'dallas',
+  'houston',
 ]);
 
 /** LA / NYC / Chicago — mega-only benchmarks, ecology compare quick mode, FM rules scoped to top metros. */
