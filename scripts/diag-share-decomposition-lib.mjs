@@ -15,6 +15,16 @@ export const DUNCAN_AQH_ENVELOPES = {
     2010: { share1: [7, 10], top3: [18, 26], ge10: [0, 2], ge6: [3, 6], note: 'Medium market allows higher than mega but not 1995 peaks' },
     2020: { share1: [6, 9], top3: [16, 24], ge10: [0, 1], ge6: [2, 5], note: 'Further fragmentation expected' },
   },
+  phoenix: {
+    1995: { share1: [8, 11], top3: [20, 28], ge10: [0, 2], ge6: [2, 5], note: 'Large Sunbelt proxy (no Duncan sheet)' },
+    2003: { share1: [7, 10], top3: [18, 24], ge10: [0, 1], ge6: [2, 5], note: 'Large Sunbelt proxy' },
+    2010: { share1: [8, 11], top3: [20, 26], ge10: [0, 2], ge6: [2, 5], note: 'Large growing market proxy' },
+  },
+  atlanta: {
+    1995: { share1: [9, 13], top3: [24, 32], ge10: [1, 3], ge6: [3, 6], note: 'Large Deep South proxy' },
+    2003: { share1: [7, 10], top3: [20, 26], ge10: [0, 2], ge6: [2, 5], note: 'Large fragmented proxy' },
+    2010: { share1: [7, 10], top3: [20, 26], ge10: [0, 2], ge6: [2, 5], note: 'Large fragmented proxy' },
+  },
 };
 
 export const LAYER_LABELS = {
@@ -71,6 +81,41 @@ function diagShareDecompCapture(G,layer){
   m.otherAudioLeaderRelief=G._otherAudioLeaderReliefLast;
   m.otherAudioNonLeaderBoost=G._otherAudioNonLeaderBoostLast;
   G._shareDecompLayers.push(m);
+}
+function diagApplyCommercialMassScale(stations,G){
+  var scale=typeof G._diagCommercialMassScale==='number'?G._diagCommercialMassScale:null;
+  if(scale==null&&G._diagCommercialMassScaleTier){
+    var m=MARKETS[G.marketId||ACTIVE_MARKET]||MARKETS.atlanta;
+    var tier=m.rankTier||'medium';
+    var y=G.year||1970;
+    var table=G._diagTierMassScaleTable||{
+      mega:0.58,large:0.64,medium:y<=1998?0.78:0.55,small:0.52
+    };
+    scale=typeof table[tier]==='number'?table[tier]:0.65;
+    G._diagCommercialMassScaleApplied=scale;
+  }
+  if(scale==null||!Number.isFinite(scale)||scale>=0.999)return;
+  var denom=publicRadioWeightedListeningDenominator(stations,G);
+  stations.forEach(function(s){
+    if(!s||s._bpSlotDeferred||typeof stationIsNoncommercialInstitutional!=='function')return;
+    if(stationIsNoncommercialInstitutional(s)||!s.rat)return;
+    COH.forEach(function(coh){
+      var cur=s.rat.cur[coh];
+      if(!cur)return;
+      cur.share=Math.round(cur.share*scale*10000)/10000;
+      var pop=(POP.cohorts[coh]?.t||0)*effUniverse(s);
+      var engage=AQH_ENGAGE[coh]||0.060;
+      cur.aqh=Math.round(cur.share*pop*engage);
+      if(s.mom[coh]){s.mom[coh].cur=cur.share;s.mom[coh].tgt=Math.min(0.22,(s.mom[coh].tgt||cur.share)*scale);}
+    });
+    s.rat.aqh=COH.reduce(function(sum,c){return sum+(s.rat.cur[c]?.aqh||0);},0);
+    var H=publicNewsHabitEngageMult(s,G);
+    s.rat.share=COH.reduce(function(sum,c){
+      var pop=POP.cohorts[c]?.t||0;
+      var engage=(AQH_ENGAGE[c]||0.060)*H;
+      return sum+(s.rat.cur[c]?.share||0)*(pop*engage);
+    },0)/denom;
+  });
 }
 `;
 
@@ -136,7 +181,21 @@ export function patchLegacyForShareDecomp(src) {
   for (const [needle, repl] of hooks) {
     if (!src.includes(repl) && src.includes(needle)) src = src.replace(needle, repl);
   }
+  if (!src.includes('diagApplyCommercialMassScale(stations,G)')) {
+    src = src.replace(
+      "wlCommercialMassProbe(stations,G,'recalc:postCohort');",
+      "wlCommercialMassProbe(stations,G,'recalc:postCohort');\n  if(typeof diagApplyCommercialMassScale==='function')diagApplyCommercialMassScale(stations,G);",
+    );
+  }
   return src;
+}
+
+export function patchAppealExponent(src) {
+  if (src.includes('G._diagAppealQExponent')) return src;
+  return src.replace(
+    'const q=s.oq/65;',
+    'const _qBase=Math.max(0,s.oq/65);const _qExp=(G&&typeof G._diagAppealQExponent===\'number\')?G._diagAppealQExponent:1;const q=_qExp===1?_qBase:Math.pow(_qBase,_qExp);',
+  );
 }
 
 export function patchPostL1Skips(src) {
