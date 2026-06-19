@@ -12,19 +12,19 @@ export const CLERK_PLAN = {
   PRO: 'pro',
 };
 
-/** Same order as ALL_PLAYABLE_MARKET_IDS in legacy.js (scenario button order). */
+/** Same order as ALL_PLAYABLE_MARKET_IDS in legacy.js (Nielsen DMA rank). */
 export const ALL_PLAYABLE_MARKET_IDS_ORDERED = Object.freeze([
   'newyork',
   'losangeles',
   'chicago',
-  'seattle',
   'sanfrancisco',
-  'atlanta',
-  'nashville',
-  'wichita',
-  'phoenix',
   'dallas',
   'houston',
+  'atlanta',
+  'seattle',
+  'phoenix',
+  'nashville',
+  'wichita',
 ]);
 
 /** Starter: NYC, LA, Chicago, Atlanta, Nashville — matches server/planMarkets.js */
