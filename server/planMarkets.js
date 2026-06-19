@@ -2,19 +2,19 @@
 
 const { CLERK_PLAN } = require('./aiEntitlements');
 
-/** Same order as src/billingEntitlements.js / legacy.js scenario picker. */
+/** Same order as src/billingEntitlements.js / legacy.js (Nielsen DMA rank). */
 const ALL_PLAYABLE_MARKET_IDS_ORDERED = Object.freeze([
   'newyork',
   'losangeles',
   'chicago',
-  'seattle',
   'sanfrancisco',
-  'atlanta',
-  'nashville',
-  'wichita',
-  'phoenix',
   'dallas',
   'houston',
+  'atlanta',
+  'seattle',
+  'phoenix',
+  'nashville',
+  'wichita',
 ]);
 
 /** Starter: five major markets (no Pro-only cities). */

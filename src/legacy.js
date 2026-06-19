@@ -6134,9 +6134,9 @@ function getCallPrefixForMarket(marketId){
   const m=MARKETS[marketId||'atlanta']||MARKETS.atlanta;
   return m.callPrefix==='K'?'K':'W';
 }
-/** Phase 1 pilot markets — single registry (Node: scripts/market-ids.cjs). Order = scenario-picker button order. */
+/** Phase 1 pilot markets — single registry (Node: scripts/market-ids.cjs). Order = Nielsen DMA rank (scenario picker). */
 const ALL_PLAYABLE_MARKET_IDS=Object.freeze([
-  'newyork','losangeles','chicago','seattle','sanfrancisco','atlanta','nashville','wichita','phoenix','dallas','houston',
+  'newyork','losangeles','chicago','sanfrancisco','dallas','houston','atlanta','seattle','phoenix','nashville','wichita',
 ]);
 const PHASE1_MARKET_IDS=ALL_PLAYABLE_MARKET_IDS;
 /** Dev/local playtest — MARKETS rows only; never add to ALL_PLAYABLE_MARKET_IDS or billing. */
@@ -6235,38 +6235,17 @@ if(typeof window!=='undefined'){
   window.wlMarketPlanLockTitle=wlMarketPlanLockTitle;
 }
 
-/** Nielsen-style tier order for scenario picker (mega → small). */
-const WL_SCENARIO_PICKER_TIER_ORDER=Object.freeze(['mega','large','medium','small']);
-const WL_SCENARIO_PICKER_TIER_LABELS=Object.freeze({
-  mega:'Mega markets (#1–3)',
-  large:'Large markets',
-  medium:'Medium markets',
-  small:'Smaller markets',
-});
-/** Keep in sync with STARTER_MARKET_IDS in billingEntitlements.js */
-const WL_STARTER_MARKET_IDS=Object.freeze(['newyork','losangeles','chicago','atlanta','nashville']);
-
-function wlScenarioPickerMarketsByTier(){
-  const ids=wlUiMarketIds().slice();
-  const tierRank=t=>{const i=WL_SCENARIO_PICKER_TIER_ORDER.indexOf(t);return i<0?99:i;};
-  ids.sort((a,b)=>{
-    const ma=MARKETS[a]||{},mb=MARKETS[b]||{};
-    const ta=tierRank(ma.rankTier||'medium'),tb=tierRank(mb.rankTier||'medium');
-    if(ta!==tb)return ta-tb;
-    const ra=Number(ma.revScale)||1,rb=Number(mb.revScale)||1;
-    if(rb!==ra)return rb-ra;
-    return String(ma.label||'').localeCompare(String(mb.label||''));
-  });
-  const byTier=new Map();
-  WL_SCENARIO_PICKER_TIER_ORDER.forEach(t=>byTier.set(t,[]));
+/** Nielsen DMA rank order for scenario picker dropdown (mirrors ALL_PLAYABLE_MARKET_IDS). */
+function wlScenarioPickerMarketsOrdered(){
+  const rank=new Map(ALL_PLAYABLE_MARKET_IDS.map((id,i)=>[id,i]));
   const dev=[];
-  ids.forEach(id=>{
+  const playable=[];
+  wlUiMarketIds().forEach(id=>{
     if(wlIsDevPlaytestMarketId(id)&&!PHASE1_MARKET_IDS.includes(id)){dev.push(id);return;}
-    const t=(MARKETS[id]||{}).rankTier||'medium';
-    const bucket=byTier.has(t)?byTier.get(t):byTier.get('medium');
-    bucket.push(id);
+    playable.push(id);
   });
-  return{byTier,dev};
+  playable.sort((a,b)=>(rank.get(a)??99)-(rank.get(b)??99));
+  return{playable,dev};
 }
 /** Lock label for scenario picker dropdown options not on the current plan. */
 function wlScenarioPickerMarketOptionTitle(id,planSlug,allowSet){
@@ -6295,24 +6274,20 @@ function wlScenarioPickerMarketLockSuffix(id,planSlug,allowSet){
   return{suffix:' (PRO ONLY)',locked:true};
 }
 function wlScenarioPickerMarketSelectHtml(selectedId,planSlug,allowSet){
-  const{byTier,dev}=wlScenarioPickerMarketsByTier();
+  const{playable,dev}=wlScenarioPickerMarketsOrdered();
   let html=`<select id="scen-market-select" class="scen-market-select" aria-label="Choose a market" onchange="pickMarketFromScenarioSelect(this)">`;
-  WL_SCENARIO_PICKER_TIER_ORDER.forEach(tier=>{
-    const list=byTier.get(tier)||[];
-    if(!list.length)return;
-    html+=`<optgroup label="${WL_SCENARIO_PICKER_TIER_LABELS[tier]}">`;
-    list.forEach(id=>{
-      const m=MARKETS[id];
-      if(!m)return;
-      const{suffix,locked}=wlScenarioPickerMarketLockSuffix(id,planSlug,allowSet);
-      const sel=id===selectedId?' selected':'';
-      const dis=locked?' disabled':'';
-      const tip=wlScenarioPickerMarketOptionTitle(id,planSlug,allowSet);
-      const title=tip?` title="${rosterHtmlEsc(tip)}"`:'';
-      html+=`<option value="${id}"${sel}${dis}${title}>${m.label}${suffix}</option>`;
-    });
-    html+=`</optgroup>`;
+  html+=`<optgroup label="Markets (Nielsen rank)">`;
+  playable.forEach(id=>{
+    const m=MARKETS[id];
+    if(!m)return;
+    const{suffix,locked}=wlScenarioPickerMarketLockSuffix(id,planSlug,allowSet);
+    const sel=id===selectedId?' selected':'';
+    const dis=locked?' disabled':'';
+    const tip=wlScenarioPickerMarketOptionTitle(id,planSlug,allowSet);
+    const title=tip?` title="${rosterHtmlEsc(tip)}"`:'';
+    html+=`<option value="${id}"${sel}${dis}${title}>${m.label}${suffix}</option>`;
   });
+  html+=`</optgroup>`;
   if(dev.length){
     html+=`<optgroup label="Dev playtest">`;
     dev.forEach(id=>{
@@ -6347,7 +6322,7 @@ function wlMpRefreshMarketSelect(){
     const allow=new Set(allowed);
     const prev=sel.value;
     sel.innerHTML='';
-    wlUiMarketIds().forEach(id=>{
+    wlScenarioPickerMarketsOrdered().playable.forEach(id=>{
       if(!allow.has(id)&&!(wlIsDevPlayEnvironment()&&wlIsDevPlaytestMarketId(id)))return;
       const m=MARKETS[id];
       if(!m)return;
