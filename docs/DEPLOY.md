@@ -17,6 +17,7 @@ Requires: `npm`, `aws`, `jq`, `curl`, `zip`, `rsync`, SSH key at `keys/airwaveem
 
 ## What deploy does
 
+0. **Market registry preflight** — `node scripts/verify-market-registry.mjs` (fails deploy if playable markets are missing, stub-only, or billing/registry out of sync). Run anytime: `npm run verify:market-registry`.
 1. **Build** — `VITE_GAME_SERVER_URL=https://api.airwaveempire.com npm run build`
 2. **Amplify** — uploads `deploy.zip` to staging branch `d11e4bu75ja2xt` / `staging`
 3. **Backup** — copies `~/airwave-persist` (and any non-symlinked app `data/` / `saves/`) to `~/backups/pre-deploy-<timestamp>` on the server
@@ -48,11 +49,13 @@ Node reads paths via `server/runtimePaths.js` (honours `WL_PERSIST_ROOT` / per-d
 
 ## Pre-deploy checklist
 
-1. `./deploy.sh --dry-run` — review rsync output (no confirm gate)
-2. `DEPLOY_CONFIRM=1 ./deploy.sh` — audit + type `yes` before any remote write
-3. Prefer first real run: `DEPLOY_CONFIRM=1 DEPLOY_SKIP_AMPLIFY=1 ./deploy.sh` (API only)
-4. Optional: `DEPLOY_SKIP_BACKUP=1` only if you already have a fresh backup
-5. After deploy: smoke-test cloud save load, account/billing page, one AI generation quota
+1. **Merge market work into the deploy branch** — playable markets (Dallas, Houston, Phoenix, etc.) are defined in `src/legacy.js` + `scripts/market-ids.cjs`. If they were built on `main`, `houston-market`, or `dallas-market`, merge those commits before deploy. Deploying from a feature branch that never received the merge will ship without them even though `main` has the data.
+2. `npm run verify:market-registry` — must pass (also runs automatically at start of `./deploy.sh`).
+3. `./deploy.sh --dry-run` — review rsync output (no confirm gate)
+4. `DEPLOY_CONFIRM=1 ./deploy.sh` — audit + type `yes` before any remote write
+5. Prefer first real run: `DEPLOY_CONFIRM=1 DEPLOY_SKIP_AMPLIFY=1 ./deploy.sh` (API only)
+6. Optional: `DEPLOY_SKIP_BACKUP=1` only if you already have a fresh backup
+7. After deploy: smoke-test cloud save load, account/billing page, one AI generation quota
 
 ## Environment overrides
 

@@ -32,6 +32,9 @@ fi
 
 deploy_require_confirm_env
 
+echo "==> Market registry preflight"
+node "$ROOT_DIR/scripts/verify-market-registry.mjs"
+
 echo "==> Building production bundle"
 VITE_GAME_SERVER_URL="$DEPLOY_VITE_GAME_SERVER_URL" npm run build
 
