@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * Phoenix scaffold reality audit — dial/signal/metadata vs runtime (read-only).
- * Does not change gameplay or market exposure. Phoenix remains DIAG_ONLY.
+ * Phoenix is playable Pro-only; exposure checks assert billing/registry wiring.
  *
  *   npm run diag:phoenix-scaffold-reality
  *
@@ -166,21 +166,33 @@ function auditExposure() {
     proPlan: marketIdsForPlanSlug('pro').includes(PHOENIX),
     trialPlan: marketIdsForPlanSlug('trial').includes(PHOENIX),
   };
-  const billingLeak = Object.entries(billingLists).some(([, v]) => v);
 
-  if (inDiag) checks.push(check('pass', 'diag_only', 'phoenix ∈ DIAG_ONLY_MARKET_IDS'));
-  else checks.push(check('fail', 'diag_only', 'phoenix missing from DIAG_ONLY_MARKET_IDS'));
+  if (inPlayable) checks.push(check('pass', 'playable', 'phoenix ∈ ALL_PLAYABLE_MARKET_IDS'));
+  else checks.push(check('fail', 'playable', 'phoenix missing from ALL_PLAYABLE_MARKET_IDS'));
 
-  if (!inPlayable) checks.push(check('pass', 'not_playable', 'phoenix ∉ ALL_PLAYABLE_MARKET_IDS'));
-  else checks.push(check('fail', 'not_playable', 'phoenix incorrectly in ALL_PLAYABLE_MARKET_IDS'));
+  if (!inDiag) checks.push(check('pass', 'not_diag_only', 'phoenix ∉ DIAG_ONLY_MARKET_IDS'));
+  else checks.push(check('fail', 'not_diag_only', 'phoenix still in DIAG_ONLY_MARKET_IDS'));
 
-  if (!billingLeak) checks.push(check('pass', 'billing_safe', 'phoenix absent from all billing/plan market lists'));
-  else {
+  if (billingLists.proOnly) checks.push(check('pass', 'pro_only', 'phoenix ∈ PRO_ONLY_MARKET_IDS'));
+  else checks.push(check('fail', 'pro_only', 'phoenix missing from PRO_ONLY_MARKET_IDS'));
+
+  if (billingLists.allPlayableOrdered) checks.push(check('pass', 'billing_ordered', 'phoenix ∈ ALL_PLAYABLE_MARKET_IDS_ORDERED'));
+  else checks.push(check('fail', 'billing_ordered', 'phoenix missing from ALL_PLAYABLE_MARKET_IDS_ORDERED'));
+
+  if (!billingLists.starter && !billingLists.free && !billingLists.starterPlan) {
+    checks.push(check('pass', 'billing_safe', 'phoenix absent from free/starter plan lists'));
+  } else {
     const leaked = Object.entries(billingLists)
-      .filter(([, v]) => v)
+      .filter(([k, v]) => v && ['starter', 'free', 'starterPlan'].includes(k))
       .map(([k]) => k);
-    checks.push(check('fail', 'billing_leak', `phoenix found in billing lists: ${leaked.join(', ')}`));
+    checks.push(check('fail', 'billing_leak', `phoenix in non-Pro lists: ${leaked.join(', ')}`));
   }
+
+  if (billingLists.proPlan) checks.push(check('pass', 'pro_plan', 'phoenix ∈ pro plan marketIds'));
+  else checks.push(check('fail', 'pro_plan', 'phoenix missing from pro plan marketIds'));
+
+  if (!billingLists.trialPlan) checks.push(check('pass', 'trial_excluded', 'phoenix excluded from trial plan marketIds'));
+  else checks.push(check('fail', 'trial_excluded', 'phoenix incorrectly in trial plan marketIds'));
 
   const status = checks.some((c) => c.level === 'fail') ? 'fail' : 'pass';
   return { checks, status, inDiag, inPlayable, billingLists };
@@ -526,9 +538,10 @@ function auditPlaytestCross(harness) {
     checks.push(check('warn', 'sim_leader', `#1 family ${y.leaderFamilyHist} — expected SPANISH leadership @2026`));
   }
 
-  const rm = y.spanishSubtype?.meanSubtypeSharePct?.REGIONAL_MEXICAN;
-  if (rm != null && rm >= 50) {
-    checks.push(check('pass', 'sim_rm', `Regional Mexican ${rm.toFixed(1)}% of Spanish mass`));
+  const rmRaw = y.spanishSubtype?.meanSubtypeSharePct?.REGIONAL_MEXICAN;
+  const rm = rmRaw != null && rmRaw > 1 ? rmRaw / 100 : rmRaw;
+  if (rm != null && rm >= 0.5) {
+    checks.push(check('pass', 'sim_rm', `Regional Mexican ${(rm * 100).toFixed(1)}% of Spanish mass`));
   }
 
   if (harness.verdict?.status === 'pass') {
@@ -591,7 +604,7 @@ function finalVerdict(allChecks, exposureStatus, readiness) {
 }
 
 function main() {
-  console.log('Phoenix scaffold reality audit (read-only, DIAG_ONLY)\n');
+  console.log('Phoenix scaffold reality audit (read-only, Pro-only playable)\n');
 
   const legacySrc = readFileSync(legacyPath, 'utf8');
   const runtimeSlice = extractPhoenixLegacySlice(legacySrc);

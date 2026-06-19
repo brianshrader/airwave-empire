@@ -590,8 +590,9 @@ function evaluateIdentity(marketId, marketMeta, byYear, inPlayable) {
     else pushId('warn', 'phx_chr', 'CHR thin');
     if (m.spokenBucket <= 0.22) pushId('pass', 'phx_spoken', 'Not NYC spoken profile');
     else pushId('warn', 'phx_spoken', `Spoken ${pct(m.spokenBucket)}`);
-    const rm = y26.spanishSubtype?.meanSubtypeSharePct?.REGIONAL_MEXICAN;
-    if (rm != null && rm >= 50) pushId('pass', 'phx_rm', `RM ${rm.toFixed(0)}%`);
+    const rmRaw = y26.spanishSubtype?.meanSubtypeSharePct?.REGIONAL_MEXICAN;
+    const rm = rmRaw != null && rmRaw > 1 ? rmRaw / 100 : rmRaw;
+    if (rm != null && rm >= 0.5) pushId('pass', 'phx_rm', `RM ${(rm * 100).toFixed(0)}%`);
     else pushId('warn', 'phx_rm', 'Regional Mexican not dominant');
   } else if (marketId === 'portland') {
     if (m.publicShare >= 0.06) pushId('pass', 'pdx_public', `Public ${pct(m.publicShare)}`);

@@ -22,6 +22,7 @@ export const ALL_PLAYABLE_MARKET_IDS_ORDERED = Object.freeze([
   'atlanta',
   'nashville',
   'wichita',
+  'phoenix',
 ]);
 
 /** Starter: NYC, LA, Chicago, Atlanta, Nashville — matches server/planMarkets.js */
@@ -31,7 +32,7 @@ const STARTER_MARKET_IDS = Object.freeze(['newyork', 'losangeles', 'chicago', 'a
 const FREE_USER_MARKET_IDS = Object.freeze(['atlanta']);
 
 /** Pro plan only — keep in sync with server/planMarkets.js */
-export const PRO_ONLY_MARKET_IDS = Object.freeze(['seattle', 'sanfrancisco', 'wichita']);
+export const PRO_ONLY_MARKET_IDS = Object.freeze(['seattle', 'sanfrancisco', 'wichita', 'phoenix']);
 
 const PRO_ONLY_SET = new Set(PRO_ONLY_MARKET_IDS);
 
@@ -43,7 +44,7 @@ export function marketIdsForClerkPlanSlug(slug) {
   const s = String(slug || '').trim();
   if (s === CLERK_PLAN.PRO) return [...ALL_PLAYABLE_MARKET_IDS_ORDERED];
   if (s === CLERK_PLAN.TRIAL) {
-    return ALL_PLAYABLE_MARKET_IDS_ORDERED.filter((id) => id !== 'sanfrancisco');
+    return ALL_PLAYABLE_MARKET_IDS_ORDERED.filter((id) => !PRO_ONLY_SET.has(id));
   }
   if (s === CLERK_PLAN.STARTER) {
     return [...STARTER_MARKET_IDS];

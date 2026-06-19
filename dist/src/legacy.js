@@ -5091,7 +5091,7 @@ const MARKETS={
       {id:'niners',name:'San Francisco Fog Lights',sport:'PRO_FOOTBALL',introduced:1970,baseFee:400000,baseBonus:0.026,contractYrs:4},
     ],
   },
-  /** DIAG_ONLY (`PHOENIX_DIAG_MARKET_ID`) — ecology harness / scaffold QA. Not in ALL_PLAYABLE_MARKET_IDS. */
+  /** Playable Pro-only — Sunbelt large market; ecology calibrated via `phoenixDiag*` hooks. */
   phoenix:{
     id:'phoenix', callPrefix:'K', label:'Phoenix', region:'Southwest', rankTier:'large', archetypeId:'sunbelt_diversified',
     pop:{'12-17':195,'18-24':220,'25-34':255,'35-49':280,'50-64':210,'65+':145},
@@ -5228,11 +5228,11 @@ function renameCallPrefixFieldHtml(fontPx){
 }
 /** Phase 1 pilot markets — single registry (Node: scripts/market-ids.cjs). Order = scenario-picker button order. */
 const ALL_PLAYABLE_MARKET_IDS=Object.freeze([
-  'newyork','losangeles','chicago','seattle','sanfrancisco','atlanta','nashville','wichita',
+  'newyork','losangeles','chicago','seattle','sanfrancisco','atlanta','nashville','wichita','phoenix',
 ]);
 const PHASE1_MARKET_IDS=ALL_PLAYABLE_MARKET_IDS;
 /** Dev/local playtest — MARKETS rows only; never add to ALL_PLAYABLE_MARKET_IDS or billing. */
-const DEV_PLAYTEST_MARKET_IDS=Object.freeze(['phoenix']);
+const DEV_PLAYTEST_MARKET_IDS=Object.freeze([]);
 /** Mega markets only — benchmarks, ecology quick mode, mega-scoped FM rules. */
 const DEV_BENCHMARK_MEGA_MARKET_IDS=Object.freeze(['newyork','losangeles','chicago']);
 /** True on Vite dev (`main.js`) or localhost — unlocks DEV_PLAYTEST_MARKET_IDS in scenario picker. */
@@ -5306,7 +5306,7 @@ if(typeof window!=='undefined')window.wlGetAllowedPhase1MarketIds=wlGetAllowedPh
 if(typeof window!=='undefined')window.wlGetPlanPhase1MarketIds=wlGetPlanPhase1MarketIds;
 
 /** Pro plan only — keep in sync with server/planMarkets.js and src/billingEntitlements.js */
-const WL_PRO_ONLY_MARKET_IDS=Object.freeze(['seattle','sanfrancisco','wichita']);
+const WL_PRO_ONLY_MARKET_IDS=Object.freeze(['seattle','sanfrancisco','wichita','phoenix']);
 function wlProOnlyMarketIds(){
   if(typeof window!=='undefined'&&Array.isArray(window.__WL_PRO_ONLY_MARKET_IDS)&&window.__WL_PRO_ONLY_MARKET_IDS.length)
     return window.__WL_PRO_ONLY_MARKET_IDS;
