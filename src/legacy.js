@@ -6235,17 +6235,33 @@ if(typeof window!=='undefined'){
   window.wlMarketPlanLockTitle=wlMarketPlanLockTitle;
 }
 
-/** Nielsen DMA rank order for scenario picker dropdown (mirrors ALL_PLAYABLE_MARKET_IDS). */
-function wlScenarioPickerMarketsOrdered(){
-  const rank=new Map(ALL_PLAYABLE_MARKET_IDS.map((id,i)=>[id,i]));
+/** Nielsen DMA rank within each size tier (mirrors ALL_PLAYABLE_MARKET_IDS). */
+const WL_SCENARIO_PICKER_TIER_ORDER=Object.freeze(['mega','large','medium','small']);
+const WL_SCENARIO_PICKER_TIER_LABELS=Object.freeze({
+  mega:'Mega markets (#1–3)',
+  large:'Large markets',
+  medium:'Medium markets',
+  small:'Smaller markets',
+});
+function wlScenarioPickerNielsenRank(id){
+  const i=ALL_PLAYABLE_MARKET_IDS.indexOf(String(id||'').trim());
+  return i<0?99:i;
+}
+function wlScenarioPickerMarketsByTier(){
+  const byTier=new Map();
+  WL_SCENARIO_PICKER_TIER_ORDER.forEach(t=>byTier.set(t,[]));
   const dev=[];
-  const playable=[];
   wlUiMarketIds().forEach(id=>{
     if(wlIsDevPlaytestMarketId(id)&&!PHASE1_MARKET_IDS.includes(id)){dev.push(id);return;}
-    playable.push(id);
+    const t=(MARKETS[id]||{}).rankTier||'medium';
+    const bucket=byTier.has(t)?byTier.get(t):byTier.get('medium');
+    bucket.push(id);
   });
-  playable.sort((a,b)=>(rank.get(a)??99)-(rank.get(b)??99));
-  return{playable,dev};
+  WL_SCENARIO_PICKER_TIER_ORDER.forEach(tier=>{
+    const list=byTier.get(tier)||[];
+    list.sort((a,b)=>wlScenarioPickerNielsenRank(a)-wlScenarioPickerNielsenRank(b));
+  });
+  return{byTier,dev};
 }
 /** Lock label for scenario picker dropdown options not on the current plan. */
 function wlScenarioPickerMarketOptionTitle(id,planSlug,allowSet){
@@ -6274,20 +6290,24 @@ function wlScenarioPickerMarketLockSuffix(id,planSlug,allowSet){
   return{suffix:' (PRO ONLY)',locked:true};
 }
 function wlScenarioPickerMarketSelectHtml(selectedId,planSlug,allowSet){
-  const{playable,dev}=wlScenarioPickerMarketsOrdered();
+  const{byTier,dev}=wlScenarioPickerMarketsByTier();
   let html=`<select id="scen-market-select" class="scen-market-select" aria-label="Choose a market" onchange="pickMarketFromScenarioSelect(this)">`;
-  html+=`<optgroup label="Markets (Nielsen rank)">`;
-  playable.forEach(id=>{
-    const m=MARKETS[id];
-    if(!m)return;
-    const{suffix,locked}=wlScenarioPickerMarketLockSuffix(id,planSlug,allowSet);
-    const sel=id===selectedId?' selected':'';
-    const dis=locked?' disabled':'';
-    const tip=wlScenarioPickerMarketOptionTitle(id,planSlug,allowSet);
-    const title=tip?` title="${rosterHtmlEsc(tip)}"`:'';
-    html+=`<option value="${id}"${sel}${dis}${title}>${m.label}${suffix}</option>`;
+  WL_SCENARIO_PICKER_TIER_ORDER.forEach(tier=>{
+    const list=byTier.get(tier)||[];
+    if(!list.length)return;
+    html+=`<optgroup label="${WL_SCENARIO_PICKER_TIER_LABELS[tier]}">`;
+    list.forEach(id=>{
+      const m=MARKETS[id];
+      if(!m)return;
+      const{suffix,locked}=wlScenarioPickerMarketLockSuffix(id,planSlug,allowSet);
+      const sel=id===selectedId?' selected':'';
+      const dis=locked?' disabled':'';
+      const tip=wlScenarioPickerMarketOptionTitle(id,planSlug,allowSet);
+      const title=tip?` title="${rosterHtmlEsc(tip)}"`:'';
+      html+=`<option value="${id}"${sel}${dis}${title}>${m.label}${suffix}</option>`;
+    });
+    html+=`</optgroup>`;
   });
-  html+=`</optgroup>`;
   if(dev.length){
     html+=`<optgroup label="Dev playtest">`;
     dev.forEach(id=>{
@@ -6322,15 +6342,18 @@ function wlMpRefreshMarketSelect(){
     const allow=new Set(allowed);
     const prev=sel.value;
     sel.innerHTML='';
-    wlScenarioPickerMarketsOrdered().playable.forEach(id=>{
-      if(!allow.has(id)&&!(wlIsDevPlayEnvironment()&&wlIsDevPlaytestMarketId(id)))return;
-      const m=MARKETS[id];
-      if(!m)return;
-      const opt=document.createElement('option');
-      opt.value=id;
-      const tier=String(m.rankTier||'').replace(/^./,ch=>ch.toUpperCase());
-      opt.textContent=`${m.label} — ${m.region} · ${tier}`;
-      sel.appendChild(opt);
+    const{byTier}=wlScenarioPickerMarketsByTier();
+    WL_SCENARIO_PICKER_TIER_ORDER.forEach(tier=>{
+      (byTier.get(tier)||[]).forEach(id=>{
+        if(!allow.has(id)&&!(wlIsDevPlayEnvironment()&&wlIsDevPlaytestMarketId(id)))return;
+        const m=MARKETS[id];
+        if(!m)return;
+        const opt=document.createElement('option');
+        opt.value=id;
+        const tierLbl=String(m.rankTier||'').replace(/^./,ch=>ch.toUpperCase());
+        opt.textContent=`${m.label} — ${m.region} · ${tierLbl}`;
+        sel.appendChild(opt);
+      });
     });
     if(allow.has(prev))sel.value=prev;
     else if(allowed.length)sel.value=allowed[0];
