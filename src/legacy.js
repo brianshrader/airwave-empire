@@ -6182,8 +6182,6 @@ if(typeof window!=='undefined'){
 function wlGetPlanPhase1MarketIds(){
   if(typeof window!=='undefined'&&Array.isArray(window.__WL_PLAN_MARKET_IDS)&&window.__WL_PLAN_MARKET_IDS.length)
     return window.__WL_PLAN_MARKET_IDS;
-  if(typeof window!=='undefined'&&!window.__wlClerkLoaded)
-    return Array.from(PHASE1_MARKET_IDS);
   return['atlanta'];
 }
 /**
@@ -6381,7 +6379,10 @@ function wlRefreshOpenScenIfPlanChanged(){
 if(typeof window!=='undefined')window.wlRefreshOpenScenIfPlanChanged=wlRefreshOpenScenIfPlanChanged;
 
 function wlClerkPlanSlug(){
-  try{return typeof window!=='undefined'?String(window.__WL_CLERK_PLAN_SLUG||'').trim():'';}catch(_e){return '';}
+  try{
+    const s=typeof window!=='undefined'?String(window.__WL_CLERK_PLAN_SLUG||'').trim():'';
+    return s||'free_user';
+  }catch(_e){return 'free_user';}
 }
 function wlTrialLockKind(){
   try{return typeof window!=='undefined'?String(window.__WL_TRIAL_LOCK_KIND||'').trim():'';}catch(_e){return '';}
@@ -7315,6 +7316,7 @@ function syncMarketPopToMarket(marketId){
 function scenarioIdsForMarket(marketId){
   const mid=marketId||'atlanta';
   return SC.map(s=>s.id).filter(scid=>{
+    if(scid==='tutorial_turnaround')return mid==='atlanta';
     // Country Roads: classic Southern country-incumbent story only
     if(scid==='cntry')return['atlanta','nashville','wichita'].includes(mid);
     return true;
@@ -26559,16 +26561,10 @@ function scenStartTutorialFromMenu(){
       showToast('Your free trial is already committed — resume from Load game or subscribe to use the tutorial.','warn',9500);
       return;
     }
-    _selectedMarket='atlanta';
-    ACTIVE_MARKET='atlanta';
-    syncMarketPopToMarket('atlanta');
   }
-  const m=(typeof _selectedMarket==='string'&&_selectedMarket)?_selectedMarket:'atlanta';
-  if(!scenarioIdsForMarket(m).includes('tutorial_turnaround')){
-    showToast('Guided tutorial isn’t available in this market — on the free trial, the tutorial is Atlanta only.','info',9000);
-    scenSetView('modes');
-    return;
-  }
+  _selectedMarket='atlanta';
+  ACTIVE_MARKET='atlanta';
+  syncMarketPopToMarket('atlanta');
   _pendingScenId=null;
   if(typeof cm==='function')cm('m-scen');
   try{
@@ -26824,7 +26820,7 @@ function openScenSelect(localSave, opts){
       <button type="button" class="cfm" style="padding:6px 18px;font-size:14px" onclick="loadLocalSave()">▶ RESUME</button>
     </div>`
     :'';
-  const tutAllowed=!!(tutSc&&allowed.has('tutorial_turnaround'));
+  const tutAllowed=!!tutSc;
   const entryPrimaryBlock=hasSave
     ?`<div class="scen-entry-primary-block scen-entry-primary-block--returning">
       <div class="scen-entry-start-wrap scen-entry-start-wrap--hero scen-entry-start-wrap--dual">
@@ -26873,7 +26869,7 @@ function openScenSelect(localSave, opts){
   </div>`;
   const tutBlock=tutSc&&allowed.has('tutorial_turnaround')
     ?`<div class="scn-mode scn-mode--tut" role="button" tabindex="0" title="Start guided walkthrough" onclick="scenStartTutorialFromMenu()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();scenStartTutorialFromMenu();}"><div class="scn-mode-ribbon">GUIDED TUTORIAL</div><h3 class="scn-mode-title" style="font-family:var(--fd);font-size:20px;letter-spacing:0.12em;color:var(--wht);margin:0 0 6px">${(tutSc.l||'').toUpperCase()}</h3>
-    <p style="font-family:var(--ft);font-size:15px;color:var(--amb);margin:0 0 8px;">${mktLabel} · ${tutSc.startYear||1970} · <strong style="color:var(--wht)">${f$(scaledScenarioCash(tutSc.cash,_selectedMarket,tutSc.startYear||1970))}</strong> starting</p>
+    <p style="font-family:var(--ft);font-size:15px;color:var(--amb);margin:0 0 8px;">${MARKETS.atlanta.label} · ${tutSc.startYear||1970} · <strong style="color:var(--wht)">${f$(scaledScenarioCash(tutSc.cash,'atlanta',tutSc.startYear||1970))}</strong> starting</p>
     <p style="font-size:15px;color:var(--off);line-height:1.5;margin:0 0 12px;">On-screen walkthrough. Finish the lessons and keep playing, or exit and play on your own.</p>
     <div><span class="cfm" style="display:inline-block;padding:8px 16px;pointer-events:none" aria-hidden="true">▶ PLAY</span></div></div>`
     :'';
@@ -27072,7 +27068,14 @@ function openOnboarding(scenId){
 
   const tips=eraTips[sc.id]||eraTips.under;
   const tipsHtml=tips.map(t=>`<div class="ob-row"><span class="ob-key">${t.k}</span><span>${t.v}</span></div>`).join('');
-  const mktLbl=(typeof _selectedMarket!=='undefined'&&_selectedMarket&&MARKETS[_selectedMarket]?.label)||MARKETS.atlanta.label;
+  if(sc.id==='tutorial_turnaround'){
+    _selectedMarket='atlanta';
+    ACTIVE_MARKET='atlanta';
+    syncMarketPopToMarket('atlanta');
+  }
+  const mktLbl=sc.id==='tutorial_turnaround'
+    ?MARKETS.atlanta.label
+    :((typeof _selectedMarket!=='undefined'&&_selectedMarket&&MARKETS[_selectedMarket]?.label)||MARKETS.atlanta.label);
   const defCompany=`${mktLbl} Broadcasting Group`;
   const escCo=defCompany.replace(/"/g,'&quot;');
 
@@ -27178,8 +27181,14 @@ async function startPlayAsync(scenId){
     }
     _pendingScenId=null;
     if(!globalThis._wlCampaignStarting&&typeof wlCampaignDeactivate==='function')wlCampaignDeactivate();
-    ACTIVE_MARKET=_selectedMarket;
-    syncMarketPopToMarket(ACTIVE_MARKET);
+    if(scenId==='tutorial_turnaround'){
+      _selectedMarket='atlanta';
+      ACTIVE_MARKET='atlanta';
+      syncMarketPopToMarket('atlanta');
+    }else{
+      ACTIVE_MARKET=_selectedMarket;
+      syncMarketPopToMarket(ACTIVE_MARKET);
+    }
     let companyName=(document.getElementById('company-name-input')?.value||'').trim();
     if(!companyName){
       const mktLbl=(typeof _selectedMarket!=='undefined'&&_selectedMarket&&MARKETS[_selectedMarket]?.label)||MARKETS.atlanta.label;
