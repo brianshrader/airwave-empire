@@ -146,7 +146,7 @@ export function patchLegacyForShareDecomp(src) {
   const hooks = [
     [
       "wlCommercialMassProbe(stations,G,'recalc:postCohort');",
-      "wlCommercialMassProbe(stations,G,'recalc:postCohort');\n  if(G._shareDecompActive&&typeof diagShareDecompCapture==='function')diagShareDecompCapture(G,'L1_postCohort');",
+      "wlCommercialMassProbe(stations,G,'recalc:postCohort');\n  if(typeof diagApplyCommercialMassScale==='function')diagApplyCommercialMassScale(stations,G);\n  if(G._shareDecompActive&&typeof diagShareDecompCapture==='function')diagShareDecompCapture(G,'L1_postCohort');",
     ],
     [
       '  // Reconcile overall rat.share with PUBLIC_NEWS habit weighting after commercial long-tail (if any).',
@@ -180,12 +180,6 @@ export function patchLegacyForShareDecomp(src) {
 
   for (const [needle, repl] of hooks) {
     if (!src.includes(repl) && src.includes(needle)) src = src.replace(needle, repl);
-  }
-  if (!src.includes('diagApplyCommercialMassScale(stations,G)')) {
-    src = src.replace(
-      "wlCommercialMassProbe(stations,G,'recalc:postCohort');",
-      "wlCommercialMassProbe(stations,G,'recalc:postCohort');\n  if(typeof diagApplyCommercialMassScale==='function')diagApplyCommercialMassScale(stations,G);",
-    );
   }
   return src;
 }
@@ -225,6 +219,30 @@ export function patchPostL1Skips(src) {
     src = src.replace(
       '    applyHighHispanicSpanishLeaderBoost(stations,G,activeIx,engageWeightedPop,postAqhDenom);',
       '    if(!G._diagSkipTrimBoost)applyHighHispanicSpanishLeaderBoost(stations,G,activeIx,engageWeightedPop,postAqhDenom);',
+    );
+  }
+  if (!src.includes('G._diagSkipListeningHoursTrimBlock')) {
+    src = src.replace(
+      '    applyListeningHoursShareFromAqh(stations,G);\n    wlEnsureCommercialRatingsHaveAqhMass(stations,G);',
+      '    if(!G._diagSkipListeningHours)applyListeningHoursShareFromAqh(stations,G);\n    wlEnsureCommercialRatingsHaveAqhMass(stations,G);',
+    );
+    src = src.replace(
+      '    applyListeningHoursShareFromAqh(stations,G,{skipOutlierSanitize:true});',
+      '    if(!G._diagSkipListeningHours)applyListeningHoursShareFromAqh(stations,G,{skipOutlierSanitize:true});',
+    );
+  }
+  if (!src.includes('G._diagSkipEndgameRepairs')) {
+    src = src.replace(
+      '  wlRepairPhantomDuopolyBookIfNeeded(stations,G);',
+      '  if(!G._diagSkipEndgameRepairs)wlRepairPhantomDuopolyBookIfNeeded(stations,G);',
+    );
+    src = src.replace(
+      '  wlRedSpreadDegenerateShareCluster(stations,G);',
+      '  if(!G._diagSkipEndgameRepairs)wlRedSpreadDegenerateShareCluster(stations,G);',
+    );
+    src = src.replace(
+      '  wlSanitizeCommercialBookShareOutliers(stations,G);',
+      '  if(!G._diagSkipEndgameRepairs)wlSanitizeCommercialBookShareOutliers(stations,G);',
     );
   }
   return src;

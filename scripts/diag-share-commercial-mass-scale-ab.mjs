@@ -61,6 +61,41 @@ const VARIANTS = {
     flags: { _diagCommercialMassScaleTier: true, _diagAppealQExponent: 0.92 },
   },
   H: { label: 'Skip listeningHours only', flags: { _diagSkipListeningHours: true } },
+  I: {
+    label: 'Tier + skip all post-L1',
+    flags: {
+      _diagCommercialMassScaleTier: true,
+      _diagSkipLongTail: true,
+      _diagSkipOtherAudio: true,
+      _diagSkipListeningHours: true,
+      _diagSkipTrimBoost: true,
+      _diagSkipEndgameRepairs: true,
+    },
+  },
+  J: {
+    label: 'Mega 0.52 tier table + skip LH',
+    flags: {
+      _diagCommercialMassScaleTier: true,
+      _diagSkipListeningHours: true,
+      _diagTierMassScaleTable: { mega: 0.52, large: 0.64, medium: 0.78, small: 0.52 },
+    },
+  },
+  K: {
+    label: 'Mega 0.48 tier table + skip LH',
+    flags: {
+      _diagCommercialMassScaleTier: true,
+      _diagSkipListeningHours: true,
+      _diagTierMassScaleTable: { mega: 0.48, large: 0.64, medium: 0.78, small: 0.52 },
+    },
+  },
+  L: {
+    label: 'Tier + skip LH + endgame repairs',
+    flags: {
+      _diagCommercialMassScaleTier: true,
+      _diagSkipListeningHours: true,
+      _diagSkipEndgameRepairs: true,
+    },
+  },
 };
 
 function stubEl() {
@@ -230,6 +265,7 @@ const RUN_IIFE = `
     G._diagSkipOtherAudio=false;
     G._diagSkipListeningHours=false;
     G._diagSkipTrimBoost=false;
+    G._diagSkipEndgameRepairs=false;
     if(!flags)return;
     Object.keys(flags).forEach(function(k){G[k]=flags[k];});
   }
