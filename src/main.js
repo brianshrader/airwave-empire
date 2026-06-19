@@ -17,10 +17,20 @@ import { gameServerApiUrl } from './gameServerApiOrigin.js';
 if (typeof window !== 'undefined') {
   window.__WL_BILLING_PRICE_SUMMARY_LINE = BILLING_PRICE_SUMMARY_LINE;
 }
-/** Vite dev: expose DIAG_ONLY playtest markets (e.g. Phoenix) in scenario picker — see legacy.js `DEV_PLAYTEST_MARKET_IDS`. */
 if (import.meta.env.DEV && typeof window !== 'undefined') {
   window.__WL_DEV_PLAYTEST_MARKETS__ = true;
 }
+
+/** Localhost dev: ?plan=free_user|starter|trial_user|pro previews scenario-picker locks without signing in. */
+function applyDevPlanPreviewFromUrl() {
+  if (!import.meta.env.DEV || typeof window === 'undefined') return;
+  const plan = new URLSearchParams(window.location.search).get('plan')?.trim();
+  if (!plan || !['free_user', 'starter', 'trial_user', 'pro'].includes(plan)) return;
+  window.__WL_CLERK_PLAN_SLUG = plan;
+  window.__WL_PLAN_MARKET_IDS = marketIdsForClerkPlanSlug(plan);
+  window.__WL_PRO_ONLY_MARKET_IDS = [...PRO_ONLY_MARKET_IDS];
+}
+applyDevPlanPreviewFromUrl();
 
 initAnalyticsClient();
 initMetaPixel();
@@ -208,6 +218,9 @@ if (typeof window !== 'undefined' && wlGuestOnboardingMeta()) {
 
 if (!requireClerk && !window.__WL_GUEST_ONBOARDING && !window.__WL_GUEST_BOOT_FAILED) {
   window.__wlBetaAuthUnlocked = true;
+  window.__WL_CLERK_PLAN_SLUG = window.__WL_CLERK_PLAN_SLUG || 'free_user';
+  window.__WL_PLAN_MARKET_IDS = window.__WL_PLAN_MARKET_IDS || marketIdsForClerkPlanSlug('free_user');
+  window.__WL_PRO_ONLY_MARKET_IDS = window.__WL_PRO_ONLY_MARKET_IDS || [...PRO_ONLY_MARKET_IDS];
   queueMicrotask(() => emitBetaAuthOk());
 }
 
@@ -372,6 +385,7 @@ if (!publishableKey) {
   // scenario screen briefly shows the wrong lock state. Seed conservative defaults until
   // `syncPlanMarkets` replaces them with the real plan.
   if (typeof window !== 'undefined') {
+    window.__WL_CLERK_PLAN_SLUG = window.__WL_CLERK_PLAN_SLUG || 'free_user';
     window.__WL_PLAN_MARKET_IDS = marketIdsForClerkPlanSlug('free_user');
     window.__WL_PRO_ONLY_MARKET_IDS = [...PRO_ONLY_MARKET_IDS];
   }
