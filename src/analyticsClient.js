@@ -11,6 +11,136 @@ let _inited = false;
 const _legacyPending = [];
 const LEGACY_QUEUE_CAP = 120;
 
+const WL_UTM_FIRST_LS = 'wl_utm_first_v1';
+const WL_UTM_LATEST_LS = 'wl_utm_latest_v1';
+const WL_UTM_REGISTERED_SS = 'wl_utm_ph_registered_v1';
+const WL_SUBSCRIPTION_STARTED_SS = 'wl_ph_subscription_started_v1';
+const UTM_PARAM_KEYS = ['utm_source', 'utm_medium', 'utm_campaign'];
+
+/** @param {string} [search] */
+function parseUtmFromSearch(search) {
+  const out = {};
+  try {
+    const params = new URLSearchParams(search || '');
+    for (const k of UTM_PARAM_KEYS) {
+      const v = params.get(k);
+      if (v) out[k] = safeString(v, 120);
+    }
+  } catch (_e) {}
+  return out;
+}
+
+/** @param {string} key */
+function readStoredUtm(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    if (!raw) return {};
+    const j = JSON.parse(raw);
+    if (!j || typeof j !== 'object') return {};
+    const out = {};
+    for (const k of UTM_PARAM_KEYS) {
+      if (j[k]) out[k] = safeString(String(j[k]), 120);
+    }
+    return out;
+  } catch (_e) {
+    return {};
+  }
+}
+
+/** @param {string} key @param {Record<string, string>} utm */
+function writeStoredUtm(key, utm) {
+  if (!utm || !Object.keys(utm).length) return;
+  try {
+    localStorage.setItem(key, JSON.stringify(utm));
+  } catch (_e) {}
+}
+
+/** @param {Array<Record<string, string>>} sources */
+function mergeUtmSources(sources) {
+  const out = {};
+  for (const src of sources) {
+    if (!src) continue;
+    for (const k of UTM_PARAM_KEYS) {
+      if (src[k] && !out[k]) out[k] = src[k];
+    }
+  }
+  return out;
+}
+
+/** Latest UTM when present; otherwise first-touch values from localStorage. */
+function getActiveUtmAttribution() {
+  if (typeof window === 'undefined') return {};
+  const fromUrl = parseUtmFromSearch(window.location.search);
+  const latest = mergeUtmSources([fromUrl, readStoredUtm(WL_UTM_LATEST_LS)]);
+  const first = mergeUtmSources([readStoredUtm(WL_UTM_FIRST_LS), fromUrl]);
+  return mergeUtmSources([latest, first]);
+}
+
+function utmPersonPropertySets() {
+  const fromUrl = typeof window !== 'undefined' ? parseUtmFromSearch(window.location.search) : {};
+  const firstTouch = mergeUtmSources([readStoredUtm(WL_UTM_FIRST_LS), fromUrl]);
+  const latestTouch = mergeUtmSources([fromUrl, readStoredUtm(WL_UTM_LATEST_LS)]);
+  const setOnce = {};
+  const set = {};
+  for (const k of UTM_PARAM_KEYS) {
+    if (firstTouch[k]) setOnce[`initial_${k}`] = firstTouch[k];
+    if (latestTouch[k]) set[k] = latestTouch[k];
+  }
+  return { setOnce, set, active: mergeUtmSources([latestTouch, firstTouch]) };
+}
+
+function persistUtmFromUrl() {
+  if (typeof window === 'undefined') return false;
+  const fromUrl = parseUtmFromSearch(window.location.search);
+  if (!Object.keys(fromUrl).length) return false;
+  writeStoredUtm(WL_UTM_LATEST_LS, fromUrl);
+  if (!Object.keys(readStoredUtm(WL_UTM_FIRST_LS)).length) {
+    writeStoredUtm(WL_UTM_FIRST_LS, fromUrl);
+  }
+  return true;
+}
+
+function applyMarketingAttribution() {
+  if (!_inited) return;
+  const hadUrlUtms = persistUtmFromUrl();
+  const { setOnce, set, active } = utmPersonPropertySets();
+  if (!Object.keys(active).length) return;
+  try {
+    posthog.register(active);
+  } catch (_e) {}
+  if (!Object.keys(setOnce).length && !Object.keys(set).length) return;
+
+  let shouldCapture = hadUrlUtms;
+  if (!shouldCapture) {
+    try {
+      shouldCapture = sessionStorage.getItem(WL_UTM_REGISTERED_SS) !== '1';
+      if (shouldCapture) sessionStorage.setItem(WL_UTM_REGISTERED_SS, '1');
+    } catch (_e) {}
+  }
+  if (!shouldCapture) return;
+
+  try {
+    posthog.capture('utm_attribution_captured', {
+      ...active,
+      ...(Object.keys(setOnce).length ? { $set_once: setOnce } : {}),
+      ...(Object.keys(set).length ? { $set: set } : {}),
+    });
+  } catch (_e) {}
+}
+
+function maybeTrackSubscriptionStarted(props) {
+  try {
+    const plan = String(props?.plan || props?.selected_plan || '').trim();
+    if (plan !== 'starter' && plan !== 'pro') return;
+    if (sessionStorage.getItem(WL_SUBSCRIPTION_STARTED_SS) === '1') return;
+    sessionStorage.setItem(WL_SUBSCRIPTION_STARTED_SS, '1');
+    const base = analyticsBaseProps();
+    const merged = sanitizeProps({ ...base, ...(props && typeof props === 'object' ? props : {}) });
+    if (!_inited) return;
+    posthog.capture('subscription_started', merged);
+  } catch (_e) {}
+}
+
 function flushLegacyQueue() {
   while (_legacyPending.length && _inited) {
     const x = _legacyPending.shift();
@@ -153,6 +283,8 @@ export function analyticsBaseProps() {
       }
       out.mode = safeString(m, 24);
     }
+
+    Object.assign(out, getActiveUtmAttribution());
   } catch (_e) {
     /* swallow */
   }
@@ -188,6 +320,7 @@ export function initAnalyticsClient() {
     });
     _inited = true;
     window.__WL_POSTHOG_READY = true;
+    applyMarketingAttribution();
     flushLegacyQueue();
     window.__WL_ANALYTICS_CAPTURE = captureEvent;
   } catch (_e) {
@@ -214,6 +347,7 @@ export function captureEvent(event, props) {
     } catch (_e2) {}
     if (!_inited) return;
     posthog.capture(name, merged);
+    if (name === 'subscription_access_detected') maybeTrackSubscriptionStarted(merged);
   } catch (_e) {}
 }
 
@@ -225,7 +359,12 @@ export function identifyClerkUser(clerkUserId) {
     if (!_inited) return;
     const id = safeString(clerkUserId, 128);
     if (!id || id.startsWith('[redacted]')) return;
-    posthog.identify(id);
+    const { setOnce, set } = utmPersonPropertySets();
+    if (Object.keys(setOnce).length || Object.keys(set).length) {
+      posthog.identify(id, set, setOnce);
+    } else {
+      posthog.identify(id);
+    }
   } catch (_e) {}
 }
 
