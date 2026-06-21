@@ -20,11 +20,21 @@
 
 | Date | Commit | System | Family | Hypothesis | Result | Classification change |
 |------|--------|--------|--------|------------|--------|-------------------------|
-| 2026-06-21 | `ffb369e` | Blueprint | Legacy music | Rock lane oversizing is primarily Blueprint at birth | **Not Success** (v1+v2) | **Blueprint + Demand** · Blueprint composition unresolved · no code commit |
+| 2026-06-21 | `ffb369e` | Blueprint | Legacy music | Rock lane oversizing is primarily Blueprint at birth | **Not Success** (v1+v2) | **Blueprint + Demand** · no code commit |
+| 2026-06-21 | — | Blueprint | Legacy composition | Explicit composition decouples Rock-family from Country-family at birth | **Composition validated** | Blueprint composition is a **real layer**; Rock **Blueprint + Demand** unchanged |
 
-**Rock (current working classification):** Blueprint + Demand. Blueprint birth is a confirmed mega-Rock lever (`maxSlots`, not `seedWeight`). Residual 2026 gap is Demand-side. **`legacyMusic` macro family too coarse** for Blueprint — need subfamily composition (Rock / Country / Classic Hits) before further Rock Blueprint implementation.
+**Rock (current working classification):** **Blueprint + Demand**. Blueprint **composition** validated (Rock-family birth decoupled from Country-family; seat count conserved). Residual Rock @ 2026 gap remains Demand-side. Not a ship candidate.
 
-**Next authorized work:** New hypothesis doc for Legacy Music **subfamily Blueprint composition** — not scalar tweaking, not market tables, not Demand/Fragmentation until scored.
+**Next authorized work:** Demand-side hypothesis for Rock trajectory when authorized. No further Blueprint composition tuning without new doc.
+
+### Legacy Blueprint composition POC v1 (scored 2026-06-21)
+
+- **Spec:** [REALISM_LEGACY_COMPOSITION_IMPLEMENTATION_SPEC.md](./REALISM_LEGACY_COMPOSITION_IMPLEMENTATION_SPEC.md) · **§9**
+- **Change:** composition rockFamily 0.45→0.30, goldFamily 0.20→0.35 (normalized); `maxSlots[legacyMusic]` held at 3
+- **Implementation (uncommitted):** `data/realismBlueprint.v1.json`, `src/realismBlueprint.js`, `src/legacy.js`
+- **Outcome:** C1 ✅ C2 ✅ C3 ✅ C4 marginal (+1.3pt) — **core hypothesis validated**; v2 coupling not reproduced
+- **Key deltas vs baseline:** mega Rock first-book 24.6→10.1% (−14.5pt); Country 4.0→3.6% (−0.4pt)
+- **Artifacts:** `tmp/share_lane_size_table_poc_composition_v1.md`, `tmp/share_lane_demand_provenance_poc_composition_v1.md`
 
 ### ffb369e — Rock Blueprint POC v1 (scored 2026-06-21)
 
@@ -106,4 +116,5 @@ Macro family for **Demand** may stay Legacy Music. **Blueprint** may need a sub-
 | 2026-06-21 | Rock Blueprint POC v1 scored — **Ambiguous (Hold)**; see experiment row |
 | 2026-06-21 | Rock Blueprint POC v2 scored — **Not Success**; reclassified **Blueprint + Demand**; see §11.2 |
 | 2026-06-21 | CTO verdict recorded — composition too coarse; experimental code not shipped; see POC §11.3 |
+| 2026-06-21 | Legacy composition POC v1 scored — composition layer validated; see implementation spec §9 |
 | 2026-06-21 | Process notes added — structural insight, experiment discipline, next design gate |
