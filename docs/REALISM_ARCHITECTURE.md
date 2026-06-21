@@ -59,6 +59,16 @@ These map **into** the triad or are out of scope:
 
 **Design-review test:** If a change doesn’t start with Blueprint, Demand, or Fragmentation, ask: *Is this realism, infrastructure, or gameplay?* Only realism must pick a system.
 
+### 1.3 Experiment discipline (frozen)
+
+Realism changes follow a **one-pass scientific cycle**, not iterative tuning:
+
+1. Form a hypothesis · 2. Isolate one system · 3. Change one thing · 4. Measure with existing harnesses · 5. Document · 6. **Stop**
+
+No run/tweak/run on the same hypothesis. No market-specific exceptions as diagnosis. Experimental code that fails the POC gate is **not merged**; experiment results and classification updates **are** preserved.
+
+**First validated cycle:** Rock Blueprint POC ([REALISM_ROCK_BLUEPRINT_POC.md](./REALISM_ROCK_BLUEPRINT_POC.md), [REALISM_CHANGELOG.md](./REALISM_CHANGELOG.md) · commit `6bf6293`). Outcome: framework predictive; Rock = Blueprint + Demand; Blueprint composition unresolved.
+
 ---
 
 ## 2. Macro families (frozen count; mappings provisional)
@@ -76,6 +86,19 @@ Contemporary music acts as a **control family**: if contemporary tracks national
 
 **Frozen:** four families exist as the realism grouping layer.  
 **Provisional:** exact format→family assignments, subformat splits, and whether a lane uses one family for Blueprint/Demand and another for Fragmentation (e.g. Identity demand vs spoken fragmentation) — to be validated during implementation, not frozen here.
+
+### 2.1 Blueprint subfamily composition (provisional — post Rock POC)
+
+Rock Blueprint POC v1+v2 suggests **macro family granularity may differ by system**:
+
+| System | Legacy music grouping (hypothesis) |
+|--------|-------------------------------------|
+| **Demand evolution** | **Legacy Music** macro family may remain valid (listening cohort over decades) |
+| **Blueprint** | Birth-time **composition** may need subfamilies under Legacy: **Rock · Country · Classic Hits** (national allocation rule, not per-market tables) |
+
+Evidence: `seedWeight[legacyMusic]` barely moved mega Rock first-book; `maxSlots[legacyMusic]` moved it −11.3pt but damaged Country — wrong *composition*, not merely too much legacy mass. Mega Rock oversizing reflected **too many legacy-format seats at birth**, not Rock stations winning over decades.
+
+**Open design gate:** Can Blueprint stay national and whack-a-mole resistant while distinguishing Rock / Country / Classic Hits composition inside Legacy Music? Requires a hypothesis document before the next experiment. **Do not** jump to Demand work because Rock is classified Blueprint + Demand.
 
 ---
 
@@ -165,7 +188,7 @@ These guide **which system to touch first** — not parameter numbers:
 
 | Lane | Clean signal | Primary system(s) |
 |------|--------------|---------------------|
-| **Rock** | Born too large (~2–3× band at first book); decays but stays high | **Blueprint** (+ Demand decay rate) |
+| **Rock** | Born too large (~2–3× band at first book); decays but stays high | **Blueprint + Demand** (POC v1+v2: birth responds to slot cap; 2026 residual → habit/evolution) |
 | **Sports** | Starts at **zero**; lane appears ~2000+; then overshoots | **Demand evolution** + **Fragmentation** |
 | **Spanish** | National lane total often near band; leader/capture fails | **Fragmentation** (+ blueprint entry timing) |
 | **News/Talk** | Large tier lane total high; mega capture often high | **Demand evolution** + **Fragmentation** |
@@ -197,8 +220,8 @@ A minimal national surface might bundle:
 
 ### 7.3 Suggested implementation order (when coding resumes)
 
-1. **Blueprint** — Legacy music (Rock proof: born too large)
-2. **Demand evolution** — Spoken (Sports proof: zero → grow)
+1. **Blueprint composition** — Legacy music subfamilies (Rock / Country / Classic Hits national rule) — *design doc first; Rock POC proved macro `legacyMusic` too coarse for Blueprint*
+2. **Demand evolution** — Spoken (Sports proof: zero → grow) — *after Blueprint composition question is scored; not because Rock is Blueprint + Demand*
 3. **Fragmentation** — spoken-regime candidates (Spanish / News/Talk proof: capture)
 
 Each PR must state: **System · Family · Tier** — not market name.
@@ -216,3 +239,4 @@ Each PR must state: **System · Family · Tier** — not market name.
 | Date | Change |
 |------|--------|
 | 2026-06-21 | Initial freeze: triad, governance rule, four families, two tiers, national validation methodology |
+| 2026-06-21 | Post Rock POC: §1.3 experiment discipline, §2.1 Blueprint subfamily hypothesis, Rock → Blueprint + Demand in §6, §7.3 order updated |

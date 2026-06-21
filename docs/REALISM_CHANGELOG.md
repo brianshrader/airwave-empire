@@ -58,6 +58,46 @@
 
 ---
 
+## Process notes
+
+Institutional memory from the first completed experiment cycle — the **process result**, not parameter values.
+
+### What the old path looked like (avoid)
+
+Rock too big → lower Rock → Country breaks → raise Country → Phoenix weird → Phoenix exception → Houston weird → Houston exception → six months later nobody remembers why anything exists.
+
+### What happened instead (2026-06-21)
+
+Hypothesis → isolate one system → change one thing → measure → document → **stop**. Experimental code not merged; knowledge preserved in docs and harness artifacts (`6bf6293`).
+
+### Structural insight (Rock Blueprint POC)
+
+| Lever | Mega Rock first-book | Implication |
+|-------|---------------------|-------------|
+| `seedWeight[legacyMusic]` 0.25→0.17 | −2.5pt | Not primarily “too much legacy mass budget” |
+| `maxSlots[legacyMusic]` 3→2 | **−11.3pt** | **Too many legacy-format seats at birth** |
+
+Markets became Rock-heavy because the blueprint kept assigning Rock-family chairs before evolution — Blueprint pathology (seat count / composition), not stations winning share over decades.
+
+### Why Blueprint + Demand is the right classification
+
+| If purely… | Predicted | Observed |
+|------------|-----------|----------|
+| **Blueprint** | First-book fix ≈ fixes 2026 | First-book dropped; 2026 gap remains (habit/evolution rank-1) |
+| **Demand** | Blueprint touches barely move birth | v2 moved birth dramatically |
+
+Both narratives partially true; neither alone survives one isolated change. That is how the triad should behave.
+
+### Next design gate (not tuning)
+
+> Can Blueprint remain national and whack-a-mole resistant while distinguishing Rock, Country, and Classic Hits composition inside Legacy Music?
+
+Macro family for **Demand** may stay Legacy Music. **Blueprint** may need a sub-layer. That is taxonomy refinement, not architecture failure.
+
+**Explicitly deferred:** Demand work “because Rock is Blueprint + Demand.” Blueprint composition must be answered first.
+
+---
+
 ## Change log (this file)
 
 | Date | Change |
@@ -66,3 +106,4 @@
 | 2026-06-21 | Rock Blueprint POC v1 scored — **Ambiguous (Hold)**; see experiment row |
 | 2026-06-21 | Rock Blueprint POC v2 scored — **Not Success**; reclassified **Blueprint + Demand**; see §11.2 |
 | 2026-06-21 | CTO verdict recorded — composition too coarse; experimental code not shipped; see POC §11.3 |
+| 2026-06-21 | Process notes added — structural insight, experiment discipline, next design gate |
