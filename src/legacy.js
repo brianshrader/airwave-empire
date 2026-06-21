@@ -43246,8 +43246,7 @@ function rHdr(){
   const _hdrCash = mpMyCashOnHand();
   const _hcashEl=document.getElementById('hcash');
   if(_hcashEl){
-    const _cashN=Math.round(_hdrCash);
-    _hcashEl.textContent=(_cashN<0?'-$':'$')+Math.abs(_cashN).toLocaleString();
+    _hcashEl.textContent=Math.round(_hdrCash).toLocaleString();
   }
   const cd=document.getElementById('cash');
   if(cd){
