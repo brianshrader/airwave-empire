@@ -9559,6 +9559,29 @@ function wlAnalyticsIsGuest(){
   return typeof window!=='undefined'&&!!window.__WL_GUEST_ONBOARDING;
 }
 
+/** Tutorial turnaround funnel — once per event per run; analytics only. */
+function wlEmitTutorialFunnelEvent(eventSuffix,extraProps){
+  if(!G||G.sc?.id!=='tutorial_turnaround')return;
+  if(typeof MP!=='undefined'&&MP.mode==='live')return;
+  const suffix=String(eventSuffix||'').trim();
+  if(!suffix)return;
+  const flagKey='_wlTutorialFunnel_'+suffix.replace(/[^a-z0-9_]/g,'_');
+  if(G[flagKey])return;
+  G[flagKey]=true;
+  const base={
+    source:'tutorial_funnel',
+    scenario_id:'tutorial_turnaround',
+    market_id:String(G.marketId||ACTIVE_MARKET||'atlanta').slice(0,32),
+    year:G.year|0,
+    period:G.period|0,
+    is_guest:wlAnalyticsIsGuest(),
+    tutorial_act:G.tutorialAct|0,
+  };
+  try{
+    wlAnalyticsCapture('tutorial_'+suffix,Object.assign({},base,extraProps||{}));
+  }catch(_e){}
+}
+
 /** Canonical tutorial completion — fires when the grad modal ("Now It's Up to You") is shown. */
 function wlEmitTutorialFinished(screenId){
   if(!G)return;
@@ -26027,7 +26050,10 @@ function tutorialTurnaroundCoachAfterRender(){
   wlTuTurnaroundLayoutStep();
 }
 function tutorialTurnaroundOnTutorialModalClosed(){
-  if(isTutorialTurnaroundScen()&&(G.tutorialAct|0)===1)G._tutorialIntroDone=true;
+  if(isTutorialTurnaroundScen()&&(G.tutorialAct|0)===1){
+    G._tutorialIntroDone=true;
+    wlEmitTutorialFunnelEvent('intro_dismissed');
+  }
   tutorialTurnaroundCoachSync();
 }
 function tutorialTurnaroundShowIntroModal(){
@@ -26123,6 +26149,7 @@ function tutorialTurnaroundOnAdvTurnComplete(){
   const t=G.turn|0,a=G.tutorialAct|0;
   const ps=tutorialTurnaroundPlayerStation();
   if(a===1&&t>=1){
+    wlEmitTutorialFunnelEvent('first_advance_clicked');
     G.tutorialAct=2;
     tutorialTurnaroundToastForAct();
   }else if(a===5&&ps){
@@ -26170,15 +26197,18 @@ function tutorialTurnaroundOnConsultantDone(){
   G._tutorialConsultantDone=true;
   G._tutorialResearchCoachStep=5;
   G._tutorialResearchReportCoachDone=false;
+  wlEmitTutorialFunnelEvent('research_memo_seen');
   tutorialTurnaroundCoachSync();
 }
 /** After closing Research post-consultant, resume the scripted flow at Act 3 (Programming / format). */
 function tutorialTurnaroundAfterResearchClosed(){
   if(!isTutorialTurnaroundScen()||MP.mode==='live')return;
   if((G.tutorialAct|0)!==2||!G._tutorialConsultantDone)return;
+  wlEmitTutorialFunnelEvent('research_closed');
   G.tutorialAct=3;
   G._tutorialResearchCoachStep=0;
   G._tutorialResearchReportCoachDone=false;
+  wlEmitTutorialFunnelEvent('format_prompt_seen');
   tutorialTurnaroundToastForAct();
 }
 function tutorialTurnaroundOnFormatChanged(s,oldFmt,newFmt){
@@ -26187,6 +26217,7 @@ function tutorialTurnaroundOnFormatChanged(s,oldFmt,newFmt){
   if(!formatUnlockedForYear(newFmt,G))return;
   if(!formatPlausibleOnFacility(s,newFmt))return;
   if(!formatAllowedInMarket(newFmt,G.marketId,G.year))return;
+  wlEmitTutorialFunnelEvent('format_changed',{old_format:String(oldFmt||'').slice(0,32),new_format:String(newFmt||'').slice(0,32)});
   G.tutorialAct=4;
   G._tutorialProgExtraStep=1;
   G._tutorialTalentRosterIntroDone=false;
@@ -28568,6 +28599,12 @@ function openResearch(sid){
   rb.innerHTML=renderResearchModalBody(sid,Date.now());
   om('m-research');
   wlFtTutorialNotifyResearchOpen();
+  if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===2){
+    wlEmitTutorialFunnelEvent('research_opened');
+    if((G._tutorialResearchCoachStep|0)===0)G._tutorialResearchCoachStep=1;
+    requestAnimationFrame(()=>tutorialTurnaroundCoachAfterRender());
+    return;
+  }
   if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===2&&!G._tutorialConsultantDone&&(G._tutorialResearchCoachStep|0)===0)
     G._tutorialResearchCoachStep=1;
   if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&(G.tutorialAct|0)===2)
@@ -37139,6 +37176,7 @@ function openFmt(sid){
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   FS={sid,chosen:null};rFmt(s);om('m-fm');
   if(isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'){
+    wlEmitTutorialFunnelEvent('format_prompt_seen');
     G._tutorialFmtCoachDismissed=0;
     if((G._tutorialFmtCoachStep|0)===0)G._tutorialFmtCoachStep=1;
     tutorialTurnaroundCoachSync();

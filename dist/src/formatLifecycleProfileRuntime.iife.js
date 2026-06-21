@@ -369,9 +369,9 @@ var WLFL = (() => {
         }
       },
       phoenix: {
-        comment: "DIAG_ONLY \u2014 moderate country, Spanish growth",
+        comment: "Sunbelt large \u2014 FM country handoff from AM; Spanish growth",
         formatModifiers: {
-          COUNTRY: { historicStrength: 0.58, modernRetention: 0.62 },
+          COUNTRY: { historicStrength: 0.66, modernRetention: 0.74 },
           SPANISH: { historicStrength: 0.5, modernRetention: 0.88 }
         }
       }

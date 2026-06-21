@@ -6,6 +6,8 @@ import posthog from 'posthog-js';
 import { trackMetaFromAppEvent } from './metaPixelClient.js';
 
 let _inited = false;
+/** Tutorial-only session replay — started on `tutorial_started`, stopped on tutorial completion. */
+let _tutorialReplayActive = false;
 
 /** Events from legacy.js before PostHog finishes init (microsecond race); flushed once `_inited`. */
 const _legacyPending = [];
@@ -291,6 +293,41 @@ export function analyticsBaseProps() {
   return out;
 }
 
+/**
+ * Opt-in PostHog session replay for tutorial runs (recording is off globally until this fires).
+ * Emits `tutorial_session_replay_started` so replays can be verified in PostHog Events.
+ */
+export function startTutorialSessionRecording() {
+  if (!_inited || analyticsDisabled()) return false;
+  if (_tutorialReplayActive) return true;
+  try {
+    posthog.startSessionRecording(true);
+    _tutorialReplayActive = true;
+    window.__WL_TUTORIAL_REPLAY_ACTIVE = true;
+    posthog.register({ tutorial_replay_active: true });
+    const sessionId =
+      typeof posthog.get_session_id === 'function' ? safeString(posthog.get_session_id(), 64) : '';
+    captureEvent('tutorial_session_replay_started', {
+      source: 'tutorial_funnel',
+      ...(sessionId ? { posthog_session_id: sessionId } : {}),
+    });
+    return true;
+  } catch (_e) {
+    return false;
+  }
+}
+
+/** Stop tutorial replay capture after grad / completion to limit recording volume. */
+export function stopTutorialSessionRecording() {
+  if (!_inited || !_tutorialReplayActive) return;
+  try {
+    posthog.stopSessionRecording();
+    posthog.unregister('tutorial_replay_active');
+    _tutorialReplayActive = false;
+    window.__WL_TUTORIAL_REPLAY_ACTIVE = false;
+  } catch (_e) {}
+}
+
 export function initAnalyticsClient() {
   if (typeof window === 'undefined' || _inited) return;
   installLegacyAnalyticsBridge();
@@ -323,6 +360,8 @@ export function initAnalyticsClient() {
     applyMarketingAttribution();
     flushLegacyQueue();
     window.__WL_ANALYTICS_CAPTURE = captureEvent;
+    window.__WL_START_TUTORIAL_SESSION_REPLAY = startTutorialSessionRecording;
+    window.__WL_STOP_TUTORIAL_SESSION_REPLAY = stopTutorialSessionRecording;
   } catch (_e) {
     window.__WL_ANALYTICS_INIT_ERR = true;
     _legacyPending.length = 0;
@@ -346,6 +385,8 @@ export function captureEvent(event, props) {
       trackMetaFromAppEvent(name, merged);
     } catch (_e2) {}
     if (!_inited) return;
+    if (name === 'tutorial_started') startTutorialSessionRecording();
+    if (name === 'tutorial_finished' || name === 'tutorial_completed') stopTutorialSessionRecording();
     posthog.capture(name, merged);
     if (name === 'subscription_access_detected') maybeTrackSubscriptionStarted(merged);
   } catch (_e) {}

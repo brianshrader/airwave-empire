@@ -33,14 +33,18 @@
    * T4: softer margin + lower survival bar + modest promotion bar — elite pressure without firing cliff.
    * T5: slightly softer than pre-pass (see git history) so flagship wins are possible but uncommon; batch still shows laterals + occasional demotions.
    */
+  /**
+   * Campaign tier templates — `marketPool` picks the city; tier row holds rules/tuning only.
+   * Do not add diag-only markets (Phoenix, Portland) until promoted to ALL_PLAYABLE_MARKET_IDS.
+   */
   var LADDER = [
     {
-      id: 'c0_wichita',
+      id: 'c0_starter',
       tier: 0,
-      marketId: 'wichita',
+      marketPool: ['wichita'],
       scenarioId: 'gm_under',
       ownerArchetype: 'turnaround',
-      title: 'General Manager — Small-market starter',
+      titleTemplate: 'General Manager — Small-market starter',
       contractLengthPeriods: 12,
       successThreshold: 53,
       survivalThreshold: 38,
@@ -55,12 +59,12 @@
         'Your first real General Manager chair: a modest Plains market with real P&L and real competition — lower stakes than a major, but every decision still counts.',
     },
     {
-      id: 'c1_nashville',
+      id: 'c1_regional',
       tier: 1,
-      marketId: 'nashville',
+      marketPool: ['nashville'],
       scenarioId: 'gm_under',
       ownerArchetype: 'turnaround',
-      title: 'General Manager — Regional turnaround',
+      titleTemplate: 'General Manager — Regional turnaround',
       contractLengthPeriods: 14,
       successThreshold: 56,
       survivalThreshold: 40,
@@ -76,12 +80,12 @@
         'Ownership needs a steady hand in a medium-sized southern market. They funded bridge capital so you can run lean and still have room to fix what is broken.',
     },
     {
-      id: 'c2_atlanta',
+      id: 'c2_large',
       tier: 2,
-      marketId: 'atlanta',
+      marketPool: ['atlanta', 'dallas', 'houston'],
       scenarioId: 'gm_under',
       ownerArchetype: 'turnaround',
-      title: 'General Manager — Large market rebuild',
+      titleTemplate: 'General Manager — Large-market rebuild',
       contractLengthPeriods: 14,
       successThreshold: 54,
       survivalThreshold: 44,
@@ -91,18 +95,18 @@
       corporateCashGrant: 520000,
       evaluationGraceReviews: 1,
       corporateCommitmentNote:
-        'Ownership backed this promotion with a one-time operating budget — large-market salvage needs more than good intentions; you get enough cash to survive early losses while you execute, with a bit more bridge than the last Atlanta posting so the chair stays playable.',
+        'Ownership backed this promotion with a one-time operating budget — large-market salvage needs more than good intentions; you get enough cash to survive early losses while you execute.',
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 80 },
-      flavor:
-        'A Sunbelt major market: more revenue on the table — and more scrutiny — but corporate put money behind the seat so a turnaround is playable, not a few rounds to bankruptcy.',
+      flavorTemplate:
+        '{city}: a large market with real revenue on the table — and real scrutiny — but corporate put money behind the seat so a turnaround is playable, not a few rounds to bankruptcy.',
     },
     {
-      id: 'c3_seattle',
+      id: 'c3_growth',
       tier: 3,
-      marketId: 'seattle',
+      marketPool: ['seattle', 'sanfrancisco'],
       scenarioId: 'gm_under',
       ownerArchetype: 'prestige',
-      title: 'General Manager — Northwest growth market',
+      titleTemplate: 'General Manager — Competitive large market',
       contractLengthPeriods: 18,
       /** Tier 3 is a step-up: promotion bar is tighter than Tier 2; survival still achievable with the turnaround package below. */
       successThreshold: 58,
@@ -120,16 +124,16 @@
       corporateCommitmentNote:
         'Corporate backed this posting with meaningful bridge capital — your first formal review still emphasizes measurable progress over instant profit, but you are not expected to run the cluster on fumes from day one.',
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 78, minFranchiseAvg: 0.5 },
-      flavor:
-        'A competitive major market where brand and ratings momentum matter as much as margin. Corporate funded real runway for a rebuild — enough to absorb a bad period — plus one early review cycle where they judge direction before holding you to steady-state standards.',
+      flavorTemplate:
+        '{city}: brand and ratings momentum matter as much as margin. Corporate funded real runway for a rebuild — enough to absorb a bad period — plus one early review cycle where they judge direction before holding you to steady-state standards.',
     },
     {
-      id: 'c4_chicago',
+      id: 'c4_operator',
       tier: 4,
-      marketId: 'chicago',
+      marketPool: ['chicago'],
       scenarioId: 'gm_under',
       ownerArchetype: 'cash_first',
-      title: 'General Manager — Major market operator',
+      titleTemplate: 'General Manager — Major-market operator',
       contractLengthPeriods: 22,
       successThreshold: 55,
       survivalThreshold: 40,
@@ -141,16 +145,16 @@
       corporateCommitmentNote:
         'Promotion to a major-market chair included limited bridge funding — corporate expects discipline, but they will not pretend an underfunded General Manager can fix a broken cluster overnight.',
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 79, minMarginPct: 8 },
-      flavor:
-        'Big payroll, big expectations — cash discipline matters as much as ratings — with enough corporate runway that the opening quarters reward direction, not only the bottom line.',
+      flavorTemplate:
+        '{city}: big payroll, big expectations — cash discipline matters as much as ratings — with enough corporate runway that the opening quarters reward direction, not only the bottom line.',
     },
     {
-      id: 'c5_top',
+      id: 'c5_flagship',
       tier: 5,
-      marketId: 'newyork',
+      marketPool: ['newyork', 'losangeles'],
       scenarioId: 'gm_under',
       ownerArchetype: 'heritage',
-      title: 'General Manager — Top-market spotlight',
+      titleTemplate: 'General Manager — Top-market spotlight',
       contractLengthPeriods: 22,
       successThreshold: 57,
       survivalThreshold: 43,
@@ -162,10 +166,13 @@
       corporateCommitmentNote:
         'Even at the flagship, the group funded transition support — you are here to win, not to run out of cash before the first books settle.',
       gmConfig: { reviewIntervalPeriods: 4, trailingPeriods: 4, startConfidence: 74, minFranchiseAvg: 0.52 },
-      flavor:
-        'The flagship job: maximum revenue, maximum pressure — with enough opening support that the assignment is a credible shot, not a kamikaze posting.',
+      flavorTemplate:
+        '{city}: the flagship chair — maximum revenue, maximum pressure — with enough opening support that the assignment is a credible shot, not a kamikaze posting.',
     },
   ];
+
+  /** Legacy fixed cities for saves that predate market pools (repair without reroll). */
+  var LEGACY_DEFAULT_MARKET_BY_TIER = ['wichita', 'nashville', 'atlanta', 'seattle', 'chicago', 'newyork'];
 
   function defaultState() {
     return {
@@ -195,6 +202,14 @@
       /** Last assignment-end sim clock — promotions use this so the career does not reset to 1970. */
       careerSimYear: null,
       careerSimPeriod: null,
+      /** Monotonic serial for deterministic market picks — persisted across saves. */
+      assignmentPickSerial: 0,
+      /** Active posting city — repair uses this instead of re-rolling the pool. */
+      currentAssignmentMarketId: null,
+      /** Pick serial bound to the active posting (must match for forced restore). */
+      currentAssignmentPickSerial: null,
+      /** Last market left at assignment end — excluded from the immediate next pick when pool > 1. */
+      lastEndedMarketId: null,
     };
   }
 
@@ -268,18 +283,144 @@
     return LADDER[t] || LADDER[0];
   }
 
-  /** Alternate NY / LA for tier-5 replays for variety */
-  function resolveTier5Market(st) {
-    var row = ladderRowForTier(5);
-    var useLa = (st.completedAssignments & 1) === 1;
-    var mid = useLa ? 'losangeles' : 'newyork';
-    var out = Object.assign({}, row, { marketId: mid, id: useLa ? 'c5_la' : 'c5_ny' });
-    return out;
+  function campaignMarketLabel(marketId) {
+    var mid = String(marketId || '').trim();
+    if (!mid) return '';
+    var m = typeof global !== 'undefined' && global.MARKETS ? global.MARKETS[mid] : null;
+    return (m && m.label) || mid;
   }
 
-  function pickAssignmentForTier(tier, st) {
-    if (tier >= 5) return resolveTier5Market(st);
-    return Object.assign({}, ladderRowForTier(tier));
+  function resolvedMarketPool(row) {
+    if (!row) return [];
+    var raw = Array.isArray(row.marketPool) && row.marketPool.length ? row.marketPool.slice() : [];
+    if (!raw.length && row.marketId) raw.push(row.marketId);
+    return raw.filter(function (mid) {
+      return mid && (!global.MARKETS || global.MARKETS[mid]);
+    });
+  }
+
+  function legacyDefaultMarketForTier(tier) {
+    var t = Math.max(0, Math.min(5, tier | 0));
+    return LEGACY_DEFAULT_MARKET_BY_TIER[t] || 'wichita';
+  }
+
+  /**
+   * Deterministic market pick from a tier pool.
+   * @param {object} st career state
+   * @param {number} tier
+   * @param {object} [opts]
+   * @param {string} [opts.forceMarketId] pinned city (load repair / headless)
+   * @param {number} [opts.pickSerial] hash input — defaults to st.assignmentPickSerial
+   * @param {string} [opts.excludeMarketId] skip immediate repeat when pool allows
+   * @param {string} [opts.outcomeKind] promoted|lateral|demoted|fired — mixed into hash
+   */
+  function pickMarketFromPool(st, tier, opts) {
+    opts = opts || {};
+    var row = ladderRowForTier(tier);
+    var pool = resolvedMarketPool(row);
+    if (!pool.length) pool = [legacyDefaultMarketForTier(tier)];
+
+    var force = opts.forceMarketId ? String(opts.forceMarketId).trim() : '';
+    if (force && pool.indexOf(force) >= 0) return force;
+
+    var exclude = opts.excludeMarketId != null ? String(opts.excludeMarketId).trim() : '';
+    if (!exclude && st && st.lastEndedMarketId) exclude = String(st.lastEndedMarketId).trim();
+
+    var candidates = pool.slice();
+    if (exclude && candidates.length > 1) {
+      candidates = candidates.filter(function (mid) {
+        return mid !== exclude;
+      });
+    }
+    if (!candidates.length) candidates = pool.slice();
+
+    var serial =
+      opts.pickSerial != null
+        ? opts.pickSerial | 0
+        : st && st.assignmentPickSerial != null
+          ? st.assignmentPickSerial | 0
+          : 0;
+    var kind = opts.outcomeKind || 'assign';
+    var hashInput = [
+      'pool_v1',
+      serial,
+      'tier',
+      tier | 0,
+      'kind',
+      kind,
+      'completed',
+      st && st.completedAssignments != null ? st.completedAssignments | 0 : 0,
+      'pool',
+      candidates.slice().sort().join(','),
+    ].join('|');
+    var h = campaignMandateHash32(hashInput);
+    return candidates[h % candidates.length];
+  }
+
+  function applyAssignmentCopyTemplates(row, marketId) {
+    var city = campaignMarketLabel(marketId);
+    var titleBase = row.titleTemplate || row.title || 'General Manager';
+    var title = titleBase.indexOf(city) >= 0 ? titleBase : titleBase + ' · ' + city;
+    var flavorRaw = row.flavorTemplate || row.flavor || '';
+    var flavor = flavorRaw.replace(/\{city\}/g, city).replace(/\{market\}/g, city);
+    if (!flavor && city) flavor = 'Your next posting is ' + city + '.';
+    return { title: title, flavor: flavor };
+  }
+
+  /**
+   * Build a concrete assignment for a tier + city (rules from ladder row, city from pool pick).
+   */
+  function materializeAssignment(tier, st, opts) {
+    opts = opts || {};
+    var row = ladderRowForTier(tier);
+    var mid = pickMarketFromPool(st, tier, opts);
+    var copy = applyAssignmentCopyTemplates(row, mid);
+    return Object.assign({}, row, {
+      marketId: mid,
+      title: copy.title,
+      flavor: copy.flavor,
+      pickSerial: opts.pickSerial != null ? opts.pickSerial | 0 : null,
+    });
+  }
+
+  function reserveAssignmentPick(st, outcomeKind) {
+    var serial = (st.assignmentPickSerial | 0) + 1;
+    st.assignmentPickSerial = serial;
+    return serial;
+  }
+
+  function pickAssignmentForTier(tier, st, opts) {
+    opts = opts || {};
+    st = st || ensureState();
+    var t = Math.max(0, Math.min(5, tier | 0));
+
+    if (opts.forceMarketId) {
+      return materializeAssignment(t, st, {
+        forceMarketId: opts.forceMarketId,
+        pickSerial: opts.pickSerial != null ? opts.pickSerial : st.currentAssignmentPickSerial,
+      });
+    }
+
+    if (!opts.allowReroll && st.currentAssignmentMarketId && (st.currentTier | 0) === t) {
+      return materializeAssignment(t, st, {
+        forceMarketId: st.currentAssignmentMarketId,
+        pickSerial: st.currentAssignmentPickSerial,
+      });
+    }
+
+    if (!opts.allowReroll && !st.currentAssignmentMarketId && !opts.outcomeKind) {
+      return materializeAssignment(t, st, {
+        forceMarketId: legacyDefaultMarketForTier(t),
+      });
+    }
+
+    var serial =
+      opts.pickSerial != null ? opts.pickSerial | 0 : reserveAssignmentPick(st, opts.outcomeKind || 'assign');
+    return materializeAssignment(t, st, {
+      pickSerial: serial,
+      excludeMarketId: opts.excludeMarketId,
+      outcomeKind: opts.outcomeKind,
+    });
   }
 
   /**
@@ -922,7 +1063,13 @@
       st.highestTierCompleted = Math.max(st.highestTierCompleted, tierBefore);
     }
 
-    var nextAsg = campaignWin ? null : pickAssignmentForTier(nextTier, st);
+    var nextAsg = campaignWin
+      ? null
+      : pickAssignmentForTier(nextTier, st, {
+          excludeMarketId: asg.marketId,
+          outcomeKind: kind,
+          allowReroll: true,
+        });
 
     if (kind === 'fired' && tierBefore <= 0 && st.firingCount >= 2 && st.reputation < 28) {
       st.active = false;
@@ -942,6 +1089,8 @@
     };
     st.history.push(entry);
     if (st.history.length > 24) st.history = st.history.slice(-24);
+
+    st.lastEndedMarketId = asg.marketId;
 
     archiveMarketAtAssignmentEnd(G, asg.marketId);
 
@@ -1046,6 +1195,7 @@
       id: asg.id,
       tier: asg.tier,
       marketId: asg.marketId,
+      pickSerial: asg.pickSerial != null ? asg.pickSerial | 0 : null,
       scenarioId: asg.scenarioId || 'gm_under',
       ownerArchetype: asg.ownerArchetype,
       title: asg.title,
@@ -1079,6 +1229,10 @@
     }
     var st = ensureState();
     if (st.active) st.currentTier = asg.tier | 0;
+    if (asg.marketId) {
+      st.currentAssignmentMarketId = asg.marketId;
+      st.currentAssignmentPickSerial = asg.pickSerial != null ? asg.pickSerial | 0 : st.assignmentPickSerial | 0;
+    }
     if (st.playerName) G.campaignPlayerName = String(st.playerName).trim();
     if (st.ownerCompanyName) G.campaignOwnerCompany = String(st.ownerCompanyName).trim();
   }
@@ -1116,6 +1270,12 @@
     if (G.campaignAssignment) {
       st.active = true;
       st.currentTier = G.campaignAssignment.tier | 0;
+      if (G.campaignAssignment.marketId) {
+        st.currentAssignmentMarketId = G.campaignAssignment.marketId;
+        if (G.campaignAssignment.pickSerial != null) {
+          st.currentAssignmentPickSerial = G.campaignAssignment.pickSerial | 0;
+        }
+      }
     }
     if (G.campaignAssignment || G.careerCampaign) {
       if (st.playerName) G.campaignPlayerName = String(st.playerName).trim();
@@ -1141,13 +1301,19 @@
       (st.history && st.history.length);
     if (!looksCareer) return false;
     var tier = st.currentTier != null ? st.currentTier | 0 : 0;
-    var asg = pickAssignmentForTier(tier, st);
+    var forceMid = st.currentAssignmentMarketId || (G.marketId && String(G.marketId)) || null;
+    var asg = pickAssignmentForTier(
+      tier,
+      st,
+      forceMid ? { forceMarketId: forceMid, pickSerial: st.currentAssignmentPickSerial } : {},
+    );
     if (!asg) return false;
     G.careerCampaign = true;
     G.campaignAssignment = {
       id: asg.id,
       tier: asg.tier,
       marketId: asg.marketId,
+      pickSerial: asg.pickSerial != null ? asg.pickSerial | 0 : null,
       scenarioId: asg.scenarioId || 'gm_under',
       ownerArchetype: asg.ownerArchetype,
       title: asg.title,
@@ -1282,18 +1448,46 @@
     if (typeof global.om === 'function') global.om('m-campaign-end');
   }
 
+  /** Drop orphaned career close-out flags on classic franchise scenarios (Underdog, etc.). */
+  function scrubPendingCareerEndForNonCareerGame(G) {
+    if (!G) return;
+    if (G.careerCampaign || G.campaignAssignment) return;
+    if (G.sc && G.sc.gmMode) return;
+    try {
+      delete G._wlCampaignPendingEndV1;
+      delete G._campaignAssignmentEnded;
+      G._campaignOutcomeRecorded = false;
+    } catch (_e) {}
+    if (state) state.awaitingLaunch = null;
+  }
+
+  /** True when a posting ended and the player still owes the assignment close-out modal. */
+  function hasPendingAssignmentEnd(G) {
+    if (!G) return false;
+    if (global.MP && global.MP.mode === 'live') return false;
+    if (!G.careerCampaign && !G.campaignAssignment && !(G.sc && G.sc.gmMode)) {
+      scrubPendingCareerEndForNonCareerGame(G);
+      return false;
+    }
+    var st = ensureState();
+    var al = st && st.awaitingLaunch;
+    if (al && al.ended) return true;
+    var d = G._wlCampaignPendingEndV1;
+    return !!(d && d.v === 1 && d.ended);
+  }
+
   /** Block advancing another sim period until the career close-out modal is dismissed (prevents orphaned play). */
   function shouldBlockAdvTurnForPendingCareerEnd(G) {
     if (!G) return null;
     if (global.MP && global.MP.mode === 'live') return null;
-    var st = ensureState();
-    var al = st.awaitingLaunch;
-    if (!al || !al.ended) return null;
+    if (!hasPendingAssignmentEnd(G)) return null;
     var m = typeof document !== 'undefined' ? document.getElementById('m-campaign-end') : null;
     if (m && m.classList.contains('on')) return null;
     var sum = typeof document !== 'undefined' ? document.getElementById('m-sum') : null;
-    if (sum && sum.classList.contains('on')) return null;
-    return 'Close the Career Assignment summary (the window that opened when your posting ended) before running another period — your calendar is paused until you do.';
+    if (sum && sum.classList.contains('on')) {
+      return 'Close the period summary first — your assignment review opens next.';
+    }
+    return 'Your posting ended — open the assignment review to continue your career.';
   }
 
   function onPeriodClose(G, wasYear, wasPeriod) {
@@ -1316,6 +1510,12 @@
       careerEndedHard: ev.careerEndedHard,
     };
     mirrorAwaitingLaunchOntoGame(G, ev, ev.nextAssignment, ev.careerEndedHard);
+    if (global.__WL_HEADLESS__) {
+      _diagLastAssignmentEndPayload = ev;
+      try {
+        delete G._campaignAssignmentEnded;
+      } catch (_e2) {}
+    }
     try {
       if (typeof global.autoSave === 'function') global.autoSave();
     } catch (_e) {}
@@ -1653,7 +1853,11 @@
     if (typeof global.enforceFmNonDupConstraints === 'function')
       global.enforceFmNonDupConstraints(global.G);
     if (typeof global.refreshAllStationOQ === 'function') global.refreshAllStationOQ(global.G);
-    if (typeof global.snapMarketRankBookDisplay === 'function')
+    if (!restored && typeof global.syncOpeningEconomicsForGame === 'function')
+      global.syncOpeningEconomicsForGame(global.G);
+    else if (typeof global.reconcileBookDisplaySnapToLastCompletedRankerBook === 'function')
+      global.reconcileBookDisplaySnapToLastCompletedRankerBook(global.G);
+    else if (typeof global.snapMarketRankBookDisplay === 'function')
       global.snapMarketRankBookDisplay(global.G);
     syncLegacyGameRef(global.G);
     return { restored: restored, mid: mid, companyName: companyName };
@@ -1699,6 +1903,9 @@
     if (!asg) return;
     st.awaitingLaunch = null;
     clearCareerPendingMirrorOnGame(global.G);
+    st.currentAssignmentMarketId = asg.marketId;
+    st.currentAssignmentPickSerial =
+      asg.pickSerial != null ? asg.pickSerial | 0 : st.assignmentPickSerial | 0;
     global._wlCampaignStarting = true;
     try {
       if (typeof global.genMarket === 'function') {
@@ -1714,7 +1921,8 @@
             if (typeof global.cm === 'function') global.cm('m-scen');
             // Restored markets: skip renderAll here — it can re-fire year-based events after calendar
             // advance and inject extra rival stations, breaking lineup continuity.
-            if (typeof global.renderAll === 'function' && !restored) global.renderAll();
+            if (typeof global.renderAll === 'function' && !restored && !global.__WL_HEADLESS__)
+              global.renderAll();
             try {
               if (typeof global.syncModalBodyScrollLock === 'function') global.syncModalBodyScrollLock();
             } catch (_e2) {}
@@ -1735,7 +1943,9 @@
             } catch (_e3) {}
           }
         };
-        if (typeof global.requestAnimationFrame === 'function') {
+        if (global.__WL_HEADLESS__) {
+          finishUi();
+        } else if (typeof global.requestAnimationFrame === 'function') {
           global.requestAnimationFrame(function () {
             global.requestAnimationFrame(finishUi);
           });
@@ -1765,101 +1975,114 @@
       if (typeof global.wlLockedGmCampaignToast === 'function') global.wlLockedGmCampaignToast();
       return;
     }
+
+    function runBeginCareerStart() {
+      state = defaultState();
+      state.active = true;
+      state.playerName = playerName || 'Manager';
+      state.ownerCompanyName = ownerCompanyName || generateOwnerCompanyName(CAREER_ENTRY_MARKET_ID);
+      var asg = pickAssignmentForTier(0, state, { allowReroll: true });
+      state.currentAssignmentMarketId = asg.marketId;
+      state.currentAssignmentPickSerial = asg.pickSerial != null ? asg.pickSerial | 0 : 1;
+      state.awaitingLaunch = null;
+      global._wlCampaignStarting = true;
+      try {
+        if (typeof global.wlSetActiveMarket === 'function') global.wlSetActiveMarket(asg.marketId);
+        else {
+          global.ACTIVE_MARKET = asg.marketId;
+          global._selectedMarket = asg.marketId;
+          if (typeof global.syncMarketPopToMarket === 'function') global.syncMarketPopToMarket(asg.marketId);
+        }
+        var mktLbl =
+          global.MARKETS && global.MARKETS[asg.marketId]
+            ? global.MARKETS[asg.marketId].label
+            : asg.marketId;
+        var companyName = state.ownerCompanyName;
+        if (typeof global.genMarket === 'function') {
+          applyCampaignStarterBpPatch(asg);
+          try {
+            global.G = global.genMarket('gm_under');
+          } finally {
+            clearCampaignStarterBpPatch();
+          }
+          syncLegacyGameRef(global.G);
+          global.G._campaignRestoredFromArchive = false;
+          global.G.companyName = companyName;
+          applyAssignmentToGame(global.G, asg, { deferCorporateMandate: true });
+          if (
+            global.G.careerCampaign &&
+            typeof global.wlApplyCampaignLadderOwnershipVariety === 'function'
+          ) {
+            global.wlApplyCampaignLadderOwnershipVariety(global.G, asg);
+          }
+          tryAttachCorporateMandate(global.G, asg);
+          pushCorporateMandateNewsIfAny(global.G);
+          global.G.ps = (global.G.stations || []).filter(function (s) {
+            return s && s.isPlayer;
+          });
+          global.G._portraitSessionId =
+            typeof crypto !== 'undefined' && crypto.randomUUID
+              ? crypto.randomUUID()
+              : Date.now() + '-' + Math.random().toString(36).slice(2, 11);
+          if (global.G.news) {
+            global.G.news.unshift({
+              v: 'HIGH',
+              t:
+                '📋 ' +
+                displayPlayerName(state) +
+                ' — ' +
+                state.ownerCompanyName +
+                ' has placed you as General Manager in ' +
+                mktLbl +
+                '.',
+              y: global.G.year,
+              p: global.G.period,
+              iy: true,
+            });
+          }
+          if (typeof global.initSportsRights === 'function') global.initSportsRights(global.G);
+          if (typeof global.initFranchiseRights === 'function') global.initFranchiseRights(global.G);
+          if (typeof global.normalizeSimulcastLinksInPlace === 'function')
+            global.normalizeSimulcastLinksInPlace(global.G);
+          if (typeof global.enforceFmNonDupConstraints === 'function')
+            global.enforceFmNonDupConstraints(global.G);
+          if (typeof global.refreshAllStationOQ === 'function') global.refreshAllStationOQ(global.G);
+          if (typeof global.syncOpeningEconomicsForGame === 'function')
+            global.syncOpeningEconomicsForGame(global.G);
+          syncLegacyGameRef(global.G);
+          if (typeof global.cm === 'function') global.cm('m-scen');
+          if (typeof global.renderAll === 'function' && !global.__WL_HEADLESS__) global.renderAll();
+          if (typeof global.queuePlayerTalentPortraits === 'function')
+            global.queuePlayerTalentPortraits();
+          if (typeof global.queueAutoLogosForPlayerStations === 'function')
+            global.queueAutoLogosForPlayerStations();
+          if (typeof global.wlTrackSoloSession === 'function')
+            global.wlTrackSoloSession({
+              source: 'campaign_new',
+              scenarioId: 'gm_under',
+              marketId: asg.marketId,
+            });
+          if (typeof global.autoSave === 'function') global.autoSave();
+        }
+      } catch (err) {
+        if (typeof global.showError === 'function')
+          global.showError(String(err && err.message ? err.message : err), '');
+      } finally {
+        delete global._wlCampaignStarting;
+      }
+    }
+
+    if (global.__WL_HEADLESS__) {
+      runBeginCareerStart();
+      return;
+    }
+
     void (async function () {
       if (typeof global.wlEnsureTrialLockBeforeCampaignStart === 'function') {
         var ok = await global.wlEnsureTrialLockBeforeCampaignStart();
         if (!ok) return;
       }
-    state = defaultState();
-    state.active = true;
-    state.playerName = playerName || 'Manager';
-    state.ownerCompanyName = ownerCompanyName || generateOwnerCompanyName(CAREER_ENTRY_MARKET_ID);
-    var asg = pickAssignmentForTier(0, state);
-    state.awaitingLaunch = null;
-    global._wlCampaignStarting = true;
-    try {
-      if (typeof global.wlSetActiveMarket === 'function') global.wlSetActiveMarket(asg.marketId);
-      else {
-        global.ACTIVE_MARKET = asg.marketId;
-        global._selectedMarket = asg.marketId;
-        if (typeof global.syncMarketPopToMarket === 'function') global.syncMarketPopToMarket(asg.marketId);
-      }
-      var mktLbl =
-        global.MARKETS && global.MARKETS[asg.marketId]
-          ? global.MARKETS[asg.marketId].label
-          : asg.marketId;
-      var companyName = state.ownerCompanyName;
-      if (typeof global.genMarket === 'function') {
-        applyCampaignStarterBpPatch(asg);
-        try {
-          global.G = global.genMarket('gm_under');
-        } finally {
-          clearCampaignStarterBpPatch();
-        }
-        syncLegacyGameRef(global.G);
-        global.G._campaignRestoredFromArchive = false;
-        global.G.companyName = companyName;
-        applyAssignmentToGame(global.G, asg, { deferCorporateMandate: true });
-        if (
-          global.G.careerCampaign &&
-          typeof global.wlApplyCampaignLadderOwnershipVariety === 'function'
-        ) {
-          global.wlApplyCampaignLadderOwnershipVariety(global.G, asg);
-        }
-        tryAttachCorporateMandate(global.G, asg);
-        pushCorporateMandateNewsIfAny(global.G);
-        global.G.ps = (global.G.stations || []).filter(function (s) {
-          return s && s.isPlayer;
-        });
-        global.G._portraitSessionId =
-          typeof crypto !== 'undefined' && crypto.randomUUID
-            ? crypto.randomUUID()
-            : Date.now() + '-' + Math.random().toString(36).slice(2, 11);
-        if (global.G.news) {
-          global.G.news.unshift({
-            v: 'HIGH',
-            t:
-              '📋 ' +
-              displayPlayerName(state) +
-              ' — ' +
-              state.ownerCompanyName +
-              ' has placed you as General Manager in ' +
-              mktLbl +
-              '.',
-            y: global.G.year,
-            p: global.G.period,
-            iy: true,
-          });
-        }
-        if (typeof global.initSportsRights === 'function') global.initSportsRights(global.G);
-        if (typeof global.initFranchiseRights === 'function') global.initFranchiseRights(global.G);
-        if (typeof global.normalizeSimulcastLinksInPlace === 'function')
-          global.normalizeSimulcastLinksInPlace(global.G);
-        if (typeof global.enforceFmNonDupConstraints === 'function')
-          global.enforceFmNonDupConstraints(global.G);
-        if (typeof global.refreshAllStationOQ === 'function') global.refreshAllStationOQ(global.G);
-        if (typeof global.snapMarketRankBookDisplay === 'function')
-          global.snapMarketRankBookDisplay(global.G);
-        syncLegacyGameRef(global.G);
-        if (typeof global.cm === 'function') global.cm('m-scen');
-        if (typeof global.renderAll === 'function') global.renderAll();
-        if (typeof global.queuePlayerTalentPortraits === 'function')
-          global.queuePlayerTalentPortraits();
-        if (typeof global.queueAutoLogosForPlayerStations === 'function')
-          global.queueAutoLogosForPlayerStations();
-        if (typeof global.wlTrackSoloSession === 'function')
-          global.wlTrackSoloSession({
-            source: 'campaign_new',
-            scenarioId: 'gm_under',
-            marketId: asg.marketId,
-          });
-        if (typeof global.autoSave === 'function') global.autoSave();
-      }
-    } catch (err) {
-      if (typeof global.showError === 'function') global.showError(String(err && err.message ? err.message : err), '');
-    } finally {
-      delete global._wlCampaignStarting;
-    }
+      runBeginCareerStart();
     })();
   }
 
@@ -2025,8 +2248,9 @@
     if (!st.awaitingLaunch || !st.awaitingLaunch.nextAssignment) return false;
     var asg = null;
     for (var i = 0; i < LADDER.length; i++) {
-      if (LADDER[i].marketId === marketId) {
-        asg = LADDER[i];
+      var pool = resolvedMarketPool(LADDER[i]);
+      if (pool.indexOf(marketId) >= 0) {
+        asg = materializeAssignment(LADDER[i].tier | 0, st, { forceMarketId: marketId });
         break;
       }
     }
@@ -2046,11 +2270,15 @@
 
   global.wlCampaign = {
     LADDER: LADDER,
+    LEGACY_DEFAULT_MARKET_BY_TIER: LEGACY_DEFAULT_MARKET_BY_TIER,
     CAREER_ENTRY_MARKET_ID: CAREER_ENTRY_MARKET_ID,
     CAMPAIGN_FULL_ARC_ASSIGNMENTS: CAMPAIGN_FULL_ARC_ASSIGNMENTS,
     CAMPAIGN_SHORT_ARC_ASSIGNMENTS: CAMPAIGN_SHORT_ARC_ASSIGNMENTS,
     ensureState: ensureState,
     pickAssignmentForTier: pickAssignmentForTier,
+    pickMarketFromPool: pickMarketFromPool,
+    materializeAssignment: materializeAssignment,
+    resolvedMarketPool: resolvedMarketPool,
     applyAssignmentToGame: applyAssignmentToGame,
     tickCorporateMandateProgress: tickCorporateMandateProgress,
     deactivateCampaign: deactivateCampaign,
@@ -2087,4 +2315,6 @@
   global.wlCampaignEnsurePendingEndModalAfterRender = ensurePendingCareerEndModalAfterRender;
   global.wlCampaignEnsureEndModalVisible = ensureEndModalVisible;
   global.wlCampaignShouldBlockAdvTurn = shouldBlockAdvTurnForPendingCareerEnd;
+  global.wlCampaignHasPendingAssignmentEnd = hasPendingAssignmentEnd;
+  global.wlCampaignScrubPendingEndForNonCareerGame = scrubPendingCareerEndForNonCareerGame;
 })(typeof window !== 'undefined' ? window : globalThis);

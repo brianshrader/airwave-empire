@@ -28,6 +28,27 @@ Resize once mid-step on desktop to confirm nothing throws in the console and the
 
 ---
 
+## PostHog funnel & session replay (after analytics deploy)
+
+Canonical funnel events (prefix `tutorial_`, property `source: tutorial_funnel` on funnel steps):
+
+`tutorial_started` → `tutorial_intro_dismissed` → **`tutorial_first_advance_clicked`** → `tutorial_research_opened` → `tutorial_research_memo_seen` → `tutorial_research_closed` → `tutorial_format_prompt_seen` → `tutorial_format_changed` → `tutorial_first_payoff_seen` → `tutorial_finished`
+
+**Replay smoke (production or staging with PostHog key):**
+
+1. Start tutorial (guest autostart OK).
+2. In PostHog → **Activity** → search event **`tutorial_session_replay_started`** (should appear within ~30s of `tutorial_started`).
+3. **Session replay** → filter persons who did `tutorial_started` in last 24h → open a recording → confirm map/coach/modals visible.
+4. PostHog project must have **Session replay** enabled under Settings → Project → Replay (client opt-in alone is not enough if project replay is off).
+
+**Replay drop-off filters (10 recordings each):**
+
+- `tutorial_started` AND NOT `tutorial_intro_dismissed`
+- `tutorial_intro_dismissed` AND NOT `tutorial_first_advance_clicked`
+- `tutorial_first_advance_clicked` AND NOT `tutorial_research_opened`
+
+---
+
 ## Act map (happy path)
 
 | Act | Goal (player) |

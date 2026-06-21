@@ -65,17 +65,19 @@ Once per run, for PostHog diagnosis between `tutorial_started` and early win:
 | Event | When |
 |--------|------|
 | `tutorial_intro_dismissed` | Intro modal OK (Act 1) |
+| `tutorial_first_advance_clicked` | First **Next Period** completes (Act 1 → 2) |
 | `tutorial_research_opened` | Research modal opened (Act 2) |
 | `tutorial_research_memo_seen` | Consultant report commissioned / memo available |
 | `tutorial_research_closed` | Research closed → Act 3 (consultant done) |
 | `tutorial_format_prompt_seen` | Act 3 format phase (research close or format modal open) |
 | `tutorial_format_changed` | Format apply succeeds |
-| `tutorial_early_win_advance_clicked` | Next Period completes during Act 3.5 |
-| `tutorial_early_success_seen` | Celebration modal (includes win deltas) |
+| `tutorial_session_replay_started` | PostHog session replay started for this tutorial run |
 
 Recommended funnel:
 
-`tutorial_started` → `tutorial_research_opened` → `tutorial_research_memo_seen` → `tutorial_research_closed` → `tutorial_format_changed` → `tutorial_early_win_advance_clicked` → `tutorial_early_success_seen`
+`tutorial_started` → `tutorial_intro_dismissed` → `tutorial_first_advance_clicked` → `tutorial_research_opened` → `tutorial_research_memo_seen` → `tutorial_research_closed` → `tutorial_format_prompt_seen` → `tutorial_format_changed` → `tutorial_first_payoff_seen` → `tutorial_finished`
+
+Session replays: filter recordings by persons who triggered `tutorial_started` or event `tutorial_session_replay_started` (last 7 days).
 
 ## Dev
 

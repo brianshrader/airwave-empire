@@ -574,11 +574,15 @@
 
   function applyBonus(t, boost) {
     if (!t) return;
-    const st = t._structMorale | 0;
-    const gap = Math.max(0, 62 - st);
-    t._structMorale = clamp(Math.round(st + gap * rnd(0.22, 0.42)), 15, 100);
-    t.morale = clamp(Math.round((t.morale | 0) + boost), 20, 100);
+    const before = t.morale | 0;
+    const st = typeof t._structMorale === 'number' ? t._structMorale : 65;
+    const gap = Math.max(0, 68 - st);
+    const structLift = Math.max(Math.round(gap * rnd(0.35, 0.55)), Math.round(boost * 0.45));
+    t._structMorale = clamp(Math.round(st + structLift), 15, 100);
+    t.morale = clamp(Math.round(before + boost), 20, 100);
     syncMoraleFromStructural(t);
+    const floor = Math.min(100, before + Math.max(4, Math.round(boost * 0.55)));
+    if ((t.morale | 0) < floor) t.morale = floor;
   }
 
   function contractModifiers(s, t, isCoHost) {
