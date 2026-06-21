@@ -3,13 +3,12 @@
  * Replace with Postgres/Dynamo later when you scale.
  */
 const fs = require('fs');
-const path = require('path');
+const { DATA_DIR, ensureDir, stripeCustomersFile } = require('./runtimePaths');
 
-const DATA_DIR = path.join(__dirname, '..', 'data');
-const FILE = path.join(DATA_DIR, 'stripe_customers.json');
+const FILE = stripeCustomersFile();
 
 function ensureFile() {
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  ensureDir(DATA_DIR);
   if (!fs.existsSync(FILE)) fs.writeFileSync(FILE, '{}', 'utf8');
 }
 
