@@ -20833,6 +20833,7 @@ function runAI(G){
   G._aiDifficultyTier=resolveAiDifficultyTier(G);
   aiRivalBeginTurn(G);
   const acts=[];
+  if(typeof rivalryProtoDrainNewsQueue==='function')rivalryProtoDrainNewsQueue(G,acts);
   // Pre-compute player station snapshot once — rivals use this for targeting decisions
   const playerStns=G.ps;
   const playerShares=playerStns.map(s=>({id:s.id,fmt:s.format,share:s.rat.share,
@@ -20859,7 +20860,8 @@ function runAI(G){
   G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!stationIsNoncommercialInstitutional(s)).forEach(s=>{
     const p=s.pers;if(!p)return;
     const pr=s.cp;
-    const aiBeh=aiRivalBehaviorLayer(s,G,aiRivalStationBehavior(s,G));
+    let aiBeh=aiRivalBehaviorLayer(s,G,aiRivalStationBehavior(s,G));
+    if(typeof rivalryProtoAdjustAiBeh==='function')aiBeh=rivalryProtoAdjustAiBeh(s,G,aiBeh);
     wlRivalDriftPolicyTryApply(s,G,acts,driftNewsCap);
     const crisis=pr&&pr.d2<-p.pt;
     const notic=pr&&Math.random()<p.rs&&Math.abs(pr.d2)>p.pt*.5;
@@ -20905,6 +20907,7 @@ function runAI(G){
         if(fmMusicAi)hireProb*=(y>=1978?1.20:1.12);
         if(crisis)hireProb*=0.42;
         hireProb*=aiBeh.hireMult;
+        if(typeof rivalryProtoHireMult==='function')hireProb*=rivalryProtoHireMult(s,G,crisis);
         if((s.fin?.ebitda||0)<-(s.fin?.rev||1)*0.38)hireProb*=0.4;
         empty.sort((a,b)=>(wt[b]||1)-(wt[a]||1));
         const maxHires=(understaffed&&p.ag>0.48)?2:1;
@@ -20964,6 +20967,7 @@ function runAI(G){
       const anchorProg=(aiBeh._aiState==='dominant'&&(s.rat?.share||0)>=0.072&&dTier>=1)?1+0.055*(dTier>=2?1.08:1):1;
       const invest=Math.round(baseInvest*Math.max(surgeMult,pressureMult)*trailProg*anchorProg*rnd(0.8,1.2)*aiBeh.spendMult);
       s.progInvestment=(s.progInvestment||0)+invest;
+      if(typeof rivalryProtoApplyProgBoost==='function')rivalryProtoApplyProgBoost(s,G,crisis);
     }
 
     // ── PROMO SPEND — also fires when rival is SURGING near a weak player ──
@@ -21023,6 +21027,7 @@ function runAI(G){
       }
       const promoCap=promoBudgetCapForPeriod(G);
       s.ops.promo=Math.min(promoCap,Math.round((basePromo+pressureBoost+opportunBoost+counterPlayerPromo)*rnd(0.7,1.3)*aiBeh.spendMult));
+      if(typeof rivalryProtoApplyPromoBoost==='function')rivalryProtoApplyPromoBoost(s,G,promoCap,crisis);
     }
 
     // ── TALENT: DEFENSIVE UPGRADE (own house in crisis) ──────
@@ -21046,8 +21051,11 @@ function runAI(G){
     const ppP=G._aiPlayerPressure?.pressure01||0;
     const aiDiffPoach=G._aiDifficultyTier!=null?G._aiDifficultyTier:1;
     const poachDangerBoost=dangerProf.anyDangerousPlayer?Math.min(0.10,(dangerProf.relativePressure01||0)*0.18):0;
-    const poachRoll=Math.min(0.9,poachDangerBoost+p.ag*0.35*(aiDiffPoach>=2&&ppP>0.34?1.14:1)*(aiDiffPoach>=1&&ppP>0.48?1.07:1)*(dangerProf.anyDangerousPlayer&&aiDiffPoach>=1?1.06:1));
-    if(canPoach&&Math.random()<poachRoll){
+    let poachRoll=Math.min(0.9,poachDangerBoost+p.ag*0.35*(aiDiffPoach>=2&&ppP>0.34?1.14:1)*(aiDiffPoach>=1&&ppP>0.48?1.07:1)*(dangerProf.anyDangerousPlayer&&aiDiffPoach>=1?1.06:1));
+    if(typeof rivalryProtoPoachMult==='function')poachRoll=Math.min(0.9,poachRoll*rivalryProtoPoachMult(s,G));
+    if(typeof rivalryProtoTryPoachDominantLeader==='function'&&rivalryProtoTryPoachDominantLeader(s,G,acts)){
+      /* in-lane rivalry poach fired */
+    }else if(canPoach&&Math.random()<poachRoll){
       // Hard / high pressure: occasionally challenge a still-strong player morning show (same or adjacent format)
       if(aiDiffPoach>=2&&(ppP>0.34||dangerProf.anyDangerousPlayer)&&p.ag>=0.56&&Math.random()<0.12+0.22*ppP+(dangerProf.anyDangerousPlayer?0.06:0)){
         const strongMorning=playerShares.find(ps=>{
@@ -32929,6 +32937,7 @@ function advTurn(mpCoalesceSeq){
       G.ps.forEach(s=>{ _rankSnap[s.id]={prev:s._prevRank??null, cur:combinedMarketRankForStation(s,_combinedRows)}; });
     }
     checkRankMilestones(G);
+    if(typeof rivalryProtoRefreshMap==='function')rivalryProtoRefreshMap(G);
     const acts=simQuiet?[]:(runAI(G)||[]);
     aiRivalPersistTurnSnapshot(G);
     wlEnsureBillableRatingsBeforeRevenue(G);
@@ -33799,11 +33808,10 @@ function showCompIntel(sid){
       <div class="msh">ON-AIR TALENT ROSTER</div>
       ${htmlOnAirTalentRoster(s)}
     </div>
-    ${(s._history||[]).length?`
-    <div class="ms2" style="margin-top:12px">
-      <div class="msh">STATION HISTORY <span style="color:var(--mut);font-size:13px;font-weight:400">(format, brand name, hires & departures, positioning, milestones)</span></div>
-      ${renderHistoryRows(s._history||[], !isOwn)}
-    </div>`:''}
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--bdr);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px">
+      <span style="font-size:13px;color:var(--mut);line-height:1.4">${(s._history||[]).length?(s._history.length+' logged move'+(s._history.length===1?'':'s')+' — format, talent, positioning'):'Moves will appear here as the station changes.'}</span>
+      <button type="button" class="abt" onclick="openHistoryFromIntel('${sid}')">📋 Station history</button>
+    </div>
   `;
   om('m-ci');
 }
@@ -41833,36 +41841,71 @@ if(typeof globalThis!=='undefined'){globalThis.loadLocalSave=loadLocalSave;}
 // ── STATION HISTORY MODAL ────────────────────────────────────────────────
 const HIST_ICONS={'FORMAT':'📻','TALENT':'🎙','IDENTITY':'🏘','RATINGS':'📊','LAUNCH':'📡','NOTE':'📝','CALLSIGN':'📇','LOGO':'🖼','SIMULCAST':'📡','BRAND':'✨','FRANCHISE':'📻'};
 
+/** Competitor intel history: strip talent names, keep daypart / move type. */
+function historyMsgForDisplay(e, fuzzy){
+  const msg=String(e?.msg||'').trim();
+  if(!msg)return '';
+  if(!fuzzy||e.type!=='TALENT')return msg;
+  return msg
+    .replace(/\b[A-Z][a-z]+(?: [A-Z][\.]?[a-z]+)+\b/g,'[talent]')
+    .replace(/\(Q:\d+\)/g,'')
+    .replace(/\s{2,}/g,' ')
+    .trim();
+}
+
+function historyPeriodLabel(y, p){
+  if(!y)return '';
+  const per=p===2?'Fall':p===1?'Spring':'';
+  return per?`${y} ${per}`:String(y);
+}
+
 function renderHistoryRows(hist, fuzzy){
   if(!hist||!hist.length) return '<div class="sr"><span style="color:var(--mut)">No recorded history yet.</span></div>';
-  return hist.map(e=>{
+  const rows=hist.map(e=>{
+    const msg=historyMsgForDisplay(e, fuzzy);
+    if(!msg)return '';
     const icon=HIST_ICONS[e.type]||'📝';
-    const yr=e.y?`<span style="color:var(--mut);font-size:13px;margin-left:auto">${e.y}</span>`:'';
-    // Fuzzy mode (competitor intel): hide talent names, show format/ratings only
-    if(fuzzy&&e.type==='TALENT') return '';
+    const yr=historyPeriodLabel(e.y, e.p);
+    const yrHtml=yr?`<span style="color:var(--mut);font-size:13px;margin-left:auto;white-space:nowrap">${yr}</span>`:'';
     const label=e.type==='FORMAT'||e.type==='CALLSIGN'||e.type==='LOGO'||e.type==='BRAND'?'var(--amb)':e.type==='IDENTITY'?'var(--grn)':e.type==='RATINGS'?'var(--yel)':'var(--off)';
     return `<div class="sr" style="gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04)">
       <span style="font-size:18px;line-height:1">${icon}</span>
-      <span style="font-family:var(--ft);font-size:14px;color:${label};flex:1">${e.msg}</span>
-      ${yr}
+      <span style="font-family:var(--ft);font-size:14px;color:${label};flex:1">${msg}</span>
+      ${yrHtml}
     </div>`;
-  }).filter(Boolean).join('');
+  }).filter(Boolean);
+  if(!rows.length) return '<div class="sr"><span style="color:var(--mut)">No recorded history yet.</span></div>';
+  return rows.join('');
 }
 
-function openHistory(sid){
-  const s=G.stations.find(st=>st.id===sid);if(!s)return;
+function openHistory(sid, opts){
+  opts=opts||{};
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s)return;
   const op=simulcastOperationalSource(s);
+  const isOwn=s.isPlayer&&mpIsMe(s);
+  const isHumanRival=MP.mode==='live'&&s.isPlayer&&!isOwn;
+  const fuzzy=opts.fuzzy!=null?!!opts.fuzzy:(!isOwn&&!isHumanRival);
   const hist=s._history||[];
-  document.getElementById('hist-title').textContent=`${callDisplay(s)} — STATION HISTORY`;
+  const titleSuffix=fuzzy?' (trade estimates)':isHumanRival?' (opponent)':isOwn?' (your station)':'';
+  document.getElementById('hist-title').textContent=`${callDisplay(s)} — STATION HISTORY${titleSuffix}`;
   const fmtAge=op._formatAge?Math.round(op._formatAge/2)+' yrs on current format':'';
   const idLine=op.identity?`Identity: ${Math.round(op.identity)}/100`:'';
+  const fuzzyNote=fuzzy
+    ?'<p class="di" style="margin:0 0 12px;font-size:13px;line-height:1.45">Trade-publication log — format, positioning, and ownership moves. Talent names withheld.</p>'
+    :'';
   document.getElementById('histb').innerHTML=`
     <div class="ms2" style="margin-bottom:4px">
       <div class="msh">${fmtLabel(op.format)}${fmtAge?' · '+fmtAge:''}${idLine?' · '+idLine:''}</div>
-      ${renderHistoryRows(hist,false)}
+      ${fuzzyNote}
+      <div style="max-height:52vh;overflow-y:auto">${renderHistoryRows(hist,fuzzy)}</div>
     </div>
     <button class="cnl" onclick="cm('m-hist')">CLOSE</button>`;
   om('m-hist');
+}
+
+function openHistoryFromIntel(sid){
+  openHistory(sid);
 }
 
 // ── STATION HISTORY LOG ───────────────────────────────────────────────────
@@ -43034,6 +43077,162 @@ function openFinancials(){
 }
 
 // ── PERIOD SUMMARY ────────────────────────────────────────────────
+/** Formats on the player's dial plus FADJ neighbors (and ecology-lane peers for CHR / spoken-news). */
+function buildPlayerRivalWatchFormatSet(G){
+  const watch=new Set();
+  const visit=(f)=>{
+    if(!f)return;
+    const c=canonicalHitsFormatKey(f);
+    watch.add(c);
+    watch.add(f);
+    (FADJ[c]||[]).forEach(adj=>watch.add(canonicalHitsFormatKey(adj)));
+    (FADJ[f]||[]).forEach(adj=>watch.add(canonicalHitsFormatKey(adj)));
+  };
+  myPS().forEach(s=>{ if(s?.format) visit(s.format); });
+  const hasChr=[...watch].some(f=>formatEcologyLaneId(f)==='__lane_chr__');
+  const hasSpoken=[...watch].some(f=>formatEcologyLaneId(f)==='__lane_spoken_news__');
+  if(hasChr)['TOP40','RHYTHMIC','HOT_AC','ADULT_CONTEMP'].forEach(visit);
+  if(hasSpoken)['NEWS_TALK','ALL_NEWS','SPORTS_TALK','PERSONALITY_TALK'].forEach(visit);
+  return watch;
+}
+function rivalWatchStationCallMap(G){
+  const map=new Map();
+  (G?.stations||[]).forEach(s=>{
+    if(!s?.callLetters||s._bpSlotDeferred)return;
+    map.set(String(s.callLetters).toUpperCase(),s);
+  });
+  return map;
+}
+function rivalWatchMentionedStations(text,callMap){
+  const t=String(text||'');
+  const out=[];
+  const seen=new Set();
+  callMap.forEach((st,call)=>{
+    const re=new RegExp('\\b'+call.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b');
+    if(re.test(t)&&!seen.has(st.id)){ seen.add(st.id); out.push(st); }
+  });
+  return out;
+}
+function rivalWatchTextMentionsRelevantFormat(text,watchFmts,G){
+  const t=String(text||'');
+  for(const f of watchFmts){
+    const lbl=fmtLabel(f,G?.year);
+    if(lbl&&t.includes(lbl))return true;
+    if(t.includes(f))return true;
+  }
+  return false;
+}
+function rivalWatchIsHousekeeping(text){
+  const t=String(text||'');
+  if(/^📋\s/.test(t))return true;
+  if(/📻 Your book —|^Your book —|📊 Your book/i.test(t))return true;
+  if(/Several employees at .* concerned/i.test(t))return true;
+  if(/contract.*expires|frustrated with the station|concerned about .* ratings slide|won't re-sign|planning to leave|click their name to negotiate/i.test(t))return true;
+  if(/Bid submitted for|passes on bidding for/i.test(t))return true;
+  if(/LMA signed|LMA terminated|LMA ended|acquired the license for/i.test(t))return true;
+  if(/retires after|retiring from|legend of .* years|morale collapse\. Find a replacement/i.test(t))return true;
+  if(/Your AM Talk .* facing audience erosion|must reformat immediately|terminal decline\. Consider reformatting/i.test(t))return true;
+  if(/"[^"]+" secured by|"[^"]+" picked up by/i.test(t)&&!/🎯|⚔️/.test(t))return true;
+  return false;
+}
+function rivalWatchIsCompetitiveSignal(text){
+  const t=String(text||'');
+  if(/🎯|gunning for|⚔️|POACHED:/i.test(t))return true;
+  if(/⚡|poach|courting|makes a run at/i.test(t))return true;
+  if(/reformat|relaunches|abandons|flips|signs on —|→|goes dark|shifts positioning toward/i.test(t))return true;
+  if(/replaces morning host/i.test(t))return true;
+  if(/\bleaves\b/i.test(t)&&!/Your book|contract|frustrated|concerned/i.test(t))return true;
+  if(/🏢 .* acquires|consolidation accelerates/i.test(t))return true;
+  return false;
+}
+function rivalWatchIsNoise(text){
+  const t=String(text||'');
+  if(/\bfills\b.+?\((entry|mid|star|syndicated)\)/i.test(t))return true;
+  if(/rights renewed|no competing bids|retained by|stale bids|could not pick a winner/i.test(t))return true;
+  if(/counters .+ with heavier promotion/i.test(t))return true;
+  return false;
+}
+function rivalWatchIncludeCandidate(item){
+  if(!item?.t)return false;
+  if(rivalWatchIsHousekeeping(item.t)||rivalWatchIsNoise(item.t))return false;
+  return rivalWatchIsCompetitiveSignal(item.t);
+}
+function rivalWatchItemTargetsPlayer(text,playerCalls){
+  const t=String(text||'');
+  return [...playerCalls].some(c=>new RegExp('\\b'+c.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'\\b').test(t));
+}
+function rivalWatchItemRelevant(item,G,watchFmts,playerCalls,callMap){
+  const t=item.t||'';
+  if(/⚡|⚔️|POACHED:|courting|makes a run at/i.test(t)&&rivalWatchItemTargetsPlayer(t,playerCalls))return true;
+  const mentioned=rivalWatchMentionedStations(t,callMap);
+  const laneHit=(st)=>{
+    const f=canonicalHitsFormatKey(st.format);
+    return watchFmts.has(f)||watchFmts.has(st.format);
+  };
+  if(/🎯|gunning for/i.test(t)&&mentioned.some(laneHit))return true;
+  const rivals=mentioned.filter(st=>!st.isPlayer&&!myPS().some(p=>p.id===st.id));
+  if(rivals.some(laneHit))return true;
+  if(/reformat|relaunches|abandons|flips|signs on|→|goes dark/i.test(t))
+    return rivalWatchTextMentionsRelevantFormat(t,watchFmts,G);
+  return false;
+}
+function rivalWatchScoreItem(item,playerFmts,playerCalls,callMap){
+  let s=0;
+  const t=item.t||'';
+  if(/⚡|⚔️|POACHED:|courting|makes a run at/i.test(t)&&rivalWatchItemTargetsPlayer(t,playerCalls))s+=100;
+  if(item.v==='HIGH')s+=25; else if(item.v==='MEDIUM')s+=12;
+  if(/🎯|gunning for/i.test(t))s+=22;
+  if(/⚡|poach|courting/i.test(t))s+=20;
+  if(/reformat|relaunches|abandons|flips|signs on|→|goes dark/i.test(t))s+=18;
+  if(/shifts positioning|replaces morning|\bleaves\b/i.test(t))s+=10;
+  rivalWatchMentionedStations(t,callMap).forEach(st=>{
+    const f=canonicalHitsFormatKey(st.format);
+    if(playerFmts.has(f)||playerFmts.has(st.format))s+=16;
+    else s+=8;
+  });
+  return s;
+}
+function buildPeriodRivalWatchItems(G,acts){
+  const ps=myPS();
+  if(!ps.length)return[];
+  const playerFmts=new Set(ps.map(s=>canonicalHitsFormatKey(s.format)).filter(Boolean));
+  ps.forEach(s=>{ if(s.format) playerFmts.add(s.format); });
+  const watchFmts=buildPlayerRivalWatchFormatSet(G);
+  const playerCalls=new Set(ps.map(s=>String(s.callLetters||'').toUpperCase()).filter(Boolean));
+  const callMap=rivalWatchStationCallMap(G);
+  const seen=new Set();
+  const pool=[];
+  const ingest=(item)=>{
+    if(!item?.t||seen.has(item.t))return;
+    if(!rivalWatchIncludeCandidate(item))return;
+    if(!rivalWatchItemRelevant(item,G,watchFmts,playerCalls,callMap))return;
+    seen.add(item.t);
+    pool.push({v:item.v||'LOW',t:item.t,score:rivalWatchScoreItem(item,playerFmts,playerCalls,callMap)});
+  };
+  (acts||[]).forEach(ingest);
+  (G._lastTurnHeadlines||[]).forEach(ingest);
+  pool.sort((a,b)=>b.score-a.score||((b.v==='HIGH'?2:b.v==='MEDIUM'?1:0)-(a.v==='HIGH'?2:a.v==='MEDIUM'?1:0)));
+  return pool.slice(0,4);
+}
+function buildPeriodRivalWatchScopeLabel(G){
+  const labels=[...new Set(myPS().map(s=>fmtLabel(s.format,G?.year)).filter(Boolean))];
+  if(!labels.length)return '';
+  return labels.join(' · ')+' + adjacent lanes';
+}
+function buildPeriodRivalWatchHtml(G,acts){
+  const items=buildPeriodRivalWatchItems(G,acts);
+  if(!items.length)return'';
+  const headlineCount=(G._lastTurnHeadlines||[]).length;
+  const scope=buildPeriodRivalWatchScopeLabel(G);
+  const rows=items.map(a=>{
+    const col=a.v==='HIGH'?'var(--amb)':a.v==='MEDIUM'?'var(--off)':'var(--mut)';
+    return `<div class="sr"><span class="vl" style="color:${col};font-size:15px;font-family:var(--fm);line-height:1.45">${a.t}</span></div>`;
+  }).join('');
+  const link=`<div class="sr" style="margin-top:6px"><button type="button" class="abt" onclick="openPeriodNews()" style="font-size:12px;letter-spacing:0.04em">View all market news${headlineCount?' ('+headlineCount+')':''} →</button></div>`;
+  return `<div class="ms2"><div class="msh">RIVAL WATCH</div>`+
+    (scope?`<div style="font-size:12px;color:var(--mut);margin:-4px 0 8px;font-family:var(--ft);line-height:1.35">${scope}</div>`:'')+
+    rows+link+`</div>`;
+}
 function playerRelevantRightsActs(sportsActs,franchiseActs){
   const seen=new Set();
   const out=[];
@@ -43465,7 +43664,6 @@ function buildPeriodSummaryStationBlocksHtml(ps,G,bookYear,bookPeriod){
 function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
   const ps=myPS(),tRev=ps.reduce((s,st)=>s+st.fin.rev,0),tCost=ps.reduce((s,st)=>s+st.fin.cost,0);
-  const vis=acts.filter(a=>['HIGH','MEDIUM'].includes(a.v));
   const margin=tRev>0?Math.round((profit/tRev)*100):0;
   const marginColor=margin>=35?'var(--grn)':margin>=15?'var(--amb)':'var(--red)';
   // Use passed year/period so the title reflects the period that just ran, not the next one
@@ -43493,7 +43691,7 @@ function showSum(profit,events,acts,alerts,displayYear,displayPeriod,rightsExtra
     ${rightsLines.length?`<div class="ms2"><div class="msh">RIGHTS &amp; SYNDICATION (THIS PERIOD)</div>${rightsLines.map(t=>`<div class="sr"><span class="vl" style="color:var(--off);font-size:15px;font-family:var(--ft)">${t}</span></div>`).join('')}</div>`:''}
     ${buildPeriodSummaryStationBlocksHtml(ps,G,yr,per)}
     ${events.length?`<div class="ms2"><div class="msh">MARKET EVENTS</div>${events.map(ev=>`<div class="sr"><span class="lb" style="color:var(--amb)">📡 ${ev.t}</span><span class="vl" style="color:var(--off);font-size:15px;font-family:var(--fm)">${ev.d}</span></div>`).join('')}</div>`:''}
-    ${vis.length?`<div class="ms2"><div class="msh">COMPETITOR MOVES</div>${vis.map(a=>`<div class="sr"><span class="vl" style="color:${a.v==='HIGH'?'var(--amb)':'var(--off)'};font-size:15px;font-family:var(--fm)">${a.t}</span></div>`).join('')}</div>`:''}
+    ${buildPeriodRivalWatchHtml(G,acts)}
     ${alerts.length?`<div class="ms2"><div class="msh" style="color:var(--red)">⚠ ALERTS</div>${alerts.map(a=>`<div class="sr"><span class="vl" style="color:var(--red);font-size:15px">${a}</span></div>`).join('')}</div>`:''}`;
   // Decade-end notice so player doesn't dismiss before grade shows
   const _dEndYrs=[1979,1989,1999,2009,2019,2020].filter(y=>y>(G.sc?.startYear||1970));

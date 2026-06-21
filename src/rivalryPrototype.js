@@ -3,9 +3,13 @@
  *
  * Enable: window.__WL_RIVALRY_PROTOTYPE = true (set in play.html on this branch).
  *
- * When a lane leader crosses 15/18/20% share, portfolio owners pick an existing
+ * When a lane leader crosses 12/15/18% share, portfolio owners pick an existing
  * in-lane competitor (#2/#3 in the lane), fund it aggressively for 5 years, and
  * generate visible news. Goal: recognizable enemies and narrative — not harness metrics.
+ *
+ * Threshold rationale: by the mid-1980s–90s (and especially today), a station that
+ * owns a format lane at ~6–7% already invites a push; 12% is strong enough to
+ * warrant a visible cluster-backed challenger without waiting for fantasy 15%+ kings.
  */
 (function rivalryPrototype(global) {
   'use strict';
@@ -53,9 +57,15 @@
     return 1.0;
   }
 
+  /** Lane-leader share tiers — first response at 12%, escalate at 15% and 18%. */
+  const THREAT_TIER_BASE = 0.12;
+  const THREAT_TIER_MID = 0.15;
+  const THREAT_TIER_HEAVY = 0.18;
+
   function tierMult(tier) {
-    if (tier >= 0.2) return 1.45;
-    if (tier >= 0.18) return 1.22;
+    if (tier >= THREAT_TIER_HEAVY) return 1.35;
+    if (tier >= THREAT_TIER_MID) return 1.15;
+    if (tier >= THREAT_TIER_BASE) return 1.0;
     return 1.0;
   }
 
@@ -73,9 +83,9 @@
     Object.keys(laneLeaders).forEach((lid) => {
       const L = laneLeaders[lid];
       let tier = 0;
-      if (L.share >= 0.2) tier = 0.2;
-      else if (L.share >= 0.18) tier = 0.18;
-      else if (L.share >= 0.15) tier = 0.15;
+      if (L.share >= THREAT_TIER_HEAVY) tier = THREAT_TIER_HEAVY;
+      else if (L.share >= THREAT_TIER_MID) tier = THREAT_TIER_MID;
+      else if (L.share >= THREAT_TIER_BASE) tier = THREAT_TIER_BASE;
       if (tier <= 0) {
         delete G._domThreats[lid];
         return;
@@ -354,7 +364,7 @@
     if (global.document.getElementById('wl-rivalry-prototype-banner')) return;
     const b = global.document.createElement('div');
     b.id = 'wl-rivalry-prototype-banner';
-    b.textContent = 'RIVALRY PROTOTYPE — in-lane challengers vs dominant stations (playtest branch)';
+    b.textContent = 'RIVALRY PROTOTYPE — challengers emerge when a lane leader hits 12%+ share';
     b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;padding:6px 12px;text-align:center;font:600 12px/1.3 system-ui,sans-serif;background:#7c2d12;color:#fff;border-bottom:2px solid #f97316;pointer-events:none;';
     global.document.body.prepend(b);
   }
