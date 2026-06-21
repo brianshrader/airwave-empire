@@ -915,6 +915,7 @@ function phoenixDiagOpeningOqMult(station){
     return 0.96;
   }
   if(station.format==='NEWS_TALK'&&sig.type==='AM')return 1.04;
+  if(station.format==='COUNTRY'&&sig.type==='FM')return 1.06;
   return 1;
 }
 /** DFW opening OQ — heritage Soul AM + FM Urban institutional head start (Duncan 10→16% lane; not Atlanta-scale). */
@@ -5975,16 +5976,16 @@ const MARKETS={
     ],
     /**
      * Spanish launch realism — trait `spanishLanguageStrength` ≠ Nielsen share; gen inject alone
-     * leaves thin book. 1988+1994+2002 FM queue targets ~16–22% leadership bucket @2026 (diag tuning).
+     * leaves thin book. 1988+1994+2002 FM queue targets ~16–20% leadership bucket @2026 (Nielsen-shaped).
      */
     spanishLaunches:[
       {id:'phoenix_spanish_1988_fm',y:1988,p:1,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
-      {id:'phoenix_spanish_1994_fm',y:1994,p:1,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'strong'}},
+      {id:'phoenix_spanish_1994_fm',y:1994,p:1,bp:{type:'FM',fmt:'SPANISH',pw:'50kw',str:'moderate'}},
       {id:'phoenix_spanish_2002_fm',y:2002,p:2,bp:{type:'FM',fmt:'SPANISH',pw:'100kw',str:'moderate'}},
     ],
     /**
-     * 1990s fragmentation — adult FM (AC / classic rock / oldies) before 1995 book; 1991 slot is
-     * Spanish (not second strong CR) for Sunbelt Hispanic dial realism (see `phoenixDiagTop40*`).
+     * 1990s fragmentation — adult FM (AC / classic rock / oldies) before 1995 book.
+     * FM country comes from slot 16 deferred launch (1976) + lifecycle retention, not a second frag.
      */
     fragmentationLaunches:[
       {id:'phoenix_frag_cr_1986',y:1986,p:1,bp:{type:'FM',fmt:'CLASSIC_ROCK',pw:'50kw',str:'moderate'}},
@@ -11995,14 +11996,14 @@ const MARKET_BP_PATCH={
     15:{fmt:'CLASSIC_ROCK',str:'emerging'},
     16:{fmt:'COUNTRY',str:'strong'},
   },
-  /** Phoenix diag — AM Top 40 anchor (slot 0); softened second MOR (slot 4); slot 15 AC; slot 18 FM Top 40 (1974 deferred); tier inject skips CR/AOR (see `phoenixDiagOpeningOqMult`). */
+  /** Phoenix — AM Top 40 anchor (slot 0); slot 16 FM country (deferred 1976, not AOR); slot 18 FM Top 40 @1974. */
   phoenix:{
     0:{fmt:'TOP40',str:'strong'},
     1:{fmt:'NEWS_TALK',str:'moderate'},
     4:{fmt:'MOR',str:'moderate'},
     10:{fmt:'ADULT_STANDARDS',str:'moderate'},
     15:{fmt:'ADULT_CONTEMP',str:'moderate'},
-    16:{fmt:'ALBUM_ROCK',str:'moderate'},
+    16:{fmt:'COUNTRY',str:'emerging'},
     18:{fmt:'TOP40',str:'strong'},
   },
 };
