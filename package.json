@@ -80,6 +80,8 @@
     "diag:portland-urban-overstatement": "node scripts/diag-portland-urban-overstatement.mjs",
     "diag:portland-leadership-correction": "node scripts/diag-portland-leadership-correction.mjs",
     "diag:rivalry-creation": "node scripts/diag-rivalry-creation.mjs --json --md --quiet",
+    "diag:share-compression-phase1": "node scripts/diag-share-compression-phase1-regression.mjs",
+    "diag:share-compression-phase1:quick": "node scripts/diag-share-compression-phase1-regression.mjs --quick",
     "diag:phoenix-internal-playtest": "node scripts/diag-phoenix-internal-playtest-harness.mjs",
     "diag:phoenix-scaffold-reality": "node scripts/diag-phoenix-scaffold-reality.mjs",
     "diag:market-certification": "node scripts/diag-market-certification.mjs",

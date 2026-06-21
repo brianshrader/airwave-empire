@@ -14655,6 +14655,7 @@ function applyOtherAudioListeningDilution(stations,G,engageWeightedPop){
       leaderRelief*=lateBoost;
     }
     leaderRelief=Math.min(0.46,leaderRelief);
+    if(typeof shareCompressionPhase1TrimLeaderRelief==='function')leaderRelief=shareCompressionPhase1TrimLeaderRelief(leaderRelief);
   }
   let nonLeaderBoost=0;
   if(y>=2000 && (tier==='mega'||tier==='large')){
@@ -16332,6 +16333,7 @@ function sanitizeStationShareForRanking(s){
  */
 function applyListeningHoursShareFromAqh(stations,G,opts){
   const rated=(stations||[]).filter(s=>s&&!s._bpSlotDeferred&&s.rat);
+  const _scp1PreLh=typeof shareCompressionPhase1BeginListeningHours==='function'?shareCompressionPhase1BeginListeningHours(rated,G):null;
   let total=0;
   for(const s of rated){
     const a=Number(s.rat?.aqh);
@@ -16395,6 +16397,7 @@ function applyListeningHoursShareFromAqh(stations,G,opts){
     const a=Math.max(0,Number.isFinite(raw)?raw:0);
     s.rat.share=Math.round(a*inv*1e8)/1e8;
   }
+  if(typeof shareCompressionPhase1EndListeningHours==='function')shareCompressionPhase1EndListeningHours(rated,G,_scp1PreLh);
   if(G){
     for(const s of rated){
       if(s.format==='BROKERED_PROGRAMMING'&&stationBrokeredEconomicsActive(s,G)){
@@ -17791,6 +17794,7 @@ function recalc(stations,G){
   });
 
   wlCommercialMassProbe(stations,G,'recalc:postCohort');
+  if(typeof applyShareCompressionTierMassScale==='function')applyShareCompressionTierMassScale(stations,G);
 
   // Long-tail share smoothing: blend toward the commercial-station mean (1970s-style
   // cliff softening). Top ranks use w≈0.94 (light pull); mid-pack moderate; ranks ~7–12

@@ -3,6 +3,8 @@
  *
  * Enable: window.__WL_RIVALRY_PROTOTYPE = true (set in play.html on this branch).
  *
+ * Playtest toggle (play.html): ?proto=rivalry | both (default branch mode is share-only)
+ *
  * When a lane leader crosses 12/15/18% share, portfolio owners pick an existing
  * in-lane competitor (#2/#3 in the lane), fund it aggressively for 5 years, and
  * generate visible news. Goal: recognizable enemies and narrative — not harness metrics.

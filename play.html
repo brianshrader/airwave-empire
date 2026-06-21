@@ -525,8 +525,18 @@
   <script defer src="/src/marketEcologyCore.iife.js"></script>
   <script defer src="/src/formatLifecycleProfileRuntime.iife.js"></script>
   <script defer src="/src/talentRetention.js"></script>
-  <!-- Prototype branch only: in-lane dominance rivalry (see src/rivalryPrototype.js). -->
-  <script>window.__WL_RIVALRY_PROTOTYPE = true;</script>
+  <!-- Prototype branch: share compression + rivalry toggles via ?proto= (default: share only). -->
+  <script>
+  (function(){
+    var qs=new URLSearchParams(location.search||'');
+    var mode=(qs.get('proto')||'share').trim().toLowerCase();
+    if(['baseline','share','rivalry','both'].indexOf(mode)<0)mode='share';
+    window.__WL_PROTOTYPE_MODE=mode;
+    window.__WL_SHARE_COMPRESSION_PHASE1=(mode==='share'||mode==='both');
+    window.__WL_RIVALRY_PROTOTYPE=(mode==='rivalry'||mode==='both');
+  })();
+  </script>
+  <script defer src="/src/shareCompressionPhase1.js"></script>
   <script defer src="/src/rivalryPrototype.js"></script>
   <script defer src="/src/legacy.js?v=20260619-nielsen"></script>
   <!-- Dev-only: stripped from production HTML by vite.config.js (file is not copied to dist). -->
