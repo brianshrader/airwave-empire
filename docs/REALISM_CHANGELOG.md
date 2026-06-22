@@ -22,10 +22,13 @@
 |------|--------|--------|--------|------------|--------|-------------------------|
 | 2026-06-21 | `ffb369e` | Blueprint | Legacy music | Rock lane oversizing is primarily Blueprint at birth | **Not Success** (v1+v2) | **Blueprint + Demand** · no code commit |
 | 2026-06-21 | — | Blueprint | Legacy composition | Explicit composition decouples Rock-family from Country-family at birth | **Composition validated** | Blueprint composition is a **real layer**; Rock **Blueprint + Demand** unchanged |
+| 2026-06-21 | — | Demand | Sports (spoken anchor) | Lower `anchor2026[spoken]` moves mega Sports lane total without Blueprint/Fragmentation edits | **Partial** | Demand surface **wired**; Sports **Demand + Fragmentation** unchanged |
 
 **Rock (current working classification):** **Blueprint + Demand**. Blueprint **composition** validated (Rock-family birth decoupled from Country-family; seat count conserved). Residual Rock @ 2026 gap remains Demand-side. Not a ship candidate.
 
-**Next authorized work:** Demand-side hypothesis for Rock trajectory when authorized. No further Blueprint composition tuning without new doc.
+**Sports (current working classification):** **Demand + Fragmentation**. Spoken Demand is **real but too coarse**; sports-rights / capture mechanics are **co-primary**. Anchor POC v1 moved mega Sports @ 2026 **−2.7pt** (8.5→5.8%) with first-book ~0%, but S2 trajectory failed (2010 +1.0pt) and News/Talk moved +2.0pt (spoken collateral). Not a ship candidate.
+
+**Next authorized work:** No anchor tuning on Sports v1. Fragmentation or spoken-subfamily split would need new hypothesis doc.
 
 ### Legacy Blueprint composition POC v1 (scored 2026-06-21)
 
@@ -35,6 +38,16 @@
 - **Outcome:** C1 ✅ C2 ✅ C3 ✅ C4 marginal (+1.3pt) — **core hypothesis validated**; v2 coupling not reproduced
 - **Key deltas vs baseline:** mega Rock first-book 24.6→10.1% (−14.5pt); Country 4.0→3.6% (−0.4pt)
 - **Artifacts:** `tmp/share_lane_size_table_poc_composition_v1.md`, `tmp/share_lane_demand_provenance_poc_composition_v1.md`
+
+### Sports Demand POC v1 — spoken anchor (scored 2026-06-21)
+
+- **Spec:** [REALISM_SPORTS_DEMAND_IMPLEMENTATION_SPEC.md](./REALISM_SPORTS_DEMAND_IMPLEMENTATION_SPEC.md) · **§9**
+- **Change:** `demand.anchor2026[spoken]` 0.08→0.05 only; Blueprint POC disabled in harness
+- **Implementation (uncommitted):** `data/realismDemand.v1.json`, `src/realismDemand.js`, `appl()` L1 adapter, harness inject
+- **Outcome:** S1 ✅ S3 ✅ S5 ✅ S6 ✅ · S2 ❌ (2010 +1.0pt) · S4 marginal (CHR+AC sum −1.4pt) — **Partial**
+- **Key deltas vs baseline:** mega Sports 2026 8.5→5.8% (−2.7pt); first-book 0%; News/Talk 2026 9.0→11.0% (+2.0pt); provenance top-3 Δ sum −24%
+- **Finding:** Demand **is wired and relevant** but not primary; rights/habit/OA co-primary; spoken macro knob too coarse for Sports-only control
+- **Artifacts:** `tmp/share_lane_*_poc_sports_demand_v1.md`
 
 ### ffb369e — Rock Blueprint POC v1 (scored 2026-06-21)
 
