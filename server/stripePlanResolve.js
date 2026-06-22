@@ -32,13 +32,12 @@ function billingSnapshotFromCache(clerkUserId) {
   };
 }
 
-/** Paid slug but inactive flag and no webhook status — re-fetch from Stripe to refresh JSON cache. */
+/** Paid slug with an inactive subscription must be revalidated before granting paid entitlements. */
 function paidSlugNeedsStripeRefresh(clerkUserId, cachedSlug) {
   if (cachedSlug !== CLERK_PLAN.STARTER && cachedSlug !== CLERK_PLAN.PRO) return false;
   if (accountStore.getSubscriptionActive(clerkUserId)) return false;
   const st = accountStore.getSubscriptionStatus(clerkUserId);
   if (st === 'active' || st === 'trialing') return false;
-  if (st && st !== 'none') return false;
   return true;
 }
 
