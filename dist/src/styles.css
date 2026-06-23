@@ -531,6 +531,18 @@ body#wl-play::after{opacity:0.15}
   cursor: pointer;
   padding: 4px 8px;
 }
+/* In-app browser sign-in warning — compact on narrow viewports (sign-in pages only; guest skips via main.js). */
+@media (max-width: 640px){
+  #wl-play .wl-ov-hint.wl-ov-hint--visible{
+    font-size: 11px;
+    line-height: 1.35;
+    padding: 8px 36px 8px 12px;
+    text-align: left;
+  }
+  #wl-play .wl-ov-hint.wl-ov-hint--visible .wl-ov-hint__long{ display: none; }
+  #wl-play .wl-ov-hint.wl-ov-hint--visible .wl-ov-hint__short{ display: inline; }
+}
+#wl-play .wl-ov-hint .wl-ov-hint__short{ display: none; }
 #wl-play .wl-ov-auth{
   display: none;
   position: fixed;
@@ -616,6 +628,17 @@ body#wl-play::after{opacity:0.15}
   cursor: pointer;
   padding: 4px 8px;
 }
+@media (max-width: 640px){
+  #wl-play-signin .wl-ov-hint.wl-ov-hint--visible{
+    font-size: 11px;
+    line-height: 1.35;
+    padding: 8px 36px 8px 12px;
+    text-align: left;
+  }
+  #wl-play-signin .wl-ov-hint.wl-ov-hint--visible .wl-ov-hint__long{ display: none; }
+  #wl-play-signin .wl-ov-hint.wl-ov-hint--visible .wl-ov-hint__short{ display: inline; }
+}
+#wl-play-signin .wl-ov-hint .wl-ov-hint__short{ display: none; }
 #wl-play-signin .wl-signin-main{
   min-height: 100vh;
   display: flex;

@@ -23,10 +23,12 @@ function wlInitInAppBrowserHint() {
   const bar = document.getElementById('wl-inapp-browser-hint');
   if (!bar) return;
   bar.style.display = 'block';
+  bar.classList.add('wl-ov-hint--visible');
   const close = document.getElementById('wl-inapp-browser-hint-close');
   if (close) {
     close.onclick = () => {
       bar.style.display = 'none';
+      bar.classList.remove('wl-ov-hint--visible');
       sessionStorage.setItem('wl-hide-inapp-hint', '1');
     };
   }

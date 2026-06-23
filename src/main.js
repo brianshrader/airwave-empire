@@ -86,13 +86,19 @@ function wlDetectInAppBrowser() {
 
 function wlInitInAppBrowserHint() {
   if (!wlDetectInAppBrowser() || sessionStorage.getItem('wl-hide-inapp-hint') === '1') return;
+  /* Guest instant-play (FB ads) never uses Google sign-in on this page — skip the tall sign-in banner. */
+  try {
+    if (document.querySelector('meta[name="wl-guest-onboarding"]')?.getAttribute('content')?.trim() === '1') return;
+  } catch (_e) {}
   const bar = document.getElementById('wl-inapp-browser-hint');
   if (!bar) return;
   bar.style.display = 'block';
+  bar.classList.add('wl-ov-hint--visible');
   const close = document.getElementById('wl-inapp-browser-hint-close');
   if (close) {
     close.onclick = () => {
       bar.style.display = 'none';
+      bar.classList.remove('wl-ov-hint--visible');
       sessionStorage.setItem('wl-hide-inapp-hint', '1');
     };
   }

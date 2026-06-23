@@ -43,14 +43,15 @@
 <!-- <script src="/socket.io/socket.io.js"></script> -->
   <script type="module" crossorigin src="/assets/analyticsClient-BN8GngS2.js"></script>
   <script type="module" crossorigin src="/assets/gameServerApiOrigin-BQisP3Bi.js"></script>
-  <script type="module" crossorigin src="/assets/main-DLVBBfm5.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/main-DCc0weW6.css">
+  <script type="module" crossorigin src="/assets/main-OFYY0xwf.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/main-B25Uwf_T.css">
 </head>
 <body id="wl-play">
 
 <!-- Google blocks “Sign in with Google” in embedded in-app browsers (Instagram, FB, TikTok, etc.). -->
 <div id="wl-inapp-browser-hint" class="wl-ov-hint" style="display:none">
-  <strong>Sign-in:</strong> Google may block sign-in inside this app’s browser. Open <strong>airwaveempire.com</strong> in <strong>Safari</strong> or <strong>Chrome</strong> (⋯ menu → “Open in Browser” / “Open in Safari”).
+  <span class="wl-ov-hint__long"><strong>Sign-in:</strong> Google may block sign-in inside this app’s browser. Open <strong>airwaveempire.com</strong> in <strong>Safari</strong> or <strong>Chrome</strong> (⋯ menu → “Open in Browser” / “Open in Safari”).</span>
+  <span class="wl-ov-hint__short"><strong>Sign-in:</strong> Open in <strong>Safari</strong> or <strong>Chrome</strong> (⋯ → Open in Browser).</span>
   <button type="button" id="wl-inapp-browser-hint-close" class="wl-ov-hint__close" aria-label="Dismiss">&times;</button>
 </div>
 
@@ -516,6 +517,19 @@
   <script defer src="/src/marketEcologyCore.iife.js"></script>
   <script defer src="/src/formatLifecycleProfileRuntime.iife.js"></script>
   <script defer src="/src/talentRetention.js"></script>
+  <!-- Prototype branch: share compression + rivalry toggles via ?proto= (default: share only). -->
+  <script>
+  (function(){
+    var qs=new URLSearchParams(location.search||'');
+    var mode=(qs.get('proto')||'share').trim().toLowerCase();
+    if(['baseline','share','rivalry','both'].indexOf(mode)<0)mode='share';
+    window.__WL_PROTOTYPE_MODE=mode;
+    window.__WL_SHARE_COMPRESSION_PHASE1=(mode==='share'||mode==='both');
+    window.__WL_RIVALRY_PROTOTYPE=(mode==='rivalry'||mode==='both');
+  })();
+  </script>
+  <script defer src="/src/shareCompressionPhase1.js"></script>
+  <script defer src="/src/rivalryPrototype.js"></script>
   <script defer src="/src/legacy.js?v=20260619-nielsen"></script>
   <!-- Dev-only: stripped from production HTML by vite.config.js (file is not copied to dist). -->
 </body>
