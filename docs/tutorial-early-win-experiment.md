@@ -49,7 +49,7 @@ localStorage.removeItem('wlTutorialEarlyWin');
 |------|--------|------------|
 | After format apply | → Act 4 immediately | → **Act 35** (3.5): coach “Next Period” once |
 | After that book’s summary | — | **Celebration modal** + `tutorial_early_success_seen` |
-| Then | Act 4 programming + talent | Same Act 4–8 as legacy |
+| Then | Act 4 programming + talent | **Act 4 talent** (programming polish tour skipped; midday focus preset) |
 
 Coach positioning, modal timing, Act 4+ gates, and soft-book logic for Act 5 are **not rewritten** — only a gated insert between Act 3 and Act 4.
 
