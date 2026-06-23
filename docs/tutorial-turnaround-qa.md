@@ -14,6 +14,7 @@ Manual pass for **scenario `tutorial_turnaround`** (solo). Use this after changi
 | **Desktop** | ≥ 900 px (e.g. 1280×800) | Coach docked **left** of `.mo`; modal highlights visible; scripted tip above coach when both exist. |
 | **Tablet** | 640–899 px | Left gutter preferred when space allows; may use right gutter. |
 | **Mobile** | ≤ 520 px | Coach may overlap modal; controls must remain reachable after “Continue without guide” if needed. |
+| **Mobile station-first layout** | ≤ 768 px, all scenarios | YOUR STATIONS panel above market table. Tutorial experiment (`docs/tutorial-mobile-station-first-experiment.md`) measures coach copy/gates only on `tutorial_turnaround`. |
 
 Resize once mid-step on desktop to confirm nothing throws in the console and the coach snaps without a dead overlay.
 
@@ -56,8 +57,8 @@ Canonical funnel events (prefix `tutorial_`, property `source: tutorial_funnel` 
 | **1** | First **Next Period**. |
 | **2** | **Research** → listener/consultant/memo → close research. |
 | **3** | **Programming** → **Format** change. |
-| **3.5** *(early-win experiment only)* | **Next Period** once → celebration modal with share/revenue/rank deltas → continue to Act 4. |
-| **4** | Programming tour (Positioning, Demo Target, Budget, Focus **Midday**) → talent on **Midday** → contract flow as scripted. |
+| **3.5** *(early-win experiment only)* | **Next Period** once → celebration modal with share/revenue/rank deltas → **Act 4 talent** (programming polish tour skipped). |
+| **4** | Talent on **Midday** → contract flow as scripted. *(Legacy: programming tour first, then talent.)* |
 | **5** | **Next Period** twice (Midday focus); summaries dismissed. |
 | **6** | **Promotion** (tour/budget commit) → advance as coached. |
 | **7** | **Sales** (spots + team + commit) → **Next Period** → market table → Ranker sequence. |
