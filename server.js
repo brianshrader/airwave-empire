@@ -48,7 +48,7 @@ const express  = require('express');
 const cors     = require('cors');
 const http     = require('http');
 const { Server } = require('socket.io');
-const { randomBytes } = require('crypto');
+const { randomBytes, timingSafeEqual } = require('crypto');
 const { getSharedCorsOptions, allowedOriginsList } = require('./server/corsConfig');
 const { posthog } = require('./server/posthog');
 
@@ -116,12 +116,31 @@ const { SAVES_DIR, ensureDir } = require('./server/runtimePaths');
 
 const PORT     = process.env.PORT || 3000;
 const SAVE_DIR = SAVES_DIR;
+const ADMIN_SAVES_TOKEN = (process.env.WL_ADMIN_TOKEN || '').trim();
 
 // Ensure saves directory exists
 ensureDir(SAVE_DIR);
 
+function timingSafeStringEqual(a, b) {
+  const left = Buffer.from(String(a || ''));
+  const right = Buffer.from(String(b || ''));
+  return left.length === right.length && timingSafeEqual(left, right);
+}
+
+function requireAdminSaves(req, res, next) {
+  if (!ADMIN_SAVES_TOKEN) {
+    return res.status(404).json({ error: 'Not found' });
+  }
+  const auth = req.headers.authorization || '';
+  const m = auth.match(/^Bearer\s+(.+)$/i);
+  if (!m || !timingSafeStringEqual(m[1].trim(), ADMIN_SAVES_TOKEN)) {
+    return res.status(403).json({ error: 'Forbidden' });
+  }
+  return next();
+}
+
 /**
- * Multiplayer host market — enforced on start_draft only. Mirrors /api/entitlements + planMarkets.js.
+ * Multiplayer host market — enforced when a host starts multiplayer. Mirrors /api/entitlements + planMarkets.js.
  * Guests joining via join_room / rejoin_room are not checked here: a free-tier player may join a paid host’s room in any city.
  * No Clerk user on socket (local dev / WL_ALLOW_MP_AUTH_BYPASS): allow all Phase-1 cities so LAN still works.
  */
@@ -142,7 +161,12 @@ async function mpAllowedMarketIdsForHostSocket(socket) {
 // ── PERSISTENCE ────────────────────────────────────────────────────
 
 function roomSavePath(roomId) {
-  return path.join(SAVE_DIR, `${roomId}.json`);
+  const normalized = normalizeRoomId(roomId);
+  if (!normalized) throw new Error('invalid room id');
+  const root = path.resolve(SAVE_DIR);
+  const file = path.resolve(root, `${normalized}.json`);
+  if (!file.startsWith(root + path.sep)) throw new Error('invalid room path');
+  return file;
 }
 
 function persistRoom(room) {
@@ -273,13 +297,19 @@ function loadPersistedRooms() {
 // ── ROOM HELPERS ───────────────────────────────────────────────────
 
 const rooms = {};
+const ROOM_ID_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const ROOM_ID_RE = /^[ABCDEFGHJKMNPQRSTUVWXYZ23456789]{6}$/;
+
+function normalizeRoomId(roomId) {
+  const v = typeof roomId === 'string' ? roomId.trim().toUpperCase() : '';
+  return ROOM_ID_RE.test(v) ? v : null;
+}
 
 function makeRoomId() {
   // 6-char alphanumeric, unambiguous characters only (no 0/O, 1/I/L)
-  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
   let id = '';
   const bytes = randomBytes(6);
-  for (const b of bytes) id += chars[b % chars.length];
+  for (const b of bytes) id += ROOM_ID_CHARS[b % ROOM_ID_CHARS.length];
   return id.slice(0, 6);
 }
 
@@ -311,7 +341,8 @@ function makeRoom(hostSocketId, hostName) {
 }
 
 function getRoom(roomId) {
-  return rooms[roomId?.toUpperCase()] || null;
+  const normalized = normalizeRoomId(roomId);
+  return normalized ? rooms[normalized] || null : null;
 }
 
 function getRoomBySocket(socketId) {
@@ -548,10 +579,20 @@ io.on('connection', socket => {
   });
 
   // ── START GAME (host only) ────────────────────────────────────
-  socket.on('start_game', ({ roomId, scenarioId, G: initialG }) => {
+  socket.on('start_game', async ({ roomId, scenarioId, G: initialG }) => {
     const room = getRoom(roomId);
     if (!room || room.hostId !== socket.id) return;
     if (room.players.length < 2) { socket.emit('start_error', 'Need at least 2 players to start.'); return; }
+
+    const mid = initialG && initialG.marketId ? String(initialG.marketId) : 'atlanta';
+    const allowed = await mpAllowedMarketIdsForHostSocket(socket);
+    if (!allowed.has(mid)) {
+      socket.emit(
+        'start_error',
+        'Your plan only allows hosting multiplayer in certain markets. Free tier: Atlanta only. Upgrade to Starter or Pro in Account to host in more cities.',
+      );
+      return;
+    }
 
     room.phase      = 'playing';
     room.scenarioId = scenarioId;
@@ -1110,6 +1151,53 @@ if (HAS_DIST) {
     }),
   );
 }
+const PRIVATE_ROOT_STATIC_SEGMENTS = new Set([
+  '.git',
+  '.github',
+  '.claude',
+  'archive',
+  'data',
+  'docs',
+  'node_modules',
+  'reports',
+  'saves',
+  'scripts',
+  'server',
+  'tmp',
+]);
+const PRIVATE_ROOT_STATIC_FILES = new Set([
+  '.env',
+  '.env.local',
+  'package.json',
+  'package-lock.json',
+  'server.js',
+  'vite.config.js',
+]);
+app.use((req, res, next) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') return next();
+  let pathname;
+  try {
+    pathname = new URL(req.originalUrl || req.url || '/', 'http://localhost').pathname;
+  } catch {
+    pathname = req.path || '/';
+  }
+  const firstRaw = pathname.split('/').filter(Boolean)[0] || '';
+  let first = firstRaw;
+  try {
+    first = decodeURIComponent(firstRaw);
+  } catch {
+    return res.sendStatus(404);
+  }
+  const key = first.toLowerCase();
+  if (
+    key.startsWith('.') ||
+    PRIVATE_ROOT_STATIC_SEGMENTS.has(key) ||
+    PRIVATE_ROOT_STATIC_FILES.has(key)
+  ) {
+    return res.sendStatus(404);
+  }
+  return next();
+});
 app.use(express.static(path.join(__dirname)));
 
 if (HAS_DIST) {
@@ -1141,7 +1229,7 @@ app.get('/', (req, res) => {
 });
 
 // ── SAVE MANAGEMENT ROUTES ──────────────────────────────────────
-app.get('/admin/saves', (req, res) => {
+app.get('/admin/saves', requireAdminSaves, (req, res) => {
   try {
     const files = fs.existsSync(SAVE_DIR) ? fs.readdirSync(SAVE_DIR).filter(f=>f.endsWith('.json')) : [];
     const saves = files.map(f => {
@@ -1154,9 +1242,10 @@ app.get('/admin/saves', (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-app.delete('/admin/saves/:roomId', (req, res) => {
-  const roomId = req.params.roomId;
-  const file = path.join(SAVE_DIR, roomId + '.json');
+app.delete('/admin/saves/:roomId', requireAdminSaves, (req, res) => {
+  const roomId = normalizeRoomId(req.params.roomId);
+  if (!roomId) return res.status(400).json({ error: 'Invalid room id' });
+  const file = roomSavePath(roomId);
   if (!fs.existsSync(file)) return res.status(404).json({ error: 'Not found' });
   fs.unlinkSync(file);
   delete rooms[roomId];
@@ -1164,7 +1253,7 @@ app.delete('/admin/saves/:roomId', (req, res) => {
   res.json({ ok: true });
 });
 
-app.delete('/admin/saves', (req, res) => {
+app.delete('/admin/saves', requireAdminSaves, (req, res) => {
   try {
     const files = fs.existsSync(SAVE_DIR) ? fs.readdirSync(SAVE_DIR).filter(f=>f.endsWith('.json')) : [];
     files.forEach(f => fs.unlinkSync(path.join(SAVE_DIR, f)));
