@@ -196,17 +196,42 @@ body#wl-play::after{opacity:0.15}
   color:var(--mut);
   border-bottom:1px solid var(--bdr);
 }
+#wl-play .ph-section-title{
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:2px;
+}
+#wl-play .ph-section-label{
+  font-family:var(--fd);
+  font-size:0.95rem;
+  font-weight:600;
+  letter-spacing:0.12em;
+  text-transform:uppercase;
+  color:var(--amb);
+  line-height:1.15;
+}
+#wl-play .ph-section-sub,
+#wl-play .ph .ph-section-sub{
+  font-family:var(--ft);
+  font-size:0.75rem;
+  letter-spacing:0.08em;
+  color:var(--mut);
+  font-style:normal;
+  line-height:1.35;
+}
 #wl-play .ph--mkt .mkt-hdr-city{
-  color:var(--wht);
-  font-size:clamp(0.9rem,1.1vw,1.05rem);
-  letter-spacing:0.12em
+  color:var(--off);
+  font-weight:500;
+  letter-spacing:0.08em;
+  text-transform:uppercase;
 }
 #wl-play .ph--mkt .mkt-hdr-book{
-  color:var(--off);
-  font-size:0.75rem;
+  color:var(--mut);
   font-weight:500;
-  letter-spacing:0.12em;
-  text-transform:none
+  letter-spacing:0.08em;
+  text-transform:none;
 }
 #wl-play .ph--mkt .mkt-hdr-sep{opacity:0.75}
 #wl-play .mkt-hdr-btns .phbtn{text-transform:uppercase;letter-spacing:0.1em}
@@ -1036,6 +1061,106 @@ body#wl-play::after{opacity:0.15}
   margin:0 0 20px 0;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
 }
+/* Promotion hub — identity + budget on main screen; logo/jingle/van/community in sub-modals */
+#m-brand .bm-manage--hub .bm-section-h{margin:16px 0 10px 0}
+#m-brand .bm-manage--hub .bm-section-h:first-of-type{margin-top:10px}
+#m-brand .bm-hub-summary-details{margin:0 0 14px 0;border:1px solid rgba(245,166,35,.22);border-radius:8px;background:rgba(0,0,0,.12)}
+#m-brand .bm-hub-summary-details[open]{background:rgba(245,166,35,.06)}
+#m-brand .bm-hub-summary-details > summary.bm-hub-summary-summary{
+  cursor:pointer;
+  list-style:none;
+  font-family:var(--fd);
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:0.1em;
+  color:var(--amb);
+  padding:10px 14px;
+  user-select:none;
+}
+#m-brand .bm-hub-summary-details > summary.bm-hub-summary-summary::-webkit-details-marker{display:none}
+#m-brand .bm-hub-summary-details > summary.bm-hub-summary-summary::after{content:' ▾';color:var(--mut);font-weight:400}
+#m-brand .bm-hub-summary-details[open] > summary.bm-hub-summary-summary::after{content:' ▴'}
+#m-brand .bm-hub-summary-details .bm-marketing-summary-box{margin:0;border:none;border-radius:0;border-top:1px solid rgba(245,166,35,.18);box-shadow:none}
+#m-brand .bm-hub-logo-strip{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  margin:0 0 14px 0;
+  padding:10px 12px;
+  box-sizing:border-box;
+  background:var(--crd);
+  border:1px solid var(--bdh);
+  border-radius:8px;
+  cursor:pointer;
+  text-align:left;
+  font-family:var(--ft);
+  color:inherit;
+}
+#m-brand .bm-hub-logo-strip:hover{border-color:rgba(245,166,35,.45)}
+#m-brand .bm-hub-logo-thumb{
+  flex:0 0 auto;
+  width:64px;
+  height:64px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:6px;
+  border:1px solid var(--bdh);
+  background:rgba(0,0,0,.22);
+  overflow:hidden;
+}
+#m-brand .bm-hub-logo-thumb-img{width:100%;height:100%;object-fit:contain}
+#m-brand .bm-hub-logo-thumb-svg{display:flex;align-items:center;justify-content:center;width:100%;height:100%;padding:4px;box-sizing:border-box}
+#m-brand .bm-hub-logo-thumb-svg svg{max-width:100%;max-height:56px;width:auto;height:auto;display:block}
+#m-brand .bm-hub-logo-thumb-empty{font-size:11px;color:var(--mut);text-align:center;padding:4px}
+#m-brand .bm-hub-logo-strip-text{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:2px}
+#m-brand .bm-hub-logo-strip-text strong{font-size:14px;color:var(--wht);letter-spacing:0.06em}
+#m-brand .bm-hub-logo-strip-status{font-size:13px;color:var(--mut);line-height:1.35}
+#m-brand .bm-hub-logo-strip-chevron{flex:0 0 auto;font-size:22px;color:var(--amb);line-height:1}
+#m-brand .bm-hub-tools{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:10px;
+  margin:0 0 14px 0;
+}
+@media (min-width:560px){
+  #m-brand .bm-hub-tools{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+#m-brand .bm-hub-tool{
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  gap:4px;
+  min-height:72px;
+  padding:12px 12px 10px;
+  box-sizing:border-box;
+  background:var(--crd);
+  border:1px solid var(--bdh);
+  border-radius:8px;
+  cursor:pointer;
+  text-align:left;
+  font-family:var(--ft);
+  color:inherit;
+  transition:border-color .15s ease,background .15s ease;
+}
+#m-brand .bm-hub-tool:hover{border-color:rgba(245,166,35,.5);background:rgba(245,166,35,.06)}
+#m-brand .bm-hub-tool-kicker{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--mut)}
+#m-brand .bm-hub-tool-label{font-family:var(--fd);font-size:15px;font-weight:700;letter-spacing:0.08em;color:var(--wht)}
+#m-brand .bm-hub-tool-badge{font-size:12px;line-height:1.35;color:var(--amb);margin-top:auto}
+#m-brand .bm-hub-tool--busy .bm-hub-tool-badge{color:var(--grn)}
+#m-brand .bm-hub-tool--warn .bm-hub-tool-badge{color:var(--red)}
+#m-brand-logo #brand-logo-b.bm-manage,
+#m-brand-jingle #brand-jingle-b.bm-manage,
+#m-brand-van #brand-van-b.bm-manage,
+#m-brand-community #brand-community-b.bm-manage{
+  min-width:0;
+  overflow-x:hidden;
+  font-size:16px;
+  line-height:1.55;
+}
+#m-brand-van .bm-van-hero{max-height:min(40vh,320px)}
+#m-brand-logo .bm-logo-hero{max-height:min(36vh,280px)}
 #m-brand .bm-sug-label{
   font-size:14px;
   font-weight:600;
@@ -1747,6 +1872,38 @@ body#wl-play #main{
 #gm-explainb h4:first-of-type{margin-top:0}
 /* Turnaround scripted tutorial coach (spotlight + cards — parallel to #wl-ft-tut-root) */
 #wl-tu-tr-root{position:fixed;inset:0;pointer-events:none;z-index:13020}
+/* Act 6 — inline coach at top of #m-brand .mo scroll panel (sticky while player scrolls) */
+#m-brand .mo #wl-tu-tr-bm-coach{
+  position:sticky;
+  top:0;
+  z-index:6;
+  pointer-events:auto;
+  box-sizing:border-box;
+  background:var(--pnl);
+  border:1px solid var(--bdh);
+  border-top:3px solid var(--amb);
+  padding:10px 12px;
+  margin:0 0 12px;
+  box-shadow:0 12px 48px rgba(0,0,0,.65);
+  font-family:var(--ft);
+  max-height:min(28vh,200px);
+  max-height:min(28dvh,200px);
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+#m-brand.wl-tut-brand-promo-focus .mo #wl-tu-tr-bm-coach{
+  background:linear-gradient(180deg,rgba(35,35,35,.99) 0%,rgba(18,18,18,.99) 100%);
+}
+#m-brand #wl-tu-tr-bm-coach .wl-ft-tut-h{
+  font-size:14px;
+  letter-spacing:1px;
+  margin:0 0 6px;
+}
+#m-brand #wl-tu-tr-bm-coach .wl-ft-tut-p{
+  font-size:13px;
+  margin:0 0 6px;
+  line-height:1.4;
+}
 /* Turnaround scripted COACH NOTE — stack above spotlight (#wl-tu-tr-root) so body text stays readable */
 #wl-play #m-turnaround-tip.ov.on{z-index:26000!important;isolation:isolate}
 #wl-play #m-turnaround-tip.ov.on .mo{position:relative;z-index:1}
@@ -1809,8 +1966,34 @@ body#wl-play #main{
   #wl-tu-tr-card .wl-ft-tut-muted{font-size:13px}
   #wl-tu-tr-card.wl-ft-tut-card--anchored,
   #wl-tu-tr-card.wl-ft-tut-card--modal-gutter{
+    bottom:auto !important;
     max-height:min(42vh, 300px) !important;
     max-height:min(42dvh, 300px) !important;
+  }
+  #wl-tu-tr-card.wl-tu-tr-card--brand-promo-mob,
+  #wl-tu-tr-card.wl-tu-tr-card--market-ratings-mob,
+  #wl-tu-tr-card.wl-tu-tr-card--scroll-task{
+    bottom:auto !important;
+    max-height:min(22vh, 168px) !important;
+    max-height:min(22dvh, 168px) !important;
+    padding:10px 12px max(8px, calc(8px + env(safe-area-inset-bottom, 0px)));
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  #wl-tu-tr-card.wl-tu-tr-card--scroll-task .wl-ft-tut-h{
+    font-size:14px;
+    letter-spacing:1px;
+    margin:0 0 6px;
+  }
+  #wl-tu-tr-card.wl-tu-tr-card--scroll-task .wl-ft-tut-p{
+    font-size:13px;
+    margin:0 0 6px;
+    line-height:1.4;
+  }
+  #wl-tu-tr-card.wl-tu-tr-card--next-period-mob{
+    bottom:auto !important;
+    max-height:min(28vh, 200px) !important;
+    max-height:min(28dvh, 200px) !important;
   }
   #wl-ft-tut-card{
     left:max(8px, env(safe-area-inset-left, 0px)) !important;
@@ -3769,6 +3952,12 @@ html.wl-modal-open,body.wl-modal-open{overflow:hidden}
   filter:brightness(1.08);
   box-shadow:0 0 0 3px rgba(var(--m-gold-rgb),0.98),0 0 26px rgba(245,166,35,.42),0 8px 36px rgba(0,0,0,.52)!important;
 }
+/* Ring-only spotlight on sticky header / modal CTAs — outline only; no position/z-index (Safari tap offset). */
+#wl-play #hdr .wl-ft-tut-spotlight,
+#wl-play .mo button.wl-ft-tut-spotlight{
+  position:relative;
+  z-index:auto;
+}
 #wl-ft-tut-card{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);width:min(420px,calc(100vw - 32px));box-sizing:border-box;background:var(--pnl);border:1px solid var(--bdh);border-top:3px solid var(--amb);padding:18px 20px 16px;box-shadow:0 12px 48px rgba(0,0,0,.65);font-family:var(--ft);pointer-events:auto}
 /* Anchored near spotlight (JS sets top/left) — avoids covering Marketing / actions on wide layouts */
 #wl-ft-tut-card.wl-ft-tut-card--anchored{max-height:min(420px,calc(100vh - 24px));overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
@@ -5302,6 +5491,142 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
 
   /* Right column — station cards */
   #pc{padding:12px;border-right:none;border-bottom:1px solid var(--bdr)}
+
+  /* Mobile play shell: YOUR STATIONS above market ratings (all scenarios; desktop unchanged). */
+  body#wl-play #pc{order:-1}
+  body#wl-play #pl{order:0}
+
+  /* Explore coach (acts 1–3): smaller card pinned below header; station card stays visible */
+  body#wl-play.wl-mobile-tut-explore #wl-tu-tr-card.wl-tu-tr-card--explore,
+  body#wl-play.wl-mobile-tut-explore #wl-tu-tr-card.wl-ft-tut-card--top{
+    max-height:min(36vh, 280px) !important;
+    max-height:min(36dvh, 280px) !important;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+    overscroll-behavior:contain;
+  }
+
+  /* Research modal coaches on mobile — dock at bottom so listener feedback stays visible */
+  #wl-tu-tr-card.wl-tu-tr-card--research-mob{
+    max-height:min(32vh, 220px) !important;
+    max-height:min(32dvh, 220px) !important;
+  }
+
+  /* Scroll-task coaches — pinned below #hdr; player scrolls panel/map to target */
+  #wl-tu-tr-card.wl-tu-tr-card--brand-promo-mob,
+  #wl-tu-tr-card.wl-tu-tr-card--market-ratings-mob,
+  #wl-tu-tr-card.wl-tu-tr-card--scroll-task{
+    bottom:auto !important;
+    max-height:min(22vh, 168px) !important;
+    max-height:min(22dvh, 168px) !important;
+    padding:10px 12px max(8px, calc(8px + env(safe-area-inset-bottom, 0px)));
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  #wl-tu-tr-card.wl-tu-tr-card--scroll-task .wl-ft-tut-h{
+    font-size:14px;
+    letter-spacing:1px;
+    margin:0 0 6px;
+  }
+  #wl-tu-tr-card.wl-tu-tr-card--scroll-task .wl-ft-tut-p{
+    font-size:13px;
+    margin:0 0 6px;
+    line-height:1.4;
+  }
+
+  /* Act 7 Next Period — coach below header; keep ▶ NEXT PERIOD in #hdr tappable */
+  #wl-tu-tr-card.wl-tu-tr-card--next-period-mob{
+    bottom:auto !important;
+    max-height:min(28vh, 200px) !important;
+    max-height:min(28dvh, 200px) !important;
+  }
+
+  /* Act 7 spot load — coach pinned below header; player scrolls Sales modal */
+  #wl-tu-tr-card.wl-tu-tr-card--spot-load-mob{
+    bottom:auto !important;
+    max-height:min(22vh, 168px) !important;
+    max-height:min(22dvh, 168px) !important;
+  }
+
+  /* Act 4 talent — bold LINEUP header; full lineup block spotlighted (rows stay bright) */
+  #wl-play #wl-ft-tut-talent-btn.wl-ft-tut-spotlight #wl-tu-tr-station-lineup,
+  #wl-play #wl-tu-tr-station-lineup.wl-ft-tut-spotlight{
+    padding:12px 12px 10px;
+    margin:0 0 10px;
+    background:linear-gradient(135deg,rgba(42,34,22,0.98) 0%,rgba(18,15,12,0.97) 100%);
+    border:1px solid rgba(255,196,80,0.48);
+    border-left:4px solid #ffc04a;
+    border-radius:4px;
+    box-shadow:0 4px 18px rgba(0,0,0,0.38),0 0 0 3px rgba(var(--m-gold-rgb),0.95),inset 0 1px 0 rgba(255,210,100,0.1);
+    outline:none;
+  }
+  #wl-play #wl-ft-tut-talent-btn.wl-ft-tut-spotlight #wl-tu-tr-station-lineup .slots-legend-title,
+  #wl-play #wl-tu-tr-station-lineup.wl-ft-tut-spotlight .slots-legend-title{
+    font-family:var(--fd);
+    font-size:clamp(1.08rem,4.8vw,1.32rem);
+    font-weight:700;
+    letter-spacing:0.18em;
+    color:#ffd978;
+    text-transform:uppercase;
+    text-shadow:0 0 22px rgba(255,200,80,0.42),0 1px 2px rgba(0,0,0,0.45);
+  }
+
+  /* Stacked columns — hard break between station block and market block */
+  #wl-play #pc{
+    margin-bottom:4px;
+    padding-bottom:18px;
+    border-bottom:2px solid rgba(255,196,80,0.28);
+  }
+  #wl-play #pl{
+    margin-top:12px;
+    padding-top:6px;
+    border-top:1px solid rgba(255,196,80,0.12);
+  }
+
+  /* Section headers — bright labels + panel chrome on mobile */
+  #wl-play .ph.ph--stations,
+  #wl-play .ph.ph--mkt{
+    padding:14px 14px 12px;
+    margin-bottom:16px;
+    background:linear-gradient(135deg,rgba(42,34,22,0.98) 0%,rgba(18,15,12,0.97) 100%);
+    border:1px solid rgba(255,196,80,0.42);
+    border-left:4px solid #ffc04a;
+    border-radius:4px;
+    box-shadow:0 4px 18px rgba(0,0,0,0.38),inset 0 1px 0 rgba(255,210,100,0.1);
+    gap:12px;
+  }
+  #wl-play .ph.ph--stations{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  #wl-play .ph-section-title{gap:4px}
+  #wl-play .ph-section-label{
+    font-size:clamp(1.14rem,5.2vw,1.42rem);
+    font-weight:700;
+    letter-spacing:0.13em;
+    color:#ffd978;
+    text-shadow:0 0 22px rgba(255,200,80,0.38),0 1px 2px rgba(0,0,0,0.45);
+  }
+  #wl-play .ph-section-sub,
+  #wl-play .ph .ph-section-sub{
+    font-size:0.84rem;
+    margin-top:2px;
+    color:rgba(232,224,210,0.82);
+    letter-spacing:0.07em;
+  }
+  #wl-play .ph--mkt .mkt-hdr-city{color:rgba(255,255,255,0.92)}
+  #wl-play .ph--mkt .mkt-hdr-book{color:rgba(232,224,210,0.72)}
+  #wl-play .ph.ph--mkt{
+    flex-direction:column;
+    align-items:stretch;
+  }
+  #wl-play .ph.ph--mkt .mkt-hdr-btns{
+    width:100%;
+    justify-content:flex-start;
+    padding-top:4px;
+    border-top:1px solid rgba(255,196,80,0.16);
+  }
+
   .ph{font-size:15px;gap:8px;margin-bottom:10px}
   /* phbtn padding handled above (#wl-play corporate / market) — keep label size only */
   .phbtn{font-size:15px}

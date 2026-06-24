@@ -1872,6 +1872,38 @@ body#wl-play #main{
 #gm-explainb h4:first-of-type{margin-top:0}
 /* Turnaround scripted tutorial coach (spotlight + cards — parallel to #wl-ft-tut-root) */
 #wl-tu-tr-root{position:fixed;inset:0;pointer-events:none;z-index:13020}
+/* Act 6 — inline coach at top of #m-brand .mo scroll panel (sticky while player scrolls) */
+#m-brand .mo #wl-tu-tr-bm-coach{
+  position:sticky;
+  top:0;
+  z-index:6;
+  pointer-events:auto;
+  box-sizing:border-box;
+  background:var(--pnl);
+  border:1px solid var(--bdh);
+  border-top:3px solid var(--amb);
+  padding:10px 12px;
+  margin:0 0 12px;
+  box-shadow:0 12px 48px rgba(0,0,0,.65);
+  font-family:var(--ft);
+  max-height:min(28vh,200px);
+  max-height:min(28dvh,200px);
+  overflow-y:auto;
+  -webkit-overflow-scrolling:touch;
+}
+#m-brand.wl-tut-brand-promo-focus .mo #wl-tu-tr-bm-coach{
+  background:linear-gradient(180deg,rgba(35,35,35,.99) 0%,rgba(18,18,18,.99) 100%);
+}
+#m-brand #wl-tu-tr-bm-coach .wl-ft-tut-h{
+  font-size:14px;
+  letter-spacing:1px;
+  margin:0 0 6px;
+}
+#m-brand #wl-tu-tr-bm-coach .wl-ft-tut-p{
+  font-size:13px;
+  margin:0 0 6px;
+  line-height:1.4;
+}
 /* Turnaround scripted COACH NOTE — stack above spotlight (#wl-tu-tr-root) so body text stays readable */
 #wl-play #m-turnaround-tip.ov.on{z-index:26000!important;isolation:isolate}
 #wl-play #m-turnaround-tip.ov.on .mo{position:relative;z-index:1}
@@ -1934,8 +1966,34 @@ body#wl-play #main{
   #wl-tu-tr-card .wl-ft-tut-muted{font-size:13px}
   #wl-tu-tr-card.wl-ft-tut-card--anchored,
   #wl-tu-tr-card.wl-ft-tut-card--modal-gutter{
+    bottom:auto !important;
     max-height:min(42vh, 300px) !important;
     max-height:min(42dvh, 300px) !important;
+  }
+  #wl-tu-tr-card.wl-tu-tr-card--brand-promo-mob,
+  #wl-tu-tr-card.wl-tu-tr-card--market-ratings-mob,
+  #wl-tu-tr-card.wl-tu-tr-card--scroll-task{
+    bottom:auto !important;
+    max-height:min(22vh, 168px) !important;
+    max-height:min(22dvh, 168px) !important;
+    padding:10px 12px max(8px, calc(8px + env(safe-area-inset-bottom, 0px)));
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  #wl-tu-tr-card.wl-tu-tr-card--scroll-task .wl-ft-tut-h{
+    font-size:14px;
+    letter-spacing:1px;
+    margin:0 0 6px;
+  }
+  #wl-tu-tr-card.wl-tu-tr-card--scroll-task .wl-ft-tut-p{
+    font-size:13px;
+    margin:0 0 6px;
+    line-height:1.4;
+  }
+  #wl-tu-tr-card.wl-tu-tr-card--next-period-mob{
+    bottom:auto !important;
+    max-height:min(28vh, 200px) !important;
+    max-height:min(28dvh, 200px) !important;
   }
   #wl-ft-tut-card{
     left:max(8px, env(safe-area-inset-left, 0px)) !important;
@@ -3894,6 +3952,12 @@ html.wl-modal-open,body.wl-modal-open{overflow:hidden}
   filter:brightness(1.08);
   box-shadow:0 0 0 3px rgba(var(--m-gold-rgb),0.98),0 0 26px rgba(245,166,35,.42),0 8px 36px rgba(0,0,0,.52)!important;
 }
+/* Ring-only spotlight on sticky header / modal CTAs — outline only; no position/z-index (Safari tap offset). */
+#wl-play #hdr .wl-ft-tut-spotlight,
+#wl-play .mo button.wl-ft-tut-spotlight{
+  position:relative;
+  z-index:auto;
+}
 #wl-ft-tut-card{position:fixed;left:50%;bottom:28px;transform:translateX(-50%);width:min(420px,calc(100vw - 32px));box-sizing:border-box;background:var(--pnl);border:1px solid var(--bdh);border-top:3px solid var(--amb);padding:18px 20px 16px;box-shadow:0 12px 48px rgba(0,0,0,.65);font-family:var(--ft);pointer-events:auto}
 /* Anchored near spotlight (JS sets top/left) — avoids covering Marketing / actions on wide layouts */
 #wl-ft-tut-card.wl-ft-tut-card--anchored{max-height:min(420px,calc(100vh - 24px));overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
@@ -5446,6 +5510,65 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:20px;heigh
   #wl-tu-tr-card.wl-tu-tr-card--research-mob{
     max-height:min(32vh, 220px) !important;
     max-height:min(32dvh, 220px) !important;
+  }
+
+  /* Scroll-task coaches — pinned below #hdr; player scrolls panel/map to target */
+  #wl-tu-tr-card.wl-tu-tr-card--brand-promo-mob,
+  #wl-tu-tr-card.wl-tu-tr-card--market-ratings-mob,
+  #wl-tu-tr-card.wl-tu-tr-card--scroll-task{
+    bottom:auto !important;
+    max-height:min(22vh, 168px) !important;
+    max-height:min(22dvh, 168px) !important;
+    padding:10px 12px max(8px, calc(8px + env(safe-area-inset-bottom, 0px)));
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  #wl-tu-tr-card.wl-tu-tr-card--scroll-task .wl-ft-tut-h{
+    font-size:14px;
+    letter-spacing:1px;
+    margin:0 0 6px;
+  }
+  #wl-tu-tr-card.wl-tu-tr-card--scroll-task .wl-ft-tut-p{
+    font-size:13px;
+    margin:0 0 6px;
+    line-height:1.4;
+  }
+
+  /* Act 7 Next Period — coach below header; keep ▶ NEXT PERIOD in #hdr tappable */
+  #wl-tu-tr-card.wl-tu-tr-card--next-period-mob{
+    bottom:auto !important;
+    max-height:min(28vh, 200px) !important;
+    max-height:min(28dvh, 200px) !important;
+  }
+
+  /* Act 7 spot load — coach pinned below header; player scrolls Sales modal */
+  #wl-tu-tr-card.wl-tu-tr-card--spot-load-mob{
+    bottom:auto !important;
+    max-height:min(22vh, 168px) !important;
+    max-height:min(22dvh, 168px) !important;
+  }
+
+  /* Act 4 talent — bold LINEUP header; full lineup block spotlighted (rows stay bright) */
+  #wl-play #wl-ft-tut-talent-btn.wl-ft-tut-spotlight #wl-tu-tr-station-lineup,
+  #wl-play #wl-tu-tr-station-lineup.wl-ft-tut-spotlight{
+    padding:12px 12px 10px;
+    margin:0 0 10px;
+    background:linear-gradient(135deg,rgba(42,34,22,0.98) 0%,rgba(18,15,12,0.97) 100%);
+    border:1px solid rgba(255,196,80,0.48);
+    border-left:4px solid #ffc04a;
+    border-radius:4px;
+    box-shadow:0 4px 18px rgba(0,0,0,0.38),0 0 0 3px rgba(var(--m-gold-rgb),0.95),inset 0 1px 0 rgba(255,210,100,0.1);
+    outline:none;
+  }
+  #wl-play #wl-ft-tut-talent-btn.wl-ft-tut-spotlight #wl-tu-tr-station-lineup .slots-legend-title,
+  #wl-play #wl-tu-tr-station-lineup.wl-ft-tut-spotlight .slots-legend-title{
+    font-family:var(--fd);
+    font-size:clamp(1.08rem,4.8vw,1.32rem);
+    font-weight:700;
+    letter-spacing:0.18em;
+    color:#ffd978;
+    text-transform:uppercase;
+    text-shadow:0 0 22px rgba(255,200,80,0.42),0 1px 2px rgba(0,0,0,0.45);
   }
 
   /* Stacked columns — hard break between station block and market block */
