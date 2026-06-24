@@ -8238,10 +8238,65 @@ function syndicationFeesForStation(s,G){
   });
   return fee;
 }
+/**
+ * Exclusive franchise with no holder and contractEnd stuck in the past (or Spring auction never opened)
+ * never re-enters the renewal calendar — e.g. intro-year Countdown at contractEnd 1970 in a 2020 save.
+ * Also re-opens dormant unowned rights (holderId null, auction closed) so "Not currently in market" cannot persist.
+ * @returns {number} franchises repaired
+ */
+function wlReopenUnownedExclusiveFranchiseAuction(G,f,r,acts,opts){
+  const end=Number(r.contractEnd);
+  const closeYear=Number.isFinite(end)&&end>=G.year?end:(G.period===2?G.year+1:G.year);
+  r.holderId=null;
+  r.holderName='—';
+  delete r.formatMismatch;
+  r.contractEnd=closeYear;
+  r.auctionOpen=true;
+  r.auctionCloses=closeYear;
+  r.bids={};
+  delete r.incumbentDeclinedRenewal;
+  delete r.declinedBid;
+  const msg=opts?.message||`📻 "${f.name}" franchise available — bidding opens for market exclusivity. Currently unowned.`;
+  if(acts){
+    acts.push({v:opts?.actV||'HIGH',t:msg,y:G.year,p:G.period,iy:!!opts?.iy});
+  }else if(!opts?.silent){
+    G.news=G.news||[];
+    G.news.unshift({v:'MEDIUM',t:msg,y:G.year,p:G.period,iy:!!opts?.iy});
+    if(G.news.length>50)G.news=G.news.slice(0,50);
+  }
+}
+function wlRepairOrphanExclusiveFranchiseRights(G,acts,opts){
+  if(!G?.franchiseRights)return 0;
+  let n=0;
+  NATIONAL_FRANCHISES.forEach(f=>{
+    if(G.year<f.introduced)return;
+    const r=G.franchiseRights[f.id];
+    if(!r||!f.exclusive)return;
+    if(r.holderId){
+      const hold=G.stations?.find(s=>s.id===r.holderId);
+      if(!hold||hold._bpSlotDeferred||stationIsNoncommercialInstitutional(hold)){
+        r.holderId=null;
+        r.holderName='—';
+        delete r.formatMismatch;
+      }else return;
+    }
+    if(r.auctionOpen)return;
+    const end=Number(r.contractEnd);
+    const staleEnd=Number.isFinite(end)&&end<G.year;
+    const missedSpring=Number.isFinite(end)&&end===G.year&&G.period===2;
+    const dormantUnowned=!r.holderId;
+    if(!staleEnd&&!missedSpring&&!dormantUnowned)return;
+    wlReopenUnownedExclusiveFranchiseAuction(G,f,r,acts,opts);
+    n++;
+  });
+  if(n>0)G._wlFranchiseOrphanRepaired=(G._wlFranchiseOrphanRepaired||0)+n;
+  return n;
+}
 function runFranchiseEvents(G){
   if(!G.franchiseRights)return[];
   initFranchiseRights(G);
   const acts=[];
+  wlRepairOrphanExclusiveFranchiseRights(G,acts,{silent:true});
   NATIONAL_FRANCHISES.forEach(f=>{
     if(G.year<f.introduced)return;
     const r=G.franchiseRights[f.id];
@@ -8300,12 +8355,11 @@ function resolveFranchiseAuction(franchise,rights,G,acts){
         return;
       }
       if(incumbentWalked&&prevHolder){
-        rights.auctionOpen=false;
-        rights.bids={};
-        acts.push({
-          v:prevHolder.isPlayer?'HIGH':'LOW',
-          t:`📻 "${franchise.name}" — ${prevHolder.callLetters} declined renewal; no other qualifying station in this market. Rights are open.`,
-          y:G.year,p:G.period,iy:!!prevHolder.isPlayer,
+        wlReopenUnownedExclusiveFranchiseAuction(G,franchise,rights,acts,{
+          silent:true,
+          actV:prevHolder.isPlayer?'HIGH':'LOW',
+          iy:!!prevHolder.isPlayer,
+          message:`📻 "${franchise.name}" — ${prevHolder.callLetters} declined renewal; bidding open for qualifying stations through Fall ${rights.auctionCloses}.`,
         });
         return;
       }
@@ -8337,6 +8391,12 @@ function resolveFranchiseAuction(franchise,rights,G,acts){
         });
         return;
       }
+      wlReopenUnownedExclusiveFranchiseAuction(G,franchise,rights,acts,{
+        silent:true,
+        actV:'MEDIUM',
+        message:`📻 "${franchise.name}" — no bids; rights stay on the market. Bidding open through Fall ${rights.auctionCloses}.`,
+      });
+      return;
     }else if(rights.holderId){
       rights.contractEnd=G.year+franchise.contractYrs;
       acts.push({v:'LOW',t:`📻 "${franchise.name}" retained by ${rights.holderName} — no competing bids.`,y:G.year,p:G.period});
@@ -8347,18 +8407,27 @@ function resolveFranchiseAuction(franchise,rights,G,acts){
   let winner=null,winnerBid=0,winnerEff=0;
   Object.entries(rights.bids).forEach(([sid,bid])=>{
     const stn=G.stations.find(st=>st.id===sid);if(!stn)return;
+    const fmt=franchiseFormatFit(franchise,stn.format,stn);
+    if(fmt<=0)return;
     const rel=(rights.relationship?.[sid]||0)/100;
     const incumbent=sid===rights.holderId?0.15:0;
-    const fmt=franchiseFormatFit(franchise,stn.format,stn);
     const effBid=bid*(1+rel*0.20+incumbent)*(0.65+0.35*Math.min(fmt,1.5));
     if(effBid>winnerEff){winner=stn;winnerBid=bid;winnerEff=effBid;}
   });
   if(!winner){
-    rights.auctionOpen=false;
     rights.bids={};
     if(rights.holderId){
       rights.contractEnd=G.year+franchise.contractYrs;
+      rights.auctionOpen=false;
       acts.push({v:'LOW',t:`📻 "${franchise.name}" — no valid winning bid; ${rights.holderName||'holder'} retained.`,y:G.year,p:G.period});
+    }else if(franchise.exclusive){
+      wlReopenUnownedExclusiveFranchiseAuction(G,franchise,rights,acts,{
+        silent:true,
+        actV:'MEDIUM',
+        message:`📻 "${franchise.name}" — no qualifying winning bid; rights stay on the market. Bidding open through Fall ${rights.auctionCloses}.`,
+      });
+    }else{
+      rights.auctionOpen=false;
     }
     return;
   }
@@ -35924,7 +35993,12 @@ function openFranchise(sid){
     }else if(heldByOther){
       bidSection=`<div style="font-size:13px;color:var(--mut);margin-top:4px">Held until ${r.contractEnd}. Watch for the auction next year.</div>`;
     }else{
-      bidSection='<div style="font-size:13px;color:var(--mut);margin-top:4px">Not currently in market. Will go to auction when available.</div>';
+      const idleNote=f.exclusive&&!r?.holderId
+        ?(r?.auctionCloses!=null
+          ?`Rights unassigned — auction scheduled through Fall ${r.auctionCloses}. Reload your save if bidding should be open now.`
+          :'Rights unassigned — no auction open yet. Watch the news feed for when the syndicator opens bidding.')
+        :'Not currently in market. Will go to auction when available.';
+      bidSection=`<div style="font-size:13px;color:var(--mut);margin-top:4px">${idleNote}</div>`;
     }
     return `<div style="background:var(--crd);border:1px solid ${holding?'var(--grn)':heldByOther?'rgba(240,88,88,.3)':'var(--bdh)'};border-radius:6px;padding:12px 14px;margin-bottom:8px">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">
@@ -40000,6 +40074,7 @@ function migrateSave(G){
     initSportsRights(G);
     initFranchiseRights(G);
   }
+  wlRepairOrphanExclusiveFranchiseRights(G,null,{silent:false});
   migrateFranchiseFormatMismatch(G);
   (G.stations||[]).forEach(s=>{ if(s)normalizeSpokenWordStaffingModesOnStation(s); });
   coerceMusicVoiceTrackModesGlobally(G);
