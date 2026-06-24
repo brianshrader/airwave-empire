@@ -3976,9 +3976,9 @@ const EVDATA=[
   {y:1993,p:2,t:'Rush Limbaugh Effect',d:'Talk radio audience explodes. News/Talk and Sports Talk benefit.',e:'talkboost'},
   {y:1994,p:1,t:'FCC Expands Further',d:'FCC allows 3 AM + 3 FM per market.',e:'fcc-1994'},
   {y:1994,p:2,t:'Economy Recovers Strong',d:'Clinton boom begins. Ad spending surges.',e:'ad+.12'},
-  {y:1995,p:1,t:'Beautiful Music Extinct',d:'The last Beautiful Music stations have converted. Adult Contemporary is the successor format.',e:'fmt_purge:BEAUTIFUL_MUSIC'},
+  {y:1992,p:1,t:'Beautiful Music Extinct',d:'The last Beautiful Music stations have converted. Adult Contemporary is the successor format.',e:'fmt_purge:BEAUTIFUL_MUSIC'},
   {y:1995,p:2,t:'Telecom Act — Final Negotiations',d:'Congress is finalizing a sweeping telecom bill. Radio ownership limits could change dramatically — industry lobbyists expect consolidation-friendly rules within months.',e:'fcc-prelude-96'},
-  {y:1996,p:1,t:'MOR Extinct',d:'Middle of the road (MOR) is no longer viable as a commercial format. The format is dead.',e:'fmt_purge:MOR'},
+  {y:1990,p:1,t:'MOR Extinct',d:'Middle of the road (MOR) is no longer viable as a commercial format. The format is dead.',e:'fmt_purge:MOR'},
   {y:1996,p:1,t:'Telecom Act — Deregulation',d:'Ownership caps lifted. Up to 8 stations per market. Consolidation begins.',e:'fcc-1996'},
   {y:1997,p:1,t:'FM Saturation Complete',d:'97% of new cars have FM. A music AM in 1997 is a museum piece. Talk and all-news AMs with real newsrooms hold up better than music on the band — if the market can support the cost.',e:'fp+.03'},
   {y:1997,p:2,t:'Consolidation Wave',d:'ClearWave and Veridian Media buying everything. Independents pressured.',e:'consolidate'},
@@ -11947,7 +11947,7 @@ const BP=[
   // idx 7: FM Album Rock emerging 100kw
   {type:'FM',fmt:'ALBUM_ROCK',     pw:'100kw',str:'emerging'},
   // idx 8: FM Beautiful Music moderate 50kw  (Stack FM)
-  {type:'FM',fmt:'ADULT_CONTEMP',  pw:'50kw', str:'moderate'}, // replaced BEAUTIFUL_MUSIC (extinct by 1995)
+  {type:'FM',fmt:'ADULT_CONTEMP',  pw:'50kw', str:'moderate'}, // replaced BEAUTIFUL_MUSIC (extinct by 1992)
   // idx 9: FM Album Rock moderate 25kw  (FM Pioneer — cult following, but unmonetized)
   {type:'FM',fmt:'ALBUM_ROCK',     pw:'25kw',str:'moderate'},
 
@@ -14199,8 +14199,8 @@ function appl(s,coh,G){
 
   // Format era viability — smoothstep sunset curves
   const FORMAT_SUNSET={
-    BEAUTIFUL_MUSIC:{peak:1985,dead:1995},
-    MOR:            {peak:1978,dead:1996},
+    BEAUTIFUL_MUSIC:{peak:1980,dead:1988},
+    MOR:            {peak:1974,dead:1986},
     OLDIES:         {peak:2000,dead:2015},
     FULL_SERVICE:   {peak:1960,dead:1975},
   };
@@ -14209,7 +14209,9 @@ function appl(s,coh,G){
   if(fs2&&year){
     if(year>=fs2.dead){eraMult=0.02;}
     else if(year>fs2.peak){
-      eraMult=Math.max(0.02,1-_smoothstep(fs2.peak,fs2.dead,year)*0.98);
+      // Steep post-peak cliff — heritage easy-listening should not hold top-5 share into the 90s.
+      const t=_smoothstep(fs2.peak,fs2.dead,year);
+      eraMult=Math.max(0.02,1-t*0.98*(1+0.35*t));
     }
   }
 
@@ -21361,12 +21363,12 @@ function applyEv(G,ev){
       // Sunset: non-player stations in dying format start migrating to successors
       const [,dying,successor]=e.split(':');
       const MOR_SUCCESSORS=['NEWS_TALK','ADULT_CONTEMP','ADULT_STANDARDS','NEWS_TALK']; // NT weighted 2x
-      const BEAUTIFUL_SUCCESSORS=['ADULT_CONTEMP','HOT_AC','ADULT_CONTEMP','ADULT_STANDARDS'];
+      const BEAUTIFUL_SUCCESSORS=['ADULT_CONTEMP','HOT_AC','ADULT_STANDARDS','ADULT_CONTEMP'];
       const successorPool=dying==='MOR'?MOR_SUCCESSORS:dying==='BEAUTIFUL_MUSIC'?BEAUTIFUL_SUCCESSORS:[successor];
       let migrateIdx=0;
       G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!stationIsNoncommercialInstitutional(s)&&s.format===dying).forEach(s=>{
-        // 75% migrate on the event — rest stay until rivalReformat catches them
-        if(Math.random()<0.75){
+        // ~92% migrate on the event — rare stragglers until rivalReformat / era cliff catches them
+        if(Math.random()<0.92){
           const old=fmtLabel(s.format);
           const target=successorPool[migrateIdx++%successorPool.length];
           // Only migrate to unlocked formats
@@ -22525,7 +22527,7 @@ function checkPressure(G){
   const alerts=[];
   if(G.score.isSandbox)return alerts;
   // Warn player if on a format past its sunset — revenue will keep falling
-  const fmtSunsets={BEAUTIFUL_MUSIC:1995,MOR:1998};
+  const fmtSunsets={BEAUTIFUL_MUSIC:1988,MOR:1986};
   (MP.mode==='live' ? G.ps.filter(s=>s._mpOwner===MP.playerId&&!G._mpBankrupt?.[MP.playerId]) : (G._soloBankrupt?[]:G.ps)).forEach(s=>{
     const sunset=fmtSunsets[s.format];
     if(sunset&&G.year>=sunset){
@@ -23128,8 +23130,8 @@ function genMarket(scenId){
         if(part.startsWith('fmt_sunset:')){
           const [,deadFmt,pivot]=part.split(':');
           // Distribute dead-format rivals across realistic successors, not just one pivot
-          const MOR_SUCCESSORS=['NEWS_TALK','ADULT_CONTEMP','ADULT_STANDARDS','BEAUTIFUL_MUSIC'];
-          const BEAUTIFUL_SUCCESSORS=['ADULT_CONTEMP','HOT_AC','ADULT_STANDARDS'];
+          const MOR_SUCCESSORS=['NEWS_TALK','ADULT_CONTEMP','ADULT_STANDARDS','NEWS_TALK'];
+          const BEAUTIFUL_SUCCESSORS=['ADULT_CONTEMP','HOT_AC','ADULT_STANDARDS','ADULT_CONTEMP'];
           const successors=deadFmt==='MOR'?MOR_SUCCESSORS:deadFmt==='BEAUTIFUL_MUSIC'?BEAUTIFUL_SUCCESSORS:[pivot];
           stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&s.format===deadFmt).forEach((s,i)=>{
             // Cycle through successors so rivals spread across formats naturally
@@ -29016,7 +29018,7 @@ function researchPushStrategyFree(free,maxFree,line){
   free.push(line);
   return true;
 }
-const RESEARCH_STRATEGY_FORMAT_SUNSET={BEAUTIFUL_MUSIC:{peak:1985,dead:1995},MOR:{peak:1982,dead:1998},FULL_SERVICE:{peak:1960,dead:1975},OLDIES:{peak:2005,dead:2018}};
+const RESEARCH_STRATEGY_FORMAT_SUNSET={BEAUTIFUL_MUSIC:{peak:1980,dead:1988},MOR:{peak:1974,dead:1986},FULL_SERVICE:{peak:1960,dead:1975},OLDIES:{peak:2005,dead:2018}};
 const RESEARCH_STRATEGY_TALK_FMTS=['NEWS_TALK','SPORTS_TALK','PERSONALITY_TALK','ALL_NEWS'];
 /**
  * Format / market strategy hints from live sim state (no new mechanics).
@@ -29290,7 +29292,7 @@ function buildResearchReport(s,G){
   const streamDrag=G.streamDrag||0;
 
   // ── FORMAT SUNSET ──
-  const FORMAT_SUNSET={BEAUTIFUL_MUSIC:{peak:1985,dead:1995},MOR:{peak:1982,dead:1998},FULL_SERVICE:{peak:1960,dead:1975}};
+  const FORMAT_SUNSET={BEAUTIFUL_MUSIC:{peak:1980,dead:1988},MOR:{peak:1974,dead:1986},FULL_SERVICE:{peak:1960,dead:1975}};
   const fs2=FORMAT_SUNSET[s.format];
   let eraViab=1.0;
   if(fs2){
@@ -29943,9 +29945,8 @@ function rivalReformat(G){
   const diffRf=resolveAiDifficultyTier(G);
   const pfDom=ppRf.dominantFmt;
   const pPressRf=ppRf.pressure01||0;
-  // Formats unavailable after their sunset year
   // Formats unavailable after their sunset — can't reformat INTO a dead format
-  const formatSunset={BEAUTIFUL_MUSIC:1995,MOR:1998,FULL_SERVICE:1975};
+  const formatSunset={BEAUTIFUL_MUSIC:1988,MOR:1986,FULL_SERVICE:1975};
   const eligibleFormats=Object.keys(FM).filter(f=>
     !FM[f]?.public && f!=='FULL_SERVICE' &&
     formatUnlockedForYear(f,G) &&
@@ -29956,6 +29957,10 @@ function rivalReformat(G){
   // Force MOR and BEAUTIFUL_MUSIC rivals into permanent struggle post-sunset trigger year
   // so rivalReformat picks them up quickly even if they somehow still have share
   const FORMAT_FORCE_EXIT={MOR:1983,BEAUTIFUL_MUSIC:1985,FULL_SERVICE:1975};
+  const isForcedSunsetFmt=(s)=>{
+    const exitYear=FORMAT_FORCE_EXIT[s?.format];
+    return !!(exitYear&&G.year>=exitYear);
+  };
   commercialRivals.forEach(s=>{
     const exitYear=FORMAT_FORCE_EXIT[s.format];
     if(exitYear&&G.year>=exitYear+2){
@@ -29966,11 +29971,13 @@ function rivalReformat(G){
 
   commercialRivals.forEach(s=>{
     if(!s._lowSharePeriods)s._lowSharePeriods=0;
+    const forcedSunset=isForcedSunsetFmt(s);
+    const deadYear=formatSunset[s.format];
     const isStruggling=s.rat.share<0.03;
     const laneCrowd=crowdedLaneAlsoRanPressure(s,G);
     const aaaGraceActive=s.format==='AAA'&&s._wlAaa1985EventLaunch===true&&(G.year|0)<=1991&&(s._wlAaa1985GraceSkipLeft|0)>0;
 
-    if(!isStruggling&&!laneCrowd.active){
+    if(!isStruggling&&!laneCrowd.active&&!forcedSunset){
       s._lowSharePeriods=Math.max(0,(s._lowSharePeriods||0)-1);
       return;
     }
@@ -29982,6 +29989,9 @@ function rivalReformat(G){
     if(laneCrowd.active){
       const chrCrowded=laneCrowd.laneId==='__lane_chr__';
       if(!isStruggling||chrCrowded)s._lowSharePeriods+=laneCrowd.extraTicks;
+    }
+    if(forcedSunset){
+      s._lowSharePeriods+=deadYear&&G.year>=deadYear?3:2;
     }
     const group=getRivalPortfolioStations(s,G);
     if(group.length>=2){
@@ -30054,6 +30064,13 @@ function rivalReformat(G){
         flipProb*=(1+Math.min(0.055,0.02+0.045*(dRf.relativePressure01||0)));
       }
       flipProb=Math.min(0.88,Math.max(0.035,flipProb));
+      if(forcedSunset){
+        const deadY=deadYear||9999;
+        const span=Math.max(1,deadY-(FORMAT_FORCE_EXIT[s.format]||deadY));
+        const urgency=G.year>=deadY?1:Math.min(1,(G.year-(FORMAT_FORCE_EXIT[s.format]||G.year))/span);
+        flipProb=Math.max(flipProb,0.22+urgency*0.62);
+        if(G.year>=deadY)flipProb=0.97;
+      }
       if(s.format==='GOSPEL'){
         const mktG=MARKETS[G.marketId||ACTIVE_MARKET]||MARKETS.atlanta;
         const gFit=gospelCommercialMarketFit01(G.marketId||'atlanta',mktG,y,G);
