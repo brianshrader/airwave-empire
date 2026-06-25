@@ -29307,11 +29307,27 @@ function simulcastMilestoneCombinedShare01FromStation(s,G){
   }
   return null;
 }
-/** Combined share for messaging when simulcast; else this leg’s share. */
+/** Commercial market rank from closed book (matches sidebar ranker); live AQH fallback only if snap missing. */
+function milestoneCommercialRankForStation(s,G){
+  const hs=stationHeadlineRankShare(s,G);
+  if(hs?.rank)return hs.rank;
+  return combinedMarketRankForStation(s,buildCommercialCombinedRankRows(G))||0;
+}
+/** Combined share for milestone popups — closed book only (display contract); never mid-period live rat.share. */
 function milestoneRankSharePct(s){
-  const comb=typeof G!=='undefined'&&G?simulcastMilestoneCombinedShare01FromStation(s,G):null;
-  if(comb!=null)return shn(comb);
-  return shn(s.rat.share);
+  if(typeof G!=='undefined'&&G){
+    const partner=simulcastPartnerStation(s);
+    if(partner){
+      const {lead,rcv}=simulcastPairLeadReceiver(s,partner);
+      const comb=wlBookDisplaySimulcastShare01(lead,rcv,G);
+      if(comb>0)return shn(comb);
+    }
+    const hs=stationHeadlineRankShare(s,G);
+    if(hs?.share!=null&&hs.share>0)return shn(hs.share);
+    const book01=wlBookDisplayShare01(s,G);
+    if(book01>0)return shn(book01);
+  }
+  return shn(s.rat?.share||0);
 }
 function scrollModalContentToTop(overlayId){
   const ov=document.getElementById(overlayId);
@@ -32338,7 +32354,7 @@ function checkRankMilestones(G){
   // In MP, host runs this for ALL player stations and tags milestones with _mpOwner.
   // Simulcast AM/FM pairs use combined rank & share — one milestone per pair, not per leg.
   // MILESTONE_Q only receives milestones belonging to the local player.
-  const combinedRows=buildCommercialCombinedRankRows(G);
+  // Must run after book-close (advTurn) so rank/share match sidebar ranker and period summary.
   const seenPairs=new Set();
   G.ps.forEach(s=>{
     const partner=simulcastPartnerStation(s);
@@ -32347,7 +32363,7 @@ function checkRankMilestones(G){
       if(seenPairs.has(pk))return;
       seenPairs.add(pk);
     }
-    const cur=combinedMarketRankForStation(s, combinedRows);
+    const cur=milestoneCommercialRankForStation(s,G);
     if(!cur)return;
     const prev=s._prevRank??null;
     const sh=milestoneRankSharePct(s);
@@ -32898,6 +32914,7 @@ function advTurn(mpCoalesceSeq){
       finalizeTalentBenchEndOfTurn(G);
       const tutSolo=isTutorialTurnaroundScen()&&MP.mode!=='live'&&(G.tutorialAct|0)<8;
       const simQuiet=tutSolo||!!G._wlHarnessDeterministic;
+      let _rankSnap={};
       if(!simQuiet)processAtlanta1970DeferredLaunches(G);
       if(!simQuiet)processMegaMarketFragmentationLaunches(G);
       processMarketSpanishLaunches(G);
@@ -32921,14 +32938,6 @@ function advTurn(mpCoalesceSeq){
     wlCommercialMassProbe(G.stations,G,'advTurn:preRecalc');
     recalc(G.stations,G);
     wlCommercialMassProbe(G.stations,G,'advTurn:postRecalc');
-    // Snapshot ranks BEFORE checkRankMilestones updates _prevRank,
-    // so the MP broadcast block can build per-player milestones accurately.
-    const _rankSnap={};
-    if(MP.mode==='live'){
-      const _combinedRows=buildCommercialCombinedRankRows(G);
-      G.ps.forEach(s=>{ _rankSnap[s.id]={prev:s._prevRank??null, cur:combinedMarketRankForStation(s,_combinedRows)}; });
-    }
-    checkRankMilestones(G);
     const acts=simQuiet?[]:(runAI(G)||[]);
     aiRivalPersistTurnSnapshot(G);
     wlEnsureBillableRatingsBeforeRevenue(G);
@@ -33010,6 +33019,11 @@ function advTurn(mpCoalesceSeq){
         period:G.period,
       });
     }
+    // Rank milestones use closed-book rank/share (same as sidebar ranker + period summary).
+    if(MP.mode==='live'){
+      G.ps.forEach(s=>{ _rankSnap[s.id]={prev:s._prevRank??null, cur:milestoneCommercialRankForStation(s,G)}; });
+    }
+    checkRankMilestones(G);
     acts.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     consolidationActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
     indieAcqActs.forEach(a=>G.news.unshift({...a,y:G.year,p:G.period}));
@@ -33181,7 +33195,7 @@ function advTurn(mpCoalesceSeq){
     // MP: if host, broadcast new state to all clients
     if (MP.mode === 'live' && MP.isHost) {
       const _dcYear = decadeEnd.includes(wasYear) && wasPeriod===2 ? wasYear : null;
-      // Build per-player milestones from the pre-checkRankMilestones snapshot
+      // Build per-player milestones from the closed-book rank snapshot (pre-_prevRank update)
       const _allMs = [];
       const _msSeenPairs=new Set();
       G.ps.forEach(s=>{
@@ -44495,8 +44509,7 @@ function rHdr(){
   const _hdrCash = mpMyCashOnHand();
   const _hcashEl=document.getElementById('hcash');
   if(_hcashEl){
-    const _cashN=Math.round(_hdrCash);
-    _hcashEl.textContent=(_cashN<0?'-$':'$')+Math.abs(_cashN).toLocaleString();
+    _hcashEl.textContent=Math.round(_hdrCash).toLocaleString();
   }
   const cd=document.getElementById('cash');
   if(cd){
