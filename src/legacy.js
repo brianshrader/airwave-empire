@@ -16193,7 +16193,9 @@ function repairRatCurFromHeadlineShareIfAqhCollapsed(s,stations,G,opts){
   if(!s.rat.cur||typeof s.rat.cur!=='object')s.rat.cur={};
   const ps=Number(s.rat.share);
   if(!(ps>1e-8))return false;
-  if(wlStationCohortAqhSum(s)>=1)return false;
+  const priorAqh=wlStationCohortAqhSum(s);
+  if(priorAqh>=1)return false;
+  const wasPartial=priorAqh>0;
   const d=Math.max(publicRadioWeightedListeningDenominator(stations,G),1e-12);
   const H=publicNewsHabitEngageMult(s,G);
   const mktAqh=wlMarketActiveAqhMassEstimate(stations,G);
@@ -44509,7 +44511,8 @@ function rHdr(){
   const _hdrCash = mpMyCashOnHand();
   const _hcashEl=document.getElementById('hcash');
   if(_hcashEl){
-    _hcashEl.textContent=Math.round(_hdrCash).toLocaleString();
+    const _cashN=Math.round(_hdrCash);
+    _hcashEl.textContent=(_cashN<0?'-':'')+Math.abs(_cashN).toLocaleString();
   }
   const cd=document.getElementById('cash');
   if(cd){
