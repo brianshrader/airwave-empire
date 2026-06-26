@@ -328,7 +328,7 @@
     <div id="progwrap"><div id="progbar"><div id="progfill" style="width:0%"></div></div><span id="proglbl">1970 → 2020</span></div>
   </div>
   <div class="hdr-actions" id="hdr-actions">
-    <div id="cash">$<span id="hcash">0</span></div>
+    <div id="cash"><span id="hcash">$0</span></div>
     <button type="button" id="abtn">▶ NEXT PERIOD</button>
   </div>
 </header>
@@ -413,6 +413,7 @@
 <div class="ov" id="m-brand-logo"><div class="mo wide" style="max-width:min(96vw,720px)"><div class="mh"><span>LOGO STUDIO</span><button type="button" class="mc" onclick="bmCloseBrandSub('m-brand-logo')">← BACK</button></div><div id="brand-logo-b" class="bm-manage"></div></div></div>
 <div class="ov" id="m-brand-jingle"><div class="mo wide" style="max-width:min(96vw,720px)"><div class="mh"><span>JINGLE STUDIO</span><button type="button" class="mc" onclick="bmCloseBrandSub('m-brand-jingle')">← BACK</button></div><div id="brand-jingle-b" class="bm-manage"></div></div></div>
 <div class="ov" id="m-brand-van"><div class="mo wide" style="max-width:min(96vw,720px)"><div class="mh"><span>REMOTE VAN</span><button type="button" class="mc" onclick="bmCloseBrandSub('m-brand-van')">← BACK</button></div><div id="brand-van-b" class="bm-manage"></div></div></div>
+<div class="ov" id="m-brand-identity"><div class="mo wide" style="max-width:min(96vw,720px)"><div class="mh"><span>CALL LETTERS &amp; BRAND</span><button type="button" class="mc" onclick="bmCloseBrandSub('m-brand-identity')">← BACK</button></div><div id="brand-identity-b" class="bm-manage"></div></div></div>
 <div class="ov" id="m-brand-community"><div class="mo wide" style="max-width:min(96vw,720px)"><div class="mh"><span>COMMUNITY IDENTITY</span><button type="button" class="mc" onclick="bmCloseBrandSub('m-brand-community')">← BACK</button></div><div id="brand-community-b" class="bm-manage"></div></div></div>
 <div class="ov" id="m-lean"><div class="mo"><div class="mh"><span>DEMO TARGETING</span><button class="mc" onclick="cm('m-lean')">CLOSE ×</button></div><div id="leanb"></div></div></div>
 <div class="ov" id="m-hist"><div class="mo"><div class="mh"><span id="hist-title">STATION HISTORY</span><button class="mc" onclick="cm('m-hist')">CLOSE ×</button></div><div id="histb"></div></div></div>
@@ -525,8 +526,40 @@
   <script defer src="/src/marketEcologyCore.iife.js"></script>
   <script defer src="/src/formatLifecycleProfileRuntime.iife.js"></script>
   <script defer src="/src/talentRetention.js"></script>
-  <script defer src="/src/legacy.js?v=20260619-nielsen"></script>
-  <!-- Dev-only: stripped from production HTML by vite.config.js (file is not copied to dist). -->
-  <script defer src="/src/marketSimHarness.js"></script>
+  <!-- Prototype branch: share compression + rivalry + realism stack via ?proto= tokens. -->
+  <script>
+  (function(){
+    var qs=new URLSearchParams(location.search||'');
+    var raw=(qs.get('proto')||'share').trim().toLowerCase();
+    var tokens=raw.split(/[+ ,]+/).map(function(t){return t.trim();}).filter(Boolean);
+    if(!tokens.length)tokens.push('share');
+    var baseline=tokens.indexOf('baseline')>=0;
+    var both=tokens.indexOf('both')>=0;
+    var spanish=tokens.indexOf('spanish')>=0||tokens.indexOf('spanish-composition')>=0;
+    var sac=tokens.indexOf('sac')>=0||spanish;
+    var share=!baseline&&(tokens.indexOf('share')>=0||both||sac||spanish);
+    var rivalry=tokens.indexOf('rivalry')>=0||both;
+    window.__WL_PROTO_STACK__={
+      raw:raw,
+      tokens:spanish?['share','sac','spanish']:tokens.slice(),
+      baseline:baseline,
+      shareCompression:share,
+      sac:sac,
+      spanishComposition:spanish,
+      rivalry:rivalry,
+      devHarness:true
+    };
+    if(spanish&&window.__WL_PROTO_STACK__.tokens.indexOf('share')<0)window.__WL_PROTO_STACK__.tokens.unshift('share');
+    if(spanish&&window.__WL_PROTO_STACK__.tokens.indexOf('sac')<0)window.__WL_PROTO_STACK__.tokens.push('sac');
+    window.__WL_PROTOTYPE_MODE=baseline?'baseline':(rivalry&&!share?'rivalry':(both||rivalry?'both':'share'));
+    window.__WL_SHARE_COMPRESSION_PHASE1=share;
+    window.__WL_SUCCESS_ATTRACTS_COMPETITION=sac;
+    window.__WL_RIVALRY_PROTOTYPE=rivalry;
+    window.__WL_REALISM_SPANISH_COMPOSITION_POC=spanish?true:false;
+  })();
+  </script>
+  <script defer src="/src/shareCompressionPhase1.js"></script>
+  <script defer src="/src/rivalryPrototype.js"></script>
+  <script defer src="/src/protoRealismPlayLoader.js"></script>
 </body>
 </html>

@@ -17,6 +17,7 @@ import { effectivePriceLabelForKey } from './billingPriceLabels.js';
 const publishableKey = import.meta.env?.VITE_CLERK_PUBLISHABLE_KEY?.trim?.() ?? '';
 
 const WL_GUEST_TUTORIAL_AUTOSTART_URL = '/play-guest.html?scenario=tutorial_turnaround&autostart=1';
+const WL_SIGNED_IN_PLAY_URL = '/play.html';
 
 initAnalyticsClient();
 initMetaPixel();
@@ -122,25 +123,82 @@ function trackLandingView() {
   } catch (_e) {}
 }
 
-/** Top-nav gold CTA: play free for guests, Play when signed in (returning players). */
-function updateIndexNavPrimaryCta(clerk) {
-  const el = document.getElementById('wl-nav-primary-cta');
-  if (!el) return;
+/** Home-page play CTAs: guest tutorial for anonymous visitors; scenario picker when signed in. */
+function updateIndexPlayCtas(clerk) {
   const signedIn = !!(clerk?.isSignedIn || clerk?.user);
-  if (signedIn) {
-    el.setAttribute('href', '/play.html');
-    el.textContent = 'Play now';
-    el.setAttribute('data-wl-cta-label', 'play_now');
-  } else {
-    el.setAttribute('href', WL_GUEST_TUTORIAL_AUTOSTART_URL);
-    el.textContent = 'Play free';
-    el.setAttribute('data-wl-cta-label', 'Play Free Now');
-    el.setAttribute('data-wl-cta-id', 'header_play_free');
-    el.setAttribute('data-wl-cta-placement', 'landing_header');
-    el.setAttribute('data-wl-cta-dest', 'guest_tutorial_turnaround');
-    el.setAttribute('data-wl-funnel', 'guest_tutorial');
-    el.setAttribute('data-wl-no-signup', 'true');
+  const playUrl = signedIn ? WL_SIGNED_IN_PLAY_URL : WL_GUEST_TUTORIAL_AUTOSTART_URL;
+
+  document.querySelectorAll('[data-wl-home-play-cta]').forEach((el) => {
+    el.setAttribute('href', playUrl);
+    if (signedIn) {
+      el.removeAttribute('data-wl-no-signup');
+      el.setAttribute('data-wl-cta-dest', 'play_scenario_picker');
+      el.setAttribute('data-wl-funnel', 'signed_in_play');
+      el.setAttribute('data-wl-cta-label', 'play_now');
+    } else {
+      el.setAttribute('data-wl-no-signup', 'true');
+      el.setAttribute('data-wl-cta-dest', 'guest_tutorial_turnaround');
+      el.setAttribute('data-wl-funnel', 'guest_tutorial');
+    }
+  });
+
+  const nav = document.getElementById('wl-nav-primary-cta');
+  if (nav) {
+    nav.textContent = signedIn ? 'Play now' : 'Play free';
+    if (!signedIn) {
+      nav.setAttribute('data-wl-cta-label', 'Play Free Now');
+      nav.setAttribute('data-wl-cta-id', 'header_play_free');
+      nav.setAttribute('data-wl-cta-placement', 'landing_header');
+    }
   }
+
+  const hero = document.getElementById('wl-hero-cta');
+  if (hero) {
+    hero.textContent = signedIn ? 'Play now' : 'Play free now';
+    if (!signedIn) {
+      hero.setAttribute('data-wl-cta-label', 'Play Free Now');
+      hero.setAttribute('data-wl-cta-id', 'hero_play_free');
+      hero.setAttribute('data-wl-cta-placement', 'landing_hero');
+    }
+  }
+
+  const heroVisual = document.getElementById('wl-hero-visual-play');
+  if (heroVisual) {
+    heroVisual.setAttribute(
+      'aria-label',
+      signedIn ? 'Play Airwave Empire — choose a scenario' : 'Play Airwave Empire free — start the tutorial',
+    );
+    if (!signedIn) {
+      heroVisual.setAttribute('data-wl-cta-label', 'Play Free Now');
+      heroVisual.setAttribute('data-wl-cta-id', 'hero_image_play_free');
+      heroVisual.setAttribute('data-wl-cta-placement', 'landing_hero_image');
+    }
+  }
+
+  const pricingPlay = document.getElementById('wl-pricing-guest-play');
+  if (pricingPlay) {
+    pricingPlay.textContent = signedIn ? 'Play now' : 'Play free — no signup required';
+    if (!signedIn) {
+      pricingPlay.setAttribute('data-wl-cta-label', 'play_free_no_signup');
+    }
+  }
+
+  const heroSub = document.getElementById('wl-hero-cta-sub');
+  if (heroSub) {
+    heroSub.textContent = signedIn
+      ? 'Pick a scenario and continue your empire.'
+      : 'No signup. No download. Start playing instantly.';
+  }
+
+  const pricingSignInHint = document.getElementById('wl-pricing-signin-hint');
+  if (pricingSignInHint) {
+    pricingSignInHint.style.display = signedIn ? 'none' : '';
+  }
+}
+
+/** @deprecated use updateIndexPlayCtas */
+function updateIndexNavPrimaryCta(clerk) {
+  updateIndexPlayCtas(clerk);
 }
 
 function wireLandingCtas() {
@@ -377,8 +435,8 @@ async function init() {
       if (uid) identifyClerkUser(String(uid));
     } catch (_e) {}
 
-    updateIndexNavPrimaryCta(clerk);
-    clerk.addListener(() => updateIndexNavPrimaryCta(clerk));
+    updateIndexPlayCtas(clerk);
+    clerk.addListener(() => updateIndexPlayCtas(clerk));
 
     mountEl.querySelectorAll('button[data-price]').forEach((btn) => {
       btn.addEventListener('click', () => {

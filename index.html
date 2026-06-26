@@ -160,7 +160,7 @@
         <a href="#pricing" class="hover:text-white hidden sm:inline">Pricing</a>
         <a href="#faq" class="hover:text-white hidden sm:inline">FAQ</a>
         <a href="/account" class="hover:text-white hidden sm:inline" data-wl-cta data-wl-cta-location="nav" data-wl-cta-label="account">Account</a>
-        <a href="/play-guest.html?scenario=tutorial_turnaround&amp;autostart=1" id="wl-nav-primary-cta" class="gold-bg px-5 py-2.5 rounded-md font-bold uppercase tracking-[0.14em] text-stone-900 hover:opacity-95" data-wl-cta data-wl-cta-location="nav" data-wl-cta-id="header_play_free" data-wl-cta-label="Play Free Now" data-wl-cta-placement="landing_header" data-wl-cta-dest="guest_tutorial_turnaround" data-wl-funnel="guest_tutorial" data-wl-no-signup="true">Play free</a>
+        <a href="/play-guest.html?scenario=tutorial_turnaround&amp;autostart=1" id="wl-nav-primary-cta" class="gold-bg px-5 py-2.5 rounded-md font-bold uppercase tracking-[0.14em] text-stone-900 hover:opacity-95" data-wl-home-play-cta data-wl-cta data-wl-cta-location="nav" data-wl-cta-id="header_play_free" data-wl-cta-label="Play Free Now" data-wl-cta-placement="landing_header" data-wl-cta-dest="guest_tutorial_turnaround" data-wl-funnel="guest_tutorial" data-wl-no-signup="true">Play free</a>
       </nav>
     </div>
   </header>
@@ -183,6 +183,7 @@
               id="wl-hero-cta"
               href="/play-guest.html?scenario=tutorial_turnaround&amp;autostart=1"
               class="inline-flex items-center justify-center text-center gold-bg rounded-xl px-8 py-4 md:px-10 md:py-5 text-lg md:text-xl font-black uppercase tracking-[0.12em] text-stone-900 hover:brightness-110 transition-[filter,transform] active:translate-y-[1px] shadow-md shadow-black/30 min-w-[min(100%,280px)]"
+              data-wl-home-play-cta
               data-wl-cta
               data-wl-cta-location="hero"
               data-wl-cta-id="hero_play_free"
@@ -215,8 +216,10 @@
         </div>
 
         <a
+          id="wl-hero-visual-play"
           href="/play-guest.html?scenario=tutorial_turnaround&amp;autostart=1"
           class="wl-hero-visual-link panel rounded-2xl p-2 lg:p-3"
+          data-wl-home-play-cta
           data-wl-cta
           data-wl-cta-location="hero_image"
           data-wl-cta-id="hero_image_play_free"
@@ -452,15 +455,17 @@
           </li>
         </ul>
         <a
+          id="wl-pricing-guest-play"
           href="/play-guest.html"
           class="mt-6 md:mt-8 inline-flex items-center justify-center gold-bg wl-pricing-play-btn rounded-xl px-10 py-4 md:px-16 md:py-6 text-xl md:text-2xl font-black uppercase tracking-[0.14em] text-stone-900 hover:brightness-110 transition-[filter,transform] active:translate-y-[1px]"
+          data-wl-home-play-cta
           data-wl-cta
           data-wl-cta-location="pricing_hero"
           data-wl-cta-label="play_free_no_signup"
         >
           Play free — no signup required
         </a>
-        <p class="mt-4 max-w-lg mx-auto text-sm text-stone-400">
+        <p id="wl-pricing-signin-hint" class="mt-4 max-w-lg mx-auto text-sm text-stone-400">
           Or <a href="/play-signin.html" class="gold underline underline-offset-2 hover:text-amber-200">sign in</a> for your first full game with an account.
         </p>
         <p class="mt-5 max-w-lg mx-auto text-[13px] md:text-sm text-stone-500 leading-relaxed px-2">
