@@ -4193,6 +4193,25 @@ function promoteSlotChairBtoAIfNeeded(sd,sl){
   sd.talent=b;
   clearPairingChemistryOnly(sd);
 }
+/** Clear lead host; promote co-host on drive dayparts (or drop orphan B elsewhere). */
+function clearSlotLeadTalent(sd,sl){
+  if(!sd)return;
+  sd.talent=null;
+  promoteSlotChairBtoAIfNeeded(sd,sl);
+}
+/** Repair slots where host was cleared but talentB remains (format-flip churn, legacy departures). */
+function scrubOrphanCoHostChairPromotion(G){
+  if(!G?.stations)return;
+  G.stations.forEach(s=>{
+    if(!s?.prog)return;
+    DAYPART_SLOTS.forEach(sl=>{
+      const sd=s.prog[sl];
+      if(!sd||sd.talent||!slotTalentB(sd))return;
+      promoteSlotChairBtoAIfNeeded(sd,sl);
+      if(sd.talent)refreshStationOQ(s,G);
+    });
+  });
+}
 /** Canonical order for pairing chemistry / scout hash so chair assignment does not flip the model. */
 function pairingChemTalentOrder(ta,tb){
   if(!ta||!tb)return[ta,tb];
@@ -4214,6 +4233,7 @@ function migrateLegacyCoHostKeysToTalentB(G){
       }
     });
   });
+  scrubOrphanCoHostChairPromotion(G);
 }
 /** Revert slot-quality estimate from pairing + delete chemistry metadata only (does not remove on-air talent). */
 function clearPairingChemistryOnly(sd){
@@ -30957,7 +30977,7 @@ function resolvePendingRivalPoaches(G){
     const nm=t.name;
     const prevCyr=typeof t.cyr==='number'&&!Number.isNaN(t.cyr)?t.cyr:0;
     const buyoutEst=prevCyr>0.1?Math.round(t.salary*prevCyr*0.60/500)*500:0;
-    sd.talent=null;
+    clearSlotLeadTalent(sd,slot);
     sd.quality=Math.round((sd.quality||30)*0.70);
     let rolls={bench:1,ramp:2};
     if(rival){
@@ -30983,6 +31003,7 @@ function resolvePendingRivalPoaches(G){
 
 function talentEvents(G){
   const acts=[];
+  scrubOrphanCoHostChairPromotion(G);
   resolvePendingRivalPoaches(G);
   G.ps.filter(s=>!s.isPublic).forEach(s=>{
     Object.entries(s.prog).forEach(([slot,sd])=>{
@@ -30998,7 +31019,7 @@ function talentEvents(G){
       }
       if(t._letExpire&&(t.cyr||0)<=0){
         const name=t.name;
-        sd.talent=null;
+        clearSlotLeadTalent(sd,slot);
         G.news.unshift({v:'MEDIUM',t:`${name} departs ${s.callLetters} ${SL[slot]} — contract not renewed.`,y:G.year,p:G.period,iy:true});
       }
     });
@@ -31026,7 +31047,7 @@ function talentEvents(G){
       const careerYears = G.year - careerStartYear;
       if(careerYears >= 35){
         const name=t.name;
-        sd.talent=null;
+        clearSlotLeadTalent(sd,slot);
         G.news.unshift({v:'HIGH',t:`🎙 ${name} retires after ${careerYears} years in radio — a true legend of ${s.callLetters} ${SL[slot]}.`,y:G.year,p:G.period,iy:true});
         return;
       }
@@ -31038,7 +31059,7 @@ function talentEvents(G){
       // Late-career retirement (calendar years in radio) — reachable during normal play, not save-migration only
       if(careerYears>=26&&careerYears<35&&Math.random()<0.02+Math.max(0,(careerYears-26))*0.018){
         const name=t.name;
-        sd.talent=null;
+        clearSlotLeadTalent(sd,slot);
         G.news.unshift({v:'MEDIUM',t:`🎙 ${name} retires from ${s.callLetters} ${SL[slot]} after ${careerYears} years in radio.`,y:G.year,p:G.period,iy:true});
         return;
       }
@@ -31046,7 +31067,7 @@ function talentEvents(G){
       const retireChance=careerYears>22?0.10:careerYears>18?0.05:age>16?0.04:age>12?0.02:0;
       if(t.quality>70&&Math.random()<retireChance){
         const name=t.name;
-        sd.talent=null;
+        clearSlotLeadTalent(sd,slot);
         G.news.unshift({v:'MEDIUM',t:`${name} retires from ${s.callLetters} ${SL[slot]} after a legendary run.`,y:G.year,p:G.period,iy:true});
         return;
       }
@@ -31056,7 +31077,7 @@ function talentEvents(G){
       const burnoutChance=effMor<35?0.15:effMor<50?0.07:0;
       if(Math.random()<burnoutChance){
         const name=t.name;
-        sd.talent=null;
+        clearSlotLeadTalent(sd,slot);
         G.news.unshift({v:'HIGH',t:`⚠ ${name} quits ${s.callLetters} ${SL[slot]} — morale collapse. Find a replacement fast.`,y:G.year,p:G.period,iy:true});
         return;
       }
@@ -38828,7 +38849,12 @@ function doFmt(keepSim){
   // Random talent churn on format flips adds realism, but breaks the Turnaround tutorial flow
   // (e.g., Midday unexpectedly becomes unstaffed before the guided replace/hire step).
   const isTutTurnaround=isTutorialTurnaroundScen()&&G?.tutorialMode&&MP.mode!=='live'&&s.isPlayer;
-  if(!isTutTurnaround&&!adj)Object.entries(s.prog).forEach(([sl,sd])=>{if(sd?.talent&&Math.random()<.25){sd.talent=null;sd.quality*=.60;}});
+  if(!isTutTurnaround&&!adj)Object.entries(s.prog).forEach(([sl,sd])=>{
+    if(sd?.talent&&Math.random()<.25){
+      clearSlotLeadTalent(sd,sl);
+      sd.quality*=0.60;
+    }
+  });
   if(!Array.isArray(s.flog))s.flog=[];
   s.flog.push({from:old,to:nf});
   // Drama: name the community loss if it was meaningful
@@ -39091,7 +39117,12 @@ function benchmarkSoloPlayerReformat(G,s,newFmt){
   Object.values(s.prog).forEach(sd=>{if(sd)sd.quality=Math.round(sd.quality*(1-pen));});
   s.oq=Math.round(Object.entries(SW).reduce((sum,[sl,w])=>sum+effSlotQForOq(s.prog[sl])*w,0));
   COH.forEach(c=>{if(s.mom[c])s.mom[c].cur*=(1-pen);});
-  if(!adj)Object.entries(s.prog).forEach(([sl,sd])=>{if(sd?.talent&&Math.random()<.25){sd.talent=null;sd.quality*=.60;}});
+  if(!adj)Object.entries(s.prog).forEach(([sl,sd])=>{
+    if(sd?.talent&&Math.random()<.25){
+      clearSlotLeadTalent(sd,sl);
+      sd.quality*=0.60;
+    }
+  });
   s.flog=s.flog||[];
   s.flog.push({from:old,to:newFmt});
   calcRev(s,G);
@@ -42013,6 +42044,7 @@ function wlHydrateGameAfterLoad(G,snap){
   scrubStationRatHistBooks(G);
   reconcileBookDisplaySnapToLastCompletedRankerBook(G);
   wlRunGameIntegrityRepair(G,{phase:'load',silent:true});
+  try{scrubOrphanCoHostChairPromotion(G);}catch(_e){}
   wlRestoreResumeEconomicsSnapshot(G,snap);
   return _needsRatingsRefresh&&!_loading;
 }
