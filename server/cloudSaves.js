@@ -7,7 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const { verifyClerkBearer } = require('./clerkVerify');
-const { userHasActiveSubscription, subscriptionCheckEnabled } = require('./subscriptionAccess');
+const { userHasActiveSubscription, userCloudAutosaveEligible, subscriptionCheckEnabled } = require('./subscriptionAccess');
 const { posthog } = require('./posthog');
 const { cloudSavesDir, ensureDir: ensureRuntimeDir } = require('./runtimePaths');
 
@@ -18,6 +18,11 @@ const MAX_SAVES = Math.min(50, parseInt(process.env.CLOUD_SAVE_MAX_SLOTS || '10'
 const MAX_BYTES = Math.min(
   24 * 1024 * 1024,
   parseInt(process.env.CLOUD_SAVE_MAX_BYTES || String(12 * 1024 * 1024), 10) || 12 * 1024 * 1024,
+);
+const AUTOSAVE_FILENAME = 'autosave.json';
+const AUTOSAVE_RETENTION_DAYS = Math.max(
+  7,
+  parseInt(process.env.CLOUD_AUTOSAVE_RETENTION_DAYS || '60', 10) || 60,
 );
 // Ops: if browsers show HTTP 413 + “CORS” errors, nginx (or ALB) is rejecting the body before Node — raise client_max_body_size (e.g. 25m) for /api/.
 
@@ -35,6 +40,51 @@ function manifestPath(uid) {
 
 function savePath(uid, id) {
   return path.join(userRoot(uid), `${id}.json`);
+}
+
+function autosavePath(uid) {
+  return path.join(userRoot(uid), AUTOSAVE_FILENAME);
+}
+
+function metaFromPayloadBody(payload, bytes) {
+  const G = payload.G || {};
+  return {
+    saved: payload.saved || new Date().toISOString(),
+    year: typeof G.year === 'number' ? G.year : null,
+    period: typeof G.period === 'number' ? G.period : null,
+    marketId: G.marketId || null,
+    bytes,
+  };
+}
+
+/** Drop rolling autosave when older than retention window (file mtime). */
+function purgeStaleAutosaveIfNeeded(uid) {
+  const p = autosavePath(uid);
+  if (!fs.existsSync(p)) return false;
+  try {
+    const ageMs = Date.now() - fs.statSync(p).mtimeMs;
+    if (ageMs > AUTOSAVE_RETENTION_DAYS * 86400000) {
+      fs.unlinkSync(p);
+      return true;
+    }
+  } catch (e) {
+    console.warn('[CLOUD] autosave retention check:', e.message || e);
+  }
+  return false;
+}
+
+function readAutosaveMeta(uid) {
+  if (purgeStaleAutosaveIfNeeded(uid)) return null;
+  const p = autosavePath(uid);
+  if (!fs.existsSync(p)) return null;
+  try {
+    const raw = fs.readFileSync(p, 'utf8');
+    const payload = JSON.parse(raw);
+    return metaFromPayloadBody(payload, Buffer.byteLength(raw, 'utf8'));
+  } catch (e) {
+    console.warn('[CLOUD] autosave meta read:', e.message || e);
+    return null;
+  }
 }
 
 function ensureUserDir(uid) {
@@ -108,6 +158,8 @@ function mountCloudSaves(app) {
     if (!uid) return;
     const subRequired = subscriptionCheckEnabled();
     const hasSub = subRequired ? await userHasActiveSubscription(uid) : true;
+    const autosaveEligible = await userCloudAutosaveEligible(uid);
+    const cloudAutosave = autosaveEligible ? readAutosaveMeta(uid) : null;
     res.json({
       authenticated: true,
       subscriptionRequired: subRequired,
@@ -115,6 +167,9 @@ function mountCloudSaves(app) {
       canWrite: hasSub,
       maxSaves: MAX_SAVES,
       maxBytes: MAX_BYTES,
+      cloudAutosaveEligible: autosaveEligible,
+      cloudAutosaveRetentionDays: AUTOSAVE_RETENTION_DAYS,
+      cloudAutosave,
     });
   });
 
@@ -125,6 +180,7 @@ function mountCloudSaves(app) {
       return res.status(402).json({ error: 'subscription_required', message: 'Active subscription required for cloud saves.' });
     }
     const man = readManifest(uid);
+    const autosaveEligible = await userCloudAutosaveEligible(uid);
     res.json({
       saves: man.saves.map(s => ({
         id: s.id,
@@ -135,7 +191,62 @@ function mountCloudSaves(app) {
         marketId: s.marketId,
         bytes: s.bytes,
       })),
+      autosave: autosaveEligible ? readAutosaveMeta(uid) : null,
     });
+  });
+
+  /** Rolling autosave — one file per account, Starter/Pro only; must register before /:id. */
+  router.get('/autosave/meta', async (req, res) => {
+    const uid = await getUserId(req, res);
+    if (!uid) return;
+    if (!(await userCloudAutosaveEligible(uid))) {
+      return res.status(402).json({ error: 'plan_required', message: 'Rolling cloud autosave requires Starter or Pro.' });
+    }
+    const meta = readAutosaveMeta(uid);
+    if (!meta) return res.status(404).json({ error: 'not_found' });
+    res.json(meta);
+  });
+
+  router.get('/autosave', async (req, res) => {
+    const uid = await getUserId(req, res);
+    if (!uid) return;
+    if (!(await userCloudAutosaveEligible(uid))) {
+      return res.status(402).json({ error: 'plan_required', message: 'Rolling cloud autosave requires Starter or Pro.' });
+    }
+    const p = autosavePath(uid);
+    if (purgeStaleAutosaveIfNeeded(uid) || !fs.existsSync(p)) {
+      return res.status(404).json({ error: 'not_found' });
+    }
+    try {
+      const raw = fs.readFileSync(p, 'utf8');
+      res.type('json').send(raw);
+    } catch (e) {
+      res.status(500).json({ error: 'Read failed' });
+    }
+  });
+
+  router.put('/autosave', async (req, res) => {
+    const uid = await getUserId(req, res);
+    if (!uid) return;
+    if (!(await userCloudAutosaveEligible(uid))) {
+      return res.status(402).json({ error: 'plan_required', message: 'Rolling cloud autosave requires Starter or Pro.' });
+    }
+    const err = validatePayload(req.body);
+    if (err) return res.status(400).json({ error: err });
+    const raw = JSON.stringify(req.body);
+    const bytes = Buffer.byteLength(raw, 'utf8');
+    if (bytes > MAX_BYTES) {
+      return res.status(413).json({ error: 'save_too_large', maxBytes: MAX_BYTES });
+    }
+    ensureUserDir(uid);
+    fs.writeFileSync(autosavePath(uid), raw, 'utf8');
+    const meta = metaFromPayloadBody(req.body, bytes);
+    posthog.capture({
+      distinctId: uid,
+      event: 'cloud autosave synced',
+      properties: { year: meta.year, market_id: meta.marketId, bytes: meta.bytes },
+    });
+    res.json({ ok: true, meta });
   });
 
   router.get('/:id', async (req, res) => {

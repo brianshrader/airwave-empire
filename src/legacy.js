@@ -10347,15 +10347,8 @@ async function wlStripeCheckoutForSubscription() {
 }
 
 const WL_CLOUD_AUTOSAVE_MIN_MS=5*60*1000;
-let _wlCloudAutosaveSyncTimer=null;
 let _wlCloudAutosaveLastOk=0;
 let _wlCloudAutosaveInFlight=null;
-
-function wlCloudAutosaveScheduleSync(){
-  if(!wlCloudAutosaveEligible())return;
-  if(_wlCloudAutosaveSyncTimer)clearTimeout(_wlCloudAutosaveSyncTimer);
-  _wlCloudAutosaveSyncTimer=setTimeout(()=>{void wlCloudAutosaveSyncNow({});},4000);
-}
 
 async function wlCloudAutosaveSyncNow(opts){
   opts=opts||{};
@@ -10390,19 +10383,59 @@ async function wlCloudAutosaveSyncNow(opts){
       }
       if(r.status===402||r.status===413){
         if(typeof console!=='undefined'&&console.warn)console.warn('[cloudAutosave] server',r.status);
-        return;
+        return false;
       }
       if(!r.ok){
         if(typeof console!=='undefined'&&console.warn)console.warn('[cloudAutosave] upload failed',r.status);
-        return;
+        return false;
       }
       _wlCloudAutosaveLastOk=Date.now();
       try{wlAnalyticsCapture('cloud_autosave_synced',{year:G.year,period:G.period});}catch(_e){}
+      return true;
     }finally{
       _wlCloudAutosaveInFlight=null;
     }
   })();
   return _wlCloudAutosaveInFlight;
+}
+
+async function wlCloudSaveLoadRollingAutosave(){
+  if(!wlCloudAutosaveEligible()){
+    showToast('Rolling cloud autosave is included with Starter and Pro.','warn',7200);
+    return;
+  }
+  const token=await wlGetClerkToken();
+  if(!token){
+    showToast('Sign in to load your cloud autosave.','warn');
+    return;
+  }
+  let r;
+  try{
+    r=await fetch(wlGameApiUrl('/api/saves/cloud/autosave'),{
+      headers:{Authorization:'Bearer '+token},
+    });
+  }catch(e){
+    showToast('Could not reach the game server.','warn');
+    return;
+  }
+  if(r.status===402){
+    showToast('Rolling cloud autosave requires Starter or Pro.','warn',7200);
+    return;
+  }
+  if(r.status===404){
+    showToast('No cloud autosave yet — finish a period while signed in.','info',5600);
+    return;
+  }
+  if(!r.ok){
+    showToast('Could not load cloud autosave.','warn');
+    return;
+  }
+  const payload=await r.json().catch(()=>null);
+  if(!payload?.G?.year){
+    showToast('Cloud autosave file is invalid.','warn');
+    return;
+  }
+  await wlApplyLoadedGamePayload(payload,{source:'cloud_autosave',label:'Cloud autosave'});
 }
 
 /** On init: if cloud autosave is newer than local (or local missing), fetch and return payload for autoresume. */
@@ -10677,8 +10710,9 @@ async function wlCloudSaveRenderPanel(hostId) {
   const autosaveBlock=st.cloudAutosaveEligible
     ?`<div style="margin-top:12px;padding:10px 12px;background:rgba(82,227,110,.06);border:1px solid rgba(82,227,110,.22);border-radius:6px">
         <div style="font-size:13px;color:var(--grn);letter-spacing:0.06em;margin-bottom:4px">ROLLING CLOUD AUTOSAVE</div>
-        <div style="font-size:13px;color:var(--mut);line-height:1.45">Starter &amp; Pro: your game syncs to the cloud automatically while you play. Does <strong>not</strong> use a manual slot. Kept ${st.cloudAutosaveRetentionDays||60} days.</div>
-        ${autosaveMeta?`<div style="font-size:13px;color:var(--off);margin-top:6px">Last cloud backup: ${wlCloudEsc(String(autosaveMeta.saved||'').slice(0,19).replace('T',' '))} · ${autosaveMeta.year!=null?autosaveMeta.year:'?'} ${autosaveMeta.period===1?'Spring':autosaveMeta.period===2?'Fall':''}</div>`:'<div style="font-size:13px;color:var(--mut);margin-top:6px">No cloud backup yet — play a period or two while signed in.</div>'}
+        <div style="font-size:13px;color:var(--mut);line-height:1.45">Starter &amp; Pro: backs up to the cloud when you advance to the <strong>next period</strong>. Does <strong>not</strong> use a manual slot. Kept ${st.cloudAutosaveRetentionDays||60} days.</div>
+        ${autosaveMeta?`<div style="font-size:13px;color:var(--off);margin-top:6px">Last cloud backup: ${wlCloudEsc(String(autosaveMeta.saved||'').slice(0,19).replace('T',' '))} · ${autosaveMeta.year!=null?autosaveMeta.year:'?'} ${autosaveMeta.period===1?'Spring':autosaveMeta.period===2?'Fall':''}</div>
+        <button type="button" class="abt g" style="width:100%;margin-top:8px" onclick="wlCloudSaveLoadRollingAutosave()">▶ Load cloud autosave</button>`:'<div style="font-size:13px;color:var(--mut);margin-top:6px">No cloud backup yet — advance a period while signed in.</div>'}
       </div>`
     :'';
   el.innerHTML = `<div class="bbox" style="margin-top:12px"><strong>CLOUD SAVES</strong> <span style="color:var(--mut);font-size:12px">(${saves.length}/${maxS})</span>
@@ -33280,7 +33314,11 @@ function advTurn(mpCoalesceSeq){
     }
     try{ wlGmMaybeAutoCampaignLifeline(); }catch(_e){}
     autoSave();
-    try{void wlCloudAutosaveSyncNow({force:true,bypassThrottle:true});}catch(_e){}
+    void wlCloudAutosaveSyncNow({force:true,bypassThrottle:true}).then(ok=>{
+      if(ok===false&&typeof showToast==='function'&&wlCloudAutosaveEligible()){
+        showToast('Cloud backup failed — your local autosave is still intact.','warn',4800);
+      }
+    });
     renderAll();
     try{
       if(MP.mode!=='live'&&typeof wlCampaignAfterRenderAll==='function')wlCampaignAfterRenderAll(G);
@@ -39665,7 +39703,6 @@ function autoSave(){
       if(typeof showToast==='function')showToast('Autosave: storage full — use Save/Load to export, or free browser storage.','warn');
     }
   }
-  try{wlCloudAutosaveScheduleSync();}catch(_e){}
 }
 
 let _wlAutosaveFlushHooked=false;
@@ -40854,7 +40891,7 @@ function openSaveLoad(){
       </div>`
     :'<div class="ibox" style="color:var(--mut)">No autosave found in this browser.</div>';
   const cloudAutosaveNote=wlCloudAutosaveEligible()
-    ?`<div class="ibox" style="margin-top:10px;line-height:1.45;font-size:13px">☁ <strong>Cloud autosave</strong> (Starter/Pro): your game also backs up to your account while you play — free rolling slot, kept 60 days. Opens on this device when the cloud copy is newer.</div>`
+    ?`<div class="ibox" style="margin-top:10px;line-height:1.45;font-size:13px">☁ <strong>Cloud autosave</strong> (Starter/Pro): backs up when you click <strong>Next Period</strong> — one rolling slot on your account, kept 60 days. Resume picks the newer of cloud vs this browser.</div>`
     :'';
 
   const hasActiveGame=typeof G!=='undefined'&&G&&G.sc&&G.stations;
@@ -42062,7 +42099,10 @@ async function loadLocalSaveAsync(){
   }
 }
 
-if(typeof globalThis!=='undefined'){globalThis.loadLocalSave=loadLocalSave;}
+if(typeof globalThis!=='undefined'){
+  globalThis.loadLocalSave=loadLocalSave;
+  globalThis.wlCloudSaveLoadRollingAutosave=wlCloudSaveLoadRollingAutosave;
+}
 
 // ── LOAN UI (capacity-based line of credit; see bank lending helpers near scoring) ──
 

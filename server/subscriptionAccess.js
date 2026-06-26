@@ -26,7 +26,21 @@ async function userHasActiveSubscription(clerkUserId) {
   }
 }
 
+/** Rolling cloud autosave — paid Starter/Pro only (not signup trial). */
+async function userCloudAutosaveEligible(clerkUserId) {
+  if (!subscriptionCheckEnabled()) return true;
+  try {
+    const r = await resolveStripePlanForUser(clerkUserId);
+    const p = r.planSlug;
+    return p === CLERK_PLAN.STARTER || p === CLERK_PLAN.PRO;
+  } catch (e) {
+    console.warn('[SUB] cloud autosave plan resolve failed:', e.message || e);
+    return false;
+  }
+}
+
 module.exports = {
   subscriptionCheckEnabled,
   userHasActiveSubscription,
+  userCloudAutosaveEligible,
 };
