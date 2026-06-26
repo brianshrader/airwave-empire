@@ -8286,7 +8286,7 @@ function releaseIncompatibleFranchiseRightsForAi(s,G){
 /**
  * Exclusive franchise with no holder and contractEnd stuck in the past (or Spring auction never opened)
  * never re-enters the renewal calendar — e.g. intro-year Countdown at contractEnd 1970 in a 2020 save.
- * Also re-opens dormant unowned rights (holderId null, auction closed) so "Not currently in market" cannot persist.
+ * Future-dated unowned rights are intentionally left closed until their normal renewal window.
  * Re-open bidding so eligible stations (and the player) can compete.
  * @returns {number} franchises repaired
  */
@@ -8328,10 +8328,10 @@ function wlRepairOrphanExclusiveFranchiseRights(G,acts,opts){
     }
     if(r.auctionOpen)return;
     const end=Number(r.contractEnd);
+    const invalidEnd=!Number.isFinite(end);
     const staleEnd=Number.isFinite(end)&&end<G.year;
     const missedSpring=Number.isFinite(end)&&end===G.year&&G.period===2;
-    const dormantUnowned=!r.holderId;
-    if(!staleEnd&&!missedSpring&&!dormantUnowned)return;
+    if(!invalidEnd&&!staleEnd&&!missedSpring)return;
     wlReopenUnownedExclusiveFranchiseAuction(G,f,r,acts,opts);
     n++;
   });
