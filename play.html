@@ -526,40 +526,6 @@
   <script defer src="/src/marketEcologyCore.iife.js"></script>
   <script defer src="/src/formatLifecycleProfileRuntime.iife.js"></script>
   <script defer src="/src/talentRetention.js"></script>
-  <!-- Prototype branch: share compression + rivalry + realism stack via ?proto= tokens. -->
-  <script>
-  (function(){
-    var qs=new URLSearchParams(location.search||'');
-    var raw=(qs.get('proto')||'share').trim().toLowerCase();
-    var tokens=raw.split(/[+ ,]+/).map(function(t){return t.trim();}).filter(Boolean);
-    if(!tokens.length)tokens.push('share');
-    var baseline=tokens.indexOf('baseline')>=0;
-    var both=tokens.indexOf('both')>=0;
-    var spanish=tokens.indexOf('spanish')>=0||tokens.indexOf('spanish-composition')>=0;
-    var sac=tokens.indexOf('sac')>=0||spanish;
-    var share=!baseline&&(tokens.indexOf('share')>=0||both||sac||spanish);
-    var rivalry=tokens.indexOf('rivalry')>=0||both;
-    window.__WL_PROTO_STACK__={
-      raw:raw,
-      tokens:spanish?['share','sac','spanish']:tokens.slice(),
-      baseline:baseline,
-      shareCompression:share,
-      sac:sac,
-      spanishComposition:spanish,
-      rivalry:rivalry,
-      devHarness:true
-    };
-    if(spanish&&window.__WL_PROTO_STACK__.tokens.indexOf('share')<0)window.__WL_PROTO_STACK__.tokens.unshift('share');
-    if(spanish&&window.__WL_PROTO_STACK__.tokens.indexOf('sac')<0)window.__WL_PROTO_STACK__.tokens.push('sac');
-    window.__WL_PROTOTYPE_MODE=baseline?'baseline':(rivalry&&!share?'rivalry':(both||rivalry?'both':'share'));
-    window.__WL_SHARE_COMPRESSION_PHASE1=share;
-    window.__WL_SUCCESS_ATTRACTS_COMPETITION=sac;
-    window.__WL_RIVALRY_PROTOTYPE=rivalry;
-    window.__WL_REALISM_SPANISH_COMPOSITION_POC=spanish?true:false;
-  })();
-  </script>
-  <script defer src="/src/shareCompressionPhase1.js"></script>
-  <script defer src="/src/rivalryPrototype.js"></script>
-  <script defer src="/src/protoRealismPlayLoader.js"></script>
+  <script defer src="/src/legacy.js?v=20260627-autosave-resume"></script>
 </body>
 </html>
