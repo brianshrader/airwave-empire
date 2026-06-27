@@ -27859,7 +27859,7 @@ async function initCoreAsync(){
     const cloudResume=await wlCloudAutosaveTryResumeOnInit(local);
     if(cloudResume?.payload){
       local=cloudResume.payload;
-      console.log('[Airwave Empire] cloud autosave newer than local — autoresume');
+      console.log('[Airwave Empire] cloud autosave newer than local — synced to browser for RESUME');
     }
     const g=local?.G;
     console.log('[Airwave Empire] localSave:', local ? `found (year=${g?.year}, sc=${g?.sc?.id}, cash=${g?.cash}, sc.cash=${g?.sc?.cash})` : 'none');
@@ -27879,11 +27879,8 @@ async function initCoreAsync(){
       _selectedMarket=mid;
       ACTIVE_MARKET=mid;
       syncMarketPopToMarket(mid);
-      if(cloudResume?.cloudWasNewer){
-        await wlApplyLoadedGamePayload(local,{source:'cloud_autosave',label:'Cloud autosave'});
-        showToast('Resumed from cloud backup (newer than this browser).','info',5600);
-        return;
-      }
+      // Cloud autosave may have refreshed localStorage above; always show scenario picker
+      // (RESUME uses wlResumeBestAutosave to pick newer local vs cloud — no silent autoload).
       openScenSelect(local);
       return;
     }
@@ -27892,6 +27889,8 @@ async function initCoreAsync(){
     }
     openScenSelect(null);
   }catch(err){
+    console.error('[Airwave Empire] initCoreAsync failed:',err);
+    try{openScenSelect(typeof getLocalSave==='function'?getLocalSave():null);}catch(_e2){}
     showError('Failed during init: '+err.message, err.stack||'');
   }
 }
