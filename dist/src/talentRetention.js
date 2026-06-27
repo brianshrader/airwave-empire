@@ -449,6 +449,7 @@
       setSlotTalentB(sd, null);
     } else {
       sd.talent = null;
+      if (typeof promoteSlotChairBtoAIfNeeded === 'function') promoteSlotChairBtoAIfNeeded(sd, slot);
     }
     refreshStationOQ(s, G);
     recordDeparture(s, kind);

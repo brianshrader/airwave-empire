@@ -31,7 +31,9 @@
     RHYTHMIC: 'rhythmic',
     COUNTRY: 'country',
     GOSPEL: 'gospel',
+    CHRISTIAN: 'ac',
     NEWS_TALK: 'news',
+    CONSERVATIVE_TALK: 'news',
     PERSONALITY_TALK: 'news',
     ALL_NEWS: 'news',
     PUBLIC_NEWS: 'news',
@@ -51,9 +53,14 @@
     PUBLIC_JAZZ: 'rock',
     OLDIES: 'oldies',
     CLASSIC_HITS: 'oldies',
+    ADULT_HITS: 'hit',
     SOUL_RNB: 'urban',
     URBAN_CONTEMP: 'urban',
     SPANISH: 'urban',
+    REGIONAL_MEXICAN: 'urban',
+    SPANISH_CONTEMPORARY: 'urban',
+    SPANISH_TROPICAL: 'urban',
+    SPANISH_ADULT_HITS: 'urban',
   };
 
   /** Human labels for the ~6 primary “feel” groups (sports/urban are extra variants). */
