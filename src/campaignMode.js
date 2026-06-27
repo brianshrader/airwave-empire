@@ -1846,6 +1846,7 @@
       typeof crypto !== 'undefined' && crypto.randomUUID
         ? crypto.randomUUID()
         : Date.now() + '-' + Math.random().toString(36).slice(2, 11);
+    if (typeof global.repairSyndicationRightsRecords === 'function') global.repairSyndicationRightsRecords(global.G);
     if (typeof global.initSportsRights === 'function') global.initSportsRights(global.G);
     if (typeof global.initFranchiseRights === 'function') global.initFranchiseRights(global.G);
     if (typeof global.normalizeSimulcastLinksInPlace === 'function')

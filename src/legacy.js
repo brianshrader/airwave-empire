@@ -2360,10 +2360,13 @@ function releaseFranchiseForCause(franchiseId,stationId,G,opts){
 /** Franchises whose syndication rights are recorded on this license (not cluster halo). */
 function franchiseRightsOnStation(s,G){
   if(!G?.franchiseRights||!s)return[];
-  return NATIONAL_FRANCHISES.filter(f=>{
-    const r=G.franchiseRights[f.id];
-    return r?.holderId===s.id;
-  }).map(f=>({franchise:f,rights:G.franchiseRights[f.id]}));
+  const out=[];
+  NATIONAL_FRANCHISES.forEach(f=>{
+    const rights=G.franchiseRights[f.id];
+    if(!rights||typeof rights!=='object'||rights.holderId!==s.id)return;
+    out.push({franchise:f,rights});
+  });
+  return out;
 }
 function franchiseYearsRemaining(r,G){
   const end=r?.contractEnd;
@@ -2389,6 +2392,7 @@ function franchiseSlotEffectiveQuality(franchise,s,G){
 function syncFranchiseFormatMismatchFlags(s,G){
   if(!s||!G?.franchiseRights)return;
   franchiseRightsOnStation(s,G).forEach(({franchise,rights})=>{
+    if(!rights)return;
     if(franchiseHolderFormatMismatch(franchise,s))rights.formatMismatch=true;
     else delete rights.formatMismatch;
   });
@@ -2461,9 +2465,9 @@ function terminateFranchiseContractEarly(franchiseId,stationId,G,opts){
 function queueNextFranchiseFormatMismatchDecision(s,G){
   if(!s||!mpIsMe(s))return false;
   const next=franchiseRightsOnStation(s,G).find(({franchise,rights})=>
-    rights.formatMismatch||franchiseHolderFormatMismatch(franchise,s)
+    rights&&(rights.formatMismatch||franchiseHolderFormatMismatch(franchise,s))
   );
-  if(!next)return false;
+  if(!next?.rights)return false;
   next.rights.formatMismatch=true;
   G.pendingDecisionEvent={
     isFranchiseFormatMismatch:true,
@@ -2480,7 +2484,7 @@ function queueFranchiseFormatMismatchAfterFlip(s,oldFmt,newFmt,G){
     franchiseFormatFit(franchise,newFmt,s)<=0
   );
   if(!mismatched.length)return;
-  mismatched.forEach(({franchise,rights})=>{rights.formatMismatch=true;});
+  mismatched.forEach(({franchise,rights})=>{if(rights)rights.formatMismatch=true;});
   refreshStationOQ(s,G);
   if(G.pendingDecisionEvent)return;
   const names=mismatched.map(x=>`"${x.franchise.name}"`).join(', ');
@@ -2501,7 +2505,7 @@ function migrateFranchiseFormatMismatch(G){
   if(G.pendingDecisionEvent)return;
   for(const s of (G.ps||G.stations||[])){
     if(!s?.isPlayer||!mpIsMe(s))continue;
-    if(franchiseRightsOnStation(s,G).some(({rights})=>rights.formatMismatch)){
+    if(franchiseRightsOnStation(s,G).some(({rights})=>rights&&rights.formatMismatch)){
       queueNextFranchiseFormatMismatchDecision(s,G);
       break;
     }
@@ -7913,22 +7917,32 @@ function initSportsRights(G){
         relationship:{},bids:{},auctionOpen:false,auctionCloses:null,
       };
       if(holder)G.sportsRights[team.id].relationship[holder.id]=30+Math.round(Math.random()*20);
+    }else if(typeof G.sportsRights[team.id]!=='object'){
+      delete G.sportsRights[team.id];
     }
   });
 }
 /** Normalize partial/corrupt sports + franchise rights rows before init/repair (load/resume crash guard). */
 function repairSyndicationRightsRecords(G){
   if(!G)return;
-  if(!G.sportsRights||typeof G.sportsRights!=='object')G.sportsRights={};
-  if(!G.franchiseRights||typeof G.franchiseRights!=='object')G.franchiseRights={};
+  if(!G.sportsRights||typeof G.sportsRights!=='object'||Array.isArray(G.sportsRights))G.sportsRights={};
+  if(!G.franchiseRights||typeof G.franchiseRights!=='object'||Array.isArray(G.franchiseRights))G.franchiseRights={};
   const repairOne=(r)=>{
-    if(!r||typeof r!=='object')return null;
+    if(!r||typeof r!=='object'||Array.isArray(r))return null;
+    if(r.holderId){
+      const h=G.stations?.find(st=>st&&st.id===r.holderId);
+      if(!h){
+        r.holderId=null;
+        r.holderName='—';
+      }
+    }
     if(r.holderName==null||typeof r.holderName!=='string'){
-      const h=r.holderId?G.stations?.find(st=>st.id===r.holderId):null;
+      const h=r.holderId?G.stations?.find(st=>st&&st.id===r.holderId):null;
       r.holderName=h?.callLetters||'—';
     }
-    if(!r.relationship||typeof r.relationship!=='object')r.relationship={};
-    if(!r.bids||typeof r.bids!=='object')r.bids={};
+    if(!r.relationship||typeof r.relationship!=='object'||Array.isArray(r.relationship))r.relationship={};
+    if(!r.bids||typeof r.bids!=='object'||Array.isArray(r.bids))r.bids={};
+    if(r.auctionOpen==null)r.auctionOpen=false;
     return r;
   };
   Object.keys(G.sportsRights).forEach(k=>{
@@ -7941,6 +7955,21 @@ function repairSyndicationRightsRecords(G){
     if(!fixed)delete G.franchiseRights[k];
     else G.franchiseRights[k]=fixed;
   });
+}
+/** Repair + init sports/franchise rights — safe to call after load, migrateSave, or campaign world swap. */
+function wlRehydrateSyndicationRightsAfterLoad(G,opts){
+  if(!G)return;
+  repairSyndicationRightsRecords(G);
+  if((G.year||1970)>=1970){
+    initSportsRights(G);
+    initFranchiseRights(G);
+  }
+  wlRepairOrphanExclusiveFranchiseRights(G,null,{silent:!!opts?.silentOrphanRepair});
+  try{ migrateFranchiseFormatMismatch(G); }
+  catch(_e){
+    repairSyndicationRightsRecords(G);
+    migrateFranchiseFormatMismatch(G);
+  }
 }
 function getSportsBonus(s,G){
   if(!G.sportsRights||!G.teamRecords)return 0;
@@ -8045,7 +8074,7 @@ function runSportsEvents(G){
       rights.bids={};
       delete rights.declinedBid;
       acts.push({v:'HIGH',
-        t:`📋 ${sportTeamEmoji(team.sport)} ${team.name} broadcast rights up for renewal — bidding opens. Current holder: ${rights.holderName||'—'}. Contract expires this period.`,
+        t:`📋 ${sportTeamEmoji(team.sport)} ${team.name} broadcast rights up for renewal — bidding opens. Current holder: ${rights?.holderName||'—'}. Contract expires this period.`,
         y:G.year,p:G.period});
     }
     if(rights&&rights.auctionOpen&&shouldResolveRightsAuction(G,rights.auctionCloses)){
@@ -8077,7 +8106,7 @@ function resolveRightsAuction(team,rights,G,acts){
       const h=G.stations.find(st=>st.id===rights.holderId);
       if(h&&h.isPlayer&&h._mpOwner!==undefined)holdMp=[h._mpOwner];
     }
-    acts.push({v:'LOW',t:`📋 ${sportTeamEmoji(team.sport)} ${team.name} rights renewed by ${rights.holderName||'—'} — no competing bids.`,y:G.year,p:G.period,
+    acts.push({v:'LOW',t:`📋 ${sportTeamEmoji(team.sport)} ${team.name} rights renewed by ${rights?.holderName||'—'} — no competing bids.`,y:G.year,p:G.period,
       mpForPids:holdMp});
     return;
   }
@@ -8095,7 +8124,7 @@ function resolveRightsAuction(team,rights,G,acts){
     rights.contractEnd=G.year+team.contractYrs;
     rights.auctionOpen=false;
     rights.bids={};
-    acts.push({v:'LOW',t:`📋 ${sportTeamEmoji(team.sport)} ${team.name} broadcast rights: auction could not pick a winner (stale bids) — ${rights.holderName||'incumbent'} renewed at prior terms.`,y:G.year,p:G.period});
+    acts.push({v:'LOW',t:`📋 ${sportTeamEmoji(team.sport)} ${team.name} broadcast rights: auction could not pick a winner (stale bids) — ${rights?.holderName||'incumbent'} renewed at prior terms.`,y:G.year,p:G.period});
     return;
   }
   const prev=rights.holderId?G.stations.find(st=>st.id===rights.holderId):null;
@@ -8240,7 +8269,10 @@ function initFranchiseRights(G){
   if(!G.franchiseRights)G.franchiseRights={};
   NATIONAL_FRANCHISES.forEach(f=>{
     if(G.year<f.introduced)return;
-    if(G.franchiseRights[f.id])return;
+    if(G.franchiseRights[f.id]){
+      if(typeof G.franchiseRights[f.id]==='object'&&!Array.isArray(G.franchiseRights[f.id]))return;
+      delete G.franchiseRights[f.id];
+    }
     let holderId=null,holderName='—';
     const newlyIntroduced=G.year===f.introduced;
     if(f.exclusive&&!newlyIntroduced){
@@ -8330,8 +8362,8 @@ function syndicationFeesForStation(s,G){
 function releaseIncompatibleFranchiseRightsForAi(s,G){
   if(!s||!G?.franchiseRights||s.isPlayer)return;
   franchiseRightsOnStation(s,G).forEach(({franchise,rights})=>{
-    if(!franchiseHolderFormatMismatch(franchise,s))return;
-    const lostCall=rights.holderName||s.callLetters;
+    if(!rights||!franchiseHolderFormatMismatch(franchise,s))return;
+    const lostCall=rights?.holderName||s.callLetters;
     rights.holderId=null;
     rights.holderName='—';
     delete rights.formatMismatch;
@@ -8426,6 +8458,7 @@ function runFranchiseEvents(G){
   return acts;
 }
 function resolveFranchiseAuction(franchise,rights,G,acts){
+  if(!rights||typeof rights!=='object')return;
   const _aiBidProb=franchise.exclusive?0.65:0.40;
   G.stations.filter(s=>!s.isPlayer&&!stationIsNoncommercialInstitutional(s)&&franchise.formats.includes(s.format)).forEach(s=>{
     const fit=franchiseFormatFit(franchise,s.format,s);
@@ -8474,7 +8507,7 @@ function resolveFranchiseAuction(franchise,rights,G,acts){
         const hold=G.stations.find(st=>st.id===rights.holderId);
         const fmtOk=hold&&franchiseFormatFit(franchise,hold.format,hold)>0;
         if(!fmtOk){
-          const lostCall=rights.holderName||hold?.callLetters||'holder';
+          const lostCall=rights?.holderName||hold?.callLetters||'holder';
           rights.holderId=null;
           rights.holderName='—';
           delete rights.formatMismatch;
@@ -8493,7 +8526,7 @@ function resolveFranchiseAuction(franchise,rights,G,acts){
         delete rights.formatMismatch;
         acts.push({
           v:'LOW',
-          t:`📻 "${franchise.name}" stays with ${rights.holderName||'holder'} — no other station in this market qualifies; renewed through ${rights.contractEnd}.`,
+          t:`📻 "${franchise.name}" stays with ${rights?.holderName||'holder'} — no other station in this market qualifies; renewed through ${rights.contractEnd}.`,
           y:G.year,p:G.period,iy:!!(hold&&hold.isPlayer),
         });
         return;
@@ -8506,7 +8539,7 @@ function resolveFranchiseAuction(franchise,rights,G,acts){
       return;
     }else if(rights.holderId){
       rights.contractEnd=G.year+franchise.contractYrs;
-      acts.push({v:'LOW',t:`📻 "${franchise.name}" retained by ${rights.holderName} — no competing bids.`,y:G.year,p:G.period});
+      acts.push({v:'LOW',t:`📻 "${franchise.name}" retained by ${rights?.holderName||'—'} — no competing bids.`,y:G.year,p:G.period});
     }
     rights.auctionOpen=false;
     return;
@@ -8526,7 +8559,7 @@ function resolveFranchiseAuction(franchise,rights,G,acts){
     if(rights.holderId){
       rights.contractEnd=G.year+franchise.contractYrs;
       rights.auctionOpen=false;
-      acts.push({v:'LOW',t:`📻 "${franchise.name}" — no valid winning bid; ${rights.holderName||'holder'} retained.`,y:G.year,p:G.period});
+      acts.push({v:'LOW',t:`📻 "${franchise.name}" — no valid winning bid; ${rights?.holderName||'holder'} retained.`,y:G.year,p:G.period});
     }else if(franchise.exclusive){
       wlReopenUnownedExclusiveFranchiseAuction(G,franchise,rights,acts,{
         silent:true,
@@ -10554,6 +10587,7 @@ async function wlResumeBestAutosave(opts){
     }
   }catch(e){
     if(typeof console!=='undefined'&&console.error)console.error('[wlResumeBestAutosave]',e);
+    if(typeof console!=='undefined'&&e?.stack)console.error(e.stack);
     showToast('Could not resume autosave'+(e?.message?': '+e.message:'')+'. Try Load Game from cloud.','warn',9500);
   }
 }
@@ -15561,6 +15595,7 @@ function wlRunGameIntegrityRepair(G,opts){
 /** Never write flatlined ratings / $0-revenue desync into autosave or cloud export. */
 function wlSanitizeGameStateBeforePersist(G){
   if(!G?.stations?.length)return 0;
+  repairSyndicationRightsRecords(G);
   return wlRunGameIntegrityRepair(G,{phase:'persist',silent:true});
 }
 /** Once per in-game turn: if probe fails, repair under the hood before the player sees stale UI. */
@@ -29947,7 +29982,7 @@ function wlCollectRatingsDigestSportsContext(G){
     const rights=G.sportsRights[team.id];
     if(!rights||!rights.holderId)continue;
     const holder=G.stations.find(st=>st.id===rights.holderId);
-    const call=holder?callDisplay(holder):String(rights.holderName||'').trim();
+    const call=holder?callDisplay(holder):String(rights?.holderName||'').trim();
     if(!call)continue;
     const rec=G.teamRecords[team.id];
     const tier=rec?sportsTierFromRecord(rec.record):'competitive';
@@ -37325,7 +37360,7 @@ function openSports(sid){
     }else{
       const expiresIn=rights.contractEnd-G.year;
       bidSection=`<div style="font-size:14px;color:var(--mut);margin-top:6px">
-        Contract held by ${rights.holderName||'—'} — ${expiresIn<=0?'<span style="color:var(--red)">expires this year</span>':expiresIn===1?'<span style="color:var(--amb)">expires next year</span>':'renews in '+expiresIn+' years'}.
+        Contract held by ${rights?.holderName||'—'} — ${expiresIn<=0?'<span style="color:var(--red)">expires this year</span>':expiresIn===1?'<span style="color:var(--amb)">expires next year</span>':'renews in '+expiresIn+' years'}.
         ${estRevLift>0?`Est. revenue lift if acquired: <span style="color:var(--grn)">+${f$(estRevLift)}/yr</span>`:''}
       </div>`;
     }
@@ -39115,7 +39150,7 @@ function doAcq(){
   syncFranchiseFormatMismatchFlags(s,G);
   const acqFranchises=franchiseRightsOnStation(s,G);
   if(acqFranchises.length){
-    const names=acqFranchises.map(x=>`"${x.franchise.name}" (${f$(x.rights.fee)}/yr)`).join(', ');
+    const names=acqFranchises.map(x=>`"${x.franchise.name}" (${f$(x.rights?.fee||0)}/yr)`).join(', ');
     G.news.unshift({
       v:'MEDIUM',
       t:`📻 ${s.callLetters} holds national franchise rights: ${names}. Open National Franchises to review.`,
@@ -41511,6 +41546,7 @@ function maybeRefreshOpenRankerModal(){
 }
 
 function migrateSave(G){
+  repairSyndicationRightsRecords(G);
   G.news=G.news||[];
   migrateHitsLineage(G);
   migrateGospelTaxonomy(G);
@@ -41588,13 +41624,7 @@ function migrateSave(G){
   G.sportsRights=G.sportsRights||{};
   G.franchiseRights=G.franchiseRights||{};
   G.teamRecords=G.teamRecords||{};
-  repairSyndicationRightsRecords(G);
-  if((G.year||1970)>=1970){
-    initSportsRights(G);
-    initFranchiseRights(G);
-  }
-  wlRepairOrphanExclusiveFranchiseRights(G,null,{silent:false});
-  migrateFranchiseFormatMismatch(G);
+  wlRehydrateSyndicationRightsAfterLoad(G);
   (G.stations||[]).forEach(s=>{ if(s)normalizeSpokenWordStaffingModesOnStation(s); });
   coerceMusicVoiceTrackModesGlobally(G);
   refreshAllStationOQ(G);
@@ -42147,6 +42177,7 @@ async function wlApplyLoadedGamePayload(payload,opts){
   const source=opts?.source||'load';
   const label=opts?.label||payload?.label||'Save';
   if(!payload?.G||payload.G.year==null)throw new Error('Invalid save file');
+  repairSyndicationRightsRecords(payload.G);
   await wlRefreshTrialLockFromServer();
   if(!wlTrialSaveResumeAllowed({ G: payload.G, campaign: payload.campaign })){
     showToast('This save does not match your free trial. Load your trial save, or subscribe for full access.','warn',9200);
@@ -42167,6 +42198,7 @@ async function wlApplyLoadedGamePayload(payload,opts){
       if(typeof wlCampaignRepairLoadedGameIfMarketMismatch==='function')wlCampaignRepairLoadedGameIfMarketMismatch(G);
       if(typeof wlCampaignScrubPendingEndForNonCareerGame==='function')wlCampaignScrubPendingEndForNonCareerGame(G);
     }catch(_e){}
+    wlRehydrateSyndicationRightsAfterLoad(G,{silentOrphanRepair:true});
     const _audienceRepaired=wlHydrateGameAfterLoad(G,_econSnap);
     wlRestoreResumeEconomicsSnapshot(G,_econSnap);
     wlStampPersistedEconomics(G);
@@ -42211,6 +42243,8 @@ if(typeof globalThis!=='undefined'){
   globalThis.loadLocalSave=loadLocalSave;
   globalThis.wlCloudSaveLoadRollingAutosave=wlCloudSaveLoadRollingAutosave;
   globalThis.wlResumeBestAutosave=wlResumeBestAutosave;
+  globalThis.repairSyndicationRightsRecords=repairSyndicationRightsRecords;
+  globalThis.wlRehydrateSyndicationRightsAfterLoad=wlRehydrateSyndicationRightsAfterLoad;
 }
 
 // ── LOAN UI (capacity-based line of credit; see bank lending helpers near scoring) ──
