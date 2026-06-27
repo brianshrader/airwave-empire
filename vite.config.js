@@ -148,6 +148,7 @@ export default defineConfig(({ command, mode }) => {
         const copy = (name) =>
           copyFileSync(join(__dirname, 'src', name), join(destDir, name));
         copy('legacy.js');
+        copy('realismSpanishComposition.js');
         copy('marketEcologyCore.iife.js');
         copy('formatLifecycleProfileRuntime.iife.js');
         copy('talentRetention.js');

@@ -7,6 +7,7 @@
  *   node scripts/diag-share-concentration.mjs --era=1970
  *   node scripts/diag-share-concentration.mjs --runs=24 --period=1 --era=1985
  *   node scripts/diag-share-concentration.mjs --markets=sanfrancisco,seattle --years=2006,2010
+ *   node scripts/diag-share-concentration.mjs --leader-caps=true --public-floor=false
  *
  * genMarketMP era keys (legacy.js): 1970 → under, 1978 → fmrev, 1985 → chrwar.
  *
@@ -196,6 +197,14 @@ function parseCsvList(s, fallback) {
 const VALID_GEN_ERAS = ['1970', '1978', '1985'];
 const DEFAULT_MAX_STEPS_BY_ERA = { '1970': 340, '1978': 300, '1985': 240 };
 
+function parseBoolFlag(raw, fallback) {
+  if (raw == null || raw === '') return fallback;
+  const s = String(raw).trim().toLowerCase();
+  if (s === '1' || s === 'true' || s === 'yes' || s === 'on') return true;
+  if (s === '0' || s === 'false' || s === 'no' || s === 'off') return false;
+  return fallback;
+}
+
 function parseArgs(argv) {
   let maxStepsExplicit = false;
   const o = {
@@ -206,6 +215,8 @@ function parseArgs(argv) {
     seed: 20260513,
     maxSteps: null,
     era: '1985',
+    leaderCaps: null,
+    publicFloor: null,
   };
   for (const a of argv) {
     if (a.startsWith('--markets=')) o.markets = parseCsvList(a.slice('--markets='.length), DEFAULT_MARKETS);
@@ -213,6 +224,8 @@ function parseArgs(argv) {
     else if (a.startsWith('--period=')) o.period = parseInt(a.slice('--period='.length), 10) || 1;
     else if (a.startsWith('--runs=')) o.runs = Math.max(1, parseInt(a.slice('--runs='.length), 10) || 20);
     else if (a.startsWith('--seed=')) o.seed = parseInt(a.slice('--seed='.length), 10) || o.seed;
+    else if (a.startsWith('--leader-caps=')) o.leaderCaps = parseBoolFlag(a.slice('--leader-caps='.length), false);
+    else if (a.startsWith('--public-floor=')) o.publicFloor = parseBoolFlag(a.slice('--public-floor='.length), true);
     else if (a.startsWith('--maxSteps=')) {
       maxStepsExplicit = true;
       o.maxSteps = Math.max(40, parseInt(a.slice('--maxSteps='.length), 10) || 240);
@@ -228,6 +241,8 @@ function parseArgs(argv) {
   if (o.maxSteps == null || !maxStepsExplicit) {
     o.maxSteps = maxStepsExplicit ? o.maxSteps : DEFAULT_MAX_STEPS_BY_ERA[o.era] ?? 240;
   }
+  if (o.leaderCaps == null) o.leaderCaps = false;
+  if (o.publicFloor == null) o.publicFloor = true;
   return o;
 }
 
@@ -282,6 +297,7 @@ function main() {
   (function(){
     var SALTS = ${JSON.stringify(salts)};
     var GEN_ERA = ${JSON.stringify(opts.era)};
+    var SHARE_CALIB = ${JSON.stringify({ leaderCaps: opts.leaderCaps, publicFloor: opts.publicFloor })};
     function eligibleBookStations(G){
       return (G.stations||[]).filter(function(s){
         return s&&!s._bpSlotDeferred&&s.rat&&typeof s.rat.share==='number';
@@ -308,6 +324,9 @@ function main() {
       var f=typeof canonicalHitsFormatKey==='function'?canonicalHitsFormatKey(fmt):fmt;
       return f==='TOP40'||fmt==='RHYTHMIC'||fmt==='HOT_AC'||fmt==='CHR';
     }
+    function isSpokenFmt(fmt){
+      return fmt==='NEWS_TALK'||fmt==='CONSERVATIVE_TALK'||fmt==='SPORTS_TALK'||fmt==='PERSONALITY_TALK'||fmt==='ALL_NEWS';
+    }
     function leaderKind(s){
       if(!s)return 'unknown';
       if(stationIsNoncommercialInstitutional(s)){
@@ -326,6 +345,7 @@ function main() {
       ACTIVE_MARKET=marketId;
       syncMarketPopToMarket(marketId);
       G=genMarketMP(GEN_ERA);
+      G._wlShareCalib=SHARE_CALIB;
       MP.mode='solo';
       MP.isHost=false;
       if(MP.players)MP.players=[];
@@ -365,6 +385,7 @@ function main() {
         leadFormat:lead?String(lead.format):'',
         leadKind:leaderKind(lead),
         isChrLead:!!(lead&&isChrFmt(lead.format)),
+        isSpokenLead:!!(lead&&isSpokenFmt(lead.format)),
       };
     }
     return function runAll(markets,years,targetPeriod,numRuns,baseSeed,maxSteps){
@@ -412,6 +433,7 @@ function main() {
               leadFormat:r.leadFormat,
               leadKind:r.leadKind,
               isChrLead:r.isChrLead,
+              isSpokenLead:r.isSpokenLead,
             });
           }
         }
@@ -465,6 +487,8 @@ function main() {
     'pct_top10_gt_0.65',
     'chr_lead_pct',
     'chr_lead_mean_share1',
+    'spoken_lead_pct',
+    'spoken_lead_mean_share1',
     'histo_lead_format',
     'histo_lead_kind',
   ].join(',');
@@ -474,6 +498,7 @@ function main() {
   const summaryLines = [
     `Share concentration audit (cold genMarketMP(${opts.era}) → target book; maxSteps=${opts.maxSteps})`,
     `period=${opts.period === 1 ? 'Spring (1)' : 'Fall (2)'} · runs/market/year=${opts.runs} · seed=${opts.seed}`,
+    `shareCalib: leaderCaps=${opts.leaderCaps} publicFloor=${opts.publicFloor}`,
     'Book = all non-deferred stations with rat.share; rank by share (legacy sanitize + tie-break id).',
     'CHR lane = TOP40|CHR|RHYTHMIC|HOT_AC (canonicalHitsFormatKey).',
     'Scope: not GM career — each row is an independent cold start.',
@@ -498,6 +523,9 @@ function main() {
       const chrRuns = list.filter((r) => r.isChrLead);
       const chrPct = chrRuns.length / n;
       const chrMean1 = chrRuns.length ? mean(chrRuns.map((r) => r.share1)) : null;
+      const spokenRuns = list.filter((r) => r.isSpokenLead);
+      const spokenPct = spokenRuns.length / n;
+      const spokenMean1 = spokenRuns.length ? mean(spokenRuns.map((r) => r.share1)) : null;
 
       const fmtHist = {};
       const kindHist = {};
@@ -540,6 +568,8 @@ function main() {
         pct_top10_gt65: pct((r) => r.top10 > 0.65),
         chr_lead_pct: chrPct,
         chr_lead_mean_share1: chrMean1,
+        spoken_lead_pct: spokenPct,
+        spoken_lead_mean_share1: spokenMean1,
         histo_lead_format: histFmt,
         histo_lead_kind: histKind,
       };
@@ -570,13 +600,15 @@ function main() {
           row.pct_top10_gt65.toFixed(3),
           row.chr_lead_pct.toFixed(3),
           row.chr_lead_mean_share1 == null ? '' : row.chr_lead_mean_share1.toFixed(4),
+          row.spoken_lead_pct.toFixed(3),
+          row.spoken_lead_mean_share1 == null ? '' : row.spoken_lead_mean_share1.toFixed(4),
           escCsv(row.histo_lead_format),
           escCsv(row.histo_lead_kind),
         ].join(',')
       );
 
       summaryLines.push(
-        `${mid} ${y} p${opts.period}: #1 mean=${(row.share1_mean * 100).toFixed(2)}% med=${(row.share1_median * 100).toFixed(2)}% p90=${(row.share1_p90 * 100).toFixed(2)}% max=${(row.share1_max * 100).toFixed(2)}% | top5=${(row.top5_mean * 100).toFixed(2)}% | nBook≈${row.nBook_mean.toFixed(1)} comm≈${row.nComm_mean.toFixed(1)} | pub=${(row.sharePublic_mean * 100).toFixed(2)}% inst=${(row.shareInst_mean * 100).toFixed(2)}% | >10%:${(row.pct_gt10 * 100).toFixed(0)}% >12%:${(row.pct_gt12 * 100).toFixed(0)}% | CHR lead ${(row.chr_lead_pct * 100).toFixed(0)}%`
+        `${mid} ${y} p${opts.period}: #1 mean=${(row.share1_mean * 100).toFixed(2)}% med=${(row.share1_median * 100).toFixed(2)}% p90=${(row.share1_p90 * 100).toFixed(2)}% max=${(row.share1_max * 100).toFixed(2)}% | top5=${(row.top5_mean * 100).toFixed(2)}% | nBook≈${row.nBook_mean.toFixed(1)} comm≈${row.nComm_mean.toFixed(1)} | pub=${(row.sharePublic_mean * 100).toFixed(2)}% inst=${(row.shareInst_mean * 100).toFixed(2)}% | >10%:${(row.pct_gt10 * 100).toFixed(0)}% >12%:${(row.pct_gt12 * 100).toFixed(0)}% | CHR lead ${(row.chr_lead_pct * 100).toFixed(0)}% spoken lead ${(row.spoken_lead_pct * 100).toFixed(0)}%${row.spoken_lead_mean_share1 != null ? ` (spoken #1 mean ${(row.spoken_lead_mean_share1 * 100).toFixed(2)}%)` : ''}`
       );
     }
   }
@@ -589,7 +621,7 @@ function main() {
   if (bad.length) console.log(`\nNote: ${bad.length} failed samples (see stderr)`);
 
   /** Cross-cut: same calendar year, #1 mean share across markets. */
-  for (const y of [2006, 2010]) {
+  for (const y of [2006, 2010, 2016, 2026]) {
     const slice = aggregateRows
       .filter((r) => r.year === y)
       .sort((a, b) => b.share1_mean - a.share1_mean);
@@ -597,7 +629,7 @@ function main() {
     console.log(`\n--- ${y} Spring: #1 mean share rank (high → low) ---`);
     slice.forEach((r, i) => {
       console.log(
-        `  ${i + 1}. ${r.marketId}: #1=${(r.share1_mean * 100).toFixed(2)}% top5=${(r.top5_mean * 100).toFixed(2)}% nBook≈${r.nBook_mean.toFixed(1)} CHR-lead=${(r.chr_lead_pct * 100).toFixed(0)}%`
+        `  ${i + 1}. ${r.marketId}: #1=${(r.share1_mean * 100).toFixed(2)}% top5=${(r.top5_mean * 100).toFixed(2)}% nBook≈${r.nBook_mean.toFixed(1)} CHR-lead=${(r.chr_lead_pct * 100).toFixed(0)}% spoken-lead=${(r.spoken_lead_pct * 100).toFixed(0)}%${r.spoken_lead_mean_share1 != null ? ` spoken-#1=${(r.spoken_lead_mean_share1 * 100).toFixed(2)}%` : ''}`
       );
     });
   }

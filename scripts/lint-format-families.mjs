@@ -364,7 +364,10 @@ function main() {
           err(`${id}: requires label and launchYear`);
         }
         if (fmKeys.includes(id)) {
-          err(`${id}: Phase 1 subtype must not appear in FM{} yet (diagnostics only)`);
+          const promoted = ['REGIONAL_MEXICAN', 'SPANISH_CONTEMPORARY', 'SPANISH_TROPICAL', 'SPANISH_ADULT_HITS'];
+          if (!promoted.includes(id)) {
+            err(`${id}: Phase 1 subtype must not appear in FM{} yet (diagnostics only)`);
+          }
         }
       }
     }

@@ -126,6 +126,16 @@
       "driftKey": "CLASSIC_HITS",
       "lifecycleCatalogKey": "CLASSIC_HITS"
     },
+    "ADULT_HITS": {
+      "family": "HITS",
+      "logicalFormat": "adult_hits",
+      "displayDefault": "Adult Hits",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1998,
+      "driftKey": "ADULT_HITS",
+      "lifecycleCatalogKey": "ADULT_HITS"
+    },
     "ALBUM_ROCK": {
       "family": "ROCK",
       "logicalFormat": "album_rock_lineage",
@@ -281,6 +291,17 @@
       "driftKey": "NEWS_TALK",
       "lifecycleCatalogKey": "NEWS_TALK"
     },
+    "CONSERVATIVE_TALK": {
+      "family": "SPOKEN",
+      "logicalFormat": "conservative_talk",
+      "displayDefault": "Conservative Talk",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1990,
+      "talkFormat": true,
+      "driftKey": "CONSERVATIVE_TALK",
+      "lifecycleCatalogKey": "CONSERVATIVE_TALK"
+    },
     "PERSONALITY_TALK": {
       "family": "SPOKEN",
       "logicalFormat": "personality_talk",
@@ -313,15 +334,68 @@
       "driftKey": "GOSPEL",
       "lifecycleCatalogKey": "GOSPEL"
     },
+    "CHRISTIAN": {
+      "family": "CHRISTIAN",
+      "logicalFormat": "christian_commercial",
+      "displayDefault": "Christian",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1990,
+      "driftKey": "CHRISTIAN",
+      "lifecycleCatalogKey": "CCM",
+      "notes": "Commercial CCM; distinct from RELIGIOUS_NETWORK institutional lane"
+    },
     "SPANISH": {
       "family": "SPANISH",
       "logicalFormat": "spanish_umbrella",
       "displayDefault": "Spanish / Latin",
       "implemented": true,
-      "playerSelectable": true,
+      "playerSelectable": false,
+      "playerHidden": true,
       "fmUnlock": 1992,
       "driftKey": "SPANISH",
-      "lifecycleCatalogKey": "SPANISH"
+      "lifecycleCatalogKey": "SPANISH",
+      "notes": "Legacy save / AI fallback; player picks subtypes"
+    },
+    "REGIONAL_MEXICAN": {
+      "family": "SPANISH",
+      "logicalFormat": "regional_mexican",
+      "displayDefault": "Regional Mexican",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1978,
+      "driftKey": "REGIONAL_MEXICAN",
+      "lifecycleCatalogKey": "REGIONAL_MEXICAN"
+    },
+    "SPANISH_CONTEMPORARY": {
+      "family": "SPANISH",
+      "logicalFormat": "spanish_contemporary",
+      "displayDefault": "Spanish Contemporary",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1985,
+      "driftKey": "SPANISH_CONTEMPORARY",
+      "lifecycleCatalogKey": "SPANISH_CONTEMPORARY"
+    },
+    "SPANISH_TROPICAL": {
+      "family": "SPANISH",
+      "logicalFormat": "spanish_tropical",
+      "displayDefault": "Spanish Tropical",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 1982,
+      "driftKey": "SPANISH_TROPICAL",
+      "lifecycleCatalogKey": "SPANISH_TROPICAL"
+    },
+    "SPANISH_ADULT_HITS": {
+      "family": "SPANISH",
+      "logicalFormat": "spanish_adult_hits",
+      "displayDefault": "Spanish Adult Hits",
+      "implemented": true,
+      "playerSelectable": true,
+      "fmUnlock": 2002,
+      "driftKey": "SPANISH_ADULT_HITS",
+      "lifecycleCatalogKey": "SPANISH_ADULT_HITS"
     },
     "PUBLIC_NEWS": {
       "family": "PUBLIC",
@@ -398,14 +472,6 @@
     }
   },
   "plannedIds": {
-    "ADULT_HITS": {
-      "family": "HITS",
-      "logicalFormat": "adult_hits",
-      "displayDefault": "Adult Hits",
-      "implemented": false,
-      "targetUnlock": 1998,
-      "notes": "Jack-FM style; hit-based gold"
-    },
     "SOFT_AC": {
       "family": "ADULT",
       "logicalFormat": "soft_ac",
@@ -413,15 +479,6 @@
       "implemented": false,
       "targetUnlock": 1980,
       "notes": "Currently ADULT_CONTEMP drift pole A only"
-    },
-    "CHRISTIAN": {
-      "family": "CHRISTIAN",
-      "logicalFormat": "christian_commercial",
-      "displayDefault": "Christian",
-      "implemented": false,
-      "targetUnlock": 1990,
-      "lifecycleCatalogKey": "CCM",
-      "notes": "Commercial Christian AC/CHR; distinct from RELIGIOUS_NETWORK"
     },
     "CLASSIC_COUNTRY": {
       "family": "COUNTRY",
@@ -441,26 +498,6 @@
       "displayDefault": "Hip Hop",
       "implemented": false,
       "notes": "May remain URBAN_CONTEMP drift through Phase 3"
-    },
-    "SPANISH_CONTEMPORARY": {
-      "family": "SPANISH",
-      "logicalFormat": "spanish_contemporary",
-      "implemented": false
-    },
-    "SPANISH_ADULT_HITS": {
-      "family": "SPANISH",
-      "logicalFormat": "spanish_adult_hits",
-      "implemented": false
-    },
-    "REGIONAL_MEXICAN": {
-      "family": "SPANISH",
-      "logicalFormat": "regional_mexican",
-      "implemented": false
-    },
-    "SPANISH_TROPICAL": {
-      "family": "SPANISH",
-      "logicalFormat": "spanish_tropical",
-      "implemented": false
     },
     "SPANISH_NEWS_TALK": {
       "family": "SPANISH",
@@ -484,6 +521,7 @@
     "RHYTHMIC": { "legacyId": "RHYTHMIC" },
     "OLDIES": { "legacyId": "OLDIES" },
     "CLASSIC_HITS": { "legacyId": "CLASSIC_HITS" },
+    "ADULT_HITS": { "legacyId": "ADULT_HITS" },
     "ADULT_CONTEMP": { "legacyId": "ADULT_CONTEMP" },
     "ADULT_STANDARDS": { "legacyId": "ADULT_STANDARDS" },
     "BEAUTIFUL_MUSIC": { "legacyId": "BEAUTIFUL_MUSIC" },
@@ -496,18 +534,24 @@
     "SOUL_RNB": { "legacyId": "SOUL_RNB" },
     "URBAN_CONTEMP": { "legacyId": "URBAN_CONTEMP" },
     "NEWS_TALK": { "legacyId": "NEWS_TALK" },
+    "CONSERVATIVE_TALK": { "legacyId": "CONSERVATIVE_TALK" },
     "SPORTS_TALK": { "legacyId": "SPORTS_TALK" },
     "ALL_NEWS": { "legacyId": "ALL_NEWS" },
     "PERSONALITY_TALK": { "legacyId": "PERSONALITY_TALK" },
     "GOSPEL": { "legacyId": "GOSPEL" },
+    "CHRISTIAN": { "legacyId": "CHRISTIAN" },
     "SPANISH": { "legacyId": "SPANISH" },
+    "REGIONAL_MEXICAN": { "legacyId": "REGIONAL_MEXICAN" },
+    "SPANISH_CONTEMPORARY": { "legacyId": "SPANISH_CONTEMPORARY" },
+    "SPANISH_TROPICAL": { "legacyId": "SPANISH_TROPICAL" },
+    "SPANISH_ADULT_HITS": { "legacyId": "SPANISH_ADULT_HITS" },
     "PUBLIC": {
       "aggregateLegacyIds": ["PUBLIC_NEWS", "PUBLIC_CLASSICAL", "PUBLIC_ECLECTIC", "PUBLIC_JAZZ"]
     },
     "CCM": {
-      "plannedId": "CHRISTIAN",
+      "legacyId": "CHRISTIAN",
       "institutionalProxyLegacyId": "RELIGIOUS_NETWORK",
-      "notes": "Diagnostic CCM row; commercial ID is planned CHRISTIAN"
+      "notes": "Commercial CCM gameplay key CHRISTIAN; institutional proxy RELIGIOUS_NETWORK"
     }
   },
   "displayLabelRules": {
@@ -608,7 +652,7 @@
   },
   "launchTimelineSpec": {
     "SOFT_AC": { "specUnlock": 1980, "implementedVia": "ADULT_CONTEMP", "fmUnlock": 1980 },
-    "CHRISTIAN": { "specUnlock": 1990, "plannedId": "CHRISTIAN", "implemented": false },
+    "CHRISTIAN": { "specUnlock": 1990, "legacyId": "CHRISTIAN", "fmUnlock": 1990, "implemented": true },
     "SPORTS_TALK": { "specUnlock": 1988, "legacyId": "SPORTS_TALK", "fmUnlock": 1990 },
     "PERSONALITY_TALK": { "specUnlock": 1995, "legacyId": "PERSONALITY_TALK", "fmUnlock": 1993 }
   }

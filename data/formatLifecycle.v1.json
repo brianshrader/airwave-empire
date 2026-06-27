@@ -60,6 +60,17 @@
       "floor": 0.08,
       "notes": "Oldies successor; demo aging 2010+"
     },
+    "ADULT_HITS": {
+      "lane": "hits",
+      "emergence": 1998,
+      "peak": 2010,
+      "plateauEnd": 2018,
+      "declineEnd": 2026,
+      "modernRetention": 0.55,
+      "declineSteepness": 0.45,
+      "floor": 0.09,
+      "notes": "Jack/Bob FM variety gold; broad 35-54 workplace FM"
+    },
     "CLASSIC_ROCK": {
       "lane": "rock",
       "emergence": 1985,
@@ -103,6 +114,17 @@
       "declineSteepness": 0.2,
       "floor": 0.2,
       "notes": "AM to FM; podcast drag post-2015"
+    },
+    "CONSERVATIVE_TALK": {
+      "lane": "spoken",
+      "emergence": 1990,
+      "peak": 2010,
+      "plateauEnd": 2018,
+      "declineEnd": 2026,
+      "modernRetention": 0.72,
+      "declineSteepness": 0.32,
+      "floor": 0.14,
+      "notes": "Syndicated partisan lane; Rush-era peak; advertiser boycotts post-2016"
     },
     "SPORTS_TALK": {
       "lane": "spoken",
@@ -158,6 +180,50 @@
       "declineSteepness": 0,
       "floor": 0.15,
       "notes": "Demographic-driven growth"
+    },
+    "REGIONAL_MEXICAN": {
+      "lane": "ethnic",
+      "emergence": 1978,
+      "peak": 2024,
+      "plateauEnd": null,
+      "declineEnd": 2060,
+      "modernRetention": 0.95,
+      "declineSteepness": 0,
+      "floor": 0.15,
+      "notes": "Sunbelt Mexican core; shares SPANISH ethnic lane"
+    },
+    "SPANISH_CONTEMPORARY": {
+      "lane": "ethnic",
+      "emergence": 1985,
+      "peak": 2024,
+      "plateauEnd": null,
+      "declineEnd": 2060,
+      "modernRetention": 0.95,
+      "declineSteepness": 0,
+      "floor": 0.15,
+      "notes": "Spanish CHR / Hot AC pillar"
+    },
+    "SPANISH_TROPICAL": {
+      "lane": "ethnic",
+      "emergence": 1982,
+      "peak": 2024,
+      "plateauEnd": null,
+      "declineEnd": 2060,
+      "modernRetention": 0.95,
+      "declineSteepness": 0,
+      "floor": 0.15,
+      "notes": "Caribbean / tropical pillar"
+    },
+    "SPANISH_ADULT_HITS": {
+      "lane": "ethnic",
+      "emergence": 2002,
+      "peak": 2026,
+      "plateauEnd": null,
+      "declineEnd": 2060,
+      "modernRetention": 0.92,
+      "declineSteepness": 0,
+      "floor": 0.12,
+      "notes": "Spanish recurrent gold pillar"
     },
     "SOUL_RNB": {
       "lane": "urban",
@@ -234,7 +300,18 @@
       "modernRetention": 0.65,
       "declineSteepness": 0.3,
       "floor": 0.12,
-      "notes": "HD/translator era widens footprint post-2004"
+      "notes": "Commercial CCM (CHRISTIAN); post-2010 launch difficulty from institutional networks — not FORMAT_SUNSET; heritage commercial can succeed"
+    },
+    "CHRISTIAN": {
+      "lane": "religious",
+      "emergence": 1990,
+      "peak": 2008,
+      "plateauEnd": 2018,
+      "declineEnd": 2026,
+      "modernRetention": 0.65,
+      "declineSteepness": 0.3,
+      "floor": 0.12,
+      "notes": "Alias of CCM row for lifecycleCatalogMap.CHRISTIAN"
     },
     "MOR": {
       "lane": "heritage",
