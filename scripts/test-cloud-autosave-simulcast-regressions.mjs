@@ -27,6 +27,7 @@ function createLegacyContext() {
   const ctx = vm.createContext({
     console: { log: noop, warn: noop, error: console.error },
     __WL_HEADLESS__: true,
+    __WL_SHARE_INSPECT_ONLY: true,
     document: {
       body: {},
       querySelector(sel) {
