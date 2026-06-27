@@ -10563,7 +10563,7 @@ async function wlResumeBestAutosave(opts){
       if(forceCloud||cloudNewer){
         payload=cloud.payload;
         source='cloud_autosave';
-        loadLabel='Cloud autosave';
+        loadLabel='Autosave';
         usedCloud=true;
         try{
           localStorage.setItem(SAVE_KEY,JSON.stringify(cloud.payload));
@@ -10583,7 +10583,7 @@ async function wlResumeBestAutosave(opts){
     const res=await wlApplyLoadedGamePayload(payload,{source,label:loadLabel});
     if(res===null)return;
     if(usedCloud&&localHasState){
-      showToast('Resumed from cloud backup (newer than this browser).','info',5600);
+      showToast('Resumed from your latest save.','info',5600);
     }
   }catch(e){
     if(typeof console!=='undefined'&&console.error)console.error('[wlResumeBestAutosave]',e);
@@ -10778,21 +10778,21 @@ async function wlCloudSaveRenderPanel(hostId) {
   if (!el) return;
   if (MP.mode === 'live') {
     el.innerHTML =
-      '<div class="ibox" style="color:var(--mut);margin-top:12px">Cloud saves are for solo games only.</div>';
+      '<div class="ibox" style="color:var(--mut);margin-top:12px">Saved slots are for solo games only.</div>';
     return;
   }
   if (!wlClerkSignInConfigured()) {
     el.innerHTML =
-      '<div class="bbox" style="margin-top:12px"><strong>CLOUD SAVES</strong><br><span style="color:var(--mut);font-size:14px">Not available — sign-in is not configured in this build.</span></div>';
+      '<div class="bbox" style="margin-top:12px"><strong>SAVED SLOTS</strong><br><span style="color:var(--mut);font-size:14px">Not available — sign-in is not configured in this build.</span></div>';
     return;
   }
   const token = await wlGetClerkToken();
   if (!token) {
-    el.innerHTML = `<div class="bbox" style="margin-top:12px"><strong>CLOUD SAVES</strong><br><span style="color:var(--mut);font-size:14px">Sign in to save progress to your account.</span><br><button type="button" class="abt g" style="margin-top:10px;width:100%" onclick="wlCloudSaveSignIn()">Sign in</button></div>`;
+    el.innerHTML = `<div class="bbox" style="margin-top:12px"><strong>SAVED SLOTS</strong><br><span style="color:var(--mut);font-size:14px">Sign in to save named backups on your account.</span><br><button type="button" class="abt g" style="margin-top:10px;width:100%" onclick="wlCloudSaveSignIn()">Sign in</button></div>`;
     return;
   }
   el.innerHTML =
-    '<div class="ibox" style="margin-top:12px;color:var(--mut)">Loading cloud saves…</div>';
+    '<div class="ibox" style="margin-top:12px;color:var(--mut)">Loading saved slots…</div>';
   let stRes;
   try {
     stRes = await fetch(wlGameApiUrl('/api/saves/cloud/status'), {
@@ -10815,7 +10815,7 @@ async function wlCloudSaveRenderPanel(hostId) {
     return;
   }
   if (st.subscriptionRequired && !st.subscriptionActive) {
-    el.innerHTML = `<div class="bbox" style="margin-top:12px"><strong>CLOUD SAVES</strong><br><span style="color:var(--mut);font-size:14px">Active subscription required (up to ${st.maxSaves || 10} slots).</span><br><button type="button" class="abt g" style="margin-top:10px;width:100%" onclick="wlStripeCheckoutForSubscription()">Subscribe</button></div>`;
+    el.innerHTML = `<div class="bbox" style="margin-top:12px"><strong>SAVED SLOTS</strong><br><span style="color:var(--mut);font-size:14px">Active subscription required (up to ${st.maxSaves || 10} slots).</span><br><button type="button" class="abt g" style="margin-top:10px;width:100%" onclick="wlStripeCheckoutForSubscription()">Subscribe</button></div>`;
     return;
   }
   let listRes;
@@ -10829,7 +10829,7 @@ async function wlCloudSaveRenderPanel(hostId) {
     return;
   }
   if (listRes.status === 402) {
-    el.innerHTML = `<div class="bbox" style="margin-top:12px"><strong>CLOUD SAVES</strong><br><span style="color:var(--mut);font-size:14px">Active subscription required.</span><br><button type="button" class="abt g" style="margin-top:10px;width:100%" onclick="wlStripeCheckoutForSubscription()">Subscribe</button></div>`;
+    el.innerHTML = `<div class="bbox" style="margin-top:12px"><strong>SAVED SLOTS</strong><br><span style="color:var(--mut);font-size:14px">Active subscription required.</span><br><button type="button" class="abt g" style="margin-top:10px;width:100%" onclick="wlStripeCheckoutForSubscription()">Subscribe</button></div>`;
     return;
   }
   const list = listRes.ok ? await listRes.json().catch(() => ({ saves: [] })) : { saves: [] };
@@ -10849,20 +10849,11 @@ async function wlCloudSaveRenderPanel(hostId) {
     .join('');
   const maxS = st.maxSaves || 10;
   const uploadDisabled = !G ? ' disabled' : '';
-  const autosaveMeta=st.cloudAutosave||list.autosave||null;
-  const autosaveBlock=st.cloudAutosaveEligible
-    ?`<div style="margin-top:12px;padding:10px 12px;background:rgba(82,227,110,.06);border:1px solid rgba(82,227,110,.22);border-radius:6px">
-        <div style="font-size:13px;color:var(--grn);letter-spacing:0.06em;margin-bottom:4px">ROLLING CLOUD AUTOSAVE</div>
-        <div style="font-size:13px;color:var(--mut);line-height:1.45">Starter &amp; Pro: backs up to the cloud when you advance to the <strong>next period</strong>. Does <strong>not</strong> use a manual slot. Kept ${st.cloudAutosaveRetentionDays||60} days.</div>
-        ${autosaveMeta?`<div style="font-size:13px;color:var(--off);margin-top:6px">Last cloud backup: ${wlCloudEsc(String(autosaveMeta.saved||'').slice(0,19).replace('T',' '))} · ${autosaveMeta.year!=null?autosaveMeta.year:'?'} ${autosaveMeta.period===1?'Spring':autosaveMeta.period===2?'Fall':''}</div>
-        <button type="button" class="abt g" style="width:100%;margin-top:8px" onclick="wlCloudSaveLoadRollingAutosave()">▶ Load cloud autosave</button>`:'<div style="font-size:13px;color:var(--mut);margin-top:6px">No cloud backup yet — advance a period while signed in.</div>'}
-      </div>`
-    :'';
-  el.innerHTML = `<div class="bbox" style="margin-top:12px"><strong>CLOUD SAVES</strong> <span style="color:var(--mut);font-size:12px">(${saves.length}/${maxS})</span>
-    ${autosaveBlock}
+  el.innerHTML = `<div class="bbox" style="margin-top:12px"><strong>SAVED SLOTS</strong> <span style="color:var(--mut);font-size:12px">(${saves.length}/${maxS})</span>
+    <div style="font-size:13px;color:var(--mut);margin-top:6px;line-height:1.45">Optional named backups on your account — separate from autosave.</div>
     <div id="wl-cloud-save-status" style="display:none;margin-top:10px;font-size:14px;line-height:1.45;font-family:var(--ft)" aria-live="polite"></div>
-    <button type="button" class="abt g wl-cloud-upload-btn" style="width:100%;margin-top:10px"${uploadDisabled} onclick="wlCloudSaveUploadCurrent()">☁ Upload current game to cloud (manual slot)</button>
-    ${rows || '<div style="color:var(--mut);font-size:14px;margin-top:8px">No manual cloud saves yet.</div>'}</div>`;
+    <button type="button" class="abt g wl-cloud-upload-btn" style="width:100%;margin-top:10px"${uploadDisabled} onclick="wlCloudSaveUploadCurrent()">☁ Save current game to slot</button>
+    ${rows || '<div style="color:var(--mut);font-size:14px;margin-top:8px">No saved slots yet.</div>'}</div>`;
 }
 
 // ── CONNECT TO SERVER ─────────────────────────────────────────────
@@ -41044,14 +41035,12 @@ function openSaveLoad(){
   const local=getLocalSave();
   const localInfo=local
     ?`<div class="bbox">
-        <strong>AUTOSAVE FOUND</strong><br>
+        <strong>AUTOSAVE</strong><br>
         ${local.label} · ${local.saved?.slice(0,10)||'?'} · ${local.G?.year||'?'} ${local.G?.period===1?'Spring':'Fall'}<br>
-        <button class="abt g" style="margin-top:8px;width:100%" onclick="loadLocalSave()">▶ RESUME THIS GAME</button>
+        <button class="abt g" style="margin-top:8px;width:100%" onclick="loadLocalSave()">▶ RESUME</button>
+        ${wlCloudAutosaveEligible()?'<div style="font-size:12px;color:var(--mut);margin-top:6px;line-height:1.45">Your account keeps a rolling backup when you advance a period.</div>':''}
       </div>`
-    :'<div class="ibox" style="color:var(--mut)">No autosave found in this browser.</div>';
-  const cloudAutosaveNote=wlCloudAutosaveEligible()
-    ?`<div class="ibox" style="margin-top:10px;line-height:1.45;font-size:13px">☁ <strong>Cloud autosave</strong> (Starter/Pro): backs up when you click <strong>Next Period</strong> — one rolling slot on your account, kept 60 days. Resume picks the newer of cloud vs this browser.</div>`
-    :'';
+    :'<div class="ibox" style="color:var(--mut)">No autosave yet — start a game or load a save file below.</div>';
 
   const hasActiveGame=typeof G!=='undefined'&&G&&G.sc&&G.stations;
   const currentGameBlock=hasActiveGame
@@ -41062,12 +41051,11 @@ function openSaveLoad(){
       <div class="sr"><span class="lb">Total Listeners</span><span class="vl">${(MP.mode==='live'?G.ps.filter(s=>s._mpOwner===MP.playerId):G.ps).reduce((s,st)=>s+(st.rat?.aqh||0),0).toLocaleString()} AQH</span></div>
     </div>
     <button class="cfm" onclick="exportSave()">💾 DOWNLOAD SAVE FILE</button>`
-    :`<div class="ibox" style="color:var(--mut);margin-top:4px;line-height:1.5">No game in progress. Resume autosave above, load from the cloud or a file, or close and pick a scenario.</div>`;
+    :`<div class="ibox" style="color:var(--mut);margin-top:4px;line-height:1.5">No game in progress. Resume autosave above, load a saved slot or file, or close and pick a scenario.</div>`;
 
   document.getElementById('saveb').innerHTML=`
-    <p class="di">Save your game to a file, your account (subscription), or resume from a previous session.</p>
+    <p class="di">Resume autosave, download a backup file, or load a saved slot.</p>
     ${localInfo}
-    ${cloudAutosaveNote}
     <div id="wl-cloud-save-panel"></div>
     ${currentGameBlock}
     <button class="abt" style="width:100%;margin-top:8px" onclick="cm('m-save');openScenSelect(null)">🎮 NEW GAME</button>
@@ -42202,7 +42190,7 @@ async function wlApplyLoadedGamePayload(payload,opts){
     const _audienceRepaired=wlHydrateGameAfterLoad(G,_econSnap);
     wlRestoreResumeEconomicsSnapshot(G,_econSnap);
     wlStampPersistedEconomics(G);
-    const _srcMsg=source==='resume_autosave'?'Autosave resumed':source==='cloud_autosave'?'Cloud autosave resumed':source==='cloud'?'Cloud save loaded':'Save loaded';
+    const _srcMsg=source==='resume_autosave'||source==='cloud_autosave'?'Autosave resumed':source==='cloud'?'Save loaded':'Save loaded';
     G.news.unshift({
       v:'HIGH',
       t:`📂 ${_srcMsg}: ${label} — Cash on hand ${f$(G.cash)}${_audienceRepaired?' (audience data repaired under the hood; your saved finances were kept)':''}`,
