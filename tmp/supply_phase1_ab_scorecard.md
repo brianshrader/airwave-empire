@@ -1,0 +1,1 @@
+| chicago | Niche count | 11.6 | 14.3 | 2.7 |

@@ -69,6 +69,7 @@
     "diag:share-concentration": "node scripts/diag-share-concentration.mjs",
     "diag:houston-share-calib-ab": "node scripts/diag-houston-share-calib-ab.mjs",
     "diag:longrun-ecology": "node scripts/diag-longrun-market-ecology.mjs",
+    "diag:supply-phase1-ab": "node scripts/diag-supply-phase1-ab.mjs",
     "diag:public-news-spotcheck": "node scripts/diag-public-news-spotcheck.mjs",
     "diag:houston-spanish-strength": "node scripts/diag-houston-spanish-strength.mjs",
     "diag:spanish-lane-trajectory": "node scripts/diag-spanish-lane-trajectory.mjs",

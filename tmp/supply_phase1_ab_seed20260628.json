@@ -1,0 +1,452 @@
+{
+  "markets": [
+    {
+      "marketId": "houston",
+      "baseline2000": {
+        "n": 12,
+        "commercial": 27.916666666666668,
+        "leaderShare": 0.15121627333333335,
+        "top5ShareMass": 0.5672044666666666,
+        "formatFamilies": 15.583333333333334,
+        "spanishLaneShare": 0,
+        "removedCumulative": 4.666666666666667,
+        "replenishedCumulative": 0,
+        "netShrink": 4.666666666666667,
+        "countShareOver15pct": 0.6666666666666666,
+        "nicheSurvival": 8.833333333333334
+      },
+      "phase1_2000": {
+        "n": 12,
+        "commercial": 29.416666666666668,
+        "leaderShare": 0.14025140666666666,
+        "top5ShareMass": 0.5612002541666666,
+        "formatFamilies": 17.166666666666668,
+        "spanishLaneShare": 0,
+        "removedCumulative": 4.166666666666667,
+        "replenishedCumulative": 0.5833333333333334,
+        "netShrink": 3.5833333333333335,
+        "countShareOver15pct": 0.16666666666666666,
+        "nicheSurvival": 5.666666666666667
+      },
+      "baseline2026": {
+        "n": 12,
+        "commercial": 25.083333333333332,
+        "leaderShare": 0.11424142333333331,
+        "top5ShareMass": 0.49573687083333334,
+        "formatFamilies": 12.833333333333334,
+        "spanishLaneShare": 0,
+        "removedCumulative": 7.916666666666667,
+        "replenishedCumulative": 0,
+        "netShrink": 7.916666666666667,
+        "countShareOver15pct": 0.08333333333333333,
+        "nicheSurvival": 7
+      },
+      "phase1_2026": {
+        "n": 12,
+        "commercial": 29.75,
+        "leaderShare": 0.10926553333333335,
+        "top5ShareMass": 0.4580630433333333,
+        "formatFamilies": 17.25,
+        "spanishLaneShare": 0,
+        "removedCumulative": 11.416666666666666,
+        "replenishedCumulative": 7.833333333333333,
+        "netShrink": 3.5833333333333335,
+        "countShareOver15pct": 0,
+        "nicheSurvival": 7.833333333333333
+      },
+      "replenishFamilies": {
+        "totals": {
+          "brokered": 19,
+          "religious": 17,
+          "conservative_talk": 14,
+          "other": 26,
+          "news_talk": 18
+        },
+        "totalLaunches": 94,
+        "pct": {
+          "brokered": 0.20212765957446807,
+          "religious": 0.18085106382978725,
+          "conservative_talk": 0.14893617021276595,
+          "other": 0.2765957446808511,
+          "news_talk": 0.19148936170212766
+        }
+      },
+      "lfpCap": 32
+    },
+    {
+      "marketId": "phoenix",
+      "baseline2000": {
+        "n": 12,
+        "commercial": 28.25,
+        "leaderShare": 0.1532743008333333,
+        "top5ShareMass": 0.5136037025,
+        "formatFamilies": 14.666666666666666,
+        "spanishLaneShare": 0,
+        "removedCumulative": 3.4166666666666665,
+        "replenishedCumulative": 0,
+        "netShrink": 3.4166666666666665,
+        "countShareOver15pct": 0.75,
+        "nicheSurvival": 7.333333333333333
+      },
+      "phase1_2000": {
+        "n": 12,
+        "commercial": 28.666666666666668,
+        "leaderShare": 0.15165811916666666,
+        "top5ShareMass": 0.5051904975,
+        "formatFamilies": 15.5,
+        "spanishLaneShare": 0,
+        "removedCumulative": 4.333333333333333,
+        "replenishedCumulative": 0.8333333333333334,
+        "netShrink": 3.5,
+        "countShareOver15pct": 0.75,
+        "nicheSurvival": 7.166666666666667
+      },
+      "baseline2026": {
+        "n": 12,
+        "commercial": 26.75,
+        "leaderShare": 0.12759945583333332,
+        "top5ShareMass": 0.48488454333333336,
+        "formatFamilies": 14.166666666666666,
+        "spanishLaneShare": 0,
+        "removedCumulative": 7.75,
+        "replenishedCumulative": 0,
+        "netShrink": 7.75,
+        "countShareOver15pct": 0.16666666666666666,
+        "nicheSurvival": 7
+      },
+      "phase1_2026": {
+        "n": 12,
+        "commercial": 30.583333333333332,
+        "leaderShare": 0.1042599475,
+        "top5ShareMass": 0.4585775083333334,
+        "formatFamilies": 15.333333333333334,
+        "spanishLaneShare": 0,
+        "removedCumulative": 13.333333333333334,
+        "replenishedCumulative": 8,
+        "netShrink": 5.333333333333333,
+        "countShareOver15pct": 0,
+        "nicheSurvival": 8.666666666666666
+      },
+      "replenishFamilies": {
+        "totals": {
+          "other": 33,
+          "religious": 13,
+          "brokered": 21,
+          "conservative_talk": 19,
+          "news_talk": 12
+        },
+        "totalLaunches": 98,
+        "pct": {
+          "other": 0.336734693877551,
+          "religious": 0.1326530612244898,
+          "brokered": 0.21428571428571427,
+          "conservative_talk": 0.19387755102040816,
+          "news_talk": 0.12244897959183673
+        }
+      },
+      "lfpCap": 32
+    },
+    {
+      "marketId": "dallas",
+      "baseline2000": {
+        "n": 12,
+        "commercial": 29.25,
+        "leaderShare": 0.1433079025,
+        "top5ShareMass": 0.5704680583333334,
+        "formatFamilies": 16,
+        "spanishLaneShare": 0,
+        "removedCumulative": 3.75,
+        "replenishedCumulative": 0,
+        "netShrink": 3.75,
+        "countShareOver15pct": 0.3333333333333333,
+        "nicheSurvival": 8.833333333333334
+      },
+      "phase1_2000": {
+        "n": 12,
+        "commercial": 30.25,
+        "leaderShare": 0.14556832583333335,
+        "top5ShareMass": 0.5728803366666666,
+        "formatFamilies": 16.666666666666668,
+        "spanishLaneShare": 0,
+        "removedCumulative": 3.9166666666666665,
+        "replenishedCumulative": 1,
+        "netShrink": 2.9166666666666665,
+        "countShareOver15pct": 0.5833333333333334,
+        "nicheSurvival": 6.833333333333333
+      },
+      "baseline2026": {
+        "n": 12,
+        "commercial": 27.25,
+        "leaderShare": 0.1413382,
+        "top5ShareMass": 0.5292598791666666,
+        "formatFamilies": 14.5,
+        "spanishLaneShare": 0,
+        "removedCumulative": 8.083333333333334,
+        "replenishedCumulative": 0,
+        "netShrink": 8.083333333333334,
+        "countShareOver15pct": 0.3333333333333333,
+        "nicheSurvival": 8.5
+      },
+      "phase1_2026": {
+        "n": 12,
+        "commercial": 31.666666666666668,
+        "leaderShare": 0.1070887625,
+        "top5ShareMass": 0.47228400666666664,
+        "formatFamilies": 17.583333333333332,
+        "spanishLaneShare": 0,
+        "removedCumulative": 11.75,
+        "replenishedCumulative": 8.083333333333334,
+        "netShrink": 3.6666666666666665,
+        "countShareOver15pct": 0,
+        "nicheSurvival": 10.333333333333334
+      },
+      "replenishFamilies": {
+        "totals": {
+          "conservative_talk": 14,
+          "other": 32,
+          "religious": 18,
+          "brokered": 22,
+          "news_talk": 13
+        },
+        "totalLaunches": 99,
+        "pct": {
+          "conservative_talk": 0.1414141414141414,
+          "other": 0.32323232323232326,
+          "religious": 0.18181818181818182,
+          "brokered": 0.2222222222222222,
+          "news_talk": 0.13131313131313133
+        }
+      },
+      "lfpCap": 33
+    },
+    {
+      "marketId": "atlanta",
+      "baseline2000": {
+        "n": 12,
+        "commercial": 28,
+        "leaderShare": 0.14029760583333334,
+        "top5ShareMass": 0.54067311,
+        "formatFamilies": 17.166666666666668,
+        "spanishLaneShare": 0,
+        "removedCumulative": 3,
+        "replenishedCumulative": 0,
+        "netShrink": 3,
+        "countShareOver15pct": 0.25,
+        "nicheSurvival": 8.75
+      },
+      "phase1_2000": {
+        "n": 12,
+        "commercial": 29.416666666666668,
+        "leaderShare": 0.14141444333333333,
+        "top5ShareMass": 0.5469955125,
+        "formatFamilies": 17.25,
+        "spanishLaneShare": 0,
+        "removedCumulative": 2.75,
+        "replenishedCumulative": 1,
+        "netShrink": 1.75,
+        "countShareOver15pct": 0.4166666666666667,
+        "nicheSurvival": 5.416666666666667
+      },
+      "baseline2026": {
+        "n": 12,
+        "commercial": 28.166666666666668,
+        "leaderShare": 0.14645696666666666,
+        "top5ShareMass": 0.48226119083333335,
+        "formatFamilies": 15.166666666666666,
+        "spanishLaneShare": 0,
+        "removedCumulative": 6.75,
+        "replenishedCumulative": 0,
+        "netShrink": 6.75,
+        "countShareOver15pct": 0.16666666666666666,
+        "nicheSurvival": 8.833333333333334
+      },
+      "phase1_2026": {
+        "n": 12,
+        "commercial": 31.5,
+        "leaderShare": 0.10777497749999998,
+        "top5ShareMass": 0.45814491249999995,
+        "formatFamilies": 17,
+        "spanishLaneShare": 0,
+        "removedCumulative": 9.333333333333334,
+        "replenishedCumulative": 5.916666666666667,
+        "netShrink": 3.4166666666666665,
+        "countShareOver15pct": 0,
+        "nicheSurvival": 10.083333333333334
+      },
+      "replenishFamilies": {
+        "totals": {
+          "other": 29,
+          "religious": 16,
+          "brokered": 8,
+          "news_talk": 14,
+          "conservative_talk": 8
+        },
+        "totalLaunches": 75,
+        "pct": {
+          "other": 0.38666666666666666,
+          "religious": 0.21333333333333335,
+          "brokered": 0.10666666666666667,
+          "news_talk": 0.18666666666666668,
+          "conservative_talk": 0.10666666666666667
+        }
+      },
+      "lfpCap": 33
+    },
+    {
+      "marketId": "seattle",
+      "baseline2000": {
+        "n": 12,
+        "commercial": 27.75,
+        "leaderShare": 0.14511568499999997,
+        "top5ShareMass": 0.5262843125,
+        "formatFamilies": 15.916666666666666,
+        "spanishLaneShare": 0,
+        "removedCumulative": 3.5833333333333335,
+        "replenishedCumulative": 0,
+        "netShrink": 3.5833333333333335,
+        "countShareOver15pct": 0.4166666666666667,
+        "nicheSurvival": 8.666666666666666
+      },
+      "phase1_2000": {
+        "n": 12,
+        "commercial": 28.5,
+        "leaderShare": 0.14618988666666666,
+        "top5ShareMass": 0.5588262225000001,
+        "formatFamilies": 14.916666666666666,
+        "spanishLaneShare": 0,
+        "removedCumulative": 4.083333333333333,
+        "replenishedCumulative": 1.25,
+        "netShrink": 2.8333333333333335,
+        "countShareOver15pct": 0.5,
+        "nicheSurvival": 6.25
+      },
+      "baseline2026": {
+        "n": 12,
+        "commercial": 26.416666666666668,
+        "leaderShare": 0.11411525166666668,
+        "top5ShareMass": 0.4711915058333333,
+        "formatFamilies": 13.75,
+        "spanishLaneShare": 0,
+        "removedCumulative": 6.166666666666667,
+        "replenishedCumulative": 0,
+        "netShrink": 6.166666666666667,
+        "countShareOver15pct": 0.16666666666666666,
+        "nicheSurvival": 7.75
+      },
+      "phase1_2026": {
+        "n": 12,
+        "commercial": 29.75,
+        "leaderShare": 0.10819417083333333,
+        "top5ShareMass": 0.4567563516666668,
+        "formatFamilies": 15.916666666666666,
+        "spanishLaneShare": 0,
+        "removedCumulative": 9.916666666666666,
+        "replenishedCumulative": 7.166666666666667,
+        "netShrink": 2.75,
+        "countShareOver15pct": 0,
+        "nicheSurvival": 9.25
+      },
+      "replenishFamilies": {
+        "totals": {
+          "other": 30,
+          "conservative_talk": 13,
+          "brokered": 17,
+          "religious": 13,
+          "news_talk": 15
+        },
+        "totalLaunches": 88,
+        "pct": {
+          "other": 0.3409090909090909,
+          "conservative_talk": 0.14772727272727273,
+          "brokered": 0.19318181818181818,
+          "religious": 0.14772727272727273,
+          "news_talk": 0.17045454545454544
+        }
+      },
+      "lfpCap": 31
+    },
+    {
+      "marketId": "chicago",
+      "baseline2000": {
+        "n": 12,
+        "commercial": 36.916666666666664,
+        "leaderShare": 0.12319601166666666,
+        "top5ShareMass": 0.46324452583333336,
+        "formatFamilies": 18.25,
+        "spanishLaneShare": 0,
+        "removedCumulative": 6,
+        "replenishedCumulative": 0,
+        "netShrink": 6,
+        "countShareOver15pct": 0,
+        "nicheSurvival": 10.166666666666666
+      },
+      "phase1_2000": {
+        "n": 12,
+        "commercial": 37.75,
+        "leaderShare": 0.11353449416666667,
+        "top5ShareMass": 0.44593614416666666,
+        "formatFamilies": 19.666666666666668,
+        "spanishLaneShare": 0,
+        "removedCumulative": 6.75,
+        "replenishedCumulative": 0.25,
+        "netShrink": 6.5,
+        "countShareOver15pct": 0,
+        "nicheSurvival": 7.833333333333333
+      },
+      "baseline2026": {
+        "n": 12,
+        "commercial": 32.25,
+        "leaderShare": 0.11958429166666666,
+        "top5ShareMass": 0.4499093050000001,
+        "formatFamilies": 17.416666666666668,
+        "spanishLaneShare": 0,
+        "removedCumulative": 14.166666666666666,
+        "replenishedCumulative": 0,
+        "netShrink": 14.166666666666666,
+        "countShareOver15pct": 0.16666666666666666,
+        "nicheSurvival": 11.25
+      },
+      "phase1_2026": {
+        "n": 12,
+        "commercial": 37.833333333333336,
+        "leaderShare": 0.10283449583333332,
+        "top5ShareMass": 0.4265540316666667,
+        "formatFamilies": 20,
+        "spanishLaneShare": 0,
+        "removedCumulative": 17.916666666666668,
+        "replenishedCumulative": 9.166666666666666,
+        "netShrink": 8.75,
+        "countShareOver15pct": 0,
+        "nicheSurvival": 12.833333333333334
+      },
+      "replenishFamilies": {
+        "totals": {
+          "other": 48,
+          "conservative_talk": 9,
+          "religious": 17,
+          "brokered": 22,
+          "news_talk": 17
+        },
+        "totalLaunches": 113,
+        "pct": {
+          "other": 0.4247787610619469,
+          "conservative_talk": 0.07964601769911504,
+          "religious": 0.1504424778761062,
+          "brokered": 0.19469026548672566,
+          "news_talk": 0.1504424778761062
+        }
+      },
+      "lfpCap": 42
+    }
+  ],
+  "pass": false,
+  "failReasons": [
+    "chicago: replenishment other 42% exceeds 40% cap"
+  ],
+  "scorecard": {
+    "inventoryPassMarkets": 6,
+    "ecologyPassMarkets": 5
+  },
+  "runErrors": [],
+  "rowCount": 1152
+}

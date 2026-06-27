@@ -362,6 +362,60 @@ function formatAllowedInMarket(fmt,marketId,year){
   if(marketUrbanRhythmicPlausibilityBlocked(marketId)&&SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(fmt))return false;
   return true;
 }
+/** Commercial formats currently on the market dial (for picker precedent — player can match live competition). */
+function marketCommercialDialFormats(G){
+  const set=new Set();
+  (G.stations||[]).forEach(st=>{
+    if(st&&!st._bpSlotDeferred&&!stationIsNoncommercialInstitutional(st)&&st.format)set.add(st.format);
+  });
+  return set;
+}
+/** Picker / selectable: era unlock OR already on a commercial station in this market (minus market-only blocks). */
+function formatSelectableInMarket(fmt,marketId,year,dialFormats){
+  if(formatAllowedInMarket(fmt,marketId,year))return true;
+  if(!dialFormats||!dialFormats.has(fmt))return false;
+  const fd=FM[fmt];
+  if(!fd||fd.public||fd.institutional)return false;
+  if(fd.marketsOnly&&fd.marketsOnly.length&&!fd.marketsOnly.includes(marketId||''))return false;
+  if(marketUrbanRhythmicPlausibilityBlocked(marketId)&&SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(fmt))return false;
+  return true;
+}
+/** When blueprint wants a not-yet-unlocked format, map to an era-valid commercial format (never spawn locked keys). */
+function blueprintEraFallbackFmt(fmt,marketId,year,band){
+  const y=year??1970;
+  const mid=marketId||ACTIVE_MARKET;
+  const ok=(f,b)=>{
+    if(!f||!formatAllowedInMarket(f,mid,y))return false;
+    const fd=FM[f];
+    if(!fd)return false;
+    if((b||band)==='FM'&&fd.fm===false)return false;
+    if((b||band)==='AM'&&fd.fm===true&&!fd.amOnly)return true; // AM can run many FM-native formats weakly
+    return true;
+  };
+  if(ok(fmt,band))return fmt;
+  const chain={
+    ADULT_CONTEMP:['BEAUTIFUL_MUSIC','MOR','TOP40'],
+    HOT_AC:['ADULT_CONTEMP','BEAUTIFUL_MUSIC','MOR'],
+    CLASSIC_ROCK:['ALBUM_ROCK','BEAUTIFUL_MUSIC','MOR'],
+    CLASSIC_HITS:['OLDIES','ADULT_STANDARDS','BEAUTIFUL_MUSIC','MOR'],
+    ADULT_HITS:['CLASSIC_HITS','OLDIES','ADULT_CONTEMP','BEAUTIFUL_MUSIC','MOR'],
+    ALT_ROCK:['ALBUM_ROCK','BEAUTIFUL_MUSIC','TOP40'],
+    AAA:['ALBUM_ROCK','BEAUTIFUL_MUSIC','ADULT_CONTEMP','MOR'],
+    RHYTHMIC:['TOP40','SOUL_RNB','URBAN_CONTEMP'],
+    URBAN_CONTEMP:['SOUL_RNB','TOP40','RHYTHMIC'],
+    ADULT_STANDARDS:['BEAUTIFUL_MUSIC','MOR','OLDIES'],
+    SPANISH:['SPANISH_ADULT_HITS','SPANISH_CONTEMPORARY','REGIONAL_MEXICAN'],
+  }[fmt];
+  if(Array.isArray(chain)){
+    for(const f of chain){
+      if(ok(f,band))return f;
+    }
+  }
+  for(const f of ['MOR','TOP40','COUNTRY','BEAUTIFUL_MUSIC','ALBUM_ROCK','NEWS_TALK']){
+    if(ok(f,band))return f;
+  }
+  return fmt;
+}
 /** Public (NCE), religious network, and future institutional NCE — no commercial terrestrial spot economics / ownership path. */
 function stationIsNoncommercialInstitutional(s){
   if(!s||s._bpSlotDeferred)return false;
@@ -6224,17 +6278,17 @@ const MARKETS={
       6:{fmt:'GOSPEL',pw:'25kw'},
       10:{fmt:'CLASSIC_HITS',pw:'50kw',str:'moderate'},
       11:{fmt:'COUNTRY',pw:'25kw',str:'emerging'},
-      12:{fmt:'GOSPEL',pw:'25kw'},
+      12:{fmt:'COUNTRY',pw:'25kw',str:'niche'},
       13:{fmt:'COUNTRY',pw:'50kw',str:'strong'},
-      17:{fmt:'GOSPEL',pw:'10kw'},
+      17:{fmt:'COUNTRY',pw:'10kw',str:'niche'},
     },
     fmFacilityByFreq:{
       '92.3 FM':'50kw','93.9 FM':'50kw','94.5 FM':'50kw','95.1 FM':'100kw','96.7 FM':'50kw','97.3 FM':'50kw','98.1 FM':'50kw',
       '99.9 FM':'100kw','100.1 FM':'50kw','101.9 FM':'50kw','102.7 FM':'50kw','104.5 FM':'50kw','105.3 FM':'50kw','106.5 FM':'50kw',
       '103.1 FM':'50kw','105.1 FM':'50kw','105.9 FM':'100kw','107.1 FM':'50kw','107.9 FM':'50kw',
     },
-    blackPop:0.11,hispPop1970:0.02,hispPop2000:0.08,hispPop2020:0.16,churchGoing:0.52,countryBonus:0.10,urbanBonus:0.03,
-    culture:{country:0.14,urban:0.04,newsTalk:0.05,religion:0.09,spanish:0.04},
+    blackPop:0.11,hispPop1970:0.02,hispPop2000:0.08,hispPop2020:0.16,churchGoing:0.52,countryBonus:0.13,urbanBonus:0.03,
+    culture:{country:0.16,urban:0.04,newsTalk:0.05,religion:0.09,spanish:0.04},
     selectBlurb:'In Wichita, local identity holds significant importance, and country, classic rock, and community-focused stations often surpass their size and resources.',
     fmPenBias:-0.04, fmMusicFragMult:0.98, spokenWordAmResilience:1.02, heritageAmResilience:1.04, countryAmHoldout:1.05,
     eduIndex:0.90,
@@ -7695,14 +7749,13 @@ function wlApplyRemoteVanPromotionWithoutGeneratedImage(op,mode,vanCost,turnN,st
     MP.emit('mp_station_logo',payload);
   }
   renderAll();
-  if(statusEl){
-    statusEl.textContent=extra.statusMsg||(mode==='replace'
-      ?`Promotion boost restored — no new image (${why}).`
-      :`Promotion boost applied — no van artwork (${why}).`);
-  }
+  const vanFallbackMsg=extra.statusMsg||(mode==='replace'
+    ?`Promotion boost restored — no new image (${why}).`
+    :`Promotion boost applied — no van artwork (${why}).`);
   showToast(extra.toastMsg||'Remote van promotion benefit applied — custom artwork unavailable.','info');
   try{wlAnalyticsCreativeTool('remote_van',extra.analyticsReason||'blocked',{reason:String(why)});}catch(_e){}
   if(extra.creativeLimitPayload&&typeof extra.creativeLimitPayload==='object')wlAiTrialQuotaToast(extra.creativeLimitPayload);
+  return vanFallbackMsg;
 }
 /** Charge in-game fee and grant jingle package promotion lift without playable audio file. */
 function wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,statusEl,extra){
@@ -7730,13 +7783,11 @@ function wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,st
     });
   }
   renderAll();
-  if(statusEl){
-    wlAiGenStatusBusy(statusEl,false);
-    statusEl.textContent=extra.statusMsg||`Promotion boost applied — no jingle audio (${why}).`;
-  }
+  const jingleFallbackMsg=extra.statusMsg||`Promotion boost applied — no jingle audio (${why}).`;
   showToast(extra.toastMsg||'Jingle package benefit applied — custom audio unavailable.','info');
   try{wlAnalyticsCreativeTool('jingle',extra.analyticsReason||'blocked',{reason:String(why)});}catch(_e){}
   if(extra.creativeLimitPayload&&typeof extra.creativeLimitPayload==='object')wlAiTrialQuotaToast(extra.creativeLimitPayload);
+  return jingleFallbackMsg;
 }
 function wlDismissSoloBankruptcyCoach(){}
 /** Solo: forced liquidation with no acquisition runway — coached explanation (see `m-bankruptcy-coach` in play.html). */
@@ -11725,7 +11776,8 @@ function mpStartGame() {
 }
 
 // Generate a market with all stations as AI (no isPlayer set)
-function genMarketMP(era) {
+function genMarketMP(era, opts) {
+  opts=opts||{};
   // Map era to a neutral base scenario that just sets the year
   const eraMap = { '1970':'under', '1978':'fmrev', '1985':'chrwar' };
   const scenId = eraMap[era] || 'under';
@@ -11733,7 +11785,8 @@ function genMarketMP(era) {
   // Temporarily blank out sc.idx so genMarket doesn't mark any station as player
   const origIdx = sc.idx;
   sc.idx = [];
-  const newG = genMarket(scenId);
+  const supplyPhase1=opts.supplyPhase1Enabled===true;
+  const newG = genMarket(scenId,{supplyPhase1Enabled:supplyPhase1});
   sc.idx = origIdx; // restore
   // All stations are rivals — none are player-controlled yet
   newG.stations.forEach(s => { s.isPlayer = false; });
@@ -12752,8 +12805,10 @@ const MARKET_BP_PATCH={
     9:{fmt:'ALBUM_ROCK',str:'niche'},
     10:{fmt:'CLASSIC_HITS',str:'moderate'},
     11:{fmt:'COUNTRY',pw:'5kw',str:'moderate'},
+    12:{fmt:'COUNTRY',pw:'5kw',str:'niche'},
     15:{fmt:'CLASSIC_ROCK',str:'emerging'},
     16:{fmt:'COUNTRY',str:'strong'},
+    17:{fmt:'COUNTRY',pw:'DA',str:'weak'},
   },
   /** Phoenix — AM Top 40 anchor (slot 0); slot 16 FM country (deferred 1976, not AOR); slot 18 FM Top 40 @1974. */
   phoenix:{
@@ -12775,7 +12830,8 @@ function coerceBlueprintFmtForYear(eff,bpIndex,marketId,year,prefFmt){
   if(ok(prefFmt))return prefFmt;
   if(ok(eff?.fmt))return eff.fmt;
   if(ok(base?.fmt))return base.fmt;
-  return prefFmt||eff?.fmt||base?.fmt;
+  const band=eff?.type||base?.type||'FM';
+  return blueprintEraFallbackFmt(prefFmt||eff?.fmt||base?.fmt,mid,y,band);
 }
 function effectiveBpForMarket(bpIndex,marketId,year){
   const base=BP[bpIndex];
@@ -12962,16 +13018,273 @@ const SMALL_MARKET_TOTAL_STATIONS_ANCHORS=[
 ];
 /**
  * Large-tier (Atlanta, Seattle): Seattle-scale metro depth.
+ * Phase 1 supply POC uses `LARGE_MARKET_TOTAL_STATIONS_ANCHORS_PHASE1` when `_supplyPhase1Enabled`.
  */
-const LARGE_MARKET_TOTAL_STATIONS_ANCHORS=[
+const LARGE_MARKET_TOTAL_STATIONS_ANCHORS_BASELINE=[
   [1975,10],[1980,24],[1985,27],[1990,25],[1995,25],[2000,27],[2005,24],[2026,30],
 ];
+const LARGE_MARKET_TOTAL_STATIONS_ANCHORS_PHASE1=[
+  [1975,10],[1980,24],[1985,28],[1990,29],[1995,30],[2000,32],[2005,33],[2010,34],[2026,36],
+];
+/** @deprecated alias — baseline curve for pre–Phase-1 saves / A/B control arm */
+const LARGE_MARKET_TOTAL_STATIONS_ANCHORS=LARGE_MARKET_TOTAL_STATIONS_ANCHORS_BASELINE;
 /**
  * Mega-tier (NY / LA / Chicago): heavy dial throughout; slow early growth then sustained fragmentation.
  */
-const MEGA_MARKET_TOTAL_STATIONS_ANCHORS=[
+const MEGA_MARKET_TOTAL_STATIONS_ANCHORS_BASELINE=[
   [1975,22],[1985,32],[1995,35],[2025,42],[2026,44],
 ];
+const MEGA_MARKET_TOTAL_STATIONS_ANCHORS_PHASE1=[
+  [1975,22],[1985,33],[1990,36],[1995,38],[2000,40],[2005,41],[2010,42],[2025,45],[2026,46],
+];
+const MEGA_MARKET_TOTAL_STATIONS_ANCHORS=MEGA_MARKET_TOTAL_STATIONS_ANCHORS_BASELINE;
+/** Station Supply Phase 1 — attrition-aware replenishment (see docs/STATION_SUPPLY_PHASE1_ANCHOR_REPLENISHMENT_SPEC.md) */
+const SUPPLY_PHASE1_REPLENISH_MIN_LAG_YEARS=2;
+const SUPPLY_PHASE1_REPLENISH_ATTEMPT_P_FALL=0.35;
+const SUPPLY_PHASE1_REPLENISH_ATTEMPT_P_SPRING=0.15;
+const SUPPLY_PHASE1_REPLENISH_MAX_PER_YEAR=1;
+const SUPPLY_PHASE1_REPLENISH_HEADROOM=1;
+const SUPPLY_PHASE1_ATTRITION_CAP_SLACK=2;
+/** Max share of replenishment launches in any one format-family bucket (POC gate: 40%). */
+const SUPPLY_PHASE1_REPLENISH_FAMILY_CAP=0.38;
+/** AM attrition replacement candidates — survival formats + niche AM staples (not tier-inject FM skew). */
+const SUPPLY_PHASE1_REPLENISH_AM_SPECS=[
+  {type:'AM',fmt:'BROKERED_PROGRAMMING',pw:'5kw',str:'niche'},
+  {type:'AM',fmt:'NEWS_TALK',pw:'10kw',str:'emerging'},
+  {type:'AM',fmt:'CONSERVATIVE_TALK',pw:'10kw',str:'niche'},
+  {type:'AM',fmt:'SPORTS_TALK',pw:'10kw',str:'niche'},
+  {type:'AM',fmt:'PERSONALITY_TALK',pw:'5kw',str:'niche'},
+  {type:'AM',fmt:'GOSPEL',pw:'5kw',str:'niche'},
+  {type:'AM',fmt:'CHRISTIAN',pw:'5kw',str:'niche'},
+  {type:'AM',fmt:'COUNTRY',pw:'10kw',str:'moderate'},
+  {type:'AM',fmt:'ADULT_STANDARDS',pw:'5kw',str:'niche'},
+  {type:'AM',fmt:'SOUL_RNB',pw:'5kw',str:'niche'},
+  {type:'AM',fmt:'MOR',pw:'10kw',str:'niche'},
+];
+/** FM attrition replacement candidates — music-first fragmentation (not talk-heavy tier inject). */
+const SUPPLY_PHASE1_REPLENISH_FM_SPECS=[
+  {type:'FM',fmt:'COUNTRY',pw:'50kw',str:'emerging'},
+  {type:'FM',fmt:'HOT_AC',pw:'50kw',str:'moderate'},
+  {type:'FM',fmt:'ADULT_CONTEMP',pw:'50kw',str:'moderate'},
+  {type:'FM',fmt:'CLASSIC_HITS',pw:'50kw',str:'moderate'},
+  {type:'FM',fmt:'ADULT_HITS',pw:'50kw',str:'emerging'},
+  {type:'FM',fmt:'OLDIES',pw:'50kw',str:'emerging'},
+  {type:'FM',fmt:'RHYTHMIC',pw:'50kw',str:'emerging'},
+  {type:'FM',fmt:'TOP40',pw:'50kw',str:'moderate'},
+  {type:'FM',fmt:'CLASSIC_ROCK',pw:'50kw',str:'moderate'},
+  {type:'FM',fmt:'ALBUM_ROCK',pw:'25kw',str:'emerging'},
+  {type:'FM',fmt:'SPANISH',pw:'50kw',str:'emerging'},
+  {type:'FM',fmt:'SPANISH_CONTEMPORARY',pw:'50kw',str:'emerging'},
+  {type:'FM',fmt:'REGIONAL_MEXICAN',pw:'50kw',str:'emerging'},
+  {type:'FM',fmt:'URBAN_CONTEMP',pw:'50kw',str:'emerging'},
+];
+function supplyPhase1Active(G){
+  return !!(G&&G._supplyPhase1Enabled);
+}
+function supplyPhase1AnchorsEnabled(explicit){
+  if(explicit===true)return true;
+  if(explicit===false)return false;
+  if(typeof G!=='undefined'&&G&&G._supplyPhase1Enabled)return true;
+  return false;
+}
+function tierAttritionCommercialCap(marketId,year){
+  return tierMarketCommercialTargetForGen(marketId,year,supplyPhase1AnchorsEnabled(true))
+    +SUPPLY_PHASE1_ATTRITION_CAP_SLACK;
+}
+function tierReplenishTarget(G){
+  const mkt=G.marketId||ACTIVE_MARKET;
+  const y=G.year||1970;
+  return Math.max(1,tierMarketCommercialTargetForGen(mkt,y,supplyPhase1Active(G))-SUPPLY_PHASE1_REPLENISH_HEADROOM);
+}
+function countCommercialActiveForSupply(G){
+  return (G.stations||[]).filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!stationIsNoncommercialInstitutional(s)).length;
+}
+function supplyPhase1ReplenishFormatFamily(fmt){
+  if(!fmt)return 'other';
+  if(typeof spanishCompositionIsSpanishLaneFmt==='function'&&spanishCompositionIsSpanishLaneFmt(fmt))return 'spanish';
+  if(fmt==='BROKERED_PROGRAMMING')return 'brokered';
+  if(fmt==='RELIGIOUS_NETWORK'||fmt==='GOSPEL')return 'religious';
+  if(fmt==='CONSERVATIVE_TALK')return 'conservative_talk';
+  if(['NEWS_TALK','SPORTS_TALK','PERSONALITY_TALK','ALL_NEWS'].includes(fmt))return 'news_talk';
+  return 'other';
+}
+function supplyPhase1ReplenishLaunchedFamilyShare(G,fam){
+  const by=G._attritionReplenishLaunchedByFamily||{};
+  let tot=0;
+  Object.keys(by).forEach(k=>{tot+=by[k]||0;});
+  if(tot<=0)return 0;
+  return (by[fam]||0)/tot;
+}
+function supplyPhase1ReplenishDialFamilyCounts(G){
+  const counts={};
+  (G.stations||[]).forEach(s=>{
+    if(!s||s._bpSlotDeferred||stationIsNoncommercialInstitutional(s))return;
+    const fam=supplyPhase1ReplenishFormatFamily(s.format);
+    counts[fam]=(counts[fam]||0)+1;
+  });
+  return counts;
+}
+function supplyPhase1ReplenishSpecsForEnt(ent){
+  const band=ent&&ent.band;
+  if(band==='AM')return SUPPLY_PHASE1_REPLENISH_AM_SPECS.slice();
+  if(band==='FM')return SUPPLY_PHASE1_REPLENISH_FM_SPECS.slice();
+  return SUPPLY_PHASE1_REPLENISH_AM_SPECS.concat(SUPPLY_PHASE1_REPLENISH_FM_SPECS);
+}
+function supplyPhase1ReplenishSpecWeight(G,ent,spec){
+  const mkt=G.marketId||ACTIVE_MARKET;
+  const y=G.year||1970;
+  const m=MARKETS[mkt]||MARKETS.atlanta;
+  const fam=supplyPhase1ReplenishFormatFamily(spec.fmt);
+  const removedFam=ent.formatFamily||'other';
+  const dialFam=supplyPhase1ReplenishDialFamilyCounts(G);
+  const launchedShare=supplyPhase1ReplenishLaunchedFamilyShare(G,fam);
+  let w=1;
+  if(ent.band&&spec.type===ent.band)w*=2.4;
+  else if(ent.band&&spec.type!==ent.band)w*=0.35;
+  if(fam===removedFam)w*=0.55;
+  else if(fam==='other'&&removedFam==='other')w*=0.75;
+  const onDial=dialFam[fam]||0;
+  w*=1+Math.max(0,2.2-onDial)*0.28;
+  if(launchedShare>=SUPPLY_PHASE1_REPLENISH_FAMILY_CAP)w*=0.04;
+  else if(launchedShare>=SUPPLY_PHASE1_REPLENISH_FAMILY_CAP-0.10)w*=0.22;
+  if(fam==='news_talk'){
+    w*=(ent.band==='AM'?0.72:0.38);
+    if((dialFam.news_talk||0)>=2)w*=0.55;
+  }
+  if(fam==='conservative_talk'&&(dialFam.conservative_talk||0)>=1)w*=0.65;
+  if(fam==='spanish'){
+    const hisp=typeof isHighHispanicMarket==='function'&&isHighHispanicMarket(mkt);
+    w*=hisp?1.45:0.18;
+    if((G._attritionReplenishLaunchedByFamily?.spanish||0)>=2)w*=0.25;
+  }
+  if(fam==='religious'){
+    const gFit=gospelCommercialMarketFit01(mkt,m,y,G);
+    w*=0.35+0.85*gFit;
+    if((dialFam.religious||0)>=1)w*=0.6;
+  }
+  if(fam==='brokered')w*=ent.band==='AM'?1.15:0.12;
+  if(fam==='other'&&spec.type==='FM'){
+    const co=typeof m.countryBonus==='number'?m.countryBonus:0;
+    if(spec.fmt==='COUNTRY'&&co>=0.08)w*=1.35;
+  }
+  if(marketUrbanRhythmicPlausibilityBlocked(mkt)&&SMALL_MARKET_URBAN_RHYTHM_FMTS.includes(spec.fmt))w=0;
+  return w;
+}
+function buildAttritionReplenishWeightedSpecs(G,ent){
+  const mkt=G.marketId||ACTIVE_MARKET;
+  const y=G.year||1970;
+  const raw=supplyPhase1ReplenishSpecsForEnt(ent);
+  const out=[];
+  for(const spec of raw){
+    if(isPhoenixDiagMarket(mkt)&&phoenixDiagTierInjectFormatBlocked(spec.fmt))continue;
+    if(isPhoenixDiagMarket(mkt)&&phoenixDiagTierInjectRockBlocked(spec.fmt))continue;
+    if(!formatAllowedInMarket(spec.fmt,mkt,y))continue;
+    const w=supplyPhase1ReplenishSpecWeight(G,ent,spec);
+    if(w<=0)continue;
+    out.push({spec,w});
+  }
+  return out;
+}
+function pickAttritionReplenishSpecTryOrder(G,ent){
+  const weighted=buildAttritionReplenishWeightedSpecs(G,ent);
+  if(!weighted.length)return [];
+  const total=weighted.reduce((s,x)=>s+x.w,0);
+  let r=Math.random()*total;
+  let first=null;
+  for(const item of weighted){
+    r-=item.w;
+    if(r<=0){first=item.spec;break;}
+  }
+  if(!first)first=weighted[0].spec;
+  const rest=weighted.slice().sort((a,b)=>b.w-a.w).map(x=>x.spec).filter(s=>s!==first);
+  return [first].concat(rest);
+}
+function enqueueAttritionReplenishment(G,meta){
+  if(!supplyPhase1Active(G))return;
+  if(!G._attritionReplenishQueue)G._attritionReplenishQueue=[];
+  G._attritionReplenishQueue.push({
+    removedAtYear:meta.removedAtYear,
+    removedAtPeriod:meta.removedAtPeriod||2,
+    band:meta.band||null,
+    formatFamily:meta.formatFamily||'other',
+  });
+}
+function tryLaunchOneAttritionReplenishment(G,ent){
+  const mkt=G.marketId||ACTIVE_MARKET;
+  if(countMegaFragmentationEligibleCommercial(G.stations)>=countUsableCommercialDialSlots(mkt))return false;
+  const tryOrder=pickAttritionReplenishSpecTryOrder(G,ent);
+  if(!tryOrder.length)return false;
+  let spec=null;
+  let freq=null;
+  for(const cand of tryOrder){
+    const f=nextUnusedCommercialFreq(G,cand.type);
+    if(f){spec=cand;freq=f;break;}
+  }
+  if(!spec||!freq)return false;
+  const s=mkStn(spec,freq,G.year);
+  s.color=CLR[(G.stations?.length||0)%CLR.length];
+  s.entryTurn={year:G.year,period:G.period};
+  s.launchPeriod=G.turn||0;
+  s._attritionReplenishEntrant=true;
+  if(spec.type==='FM'){
+    s.oq=Math.min(90,Math.round(s.oq+3));
+    Object.values(s.prog).forEach(sd=>{if(sd&&sd.quality!=null)sd.quality=Math.min(91,Math.round(sd.quality+2));});
+    refreshStationOQ(s,G);
+  }
+  G.stations.push(s);
+  seedNewEntry(s,G);
+  calcRev(s,G);
+  if(!G._attritionReplenishLaunchedCumulative)G._attritionReplenishLaunchedCumulative=0;
+  G._attritionReplenishLaunchedCumulative++;
+  if(!G._attritionReplenishLaunchedByFamily)G._attritionReplenishLaunchedByFamily={};
+  const fam=supplyPhase1ReplenishFormatFamily(spec.fmt);
+  G._attritionReplenishLaunchedByFamily[fam]=(G._attritionReplenishLaunchedByFamily[fam]||0)+1;
+  if(G.news){
+    G.news.unshift({
+      v:'LOW',
+      t:`📡 ${s.callLetters} signs on — ${fmtLabel(spec.fmt)} (${spec.type} ${freq}). New entrant fills a surrendered license.`,
+      y:G.year,
+      p:G.period,
+    });
+  }
+  return true;
+}
+function processAttritionReplenishmentLaunches(G){
+  if(!supplyPhase1Active(G))return;
+  const q=G._attritionReplenishQueue;
+  if(!q||!q.length)return;
+  const y=G.year||1970;
+  const p=G.period||1;
+  const launchedYear=G._attritionReplenishLaunchedYear;
+  if(launchedYear===y&&(G._attritionReplenishLaunchedCountYear||0)>=SUPPLY_PHASE1_REPLENISH_MAX_PER_YEAR)return;
+  const attemptP=p===2?SUPPLY_PHASE1_REPLENISH_ATTEMPT_P_FALL:SUPPLY_PHASE1_REPLENISH_ATTEMPT_P_SPRING;
+  if(Math.random()>attemptP)return;
+  const comm=countCommercialActiveForSupply(G);
+  const target=tierReplenishTarget(G);
+  if(comm>=target)return;
+  const mkt=G.marketId||ACTIVE_MARKET;
+  if(countMegaFragmentationEligibleCommercial(G.stations)>=countUsableCommercialDialSlots(mkt))return;
+  const remain=[];
+  let launched=false;
+  for(const ent of q){
+    if(launched){remain.push(ent);continue;}
+    if(y<ent.removedAtYear+SUPPLY_PHASE1_REPLENISH_MIN_LAG_YEARS
+      ||(y===ent.removedAtYear+SUPPLY_PHASE1_REPLENISH_MIN_LAG_YEARS&&p<ent.removedAtPeriod)){
+      remain.push(ent);
+      continue;
+    }
+    if(tryLaunchOneAttritionReplenishment(G,ent)){
+      launched=true;
+      if(launchedYear!==y){
+        G._attritionReplenishLaunchedYear=y;
+        G._attritionReplenishLaunchedCountYear=1;
+      }else{
+        G._attritionReplenishLaunchedCountYear=(G._attritionReplenishLaunchedCountYear||0)+1;
+      }
+    }else remain.push(ent);
+  }
+  G._attritionReplenishQueue=remain;
+}
 function isSmallMarketId(marketId){
   return (MARKETS[marketId||'']||{}).rankTier==='small';
 }
@@ -12992,24 +13305,30 @@ function countUsableCommercialDialSlots(marketId){
 function smallMarketTotalStationsForYear(year){
   return interpolateMarketTotalStationsForYear(year,SMALL_MARKET_TOTAL_STATIONS_ANCHORS);
 }
-function largeMarketTotalStationsTargetForYear(year){
-  return interpolateMarketTotalStationsForYear(year,LARGE_MARKET_TOTAL_STATIONS_ANCHORS);
+function largeMarketTotalStationsTargetForYear(year,supplyPhase1Enabled){
+  const anchors=supplyPhase1AnchorsEnabled(supplyPhase1Enabled)
+    ?LARGE_MARKET_TOTAL_STATIONS_ANCHORS_PHASE1
+    :LARGE_MARKET_TOTAL_STATIONS_ANCHORS_BASELINE;
+  return interpolateMarketTotalStationsForYear(year,anchors);
 }
-function megaMarketTotalStationsForYear(year){
-  return interpolateMarketTotalStationsForYear(year,MEGA_MARKET_TOTAL_STATIONS_ANCHORS);
+function megaMarketTotalStationsForYear(year,supplyPhase1Enabled){
+  const anchors=supplyPhase1AnchorsEnabled(supplyPhase1Enabled)
+    ?MEGA_MARKET_TOTAL_STATIONS_ANCHORS_PHASE1
+    :MEGA_MARKET_TOTAL_STATIONS_ANCHORS_BASELINE;
+  return interpolateMarketTotalStationsForYear(year,anchors);
 }
 /** `small`, `large`, and `mega` markets use year-scaled dial depth (not `medium`). */
 function tierUsesDialScaling(marketId){
   const rt=(MARKETS[marketId||'']||{}).rankTier||'';
   return rt==='small'||rt==='large'||rt==='mega';
 }
-function tierMarketCommercialTargetForGen(marketId,bpYear){
+function tierMarketCommercialTargetForGen(marketId,bpYear,supplyPhase1Enabled){
   const rt=(MARKETS[marketId||'']||{}).rankTier||'medium';
   const cap=countUsableCommercialDialSlots(marketId);
   const tot=
     rt==='small'?smallMarketTotalStationsForYear(bpYear):
-    rt==='large'?largeMarketTotalStationsTargetForYear(bpYear):
-    rt==='mega'?megaMarketTotalStationsForYear(bpYear):
+    rt==='large'?largeMarketTotalStationsTargetForYear(bpYear,supplyPhase1Enabled):
+    rt==='mega'?megaMarketTotalStationsForYear(bpYear,supplyPhase1Enabled):
     null;
   if(tot==null)return 19;
   return Math.max(1,Math.min(cap,tot-2));
@@ -14855,11 +15174,11 @@ function gospelCommercialMarketAppealDelta(marketId,mkt,year){
   if(marketId==='dallas')d+=0.028;
   if(marketId==='chicago'||marketId==='newyork')d+=0.02;
   if(marketId==='losangeles')d+=0.012;
-  if(marketId==='wichita')d+=0.012;
   if(/coastal_secular/i.test(arch))d-=0.04;
   if(marketId==='seattle'||marketId==='sanfrancisco')d-=0.034;
-  if(tier==='small'&&bp<0.12&&marketId!=='wichita')d-=0.016;
-  if(year<1983)d-=0.014*(1-_smoothstep(1972,1983,year));
+  if(tier==='small'&&bp<0.12)d-=0.022;
+  /* Duncan-style books: Relig/Gospel ~1–3% through the 80s — era damp before CCM lift. */
+  if(year<1992)d-=0.032*(1-_smoothstep(1970,1992,year));
   return d;
 }
 /**
@@ -14883,12 +15202,13 @@ function gospelCommercialMarketFit01(marketId,mkt,yearOpt,Gopt){
   else if(marketId==='nashville')f+=0.17;
   else if(marketId==='dallas')f+=0.055;
   else if(marketId==='memphis'||marketId==='birmingham')f+=0.13;
-  else if(marketId==='wichita')f+=0.11;
   else if(marketId==='chicago'||marketId==='newyork'||marketId==='losangeles')f+=0.055;
-  if(/sunbelt|southern|country|legacy|prairie|plains|heartland/i.test(arch))f+=0.048;
+  if(/sunbelt|southern|country|legacy|prairie|plains|heartland/i.test(arch)){
+    f+=(tier==='small'&&bp<0.14)?0.014:0.048;
+  }
   if(/coastal_secular/i.test(arch))f-=0.11;
   if(marketId==='seattle'||marketId==='portland'||marketId==='sanfrancisco')f-=0.22;
-  if(tier==='small'&&bp<0.13&&marketId!=='wichita')f-=0.055;
+  if(tier==='small'&&bp<0.13)f-=0.068;
   const eco=marketEcologySnapshotForGameplay(marketId,m,y,gCtx);
   if(eco&&typeof eco.gospelStrength==='number'){
     f=0.88*f+0.12*_clamp01(eco.gospelStrength);
@@ -14902,6 +15222,10 @@ function gospelCommercialMarketFit01(marketId,mkt,yearOpt,Gopt){
 function aiGospelFormatPlausibilityMult(marketId,year,gospelStations,candidateGreenfield,relNetworkStations){
   const mkt=MARKETS[marketId]||MARKETS.atlanta;
   const fit=gospelCommercialMarketFit01(marketId,mkt,year,G);
+  const tier=String(mkt.rankTier||'medium');
+  const bp=typeof mkt.blackPop==='number'?mkt.blackPop:0.2;
+  const gs=gospelStations|0;
+  if(year<1995&&gs>=1&&(tier==='small'||bp<0.14))return 0.10;
   const base=1+gospelCommercialMarketAppealDelta(marketId,mkt,year)*1.06;
   let m=base;
   const relN=Math.max(0,Math.min(4,Number(relNetworkStations)||0));
@@ -14909,12 +15233,13 @@ function aiGospelFormatPlausibilityMult(marketId,year,gospelStations,candidateGr
     const rnEra=_smoothstep(1988,2006,year);
     m*=1+0.05*Math.min(2,relN)*fit*rnEra;
   }
-  const gs=gospelStations|0;
-  if(candidateGreenfield&&gs===0)m*=0.60+0.38*fit;
-  if(gs===1)m*=0.72+0.22*fit;
-  if(gs>=2)m*=0.52+0.20*fit;
-  if(gs>=3)m*=0.68;
-  return Math.max(0.24,Math.min(1.36,m));
+  if(candidateGreenfield&&gs===0)m*=0.42+0.24*fit;
+  if(gs===1)m*=0.48+0.14*fit;
+  if(gs>=2)m*=0.32+0.12*fit;
+  if(gs>=3)m*=0.40;
+  if(year<1992)m*=0.55+0.45*_smoothstep(1970,1992,year);
+  if(year<1992&&(tier==='small'||bp<0.14))m*=0.72;
+  return Math.max(0.20,Math.min(1.22,m));
 }
 /** Heritage commercial CCM — exempt from institutional crowding decline (not a format sunset). */
 function christianCommercialIsHeritageStation(s,G){
@@ -15251,7 +15576,12 @@ function appl(s,coh,G){
   }
   if(s.format==='GOSPEL'){
     mktFmt+=gospelCommercialMarketAppealDelta(marketId,mkt,year);
-    mktFmt+=0.026*gospelCommercialMarketFit01(marketId,mkt,year,G);
+    mktFmt+=0.018*gospelCommercialMarketFit01(marketId,mkt,year,G);
+    if(year<1992&&(mkt.rankTier==='small'||(mkt.blackPop||0)<0.14)){
+      mktFmt*=0.80+0.20*_smoothstep(1970,1992,year);
+      const gSh=s.rat?.share??0;
+      if(gSh>=0.025)mktFmt*=1-_smoothstep(0.025,0.050,gSh)*0.38;
+    }
   }
   if(s.format==='CHRISTIAN'){
     mktFmt+=christianCommercialMarketAppealDelta(marketId,mkt,year);
@@ -20560,9 +20890,10 @@ function runMarketAttrition(G){
 
   const allComm = G.stations.filter(s=>s&&!s._bpSlotDeferred&&!s.isPlayer&&!stationIsNoncommercialInstitutional(s));
 
-  // Cap: Atlanta market should have at most ~22-24 commercial stations post-2000
-  // (~26 1990s, ~24 2000s, ~22 2010s — actual market data)
-  const MKTCAP = year>=2015?21:year>=2005?23:year>=1995?26:99;
+  const mktId=G.marketId||ACTIVE_MARKET;
+  const MKTCAP=supplyPhase1Active(G)
+    ?tierAttritionCommercialCap(mktId,year)
+    :(year>=2015?21:year>=2005?23:year>=1995?26:99);
   const overCap = allComm.length - MKTCAP;
   // Floor: never remove stations that would take the market below minimum viable size
   // A market needs at least 8 commercial rivals to feel competitive
@@ -20677,6 +21008,12 @@ function runMarketAttrition(G){
       if(uz<pNicZ+pRemZ&&canRemove>removed){
         if(!G._attritionRemovedCumulative)G._attritionRemovedCumulative=0;
         G._attritionRemovedCumulative++;
+        enqueueAttritionReplenishment(G,{
+          removedAtYear:G.year,
+          removedAtPeriod:G.period,
+          band:s.sig?.type||null,
+          formatFamily:supplyPhase1ReplenishFormatFamily(s.format),
+        });
         acts.push({v:'LOW',t:`📻 ${s.callLetters} goes dark — ${fmtLabel(s.format)} on AM, license surrendered or sold off-air.`});
         removedIds.add(s.id);
         G.stations.splice(G.stations.indexOf(s),1);
@@ -20718,6 +21055,12 @@ function runMarketAttrition(G){
     if(u<pNiche+pRemove&&canRemoveNow){
       if(!G._attritionRemovedCumulative)G._attritionRemovedCumulative=0;
       G._attritionRemovedCumulative++;
+      enqueueAttritionReplenishment(G,{
+        removedAtYear:G.year,
+        removedAtPeriod:G.period,
+        band:s.sig?.type||null,
+        formatFamily:supplyPhase1ReplenishFormatFamily(s.format),
+      });
       acts.push({v:'LOW',t:`📻 ${s.callLetters} goes dark — ${fmtLabel(s.format)} on AM, license surrendered or sold off-air.`});
       removedIds.add(s.id);
       G.stations.splice(G.stations.indexOf(s),1);
@@ -24040,7 +24383,9 @@ function wlTutorialTurnaroundOnAdvTurnForBoost(){
 }
 
 // ── GENERATE MARKET ───────────────────────────────────────────────
-function genMarket(scenId){
+function genMarket(scenId, genOpts){
+  genOpts=genOpts||{};
+  const supplyPhase1=genOpts.supplyPhase1Enabled===true;
   UC=new Set();amfIdx=0;fmfIdx=0;
   _gbBrandIdTaken=new Set();
   setNextFreqListsForMarket(ACTIVE_MARKET);
@@ -24054,7 +24399,7 @@ function genMarket(scenId){
   const dialCtx={stations,marketId:ACTIVE_MARKET};
   const tierDialScaling=tierUsesDialScaling(ACTIVE_MARKET)&&sc.id!=='tutorial_turnaround';
   const commercialTarget=tierDialScaling
-    ?tierMarketCommercialTargetForGen(ACTIVE_MARKET,bpYear)
+    ?tierMarketCommercialTargetForGen(ACTIVE_MARKET,bpYear,supplyPhase1)
     :19;
   const atlantaDefSet=new Set();
   if(bpYear===1970){
@@ -24344,6 +24689,10 @@ function genMarket(scenId){
       _megaFragmentationAdded:fragShell._megaFragmentationAdded||0,
       _spanishLaunchesQueue:fragShell._spanishLaunchesQueue||[],
       _fragmentationLaunchesQueue:fragShell._fragmentationLaunchesQueue||[],
+      _supplyPhase1Enabled:supplyPhase1,
+      _attritionReplenishQueue:[],
+      _attritionReplenishLaunchedCumulative:0,
+      _attritionReplenishLaunchedByFamily:{},
       sportsRights:{},franchiseRights:{},teamRecords:{},
     };
   }
@@ -24375,6 +24724,10 @@ function genMarket(scenId){
     _megaFragmentationAdded:0,
     _spanishLaunchesQueue:marketSpanishLaunchesQueueForNewGame(ACTIVE_MARKET),
     _fragmentationLaunchesQueue:marketFragmentationLaunchesQueueForNewGame(ACTIVE_MARKET),
+    _supplyPhase1Enabled:supplyPhase1,
+    _attritionReplenishQueue:[],
+    _attritionReplenishLaunchedCumulative:0,
+    _attritionReplenishLaunchedByFamily:{},
     ...(sc.id==='tutorial_turnaround'?{
       tutorialMode:true,tutorialAct:1,tutorialStep:0,
       _tutorialIntroDone:false,
@@ -32012,6 +32365,12 @@ function rivalReformat(G){
           const greenG=(fmtCounts.GOSPEL||0)===0;
           const relNetCt=fmtCounts.RELIGIOUS_NETWORK||0;
           score*=aiGospelFormatPlausibilityMult(G.marketId||ACTIVE_MARKET,y,fmtCounts.GOSPEL||0,greenG&&count===0,relNetCt);
+          const mktG=MARKETS[G.marketId||ACTIVE_MARKET]||MARKETS.atlanta;
+          const smallLowBp=mktG.rankTier==='small'||(mktG.blackPop||0)<0.14;
+          if(y<1992&&smallLowBp){
+            score*=0.20;
+            if((fmtCounts.GOSPEL||0)>=1)score*=0.04;
+          }
         }
         if(f==='CHRISTIAN'){
           const greenC=(fmtCounts.CHRISTIAN||0)===0;
@@ -33768,6 +34127,7 @@ function advTurn(mpCoalesceSeq){
       processMarketFragmentationLaunches(G);
       ensureReligiousNetworkScheduledForGame(G);
       const ev=simQuiet?[]:[...chkEv(G),...applyDriftInflections(G),...pledgeDriveCheck(G),...runMarketAttrition(G)];
+      processAttritionReplenishmentLaunches(G);
     corporateDecay(G);
     if(!simQuiet)runCorpLMAOffers(G);
     if(!simQuiet)talentEvents(G);
@@ -36563,7 +36923,7 @@ function brandMarketingJingleOnlyHtml(leg){
     ${jingleLiftActive?`<p class="di" style="font-size:13px;color:var(--amb);margin:0 0 8px;font-style:normal">Jingle promotion boost: <strong>+${Math.round(JINGLE_MARKETING_LIFT*100)}%</strong>${jingleAgeYears!=null?' — commissioned <strong>'+s.jingleCommissionedYear+'</strong> (<strong>'+jingleAgeYears+'</strong> calendar yr'+(jingleAgeYears===1?'':'s')+' on the books).':''} <span style="color:var(--mut)">Boost persists across periods until you commission a new package.</span></p>`:''}
     <div id="bm-jingle-status-${safe}" class="wl-ai-gen-status${s._jingleGenPending?' wl-ai-gen-status--busy':''}" role="status" aria-live="polite"></div>
     <label for="bm-jingle-tagline-${safe}" class="di" style="display:block;font-size:13px;color:var(--mut);margin-bottom:4px">Optional tagline (max 60 characters)</label>
-    <input type="text" id="bm-jingle-tagline-${safe}" maxlength="60" placeholder="e.g. Atlanta’s hits / W — K — T — X" style="width:100%;max-width:420px;background:var(--crd);border:1px solid var(--bdh);color:var(--wht);padding:8px 10px;border-radius:6px;margin-bottom:10px" ${pendingJingle||s._jingleGenPending?'disabled':''}>
+    <input type="text" id="bm-jingle-tagline-${safe}" maxlength="60" placeholder="e.g. Atlanta’s hits / W — K — T — X" value="${rosterHtmlEsc(typeof s._jinglePendingTagline==='string'?s._jinglePendingTagline:(typeof s.jingleTagline==='string'?s.jingleTagline:''))}" style="width:100%;max-width:420px;background:var(--crd);border:1px solid var(--bdh);color:var(--wht);padding:8px 10px;border-radius:6px;margin-bottom:10px" ${pendingJingle||s._jingleGenPending?'disabled':''}>
     ${hasJingleAudio?`<div style="margin:8px 0"><span class="di" style="font-size:12px;color:var(--mut)">Current jingle</span><br><audio controls preload="metadata" src="${wlGameMediaAbsUrl(s.cosmeticJingleUrl+(s.cosmeticJingleV?'?v='+s.cosmeticJingleV:''))}" style="width:100%;max-width:420px;margin-top:4px"></audio><button type="button" class="abt" style="margin-top:6px" onclick="wlSaveStationJingleFile('${s.id}',null)">Save file</button></div>`:''}
     ${pendingJingle?`<p class="di" style="font-size:13px;color:var(--wht);margin:8px 0">Pick your favorite — promotion credit applies when you choose.</p>${jinglePickHtml}`:''}
     <div style="display:flex;flex-wrap:nowrap;gap:8px;align-items:center">
@@ -36803,6 +37163,42 @@ function bmRefreshBrandHubIfOpen(){
   if(typeof BM_ACTIVE_SID==='undefined'||!BM_ACTIVE_SID)return;
   if(!document.getElementById('m-brand')?.classList.contains('on'))return;
   renderBrandMarketingStation(BM_ACTIVE_SID);
+}
+/** Re-render open Promotion sub-panels (van / jingle / logo) after async creative ops complete. */
+function bmRefreshBrandSubIfOpen(sid){
+  sid=ensureOpsSourceSid(sid||'');
+  if(!sid||!G)return;
+  if(document.getElementById('m-brand-van')?.classList.contains('on')){
+    const s=G.stations.find(st=>st.id===sid);
+    if(s&&mpIsMe(s)){
+      const body=document.getElementById('brand-van-b');
+      if(body)body.innerHTML=brandMarketingVanOnlyHtml(s);
+    }
+  }
+  if(document.getElementById('m-brand-jingle')?.classList.contains('on')){
+    const legs=brandMarketingStationLegs(sid);
+    const src=legs.length?simulcastOperationalSource(legs[0]):G.stations.find(st=>st.id===sid);
+    if(src&&mpIsMe(src)){
+      const body=document.getElementById('brand-jingle-b');
+      if(body){
+        body.innerHTML=brandMarketingJingleOnlyHtml(src);
+        wlRefreshBmJingleStatusAfterRender();
+      }
+    }
+  }
+  if(document.getElementById('m-brand-logo')?.classList.contains('on')){
+    const s=G.stations.find(st=>st.id===sid);
+    if(s&&mpIsMe(s)){
+      const body=document.getElementById('brand-logo-b');
+      if(body)body.innerHTML=brandMarketingLogoOnlyHtml(s);
+    }
+  }
+}
+function bmRefreshBrandMarketingUi(stationId){
+  bmRefreshBrandSubIfOpen(stationId);
+  if(typeof BM_ACTIVE_SID==='undefined'||!BM_ACTIVE_SID)return;
+  if(ensureOpsSourceSid(BM_ACTIVE_SID)!==ensureOpsSourceSid(stationId))return;
+  bmRefreshBrandHubIfOpen();
 }
 function bmCloseBrandSub(modalId){
   cm(modalId);
@@ -39490,17 +39886,19 @@ function wlFmtPickerGroupIdForFormat(fmt){
 }
 function wlFmtPickerEligibleFormats(s,G){
   const isAM=s.sig.type==='AM';
+  const dial=marketCommercialDialFormats(G);
   return Object.keys(FM).filter(f=>{
     if(FM[f]?.playerHidden)return false;
-    if(f===s.format||FM[f].public||FM[f].institutional||!formatAllowedInMarket(f,G.marketId,G.year))return false;
+    if(f===s.format||FM[f].public||FM[f].institutional||!formatSelectableInMarket(f,G.marketId,G.year,dial))return false;
     if(FM[f].amOnly&&(!isAM||s.fmBooster))return false;
     return true;
   });
 }
 function wlFmtPickerFormatUnlocked(f,s,G){
   const meta=FM[f]||{};
-  const yearOk=G.unlockedFormats.includes(f)||(meta.unlock||9999)<=G.year;
-  const marketOk=formatAllowedInMarket(f,G.marketId,G.year);
+  const dial=marketCommercialDialFormats(G);
+  const yearOk=G.unlockedFormats.includes(f)||(meta.unlock||9999)<=G.year||dial.has(f);
+  const marketOk=formatSelectableInMarket(f,G.marketId,G.year,dial);
   return yearOk&&marketOk;
 }
 function wlFmtPickerSortFormats(fmts,s,G){
@@ -39557,14 +39955,17 @@ function wlSpanishFormatMarketFitHint(fmt,marketId,G){
 }
 function wlFmtPickerRenderCard(f,s,G,FS,occ,isAM){
   const meta=FM[f]||{};
+  const dial=marketCommercialDialFormats(G);
   const unlocked=wlFmtPickerFormatUnlocked(f,s,G);
   const fmr=meta.fm&&isAM;
   const cnt=occ.filter(o=>o===f).length;
-  const yearOk=G.unlockedFormats.includes(f)||(meta.unlock||9999)<=G.year;
-  const marketOk=formatAllowedInMarket(f,G.marketId,G.year);
+  const calendarUnlock=G.unlockedFormats.includes(f)||(meta.unlock||9999)<=G.year;
+  const dialPrecedent=!calendarUnlock&&dial.has(f);
+  const marketOk=formatSelectableInMarket(f,G.marketId,G.year,dial);
   let badge,bc,cls='fmo';
-  if(!yearOk){badge=`UNLOCKS ${meta.unlock}`;bc='lock';cls+=' locked';}
+  if(!calendarUnlock&&!dialPrecedent){badge=`UNLOCKS ${meta.unlock}`;bc='lock';cls+=' locked';}
   else if(!marketOk){badge='TOP 3 MARKETS';bc='risk';cls+=' locked';}
+  else if(dialPrecedent){badge='ON DIAL';bc='ok';}
   else if(fmr&&isAM&&!isSpanishLaneMusicFmt(f)){badge='AM — low youth reach';bc='risk';}
   else if(isAM&&isSpanishLaneMusicFmt(f)){badge='AM — FM migration slower';bc='risk';}
   else if(cnt>=2){badge='CROWDED';bc='risk';}
@@ -41050,7 +41451,7 @@ function wlClearRemoteVan(stationId){
     MP.emit('mp_station_logo',{roomId:MP.roomId,stationId:op.id,clearCosmeticRemoteVan:true});
   }
   renderAll();
-  if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&stationId===BM_ACTIVE_SID)renderBrandMarketingStation(BM_ACTIVE_SID);
+  bmRefreshBrandMarketingUi(stationId);
   showToast('Van removed — promotion boost cleared.','info');
 }
 /**
@@ -41062,6 +41463,7 @@ async function wlRemoteVanImageOp(stationId,mode){
   if(!op)return;
   const turnN=effectiveGameTurn();
   const _bmSafe=bmSafeElId(stationId);
+  let vanStatusMsg='';
   const statusEl=document.getElementById('bm-van-status-'+_bmSafe);
   if(mode==='purchase'){
     if(op.cosmeticRemoteVanUrl){
@@ -41142,7 +41544,7 @@ async function wlRemoteVanImageOp(stationId,mode){
         && !(mode==='purchase'&&op.cosmeticRemoteVanUrl);
       if(canVanBenefitSansArt){
         const hitCreativeLimit=data&&(data.code==='trial_quota_exhausted'||data.code==='guest_quota_exhausted'||data.code==='quota_exceeded');
-        wlApplyRemoteVanPromotionWithoutGeneratedImage(op,mode,vanCost,turnN,statusEl,{
+        vanStatusMsg=wlApplyRemoteVanPromotionWithoutGeneratedImage(op,mode,vanCost,turnN,statusEl,{
           creativeLimitPayload:hitCreativeLimit?data:null,
           reasonSnippet:data.error||res.statusText||'no artwork',
           toastMsg:hitCreativeLimit
@@ -41153,7 +41555,7 @@ async function wlRemoteVanImageOp(stationId,mode){
         return;
       }
       if(wlAiTrialQuotaToast(data))return;
-      if(statusEl)statusEl.textContent=data.error||res.statusText||'Van image failed.';
+      vanStatusMsg=data.error||res.statusText||'Van image failed.';
       showToast(data.error||'Remote van generation failed.','warn');
       try{wlAnalyticsCreativeTool('remote_van','failed',{});}catch(_e){}
       return;
@@ -41168,11 +41570,9 @@ async function wlRemoteVanImageOp(stationId,mode){
     }
     op._lastVanGenTurn=turnN;
     recalc(G.stations,G);
-    if(statusEl){
-      statusEl.textContent=mode==='repaint'
-        ?'Repaint complete — van image updated'
-        :data.cached&&(mode==='purchase')?'From cache (purchase complete)':mode==='replace'?'Fleet replaced — boost restored':'Purchase complete — van saved';
-    }
+    vanStatusMsg=mode==='repaint'
+      ?'Repaint complete — van image updated'
+      :data.cached&&(mode==='purchase')?'From cache (purchase complete)':mode==='replace'?'Fleet replaced — boost restored':'Purchase complete — van saved';
     const logMsg=mode==='repaint'
       ?`Repainted remote van (${f$(vanCost)})`
       :mode==='replace'
@@ -41196,24 +41596,26 @@ async function wlRemoteVanImageOp(stationId,mode){
   }catch(_e){
     const canCatch=(mode==='purchase'||mode==='replace')&&!(mode==='purchase'&&op.cosmeticRemoteVanUrl)&&mpMyCashOnHand()>=vanCost;
     if(canCatch){
-      wlApplyRemoteVanPromotionWithoutGeneratedImage(op,mode,vanCost,turnN,statusEl,{
+      vanStatusMsg=wlApplyRemoteVanPromotionWithoutGeneratedImage(op,mode,vanCost,turnN,statusEl,{
         reasonSnippet:'network or API error',
         toastMsg:'Promotion boost applied — could not reach artwork service; fleet benefit is in place.',
         analyticsReason:'network_fallback',
-      });
+      })||'';
     }else{
-      if(statusEl)statusEl.textContent='Network error — try again.';
+      vanStatusMsg='Network error — try again.';
       showToast('Remote van request failed.','warn');
       try{wlAnalyticsCreativeTool('remote_van','failed',{});}catch(_f){}
     }
   }finally{
     op._vanGenPending=false;
-    if(statusEl)wlAiGenStatusBusy(statusEl,false);
     wlSetVanGenButtonUi(stationId,false);
     wlSetVanRepaintReplaceUi(stationId,false);
     wlSyncStationCardAiStatusStrip(stationId);
-    if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&ensureOpsSourceSid(BM_ACTIVE_SID)===ensureOpsSourceSid(stationId)){
-      renderBrandMarketingStation(BM_ACTIVE_SID);
+    bmRefreshBrandMarketingUi(stationId);
+    const freshVanStatus=document.getElementById('bm-van-status-'+_bmSafe);
+    if(freshVanStatus){
+      wlAiGenStatusBusy(freshVanStatus,false);
+      if(vanStatusMsg)freshVanStatus.textContent=vanStatusMsg;
     }
   }
 }
@@ -41228,6 +41630,7 @@ async function wlCommissionStationJingle(stationId){
   if(!op)return;
   const _bmSafe=bmSafeElId(stationId);
   const statusEl=document.getElementById('bm-jingle-status-'+_bmSafe);
+  let jingleStatusMsg='';
   const turnOk=effectiveGameTurn();
   const jingleCost=stationJinglePackageCostDollars(G);
   if(stationCosmeticGenMatchesTurn(op,turnOk,'_lastJingleGenTurn')){
@@ -41288,7 +41691,7 @@ async function wlCommissionStationJingle(stationId){
     if(!res.ok||!data.ok){
       if(wlPromotionBenefitEligibleWhenCreativeUnavailable(res,data,'jingle')){
         const hitCreativeLimit=data&&(data.code==='trial_quota_exhausted'||data.code==='guest_quota_exhausted'||data.code==='quota_exceeded');
-        wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,statusEl,{
+        jingleStatusMsg=wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,statusEl,{
           creativeLimitPayload:hitCreativeLimit?data:null,
           reasonSnippet:data.error||res.statusText||'no audio',
           toastMsg:hitCreativeLimit
@@ -41299,7 +41702,7 @@ async function wlCommissionStationJingle(stationId){
         return;
       }
       if(wlAiTrialQuotaToast(data))return;
-      if(statusEl)statusEl.textContent=data.error||res.statusText||'Jingle request failed.';
+      jingleStatusMsg=data.error||res.statusText||'Jingle request failed.';
       showToast(data.error||'Jingle generation failed.','warn');
       try{wlAnalyticsCreativeTool('jingle','failed',{});}catch(_e){}
       return;
@@ -41310,7 +41713,7 @@ async function wlCommissionStationJingle(stationId){
     const workingBase='WORKING — Creating two jingle takes. Often 1–4 minutes. Do not close this panel or click again; this message will clear when ready.';
     if(!variants||!variants.length){
       if(!jobId){
-        wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,statusEl,{
+        jingleStatusMsg=wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,statusEl,{
           reasonSnippet:data.error||'no jingle job id',
           toastMsg:'Promotion boost applied — jingle job could not start; package benefit is in place.',
           analyticsReason:'no_job_id',
@@ -41321,7 +41724,7 @@ async function wlCommissionStationJingle(stationId){
       const done=await wlPollStationJingleJob(jobId);
       if(done.status!=='complete'||!done.ok||!Array.isArray(done.variants)||!done.variants.length){
         const hitCreativeLimit=done&&(done.code==='trial_quota_exhausted'||done.code==='guest_quota_exhausted'||done.code==='quota_exceeded');
-        wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,statusEl,{
+        jingleStatusMsg=wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,statusEl,{
           creativeLimitPayload:hitCreativeLimit?done:null,
           reasonSnippet:(done&&done.error)||'Jingle generation did not complete.',
           toastMsg:hitCreativeLimit
@@ -41335,10 +41738,10 @@ async function wlCommissionStationJingle(stationId){
       variants=done.variants;
     }
     if(!variants||!variants.length){
-      wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,statusEl,{
+      jingleStatusMsg=wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,statusEl,{
         reasonSnippet:'No jingle variants returned.',
         analyticsReason:'empty_variants',
-      });
+      })||'';
       return;
     }
     wlAdjustMyCash(-jingleCost);
@@ -41353,28 +41756,31 @@ async function wlCommissionStationJingle(stationId){
     wlMaybeGuestAiCreativeSuccess('jingle');
   }catch(_e){
     if(mpMyCashOnHand()>=jingleCost){
-      wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,statusEl,{
+      jingleStatusMsg=wlApplyJinglePromotionBoostWithoutAudio(op,jingleCost,turnOk,tagline,statusEl,{
         reasonSnippet:'network error',
         toastMsg:'Promotion boost applied — could not reach audio service; package benefit is in place.',
         analyticsReason:'network_fallback',
-      });
+      })||'';
     }else{
-      if(statusEl)statusEl.textContent='Network error — try again.';
+      jingleStatusMsg='Network error — try again.';
       showToast('Jingle request failed.','warn');
       try{wlAnalyticsCreativeTool('jingle','failed',{});}catch(_f){}
     }
   }finally{
     op._jingleGenPending=false;
+    bmRefreshBrandMarketingUi(stationId);
     const jingleStatusFresh=document.getElementById('bm-jingle-status-'+_bmSafe);
-    if(jingleStatusFresh)wlAiGenStatusBusy(jingleStatusFresh,false);
-    if(btn){
-      btn.disabled=false;
-      btn.setAttribute('aria-busy','false');
+    if(jingleStatusFresh){
+      wlAiGenStatusBusy(jingleStatusFresh,false);
+      if(jingleStatusMsg)jingleStatusFresh.textContent=jingleStatusMsg;
+    }
+    const btnFresh=document.getElementById('bm-jingle-commission-btn-'+_bmSafe);
+    if(btnFresh){
+      btnFresh.disabled=false;
+      btnFresh.setAttribute('aria-busy','false');
     }
     wlSyncStationCardAiStatusStrip(stationId);
-    if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&ensureOpsSourceSid(BM_ACTIVE_SID)===ensureOpsSourceSid(stationId)){
-      renderBrandMarketingStation(BM_ACTIVE_SID);
-    }
+    if(!jingleStatusMsg)wlRefreshBmJingleStatusAfterRender();
   }
 }
 function wlPickStationJingleVariant(stationId,idx){
@@ -41408,9 +41814,7 @@ function wlPickStationJingleVariant(stationId,idx){
     });
   }
   renderAll();
-  if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&ensureOpsSourceSid(BM_ACTIVE_SID)===ensureOpsSourceSid(stationId)){
-    renderBrandMarketingStation(BM_ACTIVE_SID);
-  }
+  bmRefreshBrandMarketingUi(stationId);
   showToast('Jingle saved — promotion reach updated.','info');
 }
 function wlClearStationJingle(stationId){
@@ -41432,7 +41836,7 @@ function wlClearStationJingle(stationId){
     MP.emit('mp_station_logo',{roomId:MP.roomId,stationId:op.id,clearCosmeticJingle:true});
   }
   renderAll();
-  if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&ensureOpsSourceSid(BM_ACTIVE_SID)===ensureOpsSourceSid(stationId))renderBrandMarketingStation(BM_ACTIVE_SID);
+  bmRefreshBrandMarketingUi(stationId);
   showToast('Jingle removed.','info');
 }
 async function wlSaveStationJingleFile(stationId,pendingIdx){
@@ -41575,12 +41979,19 @@ async function wlGenerateLogo(stationId,regenerate,opts){
     }
   }finally{
     op._logoGenPending=false;
-    if(statusEl)wlAiGenStatusBusy(statusEl,false);
     wlSetLogoGenButtonUi(stationId,false);
     wlSyncStationCardAiStatusStrip(stationId);
     if(silent&&!op.cosmeticLogoUrl)op._logoAutoGenExhausted=true;
-    if(typeof BM_ACTIVE_SID!=='undefined'&&BM_ACTIVE_SID&&ensureOpsSourceSid(BM_ACTIVE_SID)===ensureOpsSourceSid(stationId)){
-      renderBrandMarketingStation(BM_ACTIVE_SID);
+    let logoStatusMsg='';
+    if(statusEl){
+      logoStatusMsg=statusEl.textContent||'';
+      wlAiGenStatusBusy(statusEl,false);
+    }
+    bmRefreshBrandMarketingUi(stationId);
+    const logoStatusFresh=document.getElementById('wl-logo-status-'+stationId)||document.getElementById('bm-logo-status-'+_bmSafe);
+    if(logoStatusFresh){
+      wlAiGenStatusBusy(logoStatusFresh,false);
+      if(logoStatusMsg)logoStatusFresh.textContent=logoStatusMsg;
     }
   }
 }
@@ -42385,6 +42796,9 @@ function migrateSave(G){
   G.loans=G.loans||[];
   if(G._attritionRemovedCumulative==null)G._attritionRemovedCumulative=0;
   if(G._attritionNicheFlipsCumulative==null)G._attritionNicheFlipsCumulative=0;
+  if(G._attritionReplenishQueue==null)G._attritionReplenishQueue=[];
+  if(G._attritionReplenishLaunchedCumulative==null)G._attritionReplenishLaunchedCumulative=0;
+  if(G._attritionReplenishLaunchedByFamily==null)G._attritionReplenishLaunchedByFamily={};
   migrateLoansV2(G);
   if(G.corps)rehydrateCorps(G); // re-link corp ownership after save/load
   initIndieLicenseeKeysFromStations(G.stations,G);
