@@ -10458,6 +10458,28 @@ async function wlCloudSaveLoadRollingAutosave(){
   await wlApplyLoadedGamePayload(payload,{source:'cloud_autosave',label:'Cloud autosave'});
 }
 
+function wlCloudAutosaveProgressOrdinal(src){
+  const g=src?.G||src;
+  const year=Number(g?.year);
+  if(!Number.isFinite(year))return null;
+  const period=Number(g?.period);
+  return year*10+(Number.isFinite(period)?period:0);
+}
+function wlCloudAutosaveShouldResume(meta,payload,local){
+  const cloud=payload?.G?payload:meta;
+  const cloudTs=Date.parse(payload?.saved||meta?.saved);
+  if(!Number.isFinite(cloudTs))return false;
+  const localHasState=!!(local?.G?.sc&&(local.G.stations||[]).length>0&&local.G.year!=null);
+  if(!localHasState)return true;
+  const localProgress=wlCloudAutosaveProgressOrdinal(local);
+  const cloudProgress=wlCloudAutosaveProgressOrdinal(cloud);
+  if(localProgress!=null&&cloudProgress!=null){
+    if(cloudProgress>localProgress)return true;
+    if(cloudProgress<localProgress)return false;
+  }
+  const localTs=local?.saved?Date.parse(local.saved):NaN;
+  return !Number.isFinite(localTs)||cloudTs>localTs;
+}
 /** On init: if cloud autosave is newer than local (or local missing), fetch and return payload for autoresume. */
 async function wlCloudAutosaveTryResumeOnInit(local){
   if(typeof window==='undefined'||window.__WL_GUEST_ONBOARDING)return null;
@@ -10474,11 +10496,7 @@ async function wlCloudAutosaveTryResumeOnInit(local){
   if(!metaRes.ok)return null;
   const meta=await metaRes.json().catch(()=>null);
   if(!meta?.saved)return null;
-  const cloudTs=Date.parse(meta.saved);
-  const localTs=local?.saved?Date.parse(local.saved):NaN;
-  const localHasState=!!(local?.G?.sc&&(local.G.stations||[]).length>0&&local.G.year!=null);
-  if(localHasState&&Number.isFinite(localTs)&&Number.isFinite(cloudTs)&&localTs>=cloudTs)return null;
-  if(!Number.isFinite(cloudTs))return null;
+  if(!wlCloudAutosaveShouldResume(meta,null,local))return null;
   let fullRes;
   try{
     fullRes=await fetch(wlGameApiUrl('/api/saves/cloud/autosave'),{
@@ -10488,6 +10506,7 @@ async function wlCloudAutosaveTryResumeOnInit(local){
   if(!fullRes.ok)return null;
   const payload=await fullRes.json().catch(()=>null);
   if(!payload?.G?.year)return null;
+  if(!wlCloudAutosaveShouldResume(meta,payload,local))return null;
   try{
     const raw=JSON.stringify(payload);
     localStorage.setItem(SAVE_KEY,raw);
@@ -28717,6 +28736,13 @@ function ensureTalentHireSid(sid,slot){
   if(isSimulcastProgrammingReceiver(s,G)&&!s.prog?.[slot]?.talent)return sid;
   return ensureOpsSourceSid(sid);
 }
+/** Fire / non-renew local receiver overrides locally; echoed source talent still routes to the source. */
+function ensureTalentExitSid(sid,slot,role){
+  const s=G.stations.find(st=>st.id===sid);
+  if(!s)return sid;
+  if(isSimulcastProgrammingReceiver(s,G)&&slotTalentByRole(s.prog?.[slot],role))return sid;
+  return ensureOpsSourceSid(sid);
+}
 // Determine which station leads a simulcast pair (higher signal power / revenue)
 function simLead(a,b){
   // FM (incl. fmBooster) beats AM; among same type, higher power wins; tiebreak by revenue
@@ -36559,7 +36585,7 @@ function talentFireBuyout(t){
 }
 /** Confirm then fire — same rules as station-card release (buyout if contract time remains). */
 function rosterFirePrompt(sid,slot, closeModalId){
-  sid=ensureOpsSourceSid(sid);
+  sid=ensureTalentExitSid(sid,slot,'host');
   const s=G.stations.find(st=>st.id===sid);
   if(!s||!mpIsMe(s))return;
   const sd=s.prog?.[slot];
@@ -37714,7 +37740,7 @@ function doCrossStationXferChairB(toSlot) {
   finish();
 }
 function doFire(sid,slot){
-  sid=ensureOpsSourceSid(sid);
+  sid=ensureTalentExitSid(sid,slot,'host');
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const sd=s.prog[slot];if(!sd?.talent)return;
   const t=sd.talent;
@@ -44788,8 +44814,8 @@ function doBonus(sid, slot, amount, talentRole, fromManageTalent){
 }
 
 function doLetExpire(sid, slot, talentRole, fromManageTalent){
-  sid=ensureOpsSourceSid(sid);
   const role=(talentRole==='cohost')?'cohost':'host';
+  sid=ensureTalentExitSid(sid,slot,role);
   const s=G.stations.find(st=>st.id===sid);if(!s)return;
   const sd=s.prog[slot];
   if(role==='cohost'){
