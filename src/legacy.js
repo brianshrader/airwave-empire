@@ -10220,8 +10220,16 @@ function wlGameMediaAbsUrl(pathOrUrlWithQuery){
 // ── Clerk (optional) — meta wl-clerk-publishable-key + server CLERK_SECRET_KEY ──
 function wlClerkPublishableKey(){
   try {
-    return document.querySelector('meta[name="wl-clerk-publishable-key"]')?.getAttribute('content')?.trim() || '';
-  } catch(e) { return ''; }
+    const fromMeta=document.querySelector('meta[name="wl-clerk-publishable-key"]')?.getAttribute('content')?.trim()||'';
+    if(fromMeta)return fromMeta;
+    // main.js injects Clerk after load; meta may still be empty in static HTML.
+    if(typeof window!=='undefined'&&window.__wlClerkLoaded&&window.Clerk)return 'via-main-js';
+  } catch(e) { /* noop */ }
+  return '';
+}
+/** Clerk is configured when meta has a key or Vite main.js finished Clerk.load. */
+function wlClerkSignInConfigured(){
+  return !!wlClerkPublishableKey();
 }
 /** Match src/clerkClientInit.js — strip proxy/satellite globals so Clerk uses the FAPI host in the publishable key. */
 function wlClearClerkFrontendOverrides(){
@@ -10254,15 +10262,24 @@ function wlLoadClerkScript(){
   return window.__wlClerkScriptPromise;
 }
 async function wlGetClerkToken(){
-  const pk = wlClerkPublishableKey();
-  if (!pk) return null;
+  try{
+    const Clerk=typeof window!=='undefined'?window.Clerk:null;
+    if(Clerk?.session){
+      const t=await Clerk.session.getToken();
+      if(t)return t;
+    }
+  }catch(e){
+    if(typeof console!=='undefined'&&console.warn)console.warn('[Clerk]',e);
+  }
+  const pk=wlClerkPublishableKey();
+  if(!pk)return null;
   try {
     await wlLoadClerkScript();
     const Clerk = window.Clerk;
     if (!Clerk) return null;
     if (!window.__wlClerkLoaded) {
       wlClearClerkFrontendOverrides();
-      await Clerk.load({ publishableKey: pk });
+      if(pk!=='via-main-js')await Clerk.load({ publishableKey: pk });
       window.__wlClerkLoaded = true;
     }
     wlMpRefreshAuthBar();
@@ -10270,7 +10287,7 @@ async function wlGetClerkToken(){
     if (!sess) return null;
     return await sess.getToken();
   } catch(e) {
-    console.warn('[Clerk]', e);
+    if(typeof console!=='undefined'&&console.warn)console.warn('[Clerk]', e);
     return null;
   }
 }
@@ -10408,14 +10425,20 @@ async function wlCloudAutosaveSyncNow(opts){
   if(_wlCloudAutosaveInFlight)return _wlCloudAutosaveInFlight;
   _wlCloudAutosaveInFlight=(async()=>{
     try{
+      try{
+        if(typeof window.__wlSyncPlanMarkets==='function')await window.__wlSyncPlanMarkets();
+      }catch(_e){}
       const token=await wlGetClerkToken();
-      if(!token)return;
+      if(!token){
+        if(typeof console!=='undefined'&&console.warn)console.warn('[cloudAutosave] no Clerk session token');
+        return false;
+      }
       let payload;
       try{
         payload=saveGame('Autosave');
       }catch(e){
         if(typeof console!=='undefined'&&console.warn)console.warn('[cloudAutosave] build',e);
-        return;
+        return false;
       }
       let r;
       try{
@@ -10426,10 +10449,14 @@ async function wlCloudAutosaveSyncNow(opts){
         });
       }catch(e){
         if(typeof console!=='undefined'&&console.warn)console.warn('[cloudAutosave] network',e);
-        return;
+        return false;
       }
-      if(r.status===402||r.status===413){
-        if(typeof console!=='undefined'&&console.warn)console.warn('[cloudAutosave] server',r.status);
+      if(r.status===402){
+        if(typeof console!=='undefined'&&console.warn)console.warn('[cloudAutosave] plan_required (Starter/Pro only, not trial)');
+        return false;
+      }
+      if(r.status===413){
+        if(typeof console!=='undefined'&&console.warn)console.warn('[cloudAutosave] save too large',r.status);
         return false;
       }
       if(!r.ok){
@@ -10437,6 +10464,10 @@ async function wlCloudAutosaveSyncNow(opts){
         return false;
       }
       _wlCloudAutosaveLastOk=Date.now();
+      try{
+        const j=await r.json().catch(()=>null);
+        if(j?.meta&&typeof window!=='undefined')window.__WL_CLOUD_AUTOSAVE_META=j.meta;
+      }catch(_e){}
       try{wlAnalyticsCapture('cloud_autosave_synced',{year:G.year,period:G.period});}catch(_e){}
       return true;
     }finally{
@@ -10716,7 +10747,7 @@ async function wlCloudSaveRenderPanel(hostId) {
       '<div class="ibox" style="color:var(--mut);margin-top:12px">Cloud saves are for solo games only.</div>';
     return;
   }
-  if (!wlClerkPublishableKey()) {
+  if (!wlClerkSignInConfigured()) {
     el.innerHTML =
       '<div class="bbox" style="margin-top:12px"><strong>CLOUD SAVES</strong><br><span style="color:var(--mut);font-size:14px">Not available — sign-in is not configured in this build.</span></div>';
     return;
@@ -33393,8 +33424,13 @@ function advTurn(mpCoalesceSeq){
     try{ wlGmMaybeAutoCampaignLifeline(); }catch(_e){}
     autoSave();
     void wlCloudAutosaveSyncNow({force:true,bypassThrottle:true}).then(ok=>{
-      if(ok===false&&typeof showToast==='function'&&wlCloudAutosaveEligible()){
-        showToast('Cloud backup failed — your local autosave is still intact.','warn',4800);
+      if(!wlCloudAutosaveEligible())return;
+      if(ok===true)return;
+      if(typeof showToast!=='function')return;
+      if(ok===false){
+        showToast('Cloud backup failed — your local autosave is still intact. Check Account subscription (Starter/Pro).','warn',5600);
+      }else{
+        showToast('Cloud backup skipped — sign in again if this persists.','warn',4800);
       }
     });
     renderAll();
