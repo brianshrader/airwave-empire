@@ -99,6 +99,7 @@
     "scaffold:market:check": "node scripts/scaffold-market.mjs --check",
     "validate:brokered-mode": "node scripts/validate-brokered-mode.mjs",
     "audit:swap-signal-fee": "node scripts/audit-swap-signal-fee.mjs",
+    "test:cloud-autosave-resume": "node scripts/test-cloud-autosave-resume.mjs",
     "test:billing-e2e": "node scripts/e2e-billing-checkout-verify.mjs"
   },
   "devDependencies": {
