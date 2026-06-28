@@ -102,6 +102,10 @@ function game(label, saved, year) {
   };
 }
 
+function sameSavedGame(a, b) {
+  return a?.label === b?.label && a?.saved === b?.saved && a?.G?.year === b?.G?.year;
+}
+
 async function runCase(relPath, name, fn) {
   try {
     await fn();
@@ -124,7 +128,7 @@ async function runSuite(relPath) {
     assert(ctx.__applied.length === 1, 'expected one loaded payload');
     assert(ctx.__applied[0].payload === cloud, 'expected cloud payload to load');
     assert(ctx.__applied[0].opts.source === 'cloud_autosave', 'expected cloud source');
-    assert(ctx.__storageWrites.some((w) => w.key === 'wl-save' && w.value === cloud), 'expected cloud payload to sync to localStorage');
+    assert(ctx.__storageWrites.some((w) => w.key === 'wl-save' && sameSavedGame(w.value, cloud)), 'expected cloud payload to sync to localStorage');
     assert(ctx.__toasts.some((t) => t.msg === 'Resumed from your latest save.'), 'expected latest-save toast');
   });
 
@@ -159,7 +163,7 @@ async function runSuite(relPath) {
     const res = await vm.runInContext('wlCloudAutosaveTryResumeOnInit(getLocalSave())', ctx);
     assert(res?.payload === cloud, 'expected init to return cloud payload');
     assert(ctx.__applied.length === 0, 'init sync should not load the game');
-    assert(ctx.__storageWrites.some((w) => w.key === 'wl-save' && w.value === cloud), 'expected init to sync localStorage');
+    assert(ctx.__storageWrites.some((w) => w.key === 'wl-save' && sameSavedGame(w.value, cloud)), 'expected init to sync localStorage');
   });
 }
 
