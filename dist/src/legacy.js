@@ -10870,47 +10870,7 @@ async function wlCloudAutosaveSyncNow(opts){
   return _wlCloudAutosaveInFlight;
 }
 
-async function wlCloudSaveLoadRollingAutosave(){
-  if(!wlCloudAutosaveEligible()){
-    showToast('Rolling cloud autosave is included with Starter and Pro.','warn',7200);
-    return;
-  }
-  const token=await wlGetClerkToken();
-  if(!token){
-    showToast('Sign in to load your cloud autosave.','warn');
-    return;
-  }
-  let r;
-  try{
-    r=await fetch(wlGameApiUrl('/api/saves/cloud/autosave'),{
-      headers:{Authorization:'Bearer '+token},
-    });
-  }catch(e){
-    showToast('Could not reach the game server.','warn');
-    return;
-  }
-  if(r.status===402){
-    showToast('Rolling cloud autosave requires Starter or Pro.','warn',7200);
-    return;
-  }
-  if(r.status===404){
-    showToast('No cloud autosave yet — finish a period while signed in.','info',5600);
-    return;
-  }
-  if(!r.ok){
-    showToast('Could not load cloud autosave.','warn');
-    return;
-  }
-  const payload=await r.json().catch(()=>null);
-  if(!payload?.G?.year){
-    showToast('Cloud autosave file is invalid.','warn');
-    return;
-  }
-  await wlApplyLoadedGamePayload(payload,{source:'cloud_autosave',label:'Cloud autosave'});
-}
-
-/** On init: if cloud autosave is newer than local (or local missing), fetch and return payload for autoresume. */
-async function wlCloudAutosaveTryResumeOnInit(local){
+async function wlFetchRollingCloudAutosavePayload(){
   if(typeof window==='undefined'||window.__WL_GUEST_ONBOARDING)return null;
   if(!wlCloudAutosaveEligible())return null;
   const token=await wlGetClerkToken();
@@ -10925,11 +10885,6 @@ async function wlCloudAutosaveTryResumeOnInit(local){
   if(!metaRes.ok)return null;
   const meta=await metaRes.json().catch(()=>null);
   if(!meta?.saved)return null;
-  const cloudTs=Date.parse(meta.saved);
-  const localTs=local?.saved?Date.parse(local.saved):NaN;
-  const localHasState=!!(local?.G?.sc&&(local.G.stations||[]).length>0&&local.G.year!=null);
-  if(localHasState&&Number.isFinite(localTs)&&Number.isFinite(cloudTs)&&localTs>=cloudTs)return null;
-  if(!Number.isFinite(cloudTs))return null;
   let fullRes;
   try{
     fullRes=await fetch(wlGameApiUrl('/api/saves/cloud/autosave'),{
@@ -10939,12 +10894,90 @@ async function wlCloudAutosaveTryResumeOnInit(local){
   if(!fullRes.ok)return null;
   const payload=await fullRes.json().catch(()=>null);
   if(!payload?.G?.year)return null;
+  return{payload,meta};
+}
+
+/** Resume from the best autosave source: newer of local vs rolling cloud (Starter/Pro). */
+async function wlResumeBestAutosave(opts){
+  opts=opts||{};
+  const forceCloud=!!opts.forceCloud;
+  let local;
   try{
-    const raw=JSON.stringify(payload);
+    local=getLocalSave();
+  }catch(e){
+    if(typeof console!=='undefined'&&console.error)console.error('[wlResumeBestAutosave]',e);
+    showToast('Autosave could not be read — try Load Game from cloud or a file.','warn',9200);
+    return;
+  }
+  let payload=local;
+  let source='resume_autosave';
+  let loadLabel=local?.label||'Autosave';
+  let usedCloud=false;
+  const localHasState=!!(local?.G?.sc&&(local.G.stations||[]).length>0&&local.G.year!=null);
+  if(forceCloud||wlCloudAutosaveEligible()){
+    const cloud=await wlFetchRollingCloudAutosavePayload();
+    if(cloud?.payload){
+      const cloudTs=Date.parse(cloud.meta?.saved||'');
+      const localTs=local?.saved?Date.parse(local.saved):NaN;
+      const cloudNewer=Number.isFinite(cloudTs)&&(!localHasState||!Number.isFinite(localTs)||cloudTs>localTs);
+      if(forceCloud||cloudNewer){
+        payload=cloud.payload;
+        source='cloud_autosave';
+        loadLabel='Autosave';
+        usedCloud=true;
+        try{
+          localStorage.setItem(SAVE_KEY,JSON.stringify(cloud.payload));
+          try{localStorage.removeItem(LEGACY_SAVE_KEY);}catch(_e){}
+        }catch(_e){}
+      }
+    }else if(forceCloud){
+      showToast('No cloud autosave yet — finish a period while signed in.','info',5600);
+      return;
+    }
+  }
+  if(!payload?.G){
+    showToast('No autosave found in this browser. Use Load Game or start a new scenario.','warn',7200);
+    return;
+  }
+  try{
+    const res=await wlApplyLoadedGamePayload(payload,{source,label:loadLabel});
+    if(res===null)return;
+    if(usedCloud&&localHasState){
+      showToast('Resumed from your latest save.','info',5600);
+    }
+  }catch(e){
+    if(typeof console!=='undefined'&&console.error)console.error('[wlResumeBestAutosave]',e);
+    if(typeof console!=='undefined'&&e?.stack)console.error(e.stack);
+    showToast('Could not resume autosave'+(e?.message?': '+e.message:'')+'. Try Load Game from cloud.','warn',9500);
+  }
+}
+
+async function wlCloudSaveLoadRollingAutosave(){
+  if(!wlCloudAutosaveEligible()){
+    showToast('Rolling cloud autosave is included with Starter and Pro.','warn',7200);
+    return;
+  }
+  await wlResumeBestAutosave({forceCloud:true});
+}
+
+/** On init: if cloud autosave is newer than local (or local missing), sync localStorage for RESUME. */
+async function wlCloudAutosaveTryResumeOnInit(local){
+  if(typeof window==='undefined'||window.__WL_GUEST_ONBOARDING)return null;
+  if(!wlCloudAutosaveEligible())return null;
+  const cloud=await wlFetchRollingCloudAutosavePayload();
+  if(!cloud?.payload)return null;
+  const meta=cloud.meta;
+  const cloudTs=Date.parse(meta.saved);
+  const localTs=local?.saved?Date.parse(local.saved):NaN;
+  const localHasState=!!(local?.G?.sc&&(local.G.stations||[]).length>0&&local.G.year!=null);
+  if(localHasState&&Number.isFinite(localTs)&&Number.isFinite(cloudTs)&&localTs>=cloudTs)return null;
+  if(!Number.isFinite(cloudTs))return null;
+  try{
+    const raw=JSON.stringify(cloud.payload);
     localStorage.setItem(SAVE_KEY,raw);
     try{localStorage.removeItem(LEGACY_SAVE_KEY);}catch(_e){}
   }catch(_e){}
-  return{payload,cloudWasNewer:true,meta};
+  return{payload:cloud.payload,cloudWasNewer:true,meta};
 }
 
 function wlCloudSaveUploadStatus(msg, opts) {
@@ -43050,33 +43083,16 @@ async function wlApplyLoadedGamePayload(payload,opts){
   }
 }
 function loadLocalSave(){
-  void loadLocalSaveAsync();
+  void wlResumeBestAutosave();
 }
 async function loadLocalSaveAsync(){
-  let local;
-  try{
-    local=getLocalSave();
-  }catch(e){
-    if(typeof console!=='undefined'&&console.error)console.error('[loadLocalSave]',e);
-    showToast('Autosave could not be read — try Load Game from cloud or a file.','warn',9200);
-    return;
-  }
-  if(!local?.G){
-    showToast('No autosave found in this browser. Use Load Game or start a new scenario.','warn',7200);
-    return;
-  }
-  try{
-    const res=await wlApplyLoadedGamePayload(local,{source:'resume_autosave',label:local.label||'Autosave'});
-    if(res===null)return;
-  }catch(e){
-    if(typeof console!=='undefined'&&console.error)console.error('[loadLocalSave]',e);
-    showToast('Could not resume autosave'+(e?.message?': '+e.message:'')+'. Try Load Game from cloud.','warn',9500);
-  }
+  await wlResumeBestAutosave();
 }
 
 if(typeof globalThis!=='undefined'){
   globalThis.loadLocalSave=loadLocalSave;
   globalThis.wlCloudSaveLoadRollingAutosave=wlCloudSaveLoadRollingAutosave;
+  globalThis.wlResumeBestAutosave=wlResumeBestAutosave;
 }
 
 // ── LOAN UI (capacity-based line of credit; see bank lending helpers near scoring) ──
