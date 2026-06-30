@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "updatedAt": "2026-06-28T00:00:00.000Z",
+  "concerns": [
+    {
+      "id": "large-market-under-supply",
+      "title": "Large-tier markets under-supplied vs Duncan/Nielsen books",
+      "category": "realism",
+      "severity": "watch",
+      "scope": "structural",
+      "markets": ["phoenix", "houston", "dallas", "atlanta"],
+      "status": "chronic",
+      "firstSeen": "2026-06",
+      "metricKeys": [
+        "phoenix:2026:nCommDial",
+        "houston:2026:nCommDial",
+        "phoenix:2000:nCommDial",
+        "houston:2000:nCommDial"
+      ],
+      "notes": "Supply Phase 1 target; commercial dial below measurable book counts."
+    },
+    {
+      "id": "phoenix-spanish-strength",
+      "title": "Phoenix Spanish lane trajectory vs historical benchmarks",
+      "category": "realism",
+      "severity": "watch",
+      "scope": "behavioral",
+      "markets": ["phoenix"],
+      "status": "chronic",
+      "firstSeen": "2026-06",
+      "metricKeys": [
+        "phoenix:1995:spanishLaneShare",
+        "phoenix:2000:spanishLaneShare",
+        "phoenix:2010:spanishLaneShare",
+        "phoenix:2026:spanishLaneShare"
+      ],
+      "notes": "Watch tropical/contemporary mix and AM survival, not just aggregate share."
+    },
+    {
+      "id": "houston-spanish-strength",
+      "title": "Houston Spanish — tail-seed variance, median underweight",
+      "category": "realism",
+      "severity": "watch",
+      "scope": "behavioral",
+      "markets": ["houston"],
+      "status": "watch",
+      "firstSeen": "2026-06",
+      "metricKeys": [
+        "houston:2000:spanishLaneShare",
+        "houston:2010:spanishLaneShare",
+        "houston:2026:spanishLaneShare"
+      ],
+      "notes": "8-seed Bundle A (2026-06-30): 2000 med 6.1%, 2010 med 9.1%, 2026 med 6.9% (max 18.4%). Chronic overweight reclassified — investigate lifecycle variance, not share scalars."
+    },
+    {
+      "id": "nyc-spanish-volatility",
+      "title": "NYC Spanish share spike in 2010 then collapse by 2026",
+      "category": "realism",
+      "severity": "watch",
+      "scope": "behavioral",
+      "markets": ["newyork"],
+      "status": "watch",
+      "firstSeen": "2026-06",
+      "metricKeys": [
+        "newyork:2010:spanishLaneShare",
+        "newyork:2026:spanishLaneShare",
+        "newyork:2000:spanishLaneShare"
+      ],
+      "notes": "20.6% in 2010 → 10.7% in 2026 is not a smooth historical arc."
+    },
+    {
+      "id": "dial-erosion-large-markets",
+      "title": "Commercial dial shrinks 1995→2026 in large markets",
+      "category": "realism",
+      "severity": "watch",
+      "scope": "structural",
+      "markets": ["houston", "phoenix", "nashville"],
+      "status": "chronic",
+      "firstSeen": "2026-06",
+      "metricKeys": [
+        "houston:1995:nCommDial",
+        "houston:2026:nCommDial",
+        "phoenix:1995:nCommDial",
+        "phoenix:2026:nCommDial",
+        "nashville:1995:nCommDial",
+        "nashville:2026:nCommDial"
+      ],
+      "notes": "Houston −6, Phoenix −7, Nashville −4 commercial dial over panel window."
+    },
+    {
+      "id": "wichita-concentration",
+      "title": "Wichita share concentration limits acquisition gameplay",
+      "category": "gameplay",
+      "severity": "watch",
+      "scope": "behavioral",
+      "markets": ["wichita"],
+      "status": "watch",
+      "firstSeen": "2026-06",
+      "metricKeys": [
+        "wichita:2000:topShare",
+        "wichita:2010:topShare",
+        "wichita:2026:midTierCompetitors",
+        "wichita:2000:hhi"
+      ],
+      "notes": "HHI >1200 in 2000–2010; mid-tier competitors down to 6 in 2026."
+    },
+    {
+      "id": "chr-lane-thin",
+      "title": "CHR / Top 40 lane under-represented in large markets",
+      "category": "realism",
+      "severity": "watch",
+      "scope": "behavioral",
+      "markets": ["phoenix", "houston", "atlanta"],
+      "status": "chronic",
+      "firstSeen": "2026-06",
+      "metricKeys": [],
+      "notes": "Certification flags phx_chr; track via market suite and reference panel leader formats."
+    },
+    {
+      "id": "am-attrition",
+      "title": "AM commercial attrition excessive in late eras",
+      "category": "realism",
+      "severity": "watch",
+      "scope": "structural",
+      "markets": ["newyork", "chicago", "houston"],
+      "status": "chronic",
+      "firstSeen": "2026-06",
+      "metricKeys": [
+        "newyork:2026:amCommercial",
+        "houston:2026:amCommercial",
+        "wichita:2026:amCommercial"
+      ],
+      "notes": "Distinguish spoken-word AM survival from music AM sunset."
+    },
+    {
+      "id": "acquisition-target-density",
+      "title": "Acquisition target density in large markets",
+      "category": "gameplay",
+      "severity": "watch",
+      "scope": "structural",
+      "markets": ["houston", "phoenix", "newyork"],
+      "status": "watch",
+      "firstSeen": "2026-06",
+      "metricKeys": [
+        "houston:2026:midTierCompetitors",
+        "phoenix:2026:midTierCompetitors",
+        "newyork:2026:midTierCompetitors",
+        "houston:2026:nCommDial",
+        "phoenix:2026:nCommDial"
+      ],
+      "notes": "Supply changes should increase mid-tier competitors and dial depth, not just total count."
+    },
+    {
+      "id": "share-concentration-monsters",
+      "title": "15-share monster stations in large markets",
+      "category": "gameplay",
+      "severity": "watch",
+      "scope": "behavioral",
+      "markets": ["phoenix", "houston", "wichita"],
+      "status": "watch",
+      "firstSeen": "2026-06",
+      "metricKeys": [
+        "phoenix:2000:topShare",
+        "houston:2000:topShare",
+        "wichita:2000:topShare",
+        "phoenix:2026:topShare"
+      ],
+      "notes": "High topShare + HHI suggests insufficient fragmentation for fun acquisition gameplay."
+    }
+  ]
+}
