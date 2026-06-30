@@ -102,6 +102,7 @@ mountTrialRoutes(app);
 
 const { resolveStripePlanForUser } = require('./server/stripePlanResolve');
 const { marketIdsForPlanSlug, ALL_PLAYABLE_MARKET_IDS_ORDERED } = require('./server/planMarkets');
+const { selectRejoinPlayer } = require('./server/mpRejoin');
 
 const httpServer = http.createServer(app);
 const io         = new Server(httpServer, {
@@ -450,20 +451,9 @@ io.on('connection', socket => {
     if (!room) { socket.emit('join_error', 'Room not found. The server may have restarted.'); return; }
     if (room.phase === 'lobby') { socket.emit('join_error', 'Game hasn\'t started yet — use JOIN instead.'); return; }
 
-    // Match player slot. Priority order:
-    // 1. playerId claim + name matches (most reliable, prevents slot theft)
-    // 2. playerId claim alone (same browser, name might have changed)
-    // 3. Name match on a disconnected slot (playerId not stored / wrong browser)
-    // 4. Name match on a connected slot — could be a duplicate rejoin, reject it
-    let player = null;
-    if (claimedId != null) {
-      // Try exact match: claimed playerId AND name
-      player = room.players.find(p => p.playerId === claimedId && p.name === name);
-      // Fallback: claimed playerId regardless of name (same browser, different name entry)
-      if (!player) player = room.players.find(p => p.playerId === claimedId && !p.connected);
-    }
-    // Fallback: match by name on a disconnected slot (fresh browser, no stored playerId)
-    if (!player) player = room.players.find(p => p.name === name && !p.connected);
+    // Match player slot. A playerId claim is never sufficient by itself:
+    // restored legacy rooms can have accountId=null, and spectator state exposes playerId.
+    let player = selectRejoinPlayer(room.players, { name, claimedId });
 
     if (!player) {
       // Check if already connected under that name (duplicate tab / already rejoined)
