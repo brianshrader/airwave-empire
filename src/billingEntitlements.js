@@ -1,9 +1,13 @@
 /**
  * Billing entitlements — plan → playable market ids.
  * Server `/api/entitlements` resolves Stripe subscriptions (+ accountStore). Optional Clerk Billing merge only when WL_USE_CLERK_BILLING=1 on the server.
+ *
+ * Client window globals (`__WL_CLERK_PLAN_SLUG`, `__WL_PLAN_MARKET_IDS`) drive picker UX only.
+ * Paid API routes re-resolve plan server-side; playtest URL flags in `playtestUrlFlags.js` do not change that.
  */
 
 import { captureEvent } from './analyticsClient.js';
+import { applyPlaytestPlanOverrideAfterEntitlementsSync } from './playtestUrlFlags.js';
 
 export const CLERK_PLAN = {
   FREE: 'free_user',
@@ -175,5 +179,13 @@ export async function syncPlanMarkets(clerk) {
       });
     }
   } catch (_e) {}
+  // Client-only: ?playtestPlanOverride=1 (or Vite dev) may re-apply ?plan= for picker preview — not server billing.
+  const playtestOverride = applyPlaytestPlanOverrideAfterEntitlementsSync();
+  if (playtestOverride && typeof window !== 'undefined') {
+    return {
+      slug: playtestOverride,
+      marketIds: window.__WL_PLAN_MARKET_IDS || marketIdsForClerkPlanSlug(playtestOverride),
+    };
+  }
   return { slug, marketIds };
 }

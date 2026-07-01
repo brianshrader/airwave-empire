@@ -13,6 +13,7 @@ import {
 import { marketIdsForClerkPlanSlug, syncPlanMarkets, PRO_ONLY_MARKET_IDS } from './billingEntitlements.js';
 import { BILLING_PRICE_SUMMARY_LINE } from './billingPriceLabels.js';
 import { gameServerApiUrl } from './gameServerApiOrigin.js';
+import { applyPlaytestUrlFlagsToWindow } from './playtestUrlFlags.js';
 
 if (typeof window !== 'undefined') {
   window.__WL_BILLING_PRICE_SUMMARY_LINE = BILLING_PRICE_SUMMARY_LINE;
@@ -21,16 +22,8 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
   window.__WL_DEV_PLAYTEST_MARKETS__ = true;
 }
 
-/** Localhost dev: ?plan=free_user|starter|trial_user|pro previews scenario-picker locks without signing in. */
-function applyDevPlanPreviewFromUrl() {
-  if (!import.meta.env.DEV || typeof window === 'undefined') return;
-  const plan = new URLSearchParams(window.location.search).get('plan')?.trim();
-  if (!plan || !['free_user', 'starter', 'trial_user', 'pro'].includes(plan)) return;
-  window.__WL_CLERK_PLAN_SLUG = plan;
-  window.__WL_PLAN_MARKET_IDS = marketIdsForClerkPlanSlug(plan);
-  window.__WL_PRO_ONLY_MARKET_IDS = [...PRO_ONLY_MARKET_IDS];
-}
-applyDevPlanPreviewFromUrl();
+// Client-only playtest query flags (picker / sim prototypes) — not billing enforcement; see playtestUrlFlags.js.
+applyPlaytestUrlFlagsToWindow();
 
 initAnalyticsClient();
 initMetaPixel();
@@ -209,6 +202,7 @@ if (typeof window !== 'undefined' && wlGuestOnboardingMeta()) {
       window.__WL_CLERK_PLAN_SLUG = 'free_user';
       window.__WL_PLAN_MARKET_IDS = marketIdsForClerkPlanSlug('free_user');
       window.__WL_PRO_ONLY_MARKET_IDS = [...PRO_ONLY_MARKET_IDS];
+      applyPlaytestUrlFlagsToWindow();
       return true;
     } catch (e) {
       console.warn('[guest] Session request failed:', e);
