@@ -17,14 +17,53 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, '..');
 const legacyPath = path.join(root, 'src', 'legacy.js');
 
+function injectHeadlessMegaFragNewsGuard(src) {
+  return src.replace(
+    'function tryLaunchOneMegaMarketFragmentation(G,ent){\n  const mkt=G.marketId||ACTIVE_MARKET;',
+    'function tryLaunchOneMegaMarketFragmentation(G,ent){\n  if(!G.news)G.news=[];\n  const mkt=G.marketId||ACTIVE_MARKET;',
+  );
+}
+
+function stubEl() {
+  return {
+    disabled: false,
+    textContent: '',
+    innerHTML: '',
+    value: '',
+    style: {},
+    dataset: {},
+    classList: { contains() { return false; }, add() {}, remove() {} },
+    appendChild() {},
+    querySelector() { return null; },
+    focus() {},
+    click() {},
+    addEventListener() {},
+    removeEventListener() {},
+    getAttribute() { return null; },
+    setAttribute() {},
+  };
+}
+
+const documentStub = {
+  body: { innerHTML: '', appendChild() {}, contains() { return false; } },
+  head: { appendChild() {} },
+  createElement() { return stubEl(); },
+  getElementById() { return stubEl(); },
+  querySelectorAll() { return []; },
+  querySelector() { return null; },
+  readyState: 'complete',
+  addEventListener() {},
+  removeEventListener() {},
+};
+
 function createVmContext() {
   const noop = () => {};
   const ctx = vm.createContext({
-    console,
+    console: { log: () => {}, warn: () => {}, error: console.error, table: () => {} },
     __WL_HEADLESS__: true,
     globalThis: null,
     window: null,
-    document: { body: {}, getElementById() { return null; } },
+    document: documentStub,
     localStorage: { getItem() { return null; }, setItem() {}, removeItem() {} },
     location: { reload() {}, search: '', href: 'http://127.0.0.1/' },
     setTimeout(fn) { if (typeof fn === 'function') fn(); return 0; },
@@ -39,12 +78,14 @@ function createVmContext() {
   });
   ctx.globalThis = ctx;
   ctx.window = ctx;
+  ctx.addEventListener = () => {};
+  ctx.removeEventListener = () => {};
   ctx.MP = { mode: 'solo', playerId: 0, isHost: false, players: [], emit() {}, action() {} };
   return ctx;
 }
 
 function loadLegacy(ctx) {
-  const src = readFileSync(legacyPath, 'utf8');
+  const src = injectHeadlessMegaFragNewsGuard(readFileSync(legacyPath, 'utf8'));
   injectMarketEcologyIife(ctx);
   injectFormatLifecycleIife(ctx);
   vm.runInContext(src, ctx, { filename: 'legacy.js', timeout: 180_000 });

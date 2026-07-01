@@ -1629,7 +1629,139 @@ function franchiseCompatibleFormatsPhrase(franchises){
   if(labels.length<=4)return labels.slice(0,-1).join(', ')+' or '+labels[labels.length-1];
   return labels.slice(0,3).join(', ')+', or similar compatible formats';
 }
-function wlResearchPositioningMemo(s,gds,sameFormat,leadSameFmt,year){
+function researchDriftPoleGuidance(fmtKey,year,pole){
+  let g=DRIFT_POLE_GUIDANCE[fmtKey];
+  if(fmtKey==='SOUL_RNB'&&typeof soulRnbStrategicGuidanceForYear==='function')g=soulRnbStrategicGuidanceForYear(year);
+  return g?.[pole]||null;
+}
+/** Active drift inflection for this book (most recent whose calendar has passed). */
+function researchActiveDriftInflection(cfg,year,period){
+  if(!cfg?.inflections?.length)return null;
+  const y=year||1970;
+  const p=period||1;
+  let active=null;
+  for(const inf of cfg.inflections){
+    const iy=inf.y??0;
+    const ip=inf.p??1;
+    if(y>iy||(y===iy&&p>=ip))active=inf;
+  }
+  return active;
+}
+/**
+ * Paid music-research positioning brief — perceptual whitespace, era taste, demo alignment.
+ * Does not prescribe slider numbers; returns consultant-voice paragraphs + optional scan teaser.
+ */
+function buildMusicResearchPositioningBrief(s,G){
+  const out={paragraphs:[],scanTeaser:null,testPole:null,testPoleName:null,overlap:false,demoMismatch:false};
+  if(!s||!G)return out;
+  const year=G.year||1970;
+  const period=G.period||1;
+  const gds=getDrift(s);
+  if(!gds?.cfg)return out;
+  const fmt=s.format;
+  const fmtLab=fmtLabel(fmt,year);
+  const v=gds.val??50;
+  const poleA=gds.cfg.poleA?.name||'Pole A';
+  const poleB=gds.cfg.poleB?.name||'Pole B';
+  const fmtKey=driftDefKey(fmt);
+  if(isTutorialTurnaroundScen()&&s.isPlayer&&(G.tutorialAct===2||G.tutorialAct===3)&&MP.mode!=='live'){
+    out.paragraphs.push(
+      'Perceptual testing says your stack reads older than where listening is moving — test a harder, more contemporary wedge toward '+poleB+' rather than matching heritage rivals.',
+      'Tradeoff: you may surrender some at-work background listeners to win younger cume already sampling FM Top 40.',
+    );
+    out.testPole='B';
+    out.testPoleName=poleB;
+    out.scanTeaser='Notable: perceptual tests suggest your music profile reads dated vs FM rivals.';
+    return out;
+  }
+  const excl=new Set([s.id]);
+  const partner=simulcastPartnerStation(s);
+  if(partner)excl.add(partner.id);
+  const sameFmt=(G.stations||[]).filter(o=>o&&!o._bpSlotDeferred&&!stationIsNoncommercialInstitutional(o)&&o.format===fmt&&!excl.has(o.id));
+  let recommendPole=null;
+  let recommendName=null;
+  if(sameFmt.length>=1){
+    const vals=sameFmt.map(o=>getDrift(o)?.val??50);
+    const avg=vals.reduce((a,x)=>a+x,0)/vals.length;
+    const leader=[...sameFmt].sort((a,b)=>(b.rat?.share||0)-(a.rat?.share||0))[0];
+    if(leader&&Math.abs(v-(getDrift(leader)?.val??50))<9){
+      out.overlap=true;
+      const leadVal=getDrift(leader)?.val??50;
+      recommendPole=leadVal>=50?'A':'B';
+      recommendName=recommendPole==='A'?poleA:poleB;
+      out.paragraphs.push('Focus groups bracket you with '+callDisplay(leader)+' — listeners describe the stations as interchangeable on music style.');
+    }
+    if(sameFmt.length>=2){
+      const onBSide=avg>=52;
+      const onASide=avg<=48;
+      if(onBSide||onASide){
+        const openPole=onBSide?'A':'B';
+        const openName=openPole==='A'?poleA:poleB;
+        const clusterWord=onBSide?'harder / crossover side':'heritage / softer side';
+        out.paragraphs.unshift('Perceptual maps cluster '+fmtLab+' voices on the '+clusterWord+' — the '+openName+' lane looks under-tested locally.');
+        if(!recommendPole){
+          recommendPole=openPole;
+          recommendName=openName;
+        }
+      }
+    }
+  }
+  const activeInf=researchActiveDriftInflection(gds.cfg,year,period);
+  if(activeInf&&typeof activeInf.effect==='function'){
+    const effLow=activeInf.effect(s,28);
+    const effHigh=activeInf.effect(s,72);
+    if(effHigh-effLow>0.008){
+      out.paragraphs.push('Current-chart mood in perceptual research rewards a harder lean toward '+poleB+' this book — softer positioning may face headwinds.');
+      if(!recommendPole){recommendPole='B';recommendName=poleB;}
+    }else if(effLow-effHigh>0.008){
+      out.paragraphs.push('This period\'s taste profile favors a milder lean toward '+poleA+' — aggressive positioning may cost at-work occasions.');
+      if(!recommendPole){recommendPole='A';recommendName=poleA;}
+    }
+  }
+  const dl=s.demoLean||0;
+  const aud=stationIntelActualAudienceSummary(s);
+  if(aud?.comp){
+    const young=(aud.comp['18-24']||0)+(aud.comp['25-34']||0);
+    const old=(aud.comp['35-49']||0)+(aud.comp['50-64']||0)+(aud.comp['65+']||0);
+    const musicReadsYoung=v>=58;
+    const musicReadsOld=v<=42;
+    if(dl<-0.2&&old>young+0.06&&(musicReadsOld||v<=50)){
+      out.demoMismatch=true;
+      out.paragraphs.push('Your demo target skews younger than your music profile and actual audience read — perceptual disconnect may cap growth until positioning and targeting align.');
+    }else if(dl>0.2&&young>old+0.06&&musicReadsYoung){
+      out.demoMismatch=true;
+      out.paragraphs.push('You are targeting older listeners but your music profile reads young — focus groups call the station "fun but not for me."');
+    }
+  }
+  const mkt=MARKETS[G.marketId||ACTIVE_MARKET]||MARKETS.atlanta;
+  const cult=mkt.culture||{};
+  if(fmt==='COUNTRY'&&(cult.country||0)>=0.12&&recommendPole==='A'){
+    out.paragraphs.push('Local demand signals still reward heritage-lean Country — the open pole matches rural-adjacent listening habits here.');
+  }else if(fmt==='SOUL_RNB'&&(cult.urban||0)>=0.08&&recommendPole==='B'){
+    out.paragraphs.push('Urban demand in this market supports a more contemporary R&B posture if you can defend it against rhythmic competitors.');
+  }
+  if(recommendPole&&recommendName){
+    const gu=researchDriftPoleGuidance(fmtKey,year,recommendPole);
+    if(gu?.weaknesses){
+      const weak=String(gu.weaknesses).split('.')[0].trim();
+      if(weak)out.paragraphs.push('If you test toward '+recommendName+', tradeoff to watch: '+weak.charAt(0).toLowerCase()+weak.slice(1)+'.');
+    }
+    out.paragraphs.push('Consultant view: run a perceptual test toward '+recommendName+' before the next book — directional, not a guarantee, but the whitespace hypothesis for this market.');
+    out.testPole=recommendPole;
+    out.testPoleName=recommendName;
+  }else if(!out.paragraphs.length){
+    const cur=wlBookDisplayShare01(s,G);
+    const trend=researchStationBookTrendLabel(s);
+    if(trend==='UP'&&cur>=0.045){
+      out.paragraphs.push('No urgent positioning move flagged — your current wedge holds perceptual separation this book. Refine execution rather than pivot.');
+    }
+  }
+  if(sameFmt.length>=2&&recommendPole&&!out.scanTeaser){
+    out.scanTeaser='Notable: '+fmtLab+' stations bunch on one side of the perceptual map — whitespace may exist on the opposite pole.';
+  }
+  return out;
+}
+function wlResearchPositioningMemo(s,gds,sameFormat,leadSameFmt,year,G){
   const posParas=[];
   const fmt=s?.format;
   const spoken=TALK_FMTS.includes(fmt);
@@ -1677,9 +1809,18 @@ function wlResearchPositioningMemo(s,gds,sameFormat,leadSameFmt,year){
     posParas.push('<p style="margin:0 0 8px">No positioning slider for this format — your image comes from brand, talent, and promotion.</p>');
   }
   const dl=s.demoLean||0;
-  if(dl<-0.28)posParas.push('<p style="margin:0"><strong>Audience age:</strong> Skews <strong>young</strong> — watch competing rock, rhythmic, and urban stations.</p>');
-  else if(dl>0.28)posParas.push('<p style="margin:0"><strong>Audience age:</strong> Skews <strong>older</strong> — vulnerable to younger-positioned stations.</p>');
-  return{secTitle,html:posParas.join('')};
+  if(dl<-0.28)posParas.push('<p style="margin:0 0 8px"><strong>Audience age:</strong> Skews <strong>young</strong> — watch competing rock, rhythmic, and urban stations.</p>');
+  else if(dl>0.28)posParas.push('<p style="margin:0 0 8px"><strong>Audience age:</strong> Skews <strong>older</strong> — vulnerable to younger-positioned stations.</p>');
+  const musicBrief=G?buildMusicResearchPositioningBrief(s,G):null;
+  if(musicBrief&&musicBrief.paragraphs.length){
+    const subTitle=spoken?'EDITORIAL RESEARCH — POSITIONING OPPORTUNITY':'MUSIC RESEARCH — POSITIONING OPPORTUNITY';
+    const body=musicBrief.paragraphs.map(p=>'<p style="margin:0 0 10px;font-size:14px;line-height:1.55;color:var(--off)">'+wlEscapeHtml(p)+'</p>').join('');
+    posParas.push('<div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--bdh)">'+
+      '<div style="font-size:11px;font-family:var(--fd);letter-spacing:.1em;color:var(--amb);margin-bottom:8px;text-transform:uppercase">'+subTitle+'</div>'+
+      body+
+      '<p style="margin:0;font-size:12px;color:var(--mut);line-height:1.45">From perceptual testing and competitive clustering — test in programming before you treat this as settled strategy.</p></div>');
+  }
+  return{secTitle,html:posParas.join(''),musicBrief};
 }
 function wlNotifyOvernightPassedOverIfNeeded(s,filledSlot){
   if(!s||!filledSlot)return;
@@ -4422,6 +4563,12 @@ function englishAmMusicPenaltyMult(year,fmp){
   const amViab=amViabForYear(year);
   const lateDrain=1-_smoothstep(1975,1981,year)*0.24;
   return Math.max(0.08,(1.0-0.60*(fmp||0))*amViab*lateDrain);
+}
+/** English AM Top 40 / CHR — post-FM-migration cliff (KHYW-class holdouts in 2000s). */
+function englishAmTop40SunsetMult(year){
+  const y=year||1970;
+  if(y<1986)return 1;
+  return Math.max(0.15,1-_smoothstep(1986,2002,y)*0.85);
 }
 /**
  * Late-1970s FM music listening preference: stereo music and clean audio pull audiences
@@ -14081,6 +14228,56 @@ function nextUnusedCommercialFreq(ctx,type){
   }
   return null;
 }
+/** Free an AM channel for a scheduled Spanish heritage entrant when the real dial is full. */
+function borrowAmFreqForScheduledSpanishLaunch(G){
+  const comm=(G.stations||[]).filter(s=>
+    s&&!s._bpSlotDeferred&&!stationIsNoncommercialInstitutional(s)&&!s.isPlayer&&
+    String(s.sig?.type||'').toUpperCase()==='AM'&&!s.fmBooster
+  );
+  if(!comm.length)return null;
+  const brokered=comm.filter(s=>s.format==='BROKERED_PROGRAMMING');
+  const gospel=comm.filter(s=>s.format==='GOSPEL'&&(s.rat?.share||0)<0.008);
+  const pool=brokered.length?brokered:(gospel.length?gospel:comm);
+  pool.sort((a,b)=>(a.rat?.share||0)-(b.rat?.share||0));
+  const victim=pool.find(s=>(s.rat?.share||0)<0.015);
+  if(!victim)return null;
+  const freq=victim.freq||victim.sig?.freq;
+  if(!freq)return null;
+  victim._bpSlotDeferred=true;
+  victim._spanishLaunchDisplaced=true;
+  if(!G.news)G.news=[];
+  G.news.unshift({
+    v:'LOW',
+    t:`${victim.callLetters} leaves the ${MARKETS[G.marketId||ACTIVE_MARKET]?.label||'market'} AM dial — channel reassigned for Spanish heritage sign-on.`,
+    y:G.year,
+    p:G.period,
+  });
+  return freq;
+}
+/** Scheduled Spanish / fragmentation entrants: FM dial, then synthetic FM, then AM fallback. */
+function nextFreqForScheduledLaunch(G,bpType,opts){
+  opts=opts||{};
+  const freq=nextUnusedCommercialFreq(G,bpType);
+  if(freq)return{freq,band:bpType};
+  if(bpType==='AM'&&opts.strictAm){
+    const borrowed=borrowAmFreqForScheduledSpanishLaunch(G);
+    if(borrowed)return{freq:borrowed,band:'AM'};
+    return null;
+  }
+  if(bpType==='FM'){
+    const synth=nextReligiousNetworkSyntheticFm(G);
+    if(synth)return{freq:synth,band:'FM'};
+    const am=nextUnusedCommercialFreq(G,'AM');
+    if(am)return{freq:am,band:'AM'};
+  }
+  if(bpType==='AM'){
+    const fm=nextUnusedCommercialFreq(G,'FM');
+    if(fm)return{freq:fm,band:'FM'};
+    const synth=nextReligiousNetworkSyntheticFm(G);
+    if(synth)return{freq:synth,band:'FM'};
+  }
+  return null;
+}
 /**
  * When a market's explicit AM/FM allotments are full (dense BP + fragmentation),
  * place institutional CCM on a deterministic synthetic FM channel (still deduped vs occupied dial keys).
@@ -14230,6 +14427,13 @@ function spanishLaunchesQueueRemainingAfterStart(startYear,startPeriod,marketId)
     ({y,p})=>y>sy||(y===sy&&(p||1)>sp),
   );
 }
+function spanishLaunchesDueThroughPeriod(marketId,maxYear,maxPeriod){
+  const my=maxYear||1970;
+  const mp=maxPeriod===2?2:1;
+  return marketSpanishLaunchesDefs(marketId).filter(
+    ({y,p})=>y<my||(y===my&&(p||1)<=mp),
+  );
+}
 function spanishLaunchAlreadyOnDial(G,launchId){
   if(!launchId)return false;
   return (G.stations||[]).some(s=>s&&!s._bpSlotDeferred&&s._spanishLaunchId===launchId);
@@ -14242,15 +14446,18 @@ function tryLaunchOneMarketSpanish(G,ent){
   if(!bp||!bp.fmt||!FM[bp.fmt])return false;
   if(!formatAllowedInMarket(bp.fmt,mkt,G.year))return false;
   if(countMegaFragmentationEligibleCommercial(G.stations)>=countUsableCommercialDialSlots(mkt))return false;
-  const freq=nextUnusedCommercialFreq(G,bp.type);
-  if(!freq)return false;
-  const s=mkStn(bp,freq,G.year);
+  const strictAm=bp.type==='AM';
+  const slot=nextFreqForScheduledLaunch(G,bp.type,{strictAm});
+  if(!slot)return false;
+  const effBp=slot.band!==bp.type?{...bp,type:slot.band}:bp;
+  const s=mkStn(effBp,slot.freq,G.year);
   s.color=CLR[(G.stations?.length||0)%CLR.length];
   s.entryTurn={year:G.year,period:G.period};
   s.launchPeriod=G.turn||0;
   s._spanishLaunchId=launchId;
+  s._spanishLaunchScheduledBand=bp.type;
   s._spanishLaunchEntrant=true;
-  if(bp.type==='FM'){
+  if(effBp.type==='FM'){
     s.oq=Math.min(90,Math.round(s.oq+4));
     Object.values(s.prog).forEach(sd=>{if(sd&&sd.quality!=null)sd.quality=Math.min(93,Math.round(sd.quality+3));});
     refreshStationOQ(s,G);
@@ -14259,24 +14466,24 @@ function tryLaunchOneMarketSpanish(G,ent){
   seedNewEntry(s,G);
   calcRev(s,G);
   if(!G.news)G.news=[];
+  const bandLbl=effBp.type||bp.type;
   G.news.unshift({
     v:'MEDIUM',
-    t:`📡 ${s.callLetters} signs on — ${fmtLabel(bp.fmt)} (${bp.type} ${freq}). Spanish-language dial depth grows in ${MARKETS[mkt]?.label||'market'}.`,
+    t:`📡 ${s.callLetters} signs on — ${fmtLabel(bp.fmt)} (${bandLbl} ${slot.freq}). Spanish-language dial depth grows in ${MARKETS[mkt]?.label||'market'}.`,
     y:G.year,
     p:G.period,
   });
   return true;
 }
 function injectMarketSpanishLaunchesThroughPeriod(G,maxYear,maxPeriod){
-  const q=G._spanishLaunchesQueue;
-  if(!q||!q.length)return;
-  const remain=[];
-  for(const ent of q){
-    if(maxYear<ent.y||(maxYear===ent.y&&maxPeriod<ent.p)){remain.push(ent);continue;}
-    if(spanishLaunchAlreadyOnDial(G,ent.id||`spanish_${ent.y}_${ent.p}`))continue;
-    if(!tryLaunchOneMarketSpanish(G,ent))remain.push(ent);
+  const mkt=G.marketId||ACTIVE_MARKET;
+  if(!marketSpanishLaunchesDefs(mkt).length)return;
+  for(const ent of spanishLaunchesDueThroughPeriod(mkt,maxYear,maxPeriod)){
+    const lid=ent.id||`spanish_${ent.y}_${ent.p}`;
+    if(spanishLaunchAlreadyOnDial(G,lid))continue;
+    tryLaunchOneMarketSpanish(G,ent);
   }
-  G._spanishLaunchesQueue=remain;
+  G._spanishLaunchesQueue=spanishLaunchesQueueRemainingAfterStart(maxYear,maxPeriod,mkt);
 }
 /** Runs even in harness/quiet sim — markets with explicit or mega supplemental `spanishLaunches`. */
 function processMarketSpanishLaunches(G){
@@ -16018,6 +16225,8 @@ function appl(s,coh,G){
         : (isAMTalk||isSpanishAmTalk)&&year>=2007
           ? Math.max(0.55, 1.0-_smoothstep(2007,2015,year)*0.20-_smoothstep(2015,2022,year)*0.20)
           : 1;
+  if(_spanishAMM&&typeof spanishCompositionHeritageAmStructuralPenaltyMult==='function')
+    amP*=spanishCompositionHeritageAmStructuralPenaltyMult(s,G);
   if(s.sig.type==='AM'&&!s.fmBooster&&['NEWS_TALK','CONSERVATIVE_TALK','SPORTS_TALK','PERSONALITY_TALK','ALL_NEWS'].includes(_fmt))
     amP*=mkt.spokenWordAmResilience??1;
   if(isSpanishAmTalk){
@@ -16028,6 +16237,7 @@ function appl(s,coh,G){
   }
   if(isAMMusic&&s.format==='COUNTRY')amP*=mkt.countryAmHoldout??1;
   if(isAMMusic&&s.format==='MOR')amP*=mkt.heritageAmResilience??1;
+  if(_englishAMM&&_fmt==='TOP40')amP*=englishAmTop40SunsetMult(year);
   // FM Booster: signal type is FM but reach/universe are limited (translator-class)
   // No hard cap — the lower reach values in sig naturally constrain the audience footprint.
 
@@ -16173,6 +16383,7 @@ function appl(s,coh,G){
     }
     if(urbanRhythmBlocked&&['RHYTHMIC','URBAN_CONTEMP'].includes(s.format))mktFmt*=0.36;
   }
+  if(typeof spanishCompositionHeritageAmMktFmtMult==='function')mktFmt*=spanishCompositionHeritageAmMktFmtMult(s,G);
   if((marketId==='newyork'||marketId==='chicago')&&s.sig?.type==='AM'&&['NEWS_TALK','MOR'].includes(s.format))
     mktFmt+=0.028;
   if(s.format==='ALL_NEWS'&&DEV_BENCHMARK_MEGA_MARKET_IDS.includes(marketId)){
@@ -16212,7 +16423,9 @@ function appl(s,coh,G){
   }
   mktFmt=Math.max(0.86,Math.min(1.24,mktFmt));
   const ccmInstMult=s.format==='CHRISTIAN'?christianCommercialInstitutionalAudienceMult(s,G):1;
-  const out=Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * morHeritageHybridMult * hitsLineageEraMult * chrLineageBucketAppealEraMult01 * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G) * mktFmt * ccmInstMult * allNewsSig * zombieNicheMult * staffingAutomationAppealTradeoffMult(s,G)*brokeredAppealTradeoffMult(s,G)*aaaEraAppealMult);
+  let spanHeritageAmMult=1;
+  if(typeof spanishCompositionHeritageAmAppealMult==='function')spanHeritageAmMult=spanishCompositionHeritageAmAppealMult(s,G);
+  const out=Math.max(0, aff * q * eff * amP * atl * sp * sat * strm * simBonus * driftMod * morHeritageHybridMult * hitsLineageEraMult * chrLineageBucketAppealEraMult01 * eraMult * oldiesAgeMult * fmMusPref * fmLeaderAppealTrim * franchiseDemoMult(s,coh,G) * mktFmt * ccmInstMult * allNewsSig * zombieNicheMult * staffingAutomationAppealTradeoffMult(s,G)*brokeredAppealTradeoffMult(s,G)*aaaEraAppealMult*spanHeritageAmMult);
   return Number.isFinite(out)?out:0;
 }
 
@@ -19566,6 +19779,10 @@ function recalc(stations,G){
         const raw = rawById.get(s.id);
         const p = comm.length > 1 ? rank / (comm.length - 1) : 0;
         let w = Math.min(0.94, Math.max(0.80, 0.94 - p * 0.10));
+        if(typeof spanishCompositionHeritageAmRecalcSmoothWeight==='function'){
+          const hw=spanishCompositionHeritageAmRecalcSmoothWeight(s,G);
+          if(hw!=null)w=hw;
+        }
         const gy = G.year || 1970;
         if (gy < 1986 && s.format === 'TOP40' && s.sig?.type === 'AM') {
           w = Math.max(0.69, w - 0.036 - _smoothstep(1971, 1983, gy) * 0.058);
@@ -19622,6 +19839,12 @@ function recalc(stations,G){
       return sum+(s.rat.cur[c]?.share||0)*(pop*engage);
     },0)/afterSportsHabitDenom;
   });
+
+  if(typeof spanishCompositionHeritageAmApplyShareCap==='function'){
+    stations.forEach(s=>{
+      if(s&&!s._bpSlotDeferred)spanishCompositionHeritageAmApplyShareCap(s,G);
+    });
+  }
 
   refreshAllStationOQ(G);
 
@@ -32320,6 +32543,10 @@ function buildResearchFormatStrategyHints(s,G,opts){
     seen.add(key);
     paid.push({sev:p.sev,txt:p.txt});
   }
+  if(mode==='scan'||mode==='both'){
+    const musicTeaser=buildMusicResearchPositioningBrief(s,G).scanTeaser;
+    if(musicTeaser)addScan('music_perceptual',musicTeaser);
+  }
   return{free:free.slice(0,maxFree),paid};
 }
 function _researchMarketScanHtml(lines){
@@ -32387,8 +32614,10 @@ function researchConsultantRecWhy(rec,ctx){
     return 'Format lifecycle is working against you — waiting burns cash on promotion.';
   if(/lags your other dayparts|Midday|Morning|Afternoon/i.test(t))
     return 'One weak daypart drags the whole clock in perceptual research — shore up the soft spot first.';
-  if(/Stand apart|positioning|copying the same sound/i.test(t))
+  if(/Stand apart|positioning|copying the same sound|perceptual|sound alike/i.test(t))
     return 'Overlap suggests listeners group you with the market leader — differentiation is the lever.';
+  if(/test toward|perceptual test|whitespace hypothesis/i.test(t))
+    return 'Music research points to an open perceptual lane — test before you commit promotion dollars.';
   if(/Crowded format/i.test(t))
     return 'Saturation in the lane means share fights are expensive — talent and branding must do more work.';
   if(/quality.*trails|Programming quality/i.test(t))
@@ -32535,7 +32764,7 @@ function buildResearchReport(s,G){
   const audienceFlowHtml=consultantMemoSection('WHERE LISTENERS ARE GOING',flowParas.join(''));
 
   const gds=getDrift(s);
-  const posMemo=wlResearchPositioningMemo(s,gds,sameFormat,leadSameFmt,year);
+  const posMemo=wlResearchPositioningMemo(s,gds,sameFormat,leadSameFmt,year,G);
   if(gds&&gds.cfg&&sameFormat.length&&leadSameFmt){
     let sum=0,cn=0;
     sameFormat.forEach(o=>{
@@ -33203,6 +33432,7 @@ function rivalReformat(G){
   // so rivalReformat picks them up quickly even if they somehow still have share
   const FORMAT_FORCE_EXIT={MOR:1983,BEAUTIFUL_MUSIC:1985,FULL_SERVICE:1975};
   const isForcedSunsetFmt=(s)=>{
+    if(s?.format==='TOP40'&&s.sig?.type==='AM'&&!s.fmBooster&&(G.year||1970)>=1996)return true;
     const exitYear=FORMAT_FORCE_EXIT[s?.format];
     return !!(exitYear&&G.year>=exitYear);
   };

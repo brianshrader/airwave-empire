@@ -11,6 +11,9 @@
     enabled: true,
     commercialMajor: ['REGIONAL_MEXICAN', 'SPANISH_CONTEMPORARY'],
     commercialSecondary: ['SPANISH_TROPICAL', 'SPANISH_ADULT_HITS'],
+    spokenCommercial: ['SPANISH_NEWS_TALK'],
+    /** Megamarket Hispanic AM talk migration path (post-1998 music → talk). */
+    amTalkMigrationMarkets: ['losangeles', 'newyork', 'miami'],
     tropicalArchetypes: ['northeast_mega', 'west_fm_fragmented', 'sunbelt_diversified'],
     sunbeltLaunchSequence: [
       'REGIONAL_MEXICAN',
@@ -18,6 +21,11 @@
       'REGIONAL_MEXICAN',
       'SPANISH_ADULT_HITS',
     ],
+    /** Lane >15% with fewer than 4 Spanish FMs — Houston duopoly guard (Duncan-shaped fragmentation). */
+    concentratedLaneShareGe: 0.15,
+    concentratedLaneDialCountLt: 4,
+    concentratedLaneStrength: 0.52,
+    concentratedLaneDuopolyStrength: 0.38,
   };
 
   function cfg() {
@@ -35,20 +43,35 @@
     return [...(c.commercialMajor || []), ...(c.commercialSecondary || [])];
   }
 
+  function spokenCommercialFmts() {
+    const c = cfg();
+    return [...(c.spokenCommercial || ['SPANISH_NEWS_TALK'])];
+  }
+
   function isCommercialFmt(fmt) {
     if (!enabled()) return fmt === UMBRELLA;
     const k = String(fmt || '').trim().toUpperCase();
     return commercialFmts().includes(k);
   }
 
+  function isSpanishSpokenWordFmt(fmt) {
+    if (!enabled()) return false;
+    const k = String(fmt || '').trim().toUpperCase();
+    return spokenCommercialFmts().includes(k);
+  }
+
+  function isSpanishLaneMusicFmt(fmt) {
+    return isUmbrellaSpanishFmt(fmt) || (enabled() && isCommercialFmt(fmt));
+  }
+
   function isUmbrellaSpanishFmt(fmt) {
     return String(fmt || '').trim().toUpperCase() === UMBRELLA;
   }
 
-  /** Umbrella + commercial pillars — use wherever legacy checks fmt === 'SPANISH'. */
+  /** Umbrella + music + spoken Spanish — use for lane identity / family buckets. */
   function isSpanishLaneFmt(fmt) {
-    if (isUmbrellaSpanishFmt(fmt)) return true;
-    return enabled() && isCommercialFmt(fmt);
+    if (isSpanishLaneMusicFmt(fmt)) return true;
+    return enabled() && isSpanishSpokenWordFmt(fmt);
   }
 
   function isSpanishLaunchBpFmt(fmt) {
@@ -131,11 +154,15 @@
     return base;
   }
 
+  function defaultSpanishSubtypeFmt() {
+    return 'REGIONAL_MEXICAN';
+  }
+
   function fmtForLaunchSlot(marketId, slot) {
-    if (!enabled() || !isSunbeltCompositionMarket(marketId)) return UMBRELLA;
+    if (!enabled() || !isSunbeltCompositionMarket(marketId)) return defaultSpanishSubtypeFmt();
     const seq = launchSequenceForMarket(marketId);
-    if (!seq.length) return UMBRELLA;
-    return seq[Math.min(slot, seq.length - 1)] || UMBRELLA;
+    if (!seq.length) return defaultSpanishSubtypeFmt();
+    return seq[Math.min(slot, seq.length - 1)] || defaultSpanishSubtypeFmt();
   }
 
   function unifiedSpanishLaunchEntries(marketId) {
@@ -198,6 +225,7 @@
   function inheritUmbrellaTables() {
     if (!enabled()) return;
     const fmts = commercialFmts();
+    const spoken = spokenCommercialFmts();
     const COMMUNITY_IDENTITY = legacyRef('COMMUNITY_IDENTITY');
     const TALENT_FORMAT_WEIGHT = legacyRef('TALENT_FORMAT_WEIGHT');
     const FGS = legacyRef('FGS');
@@ -208,24 +236,31 @@
     const BRANDS = legacyRef('BRANDS');
     const spanCi = COMMUNITY_IDENTITY?.SPANISH;
     const spanTw = TALENT_FORMAT_WEIGHT?.SPANISH;
+    const newsTw = TALENT_FORMAT_WEIGHT?.NEWS_TALK;
     const spanFgs = FGS?.SPANISH;
+    const newsFgs = FGS?.NEWS_TALK;
     const spanSports = SPORTS_FORMAT_FIT?.SPANISH;
     const spanBrands = BRANDS?.SPANISH;
-    fmts.forEach((f) => {
+    const newsBrands = BRANDS?.NEWS_TALK;
+    [...fmts, ...spoken].forEach((f) => {
+      const isTalk = spoken.includes(f);
       if (COMMUNITY_IDENTITY && spanCi != null && COMMUNITY_IDENTITY[f] == null) {
-        COMMUNITY_IDENTITY[f] = spanCi;
+        COMMUNITY_IDENTITY[f] = isTalk ? (COMMUNITY_IDENTITY.SPANISH_NEWS_TALK ?? spanCi * 0.92) : spanCi;
       }
-      if (TALENT_FORMAT_WEIGHT && spanTw != null && TALENT_FORMAT_WEIGHT[f] == null) {
-        TALENT_FORMAT_WEIGHT[f] = spanTw;
+      if (TALENT_FORMAT_WEIGHT && TALENT_FORMAT_WEIGHT[f] == null) {
+        if (isTalk && newsTw != null) TALENT_FORMAT_WEIGHT[f] = newsTw;
+        else if (spanTw != null) TALENT_FORMAT_WEIGHT[f] = spanTw;
       }
-      if (FGS && spanFgs != null && FGS[f] == null) {
-        FGS[f] = spanFgs;
+      if (FGS && FGS[f] == null) {
+        if (isTalk && newsFgs != null) FGS[f] = newsFgs;
+        else if (spanFgs != null) FGS[f] = spanFgs;
       }
       if (SPORTS_FORMAT_FIT && spanSports != null && SPORTS_FORMAT_FIT[f] == null) {
         SPORTS_FORMAT_FIT[f] = spanSports;
       }
-      if (BRANDS && spanBrands && BRANDS[f] == null) {
-        BRANDS[f] = spanBrands.slice();
+      if (BRANDS && BRANDS[f] == null) {
+        if (isTalk && newsBrands) BRANDS[f] = newsBrands.slice();
+        else if (spanBrands) BRANDS[f] = spanBrands.slice();
       }
     });
     if (MARKET_FMT_ADJ) {
@@ -305,8 +340,13 @@
   /** Cross-subtype cannibalization — overlapping cohorts bleed when a peer pillar is viable. */
   function crossSubtypeCannibalMult(s, coh, G) {
     if (!enabled() || !isCommercialFmt(s.format)) return 1;
-    const threshold = cfg().crossSubtypeCannibalWhenPeerShareGe ?? 0.035;
-    const strength = cfg().crossSubtypeCannibalStrength ?? 0.38;
+    const conc = concentratedLaneContext(G);
+    const threshold = conc
+      ? (cfg().concentratedLaneCrossCannibalPeerGe ?? 0.025)
+      : (cfg().crossSubtypeCannibalWhenPeerShareGe ?? 0.035);
+    const strength = conc
+      ? (cfg().concentratedLaneCrossCannibalStrength ?? 0.52)
+      : (cfg().crossSubtypeCannibalStrength ?? 0.38);
     const fmt = String(s.format);
     let penalty = 0;
     (G.stations || []).forEach((st) => {
@@ -400,6 +440,58 @@
     return total;
   }
 
+  function spanishLaneShare01(G) {
+    let total = 0;
+    (G.stations || []).forEach((st) => {
+      if (!isComm(st) || !isCommercialFmt(st.format)) return;
+      total += stationShare01(st);
+    });
+    return total;
+  }
+
+  function countSpanishCommercialDial(G) {
+    let n = 0;
+    (G.stations || []).forEach((st) => {
+      if (!isComm(st) || !isCommercialFmt(st.format)) return;
+      n += 1;
+    });
+    return n;
+  }
+
+  /** Thin Spanish dial + fat lane book — e.g. two FMs owning #1/#2 (Houston playtest). */
+  function concentratedLaneContext(G) {
+    const laneGe = cfg().concentratedLaneShareGe ?? 0.15;
+    const dialLt = cfg().concentratedLaneDialCountLt ?? 4;
+    const lane = spanishLaneShare01(G);
+    const dial = countSpanishCommercialDial(G);
+    if (lane < laneGe || dial >= dialLt) return null;
+    const thinRel = Math.min(1, (dialLt - dial) / Math.max(1, dialLt - 2));
+    const laneRel = Math.min(1, (lane - laneGe) / 0.1);
+    return { lane, dial, thinRel, laneRel, intensity: thinRel * laneRel };
+  }
+
+  function concentratedLaneMult(s, coh, G) {
+    if (!enabled() || !isCommercialFmt(s.format)) return 1;
+    const ctx = concentratedLaneContext(G);
+    if (!ctx) return 1;
+
+    const strength = cfg().concentratedLaneStrength ?? 0.52;
+    const ownSh = stationShare01(s);
+    const shareRel = Math.min(1, ownSh / 0.05);
+    let mult = 1 - strength * ctx.intensity * shareRel;
+
+    const rmLane = formatLaneShare01(G, 'REGIONAL_MEXICAN');
+    const contLane = formatLaneShare01(G, 'SPANISH_CONTEMPORARY');
+    const laneGe = cfg().concentratedLaneShareGe ?? 0.15;
+    if (rmLane >= 0.07 && contLane >= 0.07) {
+      const duoStrength = cfg().concentratedLaneDuopolyStrength ?? 0.38;
+      const duoRel = Math.min(1, (rmLane + contLane - laneGe) / 0.1);
+      mult *= Math.max(0.48, 1 - duoStrength * ctx.thinRel * duoRel);
+    }
+
+    return Math.max(0.4, mult);
+  }
+
   function countReliefEligiblePeers(G, leader) {
     let n = 0;
     (G.stations || []).forEach((st) => {
@@ -489,6 +581,8 @@
     if (peers > 0 && countReliefEligiblePeers(G, leader) === 0) {
       scaleAdj = cfg().dominantSelfTaxNoHeadroomScale ?? 0.65;
     }
+    const conc = concentratedLaneContext(G);
+    if (conc) scaleAdj *= Math.max(0.5, 1 - 0.35 * conc.intensity);
     let mult = Math.max(0.52, 1 - over * strength * scaleAdj);
     return mult;
   }
@@ -533,7 +627,10 @@
 
     const rel = Math.min(1, (Math.min(rmLane, contLane) - dualGe + 0.012) / 0.045);
     const strength = cfg().rmContDualEmperorStrength ?? 0.4;
-    return Math.max(0.58, 1 - strength * overlap * rel * (0.32 + rmLane));
+    let mult = Math.max(0.58, 1 - strength * overlap * rel * (0.32 + rmLane));
+    const conc = concentratedLaneContext(G);
+    if (conc) mult = Math.max(0.45, mult * (1 - 0.32 * conc.intensity));
+    return mult;
   }
 
   /** Phoenix v1 — block Tropical appeal outside Caribbean/NYC archetypes (existing dial pollution). */
@@ -585,12 +682,24 @@
       * rmContemporaryDualEmperorMult(s, coh, G)
       * dominantSubtypeSelfTaxMult(s, coh, G)
       * dominantSubtypeSiblingReliefMult(s, coh, G)
+      * concentratedLaneMult(s, coh, G)
       * adultHitsNicheMult(s, coh, G);
   }
 
   /** Commercial pillars inherit umbrella FA mass with subtype cohort skew + intra-subtype bleed. */
   function applBaseAff(s, coh, G) {
-    if (!enabled() || !isCommercialFmt(s.format)) return null;
+    if (!enabled()) return null;
+    if (isSpanishSpokenWordFmt(s.format)) {
+      ensureFmFaInstalled();
+      const FA = legacyRef('FA');
+      const mkt = typeof MARKETS !== 'undefined' ? MARKETS[G?.marketId || ACTIVE_MARKET] : null;
+      const h = mkt?.hispPop2020 ?? 0;
+      const span = (mkt?.culture && mkt.culture.spanish) ?? 0;
+      const laneBoost = 1 + Math.min(0.18, Math.max(0, h - 0.12) * 0.35 + Math.max(0, span - 0.10) * 0.22);
+      const base = FA?.[s.format]?.[coh] ?? FA?.NEWS_TALK?.[coh] ?? 0.1;
+      return base * laneBoost;
+    }
+    if (!isCommercialFmt(s.format)) return null;
     ensureFmFaInstalled();
     const FA = legacyRef('FA');
     const umbrella = FA?.SPANISH?.[coh] ?? 0.1;
@@ -665,7 +774,7 @@
   }
 
   function pickCrSpanishFormat(G) {
-    if (!enabled()) return UMBRELLA;
+    if (!enabled()) return defaultSpanishSubtypeFmt();
     const marketId = G.marketId || ACTIVE_MARKET;
     const year = G.year || 1970;
     const counts = {};
@@ -680,7 +789,7 @@
     for (const f of order) {
       if (FM && FM[f] && formatAllowedInMarket(f, marketId, year)) return f;
     }
-    return UMBRELLA;
+    return defaultSpanishSubtypeFmt();
   }
 
   const SPANISH_ESCAPE_FMTS = [
@@ -701,19 +810,142 @@
     return !!(s._spanishLaunchId || s._spanishLaunchEntrant || s._fragmentationLaunchId);
   }
 
+  function heritageSpanishAmLaunch(s) {
+    if (!s || !s._spanishLaunchId) return false;
+    if (s.fmBooster) return false;
+    const band = s._spanishLaunchScheduledBand || s.sig?.type;
+    return String(band || '').toUpperCase() === 'AM';
+  }
+
+  function heritageSpanishAmLaneHold(s, G) {
+    if (!enabled() || !heritageSpanishAmLaunch(s)) return false;
+    if (!highHispanicMarket(G?.marketId || ACTIVE_MARKET)) return false;
+    return isSpanishLaneMusicFmt(s.format);
+  }
+
+  /** KLAT-class heritage AM: modest niche appeal, cap runaway growth. */
+  function heritageAmAppealMult(s, G) {
+    if (!heritageSpanishAmLaneHold(s, G)) return 1;
+    const sh = stationShare01(s);
+    const y = G?.year || 1970;
+    if (y >= 1995 && y <= 2010) {
+      if (sh > 0.025) return 0.22;
+      if (sh > 0.018) return 0.32;
+      if (sh > 0.015) return 0.42;
+      if (sh >= 0.005 && sh <= 0.012) return 1.10;
+      if (sh < 0.004) return 1.08;
+      return 0.85;
+    }
+    if (sh > 0.03) return 0.72;
+    return 1;
+  }
+
+  /** Extra AM music penalty for scheduled heritage entrants (KLAT-class niche, not FM-scale). */
+  function heritageAmStructuralPenaltyMult(s, G) {
+    if (!heritageSpanishAmLaneHold(s, G)) return 1;
+    const y = G?.year || 1970;
+    if (y < 1990) return 1;
+    if (y <= 2008) return 0.58;
+    return 0.62;
+  }
+
+  /** Counter-weight high-Hispanic mktFmt lift so heritage AM stays KLAT-niche, not FM-leader scale. */
+  function heritageAmMktFmtMult(s, G) {
+    if (!heritageSpanishAmLaneHold(s, G)) return 1;
+    const y = G?.year || 1970;
+    if (y >= 1995 && y <= 2010) return 0.34;
+    if (y >= 1990) return 0.55;
+    return 1;
+  }
+
+  /** Skip long-tail mean blend that inflates KLAT-class heritage above raw appeal. */
+  function heritageAmRecalcSmoothWeight(s, G) {
+    if (!heritageSpanishAmLaneHold(s, G)) return null;
+    return 1;
+  }
+
+  function heritageAmShareCap01(s, G) {
+    if (!heritageSpanishAmLaneHold(s, G)) return null;
+    const y = G?.year || 1970;
+    if (y >= 1995 && y <= 2010) return 0.015;
+    if (y >= 1990) return 0.02;
+    return null;
+  }
+
+  function heritageAmApplyShareCap(s, G) {
+    const cap = heritageAmShareCap01(s, G);
+    if (cap == null || !s?.rat) return false;
+    const sh = Number(s.rat.share) || 0;
+    if (sh <= cap + 1e-6) return false;
+    const ratio = cap / Math.max(sh, 1e-6);
+    const engageWeightedPop = (typeof COH !== 'undefined' ? COH : []).reduce((sum, c) => {
+      const pop = (typeof POP !== 'undefined' && POP.cohorts?.[c]?.t) || 0;
+      const engage = (typeof AQH_ENGAGE !== 'undefined' && AQH_ENGAGE[c]) || 0.060;
+      return sum + pop * engage;
+    }, 0);
+    (typeof COH !== 'undefined' ? COH : []).forEach((coh) => {
+      const cur = s.rat.cur?.[coh];
+      if (!cur) return;
+      const pop = (typeof POP !== 'undefined' && POP.cohorts?.[coh]?.t) || 0;
+      const engage = (typeof AQH_ENGAGE !== 'undefined' && AQH_ENGAGE[coh]) || 0.060;
+      cur.share = Math.round(cur.share * ratio * 10000) / 10000;
+      cur.aqh = Math.round(cur.share * pop * engage);
+      if (s.mom?.[coh]) {
+        s.mom[coh].cur = cur.share;
+        s.mom[coh].tgt = Math.min(s.mom[coh].tgt ?? cap, cap);
+      }
+    });
+    s.rat.aqh = (typeof COH !== 'undefined' ? COH : []).reduce((sum, c) => sum + (s.rat.cur?.[c]?.aqh || 0), 0);
+    const H = typeof publicNewsHabitEngageMult === 'function' ? publicNewsHabitEngageMult(s, G) : 1;
+    s.rat.share = (typeof COH !== 'undefined' ? COH : []).reduce((sum, c) => {
+      const pop = (typeof POP !== 'undefined' && POP.cohorts?.[c]?.t) || 0;
+      const engage = ((typeof AQH_ENGAGE !== 'undefined' && AQH_ENGAGE[c]) || 0.060) * H;
+      return sum + (s.rat.cur?.[c]?.share || 0) * (pop * engage);
+    }, 0) / Math.max(engageWeightedPop, 1);
+    return true;
+  }
+
+  function spanishAmTalkMigrationMarket(marketId) {
+    const id = String(marketId || (typeof ACTIVE_MARKET !== 'undefined' ? ACTIVE_MARKET : '') || '');
+    const listed = cfg().amTalkMigrationMarkets || [];
+    if (listed.includes(id)) return true;
+    return false;
+  }
+
+  function spanishAmTalkMigrationEligible(s, G) {
+    if (!enabled() || !s) return false;
+    const y = G?.year || 1970;
+    if (y < 1998) return false;
+    if (String(s.sig?.type || '').toUpperCase() !== 'AM' || s.fmBooster) return false;
+    if (!isSpanishLaneMusicFmt(s.format)) return false;
+    const marketId = G?.marketId || ACTIVE_MARKET;
+    if (!spanishAmTalkMigrationMarket(marketId)) return false;
+    if (typeof formatAllowedInMarket === 'function') {
+      return formatAllowedInMarket('SPANISH_NEWS_TALK', marketId, y);
+    }
+    return true;
+  }
+
   /** Viable Spanish pillar — inherits umbrella SPANISH durability in high-Hispanic markets. */
   function viableSpanishPillarHold(s, G) {
-    if (!enabled() || !isSpanishLaneFmt(s.format)) return false;
+    if (!enabled()) return false;
     const marketId = G.marketId || ACTIVE_MARKET;
     if (!highHispanicMarket(marketId)) return false;
+    if (heritageSpanishAmLaneHold(s, G)) {
+      return stationShare01(s) >= 0.004;
+    }
+    if (!isSpanishLaneFmt(s.format)) return false;
     const sh = stationShare01(s);
     const floor = scheduledSpanishPillar(s) ? 0.035 : 0.04;
     return sh >= floor;
   }
 
-  /** Block rivalReformat flip away from Spanish lane at viable share. */
+  /** Block rivalReformat flip away from Spanish lane — but not music→talk within lane. */
   function rivalReformatBlockFlip(s, G) {
-    return viableSpanishPillarHold(s, G);
+    if (heritageSpanishAmLaneHold(s, G)) return true;
+    if (!viableSpanishPillarHold(s, G)) return false;
+    if (spanishAmTalkMigrationEligible(s, G)) return false;
+    return true;
   }
 
   /** Clear accumulated struggle when a Spanish pillar has recovered (mirror umbrella tenure). */
@@ -725,10 +957,22 @@
 
   /** Reduce flip probability for Spanish lane stations in high-Hispanic markets (GOSPEL-style). */
   function rivalReformatFlipMult(s, G) {
-    if (!enabled() || !isSpanishLaneFmt(s.format)) return 1;
+    if (!enabled()) return 1;
     const marketId = G.marketId || ACTIVE_MARKET;
     if (!highHispanicMarket(marketId)) return 1;
     const sh = stationShare01(s);
+    if (heritageSpanishAmLaneHold(s, G)) {
+      if (sh >= 0.005 && sh <= 0.02) return 0.22;
+      if (sh < 0.005) return 0.45;
+      if (sh < 0.04) return 0.35;
+      return 0.55;
+    }
+    if (!isSpanishLaneFmt(s.format)) return 1;
+    if (spanishAmTalkMigrationEligible(s, G)) {
+      if (sh >= 0.04) return 0.55;
+      if (sh >= 0.03) return 0.78;
+      return 1.12;
+    }
     if (sh >= 0.04) {
       const hold = 0.1 + Math.min(0.28, (sh - 0.04) * 4);
       const sched = scheduledSpanishPillar(s) ? 0.14 : 0;
@@ -751,6 +995,10 @@
       return cfg().reformatTropicalBlockedMult ?? 0.02;
     }
 
+    if (isSpanishSpokenWordFmt(toFmt) && isSpanishLaneMusicFmt(fromFmt) && spanishAmTalkMigrationEligible(s, G)) {
+      return 2.6;
+    }
+
     if (isSpanishLaneFmt(toFmt)) {
       if (toFmt !== fromFmt) return 1.4;
       return 0.04;
@@ -767,11 +1015,24 @@
     return 1;
   }
 
-  /** At viable share, only allow flipping to a stronger Spanish subtype — not MOR/OLDIES. */
+  /** At viable share, only allow flipping within Spanish lane — music or talk, not English exit. */
   function rivalReformatFilterCandidates(s, candidates, G) {
+    if (heritageSpanishAmLaneHold(s, G) && Array.isArray(candidates)) {
+      const lane = candidates.filter((f) => isSpanishLaneFmt(f) && f !== s.format);
+      if (lane.length) return lane;
+      return candidates.filter((f) => isSpanishLaneFmt(f));
+    }
     if (!viableSpanishPillarHold(s, G) || !Array.isArray(candidates)) return candidates;
-    const alt = candidates.filter((f) => isCommercialFmt(f) && f !== s.format);
-    return alt.length ? alt : candidates;
+    let alt = candidates.filter((f) => {
+      if (f === s.format) return false;
+      return isCommercialFmt(f) || isSpanishSpokenWordFmt(f);
+    });
+    if (spanishAmTalkMigrationEligible(s, G)) {
+      const talk = 'SPANISH_NEWS_TALK';
+      if (!alt.includes(talk)) alt.push(talk);
+    }
+    if (alt.length) return alt;
+    return candidates.filter((f) => isSpanishLaneFmt(f) && f !== s.format);
   }
 
   /** Strip Tropical from reformat targets outside tropical archetype markets (Spanish lane only). */
@@ -784,7 +1045,11 @@
 
   global.spanishCompositionEnabled = enabled;
   global.spanishCompositionIsCommercialFmt = isCommercialFmt;
+  global.spanishCompositionIsSpanishSpokenWordFmt = isSpanishSpokenWordFmt;
+  global.spanishCompositionIsSpanishLaneMusicFmt = isSpanishLaneMusicFmt;
   global.spanishCompositionIsSpanishLaneFmt = isSpanishLaneFmt;
+  global.spanishCompositionSpanishAmTalkMigrationMarket = spanishAmTalkMigrationMarket;
+  global.spanishCompositionSpanishAmTalkMigrationEligible = spanishAmTalkMigrationEligible;
   global.spanishCompositionIsSpanishLaunchBpFmt = isSpanishLaunchBpFmt;
   global.spanishCompositionCommercialFmts = commercialFmts;
   global.spanishCompositionApplyLaunchDefs = applyLaunchDefs;
@@ -806,6 +1071,11 @@
   global.spanishCompositionRivalReformatCandidateMult = rivalReformatCandidateMult;
   global.spanishCompositionRivalReformatFilterCandidates = rivalReformatFilterCandidates;
   global.spanishCompositionRivalReformatTropicalGuard = rivalReformatTropicalGuard;
+  global.spanishCompositionHeritageAmAppealMult = heritageAmAppealMult;
+  global.spanishCompositionHeritageAmStructuralPenaltyMult = heritageAmStructuralPenaltyMult;
+  global.spanishCompositionHeritageAmMktFmtMult = heritageAmMktFmtMult;
+  global.spanishCompositionHeritageAmRecalcSmoothWeight = heritageAmRecalcSmoothWeight;
+  global.spanishCompositionHeritageAmApplyShareCap = heritageAmApplyShareCap;
 
   if (enabled()) ensureFmFaInstalled();
 }(typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : this));
