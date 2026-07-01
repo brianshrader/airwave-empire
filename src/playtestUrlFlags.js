@@ -15,39 +15,21 @@
  *   ?nielsenCaps=1                          — Nielsen-shaped share caps prototype (client sim flag)
  */
 import { marketIdsForClerkPlanSlug, PRO_ONLY_MARKET_IDS } from './billingEntitlements.js';
+import {
+  isPlaytestQueryFlagEnabled,
+  isPlaytestUrlEnvironment as coreIsPlaytestUrlEnvironment,
+  truthyQueryValue,
+} from './playtestUrlEnvironmentCore.js';
 
 const VALID_PLAN_SLUGS = Object.freeze(['free_user', 'starter', 'trial_user', 'pro']);
 
-/** Amplify staging frontend — keep in sync with scripts/deploy-config.sh (DEPLOY_AMPLIFY_APP_ID + branch). */
-const AMPLIFY_STAGING_HOSTS = Object.freeze(['staging.d11e4bu75ja2xt.amplifyapp.com']);
-
 const PLAYTEST_PLAN_OVERRIDE_PARAM = 'playtestPlanOverride';
 
-function truthyQueryValue(v) {
-  const s = String(v ?? '')
-    .trim()
-    .toLowerCase();
-  return s === '1' || s === 'true' || s === 'yes' || s === 'on';
-}
-
-function normalizeHostname(hostname) {
-  return String(hostname ?? '')
-    .trim()
-    .toLowerCase();
-}
+const playtestEnvOptions = () => ({ viteDev: !!import.meta.env?.DEV });
 
 /** @param {string} [hostname] */
 export function isPlaytestUrlEnvironment(hostname) {
-  try {
-    if (import.meta.env?.DEV) return true;
-    if (typeof window === 'undefined') return false;
-    const h = normalizeHostname(hostname ?? window.location?.hostname ?? '');
-    if (h === 'localhost' || h === '127.0.0.1') return true;
-    if (AMPLIFY_STAGING_HOSTS.includes(h)) return true;
-    return false;
-  } catch (_e) {
-    return false;
-  }
+  return coreIsPlaytestUrlEnvironment(hostname, playtestEnvOptions());
 }
 
 /** Stronger opt-in: required to re-apply ?plan= after Clerk `/api/entitlements` sync. */
@@ -67,8 +49,8 @@ export function parsePlaytestUrlFlags(search) {
   if (plan && !VALID_PLAN_SLUGS.includes(plan)) plan = '';
   return {
     plan,
-    supplyPhase1: truthyQueryValue(q.get('supplyPhase1')),
-    nielsenCaps: truthyQueryValue(q.get('nielsenCaps')),
+    supplyPhase1: isPlaytestQueryFlagEnabled('supplyPhase1', search, undefined, playtestEnvOptions()),
+    nielsenCaps: isPlaytestQueryFlagEnabled('nielsenCaps', search, undefined, playtestEnvOptions()),
     planOverrideAfterSync: allowsPlaytestPlanOverrideAfterEntitlementsSync(search),
   };
 }
@@ -133,3 +115,6 @@ export function applyPlaytestPlanOverrideAfterEntitlementsSync() {
   applyPlaytestPlanSlugToWindow(override);
   return override;
 }
+
+// Re-export for callers that need the shared helper without window shim.
+export { isPlaytestQueryFlagEnabled } from './playtestUrlEnvironmentCore.js';

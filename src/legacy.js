@@ -13670,17 +13670,12 @@ const SUPPLY_PHASE1_REPLENISH_FM_SPECS=[
 function supplyPhase1Active(G){
   return !!(G&&G._supplyPhase1Enabled);
 }
-/** Playtest URL flag (?supplyPhase1=1) — localhost, staging, Amplify preview only. */
+/** Playtest URL flag (?supplyPhase1=1) — uses playtestUrlEnvironmentCore via window shim (play.html). */
 function wlPlaytestSupplyPhase1Enabled(){
   try{
     if(typeof window!=='undefined'&&window.__WL_SUPPLY_PHASE1_PLAYTEST===true)return true;
-    if(typeof location!=='undefined'){
-      const q=new URLSearchParams(location.search||'');
-      const v=String(q.get('supplyPhase1')||'').trim().toLowerCase();
-      if(v!=='1'&&v!=='true'&&v!=='yes'&&v!=='on')return false;
-      const h=String(location.hostname||'').toLowerCase();
-      return h==='localhost'||h==='127.0.0.1'||h.includes('staging')||h.endsWith('.amplifyapp.com');
-    }
+    if(typeof window!=='undefined'&&typeof window.wlIsPlaytestQueryFlagEnabled==='function')
+      return window.wlIsPlaytestQueryFlagEnabled('supplyPhase1');
   }catch(_e){}
   return false;
 }
