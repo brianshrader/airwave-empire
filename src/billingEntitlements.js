@@ -4,6 +4,7 @@
  */
 
 import { captureEvent } from './analyticsClient.js';
+import { applyPlaytestPlanOverrideAfterEntitlementsSync } from './playtestUrlFlags.js';
 
 export const CLERK_PLAN = {
   FREE: 'free_user',
@@ -175,5 +176,12 @@ export async function syncPlanMarkets(clerk) {
       });
     }
   } catch (_e) {}
+  const playtestOverride = applyPlaytestPlanOverrideAfterEntitlementsSync();
+  if (playtestOverride && typeof window !== 'undefined') {
+    return {
+      slug: playtestOverride,
+      marketIds: window.__WL_PLAN_MARKET_IDS || marketIdsForClerkPlanSlug(playtestOverride),
+    };
+  }
   return { slug, marketIds };
 }
