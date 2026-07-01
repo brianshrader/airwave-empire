@@ -3179,8 +3179,9 @@ function syncFranchiseFormatMismatchFlags(s,G){
     else delete rights.formatMismatch;
   });
 }
-function franchiseTransferDestEligible(franchise,toStation,fromSid,G){
-  if(!franchise||!toStation||!mpIsMe(toStation))return false;
+function franchiseTransferDestEligible(franchise,toStation,fromSid,G,opts){
+  if(!franchise||!toStation)return false;
+  if(!opts?.allowAnyOwner&&!mpIsMe(toStation))return false;
   if(toStation.id===fromSid)return false;
   if(franchiseFormatFit(franchise,toStation.format,toStation)<=0)return false;
   const existing=getStationFranchise(toStation,franchise.slot,G);
@@ -3194,13 +3195,15 @@ function franchiseTransferDestEligible(franchise,toStation,fromSid,G){
   }
   return true;
 }
-function transferFranchiseHolder(franchiseId,fromSid,toSid,G){
+function transferFranchiseHolder(franchiseId,fromSid,toSid,G,opts){
   const f=NATIONAL_FRANCHISES.find(x=>x.id===franchiseId);
   const r=G.franchiseRights?.[franchiseId];
   const from=G.stations.find(st=>st.id===fromSid);
   const to=G.stations.find(st=>st.id===toSid);
   if(!f||!r||!from||!to||r.holderId!==fromSid)return false;
-  if(!franchiseTransferDestEligible(f,to,fromSid,G))return false;
+  const actingPid=opts?.actingPlayerId;
+  if(opts?.allowAnyOwner&&actingPid!=null&&(from._mpOwner!==actingPid||to._mpOwner!==actingPid))return false;
+  if(!franchiseTransferDestEligible(f,to,fromSid,G,opts))return false;
   benchLocalHostDisplacedByFranchiseWin(to,f,G);
   r.holderId=to.id;
   r.holderName=to.callLetters;
@@ -4146,8 +4149,8 @@ window._mpApply_franchise_bid=function({franchiseId,stationId,amount}){
   G.franchiseRights[franchiseId].bids=G.franchiseRights[franchiseId].bids||{};
   G.franchiseRights[franchiseId].bids[stationId]=amount;
 };
-window._mpApply_franchise_transfer=function({franchiseId,fromSid,toSid}){
-  transferFranchiseHolder(franchiseId,fromSid,toSid,G);
+window._mpApply_franchise_transfer=function({franchiseId,fromSid,toSid,_fromPlayerId}){
+  transferFranchiseHolder(franchiseId,fromSid,toSid,G,{allowAnyOwner:true,actingPlayerId:_fromPlayerId});
 };
 window._mpApply_franchise_terminate=function({franchiseId,stationId,fee}){
   terminateFranchiseContractEarly(franchiseId,stationId,G,{waiveFee:fee===0});
