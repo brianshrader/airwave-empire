@@ -4271,6 +4271,8 @@ html.wl-modal-open,body.wl-modal-open{overflow:hidden}
 #wl-play #m-game-confirm.on{z-index:42000!important}
 /* First-turn tutorial (solo) — z-index set in JS (wlFtTutorialZBase ~11k) so card/shades stay above modals */
 #wl-ft-tut-root{position:fixed;inset:0;pointer-events:none}
+#m-digital-era.on{z-index:9050}
+#wl-digital-era-root{z-index:11005}
 #wl-ft-tut-shades{position:fixed;inset:0;pointer-events:none}
 .wl-ft-tut-spotlight{
   /* Outline remains visible even when a parent scroll container clips box-shadow (e.g. .mo overflow-y:auto). */

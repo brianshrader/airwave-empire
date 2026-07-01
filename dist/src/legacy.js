@@ -4996,7 +4996,7 @@ const EVDATA=[
   {y:2004,p:1,t:'Satellite Radio Arrives',d:'XM and Sirius pull premium listeners. Quiet drag begins.',e:'sat+'},
   {y:2002,p:1,t:'Variety Hits Wave',d:'Jack FM and Bob FM spread — broad gold FM with no DJs, stealing workplace listening from AC and Classic Hits.',e:'unlock-ADULT_HITS|rival-ADULT_HITS-FM-50kw-emerging'},
   {y:2005,p:1,t:'Oldies Becomes Classic Hits',d:'Stations adding 70s & 80s, dropping \'Oldies\' branding. The music is getting younger.',e:'unlock-CLASSIC_HITS|fmt_sunset:OLDIES:CLASSIC_HITS|rival-CLASSIC_HITS-FM-50kw-emerging'},
-  {y:2005,p:2,t:'Streaming Begins',d:'Pandora launches. Terrestrial revenue begins long decline.',e:'stream+'},
+  {y:2005,p:2,t:'Streaming Begins',d:'Pandora launches. Terrestrial revenue begins long decline. Stations can now launch Digital from Station Admin — streaming and on-demand reach beyond the dial.',e:'stream+'},
   {y:2006,p:1,t:'Economy Strong',d:'Mid-decade boom. Ad spending growing.',e:'ad+.08'},
   {y:2007,p:1,t:'HD Radio Fizzles',d:'The industry spent $500 million promoting HD Radio as the answer to satellite and streaming. Nobody bought the receivers. The last technical fix for terrestrial radio has failed.',e:'ad-.03'},
   {y:2008,p:1,t:'AM Talk Under Pressure',d:'Podcasts, streaming news apps, and satellite radio are eating into AM audiences. Pure AM Talk stations without FM simulcasts will face gradual share erosion through the 2010s. An FM simulcast or translator stops this immediately.',e:'amtalk_warn'},
@@ -34822,6 +34822,7 @@ function wlStationAdminLmaHtml(ctx){
   </div>`;
 }
 function openStationAdmin(sid) {
+  try{wlTeardownDigitalEraSpotlight();}catch(_e){}
   const opId = String(sid);
   const ctx = wlGetStationPillContext(opId);
   if (!ctx) {
@@ -35407,6 +35408,7 @@ function advTurn(mpCoalesceSeq){
       G._hitsChrTransitionNewsShown=true;
     }
     G.turn=(G.turn||0)+1;
+    try{wlDigitalEraOnAdvTurnCrossed(wasYear);}catch(_e){}
     try{wlMaybeTrackBookStaleAcrossTurns(wasYear,wasPeriod,false);}catch(_e){}
     try{wlMaybeTrackTurnMilestoneAfterAdvance();}catch(_e){}
     tutorialTurnaroundOnAdvTurnComplete();
@@ -40579,6 +40581,7 @@ function doStream(sid){
   s.digital.enabled=true;
   seedRev(G.stations,G);
   G.news.unshift({v:'MEDIUM',t:`📶 ${s.callLetters} launches Digital distribution (streaming + on-demand reach) — ${fmtLabel(s.format)} extends beyond the dial.`,y:G.year,p:G.period});
+  wlTeardownDigitalEraSpotlight();
   MP.action('stream', {sid});
   cm('m-stream');renderAll();
 }
@@ -45313,6 +45316,7 @@ function _wlModalAfterClose(id,opts){
     }
   }
   if(id==='m-sum')wlFtTutorialOnPeriodSummaryDismissed();
+  if(id==='m-sum')try{wlDigitalEraOnPeriodSummaryDismissed();}catch(_e){}
   if(typeof G!=='undefined'&&G&&G.sc?.id==='tutorial_turnaround'&&!G._tutorialExpansionComplete&&MP.mode!=='live'){
     requestAnimationFrame(()=>{
       if(typeof tutorialTurnaroundMaybeExpansionCoachStart==='function')tutorialTurnaroundMaybeExpansionCoachStart();
@@ -47640,13 +47644,183 @@ function wlGmMaybeAutoCampaignLifeline(){
     : 'Corporate is concerned about the financials and has extended working capital for now. Continued losses can end this posting.';
   showToast(msg,off.wouldFire?'warn':'info',9200);
 }
-/** One-time nudge when digital/streaming rules activate (2005+). */
-function wlMaybeDigitalEraToast(){
-  if(typeof MP==='undefined'||MP.mode==='live'||!G)return;
-  if(G.year<2005)return;
-  if(G._wlDigitalEraToastShown)return;
-  G._wlDigitalEraToastShown=true;
-  showToast('Digital era: audiences split across streams and downloads. Use Station Admin on each license to enable streaming and digital revenue.','info',10000);
+// ── Digital era discovery (2005+): era brief modal + optional station-card spotlight ──
+const _wlDigEra={spotlightIo:null};
+function wlDigitalEraBriefDone(Gref){
+  if(!Gref)return;
+  Gref._wlDigitalEraBriefDone=true;
+  Gref._wlDigitalEraBriefPending=false;
+  Gref._wlDigitalEraBriefDeferred=false;
+}
+function wlDigitalEraBriefEligible(Gref){
+  if(!Gref||!Gref.sc||(Gref.year|0)<2005)return false;
+  if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return false;
+  if(Gref._wlDigitalEraBriefDone)return false;
+  if(Gref._wlHarnessDeterministic)return false;
+  if(isTutorialTurnaroundScen()&&Gref.tutorialMode&&(Gref.tutorialAct|0)<8)return false;
+  if(typeof myPS==='function'&&!myPS().length)return false;
+  return true;
+}
+function wlPlayerHasAnyDigitalActive(){
+  return (myPS()||[]).some(s=>s.stream&&s.stream.active);
+}
+function wlDigitalEraBlockingOverlayOpen(){
+  return !!document.querySelector('.ov.on');
+}
+function wlShowDigitalEraBriefModal(){
+  const b=document.getElementById('digital-erab');
+  if(!b||!G)return;
+  const cost=f$(STREAM_COST_BASE);
+  const flagship=(myPS()||[])[0];
+  const adminBtn=flagship
+    ?`<button type="button" class="cfm" style="flex:1;min-width:160px;margin-top:0" onclick="wlDigitalEraOpenStationAdmin('${flagship.id}')">OPEN STATION ADMIN</button>`
+    :'';
+  b.innerHTML=
+    `<p class="di" style="margin-top:0">Online audio is now a real business line — not just a threat in the trades. You can extend each license beyond the transmitter.</p>`+
+    `<ul class="di" style="margin:12px 0;padding-left:1.2em;line-height:1.55">`+
+    `<li><strong>Invest once per station</strong> — about ${cost} setup plus upkeep each period.</li>`+
+    `<li><strong>Talent and format matter</strong> — strong shows and talk brands carry further online.</li>`+
+    `<li><strong>Early movers compound</strong> — audiences are small at first; skipping it gets harder as streaming drag builds.</li>`+
+    `</ul>`+
+    `<p class="di" style="margin-bottom:0">Use <strong>Station Admin → Add digital</strong>, or tap the <strong>Digital</strong> pill on your station card.</p>`+
+    `<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;justify-content:flex-end">`+
+    `<button type="button" class="abt" onclick="wlDeferDigitalEraBrief()">REMIND ME NEXT PERIOD</button>`+
+    adminBtn+
+    `<button type="button" class="cfm" style="flex:1;min-width:120px;margin-top:0" onclick="wlDismissDigitalEraBrief(true)">GOT IT</button>`+
+    `</div>`;
+  om('m-digital-era');
+  try{wlAnalyticsCapture('digital_era_brief_shown',{year:G.year,period:G.period});}catch(_e){}
+}
+function wlDismissDigitalEraBrief(showSpotlight){
+  cm('m-digital-era');
+  if(!G)return;
+  wlDigitalEraBriefDone(G);
+  try{wlAnalyticsCapture('digital_era_brief_dismissed',{spotlight:!!showSpotlight});}catch(_e){}
+  if(showSpotlight&&!wlPlayerHasAnyDigitalActive()){
+    G._wlDigitalEraSpotlightPending=true;
+    requestAnimationFrame(()=>wlMaybeDigitalEraSpotlight());
+  }
+}
+function wlDeferDigitalEraBrief(){
+  cm('m-digital-era');
+  if(!G)return;
+  G._wlDigitalEraBriefDeferred=true;
+  G._wlDigitalEraBriefPending=true;
+  showToast('Digital distribution is ready when you are — look for the Digital pill on your station card or Station Admin → Add digital.','info',9000);
+  try{wlAnalyticsCapture('digital_era_brief_deferred',{});}catch(_e){}
+}
+function wlDigitalEraOpenStationAdmin(sid){
+  wlDismissDigitalEraBrief(false);
+  if(sid&&typeof openStationAdmin==='function')openStationAdmin(sid);
+}
+function wlDigitalEraSpotlightTarget(){
+  for(const s of (myPS()||[])){
+    const el=document.querySelector(`[data-wl-digital-pill="${s.id}"]`);
+    if(el)return el;
+  }
+  return null;
+}
+function wlTeardownDigitalEraSpotlight(){
+  document.querySelectorAll('[data-wl-digital-pill].wl-ft-tut-spotlight').forEach(el=>el.classList.remove('wl-ft-tut-spotlight'));
+  const root=document.getElementById('wl-digital-era-root');
+  if(root)root.style.display='none';
+  if(_wlDigEra.spotlightIo){try{_wlDigEra.spotlightIo.disconnect();}catch(_e){}_wlDigEra.spotlightIo=null;}
+  if(G)G._wlDigitalEraSpotlightPending=false;
+}
+function wlAckDigitalEraSpotlight(){
+  wlTeardownDigitalEraSpotlight();
+  try{wlAnalyticsCapture('digital_era_spotlight_dismissed',{});}catch(_e){}
+}
+function wlDigitalEraAnchorSpotlightCard(card,target){
+  if(!card||!target)return;
+  const cardW=Math.min(420,window.innerWidth-32);
+  const r=target.getBoundingClientRect();
+  let left=Math.max(16,Math.min(window.innerWidth-cardW-16,r.left+r.width/2-cardW/2));
+  let top=r.bottom+12;
+  if(top+170>window.innerHeight)top=Math.max(16,r.top-170);
+  card.style.left=left+'px';
+  card.style.top=top+'px';
+  card.style.bottom='auto';
+  card.style.transform='none';
+  card.style.width=cardW+'px';
+}
+function wlMaybeDigitalEraSpotlight(){
+  if(!G||!G._wlDigitalEraSpotlightPending)return;
+  if(wlPlayerHasAnyDigitalActive()){wlTeardownDigitalEraSpotlight();return;}
+  if(wlDigitalEraBlockingOverlayOpen())return;
+  const target=wlDigitalEraSpotlightTarget();
+  if(!target){requestAnimationFrame(()=>wlMaybeDigitalEraSpotlight());return;}
+  let root=document.getElementById('wl-digital-era-root');
+  if(!root){
+    root=document.createElement('div');
+    root.id='wl-digital-era-root';
+    root.style.cssText='position:fixed;inset:0;pointer-events:none;z-index:11005';
+    root.innerHTML=
+      `<div id="wl-digital-era-card" class="wl-ft-tut-card wl-ft-tut-card--anchored" style="pointer-events:auto;display:none">`+
+      `<h3 class="wl-ft-tut-h">Digital pill</h3>`+
+      `<p class="wl-ft-tut-p">Tap <strong>Digital</strong> here to open Station Admin, then choose <strong>Add digital</strong> when you are ready to invest.</p>`+
+      `<div class="wl-ft-tut-btns"><button type="button" class="wl-ft-tut-btn wl-ft-tut-btn--pri" onclick="wlAckDigitalEraSpotlight()">Got it</button></div>`+
+      `</div>`;
+    document.body.appendChild(root);
+  }
+  target.classList.add('wl-ft-tut-spotlight');
+  root.style.display='block';
+  const card=root.querySelector('#wl-digital-era-card');
+  if(card){
+    card.style.display='block';
+    wlDigitalEraAnchorSpotlightCard(card,target);
+  }
+  try{target.scrollIntoView({block:'nearest',behavior:'smooth'});}catch(_e){}
+}
+function wlMaybeDigitalEraBrief(opts){
+  opts=opts||{};
+  if(!wlDigitalEraBriefEligible(G))return;
+  if(G._wlDigitalEraBriefDeferred&&!opts.deferredRetry)return;
+  if(G._wlDigitalEraBriefDeferred&&opts.deferredRetry)G._wlDigitalEraBriefDeferred=false;
+  if(document.getElementById('m-digital-era')?.classList.contains('on'))return;
+  if(wlDigitalEraBlockingOverlayOpen()&&!opts.afterSum){
+    G._wlDigitalEraBriefPending=true;
+    return;
+  }
+  G._wlDigitalEraBriefPending=false;
+  wlShowDigitalEraBriefModal();
+}
+function wlDigitalEraOnPeriodSummaryDismissed(){
+  if(!G?._wlDigitalEraBriefPending&&!G?._wlDigitalEraBriefDeferred)return;
+  setTimeout(()=>{
+    if(G._wlDigitalEraBriefDeferred)wlMaybeDigitalEraBrief({deferredRetry:true,afterSum:true});
+    else wlMaybeDigitalEraBrief({afterSum:true});
+  },220);
+}
+function wlDigitalEraOnAdvTurnCrossed(wasYear){
+  if(!G)return;
+  if((wasYear|0)<2005&&(G.year|0)>=2005)G._wlDigitalEraBriefPending=true;
+  if(G._wlDigitalEraBriefDeferred&&(G.year|0)>=2005)G._wlDigitalEraBriefPending=true;
+  wlMaybeDigitalLateAdoptionNudge();
+}
+function wlMaybeDigitalLateAdoptionNudge(){
+  if(!G||(G.year|0)<2010)return;
+  if(G._wlDigitalLateNudgeShown)return;
+  if(!G._wlDigitalEraBriefDone)return;
+  if(wlPlayerHasAnyDigitalActive())return;
+  G._wlDigitalLateNudgeShown=true;
+  showToast('Streaming drag is building — stations without Digital distribution are losing ground online. Station Admin → Add digital.','warn',9500);
+}
+function wlMaybeDigitalEraOnRender(){
+  if(!G||!wlDigitalEraBriefEligible(G))return;
+  if(!G._wlDigitalEraLoadNudgeScheduled&&!G._wlDigitalEraBriefPending&&!G._wlDigitalEraBriefDeferred){
+    G._wlDigitalEraLoadNudgeScheduled=true;
+    G._wlDigitalEraBriefPending=true;
+    setTimeout(()=>wlMaybeDigitalEraBrief({afterSum:true}),500);
+  }
+  if(G._wlDigitalEraSpotlightPending)requestAnimationFrame(()=>wlMaybeDigitalEraSpotlight());
+}
+if(typeof globalThis!=='undefined'){
+  globalThis.wlDismissDigitalEraBrief=wlDismissDigitalEraBrief;
+  globalThis.wlDeferDigitalEraBrief=wlDeferDigitalEraBrief;
+  globalThis.wlAckDigitalEraSpotlight=wlAckDigitalEraSpotlight;
+  globalThis.wlDigitalEraOpenStationAdmin=wlDigitalEraOpenStationAdmin;
+  globalThis.wlTeardownDigitalEraSpotlight=wlTeardownDigitalEraSpotlight;
 }
 function renderAll(){
   if(typeof globalThis!=='undefined'&&globalThis.__WL_HEADLESS__)return;
@@ -47678,7 +47852,7 @@ function renderAll(){
   }
   try{wlRepairStuckPlayInteractionLayers();}catch(_e){}
   rHdr();
-  wlMaybeDigitalEraToast();
+  try{wlMaybeDigitalEraOnRender();}catch(_e){}
   rTick();rScore();rStns();rMkt();rIntel();rNews();
   if(typeof wlGmMode!=='undefined'&&wlGmMode.renderGmHeader)wlGmMode.renderGmHeader(G);
   wlGmApplyAdvanceButtonState();
@@ -48067,10 +48241,10 @@ function rStns(){
       (_openFrH.length?' sc-hero-pill--st-bid':'');
     const _digOn=!!(op.stream&&op.stream.active);
     const _digVal=_digOn?'On':'Off';
-    const _digTitle=rosterHtmlEsc('Streaming & digital — open Station Admin to enable the stream and digital revenue.');
+    const _digTitle=rosterHtmlEsc('Digital distribution — tap to open Station Admin, then Add digital to invest.');
     const _digCls='sc-hero-pill sc-hero-pill--digital'+(_digOn?' sc-hero-pill--st-owned':' sc-hero-pill--st-empty');
     const _digPill=(G.year>=2005)
-      ?`<button type="button" class="${_digCls}" title="${_digTitle}" onclick="openStationAdmin('${op.id}')">`+
+      ?`<button type="button" class="${_digCls}"${mpIsMe(s)?` id="wl-digital-pill-${op.id}" data-wl-digital-pill="${op.id}"`:''} title="${_digTitle}" onclick="wlTeardownDigitalEraSpotlight();openStationAdmin('${op.id}')">`+
       `<span class="sc-hero-pill-ic" aria-hidden="true">📶</span><span class="sc-hero-pill-txt">`+
       `<span class="sc-hero-pill-k">Digital</span><span class="sc-hero-pill-sep">:</span> <span class="sc-hero-pill-v">${_digVal}</span></span></button>`
       :'';

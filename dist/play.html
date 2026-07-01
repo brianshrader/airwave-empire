@@ -33,7 +33,7 @@
 <!-- Optional: FormSubmit destination for player feedback (same as FEEDBACK_TO). Prefer VITE_FEEDBACK_FORMSUBMIT_EMAIL in .env at build. -->
 <meta name="wl-feedback-formsubmit-email" content="">
 <!-- When the game is served from a different origin than the Node API, set the API origin here (or use VITE_GAME_SERVER_URL at build). Example: content="https://api.airwaveempire.com" -->
-<meta name="wl-game-server-url" content="https://api.airwaveempire.com">
+<meta name="wl-game-server-url" content="">
 <title>Airwave Empire</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <!-- Station logo templates (curated subset — deterministic SVG typography) -->
@@ -41,10 +41,7 @@
 
 <!-- Socket.io — loaded dynamically only in multiplayer mode -->
 <!-- <script src="/socket.io/socket.io.js"></script> -->
-  <script type="module" crossorigin src="/assets/analyticsClient-BN8GngS2.js"></script>
-  <script type="module" crossorigin src="/assets/gameServerApiOrigin-BQisP3Bi.js"></script>
-  <script type="module" crossorigin src="/assets/main-rZIurfR-.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/main-DodAQgK2.css">
+  <link rel="stylesheet" href="src/styles.css?v=20260619-picker" />
 </head>
 <body id="wl-play">
 
@@ -116,8 +113,8 @@
     <div id="mp-connect-panel">
       <div class="mp-field-lbl">SERVER ADDRESS</div>
       <div class="mp-row">
-        <input id="mp-server-url" class="mp-inp mp-inp--row" type="text" value="https://api.airwaveempire.com"
-          placeholder="https://api.airwaveempire.com"/>
+        <input id="mp-server-url" class="mp-inp mp-inp--row" type="text" value="http://localhost:3000"
+          placeholder="http://localhost:3000"/>
         <button onclick="mpConnect()" class="abt mp-connect-btn" type="button" id="mp-connect-btn">CONNECT</button>
       </div>
       <div id="mp-connect-status" class="mp-conn-status">Connecting…</div>
@@ -423,6 +420,7 @@
 <div class="ov" id="m-sell"><div class="mo"><div class="mh"><span>SELL STATION</span><button class="mc" onclick="cm('m-sell')">CLOSE ×</button></div><div id="sellb"></div></div></div>
 <div class="ov" id="m-gameover-sellout"><div class="mo wide" style="max-width:520px"><div class="mh"><span>RUN COMPLETE</span><button type="button" class="mc" onclick="cm('m-gameover-sellout');openScenSelect(null)">SCENARIO SELECTION →</button></div><div id="gameover-selloutb" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.55;color:var(--off)"></div></div></div>
 <div class="ov" id="m-bankruptcy-coach" style="z-index:9120"><div class="mo wide" style="max-width:560px"><div class="mh"><span id="bankruptcy-coach-title">STATION BANKRUPTCY</span><button type="button" class="mc" onclick="cm('m-bankruptcy-coach');wlDismissSoloBankruptcyCoach()">OK</button></div><div id="bankruptcy-coachb" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.6;color:var(--off)"></div></div></div>
+<div class="ov" id="m-digital-era" style="z-index:9050"><div class="mo wide" style="max-width:560px"><div class="mh"><span>📶 DIGITAL ERA</span><button type="button" class="mc" onclick="wlDismissDigitalEraBrief(true)">CLOSE ×</button></div><div id="digital-erab" style="padding:16px 20px 20px;font-family:var(--ft);font-size:15px;line-height:1.6;color:var(--off)"></div></div></div>
 <div class="ov" id="m-sta-offer"><div class="mo"><div class="mh"><span>OFF-MARKET LISTING</span><button type="button" class="mc" onclick="rejectStationListingOffer()">DECLINE ×</button></div><div id="sta-offerb"></div></div></div>
 <div class="ov" id="m-game-confirm"><div class="mo" style="max-width:480px"><div class="mh"><span id="gameconf-title">CONFIRM</span></div><div id="gameconfb" style="padding:8px 20px 4px"></div><div style="padding:8px 20px 20px;display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap"><button type="button" class="cnl" onclick="wlGameConfirmDismiss()">CANCEL</button><button type="button" class="cfm" id="gameconf-ok" onclick="wlGameConfirmCommit()" style="width:auto;min-width:120px;margin-top:0;padding:12px 20px">OK</button></div></div></div>
 <div class="ov" id="m-scen"><div class="mo wide" style="max-width:780px"><div id="scenb"></div></div></div>
@@ -521,6 +519,7 @@
 </footer>
 
   <!-- Vite: env in src/main.js (VITE_CLERK_PUBLISHABLE_KEY). Plain server: set meta above or use .env only after vite build. -->
+  <script type="module" src="/src/main.js"></script>
   <script defer src="/src/stationLogoConfig.js"></script>
   <script defer src="/src/stationLogoSvg.js"></script>
   <script defer src="/src/campaignMode.js"></script>
@@ -528,8 +527,9 @@
   <script defer src="/src/marketEcologyCore.iife.js"></script>
   <script defer src="/src/formatLifecycleProfileRuntime.iife.js"></script>
   <script defer src="/src/talentRetention.js"></script>
-  <script defer src="/src/legacy.js?v=20260530-fr-bid"></script>
+  <script defer src="/src/legacy.js?v=20260530-digital-era"></script>
   <script defer src="/src/realismSpanishComposition.js"></script>
   <!-- Dev-only: stripped from production HTML by vite.config.js (file is not copied to dist). -->
+  <script defer src="/src/marketSimHarness.js"></script>
 </body>
 </html>
