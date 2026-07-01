@@ -22,6 +22,7 @@ if (import.meta.env.DEV && typeof window !== 'undefined') {
   window.__WL_DEV_PLAYTEST_MARKETS__ = true;
 }
 
+// Client-only playtest query flags (picker / sim prototypes) — not billing enforcement; see playtestUrlFlags.js.
 applyPlaytestUrlFlagsToWindow();
 
 initAnalyticsClient();
