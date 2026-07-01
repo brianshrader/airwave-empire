@@ -2,13 +2,17 @@
 
 const { posthog } = require('./posthog');
 const { verifyClerkBearer } = require('./clerkVerify');
+const { verifyGuestToken } = require('./guestJwt');
 const { resolveStripePlanForUser } = require('./stripePlanResolve');
-const { CLERK_PLAN } = require('./aiEntitlements');
+const { CLERK_PLAN, digestMonthlyLimitForPlan } = require('./aiEntitlements');
+const { tryConsume, refundOne } = require('./aiUsageStore');
+const guestAiUsage = require('./guestAiUsageStore');
 
 /**
  * Trade-press style ratings digest via ShortAPI LLM (job/create + job/query, same transport as images).
  * POST /api/ratings-digest — body: { payload: { market, periodLabel, year, period, book: [{ rank, call, brand?, format, sharePct, deltaPts, band }], marketContext?: string[] } }
  * Optional `Authorization: Bearer` (Clerk): trial + Starter → advanced insights; Pro → elite (extended); free_user / unsigned → standard column.
+ * Monthly digest quotas (UTC month) enforced for signed-in users; guest tokens get a lifetime cap; unsigned requests rely on IP rate limit only.
  * GET  /api/ratings-digest/status — { configured, model }
  *
  * Env: SHORTAPI_KEY and/or OPENROUTER_API_KEY and/or OPENAI_API_KEY; digest model vars below.
@@ -526,6 +530,73 @@ async function digestInsightsTierForRequest(req) {
   return 'standard';
 }
 
+/**
+ * Reserve one digest generation slot before calling the LLM (refund on failure).
+ * @returns {Promise<
+ *   | { ok: true, refund: () => Promise<void> }
+ *   | { ok: false, status: number, body: Record<string, unknown> }
+ * >}
+ */
+async function tryConsumeDigestQuota(req) {
+  const auth = req.headers.authorization || '';
+  const m = auth.match(/^Bearer\s+(.+)$/i);
+  if (m) {
+    const bearer = m[1].trim();
+    const guestId = verifyGuestToken(bearer);
+    if (guestId) {
+      const out = await guestAiUsage.tryConsume(guestId, 'digest');
+      if (!out.ok) {
+        return {
+          ok: false,
+          status: 403,
+          body: {
+            ok: false,
+            code: 'guest_digest_quota_exhausted',
+            error: 'Guest ratings digest limit reached. Create a free account or subscribe for more.',
+            limit: out.limit,
+            used: out.used,
+          },
+        };
+      }
+      return { ok: true, refund: () => guestAiUsage.refundOne(guestId, 'digest') };
+    }
+    if (process.env.CLERK_SECRET_KEY) {
+      try {
+        const userId = await verifyClerkBearer(bearer);
+        let planSlug = CLERK_PLAN.FREE;
+        try {
+          const r = await resolveStripePlanForUser(userId);
+          planSlug = r.planSlug || planSlug;
+        } catch (e) {
+          console.warn('[ratings-digest] plan resolve for quota:', e.message || e);
+        }
+        const limit = digestMonthlyLimitForPlan(planSlug);
+        const out = await tryConsume(userId, 'digest', limit);
+        if (!out.ok) {
+          return {
+            ok: false,
+            status: 403,
+            body: {
+              ok: false,
+              code: 'digest_quota_exceeded',
+              error:
+                'Monthly ratings digest limit reached for your plan — upgrade or try next month (UTC).',
+              plan: planSlug,
+              limit: out.limit,
+              used: out.used,
+              period: out.period,
+            },
+          };
+        }
+        return { ok: true, refund: () => refundOne(userId, 'digest') };
+      } catch {
+        /* invalid bearer — fall through to anonymous (IP rate limit only) */
+      }
+    }
+  }
+  return { ok: true, refund: async () => {} };
+}
+
 function sanitizeDigestPayload(body) {
   const raw = body && typeof body === 'object' ? body.payload : null;
   if (!raw || typeof raw !== 'object') return null;
@@ -608,6 +679,11 @@ function mountRatingsDigestRoutes(app) {
         return res.status(400).json({ error: 'Payload too large.' });
       }
 
+      const quota = await tryConsumeDigestQuota(req);
+      if (!quota.ok) {
+        return res.status(quota.status).json(quota.body);
+      }
+
       const insightsTier = await digestInsightsTierForRequest(req);
       const systemPrompt =
         insightsTier === 'elite'
@@ -616,10 +692,16 @@ function mountRatingsDigestRoutes(app) {
             ? DIGEST_SYSTEM_ADVANCED
             : DIGEST_SYSTEM;
 
-      const article = await digestChatComplete([
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: userMsg },
-      ]);
+      let article;
+      try {
+        article = await digestChatComplete([
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userMsg },
+        ]);
+      } catch (e) {
+        await quota.refund();
+        throw e;
+      }
 
       posthog.capture({
         distinctId: ip,

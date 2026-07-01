@@ -18,6 +18,13 @@ const LIMITS = {
   [CLERK_PLAN.PRO]: { logo: 200, jingle: 80, van: 100 },
 };
 
+/** Monthly ratings digest generations (UTC calendar month) — docs/ENTITLEMENTS.md */
+const DIGEST_LIMITS = {
+  [CLERK_PLAN.FREE]: 15,
+  [CLERK_PLAN.STARTER]: 100,
+  [CLERK_PLAN.PRO]: 500,
+};
+
 /** @param {string} slug */
 function defaultLimitsForUnknownSlug(slug) {
   const s = String(slug || '').trim();
@@ -36,9 +43,19 @@ function monthlyLimitForPlan(slug, kind) {
   return defaultLimitsForUnknownSlug(slug)[kind];
 }
 
+/** @param {string} slug */
+function digestMonthlyLimitForPlan(slug) {
+  const s = String(slug || '').trim();
+  if (s === CLERK_PLAN.TRIAL || s === CLERK_PLAN.STARTER) return DIGEST_LIMITS[CLERK_PLAN.STARTER];
+  if (s === CLERK_PLAN.PRO) return DIGEST_LIMITS[CLERK_PLAN.PRO];
+  return DIGEST_LIMITS[CLERK_PLAN.FREE];
+}
+
 module.exports = {
   CLERK_PLAN,
   LIMITS,
+  DIGEST_LIMITS,
   defaultLimitsForUnknownSlug,
   monthlyLimitForPlan,
+  digestMonthlyLimitForPlan,
 };

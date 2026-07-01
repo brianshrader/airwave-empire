@@ -56,31 +56,32 @@ function withUserLock(userId, fn) {
 
 /**
  * @param {string} userId
- * @returns {{ period: string, logo: number, jingle: number, van: number }}
+ * @returns {{ period: string, logo: number, jingle: number, van: number, digest: number }}
  */
 function readState(userId) {
   const p = filePathForUser(userId);
   if (!fs.existsSync(p)) {
-    return { period: utcYearMonth(), logo: 0, jingle: 0, van: 0 };
+    return { period: utcYearMonth(), logo: 0, jingle: 0, van: 0, digest: 0 };
   }
   try {
     const j = JSON.parse(fs.readFileSync(p, 'utf8'));
     if (!j || typeof j !== 'object') {
-      return { period: utcYearMonth(), logo: 0, jingle: 0, van: 0 };
+      return { period: utcYearMonth(), logo: 0, jingle: 0, van: 0, digest: 0 };
     }
     const current = utcYearMonth();
     const period = typeof j.period === 'string' && j.period ? j.period : current;
     if (period !== current) {
-      return { period: current, logo: 0, jingle: 0, van: 0 };
+      return { period: current, logo: 0, jingle: 0, van: 0, digest: 0 };
     }
     return {
       period: current,
       logo: Math.max(0, Math.min(1e6, Math.floor(Number(j.logo) || 0))),
       jingle: Math.max(0, Math.min(1e6, Math.floor(Number(j.jingle) || 0))),
       van: Math.max(0, Math.min(1e6, Math.floor(Number(j.van) || 0))),
+      digest: Math.max(0, Math.min(1e6, Math.floor(Number(j.digest) || 0))),
     };
   } catch {
-    return { period: utcYearMonth(), logo: 0, jingle: 0, van: 0 };
+    return { period: utcYearMonth(), logo: 0, jingle: 0, van: 0, digest: 0 };
   }
 }
 
@@ -90,7 +91,7 @@ function writeState(userId, state) {
 }
 
 /**
- * @param {'logo' | 'jingle' | 'van'} kind
+ * @param {'logo' | 'jingle' | 'van' | 'digest'} kind
  * @param {number} limit
  * @returns {Promise<{ ok: boolean, used: number, limit: number, period: string }>}
  */
@@ -112,7 +113,7 @@ async function tryConsume(userId, kind, limit) {
 }
 
 /**
- * @param {'logo' | 'jingle' | 'van'} kind
+ * @param {'logo' | 'jingle' | 'van' | 'digest'} kind
  * @returns {Promise<void>}
  */
 async function refundOne(userId, kind) {
