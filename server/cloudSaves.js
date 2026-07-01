@@ -8,6 +8,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { verifyClerkBearer } = require('./clerkVerify');
 const { userHasActiveSubscription, userCloudAutosaveEligible, subscriptionCheckEnabled } = require('./subscriptionAccess');
+const { assertCloudSaveMarketAllowedForPlan } = require('./planMarketAccess');
 const { posthog } = require('./posthog');
 const { cloudSavesDir, ensureDir: ensureRuntimeDir } = require('./runtimePaths');
 
@@ -233,6 +234,7 @@ function mountCloudSaves(app) {
     }
     const err = validatePayload(req.body);
     if (err) return res.status(400).json({ error: err });
+    if (!(await assertCloudSaveMarketAllowedForPlan(res, uid, req.body.G.marketId))) return;
     const raw = JSON.stringify(req.body);
     const bytes = Buffer.byteLength(raw, 'utf8');
     if (bytes > MAX_BYTES) {
@@ -277,6 +279,7 @@ function mountCloudSaves(app) {
     }
     const err = validatePayload(req.body);
     if (err) return res.status(400).json({ error: err });
+    if (!(await assertCloudSaveMarketAllowedForPlan(res, uid, req.body.G.marketId))) return;
     const raw = JSON.stringify(req.body);
     if (Buffer.byteLength(raw, 'utf8') > MAX_BYTES) {
       return res.status(413).json({ error: 'save_too_large', maxBytes: MAX_BYTES });
@@ -309,6 +312,7 @@ function mountCloudSaves(app) {
     if (!id) return res.status(400).json({ error: 'Invalid id' });
     const err = validatePayload(req.body);
     if (err) return res.status(400).json({ error: err });
+    if (!(await assertCloudSaveMarketAllowedForPlan(res, uid, req.body.G.marketId))) return;
     const raw = JSON.stringify(req.body);
     if (Buffer.byteLength(raw, 'utf8') > MAX_BYTES) {
       return res.status(413).json({ error: 'save_too_large', maxBytes: MAX_BYTES });
