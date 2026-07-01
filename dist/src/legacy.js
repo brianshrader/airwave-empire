@@ -3202,7 +3202,9 @@ function transferFranchiseHolder(franchiseId,fromSid,toSid,G,opts){
   const to=G.stations.find(st=>st.id===toSid);
   if(!f||!r||!from||!to||r.holderId!==fromSid)return false;
   const actingPid=opts?.actingPlayerId;
-  if(opts?.allowAnyOwner&&actingPid!=null&&(from._mpOwner!==actingPid||to._mpOwner!==actingPid))return false;
+  if(opts?.allowAnyOwner){
+    if(actingPid==null||from._mpOwner!==actingPid||to._mpOwner!==actingPid)return false;
+  }
   if(!franchiseTransferDestEligible(f,to,fromSid,G,opts))return false;
   benchLocalHostDisplacedByFranchiseWin(to,f,G);
   r.holderId=to.id;
