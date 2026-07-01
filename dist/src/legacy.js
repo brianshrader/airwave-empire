@@ -21587,13 +21587,22 @@ function runMarketAttrition(G){
   for(const s of byShare){
     if(removedIds.has(s.id)) continue;    // already removed this period — skip
 
-    const isAMMusic = s.sig.type==='AM'&&!s.fmBooster&&
+    const isAM = s.sig.type==='AM'&&!s.fmBooster;
+    // AM-only pass — ghost-share FM rivals were incorrectly entering zombie/niche survival.
+    if(!isAM){
+      if(s.isZombie||s.isNicheSurvival||s._amWeakFallCount||s._zombieFallStreak){
+        s.isZombie=false;s.isNicheSurvival=false;s._amWeakFallCount=0;s._zombieFallStreak=0;
+      }
+      continue;
+    }
+
+    const isAMMusic = isAM&&
       ['TOP40','COUNTRY','SOUL_RNB','MOR','ALBUM_ROCK','BEAUTIFUL_MUSIC',
        'CLASSIC_ROCK','ADULT_CONTEMP','URBAN_CONTEMP','ALT_ROCK','AAA',
        'RHYTHMIC','HOT_AC','CLASSIC_HITS','ADULT_HITS','OLDIES','BROKERED_PROGRAMMING','GOSPEL'].includes(s.format);
-    const isAMTalk = s.sig.type==='AM'&&!s.fmBooster&&
+    const isAMTalk = isAM&&
       ['NEWS_TALK','CONSERVATIVE_TALK','SPORTS_TALK','ALL_NEWS'].includes(s.format);
-    const isImplausible = s.sig.type==='AM'&&!s.fmBooster&&
+    const isImplausible = isAM&&
       AM_IMPLAUSIBLE_AFTER[s.format]&&year>AM_IMPLAUSIBLE_AFTER[s.format];
     const shareIsGhost = s.rat.share<0.005; // truly invisible
 
