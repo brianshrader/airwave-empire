@@ -17,6 +17,50 @@
 
   const MARKET_TIER_RANK = { small: 0, medium: 1, large: 2, mega: 3 };
 
+  const DAYPART_PROFILE_RANK = {
+    morningDrive: 0,
+    afternoonDrive: 1,
+    midday: 2,
+    evening: 3,
+    overnight: 4,
+  };
+
+  function overnightBurnoutDrain(t, slot) {
+    if (slot !== 'overnight' || !t) return 0;
+    const ten = t.periodsAtStation | 0;
+    if (ten < 6) return 0;
+    const yrs = Math.floor(ten / 2);
+    let drain = yrs >= 8 ? 1.15 : yrs >= 5 ? 0.65 : 0.3;
+    const p = t._personality;
+    if (p === 'ambitious' || p === 'careerist') drain *= 1.4;
+    if (p === 'loyal' || p === 'lifestyle') drain *= 0.75;
+    if (t._overnightPassedOver) drain += 1.8;
+    return drain;
+  }
+
+  function onStationDaypartFilled(s, filledSlot, G) {
+    if (!s?.isPlayer || !s.prog?.overnight?.talent || filledSlot === 'overnight') return;
+    const ot = s.prog.overnight.talent;
+    if ((ot.periodsAtStation | 0) < 10) return;
+    const filledRank = DAYPART_PROFILE_RANK[filledSlot];
+    if (filledRank == null || filledRank >= DAYPART_PROFILE_RANK.overnight) return;
+    const filledTal = s.prog[filledSlot]?.talent;
+    if (!filledTal || filledTal === ot) return;
+    ot._overnightPassedOver = true;
+    if (!ot._overnightPassedWarned && G) {
+      ot._overnightPassedWarned = true;
+      const sl =
+        typeof SL !== 'undefined' && SL[filledSlot] ? SL[filledSlot] : filledSlot;
+      G.news.unshift({
+        v: 'MEDIUM',
+        t: `${nm(ot)} has watched ${sl} fill at ${s.callLetters} while staying on overnights — morale is taking a hit.`,
+        y: G.year,
+        p: G.period,
+        iy: true,
+      });
+    }
+  }
+
   const LIFE_REASONS = [
     { id: 'relocation', line: 'family relocation' },
     { id: 'spouse_job', line: 'a spouse\'s job transfer' },
@@ -194,10 +238,15 @@
     if ((t.cyr || 0) <= 0) sat -= 14;
     else if ((t.cyr || 0) <= 0.5) sat -= 5;
     if (t._failedRenewals | 0) sat -= 4 * Math.min(3, t._failedRenewals | 0);
+    if (slot === 'overnight') {
+      const ten = t.periodsAtStation | 0;
+      if (ten >= 8) sat -= Math.min(14, 2 + Math.floor(ten / 4));
+      if (t._overnightPassedOver) sat -= 9;
+    }
     return clamp(Math.round(sat), 8, 98);
   }
 
-  function updateStructuralMorale(t, s, G, ctx, sat) {
+  function updateStructuralMorale(t, s, slot, G, ctx, sat) {
     let st = typeof t._structMorale === 'number' ? t._structMorale : 65;
     const target = sat;
     const pull = ctx.budgetStress > 0.4 || ctx.rankDeclineStreak >= 3 ? 0.06 : 0.11;
@@ -207,6 +256,8 @@
     if (ctx.departuresRecent >= 1) st -= 2.2 * Math.min(4, ctx.departuresRecent);
     if (ctx.rep.declining > 52) st -= 1.6;
     if (ctx.share >= 0.1 && ctx.rank != null && ctx.rank <= 5) st += 0.8;
+    const obDrain = overnightBurnoutDrain(t, slot);
+    if (obDrain > 0) st -= obDrain;
     t._structMorale = clamp(Math.round(st), 15, 100);
     syncMoraleFromStructural(t);
   }
@@ -504,7 +555,7 @@
     const ctx = stationContext(s, G);
     const sat = computeSatisfaction(t, s, slot, G, ctx);
     t._satisfaction = sat;
-    updateStructuralMorale(t, s, G, ctx, sat);
+    updateStructuralMorale(t, s, slot, G, ctx, sat);
     maybeRollMarketAmbition(t, s, slot, G, ctx);
     maybeRollLifeExit(t, s, slot, G, ctx);
     maybeSetDissatisfactionExit(t, s, slot, G, ctx, sat);
@@ -565,6 +616,25 @@
     const t = sd?.talent;
     if (!t || !s?.isPlayer) return;
     ensurePersonality(t, G);
+    if (sl === 'overnight') {
+      const drain = overnightBurnoutDrain(t, sl);
+      if (drain > 0) {
+        t._structMorale = clamp((t._structMorale | 0) - drain, 15, 100);
+        syncMoraleFromStructural(t);
+        const ten = t.periodsAtStation | 0;
+        if (ten >= 12 && !t._overnightBurnoutWarned && (t._structMorale | 0) < 50 && G) {
+          t._overnightBurnoutWarned = true;
+          const slLbl = typeof SL !== 'undefined' && SL.overnight ? SL.overnight : 'OVERNIGHT';
+          G.news.unshift({
+            v: 'MEDIUM',
+            t: `${nm(t)} is burning out on ${slLbl} at ${s.callLetters} — years on the graveyard shift are wearing on them.`,
+            y: G.year,
+            p: G.period,
+            iy: true,
+          });
+        }
+      }
+    }
     syncMoraleFromStructural(t);
     const ch = typeof slotTalentB === 'function' ? slotTalentB(sd) : null;
     if (ch) {
@@ -684,6 +754,7 @@
     contractModifiers,
     contractUiExtras,
     onFormatFlip,
+    onStationDaypartFilled,
     hasExitIntent,
     effectiveMorale,
     wlTalentTickExpiredLimp,

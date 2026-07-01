@@ -2630,6 +2630,11 @@ body#wl-play #main{
 .sl-cell-mor{display:flex;align-items:center;justify-content:center}
 .sl-cell-mor .mor-bar{margin-left:0}
 .sl-mor-dot{display:inline-block;width:10px;height:10px;border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.4);flex-shrink:0;vertical-align:middle}
+.sl-mor-icon{display:inline-block;font-size:17px;line-height:1;flex-shrink:0;vertical-align:middle;cursor:default}
+.sl-mor-icon--high{filter:none}
+.sl-mor-icon--mid{filter:none}
+.sl-mor-icon--low{opacity:.92}
+.sl-mor-icon--bad{opacity:.95}
 .sl-cell-pay,.sl-cell-sq,.sl-cell-tal{text-align:right;min-width:0}
 .sl-cell-pay{font-family:var(--ft);font-size:14px;color:var(--mut)}
 /* Verbose pay+contract line (see lineupContractVerboseUi) — mobile-only display + kind colors */
@@ -3354,10 +3359,17 @@ body#wl-play #main{
 .itr{font-size:15px;width:18px;text-align:center}
 .ni{padding:11px 0;border-bottom:1px solid var(--bdr)}
 .ni:last-child{border-bottom:none}
+.ni--major{padding:12px 0 11px;border-bottom:1px solid rgba(245,166,35,.22)}
+.ni--quiet{opacity:.78}
 .nm{font-family:var(--ft);font-size:15px;color:var(--mut);margin-bottom:4px;letter-spacing:1px}
 .nt{font-size:15px;color:var(--wht);line-height:1.6}
 .nt.hi{color:var(--amb)}
+.nt--quiet{color:var(--mut);font-size:14px;line-height:1.55}
 .ni.you .nt::before{content:'▶ ';color:var(--amb)}
+.ni--major.you .nt::before{color:var(--amb)}
+.news-feed-section--major .ni:last-child{border-bottom:1px solid rgba(245,166,35,.15)}
+.news-feed-section-label{font-family:var(--fd);font-size:11px;letter-spacing:.14em;color:var(--mut);margin:10px 0 4px;text-transform:uppercase}
+.wl-news-feed-badge{display:inline-block;min-width:18px;height:18px;padding:0 5px;margin:0 4px 0 2px;border-radius:9px;background:var(--amb);color:var(--drk);font-family:var(--fd);font-size:12px;line-height:18px;letter-spacing:0;text-align:center;vertical-align:middle}
 .ev{padding:10px 12px;margin-bottom:9px;background:rgba(245,166,35,.07);border-left:2px solid var(--adm)}
 .evt{font-family:var(--ft);font-size:15px;color:var(--amb);letter-spacing:1px;margin-bottom:3px}
 .evd{font-size:16px;color:var(--off);line-height:1.58}

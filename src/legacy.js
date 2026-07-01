@@ -5377,13 +5377,17 @@ function daypartSlotAppealRaw(st,sl,G){
   const op=simulcastOperationalSource(st);
   const sd=op.prog?.[sl];
   if(!sd)return 1e-6;
-  let slotCore=0.10+0.90*(Math.max(0,Math.min(100,slotQualityForOQ(op,sl,G)))/100);
   const fr=getStationFranchise(op,sl,G);
-  if(!sd.talent&&!fr){
+  const vacant=!sd.talent&&!fr;
+  let q=slotQualityForOQ(op,sl,G);
+  if(vacant)q=Math.min(q,vacantDaypartOqCap(sl));
+  let slotCore=0.10+0.90*(Math.max(0,Math.min(100,q))/100);
+  if(vacant){
     const mode=sd.staffingMode;
     if(mode==='paid')slotCore*=0.40;
     else if(mode==='light')slotCore*=0.55;
     else slotCore*=0.46;
+    if(sl==='morningDrive'||sl==='afternoonDrive')slotCore*=0.72;
   }
   if(slotTalentB(sd)&&daypartCoHostModelStrength(sl,op.format)>0){
     let chem=0;
@@ -5514,10 +5518,11 @@ function buildDaypartRankRowsForBook(sl,G,year,period){
   const entry=rankerHistoryEntryAt(G,year,period);
   const slotMap=entry?.daypartShares?.[sl];
   if(slotMap&&typeof slotMap==='object'){
-    return comm.map(st=>({
-      st,
-      share:typeof slotMap[st.id]==='number'&&!Number.isNaN(slotMap[st.id])?slotMap[st.id]:0,
-    }))
+    return comm.map(st=>{
+      let share=typeof slotMap[st.id]==='number'&&!Number.isNaN(slotMap[st.id])?slotMap[st.id]:0;
+      if(daypartSlotIsVacant(st,sl,G))share=daypartDerivedShare01(st,sl,G);
+      return{st,share};
+    })
       .sort((a,b)=>b.share-a.share)
       .map((row,i)=>({st:row.st,share:row.share,rank:i+1}));
   }
