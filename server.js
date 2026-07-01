@@ -100,8 +100,11 @@ mountEntitlementsRoutes(app);
 const { mountTrialRoutes } = require('./server/trialRoutes');
 mountTrialRoutes(app);
 
-const { resolveStripePlanForUser } = require('./server/stripePlanResolve');
-const { marketIdsForPlanSlug, ALL_PLAYABLE_MARKET_IDS_ORDERED } = require('./server/planMarkets');
+const {
+  assertMpHostMaySetMarket,
+  marketIdFromGameState,
+  sanitizeMpHostGameState,
+} = require('./server/mpMarketAccess');
 
 const httpServer = http.createServer(app);
 const io         = new Server(httpServer, {
@@ -120,26 +123,7 @@ const SAVE_DIR = SAVES_DIR;
 // Ensure saves directory exists
 ensureDir(SAVE_DIR);
 
-/**
- * Multiplayer host market — enforced on start_draft only. Mirrors /api/entitlements + planMarkets.js.
- * Guests joining via join_room / rejoin_room are not checked here: a free-tier player may join a paid host’s room in any city.
- * No Clerk user on socket (local dev / WL_ALLOW_MP_AUTH_BYPASS): allow all Phase-1 cities so LAN still works.
- */
-async function mpAllowedMarketIdsForHostSocket(socket) {
-  const uid = socket.data.clerkUserId || null;
-  if (!uid) {
-    return new Set([...ALL_PLAYABLE_MARKET_IDS_ORDERED]);
-  }
-  try {
-    const r = await resolveStripePlanForUser(uid);
-    return new Set(marketIdsForPlanSlug(r.planSlug));
-  } catch (e) {
-    console.warn('[MP] plan resolve for host failed:', e.message || e);
-    return new Set(['atlanta']);
-  }
-}
-
-// ── PERSISTENCE ────────────────────────────────────────────────────
+// MP host market rules: see server/mpMarketAccess.js (start_draft / start_game pin; later G writes sanitized).
 
 function roomSavePath(roomId) {
   return path.join(SAVE_DIR, `${roomId}.json`);
@@ -151,6 +135,7 @@ function persistRoom(room) {
       id:          room.id,
       phase:       room.phase,
       scenarioId:  room.scenarioId,
+      mpMarketId:  room.mpMarketId || null,
       players:     room.players.map(p => ({
         // Save name + playerId but NOT socketId — that changes on reconnect
         name:     p.name,
@@ -245,6 +230,7 @@ function loadPersistedRooms() {
         hostId:     null,   // will be assigned when first player rejoins
         phase:      data.phase || 'playing',
         scenarioId: data.scenarioId,
+        mpMarketId: data.mpMarketId || (data.G?.marketId ? String(data.G.marketId).trim().toLowerCase() : null),
         players:    data.players.map(p => ({
           socketId:  null,   // unknown until they reconnect
           name:      p.name,
@@ -306,6 +292,7 @@ function makeRoom(hostSocketId, hostName) {
     seq:        0,
     hostPlayerId: 0,  // playerId 0 is always the permanent host
     draft: null,  // {order:[], pickIdx:0, picks:{socketId: [stationIdx,...]}, phase:'draft'|'done'}
+    mpMarketId: null, // pinned when host starts draft/game; G.marketId cannot change afterward
   };
   return rooms[id];
 }
@@ -547,15 +534,22 @@ io.on('connection', socket => {
     if (p) { p.ready = true; broadcastRoomState(room); }
   });
 
-  // ── START GAME (host only) ────────────────────────────────────
-  socket.on('start_game', ({ roomId, scenarioId, G: initialG }) => {
+  // ── START GAME (host only) — legacy path; client uses start_draft + draft_complete ──
+  socket.on('start_game', async ({ roomId, scenarioId, G: initialG }) => {
     const room = getRoom(roomId);
     if (!room || room.hostId !== socket.id) return;
     if (room.players.length < 2) { socket.emit('start_error', 'Need at least 2 players to start.'); return; }
 
+    const check = await assertMpHostMaySetMarket(socket, marketIdFromGameState(initialG));
+    if (!check.ok) {
+      socket.emit('start_error', check.message);
+      return;
+    }
+    room.mpMarketId = check.marketId;
+
     room.phase      = 'playing';
     room.scenarioId = scenarioId;
-    room.G          = initialG;
+    room.G          = sanitizeMpHostGameState(room, initialG);
     room.commitLog  = {};
     room.players.forEach(p => { room.commitLog[p.socketId] = false; });
 
@@ -601,8 +595,9 @@ io.on('connection', socket => {
     // If the host includes their current G snapshot, update room.G so rejoiners
     // get the latest state including mid-period changes (ops, salesForce, etc.)
     if (hostG && room.hostId === socket.id) {
-      mergeMpStationLogosFromPrior(hostG, room.G);
-      room.G = hostG;
+      const Gsafe = sanitizeMpHostGameState(room, hostG);
+      mergeMpStationLogosFromPrior(Gsafe, room.G);
+      room.G = Gsafe;
       persistRoom(room);
     }
   });
@@ -800,8 +795,9 @@ io.on('connection', socket => {
       return;
     }
 
-    mergeMpStationLogosFromPrior(G, room.G);
-    room.G = G;
+    const Gsafe = sanitizeMpHostGameState(room, G);
+    mergeMpStationLogosFromPrior(Gsafe, room.G);
+    room.G = Gsafe;
     room.commitLog  = {};
     room.players.forEach(p => { room.commitLog[p.socketId] = false; });
     room.actionQueue = [];
@@ -811,15 +807,15 @@ io.on('connection', socket => {
     persistRoom(room);
 
     io.to(roomId).emit('state_broadcast', { G: room.G, decadeYear: decadeYear || null, sumData: sumData || null });
-    console.log(`[STATE] ${roomId} — year ${G?.year} ${G?.period===2?'FALL':'SPRING'} saved`);
+    console.log(`[STATE] ${roomId} — year ${Gsafe?.year} ${Gsafe?.period===2?'FALL':'SPRING'} saved`);
     const stateHostPlayer = room.players.find(p => p.socketId === socket.id);
     posthog.capture({
       distinctId: stateHostPlayer?.accountId || socket.id,
       event: 'game period advanced',
       properties: {
         room_id: roomId,
-        year: G?.year,
-        period: G?.period === 2 ? 'fall' : 'spring',
+        year: Gsafe?.year,
+        period: Gsafe?.period === 2 ? 'fall' : 'spring',
         player_count: room.players.length,
       },
     });
@@ -846,19 +842,16 @@ io.on('connection', socket => {
     if (!room || room.hostId !== socket.id) return;
     if (room.players.length < 2) { socket.emit('start_error', 'Need at least 2 players.'); return; }
 
-    const mid = initialG && initialG.marketId ? String(initialG.marketId) : 'atlanta';
-    const allowed = await mpAllowedMarketIdsForHostSocket(socket);
-    if (!allowed.has(mid)) {
-      socket.emit(
-        'start_error',
-        'Your plan only allows hosting multiplayer in certain markets. Free tier: Atlanta only. Upgrade to Starter or Pro in Account to host in more cities.',
-      );
+    const check = await assertMpHostMaySetMarket(socket, marketIdFromGameState(initialG));
+    if (!check.ok) {
+      socket.emit('start_error', check.message);
       return;
     }
+    room.mpMarketId = check.marketId;
 
     room.phase = 'draft';
     room.era = era;
-    room.G = initialG;
+    room.G = sanitizeMpHostGameState(room, initialG);
 
     // Build snake draft order: [0,1,2,1,0] for 3 players, etc.
     const n = room.players.length;
@@ -980,12 +973,21 @@ io.on('connection', socket => {
   });
 
   // ── DRAFT COMPLETE (host finalizes and starts game) ────────────
-  socket.on('draft_complete', ({ roomId, G: finalG }) => {
+  socket.on('draft_complete', async ({ roomId, G: finalG }) => {
     const room = getRoom(roomId);
     if (!room || room.hostId !== socket.id) return;
 
+    if (!room.mpMarketId) {
+      const check = await assertMpHostMaySetMarket(socket, marketIdFromGameState(finalG));
+      if (!check.ok) {
+        socket.emit('start_error', check.message);
+        return;
+      }
+      room.mpMarketId = check.marketId;
+    }
+
     room.phase = 'playing';
-    room.G = finalG;
+    room.G = sanitizeMpHostGameState(room, finalG);
     room.commitLog = {};
     room.players.forEach(p => { room.commitLog[p.socketId] = false; });
     room.actionQueue = [];

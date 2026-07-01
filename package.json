@@ -38,6 +38,7 @@
     "diag:quality-distribution-2020": "node scripts/diag-quality-distribution-2020.mjs",
     "diag:quality-share-elasticity": "node scripts/diag-quality-share-elasticity.mjs",
     "verify:market-registry": "node scripts/verify-market-registry.mjs",
+    "test:mp-market-access": "node scripts/test-mp-market-access.mjs",
     "diag:morning-transitions": "node scripts/diag-morning-transitions.mjs",
     "diag:morning-recovery-ab": "node scripts/diag-morning-recovery-ab.mjs",
     "diag:morning-recovery-grid": "node scripts/diag-morning-recovery-ab.mjs -- --grid",
